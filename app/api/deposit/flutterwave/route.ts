@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@neondatabase/serverless'
 
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY
+const FLUTTERWAVE_SECRET_KEY = process.env.FLW_SECRET_KEY
 const TRX_RATE = 10 // 1 USD = 10 TRX
 
 function getDb() {

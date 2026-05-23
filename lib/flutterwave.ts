@@ -3,7 +3,7 @@
 // Flutterwave Payment Integration for SSB Now
 // Handles deposits and payment processing
 
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY
+const FLUTTERWAVE_SECRET_KEY = process.env.FLW_SECRET_KEY
 
 interface PaymentInitResponse {
   success: boolean

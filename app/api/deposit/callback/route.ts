@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@neondatabase/serverless'
 
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY
+const FLUTTERWAVE_SECRET_KEY = process.env.FLW_SECRET_KEY
 
 function getDb() {
   const url = process.env.DATABASE_URL || process.env.POSTGRES_URL

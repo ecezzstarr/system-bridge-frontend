@@ -201,7 +201,7 @@ export async function eightHealthCheck(): Promise<{
   // Check Flutterwave
   try {
     const res = await fetch('https://api.flutterwave.com/v3/banks/NG', {
-      headers: { 'Authorization': `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}` },
+      headers: { 'Authorization': `Bearer ${process.env.FLW_SECRET_KEY}` },
     })
     services.flutterwave = res.ok
   } catch {
