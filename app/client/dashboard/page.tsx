@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { LogOut, MessageCircle, ArrowRight, Menu, X, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { LogOut, MessageCircle, ArrowRight, Menu, X, ArrowUpRight, ArrowDownLeft, Phone } from 'lucide-react'
 import { getClientUser, clearClientAuth } from '@/lib/client-auth'
-import { WhatsAppButton } from '@/components/external-apps-nav'
+import { openWhatsAppWithNumber, SUPPORT_NUMBERS } from '@/components/external-apps-nav'
 
 interface ClientUser {
   id: string
@@ -15,6 +15,8 @@ interface ClientUser {
   name: string
   business_name: string
   role?: 'admin' | 'client'
+  referred_by?: string
+  bridger_whatsapp?: string
 }
 
 interface PositionAgent {
@@ -23,13 +25,15 @@ interface PositionAgent {
   agent_username: string
   icon: string
   description: string
+  whatsapp?: string
 }
 
 const POSITIONS: PositionAgent[] = [
-  { position: 'mandate', agent_name: 'Loading...', agent_username: '', icon: '📋', description: 'Mandate Officer' },
-  { position: 'lawyer', agent_name: 'Loading...', agent_username: '', icon: '⚖️', description: 'Legal Counsel' },
-  { position: 'forensic', agent_name: 'Loading...', agent_username: '', icon: '🔍', description: 'Forensic Expert' },
-  { position: 'admin', agent_name: 'Loading...', agent_username: '', icon: '👤', description: 'Administrator' },
+  { position: 'mandate', agent_name: 'Mandate Officer', agent_username: '', icon: '📋', description: 'Mandate Officer', whatsapp: SUPPORT_NUMBERS.mandate },
+  { position: 'forensic', agent_name: 'Forensic Expert', agent_username: '', icon: '🔍', description: 'Forensic Expert', whatsapp: SUPPORT_NUMBERS.forensic },
+  { position: 'lawyer', agent_name: 'Legal Counsel', agent_username: '', icon: '⚖️', description: 'Attorney', whatsapp: SUPPORT_NUMBERS.legal },
+  { position: 'admin', agent_name: 'Administrator', agent_username: '', icon: '👤', description: 'Admin Support', whatsapp: SUPPORT_NUMBERS.admin },
+  { position: 'bridger', agent_name: 'Your Bridger', agent_username: '', icon: '🌉', description: 'Your Bridger' },
 ]
 
 export default function ClientDashboardPage() {
@@ -50,13 +54,24 @@ export default function ClientDashboardPage() {
     
     setClient(clientData)
 
-    const mockPositions: PositionAgent[] = [
-      { position: 'mandate', agent_name: 'Sarah Chen', agent_username: 'sarah.chen', icon: '📋', description: 'Mandate Officer' },
-      { position: 'lawyer', agent_name: 'James Wilson', agent_username: 'james.wilson', icon: '⚖️', description: 'Legal Counsel' },
-      { position: 'forensic', agent_name: 'Dr. Emma Davis', agent_username: 'emma.davis', icon: '🔍', description: 'Forensic Expert' },
-      { position: 'admin', agent_name: 'Michael Brown', agent_username: 'michael.brown', icon: '👤', description: 'Administrator' },
-    ]
-    setPositions(mockPositions)
+    // Fetch bridger info if client was referred
+    const fetchBridgerInfo = async () => {
+      try {
+        const response = await fetch(`/api/client/bridger?clientId=${clientData.id}`)
+        const data = await response.json()
+        if (data.bridger) {
+          // Update the bridger position with actual bridger info
+          setPositions(prev => prev.map(pos => 
+            pos.position === 'bridger' 
+              ? { ...pos, agent_name: data.bridger.name, whatsapp: data.bridger.whatsapp_number }
+              : pos
+          ))
+        }
+      } catch (error) {
+        console.error('Error fetching bridger info:', error)
+      }
+    }
+    fetchBridgerInfo()
     setIsLoading(false)
   }, [router])
 
@@ -132,15 +147,26 @@ export default function ClientDashboardPage() {
 
           <nav className="flex-1 space-y-1 lg:space-y-2 overflow-y-auto">
             {positions.map((pos) => (
-              <Link key={pos.position} href={`/client/chat/${pos.position}`} onClick={() => setSidebarOpen(false)}>
-                <button className="w-full text-left px-3 py-3 lg:py-2.5 rounded-lg hover:bg-slate-800/50 active:bg-slate-800 transition group flex items-center gap-3">
-                  <span className="text-xl lg:text-lg">{pos.icon}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm lg:text-xs font-semibold text-slate-300 group-hover:text-white transition">{pos.description}</p>
-                    <p className="text-xs text-slate-500">{pos.agent_name}</p>
-                  </div>
-                </button>
-              </Link>
+              <div key={pos.position} className="flex items-center gap-2">
+                <Link href={`/client/chat/${pos.position}`} onClick={() => setSidebarOpen(false)} className="flex-1">
+                  <button className="w-full text-left px-3 py-3 lg:py-2.5 rounded-lg hover:bg-slate-800/50 active:bg-slate-800 transition group flex items-center gap-3">
+                    <span className="text-xl lg:text-lg">{pos.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm lg:text-xs font-semibold text-slate-300 group-hover:text-white transition">{pos.description}</p>
+                      <p className="text-xs text-slate-500">{pos.agent_name}</p>
+                    </div>
+                  </button>
+                </Link>
+                {pos.whatsapp && (
+                  <button
+                    onClick={() => openWhatsAppWithNumber(pos.whatsapp!, `Hi, I need assistance from ${pos.description}`)}
+                    className="p-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 transition"
+                    title={`WhatsApp ${pos.description}`}
+                  >
+                    <Phone className="w-4 h-4 text-green-400" />
+                  </button>
+                )}
+              </div>
             ))}
           </nav>
 

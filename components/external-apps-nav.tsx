@@ -7,12 +7,27 @@ interface ExternalAppsNavProps {
   showBase?: boolean // For client, only show during withdraw
 }
 
+// WhatsApp support numbers for different departments
+export const SUPPORT_NUMBERS = {
+  mandate: '447853187363',
+  legal: '447832387522',
+  forensic: '12268011782',
+  admin: '17829072104',
+} as const
+
 // WhatsApp Business deep link
 const WHATSAPP_BUSINESS_URL = 'https://api.whatsapp.com/send?phone='
 
 // Coinbase Wallet / Base deep link
 const COINBASE_WALLET_URL = 'https://go.cb-w.com/dapp?cb_url='
 const BASE_APP_STORE = 'https://play.google.com/store/apps/details?id=org.toshi'
+
+export function openWhatsAppWithNumber(phoneNumber: string, message?: string) {
+  const url = message 
+    ? `${WHATSAPP_BUSINESS_URL}${phoneNumber}&text=${encodeURIComponent(message)}`
+    : `${WHATSAPP_BUSINESS_URL}${phoneNumber}`
+  window.open(url, '_blank')
+}
 
 export function ExternalAppsNav({ userRole, showBase = false }: ExternalAppsNavProps) {
   const canSeeBase = userRole === 'admin' || userRole === 'bridger' || showBase

@@ -4,16 +4,16 @@ import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { LogOut, MessageCircle, Gamepad2, ShoppingBag, Users, Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { LogOut, MessageCircle, Gamepad2, ShoppingBag, Users, Wallet, ArrowUpRight, ArrowDownLeft, Phone, Send } from 'lucide-react'
 import { clearToken } from '@/lib/auth-client'
 import { RiverChat } from '@/components/river-chat'
 import { NotificationBell } from '@/components/notification-bell'
 import Arena from '@/components/places/arena'
 import Lounge from '@/components/places/lounge'
 import Link from 'next/link'
-import { ExternalAppsNav } from '@/components/external-apps-nav'
+import { ExternalAppsNav, openWhatsAppWithNumber } from '@/components/external-apps-nav'
 
-type TabId = 'lounge' | 'arena' | 'wallet' | 'market' | 'referrals'
+type TabId = 'lounge' | 'arena' | 'wallet' | 'market' | 'clients' | 'referrals'
 
 export default function BridgerDashboard() {
   const { user, logout } = useAuth()
@@ -40,8 +40,9 @@ export default function BridgerDashboard() {
     { id: 'lounge' as TabId, label: 'Lounge', icon: <MessageCircle className="h-5 w-5" /> },
     { id: 'arena' as TabId, label: 'Arena & Casino', icon: <Gamepad2 className="h-5 w-5" /> },
     { id: 'wallet' as TabId, label: 'Wallet', icon: <Wallet className="h-5 w-5" /> },
+    { id: 'clients' as TabId, label: 'My Clients', icon: <Users className="h-5 w-5" /> },
     { id: 'market' as TabId, label: 'Market', icon: <ShoppingBag className="h-5 w-5" /> },
-    { id: 'referrals' as TabId, label: 'My Referrals', icon: <Users className="h-5 w-5" /> },
+    { id: 'referrals' as TabId, label: 'Invite Clients', icon: <Users className="h-5 w-5" /> },
   ]
 
   return (
@@ -117,6 +118,7 @@ export default function BridgerDashboard() {
             {activeTab === 'lounge' && <Lounge />}
             {activeTab === 'arena' && <Arena />}
             {activeTab === 'wallet' && <WalletSection user={user} />}
+            {activeTab === 'clients' && <MyClients user={user} />}
             {activeTab === 'market' && <MarketSection />}
             {activeTab === 'referrals' && <MyReferrals user={user} />}
           </div>
@@ -207,6 +209,104 @@ function WalletSection({ user }: { user: any }) {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function MyClients({ user }: { user: any }) {
+  const [clients, setClients] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedClient, setSelectedClient] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      if (!user?.id) return
+      try {
+        const response = await fetch(`/api/bridger/clients?bridgerId=${user.id}`)
+        const data = await response.json()
+        setClients(data.clients || [])
+      } catch (error) {
+        console.error('Error fetching clients:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchClients()
+  }, [user?.id])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="group relative">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl opacity-20 blur"></div>
+        <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Users className="h-8 w-8 text-emerald-400" />
+              <div>
+                <h2 className="text-2xl font-bold text-white">My Clients</h2>
+                <p className="text-slate-400 text-sm">Interact with clients you referred</p>
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-emerald-400">{clients.length}</div>
+          </div>
+        </div>
+      </div>
+
+      {clients.length === 0 ? (
+        <div className="text-center py-12 bg-slate-900/50 border border-slate-800 rounded-xl">
+          <Users className="h-16 w-16 text-slate-600 mx-auto mb-4" />
+          <p className="text-slate-400 mb-2">No clients yet</p>
+          <p className="text-sm text-slate-500">Share your referral link to bring clients to the platform</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {clients.map((client) => (
+            <div 
+              key={client.id}
+              className="group relative"
+            >
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl opacity-10 blur group-hover:opacity-30 transition"></div>
+              <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                    {client.name?.charAt(0) || 'C'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white truncate">{client.name}</p>
+                    <p className="text-xs text-slate-400 truncate">{client.business_name || client.email}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  {client.phone && (
+                    <button
+                      onClick={() => openWhatsAppWithNumber(client.phone, `Hi ${client.name}, this is your bridger from SSBNOW`)}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 transition"
+                    >
+                      <Phone className="w-4 h-4 text-green-400" />
+                      <span className="text-xs text-green-300">WhatsApp</span>
+                    </button>
+                  )}
+                  <Link href={`/bridger/clients`} className="flex-1">
+                    <button className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 transition">
+                      <MessageCircle className="w-4 h-4 text-cyan-400" />
+                      <span className="text-xs text-cyan-300">Chat</span>
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
