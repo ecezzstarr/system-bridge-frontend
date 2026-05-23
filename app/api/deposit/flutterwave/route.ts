@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@neondatabase/serverless'
 
-const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY
+const FLUTTERWAVE_SECRET_KEY = process.env.FLW_SECRET_KEY
 const TRX_RATE = 10 // 1 USD = 10 TRX
 
 function getDb() {
@@ -36,14 +36,16 @@ export async function POST(request: NextRequest) {
         tx_ref: reference,
         amount: amountUSD,
         currency: 'USD',
+        payment_options: 'card,banktransfer,ussd,mobilemoney',
         redirect_url: redirectUrl,
         customer: {
           email,
           name: name || email,
+          phonenumber: '',
         },
         customizations: {
           title: 'SSBNOW.SHOP',
-          description: `Deposit ${trxAmount} TRX`,
+          description: `Deposit ${trxAmount} TRX to your wallet`,
           logo: 'https://v0-live-site-deployment-pink.vercel.app/logo.png',
         },
         meta: {

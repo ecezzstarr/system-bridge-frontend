@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateClient, getClientByEmail } from '@/lib/mock-client-db'
+import { neon } from '@neondatabase/serverless'
+import bcrypt from 'bcryptjs'
+
+const getDb = () => {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL not configured')
+  }
+  return neon(process.env.DATABASE_URL)
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,16 +20,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const client = authenticateClient(email, password)
+    const sql = getDb()
 
-    if (!client) {
+    // Find client by email
+    const clients = await sql`SELECT * FROM clients WHERE email = ${email} LIMIT 1`
+    
+    if (clients.length === 0) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       )
     }
 
-    // Generate simple token
+    const client = clients[0]
+
+    // Verify password
+    const isValid = await bcrypt.compare(password, client.password_hash)
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      )
+    }
+
+    // Generate token
     const token = Buffer.from(`${client.id}_${Date.now()}`).toString('base64')
 
     return NextResponse.json({
@@ -29,10 +51,11 @@ export async function POST(request: NextRequest) {
       client: {
         id: client.id,
         email: client.email,
-        phone: client.phone,
+        phone: client.phone || '',
         name: client.name,
-        business_name: client.business_name,
-        role: client.role,
+        business_name: client.business_name || '',
+        role: client.role || 'client',
+        assigned_bridger_id: client.assigned_bridger_id,
       },
     })
   } catch (error) {

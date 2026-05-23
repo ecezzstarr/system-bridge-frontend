@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,8 @@ import { saveClientToken, saveClientUser } from '@/lib/client-auth'
 
 export default function ClientRegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [referredBy, setReferredBy] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,6 +22,14 @@ export default function ClientRegisterForm() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // Get referral code from URL
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) {
+      setReferredBy(ref)
+    }
+  }, [searchParams])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -54,6 +64,7 @@ export default function ClientRegisterForm() {
           phone: formData.phone,
           business_name: formData.business_name,
           password: formData.password,
+          referredBy: referredBy,
         }),
       })
 

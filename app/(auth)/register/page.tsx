@@ -16,6 +16,7 @@ function RegisterContent() {
   
   const [step, setStep] = useState<'role' | 'details'>('role')
   const [referredBy, setReferredBy] = useState<string | null>(null)
+  const [forcedRole, setForcedRole] = useState<'bridger' | null>(null)
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -28,11 +29,19 @@ function RegisterContent() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Check for referral code in URL
+  // Check for referral code and role restriction in URL
+  // Agent referrals can ONLY create bridgers (role=bridger in URL)
   useEffect(() => {
     const ref = searchParams.get('ref')
+    const roleParam = searchParams.get('role')
     if (ref) {
       setReferredBy(ref)
+    }
+    // If role=bridger is in URL, this is an Agent's referral - can ONLY register as Bridger
+    if (roleParam === 'bridger') {
+      setForcedRole('bridger')
+      setFormData(prev => ({ ...prev, role: 'bridger' }))
+      setStep('details')
     }
   }, [searchParams])
 

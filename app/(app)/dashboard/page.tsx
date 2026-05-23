@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-provider'
 import { clearToken } from '@/lib/auth-client'
-import { LogOut, Wallet, Store, Gamepad2, MessageCircle, ChevronRight, Zap, Globe, Code } from 'lucide-react'
+import { LogOut, Store, Gamepad2, MessageCircle, ChevronRight, Zap, Globe, Code } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -123,37 +123,28 @@ export default function DashboardPage() {
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 gap-3">
-            <Link href="/wallet-settings">
-              <button className="bg-slate-900/60 hover:bg-slate-900/80 rounded-xl p-3 border border-slate-800 hover:border-cyan-500/50 transition w-full text-left">
-                <p className="text-xs text-slate-400 mb-1">Personal</p>
-                <p className="text-lg font-bold text-cyan-400">{user.personal_wallet_address ? '✓' : '−'}</p>
-                <p className="text-xs text-slate-500">Wallet</p>
-              </button>
-            </Link>
+            <div className="bg-slate-900/60 rounded-xl p-3 border border-slate-800">
+              <p className="text-xs text-slate-400 mb-1">Escrow</p>
+              <p className="text-lg font-bold text-yellow-400">{user.escrow_balance || 0}</p>
+              <p className="text-xs text-slate-500">TRX</p>
+            </div>
             <div className="bg-slate-900/60 rounded-xl p-3 border border-slate-800">
               <p className="text-xs text-slate-400 mb-1">Platform</p>
               <p className="text-lg font-bold text-green-400">{user.platform_wallet_balance || 0}</p>
-              <p className="text-xs text-slate-500">Gaming</p>
+              <p className="text-xs text-slate-500">TRX</p>
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Flutterwave Deposit & TRX Withdraw */}
           <div className="space-y-2 pt-2">
-            <Link href="/wallet">
-              <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
-                <div className="flex items-center gap-3">
-                  <Wallet className="h-5 w-5 text-cyan-400 flex-shrink-0" />
-                  <span className="text-sm font-medium">Manage Wallet</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
-              </button>
-            </Link>
-
-            <Link href="/deposit">
+            <Link href="/wallet/deposit-withdraw">
               <button className="w-full bg-green-600/20 hover:bg-green-600/30 border border-green-600/50 rounded-xl p-3 flex items-center justify-between transition">
                 <div className="flex items-center gap-3">
                   <Zap className="h-5 w-5 text-green-400 flex-shrink-0" />
-                  <span className="text-sm font-medium">Deposit Funds</span>
+                  <div className="text-left">
+                    <span className="text-sm font-medium block">Deposit & Withdraw</span>
+                    <span className="text-xs text-slate-500">Flutterwave / TRX</span>
+                  </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-green-400 flex-shrink-0" />
               </button>

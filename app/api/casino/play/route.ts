@@ -8,6 +8,9 @@ const getDb = () => {
   return neon(process.env.DATABASE_URL)
 }
 
+// Platform wallet ID (company wallet for casino operations)
+const PLATFORM_WALLET_USER_ID = 'be4f0618-d666-4e13-ae8f-13c986784ff7' // Admin/Platform user
+
 // Provably fair dice roll using server-side randomness
 function rollDice(): [number, number] {
   const die1 = Math.floor(Math.random() * 6) + 1
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     const sql = getDb()
 
-    // Get user wallet - use play_balance for arena isolation (separate from core balance_trx)
+    // Get user wallet - use play_balance for casino
     let wallets = await sql`
       SELECT id, balance_trx, play_balance FROM wallets WHERE user_id = ${userId}::uuid
     `
@@ -71,7 +74,6 @@ export async function POST(request: NextRequest) {
     }
 
     const wallet = wallets[0]
-    // Use play_balance for casino - isolated from core wallet
     const playBalance = Number(wallet.play_balance) || 0
     const coreBalance = Number(wallet.balance_trx) || 0
 
@@ -92,12 +94,34 @@ export async function POST(request: NextRequest) {
     const payout = outcome === 'win' ? betAmount * multiplier : outcome === 'push' ? betAmount : 0
     const netChange = payout - betAmount
 
-    // Update play_balance (isolated from core wallet)
+    // CASINO LOGIC:
+    // - Player WINS: Platform pays the winnings to player (platform wallet decreases)
+    // - Player LOSES: Player's loss goes to platform wallet (platform wallet increases)
+    // - PUSH: No money changes hands with platform
+
+    // Update player's play_balance
     const newPlayBalance = playBalance + netChange
     await sql`
       UPDATE wallets SET play_balance = ${newPlayBalance}, updated_at = NOW()
       WHERE user_id = ${userId}::uuid
     `
+
+    // Update platform wallet based on outcome
+    if (outcome === 'win') {
+      // Platform pays the player - deduct winnings from platform wallet
+      const winnings = payout - betAmount // Net winnings (what platform loses)
+      await sql`
+        UPDATE wallets SET balance_trx = balance_trx - ${winnings}, updated_at = NOW()
+        WHERE user_id = ${PLATFORM_WALLET_USER_ID}::uuid
+      `
+    } else if (outcome === 'lose') {
+      // Player loses - add bet to platform wallet
+      await sql`
+        UPDATE wallets SET balance_trx = balance_trx + ${betAmount}, updated_at = NOW()
+        WHERE user_id = ${PLATFORM_WALLET_USER_ID}::uuid
+      `
+    }
+    // On push, no platform wallet changes
 
     // Record game in ledger_entries
     try {
@@ -109,7 +133,7 @@ export async function POST(request: NextRequest) {
           ${outcome === 'win' ? 'casino_win' : outcome === 'lose' ? 'casino_loss' : 'casino_push'},
           ${netChange},
           'TRX',
-          ${'Arena dice: ' + die1 + ' + ' + die2 + ' = ' + (die1 + die2)},
+          ${'Casino dice: ' + die1 + ' + ' + die2 + ' = ' + (die1 + die2) + ' - Platform hosted'},
           ${playBalance},
           ${newPlayBalance},
           NOW()
@@ -119,7 +143,7 @@ export async function POST(request: NextRequest) {
       console.log('Ledger entry failed:', e)
     }
 
-    // Record game in casino_games table (create if not exists handled separately)
+    // Record game in casino_games table
     try {
       await sql`
         INSERT INTO casino_games (id, user_id, game_type, bet_amount, outcome, payout, dice_result, created_at)
@@ -135,8 +159,7 @@ export async function POST(request: NextRequest) {
         )
       `
     } catch (e) {
-      // Table might not exist, that's ok - we still recorded the transaction
-      console.log('Casino games table not available, transaction still recorded')
+      console.log('Casino games table not available')
     }
 
     return NextResponse.json({
@@ -150,10 +173,11 @@ export async function POST(request: NextRequest) {
       newBalance: newPlayBalance,
       playBalance: newPlayBalance,
       coreBalance,
+      hostedBy: 'Platform',
       message: outcome === 'win' 
-        ? `You won ${payout} TRX!` 
+        ? `You won ${payout} TRX! Platform paid immediately.` 
         : outcome === 'lose' 
-        ? `You lost ${betAmount} TRX` 
+        ? `You lost ${betAmount} TRX to the platform` 
         : `Push - bet returned`
     })
 

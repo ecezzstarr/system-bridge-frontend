@@ -2,15 +2,17 @@
 
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check } from 'lucide-react'
+import { ArrowLeft, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, Home } from 'lucide-react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 // TRX rate: 1 USD = 10 TRX (example rate)
 const TRX_RATE = 10
 
 export default function WalletDepositWithdrawPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit')
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,6 +20,17 @@ export default function WalletDepositWithdrawPage() {
   const [balance, setBalance] = useState(0)
   const [copied, setCopied] = useState(false)
   const [withdrawAddress, setWithdrawAddress] = useState('')
+
+  // Determine the correct dashboard route based on user role
+  const getDashboardRoute = () => {
+    if (!user) return '/dashboard'
+    switch (user.role) {
+      case 'admin': return '/admin/dashboard'
+      case 'agent': return '/agent/dashboard'
+      case 'bridger': return '/bridger/dashboard'
+      default: return '/dashboard'
+    }
+  }
 
   useEffect(() => {
     fetchBalance()
@@ -145,10 +158,10 @@ export default function WalletDepositWithdrawPage() {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <Link href="/wallet">
+            <Link href={getDashboardRoute()}>
               <Button variant="outline" className="border-slate-600 hover:bg-slate-800 mb-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Wallet
+                Back to Dashboard
               </Button>
             </Link>
             <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 mb-2">
