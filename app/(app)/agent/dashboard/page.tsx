@@ -251,15 +251,18 @@ function MarketSection() {
 }
 
 function MyBridgers() {
+  const { user } = useAuth()
   const [bridgers, setBridgers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchBridgers = async () => {
+      if (!user?.id) return
       try {
-        const response = await fetch('/api/users?role=bridger')
+        // Fetch only bridgers assigned to this agent
+        const response = await fetch(`/api/agent/bridgers?agentId=${user.id}`)
         const data = await response.json()
-        setBridgers(data.users?.slice(0, 3) || [])
+        setBridgers(data.bridgers || [])
       } catch (error) {
         console.error('Error fetching bridgers:', error)
       } finally {
@@ -267,7 +270,7 @@ function MyBridgers() {
       }
     }
     fetchBridgers()
-  }, [])
+  }, [user?.id])
 
   return (
     <div className="group relative">

@@ -243,11 +243,13 @@ function AdminWalletSection({ user }: { user: any }) {
 
 function UserManagement() {
   const [users, setUsers] = useState([])
+  const [agents, setAgents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('unassigned')
 
   useEffect(() => {
     fetchUsers()
+    fetchAgents()
   }, [filter])
 
   const fetchUsers = async () => {
@@ -259,6 +261,16 @@ function UserManagement() {
       console.error('Error fetching users:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchAgents = async () => {
+    try {
+      const response = await fetch('/api/users?role=agent')
+      const data = await response.json()
+      setAgents(data.users || [])
+    } catch (error) {
+      console.error('Error fetching agents:', error)
     }
   }
 
@@ -274,6 +286,25 @@ function UserManagement() {
       }
     } catch (error) {
       console.error('Error assigning department:', error)
+    }
+  }
+
+  const assignBridgerToAgent = async (bridgerId: string, agentId: string) => {
+    try {
+      const response = await fetch('/api/admin/assign-bridger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bridgerId, agentId }),
+      })
+      const data = await response.json()
+      if (response.ok) {
+        fetchUsers()
+        fetchAgents()
+      } else {
+        alert(data.error || 'Failed to assign bridger')
+      }
+    } catch (error) {
+      console.error('Error assigning bridger:', error)
     }
   }
 
@@ -319,33 +350,55 @@ function UserManagement() {
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Department</th>
-                  <th className="px-4 py-3">Wallet Balance</th>
-                  <th className="px-4 py-3">Action</th>
+                  <th className="px-4 py-3">Assigned Agent</th>
+                  <th className="px-4 py-3">Balance</th>
+                  <th className="px-4 py-3">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
                 {users.map((user: any) => (
                   <tr key={user.id} className="hover:bg-slate-800/50 transition-colors">
                     <td className="px-4 py-3 font-semibold text-white">{user.name}</td>
-                    <td className="px-4 py-3 text-slate-400">{user.email}</td>
+                    <td className="px-4 py-3 text-slate-400 text-xs">{user.email}</td>
                     <td className="px-4 py-3">
                       <select
-                        value={user.departmental_code}
+                        value={user.departmental_code || ''}
                         onChange={(e) => assignDepartment(user.id, e.target.value)}
-                        className="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-sm"
+                        className="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-xs"
                       >
-                        <option value="HOPE">HOPE (Bridger)</option>
-                        <option value="STABILITY">STABILITY (Agent)</option>
-                        <option value="MOVEMENT">MOVEMENT (Client)</option>
+                        <option value="">Select...</option>
+                        <option value="HOPE">Bridger</option>
+                        <option value="STABILITY">Agent</option>
+                        <option value="MOVEMENT">Client</option>
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-cyan-400 font-semibold">{user.platform_wallet_balance} TRX</td>
                     <td className="px-4 py-3">
-                      {!user.assigned_by_admin && (
+                      {(user.role === 'bridger' || user.departmental_code === 'HOPE') && (
+                        <select
+                          value={user.assigned_agent_id || ''}
+                          onChange={(e) => assignBridgerToAgent(user.id, e.target.value)}
+                          className="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-xs"
+                        >
+                          <option value="">No Agent</option>
+                          {agents.map((agent: any) => (
+                            <option key={agent.id} value={agent.id}>
+                              {agent.name} ({agent.bridger_count || 0}/3)
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-cyan-400 font-semibold text-sm">{user.platform_wallet_balance || 0} TRX</td>
+                    <td className="px-4 py-3">
+                      {user.assigned_agent_id ? (
+                        <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full">
+                          Assigned
+                        </span>
+                      ) : !user.departmental_code ? (
                         <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">
                           Pending
                         </span>
-                      )}
+                      ) : null}
                     </td>
                   </tr>
                 ))}
