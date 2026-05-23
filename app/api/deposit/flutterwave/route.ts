@@ -36,14 +36,16 @@ export async function POST(request: NextRequest) {
         tx_ref: reference,
         amount: amountUSD,
         currency: 'USD',
+        payment_options: 'card,banktransfer,ussd,mobilemoney',
         redirect_url: redirectUrl,
         customer: {
           email,
           name: name || email,
+          phonenumber: '',
         },
         customizations: {
           title: 'SSBNOW.SHOP',
-          description: `Deposit ${trxAmount} TRX`,
+          description: `Deposit ${trxAmount} TRX to your wallet`,
           logo: 'https://v0-live-site-deployment-pink.vercel.app/logo.png',
         },
         meta: {
