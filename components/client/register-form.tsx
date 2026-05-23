@@ -64,6 +64,7 @@ export default function ClientRegisterForm() {
           phone: formData.phone,
           business_name: formData.business_name,
           password: formData.password,
+          referredBy: referredBy,
         }),
       })
 
