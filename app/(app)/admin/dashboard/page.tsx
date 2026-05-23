@@ -10,6 +10,7 @@ import { clearToken } from '@/lib/auth-client'
 import { EcosystemNav } from '@/components/ecosystem-nav'
 import { RiverChat } from '@/components/river-chat'
 import { NotificationBell } from '@/components/notification-bell'
+import { ExternalAppsNav } from '@/components/external-apps-nav'
 
 interface AdminTab {
   id: 'users' | 'sweeps' | 'wallet' | 'eight' | 'clients'
@@ -69,6 +70,7 @@ export default function AdminDashboard() {
                   Lounge
                 </Button>
               </Link>
+              <ExternalAppsNav userRole="admin" />
               <NotificationBell />
               <Button
                 variant="ghost"

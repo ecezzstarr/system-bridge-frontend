@@ -4,13 +4,14 @@ import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Users, LogOut, MessageCircle, Gamepad2, ShoppingBag, TrendingUp, Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { Users, LogOut, MessageCircle, Gamepad2, ShoppingBag, Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { clearToken } from '@/lib/auth-client'
 import { RiverChat } from '@/components/river-chat'
 import { NotificationBell } from '@/components/notification-bell'
 import Arena from '@/components/places/arena'
 import Lounge from '@/components/places/lounge'
 import Link from 'next/link'
+import { ExternalAppsNav, WhatsAppButton } from '@/components/external-apps-nav'
 
 type TabId = 'lounge' | 'arena' | 'market' | 'wallet' | 'team'
 
@@ -60,6 +61,7 @@ export default function AgentDashboard() {
               <p className="text-slate-400 text-sm">Welcome back, {user.name}</p>
             </div>
             <div className="flex items-center gap-3">
+              <ExternalAppsNav userRole="agent" />
               <NotificationBell />
               <Button
                 variant="ghost"
@@ -183,16 +185,16 @@ function WalletSection({ user }: { user: any }) {
         </Link>
       </div>
 
-      {/* Referral Link */}
+      {/* Referral Link - Agents can ONLY invite Bridgers */}
       <div className="group relative">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl opacity-20 blur group-hover:opacity-40 transition"></div>
         <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-2">Your Referral Link</h3>
-          <p className="text-sm text-slate-400 mb-4">Share to earn commissions when new users sign up</p>
+          <h3 className="text-lg font-bold text-white mb-2">Invite Bridgers</h3>
+          <p className="text-sm text-slate-400 mb-4">As an Agent, you can only invite new Bridgers to the platform</p>
           <div className="flex gap-2">
             <input
               type="text"
-              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user?.id?.slice(0, 8) || ''}`}
+              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user?.id?.slice(0, 8) || ''}&role=bridger`}
               readOnly
               className="flex-1 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
             />

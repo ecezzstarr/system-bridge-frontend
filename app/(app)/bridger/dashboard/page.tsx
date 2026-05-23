@@ -11,6 +11,7 @@ import { NotificationBell } from '@/components/notification-bell'
 import Arena from '@/components/places/arena'
 import Lounge from '@/components/places/lounge'
 import Link from 'next/link'
+import { ExternalAppsNav } from '@/components/external-apps-nav'
 
 type TabId = 'lounge' | 'arena' | 'wallet' | 'market' | 'referrals'
 
@@ -60,6 +61,7 @@ export default function BridgerDashboard() {
               <p className="text-slate-400 text-sm">Welcome back, {user.name}</p>
             </div>
             <div className="flex items-center gap-3">
+              <ExternalAppsNav userRole="bridger" />
               <NotificationBell />
               <Button
                 variant="ghost"
@@ -183,22 +185,22 @@ function WalletSection({ user }: { user: any }) {
         </Link>
       </div>
 
-      {/* Referral Link */}
+      {/* Referral Link - Bridgers can ONLY invite Clients */}
       <div className="group relative">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl opacity-20 blur group-hover:opacity-40 transition"></div>
         <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-2">Your Referral Link</h3>
-          <p className="text-sm text-slate-400 mb-4">Share to earn commissions when new users sign up</p>
+          <h3 className="text-lg font-bold text-white mb-2">Invite Clients</h3>
+          <p className="text-sm text-slate-400 mb-4">As a Bridger, you can only invite new Clients to the platform</p>
           <div className="flex gap-2">
             <input
               type="text"
-              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user?.id?.slice(0, 8) || ''}`}
+              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/client/register?ref=${user?.id?.slice(0, 8) || ''}`}
               readOnly
               className="flex-1 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white text-sm"
             />
             <Button 
               className="bg-purple-600 hover:bg-purple-700"
-              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/register?ref=${user?.id?.slice(0, 8) || ''}`)}
+              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/client/register?ref=${user?.id?.slice(0, 8) || ''}`)}
             >
               Copy
             </Button>
@@ -251,16 +253,16 @@ function MarketSection() {
 function MyReferrals({ user }: { user: any }) {
   const [referrals] = useState<any[]>([])
 
-  const referralLink = `https://ssbnow.online/register?ref=${user?.id?.slice(0, 8) || 'bridger'}`
+  const referralLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/client/register?ref=${user?.id?.slice(0, 8) || 'bridger'}`
 
   return (
     <div className="space-y-6">
-      {/* Referral Link Card */}
+      {/* Referral Link Card - Bridgers invite Clients only */}
       <div className="group relative">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl opacity-20 blur group-hover:opacity-40 transition duration-500"></div>
         <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-2">Your Referral Link</h3>
-          <p className="text-slate-400 text-sm mb-4">Share this link to earn commissions from client activities</p>
+          <h3 className="text-lg font-bold text-white mb-2">Invite Clients</h3>
+          <p className="text-slate-400 text-sm mb-4">As a Bridger, share this link to invite new Clients</p>
           <div className="flex gap-2">
             <input
               type="text"

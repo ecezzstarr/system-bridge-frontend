@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { LogOut, MessageCircle, ArrowRight, Menu, X, Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { LogOut, MessageCircle, ArrowRight, Menu, X, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { getClientUser, clearClientAuth } from '@/lib/client-auth'
+import { WhatsAppButton } from '@/components/external-apps-nav'
 
 interface ClientUser {
   id: string
@@ -249,6 +250,14 @@ export default function ClientDashboardPage() {
                     </div>
                   </div>
                 </Link>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-slate-800">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-1 gap-3 lg:gap-4">
+                <WhatsAppButton />
               </div>
             </div>
 
