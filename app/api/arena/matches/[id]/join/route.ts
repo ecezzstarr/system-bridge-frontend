@@ -52,12 +52,18 @@ export async function POST(
       return NextResponse.json({ error: 'Match is full' }, { status: 400 })
     }
 
-    // Check wallet balance
-    const wallets = await sql`SELECT balance FROM wallets WHERE user_id = ${userId}`
-    const balance = wallets.length > 0 ? parseFloat(wallets[0].balance) : 0
+    const entryFee = parseFloat(match.entry_fee) || 0
 
-    if (balance < parseFloat(match.entry_fee)) {
-      return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+    // Check wallet balance (use balance_trx for arena entry fees)
+    const wallets = await sql`SELECT balance_trx FROM wallets WHERE user_id = ${userId}::uuid`
+    const balance = wallets.length > 0 ? parseFloat(wallets[0].balance_trx) : 0
+
+    if (balance < entryFee) {
+      return NextResponse.json({ 
+        error: 'Insufficient balance', 
+        required: entryFee,
+        available: balance
+      }, { status: 400 })
     }
 
     // Join match
@@ -68,18 +74,49 @@ export async function POST(
       VALUES (${partId}, ${id}, ${userId})
     `
 
-    // Deduct entry fee
-    if (parseFloat(match.entry_fee) > 0) {
+    // Deduct entry fee from user and add to prize pool
+    if (entryFee > 0) {
+      // Deduct from user's wallet
       await sql`
-        UPDATE wallets SET balance = balance - ${match.entry_fee} WHERE user_id = ${userId}
+        UPDATE wallets SET balance_trx = balance_trx - ${entryFee}, updated_at = NOW()
+        WHERE user_id = ${userId}::uuid
       `
-      // Add to prize pool
+      
+      // Add to match prize pool (entry fees accumulate until match ends)
       await sql`
-        UPDATE arena_matches SET prize_pool = prize_pool + ${match.entry_fee} WHERE id = ${id}
+        UPDATE arena_matches SET prize_pool = prize_pool + ${entryFee} WHERE id = ${id}
       `
+
+      // Record ledger entry
+      try {
+        await sql`
+          INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at)
+          VALUES (
+            gen_random_uuid(),
+            ${userId}::uuid,
+            'arena_entry_fee',
+            ${-entryFee},
+            'TRX',
+            ${'Arena entry fee: ' + match.title},
+            NOW()
+          )
+        `
+      } catch (e) {
+        console.log('Ledger entry failed:', e)
+      }
     }
 
-    return NextResponse.json({ success: true, message: 'Successfully joined match' })
+    // Get updated prize pool
+    const updatedMatch = await sql`SELECT prize_pool FROM arena_matches WHERE id = ${id}`
+    const newPrizePool = updatedMatch.length > 0 ? parseFloat(updatedMatch[0].prize_pool) : 0
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Successfully joined match',
+      entryFee,
+      prizePool: newPrizePool,
+      potentialWinnings: newPrizePool * 0.70 // 70% to winner
+    })
   } catch (error) {
     console.error('Error joining match:', error)
     return NextResponse.json({ error: 'Failed to join match' }, { status: 500 })
