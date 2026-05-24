@@ -1,11 +1,112 @@
-import { neon } from '@neondatabase/serverless'
+import { neon, NeonQueryFunction } from '@neondatabase/serverless'
+import { Pool, PoolClient } from 'pg'
 
-// Initialize Neon client lazily to avoid build-time errors
-function getSql() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is not set')
+// Database provider type
+type DatabaseProvider = 'neon' | 'cloudsql'
+
+// Determine which database provider to use
+function getDatabaseProvider(): DatabaseProvider {
+  if (process.env.CLOUD_SQL_CONNECTION_NAME) {
+    return 'cloudsql'
   }
-  return neon(process.env.DATABASE_URL)
+  return 'neon'
+}
+
+// Cloud SQL Pool (singleton)
+let cloudSqlPool: Pool | null = null
+
+function getCloudSqlPool(): Pool {
+  if (!cloudSqlPool) {
+    const isProduction = process.env.NODE_ENV === 'production'
+    
+    // In production on Cloud Run, use Unix socket
+    // In development or other environments, use TCP
+    const connectionConfig = isProduction && process.env.CLOUD_SQL_CONNECTION_NAME
+      ? {
+          user: process.env.CLOUD_SQL_USER,
+          password: process.env.CLOUD_SQL_PASSWORD,
+          database: process.env.CLOUD_SQL_DATABASE,
+          host: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
+        }
+      : {
+          user: process.env.CLOUD_SQL_USER,
+          password: process.env.CLOUD_SQL_PASSWORD,
+          database: process.env.CLOUD_SQL_DATABASE,
+          host: process.env.CLOUD_SQL_HOST || '127.0.0.1',
+          port: parseInt(process.env.CLOUD_SQL_PORT || '5432'),
+          ssl: process.env.CLOUD_SQL_SSL === 'true' ? { rejectUnauthorized: false } : false,
+        }
+
+    cloudSqlPool = new Pool({
+      ...connectionConfig,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    })
+  }
+  return cloudSqlPool
+}
+
+// Neon SQL client
+let neonSql: NeonQueryFunction<false, any[]> | null = null
+
+function getNeonSql() {
+  if (!neonSql) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL environment variable is not set')
+    }
+    neonSql = neon(process.env.DATABASE_URL)
+  }
+  return neonSql
+}
+
+// Unified query interface
+type QueryResult = any[]
+
+async function query(text: string, params?: any[]): Promise<QueryResult> {
+  const provider = getDatabaseProvider()
+  
+  if (provider === 'cloudsql') {
+    const pool = getCloudSqlPool()
+    const result = await pool.query(text, params)
+    return result.rows
+  } else {
+    const sql = getNeonSql()
+    // Convert $1, $2 style params to tagged template for Neon
+    if (params && params.length > 0) {
+      // For Neon, we need to use the sql function directly with params
+      const result = await sql(text, params)
+      return result as QueryResult
+    }
+    const result = await sql(text)
+    return result as QueryResult
+  }
+}
+
+// Template literal tag for SQL queries (Neon-style)
+function getSql() {
+  const provider = getDatabaseProvider()
+  
+  if (provider === 'cloudsql') {
+    // Return a tagged template function that works with Cloud SQL
+    return async function sql(strings: TemplateStringsArray, ...values: any[]): Promise<QueryResult> {
+      const pool = getCloudSqlPool()
+      
+      // Build parameterized query
+      let queryText = strings[0]
+      const params: any[] = []
+      
+      for (let i = 0; i < values.length; i++) {
+        params.push(values[i])
+        queryText += `$${i + 1}${strings[i + 1]}`
+      }
+      
+      const result = await pool.query(queryText, params)
+      return result.rows
+    }
+  } else {
+    return getNeonSql()
+  }
 }
 
 // Wallet tier based on balance
@@ -95,7 +196,6 @@ export async function createUser(data: {
   departmentalCode?: string
 }) {
   const sql = getSql()
-  // Extract username from email if not provided (e.g., "user@domain.com" -> "user")
   const username = data.username || data.email.split('@')[0]
   const result = await sql`
     INSERT INTO users (email, name, username, password_hash, google_id, tron_wallet_address, role, departmental_code, is_active)
@@ -266,5 +366,14 @@ export async function getTotalStats() {
   }
 }
 
+// Get current database provider info
+export function getDatabaseInfo() {
+  return {
+    provider: getDatabaseProvider(),
+    isCloudSql: getDatabaseProvider() === 'cloudsql',
+    connectionName: process.env.CLOUD_SQL_CONNECTION_NAME || null,
+  }
+}
+
 // Export getSql for custom queries
-export { getSql }
+export { getSql, query, getDatabaseProvider }
