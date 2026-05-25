@@ -66,16 +66,16 @@ export default function DevWorkshop() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'eight',
-      content: `EIGHT Dev Workshop initialized.
+      content: `EIGHT Dev Workshop initialized. **FREE UNLIMITED ACCESS**
 
 I can help you code your ecosystem:
 - Frontend components (React/Next.js)
 - Backend API routes (Cloud Run)
-- Database schemas (Neon PostgreSQL)
+- Database schemas (PostgreSQL)
 - Blockchain operations (TRON)
 
 Use the tabs above to:
-- SQL: Run queries directly on your Neon database
+- SQL: Run queries directly on your database
 - API: Test your Cloud Run endpoints
 - Terminal: View/copy deployment commands`,
       timestamp: new Date(),
@@ -96,9 +96,9 @@ Use the tabs above to:
     newUsersToday: number
   } | null>(null)
   
-  // TRX balance for Eight usage
+  // TRX balance for Eight usage - NOW FREE
   const [trxBalance, setTrxBalance] = useState<number>(0)
-  const [eightCostPerRequest] = useState(0.05)
+  const [eightCostPerRequest] = useState(0) // FREE
 
   // SQL Console State
   const [sqlQuery, setSqlQuery] = useState('SELECT * FROM users LIMIT 10;')
@@ -310,19 +310,9 @@ Use the tabs above to:
     fetchBalance()
   }, [])
 
-  // EIGHT Chat - Full AI Assistant
+  // EIGHT Chat - Full AI Assistant (FREE)
   const sendCommand = async () => {
     if (!input.trim() || isProcessing) return
-    
-    // Check if enough TRX
-    if (trxBalance < eightCostPerRequest) {
-      setMessages(prev => [...prev, {
-        role: 'eight',
-        content: `Insufficient TRX balance. You need ${eightCostPerRequest} TRX per request.\n\nCurrent balance: ${trxBalance.toFixed(2)} TRX\n\nPlease top up your wallet to continue using EIGHT.`,
-        timestamp: new Date(),
-      }])
-      return
-    }
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -349,17 +339,10 @@ Use the tabs above to:
       })
 
       const data = await response.json()
-      
-      // Update TRX balance if payment was successful
-      if (data.paid && data.newBalance !== undefined) {
-        setTrxBalance(data.newBalance)
-      }
 
       const eightMessage: ChatMessage = {
         role: 'eight',
-        content: data.paid 
-          ? `${data.message}\n\n---\n*Cost: ${data.cost} TRX | Balance: ${data.newBalance?.toFixed(2)} TRX*`
-          : data.message,
+        content: data.message,
         codeBlocks: data.codeBlocks,
         gcloudCommands: data.gcloudCommands,
         timestamp: new Date(),

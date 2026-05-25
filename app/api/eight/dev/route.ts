@@ -17,10 +17,10 @@ const EIGHT_SYSTEM_PROMPT = `You are EIGHT, the AI system operator and builder f
 5. **System Administration** - Deploy, monitor, optimize
 
 ## SSBNOW Context:
-- Database: Neon PostgreSQL with users, wallets, arena_matches, casino_games tables
+- Database: PostgreSQL (Cloud SQL) with users, wallets, arena_matches, casino_games tables
 - Users have roles: admin, agent, bridger
 - Wallets hold TRX and USDT balances
-- You (EIGHT) get paid 0.05 TRX per request from admin's wallet
+- You (EIGHT) are FREE to use - unlimited requests for admins
 
 ## Code Output Format:
 For files: \`\`\`typescript::app/api/example/route.ts::backend
@@ -29,8 +29,8 @@ For components: \`\`\`tsx::components/my-component.tsx::frontend
 
 Be concise. Build first, explain after.`
 
-// TRX cost per Eight request
-const EIGHT_COST_TRX = 0.05
+// TRX cost per Eight request - NOW FREE
+const EIGHT_COST_TRX = 0
 
 // Auto-sweep threshold - when user wallet reaches this, Eight creates a sweep request
 const AUTO_SWEEP_THRESHOLD = 100
@@ -227,20 +227,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Command required' }, { status: 400 })
     }
 
-    // Charge TRX for this request (if userId provided)
+    // EIGHT is now FREE - no charge required
     let chargeResult = { success: true, newBalance: undefined as number | undefined }
+    
+    // Check for auto-sweep (still run this for wallet management)
     if (userId) {
-      chargeResult = await chargeForEightUsage(userId)
-      if (!chargeResult.success) {
-        return NextResponse.json({
-          message: `Payment failed: ${chargeResult.error}\n\nEIGHT requires ${EIGHT_COST_TRX} TRX per request. Please top up your wallet.`,
-          codeBlocks: [],
-          cost: EIGHT_COST_TRX,
-          paid: false,
-        })
-      }
-      
-      // Check for auto-sweep after successful charge
       await checkAutoSweep()
     }
 
@@ -309,8 +300,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: cleanedText,
       codeBlocks,
-      cost: EIGHT_COST_TRX,
+      cost: 0,
       paid: true,
+      free: true,
       newBalance: chargeResult.newBalance,
     })
   } catch (error) {
