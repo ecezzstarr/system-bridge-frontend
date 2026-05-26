@@ -6,26 +6,39 @@
 
 import express from 'express'
 import cors from 'cors'
-import { neon } from '@neondatabase/serverless'
+import pg from 'pg'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import fs from 'fs/promises'
 import path from 'path'
 
+const { Pool } = pg
 const app = express()
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 
-// Database connection
-const getDb = () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL not set')
+// Database connection - Cloud SQL
+let pool: pg.Pool | null = null
+const getDb = (): pg.Pool => {
+  if (!pool) {
+    if (process.env.CLOUD_SQL_CONNECTION_NAME) {
+      pool = new Pool({
+        user: process.env.CLOUD_SQL_USER || 'postgres',
+        password: process.env.CLOUD_SQL_PASSWORD,
+        database: process.env.CLOUD_SQL_DATABASE || 'ssbnow',
+        host: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
+      })
+    } else if (process.env.DATABASE_URL) {
+      pool = new Pool({ connectionString: process.env.DATABASE_URL })
+    } else {
+      throw new Error('No database configuration found')
+    }
   }
-  return neon(process.env.DATABASE_URL)
+  return pool
 }
 
-// AI Model - Using Google Gemini (free tier available)
+// AI Model - Using Google Gemini (free tier)
 const getAI = () => {
-  const apiKey = process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY
+  const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY
   if (!apiKey) {
     return null
   }
@@ -65,7 +78,7 @@ app.post('/chat', async (req, res) => {
     if (!ai) {
       return res.json({
         success: false,
-        error: 'AI not configured. Set GOOGLE_AI_KEY or GEMINI_API_KEY'
+        error: 'AI not configured. Set GOOGLE_AI_API_KEY environment variable'
       })
     }
 
@@ -85,7 +98,6 @@ app.post('/chat', async (req, res) => {
     const result = await chat.sendMessage(`${systemPrompt}\n\n${lastMessage.content}`)
     const text = result.response.text()
 
-    // Parse any action blocks from the response
     const actions = parseActions(text)
 
     res.json({
@@ -119,13 +131,13 @@ app.post('/sql', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Query required' })
     }
     
-    const sql = getDb()
-    const rows = await sql(query)
+    const db = getDb()
+    const result = await db.query(query)
     
     res.json({
       success: true,
-      rows: Array.isArray(rows) ? rows : [],
-      rowCount: Array.isArray(rows) ? rows.length : 0,
+      rows: result.rows || [],
+      rowCount: result.rowCount || 0,
     })
   } catch (error) {
     console.error('SQL error:', error)
@@ -178,20 +190,20 @@ app.post('/files', async (req, res) => {
 // Stats endpoint
 app.get('/stats', async (req, res) => {
   try {
-    const sql = getDb()
+    const db = getDb()
     
     const [users, wallets, games] = await Promise.all([
-      sql`SELECT COUNT(*) as count FROM users`,
-      sql`SELECT COALESCE(SUM(balance_trx), 0) as total FROM wallets`,
-      sql`SELECT COUNT(*) as count FROM casino_games`,
+      db.query('SELECT COUNT(*) as count FROM users'),
+      db.query('SELECT COALESCE(SUM(balance_trx), 0) as total FROM wallets'),
+      db.query('SELECT COUNT(*) as count FROM casino_games'),
     ])
     
     res.json({
       success: true,
       stats: {
-        totalUsers: Number(users[0]?.count || 0),
-        totalTrx: Number(wallets[0]?.total || 0),
-        casinoGames: Number(games[0]?.count || 0),
+        totalUsers: Number(users.rows[0]?.count || 0),
+        totalTrx: Number(wallets.rows[0]?.total || 0),
+        casinoGames: Number(games.rows[0]?.count || 0),
       }
     })
   } catch (error) {
@@ -204,22 +216,22 @@ app.get('/stats', async (req, res) => {
 app.get('/users', async (req, res) => {
   try {
     const { role } = req.query
-    const sql = getDb()
+    const db = getDb()
     
-    let users
+    let result
     if (role && role !== 'all') {
-      users = await sql`
+      result = await db.query(`
         SELECT u.id, u.email, u.username, u.name, u.role, u.is_active,
                COALESCE(w.balance_trx, 0) as balance_trx,
                COALESCE(w.play_balance, 0) as play_balance
         FROM users u
         LEFT JOIN wallets w ON u.id = w.user_id
-        WHERE u.role = ${role}
+        WHERE u.role = $1
         ORDER BY u.created_at DESC
         LIMIT 100
-      `
+      `, [role])
     } else {
-      users = await sql`
+      result = await db.query(`
         SELECT u.id, u.email, u.username, u.name, u.role, u.is_active,
                COALESCE(w.balance_trx, 0) as balance_trx,
                COALESCE(w.play_balance, 0) as play_balance
@@ -227,10 +239,10 @@ app.get('/users', async (req, res) => {
         LEFT JOIN wallets w ON u.id = w.user_id
         ORDER BY u.created_at DESC
         LIMIT 100
-      `
+      `)
     }
     
-    res.json({ success: true, users })
+    res.json({ success: true, users: result.rows })
   } catch (error) {
     console.error('Users error:', error)
     res.status(500).json({ success: false, error: String(error) })
@@ -245,14 +257,13 @@ app.post('/fund', async (req, res) => {
       return res.status(400).json({ success: false, error: 'userId and amount required' })
     }
     
-    const sql = getDb()
+    const db = getDb()
     const column = target === 'play' ? 'play_balance' : 'balance_trx'
     
-    await sql`
-      UPDATE wallets 
-      SET ${sql(column)} = ${sql(column)} + ${amount}, updated_at = NOW()
-      WHERE user_id = ${userId}::uuid
-    `
+    await db.query(
+      `UPDATE wallets SET ${column} = ${column} + $1, updated_at = NOW() WHERE user_id = $2::uuid`,
+      [amount, userId]
+    )
     
     res.json({ success: true, message: `Added ${amount} TRX to ${target || 'core'} wallet` })
   } catch (error) {
@@ -264,16 +275,16 @@ app.post('/fund', async (req, res) => {
 // Schema endpoint
 app.get('/schema', async (req, res) => {
   try {
-    const sql = getDb()
-    const result = await sql`
+    const db = getDb()
+    const result = await db.query(`
       SELECT table_name, column_name, data_type
       FROM information_schema.columns
       WHERE table_schema = 'public'
       ORDER BY table_name, ordinal_position
-    `
+    `)
     
     const schema: Record<string, Array<{ column: string; type: string }>> = {}
-    for (const row of result) {
+    for (const row of result.rows) {
       if (!schema[row.table_name]) schema[row.table_name] = []
       schema[row.table_name].push({ column: row.column_name, type: row.data_type })
     }
@@ -306,28 +317,31 @@ function parseActions(text: string): Array<{ type: string; payload: any }> {
 
 // Execute a parsed action
 async function executeAction(action: string, payload: any) {
-  const sql = getDb()
+  const db = getDb()
   
   switch (action) {
     case 'sql':
-      const rows = await sql(payload.query)
-      return { success: true, rows }
+      const sqlResult = await db.query(payload.query)
+      return { success: true, rows: sqlResult.rows }
       
     case 'create_table':
-      await sql(payload.sql)
+      await db.query(payload.sql)
       return { success: true, message: `Table created` }
       
     case 'fund_wallet':
       const column = payload.target === 'play' ? 'play_balance' : 'balance_trx'
-      await sql`UPDATE wallets SET ${sql(column)} = ${sql(column)} + ${payload.amount} WHERE user_id = ${payload.userId}::uuid`
+      await db.query(
+        `UPDATE wallets SET ${column} = ${column} + $1 WHERE user_id = $2::uuid`,
+        [payload.amount, payload.userId]
+      )
       return { success: true, message: `Funded wallet` }
       
     case 'stats':
       const [users, wallets] = await Promise.all([
-        sql`SELECT COUNT(*) as count FROM users`,
-        sql`SELECT COALESCE(SUM(balance_trx), 0) as total FROM wallets`,
+        db.query('SELECT COUNT(*) as count FROM users'),
+        db.query('SELECT COALESCE(SUM(balance_trx), 0) as total FROM wallets'),
       ])
-      return { success: true, stats: { users: users[0]?.count, totalTrx: wallets[0]?.total } }
+      return { success: true, stats: { users: users.rows[0]?.count, totalTrx: wallets.rows[0]?.total } }
       
     default:
       return { success: false, error: `Unknown action: ${action}` }
