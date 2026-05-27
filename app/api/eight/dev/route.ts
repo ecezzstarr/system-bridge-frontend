@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { neon } from '@/lib/pg-neon'
 
 const EIGHT_SYSTEM_PROMPT = `You are EIGHT, the AI system operator and builder for the SSBNOW ecosystem.
 

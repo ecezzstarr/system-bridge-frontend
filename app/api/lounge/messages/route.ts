@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { neon } from '@/lib/pg-neon'
 
 function getDb() {
   if (!process.env.DATABASE_URL) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { neon } from '@/lib/pg-neon'
 
 function getDb() {
   const url = process.env.DATABASE_URL || process.env.POSTGRES_URL

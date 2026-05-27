@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { neon } from '@/lib/pg-neon'
 import { getAllOriginSystems, SOURCE_ADMIN_ID } from '@/lib/core/originTruthLedger'
 import { getRegistryStatus } from '@/lib/core/systemRegistry'
 import { getWalletBalance, sendTRX } from '@/lib/tron-wallet'

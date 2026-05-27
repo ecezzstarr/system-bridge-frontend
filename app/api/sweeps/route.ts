@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     // Only creator can view pending sweeps
-    const { neon } = await import('@neondatabase/serverless')
+    const { neon } = await import('@/lib/pg-neon')
     const sql = neon(process.env.DATABASE_URL || '')
     
     const user = await sql`SELECT role FROM users WHERE id = ${session.user.id}`
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     const { amount, action, sweepId } = await request.json()
 
-    const { neon } = await import('@neondatabase/serverless')
+    const { neon } = await import('@/lib/pg-neon')
     const sql = neon(process.env.DATABASE_URL || '')
 
     // Check if user is creator

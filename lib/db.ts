@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless'
+import { neon } from '@/lib/pg-neon'
 
 // Initialize Neon client lazily to avoid build-time errors
 function getSql() {

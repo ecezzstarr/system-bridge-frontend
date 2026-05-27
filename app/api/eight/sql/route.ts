@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { neon } from '@/lib/pg-neon'
 
 // SQL Console API - Execute queries against Neon database
 export async function POST(request: NextRequest) {

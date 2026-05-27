@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     // Lazy load neon to avoid build-time issues
-    const { neon } = await import('@neondatabase/serverless')
+    const { neon } = await import('@/lib/pg-neon')
     const sql = neon(process.env.DATABASE_URL || '')
 
     // Check if user is creator (only creator can access company wallet)
