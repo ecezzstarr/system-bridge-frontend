@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
-
-function getDb() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL not configured')
-  }
-  return neon(process.env.DATABASE_URL)
-}
+import { sql } from '@/lib/db'
 
 // GET - Fetch messages for a room
 export async function GET(request: NextRequest) {
@@ -16,8 +9,7 @@ export async function GET(request: NextRequest) {
     const roomId = searchParams.get('roomId') || 'main'
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    const sql = getDb()
-    const messages = await sql`
+    const messages = await sql(`
       SELECT 
         id, 
         room_type, 
@@ -31,10 +23,10 @@ export async function GET(request: NextRequest) {
         media_url as "mediaUrl",
         created_at as timestamp
       FROM lounge_messages
-      WHERE room_type = ${roomType} AND room_id = ${roomId}
+      WHERE room_type = $1 AND room_id = $2
       ORDER BY created_at DESC
-      LIMIT ${limit}
-    `
+      LIMIT $3
+    `, [roomType, roomId, limit])
 
     // Return in chronological order (oldest first)
     return NextResponse.json({ 
