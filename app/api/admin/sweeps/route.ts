@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { getPendingSweeps, getAllSweeps, approveSweepRequest, executeSweep } from '@/lib/mock-db'
 
 export async function GET(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status') || 'all'
@@ -24,6 +28,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const body = await request.json()
     const { sweepId, adminId, action } = body

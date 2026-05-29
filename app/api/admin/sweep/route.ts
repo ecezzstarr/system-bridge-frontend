@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { sweepToCompanyWallet, getWalletBalance } from '@/lib/tron-wallet'
 import { processEightCommand } from '@/lib/eight-engine'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user) {
@@ -81,6 +85,9 @@ export async function POST(request: NextRequest) {
 
 // Get sweep history (from Eight logs)
 export async function GET(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { neon } from '@/lib/pg-neon'
 
 const getDb = () => {
@@ -12,6 +13,9 @@ const getDb = () => {
 const MAX_BRIDGERS_PER_AGENT = 3
 
 export async function POST(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const { bridgerId, agentId } = await request.json()
 

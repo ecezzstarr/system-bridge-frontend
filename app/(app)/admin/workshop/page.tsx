@@ -243,6 +243,11 @@ export default function DeveloperWorkshop() {
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl opacity-20 blur group-hover:opacity-40 transition duration-500"></div>
                 <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
                   <h3 className="text-lg font-bold text-white mb-4">Workshop Features</h3>
+                    <Link href="/admin/workshop/siblings">
+                      <Button className="bg-indigo-600 hover:bg-indigo-700 w-full mb-4">
+                        <Users className="h-4 w-4 mr-2" /> Sibling Partnerships
+                      </Button>
+                    </Link>
                   <ul className="space-y-2">
                     {[
                       'Direct EIGHT multi-system operator control',

@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { neon } from '@/lib/pg-neon'
 
 // SQL Console API - Execute queries against Neon database
 export async function POST(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const { query } = await request.json()
 

@@ -51,7 +51,11 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
     },
   ]
 
-  const visibleSystems = systems.filter(s => !s.adminOnly || isAdmin)
+  const visibleSystems = systems.filter(s => {
+    if (s.adminOnly && !isAdmin) return false;
+    if (s.role === 'sibling' && !isAdmin && user?.role !== 'sibling') return false;
+    return true;
+  })
 
   return (
     <div className="w-full">

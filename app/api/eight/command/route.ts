@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { neon } from '@/lib/pg-neon'
 import { getAllOriginSystems, SOURCE_ADMIN_ID } from '@/lib/core/originTruthLedger'
 import { getRegistryStatus } from '@/lib/core/systemRegistry'
@@ -24,6 +25,9 @@ interface TransactionLog {
 // Transaction logs are now persisted to Neon database
 
 export async function POST(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const { command, adminId, userRole } = await request.json()
 
@@ -300,6 +304,9 @@ Quick Commands:
 
 // GET to view transaction logs from database (admin only)
 export async function GET(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const sql = getSQL()
     const transactions = await sql`

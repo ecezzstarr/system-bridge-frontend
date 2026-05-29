@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { neon } from '@/lib/pg-neon'
 
 const getDb = () => {
@@ -9,6 +10,9 @@ const getDb = () => {
 }
 
 export async function GET(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const searchParams = request.nextUrl.searchParams
     const filter = searchParams.get('filter') || 'unassigned'
@@ -63,6 +67,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const body = await request.json()
     const { userId, departmental_code } = body

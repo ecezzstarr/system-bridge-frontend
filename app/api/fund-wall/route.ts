@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 

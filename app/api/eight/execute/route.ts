@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { neon } from '@/lib/pg-neon'
 import { writeFile, readFile, mkdir, readdir, stat, unlink } from 'fs/promises'
 import { dirname, join, relative } from 'path'
@@ -17,6 +18,9 @@ const getDb = () => {
 const PROJECT_ROOT = process.cwd()
 
 export async function POST(request: NextRequest) {
+    const auth = await requireWorkshopAuthorization()
+    if (!auth.authorized) return auth.response
+
   try {
     const { action, payload } = await request.json()
     console.log('[v0] Eight execute API called:', action)

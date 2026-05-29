@@ -8,7 +8,7 @@ const pool = new Pool({
       : false,
 });
 
-export async function sql(
+export async function neon(
   strings: TemplateStringsArray,
   ...values: any[]
 ) {
