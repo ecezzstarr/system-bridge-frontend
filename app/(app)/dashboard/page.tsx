@@ -102,7 +102,14 @@ export default function DashboardPage() {
 
         {/* Scrollable Content */}
         <div className="px-4 pb-20 space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto">
-          {/* User Profile Card */}
+          {/* Identity Section */}
+<div className="pt-2">
+  <h3 className="text-xs font-semibold text-cyan-400 uppercase mb-3 tracking-wider">
+    Identity
+  </h3>
+</div>
+
+{/* User Profile Card */}
           <div className="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 mt-2">
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center text-xl font-bold flex-shrink-0">
@@ -153,7 +160,7 @@ export default function DashboardPage() {
 
           {/* Places Section */}
           <div className="pt-4 border-t border-slate-800">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase mb-3">Explore</h3>
+            <h3 className="text-xs font-semibold text-slate-400 uppercase mb-3">RIVER</h3>
             <div className="space-y-2">
               <Link href="/places?place=market">
                 <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
@@ -161,7 +168,7 @@ export default function DashboardPage() {
                     <Store className="h-5 w-5 text-emerald-400 flex-shrink-0" />
                     <div className="text-left min-w-0">
                       <p className="text-sm font-medium">Market</p>
-                      <p className="text-xs text-slate-500">Trade assets</p>
+                      <p className="text-xs text-slate-500">River Market</p>
                     </div>
                   </div>
                   <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
@@ -174,7 +181,7 @@ export default function DashboardPage() {
                     <Gamepad2 className="h-5 w-5 text-yellow-400 flex-shrink-0" />
                     <div className="text-left min-w-0">
                       <p className="text-sm font-medium">Arena</p>
-                      <p className="text-xs text-slate-500">Live games</p>
+                      <p className="text-xs text-slate-500">Living District</p>
                     </div>
                   </div>
                   <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
@@ -187,7 +194,7 @@ export default function DashboardPage() {
                     <MessageCircle className="h-5 w-5 text-cyan-400 flex-shrink-0" />
                     <div className="text-left min-w-0">
                       <p className="text-sm font-medium">Lounge</p>
-                      <p className="text-xs text-slate-500">Chat</p>
+                      <p className="text-xs text-slate-500">Public Space</p>
                     </div>
                   </div>
                   <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
@@ -213,7 +220,7 @@ export default function DashboardPage() {
 
           {/* Wallets Section */}
           <div className="pt-4 border-t border-slate-800">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase mb-3">Wallets</h3>
+            <h3 className="text-xs font-semibold text-slate-400 uppercase mb-3">RESOURCES</h3>
             
             <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-800 mb-3">
               <div className="flex items-center justify-between mb-2">
@@ -257,8 +264,8 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      {/* River Chat Widget */}
-      <RiverChat />
+      {/* River Public Space Widget */}
+      <RiverPublic Space />
     </div>
   )
 }
