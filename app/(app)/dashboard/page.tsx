@@ -175,18 +175,7 @@ export default function DashboardPage() {
                 </button>
               </Link>
 
-              <Link href="/places?place=arena">
-                <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
-                  <div className="flex items-center gap-3">
-                    <Gamepad2 className="h-5 w-5 text-yellow-400 flex-shrink-0" />
-                    <div className="text-left min-w-0">
-                      <p className="text-sm font-medium">Arena</p>
-                      <p className="text-xs text-slate-500">Living District</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
-                </button>
-              </Link>
+              
 
               <Link href="/places?place=lounge">
                 <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
@@ -217,6 +206,30 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+
+
+          {/* Arena Section */}
+          <div className="pt-4 border-t border-slate-800">
+            <h3 className="text-xs font-semibold text-yellow-400 uppercase mb-3 tracking-wider">
+              ARENA
+            </h3>
+
+            <Link href="/places?place=arena">
+              <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-yellow-900/40 rounded-xl p-3 flex items-center justify-between transition">
+                <div className="flex items-center gap-3">
+                  <Gamepad2 className="h-5 w-5 text-yellow-400 flex-shrink-0" />
+                  <div className="text-left min-w-0">
+                    <p className="text-sm font-medium">Arena World</p>
+                    <p className="text-xs text-slate-500">
+                      Living District • Work + Play
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-yellow-400 flex-shrink-0" />
+              </button>
+            </Link>
+          </div>
+
 
           {/* Wallets Section */}
           <div className="pt-4 border-t border-slate-800">
