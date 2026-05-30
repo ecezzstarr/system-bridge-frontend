@@ -29,21 +29,22 @@ import { PresenceIndicator } from "@/components/presence-indicator"
 import { useAuth } from "@/lib/auth-context"
 
 const navigation = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Ledger", href: "/ledger", icon: BookOpen },
-  { name: "Transactions", href: "/transactions", icon: ReceiptText },
-  { name: "Wallet", href: "/wallet", icon: Wallet },
-  { name: "Roles", href: "/roles", icon: Briefcase },
-  { name: "Profiles", href: "/profiles", icon: UserCircle },
-  { name: "Clients", href: "/clients", icon: Users },
-  { name: "Private Ground", href: "/private-ground", icon: Shield },
-  { name: "Lounge", href: "/lounge", icon: MessageSquare },
-  { name: "Video Feed", href: "/video-feed", icon: Video },
+  { name: "Home", href: "/dashboard", icon: Home },
+
+  { name: "Profile", href: "/profiles", icon: UserCircle },
+
+  { name: "River", href: "/lounge", icon: MessageSquare },
+
   { name: "Arena", href: "/arena", icon: Globe },
-  { name: "Marketplace", href: "/marketplace", icon: Store },
-  { name: "Earnings", href: "/earnings", icon: TrendingUp },
-  { name: "Fund Wall", href: "/fund-wall", icon: DollarSign, creatorOnly: true },
+
+  { name: "Market", href: "/marketplace", icon: Store },
+
+  {
+    name: "Workshop",
+    href: "/admin/dev-workshop",
+    icon: ShieldCheck,
+    adminOnly: true,
+  },
 ]
 
 interface AppSidebarProps {
