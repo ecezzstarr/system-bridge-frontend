@@ -18,7 +18,7 @@ const getDb = () => {
 const PROJECT_ROOT = process.cwd()
 
 export async function POST(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
+    const auth = await requireWorkshopAuthorization(request)
     if (!auth.authorized) return auth.response
 
   try {

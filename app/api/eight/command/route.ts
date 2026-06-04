@@ -25,7 +25,7 @@ interface TransactionLog {
 // Transaction logs are now persisted to Neon database
 
 export async function POST(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
+    const auth = await requireWorkshopAuthorization(request)
     if (!auth.authorized) return auth.response
 
   try {
@@ -304,7 +304,7 @@ Quick Commands:
 
 // GET to view transaction logs from database (admin only)
 export async function GET(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
+    const auth = await requireWorkshopAuthorization(request)
     if (!auth.authorized) return auth.response
 
   try {

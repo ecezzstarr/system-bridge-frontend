@@ -4,7 +4,7 @@ import { neon } from '@/lib/pg-neon'
 
 // SQL Console API - Execute queries against Neon database
 export async function POST(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
+    const auth = await requireWorkshopAuthorization(request)
     if (!auth.authorized) return auth.response
 
   try {

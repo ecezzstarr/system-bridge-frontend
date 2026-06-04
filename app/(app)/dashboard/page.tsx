@@ -94,7 +94,7 @@ export default function DashboardPage() {
               <Link href="/admin/workshop">
                 <button className="w-full text-xs bg-pink-600/20 text-pink-400 border border-pink-600/50 rounded-lg py-2 hover:bg-pink-600/30 transition font-medium flex items-center justify-center gap-2">
                   <Code className="h-3.5 w-3.5" />
-                  Dev Workshop
+                  Authority Workshop
                 </button>
               </Link>
             </div>

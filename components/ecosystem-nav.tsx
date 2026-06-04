@@ -42,10 +42,10 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
     },
     {
       id: 'workshop',
-      name: 'Dev Workshop',
-      subtitle: 'Admin Tools',
+      name: 'Authority Workshop',
+      subtitle: 'Registry & Refinement',
       icon: Code,
-      href: '/admin/dev-workshop',
+      href: '/admin/workshop',
       color: 'from-pink-500 to-rose-500',
       adminOnly: true,
     },

@@ -221,7 +221,7 @@ async function checkAutoSweep(): Promise<void> {
 }
 
 export async function POST(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
+    const auth = await requireWorkshopAuthorization(request)
     if (!auth.authorized) return auth.response
 
   try {

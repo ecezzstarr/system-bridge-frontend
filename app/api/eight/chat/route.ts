@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { askEight, eightBuildFeature, eightRefineCode, eightBuildUI, eightCreateAPI, eightDebug } from '@/lib/eight-engine'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 
 export async function POST(request: NextRequest) {
+  const auth = await requireWorkshopAuthorization(request)
+  if (!auth.authorized) return auth.response
+
   try {
     const { message, mode, context } = await request.json()
 
