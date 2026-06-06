@@ -116,53 +116,83 @@ async function getAccessToken(): Promise<string> {
   return data.access_token
 }
 
+// Models to try in order (newest/most available first)
+const GOOGLE_AI_MODELS = [
+  'gemini-2.0-flash',
+  'gemini-flash-latest',
+  'gemini-1.5-flash',
+]
+
 // Call Google AI Studio (free tier - no Vertex AI required)
 async function callGoogleAI(messages: Array<{ role: string; content: string }>, systemPrompt: string, apiKey: string): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
-
   // Convert messages to Gemini format
   const contents = messages.map(msg => ({
     role: msg.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: msg.content }],
   }))
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents,
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      generationConfig: {
-        maxOutputTokens: 4000,
-        temperature: 0.7,
-      },
-    }),
+  const body = JSON.stringify({
+    contents,
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    generationConfig: {
+      maxOutputTokens: 4000,
+      temperature: 0.7,
+    },
   })
 
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Google AI API error: ${error}`)
+  let lastError = ''
+
+  // Try each model until one works (handles model retirement / 404s)
+  for (const model of GOOGLE_AI_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from EIGHT'
+    }
+
+    const errorText = await response.text()
+    lastError = errorText
+
+    // If the key itself is invalid, no point trying other models
+    if (errorText.includes('API_KEY_INVALID') || errorText.includes('API key not valid')) {
+      throw new Error('GOOGLE_AI_API_KEY is invalid. Get a free key at https://aistudio.google.com/app/apikey and update the GOOGLE_AI_API_KEY environment variable.')
+    }
+    // If permission denied, the key may lack access to the Generative Language API
+    if (response.status === 403) {
+      throw new Error('Access denied for GOOGLE_AI_API_KEY. Enable the "Generative Language API" for this key in Google AI Studio / Google Cloud Console.')
+    }
+    // For 404 (model not found) keep trying the next model
   }
 
-  const data = await response.json()
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from EIGHT'
+  throw new Error(`Google AI request failed for all models. Last error: ${lastError}`)
 }
 
 // Call Google AI (Generative AI Studio - free tier) or Vertex AI
 async function callGemini(messages: Array<{ role: string; content: string }>, systemPrompt: string): Promise<string> {
-  // First try Google AI Studio (free, doesn't require Vertex AI)
-  const googleApiKey = process.env.GOOGLE_AI_API_KEY
+  // Prefer Google AI Studio (free, doesn't require Vertex AI)
+  const googleApiKey = process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY
   if (googleApiKey) {
     return callGoogleAI(messages, systemPrompt, googleApiKey)
   }
 
-  // Fallback to Vertex AI
+  // Fallback to Vertex AI only if a service account is configured
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT) {
+    throw new Error('EIGHT is not configured. Add a free GOOGLE_AI_API_KEY from https://aistudio.google.com/app/apikey to enable EIGHT chat.')
+  }
+
   const accessToken = await getAccessToken()
   // Use environment variable for project ID, fallback to common project
   const projectId = process.env.GCP_PROJECT_ID || 'ssbr-495208'
   const location = process.env.GCP_REGION || 'us-central1'
-  // Use gemini-1.5-flash which is more widely available
-  const model = 'gemini-1.5-flash-001'
+  // Use gemini-2.0-flash which is the current widely-available model
+  const model = 'gemini-2.0-flash'
 
   const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:generateContent`
 
