@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Users, MessageSquare, Zap, LogOut, MessageCircle, Wallet, ArrowUpRight, ArrowDownLeft, Phone } from 'lucide-react'
 import Link from 'next/link'
 import { clearToken } from '@/lib/auth-client'
-import { RiverChat } from '@/components/river-chat'
+import { BottomNav } from '@/components/bottom-nav'
 import { NotificationBell } from '@/components/notification-bell'
 import { openWhatsAppWithNumber, SUPPORT_NUMBERS } from '@/components/external-apps-nav'
 
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
         </div>
       </div>
       
-      <RiverChat />
+      <BottomNav />
     </div>
   )
 }

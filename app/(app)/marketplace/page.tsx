@@ -1,334 +1,84 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import {
-  Search,
-  Plus,
-  ShoppingBag,
-  Filter,
-  Grid,
-  List,
-  Heart,
-  Share2,
-  Tag,
-} from "lucide-react"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { useMarketplaceItems } from "@/lib/hooks"
-import { cn } from "@/lib/utils"
-import api from "@/lib/api"
+import { useState } from 'react'
+import { Store, Plus, Search, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { marketItems } from '@/lib/mock-places'
+import { BottomNav } from '@/components/bottom-nav'
 
-const categories = [
-  "All",
-  "Digital",
-  "Services",
-  "Collectibles",
-  "Courses",
-  "Memberships",
-  "Other",
-]
-
-const statusConfig = {
-  available: { label: "Available", color: "bg-primary/10 text-primary" },
-  sold: { label: "Sold", color: "bg-muted text-muted-foreground" },
-  reserved: { label: "Reserved", color: "bg-warning/10 text-warning" },
-  removed: { label: "Removed", color: "bg-destructive/10 text-destructive" },
-}
-
-export default function MarketplacePage() {
-  const [search, setSearch] = useState("")
-  const [category, setCategory] = useState("All")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const { data: itemsData, isLoading, mutate } = useMarketplaceItems({
-    category: category === "All" ? undefined : category.toLowerCase(),
-    status: "available",
-    limit: 30,
-  })
-
-  const items = itemsData?.data || []
-  const filteredItems = items.filter(
-    (item) =>
-      item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.description.toLowerCase().includes(search.toLowerCase())
+export default function MarketPage() {
+  const [search, setSearch] = useState('')
+  
+  const filteredItems = marketItems.filter(item => 
+    item.name.toLowerCase().includes(search.toLowerCase()) ||
+    item.description.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handlePurchase = async (itemId: string) => {
-    const result = await api.purchaseMarketplaceItem(itemId)
-    if (result.success) {
-      mutate()
-    }
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ShoppingBag className="h-6 w-6 text-primary" />
-            Marketplace
-          </h1>
-          <p className="text-muted-foreground">
-            Buy and sell digital goods and services
-          </p>
-        </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          List Item
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search marketplace..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-40">
-              <Tag className="mr-2 h-4 w-4" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex rounded-lg border border-border">
-            <Button
-              variant={viewMode === "grid" ? "secondary" : "ghost"}
-              size="icon"
-              className="rounded-r-none"
-              onClick={() => setViewMode("grid")}
-            >
-              <Grid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "secondary" : "ghost"}
-              size="icon"
-              className="rounded-l-none"
-              onClick={() => setViewMode("list")}
-            >
-              <List className="h-4 w-4" />
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+      <div className="max-w-md mx-auto w-full flex-1 flex flex-col bg-slate-950 shadow-2xl shadow-emerald-900/10">
+        {/* Header */}
+        <header className="p-6 border-b border-slate-800/50 sticky top-0 bg-slate-950/80 backdrop-blur-md z-50">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h1 className="text-xl font-bold text-emerald-400 flex items-center gap-2">
+                <Store className="h-5 w-5" />
+                Market
+              </h1>
+              <p className="text-[10px] text-slate-500 uppercase tracking-widest">Trade Assets</p>
+            </div>
+            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-xl gap-2">
+              <Plus className="h-4 w-4" />
+              Advertise
             </Button>
           </div>
-        </div>
-      </div>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <Input 
+              placeholder="Search items..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-slate-900/50 border-slate-800 pl-10 rounded-xl text-sm"
+            />
+          </div>
+        </header>
 
-      {/* Items */}
-      {isLoading ? (
-        <div
-          className={cn(
-            "grid gap-4",
-            viewMode === "grid"
-              ? "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              : "grid-cols-1"
-          )}
-        >
-          {[...Array(8)].map((_, i) => (
-            <Card key={i} className="animate-pulse overflow-hidden">
-              <div className="aspect-square bg-secondary" />
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <div className="h-4 w-full rounded bg-secondary" />
-                  <div className="h-3 w-24 rounded bg-secondary" />
+        {/* Content */}
+        <main className="flex-1 p-6 space-y-4 overflow-y-auto">
+          {filteredItems.map((item) => (
+            <div key={item.id} className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex gap-4 hover:border-emerald-500/30 transition-colors group">
+              <div className="w-16 h-16 rounded-xl bg-slate-800 flex items-center justify-center text-2xl">
+                {item.sellerAvatar}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start">
+                  <h3 className="font-bold text-white truncate">{item.name}</h3>
+                  <span className="text-emerald-400 font-mono font-bold text-sm">{item.price} TRX</span>
                 </div>
-              </CardContent>
-            </Card>
+                <p className="text-xs text-slate-400 line-clamp-1 mb-2">{item.description}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">By {item.seller}</span>
+                  <button className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 uppercase group-hover:gap-2 transition-all">
+                    View Details
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
-        </div>
-      ) : filteredItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <ShoppingBag className="h-16 w-16 text-muted-foreground/50" />
-          <p className="mt-4 text-lg font-medium">No items found</p>
-          <p className="text-sm text-muted-foreground">
-            {search ? "Try adjusting your search" : "List an item to get started"}
-          </p>
-        </div>
-      ) : viewMode === "grid" ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredItems.map((item) => {
-            const config = statusConfig[item.status]
-            return (
-              <Card
-                key={item.id}
-                className="group overflow-hidden transition-colors hover:border-primary/50"
-              >
-                {/* Image */}
-                <div className="relative aspect-square bg-secondary">
-                  {item.images[0] ? (
-                    <img
-                      src={item.images[0]}
-                      alt={item.title}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <ShoppingBag className="h-12 w-12 text-muted-foreground/50" />
-                    </div>
-                  )}
-                  <Badge
-                    variant="secondary"
-                    className="absolute left-2 top-2 capitalize"
-                  >
-                    {item.category}
-                  </Badge>
-                  <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-8 w-8"
-                    >
-                      <Heart className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-8 w-8"
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+          
+          {filteredItems.length === 0 && (
+            <div className="py-20 text-center">
+              <Store className="h-12 w-12 text-slate-800 mx-auto mb-4" />
+              <p className="text-slate-500">No items found in the marketplace</p>
+            </div>
+          )}
+        </main>
 
-                <CardContent className="p-4">
-                  <h3 className="font-medium line-clamp-1">{item.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                    {item.description}
-                  </p>
-                  <div className="mt-3 flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={item.seller.avatar} />
-                      <AvatarFallback className="text-xs">
-                        {item.seller.displayName.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-muted-foreground">
-                      {item.seller.displayName}
-                    </span>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="flex items-center justify-between border-t border-border p-4">
-                  <p className="font-mono text-lg font-bold">
-                    {item.price.toLocaleString()}{" "}
-                    <span className="text-sm font-normal text-muted-foreground">TRX</span>
-                  </p>
-                  <Button
-                    size="sm"
-                    disabled={item.status !== "available"}
-                    onClick={() => handlePurchase(item.id)}
-                  >
-                    Buy Now
-                  </Button>
-                </CardFooter>
-              </Card>
-            )
-          })}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredItems.map((item) => {
-            const config = statusConfig[item.status]
-            return (
-              <Card
-                key={item.id}
-                className="group overflow-hidden transition-colors hover:border-primary/50"
-              >
-                <div className="flex">
-                  {/* Image */}
-                  <div className="relative h-40 w-40 flex-shrink-0 bg-secondary">
-                    {item.images[0] ? (
-                      <img
-                        src={item.images[0]}
-                        alt={item.title}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <ShoppingBag className="h-8 w-8 text-muted-foreground/50" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex flex-1 flex-col justify-between p-4">
-                    <div>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-medium">{item.title}</h3>
-                          <Badge
-                            variant="secondary"
-                            className="mt-1 capitalize"
-                          >
-                            {item.category}
-                          </Badge>
-                        </div>
-                        <p className="font-mono text-lg font-bold">
-                          {item.price.toLocaleString()}{" "}
-                          <span className="text-sm font-normal text-muted-foreground">
-                            TRX
-                          </span>
-                        </p>
-                      </div>
-                      <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                        {item.description}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={item.seller.avatar} />
-                          <AvatarFallback className="text-xs">
-                            {item.seller.displayName.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm text-muted-foreground">
-                          {item.seller.displayName}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon">
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          disabled={item.status !== "available"}
-                          onClick={() => handlePurchase(item.id)}
-                        >
-                          Buy Now
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            )
-          })}
-        </div>
-      )}
+        <BottomNav />
+      </div>
     </div>
   )
 }

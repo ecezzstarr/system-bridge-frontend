@@ -4,23 +4,15 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Home,
-  LayoutDashboard,
-  Wallet,
-  Users,
-  UserCircle,
-  MessageSquare,
-  Video,
-  Shield,
-  Globe,
   Store,
-  TrendingUp,
-  DollarSign,
+  MessageSquare,
+  Gamepad2,
+  Globe,
+  Code,
+  LayoutDashboard,
   Settings,
   LogOut,
-  ShieldCheck,
-  BookOpen,
-  ReceiptText,
-  Briefcase,
+  Navigation,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -29,21 +21,17 @@ import { PresenceIndicator } from "@/components/presence-indicator"
 import { useAuth } from "@/lib/auth-context"
 
 const navigation = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Ledger", href: "/ledger", icon: BookOpen },
-  { name: "Transactions", href: "/transactions", icon: ReceiptText },
-  { name: "Wallet", href: "/wallet", icon: Wallet },
-  { name: "Roles", href: "/roles", icon: Briefcase },
-  { name: "Profiles", href: "/profiles", icon: UserCircle },
-  { name: "Clients", href: "/clients", icon: Users },
-  { name: "Private Ground", href: "/private-ground", icon: Shield },
+  { name: "Home", href: "/dashboard", icon: Home },
+  { name: "Market", href: "/marketplace", icon: Store },
   { name: "Lounge", href: "/lounge", icon: MessageSquare },
-  { name: "Video Feed", href: "/video-feed", icon: Video },
+  { name: "Casino", href: "/casino", icon: Gamepad2 },
   { name: "Arena", href: "/arena", icon: Globe },
-  { name: "Marketplace", href: "/marketplace", icon: Store },
-  { name: "Earnings", href: "/earnings", icon: TrendingUp },
-  { name: "Fund Wall", href: "/fund-wall", icon: DollarSign, creatorOnly: true },
+]
+
+const adminNavigation = [
+  { name: "Workshop", href: "/admin/workshop", icon: Code },
+  { name: "System Navigation", href: "/admin/origin-systems", icon: Navigation },
+  { name: "Admin Panel", href: "/admin/dashboard", icon: LayoutDashboard },
 ]
 
 interface AppSidebarProps {
@@ -104,31 +92,54 @@ export function AppSidebar({ user }: AppSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3">
         <ul className="space-y-1">
-          {navigation
-            .filter((item) => {
-              if (item.adminOnly && user?.role !== "admin") return false
-              if (item.creatorOnly && user?.role !== "creator") return false
-              return true
-            })
-            .map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                      isActive
-                        ? "bg-sidebar-accent text-sidebar-primary"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.name}
-                  </Link>
-                </li>
-              )
-            })}
+          {navigation.map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-primary"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.name}
+                </Link>
+              </li>
+            )
+          })}
+
+          {user?.role === "admin" && (
+            <>
+              <li className="my-2 border-t border-sidebar-border pt-2">
+                <span className="px-3 text-[10px] font-semibold text-muted-foreground uppercase">
+                  Admin Tools
+                </span>
+              </li>
+              {adminNavigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-primary"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.name}
+                    </Link>
+                  </li>
+                )
+              })}
+            </>
+          )}
         </ul>
       </nav>
 
