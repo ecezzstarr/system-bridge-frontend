@@ -116,11 +116,11 @@ async function getAccessToken(): Promise<string> {
   return data.access_token
 }
 
-// Models to try in order (newest/most available first)
+// Models to try in order (confirmed available for this key, newest first)
 const GOOGLE_AI_MODELS = [
   'gemini-2.0-flash',
   'gemini-flash-latest',
-  'gemini-1.5-flash',
+  'gemini-2.5-flash',
 ]
 
 // Call Google AI Studio (free tier - no Vertex AI required)
@@ -167,6 +167,10 @@ async function callGoogleAI(messages: Array<{ role: string; content: string }>, 
     // If permission denied, the key may lack access to the Generative Language API
     if (response.status === 403) {
       throw new Error('Access denied for GOOGLE_AI_API_KEY. Enable the "Generative Language API" for this key in Google AI Studio / Google Cloud Console.')
+    }
+    // Quota / billing exhausted
+    if (response.status === 429) {
+      throw new Error('EIGHT is temporarily unavailable: the Google AI API key has depleted its credits/quota. Add billing or use a key on the free tier at https://aistudio.google.com/app/apikey, then update GOOGLE_AI_API_KEY.')
     }
     // For 404 (model not found) keep trying the next model
   }
