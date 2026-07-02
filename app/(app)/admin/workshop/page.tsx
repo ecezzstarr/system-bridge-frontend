@@ -1076,10 +1076,7 @@ export default function AdminWorkshop() {
               </div>
             )}
           </div>
-
-          {/* Right Panels (Sidebar) - Global Operational Context */}
           <aside className="w-80 flex flex-col bg-black/40 border-l border-white/5 p-6 space-y-8 overflow-y-auto">
-            {/* Refinement Queue */}
             <div className="space-y-4">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center justify-between">
                 <span>Approval Queue</span>
@@ -1091,8 +1088,6 @@ export default function AdminWorkshop() {
                 </div>
               </div>
             </div>
-
-            {/* Execution Queue */}
             <div className="space-y-4">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center justify-between">
                 <span>Execution Queue</span>
@@ -1104,8 +1099,6 @@ export default function AdminWorkshop() {
                 </div>
               </div>
             </div>
-
-            {/* Activity Stream */}
             <div className="space-y-4">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Activity Stream</h3>
               <div className="space-y-3">
@@ -1123,8 +1116,6 @@ export default function AdminWorkshop() {
                 ))}
               </div>
             </div>
-
-            {/* Deployment Requests (Sidebar) */}
             <div className="space-y-4 pt-6 border-t border-white/10">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Deployment Requests</h3>
               <Card className="bg-purple-900/10 border border-purple-500/20 p-4 space-y-3">
