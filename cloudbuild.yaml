@@ -1,0 +1,30 @@
+steps:
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+        - build
+        - -t
+        - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA
+        - -t
+        - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:latest
+        - .
+
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+        - push
+        - --all-tags
+        - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend
+
+    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+      entrypoint: gcloud
+      args:
+        - run
+        - deploy
+        - system-bridge-frontend
+        - --image=us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA
+        - --region=us-central1
+        - --quiet
+
+  images:
+    - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA
+    - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:latest
+  
