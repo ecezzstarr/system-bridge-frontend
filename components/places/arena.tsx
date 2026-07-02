@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeftRight, Gamepad2, Users, Zap, Trophy, Plus, X, Loader2, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react'
+import { ArrowLeftRight, Gamepad2, Users, Zap, Trophy, Plus, X, Loader2, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, Wallet } from 'lucide-react'
 import { useArenaMatches } from '@/lib/hooks'
 import { useAuth } from '@/lib/auth-provider'
 import api from '@/lib/api'
