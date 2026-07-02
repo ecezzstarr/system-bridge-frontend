@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Wallet } from 'lucide-react'
 
 interface ExternalAppsNavProps {
   userRole: 'admin' | 'agent' | 'bridger' | 'client'
