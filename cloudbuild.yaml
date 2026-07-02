@@ -24,3 +24,5 @@ steps:
 images:
   - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA
   - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:latest
+options:
+  logging: CLOUD_LOGGING_ONLY
