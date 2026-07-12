@@ -1,54 +1,48 @@
 steps:
-  - name: gcr.io/cloud-builders/docker
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - build
-      - -t
-      - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA
-      - -t
-      - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:latest
-      - .
-      - --build-arg
-      - DATABASE_URL=${_DATABASE_URL}
-      - --build-arg
-      - NEXTAUTH_SECRET=${_NEXTAUTH_SECRET}
-      - --build-arg
-      - NEXTAUTH_URL=${_NEXTAUTH_URL}
-      - --build-arg
-      - GOOGLE_AI_KEY=${_GOOGLE_AI_KEY}
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=default'
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:latest'
+      - '.'
+    waitFor: ['-']
 
-  - name: gcr.io/cloud-builders/docker
+  # Step 2: Push image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - push
-      - --all-tags
-      - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA'
+    waitFor: ['0']
 
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
     args:
-      - run
-      - deploy
-      - system-bridge-frontend
-      - --image=us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA
-      - --region=us-central1
-      - --quiet
-      - --memory=1Gi
-      - --timeout=60
-      - --max-instances=10
-      - --min-instances=1
-      - --set-env-vars=DATABASE_URL=${_DATABASE_URL},NEXTAUTH_SECRET=${_NEXTAUTH_SECRET},NEXTAUTH_URL=${_NEXTAUTH_URL},GOOGLE_AI_KEY=${_GOOGLE_AI_KEY},NODE_ENV=production
+      - 'run'
+      - 'deploy'
+      - 'system-bridge-frontend'
+      - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--memory=1Gi'
+      - '--cpu=1'
+      - '--timeout=60s'
+      - '--max-instances=10'
+      - '--min-instances=1'
+      - '--set-env-vars=NODE_ENV=production,NEXT_TELEMETRY_DISABLED=1'
+      - '--update-secrets=DATABASE_URL=DATABASE_URL:latest,NEXTAUTH_SECRET=NEXTAUTH_SECRET:latest,NEXTAUTH_URL=NEXTAUTH_URL:latest,GOOGLE_AI_KEY=GOOGLE_AI_KEY:latest'
+    waitFor: ['1']
 
 images:
-  - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA
-  - us-central1-docker.pkg.dev/ssbr-495208/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:latest
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:$COMMIT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/system-bridge-frontend/ssbnow-frontend:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  machineType: 'N1_HIGHCPU_8'
 
-substitutions:
-  _DATABASE_URL: ''
-  _NEXTAUTH_SECRET: ''
-  _NEXTAUTH_URL: ''
-  _GOOGLE_AI_KEY: ''
+timeout: '1800s'
