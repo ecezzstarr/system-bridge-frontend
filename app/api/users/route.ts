@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
           u.username, 
           u.email,
           u.role,
+          u.avatar,
+          COALESCE(u.presence, 'offline') as status,
           u.created_at,
           (SELECT COUNT(*) FROM users WHERE assigned_agent_id = u.id) as bridger_count
         FROM users u
@@ -40,6 +42,8 @@ export async function GET(request: NextRequest) {
           username, 
           email,
           role,
+          avatar,
+          COALESCE(presence, 'offline') as status,
           assigned_agent_id,
           created_at
         FROM users
@@ -54,6 +58,8 @@ export async function GET(request: NextRequest) {
           username, 
           email,
           role,
+          avatar,
+          COALESCE(presence, 'offline') as status,
           assigned_agent_id,
           created_at
         FROM users
@@ -70,6 +76,8 @@ export async function GET(request: NextRequest) {
         username: u.username || u.email?.split('@')[0] || 'user',
         email: u.email,
         role: u.role,
+        avatar: u.avatar,
+        status: u.status === 'online' ? 'online' : 'offline',
         assigned_agent_id: u.assigned_agent_id,
         bridger_count: u.bridger_count ? parseInt(u.bridger_count) : undefined,
       }))
