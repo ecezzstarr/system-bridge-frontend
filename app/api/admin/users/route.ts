@@ -1,50 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { neon } from '@/lib/pg-neon'
+import { withDbErrorHandling } from '@/lib/db-utils'
 
 const getDb = () => {
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL not configured')
   }
-  return neon(process.env.DATABASE_URL)
+  return neon
 }
 
 export async function GET(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
+  try {
+    const auth = await requireWorkshopAuthorization(request)
     if (!auth.authorized) return auth.response
 
-  try {
     const searchParams = request.nextUrl.searchParams
     const filter = searchParams.get('filter') || 'unassigned'
 
     const sql = getDb()
     
-    let users
-    if (filter === 'unassigned') {
-      users = await sql`
-        SELECT 
-          id, email, username, name, role, departmental_code,
-          platform_wallet_balance, escrow_balance, assigned_agent_id,
-          created_at
-        FROM users 
-        WHERE role != 'admin' 
-        AND (departmental_code IS NULL OR assigned_agent_id IS NULL)
-        ORDER BY created_at DESC
-      `
-    } else {
-      users = await sql`
-        SELECT 
-          id, email, username, name, role, departmental_code,
-          platform_wallet_balance, escrow_balance, assigned_agent_id,
-          created_at
-        FROM users 
-        WHERE role != 'admin'
-        ORDER BY created_at DESC
-      `
+    const result = await withDbErrorHandling(
+      async () => {
+        let users
+        if (filter === 'unassigned') {
+          users = await sql`
+            SELECT 
+              id, email, username, name, role, departmental_code,
+              platform_wallet_balance, escrow_balance, assigned_agent_id,
+              created_at
+            FROM users 
+            WHERE role != 'admin' 
+            AND (departmental_code IS NULL OR assigned_agent_id IS NULL)
+            ORDER BY created_at DESC
+            LIMIT 100
+          `
+        } else {
+          users = await sql`
+            SELECT 
+              id, email, username, name, role, departmental_code,
+              platform_wallet_balance, escrow_balance, assigned_agent_id,
+              created_at
+            FROM users 
+            WHERE role != 'admin'
+            ORDER BY created_at DESC
+            LIMIT 100
+          `
+        }
+        return users
+      },
+      'Admin users fetch'
+    )
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 503 }
+      )
     }
 
     return NextResponse.json({
-      users: users.map(u => ({
+      users: (result.data || []).map(u => ({
         id: u.id,
         email: u.email,
         username: u.username,
@@ -58,19 +74,19 @@ export async function GET(request: NextRequest) {
       })),
     })
   } catch (error) {
-    console.error('[v0] Get users error:', error)
+    console.error('[admin users] Get users error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
+      { error: 'Failed to fetch users. Service temporarily unavailable.' },
+      { status: 503 }
     )
   }
 }
 
 export async function PUT(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
+  try {
+    const auth = await requireWorkshopAuthorization(request)
     if (!auth.authorized) return auth.response
 
-  try {
     const body = await request.json()
     const { userId, departmental_code } = body
 
@@ -83,29 +99,39 @@ export async function PUT(request: NextRequest) {
 
     const sql = getDb()
     
-    // Map departmental code to role
-    const roleMap: Record<string, string> = {
-      'HOPE': 'bridger',
-      'STABILITY': 'agent',
-      'MOVEMENT': 'client'
+    const result = await withDbErrorHandling(
+      async () => {
+        // Map departmental code to role
+        const roleMap: Record<string, string> = {
+          'HOPE': 'bridger',
+          'STABILITY': 'agent',
+          'MOVEMENT': 'client'
+        }
+        const newRole = roleMap[departmental_code] || 'bridger'
+
+        await sql`
+          UPDATE users 
+          SET departmental_code = ${departmental_code}, role = ${newRole}
+          WHERE id = ${userId}::uuid
+        `
+        return { success: true, message: 'User department assigned successfully' }
+      },
+      'Admin assign department'
+    )
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 503 }
+      )
     }
-    const newRole = roleMap[departmental_code] || 'bridger'
 
-    await sql`
-      UPDATE users 
-      SET departmental_code = ${departmental_code}, role = ${newRole}
-      WHERE id = ${userId}::uuid
-    `
-
-    return NextResponse.json({
-      success: true,
-      message: 'User department assigned successfully',
-    })
+    return NextResponse.json(result.data)
   } catch (error) {
-    console.error('[v0] Assign department error:', error)
+    console.error('[admin users] Assign department error:', error)
     return NextResponse.json(
-      { error: 'Failed to assign department' },
-      { status: 500 }
+      { error: 'Failed to assign department. Service temporarily unavailable.' },
+      { status: 503 }
     )
   }
 }
