@@ -6,17 +6,12 @@ on:
       - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: us-central1
   SERVICE_NAME: system-bridge-frontend
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
-    permissions:
-      contents: read
-      id-token: write
 
     steps:
       - name: Checkout code
@@ -25,26 +20,27 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Configure Docker to use gcloud
         run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+          gcloud auth configure-docker
 
       - name: Build and Push Docker image
         run: |
           gcloud builds submit \
             --region=${{ env.REGION }} \
-            --tag=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/cloud-run-repo/${{ env.SERVICE_NAME }}:${{ github.sha }}
+            --tag=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/cloud-run-repo/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            --image=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --allow-unauthenticated \
             --memory=512Mi \
@@ -52,12 +48,12 @@ jobs:
             --timeout=3600 \
             --max-instances=100 \
             --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }},GOOGLE_AI_KEY=${{ secrets.GOOGLE_AI_KEY }} \
-            --project=${{ env.PROJECT_ID }}
+            --project=${{ secrets.GCP_PROJECT_ID }}
 
       - name: Output Service URL
         run: |
-          echo "Deployment successful!"
+          echo "✅ Deployment successful!"
           gcloud run services describe ${{ env.SERVICE_NAME }} \
             --region=${{ env.REGION }} \
             --format='value(status.url)' \
-            --project=${{ env.PROJECT_ID }}
+            --project=${{ secrets.GCP_PROJECT_ID }}
