@@ -19,10 +19,7 @@ export async function ensureClientFileFolderSchema(sql = getFileFolderDb()) {
       claimed_at timestamptz
     )
   `
-  await sql`
-    CREATE INDEX IF NOT EXISTS idx_client_file_folders_file_number
-    ON client_file_folders(file_number)
-  `
+  await sql`CREATE INDEX IF NOT EXISTS idx_client_file_folders_file_number ON client_file_folders(file_number)`
 }
 
 export const CJ_DORADO_FILE_NUMBER = 'WEAVE-2026-0907-0001'
@@ -30,10 +27,8 @@ export const CJ_DORADO_FILE_NUMBER = 'WEAVE-2026-0907-0001'
 export async function ensureCjDoradoFolder(sql = getFileFolderDb()) {
   await ensureClientFileFolderSchema(sql)
   const [folder] = await sql`
-    INSERT INTO client_file_folders
-      (file_number, client_name, workshop_type, status)
-    VALUES
-      (${CJ_DORADO_FILE_NUMBER}, 'Cj Dorado', 'crypto_exchange', 'waiting_for_login')
+    INSERT INTO client_file_folders (file_number, client_name, workshop_type, status)
+    VALUES (${CJ_DORADO_FILE_NUMBER}, 'Cj Dorado', 'crypto_exchange', 'waiting_for_login')
     ON CONFLICT (file_number) DO UPDATE SET
       client_name = COALESCE(client_file_folders.client_name, EXCLUDED.client_name),
       workshop_type = COALESCE(client_file_folders.workshop_type, EXCLUDED.workshop_type),
@@ -43,12 +38,7 @@ export async function ensureCjDoradoFolder(sql = getFileFolderDb()) {
   return folder
 }
 
-export async function claimFileFolder(
-  sql: ReturnType<typeof neon>,
-  clientId: string,
-  fileNumber: string,
-  clientName: string,
-) {
+export async function claimFileFolder(sql: any, clientId: string, fileNumber: string, clientName: string) {
   await ensureClientFileFolderSchema(sql)
   const [folder] = await sql`
     UPDATE client_file_folders
