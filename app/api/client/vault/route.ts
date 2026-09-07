@@ -37,12 +37,16 @@ export async function POST(request: NextRequest) {
     const { amount, destination } = await request.json()
     const value = Number(amount)
     if (!Number.isFinite(value) || value <= 0) return NextResponse.json({ error: 'A positive TRX withdrawal amount is required' }, { status: 400 })
+    if (!destination || typeof destination !== 'string' || !destination.trim()) {
+      return NextResponse.json({ error: 'A TRX withdrawal destination is required' }, { status: 400 })
+    }
 
     const sql = neon(process.env.DATABASE_URL || '')
     await ensureClientVaultSchema(sql)
-    const [vault] = await sql`SELECT balance FROM client_vaults WHERE client_id = ${clientId}::uuid`
+    const [vault] = await sql`SELECT balance, currency FROM client_vaults WHERE client_id = ${clientId}::uuid`
     const balance = Number(vault?.balance || 0)
     if (value > balance) return NextResponse.json({ error: 'Insufficient Client Vault TRX balance' }, { status: 400 })
+    if (vault?.currency && vault.currency !== 'TRX') return NextResponse.json({ error: 'Client Vault is not configured for TRX settlement' }, { status: 409 })
 
     const [pending] = await sql`
       SELECT id FROM client_vault_withdrawals
@@ -52,9 +56,9 @@ export async function POST(request: NextRequest) {
 
     const [row] = await sql`
       INSERT INTO client_vault_withdrawals (client_id, amount, currency, destination, status)
-      VALUES (${clientId}::uuid, ${value}, 'TRX', ${destination || null}, 'pending') RETURNING *
+      VALUES (${clientId}::uuid, ${value}, 'TRX', ${destination.trim()}, 'pending') RETURNING *
     `
-    return NextResponse.json({ success: true, withdrawal: row })
+    return NextResponse.json({ success: true, withdrawal: row, message: 'TRX withdrawal submitted for Admin review' })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Failed to request TRX withdrawal' }, { status: 500 })
   }
