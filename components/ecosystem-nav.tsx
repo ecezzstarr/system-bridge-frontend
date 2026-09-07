@@ -13,6 +13,7 @@ interface EcosystemNavProps {
 export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: EcosystemNavProps) {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
+  const isClient = user?.role === 'client' || user?.role === 'sibling'
 
   const systems = [
     {
@@ -33,11 +34,12 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
     },
     {
       id: 'online',
-      name: 'SSBNOW.ONLINE',
-      subtitle: 'Service System',
+      name: isClient ? 'SYSTEM SWITCH' : 'SSBNOW.ONLINE',
+      subtitle: isClient ? 'File Folder · Interaction in Motion' : 'Service System',
       icon: Globe,
-      // Admin goes to client messages management, clients go to client dashboard
-      href: isAdmin ? '/admin/client-messages' : '/client/dashboard',
+      // Admin manages Client services; a Client travels from the Portal into
+      // the verified File Folder and continues through the existing Switch world.
+      href: isAdmin ? '/admin/client-messages' : isClient ? '/client/system-switch' : '/client/dashboard',
       color: 'from-blue-500 to-cyan-500',
     },
     {
@@ -52,28 +54,22 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
   ]
 
   const visibleSystems = systems.filter(s => {
-    if (s.adminOnly && !isAdmin) return false;
-    if (s.role === 'sibling' && !isAdmin && user?.role !== 'sibling') return false;
-    return true;
+    if (s.adminOnly && !isAdmin) return false
+    if (s.role === 'sibling' && !isAdmin && user?.role !== 'sibling') return false
+    return true
   })
 
   return (
     <div className="w-full">
-      {/* Desktop Navigation */}
       <div className="hidden md:flex gap-2 flex-wrap">
         {visibleSystems.map((system) => {
           const Icon = system.icon
           const isCurrent = currentSystem === system.id
-          
           return (
             <Link key={system.id} href={system.href}>
               <Button
                 variant={isCurrent ? 'default' : 'outline'}
-                className={`gap-2 transition-all ${
-                  isCurrent
-                    ? `bg-gradient-to-r ${system.color} text-white border-0`
-                    : 'border-slate-600 hover:bg-slate-800'
-                }`}
+                className={`gap-2 transition-all ${isCurrent ? `bg-gradient-to-r ${system.color} text-white border-0` : 'border-slate-600 hover:bg-slate-800'}`}
               >
                 <Icon className="h-4 w-4" />
                 <div className="flex flex-col items-start">
@@ -86,22 +82,16 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
         })}
       </div>
 
-      {/* Mobile Navigation */}
       {showMobile && (
         <div className="md:hidden flex flex-col gap-2">
           {visibleSystems.map((system) => {
             const Icon = system.icon
             const isCurrent = currentSystem === system.id
-            
             return (
               <Link key={system.id} href={system.href}>
                 <Button
                   variant={isCurrent ? 'default' : 'outline'}
-                  className={`w-full gap-2 transition-all text-sm ${
-                    isCurrent
-                      ? `bg-gradient-to-r ${system.color} text-white border-0`
-                      : 'border-slate-600 hover:bg-slate-800'
-                  }`}
+                  className={`w-full gap-2 transition-all text-sm ${isCurrent ? `bg-gradient-to-r ${system.color} text-white border-0` : 'border-slate-600 hover:bg-slate-800'}`}
                 >
                   <Icon className="h-4 w-4" />
                   <div className="flex flex-col items-start">
