@@ -14,16 +14,17 @@ function db() {
 
 async function chargeAdmin(adminId: string) {
   const sql = db()
-  const [wallet] = await sql`SELECT id, balance_trx FROM wallets WHERE user_id=${adminId}::uuid FOR UPDATE`
-  if (!wallet) return { success: false, error: 'Administrator wallet not found' }
-  const balance = Number(wallet.balance_trx || 0)
-  if (balance < EIGHT_COST_TRX) return { success: false, error: `Insufficient TRX. Need ${EIGHT_COST_TRX} TRX.` }
-  const next = balance - EIGHT_COST_TRX
-  await sql`UPDATE wallets SET balance_trx=${next}, updated_at=NOW() WHERE id=${wallet.id}`
+  const [wallet] = await sql`
+    UPDATE wallets
+    SET balance_trx = balance_trx - ${EIGHT_COST_TRX}, updated_at = NOW()
+    WHERE user_id = ${adminId}::uuid AND balance_trx >= ${EIGHT_COST_TRX}
+    RETURNING id, balance_trx
+  `
+  if (!wallet) return { success: false, error: 'Administrator wallet not found or insufficient TRX' }
   try {
-    await sql`INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_after,created_at) VALUES (gen_random_uuid(),${adminId}::uuid,'eight_usage',${EIGHT_COST_TRX},'TRX','EIGHT developer request',${next},NOW())`
+    await sql`INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_after,created_at) VALUES (gen_random_uuid(),${adminId}::uuid,'eight_usage',${EIGHT_COST_TRX},'TRX','EIGHT developer request',${wallet.balance_trx},NOW())`
   } catch { /* legacy databases may not yet have ledger_entries */ }
-  return { success: true, newBalance: next }
+  return { success: true, newBalance: Number(wallet.balance_trx) }
 }
 
 function parseBlocks(text: string) {
