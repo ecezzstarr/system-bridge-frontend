@@ -1,32 +1,33 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getClientToken } from '@/lib/client-auth'
+import { useAuth } from '@/lib/auth-provider'
 
 export default function AdminFileFolderPurchasesPage() {
+  const { user, token } = useAuth()
   const [purchases, setPurchases] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
   const [message, setMessage] = useState('')
 
   const load = async () => {
+    if (!token) return
     setLoading(true)
     try {
-      const token = getClientToken()
-      const res = await fetch('/api/admin/file-folder-purchases', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      const res = await fetch('/api/admin/file-folder-purchases', { headers: { Authorization: `Bearer ${token}` } })
       const body = await res.json()
       if (!res.ok) throw new Error(body.error || 'Unable to load purchases')
       setPurchases(body.purchases || [])
     } catch (error: any) { setMessage(error.message || 'Unable to load purchases') } finally { setLoading(false) }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { if (user?.role === 'admin') load() }, [user, token])
+  if (!user || user.role !== 'admin') return null
 
   const issue = async (purchase: any) => {
     setBusy(purchase.id); setMessage('')
     try {
-      const token = getClientToken()
-      const res = await fetch('/api/admin/file-folder-purchases', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ purchaseId: purchase.id }) })
+      const res = await fetch('/api/admin/file-folder-purchases', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ purchaseId: purchase.id }) })
       const body = await res.json()
       if (!res.ok) throw new Error(body.error || 'Unable to issue File Folder')
       setMessage(`File Folder issued: ${body.folder.file_number}`)
