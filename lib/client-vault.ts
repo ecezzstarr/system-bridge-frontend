@@ -10,17 +10,20 @@ export async function ensureClientVaultSchema(sql = getVaultDb()) {
     CREATE TABLE IF NOT EXISTS client_vaults (
       client_id uuid PRIMARY KEY,
       balance numeric(30, 8) NOT NULL DEFAULT 0,
-      currency varchar(16) NOT NULL DEFAULT 'USDT',
+      currency varchar(16) NOT NULL DEFAULT 'TRX',
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+  // Client platform balances are denominated in TRX. Keep the existing
+  // table structure compatible with previously-created installations.
+  await sql`UPDATE client_vaults SET currency = 'TRX' WHERE currency IS NULL OR currency <> 'TRX'`
   await sql`
     CREATE TABLE IF NOT EXISTS client_vault_ledger (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       client_id uuid NOT NULL,
       entry_type varchar(32) NOT NULL,
       amount numeric(30, 8) NOT NULL,
-      currency varchar(16) NOT NULL DEFAULT 'USDT',
+      currency varchar(16) NOT NULL DEFAULT 'TRX',
       balance_after numeric(30, 8) NOT NULL,
       source varchar(120) NOT NULL,
       reference varchar(255),
@@ -38,7 +41,7 @@ export async function ensureClientVaultSchema(sql = getVaultDb()) {
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       client_id uuid NOT NULL,
       amount numeric(30, 8) NOT NULL,
-      currency varchar(16) NOT NULL DEFAULT 'USDT',
+      currency varchar(16) NOT NULL DEFAULT 'TRX',
       destination text,
       status varchar(24) NOT NULL DEFAULT 'pending',
       requested_at timestamptz NOT NULL DEFAULT NOW(),
@@ -48,6 +51,7 @@ export async function ensureClientVaultSchema(sql = getVaultDb()) {
       note text
     )
   `
+  await sql`UPDATE client_vault_withdrawals SET currency = 'TRX' WHERE currency IS NULL OR currency <> 'TRX'`
 }
 
 export function decodeClientToken(token: string | null) {
