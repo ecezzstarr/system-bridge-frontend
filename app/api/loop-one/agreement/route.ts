@@ -29,23 +29,34 @@ async function ensureTable(sql: ReturnType<typeof getDb>) {
 }
 
 async function getIdentity(request: NextRequest) {
+  const sql = getDb()
+
   const session = await getServerSession(authOptions)
   if (session?.user?.id) {
-    const sql = getDb()
-    const rows = await sql`SELECT id, role, name, email FROM users WHERE id = ${session.user.id}::uuid AND is_active = true LIMIT 1`
+    const rows = await sql`
+      SELECT id, role, name, email
+      FROM users
+      WHERE id = ${session.user.id}::uuid AND is_active = true
+      LIMIT 1
+    `
     if (rows[0]) return rows[0]
   }
 
-  // The platform currently also stores the application token in local storage.
-  // Accept the same token shape for this route so the agreement gate works with
-  // the existing Agent/Bridger authentication flow.
+  // Agent/Bridger authentication uses the opaque token stored in the sessions table.
+  // Do not decode or infer a user ID from the token itself.
   const auth = request.headers.get('authorization') || ''
   const token = auth.replace(/^Bearer\s+/i, '').trim()
-  const match = token.match(/^token_([0-9a-f-]{36})_\d+$/i)
-  if (!match) return null
+  if (!token || token.length < 32 || token.length > 128) return null
 
-  const sql = getDb()
-  const rows = await sql`SELECT id, role, name, email FROM users WHERE id = ${match[1]}::uuid AND is_active = true LIMIT 1`
+  const rows = await sql`
+    SELECT u.id, u.role, u.name, u.email
+    FROM sessions s
+    JOIN users u ON u.id = s.user_id
+    WHERE s.token = ${token}
+      AND s.expires_at > NOW()
+      AND u.is_active = true
+    LIMIT 1
+  `
   return rows[0] || null
 }
 
@@ -77,7 +88,7 @@ export async function GET(request: NextRequest) {
       signedAt: rows[0]?.signed_at || null,
     })
   } catch (error) {
-    console.error('Loop One agreement status error:', error)
+    console.error('Loop One agreement status error:', error instanceof Error ? error.message : 'unknown error')
     return NextResponse.json({ error: 'Unable to read Loop One agreement status' }, { status: 500 })
   }
 }
@@ -123,7 +134,7 @@ export async function POST(request: NextRequest) {
       signedAt: result[0]?.signed_at || null,
     })
   } catch (error) {
-    console.error('Loop One agreement signing error:', error)
+    console.error('Loop One agreement signing error:', error instanceof Error ? error.message : 'unknown error')
     return NextResponse.json({ error: 'Unable to record Loop One agreement' }, { status: 500 })
   }
 }
