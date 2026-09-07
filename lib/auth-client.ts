@@ -1,4 +1,6 @@
 const API_URL = '/api'
+const TOKEN_KEYS = ['ssb_auth_token', 'auth_token'] as const
+const USER_KEYS = ['ssb_auth_user', 'auth_user'] as const
 
 interface AuthResponse {
   token?: string
@@ -34,119 +36,92 @@ export async function register(data: {
   role: 'agent' | 'bridger'
   department: string
 }): Promise<AuthResponse> {
-  try {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
 
-    if (!response.ok) {
-      let errorMsg = `HTTP ${response.status}`
-      try {
-        const errorData = await response.json()
-        errorMsg = errorData.message || errorData.error || errorMsg
-      } catch (e) {
-        // Ignore JSON parse error
-      }
-      throw new Error(errorMsg)
-    }
-
-    const result = await response.json()
-    return result
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    let errorMsg = `HTTP ${response.status}`
+    try {
+      const errorData = await response.json()
+      errorMsg = errorData.message || errorData.error || errorMsg
+    } catch {}
+    throw new Error(errorMsg)
   }
+
+  return response.json()
 }
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
 
-    if (!response.ok) {
-      let errorMsg = `HTTP ${response.status}`
-      try {
-        const errorData = await response.json()
-        errorMsg = errorData.message || errorData.error || errorMsg
-      } catch (e) {
-        // Ignore JSON parse error
-      }
-      throw new Error(errorMsg)
-    }
-
-    const result = await response.json()
-    return result
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    let errorMsg = `HTTP ${response.status}`
+    try {
+      const errorData = await response.json()
+      errorMsg = errorData.message || errorData.error || errorMsg
+    } catch {}
+    throw new Error(errorMsg)
   }
+
+  return response.json()
 }
 
 export function saveToken(token: string): void {
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem('auth_token', token)
-    } catch (e) {
-      // localStorage not available (private browsing, quota exceeded, etc)
-      console.warn('[v0] localStorage unavailable, using memory storage')
-      if (typeof window !== 'undefined') {
-        (window as any).__auth_token = token
-      }
-    }
+  if (typeof window === 'undefined') return
+  try {
+    // Keep both historical keys synchronized while the app migrates to ssb_*.
+    for (const key of TOKEN_KEYS) localStorage.setItem(key, token)
+  } catch {
+    ;(window as any).__auth_token = token
   }
 }
 
 export function saveUser(user: any): void {
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem('auth_user', JSON.stringify(user))
-    } catch (e) {
-      // localStorage not available
-      console.warn('[v0] localStorage unavailable, using memory storage')
-      if (typeof window !== 'undefined') {
-        (window as any).__auth_user = user
-      }
-    }
+  if (typeof window === 'undefined') return
+  try {
+    const value = JSON.stringify(user)
+    for (const key of USER_KEYS) localStorage.setItem(key, value)
+  } catch {
+    ;(window as any).__auth_user = user
   }
 }
 
 export function getToken(): string | null {
-  if (typeof window !== 'undefined') {
-    try {
-      return localStorage.getItem('auth_token') || (window as any).__auth_token || null
-    } catch (e) {
-      return (window as any).__auth_token || null
+  if (typeof window === 'undefined') return null
+  try {
+    for (const key of TOKEN_KEYS) {
+      const value = localStorage.getItem(key)
+      if (value) return value
     }
-  }
-  return null
+  } catch {}
+  return (window as any).__auth_token || null
 }
 
 export function getUser(): any {
-  if (typeof window !== 'undefined') {
-    try {
-      const user = localStorage.getItem('auth_user')
-      return user ? JSON.parse(user) : (window as any).__auth_user || null
-    } catch (e) {
-      return (window as any).__auth_user || null
+  if (typeof window === 'undefined') return null
+  try {
+    for (const key of USER_KEYS) {
+      const value = localStorage.getItem(key)
+      if (value) return JSON.parse(value)
     }
-  }
-  return null
+  } catch {}
+  return (window as any).__auth_user || null
 }
 
 export function clearToken(): void {
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_user')
-    } catch (e) {
-      // Silently fail
-    }
-    (window as any).__auth_token = null
-    (window as any).__auth_user = null
+  if (typeof window === 'undefined') return
+  for (const key of [...TOKEN_KEYS, ...USER_KEYS]) {
+    try { localStorage.removeItem(key) } catch {}
   }
+  ;(window as any).__auth_token = null
+  ;(window as any).__auth_user = null
 }
 
 export function getAuthHeaders(): HeadersInit {
