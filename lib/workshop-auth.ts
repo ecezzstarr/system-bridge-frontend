@@ -3,52 +3,88 @@ import { authOptions } from './auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from './pg-neon'
 
+/**
+ * Authorize the single active platform administrator.
+ * Role alone is not sufficient: the database must contain exactly one active admin,
+ * and the presented identity must be that admin.
+ */
 export async function requireWorkshopAuthorization(req?: NextRequest) {
-  // 1. Check next-auth session (original way)
-  const session = await getServerSession(authOptions)
-  
-  if (session && session.user.role === 'admin') {
-    return {
-      authorized: true,
-      response: null,
-      session
-    }
+  const sql = neon(process.env.DATABASE_URL!)
+
+  async function authorizeUser(userId: string | null) {
+    if (!userId) return null
+    const rows = await sql`
+      SELECT id, username, name, email, role
+      FROM users
+      WHERE id = ${userId}::uuid AND is_active = true
+      LIMIT 1
+    `
+    if (!rows.length || rows[0].role !== 'admin') return null
+
+    const admins = await sql`
+      SELECT COUNT(*)::int AS count
+      FROM users
+      WHERE role = 'admin' AND is_active = true
+    `
+    if (Number(admins[0]?.count || 0) !== 1) return null
+
+    return rows[0]
   }
 
-  // 2. Check for custom token if request is provided
-  if (req) {
-    const authHeader = req.headers.get('authorization')
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null
-    
-    if (token) {
-      try {
-        const sql = neon(process.env.DATABASE_URL!)
+  try {
+    const session = await getServerSession(authOptions)
+    if (session?.user?.id) {
+      const admin = await authorizeUser(session.user.id)
+      if (admin) {
+        return {
+          authorized: true,
+          response: null,
+          session: {
+            user: {
+              id: admin.id,
+              username: admin.username,
+              name: admin.name,
+              role: admin.role,
+              email: admin.email,
+            },
+          },
+        }
+      }
+    }
+
+    if (req) {
+      const authHeader = req.headers.get('authorization') || ''
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+      if (token) {
         const sessions = await sql`
-          SELECT s.*, u.role, u.username, u.name, u.email
+          SELECT s.user_id
           FROM sessions s
           JOIN users u ON u.id = s.user_id
-          WHERE s.token = ${token} AND s.expires_at > NOW()
+          WHERE s.token = ${token}
+            AND s.expires_at > NOW()
+            AND u.is_active = true
+          LIMIT 1
         `
-
-        if (sessions.length > 0 && sessions[0].role === 'admin') {
+        const admin = sessions.length ? await authorizeUser(String(sessions[0].user_id)) : null
+        if (admin) {
           return {
             authorized: true,
             response: null,
             session: {
               user: {
-                id: sessions[0].user_id,
-                username: sessions[0].username,
-                name: sessions[0].name,
-                role: sessions[0].role,
-                email: sessions[0].email
-              }
-            }
+                id: admin.id,
+                username: admin.username,
+                name: admin.name,
+                role: admin.role,
+                email: admin.email,
+              },
+            },
           }
         }
-      } catch (error) {
-        console.error('[workshop-auth] Token verification error:', error)
       }
     }
+  } catch (error) {
+    console.error('[workshop-auth] Authorization error:', error instanceof Error ? error.message : 'unknown error')
   }
 
   return {
@@ -57,6 +93,6 @@ export async function requireWorkshopAuthorization(req?: NextRequest) {
       { message: 'Unauthorized: Workshop Admin access required' },
       { status: 401 }
     ),
-    session: null
+    session: null,
   }
 }
