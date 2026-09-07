@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-// Local storage keys
 const TOKEN_KEY = 'ssb_auth_token'
 const USER_KEY = 'ssb_auth_user'
+const LOOP_ONE_AGREEMENT_PATH = '/loop-one/agreement'
 
 interface User {
   id: string
@@ -33,35 +33,23 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Helper functions for local storage
 function saveToken(token: string) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(TOKEN_KEY, token)
-  }
+  if (typeof window !== 'undefined') localStorage.setItem(TOKEN_KEY, token)
 }
 
 function saveUser(user: User) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(USER_KEY, JSON.stringify(user))
-  }
+  if (typeof window !== 'undefined') localStorage.setItem(USER_KEY, JSON.stringify(user))
 }
 
 function getToken(): string | null {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(TOKEN_KEY)
-  }
-  return null
+  return typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null
 }
 
 function getUser(): User | null {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(USER_KEY)
     if (stored) {
-      try {
-        return JSON.parse(stored)
-      } catch {
-        return null
-      }
+      try { return JSON.parse(stored) } catch { return null }
     }
   }
   return null
@@ -74,43 +62,46 @@ function clearAuth() {
   }
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  // Initialize state from localStorage immediately (not in useEffect)
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== 'undefined') {
-      return getUser()
-    }
-    return null
-  })
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return getToken()
-    }
-    return null
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !!(getToken() && getUser())
-    }
-    return false
-  })
+async function requireLoopOneAgreement(user: User, token: string | null) {
+  if (!token || !['agent', 'bridger'].includes(user.role || '')) return true
+  if (typeof window === 'undefined' || window.location.pathname === LOOP_ONE_AGREEMENT_PATH) return true
 
-  // Sync state on mount (for SSR hydration)
+  try {
+    const response = await fetch('/api/loop-one/agreement', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response.ok) return false
+    const data = await response.json()
+    if (data.required && !data.signed) {
+      window.location.replace(LOOP_ONE_AGREEMENT_PATH)
+      return false
+    }
+    return true
+  } catch {
+    // Fail closed for Loop One: do not allow role activation when agreement status cannot be verified.
+    return false
+  }
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(() => getUser())
+  const [token, setToken] = useState<string | null>(() => getToken())
+  const [isLoading, setIsLoading] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!(getToken() && getUser()))
+
   useEffect(() => {
     const existingToken = getToken()
     const existingUser = getUser()
-    
     if (existingToken && existingUser) {
       setToken(existingToken)
       setUser(existingUser)
       setIsAuthenticated(true)
+      void requireLoopOneAgreement(existingUser, existingToken)
     } else {
       setIsAuthenticated(false)
     }
   }, [])
 
-  // Register - uses local API connected to Neon database
   const register = async (data: { email: string; password: string; name: string; username: string; role: 'agent' | 'bridger'; department: string; referredBy?: string }) => {
     setIsLoading(true)
     try {
@@ -126,27 +117,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           department: data.department,
         }),
       })
-
       const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Registration failed')
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Registration failed')
-      }
-
-      // Save auth data
       if (result.token && result.user) {
+        const userData: User = result.user
         saveToken(result.token)
-        saveUser(result.user)
+        saveUser(userData)
         setToken(result.token)
-        setUser(result.user)
+        setUser(userData)
         setIsAuthenticated(true)
+        if (userData.role === 'agent' || userData.role === 'bridger') {
+          window.location.href = LOOP_ONE_AGREEMENT_PATH
+        }
       }
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Login - uses local API connected to Neon database
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
@@ -155,33 +144,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
-
       const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Login failed')
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Login failed')
+      if (!result.token || !result.user) throw new Error('Login failed')
+
+      const userData: User = {
+        id: result.user.id,
+        email: result.user.email,
+        username: result.user.username,
+        name: result.user.name,
+        role: result.user.role as 'agent' | 'bridger' | 'admin',
+        platform_wallet_balance: result.user.platform_wallet_balance || 0,
+        escrow_balance: result.user.escrow_balance || 0,
+        departmental_code: result.user.departmental_code,
+        wallet_address: result.user.wallet_address,
       }
 
-      if (result.token && result.user) {
-        const userData: User = {
-          id: result.user.id,
-          email: result.user.email,
-          username: result.user.username,
-          name: result.user.name,
-          role: result.user.role as 'agent' | 'bridger' | 'admin',
-          platform_wallet_balance: result.user.platform_wallet_balance || 0,
-          escrow_balance: result.user.escrow_balance || 0,
-          departmental_code: result.user.departmental_code,
-          wallet_address: result.user.wallet_address,
-        }
+      saveToken(result.token)
+      saveUser(userData)
+      setToken(result.token)
+      setUser(userData)
+      setIsAuthenticated(true)
 
-        saveToken(result.token)
-        saveUser(userData)
-        setToken(result.token)
-        setUser(userData)
-        setIsAuthenticated(true)
-      } else {
-        throw new Error('Login failed')
+      if (userData.role === 'agent' || userData.role === 'bridger') {
+        const allowed = await requireLoopOneAgreement(userData, result.token)
+        if (!allowed) return
       }
     } catch (error) {
       setIsLoading(false)
@@ -198,15 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      token, 
-      isLoading, 
-      isAuthenticated, 
-      register, 
-      login, 
-      logout,
-    }}>
+    <AuthContext.Provider value={{ user, token, isLoading, isAuthenticated, register, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
@@ -214,8 +194,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider')
   return context
 }
