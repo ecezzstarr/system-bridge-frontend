@@ -1,117 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
-import { sweepToCompanyWallet, getWalletBalance } from '@/lib/tron-wallet'
-import { processEightCommand } from '@/lib/eight-engine'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { neon } from '@/lib/pg-neon'
+
+function db() {
+  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL
+  if (!url) throw new Error('Database not configured')
+  return neon(url)
+}
 
 export async function POST(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
-    if (!auth.authorized) return auth.response
-
+  const auth = await requireWorkshopAuthorization(request)
+  if (!auth.authorized) return auth.response
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const userRole = (session.user as any).role
-    if (userRole !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-
     const body = await request.json()
-    const { walletAddress, privateKey, tokenType = 'ALL' } = body
+    const walletAddress = typeof body.walletAddress === 'string' ? body.walletAddress.trim() : ''
+    const tokenType = body.tokenType === 'TRX' || body.tokenType === 'USDT' ? body.tokenType : 'ALL'
+    if (!walletAddress) return NextResponse.json({ success: false, error: 'Wallet address required' }, { status: 400 })
+    if (!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(walletAddress)) return NextResponse.json({ success: false, error: 'Invalid TRON wallet address' }, { status: 400 })
 
-    if (!walletAddress || !privateKey) {
-      return NextResponse.json({ error: 'Wallet address and private key required' }, { status: 400 })
-    }
-
-    // Log sweep attempt with Eight
-    const eightLog = await processEightCommand(
-      `Admin sweep initiated by ${session.user.email} for wallet ${walletAddress}`,
-      { 
-        adminEmail: session.user.email,
-        walletAddress,
-        tokenType,
-        operation: 'wallet_sweep'
-      }
-    )
-
-    // Get current balance before sweep
-    const balanceBefore = await getWalletBalance(walletAddress)
-
-    // Execute sweep
-    const result = await sweepToCompanyWallet(walletAddress, privateKey, tokenType)
-
-    // Get balance after sweep
-    const balanceAfter = await getWalletBalance(walletAddress)
-
-    // Log result with Eight
-    await processEightCommand(
-      `Sweep ${result.success ? 'completed' : 'failed'} for wallet ${walletAddress}`,
-      {
-        success: result.success,
-        txId: result.txId,
-        balanceBefore: { trx: balanceBefore.trx, usdt: balanceBefore.usdt },
-        balanceAfter: { trx: balanceAfter.trx, usdt: balanceAfter.usdt },
-        error: result.error,
-      }
-    )
-
-    if (result.success) {
-      return NextResponse.json({
-        success: true,
-        message: 'Wallet sweep completed successfully',
-        txId: result.txId,
-        swept: {
-          trx: balanceBefore.trx - balanceAfter.trx,
-          usdt: balanceBefore.usdt - balanceAfter.usdt,
-        },
-        eightResponse: eightLog.message,
-      })
-    } else {
-      return NextResponse.json({ 
-        success: false,
-        error: result.error 
-      }, { status: 400 })
-    }
-  } catch (error: any) {
-    console.error('Admin sweep error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    // Private keys are never accepted from the browser. Execution belongs in a
+    // separately secured custody/signing service. This endpoint only records intent.
+    const sql = db()
+    const [row] = await sql`
+      INSERT INTO fund_sweeps (user_id, amount, status, created_at)
+      VALUES (${auth.session?.user?.id}::uuid, 0, 'pending', NOW())
+      RETURNING id, status, created_at
+    `
+    return NextResponse.json({ success: true, pending: true, sweep: row, walletAddress, tokenType, message: 'Sweep request recorded. No private key was accepted or stored.' })
+  } catch (error) {
+    console.error('Admin sweep request error', error instanceof Error ? error.message : 'unknown error')
+    return NextResponse.json({ success: false, error: 'Unable to create sweep request' }, { status: 500 })
   }
 }
 
-// Get sweep history (from Eight logs)
 export async function GET(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
-    if (!auth.authorized) return auth.response
-
+  const auth = await requireWorkshopAuthorization(request)
+  if (!auth.authorized) return auth.response
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const userRole = (session.user as any).role
-    if (userRole !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-
-    // Query Eight for sweep history
-    const eightResponse = await processEightCommand(
-      'Get recent wallet sweep operations history',
-      { operation: 'get_sweep_history' }
-    )
-
-    return NextResponse.json({
-      success: true,
-      history: eightResponse.data || [],
-      message: eightResponse.message,
-    })
-  } catch (error: any) {
-    console.error('Get sweep history error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const sql = db()
+    const history = await sql`
+      SELECT id, user_id, amount, status, created_at
+      FROM fund_sweeps
+      ORDER BY created_at DESC LIMIT 100
+    `
+    return NextResponse.json({ success: true, history })
+  } catch (error) {
+    console.error('Admin sweep history error', error instanceof Error ? error.message : 'unknown error')
+    return NextResponse.json({ success: false, error: 'Unable to load sweep history' }, { status: 500 })
   }
 }
