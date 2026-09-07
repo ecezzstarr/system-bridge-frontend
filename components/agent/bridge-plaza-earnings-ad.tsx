@@ -5,9 +5,7 @@ import { Users, TrendingUp } from 'lucide-react'
 
 const AGENT_RATE = 0.30
 const ACTIVE_BRIDGER_TARGET = 6
-// Bridgers purchase individual prospects for less than 2 TRX.
-// Keep this separate from File Folder pricing.
-const PROSPECT_PURCHASE_PRICE_TRX = 1.8
+const PROSPECT_PURCHASE_PRICE_TRX = 1.1
 
 export function BridgePlazaEarningsAd() {
   const [prospectPrice, setProspectPrice] = useState(String(PROSPECT_PURCHASE_PRICE_TRX))
@@ -63,7 +61,7 @@ export function BridgePlazaEarningsAd() {
             onChange={(event) => setProspectPrice(event.target.value)}
             className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
           />
-          <span className="mt-1 block text-[10px] text-slate-600">Current prospect purchase basis: {PROSPECT_PURCHASE_PRICE_TRX} TRX (below 2 TRX).</span>
+          <span className="mt-1 block text-[10px] text-slate-600">Current prospect purchase price: 1.1 TRX each.</span>
         </label>
         <label className="block">
           <span className="mb-1 block text-[11px] font-medium text-slate-400">Purchases per Bridger / day</span>
