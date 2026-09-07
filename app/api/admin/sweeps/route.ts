@@ -1,76 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
-import { getPendingSweeps, getAllSweeps, approveSweepRequest, executeSweep } from '@/lib/mock-db'
+import { neon } from '@/lib/pg-neon'
+
+const db = () => neon(process.env.DATABASE_URL || process.env.POSTGRES_URL || '')
 
 export async function GET(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
-    if (!auth.authorized) return auth.response
-
+  const auth = await requireWorkshopAuthorization(request)
+  if (!auth.authorized) return auth.response
   try {
-    const searchParams = request.nextUrl.searchParams
-    const status = searchParams.get('status') || 'all'
-
-    let sweeps = []
-    if (status === 'pending') {
-      sweeps = getPendingSweeps()
-    } else {
-      sweeps = getAllSweeps()
-    }
-
-    return NextResponse.json({ sweeps })
+    const status = request.nextUrl.searchParams.get('status')
+    const sql = db()
+    const sweeps = status && status !== 'all'
+      ? await sql`SELECT id,user_id,amount,status,created_at FROM fund_sweeps WHERE status=${status} ORDER BY created_at DESC LIMIT 100`
+      : await sql`SELECT id,user_id,amount,status,created_at FROM fund_sweeps ORDER BY created_at DESC LIMIT 100`
+    return NextResponse.json({ success: true, sweeps })
   } catch (error) {
-    console.error('[v0] Get sweeps error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch sweeps' },
-      { status: 500 }
-    )
+    console.error('Get sweeps error', error instanceof Error ? error.message : 'unknown error')
+    return NextResponse.json({ success: false, error: 'Failed to fetch sweeps' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-    const auth = await requireWorkshopAuthorization()
-    if (!auth.authorized) return auth.response
-
+  const auth = await requireWorkshopAuthorization(request)
+  if (!auth.authorized) return auth.response
   try {
-    const body = await request.json()
-    const { sweepId, adminId, action } = body
-
-    if (!sweepId || !adminId || !action) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
+    const { sweepId, action } = await request.json()
+    if (!sweepId || !action) return NextResponse.json({ success: false, error: 'Missing sweepId or action' }, { status: 400 })
+    const sql = db()
 
     if (action === 'approve') {
-      const success = approveSweepRequest(sweepId, adminId)
-      if (!success) {
-        return NextResponse.json(
-          { error: 'Sweep not found or already approved' },
-          { status: 404 }
-        )
-      }
-      return NextResponse.json({ success: true, message: 'Sweep approved' })
-    } else if (action === 'execute') {
-      const success = executeSweep(sweepId)
-      if (!success) {
-        return NextResponse.json(
-          { error: 'Sweep not approved or already executed' },
-          { status: 400 }
-        )
-      }
-      return NextResponse.json({ success: true, message: 'Sweep executed' })
-    } else {
-      return NextResponse.json(
-        { error: 'Invalid action' },
-        { status: 400 }
-      )
+      const [row] = await sql`UPDATE fund_sweeps SET status='approved' WHERE id=${sweepId} AND status='pending' RETURNING id,status`
+      if (!row) return NextResponse.json({ success: false, error: 'Sweep not found or already reviewed' }, { status: 404 })
+      return NextResponse.json({ success: true, sweep: row })
     }
+
+    if (action === 'execute') {
+      return NextResponse.json({ success: false, pending: true, error: 'Blockchain execution is not performed by the web API. Use the secured custody/signing process after approval.' }, { status: 202 })
+    }
+
+    return NextResponse.json({ success: false, error: 'Invalid action' }, { status: 400 })
   } catch (error) {
-    console.error('[v0] Sweep action error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process sweep' },
-      { status: 500 }
-    )
+    console.error('Sweep action error', error instanceof Error ? error.message : 'unknown error')
+    return NextResponse.json({ success: false, error: 'Failed to process sweep' }, { status: 500 })
   }
 }
