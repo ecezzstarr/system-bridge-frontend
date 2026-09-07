@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CreditCard, Copy, Wallet } from 'lucide-react'
 
 const STANDARD_PRICE_TRX = 35800
@@ -15,13 +15,13 @@ export default function FileFolderPurchase() {
   const selectedPrice = customPrice ? Number(customPrice) : STANDARD_PRICE_TRX
   const validCustomPrice = !customPrice || (Number.isFinite(selectedPrice) && selectedPrice >= MINIMUM_PROSPECT_PRICE_TRX)
 
-  useState(() => {
+  useEffect(() => {
     fetch('/api/system-switch/file-folder')
       .then(async response => response.ok ? response.json() : null)
       .then(data => setWallet(data?.depositWallet || ''))
       .catch(() => setWallet(''))
       .finally(() => setLoadingWallet(false))
-  })
+  }, [])
 
   const copyWallet = async () => {
     if (!wallet) return
