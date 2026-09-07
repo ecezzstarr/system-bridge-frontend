@@ -2,17 +2,19 @@
 
 import { useMemo, useState } from 'react'
 import { Users, TrendingUp } from 'lucide-react'
-import { FILE_FOLDER_PRICING } from '@/lib/file-folder-pricing'
 
 const AGENT_RATE = 0.30
 const ACTIVE_BRIDGER_TARGET = 6
+// Bridgers purchase individual prospects for less than 2 TRX.
+// Keep this separate from File Folder pricing.
+const PROSPECT_PURCHASE_PRICE_TRX = 1.8
 
 export function BridgePlazaEarningsAd() {
-  const [prospectPrice, setProspectPrice] = useState(String(FILE_FOLDER_PRICING.minimumTrx))
+  const [prospectPrice, setProspectPrice] = useState(String(PROSPECT_PURCHASE_PRICE_TRX))
   const [purchasesPerBridger, setPurchasesPerBridger] = useState('1')
 
   const projection = useMemo(() => {
-    const price = Math.max(FILE_FOLDER_PRICING.minimumTrx, Number(prospectPrice) || FILE_FOLDER_PRICING.minimumTrx)
+    const price = Math.max(0, Number(prospectPrice) || PROSPECT_PURCHASE_PRICE_TRX)
     const purchases = Math.max(1, Math.floor(Number(purchasesPerBridger) || 1))
     const dailyPurchases = ACTIVE_BRIDGER_TARGET * purchases
     return {
@@ -55,12 +57,13 @@ export function BridgePlazaEarningsAd() {
           <span className="mb-1 block text-[11px] font-medium text-slate-400">Prospect purchase value (TRX)</span>
           <input
             type="number"
-            min={FILE_FOLDER_PRICING.minimumTrx}
-            step="1"
+            min="0"
+            step="0.1"
             value={prospectPrice}
             onChange={(event) => setProspectPrice(event.target.value)}
             className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-cyan-500"
           />
+          <span className="mt-1 block text-[10px] text-slate-600">Current prospect purchase basis: {PROSPECT_PURCHASE_PRICE_TRX} TRX (below 2 TRX).</span>
         </label>
         <label className="block">
           <span className="mb-1 block text-[11px] font-medium text-slate-400">Purchases per Bridger / day</span>
@@ -84,7 +87,7 @@ export function BridgePlazaEarningsAd() {
       </div>
 
       <p className="mt-3 text-[10px] leading-4 text-slate-600">
-        Projection only. Actual earnings depend on qualifying prospect purchases completed by your managed Bridgers. Prospect value is entered above; the platform should use the current qualifying prospect price.
+        Projection only. Actual earnings depend on qualifying prospect purchases completed by your managed Bridgers. This prospect price is separate from File Folder pricing.
       </p>
     </aside>
   )
