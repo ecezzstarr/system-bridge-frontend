@@ -1,28 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
+import { getApiUser } from '@/lib/api-auth'
 
 const getDb = () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL not configured')
-  }
+  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not configured')
   return neon(process.env.DATABASE_URL)
 }
 
-// GET - Fetch bridgers assigned to a specific agent
+// GET - Fetch only the authenticated Agent's assigned Bridgers.
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const agentId = searchParams.get('agentId')
-
-    if (!agentId) {
-      return NextResponse.json({ error: 'Agent ID required' }, { status: 400 })
-    }
+    const user = await getApiUser(request)
+    if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    if (user.role !== 'agent') return NextResponse.json({ error: 'Agent access required' }, { status: 403 })
 
     const sql = getDb()
-
-    // Get bridgers assigned to this agent with their client count
     const bridgers = await sql`
-      SELECT 
+      SELECT
         u.id,
         u.name,
         u.email,
@@ -35,10 +29,10 @@ export async function GET(request: NextRequest) {
           0
         ) as total_earnings
       FROM users u
-      WHERE u.assigned_agent_id = ${agentId}::uuid
-      AND u.role = 'bridger'
+      WHERE u.assigned_agent_id = ${user.id}::uuid
+        AND u.role = 'bridger'
+        AND u.is_active = true
       ORDER BY u.name ASC
-      LIMIT 3
     `
 
     return NextResponse.json({
@@ -47,20 +41,16 @@ export async function GET(request: NextRequest) {
         id: b.id,
         name: b.name || b.username || 'Bridger',
         email: b.email,
-        clientCount: parseInt(b.client_count) || 0,
-        earnings: parseFloat(b.total_earnings) || 0,
-        balance: parseFloat(b.platform_wallet_balance) || 0,
+        clientCount: Number(b.client_count) || 0,
+        earnings: Number(b.total_earnings) || 0,
+        balance: Number(b.platform_wallet_balance) || 0,
       })),
       count: bridgers.length,
-      maxAllowed: 3
+      activeCount: bridgers.length,
+      target: 6,
     })
-
   } catch (error) {
     console.error('Error fetching agent bridgers:', error)
-    return NextResponse.json({ 
-      success: false, 
-      bridgers: [],
-      error: String(error)
-    }, { status: 500 })
+    return NextResponse.json({ success: false, bridgers: [], error: 'Unable to load Bridgers' }, { status: 500 })
   }
 }
