@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       FROM client_vault_withdrawals WHERE client_id = ${clientId}::uuid
       ORDER BY requested_at DESC LIMIT 20
     `
-    return NextResponse.json({ success: true, vault: vault || { client_id: clientId, balance: 0, currency: 'USDT' }, ledger, withdrawals })
+    return NextResponse.json({ success: true, vault: vault || { client_id: clientId, balance: 0, currency: 'TRX' }, ledger, withdrawals })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Failed to load Client Vault' }, { status: 500 })
   }
@@ -36,13 +36,13 @@ export async function POST(request: NextRequest) {
     if (!clientId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     const { amount, destination } = await request.json()
     const value = Number(amount)
-    if (!Number.isFinite(value) || value <= 0) return NextResponse.json({ error: 'A positive withdrawal amount is required' }, { status: 400 })
+    if (!Number.isFinite(value) || value <= 0) return NextResponse.json({ error: 'A positive TRX withdrawal amount is required' }, { status: 400 })
 
     const sql = neon(process.env.DATABASE_URL || '')
     await ensureClientVaultSchema(sql)
-    const [vault] = await sql`SELECT balance FROM client_vaults WHERE client_id = ${clientId}::uuid FOR UPDATE`
+    const [vault] = await sql`SELECT balance FROM client_vaults WHERE client_id = ${clientId}::uuid`
     const balance = Number(vault?.balance || 0)
-    if (value > balance) return NextResponse.json({ error: 'Insufficient Client Vault balance' }, { status: 400 })
+    if (value > balance) return NextResponse.json({ error: 'Insufficient Client Vault TRX balance' }, { status: 400 })
 
     const [pending] = await sql`
       SELECT id FROM client_vault_withdrawals
@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
 
     const [row] = await sql`
       INSERT INTO client_vault_withdrawals (client_id, amount, currency, destination, status)
-      VALUES (${clientId}::uuid, ${value}, 'USDT', ${destination || null}, 'pending') RETURNING *
+      VALUES (${clientId}::uuid, ${value}, 'TRX', ${destination || null}, 'pending') RETURNING *
     `
     return NextResponse.json({ success: true, withdrawal: row })
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Failed to request withdrawal' }, { status: 500 })
+    return NextResponse.json({ success: false, error: error.message || 'Failed to request TRX withdrawal' }, { status: 500 })
   }
 }
