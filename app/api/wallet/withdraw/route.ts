@@ -1,101 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireApiUser } from '@/lib/api-auth'
 import { neon } from '@/lib/pg-neon'
-
-function getDb() {
-  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL
-  if (!url) throw new Error('Database not configured')
-  return neon(url)
-}
-
-// Extract user ID from token (format: token_{userId}_{timestamp})
-function getUserIdFromToken(token: string): string | null {
-  if (!token || !token.startsWith('token_')) return null
-  const parts = token.split('_')
-  if (parts.length >= 2) {
-    return parts[1]
-  }
-  return null
-}
 
 export async function POST(request: NextRequest) {
   try {
-    // Get token from Authorization header
-    const authHeader = request.headers.get('authorization')
-    const token = authHeader?.replace('Bearer ', '')
-    
-    if (!token) {
-      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
-    }
-    
-    const tokenUserId = getUserIdFromToken(token)
-    if (!tokenUserId) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 })
-    }
+    const user = await requireApiUser(request)
+    if (!user) return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
 
-    const { userId, amount, address } = await request.json()
+    const body = await request.json()
+    const amount = Number(body.amount)
+    const address = typeof body.address === 'string' ? body.address.trim() : ''
+    if (!Number.isFinite(amount) || amount < 10 || !address) return NextResponse.json({ success: false, error: 'Invalid withdrawal request' }, { status: 400 })
 
-    // Verify the user ID matches the token
-    if (tokenUserId !== userId) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 })
-    }
+    // Base58 TRON address shape check. The final on-chain validation must occur before payout.
+    if (!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)) return NextResponse.json({ success: false, error: 'Invalid TRON wallet address' }, { status: 400 })
 
-    if (!userId || !amount || !address) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
-    }
+    const sql = neon(process.env.DATABASE_URL!)
+    const wallets = await sql`SELECT id, balance_trx FROM wallets WHERE user_id = ${user.id}::uuid AND is_primary = true LIMIT 1`
+    if (!wallets.length) return NextResponse.json({ success: false, error: 'Wallet not found' }, { status: 404 })
 
-    if (amount < 10) {
-      return NextResponse.json({ success: false, error: 'Minimum withdrawal is 10 TRX' }, { status: 400 })
-    }
+    const balance = Number(wallets[0].balance_trx) || 0
+    if (balance < amount) return NextResponse.json({ success: false, error: 'Insufficient balance' }, { status: 400 })
 
-    // Validate TRON address format
-    if (!address.startsWith('T') || address.length !== 34) {
-      return NextResponse.json({ success: false, error: 'Invalid TRON wallet address' }, { status: 400 })
-    }
-
-    const sql = getDb()
-
-    // Check user's balance
-    const wallets = await sql`
-      SELECT id, balance_trx FROM wallets WHERE user_id = ${userId}::uuid
+    const reference = `WD-${crypto.randomUUID()}`
+    // Hold funds by deducting them before creating the pending request.
+    const updated = await sql`
+      UPDATE wallets
+      SET balance_trx = balance_trx - ${amount}, updated_at = NOW()
+      WHERE id = ${wallets[0].id} AND user_id = ${user.id}::uuid AND balance_trx >= ${amount}
+      RETURNING balance_trx
     `
+    if (!updated.length) return NextResponse.json({ success: false, error: 'Balance changed; please retry' }, { status: 409 })
 
-    if (wallets.length === 0) {
-      return NextResponse.json({ success: false, error: 'Wallet not found' }, { status: 404 })
+    try {
+      await sql`
+        INSERT INTO withdrawal_requests (user_id, amount, address, reference, status, created_at)
+        VALUES (${user.id}::uuid, ${amount}, ${address}, ${reference}, 'pending', NOW())
+      `
+    } catch {
+      // Roll back the hold if the request could not be persisted.
+      await sql`UPDATE wallets SET balance_trx = balance_trx + ${amount}, updated_at = NOW() WHERE id = ${wallets[0].id} AND user_id = ${user.id}::uuid`
+      return NextResponse.json({ success: false, error: 'Withdrawal request could not be created' }, { status: 500 })
     }
 
-    const wallet = wallets[0]
-    const currentBalance = parseFloat(wallet.balance_trx) || 0
-
-    if (currentBalance < amount) {
-      return NextResponse.json({ success: false, error: 'Insufficient balance' }, { status: 400 })
-    }
-
-    // Deduct from wallet
-    const newBalance = currentBalance - amount
-    await sql`
-      UPDATE wallets SET balance_trx = ${newBalance} WHERE id = ${wallet.id}
-    `
-
-    // Create withdrawal request (would be processed by admin or automated system)
-    const reference = `WD-${userId.substring(0, 8)}-${Date.now()}`
-    await sql`
-      INSERT INTO withdrawal_requests (user_id, amount, address, reference, status, created_at)
-      VALUES (${userId}::uuid, ${amount}, ${address}, ${reference}, 'pending', NOW())
-    `.catch(() => {
-      // Table might not exist, create it
-    })
-
-    return NextResponse.json({
-      success: true,
-      message: 'Withdrawal request submitted',
-      reference,
-      newBalance,
-    })
-  } catch (error: any) {
-    console.error('Withdrawal error:', error)
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Withdrawal failed',
-    }, { status: 500 })
+    return NextResponse.json({ success: true, message: 'Withdrawal request submitted', reference, newBalance: Number(updated[0].balance_trx) || 0 }, { headers: { 'Cache-Control': 'no-store' } })
+  } catch (error) {
+    console.error('Withdrawal error:', error instanceof Error ? error.message : 'unknown error')
+    return NextResponse.json({ success: false, error: 'Withdrawal failed' }, { status: 500 })
   }
 }
