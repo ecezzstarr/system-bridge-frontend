@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
+import { FILE_FOLDER_PRICING, isValidFileFolderAmount } from '@/lib/file-folder-pricing'
 import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 
-const STANDARD_PRICE_TRX = 35800
-const MINIMUM_PRICE_TRX = 1800
 const sql = neon(process.env.DATABASE_URL!)
 
 function validPrice(value: unknown) {
   const amount = Number(value)
-  return Number.isFinite(amount) && amount >= MINIMUM_PRICE_TRX && amount <= 100000000
+  return isValidFileFolderAmount(amount) && amount <= 100000000
 }
 
 async function ensurePurchaseSchema() {
@@ -29,14 +28,14 @@ export async function POST(request: NextRequest) {
     await ensureClientFileFolderSchema(sql); await ensurePurchaseSchema()
     const body = await request.json()
     const fileNumber = typeof body.fileNumber === 'string' && body.fileNumber.trim() ? body.fileNumber.trim().toUpperCase() : null
-    const amountTrx = body.amountTrx == null || body.amountTrx === '' ? STANDARD_PRICE_TRX : Number(body.amountTrx)
+    const amountTrx = body.amountTrx == null || body.amountTrx === '' ? FILE_FOLDER_PRICING.standardTrx : Number(body.amountTrx)
     const paymentMethod = body.paymentMethod === 'flutterwave' ? 'flutterwave' : 'trx'
     const paymentReference = typeof body.paymentReference === 'string' ? body.paymentReference.trim() : ''
     const buyerName = typeof body.buyerName === 'string' ? body.buyerName.trim() : null
     const buyerEmail = typeof body.buyerEmail === 'string' ? body.buyerEmail.trim() : null
     const buyerPhone = typeof body.buyerPhone === 'string' ? body.buyerPhone.trim() : null
     const clientId = typeof body.clientId === 'string' && body.clientId ? body.clientId : null
-    if (!validPrice(amountTrx)) return NextResponse.json({ error: `File Folder value must be at least ${MINIMUM_PRICE_TRX.toLocaleString()} TRX.` }, { status: 400 })
+    if (!validPrice(amountTrx)) return NextResponse.json({ error: `File Folder value must be at least ${FILE_FOLDER_PRICING.minimumTrx.toLocaleString()} TRX.` }, { status: 400 })
     if (!paymentReference) return NextResponse.json({ error: 'Payment reference is required.' }, { status: 400 })
     if (fileNumber) {
       const [folder] = await sql`SELECT * FROM client_file_folders WHERE file_number=${fileNumber} LIMIT 1`
@@ -45,10 +44,7 @@ export async function POST(request: NextRequest) {
     }
     const [existing] = await sql`SELECT id FROM file_folder_purchases WHERE payment_reference=${paymentReference} LIMIT 1`
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
-    const [record] = await sql`
-      INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference)
-      VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountTrx},${paymentMethod},${paymentReference}) RETURNING *
-    `
+    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountTrx},${paymentMethod},${paymentReference}) RETURNING *`
     return NextResponse.json({ success: true, purchase: record, message: 'Payment recorded. Administration must confirm the payment before the File Folder is activated.' }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
@@ -69,7 +65,7 @@ export async function PATCH(request: NextRequest) {
     if (purchase.status === 'confirmed') return NextResponse.json({ error: 'Purchase is already confirmed' }, { status: 409 })
     const [folder] = await sql`SELECT * FROM client_file_folders WHERE file_number=${fileNumber} LIMIT 1`
     if (!folder) return NextResponse.json({ error: 'File Folder not found. Create/issue the File Number first.' }, { status: 404 })
-    if (folder.client_id && folder.client_id !== clientId) return NextResponse.json({ error: 'File Folder is already assigned' }, { status: 409 })
+    if (folder.client_id && String(folder.client_id) !== String(clientId)) return NextResponse.json({ error: 'File Folder is already assigned' }, { status: 409 })
     const [claimed] = await sql`UPDATE client_file_folders SET client_id=${clientId}::uuid,client_name=${clientName},status='active',claimed_at=COALESCE(claimed_at,NOW()),updated_at=NOW() WHERE file_number=${fileNumber} AND (client_id IS NULL OR client_id=${clientId}::uuid) RETURNING *`
     if (!claimed) return NextResponse.json({ error: 'File Folder could not be activated' }, { status: 409 })
     const [confirmed] = await sql`UPDATE file_folder_purchases SET file_number=${fileNumber},client_id=${clientId}::uuid,status='confirmed',confirmed_at=NOW(),confirmed_by=${auth.session.user.id}::uuid WHERE id=${purchaseId}::uuid RETURNING *`
