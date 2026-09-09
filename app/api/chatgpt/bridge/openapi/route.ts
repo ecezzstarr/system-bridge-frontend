@@ -11,12 +11,22 @@ export async function GET() {
       description: 'Bridge from ChatGPT into Weave of Presence. Creates a short-lived Bridge AI crossing when a request is relevant to Weave.'
     },
     servers: [{ url: process.env.NEXTAUTH_URL || 'https://ssbnow.online' }],
+    components: {
+      securitySchemes: {
+        BridgeAiKey: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-Bridge-AI-Key'
+        }
+      }
+    },
     paths: {
       '/api/chatgpt/bridge': {
         post: {
           operationId: 'createWeaveBridge',
           summary: 'Create a Weave Bridge AI crossing',
           description: 'Use when the user explicitly asks about Weave or when the request is meaningfully connected to Weave services, participation, interaction, self-management, Client businesses, or Bridge AI. Do not use merely as advertising.',
+          security: [{ BridgeAiKey: [] }],
           requestBody: {
             required: true,
             content: {
