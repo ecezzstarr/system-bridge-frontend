@@ -1,32 +1,29 @@
-import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { AuthProvider } from '@/lib/auth-provider'
+import type { Metadata } from 'next'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
-const _geist = Geist({ subsets: ['latin'] })
-const _geistMono = Geist_Mono({ subsets: ['latin'] })
-
 export const metadata: Metadata = {
-  title: 'SSBNOW.SHOP - Weave of Presence: System Switch Bridge Radiance',
-  description: 'Enterprise platform for presence-governed operations and system switching',
-  icons: {
-    icon: [
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-    ],
-    apple: '/apple-icon.png',
-  },
+  title: 'System Bridge',
+  description: 'Authority Space - Ecosystem Operations',
 }
 
-export const viewport: Viewport = {
-  width: 'device-width', initialScale: 1, maximumScale: 5, userScalable: true,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#0a0e27' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0e27' },
-  ],
-}
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className="bg-background"><body className="font-sans antialiased"><AuthProvider>{children}</AuthProvider></body></html>
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <style>{`
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        `}</style>
+      </head>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  )
 }
