@@ -14,6 +14,9 @@ RUN npm ci
 # Copy application source
 COPY . .
 
+# Add dummy secret for build
+ENV NEXTAUTH_SECRET=temp
+
 # Build application
 RUN npm run build
 

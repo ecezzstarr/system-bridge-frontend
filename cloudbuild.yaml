@@ -28,9 +28,11 @@ steps:
     waitFor: ['build-image']
 
   # Step 3: Deploy to Cloud Run
-  - name: 'gcr.io/cloud-builders/run'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-cloud-run'
+    entrypoint: 'gcloud'
     args:
+      - 'run'
       - 'deploy'
       - '${_SERVICE_NAME}'
       - '--image'
@@ -41,20 +43,10 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'COMMIT_SHA=${_COMMIT_SHA},BUILD_TIMESTAMP=${_BUILD_TIMESTAMP}'
-      - '--update-secrets'
-      - 'GOOGLE_AI_KEY=google-ai-key:latest,DATABASE_URL=database-url:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest'
+      - 'COMMIT_SHA=${_COMMIT_SHA},BUILD_TIMESTAMP=${_BUILD_TIMESTAMP},NODE_ENV=production,CLOUD_SQL_CONNECTION_NAME=ssbr-495208:us-central1:system-bridge-db,CLOUD_SQL_DATABASE=ssbnow,CLOUD_SQL_USER=ssbnow_user,PGSSLMODE=disable'
+      - '--set-secrets'
+      - 'DATABASE_URL=database-url:latest,CLOUD_SQL_PASSWORD=db-password:latest,JWT_SECRET=jwt-secret:latest,FLW_PUBLIC_KEY=flw-public-key:latest,FLW_SECRET_KEY=flw-secret-key:latest,NEXTAUTH_SECRET=nextauth-secret:latest,GOOGLE_AI_KEY=google-ai-key:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest'
     waitFor: ['push-image']
-
-  # Step 4: Verify deployment health
-  - name: 'gcr.io/cloud-builders/gke-deploy'
-    id: 'health-check'
-    args:
-      - 'run'
-      - '--filename=.'
-    env:
-      - 'CLOUDSDK_COMPUTE_REGION=${_REGION}'
-    waitFor: ['deploy-cloud-run']
 
 # Substitutions for environment-specific values
 substitutions:
