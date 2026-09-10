@@ -98,12 +98,37 @@ print_version_info() {
     echo ""
 }
 
+load_build_secrets() {
+    log_info "Loading required build secrets from Secret Manager..."
+
+    # NEXTAUTH_SECRET is required while Next.js collects production page data.
+    # Read the existing secret only into the current process environment; never print it.
+    if ! NEXTAUTH_SECRET_VALUE=$(gcloud secrets versions access latest \
+        --secret="nextauth-secret" \
+        --project="$PROJECT_ID" 2>/dev/null); then
+        log_error "Unable to access Secret Manager secret: nextauth-secret"
+        exit 1
+    fi
+
+    if [ -z "$NEXTAUTH_SECRET_VALUE" ]; then
+        log_error "Secret Manager secret nextauth-secret is empty"
+        exit 1
+    fi
+
+    export NEXTAUTH_SECRET="$NEXTAUTH_SECRET_VALUE"
+    unset NEXTAUTH_SECRET_VALUE
+    log_success "Build secrets loaded"
+}
+
 build_application() {
     log_info "Building application..."
     
     # Install dependencies
     log_info "Installing dependencies..."
     npm ci
+
+    # Next.js evaluates production auth configuration during page-data collection.
+    load_build_secrets
     
     # Build Next.js app
     log_info "Building Next.js application..."
@@ -207,7 +232,7 @@ deploy_to_cloud_run() {
             --platform managed \
             --allow-unauthenticated \
             --set-env-vars="COMMIT_SHA=${COMMIT_SHA},BUILD_TIMESTAMP=${BUILD_TIMESTAMP},APP_VERSION=${PACKAGE_VERSION}" \
-            --update-secrets="GOOGLE_AI_KEY=google-ai-key:latest,DATABASE_URL=database-url:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest" \
+            --update-secrets="GOOGLE_AI_KEY=google-ai-key:latest,DATABASE_URL=database-url:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest,NEXTAUTH_SECRET=nextauth-secret:latest" \
             2>&1 | grep -E "(Deploying|Service|URL)" || true
         
         log_success "Service updated successfully"
@@ -224,7 +249,7 @@ deploy_to_cloud_run() {
             --cpu 2 \
             --timeout 3600 \
             --set-env-vars="COMMIT_SHA=${COMMIT_SHA},BUILD_TIMESTAMP=${BUILD_TIMESTAMP},APP_VERSION=${PACKAGE_VERSION}" \
-            --update-secrets="GOOGLE_AI_KEY=google-ai-key:latest,DATABASE_URL=database-url:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest" \
+            --update-secrets="GOOGLE_AI_KEY=google-ai-key:latest,DATABASE_URL=database-url:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest,NEXTAUTH_SECRET=nextauth-secret:latest" \
             2>&1 | grep -E "(Deploying|Service|URL)" || true
         
         log_success "Service created successfully"
