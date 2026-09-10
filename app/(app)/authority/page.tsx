@@ -13,7 +13,7 @@ const authoritySystems = [
     title: 'Developer Workshop',
     description: 'System refinement layer for ecosystem operators. Build and refine origin systems.',
     tags: ['NEXT.JS 16', 'POSTGRES', 'GCLOUD'],
-    href: '/admin/dev-workshop',
+    href: '/admin/origin-systems',
     icon: Code,
     iconClass: 'text-purple-400',
   },
