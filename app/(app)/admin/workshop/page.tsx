@@ -10,7 +10,7 @@ import {
   Clock, Play, Database, Wallet, ShieldAlert, Layers,
   ChevronRight, Sparkles, RefreshCcw, Cpu, ShieldCheck, 
   Key, ScrollText, History, TerminalSquare, Users, Server, Link2, 
-  Boxes, MoreHorizontal, Power, FileCode, Anchor
+  Boxes, MoreHorizontal, Power, FileCode, Anchor, Search
 } from 'lucide-react'
 import Link from 'next/link'
 import { EcosystemNav } from '@/components/ecosystem-nav'
@@ -713,6 +713,8 @@ export default function AdminWorkshop() {
                     </div>
                   </Card>
                 ))}
+              </div>
+                )}
               </div>
             )}
 

@@ -1,5 +1,3 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from './auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from './pg-neon'
 
@@ -8,7 +6,11 @@ import { neon } from './pg-neon'
  * Role alone is not sufficient: the database must contain exactly one active admin,
  * and the presented identity must be that admin.
  */
-export async function requireWorkshopAuthorization(req?: NextRequest) {
+type WorkshopAuthResult =
+  | { authorized: true; response: null; session: { user: { id: string; username: string; name: string; role: string; email: string } } }
+  | { authorized: false; response: NextResponse; session: null }
+
+export async function requireWorkshopAuthorization(req?: NextRequest): Promise<WorkshopAuthResult> {
   const sql = neon(process.env.DATABASE_URL!)
 
   async function authorizeUser(userId: string | null) {
@@ -32,26 +34,6 @@ export async function requireWorkshopAuthorization(req?: NextRequest) {
   }
 
   try {
-    const session = await getServerSession(authOptions)
-    if (session?.user?.id) {
-      const admin = await authorizeUser(session.user.id)
-      if (admin) {
-        return {
-          authorized: true,
-          response: null,
-          session: {
-            user: {
-              id: admin.id,
-              username: admin.username,
-              name: admin.name,
-              role: admin.role,
-              email: admin.email,
-            },
-          },
-        }
-      }
-    }
-
     if (req) {
       const authHeader = req.headers.get('authorization') || ''
       const token = authHeader.replace(/^Bearer\s+/i, '').trim()
