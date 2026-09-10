@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-provider'
 
 interface EcosystemNavProps {
-  currentSystem?: 'home' | 'shop' | 'online' | 'workshop'
+  currentSystem?: 'home' | 'shop' | 'online' | 'authority'
   showMobile?: boolean
 }
 
@@ -16,48 +16,28 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
   const isClient = user?.role === 'client' || user?.role === 'sibling'
 
   const systems = [
-    {
-      id: 'home',
-      name: 'Home',
-      subtitle: 'Main Landing',
-      icon: Home,
-      href: '/',
-      color: 'from-green-500 to-emerald-500',
-    },
-    {
-      id: 'shop',
-      name: 'SSBNOW.SHOP',
-      subtitle: 'Agent & Bridger Hub',
-      icon: Store,
-      href: '/admin/dashboard',
-      color: 'from-purple-500 to-pink-500',
-    },
+    { id: 'home', name: 'Home', subtitle: 'Main Landing', icon: Home, href: '/', color: 'from-green-500 to-emerald-500' },
+    { id: 'shop', name: 'SSBNOW.SHOP', subtitle: 'Agent & Bridger Hub', icon: Store, href: '/admin/dashboard', color: 'from-purple-500 to-pink-500' },
     {
       id: 'online',
       name: isClient ? 'SYSTEM SWITCH' : 'SSBNOW.ONLINE',
       subtitle: isClient ? 'File Folder · Interaction in Motion' : 'Service System',
       icon: Globe,
-      // Admin manages Client services; a Client travels from the Portal into
-      // the verified File Folder and continues through the existing Switch world.
       href: isAdmin ? '/admin/client-messages' : isClient ? '/client/system-switch' : '/client/dashboard',
       color: 'from-blue-500 to-cyan-500',
     },
     {
-      id: 'workshop',
-      name: 'Authority Workshop',
-      subtitle: 'Registry & Refinement',
+      id: 'authority',
+      name: 'Ecosystem Authority',
+      subtitle: 'Authority Workshop · Registry & Refinement',
       icon: Code,
-      href: '/admin/workshop',
+      href: '/authority',
       color: 'from-pink-500 to-rose-500',
       adminOnly: true,
     },
   ]
 
-  const visibleSystems = systems.filter(s => {
-    if (s.adminOnly && !isAdmin) return false
-    if (s.role === 'sibling' && !isAdmin && user?.role !== 'sibling') return false
-    return true
-  })
+  const visibleSystems = systems.filter(s => !s.adminOnly || isAdmin)
 
   return (
     <div className="w-full">
