@@ -1,4 +1,4 @@
-# v0 sandbox internal files
+# Legacy builder/tooling files
 __v0_runtime_loader.js
 __v0_devtools.tsx
 __v0_jsx-dev-runtime.ts
@@ -6,11 +6,15 @@ __v0_jsx-dev-runtime.ts
 .v0-trash/
 .vercel/
 
-# Environment variables
-.env*.local
+# Environment variables and local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
 
-# Common ignores
-node_modules
+# Dependencies/build output
+node_modules/
 .next/
 .DS_Store
-.vercel

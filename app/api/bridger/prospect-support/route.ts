@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
+import { getApiUser } from '@/lib/api-auth'
 
 const getDb = () => {
   if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not configured')
@@ -7,20 +8,9 @@ const getDb = () => {
 }
 
 async function getBridger(request: NextRequest) {
-  const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim()
-  if (!token) return null
-
-  const sql = getDb()
-  const [session] = await sql`
-    SELECT s.user_id, u.role, u.name, u.email
-    FROM sessions s
-    JOIN users u ON u.id = s.user_id
-    WHERE s.token = ${token} AND s.expires_at > NOW()
-    LIMIT 1
-  `
-
-  if (!session || session.role !== 'bridger') return null
-  return session
+  const user = await getApiUser(request)
+  if (!user || user.role !== 'bridger') return null
+  return user
 }
 
 async function ensureSchema() {
@@ -49,13 +39,14 @@ export async function GET(request: NextRequest) {
     const requests = await sql`
       SELECT id, prospect_id, prospect_name, prospect_message, suggested_response, status, created_at
       FROM bridger_support_requests
-      WHERE bridger_id = ${bridger.user_id}::uuid
+      WHERE bridger_id = ${bridger.id}::uuid
       ORDER BY created_at DESC
       LIMIT 50
     `
     return NextResponse.json({ success: true, requests })
-  } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'Unable to load company support' }, { status: 500 })
+  } catch (error) {
+    console.error('[prospect-support] GET error:', error)
+    return NextResponse.json({ error: 'Unable to load company support' }, { status: 500 })
   }
 }
 
@@ -70,6 +61,7 @@ export async function POST(request: NextRequest) {
     const prospectId = body?.prospectId ? String(body.prospectId).trim() : null
 
     if (!prospectMessage) return NextResponse.json({ error: 'Prospect message is required' }, { status: 400 })
+    if (prospectMessage.length > 5000) return NextResponse.json({ error: 'Prospect message is too long' }, { status: 400 })
 
     await ensureSchema()
     const sql = getDb()
@@ -78,13 +70,14 @@ export async function POST(request: NextRequest) {
       INSERT INTO bridger_support_requests
         (bridger_id, prospect_id, prospect_name, prospect_message, suggested_response)
       VALUES
-        (${bridger.user_id}::uuid, ${prospectId ? prospectId : null}::uuid, ${prospectName}, ${prospectMessage}, ${response})
+        (${bridger.id}::uuid, ${prospectId ? prospectId : null}::uuid, ${prospectName}, ${prospectMessage}, ${response})
       RETURNING id, prospect_id, prospect_name, prospect_message, suggested_response, status, created_at
     `
 
     return NextResponse.json({ success: true, request: saved })
-  } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'Unable to answer prospect' }, { status: 500 })
+  } catch (error) {
+    console.error('[prospect-support] POST error:', error)
+    return NextResponse.json({ error: 'Unable to answer prospect' }, { status: 500 })
   }
 }
 
