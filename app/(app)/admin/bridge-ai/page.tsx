@@ -1,4 +1,5 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Bot, CheckCircle2, FileText, RefreshCw, Users } from 'lucide-react'
@@ -6,8 +7,106 @@ import { useAuth } from '@/lib/auth-provider'
 
 export default function AdminBridgeAIPage() {
   const { user, token } = useAuth()
-  const [reports,setReports]=useState<any[]>([]), [clients,setClients]=useState<any[]>([]), [agents,setAgents]=useState<any[]>([]), [selectedAgent,setSelectedAgent]=useState<Record<string,string>>({}), [message,setMessage]=useState('')
-  const load=async()=>{if(!token)return; const headers={Authorization:`Bearer ${token}`}; const [r,c]=await Promise.all([fetch('/api/admin/bridge-ai-reports',{headers}),fetch('/api/admin/client-workshop',{headers})]); const rd=await r.json(),cd=await c.json(); setReports(rd.reports||[]);setClients(cd.clients||[]);setAgents(cd.agents||[])}
-  useEffect(()=>{if(user?.role==='admin')load()},[user,token]); if(!user||user.role!=='admin')return null
-  const approve=async(clientId:string)=>{const agentId=selectedAgent[clientId];if(!agentId)return;const res=await fetch('/api/admin/client-workshop',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({clientId,agentId,active:true})});const body=await res.json();setMessage(res.ok?'Agent approved for Client workshop.':body.error||'Approval failed');await load()}
-  return <main className="min-h-screen bg-slate-950 text-white p-5 md:p-8"><div className="mx-auto max-w-7xl space-y-8"><header className="flex items-center justify-between"><div><div className="flex items-center gap-2 text-cyan-300"><Bot className="h-5 w-5"/><span className="text-[10px] uppercase tracking-[0.3em]">Administration · Bridge AI</span></div><h1 className="mt-2 text-2xl md:text-3xl font-semibold">Interaction Intelligence</h1><p className="mt-2 text-sm text-slate-500">Bridge AI reports what it learns from prospect and Client interactions so company support can build what the movement requires.</p></div><div className="flex gap-2"><button onClick={load} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-xs"><RefreshCw className="h-3.5 w-3.5"/> Refresh</button><Link href="/authority" className="rounded-full border border-white/10 px-4 py-2 text-xs">Ecosystem Authority</Link></div></header><section className="rounded-3xl border border-white/10 bg-black/20 p-5"><div className="flex items-center gap-2"><Users className="h-4 w-4 text-violet-300"/><h2 className="text-sm font-semibold">Client Workshop Support</h2></div><div className="mt-5 space-y-3">{clients.map(c=><div key={c.id} className="grid gap-3 md:grid-cols-[1fr_1fr_auto] items-center rounded-2xl border border-white/5 bg-white/[0.02] p-4"><div><p className="text-sm font-semibold">{c.name}</p><p className="mt-1 font-mono text-[10px] text-slate-500">{c.file_number} · {c.workshop_type||'formation'}</p></div><div><p className="text-[10px] uppercase tracking-widest text-slate-600">Approved agents</p><p className="mt-1 text-xs text-slate-400">{c.approved_agents||'None'}</p></div><div className="flex gap-2"><select value={selectedAgent[c.id]||''} onChange={e=>setSelectedAgent({...selectedAgent,[c.id]:e.target.value})} className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs"><option value="">Select Agent</option>{agents.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select><button onClick={()=>approve(c.id)} className="rounded-xl bg-cyan-600 px-3 py-2 text-xs font-semibold">Approve</button></div></div>)}</div>{message&&<p className="mt-4 text-xs text-slate-400">{message}</p>}</section><section className="rounded-3xl border border-white/10 bg-black/20 p-5"><div className="flex items-center gap-2"><FileText className="h-4 w-4 text-emerald-300"/><h2 className="text-sm font-semibold">Bridge AI Reports</h2></div><div className="mt-5 space-y-4">{reports.length===0?<p className="text-sm text-slate-500">No reports recorded yet.</p>:reports.map(r=><article key={r.id} className="rounded-2xl border border-white/5 bg-white/[0.02] p-5"><div className="flex flex-wrap items-center gap-3"><span className="text-sm font-semibold">{r.client_name||'Unknown Client'}</span><span className="font-mono text-[10px] text-slate-600">{r.file_number}</span><span className="text-[10px] text-slate-600">{new Date(r.created_at).toLocaleString()}</span><span className="ml-auto inline-flex items-center gap-1 text-[10px] text-emerald-300"><CheckCircle2 className="h-3 w-3"/> Recorded</span></div><p className="mt-3 text-sm leading-6 text-slate-300">{r.summary}</p>{Array.isArray(r.insights)&&r.insights.length>0&&<div className="mt-4"><p className="text-[9px] uppercase tracking-widest text-slate-600">Insights</p><ul className="mt-2 space-y-1 text-xs text-slate-400">{r.insights.map((i:any,n:number)=><li key={n}>• {typeof i==='string'?i:JSON.stringify(i)}</li>)}</ul></div>}</article>)}</div></section></div></main>
+  const [reports, setReports] = useState<any[]>([])
+  const [clients, setClients] = useState<any[]>([])
+  const [agents, setAgents] = useState<any[]>([])
+  const [selectedAgent, setSelectedAgent] = useState<Record<string, string>>({})
+  const [message, setMessage] = useState('')
+
+  const load = async () => {
+    if (!token) return
+    const headers = { Authorization: `Bearer ${token}` }
+    const [r, c] = await Promise.all([
+      fetch('/api/admin/bridge-ai-reports', { headers }),
+      fetch('/api/admin/client-workshop', { headers }),
+    ])
+    const rd = await r.json()
+    const cd = await c.json()
+    setReports(rd.reports || [])
+    setClients(cd.clients || [])
+    setAgents(cd.agents || [])
+  }
+
+  useEffect(() => {
+    if (user?.role === 'admin') load()
+  }, [user, token])
+
+  if (!user || user.role !== 'admin') return null
+
+  const approve = async (clientId: string) => {
+    const agentId = selectedAgent[clientId]
+    if (!agentId) return
+    const res = await fetch('/api/admin/client-workshop', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ clientId, agentId, active: true }),
+    })
+    const body = await res.json()
+    setMessage(res.ok ? 'Agent approved for Client workshop.' : body.error || 'Approval failed')
+    await load()
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-white p-5 md:p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <header className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-cyan-300">
+              <Bot className="h-5 w-5" />
+              <span className="text-[10px] uppercase tracking-[0.3em]">Administration · Bridge AI</span>
+            </div>
+            <h1 className="mt-2 text-2xl md:text-3xl font-semibold">Interaction Intelligence</h1>
+            <p className="mt-2 text-sm text-slate-500">Bridge AI reports what it learns from prospect and Client interactions so company support can build what the movement requires.</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={load} className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-xs">
+              <RefreshCw className="h-3.5 w-3.5" /> Refresh
+            </button>
+            <Link href="/authority" className="rounded-full border border-white/10 px-4 py-2 text-xs">Ecosystem Authority</Link>
+          </div>
+        </header>
+
+        <section className="rounded-3xl border border-white/10 bg-black/20 p-5">
+          <div className="flex items-center gap-2"><Users className="h-4 w-4 text-violet-300" /><h2 className="text-sm font-semibold">Client Workshop Support</h2></div>
+          <div className="mt-5 space-y-3">
+            {clients.map(c => (
+              <div key={c.id} className="grid gap-3 md:grid-cols-[1fr_1fr_auto] items-center rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                <div><p className="text-sm font-semibold">{c.name}</p><p className="mt-1 font-mono text-[10px] text-slate-500">{c.file_number} · {c.workshop_type || 'formation'}</p></div>
+                <div><p className="text-[10px] uppercase tracking-widest text-slate-600">Approved agents</p><p className="mt-1 text-xs text-slate-400">{c.approved_agents || 'None'}</p></div>
+                <div className="flex gap-2">
+                  <select value={selectedAgent[c.id] || ''} onChange={e => setSelectedAgent({ ...selectedAgent, [c.id]: e.target.value })} className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs">
+                    <option value="">Select Agent</option>
+                    {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </select>
+                  <button onClick={() => approve(c.id)} className="rounded-xl bg-cyan-600 px-3 py-2 text-xs font-semibold">Approve</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {message && <p className="mt-4 text-xs text-slate-400">{message}</p>}
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-black/20 p-5">
+          <div className="flex items-center gap-2"><FileText className="h-4 w-4 text-emerald-300" /><h2 className="text-sm font-semibold">Bridge AI Reports</h2></div>
+          <div className="mt-5 space-y-4">
+            {reports.length === 0 ? <p className="text-sm text-slate-500">No reports recorded yet.</p> : reports.map(r => (
+              <article key={r.id} className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-semibold">{r.client_name || 'Unknown Client'}</span>
+                  <span className="font-mono text-[10px] text-slate-600">{r.file_number}</span>
+                  <span className="text-[10px] text-slate-600">{new Date(r.created_at).toLocaleString()}</span>
+                  <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-emerald-300"><CheckCircle2 className="h-3 w-3" /> Recorded</span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-slate-300">{r.summary}</p>
+                {Array.isArray(r.insights) && r.insights.length > 0 && <div className="mt-4"><p className="text-[9px] uppercase tracking-widest text-slate-600">Insights</p><ul className="mt-2 space-y-1 text-xs text-slate-400">{r.insights.map((i: any, n: number) => <li key={n}>• {typeof i === 'string' ? i : JSON.stringify(i)}</li>)}</ul></div>}
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
+  )
+}
