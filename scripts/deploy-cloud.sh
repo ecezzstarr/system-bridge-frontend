@@ -3,8 +3,8 @@
 ###############################################################################
 # Deploy to Google Cloud Run - System Bridge Frontend
 #
-# This script handles building and deploying the application to Cloud Run
-# with proper version tracking and validation.
+# This script handles building and deploying the main System Bridge Frontend
+# application to Cloud Run with proper version tracking and validation.
 ###############################################################################
 
 set -euo pipefail
@@ -35,10 +35,32 @@ check_prerequisites() {
     command -v git >/dev/null || { log_error "git is not installed"; exit 1; }
     command -v gcloud >/dev/null || { log_error "gcloud CLI is not installed"; exit 1; }
     command -v node >/dev/null || { log_error "Node.js is not installed"; exit 1; }
+
+    if [ -z "$PROJECT_ID" ]; then
+        log_error "Google Cloud project is not configured. Set GCP_PROJECT_ID or gcloud project."
+        exit 1
+    fi
+
+    if [ "$PROJECT_ID" != "ssbr-495208" ]; then
+        log_error "Refusing deployment: expected project ssbr-495208, got $PROJECT_ID"
+        exit 1
+    fi
+
+    if [ "$SERVICE_NAME" != "system-bridge-frontend" ]; then
+        log_error "Refusing deployment: expected service system-bridge-frontend, got $SERVICE_NAME"
+        exit 1
+    fi
+
+    if [ "$REGION" != "us-central1" ]; then
+        log_error "Refusing deployment: expected region us-central1, got $REGION"
+        exit 1
+    fi
+
     if ! git diff-index --quiet HEAD --; then
         log_error "Working directory has uncommitted changes. Commit or stash them before deploying."
         exit 1
     fi
+
     log_success "All prerequisites met"
 }
 
@@ -70,7 +92,7 @@ load_build_secrets() {
 }
 
 build_application() {
-    log_info "Building application..."
+    log_info "Building main System Bridge Frontend application..."
     log_info "Installing dependencies..."
     npm ci
 
@@ -79,38 +101,19 @@ build_application() {
     log_info "Building Next.js application..."
     npm run build
 
-    # eight-core is a standalone TypeScript service in this repository. It does
-    # not currently ship a package-lock.json, so npm ci cannot be used here.
-    # npm install resolves its package.json dependencies without modifying the
-    # tracked repository files during this deployment process.
-    if [ -d "eight-core" ]; then
-        log_info "Building eight-core service..."
-        cd eight-core
-        npm install --no-audit --no-fund
-        npm run build
-        cd ..
-    fi
+    # eight-core is a separate service directory. It is not part of the
+    # system-bridge-frontend Cloud Run image and is not deployed by this script.
+    # Do not install its dependencies during the main-app deployment: Cloud
+    # Shell's small home disk can exhaust while npm extracts TypeScript.
 
-    log_success "Application built successfully"
+    log_success "Main application built successfully"
 }
 
 create_deployment_image() {
     log_info "Preparing deployment image..."
     if [ ! -f "Dockerfile" ]; then
-        log_warning "No Dockerfile found. Creating a default one..."
-        cat > Dockerfile << 'EOF'
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY .next ./.next
-COPY public ./public
-COPY package.json .
-ENV NODE_ENV=production
-EXPOSE 3000
-CMD ["npm", "start"]
-EOF
-        log_success "Created default Dockerfile"
+        log_error "Dockerfile is required for the main application deployment"
+        exit 1
     fi
 }
 
@@ -140,42 +143,29 @@ deploy_to_cloud_run() {
         --project "$PROJECT_ID" \
         --substitutions "_SERVICE_NAME=${SERVICE_NAME},_COMMIT_SHA=${COMMIT_SHA},_BUILD_TIMESTAMP=${BUILD_TIMESTAMP}"
 
-    log_info "Deploying to Cloud Run..."
-    if gcloud run services describe "$SERVICE_NAME" --region "$REGION" --project "$PROJECT_ID" &>/dev/null; then
-        gcloud run deploy "$SERVICE_NAME" \
-            --image "$FULL_IMAGE" \
-            --region "$REGION" \
-            --project "$PROJECT_ID" \
-            --platform managed \
-            --allow-unauthenticated \
-            --set-env-vars="COMMIT_SHA=${COMMIT_SHA},BUILD_TIMESTAMP=${BUILD_TIMESTAMP},APP_VERSION=${PACKAGE_VERSION}" \
-            --update-secrets="GOOGLE_AI_KEY=google-ai-key:latest,DATABASE_URL=database-url:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest,NEXTAUTH_SECRET=nextauth-secret:latest"
-        log_success "Service updated successfully"
-    else
-        log_warning "Service does not exist. Creating new service..."
-        gcloud run deploy "$SERVICE_NAME" \
-            --image "$FULL_IMAGE" \
-            --region "$REGION" \
-            --project "$PROJECT_ID" \
-            --platform managed \
-            --allow-unauthenticated \
-            --memory 2Gi \
-            --cpu 2 \
-            --timeout 3600 \
-            --set-env-vars="COMMIT_SHA=${COMMIT_SHA},BUILD_TIMESTAMP=${BUILD_TIMESTAMP},APP_VERSION=${PACKAGE_VERSION}" \
-            --update-secrets="GOOGLE_AI_KEY=google-ai-key:latest,DATABASE_URL=database-url:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest,NEXTAUTH_SECRET=nextauth-secret:latest"
-        log_success "Service created successfully"
-    fi
+    log_info "Deploying to Cloud Run service: $SERVICE_NAME"
+    gcloud run deploy "$SERVICE_NAME" \
+        --image "$FULL_IMAGE" \
+        --region "$REGION" \
+        --project "$PROJECT_ID" \
+        --platform managed \
+        --allow-unauthenticated \
+        --set-env-vars="COMMIT_SHA=${COMMIT_SHA},BUILD_TIMESTAMP=${BUILD_TIMESTAMP},APP_VERSION=${PACKAGE_VERSION}" \
+        --update-secrets="GOOGLE_AI_KEY=google-ai-key:latest,DATABASE_URL=database-url:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest,NEXTAUTH_SECRET=nextauth-secret:latest"
+
+    log_success "Service updated successfully"
 }
 
 print_deployment_summary() {
     log_info "Deployment Summary"
     echo ""
-    log_success "Application deployed to Cloud Run"
+    log_success "Main application deployed to Cloud Run"
     echo ""
+    echo "  Service:     $SERVICE_NAME"
+    echo "  Project:     $PROJECT_ID"
+    echo "  Region:      $REGION"
     echo "  Commit:      $COMMIT_SHA"
     echo "  Version:     $PACKAGE_VERSION"
-    echo "  Region:      $REGION"
     echo ""
     SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$REGION" --project "$PROJECT_ID" --format='value(status.url)' 2>/dev/null || echo "")
     if [ -n "$SERVICE_URL" ]; then echo "  Access URL:  $SERVICE_URL"; fi
