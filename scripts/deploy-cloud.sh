@@ -140,8 +140,7 @@ deploy_to_cloud_run() {
     log_info "Building Docker image: $FULL_IMAGE"
     gcloud builds submit \
         --tag "$FULL_IMAGE" \
-        --project "$PROJECT_ID" \
-        --substitutions "_SERVICE_NAME=${SERVICE_NAME},_COMMIT_SHA=${COMMIT_SHA},_BUILD_TIMESTAMP=${BUILD_TIMESTAMP}"
+        --project "$PROJECT_ID"
 
     log_info "Deploying to Cloud Run service: $SERVICE_NAME"
     gcloud run deploy "$SERVICE_NAME" \
