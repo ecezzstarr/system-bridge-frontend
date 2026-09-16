@@ -29,20 +29,26 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
     enabled boolean NOT NULL DEFAULT true,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
-  )`
+  `
   await sql`CREATE TABLE IF NOT EXISTS client_store_orders (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     store_id uuid NOT NULL,
     item_id uuid,
     customer_name varchar(255),
     customer_contact varchar(255),
+    customer_wallet varchar(255),
+    payment_reference varchar(255),
     customer_note text,
     amount numeric(30,8) NOT NULL DEFAULT 0,
     currency varchar(20) NOT NULL DEFAULT 'USDT',
     status varchar(40) NOT NULL DEFAULT 'requested',
+    payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment',
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
-  )`
+  `
+  await sql`ALTER TABLE client_store_orders ADD COLUMN IF NOT EXISTS customer_wallet varchar(255)`
+  await sql`ALTER TABLE client_store_orders ADD COLUMN IF NOT EXISTS payment_reference varchar(255)`
+  await sql`ALTER TABLE client_store_orders ADD COLUMN IF NOT EXISTS payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment'`
   await sql`CREATE INDEX IF NOT EXISTS idx_client_store_orders_store ON client_store_orders(store_id, created_at DESC)`
 }
 
