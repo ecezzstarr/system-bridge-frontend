@@ -44,6 +44,7 @@ export default function SearchPage() {
 
     if (!query) {
       setMarketplace([])
+      setMarketplaceLoading(false)
       return
     }
 
