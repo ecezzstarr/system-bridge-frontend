@@ -27,7 +27,15 @@ export async function ensureClientVaultLedgerSchema(sql = getFileFolderDb()) {
       status varchar(40) NOT NULL DEFAULT 'pending_approval',
       approved_by uuid,
       approved_at timestamptz,
+      sent_by uuid,
+      sent_at timestamptz,
+      settlement_reference varchar(255),
+      settlement_note text,
       created_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE client_vault_withdrawals ADD COLUMN IF NOT EXISTS sent_by uuid`
+  await sql`ALTER TABLE client_vault_withdrawals ADD COLUMN IF NOT EXISTS sent_at timestamptz`
+  await sql`ALTER TABLE client_vault_withdrawals ADD COLUMN IF NOT EXISTS settlement_reference varchar(255)`
+  await sql`ALTER TABLE client_vault_withdrawals ADD COLUMN IF NOT EXISTS settlement_note text`
 }
