@@ -20,19 +20,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       FOR UPDATE
     ), debited AS (
       UPDATE client_vaults v
-      SET balance=v.balance-p.amount
+      SET balance=v.balance-p.amount,updated_at=NOW()
       FROM pending p
       WHERE v.client_id=p.client_id::uuid AND v.balance>=p.amount
       RETURNING v.client_id,v.balance,v.currency
     ), approved AS (
       UPDATE client_vault_withdrawals w
-      SET status='approved',approved_by=${auth.session.user.id}::uuid,approved_at=NOW()
+      SET status='approved',approved_by=${auth.session.user.id}::uuid,approved_at=NOW(),reviewed_by=${auth.session.user.id}::uuid,reviewed_at=NOW()
       FROM pending p,debited d
       WHERE w.id=p.id AND w.status='pending_approval'
       RETURNING w.*,d.balance AS remaining_balance,d.currency AS vault_currency
     ), ledger AS (
-      INSERT INTO client_vault_ledger (client_id,type,amount,currency,status,reference,note,created_by)
-      SELECT client_id,'withdrawal',-amount,currency,'posted',id,'Administration-approved withdrawal',${auth.session.user.id}::uuid
+      INSERT INTO client_vault_ledger (client_id,entry_type,amount,currency,balance_after,source,reference,reason,actor_id)
+      SELECT client_id,'withdrawal',-amount,currency,remaining_balance,'Administration',id,'Administration-approved withdrawal',${auth.session.user.id}::uuid
       FROM approved
       RETURNING id
     )
