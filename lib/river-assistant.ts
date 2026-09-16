@@ -50,7 +50,10 @@ export async function chatWithRiver(messages: RiverMessage[], userContext?: Rive
     const ai = getAI()
     if (!ai) return 'I am River. The connection is not configured yet.'
 
-    const model = ai.getGenerativeModel({ model: process.env.RIVER_MODEL || process.env.EIGHT_MODEL || 'gemini-1.5-flash' })
+    const model = ai.getGenerativeModel({
+      model: process.env.RIVER_MODEL || process.env.EIGHT_MODEL || 'gemini-1.5-flash',
+      systemInstruction: buildSystemMessage(userContext),
+    })
     const history = messages
       .slice(-12, -1)
       .filter(message => message?.content)
@@ -61,7 +64,6 @@ export async function chatWithRiver(messages: RiverMessage[], userContext?: Rive
 
     const chat = model.startChat({
       history,
-      systemInstruction: { role: 'system', parts: [{ text: buildSystemMessage(userContext) }] },
       generationConfig: { maxOutputTokens: 300, temperature: 0.7 },
     })
 
