@@ -11,11 +11,9 @@ export async function GET(request: NextRequest) {
     const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
     const clientId = await resolveClientToken(token, sql)
     if (!clientId) return NextResponse.json({ error:'Client login required' },{status:401})
-
-    await ensureClientFileFolderSchema(sql); await ensureClientVaultSchema(sql); await ensureClientWorkshopSchema(sql); await ensureClientBusinessStore(sql, clientId, 'pending', 'Business Store'); await ensureClientVaultLedgerSchema(sql); await ensureCjDoradoFolder(sql)
+    await ensureClientFileFolderSchema(sql); await ensureClientVaultSchema(sql); await ensureClientWorkshopSchema(sql); await ensureClientVaultLedgerSchema(sql); await ensureCjDoradoFolder(sql)
     const [client] = await sql`SELECT id,name,email,phone,business_name,file_number,assigned_bridger_id FROM clients WHERE id=${clientId}::uuid LIMIT 1`
     if(!client)return NextResponse.json({error:'Client record not found'},{status:404})
-
     const folder=client.file_number?await claimFileFolder(sql,client.id,client.file_number,client.name):null
     if(!folder)return NextResponse.json({success:true,verified:false,client:{id:client.id,name:client.name,business_name:client.business_name,file_number:client.file_number},file_folder:null})
     const [vault]=await sql`SELECT balance,currency FROM client_vaults WHERE client_id=${client.id}::uuid`
