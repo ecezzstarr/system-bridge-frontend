@@ -1,5 +1,7 @@
 "use client"
 
+import { FormEvent, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Bell, Search, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,17 +16,29 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ user }: AppHeaderProps) {
+  const router = useRouter()
+  const [search, setSearch] = useState("")
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const query = search.trim()
+    router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search")
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      {/* Search */}
-      <div className="relative w-96">
+      {/* Global Weave Search */}
+      <form onSubmit={submitSearch} className="relative w-96">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search profiles, transactions, clients..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search the Weave..."
+          aria-label="Search the Weave"
           className="pl-10"
         />
-      </div>
+      </form>
 
       {/* Actions */}
       <div className="flex items-center gap-4">
