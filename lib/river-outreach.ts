@@ -82,7 +82,7 @@ export async function riverExternalReply(token: string, messages: RiverMessage[]
   const invite = await getRiverOutreachInvite(token)
   if (!invite) throw new Error('This River invitation is no longer active.')
 
-  const safeHistory = messages
+  const safeHistory: RiverMessage[] = messages
     .slice(-12)
     .filter(message => message && (message.role === 'user' || message.role === 'assistant') && typeof message.content === 'string')
     .map(message => ({ role: message.role, content: message.content.slice(0, 6000) }))
@@ -91,7 +91,7 @@ export async function riverExternalReply(token: string, messages: RiverMessage[]
     systemName: 'River external outreach',
     systemArea: 'external conversation',
     outreachPurpose: String(invite.purpose),
-  } as never)
+  })
 }
 
 export function riverOutreachUrl(token: string) {
