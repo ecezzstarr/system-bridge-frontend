@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { MessageCircle, X, Send, Loader2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -10,10 +11,11 @@ interface Message {
 }
 
 export function RiverChat() {
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'I am River. Truth untold I simple make known. How can I help you today?' }
+    { role: 'assistant', content: 'I am River. I am here to make this system understandable while you are inside it. What are you trying to understand?' }
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -27,8 +29,9 @@ export function RiverChat() {
     if (!input.trim() || isLoading) return
 
     const userMessage = input.trim()
+    const nextMessages = [...messages, { role: 'user' as const, content: userMessage }]
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    setMessages(nextMessages)
     setIsLoading(true)
 
     try {
@@ -36,12 +39,12 @@ export function RiverChat() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, { role: 'user', content: userMessage }]
+          messages: nextMessages,
+          pathname,
         })
       })
 
       const data = await response.json()
-      
       if (data.success && data.response) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
       } else {
@@ -75,15 +78,14 @@ export function RiverChat() {
   }
 
   return (
-    <div 
+    <div
       className={`fixed z-50 transition-all duration-300 ${
-        isMinimized 
-          ? 'bottom-6 right-6 w-72' 
+        isMinimized
+          ? 'bottom-6 right-6 w-72'
           : 'bottom-6 right-6 w-80 sm:w-96'
       }`}
     >
       <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border-b border-slate-700">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
@@ -91,26 +93,27 @@ export function RiverChat() {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white">River</h3>
-              <p className="text-xs text-slate-400">Ecosystem Guide</p>
+              <p className="text-xs text-slate-400">System voice</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsMinimized(!isMinimized)}
               className="p-1.5 hover:bg-slate-700/50 rounded-lg transition"
+              aria-label="Minimize River"
             >
               <Minimize2 className="h-4 w-4 text-slate-400" />
             </button>
             <button
               onClick={() => setIsOpen(false)}
               className="p-1.5 hover:bg-slate-700/50 rounded-lg transition"
+              aria-label="Close River"
             >
               <X className="h-4 w-4 text-slate-400" />
             </button>
           </div>
         </div>
 
-        {/* Messages */}
         {!isMinimized && (
           <>
             <div className="h-80 overflow-y-auto p-4 space-y-3 bg-slate-950/50">
@@ -140,7 +143,6 @@ export function RiverChat() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
             <div className="p-3 border-t border-slate-700 bg-slate-900">
               <div className="flex items-center gap-2">
                 <input
@@ -148,7 +150,7 @@ export function RiverChat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask River anything..."
+                  placeholder="Ask River about this system..."
                   className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50"
                 />
                 <Button
@@ -160,7 +162,7 @@ export function RiverChat() {
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-xs text-slate-500 mt-2 text-center">River speaks truth. No hype.</p>
+              <p className="text-xs text-slate-500 mt-2 text-center">River speaks from the system context available to it.</p>
             </div>
           </>
         )}
