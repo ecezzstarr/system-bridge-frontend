@@ -34,28 +34,19 @@ function buildSystemMessage(context?: RiverContext): string {
     context?.systemArea ? `Current area: ${context.systemArea}` : null,
     context?.userName ? `Person: ${context.userName}` : null,
     context?.userId ? `Person identifier: ${context.userId}` : null,
-    typeof context?.walletBalance === 'number'
-      ? `Wallet balance provided by the system: ${context.walletBalance}`
-      : null,
+    typeof context?.walletBalance === 'number' ? `Wallet balance provided by the system: ${context.walletBalance}` : null,
   ].filter(Boolean)
 
-  return contextLines.length > 0
-    ? `${RIVER_SYSTEM_PROMPT}\n\nCurrent system context:\n${contextLines.join('\n')}`
-    : RIVER_SYSTEM_PROMPT
+  return contextLines.length > 0 ? `${RIVER_SYSTEM_PROMPT}\n\nCurrent system context:\n${contextLines.join('\n')}` : RIVER_SYSTEM_PROMPT
 }
 
-// Get access token using service account
 async function getAccessToken(): Promise<string | null> {
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT
   if (!serviceAccountJson) return null
 
   try {
     const credentials = JSON.parse(serviceAccountJson)
-    const auth = new GoogleAuth({
-      credentials,
-      scopes: ['https://www.googleapis.com/auth/generative-language'],
-    })
-
+    const auth = new GoogleAuth({ credentials, scopes: ['https://www.googleapis.com/auth/generative-language'] })
     const client = await auth.getClient()
     const tokenResponse = await client.getAccessToken()
     return tokenResponse.token || null
@@ -65,51 +56,20 @@ async function getAccessToken(): Promise<string | null> {
   }
 }
 
-// Chat with River
-export async function chatWithRiver(
-  messages: RiverMessage[],
-  userContext?: RiverContext
-): Promise<string> {
+export async function chatWithRiver(messages: RiverMessage[], userContext?: RiverContext): Promise<string> {
   try {
     const accessToken = await getAccessToken()
+    if (!accessToken) return 'I am River. The connection is not configured yet.'
 
-    if (!accessToken) {
-      return 'I am River. The connection is not configured yet.'
-    }
+    const contents = messages.map(msg => ({ role: msg.role === 'assistant' ? 'model' : 'user', parts: [{ text: msg.content }] }))
+    if (contents.length > 0 && contents[0].role === 'model') contents.shift()
+    if (contents.length > 0) contents[0].parts[0].text = `${buildSystemMessage(userContext)}\n\nPerson's message:\n${contents[0].parts[0].text}`
 
-    const systemMessage = buildSystemMessage(userContext)
-
-    const contents = messages.map(msg => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }]
-    }))
-
-    // Gemini requires the conversation to begin with a user message.
-    if (contents.length > 0 && contents[0].role === 'model') {
-      contents.shift()
-    }
-
-    if (contents.length > 0) {
-      contents[0].parts[0].text = `${systemMessage}\n\nPerson's message:\n${contents[0].parts[0].text}`
-    }
-
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents,
-          generationConfig: {
-            maxOutputTokens: 300,
-            temperature: 0.7,
-          }
-        })
-      }
-    )
+    const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents, generationConfig: { maxOutputTokens: 300, temperature: 0.7 } })
+    })
 
     if (!response.ok) {
       console.error('River model response:', response.status, await response.text())
@@ -124,12 +84,10 @@ export async function chatWithRiver(
   }
 }
 
-// Quick help - single question response
 export async function askRiver(question: string, context?: RiverContext): Promise<string> {
   return chatWithRiver([{ role: 'user', content: question }], context)
 }
 
-// Get contextual help based on page
 export async function getPageHelp(page: string, context?: Omit<RiverContext, 'systemArea'>): Promise<string> {
   const helpPrompts: Record<string, string> = {
     wallet: 'Explain what I can understand and do in the wallet from the current system context.',
@@ -138,10 +96,6 @@ export async function getPageHelp(page: string, context?: Omit<RiverContext, 'sy
     lounge: 'Explain what I can do in the Lounge from the current system context.',
     dashboard: 'Explain what I can understand and do from this dashboard.',
   }
-
   const prompt = helpPrompts[page] || 'Explain the part of the system I am currently looking at.'
-  return chatWithRiver(
-    [{ role: 'user', content: prompt }],
-    { ...context, systemArea: page }
-  )
+  return chatWithRiver([{ role: 'user', content: prompt }], { ...context, systemArea: page })
 }
