@@ -9,13 +9,38 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!auth.authorized) return auth.response
   const { id } = await params
   const sql = neon(process.env.DATABASE_URL!)
-  await ensureClientVaultSchema(sql); await ensureClientVaultLedgerSchema(sql)
-  const [withdrawal] = await sql`SELECT * FROM client_vault_withdrawals WHERE id=${id}::uuid AND status='pending_approval' LIMIT 1`
-  if (!withdrawal) return NextResponse.json({ error: 'Pending withdrawal not found' }, { status: 404 })
-  const [debited] = await sql`UPDATE client_vaults SET balance=balance-${withdrawal.amount} WHERE client_id=${withdrawal.client_id}::uuid AND balance>=${withdrawal.amount} RETURNING balance,currency`
-  if (!debited) return NextResponse.json({ error: 'Insufficient client balance at approval time' }, { status: 409 })
-  const [updated] = await sql`UPDATE client_vault_withdrawals SET status='approved',approved_by=${auth.session.user.id}::uuid,approved_at=NOW() WHERE id=${id}::uuid AND status='pending_approval' RETURNING *`
-  if (!updated) return NextResponse.json({ error: 'Withdrawal approval could not be completed' }, { status: 409 })
-  await sql`INSERT INTO client_vault_ledger (client_id,type,amount,currency,status,reference,note,created_by) VALUES (${withdrawal.client_id}::uuid,'withdrawal',-${withdrawal.amount},${withdrawal.currency},'posted',${withdrawal.id},'Administration-approved withdrawal',${auth.session.user.id}::uuid)`
-  return NextResponse.json({ success: true, withdrawal: updated, vault: debited })
+  await ensureClientVaultSchema(sql)
+  await ensureClientVaultLedgerSchema(sql)
+
+  const [result] = await sql`
+    WITH pending AS (
+      SELECT id,client_id,amount,currency
+      FROM client_vault_withdrawals
+      WHERE id=${id}::uuid AND status='pending_approval'
+      FOR UPDATE
+    ), debited AS (
+      UPDATE client_vaults v
+      SET balance=v.balance-p.amount
+      FROM pending p
+      WHERE v.client_id=p.client_id::uuid AND v.balance>=p.amount
+      RETURNING v.client_id,v.balance,v.currency
+    ), approved AS (
+      UPDATE client_vault_withdrawals w
+      SET status='approved',approved_by=${auth.session.user.id}::uuid,approved_at=NOW()
+      FROM pending p,debited d
+      WHERE w.id=p.id AND w.status='pending_approval'
+      RETURNING w.*,d.balance AS remaining_balance,d.currency AS vault_currency
+    ), ledger AS (
+      INSERT INTO client_vault_ledger (client_id,type,amount,currency,status,reference,note,created_by)
+      SELECT client_id,'withdrawal',-amount,currency,'posted',id,'Administration-approved withdrawal',${auth.session.user.id}::uuid
+      FROM approved
+      RETURNING id
+    )
+    SELECT a.*,a.remaining_balance,a.vault_currency
+    FROM approved a
+    JOIN ledger l ON true
+  `
+
+  if (!result) return NextResponse.json({ error: 'Withdrawal could not be approved; check the pending request and available balance' }, { status: 409 })
+  return NextResponse.json({ success: true, withdrawal: result, vault: { balance: Number(result.remaining_balance), currency: result.vault_currency } })
 }
