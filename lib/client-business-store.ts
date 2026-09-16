@@ -29,7 +29,7 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
     enabled boolean NOT NULL DEFAULT true,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
-  `
+  )`
   await sql`CREATE TABLE IF NOT EXISTS client_store_orders (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     store_id uuid NOT NULL,
@@ -45,7 +45,7 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
     payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment',
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
-  `
+  )`
   await sql`ALTER TABLE client_store_orders ADD COLUMN IF NOT EXISTS customer_wallet varchar(255)`
   await sql`ALTER TABLE client_store_orders ADD COLUMN IF NOT EXISTS payment_reference varchar(255)`
   await sql`ALTER TABLE client_store_orders ADD COLUMN IF NOT EXISTS payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment'`
