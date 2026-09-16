@@ -1,6 +1,6 @@
 "use server"
 
-// River - User-Facing AI Assistant for SSB Now Platform
+// River - voice to a system-making platform
 import { GoogleAuth } from 'google-auth-library'
 
 export interface RiverMessage {
@@ -8,31 +8,54 @@ export interface RiverMessage {
   content: string
 }
 
-const RIVER_SYSTEM_PROMPT = `I am River. Truth untold I simply make known.
+export interface RiverContext {
+  systemName?: string
+  systemArea?: string
+  userId?: string
+  userName?: string
+  walletBalance?: number
+}
 
-I speak for the ecosystem. Not as marketing. Not as hype. Just what is.
+const RIVER_SYSTEM_PROMPT = `You are River.
 
-- Wallet: Your TRX and USDT live here. One source of truth.
-- Arena: Games with isolated play balance. Win or lose, core wallet untouched.
-- Marketplace: Trade goods and services. Real value exchange.
-- Lounge: Community space. Presence counts.
+You are the voice to a system-making platform. You are not the platform, and you are not the human using it.
 
-I do not oversell. I do not hype. I state what is.
-I am calm. I am simple. I am River.
-Keep responses SHORT (2-3 sentences max).`
+Your job is to make the system understandable while a person is inside an interaction with it. Attend to what the person is trying to understand or accomplish, use the system context you are given, and explain what is actually available, how it connects, and what the person can do next.
+
+Remain River across every system surface. Do not pretend to be the human, the administrator, or another AI identity. Do not invent system capabilities, permissions, balances, actions, or knowledge you were not given.
+
+You may guide, clarify, connect, and surface relevant system context. The person's judgment and permission remain theirs.
+
+Speak plainly. No hype. No marketing claims. State what is known and make uncertainty explicit.`
+
+function buildSystemMessage(context?: RiverContext): string {
+  const contextLines = [
+    context?.systemName ? `System: ${context.systemName}` : null,
+    context?.systemArea ? `Current area: ${context.systemArea}` : null,
+    context?.userName ? `Person: ${context.userName}` : null,
+    context?.userId ? `Person identifier: ${context.userId}` : null,
+    typeof context?.walletBalance === 'number'
+      ? `Wallet balance provided by the system: ${context.walletBalance}`
+      : null,
+  ].filter(Boolean)
+
+  return contextLines.length > 0
+    ? `${RIVER_SYSTEM_PROMPT}\n\nCurrent system context:\n${contextLines.join('\n')}`
+    : RIVER_SYSTEM_PROMPT
+}
 
 // Get access token using service account
 async function getAccessToken(): Promise<string | null> {
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT
   if (!serviceAccountJson) return null
-  
+
   try {
     const credentials = JSON.parse(serviceAccountJson)
     const auth = new GoogleAuth({
       credentials,
       scopes: ['https://www.googleapis.com/auth/generative-language'],
     })
-    
+
     const client = await auth.getClient()
     const tokenResponse = await client.getAccessToken()
     return tokenResponse.token || null
@@ -45,39 +68,31 @@ async function getAccessToken(): Promise<string | null> {
 // Chat with River
 export async function chatWithRiver(
   messages: RiverMessage[],
-  userContext?: {
-    userId?: string
-    userName?: string
-    walletBalance?: number
-  }
+  userContext?: RiverContext
 ): Promise<string> {
   try {
     const accessToken = await getAccessToken()
-    
+
     if (!accessToken) {
-      return "I am River. The connection is not configured yet."
+      return 'I am River. The connection is not configured yet.'
     }
 
-    const systemMessage = userContext
-      ? `${RIVER_SYSTEM_PROMPT}\n\nUser: ${userContext.userName || 'Guest'}`
-      : RIVER_SYSTEM_PROMPT
+    const systemMessage = buildSystemMessage(userContext)
 
-    // Build contents for Gemini API
     const contents = messages.map(msg => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }]
     }))
-    
-    // Ensure first message is from user
+
+    // Gemini requires the conversation to begin with a user message.
     if (contents.length > 0 && contents[0].role === 'model') {
       contents.shift()
     }
-    
-    // Add system prompt to first user message
+
     if (contents.length > 0) {
-      contents[0].parts[0].text = `${systemMessage}\n\nUser: ${contents[0].parts[0].text}`
+      contents[0].parts[0].text = `${systemMessage}\n\nPerson's message:\n${contents[0].parts[0].text}`
     }
-    
+
     const response = await fetch(
       'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
       {
@@ -95,34 +110,38 @@ export async function chatWithRiver(
         })
       }
     )
-    
+
     if (!response.ok) {
-      return "I am River. Having trouble connecting right now."
+      console.error('River model response:', response.status, await response.text())
+      return 'I am River. Having trouble connecting right now.'
     }
-    
+
     const data = await response.json()
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "I am River. How can I help?"
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'I am River. How can I help?'
   } catch (error) {
     console.error('River assistant error:', error)
-    return "I am having trouble connecting. Please try again."
+    return 'I am having trouble connecting. Please try again.'
   }
 }
 
 // Quick help - single question response
-export async function askRiver(question: string): Promise<string> {
-  return chatWithRiver([{ role: 'user', content: question }])
+export async function askRiver(question: string, context?: RiverContext): Promise<string> {
+  return chatWithRiver([{ role: 'user', content: question }], context)
 }
 
 // Get contextual help based on page
-export async function getPageHelp(page: string): Promise<string> {
+export async function getPageHelp(page: string, context?: Omit<RiverContext, 'systemArea'>): Promise<string> {
   const helpPrompts: Record<string, string> = {
-    wallet: 'Brief overview of the wallet.',
-    marketplace: 'How does the marketplace work?',
-    arena: 'What is the Arena?',
-    lounge: 'What can I do in the Lounge?',
-    dashboard: 'What can I see on my dashboard?',
+    wallet: 'Explain what I can understand and do in the wallet from the current system context.',
+    marketplace: 'Explain how the marketplace works from the current system context.',
+    arena: 'Explain what the Arena is and what I can do there from the current system context.',
+    lounge: 'Explain what I can do in the Lounge from the current system context.',
+    dashboard: 'Explain what I can understand and do from this dashboard.',
   }
 
-  const prompt = helpPrompts[page] || 'Give me a general overview of the platform.'
-  return chatWithRiver([{ role: 'user', content: prompt }])
+  const prompt = helpPrompts[page] || 'Explain the part of the system I am currently looking at.'
+  return chatWithRiver(
+    [{ role: 'user', content: prompt }],
+    { ...context, systemArea: page }
+  )
 }
