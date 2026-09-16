@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation'
+import { getBusinessDb, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
 
 export default async function PublicBusinessStore({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const base = process.env.NEXT_PUBLIC_APP_URL || ''
-  const res = await fetch(`${base}/api/public/store/${encodeURIComponent(slug)}`, { cache: 'no-store' })
-  if (!res.ok) notFound()
-  const { store, items } = await res.json()
+  const sql = getBusinessDb()
+  await ensureClientBusinessStoreSchema(sql)
+  const [store] = await sql`SELECT id,name,description,public_slug FROM client_business_stores WHERE public_slug=${slug} AND enabled=true LIMIT 1`
+  if (!store) notFound()
+  const items = await sql`SELECT id,name,description,price,currency FROM client_store_items WHERE store_id=${store.id}::uuid AND enabled=true ORDER BY created_at DESC`
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6 md:p-10">
       <div className="mx-auto max-w-4xl">
@@ -25,6 +27,7 @@ export default async function PublicBusinessStore({ params }: { params: Promise<
             </form>
           </article>)}
         </div>
+        {items.length===0 && <p className="mt-10 text-sm text-slate-500">This workshop is preparing its public offers.</p>}
       </div>
     </main>
   )
