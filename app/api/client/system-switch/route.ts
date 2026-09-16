@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb, ensureClientFileFolderSchema, ensureCjDoradoFolder, claimFileFolder } from '@/lib/client-file-folder'
 import { resolveClientToken, ensureClientVaultSchema } from '@/lib/client-vault'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
+import { ensureClientBusinessStore } from '@/lib/client-business-store'
+import { ensureClientVaultLedgerSchema } from '@/lib/client-vault-ledger'
+import { ensureClientInternationalPaymentProfile } from '@/lib/client-international-payments'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,11 +12,9 @@ export async function GET(request: NextRequest) {
     const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
     const clientId = await resolveClientToken(token, sql)
     if (!clientId) return NextResponse.json({ error:'Client login required' },{status:401})
-
-    await ensureClientFileFolderSchema(sql); await ensureClientVaultSchema(sql); await ensureClientWorkshopSchema(sql); await ensureCjDoradoFolder(sql)
+    await ensureClientFileFolderSchema(sql); await ensureClientVaultSchema(sql); await ensureClientWorkshopSchema(sql); await ensureClientVaultLedgerSchema(sql); await ensureCjDoradoFolder(sql)
     const [client] = await sql`SELECT id,name,email,phone,business_name,file_number,assigned_bridger_id FROM clients WHERE id=${clientId}::uuid LIMIT 1`
     if(!client)return NextResponse.json({error:'Client record not found'},{status:404})
-
     const folder=client.file_number?await claimFileFolder(sql,client.id,client.file_number,client.name):null
     if(!folder)return NextResponse.json({success:true,verified:false,client:{id:client.id,name:client.name,business_name:client.business_name,file_number:client.file_number},file_folder:null})
     const [vault]=await sql`SELECT balance,currency FROM client_vaults WHERE client_id=${client.id}::uuid`
@@ -21,7 +22,13 @@ export async function GET(request: NextRequest) {
     const [bridge]=await sql`SELECT u.id,u.name,u.username FROM users u WHERE u.id=${client.assigned_bridger_id || '00000000-0000-0000-0000-000000000000'}::uuid AND u.role='bridger' AND u.is_active=true LIMIT 1`
     const agents=workshop?await sql`SELECT u.id,u.name,u.username,u.departmental_code FROM client_workshop_agents a JOIN users u ON u.id=a.agent_id WHERE a.workshop_id=${workshop.id}::uuid AND a.active=true AND u.role='agent' AND u.is_active=true ORDER BY u.name`:[]
     const [report]=await sql`SELECT id,summary,insights,recommended_actions,source_message_count,created_at FROM bridge_ai_reports WHERE client_id=${client.id}::uuid ORDER BY created_at DESC LIMIT 1`
+    const store=client.file_number?await ensureClientBusinessStore(sql,client.id,client.file_number,client.business_name||client.name):null
+    const items=store?await sql`SELECT id,name,description,price,currency,enabled FROM client_store_items WHERE store_id=${store.id}::uuid ORDER BY created_at DESC`:[]
+    const orders=store?await sql`SELECT id,item_id,customer_name,customer_contact,customer_wallet,payment_reference,amount,currency,status,payment_status,created_at FROM client_store_orders WHERE store_id=${store.id}::uuid ORDER BY created_at DESC LIMIT 20`:[]
+    const internationalPayments=await ensureClientInternationalPaymentProfile(sql,client.id)
+    const withdrawals=await sql`SELECT id,amount,currency,destination,status,created_at FROM client_vault_withdrawals WHERE client_id=${client.id}::uuid ORDER BY created_at DESC LIMIT 20`
     const isCrypto=(workshop?.workshop_type||folder.workshop_type)==='crypto_exchange'
-    return NextResponse.json({success:true,verified:true,client:{id:client.id,name:client.name,email:client.email,business_name:client.business_name,file_number:client.file_number},file_folder:folder,vault:{balance:Number(vault?.balance||0),currency:vault?.currency||'TRX'},workshop:{type:workshop?.workshop_type||folder.workshop_type||'formation',title:workshop?.title||(isCrypto?'Crypto Exchange Workshop':'System Formation Workshop'),status:folder.status,purpose:workshop?.description||'Build and form the productive systems and businesses recognized through the Client’s Interaction in Motion.',modules:isCrypto?['Market','Buy','Sell','Holdings','Orders','Activity','Business Formation','Technology']:['Interaction','Formation','Business','Technology','Productivity']},bridge:bridge||null,approved_agents:agents,bridge_ai:{available:true,name:'Bridge AI',purpose:'The AI participant inside the File Folder and System Switch.',last_report:report||null}}, {headers:{'Cache-Control':'private, no-store'}})
+    const modules=isCrypto?['Market','Buy','Sell','Holdings','Orders','Activity','Business Store','International Payments','Business Formation','Technology']:['Interaction','Formation','Business Store','International Payments','Business','Technology','Productivity']
+    return NextResponse.json({success:true,verified:true,client:{id:client.id,name:client.name,email:client.email,business_name:client.business_name,file_number:client.file_number},file_folder:folder,vault:{balance:Number(vault?.balance||0),currency:vault?.currency||'TRX',withdrawals},workshop:{type:workshop?.workshop_type||folder.workshop_type||'formation',title:workshop?.title||(isCrypto?'Crypto Exchange Workshop':'System Formation Workshop'),status:folder.status,purpose:workshop?.description||'Build and form the productive systems and businesses recognized through the Client’s Interaction in Motion.',modules},business_store:store?{...store,items,orders,public_url:`/store/${store.public_slug}`} : null,international_payments:internationalPayments,bridge:bridge||null,approved_agents:agents,bridge_ai:{available:true,name:'Bridge AI',purpose:'The AI participant inside the File Folder and System Switch.',last_report:report||null}}, {headers:{'Cache-Control':'private, no-store'}})
   } catch(error){ console.error('[client/system-switch] error:',error instanceof Error?error.message:'unknown error'); return NextResponse.json({error:'Unable to open System Switch'},{status:500}) }
 }
