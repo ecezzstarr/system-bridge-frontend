@@ -170,9 +170,14 @@ export default function SearchPage() {
 
           {marketplace.length > 0 && (
             <section className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Store className="h-5 w-5" />
-                <h2 className="text-xl font-semibold">Marketplace</h2>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  <h2 className="text-xl font-semibold">Marketplace</h2>
+                </div>
+                <Link href="/marketplace" className="text-sm text-muted-foreground hover:text-foreground">
+                  View marketplace
+                </Link>
               </div>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {marketplace.map((listing) => (
@@ -185,11 +190,6 @@ export default function SearchPage() {
                       <h3 className="mt-1 font-semibold">{listing.title || "Untitled listing"}</h3>
                       {listing.description && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{listing.description}</p>}
                       {typeof listing.price === "number" && <p className="mt-3 font-mono font-semibold">{listing.price.toLocaleString()} TRX</p>}
-                      <Button variant="ghost" size="sm" className="mt-2 px-0" asChild>
-                        <Link href={`/marketplace/${listing.id}`}>
-                          View offering <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
                     </CardContent>
                   </Card>
                 ))}
