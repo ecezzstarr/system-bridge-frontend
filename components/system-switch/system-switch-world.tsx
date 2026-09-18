@@ -67,7 +67,7 @@ function Scene({ active, onSelect }: { active: string | null; onSelect: (id: str
   )
 }
 
-export default function SystemSwitchWorld({ fileNumber, onCrossingRequest }: { fileNumber?: string | null; onCrossingRequest?: () => void }) {
+export default function SystemSwitchWorld({ fileNumber, onCrossingRequest, initialMovement, flameName }: { fileNumber?: string | null; onCrossingRequest?: () => void; initialMovement?: string | null; flameName?: string | null }) {
   const [active, setActive] = useState<string | null>(null)
   const [movements, setMovements] = useState(0)
 
@@ -91,11 +91,17 @@ export default function SystemSwitchWorld({ fileNumber, onCrossingRequest }: { f
       </div>
       <div className="absolute inset-0"><Scene active={active} onSelect={select} /></div>
       <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/80 to-transparent px-6 pb-6 pt-28">
+        {initialMovement ? (
+          <div className="mb-4 max-w-2xl rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4 backdrop-blur">
+            <p className="text-[9px] uppercase tracking-[0.25em] text-sky-300">Crossing arrived · Prospect + {flameName || 'Flame'}</p>
+            <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">{initialMovement}</p>
+          </div>
+        ) : null}
         <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">Test Movement · {movements}</p>
         <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-xl font-medium">Your movement changes the world.</h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Encounter the four company positions. The workshop grows from participation, leading toward recognition and the crossing into Weave.</p>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Your interaction continues here. Encounter the company positions as the movement that arrived with your Flame becomes recognized inside System Switch.</p>
           </div>
           <button type="button" disabled={!active} onClick={onCrossingRequest} className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] disabled:opacity-30">Approach Recognition</button>
         </div>
