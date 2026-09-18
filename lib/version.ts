@@ -19,11 +19,11 @@ export interface VersionInfo {
  */
 export function getVersionInfo(): VersionInfo {
   return {
-    appVersion: process.env.NEXT_PUBLIC_APP_VERSION || 'unknown',
-    commitSha: process.env.NEXT_PUBLIC_COMMIT_SHA || 'unknown',
-    commitFull: process.env.NEXT_PUBLIC_COMMIT_FULL || 'unknown',
-    branch: process.env.NEXT_PUBLIC_BRANCH || 'unknown',
-    buildTime: process.env.NEXT_PUBLIC_BUILD_TIME || 'unknown',
+    appVersion: process.env.NEXT_PUBLIC_APP_VERSION || process.env.APP_VERSION || 'unknown',
+    commitSha: process.env.NEXT_PUBLIC_COMMIT_SHA || process.env.COMMIT_SHA || 'unknown',
+    commitFull: process.env.NEXT_PUBLIC_COMMIT_FULL || process.env.COMMIT_FULL || 'unknown',
+    branch: process.env.NEXT_PUBLIC_BRANCH || process.env.BRANCH || 'unknown',
+    buildTime: process.env.NEXT_PUBLIC_BUILD_TIME || process.env.BUILD_TIMESTAMP || 'unknown',
     isProduction: process.env.NODE_ENV === 'production',
   }
 }

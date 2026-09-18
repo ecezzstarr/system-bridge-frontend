@@ -9,13 +9,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy application source
 COPY . .
-
-# Add dummy secret for build
-ENV NEXTAUTH_SECRET=temp
 
 # Build application
 RUN npm run build
@@ -32,7 +29,7 @@ RUN apk add --no-cache dumb-init
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
 # Copy built application from builder
 COPY --from=builder /app/.next ./.next

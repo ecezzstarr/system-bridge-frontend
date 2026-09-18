@@ -2,7 +2,15 @@
 # This file orchestrates the build and deployment process to Cloud Run
 
 steps:
-  # Step 1: Build the Docker image
+  # Step 1: Verify the checked-out source builds before any image is pushed.
+  - name: 'node:22'
+    id: 'verify-source-build'
+    entrypoint: 'bash'
+    args:
+      - '-lc'
+      - 'npm ci --legacy-peer-deps && ./scripts/verify-build.sh'
+
+  # Step 2: Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-image'
     args:
@@ -18,8 +26,9 @@ steps:
       - '.'
     env:
       - 'DOCKER_BUILDKIT=1'
+    waitFor: ['verify-source-build']
 
-  # Step 2: Push image to Container Registry
+  # Step 3: Push image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-image'
     args:
@@ -27,7 +36,7 @@ steps:
       - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_COMMIT_SHA}'
     waitFor: ['build-image']
 
-  # Step 3: Deploy to Cloud Run
+  # Step 4: Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-cloud-run'
     entrypoint: 'gcloud'
@@ -43,9 +52,9 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-env-vars'
-      - 'COMMIT_SHA=${_COMMIT_SHA},BUILD_TIMESTAMP=${_BUILD_TIMESTAMP},NODE_ENV=production,CLOUD_SQL_CONNECTION_NAME=ssbr-495208:us-central1:system-bridge-db,CLOUD_SQL_DATABASE=ssbnow,CLOUD_SQL_USER=ssbnow_user,PGSSLMODE=disable'
+      - 'COMMIT_SHA=${_COMMIT_SHA},BUILD_TIMESTAMP=${_BUILD_TIMESTAMP},NODE_ENV=production'
       - '--set-secrets'
-      - 'DATABASE_URL=database-url:latest,CLOUD_SQL_PASSWORD=db-password:latest,JWT_SECRET=jwt-secret:latest,FLW_PUBLIC_KEY=flw-public-key:latest,FLW_SECRET_KEY=flw-secret-key:latest,NEXTAUTH_SECRET=nextauth-secret:latest,GOOGLE_AI_KEY=google-ai-key:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest'
+      - 'DATABASE_URL=database-url:latest,NEXTAUTH_SECRET=nextauth-secret:latest,GOOGLE_AI_KEY=google-ai-key:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest,FLW_SECRET_KEY=flw-secret-key:latest'
     waitFor: ['push-image']
 
 # Substitutions for environment-specific values

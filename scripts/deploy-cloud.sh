@@ -76,30 +76,13 @@ print_version_info() {
     echo ""
 }
 
-load_build_secrets() {
-    log_info "Loading required build secrets from Secret Manager..."
-    if ! NEXTAUTH_SECRET_VALUE=$(gcloud secrets versions access latest --secret="nextauth-secret" --project="$PROJECT_ID" 2>/dev/null); then
-        log_error "Unable to access Secret Manager secret: nextauth-secret"
-        exit 1
-    fi
-    if [ -z "$NEXTAUTH_SECRET_VALUE" ]; then
-        log_error "Secret Manager secret nextauth-secret is empty"
-        exit 1
-    fi
-    export NEXTAUTH_SECRET="$NEXTAUTH_SECRET_VALUE"
-    unset NEXTAUTH_SECRET_VALUE
-    log_success "Build secrets loaded"
-}
-
 build_application() {
     log_info "Building main System Bridge Frontend application..."
     log_info "Installing dependencies..."
-    npm ci
-
-    load_build_secrets
+    npm ci --legacy-peer-deps
 
     log_info "Building Next.js application..."
-    npm run build
+    ./scripts/verify-build.sh
 
     # eight-core is a separate service directory. It is not part of the
     # system-bridge-frontend Cloud Run image and is not deployed by this script.
@@ -119,14 +102,16 @@ create_deployment_image() {
 
 validate_deployment() {
     log_info "Validating deployment configuration..."
-    required_vars=("GOOGLE_AI_KEY" "DATABASE_URL")
-    missing_vars=()
-    for var in "${required_vars[@]}"; do
-        if [ -z "${!var:-}" ]; then missing_vars+=("$var"); fi
+    required_secrets=("google-ai-key" "database-url" "eight-internal-token" "nextauth-secret" "flw-secret-key")
+    missing_secrets=()
+    for secret in "${required_secrets[@]}"; do
+        if ! gcloud secrets describe "$secret" --project "$PROJECT_ID" >/dev/null 2>&1; then
+            missing_secrets+=("$secret")
+        fi
     done
-    if [ ${#missing_vars[@]} -gt 0 ]; then
-        log_warning "Missing environment variables: ${missing_vars[*]}"
-        log_info "These will need to be configured in Cloud Run service environment"
+    if [ ${#missing_secrets[@]} -gt 0 ]; then
+        log_error "Missing Secret Manager secrets: ${missing_secrets[*]}"
+        exit 1
     fi
     log_success "Validation complete"
 }
@@ -167,7 +152,12 @@ print_deployment_summary() {
     echo "  Version:     $PACKAGE_VERSION"
     echo ""
     SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$REGION" --project "$PROJECT_ID" --format='value(status.url)' 2>/dev/null || echo "")
-    if [ -n "$SERVICE_URL" ]; then echo "  Access URL:  $SERVICE_URL"; fi
+    if [ -n "$SERVICE_URL" ]; then
+        echo "  Access URL:  $SERVICE_URL"
+        echo ""
+        echo "  Verify deployed commit:"
+        echo "    curl \"$SERVICE_URL/api/health\""
+    fi
     echo ""
 }
 
