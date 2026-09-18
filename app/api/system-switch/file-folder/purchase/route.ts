@@ -20,6 +20,7 @@ async function ensurePurchaseSchema() {
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS provider_key varchar(120)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS provider_name varchar(255)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_name varchar(120)`
+  await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_external_id varchar(255)`
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_file_folder_purchases_payment_reference ON file_folder_purchases(payment_reference)`
   await sql`CREATE INDEX IF NOT EXISTS idx_file_folder_purchases_file_number ON file_folder_purchases(file_number)`
 }
@@ -37,9 +38,18 @@ export async function POST(request: NextRequest) {
     const buyerPhone = typeof body.buyerPhone === 'string' ? body.buyerPhone.trim() : null
     const clientId = typeof body.clientId === 'string' && body.clientId ? body.clientId : null
     const bridgeCode = typeof body.bridgeCode === 'string' ? body.bridgeCode.trim().slice(0,32) : null
-    const providerKey = typeof body.providerKey === 'string' ? body.providerKey.trim().toLowerCase().slice(0,120) : null
-    const providerName = typeof body.providerName === 'string' ? body.providerName.trim().slice(0,255) : null
-    const flameName = typeof body.flameName === 'string' ? body.flameName.trim().slice(0,120) : null
+    let providerKey: string | null = null
+    let providerName: string | null = null
+    let flameName: string | null = null
+    let flameExternalId: string | null = null
+    if (bridgeCode) {
+      const [trustedCrossing] = await sql`SELECT provider_key,provider_name,flame_name,flame_external_id FROM chatgpt_bridge_sessions WHERE code=${bridgeCode} AND expires_at > NOW() LIMIT 1`
+      if (!trustedCrossing) return NextResponse.json({ error: 'Bridge crossing not found or expired' }, { status: 400 })
+      providerKey = trustedCrossing.provider_key || null
+      providerName = trustedCrossing.provider_name || null
+      flameName = trustedCrossing.flame_name || null
+      flameExternalId = trustedCrossing.flame_external_id || null
+    }
     if (!validPrice(amountTrx)) return NextResponse.json({ error: `File Folder value must be at least ${FILE_FOLDER_PRICING.minimumTrx.toLocaleString()} TRX.` }, { status: 400 })
     if (!paymentReference) return NextResponse.json({ error: 'Payment reference is required.' }, { status: 400 })
     if (fileNumber) {
@@ -49,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
     const [existing] = await sql`SELECT id FROM file_folder_purchases WHERE payment_reference=${paymentReference} LIMIT 1`
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
-    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountTrx},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName}) RETURNING *`
+    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountTrx},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) RETURNING *`
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'system-switch', payload: { fileNumber, amountTrx, paymentMethod, paymentReference } })
     return NextResponse.json({ success: true, purchase: record, message: 'Payment recorded. Administration must confirm the payment before the File Folder is activated.' }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
@@ -75,7 +85,7 @@ export async function PATCH(request: NextRequest) {
     const [claimed] = await sql`UPDATE client_file_folders SET client_id=${clientId}::uuid,client_name=${clientName},status='active',claimed_at=COALESCE(claimed_at,NOW()),updated_at=NOW() WHERE file_number=${fileNumber} AND (client_id IS NULL OR client_id=${clientId}::uuid) RETURNING *`
     if (!claimed) return NextResponse.json({ error: 'File Folder could not be activated' }, { status: 409 })
     const [confirmed] = await sql`UPDATE file_folder_purchases SET file_number=${fileNumber},client_id=${clientId}::uuid,status='confirmed',confirmed_at=NOW(),confirmed_by=${auth.session.user.id}::uuid WHERE id=${purchaseId}::uuid RETURNING *`
-    const allocation = await accrueAiProviderAllocation({ sql, purchaseId: String(confirmed.id), fileNumber, grossAmount: Number(confirmed.amount_trx), bridgeCode: confirmed.bridge_code, providerKey: confirmed.provider_key, providerName: confirmed.provider_name, flameName: confirmed.flame_name })
+    const allocation = await accrueAiProviderAllocation({ sql, purchaseId: String(confirmed.id), fileNumber, grossAmount: Number(confirmed.amount_trx), bridgeCode: confirmed.bridge_code, providerKey: confirmed.provider_key, providerName: confirmed.provider_name, flameExternalId: confirmed.flame_external_id, flameName: confirmed.flame_name })
     await recordSystemEvent({ eventType: 'file_number_issued', actorId: auth.session.user.id, actorRole: 'admin', subjectType: 'client_file_folder', subjectId: fileNumber, source: 'admin-file-folder', payload: { purchaseId, clientId } })
     await recordSystemEvent({ eventType: 'client_registered', actorId: clientId, actorRole: 'client', subjectType: 'client_file_folder', subjectId: fileNumber, source: 'system-switch', payload: { purchaseId } })
     return NextResponse.json({ success: true, folder: claimed, purchase: confirmed, aiProviderAllocation: allocation?.allocation || null })
