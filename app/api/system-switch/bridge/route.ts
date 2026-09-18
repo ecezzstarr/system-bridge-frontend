@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   try {
     const sql = getDb()
     const rows = await sql`
-      SELECT code, message, topic, context, flame_name, flame_presence, crossing_state
+      SELECT code, message, topic, context, flame_name, flame_external_id, flame_presence, crossing_state, provider_key, provider_name
       FROM chatgpt_bridge_sessions
       WHERE code = ${code} AND expires_at > now()
       LIMIT 1
