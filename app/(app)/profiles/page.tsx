@@ -91,7 +91,7 @@ export default function ProfilesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold truncate">{profile.user.displayName}</h3>
-                      <RoleBadge role={profile.user.role} size="sm" />
+                      <RoleBadge role={profile.user.role} className="text-[10px] px-2 py-0.5" />
                     </div>
                     {profile.location && (
                       <p className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -108,7 +108,7 @@ export default function ProfilesPage() {
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-                  <WealthTier tier={getTierFromBalance(5000)} size="sm" />
+                  <WealthTier tier={getTierFromBalance(5000)} className="px-2 py-0.5 text-[10px]" />
                   <div className="flex items-center gap-2">
                     {profile.website && (
                       <Button variant="ghost" size="icon" asChild>

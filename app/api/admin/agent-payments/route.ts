@@ -20,7 +20,7 @@ async function ensureSchema(sql: any) {
 
 export async function GET(req: NextRequest) {
   const admin = await requireWorkshopAuthorization(req)
-  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!admin.authorized) return admin.response
 
   try {
     const sql = getSql()
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const admin = await requireWorkshopAuthorization(req)
-  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!admin.authorized) return admin.response
 
   try {
     const body = await req.json()
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     const [payment] = await sql`
       INSERT INTO agent_payments (agent_id, amount, currency, payment_month, paid_by_admin_id, confirmed_functions)
-      VALUES (${agentId}::uuid, ${amount}, 'TRX', ${paymentMonth}, ${admin.id}::uuid, ${confirmedFunctions})
+      VALUES (${agentId}::uuid, ${amount}, 'TRX', ${paymentMonth}, ${admin.session.user.id}::uuid, ${confirmedFunctions})
       RETURNING id, agent_id, amount, currency, payment_month, paid_by_admin_id, confirmed_functions, payment_date, status
     `
 

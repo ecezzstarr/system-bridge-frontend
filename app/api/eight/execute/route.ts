@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         const userId = String(payload.userId || '')
         const amount = Number(payload.amount)
         const target = payload.target === 'play' ? 'play_balance' : 'balance_trx'
-        const currency = target === 'play' ? 'TRX' : payload.currency === 'USDT' ? 'USDT' : 'TRX'
+        const currency = target === 'play_balance' ? 'TRX' : payload.currency === 'USDT' ? 'USDT' : 'TRX'
         if (!userId || !Number.isFinite(amount) || amount <= 0) return NextResponse.json({ success: false, error: 'Valid userId and positive amount required' }, { status: 400 })
         const result = await sql(`UPDATE wallets SET ${target} = ${target} + $1, updated_at = NOW() WHERE user_id = $2::uuid RETURNING *`, [amount, userId])
         if (!result.length) return NextResponse.json({ success: false, error: 'Wallet not found' }, { status: 404 })

@@ -29,6 +29,15 @@ const statusConfig = {
   cancelled: { label: "Cancelled", color: "bg-destructive/10 text-destructive" },
 }
 
+type PrivateSession = {
+  id: string
+  status: keyof typeof statusConfig
+  scheduledAt: string
+  rate: number
+  totalAmount?: number
+  guest: { avatar?: string; displayName: string; presence?: string }
+}
+
 function formatDateTime(dateString: string) {
   const date = new Date(dateString)
   return {
@@ -44,7 +53,7 @@ export default function PrivateGroundPage() {
     limit: 20,
   })
 
-  const sessions = sessionsData?.data || []
+  const sessions = (sessionsData?.data || []) as PrivateSession[]
 
   return (
     <div className="space-y-6">
@@ -76,7 +85,7 @@ export default function PrivateGroundPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Upcoming</p>
                 <p className="text-2xl font-bold">
-                  {sessions.filter((s) => s.status === "scheduled").length}
+                  {sessions.filter((s: PrivateSession) => s.status === "scheduled").length}
                 </p>
               </div>
             </div>
@@ -91,7 +100,7 @@ export default function PrivateGroundPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Active Now</p>
                 <p className="text-2xl font-bold">
-                  {sessions.filter((s) => s.status === "active").length}
+                  {sessions.filter((s: PrivateSession) => s.status === "active").length}
                 </p>
               </div>
             </div>
@@ -106,7 +115,7 @@ export default function PrivateGroundPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Completed</p>
                 <p className="text-2xl font-bold">
-                  {sessions.filter((s) => s.status === "completed").length}
+                  {sessions.filter((s: PrivateSession) => s.status === "completed").length}
                 </p>
               </div>
             </div>
@@ -122,8 +131,8 @@ export default function PrivateGroundPage() {
                 <p className="text-sm text-muted-foreground">Earnings</p>
                 <p className="text-2xl font-bold">
                   {sessions
-                    .filter((s) => s.status === "completed")
-                    .reduce((sum, s) => sum + (s.totalAmount || 0), 0)
+                    .filter((s: PrivateSession) => s.status === "completed")
+                    .reduce((sum: number, s: PrivateSession) => sum + (s.totalAmount || 0), 0)
                     .toLocaleString()}{" "}
                   <span className="text-sm font-normal text-muted-foreground">TRX</span>
                 </p>
@@ -182,7 +191,7 @@ export default function PrivateGroundPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {sessions.map((session) => {
+                  {sessions.map((session: PrivateSession) => {
                     const config = statusConfig[session.status]
                     const { date, time } = formatDateTime(session.scheduledAt)
                     return (
@@ -199,7 +208,7 @@ export default function PrivateGroundPage() {
                               </AvatarFallback>
                             </Avatar>
                             <PresenceIndicator
-                              status={session.guest.presence}
+                              status={session.guest.presence as "online" | "offline" | "away" | "busy" | undefined}
                               className="absolute -bottom-1 -right-1"
                             />
                           </div>

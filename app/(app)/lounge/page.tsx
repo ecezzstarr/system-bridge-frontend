@@ -28,13 +28,32 @@ const statusConfig = {
   closed: { label: "Closed", color: "bg-muted text-muted-foreground" },
 }
 
+type LoungeParticipant = {
+  id: string
+  avatar?: string
+  displayName: string
+  presence?: string
+}
+
+type LoungeRoom = {
+  id: string
+  name: string
+  description?: string
+  status: keyof typeof statusConfig
+  isPrivate?: boolean
+  maxParticipants: number
+  entryFee: number
+  host: { avatar?: string; displayName: string }
+  participants: LoungeParticipant[]
+}
+
 export default function LoungePage() {
   const [search, setSearch] = useState("")
   const { data: roomsData, isLoading, mutate } = useLoungeRooms({ limit: 20 })
 
-  const rooms = roomsData?.data || []
+  const rooms = (roomsData?.data || []) as LoungeRoom[]
   const filteredRooms = rooms.filter(
-    (r) =>
+    (r: LoungeRoom) =>
       r.name.toLowerCase().includes(search.toLowerCase()) ||
       r.description?.toLowerCase().includes(search.toLowerCase())
   )
@@ -105,7 +124,7 @@ export default function LoungePage() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredRooms.map((room) => {
+            {filteredRooms.map((room: LoungeRoom) => {
               const config = statusConfig[room.status]
               const isFull = room.participants.length >= room.maxParticipants
               return (
@@ -158,7 +177,7 @@ export default function LoungePage() {
                         </span>
                       </div>
                       <div className="mt-2 flex -space-x-2">
-                        {room.participants.slice(0, 5).map((participant) => (
+                        {room.participants.slice(0, 5).map((participant: LoungeParticipant) => (
                           <div key={participant.id} className="relative">
                             <Avatar className="h-8 w-8 border-2 border-background">
                               <AvatarImage src={participant.avatar} />
@@ -167,7 +186,7 @@ export default function LoungePage() {
                               </AvatarFallback>
                             </Avatar>
                             <PresenceIndicator
-                              status={participant.presence}
+                              status={participant.presence as "online" | "offline" | "away" | "busy" | undefined}
                               size="sm"
                               className="absolute -bottom-0.5 -right-0.5"
                             />

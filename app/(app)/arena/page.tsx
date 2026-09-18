@@ -33,6 +33,28 @@ const statusConfig = {
   cancelled: { label: "Cancelled", color: "bg-muted text-muted-foreground", icon: Target },
 }
 
+type ArenaStatus = keyof typeof statusConfig
+
+interface ArenaParticipant {
+  id: string
+  displayName: string
+  avatar?: string
+}
+
+interface ArenaMatch {
+  id: string
+  title: string
+  description?: string
+  status: ArenaStatus
+  scheduledAt: string
+  entryFee: number
+  prizePool: number
+  maxParticipants: number
+  participants: ArenaParticipant[]
+  host: ArenaParticipant
+  winner?: ArenaParticipant | null
+}
+
 function formatDateTime(dateString: string) {
   const date = new Date(dateString)
   return {
@@ -61,7 +83,7 @@ export default function ArenaPage() {
     limit: 20,
   })
 
-  const matches = matchesData?.matches || matchesData?.data?.matches || []
+  const matches = (matchesData?.matches || []) as ArenaMatch[]
 
   const handleJoinMatch = async (matchId: string) => {
     if (!user?.id) return

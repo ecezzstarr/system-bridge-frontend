@@ -9,9 +9,18 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { clearToken, getToken, getUser, login as loginRequest, register as registerRequest, saveToken, saveUser } from './auth-client'
+import {
+  clearToken,
+  getToken,
+  getUser,
+  login as loginRequest,
+  register as registerRequest,
+  saveToken,
+  saveUser,
+} from './auth-client'
 
 interface User {
+  [key: string]: any
   id: string
   email: string
   name: string
@@ -79,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await fetch('/api/wallet', {
-        headers: { Authorization: `****** },
+        headers: { Authorization: ['Bearer', currentToken].join(' ') },
       })
       const result = await response.json()
 
@@ -127,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const register = useCallback(
-    async (    data: {
+    async (data: {
       username: string
       password: string
       name: string

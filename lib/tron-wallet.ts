@@ -9,6 +9,16 @@ const COMPANY_WALLET = process.env.COMPANY_TRON_WALLET
 // TronGrid API base URL
 const TRONGRID_API = 'https://api.trongrid.io'
 
+async function getTronWeb(privateKey?: string) {
+  const tronweb = await import('tronweb')
+  const TronWeb = (tronweb as any).default || (tronweb as any).TronWeb || tronweb
+  return new TronWeb({
+    fullHost: TRONGRID_API,
+    headers: TRONGRID_API_KEY ? { 'TRON-PRO-API-KEY': TRONGRID_API_KEY } : undefined,
+    privateKey: privateKey || PLATFORM_PRIVATE_KEY,
+  })
+}
+
 // Helper to make TronGrid API calls
 async function tronGridFetch(endpoint: string, options?: RequestInit) {
   const headers: Record<string, string> = {
@@ -254,7 +264,7 @@ export async function sweepToCompanyWallet(
     
     if (tokenType === 'TRX' || tokenType === 'ALL') {
       if (balance.trx > 1) { // Keep 1 TRX for fees
-        const result = await sendTRX(userPrivateKey, COMPANY_WALLET, balance.trx - 1)
+        const result = await sendTRX(userWalletAddress, COMPANY_WALLET, balance.trx - 1, userPrivateKey)
         results.push(result)
       }
     }

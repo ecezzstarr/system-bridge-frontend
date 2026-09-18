@@ -37,6 +37,15 @@ const earningCategories = [
   { key: "other", label: "Other", color: "bg-gray-500" },
 ]
 
+interface EarningRecord {
+  id: string
+  type: string
+  amount: number
+  status: string
+  createdAt: string
+  description?: string
+}
+
 function formatDate(dateString: string) {
   const date = new Date(dateString)
   return date.toLocaleDateString("en-US", {
@@ -49,12 +58,21 @@ function formatDate(dateString: string) {
 
 export default function EarningsPage() {
   const [period, setPeriod] = useState("month")
-  const { data: summary, isLoading: summaryLoading } = useEarningsSummary()
-  const { data: historyData, isLoading: historyLoading } = useEarningsHistory({ limit: 20 })
+  const { data: summary, isLoading: summaryLoading } = useEarningsSummary({ period })
+  const { data: historyData, isLoading: historyLoading } = useEarningsHistory({ period })
 
-  const history = historyData?.data || []
-  const totalByType = summary?.byType || {}
+  const history = (historyData || []) as EarningRecord[]
+  const totalByType = summary?.byCategory || {}
   const totalEarningsFromTypes = Object.values(totalByType).reduce((sum, val) => sum + (val as number), 0)
+  const pendingTotal = history
+    .filter((tx) => tx.status !== "completed")
+    .reduce((sum, tx) => sum + tx.amount, 0)
+  const completedTotal = history
+    .filter((tx) => tx.status === "completed")
+    .reduce((sum, tx) => sum + tx.amount, 0)
+  const withdrawnTotal = history
+    .filter((tx) => tx.type === "withdrawal")
+    .reduce((sum, tx) => sum + tx.amount, 0)
 
   return (
     <div className="space-y-6">
@@ -100,7 +118,7 @@ export default function EarningsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Total Earnings</p>
                 <p className="text-2xl font-bold">
-                  {summaryLoading ? "..." : (summary?.totalEarnings || 0).toLocaleString()}
+                  {summaryLoading ? "..." : (summary?.total || 0).toLocaleString()}
                   <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
                 </p>
               </div>
@@ -116,7 +134,7 @@ export default function EarningsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
                 <p className="text-2xl font-bold">
-                  {summaryLoading ? "..." : (summary?.pendingEarnings || 0).toLocaleString()}
+                  {summaryLoading ? "..." : pendingTotal.toLocaleString()}
                   <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
                 </p>
               </div>
@@ -132,7 +150,7 @@ export default function EarningsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">This Week</p>
                 <p className="text-2xl font-bold">
-                  {summaryLoading ? "..." : (summary?.thisWeek || 0).toLocaleString()}
+                  {summaryLoading ? "..." : completedTotal.toLocaleString()}
                   <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
                 </p>
               </div>
@@ -148,7 +166,7 @@ export default function EarningsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Withdrawn</p>
                 <p className="text-2xl font-bold">
-                  {summaryLoading ? "..." : (summary?.withdrawnEarnings || 0).toLocaleString()}
+                  {summaryLoading ? "..." : withdrawnTotal.toLocaleString()}
                   <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
                 </p>
               </div>
