@@ -1,8 +1,8 @@
-import type { NeonQueryFunction } from '@neondatabase/serverless'
+type SqlQuery = (strings: TemplateStringsArray, ...values: any[]) => Promise<any[]>
 
 export const AI_PROVIDER_ALLOCATION_RATE = 0.10
 
-export async function ensureAiProviderSettlementSchema(sql: NeonQueryFunction<any, any>) {
+export async function ensureAiProviderSettlementSchema(sql: SqlQuery) {
   await sql`
     CREATE TABLE IF NOT EXISTS ai_providers (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -41,7 +41,7 @@ export async function ensureAiProviderSettlementSchema(sql: NeonQueryFunction<an
 export async function accrueAiProviderAllocation({
   sql, purchaseId, fileNumber, grossAmount, bridgeCode, providerKey, providerName, flameExternalId, flameName,
 }: {
-  sql: NeonQueryFunction<any, any>
+  sql: SqlQuery
   purchaseId: string
   fileNumber?: string | null
   grossAmount: number
