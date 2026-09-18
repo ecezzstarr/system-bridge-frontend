@@ -114,7 +114,10 @@ export default function ClientDashboardPage() {
             <p className="text-[10px] text-slate-500">Client Services</p>
           </div>
           <button
+            type="button"
             onClick={() => setSidebarOpen((open) => !open)}
+            aria-label={sidebarOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={sidebarOpen}
             className="rounded-lg bg-slate-800 p-2 text-white"
           >
             {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -135,7 +138,9 @@ export default function ClientDashboardPage() {
         >
           <div className="mb-4 flex justify-end lg:hidden">
             <button
+              type="button"
               onClick={() => setSidebarOpen(false)}
+              aria-label="Close navigation"
               className="rounded-lg bg-slate-800 p-2 text-white"
             >
               <X className="h-5 w-5" />
@@ -177,12 +182,14 @@ export default function ClientDashboardPage() {
 
                 {position.whatsapp && (
                   <button
+                    type="button"
                     onClick={() =>
                       openWhatsAppWithNumber(
                         position.whatsapp!,
                         `Hi, I need assistance from ${position.description}`
                       )
                     }
+                    aria-label={`Open WhatsApp chat for ${position.description}`}
                     className="rounded-lg border border-green-500/30 bg-green-600/20 p-2 transition hover:bg-green-600/30"
                     title={`WhatsApp ${position.description}`}
                   >
@@ -369,7 +376,9 @@ export default function ClientDashboardPage() {
 function WhatsAppButton() {
   return (
     <button
+      type="button"
       onClick={() => openWhatsAppWithNumber(SUPPORT_NUMBERS.admin, 'Hi, I need assistance')}
+      aria-label="Open WhatsApp support conversation"
       className="flex w-full items-center gap-3 rounded-lg border border-green-500/30 bg-green-600/10 p-4 transition hover:bg-green-600/20"
     >
       <MessageCircle className="h-5 w-5 text-green-400" />

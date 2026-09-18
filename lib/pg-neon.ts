@@ -34,6 +34,10 @@ function getPool(connectionString?: string) {
   return pools.get(resolved)!
 }
 
+function isConnectionString(value: string) {
+  return /^(postgres(ql)?:\/\/|mysql:\/\/|mssql:\/\/)/i.test(value)
+}
+
 async function executeQuery(
   connectionString: string | undefined,
   strings: TemplateStringsArray,
@@ -70,7 +74,7 @@ export function neon(
   connectionOrStrings?: string | TemplateStringsArray,
   ...values: any[]
 ): SqlQueryFn | Promise<any[]> {
-  if (typeof connectionOrStrings === "string" || connectionOrStrings === undefined) {
+  if (connectionOrStrings === undefined || (typeof connectionOrStrings === "string" && isConnectionString(connectionOrStrings))) {
     const connectionString = connectionOrStrings
     const sql: SqlQueryFn = (
       stringsOrQuery: TemplateStringsArray | string,
@@ -84,6 +88,14 @@ export function neon(
           )
         : executeQuery(connectionString, stringsOrQuery, queryValues)
     return sql
+  }
+
+  if (typeof connectionOrStrings === "string") {
+    return executeRawQuery(
+      undefined,
+      connectionOrStrings,
+      Array.isArray(values[0]) ? values[0] : values
+    )
   }
 
   return executeQuery(undefined, connectionOrStrings, values)

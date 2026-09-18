@@ -14,6 +14,10 @@ RUN npm ci --legacy-peer-deps
 # Copy application source
 COPY . .
 
+# Build-only secret for NextAuth initialization during image build.
+ARG BUILD_NEXTAUTH_SECRET=build-only-nextauth-secret
+ENV NEXTAUTH_SECRET=$BUILD_NEXTAUTH_SECRET
+
 # Build application
 RUN npm run build
 
