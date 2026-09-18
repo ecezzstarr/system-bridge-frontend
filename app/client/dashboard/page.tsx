@@ -150,13 +150,13 @@ export default function ClientDashboardPage() {
 
           <nav className="flex-1 space-y-1 overflow-y-auto lg:space-y-2">
             <Link href="/client/loops" onClick={() => setSidebarOpen(false)}>
-              <button className="mb-2 flex w-full items-center gap-3 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-3 text-left text-sm font-semibold text-cyan-300 lg:py-2.5">
+              <span className="mb-2 flex w-full items-center gap-3 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-3 text-left text-sm font-semibold text-cyan-300 lg:py-2.5">
                 <FileText className="h-5 w-5" />
                 <div>
                   <p>Client Position</p>
                   <p className="text-[10px] font-normal text-cyan-500/70">Loops & Agreements</p>
                 </div>
-              </button>
+              </span>
             </Link>
 
             {positions.map((position) => (
@@ -164,17 +164,15 @@ export default function ClientDashboardPage() {
                 <Link
                   href={`/client/chat/${position.position}`}
                   onClick={() => setSidebarOpen(false)}
-                  className="flex-1"
+                  className="group flex flex-1 items-center gap-3 rounded-lg px-3 py-3 text-left transition hover:bg-slate-800/50 active:bg-slate-800 lg:py-2.5"
                 >
-                  <button className="group flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition hover:bg-slate-800/50 active:bg-slate-800 lg:py-2.5">
-                    <span className="text-xl lg:text-lg">{position.icon}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-300 transition group-hover:text-white lg:text-xs">
-                        {position.description}
-                      </p>
-                      <p className="text-xs text-slate-500">{position.agent_name}</p>
-                    </div>
-                  </button>
+                  <span className="text-xl lg:text-lg">{position.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-300 transition group-hover:text-white lg:text-xs">
+                      {position.description}
+                    </p>
+                    <p className="text-xs text-slate-500">{position.agent_name}</p>
+                  </div>
                 </Link>
 
                 {position.whatsapp && (
@@ -200,22 +198,18 @@ export default function ClientDashboardPage() {
               <>
                 <Link
                   href="/client/admin-chat"
-                  className="block w-full"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-3 text-left text-sm text-green-300 hover:bg-green-900/30 lg:py-2.5"
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <button className="flex w-full items-center gap-2 rounded-lg px-3 py-3 text-left text-sm text-green-300 hover:bg-green-900/30 lg:py-2.5">
-                    <MessageCircle className="h-4 w-4" />
-                    Manage All Chats
-                  </button>
+                  <MessageCircle className="h-4 w-4" />
+                  Manage All Chats
                 </Link>
                 <Link
                   href="/dashboard"
-                  className="block w-full"
+                  className="block w-full rounded-lg px-3 py-3 text-left text-sm text-purple-300 hover:bg-purple-900/30 lg:py-2.5"
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <button className="w-full rounded-lg px-3 py-3 text-left text-sm text-purple-300 hover:bg-purple-900/30 lg:py-2.5">
-                    ← Back to Platform
-                  </button>
+                  ← Back to Platform
                 </Link>
               </>
             )}

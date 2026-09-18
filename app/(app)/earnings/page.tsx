@@ -65,7 +65,7 @@ export default function EarningsPage() {
   const totalByType = summary?.byCategory || {}
   const totalEarningsFromTypes = Object.values(totalByType).reduce((sum, val) => sum + (val as number), 0)
   const pendingTotal = history
-    .filter((tx) => tx.status !== "completed")
+    .filter((tx) => tx.status === "pending")
     .reduce((sum, tx) => sum + tx.amount, 0)
   const completedTotal = history
     .filter((tx) => tx.status === "completed")
@@ -148,7 +148,7 @@ export default function EarningsPage() {
                 <TrendingUp className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">This Week</p>
+                <p className="text-sm text-muted-foreground">Completed</p>
                 <p className="text-2xl font-bold">
                   {summaryLoading ? "..." : completedTotal.toLocaleString()}
                   <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
