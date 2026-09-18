@@ -191,6 +191,6 @@ export function useEarningsHistory(params?: { category?: string; period?: string
   return useSWR(['earningsHistory', params], async () => {
     const res = await api.getEarnings(params)
     if (!res.success) throw new Error(res.error)
-    return res.data?.earnings || []
+    return { data: res.data?.earnings || [] }
   })
 }

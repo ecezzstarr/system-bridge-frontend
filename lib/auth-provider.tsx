@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from 'react'
 import {
+  clearUser,
   clearToken,
   getToken,
   getUser,
@@ -154,6 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           username: data.username,
           role: data.role || 'agent',
           department: data.departmentalCode || data.department || '',
+          referredBy: data.referredBy,
         })
 
         if (!result.token || !result.user) {
@@ -179,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     clearToken()
+    clearUser()
     setToken(null)
     setUser(null)
     setWallet(null)

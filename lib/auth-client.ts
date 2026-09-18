@@ -35,6 +35,7 @@ export async function register(data: {
   username: string
   role: 'agent' | 'bridger'
   department: string
+  referredBy?: string
 }): Promise<AuthResponse> {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
@@ -121,6 +122,14 @@ export function clearToken(): void {
     try { localStorage.removeItem(key) } catch {}
   }
   ;(window as any).__auth_token = null
+  ;(window as any).__auth_user = null
+}
+
+export function clearUser(): void {
+  if (typeof window === 'undefined') return
+  for (const key of USER_KEYS) {
+    try { localStorage.removeItem(key) } catch {}
+  }
   ;(window as any).__auth_user = null
 }
 

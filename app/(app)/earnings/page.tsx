@@ -61,7 +61,7 @@ export default function EarningsPage() {
   const { data: summary, isLoading: summaryLoading } = useEarningsSummary({ period })
   const { data: historyData, isLoading: historyLoading } = useEarningsHistory({ period })
 
-  const history = (historyData || []) as EarningRecord[]
+  const history = ((historyData?.data || []) as EarningRecord[])
   const totalByType = summary?.byCategory || {}
   const totalEarningsFromTypes = Object.values(totalByType).reduce((sum, val) => sum + (val as number), 0)
   const pendingTotal = history
