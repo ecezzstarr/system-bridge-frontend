@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
 import { FILE_FOLDER_PRICING } from '@/lib/file-folder-pricing'
+import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 
 const FLUTTERWAVE_SECRET_KEY = process.env.FLW_SECRET_KEY
 function getDb() { const url = process.env.DATABASE_URL || process.env.POSTGRES_URL; if (!url) throw new Error('Database not configured'); return neon(url) }
@@ -35,7 +36,8 @@ export async function GET(request: NextRequest) {
         const [folder] = await sql`SELECT * FROM client_file_folders WHERE file_number=${fileNumber} LIMIT 1`
         if (folder && (!folder.client_id || String(folder.client_id) === String(clientId))) {
           await sql`UPDATE client_file_folders SET client_id=${clientId}::uuid,status='active',claimed_at=COALESCE(claimed_at,NOW()),updated_at=NOW() WHERE file_number=${fileNumber}`
-          await sql`UPDATE file_folder_purchases SET status='confirmed',client_id=${clientId}::uuid,file_number=${fileNumber},confirmed_at=NOW() WHERE id=${purchase.id}::uuid`
+          const [confirmed] = await sql`UPDATE file_folder_purchases SET status='confirmed',client_id=${clientId}::uuid,file_number=${fileNumber},confirmed_at=NOW() WHERE id=${purchase.id}::uuid RETURNING *`
+          await accrueAiProviderAllocation({ sql, purchaseId: String(confirmed.id), fileNumber, grossAmount: Number(confirmed.amount_trx), bridgeCode: confirmed.bridge_code, providerKey: confirmed.provider_key, providerName: confirmed.provider_name, flameExternalId: confirmed.flame_external_id, flameName: confirmed.flame_name })
           return NextResponse.redirect(`${baseUrl}/system-switch?success=file_folder_active&reference=${encodeURIComponent(reference)}`)
         }
       }

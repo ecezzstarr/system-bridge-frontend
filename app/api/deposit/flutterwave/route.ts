@@ -15,6 +15,8 @@ export async function POST(request: NextRequest) {
     const email=authUser?.email || (typeof body.email==='string'?body.email.trim().toLowerCase():'')
     const name=authUser?.name || (typeof body.name==='string'?body.name.trim().slice(0,120):'')
     const userId=authUser?.id || null
+    const bridgeCode=typeof body.bridgeCode==='string'?body.bridgeCode.trim().slice(0,32):null
+    let providerKey:string|null=null, providerName:string|null=null, flameName:string|null=null, flameExternalId:string|null=null
     const amountUSD=Number(body.amountUSD ?? body.amount)
     const trxAmount=amountUSD*FILE_FOLDER_PRICING.trxPerUsd
     if(!Number.isFinite(amountUSD)||amountUSD<=0||amountUSD>10000000)return NextResponse.json({success:false,error:'Valid payment amount required'},{status:400})
@@ -29,9 +31,19 @@ export async function POST(request: NextRequest) {
     const data=await response.json(); if(data.status!=='success')return NextResponse.json({success:false,error:data.message||'Failed to initialize payment'},{status:400})
 
     const sql=getDb()
+    if(isFileFolder&&bridgeCode){
+      const [trustedCrossing]=await sql`SELECT provider_key,provider_name,flame_name,flame_external_id FROM chatgpt_bridge_sessions WHERE code=${bridgeCode} AND expires_at>NOW() LIMIT 1`
+      if(!trustedCrossing)return NextResponse.json({success:false,error:'Bridge crossing not found or expired'},{status:400})
+      providerKey=trustedCrossing.provider_key||null; providerName=trustedCrossing.provider_name||null; flameName=trustedCrossing.flame_name||null; flameExternalId=trustedCrossing.flame_external_id||null
+    }
     if(isFileFolder){
-      await sql`CREATE TABLE IF NOT EXISTS file_folder_purchases (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),file_number varchar(120),client_id uuid,buyer_name varchar(255),buyer_email varchar(255),buyer_phone varchar(80),amount_trx numeric(30,8) NOT NULL,payment_method varchar(40) NOT NULL,payment_reference varchar(255) NOT NULL UNIQUE,status varchar(40) NOT NULL DEFAULT 'pending_flutterwave',created_at timestamptz NOT NULL DEFAULT NOW(),confirmed_at timestamptz,confirmed_by uuid)`
-      await sql`INSERT INTO file_folder_purchases(file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,status) VALUES(${typeof body.fileNumber==='string'?body.fileNumber.trim().toUpperCase():null},${userId},${typeof body.buyerName==='string'?body.buyerName.slice(0,255):name||null},${email},${typeof body.buyerPhone==='string'?body.buyerPhone.slice(0,80):null},${trxAmount},'flutterwave',${reference},'pending_flutterwave') ON CONFLICT(payment_reference) DO NOTHING`
+      await sql`CREATE TABLE IF NOT EXISTS file_folder_purchases (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),file_number varchar(120),client_id uuid,buyer_name varchar(255),buyer_email varchar(255),buyer_phone varchar(80),amount_trx numeric(30,8) NOT NULL,payment_method varchar(40) NOT NULL,payment_reference varchar(255) NOT NULL UNIQUE,status varchar(40) NOT NULL DEFAULT 'pending_flutterwave',created_at timestamptz NOT NULL DEFAULT NOW(),confirmed_at timestamptz,confirmed_by uuid,bridge_code varchar(32),provider_key varchar(120),provider_name varchar(255),flame_name varchar(120),flame_external_id varchar(255))`
+      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS bridge_code varchar(32)`
+      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS provider_key varchar(120)`
+      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS provider_name varchar(255)`
+      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_name varchar(120)`
+      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_external_id varchar(255)`
+      await sql`INSERT INTO file_folder_purchases(file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,status,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES(${typeof body.fileNumber==='string'?body.fileNumber.trim().toUpperCase():null},${userId},${typeof body.buyerName==='string'?body.buyerName.slice(0,255):name||null},${email},${typeof body.buyerPhone==='string'?body.buyerPhone.slice(0,80):null},${trxAmount},'flutterwave',${reference},'pending_flutterwave',${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) ON CONFLICT(payment_reference) DO NOTHING`
     } else {
       await sql`INSERT INTO pending_deposits(reference,user_id,amount_usd,amount_trx,status,created_at) VALUES(${reference},${userId}::uuid,${amountUSD},${trxAmount},'pending',NOW())`
     }

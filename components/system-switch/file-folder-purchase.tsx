@@ -6,7 +6,7 @@ import { FILE_FOLDER_PRICING } from '@/lib/file-folder-pricing'
 
 const { standardTrx: STANDARD_PRICE_TRX, minimumTrx: MINIMUM_PROSPECT_PRICE_TRX, trxPerUsd: TRX_PER_USD } = FILE_FOLDER_PRICING
 
-export default function FileFolderPurchase({ fileNumber = '' }: { fileNumber?: string }) {
+export default function FileFolderPurchase({ fileNumber = '', bridgeCode, providerKey, providerName, flameName }: { fileNumber?: string; bridgeCode?: string; providerKey?: string; providerName?: string; flameName?: string }) {
   const [customPrice, setCustomPrice] = useState('')
   const [email, setEmail] = useState('')
   const [copied, setCopied] = useState(false)
@@ -28,7 +28,7 @@ export default function FileFolderPurchase({ fileNumber = '' }: { fileNumber?: s
     if (!validPrice || !reference.trim()) return
     setBusy(true); setMessage('')
     try {
-      const res = await fetch('/api/system-switch/file-folder/purchase', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileNumber: fileNumber || undefined, amountTrx: selectedPrice, paymentMethod: 'trx', paymentReference: reference.trim(), buyerEmail: email.trim() || undefined }) })
+      const res = await fetch('/api/system-switch/file-folder/purchase', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileNumber: fileNumber || undefined, amountTrx: selectedPrice, paymentMethod: 'trx', paymentReference: reference.trim(), buyerEmail: email.trim() || undefined, bridgeCode, providerKey, providerName, flameName }) })
       const body = await res.json(); if (!res.ok) throw new Error(body.error || 'Unable to record payment')
       setMessage(`Payment recorded as ${body.purchase.status}. Administration will confirm the TRX payment and establish the File Folder.`)
     } catch (error: any) { setMessage(error.message || 'Unable to record payment') } finally { setBusy(false) }
@@ -37,7 +37,7 @@ export default function FileFolderPurchase({ fileNumber = '' }: { fileNumber?: s
     if (!validPrice || !email.trim()) { setMessage('Enter an email address for the Flutterwave payment receipt.'); return }
     setBusy(true); setMessage('')
     try {
-      const res = await fetch('/api/deposit/flutterwave', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountUSD: selectedPrice / TRX_PER_USD, email: email.trim(), name: 'File Folder Purchase', userType: 'file_folder', fileNumber: fileNumber || undefined }) })
+      const res = await fetch('/api/deposit/flutterwave', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountUSD: selectedPrice / TRX_PER_USD, email: email.trim(), name: 'File Folder Purchase', userType: 'file_folder', fileNumber: fileNumber || undefined, bridgeCode, providerKey, providerName, flameName }) })
       const body = await res.json(); if (!res.ok || !body.paymentLink) throw new Error(body.error || 'Unable to start Flutterwave payment')
       window.location.href = body.paymentLink
     } catch (error: any) { setMessage(error.message || 'Unable to start Flutterwave payment'); setBusy(false) }
