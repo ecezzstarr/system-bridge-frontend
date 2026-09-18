@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireApiUser } from '@/lib/api-auth'
-import { neon } from '@/lib/pg-neon'
+import { neon, runSqlQuery } from '@/lib/pg-neon'
 
 const getDb = () => {
   if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not configured')
@@ -12,14 +12,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const category = searchParams.get('category')
+    const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 50, 1), 100)
     const sql = getDb()
     let query = `SELECT m.*, u.name AS host_name, u.username AS host_username, u.avatar AS host_avatar, (SELECT COUNT(*) FROM arena_participants WHERE match_id = m.id) AS participant_count FROM arena_matches m LEFT JOIN users u ON m.host_id = u.id WHERE 1=1`
     const params: any[] = []
     let i = 1
     if (status) { query += ` AND m.status = $${i++}`; params.push(status) }
     if (category) { query += ` AND m.category = $${i++}`; params.push(category) }
-    query += ' ORDER BY m.scheduled_at ASC LIMIT 50'
-    const matches = await sql(query, params)
+    query += ` ORDER BY m.scheduled_at ASC LIMIT $${i++}`
+    params.push(limit)
+    const matches = await runSqlQuery(query, params, process.env.DATABASE_URL)
     return NextResponse.json({ matches: matches.map((m: any) => ({
       id: m.id, title: m.title, description: m.description,
       host: { id: m.host_id, displayName: m.host_name, avatar: m.host_avatar },

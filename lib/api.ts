@@ -91,7 +91,7 @@ class ApiClient {
   }
 
   // Users
-  async getUsers(params?: { role?: string; presence?: string; search?: string }): Promise<ApiResponse<{ users: unknown[] }>> {
+  async getUsers(params?: { role?: string; presence?: string; search?: string }): Promise<ApiResponse<{ users: Array<Record<string, any>> }>> {
     const searchParams = new URLSearchParams()
     if (params?.role) searchParams.set('role', params.role)
     if (params?.presence) searchParams.set('presence', params.presence)
@@ -164,9 +164,10 @@ class ApiClient {
   }
 
   // Clients
-  async getClients(params?: { status?: string }): Promise<ApiResponse<{ clients: unknown[] }>> {
+  async getClients(params?: { status?: string; limit?: number }): Promise<ApiResponse<{ clients: Array<Record<string, any>> }>> {
     const searchParams = new URLSearchParams()
     if (params?.status) searchParams.set('status', params.status)
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
 
     const query = searchParams.toString()
     return this.request(`/clients${query ? `?${query}` : ''}`)
@@ -180,9 +181,10 @@ class ApiClient {
   }
 
   // Sessions (Private Ground)
-  async getSessions(params?: { status?: string }): Promise<ApiResponse<{ sessions: unknown[] }>> {
+  async getSessions(params?: { status?: string; limit?: number }): Promise<ApiResponse<{ sessions: Array<Record<string, any>> }>> {
     const searchParams = new URLSearchParams()
     if (params?.status) searchParams.set('status', params.status)
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
 
     const query = searchParams.toString()
     return this.request(`/sessions${query ? `?${query}` : ''}`)
@@ -202,10 +204,11 @@ class ApiClient {
   }
 
   // Rooms (Lounge)
-  async getRooms(params?: { category?: string; isLive?: boolean }): Promise<ApiResponse<{ rooms: unknown[] }>> {
+  async getRooms(params?: { category?: string; isLive?: boolean; limit?: number }): Promise<ApiResponse<{ rooms: Array<Record<string, any>> }>> {
     const searchParams = new URLSearchParams()
     if (params?.category) searchParams.set('category', params.category)
     if (params?.isLive !== undefined) searchParams.set('isLive', params.isLive.toString())
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
 
     const query = searchParams.toString()
     return this.request(`/rooms${query ? `?${query}` : ''}`)
@@ -217,12 +220,17 @@ class ApiClient {
     })
   }
 
+  async joinLoungeRoom(roomId: string) {
+    return this.joinRoom(roomId)
+  }
+
   // Videos
-  async getVideos(params?: { category?: string; isLive?: boolean; creatorId?: string }): Promise<ApiResponse<{ videos: unknown[] }>> {
+  async getVideos(params?: { category?: string; isLive?: boolean; creatorId?: string; limit?: number }): Promise<ApiResponse<{ videos: Array<Record<string, any>> }>> {
     const searchParams = new URLSearchParams()
     if (params?.category) searchParams.set('category', params.category)
     if (params?.isLive !== undefined) searchParams.set('isLive', params.isLive.toString())
     if (params?.creatorId) searchParams.set('creatorId', params.creatorId)
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
 
     const query = searchParams.toString()
     return this.request(`/videos${query ? `?${query}` : ''}`)
@@ -236,7 +244,7 @@ class ApiClient {
   }
 
   // Arena - uses local Vercel API routes (connected to Neon)
-  async getArenaMatches(params?: { status?: string; category?: string; limit?: number }): Promise<ApiResponse<{ matches: unknown[] }>> {
+  async getArenaMatches(params?: { status?: string; category?: string; limit?: number }): Promise<ApiResponse<{ matches: Array<Record<string, any>> }>> {
     const searchParams = new URLSearchParams()
     if (params?.status) searchParams.set('status', params.status)
     if (params?.category) searchParams.set('category', params.category)
@@ -334,11 +342,12 @@ class ApiClient {
   }
 
   // Marketplace
-  async getMarketplaceListings(params?: { category?: string; status?: string; search?: string }): Promise<ApiResponse<{ listings: unknown[] }>> {
+  async getMarketplaceListings(params?: { category?: string; status?: string; search?: string; limit?: number }): Promise<ApiResponse<{ listings: Array<Record<string, any>> }>> {
     const searchParams = new URLSearchParams()
     if (params?.category) searchParams.set('category', params.category)
     if (params?.status) searchParams.set('status', params.status)
     if (params?.search) searchParams.set('search', params.search)
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
 
     const query = searchParams.toString()
     return this.request(`/marketplace${query ? `?${query}` : ''}`)
@@ -363,8 +372,12 @@ class ApiClient {
     })
   }
 
+  async purchaseMarketplaceItem(listingId: string) {
+    return this.purchaseMarketplaceListing(listingId)
+  }
+
   // Earnings
-  async getEarnings(params?: { category?: string; period?: string }): Promise<ApiResponse<{ earnings: unknown[]; byCategory: Record<string, number>; total: number }>> {
+  async getEarnings(params?: { category?: string; period?: string }): Promise<ApiResponse<{ earnings: Array<Record<string, any>>; byCategory: Record<string, number>; total: number }>> {
     const searchParams = new URLSearchParams()
     if (params?.category) searchParams.set('category', params.category)
     if (params?.period) searchParams.set('period', params.period)
@@ -374,7 +387,7 @@ class ApiClient {
   }
 
   // Campaigns (Fund Wall)
-  async getCampaigns(params?: { status?: string; creatorId?: string }): Promise<ApiResponse<{ campaigns: unknown[] }>> {
+  async getCampaigns(params?: { status?: string; creatorId?: string }): Promise<ApiResponse<{ campaigns: Array<Record<string, any>> }>> {
     const searchParams = new URLSearchParams()
     if (params?.status) searchParams.set('status', params.status)
     if (params?.creatorId) searchParams.set('creatorId', params.creatorId)

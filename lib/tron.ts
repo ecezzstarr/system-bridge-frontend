@@ -33,7 +33,8 @@ export async function sendTrx(toAddress:string,amountTrx:number){
     if(!PLATFORM_TRON_PRIVATE_KEY)throw new Error('Platform TRON signing key is not configured')
     if(!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(toAddress))throw new Error('Invalid TRON destination')
     if(!Number.isFinite(amountTrx)||amountTrx<=0)throw new Error('Invalid TRX amount')
-    const TronWeb=(await import('tronweb')).default
+    const tronwebModule=await import('tronweb')
+    const TronWeb=(tronwebModule as any).default || (tronwebModule as any).TronWeb || tronwebModule
     const tronWeb=new TronWeb({...TRON_CONFIG,privateKey:PLATFORM_TRON_PRIVATE_KEY})
     const transaction=await tronWeb.transactionBuilder.sendTrx(toAddress,trxToSun(amountTrx),tronWeb.defaultAddress.base58)
     const signedTx=await tronWeb.trx.sign(transaction); const result=await tronWeb.trx.sendRawTransaction(signedTx)

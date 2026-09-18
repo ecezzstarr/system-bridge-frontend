@@ -206,7 +206,7 @@ export default function Arena() {
     }
   }
 
-  const matches = matchesData?.matches || matchesData?.data?.matches || []
+  const matches = matchesData?.matches || []
 
   const handleJoinMatch = async (matchId: string) => {
     if (!user?.id) return

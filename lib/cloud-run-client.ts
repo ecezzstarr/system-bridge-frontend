@@ -21,13 +21,10 @@ interface ApiResponse<T = unknown> {
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  body?: Record<string, unknown>
+  body?: unknown
   token?: string
 }
 
-/**
- * Make authenticated request to Cloud Run backend
- */
 async function cloudRunFetch<T>(
   endpoint: string,
   options: RequestOptions = {}
@@ -38,9 +35,8 @@ async function cloudRunFetch<T>(
     'Content-Type': 'application/json',
   }
 
-  // Add authorization token if provided (from user session)
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+    headers.Authorization = 'Bearer ' + token
   }
 
   try {
@@ -69,10 +65,6 @@ async function cloudRunFetch<T>(
     }
   }
 }
-
-// ============================================
-// Authentication Endpoints
-// ============================================
 
 export interface LoginCredentials {
   email: string
@@ -139,10 +131,6 @@ export async function logout(token: string): Promise<ApiResponse<void>> {
   })
 }
 
-// ============================================
-// User Endpoints
-// ============================================
-
 export interface User {
   id: string
   email: string
@@ -177,10 +165,6 @@ export async function updateUser(token: string, userId: string, data: Partial<Us
     token,
   })
 }
-
-// ============================================
-// Wallet Endpoints
-// ============================================
 
 export interface Wallet {
   id: string
@@ -234,10 +218,6 @@ export async function createTransaction(
   })
 }
 
-// ============================================
-// Admin Endpoints (Wallet Sweep)
-// ============================================
-
 export interface SweepResult {
   id: string
   totalAmount: number
@@ -266,37 +246,28 @@ export async function getSweepHistory(
   return cloudRunFetch<{ sweeps: SweepResult[]; total: number }>(`/admin/sweep/history${query}`, { token })
 }
 
-// ============================================
-// Health Check
-// ============================================
-
 export async function healthCheck(): Promise<ApiResponse<{ status: string; timestamp: string }>> {
   return cloudRunFetch<{ status: string; timestamp: string }>('/health')
 }
 
-// Export the client
 export const cloudRunClient = {
-  // Auth
   login,
   register,
   googleAuth,
   refreshToken,
   logout,
-  // Users
   getCurrentUser,
   getUsers,
   getUserById,
   updateUser,
-  // Wallet
   getWallet,
   getWalletBalance,
   getTransactions,
   createTransaction,
-  // Admin
   sweepToCompanyWallet,
   getSweepHistory,
-  // Health
   healthCheck,
 }
 
+export { API_SERVER_URL, CORE_API_URL, SHOP_API_URL }
 export default cloudRunClient

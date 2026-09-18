@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 
 interface FundWallData {
+  wallet?: {
+    address: string
+  }
   companyWallet: {
     id: string
     address: string
@@ -232,12 +235,12 @@ export default function FundWallPage() {
         <CardContent>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-xs sm:text-sm bg-muted p-2 rounded overflow-auto font-mono">
-              {data?.wallet.address || "No wallet connected"}
+              {data?.wallet?.address || "No wallet connected"}
             </code>
             <Button
               size="sm"
               variant="ghost"
-              onClick={handleCopyAddress}
+              onClick={() => handleCopyAddress(data?.wallet?.address || '')}
             >
               {copiedAddress ? (
                 <Check className="h-4 w-4 text-green-600" />

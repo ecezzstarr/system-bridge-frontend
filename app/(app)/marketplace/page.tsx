@@ -45,6 +45,17 @@ const statusConfig = {
   removed: { label: "Removed", color: "bg-destructive/10 text-destructive" },
 }
 
+type MarketplaceItem = {
+  id: string
+  title: string
+  description: string
+  category: string
+  status: keyof typeof statusConfig
+  price: number
+  images: string[]
+  seller: { avatar?: string; displayName: string }
+}
+
 export default function MarketplacePage() {
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("All")
@@ -55,9 +66,9 @@ export default function MarketplacePage() {
     limit: 30,
   })
 
-  const items = itemsData?.data || []
+  const items = (itemsData?.data || []) as MarketplaceItem[]
   const filteredItems = items.filter(
-    (item) =>
+    (item: MarketplaceItem) =>
       item.title.toLowerCase().includes(search.toLowerCase()) ||
       item.description.toLowerCase().includes(search.toLowerCase())
   )
@@ -166,7 +177,7 @@ export default function MarketplacePage() {
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredItems.map((item) => {
+          {filteredItems.map((item: MarketplaceItem) => {
             const config = statusConfig[item.status]
             return (
               <Card
@@ -247,7 +258,7 @@ export default function MarketplacePage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredItems.map((item) => {
+          {filteredItems.map((item: MarketplaceItem) => {
             const config = statusConfig[item.status]
             return (
               <Card

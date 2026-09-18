@@ -12,8 +12,13 @@ declare module 'next-auth/jwt' {
   interface JWT { id: string; username: string; name: string; role: string; avatar?: string; walletAddress?: string }
 }
 
-const authSecret=process.env.NEXTAUTH_SECRET||(process.env.NODE_ENV==='development'?'development-only-secret-change-me':undefined)
-if(!authSecret)throw new Error('NEXTAUTH_SECRET must be configured in production')
+const authSecret =
+  process.env.NEXTAUTH_SECRET ||
+  (process.env.NODE_ENV === 'development' ? 'development-only-secret-change-me' : undefined)
+
+if (process.env.NODE_ENV !== 'development' && !authSecret) {
+  throw new Error('NEXTAUTH_SECRET must be configured outside development')
+}
 
 export const authOptions:NextAuthOptions={
   providers:[CredentialsProvider({id:'credentials',name:'Username and Password',credentials:{username:{label:'Username',type:'text'},password:{label:'Password',type:'password'}},async authorize(credentials){

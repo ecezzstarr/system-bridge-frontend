@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@/lib/pg-neon'
+import { neon, type SqlQueryFn } from '@/lib/pg-neon'
 import { ensureClientVaultSchema, resolveClientToken } from '@/lib/client-vault'
 
-async function getClientId(request: NextRequest, sql: ReturnType<typeof neon>) {
+async function getClientId(request: NextRequest, sql: SqlQueryFn) {
   const token = request.cookies.get('client_token')?.value || request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
   return resolveClientToken(token, sql)
 }

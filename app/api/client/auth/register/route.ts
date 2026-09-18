@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@/lib/pg-neon'
+import { neon, type SqlQueryFn } from '@/lib/pg-neon'
 import bcrypt from 'bcryptjs'
 import { ensureCjDoradoFolder, ensureClientFileFolderSchema, claimFileFolder } from '@/lib/client-file-folder'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
@@ -7,7 +7,7 @@ import { ensureClientSessionSchema } from '@/lib/client-vault'
 
 const getDb = () => { if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not configured'); return neon(process.env.DATABASE_URL) }
 
-async function openWorkshop(sql: ReturnType<typeof neon>, clientId: string, fileNumber: string, clientName: string) {
+async function openWorkshop(sql: SqlQueryFn, clientId: string, fileNumber: string, clientName: string) {
   await ensureClientWorkshopSchema(sql)
   const workshopType = fileNumber === 'WEAVE-2026-0907-0001' ? 'crypto_exchange' : 'formation'
   const title = workshopType === 'crypto_exchange' ? 'CJ Dorado · Crypto Exchange Workshop' : `${clientName} · System Switch Workshop`
@@ -15,7 +15,7 @@ async function openWorkshop(sql: ReturnType<typeof neon>, clientId: string, file
   await sql`INSERT INTO client_system_workshops (client_id,file_number,workshop_type,title,description) VALUES (${clientId}::uuid,${fileNumber},${workshopType},${title},${description}) ON CONFLICT(client_id) DO UPDATE SET file_number=EXCLUDED.file_number,workshop_type=EXCLUDED.workshop_type,title=EXCLUDED.title,description=EXCLUDED.description,updated_at=NOW()`
 }
 
-async function issueClientLogin(sql: ReturnType<typeof neon>, client: any, fileNumber: string | null = null) {
+async function issueClientLogin(sql: SqlQueryFn, client: any, fileNumber: string | null = null) {
   if (fileNumber) {
     const claimed = await claimFileFolder(sql, client.id, fileNumber, client.name)
     if (!claimed) return null

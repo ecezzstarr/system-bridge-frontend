@@ -30,16 +30,16 @@ export function useUsers(params?: { role?: string; presence?: string }) {
 }
 
 // Clients
-export function useClients(params?: { status?: string }) {
+export function useClients(params?: { status?: string; limit?: number }) {
   return useSWR(['clients', params], async () => {
     const res = await api.getClients(params)
     if (!res.success) throw new Error(res.error)
-    return res.data
+    return { clients: res.data?.clients || [] }
   })
 }
 
 // Sessions (Private Ground)
-export function useSessions(params?: { status?: string }) {
+export function useSessions(params?: { status?: string; limit?: number }) {
   return useSWR(['sessions', params], async () => {
     const res = await api.getSessions(params)
     if (!res.success) throw new Error(res.error)
@@ -48,7 +48,7 @@ export function useSessions(params?: { status?: string }) {
 }
 
 // Rooms (Lounge)
-export function useRooms(params?: { category?: string; isLive?: boolean }) {
+export function useRooms(params?: { category?: string; isLive?: boolean; limit?: number }) {
   return useSWR(['rooms', params], async () => {
     const res = await api.getRooms(params)
     if (!res.success) throw new Error(res.error)
@@ -57,7 +57,7 @@ export function useRooms(params?: { category?: string; isLive?: boolean }) {
 }
 
 // Videos
-export function useVideos(params?: { category?: string; isLive?: boolean }) {
+export function useVideos(params?: { category?: string; isLive?: boolean; limit?: number }) {
   return useSWR(['videos', params], async () => {
     const res = await api.getVideos(params)
     if (!res.success) throw new Error(res.error)
@@ -66,7 +66,7 @@ export function useVideos(params?: { category?: string; isLive?: boolean }) {
 }
 
 // Arena
-export function useArenaMatches(params?: { status?: string; category?: string }) {
+export function useArenaMatches(params?: { status?: string; category?: string; limit?: number }) {
   return useSWR(['arenaMatches', params], async () => {
     const res = await api.getArenaMatches(params)
     if (!res.success) throw new Error(res.error)
@@ -75,7 +75,7 @@ export function useArenaMatches(params?: { status?: string; category?: string })
 }
 
 // Marketplace
-export function useMarketplace(params?: { category?: string; status?: string }) {
+export function useMarketplace(params?: { category?: string; status?: string; search?: string; limit?: number }) {
   return useSWR(['marketplace', params], async () => {
     const res = await api.getMarketplaceListings(params)
     if (!res.success) throw new Error(res.error)
@@ -116,7 +116,7 @@ export function usePublicProfiles(params?: { limit?: number; search?: string }) 
     const res = await api.getUsers(params as { search?: string })
     if (!res.success) throw new Error(res.error)
     // Transform users into profile format
-    const profiles = res.data?.users.map(user => ({
+    const profiles = (res.data?.users || []).map((user: Record<string, any>) => ({
       id: user.id,
       userId: user.id,
       user: user,
@@ -139,29 +139,29 @@ export function useVideoFeed(params?: { live?: boolean; limit?: number }) {
 }
 
 // Private Sessions (used by private-ground page)
-export function usePrivateSessions(params?: { status?: string }) {
+export function usePrivateSessions(params?: { status?: string; limit?: number }) {
   return useSWR(['privateSessions', params], async () => {
     const res = await api.getSessions(params)
     if (!res.success) throw new Error(res.error)
-    return res.data
+    return { data: res.data?.sessions || [] }
   })
 }
 
 // Marketplace Items (used by marketplace page)
-export function useMarketplaceItems(params?: { category?: string; status?: string; search?: string }) {
+export function useMarketplaceItems(params?: { category?: string; status?: string; search?: string; limit?: number }) {
   return useSWR(['marketplaceItems', params], async () => {
     const res = await api.getMarketplaceListings(params)
     if (!res.success) throw new Error(res.error)
-    return res.data
+    return { data: res.data?.listings || [] }
   })
 }
 
 // Lounge Rooms (used by lounge page)
-export function useLoungeRooms(params?: { category?: string; isLive?: boolean }) {
+export function useLoungeRooms(params?: { category?: string; isLive?: boolean; limit?: number }) {
   return useSWR(['loungeRooms', params], async () => {
     const res = await api.getRooms(params)
     if (!res.success) throw new Error(res.error)
-    return res.data
+    return { data: res.data?.rooms || [] }
   })
 }
 
@@ -191,6 +191,6 @@ export function useEarningsHistory(params?: { category?: string; period?: string
   return useSWR(['earningsHistory', params], async () => {
     const res = await api.getEarnings(params)
     if (!res.success) throw new Error(res.error)
-    return res.data?.earnings || []
+    return { data: res.data?.earnings || [] }
   })
 }

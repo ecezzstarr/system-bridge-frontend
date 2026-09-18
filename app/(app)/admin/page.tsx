@@ -35,6 +35,18 @@ import { useAuth } from "@/lib/auth-context"
 import { api } from "@/lib/api"
 import useSWR from "swr"
 
+interface SweepHistoryEntry {
+  id: string
+  totalAmount: number
+  transactionCount: number
+  status: string
+  createdAt: string
+}
+
+interface SweepHistoryData {
+  sweeps: SweepHistoryEntry[]
+}
+
 export default function AdminPage() {
   const router = useRouter()
   const { user } = useAuth()
@@ -48,12 +60,16 @@ export default function AdminPage() {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   // Fetch sweep history
-  const { data: sweepHistory, mutate: refreshHistory } = useSWR(
+  const { data: sweepHistory, mutate: refreshHistory } = useSWR<SweepHistoryData>(
     user?.role === "admin" ? "sweepHistory" : null,
     async () => {
       const res = await api.getSweepHistory({ limit: 10 })
       if (!res.success) throw new Error(res.error)
-      return res.data
+      return {
+        sweeps: Array.isArray(res.data?.sweeps)
+          ? (res.data.sweeps as SweepHistoryEntry[])
+          : [],
+      }
     }
   )
 
@@ -304,13 +320,7 @@ export default function AdminPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {sweepHistory.sweeps.map((sweep: {
-                id: string
-                totalAmount: number
-                transactionCount: number
-                status: string
-                createdAt: string
-              }) => (
+              {sweepHistory.sweeps.map((sweep) => (
                 <div
                   key={sweep.id}
                   className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0"

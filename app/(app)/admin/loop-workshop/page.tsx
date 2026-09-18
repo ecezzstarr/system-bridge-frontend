@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 
 const AUDIENCE = ['client', 'agent', 'bridger'] as const
+type AudienceRole = (typeof AUDIENCE)[number]
 
 type Loop = {
   id: string
@@ -48,7 +49,7 @@ export default function LoopWorkshopPage() {
 
   useEffect(() => { if (user?.role === 'admin') loadLoops() }, [user])
 
-  const toggleAudience = (role: string) => {
+  const toggleAudience = (role: AudienceRole) => {
     setForm(current => ({
       ...current,
       audience: current.audience.includes(role)

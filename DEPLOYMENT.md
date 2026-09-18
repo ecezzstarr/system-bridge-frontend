@@ -18,29 +18,99 @@ This document provides comprehensive instructions for building, testing, and dep
 ### Deploy from Cloud Shell
 
 ```bash
-# Navigate to repository
 cd ~/system-bridge-frontend
-
-# Make script executable
 chmod +x scripts/deploy-cloud.sh
+# Verify the checked-out commit builds with safe build-time defaults
+./scripts/verify-build.sh
 
-# Run deployment
+# Deploy the same checked-out commit to Cloud Run
 ./scripts/deploy-cloud.sh
-
-# Deploy to specific region
-./scripts/deploy-cloud.sh --region europe-west1 --service my-service
 ```
 
-### Deploy with gcloud
+This path is the recommended deployment flow for `main` because it:
+
+- blocks deployment if the checked-out commit does not pass `next build`
+- tags the deployed image with the current git SHA
+- keeps runtime secrets in Cloud Run / Secret Manager instead of the source tree
+
+### Verify the deployed revision
 
 ```bash
-gcloud run deploy system-bridge-frontend \
-  --source . \
+SERVICE_URL="$(gcloud run services describe system-bridge-frontend \
   --region us-central1 \
-  --platform managed \
-  --allow-unauthenticated \
-  --set-env-vars="COMMIT_SHA=$(git rev-parse --short HEAD)"
+  --format='value(status.url)')"
+
+curl "$SERVICE_URL/api/health"
 ```
+
+Confirm that the response reports the selected commit SHA in `version.commit`. The
+Cloud Run revision should match the git SHA you deployed locally:
+
+```bash
+git rev-parse --short HEAD
+```
+
+## Recover the live app source into Git
+
+If Cloud Run is serving a user-facing app source that no longer matches Git history, recover the source into a clean Git checkout before deploying again.
+
+### 1. Download and extract the Cloud Build source snapshot
+
+Use the build ID that produced the live image, then extract the archived source into a temporary directory outside your Git checkout.
+
+```bash
+gcloud builds describe BUILD_ID --project ssbr-495208 \
+  --format='value(source.storageSource.bucket,source.storageSource.object,source.storageSource.generation)'
+
+mkdir -p /tmp/system-bridge-live-source
+
+gcloud storage cp 'gs://BUCKET/OBJECT#GENERATION' /tmp/system-bridge-live-source/source.tgz
+mkdir -p /tmp/system-bridge-live-source/extracted
+tar -xzf /tmp/system-bridge-live-source/source.tgz -C /tmp/system-bridge-live-source/extracted
+```
+
+### 2. Restore the live source into a clean Git checkout
+
+The recovery script replaces the working tree with the extracted live source while preserving the hardened deployment files from this repository branch.
+
+```bash
+cd ~/system-bridge-frontend
+git fetch origin
+git checkout -B live-source-recovery origin/main
+git reset --hard origin/main
+git clean -fdx
+
+./scripts/restore-live-source.sh \
+  /tmp/system-bridge-live-source/extracted
+```
+
+After the script runs, inspect the diff and commit the recovered source as a normal Git commit.
+
+### 3. Validate and deploy from Git
+
+```bash
+npm ci --legacy-peer-deps
+./scripts/verify-build.sh
+./scripts/deploy-cloud.sh
+```
+
+### 4. Confirm Cloud Run is serving the new source commit
+
+```bash
+SERVICE_URL="$(gcloud run services describe system-bridge-frontend \
+  --region us-central1 \
+  --project ssbr-495208 \
+  --format='value(status.url)')"
+
+curl "$SERVICE_URL/api/health"
+gcloud run services describe system-bridge-frontend \
+  --region us-central1 \
+  --project ssbr-495208 \
+  --format='value(spec.template.spec.containers[0].image)'
+git rev-parse --short HEAD
+```
+
+The deployed image tag and health/version output should match the Git commit you restored and deployed.
 
 ## Prerequisites
 
@@ -65,10 +135,12 @@ gcloud services enable \
   cloudbuild.googleapis.com \
   secretmanager.googleapis.com
 
-# Create secret manager secrets (one-time setup)
-echo -n "YOUR_GOOGLE_AI_KEY" | gcloud secrets create google-ai-key --data-file=-
+# Create runtime secrets in Secret Manager (one-time setup)
 echo -n "YOUR_DATABASE_URL" | gcloud secrets create database-url --data-file=-
+echo -n "YOUR_NEXTAUTH_SECRET" | gcloud secrets create nextauth-secret --data-file=-
+echo -n "YOUR_GOOGLE_AI_KEY" | gcloud secrets create google-ai-key --data-file=-
 echo -n "YOUR_INTERNAL_TOKEN" | gcloud secrets create eight-internal-token --data-file=-
+echo -n "YOUR_FLUTTERWAVE_SECRET_KEY" | gcloud secrets create flw-secret-key --data-file=-
 
 # Grant Cloud Run service account access
 gcloud projects add-iam-policy-binding PROJECT_ID \
@@ -84,13 +156,10 @@ gcloud projects add-iam-policy-binding PROJECT_ID \
 # Install dependencies
 npm install
 
-# Create .env.local with local configuration
-cp .env.example .env.local
-
-# Edit .env.local with your settings
-GOOGLE_AI_KEY=your_key_here
-DATABASE_URL=postgresql://...
-EIGHT_INTERNAL_TOKEN=your_token_here
+# Build verification only needs safe build-time defaults
+NEXTAUTH_SECRET=build-only-verification-secret \
+NEXT_PUBLIC_NEXTAUTH_URL=http://localhost:3000 \
+./scripts/verify-build.sh
 ```
 
 ### Run Development Server
@@ -120,14 +189,14 @@ npm run test:e2e
 
 ## Building
 
-### Development Build
+### Verified Build
 
 ```bash
-# Build Next.js application
-npm run build
+# Install dependencies the same way as CI / deploy automation
+npm ci --legacy-peer-deps
 
-# Start production build locally
-npm run start
+# Verify the exact checked-out commit can build
+./scripts/verify-build.sh
 ```
 
 ### Production Build with Version Info
@@ -196,7 +265,8 @@ The `scripts/deploy-cloud.sh` script provides:
 
 ### Using Cloud Build
 
-Cloud Build automatically deploys on push to main branch:
+`cloudbuild.yaml` now verifies the checked-out source with `./scripts/verify-build.sh`
+before building or deploying a container image.
 
 ```bash
 # Manually trigger build
@@ -209,12 +279,8 @@ gcloud builds log BUILDS_ID --stream
 ### Manual gcloud Deployment
 
 ```bash
-# Build and deploy in one command
-gcloud run deploy system-bridge-frontend \
-  --source . \
-  --region us-central1 \
-  --platform managed \
-  --allow-unauthenticated
+# Recommended: keep the source-build gate and version stamping
+./scripts/deploy-cloud.sh
 ```
 
 ### Deploy from Specific Branch
@@ -266,24 +332,13 @@ curl https://your-service.run.app/api/health
 }
 ```
 
-### Display Version in UI
+### Deployment Verification Procedure
 
-Create a version badge component:
-
-```typescript
-// components/VersionBadge.tsx
-import { getVersionInfo } from '@/lib/version'
-
-export function VersionBadge() {
-  const version = getVersionInfo()
-  
-  return (
-    <div className="text-xs text-gray-500">
-      v{version.appVersion} ({version.commitSha})
-    </div>
-  )
-}
-```
+1. Run `git rev-parse --short HEAD` before deployment and record the SHA.
+2. Run `./scripts/verify-build.sh` and confirm it succeeds.
+3. Run `./scripts/deploy-cloud.sh`.
+4. Query `GET /api/health` on the deployed Cloud Run service.
+5. Confirm `version.commit` in the JSON response matches the SHA from step 1.
 
 ## Monitoring
 
@@ -407,7 +462,7 @@ gcloud run revisions logs read REVISION_NAME
 **Verify deployed version:**
 
 ```bash
-# Check service health
+# Check service health and returned commit SHA
 curl https://your-service.run.app/api/health
 
 # Check revision details
@@ -444,24 +499,31 @@ gcloud secrets versions add google-ai-key --data-file=- <<< "NEW_VALUE"
 
 ## Environment Variables
 
-### Required
+### Required runtime secrets
 
-- `GOOGLE_AI_KEY` - Google AI/Gemini API key
-- `DATABASE_URL` - PostgreSQL connection string
-- `EIGHT_INTERNAL_TOKEN` - Internal service authentication token
+- `database-url` → `DATABASE_URL` - PostgreSQL connection string
+- `nextauth-secret` → `NEXTAUTH_SECRET` - NextAuth runtime secret (must be injected at runtime, not baked into the image)
+- `google-ai-key` → `GOOGLE_AI_KEY` - Google AI / Gemini API key
+- `eight-internal-token` → `EIGHT_INTERNAL_TOKEN` - Internal service authentication token
+- `flw-secret-key` → `FLW_SECRET_KEY` - Flutterwave secret for payment routes
 
-### Optional
+### Optional runtime environment variables
 
 - `NODE_ENV` - `production` or `development` (auto-set in Cloud Run)
 - `LOG_LEVEL` - Logging verbosity level
+- `GOOGLE_CLOUD_RUN_URL` - Override the backend Cloud Run base URL used by `lib/system-switch.ts`
+- `CLOUD_RUN_API_KEY` - Optional API key sent to external engine routes
 
-### Auto-Injected by Build System
+### Build / deploy metadata
 
-- `NEXT_PUBLIC_COMMIT_SHA` - Git commit short hash
-- `NEXT_PUBLIC_COMMIT_FULL` - Full git commit hash
-- `NEXT_PUBLIC_BRANCH` - Git branch name
+- `NEXT_PUBLIC_COMMIT_SHA` - Git commit short hash for the built application
+- `NEXT_PUBLIC_COMMIT_FULL` - Full git commit hash when available during build
+- `NEXT_PUBLIC_BRANCH` - Git branch name when available during build
 - `NEXT_PUBLIC_BUILD_TIME` - Build timestamp
-- `NEXT_PUBLIC_APP_VERSION` - App version from package.json
+- `NEXT_PUBLIC_APP_VERSION` - App version from `package.json`
+- `COMMIT_SHA` - Runtime deploy SHA exposed by Cloud Run for `/api/health`
+- `BUILD_TIMESTAMP` - Runtime deploy timestamp exposed by Cloud Run for `/api/health`
+- `APP_VERSION` - Runtime app version exposed by Cloud Run for `/api/health`
 
 ## Support
 

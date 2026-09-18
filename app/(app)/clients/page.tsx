@@ -40,6 +40,20 @@ const statusConfig = {
   pending: { label: "Pending", color: "bg-warning/10 text-warning", icon: Clock },
 }
 
+type ClientStatus = keyof typeof statusConfig
+
+interface ClientRecord {
+  id: string
+  status: ClientStatus
+  createdAt: string
+  user: {
+    displayName: string
+    email: string
+    avatar?: string
+    presence?: 'online' | 'offline' | 'away' | 'busy'
+  }
+}
+
 export default function ClientsPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -48,7 +62,7 @@ export default function ClientsPage() {
     limit: 50,
   })
 
-  const clients = clientsData?.data || []
+  const clients = (clientsData?.clients || []) as ClientRecord[]
   const filteredClients = clients.filter((c) =>
     c.user.displayName.toLowerCase().includes(search.toLowerCase())
   )

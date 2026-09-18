@@ -548,6 +548,7 @@ function UserManagement() {
 }
 
 function FundSweeps() {
+  const { user } = useAuth()
   const [sweeps, setSweeps] = useState([])
   const [loading, setLoading] = useState(true)
 

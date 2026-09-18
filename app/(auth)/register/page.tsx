@@ -72,7 +72,7 @@ function RegisterContent() {
     setIsSubmitting(true)
 
     try {
-      await register({
+      const result = await register({
         email: formData.email,
         username: formData.username,
         name: formData.name,
@@ -82,8 +82,11 @@ function RegisterContent() {
         referredBy: referredBy || undefined,
       })
 
-      // Use window.location for reliable redirect after auth state changes
-      window.location.href = '/dashboard'
+      if (!result.success) {
+        throw new Error(result.error || 'Registration failed')
+      }
+
+      window.location.href = result.destination || '/dashboard'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
       setIsSubmitting(false)
