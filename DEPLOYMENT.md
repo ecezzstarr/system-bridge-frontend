@@ -50,6 +50,68 @@ Cloud Run revision should match the git SHA you deployed locally:
 git rev-parse --short HEAD
 ```
 
+## Recover the live app source into Git
+
+If Cloud Run is serving a user-facing app source that no longer matches Git history, recover the source into a clean Git checkout before deploying again.
+
+### 1. Download and extract the Cloud Build source snapshot
+
+Use the build ID that produced the live image, then extract the archived source into a temporary directory outside your Git checkout.
+
+```bash
+gcloud builds describe BUILD_ID --project ssbr-495208 \
+  --format='value(source.storageSource.bucket,source.storageSource.object,source.storageSource.generation)'
+
+mkdir -p /tmp/system-bridge-live-source
+
+gcloud storage cp 'gs://BUCKET/OBJECT#GENERATION' /tmp/system-bridge-live-source/source.tgz
+mkdir -p /tmp/system-bridge-live-source/extracted
+tar -xzf /tmp/system-bridge-live-source/source.tgz -C /tmp/system-bridge-live-source/extracted
+```
+
+### 2. Restore the live source into a clean Git checkout
+
+The recovery script replaces the working tree with the extracted live source while preserving the hardened deployment files from this repository branch.
+
+```bash
+cd ~/system-bridge-frontend
+git fetch origin
+git checkout -B live-source-recovery origin/main
+git reset --hard origin/main
+git clean -fdx
+
+./scripts/restore-live-source.sh \
+  /tmp/system-bridge-live-source/extracted
+```
+
+After the script runs, inspect the diff and commit the recovered source as a normal Git commit.
+
+### 3. Validate and deploy from Git
+
+```bash
+npm ci --legacy-peer-deps
+./scripts/verify-build.sh
+./scripts/deploy-cloud.sh
+```
+
+### 4. Confirm Cloud Run is serving the new source commit
+
+```bash
+SERVICE_URL="$(gcloud run services describe system-bridge-frontend \
+  --region us-central1 \
+  --project ssbr-495208 \
+  --format='value(status.url)')"
+
+curl "$SERVICE_URL/api/health"
+gcloud run services describe system-bridge-frontend \
+  --region us-central1 \
+  --project ssbr-495208 \
+  --format='value(spec.template.spec.containers[0].image)'
+git rev-parse --short HEAD
+```
+
+The deployed image tag and health/version output should match the Git commit you restored and deployed.
+
 ## Prerequisites
 
 ### Required Tools
