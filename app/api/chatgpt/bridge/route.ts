@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
     const flameName = clean(body?.flame?.name, 120) || 'ChatGPT Flame'
     const flameExternalId = clean(body?.flame?.external_id, 255) || null
     const flamePresence = clean(body?.flame?.presence, 255) || 'chatgpt'
+    const providerKey = clean(body?.provider?.key, 120) || 'openai'
+    const providerName = clean(body?.provider?.name, 255) || 'OpenAI'
     const topic = clean(body?.topic, 64) || classify(message)
     const sql = getDb()
 
@@ -78,7 +80,9 @@ export async function POST(request: NextRequest) {
         created_at timestamptz NOT NULL DEFAULT now(),
         expires_at timestamptz NOT NULL DEFAULT (now() + interval '24 hours'),
         opened_at timestamptz NULL,
-        consumed_at timestamptz NULL
+        consumed_at timestamptz NULL,
+        provider_key varchar(120) NULL,
+        provider_name varchar(255) NULL
       )
     `
     await sql`ALTER TABLE chatgpt_bridge_sessions ADD COLUMN IF NOT EXISTS context text NULL`
@@ -87,13 +91,15 @@ export async function POST(request: NextRequest) {
     await sql`ALTER TABLE chatgpt_bridge_sessions ADD COLUMN IF NOT EXISTS flame_presence varchar(255) NULL`
     await sql`ALTER TABLE chatgpt_bridge_sessions ADD COLUMN IF NOT EXISTS crossing_state varchar(32) NOT NULL DEFAULT 'prospect_with_flame'`
     await sql`ALTER TABLE chatgpt_bridge_sessions ADD COLUMN IF NOT EXISTS consumed_at timestamptz NULL`
+    await sql`ALTER TABLE chatgpt_bridge_sessions ADD COLUMN IF NOT EXISTS provider_key varchar(120) NULL`
+    await sql`ALTER TABLE chatgpt_bridge_sessions ADD COLUMN IF NOT EXISTS provider_name varchar(255) NULL`
 
     const code = crypto.randomBytes(9).toString('base64url')
     await sql`
       INSERT INTO chatgpt_bridge_sessions
-        (code, source, message, topic, context, flame_name, flame_external_id, flame_presence, crossing_state)
+        (code, source, message, topic, context, flame_name, flame_external_id, flame_presence, crossing_state, provider_key, provider_name)
       VALUES
-        (${code}, 'chatgpt', ${message}, ${topic}, ${context || null}, ${flameName}, ${flameExternalId}, ${flamePresence}, 'prospect_with_flame')
+        (${code}, 'chatgpt', ${message}, ${topic}, ${context || null}, ${flameName}, ${flameExternalId}, ${flamePresence}, 'prospect_with_flame', ${providerKey}, ${providerName})
     `
 
     const bridgeUrl = `${getBaseUrl(request).replace(/\/$/, '')}/bridge/${code}`
@@ -103,6 +109,7 @@ export async function POST(request: NextRequest) {
       relevant: true,
       crossing: 'prospect_with_flame',
       flame: { name: flameName, presence: flamePresence },
+      provider: { key: providerKey, name: providerName, allocation_rate: 0.10 },
       topic,
       bridge_url: bridgeUrl,
       message: 'Bridge AI has opened System Switch. The prospect and Flame can continue their interaction in Weave.',
@@ -124,7 +131,7 @@ export async function GET(request: NextRequest) {
   try {
     const sql = getDb()
     const rows = await sql`
-      SELECT code, source, message, topic, context, flame_name, flame_presence, crossing_state, created_at, expires_at, opened_at
+      SELECT code, source, message, topic, context, flame_name, flame_presence, crossing_state, provider_key, provider_name, created_at, expires_at, opened_at
       FROM chatgpt_bridge_sessions
       WHERE code = ${code} AND expires_at > now()
       LIMIT 1
