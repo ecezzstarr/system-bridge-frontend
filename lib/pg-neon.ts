@@ -2,7 +2,6 @@ import { Pool } from "pg"
 
 export interface SqlQueryFn {
   (strings: TemplateStringsArray, ...values: any[]): Promise<any[]>
-  (queryText: string, values?: any[]): Promise<any[]>
 }
 
 const pools = new Map<string, Pool>()
@@ -34,10 +33,6 @@ function getPool(connectionString?: string) {
   return pools.get(resolved)!
 }
 
-function isConnectionString(value: string) {
-  return /^(postgres(ql)?:\/\/|mysql:\/\/|mssql:\/\/)/i.test(value)
-}
-
 async function executeQuery(
   connectionString: string | undefined,
   strings: TemplateStringsArray,
@@ -67,35 +62,27 @@ async function executeRawQuery(
   return result.rows
 }
 
+export function createSql(connectionString?: string): SqlQueryFn {
+  return (strings: TemplateStringsArray, ...tagValues: any[]) =>
+    executeQuery(connectionString, strings, tagValues)
+}
+
+export async function runSqlQuery(
+  queryText: string,
+  values: any[] = [],
+  connectionString?: string
+) {
+  return executeRawQuery(connectionString, queryText, values)
+}
+
 export function neon(connectionString?: string): SqlQueryFn
 export function neon(strings: TemplateStringsArray, ...values: any[]): Promise<any[]>
-export function neon(queryText: string, values?: any[]): Promise<any[]>
 export function neon(
   connectionOrStrings?: string | TemplateStringsArray,
   ...values: any[]
 ): SqlQueryFn | Promise<any[]> {
-  if (connectionOrStrings === undefined || (typeof connectionOrStrings === "string" && isConnectionString(connectionOrStrings))) {
-    const connectionString = connectionOrStrings
-    const sql: SqlQueryFn = (
-      stringsOrQuery: TemplateStringsArray | string,
-      ...queryValues: any[]
-    ) =>
-      typeof stringsOrQuery === "string"
-        ? executeRawQuery(
-            connectionString,
-            stringsOrQuery,
-            Array.isArray(queryValues[0]) ? queryValues[0] : queryValues
-          )
-        : executeQuery(connectionString, stringsOrQuery, queryValues)
-    return sql
-  }
-
-  if (typeof connectionOrStrings === "string") {
-    return executeRawQuery(
-      undefined,
-      connectionOrStrings,
-      Array.isArray(values[0]) ? values[0] : values
-    )
+  if (typeof connectionOrStrings === "string" || connectionOrStrings === undefined) {
+    return createSql(connectionOrStrings)
   }
 
   return executeQuery(undefined, connectionOrStrings, values)

@@ -114,6 +114,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refreshWallet()
   }, [isAuthenticated, refreshWallet])
 
+  const enforceLoopOneAgreement = useCallback(async (nextUser: User, nextToken: string) => {
+    if (!['agent', 'bridger'].includes(nextUser.role)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/loop-one/agreement', {
+        headers: { Authorization: ['Bearer', nextToken].join(' ') },
+      })
+
+      if (!response.ok) {
+        return
+      }
+
+      const result = await response.json()
+      if (!result?.signed && typeof window !== 'undefined') {
+        window.location.href = '/loop-one/agreement'
+      }
+    } catch (error) {
+      console.error('[Auth] Failed to verify Loop One agreement:', error)
+    }
+  }, [])
+
   const login = useCallback(async (email: string, password: string) => {
     try {
       const result = await loginRequest(email, password)
@@ -126,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       saveUser(nextUser)
       setToken(result.token)
       setUser(nextUser)
+      await enforceLoopOneAgreement(nextUser, result.token)
 
       return { success: true }
     } catch (error) {
@@ -134,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error: error instanceof Error ? error.message : 'Login failed',
       }
     }
-  }, [])
+  }, [enforceLoopOneAgreement])
 
   const register = useCallback(
     async (data: {
@@ -167,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveUser(nextUser)
         setToken(result.token)
         setUser(nextUser)
+        await enforceLoopOneAgreement(nextUser, result.token)
 
         return { success: true }
       } catch (error) {
@@ -176,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    []
+    [enforceLoopOneAgreement]
   )
 
   const logout = useCallback(async () => {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
-import { neon } from '@/lib/pg-neon'
+import { neon, runSqlQuery } from '@/lib/pg-neon'
 
 const getDb = () => {
   if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not configured')
@@ -67,7 +67,11 @@ export async function POST(request: NextRequest) {
         const target = payload.target === 'play' ? 'play_balance' : 'balance_trx'
         const currency = target === 'play_balance' ? 'TRX' : payload.currency === 'USDT' ? 'USDT' : 'TRX'
         if (!userId || !Number.isFinite(amount) || amount <= 0) return NextResponse.json({ success: false, error: 'Valid userId and positive amount required' }, { status: 400 })
-        const result = await sql(`UPDATE wallets SET ${target} = ${target} + $1, updated_at = NOW() WHERE user_id = $2::uuid RETURNING *`, [amount, userId])
+        const result = await runSqlQuery(
+          `UPDATE wallets SET ${target} = ${target} + $1, updated_at = NOW() WHERE user_id = $2::uuid RETURNING *`,
+          [amount, userId],
+          process.env.DATABASE_URL
+        )
         if (!result.length) return NextResponse.json({ success: false, error: 'Wallet not found' }, { status: 404 })
         await sql`INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_after, created_at) VALUES (gen_random_uuid(), ${userId}::uuid, 'admin_credit', ${amount}, ${currency}, ${'EIGHT funded ' + target}, ${result[0][target]}, NOW())`
         return NextResponse.json({ success: true, wallet: result[0] })

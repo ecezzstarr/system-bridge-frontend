@@ -34,7 +34,7 @@ export function useClients(params?: { status?: string; limit?: number }) {
   return useSWR(['clients', params], async () => {
     const res = await api.getClients(params)
     if (!res.success) throw new Error(res.error)
-    return res.data
+    return { clients: res.data?.clients || [] }
   })
 }
 

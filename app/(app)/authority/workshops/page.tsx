@@ -88,7 +88,13 @@ export default function AuthorityWorkshopsPage() {
   }, [loading, router, user])
 
   if (loading || !user || user.role !== 'admin') {
-    return null
+    return (
+      <main className="min-h-screen bg-[#05050f] px-5 py-8 text-slate-200 md:px-8">
+        <div className="mx-auto max-w-3xl rounded-2xl border border-slate-800 bg-slate-950/80 p-6 text-sm text-slate-400">
+          {loading ? 'Loading Authority Workshop…' : 'Redirecting to the dashboard…'}
+        </div>
+      </main>
+    )
   }
 
   return (

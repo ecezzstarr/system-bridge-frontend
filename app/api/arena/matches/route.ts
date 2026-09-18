@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireApiUser } from '@/lib/api-auth'
-import { neon } from '@/lib/pg-neon'
+import { neon, runSqlQuery } from '@/lib/pg-neon'
 
 const getDb = () => {
   if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not configured')
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     if (status) { query += ` AND m.status = $${i++}`; params.push(status) }
     if (category) { query += ` AND m.category = $${i++}`; params.push(category) }
     query += ' ORDER BY m.scheduled_at ASC LIMIT 50'
-    const matches = await sql(query, params)
+    const matches = await runSqlQuery(query, params, process.env.DATABASE_URL)
     return NextResponse.json({ matches: matches.map((m: any) => ({
       id: m.id, title: m.title, description: m.description,
       host: { id: m.host_id, displayName: m.host_name, avatar: m.host_avatar },
