@@ -14,6 +14,8 @@ type Crossing = {
   flame_name?: string | null
   flame_presence?: string | null
   crossing_state?: string | null
+  provider_key?: string | null
+  provider_name?: string | null
 }
 
 export default function SystemSwitchPage() {
@@ -32,7 +34,7 @@ export default function SystemSwitchPage() {
   return (
     <main className="min-h-screen bg-black p-3 md:p-6">
       <SystemSwitchWorld initialMovement={crossing?.message || null} flameName={crossing?.flame_name || null} />
-      <FileFolderPurchase />
+      <FileFolderPurchase bridgeCode={bridge || undefined} providerKey={crossing?.provider_key || undefined} providerName={crossing?.provider_name || undefined} flameName={crossing?.flame_name || undefined} />
     </main>
   )
 }
