@@ -12,13 +12,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const category = searchParams.get('category')
+    const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 50, 1), 100)
     const sql = getDb()
     let query = `SELECT m.*, u.name AS host_name, u.username AS host_username, u.avatar AS host_avatar, (SELECT COUNT(*) FROM arena_participants WHERE match_id = m.id) AS participant_count FROM arena_matches m LEFT JOIN users u ON m.host_id = u.id WHERE 1=1`
     const params: any[] = []
     let i = 1
     if (status) { query += ` AND m.status = $${i++}`; params.push(status) }
     if (category) { query += ` AND m.category = $${i++}`; params.push(category) }
-    query += ' ORDER BY m.scheduled_at ASC LIMIT 50'
+    query += ` ORDER BY m.scheduled_at ASC LIMIT $${i++}`
+    params.push(limit)
     const matches = await runSqlQuery(query, params, process.env.DATABASE_URL)
     return NextResponse.json({ matches: matches.map((m: any) => ({
       id: m.id, title: m.title, description: m.description,

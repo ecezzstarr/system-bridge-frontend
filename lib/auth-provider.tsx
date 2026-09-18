@@ -49,7 +49,7 @@ interface AuthContextType {
   loading: boolean
   isLoading: boolean
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; destination?: string }>
   loginWithGoogle: () => Promise<void>
   register: (data: {
     username: string
@@ -60,7 +60,7 @@ interface AuthContextType {
     email?: string
     role?: 'agent' | 'bridger'
     referredBy?: string
-  }) => Promise<{ success: boolean; error?: string }>
+  }) => Promise<{ success: boolean; error?: string; destination?: string }>
   logout: () => Promise<void>
   refreshWallet: () => Promise<void>
 }
@@ -114,9 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refreshWallet()
   }, [isAuthenticated, refreshWallet])
 
-  const enforceLoopOneAgreement = useCallback(async (nextUser: User, nextToken: string) => {
+  const getPostAuthDestination = useCallback(async (nextUser: User, nextToken: string) => {
     if (!['agent', 'bridger'].includes(nextUser.role)) {
-      return
+      return '/dashboard'
     }
 
     try {
@@ -125,16 +125,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
 
       if (!response.ok) {
-        return
+        return '/dashboard'
       }
 
       const result = await response.json()
-      if (!result?.signed && typeof window !== 'undefined') {
-        window.location.href = '/loop-one/agreement'
+      if (!result?.signed) {
+        return '/loop-one/agreement'
       }
     } catch (error) {
       console.error('[Auth] Failed to verify Loop One agreement:', error)
     }
+    return '/dashboard'
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
@@ -149,16 +150,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       saveUser(nextUser)
       setToken(result.token)
       setUser(nextUser)
-      await enforceLoopOneAgreement(nextUser, result.token)
-
-      return { success: true }
+      const destination = await getPostAuthDestination(nextUser, result.token)
+      return { success: true, destination }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Login failed',
       }
     }
-  }, [enforceLoopOneAgreement])
+  }, [getPostAuthDestination])
 
   const register = useCallback(
     async (data: {
@@ -191,9 +191,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveUser(nextUser)
         setToken(result.token)
         setUser(nextUser)
-        await enforceLoopOneAgreement(nextUser, result.token)
-
-        return { success: true }
+        const destination = await getPostAuthDestination(nextUser, result.token)
+        return { success: true, destination }
       } catch (error) {
         return {
           success: false,
@@ -201,7 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [enforceLoopOneAgreement]
+    [getPostAuthDestination]
   )
 
   const logout = useCallback(async () => {

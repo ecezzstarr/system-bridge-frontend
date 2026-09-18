@@ -86,8 +86,7 @@ function RegisterContent() {
         throw new Error(result.error || 'Registration failed')
       }
 
-      // Use window.location for reliable redirect after auth state changes
-      window.location.href = '/dashboard'
+      window.location.href = result.destination || '/dashboard'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
       setIsSubmitting(false)

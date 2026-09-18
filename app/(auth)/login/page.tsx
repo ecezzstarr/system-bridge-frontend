@@ -29,7 +29,7 @@ export default function LoginPage() {
       if (!result.success) {
         throw new Error(result.error || 'Login failed')
       }
-      router.push('/dashboard')
+      router.push(result.destination || '/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
       setIsSubmitting(false)
