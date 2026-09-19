@@ -1,9 +1,9 @@
-# Use Node.js 20 Alpine as base
-FROM node:22-alpine AS base
+# Use glibc to match the locked native Next.js dependency
+FROM node:22-bookworm-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+
 WORKDIR /app
 
 # Install pnpm
