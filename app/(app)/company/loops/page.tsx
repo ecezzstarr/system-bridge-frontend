@@ -20,7 +20,8 @@ interface Loop {
 }
 
 export default function CompanyLoopsPage() {
-  const { user, loading } = useAuth()
+  const { user, isLoading, isInitialized } = useAuth()
+  const loading = isLoading || !isInitialized
   const [loops, setLoops] = useState<Loop[]>([])
   const [error, setError] = useState('')
 

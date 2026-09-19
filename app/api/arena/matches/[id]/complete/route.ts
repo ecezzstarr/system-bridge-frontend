@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@/lib/pg-neon'
-
-const getDb = () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL not configured')
-  }
-  return neon(process.env.DATABASE_URL)
-}
+import { sql } from '@/lib/db'
+import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 
 // Platform wallet ID (company wallet)
 const PLATFORM_WALLET_USER_ID = 'be4f0618-d666-4e13-ae8f-13c986784ff7'
@@ -28,8 +22,6 @@ export async function POST(
     if (!winnerId) {
       return NextResponse.json({ error: 'Winner ID required' }, { status: 400 })
     }
-
-    const sql = getDb()
 
     // Get match
     const matches = await sql`SELECT * FROM arena_matches WHERE id = ${id}`
@@ -131,6 +123,13 @@ export async function POST(
     // Get winner info
     const winners = await sql`SELECT name, username FROM users WHERE id = ${winnerId}::uuid`
     const winnerName = winners.length > 0 ? (winners[0].name || winners[0].username) : 'Unknown'
+
+    creditBridgerActivityCommission({
+      bridgerId: winnerId,
+      activity: 'arena_win',
+      baseAmount: winnerPayout,
+      description: `30% commission: referred Bridger won ${winnerPayout.toFixed(2)} TRX in Arena (${match.title})`,
+    }).catch(err => console.error('[arena complete] commission error:', err))
 
     return NextResponse.json({
       success: true,

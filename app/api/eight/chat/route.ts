@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/auth-api'
 import { askEight, eightBuildFeature, eightRefineCode, eightBuildUI, eightCreateAPI, eightDebug } from '@/lib/eight-engine'
-import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 
 export async function POST(request: NextRequest) {
-  const auth = await requireWorkshopAuthorization(request)
-  if (!auth.authorized) return auth.response
-
   try {
+    const authUser = await getAuthUser(request)
+    if (!authUser || authUser.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { message, mode, context } = await request.json()
 
     if (!message) {

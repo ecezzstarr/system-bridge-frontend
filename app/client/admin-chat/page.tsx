@@ -95,7 +95,7 @@ export default function AdminChatPage() {
         <div className="w-64 bg-slate-900/80 border-r border-slate-800 p-6 flex flex-col sticky top-0 h-screen">
           <Link href="/client/dashboard">
             <button className="text-sm text-slate-400 hover:text-white mb-6 flex items-center gap-1">
-              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+              <ArrowLeft className="w-4 h-4" /> Back to Terminal
             </button>
           </Link>
 
@@ -144,7 +144,7 @@ export default function AdminChatPage() {
       <div className="w-64 bg-slate-900/80 border-r border-slate-800 p-6 flex flex-col sticky top-0 h-screen">
         <Link href="/client/dashboard">
           <button className="text-sm text-slate-400 hover:text-white mb-6 flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+            <ArrowLeft className="w-4 h-4" /> Back to Terminal
           </button>
         </Link>
 

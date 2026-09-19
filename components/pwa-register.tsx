@@ -1,0 +1,34 @@
+'use client'
+
+import { useEffect } from 'react'
+
+export function PWARegister() {
+  useEffect(() => {
+    // Capture the install prompt
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      (window as any).deferredPrompt = e;
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(
+          (registration) => {
+            console.log('Service Worker registered with scope:', registration.scope)
+          },
+          (err) => {
+            console.log('Service Worker registration failed:', err)
+          }
+        )
+      })
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, [])
+
+  return null
+}

@@ -2,14 +2,14 @@
 
 import { useAuth } from '@/lib/auth-provider'
 import { clearToken } from '@/lib/auth-client'
-import { LogOut, Store, Gamepad2, MessageCircle, ChevronRight, Zap, Globe, Code } from 'lucide-react'
+import { LogOut, Store, Gamepad2, MessageCircle, ChevronRight, Zap, Globe, Code, Trophy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { EcosystemNav } from '@/components/ecosystem-nav'
-import { RiverChat } from '@/components/river-chat'
+import { WeaveAssistant } from '@/components/weave-assistant'
 
-export default function DashboardPage() {
+export default function TerminalPage() {
   const { user, isLoading, logout } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -21,12 +21,14 @@ export default function DashboardPage() {
   // Route users to their appropriate dashboard
   useEffect(() => {
     if (mounted && user && !isLoading) {
-      if (user.role === 'agent') {
+      if (user.role === 'admin') {
+        router.replace('/admin/dashboard')
+      } else if (user.role === 'agent') {
         router.replace('/agent/dashboard')
       } else if (user.role === 'bridger') {
         router.replace('/bridger/dashboard')
       }
-      // Admin and client stay on this dashboard
+      // Client stays on this dashboard
     }
   }, [mounted, user, isLoading, router])
 
@@ -53,14 +55,14 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* Mobile-First Scrollable Dashboard */}
+      {/* Mobile-First Scrollable Terminal */}
       <div className="max-w-md mx-auto bg-slate-950">
         {/* Header Section - Sticky */}
         <div className="sticky top-0 z-50 bg-slate-950 border-b border-slate-800 px-4 py-4 backdrop-blur-sm">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-2xl font-bold text-white">SSBNOW.SHOP</h1>
-              <p className="text-xs text-slate-500">Weave of Presence</p>
+              <h1 className="text-2xl font-black text-white tracking-tighter">WEAVE</h1>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">WEAVE Ecosystem</p>
             </div>
             <button
               onClick={handleLogout}
@@ -79,22 +81,23 @@ export default function DashboardPage() {
           )}
 
           {user.role === 'admin' && (
-            <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-2">
               <Link href="/admin/dashboard">
-                <button className="w-full text-xs bg-purple-600/20 text-purple-400 border border-purple-600/50 rounded-lg py-2 hover:bg-purple-600/30 transition font-medium">
-                  Admin Panel
+                <button className="w-full h-full text-[10px] bg-purple-600/20 text-purple-400 border border-purple-600/50 rounded-lg py-2 hover:bg-purple-600/30 transition font-medium flex flex-col items-center justify-center gap-1">
+                  <Zap className="h-3.5 w-3.5" />
+                  The Weave
+                </button>
+              </Link>
+              <Link href="/admin">
+                <button className="w-full h-full text-[10px] bg-cyan-600/20 text-cyan-400 border border-cyan-600/50 rounded-lg py-2 hover:bg-cyan-600/30 transition font-medium flex flex-col items-center justify-center gap-1">
+                  <Zap className="h-3.5 w-3.5" />
+                  Panel
                 </button>
               </Link>
               <Link href="/admin/origin-systems">
-                <button className="w-full text-xs bg-indigo-600/20 text-indigo-400 border border-indigo-600/50 rounded-lg py-2 hover:bg-indigo-600/30 transition font-medium flex items-center justify-center gap-2">
+                <button className="w-full h-full text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-600/50 rounded-lg py-2 hover:bg-indigo-600/30 transition font-medium flex flex-col items-center justify-center gap-1">
                   <Globe className="h-3.5 w-3.5" />
-                  Origin Network
-                </button>
-              </Link>
-              <Link href="/admin/workshop">
-                <button className="w-full text-xs bg-pink-600/20 text-pink-400 border border-pink-600/50 rounded-lg py-2 hover:bg-pink-600/30 transition font-medium flex items-center justify-center gap-2">
-                  <Code className="h-3.5 w-3.5" />
-                  Authority Workshop
+                  Origin
                 </button>
               </Link>
             </div>
@@ -168,13 +171,26 @@ export default function DashboardPage() {
                 </button>
               </Link>
 
-              <Link href="/places?place=arena">
+              <Link href="/arena">
                 <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
                   <div className="flex items-center gap-3">
                     <Gamepad2 className="h-5 w-5 text-yellow-400 flex-shrink-0" />
                     <div className="text-left min-w-0">
                       <p className="text-sm font-medium">Arena</p>
-                      <p className="text-xs text-slate-500">Live games</p>
+                      <p className="text-xs text-slate-500">Live predictions</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                </button>
+              </Link>
+
+              <Link href="/casino">
+                <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
+                  <div className="flex items-center gap-3">
+                    <Trophy className="h-5 w-5 text-purple-400 flex-shrink-0" />
+                    <div className="text-left min-w-0">
+                      <p className="text-sm font-medium">Casino</p>
+                      <p className="text-xs text-slate-500">Test your luck</p>
                     </div>
                   </div>
                   <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
@@ -258,7 +274,7 @@ export default function DashboardPage() {
       </div>
       
       {/* River Chat Widget */}
-      <RiverChat />
+      <WeaveAssistant role="client" checklist={[]} />
     </div>
   )
 }

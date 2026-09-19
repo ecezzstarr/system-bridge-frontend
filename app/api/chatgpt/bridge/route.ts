@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { sql } from '@/lib/db'
 import crypto from 'node:crypto'
 
 export const dynamic = 'force-dynamic'
-
-function getDb() {
-  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL
-  if (!url) throw new Error('Database not configured')
-  return neon(url)
-}
 
 function getBaseUrl(request: NextRequest) {
   return process.env.NEXTAUTH_URL || new URL(request.url).origin
@@ -57,7 +51,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'message is too long' }, { status: 413 })
     }
 
-    const sql = getDb()
     await sql`
       CREATE TABLE IF NOT EXISTS chatgpt_bridge_sessions (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

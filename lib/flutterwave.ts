@@ -50,7 +50,7 @@ export async function initializePayment(
         customizations: {
           title: 'SSB Now',
           description: 'Wallet Deposit',
-          logo: 'https://ssbnow.online/logo.png',
+          logo: 'https://ssbnow.shop/logo.png',
         },
         meta: {
           userId,
@@ -132,7 +132,7 @@ export async function getDepositLink(
     email,
     name,
     userId,
-    `${process.env.NEXTAUTH_URL || 'https://ssbnow.online'}/wallet?deposit=success`
+    `${process.env.NEXTAUTH_URL || 'https://ssbnow.shop'}/wallet?deposit=success`
   )
   
   return result.success ? result.paymentLink || null : null

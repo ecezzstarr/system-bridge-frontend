@@ -52,9 +52,12 @@ export default function EarningsPage() {
   const { data: summary, isLoading: summaryLoading } = useEarningsSummary()
   const { data: historyData, isLoading: historyLoading } = useEarningsHistory({ limit: 20 })
 
-  const history = historyData?.data || []
-  const totalByType = summary?.byType || {}
-  const totalEarningsFromTypes = Object.values(totalByType).reduce((sum, val) => sum + (val as number), 0)
+  const history = historyData?.earnings || []
+  const totalByType: Record<string, number> = summary?.byType || {}
+  const totalEarningsFromTypes = Object.values(totalByType).reduce(
+    (sum: number, val: number) => sum + val,
+    0
+  )
 
   return (
     <div className="space-y-6">

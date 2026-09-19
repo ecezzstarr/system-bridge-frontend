@@ -1,20 +1,19 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/auth-api'
 import { getUserLedger, getUserEscrow, getUserTotalBalance } from '@/lib/ledger'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const authUser = await getAuthUser(request)
     
-    if (!session?.user?.id) {
+    if (!authUser?.id) {
       return NextResponse.json(
         { success: false, error: 'Not authenticated' },
         { status: 401 }
       )
     }
 
-    const userId = session.user.id
+    const userId = authUser.id
     const ledger = await getUserLedger(userId, 100)
     const escrow = await getUserEscrow(userId)
     const balance = await getUserTotalBalance(userId)

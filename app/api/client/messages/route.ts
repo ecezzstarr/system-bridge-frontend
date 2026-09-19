@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@/lib/pg-neon'
-
-function getDb() {
-  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL
-  if (!url) throw new Error('Database not configured')
-  return neon(url)
-}
+import { sql } from '@/lib/db'
+import { agentHasApprovedChannel } from '@/lib/agent-channels'
 
 // GET - Fetch messages for a client/position
 export async function GET(request: NextRequest) {
@@ -14,58 +9,153 @@ export async function GET(request: NextRequest) {
     const clientId = searchParams.get('clientId')
     const position = searchParams.get('position')
     const isAdmin = searchParams.get('admin') === 'true'
+    const isBridger = searchParams.get('bridger') === 'true'
+    const isAgent = searchParams.get('agent') === 'true'
 
-    const sql = getDb()
+    if (isAdmin || isBridger || isAgent) {
+      const enforcedPosition = isBridger ? 'bridger' : position
 
-    if (isAdmin) {
-      // Admin fetching conversation with specific client
-      if (clientId && position) {
+      if (clientId && enforcedPosition) {
+        if (isBridger) {
+          const bridgerId = searchParams.get('bridgerId')
+          const ownership = await sql`
+            SELECT id FROM clients
+            WHERE id = ${clientId}::uuid AND (referred_by = ${bridgerId}::uuid OR assigned_bridger_id = ${bridgerId}::uuid)
+          `
+          if (ownership.length === 0) {
+            return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
+          }
+        }
+
+        if (isAgent) {
+          const agentId = searchParams.get('agentId')
+          const ownership = await sql`
+            SELECT id FROM clients
+            WHERE id = ${clientId}::uuid AND assigned_agent_id = ${agentId}::uuid
+          `
+          if (ownership.length === 0) {
+            return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
+          }
+
+          const hasChannel = await agentHasApprovedChannel(agentId || '', enforcedPosition || '')
+          if (!hasChannel) {
+            return NextResponse.json({ success: false, error: 'Not approved for this channel' }, { status: 403 })
+          }
+        }
+
         const messages = await sql`
-          SELECT * FROM client_messages 
-          WHERE client_id = ${clientId} AND position = ${position}
+          SELECT * FROM client_messages
+          WHERE client_id = ${clientId} AND position = ${enforcedPosition}
           ORDER BY created_at ASC
         `
+
+        await sql`
+          UPDATE client_messages
+          SET is_read = true
+          WHERE client_id = ${clientId} AND position = ${enforcedPosition} AND sender_type = 'client'
+        `
+
         return NextResponse.json({ success: true, messages })
-      } else if (clientId) {
-        // Admin fetching all messages from a specific client
+      } else if (clientId && isAdmin) {
         const messages = await sql`
-          SELECT * FROM client_messages 
+          SELECT * FROM client_messages
           WHERE client_id = ${clientId}
           ORDER BY created_at ASC
         `
         return NextResponse.json({ success: true, messages })
       } else {
-        // Get all conversations grouped by client and position
-        const summary = await sql`
-          SELECT 
-            client_id, 
-            client_name,
-            position, 
-            COUNT(*) as total_messages,
-            SUM(CASE WHEN is_read = false AND sender_type = 'client' THEN 1 ELSE 0 END) as unread_count,
-            MAX(created_at) as last_message_at
-          FROM client_messages 
-          GROUP BY client_id, client_name, position
-          ORDER BY MAX(created_at) DESC
-        `
+        let summary;
+
+        if (isBridger) {
+          const bridgerId = searchParams.get('bridgerId')
+          const myClients = await sql`
+            SELECT id FROM clients
+            WHERE referred_by = ${bridgerId}::uuid OR assigned_bridger_id = ${bridgerId}::uuid
+          `
+          const clientIds = myClients.map(c => c.id)
+
+          if (clientIds.length === 0) {
+            return NextResponse.json({ success: true, summary: [] })
+          }
+
+          summary = await sql`
+            SELECT
+              client_id,
+              client_name,
+              position,
+              COUNT(*) as total_messages,
+              SUM(CASE WHEN is_read = false AND sender_type = 'client' THEN 1 ELSE 0 END) as unread_count,
+              MAX(created_at) as last_message_at
+            FROM client_messages
+            WHERE client_id = ANY(${clientIds}) AND position = 'bridger'
+            GROUP BY client_id, client_name, position
+            ORDER BY MAX(created_at) DESC
+          `
+        } else if (isAgent) {
+          const agentId = searchParams.get('agentId')
+          const myClients = await sql`
+            SELECT id FROM clients
+            WHERE assigned_agent_id = ${agentId}::uuid
+          `
+          const clientIds = myClients.map(c => c.id)
+
+          if (clientIds.length === 0) {
+            return NextResponse.json({ success: true, summary: [] })
+          }
+
+          const approvedChannels = await sql`
+            SELECT channel FROM agent_channel_applications
+            WHERE agent_id = ${agentId}::uuid AND status = 'approved'
+          `
+          const channelList = approvedChannels.map((c: any) => c.channel)
+
+          if (channelList.length === 0) {
+            return NextResponse.json({ success: true, summary: [] })
+          }
+
+          summary = await sql`
+            SELECT
+              client_id,
+              client_name,
+              position,
+              COUNT(*) as total_messages,
+              SUM(CASE WHEN is_read = false AND sender_type = 'client' THEN 1 ELSE 0 END) as unread_count,
+              MAX(created_at) as last_message_at
+            FROM client_messages
+            WHERE client_id = ANY(${clientIds}) AND position = ANY(${channelList})
+            GROUP BY client_id, client_name, position
+            ORDER BY MAX(created_at) DESC
+          `
+        } else {
+          summary = await sql`
+            SELECT
+              client_id,
+              client_name,
+              position,
+              COUNT(*) as total_messages,
+              SUM(CASE WHEN is_read = false AND sender_type = 'client' THEN 1 ELSE 0 END) as unread_count,
+              MAX(created_at) as last_message_at
+            FROM client_messages
+            GROUP BY client_id, client_name, position
+            ORDER BY MAX(created_at) DESC
+          `
+        }
         return NextResponse.json({ success: true, summary })
       }
     } else {
-      // Client fetching their messages for a position
       if (!clientId || !position) {
         return NextResponse.json({ success: false, error: 'Missing clientId or position' }, { status: 400 })
       }
 
       const messages = await sql`
-        SELECT * FROM client_messages 
+        SELECT * FROM client_messages
         WHERE client_id = ${clientId} AND position = ${position}
         ORDER BY created_at ASC
       `
 
-      // Mark admin messages as read (for client view)
       await sql`
-        UPDATE client_messages 
-        SET is_read = true 
+        UPDATE client_messages
+        SET is_read = true
         WHERE client_id = ${clientId} AND position = ${position} AND sender_type = 'admin'
       `
 
@@ -81,13 +171,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { clientId, clientName, position, content, senderType } = body
+    const { clientId, clientName, position, content, senderType, agentId } = body
 
     if (!clientId || !position || !content || !senderType) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
     }
 
-    const sql = getDb()
+    if (agentId) {
+      const hasChannel = await agentHasApprovedChannel(agentId, position)
+      if (!hasChannel) {
+        return NextResponse.json({ success: false, error: 'Not approved for this channel' }, { status: 403 })
+      }
+    }
 
     const result = await sql`
       INSERT INTO client_messages (client_id, client_name, position, sender_type, content)
@@ -108,13 +203,11 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
     const { clientId, position, senderType } = body
 
-    const sql = getDb()
-
     await sql`
-      UPDATE client_messages 
-      SET is_read = true 
-      WHERE client_id = ${clientId} 
-        AND position = ${position} 
+      UPDATE client_messages
+      SET is_read = true
+      WHERE client_id = ${clientId}
+        AND position = ${position}
         AND sender_type = ${senderType}
     `
 

@@ -1,66 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@/lib/pg-neon'
-import { requireApiUser } from '@/lib/api-auth'
+import { sql } from '@/lib/db'
 
-const getDb = () => {
-  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not configured')
-  return neon(process.env.DATABASE_URL)
-}
-
+// Record presence heartbeat - called periodically while user is in field
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireApiUser(request)
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { userId, minutes = 1 } = await request.json()
 
-    const body = await request.json()
-    const minutes = Number(body.minutes ?? 1)
-    if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 10) {
-      return NextResponse.json({ error: 'Invalid presence interval' }, { status: 400 })
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
 
-    const sql = getDb()
+    // Update user's field presence minutes
     await sql`
-      UPDATE users
-      SET field_presence_minutes = COALESCE(field_presence_minutes, 0) + ${minutes}, updated_at = NOW()
-      WHERE id = ${user.id}::uuid AND is_active = true
+      UPDATE users 
+      SET field_presence_minutes = COALESCE(field_presence_minutes, 0) + ${minutes},
+          updated_at = NOW()
+      WHERE id = ${userId}::uuid
     `
-    const rows = await sql`SELECT field_presence_minutes FROM users WHERE id = ${user.id}::uuid`
-    const totalMinutes = rows.length ? Number(rows[0].field_presence_minutes) || 0 : 0
+
+    // Get updated presence stats
+    const users = await sql`
+      SELECT field_presence_minutes FROM users WHERE id = ${userId}::uuid
+    `
+
+    const totalMinutes = users.length > 0 ? Number(users[0].field_presence_minutes) : 0
 
     return NextResponse.json({
       success: true,
       totalMinutes,
       hoursInField: Math.floor(totalMinutes / 60),
-      accruedValue: (totalMinutes / 60).toFixed(2),
-    }, { headers: { 'Cache-Control': 'no-store' } })
+      // Presence value: 1 TRX per 60 minutes (accrues, paid monthly)
+      accruedValue: (totalMinutes / 60).toFixed(2)
+    })
+
   } catch (error) {
-    console.error('Presence tracking error:', error instanceof Error ? error.message : 'unknown error')
+    console.error('Presence tracking error:', error)
     return NextResponse.json({ error: 'Failed to record presence' }, { status: 500 })
   }
 }
 
+// Get user's presence stats
 export async function GET(request: NextRequest) {
   try {
-    const user = await requireApiUser(request)
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId')
 
-    const sql = getDb()
-    const rows = await sql`
-      SELECT field_presence_minutes, created_at FROM users WHERE id = ${user.id}::uuid AND is_active = true
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+    }
+
+    const users = await sql`
+      SELECT field_presence_minutes, created_at FROM users WHERE id = ${userId}::uuid
     `
-    if (!rows.length) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    const totalMinutes = Number(rows[0].field_presence_minutes) || 0
-    const nextMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)
+    if (users.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const totalMinutes = Number(users[0].field_presence_minutes) || 0
+    const memberSince = users[0].created_at
+
+    // Calculate presence value (1 TRX per hour in field)
+    const accruedValue = totalMinutes / 60
+
     return NextResponse.json({
       totalMinutes,
       hoursInField: Math.floor(totalMinutes / 60),
-      accruedValue: (totalMinutes / 60).toFixed(2),
-      memberSince: rows[0].created_at,
-      nextPayout: nextMonth.toISOString().split('T')[0],
-    }, { headers: { 'Cache-Control': 'no-store' } })
+      accruedValue: accruedValue.toFixed(2),
+      memberSince,
+      // Next payout is first of next month
+      nextPayout: getNextPayoutDate()
+    })
+
   } catch (error) {
-    console.error('Presence stats error:', error instanceof Error ? error.message : 'unknown error')
+    console.error('Presence stats error:', error)
     return NextResponse.json({ error: 'Failed to fetch presence stats' }, { status: 500 })
   }
+}
+
+function getNextPayoutDate(): string {
+  const now = new Date()
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  return nextMonth.toISOString().split('T')[0]
 }

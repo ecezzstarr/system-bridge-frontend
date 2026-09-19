@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@/lib/pg-neon'
-import { getApiUser } from '@/lib/api-auth'
+import { sql } from '@/lib/db'
 
-const getDb = () => {
-  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not configured')
-  return neon(process.env.DATABASE_URL)
-}
-
-// GET - Fetch only clients belonging to the authenticated Bridger.
+// GET - Fetch all clients referred by this bridger
 export async function GET(request: NextRequest) {
   try {
-    const user = await getApiUser(request)
-    if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    if (user.role !== 'bridger') return NextResponse.json({ error: 'Bridger access required' }, { status: 403 })
+    const { searchParams } = new URL(request.url)
+    const bridgerId = searchParams.get('bridgerId')
 
-    const sql = getDb()
+    if (!bridgerId) {
+      return NextResponse.json({ success: false, error: 'Bridger ID required' }, { status: 400 })
+    }
+
+    // Get all clients where referred_by or assigned_bridger_id matches this bridger
     const clients = await sql`
-      SELECT
+      SELECT 
         c.id,
         c.name,
         c.email,
@@ -24,14 +21,14 @@ export async function GET(request: NextRequest) {
         c.business_name,
         c.created_at
       FROM clients c
-      WHERE c.referred_by = ${user.id}::uuid
-         OR c.assigned_bridger_id = ${user.id}::uuid
+      WHERE c.referred_by = ${bridgerId}::uuid 
+         OR c.assigned_bridger_id = ${bridgerId}::uuid
       ORDER BY c.created_at DESC
     `
 
     return NextResponse.json({
       success: true,
-      clients: clients.map(c => ({
+      clients: (clients || []).map(c => ({
         id: c.id,
         name: c.name || 'Unnamed Client',
         email: c.email,
@@ -42,6 +39,10 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching bridger clients:', error)
-    return NextResponse.json({ success: false, clients: [], error: 'Unable to load clients' }, { status: 500 })
+    return NextResponse.json({ 
+      success: false, 
+      clients: [],
+      error: String(error)
+    })
   }
 }

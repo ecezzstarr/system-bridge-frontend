@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@/lib/pg-neon'
+import { sql } from '@/lib/db'
 
-const getDb = () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL not configured')
-  }
-  return neon(process.env.DATABASE_URL)
-}
+// Platform wallet ID (company wallet for commission)
+const PLATFORM_WALLET_USER_ID = 'be4f0618-d666-4e13-ae8f-13c986784ff7'
 
 // POST /api/arena/matches/[id]/join - Join a match
 export async function POST(
@@ -16,13 +12,11 @@ export async function POST(
   try {
     const { id } = await params
     const body = await request.json()
-    const { userId } = body
+    const { userId, prediction } = body
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
-
-    const sql = getDb()
 
     // Get match
     const matches = await sql`SELECT * FROM arena_matches WHERE id = ${id}`
@@ -70,21 +64,30 @@ export async function POST(
     const partId = `part_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     
     await sql`
-      INSERT INTO arena_participants (id, match_id, user_id)
-      VALUES (${partId}, ${id}, ${userId})
+      INSERT INTO arena_participants (id, match_id, user_id, prediction)
+      VALUES (${partId}, ${id}, ${userId}, ${prediction || null})
     `
 
-    // Deduct entry fee from user and add to prize pool
+    // Deduct entry fee from user and add to prize pool (with 10% commission)
     if (entryFee > 0) {
+      const commission = entryFee * 0.10
+      const netToPrizePool = entryFee - commission
+
       // Deduct from user's wallet
       await sql`
         UPDATE wallets SET balance_trx = balance_trx - ${entryFee}, updated_at = NOW()
         WHERE user_id = ${userId}::uuid
       `
       
-      // Add to match prize pool (entry fees accumulate until match ends)
+      // Add commission to platform wallet
       await sql`
-        UPDATE arena_matches SET prize_pool = prize_pool + ${entryFee} WHERE id = ${id}
+        UPDATE wallets SET balance_trx = balance_trx + ${commission}, updated_at = NOW()
+        WHERE user_id = ${PLATFORM_WALLET_USER_ID}::uuid
+      `
+
+      // Add net amount to match prize pool
+      await sql`
+        UPDATE arena_matches SET prize_pool = prize_pool + ${netToPrizePool} WHERE id = ${id}
       `
 
       // Record ledger entry

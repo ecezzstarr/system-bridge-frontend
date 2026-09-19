@@ -1,20 +1,11 @@
-# Legacy builder/tooling files
-__v0_runtime_loader.js
-__v0_devtools.tsx
-__v0_jsx-dev-runtime.ts
-.snowflake/
-.v0-trash/
-.vercel/
-
-# Environment variables and local credentials
+node_modules/
+.next/
 .env
 .env.*
 !.env.example
-*.pem
-*.key
-*.crt
-
-# Dependencies/build output
-node_modules/
-.next/
-.DS_Store
+*.log
+__pycache__/
+*.pyc
+*.tsbuildinfo
+=
+screenshot-main.png

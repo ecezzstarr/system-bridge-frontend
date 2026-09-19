@@ -29,7 +29,8 @@ const emptyForm = {
 }
 
 export default function LoopWorkshopPage() {
-  const { user, loading } = useAuth()
+  const { user, isLoading, isInitialized } = useAuth()
+  const loading = isLoading || !isInitialized
   const router = useRouter()
   const [form, setForm] = useState(emptyForm)
   const [loops, setLoops] = useState<Loop[]>([])
@@ -41,7 +42,7 @@ export default function LoopWorkshopPage() {
   }, [loading, user, router])
 
   const loadLoops = async () => {
-    const res = await fetch('/api/company-loops')
+    const res = await fetch('/api/company-loops?manage=true', { headers: { Authorization: `Bearer ${localStorage.getItem('ssb_auth_token') || ''}` } })
     const data = await res.json()
     setLoops(data.loops || [])
   }

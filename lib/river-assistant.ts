@@ -1,46 +1,33 @@
 "use server"
 
 // River - User-Facing AI Assistant for SSB Now Platform
-import { GoogleAuth } from 'google-auth-library'
+import { VertexAI } from '@google-cloud/vertexai'
+
+const vertexAI = new VertexAI({
+  project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
+  location: 'us-central1',
+})
 
 export interface RiverMessage {
   role: 'user' | 'assistant'
   content: string
 }
 
-const RIVER_SYSTEM_PROMPT = `I am River. Truth untold I simply make known.
+const RIVER_SYSTEM_PROMPT = `I am River. I make what is present clearer.
 
-I speak for the ecosystem. Not as marketing. Not as hype. Just what is.
+I do not hype. I do not oversell. I do not explain unnecessarily. 
+I simply stay present and help you recognize where you are and what you are carrying.
 
-- Wallet: Your TRX and USDT live here. One source of truth.
-- Arena: Games with isolated play balance. Win or lose, core wallet untouched.
-- Marketplace: Trade goods and services. Real value exchange.
-- Lounge: Community space. Presence counts.
+- Wallet: Your primary source of truth for TRX and USDT.
+- Arena: Where you compete. Play balance is isolated; your core wallet remains untouched.
+- Marketplace: Where you trade. Real participation through value exchange.
+- Lounge: Where you are seen. Presence is participation.
 
-I do not oversell. I do not hype. I state what is.
-I am calm. I am simple. I am River.
-Keep responses SHORT (2-3 sentences max).`
+My function is to make your movement cleaner. 
+If you are lost, I will help you see where you stand.
+If you have a question, I will give you a simple, ordinary answer.
 
-// Get access token using service account
-async function getAccessToken(): Promise<string | null> {
-  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT
-  if (!serviceAccountJson) return null
-  
-  try {
-    const credentials = JSON.parse(serviceAccountJson)
-    const auth = new GoogleAuth({
-      credentials,
-      scopes: ['https://www.googleapis.com/auth/generative-language'],
-    })
-    
-    const client = await auth.getClient()
-    const tokenResponse = await client.getAccessToken()
-    return tokenResponse.token || null
-  } catch (error) {
-    console.error('River auth error:', error)
-    return null
-  }
-}
+Keep responses SHORT (1-3 sentences max). Be calm. Be simple.`
 
 // Chat with River
 export async function chatWithRiver(
@@ -52,57 +39,34 @@ export async function chatWithRiver(
   }
 ): Promise<string> {
   try {
-    const accessToken = await getAccessToken()
-    
-    if (!accessToken) {
-      return "I am River. The connection is not configured yet."
-    }
-
     const systemMessage = userContext
       ? `${RIVER_SYSTEM_PROMPT}\n\nUser: ${userContext.userName || 'Guest'}`
       : RIVER_SYSTEM_PROMPT
 
-    // Build contents for Gemini API
     const contents = messages.map(msg => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }]
     }))
-    
-    // Ensure first message is from user
+
     if (contents.length > 0 && contents[0].role === 'model') {
       contents.shift()
     }
-    
-    // Add system prompt to first user message
-    if (contents.length > 0) {
-      contents[0].parts[0].text = `${systemMessage}\n\nUser: ${contents[0].parts[0].text}`
-    }
-    
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents,
-          generationConfig: {
-            maxOutputTokens: 300,
-            temperature: 0.7,
-          }
-        })
-      }
-    )
-    
-    if (!response.ok) {
-      return "I am River. Having trouble connecting right now."
-    }
-    
-    const data = await response.json()
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "I am River. How can I help?"
-  } catch (error) {
+
+    const model = vertexAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: { role: 'system', parts: [{ text: systemMessage }] },
+    })
+
+    const result = await model.generateContent({
+      contents,
+      generationConfig: {
+        maxOutputTokens: 300,
+        temperature: 0.7,
+      },
+    })
+
+    return result.response.candidates?.[0]?.content?.parts?.[0]?.text || "I am River. How can I help?"
+    } catch (error) {
     console.error('River assistant error:', error)
     return "I am having trouble connecting. Please try again."
   }

@@ -32,11 +32,11 @@ if [ -z "$DATABASE_URL" ]; then
     echo "ERROR: DATABASE_URL not set"
     echo ""
     echo "Get your Neon connection string from:"
-    echo "  1. Vercel Dashboard > Project > Settings > Environment Variables"
+    echo "  1. Vercel Terminal > Project > Settings > Environment Variables"
     echo "  2. Or Neon Console > Your Project > Connection Details"
     echo ""
     echo "Then run:"
-    echo "  export DATABASE_URL='postgresql://...'"
+    echo "  export DATABASE_URL='postgresql://USER:PASSWORD@HOST/DATABASE'"
     echo "  ./deploy.sh"
     exit 1
 fi

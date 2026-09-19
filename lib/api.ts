@@ -19,8 +19,8 @@ export interface ApiResponse<T> {
 class ApiClient {
   private getToken(): string | null {
     if (typeof window === 'undefined') return null
-    // Token is stored in session storage by auth context
-    return sessionStorage.getItem('accessToken')
+    // Token is stored in local storage by auth context
+    return localStorage.getItem('ssb_auth_token')
   }
 
   private async request<T>(
@@ -91,7 +91,17 @@ class ApiClient {
   }
 
   // Users
-  async getUsers(params?: { role?: string; presence?: string; search?: string }): Promise<ApiResponse<{ users: unknown[] }>> {
+  async getUsers(params?: { role?: string; presence?: string; search?: string }): Promise<ApiResponse<{
+    users: Array<{
+      id: string
+      role: string
+      name?: string | null
+      email?: string | null
+      username?: string | null
+      avatar?: string | null
+      presence?: string | null
+    }>
+  }>> {
     const searchParams = new URLSearchParams()
     if (params?.role) searchParams.set('role', params.role)
     if (params?.presence) searchParams.set('presence', params.presence)
@@ -201,22 +211,6 @@ class ApiClient {
     })
   }
 
-  // Rooms (Lounge)
-  async getRooms(params?: { category?: string; isLive?: boolean }): Promise<ApiResponse<{ rooms: unknown[] }>> {
-    const searchParams = new URLSearchParams()
-    if (params?.category) searchParams.set('category', params.category)
-    if (params?.isLive !== undefined) searchParams.set('isLive', params.isLive.toString())
-
-    const query = searchParams.toString()
-    return this.request(`/rooms${query ? `?${query}` : ''}`)
-  }
-
-  async joinRoom(roomId: string): Promise<ApiResponse<{ room: unknown; joined: boolean }>> {
-    return this.request(`/rooms/${roomId}/join`, {
-      method: 'POST',
-    })
-  }
-
   // Videos
   async getVideos(params?: { category?: string; isLive?: boolean; creatorId?: string }): Promise<ApiResponse<{ videos: unknown[] }>> {
     const searchParams = new URLSearchParams()
@@ -282,12 +276,12 @@ class ApiClient {
     }
   }
 
-  async joinArenaMatch(matchId: string, userId: string): Promise<ApiResponse<{ match: unknown; wallet: unknown; transaction: unknown }>> {
+  async joinArenaMatch(matchId: string, userId: string, prediction?: string): Promise<ApiResponse<{ match: unknown; wallet: unknown; transaction: unknown }>> {
     try {
       const response = await fetch(`/api/arena/matches/${matchId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId, prediction }),
       })
       const result = await response.json()
       if (!response.ok) {
@@ -364,10 +358,27 @@ class ApiClient {
   }
 
   // Earnings
-  async getEarnings(params?: { category?: string; period?: string }): Promise<ApiResponse<{ earnings: unknown[]; byCategory: Record<string, number>; total: number }>> {
+  async getEarnings(params?: { category?: string; period?: string; limit?: number }): Promise<ApiResponse<{
+    earnings: Array<{
+      id: string
+      type: string
+      amount: number
+      description?: string | null
+      status: string
+      createdAt: string
+    }>
+    byCategory: Record<string, number>
+    byType: Record<string, number>
+    total: number
+    totalEarnings: number
+    pendingEarnings: number
+    thisWeek: number
+    withdrawnEarnings: number
+  }>> {
     const searchParams = new URLSearchParams()
     if (params?.category) searchParams.set('category', params.category)
     if (params?.period) searchParams.set('period', params.period)
+    if (params?.limit) searchParams.set('limit', String(params.limit))
 
     const query = searchParams.toString()
     return this.request(`/earnings${query ? `?${query}` : ''}`)
@@ -423,7 +434,6 @@ class ApiClient {
     totalWalletBalance: number
     systemBalance: number
     totalTransactions: number
-    activeRooms: number
     activeMatches: number
     activeListings: number
     activeCampaigns: number
@@ -431,6 +441,7 @@ class ApiClient {
     return this.request('/system/stats')
   }
 }
+
 
 export const api = new ApiClient()
 export default api

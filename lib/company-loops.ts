@@ -1,13 +1,9 @@
-import { neon } from '@/lib/pg-neon'
+import { sql } from '@/lib/db'
 
 export const COMPANY_LOOP_ROLES = ['client', 'agent', 'bridger', 'admin'] as const
 export type CompanyLoopRole = typeof COMPANY_LOOP_ROLES[number]
 
-export function getDb() {
-  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL
-  if (!url) throw new Error('Database not configured')
-  return neon(url)
-}
+export function getDb() { return sql }
 
 export async function ensureCompanyLoopsSchema(sql = getDb()) {
   await sql`

@@ -6,7 +6,7 @@ import useSWR from "swr"
 import { RefreshCw, Copy, Check, Loader2, Wallet, ArrowUpRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/auth-provider"
 
 interface FundWallData {
   companyWallet: {

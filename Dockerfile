@@ -1,67 +1,61 @@
-# Multi-stage build for optimal image size
+# Use Node.js 20 Alpine as base
+FROM node:22-alpine AS base
 
-# Stage 1: Builder
-FROM node:20-alpine AS builder
-
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+# Install pnpm
+
+
 # Copy package files
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
-# Copy application source
-COPY . .
-
-# Add dummy secret for build
-ENV NEXTAUTH_SECRET=temp
-
-# Build application
-RUN npm run build
-
-# Stage 2: Runtime
-FROM node:20-alpine
-
+# Rebuild the source code only when needed
+FROM base AS builder
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install pnpm
 
-# Copy package files
-COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production && npm cache clean --force
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
-# Copy built application from builder
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
-
-# Set environment variables
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV PORT=3000
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
+# Build the application
+RUN npm run build
 
-# Change ownership of app directory
-RUN chown -R nextjs:nodejs /app
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
 
-# Switch to non-root user
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy built assets
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
+# Health check for Cloud Run
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
 
-# Start application
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

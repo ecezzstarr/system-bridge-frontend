@@ -11,7 +11,7 @@ import {
   History,
   DollarSign,
   Users,
-  ShieldCheck,
+  Shield,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -31,13 +31,20 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/auth-provider"
 import { api } from "@/lib/api"
 import useSWR from "swr"
 
 export default function AdminPage() {
   const router = useRouter()
   const { user } = useAuth()
+  
+  // Redirect to new admin dashboard
+  if (typeof window !== 'undefined') {
+    router.replace('/admin/dashboard')
+    return null
+  }
+
   const [isSweeping, setIsSweeping] = useState(false)
   const [sweepResult, setSweepResult] = useState<{
     success: boolean
@@ -71,13 +78,13 @@ export default function AdminPage() {
   if (user && user.role !== "admin") {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center">
-        <ShieldCheck className="h-16 w-16 text-muted-foreground" />
+        <Shield className="h-16 w-16 text-muted-foreground" />
         <h1 className="mt-4 text-2xl font-bold">Access Denied</h1>
         <p className="mt-2 text-muted-foreground">
           You need admin privileges to access this page.
         </p>
         <Button className="mt-6" onClick={() => router.push("/dashboard")}>
-          Go to Dashboard
+          Go to Terminal
         </Button>
       </div>
     )

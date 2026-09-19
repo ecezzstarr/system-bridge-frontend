@@ -1,10 +1,10 @@
 'use client'
 
 import { useAuth } from '@/lib/auth-provider'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, MessageCircle, Phone, Users, Send } from 'lucide-react'
+import { ArrowLeft, MessageCircle, Phone, Users, Send, CheckCheck } from 'lucide-react'
 import Link from 'next/link'
 import { openWhatsAppWithNumber } from '@/components/external-apps-nav'
 
@@ -18,13 +18,47 @@ interface Client {
   last_activity?: string
 }
 
+interface Message {
+  id: string
+  client_id: string
+  client_name: string
+  position: string
+  sender_type: 'client' | 'admin'
+  content: string
+  is_read: boolean
+  created_at: string
+}
+
+const POSITIONS = [
+  { id: 'bridger', name: 'General Support', icon: '🌉' },
+]
+
 export default function BridgerClientsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div></div>}>
+      <BridgerClientsContent />
+    </Suspense>
+  )
+}
+
+function BridgerClientsContent() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialClientId = searchParams.get('clientId')
+  const initialPosition = searchParams.get('position')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
-  const [message, setMessage] = useState('')
+  
+  // Chat state
+  const [activePosition, setActivePosition] = useState(initialPosition || 'bridger')
+  const [messages, setMessages] = useState<Message[]>([])
+  const [messageInput, setMessageInput] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [chatLoading, setChatLoading] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -40,12 +74,39 @@ export default function BridgerClientsPage() {
     fetchClients()
   }, [user, authLoading, router])
 
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  // Fetch messages when client or position changes
+  useEffect(() => {
+    if (selectedClient) {
+      fetchMessages(selectedClient.id, activePosition)
+      
+      // Poll for new messages every 4 seconds
+      const interval = setInterval(() => {
+        fetchMessages(selectedClient.id, activePosition, true)
+      }, 4000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [selectedClient, activePosition])
+
   const fetchClients = async () => {
     if (!user?.id) return
     try {
       const response = await fetch(`/api/bridger/clients?bridgerId=${user.id}`)
       const data = await response.json()
       setClients(data.clients || [])
+      
+      // Select client from query param if available
+      if (initialClientId && data.clients?.length > 0) {
+        const client = data.clients.find((c: any) => c.id === initialClientId)
+        if (client) {
+          setSelectedClient(client)
+        }
+      }
     } catch (error) {
       console.error('Error fetching clients:', error)
     } finally {
@@ -53,24 +114,50 @@ export default function BridgerClientsPage() {
     }
   }
 
-  const sendInAppMessage = async () => {
-    if (!selectedClient || !message.trim()) return
-    
+  const fetchMessages = async (clientId: string, position: string, silent = false) => {
+    if (!silent) setChatLoading(true)
     try {
-      await fetch('/api/messages', {
+      const response = await fetch(`/api/client/messages?clientId=${clientId}&position=${position}&bridger=true`)
+      const data = await response.json()
+      if (data.success) {
+        setMessages(data.messages || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error)
+    } finally {
+      if (!silent) setChatLoading(false)
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || !selectedClient || isSending) return
+
+    setIsSending(true)
+    const content = messageInput.trim()
+    setMessageInput('')
+
+    try {
+      const response = await fetch('/api/client/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          senderId: user?.id,
-          recipientId: selectedClient.id,
-          content: message,
-          type: 'bridger_to_client'
-        })
+          clientId: selectedClient.id,
+          clientName: selectedClient.name,
+          position: activePosition,
+          content,
+          senderType: 'admin', // Bridger replies as 'admin' position
+        }),
       })
-      setMessage('')
-      alert('Message sent successfully!')
+
+      const data = await response.json()
+      if (data.success && data.message) {
+        setMessages(prev => [...prev, data.message])
+      }
     } catch (error) {
-      console.error('Error sending message:', error)
+      console.error('Failed to send message:', error)
+      setMessageInput(content) // Restore
+    } finally {
+      setIsSending(false)
     }
   }
 
@@ -83,10 +170,10 @@ export default function BridgerClientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3">
-        <div className="flex items-center justify-between max-w-6xl mx-auto">
+      <div className="bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shrink-0">
+        <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3">
             <Link href="/bridger/dashboard">
               <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
@@ -94,146 +181,201 @@ export default function BridgerClientsPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-white">My Clients</h1>
+              <h1 className="text-lg font-bold text-white">Client Service Portal</h1>
               <p className="text-xs text-slate-500">Interact with your referred clients</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-cyan-400" />
-            <span className="text-cyan-400 font-bold">{clients.length}</span>
+          <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full border border-slate-700">
+            <Users className="h-4 w-4 text-emerald-400" />
+            <span className="text-emerald-400 font-bold text-sm">{clients.length}</span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-4">
-        {clients.length === 0 ? (
-          <div className="text-center py-16">
-            <Users className="h-16 w-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">No Clients Yet</h2>
-            <p className="text-slate-400 mb-6">Share your referral link to bring clients to the platform</p>
-            <Link href="/bridger/dashboard">
-              <Button className="bg-cyan-600 hover:bg-cyan-700">
-                Get Referral Link
-              </Button>
-            </Link>
+      <div className="flex-1 flex overflow-hidden max-w-7xl mx-auto w-full">
+        {/* Client Sidebar */}
+        <div className="w-80 border-r border-slate-800 flex flex-col bg-slate-900/30 overflow-y-auto hidden md:flex">
+          <div className="p-4 border-b border-slate-800">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Your Clients</h2>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Client List */}
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Your Clients</h2>
-              {clients.map((client) => (
+          <div className="flex-1 overflow-y-auto">
+            {clients.length === 0 ? (
+              <div className="p-8 text-center text-slate-500">
+                <p>No clients yet</p>
+              </div>
+            ) : (
+              clients.map((client) => (
                 <div 
                   key={client.id}
                   onClick={() => setSelectedClient(client)}
-                  className={`p-4 rounded-xl border transition cursor-pointer ${
+                  className={`p-4 border-b border-slate-800/50 transition cursor-pointer flex items-center gap-3 ${
                     selectedClient?.id === client.id 
-                      ? 'bg-cyan-500/10 border-cyan-500/50' 
-                      : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
+                      ? 'bg-emerald-500/10 border-l-4 border-l-emerald-500' 
+                      : 'hover:bg-slate-800/40'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                      {client.name?.charAt(0) || 'C'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-white truncate">{client.name}</p>
-                      <p className="text-xs text-slate-400 truncate">{client.business_name || client.email}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      {client.phone && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            openWhatsAppWithNumber(client.phone, `Hi ${client.name}, this is your bridger from SSBNOW`)
-                          }}
-                          className="p-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 transition"
-                          title="WhatsApp Client"
-                        >
-                          <Phone className="w-4 h-4 text-green-400" />
-                        </button>
-                      )}
-                    </div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold shrink-0">
+                    {client.name?.charAt(0) || 'C'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm text-white truncate">{client.name}</p>
+                    <p className="text-xs text-slate-500 truncate">{client.business_name || client.email}</p>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
+          </div>
+        </div>
 
-            {/* Client Details / Chat */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-              {selectedClient ? (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4 pb-4 border-b border-slate-800">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl">
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col bg-slate-950 overflow-hidden relative">
+          {selectedClient ? (
+            <>
+              {/* Chat Header */}
+              <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="md:hidden">
+                       <Button variant="ghost" size="icon" onClick={() => setSelectedClient(null)} className="text-slate-400">
+                         <ArrowLeft className="h-5 w-5" />
+                       </Button>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold">
                       {selectedClient.name?.charAt(0) || 'C'}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-white">{selectedClient.name}</h3>
-                      <p className="text-sm text-slate-400">{selectedClient.business_name}</p>
-                      <p className="text-xs text-slate-500">{selectedClient.email}</p>
+                      <h3 className="font-bold text-white">{selectedClient.name}</h3>
+                      <p className="text-xs text-slate-500">{selectedClient.business_name}</p>
                     </div>
                   </div>
-
-                  {/* Quick Actions */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="flex gap-2">
                     {selectedClient.phone && (
-                      <button
-                        onClick={() => openWhatsAppWithNumber(selectedClient.phone, `Hi ${selectedClient.name}, this is your bridger from SSBNOW`)}
-                        className="flex items-center gap-2 p-3 rounded-lg bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 transition"
-                      >
-                        <Phone className="w-5 h-5 text-green-400" />
-                        <span className="text-sm text-green-300">WhatsApp</span>
-                      </button>
-                    )}
-                    <Link href={`/client/chat/bridger?clientId=${selectedClient.id}`}>
-                      <button className="w-full flex items-center gap-2 p-3 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 transition">
-                        <MessageCircle className="w-5 h-5 text-cyan-400" />
-                        <span className="text-sm text-cyan-300">Platform Chat</span>
-                      </button>
-                    </Link>
-                  </div>
-
-                  {/* Quick Message */}
-                  <div className="pt-4 border-t border-slate-800">
-                    <h4 className="text-sm font-semibold text-slate-400 mb-3">Send Quick Message</h4>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Type a message..."
-                        className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-                      />
                       <Button 
-                        onClick={sendInAppMessage}
-                        disabled={!message.trim()}
-                        className="bg-cyan-600 hover:bg-cyan-700"
+                        variant="outline" 
+                        size="sm" 
+                        className="bg-green-600/10 border-green-500/30 text-green-400 hover:bg-green-600/20"
+                        onClick={() => openWhatsAppWithNumber(selectedClient.phone, `Hi ${selectedClient.name}, this is your bridger from SSBNOW`)}
                       >
-                        <Send className="w-4 h-4" />
+                        <Phone className="h-4 w-4 mr-2" /> WhatsApp
                       </Button>
-                    </div>
+                    )}
                   </div>
+                </div>
 
-                  {/* Client Info */}
-                  <div className="pt-4 border-t border-slate-800 space-y-2">
-                    <h4 className="text-sm font-semibold text-slate-400 mb-3">Client Information</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <span className="text-slate-500">Phone:</span>
-                      <span className="text-white">{selectedClient.phone || 'Not provided'}</span>
-                      <span className="text-slate-500">Joined:</span>
-                      <span className="text-white">{new Date(selectedClient.created_at).toLocaleDateString()}</span>
-                    </div>
+                {/* Position Tabs */}
+                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                  {POSITIONS.map((pos) => (
+                    <button
+                      key={pos.id}
+                      onClick={() => setActivePosition(pos.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition ${
+                        activePosition === pos.id
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      }`}
+                    >
+                      {pos.icon} {pos.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Messages List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[url('/grid.svg')] bg-repeat">
+                {chatLoading && messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400"></div>
                   </div>
+                ) : messages.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center text-3xl">
+                      {POSITIONS.find(p => p.id === activePosition)?.icon}
+                    </div>
+                    <p className="text-center">No messages yet for {POSITIONS.find(p => p.id === activePosition)?.name} context.</p>
+                    <p className="text-xs max-w-xs text-center italic">Start the conversation by sending a message below.</p>
+                  </div>
+                ) : (
+                  messages.map((msg) => (
+                    <div 
+                      key={msg.id} 
+                      className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-[80%] ${msg.sender_type === 'admin' ? 'order-2' : 'order-1'}`}>
+                        <div
+                          className={`rounded-2xl px-4 py-2 text-sm shadow-sm ${
+                            msg.sender_type === 'admin'
+                              ? 'bg-emerald-600 text-white rounded-br-none'
+                              : 'bg-slate-800 text-slate-100 rounded-bl-none'
+                          }`}
+                        >
+                          {msg.sender_type === 'client' && (
+                            <p className="text-[10px] font-bold mb-1 text-emerald-400 uppercase tracking-tighter">Client</p>
+                          )}
+                          <p className="whitespace-pre-wrap">{msg.content}</p>
+                        </div>
+                        <div className={`flex items-center gap-1 mt-1 px-1 text-[10px] text-slate-500 ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
+                          <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          {msg.sender_type === 'admin' && (
+                            <CheckCheck className={`h-3 w-3 ${msg.is_read ? 'text-emerald-400' : 'text-slate-600'}`} />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Message Input */}
+              <div className="p-4 border-t border-slate-800 bg-slate-900/80 backdrop-blur shrink-0">
+                <div className="flex gap-2 max-w-4xl mx-auto">
+                  <input
+                    type="text"
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    placeholder={`Reply as ${POSITIONS.find(p => p.id === activePosition)?.name}...`}
+                    className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                    disabled={isSending}
+                  />
+                  <Button 
+                    onClick={handleSendMessage}
+                    disabled={!messageInput.trim() || isSending}
+                    className="bg-emerald-600 hover:bg-emerald-700 rounded-xl h-auto px-6"
+                  >
+                    <Send className="h-5 w-5" />
+                  </Button>
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <MessageCircle className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-                  <p className="text-slate-400">Select a client to view details</p>
-                </div>
-              )}
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[url('/grid.svg')] bg-repeat">
+              <div className="w-20 h-20 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mb-6">
+                <MessageCircle className="h-10 w-10 text-emerald-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Select a Client</h3>
+              <p className="text-slate-400 max-w-sm">Choose a client from the sidebar to view their message history and provide support across different service contexts.</p>
+              
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg w-full md:hidden">
+                {clients.map(client => (
+                   <div 
+                    key={client.id}
+                    onClick={() => setSelectedClient(client)}
+                    className="p-4 bg-slate-900 border border-slate-800 rounded-xl flex items-center gap-3 cursor-pointer"
+                   >
+                     <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center font-bold">
+                       {client.name.charAt(0)}
+                     </div>
+                     <div className="text-left">
+                       <p className="font-bold text-sm">{client.name}</p>
+                       <p className="text-xs text-slate-500">{client.email}</p>
+                     </div>
+                   </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

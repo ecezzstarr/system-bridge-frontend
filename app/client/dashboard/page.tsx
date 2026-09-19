@@ -1,55 +1,276 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { LogOut, MessageCircle, ArrowRight, Menu, X, ArrowUpRight, ArrowDownLeft, Phone, FileText } from 'lucide-react'
-import { getClientUser, clearClientAuth } from '@/lib/client-auth'
-import { openWhatsAppWithNumber, SUPPORT_NUMBERS } from '@/components/external-apps-nav'
+import { MessageCircle, ArrowRight, ArrowUpRight, ArrowDownLeft, Phone, Trophy, Globe, Zap, Shield, Wallet, Lock, Sparkles } from 'lucide-react'
+import { useAuth } from '@/lib/auth-provider'
+import { openWhatsAppWithNumber, SUPPORT_NUMBERS, WhatsAppButton } from '@/components/external-apps-nav'
 
-interface ClientUser { id: string; email: string; phone: string; name: string; business_name: string; role?: 'admin' | 'client'; referred_by?: string; bridger_whatsapp?: string }
-interface PositionAgent { position: string; agent_name: string; agent_username: string; icon: string; description: string; whatsapp?: string }
+interface SupportPosition {
+  position: string
+  agent_name: string
+  icon: string
+  description: string
+  whatsapp?: string
+}
 
-const POSITIONS: PositionAgent[] = [
-  { position: 'mandate', agent_name: 'Mandate Officer', agent_username: '', icon: '📋', description: 'Mandate Officer', whatsapp: SUPPORT_NUMBERS.mandate },
-  { position: 'forensic', agent_name: 'Forensic Expert', agent_username: '', icon: '🔍', description: 'Forensic Expert', whatsapp: SUPPORT_NUMBERS.forensic },
-  { position: 'lawyer', agent_name: 'Legal Counsel', agent_username: '', icon: '⚖️', description: 'Attorney', whatsapp: SUPPORT_NUMBERS.legal },
-  { position: 'admin', agent_name: 'Administrator', agent_username: '', icon: '👤', description: 'Admin Support', whatsapp: SUPPORT_NUMBERS.admin },
-  { position: 'bridger', agent_name: 'Your Bridger', agent_username: '', icon: '🌉', description: 'Your Bridger' },
+const SUPPORT_POSITIONS: SupportPosition[] = [
+  { position: 'mandate', agent_name: 'Mandate Officer', icon: '📋', description: 'Mandate', whatsapp: SUPPORT_NUMBERS.mandate },
+  { position: 'forensic', agent_name: 'Forensic Expert', icon: '🔍', description: 'Forensic', whatsapp: SUPPORT_NUMBERS.forensic },
+  { position: 'lawyer', agent_name: 'Legal Counsel', icon: '⚖️', description: 'Legal', whatsapp: SUPPORT_NUMBERS.legal },
+  { position: 'admin', agent_name: 'Administrator', icon: '👤', description: 'Admin', whatsapp: SUPPORT_NUMBERS.admin },
 ]
 
-export default function ClientDashboardPage() {
-  const router = useRouter(); const [client,setClient]=useState<ClientUser|null>(null); const [positions,setPositions]=useState<PositionAgent[]>(POSITIONS); const [isLoading,setIsLoading]=useState(true); const [sidebarOpen,setSidebarOpen]=useState(false)
-  useEffect(()=>{ const clientData=getClientUser(); if(!clientData){window.location.href='/client/login';return}; setClient(clientData); fetch(`/api/client/bridger?clientId=${clientData.id}`).then(r=>r.json()).then(data=>{if(data.bridger)setPositions(prev=>prev.map(pos=>pos.position==='bridger'?{...pos,agent_name:data.bridger.name,whatsapp:data.bridger.whatsapp_number}:pos)}).catch(error=>console.error('Error fetching bridger info:',error)); setIsLoading(false) },[router])
-  const handleLogout=()=>{clearClientAuth();window.location.href='/client/login'}
-  if(isLoading)return <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4"><div className="text-center"><div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mb-4"/><p className="text-slate-400 text-sm">Loading...</p></div></div>
-  if(!client)return null
-  return <div className="min-h-screen bg-slate-950 text-white">
-    <div className="lg:hidden sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3"><div className="flex items-center justify-between"><div><h1 className="text-lg font-bold text-white">SSBNOW.SHOP</h1><p className="text-[10px] text-slate-500">Client Services</p></div><button onClick={()=>setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg bg-slate-800 text-white">{sidebarOpen?<X className="w-5 h-5"/>:<Menu className="w-5 h-5"/>}</button></div></div>
-    {sidebarOpen&&<div className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={()=>setSidebarOpen(false)}/>}<div className="flex">
-      <div className={`fixed lg:sticky top-0 left-0 z-50 lg:z-0 w-64 h-screen bg-slate-900/95 lg:bg-slate-900/80 border-r border-slate-800 p-4 lg:p-6 flex flex-col transform transition-transform duration-300 ease-in-out ${sidebarOpen?'translate-x-0':'-translate-x-full lg:translate-x-0'}`}>
-        <div className="lg:hidden flex justify-end mb-4"><button onClick={()=>setSidebarOpen(false)} className="p-2 rounded-lg bg-slate-800 text-white"><X className="w-5 h-5"/></button></div>
-        <div className="mb-6 lg:mb-8"><h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Service Positions</h2></div>
-        <nav className="flex-1 space-y-1 lg:space-y-2 overflow-y-auto">
-          <Link href="/client/loops" onClick={()=>setSidebarOpen(false)}><button className="w-full text-left px-3 py-3 lg:py-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm font-semibold flex items-center gap-3 mb-2"><FileText className="w-5 h-5"/><div><p>Client Position</p><p className="text-[10px] text-cyan-500/70 font-normal">Loops & Agreements</p></div></button></Link>
-          {positions.map(pos=><div key={pos.position} className="flex items-center gap-2"><Link href={`/client/chat/${pos.position}`} onClick={()=>setSidebarOpen(false)} className="flex-1"><button className="w-full text-left px-3 py-3 lg:py-2.5 rounded-lg hover:bg-slate-800/50 active:bg-slate-800 transition group flex items-center gap-3"><span className="text-xl lg:text-lg">{pos.icon}</span><div className="min-w-0 flex-1"><p className="text-sm lg:text-xs font-semibold text-slate-300 group-hover:text-white transition">{pos.description}</p><p className="text-xs text-slate-500">{pos.agent_name}</p></div></button></Link>{pos.whatsapp&&<button onClick={()=>openWhatsAppWithNumber(pos.whatsapp!,`Hi, I need assistance from ${pos.description}`)} className="p-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 transition" title={`WhatsApp ${pos.description}`}><Phone className="w-4 h-4 text-green-400"/></button>}</div>)}
-        </nav>
-        <div className="pt-4 border-t border-slate-800 space-y-1 lg:space-y-2">{client?.role==='admin'&&<><Link href="/client/admin-chat" className="w-full block" onClick={()=>setSidebarOpen(false)}><button className="w-full text-left px-3 py-3 lg:py-2.5 rounded-lg hover:bg-green-900/30 text-sm text-green-300 flex items-center gap-2"><MessageCircle className="w-4 h-4"/> Manage All Chats</button></Link><Link href="/dashboard" className="w-full block" onClick={()=>setSidebarOpen(false)}><button className="w-full text-left px-3 py-3 lg:py-2.5 rounded-lg hover:bg-purple-900/30 text-sm text-purple-300">← Back to Platform</button></Link></>}<button onClick={handleLogout} className="w-full text-left px-3 py-3 lg:py-2.5 rounded-lg hover:bg-red-900/20 text-sm text-red-400">Sign Out</button></div>
+export default function ClientTerminalPage() {
+  const { user, isLoading: authLoading } = useAuth()
+  const [bridger, setBridger] = useState<{ name: string; whatsapp_number?: string } | null>(null)
+  const [vaultBalance, setVaultBalance] = useState(0)
+  const [isLoadingVault, setIsLoadingVault] = useState(true)
+
+  useEffect(() => {
+    if (!user?.id) return
+
+    const fetchBridgerInfo = async () => {
+      try {
+        const response = await fetch(`/api/client/bridger?clientId=${user.id}`)
+        const data = await response.json()
+        if (data.bridger) {
+          setBridger(data.bridger)
+        }
+      } catch (error) {
+        console.error('Error fetching bridger info:', error)
+      }
+    }
+
+    const fetchVaultBalance = async () => {
+      try {
+        const token = localStorage.getItem('ssb_auth_token')
+        const res = await fetch(`/api/wallet/balance?userId=${user.id}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        })
+        const data = await res.json()
+        if (data.success) setVaultBalance(data.coreTrx || 0)
+      } catch (error) {
+        console.error('Error fetching vault balance:', error)
+      } finally {
+        setIsLoadingVault(false)
+      }
+    }
+
+    fetchBridgerInfo()
+    fetchVaultBalance()
+  }, [user?.id])
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mb-4"></div>
+          <p className="text-slate-400">Loading your profile...</p>
+        </div>
       </div>
-      <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
-        <div className="hidden lg:block border-b border-slate-800 px-6 lg:px-8 py-4 lg:py-6 bg-slate-900/40 backdrop-blur"><div className="flex items-center justify-between"><div><h1 className="text-xl lg:text-2xl font-bold text-white">SSBNOW.SHOP</h1><p className="text-[10px] lg:text-xs text-slate-500">Weave of Presence · System Switch Bridge Radiance</p></div><div className="px-3 lg:px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700"><p className="text-[10px] lg:text-xs text-slate-400 uppercase tracking-wider">Status</p><p className="text-xs lg:text-sm font-semibold text-green-400 flex items-center gap-2 mt-1"><span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"/> Connected</p></div></div></div>
-        <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          <div className="lg:hidden mb-4 px-3 py-2 bg-slate-800/50 rounded-lg border border-slate-700 inline-flex items-center gap-2"><span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"/><span className="text-xs font-semibold text-green-400">Connected</span></div>
-          <div className="mb-6"><div className="flex items-center justify-between mb-4"><h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Your Service Channels</h2><Link href="/client/loops" className="text-xs text-cyan-400 hover:text-cyan-300">Client Position →</Link></div><div className="grid grid-cols-2 lg:grid-cols-2 gap-3 lg:gap-4">{positions.map(pos=><Link key={pos.position} href={`/client/chat/${pos.position}`}><div className="group relative h-full"><div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur transition duration-500"/><div className="relative bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-4 lg:p-6 hover:border-cyan-500/50 transition cursor-pointer h-full"><div className="flex items-center justify-between mb-3 lg:mb-4"><span className="text-2xl lg:text-4xl">{pos.icon}</span><div className="w-2 h-2 lg:w-3 lg:h-3 bg-green-400 rounded-full animate-pulse"/></div><h3 className="font-semibold text-white text-sm lg:text-base mb-1">{pos.description}</h3><p className="text-xs lg:text-sm text-slate-400 mb-2 lg:mb-4 truncate">{pos.agent_name}</p><p className="text-[10px] lg:text-xs text-slate-500 group-hover:text-cyan-400 transition flex items-center gap-1">Open chat <ArrowRight className="w-3 h-3"/></p></div></div></Link>)}</div></div>
-          <Link href="/client/loops" className="block mt-8 lg:mt-12"><div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-5 hover:border-cyan-500/40 transition"><div className="flex items-center justify-between gap-4"><div><p className="text-xs uppercase tracking-wider text-cyan-400">Persistent Client Record</p><h3 className="mt-1 text-lg font-semibold">Client Position · Company Loops · Agreements</h3><p className="mt-2 text-sm text-slate-400">Your crossing, current company events, responsibilities, boundaries, and documents to read and sign.</p></div><ArrowRight className="w-5 h-5 text-cyan-400 shrink-0"/></div></div></Link>
-          <div className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-slate-800"><h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Wallet & Payments</h3><div className="grid grid-cols-2 gap-3 lg:gap-4"><Link href="/client/deposit"><div className="group bg-slate-800/30 border border-slate-700 rounded-lg p-4 hover:border-green-500/50 transition cursor-pointer"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center"><ArrowDownLeft className="h-5 w-5 text-green-400"/></div><div><p className="text-sm font-semibold text-white">Deposit</p><p className="text-xs text-slate-400">Add funds</p></div></div></div></Link><Link href="/client/withdraw"><div className="group bg-slate-800/30 border border-slate-700 rounded-lg p-4 hover:border-red-500/50 transition cursor-pointer"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center"><ArrowUpRight className="h-5 w-5 text-red-400"/></div><div><p className="text-sm font-semibold text-white">Withdraw</p><p className="text-xs text-slate-400">Cash out</p></div></div></div></Link></div></div>
-          <div className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-slate-800"><h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Quick Actions</h3><div className="grid grid-cols-1 gap-3 lg:gap-4"><WhatsAppButton/></div></div>
-          <div className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-slate-800"><h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Account Information</h3><div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4"><div className="bg-slate-800/30 border border-slate-700 rounded-lg p-3 lg:p-4"><p className="text-[10px] lg:text-xs text-slate-500 uppercase tracking-wider mb-1 lg:mb-2">Business Name</p><p className="text-sm font-semibold text-white truncate">{client?.business_name}</p></div><div className="bg-slate-800/30 border border-slate-700 rounded-lg p-3 lg:p-4"><p className="text-[10px] lg:text-xs text-slate-500 uppercase tracking-wider mb-1 lg:mb-2">Contact Email</p><p className="text-sm font-semibold text-white truncate">{client?.email}</p></div><div className="bg-slate-800/30 border border-slate-700 rounded-lg p-3 lg:p-4"><p className="text-[10px] lg:text-xs text-slate-500 uppercase tracking-wider mb-1 lg:mb-2">Contact Person</p><p className="text-sm font-semibold text-white truncate">{client?.name}</p></div><div className="bg-slate-800/30 border border-slate-700 rounded-lg p-3 lg:p-4"><p className="text-[10px] lg:text-xs text-slate-500 uppercase tracking-wider mb-1 lg:mb-2">Phone</p><p className="text-sm font-semibold text-white truncate">{client?.phone||'Not provided'}</p></div></div></div>
+    )
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6 md:space-y-10 px-4 md:px-0 py-6 md:py-10">
+      {/* Visual Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-slate-900 border border-white/10 p-6 md:p-12 shadow-2xl shadow-blue-500/10 group">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/20 via-blue-600/10 to-purple-600/20 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/20 rounded-full blur-[80px] animate-pulse"></div>
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px] animate-pulse delay-1000"></div>
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full mb-2">
+              <Zap className="h-3 w-3 text-cyan-400" />
+              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Active Protocol</span>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
+              COMMAND<br className="md:hidden" /> CENTER
+            </h1>
+            <p className="text-slate-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em] flex items-center gap-2">
+              WEAVE ECOSYSTEM <span className="h-1 w-1 rounded-full bg-slate-600"></span> RADIANCE LAYER
+            </p>
+          </div>
+          <div className="flex flex-col items-end text-right">
+            <div className="text-4xl md:text-6xl font-black text-white/10 select-none hidden md:block">WEAVE</div>
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl">
+              <Globe className="h-8 w-8 text-cyan-400 animate-spin-slow" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Link href="/client/loops" className="block rounded-3xl border border-cyan-500/20 bg-slate-900 p-6 hover:border-cyan-400/50">
+        <p className="text-xs uppercase tracking-widest text-cyan-400">Client Position</p>
+        <h2 className="mt-2 text-xl font-bold text-white">Company Loops & Agreements</h2>
+        <p className="mt-2 text-sm text-slate-400">Your company events, responsibilities, and documents to review and sign.</p>
+      </Link>
+
+      {/* Vault */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 border border-cyan-500/20 p-6 md:p-10 shadow-xl">
+        <div className="absolute top-0 right-0 p-6 opacity-10">
+          <Lock className="h-32 w-32 text-cyan-400" />
+        </div>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full mb-3">
+              <Lock className="h-3 w-3 text-cyan-400" />
+              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Your Vault</span>
+            </div>
+            <p className="text-4xl md:text-5xl font-black text-white">
+              {isLoadingVault ? '—' : vaultBalance.toFixed(2)} <span className="text-lg font-bold text-slate-500">TRX</span>
+            </p>
+            <p className="text-xs text-slate-500 mt-2">Your Vault holds funds secured by WEAVE and is ready to use.</p>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/client/deposit">
+              <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-green-500 hover:text-slate-950 hover:border-green-500 font-bold text-xs uppercase tracking-widest h-12 rounded-xl px-6">
+                <ArrowDownLeft className="mr-2 h-4 w-4" /> Deposit
+              </Button>
+            </Link>
+            <Link href="/client/withdraw">
+              <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-red-500 hover:text-slate-950 hover:border-red-500 font-bold text-xs uppercase tracking-widest h-12 rounded-xl px-6">
+                <ArrowUpRight className="mr-2 h-4 w-4" /> Withdraw
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main chat: bridger, front and center */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600/20 via-slate-900 to-slate-900 border border-emerald-500/30 p-6 md:p-10 shadow-xl">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="h-8 w-8 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] mb-1">Your Direct Line</p>
+              <h2 className="text-xl md:text-2xl font-bold text-white">{bridger?.name || 'Your Bridger'}</h2>
+              <p className="text-xs text-slate-400">Your primary point of contact in WEAVE</p>
+            </div>
+          </div>
+          <Link href="/client/chat/bridger">
+            <Button className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-widest h-12 rounded-xl px-8">
+              Open Chat <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Arena + Casino - promoted, Arena first as the flagship experience */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link href="/client/arena" className="block">
+          <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600/20 to-slate-900 border border-blue-500/30 p-8 hover:border-blue-400/50 transition-all hover:translate-y-[-4px] shadow-xl h-full">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Globe className="h-28 w-28 text-blue-400" />
+            </div>
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full mb-4">
+                <Sparkles className="h-3 w-3 text-blue-400" />
+                <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Flagship Experience</span>
+              </div>
+              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Arena</h3>
+              <p className="text-sm text-slate-400 mb-6">WEAVE's primary experience, curated for you.</p>
+              <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-widest">
+                Enter Arena <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/client/casino" className="block">
+          <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600/20 to-slate-900 border border-purple-500/30 p-8 hover:border-purple-400/50 transition-all hover:translate-y-[-4px] shadow-xl h-full">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Trophy className="h-28 w-28 text-purple-400" />
+            </div>
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full mb-4">
+                <Trophy className="h-3 w-3 text-purple-400" />
+                <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Play</span>
+              </div>
+              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Casino</h3>
+              <p className="text-sm text-slate-400 mb-6">Test your luck with your Vault balance.</p>
+              <div className="flex items-center gap-2 text-purple-400 font-bold text-xs uppercase tracking-widest">
+                Enter Casino <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* Company support positions - demoted to a compact corner strip */}
+      <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 md:p-5">
+        <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 flex items-center gap-2">
+          <Shield className="h-3 w-3" /> Support Services
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {SUPPORT_POSITIONS.map((pos) => (
+            <div key={pos.position} className="flex items-center gap-2 bg-slate-950/50 border border-white/5 rounded-xl px-3 py-2">
+              <span className="text-base flex-shrink-0">{pos.icon}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold text-slate-300 truncate">{pos.description}</p>
+              </div>
+              <div className="flex gap-1 flex-shrink-0">
+                {pos.whatsapp && (
+                  <button
+                    onClick={() => openWhatsAppWithNumber(pos.whatsapp!, `Hi, I need assistance from ${pos.description}`)}
+                    className="w-6 h-6 rounded-full bg-green-500/5 hover:bg-green-500/10 border border-green-500/10 flex items-center justify-center transition-colors"
+                  >
+                    <Phone className="h-3 w-3 text-green-500" />
+                  </button>
+                )}
+                <Link href={`/client/chat/${pos.position}`}>
+                  <button className="w-6 h-6 rounded-full bg-white/5 hover:bg-cyan-500/10 border border-white/10 flex items-center justify-center transition-colors">
+                    <MessageCircle className="h-3 w-3 text-slate-400" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Profile Identity */}
+      <div className="bg-slate-950 border border-white/5 rounded-3xl p-6 md:p-8 relative group">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6">Profile Identity</h3>
+        <div className="space-y-5 relative z-10">
+          {user.business_name && (
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Entity</span>
+              <span className="text-sm font-bold text-slate-200 truncate ml-4">{user.business_name}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Node</span>
+            <span className="text-sm font-bold text-slate-200 truncate ml-4">{user.name}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Signal</span>
+            <span className="text-xs font-bold text-cyan-400 truncate ml-4">{user.email}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2">
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-slate-900/50 backdrop-blur-2xl border border-white/5 p-6 md:px-10 md:py-6 rounded-[2rem]">
+          <div className="flex gap-4">
+            <WhatsAppButton />
+          </div>
+          <div className="flex items-center gap-3 px-6 py-2.5 bg-slate-950 border border-white/5 rounded-full shadow-inner">
+            <div className="relative flex h-2 w-2">
+              <div className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></div>
+              <div className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></div>
+            </div>
+            <span className="text-[10px] font-black text-green-500 uppercase tracking-[0.3em]">System Stabilized</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  )
 }
-
-function WhatsAppButton(){return <button onClick={()=>openWhatsAppWithNumber(SUPPORT_NUMBERS.admin,'Hi, I need assistance')} className="w-full bg-green-600/10 border border-green-500/30 rounded-lg p-4 hover:bg-green-600/20 transition flex items-center gap-3"><MessageCircle className="h-5 w-5 text-green-400"/><div className="text-left"><p className="text-sm font-semibold text-white">WhatsApp Support</p><p className="text-xs text-slate-400">Open a support conversation</p></div></button>}

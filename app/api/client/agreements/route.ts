@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getFileFolderDb } from '@/lib/client-file-folder'
-import { resolveClientToken } from '@/lib/client-vault'
+import { getDb as getFileFolderDb } from '@/lib/company-loops'
+import { requireApiUser } from '@/lib/api-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,8 +29,8 @@ async function ensureSchema(sql: ReturnType<typeof getFileFolderDb>) {
 export async function GET(request: NextRequest) {
   try {
     const sql = getFileFolderDb()
-    const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
-    const clientId = await resolveClientToken(token, sql)
+    const user = await requireApiUser(request)
+    const clientId = user?.id
     if (!clientId) return NextResponse.json({ error: 'Client login required' }, { status: 401 })
     await ensureSchema(sql)
     const accepted = await sql`SELECT document_key, document_title, document_version, accepted_at FROM client_agreements WHERE client_id=${clientId}::uuid ORDER BY accepted_at DESC`
@@ -44,8 +44,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const sql = getFileFolderDb()
-    const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim() || null
-    const clientId = await resolveClientToken(token, sql)
+    const user = await requireApiUser(request)
+    const clientId = user?.id
     if (!clientId) return NextResponse.json({ error: 'Client login required' }, { status: 401 })
     await ensureSchema(sql)
     const body = await request.json()

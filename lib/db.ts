@@ -1,11 +1,89 @@
-import { neon } from '@/lib/pg-neon'
+// ===========================================
+// DATABASE CONFIGURATION - ECOSYSTEM CONTINUITY
+// Supports Neon and Google Cloud SQL
+// ===========================================
 
-// Initialize Neon client lazily to avoid build-time errors
-function getSql() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is not set')
+import { Pool } from 'pg'
+
+// Global pool for connection reuse
+let pool: Pool | null = null
+
+export function getPool(): Pool {
+  if (!pool) {
+    const isProduction = process.env.NODE_ENV === 'production'
+    const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL
+    const connectionName = process.env.CLOUD_SQL_CONNECTION_NAME
+    
+    let connectionConfig: any = {}
+    
+    if (isProduction && connectionName) {
+      // PROPER CLOUD SQL CONFIGURATION
+      connectionConfig = {
+        user: process.env.CLOUD_SQL_USER || 'ssbnow_user',
+        password: process.env.CLOUD_SQL_PASSWORD,
+        database: process.env.CLOUD_SQL_DATABASE || 'ssbnow',
+        host: `/cloudsql/${connectionName}`,
+      }
+      console.log(`[DATABASE] Connecting via Cloud SQL socket: ${connectionName}`)
+    } else if (databaseUrl) {
+      // URL-BASED CONFIGURATION (Neon or external)
+      connectionConfig = { 
+        connectionString: databaseUrl,
+        ssl: databaseUrl.includes('neon.tech') ? { rejectUnauthorized: false } : false
+      }
+      console.log(`[DATABASE] Connecting via URL: ${databaseUrl.split('@')[1]}`)
+    } else {
+      // LOCAL DEVELOPMENT FALLBACK
+      connectionConfig = {
+        user: process.env.CLOUD_SQL_USER || 'postgres',
+        password: process.env.CLOUD_SQL_PASSWORD || 'postgres',
+        database: process.env.CLOUD_SQL_DATABASE || 'ssbnow',
+        host: process.env.CLOUD_SQL_HOST || '127.0.0.1',
+        port: parseInt(process.env.CLOUD_SQL_PORT || '5432'),
+      }
+      console.log('[DATABASE] Connecting via Local TCP')
+    }
+
+    pool = new Pool({
+      ...connectionConfig,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    })
+
+    pool.on('error', (err) => {
+      console.error('[DATABASE] Unexpected pool error:', err)
+    })
   }
-  return neon(process.env.DATABASE_URL)
+  return pool
+}
+
+// Tagged template SQL helper
+export async function sql(strings: TemplateStringsArray, ...values: any[]): Promise<any[]> {
+  const p = getPool()
+  
+  // Build parameterized query
+  let queryText = strings[0]
+  const params: any[] = []
+  
+  for (let i = 0; i < values.length; i++) {
+    params.push(values[i])
+    queryText += `$${i + 1}${strings[i + 1]}`
+  }
+  
+  const result = await p.query(queryText, params)
+  return result.rows
+}
+
+// Direct query helper
+export async function query(text: string, params?: any[]): Promise<any[]> {
+  const p = getPool()
+  const result = await p.query(text, params)
+  return result.rows
+}
+
+export function getSql() {
+  return sql
 }
 
 // Wallet tier based on balance
@@ -54,32 +132,25 @@ export function formatRelativeTime(dateString: string): string {
 // User functions
 export async function getUserByUsername(username: string) {
   try {
-    const sql = getSql()
-    console.log('[v0] getUserByUsername: querying for', username)
     const result = await sql`SELECT * FROM users WHERE username = ${username} AND is_active = true`
-    console.log('[v0] getUserByUsername: result count =', result?.length || 0)
     return result[0] || null
   } catch (error) {
-    console.error('[v0] getUserByUsername error:', error)
+    console.error('getUserByUsername error:', error)
     return null
   }
 }
 
 export async function getUserByEmail(email: string) {
   try {
-    const sql = getSql()
-    console.log('[v0] getUserByEmail: querying for', email)
     const result = await sql`SELECT * FROM users WHERE email = ${email} AND is_active = true`
-    console.log('[v0] getUserByEmail: result count =', result?.length || 0)
     return result[0] || null
   } catch (error) {
-    console.error('[v0] getUserByEmail error:', error)
+    console.error('getUserByEmail error:', error)
     return null
   }
 }
 
 export async function getUserById(id: string) {
-  const sql = getSql()
   const result = await sql`SELECT * FROM users WHERE id = ${id}::uuid AND is_active = true`
   return result[0] || null
 }
@@ -94,8 +165,6 @@ export async function createUser(data: {
   role?: string
   departmentalCode?: string
 }) {
-  const sql = getSql()
-  // Extract username from email if not provided (e.g., "user@domain.com" -> "user")
   const username = data.username || data.email.split('@')[0]
   const result = await sql`
     INSERT INTO users (email, name, username, password_hash, google_id, tron_wallet_address, role, departmental_code, is_active)
@@ -107,29 +176,23 @@ export async function createUser(data: {
 
 export async function updateUserLastLogin(id: string) {
   try {
-    const sql = getSql()
-    console.log('[v0] updateUserLastLogin: updating user', id)
     await sql`UPDATE users SET last_login = NOW(), updated_at = NOW() WHERE id = ${id}::uuid`
-    console.log('[v0] updateUserLastLogin: success')
   } catch (error) {
-    console.error('[v0] updateUserLastLogin error:', error)
+    console.error('updateUserLastLogin error:', error)
   }
 }
 
 export async function getAllUsers() {
-  const sql = getSql()
   return await sql`SELECT id, email, name, avatar_url, role, tron_wallet_address, created_at, last_login, is_active FROM users WHERE is_active = true ORDER BY created_at DESC`
 }
 
 // Wallet functions
 export async function getWalletByUserId(userId: string) {
-  const sql = getSql()
   const result = await sql`SELECT * FROM wallets WHERE user_id = ${userId}::uuid AND is_primary = true`
   return result[0] || null
 }
 
 export async function createWallet(userId: string, tronAddress: string) {
-  const sql = getSql()
   const result = await sql`
     INSERT INTO wallets (user_id, tron_address)
     VALUES (${userId}::uuid, ${tronAddress})
@@ -139,7 +202,6 @@ export async function createWallet(userId: string, tronAddress: string) {
 }
 
 export async function updateWalletBalance(walletId: string, balanceTrx: number, balanceUsdt: number) {
-  const sql = getSql()
   const result = await sql`
     UPDATE wallets 
     SET balance_trx = ${balanceTrx}, balance_usdt = ${balanceUsdt}, updated_at = NOW()
@@ -150,7 +212,6 @@ export async function updateWalletBalance(walletId: string, balanceTrx: number, 
 }
 
 export async function getAllWallets() {
-  const sql = getSql()
   return await sql`
     SELECT w.*, u.email, u.name as user_name 
     FROM wallets w 
@@ -172,7 +233,6 @@ export async function createTransaction(data: {
   description?: string
   metadata?: Record<string, unknown>
 }) {
-  const sql = getSql()
   const result = await sql`
     INSERT INTO transactions (user_id, type, amount, currency, tx_hash, from_address, to_address, description, metadata)
     VALUES (
@@ -192,7 +252,6 @@ export async function createTransaction(data: {
 }
 
 export async function updateTransactionStatus(txId: string, status: 'pending' | 'completed' | 'failed' | 'cancelled', txHash?: string) {
-  const sql = getSql()
   const result = await sql`
     UPDATE transactions 
     SET status = ${status}, tx_hash = COALESCE(${txHash || null}, tx_hash), completed_at = CASE WHEN ${status} = 'completed' THEN NOW() ELSE completed_at END
@@ -203,7 +262,6 @@ export async function updateTransactionStatus(txId: string, status: 'pending' | 
 }
 
 export async function getTransactionsByUserId(userId: string, limit = 50) {
-  const sql = getSql()
   return await sql`
     SELECT * FROM transactions 
     WHERE user_id = ${userId}::uuid 
@@ -213,7 +271,6 @@ export async function getTransactionsByUserId(userId: string, limit = 50) {
 }
 
 export async function getAllTransactions(limit = 100) {
-  const sql = getSql()
   return await sql`
     SELECT t.*, u.email, u.name as user_name 
     FROM transactions t 
@@ -225,7 +282,6 @@ export async function getAllTransactions(limit = 100) {
 
 // Session functions
 export async function createSession(userId: string, token: string, expiresAt: Date) {
-  const sql = getSql()
   const result = await sql`
     INSERT INTO sessions (user_id, token, expires_at)
     VALUES (${userId}::uuid, ${token}, ${expiresAt.toISOString()})
@@ -235,7 +291,6 @@ export async function createSession(userId: string, token: string, expiresAt: Da
 }
 
 export async function getSessionByToken(token: string) {
-  const sql = getSql()
   const result = await sql`
     SELECT s.*, u.id as user_id, u.email, u.name, u.role, u.avatar_url, u.tron_wallet_address
     FROM sessions s
@@ -246,13 +301,22 @@ export async function getSessionByToken(token: string) {
 }
 
 export async function deleteSession(token: string) {
-  const sql = getSql()
   await sql`DELETE FROM sessions WHERE token = ${token}`
+}
+
+export async function logAudit(userId: string, action: string, details?: any) {
+  try {
+    await sql`
+      INSERT INTO audit_logs (user_id, action, details)
+      VALUES (${userId}::uuid, ${action}, ${details ? JSON.stringify(details) : null})
+    `
+  } catch (error) {
+    console.error('Failed to log audit:', error)
+  }
 }
 
 // Admin stats
 export async function getTotalStats() {
-  const sql = getSql()
   const users = await sql`SELECT COUNT(*) as count FROM users WHERE is_active = true`
   const transactions = await sql`SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total FROM transactions WHERE status = 'completed'`
   const wallets = await sql`SELECT COALESCE(SUM(balance_trx), 0) as total_trx, COALESCE(SUM(balance_usdt), 0) as total_usdt FROM wallets`
@@ -266,5 +330,10 @@ export async function getTotalStats() {
   }
 }
 
-// Export getSql for custom queries
-export { getSql }
+// Get database info
+export function getDatabaseInfo() {
+  return {
+    provider: 'cloudsql',
+    connectionName: process.env.CLOUD_SQL_CONNECTION_NAME || null,
+  }
+}

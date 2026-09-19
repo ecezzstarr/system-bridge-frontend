@@ -47,15 +47,6 @@ export function useSessions(params?: { status?: string }) {
   })
 }
 
-// Rooms (Lounge)
-export function useRooms(params?: { category?: string; isLive?: boolean }) {
-  return useSWR(['rooms', params], async () => {
-    const res = await api.getRooms(params)
-    if (!res.success) throw new Error(res.error)
-    return res.data
-  })
-}
-
 // Videos
 export function useVideos(params?: { category?: string; isLive?: boolean }) {
   return useSWR(['videos', params], async () => {
@@ -156,15 +147,6 @@ export function useMarketplaceItems(params?: { category?: string; status?: strin
   })
 }
 
-// Lounge Rooms (used by lounge page)
-export function useLoungeRooms(params?: { category?: string; isLive?: boolean }) {
-  return useSWR(['loungeRooms', params], async () => {
-    const res = await api.getRooms(params)
-    if (!res.success) throw new Error(res.error)
-    return res.data
-  })
-}
-
 // Fund Wall Entries (used by fund-wall page)
 export function useFundWallEntries(params?: { status?: string }) {
   return useSWR(['fundWallEntries', params], async () => {
@@ -178,19 +160,20 @@ export function useFundWallEntries(params?: { status?: string }) {
 export function useEarningsSummary(params?: { period?: string }) {
   return useSWR(['earningsSummary', params], async () => {
     const res = await api.getEarnings(params)
-    if (!res.success) throw new Error(res.error)
-    return {
-      byCategory: res.data?.byCategory || {},
-      total: res.data?.total || 0,
+    if (!res.success || !res.data) {
+      throw new Error(res.error || 'Failed to load earnings')
     }
+    return res.data
   })
 }
 
 // Earnings History (used by earnings page)
-export function useEarningsHistory(params?: { category?: string; period?: string }) {
+export function useEarningsHistory(params?: { category?: string; period?: string; limit?: number }) {
   return useSWR(['earningsHistory', params], async () => {
     const res = await api.getEarnings(params)
-    if (!res.success) throw new Error(res.error)
-    return res.data?.earnings || []
+    if (!res.success || !res.data) {
+      throw new Error(res.error || 'Failed to load earnings')
+    }
+    return res.data
   })
 }

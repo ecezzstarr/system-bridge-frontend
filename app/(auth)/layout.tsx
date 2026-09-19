@@ -17,7 +17,7 @@ export default function AuthLayout({
   useEffect(() => {
     // If already logged in, redirect to dashboard
     if (isAuthenticated && !isLoading) {
-      router.push('/dashboard')
+      router.push('/weave')
     }
   }, [isAuthenticated, isLoading, router])
 

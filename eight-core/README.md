@@ -38,7 +38,7 @@ A standalone AI-powered system builder that can be deployed to Google Cloud Run,
 ```bash
 # Set environment variables
 export GCP_PROJECT_ID="your-project-id"
-export DATABASE_URL="postgresql://..."
+export DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE"
 export GOOGLE_AI_KEY="your-key"  # optional
 
 # Deploy

@@ -3,14 +3,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, FileText, Lock, PenLine, RefreshCw } from 'lucide-react'
-import { getClientToken, getClientUser } from '@/lib/client-auth'
+import { useAuth } from '@/lib/auth-provider'
 
 type Loop = { id:string; loop_number:number; title:string; purpose:string; stage:string; position:string; functions:string; economics:string; responsibilities:string; boundaries:string; agreement_version:string|null; audience:string[] }
 type Document = { key:string; title:string; version:string; required:boolean; body:string }
 type Accepted = { document_key:string; document_title:string; document_version:string; accepted_at:string }
 
 export default function ClientLoopsPage() {
-  const [client,setClient] = useState<any>(null)
+  const { user: client, token, isInitialized } = useAuth()
   const [loops,setLoops] = useState<Loop[]>([])
   const [documents,setDocuments] = useState<Document[]>([])
   const [accepted,setAccepted] = useState<Accepted[]>([])
@@ -20,19 +20,20 @@ export default function ClientLoopsPage() {
   const [working,setWorking] = useState<string|null>(null)
 
   const load = async () => {
-    const user = getClientUser(); const token = getClientToken()
-    if (!user || !token) { window.location.href='/client/login'; return }
-    setClient(user)
+    const user = client
+    if (!user || !token) { window.location.href='/login'; return }
+
     try {
       const headers = { Authorization:`Bearer ${token}` }
       const [loopRes, docRes] = await Promise.all([fetch('/api/company-loops?role=client',{headers}), fetch('/api/client/agreements',{headers})])
-      if (loopRes.status===401 || docRes.status===401) { window.location.href='/client/login'; return }
+      if (loopRes.status===401 || docRes.status===401) { window.location.href='/login'; return }
       const loopData=await loopRes.json(); const docData=await docRes.json()
+      if (!loopRes.ok || !docRes.ok) throw new Error('Unable to load client records')
       setLoops(loopData.loops||[]); setDocuments(docData.documents||[]); setAccepted(docData.accepted||[])
     } catch { setMessage('Unable to load the Client environment.') }
     finally { setLoading(false) }
   }
-  useEffect(()=>{load()},[])
+  useEffect(()=>{ if (isInitialized) load() },[isInitialized, client?.id, token])
 
   const acceptedKeys = useMemo(()=>new Set(accepted.map(item=>`${item.document_key}:${item.document_version}`)),[accepted])
   const requiredPending = documents.filter(d=>d.required&&!acceptedKeys.has(`${d.key}:${d.version}`)).length
@@ -40,7 +41,7 @@ export default function ClientLoopsPage() {
   const accept = async (doc:Document) => {
     setWorking(doc.key); setMessage('')
     try {
-      const token=getClientToken(); const res=await fetch('/api/client/agreements',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({documentKey:doc.key,accept:true})})
+      const res=await fetch('/api/client/agreements',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({documentKey:doc.key,accept:true})})
       const data=await res.json(); if(!res.ok) throw new Error(data.error||'Unable to record acceptance')
       setMessage(`${doc.title} accepted and recorded.`); await load()
     } catch(e) { setMessage(e instanceof Error?e.message:'Unable to record acceptance') }

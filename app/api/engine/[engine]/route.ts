@@ -5,7 +5,7 @@ import { callEngineAPI } from '@/lib/system-switch'
 
 export async function GET(
   request: Request,
-  { params }: { params: { engine: 'arena' | 'marketplace' | 'role' } }
+  { params }: { params: Promise<{ engine: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -17,12 +17,12 @@ export async function GET(
     }
 
     const url = new URL(request.url)
-    const path = url.pathname.replace(`/api/engine/${params.engine}`, '')
+    const path = url.pathname.replace(`/api/engine/${engine}`, '')
     const query = url.search
 
-    console.log('[v0] Proxying to engine:', params.engine, path)
+    console.log('[v0] Proxying to engine:', engine, path)
     
-    const result = await callEngineAPI(params.engine, `${path}${query}`)
+    const result = await callEngineAPI(engine, `${path}${query}`)
     
     return NextResponse.json({
       success: true,
@@ -39,7 +39,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { engine: 'arena' | 'marketplace' | 'role' } }
+  { params }: { params: Promise<{ engine: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -52,11 +52,11 @@ export async function POST(
 
     const body = await request.json()
     const url = new URL(request.url)
-    const path = url.pathname.replace(`/api/engine/${params.engine}`, '')
+    const path = url.pathname.replace(`/api/engine/${engine}`, '')
 
-    console.log('[v0] POST to engine:', params.engine, path)
+    console.log('[v0] POST to engine:', engine, path)
     
-    const result = await callEngineAPI(params.engine, path, 'POST', body)
+    const result = await callEngineAPI(engine, path, 'POST', body)
     
     return NextResponse.json({
       success: true,

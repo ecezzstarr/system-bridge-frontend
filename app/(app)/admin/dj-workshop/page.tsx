@@ -47,13 +47,9 @@ export default function DJWorkshopPage() {
     }
   }, [user, router])
 
-  const authHeaders = (): Record<string, string> => {
-    const token =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('ssb_auth_token')
-        : null
-
-    return token ? { Authorization: `Bearer ${token}` } : {}
+  const authHeaders = () => {
+    const token = localStorage.getItem('ssb_auth_token')
+    return token ? { 'Authorization': `Bearer ${token}` } : {}
   }
 
   const loadAll = async () => {

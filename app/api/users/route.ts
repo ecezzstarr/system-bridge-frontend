@@ -1,40 +1,109 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireApiUser } from '@/lib/api-auth'
+import { sql } from '@/lib/db'
+import { getAuthUser } from '@/lib/auth-api'
 
+// GET - Fetch all users for private messaging, with optional role filter
 export async function GET(request: NextRequest) {
   try {
-    const requester = await requireApiUser(request)
-    if (!requester) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    // Optional: Only authenticated users can list other users
+    const authUser = await getAuthUser(request)
+    if (!authUser) {
+      // For now, let's just log and continue to avoid breaking existing flows if some callers don't pass token
+      console.warn('Listing users without authentication')
+    }
 
     const { searchParams } = new URL(request.url)
     const role = searchParams.get('role')
-    const sql = require('@/lib/pg-neon').neon(process.env.DATABASE_URL!)
+    const currentUserId = searchParams.get('currentUserId')
+    
+    let users
+    if (currentUserId) {
+      // Fetch users and sort by last message with current user
+      users = await sql`
+        SELECT 
+          u.id, 
+          u.name, 
+          u.username, 
+          u.email, 
+          u.role, 
+          u.assigned_agent_id,
+          u.created_at,
+          (
+            SELECT MAX(created_at) 
+            FROM lounge_messages 
+            WHERE room_type = 'private' 
+            AND room_id = CASE 
+              WHEN u.id::text < ${currentUserId} THEN u.id::text || '-' || ${currentUserId}
+              ELSE ${currentUserId} || '-' || u.id::text
+            END
+          ) as last_message_at
+        FROM users u
+        WHERE u.id != ${currentUserId}
+        ORDER BY last_message_at DESC NULLS LAST, COALESCE(u.name, u.username, u.email) ASC
+      `
+    } else if (role === 'agent') {
+      // For agents, also get their bridger count
+      users = await sql`
+        SELECT 
+          u.id, 
+          u.name, 
+          u.username, 
+          u.email,
+          u.role,
+          u.created_at,
+          (SELECT COUNT(*) FROM users WHERE assigned_agent_id = u.id) as bridger_count
+        FROM users u
+        WHERE u.role = 'agent'
+        ORDER BY COALESCE(u.name, u.username, u.email) ASC
+      `
+    } else if (role) {
+      users = await sql`
+        SELECT 
+          id, 
+          name, 
+          username, 
+          email, 
+          role, 
+          assigned_agent_id,
+          created_at
+        FROM users
+        WHERE role = ${role}
+        ORDER BY COALESCE(name, username, email) ASC
+      `
+    } else {
+      // Default: show all users who have at least an email or username or name
+      users = await sql`
+        SELECT 
+          id, 
+          name, 
+          username, 
+          email, 
+          role, 
+          assigned_agent_id,
+          created_at
+        FROM users
+        ORDER BY COALESCE(name, username, email) ASC
+      `
+    }
 
-    const users = role
-      ? await sql`
-          SELECT id, name, username, role, avatar, COALESCE(presence, 'offline') AS status
-          FROM users WHERE role = ${role} AND name IS NOT NULL AND is_active = true
-          ORDER BY name ASC LIMIT 200
-        `
-      : await sql`
-          SELECT id, name, username, role, avatar, COALESCE(presence, 'offline') AS status
-          FROM users WHERE name IS NOT NULL AND is_active = true
-          ORDER BY name ASC LIMIT 200
-        `
-
-    return NextResponse.json({
+    return NextResponse.json({ 
       success: true,
-      users: users.map((u: any) => ({
+      users: (users || []).map(u => ({
         id: u.id,
-        name: u.name || u.username || 'User',
-        username: u.username || 'user',
+        name: u.name || u.username || u.email?.split('@')[0] || 'User',
+        username: u.username || u.email?.split('@')[0] || 'user',
+        email: u.email,
         role: u.role,
-        avatar: u.avatar,
-        status: u.status === 'online' ? 'online' : 'offline',
-      })),
-    }, { headers: { 'Cache-Control': 'private, no-store' } })
+        assigned_agent_id: u.assigned_agent_id,
+        bridger_count: u.bridger_count ? parseInt(u.bridger_count) : undefined,
+      }))
+    })
   } catch (error) {
-    console.error('Failed to fetch users:', error instanceof Error ? error.message : 'unknown error')
-    return NextResponse.json({ success: false, users: [], error: 'Failed to fetch users' }, { status: 500 })
+    console.error('Failed to fetch users:', error)
+    return NextResponse.json({ 
+      success: false, 
+      users: [],
+      error: String(error)
+    })
   }
 }

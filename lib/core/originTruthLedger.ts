@@ -106,13 +106,13 @@ export function verifyOriginLedgerIntegrity(): boolean {
 export function initializeOriginSystem() {
   if (originLedger.length === 0) {
     // Register Origin Authority (Primary System)
-    registerSystemToOrigin("SSBNOW.SHOP - Origin Authority", "vercel", "ssbnow.shop", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk")
+    registerSystemToOrigin("SSBNOW.SHOP - Origin Authority", "cloudrun", "ssbnow.shop", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk")
     
     // Register Service System (Child System)
-    registerSystemToOrigin("SSBNOW.ONLINE - Service System", "vercel", "ssbnow.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
+    registerSystemToOrigin("SSBNOW.ONLINE - Service System", "cloudrun", "ssbnow.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
     
     // Register Admin Workshop (Private Production Layer)
-    registerSystemToOrigin("WEAVINGSYSTEM.ONLINE - Admin Workshop", "vercel", "weavingsystem.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
+    registerSystemToOrigin("WEAVINGSYSTEM.ONLINE - Admin Workshop", "cloudrun", "weavingsystem.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
     
     console.log("[v0] Origin Truth Ledger initialized with 3 interconnected systems")
   }

@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from './auth'
-import { neon } from './pg-neon'
+import { sql } from './db'
 import type { NextRequest } from 'next/server'
 
 type AuthUser = {
@@ -16,7 +16,7 @@ type AuthUser = {
 export async function getApiUser(request: NextRequest): Promise<AuthUser | null> {
   const session = await getServerSession(authOptions)
   if (session?.user?.id) {
-    const sql = neon(process.env.DATABASE_URL!)
+
     const rows = await sql`
       SELECT id, email, username, name, role, is_active
       FROM users
@@ -30,7 +30,7 @@ export async function getApiUser(request: NextRequest): Promise<AuthUser | null>
   const token = header.replace(/^Bearer\s+/i, '').trim()
   if (!token || token.length < 32 || token.length > 128) return null
 
-  const sql = neon(process.env.DATABASE_URL!)
+
   const rows = await sql`
     SELECT u.id, u.email, u.username, u.name, u.role, u.is_active
     FROM sessions s

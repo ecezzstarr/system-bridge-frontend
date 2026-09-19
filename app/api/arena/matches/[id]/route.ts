@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { neon } from '@/lib/pg-neon'
-
-const getDb = () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL not configured')
-  }
-  return neon(process.env.DATABASE_URL)
-}
+import { sql } from '@/lib/db'
 
 // GET /api/arena/matches/[id] - Get single match with participants
 export async function GET(
@@ -15,16 +8,15 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const sql = getDb()
 
     const matches = await sql`
       SELECT 
         m.*,
         u.name as host_name,
         u.username as host_username,
-        u.avatar as host_avatar
+        u.avatar_url as host_avatar
       FROM arena_matches m
-      LEFT JOIN users u ON m.host_id = u.id
+      LEFT JOIN users u ON m.host_id = u.id::text
       WHERE m.id = ${id}
     `
 
@@ -40,9 +32,9 @@ export async function GET(
         p.*,
         u.name,
         u.username,
-        u.avatar
+        u.avatar_url
       FROM arena_participants p
-      LEFT JOIN users u ON p.user_id = u.id
+      LEFT JOIN users u ON p.user_id = u.id::text
       WHERE p.match_id = ${id}
       ORDER BY p.joined_at ASC
     `
@@ -68,7 +60,7 @@ export async function GET(
         participants: participants.map((p: any) => ({
           id: p.user_id,
           displayName: p.name,
-          avatar: p.avatar,
+          avatar: p.avatar_url,
           joinedAt: p.joined_at,
           placement: p.placement,
           payout: p.payout,
@@ -90,7 +82,6 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json()
     const { action, winnerId, userId } = body
-    const sql = getDb()
 
     // Verify match exists
     const matches = await sql`SELECT * FROM arena_matches WHERE id = ${id}`
@@ -132,7 +123,7 @@ export async function PATCH(
       if (winnerId) {
         const winnerPayout = parseFloat(match.prize_pool) * 0.9
         await sql`
-          UPDATE wallets SET balance = balance + ${winnerPayout} WHERE user_id = ${winnerId}
+          UPDATE wallets SET balance_trx = balance_trx + ${winnerPayout} WHERE user_id = ${winnerId}::uuid
         `
         await sql`
           UPDATE arena_participants SET placement = 1, payout = ${winnerPayout} 
@@ -152,7 +143,7 @@ export async function PATCH(
       const participants = await sql`SELECT user_id FROM arena_participants WHERE match_id = ${id}`
       for (const p of participants) {
         await sql`
-          UPDATE wallets SET balance = balance + ${match.entry_fee} WHERE user_id = ${p.user_id}
+          UPDATE wallets SET balance_trx = balance_trx + ${match.entry_fee} WHERE user_id = ${p.user_id}::uuid
         `
       }
 

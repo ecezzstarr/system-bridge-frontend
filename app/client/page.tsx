@@ -3,15 +3,15 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { isClientAuthenticated } from '@/lib/client-auth'
+import { useAuth } from '@/lib/auth-provider'
 
 export default function ClientHomePage() {
+  const { user } = useAuth()
   useEffect(() => {
-    // Check if client is already logged in (using cookies)
-    if (isClientAuthenticated()) {
+    if (user) {
       window.location.href = '/client/dashboard'
     }
-  }, [])
+  }, [user])
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 flex flex-col items-center justify-center p-6">
@@ -20,8 +20,8 @@ export default function ClientHomePage() {
         <div className="inline-block mb-4 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
           <span className="text-5xl">🌐</span>
         </div>
-        <h1 className="text-4xl font-bold text-white mb-2">SSBNOW.SHOP</h1>
-        <p className="text-sm text-slate-500 mb-2">Weave of Presence</p>
+        <h1 className="text-4xl font-black text-white tracking-tighter mb-1">WEAVE</h1>
+        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Ecosystem Authority</p>
         <p className="text-lg text-slate-400">Client Services Portal</p>
       </div>
 

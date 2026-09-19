@@ -1,195 +1,131 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useState } from 'react'
+import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Star, Users, TrendingUp } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-interface BridgerProfile {
-  id: string
-  commission_rate: number
-  status: string
-  referrals: number
-  total_earnings: number
-}
+export default function SettingsPage() {
+  const { user, token } = useAuth()
+  const [name, setName] = useState(user?.name || '')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
 
-interface AgentProfile {
-  id: string
-  agent_type: string
-  commission_rate: number
-  status: string
-  matches_completed: number
-  total_earnings: number
-  rating: number
-}
+  if (!user) {
+    return (
+      <div className="p-6 text-slate-400">
+        You need to be logged in to view settings.
+      </div>
+    )
+  }
 
-export default function RolesPage() {
-  const [bridger, setBridger] = useState<BridgerProfile | null>(null)
-  const [agent, setAgent] = useState<AgentProfile | null>(null)
-  const [loading, setLoading] = useState(true)
+  const handleSave = async () => {
+    setError('')
+    setMessage('')
 
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const [bridgerRes, agentRes] = await Promise.all([
-          fetch('/api/roles/bridger'),
-          fetch('/api/roles/agent')
-        ])
-
-        if (bridgerRes.ok) {
-          const bridgerData = await bridgerRes.json()
-          setBridger(bridgerData.data)
-        }
-
-        if (agentRes.ok) {
-          const agentData = await agentRes.json()
-          setAgent(agentData.data)
-        }
-      } catch (error) {
-        console.error('[v0] Error fetching roles:', error)
-      } finally {
-        setLoading(false)
-      }
+    if (newPassword && newPassword !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+    if (newPassword && newPassword.length < 8) {
+      setError('Password must be at least 8 characters')
+      return
     }
 
-    fetchRoles()
-  }, [])
+    setIsSaving(true)
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token || ''}`,
+        },
+        body: JSON.stringify({
+          name: name !== user.name ? name : undefined,
+          newPassword: newPassword || undefined,
+          confirmPassword: confirmPassword || undefined,
+        }),
+      })
+      const data = await res.json()
 
-  if (loading) {
-    return <div className="p-8 text-center">Loading roles...</div>
+      if (!res.ok) {
+        setError(data.error || 'Failed to update settings')
+        return
+      }
+
+      setMessage('Settings updated successfully')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err) {
+      setError('Network error. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
-    <div className="space-y-8 p-8">
-      <div>
-        <h1 className="text-3xl font-bold">Roles & Profiles</h1>
-        <p className="text-muted-foreground mt-2">Manage your Bridger and Agent profiles</p>
+    <div className="p-8 max-w-md mx-auto">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Account Settings</h1>
+        <p className="text-muted-foreground mt-2">
+          Signed in as {user.email} ({user.role})
+        </p>
       </div>
 
-      <Tabs defaultValue="bridger" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="bridger">Bridger Profile</TabsTrigger>
-          <TabsTrigger value="agent">Agent Profile</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="bridger" className="space-y-4">
-          {bridger ? (
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Commission Rate</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{(bridger.commission_rate * 100).toFixed(1)}%</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Referrals
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{bridger.referrals}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    Total Earnings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{bridger.total_earnings.toFixed(2)} TRX</div>
-                </CardContent>
-              </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile</CardTitle>
+          <CardDescription>Update your name and password</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {message && (
+            <div className="bg-green-500/20 border border-green-500/50 text-green-300 px-3 py-2 rounded-lg text-sm">
+              {message}
             </div>
-          ) : null}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Bridger Status</CardTitle>
-              <CardDescription>Your current role status and activity</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
-                <Badge variant="outline">{bridger?.status}</Badge>
-              </div>
-              <Button className="w-full">Manage Bridger Profile</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="agent" className="space-y-4">
-          {agent ? (
-            <div className="grid gap-4 md:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Commission Rate</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{(agent.commission_rate * 100).toFixed(1)}%</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Matches</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{agent.matches_completed}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Star className="h-4 w-4" />
-                    Rating
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{agent.rating.toFixed(1)}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Earnings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{agent.total_earnings.toFixed(2)} TRX</div>
-                </CardContent>
-              </Card>
+          )}
+          {error && (
+            <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-3 py-2 rounded-lg text-sm">
+              {error}
             </div>
-          ) : null}
+          )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Agent Status</CardTitle>
-              <CardDescription>Your agent profile and performance</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Type</span>
-                <Badge variant="outline">{agent?.agent_type}</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
-                <Badge variant="outline">{agent?.status}</Badge>
-              </div>
-              <Button className="w-full">Manage Agent Profile</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          <div>
+            <label className="text-xs font-medium mb-2 block">Email (Read-only)</label>
+            <Input type="email" value={user.email} disabled />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium mb-2 block">Full Name</label>
+            <Input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+
+          <div className="border-t pt-6">
+            <p className="text-sm font-medium mb-4">Change Password</p>
+            <div className="space-y-3">
+              <Input
+                type="password"
+                placeholder="New password (leave blank to keep current)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <Input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <Button onClick={handleSave} disabled={isSaving} className="w-full">
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }

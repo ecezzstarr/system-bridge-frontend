@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Wallet } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Bot, CheckCircle2, XCircle } from 'lucide-react'
 
 interface SystemInfo {
   id: string
@@ -17,11 +17,23 @@ interface SystemInfo {
   status: string
 }
 
+interface AIAgent {
+  id: string
+  name: string
+  description: string
+  model: string
+  auth: string
+  accessLevel: string
+  configured: boolean
+}
+
 export default function OriginSystemsPanel() {
   const { user } = useAuth()
   const router = useRouter()
   const [systems, setSystems] = useState<SystemInfo[]>([])
   const [loading, setLoading] = useState(true)
+  const [agents, setAgents] = useState<AIAgent[]>([])
+  const [agentsLoading, setAgentsLoading] = useState(true)
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -30,7 +42,23 @@ export default function OriginSystemsPanel() {
     }
 
     fetchSystems()
+    fetchAgents()
   }, [user, router])
+
+  const fetchAgents = async () => {
+    try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/ai-registry/status', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      const data = await response.json()
+      if (data.success) setAgents(data.agents)
+    } catch (error) {
+      console.error('Error fetching AI agents:', error)
+    } finally {
+      setAgentsLoading(false)
+    }
+  }
 
   const fetchSystems = async () => {
     try {
@@ -53,6 +81,40 @@ export default function OriginSystemsPanel() {
         <h1 className="text-3xl font-bold text-white">Origin Systems Network</h1>
         <p className="text-slate-400 mt-2">All systems connected to SSBNOW.SHOP origin authority</p>
       </div>
+
+      {/* AI Registry */}
+      <Card className="bg-slate-900/50 border-slate-700">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5 text-blue-400" /> AI Registry</CardTitle>
+          <CardDescription>Autonomous agents active within the ecosystem</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {agentsLoading ? (
+            <p className="text-slate-400">Loading agents...</p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-3">
+              {agents.map((agent) => (
+                <div key={agent.id} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-white">{agent.name}</h3>
+                    {agent.configured ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-400" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-400" />
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400">{agent.description}</p>
+                  <div className="text-[11px] text-slate-500 space-y-1 pt-2 border-t border-slate-700">
+                    <p>Model: <span className="text-cyan-400">{agent.model}</span></p>
+                    <p>Auth: <span className="text-cyan-400">{agent.auth}</span></p>
+                    <p>Access: <span className="text-cyan-400">{agent.accessLevel}</span></p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">

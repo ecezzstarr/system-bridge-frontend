@@ -1,69 +1,9 @@
-# Cloud Build configuration for automated deployment
-# This file orchestrates the build and deployment process to Cloud Run
-
 steps:
-  # Step 1: Build the Docker image
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-image'
-    args:
-      - 'build'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_COMMIT_SHA}'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
-      - '--build-arg'
-      - 'COMMIT_SHA=${_COMMIT_SHA}'
-      - '--build-arg'
-      - 'BUILD_TIMESTAMP=${_BUILD_TIMESTAMP}'
-      - '.'
-    env:
-      - 'DOCKER_BUILDKIT=1'
-
-  # Step 2: Push image to Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'push-image'
-    args:
-      - 'push'
-      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_COMMIT_SHA}'
-    waitFor: ['build-image']
-
-  # Step 3: Deploy to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'deploy-cloud-run'
-    entrypoint: 'gcloud'
-    args:
-      - 'run'
-      - 'deploy'
-      - '${_SERVICE_NAME}'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_COMMIT_SHA}'
-      - '--region'
-      - '${_REGION}'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
-      - '--set-env-vars'
-      - 'COMMIT_SHA=${_COMMIT_SHA},BUILD_TIMESTAMP=${_BUILD_TIMESTAMP},NODE_ENV=production,CLOUD_SQL_CONNECTION_NAME=ssbr-495208:us-central1:system-bridge-db,CLOUD_SQL_DATABASE=ssbnow,CLOUD_SQL_USER=ssbnow_user,PGSSLMODE=disable'
-      - '--set-secrets'
-      - 'DATABASE_URL=database-url:latest,CLOUD_SQL_PASSWORD=db-password:latest,JWT_SECRET=jwt-secret:latest,FLW_PUBLIC_KEY=flw-public-key:latest,FLW_SECRET_KEY=flw-secret-key:latest,NEXTAUTH_SECRET=nextauth-secret:latest,GOOGLE_AI_KEY=google-ai-key:latest,EIGHT_INTERNAL_TOKEN=eight-internal-token:latest'
-    waitFor: ['push-image']
-
-# Substitutions for environment-specific values
-substitutions:
-  _SERVICE_NAME: 'system-bridge-frontend'
-  _REGION: 'us-central1'
-  _COMMIT_SHA: '${COMMIT_SHA}'
-  _BUILD_TIMESTAMP: '${BUILD_ID}'
-
-# Image output
+  - name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/system-bridge/frontend:$COMMIT_SHA', '.']
 images:
-  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_COMMIT_SHA}'
-  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
-
-# Timeout for the entire build process
-timeout: 3600s
-
-# Options for the build
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/system-bridge/frontend:$COMMIT_SHA'
 options:
-  machineType: 'N1_HIGHCPU_8'
+  machineType: E2_HIGHCPU_8
   logging: CLOUD_LOGGING_ONLY
+timeout: 1800s

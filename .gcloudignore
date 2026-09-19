@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+*.log
+__pycache__/
+*.pyc
+*.tsbuildinfo
+=
+screenshot-main.png
+.git

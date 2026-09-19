@@ -1,0 +1,9 @@
+packages:
+  - '.'
+
+allowBuilds:
+  '@clerk/shared': true
+  '@google/genai': true
+  esbuild: true
+  protobufjs: true
+  sharp: true

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, CreditCard, Wallet } from 'lucide-react'
-import { getClientUser } from '@/lib/client-auth'
+import { useAuth } from '@/lib/auth-provider'
 import Link from 'next/link'
 
 const QUICK_AMOUNTS = [10, 25, 50, 100, 250, 500]
@@ -13,19 +13,18 @@ const USD_TO_TRX_RATE = 10
 
 export default function ClientDepositPage() {
   const router = useRouter()
-  const [client, setClient] = useState<any>(null)
+  const { user: client, isLoading: authLoading } = useAuth()
   const [amount, setAmount] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const clientData = getClientUser()
-    if (!clientData) {
+    if (authLoading) return
+    if (!client) {
       router.push('/client/login')
       return
     }
-    setClient(clientData)
-  }, [router])
+  }, [router, client, authLoading])
 
   const handleDeposit = async () => {
     if (!amount || parseFloat(amount) < 1) {
@@ -78,7 +77,7 @@ export default function ClientDepositPage() {
       <div className="max-w-lg mx-auto">
         <Link href="/client/dashboard">
           <Button variant="ghost" className="mb-6 text-slate-400 hover:text-white">
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Terminal
           </Button>
         </Link>
 

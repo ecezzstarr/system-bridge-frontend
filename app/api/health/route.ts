@@ -1,37 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getVersionInfo } from '@/lib/version'
+import { NextResponse } from 'next/server'
 
-/**
- * Health check endpoint
- * 
- * Returns application status and version information.
- * Used by Cloud Run health checks and monitoring systems.
- */
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
-    const versionInfo = getVersionInfo()
-    
+    // Basic health check
     return NextResponse.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      service: 'system-bridge-frontend',
-      version: {
-        app: versionInfo.appVersion,
-        commit: versionInfo.commitSha,
-        branch: versionInfo.branch,
-        buildTime: versionInfo.buildTime,
-        environment: versionInfo.isProduction ? 'production' : 'development',
-      },
+      version: '1.0.0',
+      environment: process.env.NODE_ENV,
     })
   } catch (error) {
-    console.error('Health check error:', error)
     return NextResponse.json(
-      {
-        status: 'unhealthy',
-        timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 503 }
+      { status: 'unhealthy', error: 'Health check failed' },
+      { status: 500 }
     )
   }
 }

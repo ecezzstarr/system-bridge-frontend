@@ -11,7 +11,7 @@ export interface SystemIdentity {
   ORIGIN_SYSTEM_ID: string
   SYSTEM_NAME: string
   SYSTEM_ROLE: "origin" | "extension" | "arena" | "agent"
-  DEPLOYMENT_TARGET: "vercel" | "cloudrun" | "local" | "playstore"
+  DEPLOYMENT_TARGET: "cloudrun" | "cloudrun" | "local" | "playstore"
   CONNECTED_TO_ORIGIN: boolean
   SOURCE_ADMIN: string
   EIGHT_ENABLED: boolean
@@ -26,7 +26,7 @@ export const mainSystemIdentity: SystemIdentity = {
   ORIGIN_SYSTEM_ID: ORIGIN_SYSTEM_ID,
   SYSTEM_NAME: "SSBNOW.SHOP",
   SYSTEM_ROLE: "origin",
-  DEPLOYMENT_TARGET: "vercel",
+  DEPLOYMENT_TARGET: "cloudrun",
   CONNECTED_TO_ORIGIN: true,
   SOURCE_ADMIN: SOURCE_ADMIN_ID,
   EIGHT_ENABLED: true,

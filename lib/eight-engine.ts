@@ -5,6 +5,7 @@
 // Works alongside you (the user) to continuously improve the system
 
 import OpenAI from 'openai'
+import { VertexAI } from '@google-cloud/vertexai'
 
 function getOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY
@@ -12,6 +13,40 @@ function getOpenAI() {
     return null
   }
   return new OpenAI({ apiKey })
+}
+
+// Vertex AI client - authenticates via the Cloud Run service account
+// (Application Default Credentials). No API key anywhere.
+const vertexAI = new VertexAI({
+  project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
+  location: 'us-central1',
+})
+
+async function callGemini(messages: Array<{ role: string; content: string }>, systemPrompt: string): Promise<string | null> {
+  try {
+    const model = vertexAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
+    })
+
+    const contents = messages.map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }))
+
+    const result = await model.generateContent({
+      contents,
+      generationConfig: {
+        maxOutputTokens: 4000,
+        temperature: 0.7,
+      },
+    })
+
+    return result.response.candidates?.[0]?.content?.parts?.[0]?.text || null
+  } catch (error) {
+    console.error('Vertex AI Gemini error:', error)
+    return null
+  }
 }
 
 export interface EightCommand {
@@ -43,17 +78,16 @@ You are not just a helper - you are a co-builder. You understand the entire SSB 
 
 ## Platform Architecture You Understand
 - Frontend: Next.js 16, React, Tailwind CSS, shadcn/ui components
-- Backend: Vercel serverless functions, Neon PostgreSQL
+- Backend: Cloud Run (Node.js), Cloud SQL (PostgreSQL)
 - Blockchain: TRON network for TRX transactions
-- AI: OpenAI for intelligence (you), Vercel AI SDK
-- Auth: Custom JWT auth with Neon database
+- AI: Google Gemini (you), OpenAI (fallback)
+- Auth: Custom JWT auth with PostgreSQL
 - Places: Wave (dashboard), Market, Arena, Lounge
 
 ## Key Systems
-- Users: agents (employees, 1 TRX/day), bridgers (partners, 50% commission)
+- Users: agents (employees), bridgers (partners)
 - Wallets: platform_balance, escrow_balance, TRX on TRON
 - Arena: Casino games, multiplayer matches with escrow
-- Client Service: Separate portal for bridger clients
 - Eight Engine: You - the AI that builds and maintains everything
 
 ## Your Capabilities
@@ -64,7 +98,6 @@ You are not just a helper - you are a co-builder. You understand the entire SSB 
 5. **API Design**: Create RESTful endpoints with proper error handling
 6. **UI Building**: Generate React components with Tailwind styling
 7. **Debugging**: Identify and fix issues in the codebase
-8. **Documentation**: Explain systems and generate docs
 
 ## Response Format
 Always respond with structured JSON:
@@ -77,15 +110,7 @@ Always respond with structured JSON:
   "action": "Triggered action if any"
 }
 
-## Working Style
-- Be proactive - suggest improvements you notice
-- Be thorough - consider edge cases and security
-- Be practical - generate working code, not pseudocode
-- Be collaborative - explain your reasoning
-- Be honest - if you're unsure, say so
-
-When the user asks to build or refine something, provide complete, working solutions.
-You are Eight. You build ecosystems.`
+Be concise. Build first, explain after. You are Eight. You build ecosystems.`
 
 // Main function to interact with Eight
 export async function askEight(
@@ -98,15 +123,6 @@ export async function askEight(
   }
 ): Promise<EightResponse> {
   try {
-    const openai = getOpenAI()
-    if (!openai) {
-      return {
-        success: true,
-        message: 'Eight is in offline mode. OpenAI API key not configured.',
-        suggestions: ['Add OPENAI_API_KEY to environment variables to enable full Eight capabilities'],
-      }
-    }
-
     const contextString = context ? `
 ## Current Context
 ${context.currentCode ? `### Code Context:\n\`\`\`\n${context.currentCode}\n\`\`\`` : ''}
@@ -115,29 +131,51 @@ ${context.userRole ? `### User Role: ${context.userRole}` : ''}
 ${context.systemState ? `### System State:\n${JSON.stringify(context.systemState, null, 2)}` : ''}
 ` : ''
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: EIGHT_SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `${contextString}\n\n## Request\n${prompt}`,
-        },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-      max_tokens: 4000,
-    })
+    const messages = [
+      { role: 'user', content: `${contextString}\n\n## Request\n${prompt}` }
+    ]
 
-    const content = response.choices[0].message.content
-    if (!content) {
-      return {
-        success: false,
-        message: 'Eight did not respond',
+    // 1. Try Gemini first (AI Studio Key)
+    const geminiResponse = await callGemini(messages, EIGHT_SYSTEM_PROMPT)
+    if (geminiResponse) {
+      try {
+        return JSON.parse(geminiResponse) as EightResponse
+      } catch (e) {
+        return {
+          success: true,
+          message: geminiResponse,
+        }
       }
     }
 
-    return JSON.parse(content) as EightResponse
+    // 2. Fallback to OpenAI
+    const openai = getOpenAI()
+    if (openai) {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: EIGHT_SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content: `${contextString}\n\n## Request\n${prompt}`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+        max_tokens: 4000,
+      })
+
+      const content = response.choices[0].message.content
+      if (content) {
+        return JSON.parse(content) as EightResponse
+      }
+    }
+
+    return {
+      success: false,
+      message: 'Eight is in offline mode. Vertex AI or OpenAI could not be reached.',
+      suggestions: ['Check that the Cloud Run service account has the aiplatform.user role.'],
+    }
   } catch (error: any) {
     console.error('Eight engine error:', error)
     return {

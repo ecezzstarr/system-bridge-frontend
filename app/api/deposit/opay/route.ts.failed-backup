@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createTransaction } from '@/lib/db'
+import { getAuthUser } from '@/lib/auth-api'
+
+/**
+ * Initialize an OPay (NGN) deposit for Admin, Agents, and Bridgers.
+ * Funds will be automatically converted to TRX upon success.
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getAuthUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Role check: Only Administration, Agents, and Bridgers use OPay
+    const userRole = user.role
+    if (!['admin', 'agent', 'bridger'].includes(userRole)) {
+      return NextResponse.json({ error: 'OPay deposit is not available for your role' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { amount } = body // Amount in NGN
+
+    if (!amount || amount <= 0) {
+      return NextResponse.json({ error: 'Valid NGN amount required' }, { status: 400 })
+    }
+
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://ssbnow.shop'
+
+    const transaction = await createTransaction({
+      userId: user.id,
+      type: 'deposit',
+      amount: Number(amount),
+      currency: 'NGN',
+      description: 'OPay NGN Deposit - Pending Admin Verification',
+      metadata: {
+        payment_gateway: 'manual_opay',
+        converted_asset: 'TRX',
+        status: 'pending'
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Deposit submitted. Awaiting admin verification.',
+      transactionId: transaction.id,
+      status: 'pending'
+    })
+  } catch (error: any) {
+    console.error('OPay Deposit init error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

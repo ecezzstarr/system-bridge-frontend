@@ -10,6 +10,12 @@ export async function GET(request: NextRequest) {
     await ensureCompanyLoopsSchema(sql)
     const requestedRole = request.nextUrl.searchParams.get('role')
     const role = requestedRole && ['client', 'agent', 'bridger', 'admin'].includes(requestedRole) ? requestedRole : null
+    if (request.nextUrl.searchParams.get('manage') === 'true') {
+      const user = await requireApiUser(request)
+      if (!user || user.role !== 'admin') return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+      const rows = await sql`SELECT * FROM company_loops ORDER BY loop_number ASC, created_at ASC`
+      return NextResponse.json({ loops: rows })
+    }
     const rows = role
       ? await sql`SELECT id, loop_number, title, purpose, stage, position, functions, economics, responsibilities, boundaries, agreement_version, audience, status, created_at, updated_at, published_at FROM company_loops WHERE status = 'published' AND (${role} = ANY(audience) OR 'all' = ANY(audience)) ORDER BY loop_number ASC, created_at ASC`
       : await sql`SELECT id, loop_number, title, purpose, stage, position, functions, economics, responsibilities, boundaries, agreement_version, audience, status, created_at, updated_at, published_at FROM company_loops WHERE status = 'published' ORDER BY loop_number ASC, created_at ASC`

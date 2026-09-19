@@ -1,31 +1,22 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { AuthProvider } from '@/lib/auth-provider'
-import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
-
-const _geist = Geist({ subsets: ['latin'] })
-const _geistMono = Geist_Mono({ subsets: ['latin'] })
+import { AuthProvider } from '@/lib/auth-provider'
+import { ThemeProvider } from 'next-themes'
+import { PWARegister } from '@/components/pwa-register'
+import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
 
 export const metadata: Metadata = {
-  title: 'SSBNOW.SHOP - Weave of Presence: System Switch Bridge Radiance',
-  description: 'Enterprise platform for presence-governed operations and system switching',
-  icons: {
-    icon: [
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-    ],
-    apple: '/apple-icon.png',
-  },
+  title: 'WEAVE - System Bridge',
+  description: 'Unified ecosystem for bridgers, agents, and administrators',
+  manifest: '/manifest.webmanifest',
 }
 
 export const viewport: Viewport = {
-  width: 'device-width', initialScale: 1, maximumScale: 5, userScalable: true,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#0a0e27' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0e27' },
-  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#08090f',
 }
 
 export default function RootLayout({
@@ -34,10 +25,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="bg-background" suppressHydrationWarning>
-      <body className="font-sans antialiased">
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
+      <body className="bg-slate-950 text-slate-100 overflow-x-hidden antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <PWARegister />
+            {children}
+            <DJBroadcastPlayer />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
