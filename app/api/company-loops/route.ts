@@ -8,6 +8,29 @@ export async function GET(request: NextRequest) {
   try {
     const sql = getDb()
     await ensureCompanyLoopsSchema(sql)
+    // Loop One is the already-established institutional movement. Keep it present
+    // even on databases created before Company Loops were introduced.
+    await sql`
+      INSERT INTO company_loops
+        (loop_number, title, purpose, stage, position, functions, economics, responsibilities, boundaries, agreement_version, audience, status, published_at)
+      SELECT
+        1,
+        'System Switch — Interaction in Motion',
+        'Carry participation established through System Switch into continuing Weave movement.',
+        'Active · Continuing',
+        'Interaction in Motion',
+        'Interaction → Event → Position → Company Function → Interaction',
+        '',
+        'Participate from the responsibilities and boundaries of the current Weave position.',
+        'Loop One does not replace role authority, Client ownership boundaries, or Administration recognition.',
+        'loop-one',
+        ARRAY['client','agent','bridger']::text[],
+        'published',
+        NOW()
+      WHERE NOT EXISTS (
+        SELECT 1 FROM company_loops WHERE loop_number = 1 AND status = 'published'
+      )
+    `
     const requestedRole = request.nextUrl.searchParams.get('role')
     const role = requestedRole && ['client', 'agent', 'bridger', 'admin'].includes(requestedRole) ? requestedRole : null
     const rows = role
