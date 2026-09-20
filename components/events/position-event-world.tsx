@@ -8,6 +8,7 @@ const roleTone: Record<EventRole,string> = {
   client: 'from-blue-500/20 via-black to-red-500/10',
   bridger: 'from-red-500/20 via-black to-blue-500/10',
   agent: 'from-blue-600/20 via-black to-red-600/10',
+  admin: 'from-red-600/20 via-black to-blue-600/15',
 }
 
 export default function PositionEventWorld({ role, context }: { role: EventRole; context?: { label: string; value: string | number }[] }) {
