@@ -51,6 +51,7 @@ const navigation = [
   // 1. PRESENCE
   { group: "Presence", items: [
     { name: "Home", href: "/", icon: Home },
+    { name: "Human Cadences", href: "/search", icon: MessageSquare },
     { name: "Presences", href: "/profiles", icon: UserCircle },
     { name: "Agent Terminal", href: "/agent/dashboard", icon: LayoutTemplate, agentOnly: true },
     { name: "Ecosystem Control", href: "/admin/dashboard", icon: ShieldCheck, adminOnly: true },
@@ -93,7 +94,7 @@ const navigation = [
     { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
           { name: "Company Loops", href: "/company/loops", icon: GitBranch },
       { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
-{ name: "Admin Workshop", href: "/admin/dev-workshop", icon: Rocket, adminOnly: true },
+{ name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
     { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
     { name: "Echo", href: "/echo", icon: Sparkles },
   ]},
@@ -193,11 +194,11 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       canvas.height = video.videoHeight
       const ctx = canvas.getContext("2d")
       ctx?.drawImage(video, 0, 0)
-      
+
       const dataUrl = canvas.toDataURL("image/png")
-      
+
       stream.getTracks().forEach((track) => track.stop())
-      
+
       await sendToLounge(dataUrl, "image")
     } catch (err) {
       console.error("Error capturing screenshot:", err)
@@ -246,11 +247,11 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       <div className="flex flex-col items-center justify-center border-b border-white/5 p-6">
         <WeaveLogo size="md" className="mb-1" />
         <span className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">Ecosystem Authority</span>
-        
+
         {/* PWA Download Button */}
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="mt-4 w-full h-8 text-[10px] border-cyan-500/30 bg-cyan-500/5 text-cyan-400 hover:bg-cyan-500/10 gap-2"
           onClick={() => {
             const prompt = (window as any).deferredPrompt;
@@ -330,7 +331,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                   {visibleItems.map((item) => {
                     const isActive = pathname === item.href
                     const isSubItem = item.name === "Bridger Continuance"
-                    
+
                     return (
                       <li key={item.name}>
                         <Link
@@ -349,7 +350,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                           {isSubItem && subscription && (
                             <span className={cn(
                               "text-[8px] font-black uppercase px-1.5 py-0.5 rounded border",
-                              subscription.subscription_status === 'active' 
+                              subscription.subscription_status === 'active'
                                 ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                                 : subscription.subscription_status === 'due'
                                   ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
@@ -371,10 +372,10 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
         {/* Lounge Media Hub */}
         <div className="mt-6 pt-6 border-t border-white/5 px-3">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Lounge Media Hub</p>
-          
+
           <div className="space-y-3">
             <div className="flex flex-col gap-2">
-              <select 
+              <select
                 value={targetRoom}
                 onChange={(e) => setTargetRoom(e.target.value)}
                 className="bg-white/5 border-0 rounded-md px-2 py-1.5 text-[10px] text-slate-300 focus:ring-1 focus:ring-cyan-500 outline-none"
@@ -395,7 +396,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                   {isUploading && uploadType === "image" ? <Loader2 className="h-4 w-4 animate-spin text-cyan-400" /> : <Image className="h-4 w-4" />}
                   <span className="text-[9px]">Photo</span>
                 </button>
-                
+
                 <button
                   onClick={() => { setUploadType("video"); fileInputRef.current?.click(); }}
                   disabled={isUploading}
@@ -417,11 +418,11 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                 </button>
               </div>
             </div>
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              hidden 
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              hidden
               accept={uploadType === "video" ? "video/*" : "image/*"}
               onChange={handleFileUpload}
             />

@@ -502,35 +502,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'deploy': {
-        const service = payload?.service === 'system-bridge-frontend' ? 'system-bridge-frontend' : null
-        console.log(`[v0] Starting deployment for ${service}...`)
-        if (!service) {
-          return NextResponse.json({ success: false, error: `Deployment not configured for ${payload?.service}` })
-        }
-        try {
-          const { stdout: gcloudAuth } = await execFileAsync('gcloud', ['auth', 'list', '--format=value(account)'])
-          if (!gcloudAuth.trim()) {
-            return NextResponse.json({ success: false, error: 'GCP authentication required. Run "gcloud auth login" in terminal.', needsAuth: true })
-          }
-          await execFileAsync('gcloud', [
-            'builds', 'submit', '--tag', 'gcr.io/ssbr-495208/system-bridge-frontend'
-          ], { cwd: PROJECT_ROOT, timeout: 600000 })
-          const { stdout, stderr } = await execFileAsync('gcloud', [
-            'run', 'deploy', 'system-bridge-frontend',
-            '--image', 'gcr.io/ssbr-495208/system-bridge-frontend:latest',
-            '--region', 'us-central1',
-            '--project', 'ssbr-495208',
-            '--platform', 'managed',
-            '--allow-unauthenticated',
-            '--add-cloudsql-instances', 'ssbr-495208:us-central1:system-bridge-db',
-            '--set-env-vars', 'NODE_ENV=production,CLOUD_SQL_CONNECTION_NAME=ssbr-495208:us-central1:system-bridge-db,CLOUD_SQL_DATABASE=ssbnow,CLOUD_SQL_USER=ssbnow_user,PGSSLMODE=disable',
-            '--update-secrets', 'DATABASE_URL=database-url:latest,CLOUD_SQL_PASSWORD=db-password:latest,FLW_PUBLIC_KEY=flw-public-key:latest,FLW_SECRET_KEY=flw-secret-key:latest,JWT_SECRET=jwt-secret:latest,NEXTAUTH_SECRET=nextauth-secret:latest',
-            '--memory', '1Gi', '--cpu', '1', '--port', '3000'
-          ], { cwd: PROJECT_ROOT, timeout: 600000 })
-          return NextResponse.json({ success: true, message: 'Deployment successful', stdout, stderr })
-        } catch (error: any) {
-          return NextResponse.json({ success: false, error: 'Deployment failed', details: error.message, stdout: error.stdout, stderr: error.stderr })
-        }
+        return NextResponse.json({ success: false, error: 'Deploy the verified main source through the WEAVE preview and promotion workflow.' }, { status: 409 })
       }
 
       case 'debug_logs': {

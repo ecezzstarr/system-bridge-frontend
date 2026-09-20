@@ -1,0 +1,302 @@
+[
+  {
+    "branch": "river-weave-development",
+    "commit": "76466fd10541a98fa9f8e63f4b8b74687d424c8a",
+    "file": "lib/river-assistant.ts"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "app/api/chat/route.ts"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "app/api/river/external/route.ts"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "app/api/river/outreach/route.ts"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "app/river/connect/page.tsx"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "components/river-chat.tsx"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "lib/river-assistant.ts"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "lib/river-outreach.ts"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "lib/river-quo.ts"
+  },
+  {
+    "branch": "river-context-integration",
+    "commit": "f9d2ec70634a6da9c4b76e1d3d5f02f9546e046d",
+    "file": "lib/river-qu\u043e.ts"
+  },
+  {
+    "branch": "feat/weave-global-search",
+    "commit": "d4f589519ea50e66a0d905140499717e2271ed54",
+    "file": "app/(app)/search/page.tsx"
+  },
+  {
+    "branch": "feat/weave-global-search",
+    "commit": "d4f589519ea50e66a0d905140499717e2271ed54",
+    "file": "app/api/cadences/route.ts"
+  },
+  {
+    "branch": "feat/weave-global-search",
+    "commit": "d4f589519ea50e66a0d905140499717e2271ed54",
+    "file": "components/app-header.tsx"
+  },
+  {
+    "branch": "feat/weave-global-search",
+    "commit": "d4f589519ea50e66a0d905140499717e2271ed54",
+    "file": "db/migrations/20260917_weave_cadences.sql"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/(app)/admin/client-vault/page.tsx"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/admin/client-vault/credit/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/admin/client-vault/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/admin/client-vault/withdrawals/[id]/approve/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/admin/client-vault/withdrawals/[id]/sent/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/client/business-store/orders/[id]/status/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/client/business-store/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/client/international-payments/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/client/system-switch/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/client/vault/withdraw/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/public/store/[slug]/orders/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/api/public/store/[slug]/route.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/client/system-switch/page.tsx"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "app/store/[slug]/page.tsx"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "components/system-switch/client-workshop-world.tsx"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "lib/client-business-store.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "lib/client-international-payments.ts"
+  },
+  {
+    "branch": "feature/client-business-store-vault-credits",
+    "commit": "24b45811fd82248b12d961bbf5d418a810bd7b99",
+    "file": "lib/client-vault-ledger.ts"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/(app)/event/page.tsx"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/api/admin/campaign-flame/route.ts"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/api/chatgpt/bridge/route.ts"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/api/deposit/callback/route.ts"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/api/deposit/flutterwave/route.ts"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/api/system-switch/bridge/route.ts"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/api/system-switch/file-folder/purchase/route.ts"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/client/event/page.tsx"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "app/system-switch/page.tsx"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "components/events/position-event-world.tsx"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "components/system-switch/file-folder-purchase.tsx"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "components/system-switch/system-switch-world.tsx"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "db/migrations/20260909_chatgpt_bridge_ai.sql"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "db/migrations/20260918_ai_provider_allocations.sql"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "db/migrations/20260920_position_events.sql"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "lib/ai-provider-settlement.ts"
+  },
+  {
+    "branch": "weave/flame-prospect-crossing",
+    "commit": "4d3c4c7499f4e47e24fb561ce411f303fa343e28",
+    "file": "lib/weave-event.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "lib/pg-neon.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "lib/workshop-auth.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "lib/client-vault.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "lib/client-file-folder.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "lib/client-system-workshop.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "lib/client-auth.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "app/api/bridge-ai/report/route.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "lib/file-folder-pricing.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "lib/system-events.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "app/api/system-switch/file-folder/route.ts"
+  },
+  {
+    "branch": "dependency",
+    "commit": "origin/feature/client-business-store-vault-credits",
+    "file": "app/api/admin/client-workshop/route.ts"
+  }
+]

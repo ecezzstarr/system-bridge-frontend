@@ -18,10 +18,10 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Client routes use separate auth (client_token/client_user)
-  // Not wrapped in main AuthProvider
+  // Client routes share the root AuthProvider.
   return (
     <div className="min-h-screen bg-slate-950">
+      <nav className="flex gap-4 border-b border-white/10 px-5 py-3 text-sm text-slate-300"><a href="/client/dashboard">Client Portal</a><a href="/client/system-switch">My Workshop & Store</a><a href="/client/loops">Company Loops</a></nav>
       {children}
     </div>
   )

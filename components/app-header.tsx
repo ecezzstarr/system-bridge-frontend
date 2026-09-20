@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { Search, Wallet, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,6 +19,8 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ user }: AppHeaderProps) {
+  const router = useRouter()
+  const [search, setSearch] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { user: authUser } = useAuth()
   const [coreTrx, setCoreTrx] = useState<number | null>(null)
@@ -45,13 +48,13 @@ export function AppHeader({ user }: AppHeaderProps) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          
+
           {/* Search - Hidden on small mobile */}
           <div className="relative hidden md:block w-64 lg:w-96">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <Input
               type="search"
-              placeholder="Search..."
+              placeholder="Search human cadences..." aria-label="Search human cadences" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === "Enter") router.push(`/search?q=${encodeURIComponent(search.trim())}`) }}
               className="pl-10 bg-white/5 border-white/10 text-xs h-9 focus-visible:ring-cyan-500/50"
             />
           </div>
@@ -95,15 +98,15 @@ export function AppHeader({ user }: AppHeaderProps) {
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div 
+          <div
             className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <div className="absolute left-0 top-0 bottom-0 w-72 bg-slate-950 border-r border-white/10 shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="flex justify-end p-4">
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="text-slate-400 hover:text-white"
               >
@@ -111,7 +114,7 @@ export function AppHeader({ user }: AppHeaderProps) {
               </Button>
             </div>
             <div className="px-2 pb-8">
-              <AppSidebar user={user} />
+              <AppSidebar user={authUser || undefined} />
             </div>
           </div>
         </div>

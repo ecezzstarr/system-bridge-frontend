@@ -30,6 +30,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Build the application
+RUN node tests/recent-features.cjs
 RUN npm run build
 
 # Production image, copy all the files and run next
