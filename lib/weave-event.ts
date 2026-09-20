@@ -1,4 +1,4 @@
-export type EventRole = 'client' | 'bridger' | 'agent'
+export type EventRole = 'client' | 'bridger' | 'agent' | 'admin'
 
 export type EventPosition = {
   headline: string
@@ -40,6 +40,12 @@ export const FLAME_EVENT: WeaveEvent = {
       purpose: 'Follow Weave activities to acquire more prospects. When you already accompany Clients, continue supporting their movement while remaining open to new prospects.',
       focus: ['Available Prospects', 'Prospects in Motion', 'My Clients', 'Weave Activities', 'Client Support', 'Event Opportunities'],
       movement: ['Follow active Weave activities', 'Acquire and work available prospects', 'Accompany prospects toward Client formation', 'Support Clients you already accompany', 'Continue into new opportunities as the Event develops'],
+    },
+    admin: {
+      headline: 'Organize the Event in Motion',
+      purpose: 'Administration experiences the same Event from the organizing position: shape activities, coordinate company positions, control the institutional broadcast, recognize movement and keep the Event coherent as it develops.',
+      focus: ['Event Control', 'Company Movement', 'Position Activity', 'DJ Workshop', 'Announcements', 'Administration Recognition'],
+      movement: ['Observe movement across participating positions', 'Open and organize Event activities', 'Coordinate support where movement requires it', 'Set the live institutional rhythm through DJ Workshop', 'Recognize milestones and adjust the Event as it develops'],
     },
     agent: {
       headline: 'Your Bridgers and Company Movement',
