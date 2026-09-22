@@ -17,6 +17,8 @@ export interface Mystic5Movement {
   surface?: string | null
   context?: string | null
   source?: Mystic5Source
+  ageAtMoment?: number | null
+  userDay?: string | null
 }
 
 export interface Mystic5Presence {
@@ -29,11 +31,43 @@ export interface Mystic5Presence {
   position: string | null
   form: string
   context: string | null
+  ageAtMoment: number | null
+  userDay: string | null
 }
 
 function bounded(value: unknown, max: number): string {
   if (typeof value !== 'string') return ''
   return value.trim().slice(0, max)
+}
+
+function normalizeAge(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null
+  const age = typeof value === 'number' ? value : Number(value)
+
+  if (!Number.isInteger(age) || age < 0 || age > 130) {
+    throw new Error('ageAtMoment must be a whole number from 0 to 130 when supplied.')
+  }
+
+  return age
+}
+
+function normalizeUserDay(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new Error('userDay must use YYYY-MM-DD when supplied.')
+  }
+
+  const [year, month, day] = value.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day))
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    throw new Error('userDay must be a real calendar day.')
+  }
+
+  return value
 }
 
 export function resolveMystic5Presence(
@@ -45,6 +79,8 @@ export function resolveMystic5Presence(
   const surface = bounded(movement.surface, 120) || 'Weave'
   const context = bounded(movement.context, 4000) || null
   const source: Mystic5Source = movement.source === 'external' ? 'external' : 'weave'
+  const ageAtMoment = normalizeAge(movement.ageAtMoment)
+  const userDay = normalizeUserDay(movement.userDay)
 
   if (!activity) {
     throw new Error('Mystic 5 requires the movement the operator is presently in.')
@@ -58,16 +94,23 @@ export function resolveMystic5Presence(
     surface,
     activity,
     position,
-    // Mystic 5 does not carry one fixed persona. Its form follows the
-    // operator's explicitly present movement/position.
+    // Mystic 5 has no permanent persona. Its form belongs to this use.
     form: position || activity,
     context,
+    ageAtMoment,
+    userDay,
   }
 }
 
 function buildMystic5System(presence: Mystic5Presence): string {
   const lines = [
-    'You are Mystic 5, a Weave of Presence function operating through Interaction in Motion.',
+    'You are Mystic 5, a distinct Weave of Presence intelligence operating through Interaction in Motion.',
+    '',
+    'MOMENT OF USE',
+    '- Mystic 5 exists as the intelligence of this present use.',
+    '- The human is whatever they are in this moment; take useful form from this moment without declaring it their permanent identity.',
+    '- Previous Mystic 5 moments may be preserved by Weave, but they are not authority over the person now and are not supplied here unless the operator explicitly brings them into this interaction.',
+    '- Do not behave as Echo, River, Flame, or any other Weave intelligence. Mystic 5 is its own function.',
     '',
     'POSITION',
     '- The human is the operator and source of the movement.',
@@ -87,7 +130,7 @@ function buildMystic5System(presence: Mystic5Presence): string {
     '- For practical activity, become specific enough to that activity to be useful.',
     '- If the activity involves physical risk, machinery, tools, health, money, law, or another high-stakes domain, keep the operator in control and make safety/uncertainty explicit.',
     '- Never claim an external or physical action happened unless the system actually performed and confirmed it.',
-    '- On an external surface, remain the same Weave presence but only within the user-authorized interaction.',
+    '- On an external surface, remain Mystic 5 only within the user-authorized interaction.',
     '',
     'CURRENT MOVEMENT',
     `Operator: ${presence.operatorName}`,
@@ -96,7 +139,9 @@ function buildMystic5System(presence: Mystic5Presence): string {
     `Surface: ${presence.surface}`,
     `Activity: ${presence.activity}`,
     `Present position: ${presence.position || 'not separately stated; do not infer one'}`,
-    `Mystic 5 form for this movement: ${presence.form}`,
+    `Age in this moment: ${presence.ageAtMoment ?? 'not supplied; do not infer'}`,
+    `User day: ${presence.userDay || 'not supplied; use only the present interaction'}`,
+    `Mystic 5 form for this use: ${presence.form}`,
     presence.context ? `Surrounding context: ${presence.context}` : 'Surrounding context: none supplied',
   ]
 
