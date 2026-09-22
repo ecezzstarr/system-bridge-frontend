@@ -1,5 +1,3 @@
-"use server"
-
 import { VertexAI } from '@google-cloud/vertexai'
 import type { AuthUser } from '@/lib/auth-api'
 
