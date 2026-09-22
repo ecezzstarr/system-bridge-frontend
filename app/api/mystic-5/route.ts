@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { moveWithMystic5 } from '@/lib/mystic-5'
+import { momentFieldsFromPresence, saveMystic5Moment } from '@/lib/mystic-5-moments'
 
 export const runtime = 'nodejs'
 
@@ -19,12 +20,29 @@ export async function POST(request: NextRequest) {
       position: typeof body.position === 'string' ? body.position : null,
       context: typeof body.context === 'string' ? body.context : null,
       message: typeof body.message === 'string' ? body.message : '',
+      ageAtMoment: body.ageAtMoment ?? null,
+      userDay: typeof body.userDay === 'string' ? body.userDay : null,
     })
 
-    return NextResponse.json(result)
+    const moment = await saveMystic5Moment({
+      userId: user.id,
+      ...momentFieldsFromPresence(result.presence),
+      userMessage: typeof body.message === 'string' ? body.message : '',
+      mysticReply: result.reply,
+    })
+
+    return NextResponse.json({
+      ...result,
+      moment: {
+        id: moment.id,
+        occurredAt: moment.occurred_at,
+        ageAtMoment: moment.age_at_moment,
+        userDay: moment.user_day,
+      },
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Mystic 5 could not enter this movement.'
-    const status = /requires|Unsupported/.test(message) ? 400 : 500
+    const status = /requires|Unsupported|ageAtMoment|userDay/.test(message) ? 400 : 500
     console.error('[mystic-5] movement error:', error)
     return NextResponse.json({ error: message }, { status })
   }
