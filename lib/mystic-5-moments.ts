@@ -137,9 +137,19 @@ export async function saveMystic5Moment(input: Mystic5MomentInput) {
   return rows[0]
 }
 
-export async function listMystic5Moments(userId: string, limit = 50) {
+export async function listMystic5Moments(
+  userId: string,
+  opts?: {
+    limit?: number
+    ageAtMoment?: number | null
+    userDay?: string | null
+  }
+) {
   await ensureMystic5MomentTable()
-  const safeLimit = Math.min(Math.max(Math.floor(limit) || 50, 1), 200)
+
+  const safeLimit = Math.min(Math.max(Math.floor(opts?.limit ?? 50) || 50, 1), 200)
+  const ageAtMoment = normalizeMystic5Age(opts?.ageAtMoment)
+  const userDay = normalizeMystic5UserDay(opts?.userDay)
 
   return sql`
     SELECT
@@ -158,6 +168,8 @@ export async function listMystic5Moments(userId: string, limit = 50) {
       occurred_at
     FROM mystic5_moments
     WHERE user_id = ${userId}::uuid
+      AND (${ageAtMoment}::integer IS NULL OR age_at_moment = ${ageAtMoment})
+      AND (${userDay}::date IS NULL OR user_day = ${userDay}::date)
     ORDER BY occurred_at DESC
     LIMIT ${safeLimit}
   `
