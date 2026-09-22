@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { moveWithMystic5 } from '@/lib/mystic-5'
+import { momentFieldsFromPresence, saveMystic5Moment } from '@/lib/mystic-5-moments'
 import { resolveMystic5Grant } from '@/lib/mystic-5-grants'
 import type { AuthUser } from '@/lib/auth-api'
 
@@ -51,11 +52,27 @@ export async function POST(request: NextRequest) {
         typeof body.context === 'string' ? body.context : '',
       ].filter(Boolean).join('\n'),
       message: typeof body.message === 'string' ? body.message : '',
+      ageAtMoment: body.ageAtMoment ?? null,
+      userDay: typeof body.userDay === 'string' ? body.userDay : null,
+    })
+
+    const moment = await saveMystic5Moment({
+      userId: user.id,
+      ...momentFieldsFromPresence(result.presence),
+      userMessage: typeof body.message === 'string' ? body.message : '',
+      mysticReply: result.reply,
+      externalGrantId: grant.id,
     })
 
     return NextResponse.json({
       presence: result.presence,
       reply: result.reply,
+      moment: {
+        id: moment.id,
+        occurredAt: moment.occurred_at,
+        ageAtMoment: moment.age_at_moment,
+        userDay: moment.user_day,
+      },
       grant: {
         id: grant.id,
         surface: grant.surface,
@@ -64,7 +81,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Mystic 5 could not continue externally.'
-    const status = /requires/.test(message) ? 400 : 500
+    const status = /requires|ageAtMoment|userDay/.test(message) ? 400 : 500
     console.error('[mystic-5 external] movement error:', error)
     return NextResponse.json({ error: message }, { status })
   }
