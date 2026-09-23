@@ -63,11 +63,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const variantId = String(body.variantId || '').trim()
     const boxCount = Number(body.boxCount)
+    const distributionMode = String(body.distributionMode || 'retailer').trim()
     const agentNote = String(body.note || '').trim().slice(0, 500)
     const variant = getAgilityVariant(variantId)
 
     if (!variant) {
       return NextResponse.json({ success: false, error: 'Choose a valid Agility package' }, { status: 400 })
+    }
+    if (!['wholesaler', 'retailer'].includes(distributionMode)) {
+      return NextResponse.json({ success: false, error: 'Choose wholesaler or retailer distribution' }, { status: 400 })
     }
     if (!Number.isInteger(boxCount) || boxCount < 1 || boxCount > 50) {
       return NextResponse.json({ success: false, error: 'Choose between 1 and 50 Agility boxes' }, { status: 400 })
@@ -81,6 +85,7 @@ export async function POST(request: NextRequest) {
       INSERT INTO agility_stock_orders (
         agent_id,
         variant_id,
+        distribution_mode,
         box_count,
         packages_per_box,
         package_count,
@@ -102,6 +107,7 @@ export async function POST(request: NextRequest) {
       VALUES (
         ${user.id}::uuid,
         ${variant.id},
+        ${distributionMode},
         ${totals.boxCount},
         ${totals.packagesPerBox},
         ${totals.packageCount},
@@ -137,6 +143,7 @@ export async function POST(request: NextRequest) {
         retailValueNgn: totals.retailValueNgn,
         agentPayableNgn: totals.agentPayableNgn,
         agentExpectedGrossProfitNgn: totals.agentExpectedGrossProfitNgn,
+        distributionMode,
       },
     }, { status: 201 })
   } catch (error) {
