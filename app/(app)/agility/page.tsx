@@ -37,6 +37,7 @@ type AgilityOrder = {
   box_price_ngn: number | string
   total_ngn: number | string
   payment_reference: string
+  payment_link?: string | null
   payment_status: string
   fulfillment_status: string
   agent_note?: string | null
@@ -428,6 +429,17 @@ export default function AgilityPage() {
                           <p className="mt-3 rounded-xl bg-white/[0.04] px-3 py-2 text-xs text-slate-400">
                             Administration: {order.admin_note}
                           </p>
+                        )}
+
+                        {order.payment_status === 'pending' && order.payment_link && (
+                          <Button
+                            variant="outline"
+                            className="mt-4 w-full"
+                            onClick={() => window.location.assign(order.payment_link as string)}
+                          >
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Resume payment
+                          </Button>
                         )}
 
                         {order.fulfillment_status === 'delivered' && (
