@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, FolderOpen, ShieldCheck } from 'lucide-react'
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
+import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
 import { getClientToken, getClientUser } from '@/lib/client-auth'
 import { WEAVE_ARCHITECTURE } from '@/lib/weave-architecture'
 
@@ -50,6 +51,7 @@ export default function ClientSystemSwitchPage() {
         </div>
 
         <ClientWorkshopWorld client={data.client} folder={data.file_folder} vault={data.vault} bridge={data.bridge} approvedAgents={data.approved_agents || []} workshop={data.workshop} bridgeAi={data.bridge_ai} businessStore={data.business_store} internationalPayments={data.international_payments} />
+        <EnterpriseDreamPanel initialState={data.enterprise || null} />
 
         <div className="mt-4"><Link href="/client/dashboard" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-xs text-slate-400 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Portal</Link></div>
       </div>
