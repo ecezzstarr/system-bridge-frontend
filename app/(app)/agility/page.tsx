@@ -19,6 +19,8 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { WeaveAssistant, type ChecklistItem } from '@/components/weave-assistant'
+import { AGILITY_AGENT_TUTORIAL } from '@/lib/agility-tutorial'
 import {
   AGILITY_AGENT_BOX_PRICE_NGN,
   AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
@@ -101,6 +103,7 @@ export default function AgilityPage() {
   const [workingOrder, setWorkingOrder] = useState<string | null>(null)
   const [loadingOrders, setLoadingOrders] = useState(false)
   const [message, setMessage] = useState('')
+  const [openTutorial, setOpenTutorial] = useState(false)
 
   const packageCount = boxCount * AGILITY_PACKAGES_PER_BOX
   const agentPayable = boxCount * AGILITY_AGENT_BOX_PRICE_NGN
@@ -125,6 +128,13 @@ export default function AgilityPage() {
   useEffect(() => {
     loadOrders()
   }, [isAgent, token])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (new URLSearchParams(window.location.search).get('tutorial') === '1') {
+      setOpenTutorial(true)
+    }
+  }, [])
 
   const beginOrder = async () => {
     if (!token || !isAgent) return
@@ -253,6 +263,72 @@ export default function AgilityPage() {
     (sum, order) => sum + Number(order.realized_agent_gross_profit_ngn || 0),
     0
   )
+
+  const scrollTo = (id: string) => {
+    if (typeof document === 'undefined') return
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const latestOrder = orders[0]
+  const agilityChecklist: ChecklistItem[] = []
+
+  if (!latestOrder) {
+    agilityChecklist.push({
+      id: 'agility-start',
+      label: 'Start your first Agility order',
+      detail: 'Choose Retailer or Wholesaler, select your boxes, add the delivery destination, then create the OPay order.',
+      actLabel: 'Start order',
+      onAct: () => scrollTo('agility-order'),
+    })
+  } else if (['pending', 'rejected'].includes(latestOrder.payment_status)) {
+    agilityChecklist.push({
+      id: 'agility-payment-proof',
+      label: latestOrder.payment_status === 'rejected' ? 'Submit corrected OPay proof' : 'Pay and submit OPay proof',
+      detail: `Exact order amount: ${naira(latestOrder.total_ngn)}. Use the OPay details shown on the order.`,
+      actLabel: 'Open order',
+      onAct: () => scrollTo('agility-orders'),
+    })
+  } else if (latestOrder.payment_status === 'proof_submitted') {
+    agilityChecklist.push({
+      id: 'agility-await-verification',
+      label: 'OPay proof is with Administration',
+      detail: 'Preparation opens only after Administration verifies the payment.',
+      done: true,
+    })
+  } else if (latestOrder.fulfillment_status === 'delivered') {
+    agilityChecklist.push({
+      id: 'agility-confirm-receipt',
+      label: 'Confirm your Agility stock received',
+      detail: 'Administration marked the order delivered. Confirm the physical stock so it becomes sellable inventory.',
+      actLabel: 'Confirm receipt',
+      onAct: () => scrollTo('agility-orders'),
+    })
+  } else if (latestOrder.fulfillment_status === 'received') {
+    const remaining = Math.max(0, Number(latestOrder.package_count) - Number(latestOrder.sold_packages || 0))
+    if (remaining > 0) {
+      agilityChecklist.push({
+        id: 'agility-sell-stock',
+        label: latestOrder.distribution_mode === 'wholesaler' ? 'Record your next Agility box sale' : 'Record your next Agility package sale',
+        detail: `${remaining} package${remaining === 1 ? '' : 's'} remain in this order.`,
+        actLabel: 'Open inventory',
+        onAct: () => scrollTo('agility-orders'),
+      })
+    } else {
+      agilityChecklist.push({
+        id: 'agility-sold-out',
+        label: 'This Agility order is sold out',
+        detail: `Recorded gross profit: ${naira(latestOrder.realized_agent_gross_profit_ngn || 0)}.`,
+        done: true,
+      })
+    }
+  } else if (latestOrder.payment_status === 'paid') {
+    agilityChecklist.push({
+      id: 'agility-company-movement',
+      label: `WEAVE is moving your order: ${fulfillmentLabel[latestOrder.fulfillment_status] || latestOrder.fulfillment_status}`,
+      detail: 'Track the preparation, packing, boxing and dispatch movement here. No Agent action is required until delivery.',
+      done: true,
+    })
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 pb-16">
@@ -423,7 +499,7 @@ export default function AgilityPage() {
 
       {isAgent ? (
         <>
-          <section className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]">
+          <section id="agility-order" className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]">
             <div className="rounded-[2rem] border border-orange-300/20 bg-orange-300/5 p-6">
               <div className="flex items-center gap-3">
                 <ShoppingBag className="h-6 w-6 text-orange-300" />
@@ -528,7 +604,7 @@ export default function AgilityPage() {
               </p>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.025] p-6">
+            <div id="agility-orders" className="rounded-[2rem] border border-white/10 bg-white/[0.025] p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Order movement</p>
@@ -721,6 +797,15 @@ export default function AgilityPage() {
             Product information is visible here; OPay stock ordering, receipt confirmation and consumer-sale inventory are restricted to Agents.
           </p>
         </section>
+      )}
+
+      {isAgent && (
+        <WeaveAssistant
+          role="agent"
+          checklist={agilityChecklist}
+          tutorial={AGILITY_AGENT_TUTORIAL}
+          openTutorial={openTutorial}
+        />
       )}
     </div>
   )
