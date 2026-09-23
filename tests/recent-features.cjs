@@ -26,13 +26,51 @@ const valid={status:'successful',tx_ref:'test-ref',currency:'USD',amount:20}
 assert.equal(matchesVerifiedPayment(valid,'test-ref',20),true)
 for(const change of [{currency:'NGN'},{amount:1},{status:'failed'},{tx_ref:'other'}])assert.equal(matchesVerifiedPayment({...valid,...change},'test-ref',20),false)
 assert.equal(matchesVerifiedPayment(valid,'test-ref',NaN),false)
-const {AGILITY_VARIANTS,AGILITY_UNIT_PRICE_NGN,AGILITY_PACKAGES_PER_BOX,AGILITY_BOX_PRICE_NGN}=require('../lib/agility-catalog.ts')
-assert.equal(AGILITY_UNIT_PRICE_NGN,3000)
+const {
+  AGILITY_VARIANTS,
+  AGILITY_RETAIL_UNIT_PRICE_NGN,
+  AGILITY_PACKAGES_PER_BOX,
+  AGILITY_RETAIL_BOX_VALUE_NGN,
+  AGILITY_AGENT_BOX_PRICE_NGN,
+  AGILITY_AGENT_UNIT_COST_NGN,
+  AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
+  AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
+  AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,
+  AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
+  AGILITY_OPAY_ACCOUNT_NUMBER,
+}=require('../lib/agility-catalog.ts')
+assert.equal(AGILITY_RETAIL_UNIT_PRICE_NGN,3000)
 assert.equal(AGILITY_PACKAGES_PER_BOX,10)
-assert.equal(AGILITY_BOX_PRICE_NGN,30000)
+assert.equal(AGILITY_RETAIL_BOX_VALUE_NGN,30000)
+assert.equal(AGILITY_AGENT_BOX_PRICE_NGN,24000)
+assert.equal(AGILITY_AGENT_UNIT_COST_NGN,2400)
+assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,600)
+assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,6000)
+assert.equal(AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,21000)
+assert.equal(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,3000)
+assert.equal(AGILITY_OPAY_ACCOUNT_NUMBER,'8136003459')
 assert.ok(AGILITY_VARIANTS.length>=4,'Agility variants')
-const {getAgilityTotals,nextAgilityAdminStage}=require('../lib/agility.ts')
-assert.deepEqual(getAgilityTotals(2),{boxCount:2,packageCount:20,packagesPerBox:10,unitPriceNgn:3000,boxPriceNgn:30000,totalNgn:60000})
+const {getAgilityTotals,getAgilityCompanyEconomics,isValidAgilityCompanyCost,nextAgilityAdminStage}=require('../lib/agility.ts')
+assert.deepEqual(getAgilityTotals(2),{
+ boxCount:2,
+ packageCount:20,
+ packagesPerBox:10,
+ retailUnitPriceNgn:3000,
+ retailBoxValueNgn:30000,
+ agentBoxPriceNgn:24000,
+ agentUnitCostNgn:2400,
+ agentPayableNgn:48000,
+ retailValueNgn:60000,
+ agentExpectedGrossProfitNgn:12000,
+})
+assert.deepEqual(getAgilityCompanyEconomics(2,21000),{
+ wholesaleRevenueNgn:48000,
+ totalPlannedCostNgn:42000,
+ grossProfitNgn:6000,
+ grossProfitPerBoxNgn:3000,
+})
+assert.equal(isValidAgilityCompanyCost(21000),true)
+assert.equal(isValidAgilityCompanyCost(21001),false)
 assert.equal(nextAgilityAdminStage('paid'),'heating')
 assert.equal(nextAgilityAdminStage('heating'),'packed')
 assert.equal(nextAgilityAdminStage('packed'),'boxed')
@@ -42,6 +80,14 @@ assert.equal(nextAgilityAdminStage('delivered'),null)
 auth={...auth,user:{id:'agent-test',name:'Agent',role:'agent'},token:'test-token'}
 const Agility=require('../app/(app)/agility/page.tsx').default
 const agilityHtml=renderToStaticMarkup(React.createElement(Agility))
-for(const label of ['AGILITY','Intelligence in Action','Agent Store','₦3,000','10 packages','₦30,000','Pay first'])assert.ok(agilityHtml.includes(label),label)
-for(const route of ['/api/agility/payment/callback/route.ts','/api/agility/payment/webhook/route.ts','/api/agility/receive/route.ts','/api/agility/sales/route.ts','/api/admin/agility/stock/route.ts'])assert.ok(fs.existsSync(path.join(root,'app',route)),route+' exists')
-console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, Agility paid-order workflow')
+for(const label of ['AGILITY','Intelligence in Action','Agent Store','₦3,000','10 packages','₦24,000','₦6,000','OPay'])assert.ok(agilityHtml.includes(label),label)
+for(const route of [
+ '/api/agility/payment/opay/receipt/route.ts',
+ '/api/admin/agility/payment/opay/verify/route.ts',
+ '/api/agility/receive/route.ts',
+ '/api/agility/sales/route.ts',
+ '/api/admin/agility/stock/route.ts',
+])assert.ok(fs.existsSync(path.join(root,'app',route)),route+' exists')
+assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/callback/route.ts')),'Agility Flutterwave callback removed')
+assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/webhook/route.ts')),'Agility Flutterwave webhook removed')
+console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, Agility OPay economics and fulfillment')
