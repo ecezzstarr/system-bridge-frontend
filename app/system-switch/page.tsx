@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import FileFolderPurchase from '@/components/system-switch/file-folder-purchase'
+import { normalizeWeaveTopic } from '@/lib/weave-architecture'
 
 const SystemSwitchWorld = dynamic(() => import('@/components/system-switch/system-switch-world'), { ssr: false })
 
@@ -33,7 +34,11 @@ export default function SystemSwitchPage() {
 
   return (
     <main className="min-h-screen bg-black p-3 md:p-6">
-      <SystemSwitchWorld initialMovement={crossing?.message || null} flameName={crossing?.flame_name || null} />
+      <SystemSwitchWorld
+        initialMovement={crossing?.message || null}
+        flameName={crossing?.flame_name || null}
+        topic={normalizeWeaveTopic(crossing?.topic)}
+      />
       <FileFolderPurchase bridgeCode={bridge || undefined} providerKey={crossing?.provider_key || undefined} providerName={crossing?.provider_name || undefined} flameName={crossing?.flame_name || undefined} />
     </main>
   )

@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Users, FileText, ChevronRight, Search } from 'lucide-react'
+import { WEAVE_ARCHITECTURE } from '@/lib/weave-architecture'
 
 const BridgePlazaMap = dynamic(
   () => import('@/components/world/bridge-plaza-map').then((module) => module.BridgePlazaMap),
@@ -133,11 +134,34 @@ export default function WeavePage() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-6 md:p-8">
       <div>
-        <p className="text-sm font-medium text-primary uppercase tracking-[0.2em]">Real Life Gaming OS</p>
+        <p className="text-sm font-medium text-primary uppercase tracking-[0.2em]">The Weave of Presence · Subject</p>
         <h1 className="mt-2 text-4xl md:text-5xl font-black">Bridge Plaza</h1>
-        <p className="mt-2 text-muted-foreground max-w-2xl">
-          Interaction in motion. Travel through the world or enter a Client&apos;s System Switch environment to provide support.
+        <p className="mt-2 text-muted-foreground max-w-3xl">
+          Interaction in motion. The subject stays fixed while every Client movement, workshop, problem, build, discovery, and participation can become a topic inside Weave.
         </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+          <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">School</p>
+          <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.school.name}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Earth and beyond: the field in which learning and participation continue.</p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+          <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">Board</p>
+          <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.board.name}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">The responsive surface that can turn writing into organized movement.</p>
+        </div>
+        <div className="rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4">
+          <p className="text-[9px] uppercase tracking-[0.24em] text-sky-300">Subject</p>
+          <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.subject.name}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">The institutional frame remains constant.</p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+          <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">Topics</p>
+          <p className="mt-2 text-sm font-semibold">What we build and do</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Each current interaction becomes a topic that can be made functional through Weave.</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">

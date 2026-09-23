@@ -1,6 +1,7 @@
 import { WORLD_RULES } from './world/constants'
+import { WEAVE_ARCHITECTURE } from './weave-architecture'
 
-export const CURRENT_TERMS_VERSION = 6
+export const CURRENT_TERMS_VERSION = 7
 
 const TRX_RATE = WORLD_RULES.TRX_NGN_RATE
 const FILE_FOLDER_TRX = WORLD_RULES.FILE_FOLDER_PRICE_TRX
@@ -48,7 +49,7 @@ export const BRIDGER_CONTENT = {
 export const FILE_FOLDER_CONTENT = {
   title: 'THE FILE FOLDER',
   subtitle: 'Your place inside System Switch',
-  body: 'A File Folder is the persistent workshop created for one Client at System Switch. It is where the Client\'s movement meets the people, AI technologies, company functions, systems, records, and supports of Weave. One Client. One File Folder. One continuing environment.',
+  body: `A File Folder is the persistent workshop created for one Client at System Switch. It is where the Client's movement becomes a continuing topic inside ${WEAVE_ARCHITECTURE.subject.name} and meets the people, AI technologies, company functions, systems, records, and supports of Weave. One Client. One File Folder. One continuing environment.`,
   establishment: 'When a Prospect purchases a File Folder, their place in System Switch is established. The Folder then becomes the environment through which their enterprise, decisions, actions, needs, support, and progress can continue to move. Your File Folder is not a document. It is your working environment inside Weave.',
 }
 
@@ -60,7 +61,7 @@ export const BRIDGE_PLAZA_CONTENT = {
 
 export const MOVEMENT_CONTENT = {
   title: 'THE MOVEMENT',
-  body: 'A Client does not come into the File Folder merely to look around. Something is moving. A thought becomes a word. A word becomes an interaction. An interaction becomes an action. An action creates a result. The result creates another movement. The File Folder keeps that movement inside a persistent environment where the appropriate people, functions, AI, and systems can participate.',
+  body: 'A Client does not come into the File Folder merely to look around. Something is moving. A thought becomes a word. A word becomes an interaction. An interaction becomes an action. An action creates a result. The result creates another movement. That continuing movement is the Client\'s current topic. The File Folder keeps the topic inside a persistent environment where the appropriate people, functions, AI, and systems can participate.',
   footer: 'Interaction in Motion.',
 }
 
@@ -87,7 +88,7 @@ export const TERMS_SECTIONS = [
   { title: '4. Bridger Earning Movement', body: 'A Bridger earns 30% of the 35,800 TRX File Folder price when a prospect they guide becomes a Weave Client. This closes Loop 1 for the Bridger partnership.' },
   { title: '5. Agent Earning Movement', body: 'An Agent earns 30% on Bridger prospect lead purchases and 5% of Weave\'s 40% company percentage from File Folder purchases. This establishes Loop 1 for the Agent role.' },
   { title: '6. The File Folder', body: 'The File Folder is the persistent workshop at System Switch containing one Client and the Weave support assembled around that Client. It is issued upon purchase and establishes the Client\'s crossing.' },
-  { title: '7. System Switch', body: 'System Switch is the Client\'s crossing environment. Clients cross System Switch to establish their enterprise, workshop, or store within Weave.' },
+  { title: '7. System Switch', body: `System Switch is the Client's crossing environment. It carries the Client and the current topic into the fixed subject: ${WEAVE_ARCHITECTURE.subject.name}. The Client's enterprise, workshop, store, problem, build, or other movement can continue there as the topic develops.` },
   { title: '8. Bridge Plaza', body: 'Bridge Plaza is the support entrance for Agents and Bridgers. It is where they select which File Folder environment to enter and visit.' },
   { title: '9. Company Information', body: 'Agents and Bridgers must protect confidential Company information, Client information, operational procedures, internal communications, and system information during and after their relationship with WEAVE.' },
   { title: '10. Client Information', body: 'Client contact information supplied or generated through Company operations must be used only for authorized WEAVE activities. It must not be sold, transferred, or misused.' },

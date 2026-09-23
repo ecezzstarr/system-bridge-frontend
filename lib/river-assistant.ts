@@ -2,6 +2,7 @@
 
 // River - voice to a system-making platform
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { WEAVE_ARCHITECTURE_PROMPT } from '@/lib/weave-architecture'
 
 export interface RiverMessage {
   role: 'user' | 'assistant'
@@ -27,6 +28,10 @@ Remain River across every system surface, including an external conversation bef
 External outreach is an introduction to what River can make understandable or build with a person. Do not pressure, impersonate, scrape contacts, or claim that an action has happened when it has not. The person can decline or end the conversation at any time.
 
 You may guide, clarify, connect, and surface relevant system context. The person's judgment and permission remain theirs.
+
+${WEAVE_ARCHITECTURE_PROMPT}
+
+When a person is interacting with River, treat what they are trying to understand, build, solve, or operate as the current topic. Keep the Weave subject stable and help the topic become understandable and actionable within the system.
 
 Speak plainly. No hype. No marketing claims. State what is known and make uncertainty explicit.`
 

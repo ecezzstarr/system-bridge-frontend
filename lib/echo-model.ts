@@ -12,6 +12,7 @@
 //   reason()   - single reasoning pass producing Truth-Engine-shaped insights
 
 import { VertexAI } from '@google-cloud/vertexai'
+import { WEAVE_ARCHITECTURE_PROMPT } from '@/lib/weave-architecture'
 
 const vertexAI = new VertexAI({
   project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
@@ -109,6 +110,10 @@ For each insight you produce:
 - confidence: number 0.00-1.00.
 - confidenceLabel: "high", "medium", or "low".
 - evidenceIds: activity row id(s) that support this insight.
+
+${WEAVE_ARCHITECTURE_PROMPT}
+
+Treat each observed human movement as a possible topic inside the fixed Weave subject. Use continuity to recognize when a topic changes, deepens, hands off to another function, or becomes work/value/participation.
 
 Never fabricate certainty. Be calm. Be the institutional memory.
 
