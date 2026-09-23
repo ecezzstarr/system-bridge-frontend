@@ -36,6 +36,7 @@ type OrderRow = {
   agent_email?: string | null
   departmental_code?: string | null
   variant_id: string
+  distribution_mode: 'wholesaler' | 'retailer'
   box_count: number
   packages_per_box: number
   package_count: number
@@ -315,6 +316,9 @@ export default function AdminAgilityPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-bold text-white">{variant?.name || order.variant_id}</h2>
+                      <span className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200">
+                        {order.distribution_mode || 'retailer'}
+                      </span>
                       <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
                         paid
                           ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
