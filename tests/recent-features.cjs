@@ -92,6 +92,7 @@ for(const route of [
 ])assert.ok(fs.existsSync(path.join(root,'app',route)),route+' exists')
 assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/callback/route.ts')),'Agility Flutterwave callback removed')
 assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/webhook/route.ts')),'Agility Flutterwave webhook removed')
+assert.ok(fs.existsSync(path.join(root,'gcp-migration/agility.sql')),'Agility production migration exists')
 const opayApiSource=fs.readFileSync(path.join(root,'app/api/deposit/opay/route.ts'),'utf8')
 assert.match(opayApiSource,/deposit:\s*result\[0\]/)
 assert.match(opayApiSource,/admin', 'agent', 'bridger/)
