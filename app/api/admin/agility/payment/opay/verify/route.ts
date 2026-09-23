@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
 
   await ensureAgilitySchema()
   let db: PoolClient | undefined
+  let committed = false
 
   try {
     db = await getPool().connect()
@@ -63,10 +64,27 @@ export async function POST(request: NextRequest) {
          RETURNING *`,
         [admin.id, adminNote || null, orderId]
       )
+
       await db.query('COMMIT')
+      committed = true
+      const rejectedOrder = rejected.rows[0]
+
+      try {
+        await db.query(
+          `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
+           VALUES ($1::uuid,'agility_stock','Agility OPay proof rejected',$2,'WEAVE','/agility')`,
+          [
+            rejectedOrder.agent_id,
+            'Administration could not verify the submitted OPay proof. Open the Agility order and submit the correct transaction reference or receipt.',
+          ]
+        )
+      } catch (notificationError) {
+        console.error('[admin/agility/opay] rejection notification failed', notificationError)
+      }
+
       return NextResponse.json({
         success: true,
-        order: rejected.rows[0],
+        order: rejectedOrder,
         message: 'OPay proof rejected. The Agent can submit a corrected payment reference or receipt.',
       })
     }
@@ -85,6 +103,12 @@ export async function POST(request: NextRequest) {
       [admin.id, adminNote || null, orderId]
     )
     const paidOrder = approved.rows[0]
+
+    // The payment state is the critical company record. Commit it before
+    // best-effort ledger/notification writes so a secondary table failure
+    // can never roll back a verified OPay payment.
+    await db.query('COMMIT')
+    committed = true
 
     try {
       await db.query(
@@ -113,7 +137,7 @@ export async function POST(request: NextRequest) {
         ]
       )
     } catch (ledgerError) {
-      console.error('[admin/agility/opay] transaction ledger failed', ledgerError)
+      console.error('[admin/agility/opay] transaction ledger failed after payment commit', ledgerError)
     }
 
     try {
@@ -125,11 +149,10 @@ export async function POST(request: NextRequest) {
           `Your OPay payment of ₦${Number(paidOrder.total_ngn).toLocaleString()} was approved. The Agility order is now in company fulfillment.`,
         ]
       )
-    } catch {
-      // Payment record remains authoritative.
+    } catch (notificationError) {
+      console.error('[admin/agility/opay] approval notification failed after payment commit', notificationError)
     }
 
-    await db.query('COMMIT')
     return NextResponse.json({
       success: true,
       order: paidOrder,
@@ -137,7 +160,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('[admin/agility/opay] verification failed', error)
-    if (db) await db.query('ROLLBACK').catch(() => {})
+    if (db && !committed) await db.query('ROLLBACK').catch(() => {})
     return NextResponse.json({ success: false, error: 'Unable to verify OPay payment' }, { status: 500 })
   } finally {
     db?.release()
