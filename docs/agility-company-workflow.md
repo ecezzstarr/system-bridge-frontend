@@ -84,7 +84,7 @@ Agent receipt confirmation:
 
 `/api/agility/receive`
 
-Agent consumer-sale recording:
+Agent wholesaler / retailer sale recording:
 
 `/api/agility/sales`
 
@@ -100,13 +100,14 @@ Administration UI:
 
 For **1 box**:
 
-- Agent pays WEAVE: ₦28,000.
+- Company preparation cost: ₦21,000.
+- WEAVE sells the box to the Agent: ₦28,000.
+- Company gross profit: ₦7,000.
 - Agent receives: 10 packages.
-- Agent sells 10 × ₦3,000 = ₦30,000 retail revenue.
-- Agent gross spread = ₦2,000.
-- If company all-in cost is ₦21,000, company gross contribution = ₦3,000.
-- If company all-in cost is ₦20,000, company gross contribution = ₦4,000.
-- If company all-in cost rises above ₦21,000, the current production gate blocks preparation until sourcing / composition is corrected.
+- Wholesaler route: Agent sells the complete box for ₦30,000.
+- Retailer route: Agent sells 10 individual packages × ₦3,000 = ₦30,000.
+- Agent gross profit: ₦2,000 per completed box.
+- Retailer Agents also gain direct consumer patronage and repeat-purchase opportunity; that relationship value is not counted as extra guaranteed monetary profit.
 
 For **5 boxes**:
 
