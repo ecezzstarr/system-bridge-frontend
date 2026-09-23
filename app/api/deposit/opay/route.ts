@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getSql } from '@/lib/db'
 import { getTrxNgnRate, ngnToTrx } from '@/lib/trx-rate'
+import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      )
+    }
+
+    if (!['admin', 'agent', 'bridger'].includes(user.role)) {
+      return NextResponse.json(
+        { error: 'OPay deposit is available to Administration, Agents, and Bridgers' },
+        { status: 403 }
       )
     }
 
@@ -62,7 +70,7 @@ export async function POST(request: NextRequest) {
         ${JSON.stringify({
           deposit_id: result[0].id,
           payment_method: 'OPay',
-          opay_number: '8136003459',
+          opay_number: WEAVE_OPAY_ACCOUNT_NUMBER,
           ngn_amount: Number(amount),
           rate_used: rate,
           rate_source: rateSource,
@@ -73,8 +81,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Send NGN to OPay 8136003459. Awaiting admin verification.',
+      message: `Send NGN to OPay ${WEAVE_OPAY_ACCOUNT_NUMBER}. Awaiting admin verification.`,
       depositId: result[0].id,
+      deposit: result[0],
+      opayAccountNumber: WEAVE_OPAY_ACCOUNT_NUMBER,
       status: 'pending'
     })
 
