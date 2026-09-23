@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { AGILITY_PROCESS, AGILITY_VARIANTS, type AgilityVariant } from '@/lib/agility'
+import { AGILITY_PROCESS, AGILITY_VARIANTS, type AgilityVariant } from '@/lib/agility-catalog'
 
 type StockRequest = {
   id: string
