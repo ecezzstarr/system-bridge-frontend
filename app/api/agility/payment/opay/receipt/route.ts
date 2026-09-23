@@ -76,8 +76,14 @@ export async function POST(request: NextRequest) {
       order: updated,
       message: 'OPay proof submitted. Administration will verify the payment before preparation begins.',
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('[agility/opay/receipt] failed', error)
+    if (error?.code === '23505') {
+      return NextResponse.json({
+        success: false,
+        error: 'This OPay proof is already attached to another Agility order',
+      }, { status: 409 })
+    }
     return NextResponse.json({ success: false, error: 'Unable to submit OPay proof' }, { status: 500 })
   }
 }
