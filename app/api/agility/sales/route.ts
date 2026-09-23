@@ -4,6 +4,8 @@ import { getAuthUser } from '@/lib/auth-api'
 import {
   AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
   AGILITY_AGENT_UNIT_COST_NGN,
+  AGILITY_PACKAGES_PER_BOX,
+  AGILITY_RETAIL_BOX_VALUE_NGN,
   AGILITY_RETAIL_UNIT_PRICE_NGN,
   ensureAgilitySchema,
 } from '@/lib/agility'
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
   const quantity = Number(body.quantity)
 
   if (!orderId || !Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
-    return NextResponse.json({ success: false, error: 'Valid order and package quantity are required' }, { status: 400 })
+    return NextResponse.json({ success: false, error: 'Valid order and sale quantity are required' }, { status: 400 })
   }
 
   await ensureAgilitySchema()
@@ -54,23 +56,35 @@ export async function POST(request: NextRequest) {
     )
     const sold = Number(soldResult.rows[0]?.sold || 0)
     const available = Number(order.package_count) - sold
+    const isWholesaler = order.distribution_mode === 'wholesaler'
+    const saleMode = isWholesaler ? 'wholesale_box' : 'retail_package'
+    const packageQuantity = isWholesaler ? quantity * AGILITY_PACKAGES_PER_BOX : quantity
+    const boxQuantity = isWholesaler ? quantity : 0
 
-    if (quantity > available) {
+    if (packageQuantity > available) {
       await db.query('ROLLBACK')
       return NextResponse.json({
         success: false,
-        error: `Only ${available} Agility package${available === 1 ? '' : 's'} remain in this order`,
+        error: isWholesaler
+          ? `Only ${Math.floor(available / AGILITY_PACKAGES_PER_BOX)} complete Agility box${Math.floor(available / AGILITY_PACKAGES_PER_BOX) === 1 ? '' : 'es'} remain in this order`
+          : `Only ${available} Agility package${available === 1 ? '' : 's'} remain in this order`,
       }, { status: 409 })
     }
 
-    const totalRevenueNgn = quantity * AGILITY_RETAIL_UNIT_PRICE_NGN
-    const agentGrossProfitNgn = quantity * AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN
+    const totalRevenueNgn = isWholesaler
+      ? quantity * AGILITY_RETAIL_BOX_VALUE_NGN
+      : quantity * AGILITY_RETAIL_UNIT_PRICE_NGN
+    const agentGrossProfitNgn = isWholesaler
+      ? quantity * (AGILITY_RETAIL_BOX_VALUE_NGN - Number(order.agent_box_price_ngn))
+      : packageQuantity * AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN
 
     const saleResult = await db.query(
       `INSERT INTO agility_agent_sales (
         order_id,
         agent_id,
         quantity_packages,
+        sale_mode,
+        box_quantity,
         unit_price_ngn,
         total_ngn,
         retail_unit_price_ngn,
@@ -78,13 +92,15 @@ export async function POST(request: NextRequest) {
         total_revenue_ngn,
         agent_gross_profit_ngn
        )
-       VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9)
+       VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        RETURNING *`,
       [
         orderId,
         user.id,
-        quantity,
-        AGILITY_RETAIL_UNIT_PRICE_NGN,
+        packageQuantity,
+        saleMode,
+        boxQuantity,
+        isWholesaler ? AGILITY_RETAIL_BOX_VALUE_NGN : AGILITY_RETAIL_UNIT_PRICE_NGN,
         totalRevenueNgn,
         AGILITY_RETAIL_UNIT_PRICE_NGN,
         AGILITY_AGENT_UNIT_COST_NGN,
@@ -99,7 +115,10 @@ export async function POST(request: NextRequest) {
       success: true,
       sale: saleResult.rows[0],
       economics: {
+        distributionMode: order.distribution_mode,
+        saleMode,
         retailUnitPriceNgn: AGILITY_RETAIL_UNIT_PRICE_NGN,
+        wholesaleBoxSellPriceNgn: AGILITY_RETAIL_BOX_VALUE_NGN,
         agentUnitCostNgn: AGILITY_AGENT_UNIT_COST_NGN,
         agentGrossProfitPerPackageNgn: AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
         saleRevenueNgn: totalRevenueNgn,
@@ -107,8 +126,8 @@ export async function POST(request: NextRequest) {
       },
       inventory: {
         packageCount: Number(order.package_count),
-        soldPackages: sold + quantity,
-        availablePackages: available - quantity,
+        soldPackages: sold + packageQuantity,
+        availablePackages: available - packageQuantity,
       },
     }, { status: 201 })
   } catch (error) {
