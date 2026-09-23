@@ -28,6 +28,7 @@ export async function ensureAgilitySchema() {
       box_price_ngn numeric(14,2) NOT NULL,
       total_ngn numeric(14,2) NOT NULL,
       payment_reference varchar(255) UNIQUE NOT NULL,
+      payment_link text,
       flutterwave_transaction_id varchar(120),
       payment_status varchar(40) NOT NULL DEFAULT 'pending',
       fulfillment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment',
@@ -45,8 +46,10 @@ export async function ensureAgilitySchema() {
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_orders_agent ON agility_stock_orders(agent_id, created_at DESC)`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS payment_link text`
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_orders_payment ON agility_stock_orders(payment_status, created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_orders_fulfillment ON agility_stock_orders(fulfillment_status, created_at DESC)`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_agility_orders_flw_tx ON agility_stock_orders(flutterwave_transaction_id) WHERE flutterwave_transaction_id IS NOT NULL`
 
   await sql`
     CREATE TABLE IF NOT EXISTS agility_agent_sales (
