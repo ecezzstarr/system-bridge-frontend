@@ -1,3 +1,4 @@
+import { createHash } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
@@ -23,6 +24,24 @@ export async function POST(request: NextRequest) {
 
     await ensureAgilitySchema()
 
+    const normalizedReceipt = receipt.toLowerCase().replace(/\s+/g, ' ').trim()
+    const proofHash = createHash('sha256').update(normalizedReceipt).digest('hex')
+
+    const [duplicate] = await sql`
+      SELECT id
+      FROM agility_stock_orders
+      WHERE opay_proof_hash=${proofHash}
+        AND id<>${orderId}::uuid
+      LIMIT 1
+    `
+
+    if (duplicate) {
+      return NextResponse.json({
+        success: false,
+        error: 'This OPay proof is already attached to another Agility order',
+      }, { status: 409 })
+    }
+
     const [order] = await sql`
       SELECT id,payment_status,total_ngn,payment_reference,opay_account_number
       FROM agility_stock_orders
@@ -42,6 +61,7 @@ export async function POST(request: NextRequest) {
       UPDATE agility_stock_orders
       SET
         opay_receipt_data=${receipt.slice(0, 2000)},
+        opay_proof_hash=${proofHash},
         payment_status='proof_submitted',
         proof_submitted_at=NOW(),
         updated_at=NOW()
