@@ -32,7 +32,7 @@ The Agility order has its own OPay proof and Administration verification because
 
 ## Operating movement
 
-1. **Agent creates an order** — authenticated Agent selects the Agility type and number of company boxes.
+1. **Agent creates an order** — authenticated Agent selects the Agility type, wholesaler/retailer position, number of company boxes, Agent Store delivery address, and delivery phone.
 2. **Economics are fixed at order creation** — each box is 10 packages, ₦21,000 company preparation cost, ₦28,000 Agent price, and ₦30,000 sell-out value.
 3. **Agent pays by OPay** — the screen shows the existing WEAVE OPay account, exact NGN amount and unique Agility order reference.
 4. **Agent submits proof** — Agent pastes the OPay transaction reference or receipt.
@@ -43,7 +43,7 @@ The Agility order has its own OPay proof and Administration verification because
 9. **Packed** — each complete Agility meal is sealed. Milk, water and fruit remain separate from hot-food handling.
 10. **Boxed** — 10 sealed Agility packages are placed into one company delivery box.
 11. **Dispatched** — the company sends the paid box to the Agent Store.
-12. **Delivered + actual-cost reconciliation** — before closing delivery, Administration records the actual all-in company cost per box. The system calculates actual company gross contribution and flags a loss if actual cost exceeded wholesale revenue.
+12. **Delivered + actual-cost reconciliation** — the ₦21,000 company standard is used by default. Administration changes the actual cost only if the completed box cost differed; the system calculates actual company gross contribution and flags a loss if actual cost exceeded wholesale revenue.
 13. **Received** — the Agent confirms physical receipt. Only then does the stock become sellable inventory.
 14. **Agent sale** — a wholesaler can move the complete 10-package box for ₦30,000; a retailer sells the individual packages at ₦3,000 each. Either route gives the Agent a base ₦2,000 gross profit per completed box. Retailers also build direct consumer patronage and repeat demand around their store.
 
@@ -57,7 +57,7 @@ The Agility order has its own OPay proof and Administration verification because
 - Administration cannot start fulfillment before OPay payment approval.
 - Administration cannot skip fulfillment stages.
 - Preparation opens with the fixed ₦21,000-per-box preparation standard, producing the planned ₦7,000 company gross profit.
-- Delivery cannot close without recording actual all-in cost, so planned and actual company gross performance remain visible.
+- Delivery reconciles actual company cost using ₦21,000 by default, with an Administration override when the completed cost differed.
 - The Agent cannot record consumer sales until Administration marks delivery and the Agent confirms receipt.
 - Sales cannot exceed received inventory.
 - Every order keeps its own payment reference, OPay proof, verifying administrator, timestamps, box count, package count and economics.
@@ -119,3 +119,12 @@ For **5 boxes**:
 - Agent gross profit: ₦10,000.
 
 This separates company production profit, Agent distribution profit, and consumer pricing. Wholesaler and retailer Agents use the same ₦28,000 box cost but sell through different relationships: box-to-buyer wholesale or package-to-consumer retail.
+
+
+## Production database rollout
+
+The explicit Cloud SQL migration is:
+
+`gcp-migration/agility.sql`
+
+Run it against the production database before opening Agility orders. The application also retains idempotent schema guards for continuity, but production should begin with the explicit migration applied so tables, indexes, foreign keys and core checks exist before the first Agent order.
