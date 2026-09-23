@@ -347,6 +347,16 @@ export default function AgilityPage() {
               existing OPay payment method, receives the physical stock, then sells each complete morning package
               to consumers at the fixed retail price.
             </p>
+            {isAgent && (
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4 border-orange-300/30 bg-orange-300/5 text-orange-100 hover:bg-orange-300/10"
+                onClick={() => setOpenTutorial(true)}
+              >
+                How does Agility work? · Open WEAVE tutorial
+              </Button>
+            )}
 
             <div className="mt-6 grid max-w-3xl grid-cols-2 gap-3 md:grid-cols-4">
               <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
