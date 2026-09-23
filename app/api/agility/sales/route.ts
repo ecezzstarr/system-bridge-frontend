@@ -71,12 +71,20 @@ export async function POST(request: NextRequest) {
       }, { status: 409 })
     }
 
+    // Use the economics stored on the order so later catalog price changes do
+    // not rewrite the profit history of stock the Agent already bought.
+    const retailUnitPriceNgn = Number(order.retail_unit_price_ngn)
+    const retailBoxValueNgn = Number(order.retail_box_value_ngn)
+    const agentUnitCostNgn = Number(order.agent_unit_cost_ngn)
+    const agentBoxPriceNgn = Number(order.agent_box_price_ngn)
+    const agentGrossProfitPerPackageNgn = retailUnitPriceNgn - agentUnitCostNgn
+
     const totalRevenueNgn = isWholesaler
-      ? quantity * AGILITY_RETAIL_BOX_VALUE_NGN
-      : quantity * AGILITY_RETAIL_UNIT_PRICE_NGN
+      ? quantity * retailBoxValueNgn
+      : quantity * retailUnitPriceNgn
     const agentGrossProfitNgn = isWholesaler
-      ? quantity * (AGILITY_RETAIL_BOX_VALUE_NGN - Number(order.agent_box_price_ngn))
-      : packageQuantity * AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN
+      ? quantity * (retailBoxValueNgn - agentBoxPriceNgn)
+      : packageQuantity * agentGrossProfitPerPackageNgn
 
     const saleResult = await db.query(
       `INSERT INTO agility_agent_sales (
@@ -100,10 +108,10 @@ export async function POST(request: NextRequest) {
         packageQuantity,
         saleMode,
         boxQuantity,
-        isWholesaler ? AGILITY_RETAIL_BOX_VALUE_NGN : AGILITY_RETAIL_UNIT_PRICE_NGN,
+        isWholesaler ? retailBoxValueNgn : retailUnitPriceNgn,
         totalRevenueNgn,
-        AGILITY_RETAIL_UNIT_PRICE_NGN,
-        AGILITY_AGENT_UNIT_COST_NGN,
+        retailUnitPriceNgn,
+        agentUnitCostNgn,
         totalRevenueNgn,
         agentGrossProfitNgn,
       ]
@@ -117,10 +125,10 @@ export async function POST(request: NextRequest) {
       economics: {
         distributionMode: order.distribution_mode,
         saleMode,
-        retailUnitPriceNgn: AGILITY_RETAIL_UNIT_PRICE_NGN,
-        wholesaleBoxSellPriceNgn: AGILITY_RETAIL_BOX_VALUE_NGN,
-        agentUnitCostNgn: AGILITY_AGENT_UNIT_COST_NGN,
-        agentGrossProfitPerPackageNgn: AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
+        retailUnitPriceNgn,
+        wholesaleBoxSellPriceNgn: retailBoxValueNgn,
+        agentUnitCostNgn,
+        agentGrossProfitPerPackageNgn,
         saleRevenueNgn: totalRevenueNgn,
         agentGrossProfitNgn,
       },
