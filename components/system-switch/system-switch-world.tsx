@@ -67,7 +67,7 @@ function Scene({ active, onSelect }: { active: string | null; onSelect: (id: str
   )
 }
 
-export default function SystemSwitchWorld({ fileNumber, onCrossingRequest, initialMovement, flameName }: { fileNumber?: string | null; onCrossingRequest?: () => void; initialMovement?: string | null; flameName?: string | null }) {
+export default function SystemSwitchWorld({ fileNumber, onCrossingRequest, initialMovement, flameName, topic }: { fileNumber?: string | null; onCrossingRequest?: () => void; initialMovement?: string | null; flameName?: string | null; topic?: string | null }) {
   const [active, setActive] = useState<string | null>(null)
   const [movements, setMovements] = useState(0)
 
@@ -80,9 +80,10 @@ export default function SystemSwitchWorld({ fileNumber, onCrossingRequest, initi
     <section className="relative min-h-[720px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#02040a] text-white">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-6">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300/80">Bridge AI Template</p>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300/80">The Weave of Presence</p>
           <h1 className="mt-2 text-3xl font-semibold">SYSTEM SWITCH</h1>
-          <p className="mt-1 text-sm text-slate-400">Interaction in Motion</p>
+          <p className="mt-1 text-sm text-slate-400">Subject · System Switch — Bridge Radiance</p>
+          <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-white/45">Topic · {topic || 'Interaction in Motion'}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-right backdrop-blur">
           <p className="text-[9px] uppercase tracking-[0.25em] text-slate-500">File Number</p>
