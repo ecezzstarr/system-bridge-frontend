@@ -53,6 +53,7 @@ export async function ensureAgilitySchema() {
       payment_method varchar(40) NOT NULL DEFAULT 'OPay',
       opay_account_number varchar(40) NOT NULL,
       opay_receipt_data text,
+      opay_proof_hash varchar(64),
       payment_status varchar(40) NOT NULL DEFAULT 'pending',
       payment_verified_by uuid,
       proof_submitted_at timestamptz,
@@ -85,6 +86,7 @@ export async function ensureAgilitySchema() {
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS payment_method varchar(40) DEFAULT 'OPay'`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS opay_account_number varchar(40)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS opay_receipt_data text`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS opay_proof_hash varchar(64)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS payment_verified_by uuid`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS proof_submitted_at timestamptz`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz`
@@ -92,6 +94,7 @@ export async function ensureAgilitySchema() {
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_orders_agent ON agility_stock_orders(agent_id, created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_orders_payment ON agility_stock_orders(payment_status, created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_orders_fulfillment ON agility_stock_orders(fulfillment_status, created_at DESC)`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_agility_orders_opay_proof ON agility_stock_orders(opay_proof_hash) WHERE opay_proof_hash IS NOT NULL`
 
   await sql`
     CREATE TABLE IF NOT EXISTS agility_agent_sales (
