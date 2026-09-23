@@ -64,6 +64,8 @@ export async function POST(request: NextRequest) {
     const variantId = String(body.variantId || '').trim()
     const boxCount = Number(body.boxCount)
     const distributionMode = String(body.distributionMode || 'retailer').trim()
+    const deliveryAddress = String(body.deliveryAddress || '').trim().slice(0, 500)
+    const deliveryPhone = String(body.deliveryPhone || '').trim().slice(0, 40)
     const agentNote = String(body.note || '').trim().slice(0, 500)
     const variant = getAgilityVariant(variantId)
 
@@ -75,6 +77,12 @@ export async function POST(request: NextRequest) {
     }
     if (!Number.isInteger(boxCount) || boxCount < 1 || boxCount > 50) {
       return NextResponse.json({ success: false, error: 'Choose between 1 and 50 Agility boxes' }, { status: 400 })
+    }
+    if (deliveryAddress.length < 5) {
+      return NextResponse.json({ success: false, error: 'Enter the Agent Store delivery address' }, { status: 400 })
+    }
+    if (deliveryPhone.replace(/\D/g, '').length < 7) {
+      return NextResponse.json({ success: false, error: 'Enter a valid delivery phone number' }, { status: 400 })
     }
 
     await ensureAgilitySchema()
@@ -102,6 +110,8 @@ export async function POST(request: NextRequest) {
         opay_account_number,
         payment_status,
         fulfillment_status,
+        delivery_address,
+        delivery_phone,
         agent_note
       )
       VALUES (
@@ -124,6 +134,8 @@ export async function POST(request: NextRequest) {
         ${AGILITY_OPAY_ACCOUNT_NUMBER},
         'pending',
         'awaiting_payment',
+        ${deliveryAddress},
+        ${deliveryPhone},
         ${agentNote || null}
       )
       RETURNING *
