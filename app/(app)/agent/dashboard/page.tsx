@@ -67,6 +67,13 @@ export default function AgentTerminal() {
 
   const checklist: ChecklistItem[] = []
   checklist.push({
+    id: 'agility-tutorial',
+    label: 'How does Agility work?',
+    detail: 'Open the WEAVE-assisted tutorial for ordering, OPay verification, delivery, Retailer/Wholesaler selling and profit tracking.',
+    actLabel: 'Open tutorial',
+    onAct: () => router.push('/agility?tutorial=1'),
+  })
+  checklist.push({
     id: 'loop-1',
     label: 'Support Bridgers to close Loop 1',
     detail: 'Agents earn 30% on lead purchases and 5% of Weave\'s 40% (716 TRX) on Client crossings.',
