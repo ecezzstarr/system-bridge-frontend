@@ -11,6 +11,10 @@ import Arena from '@/components/places/arena'
 import Casino from '@/components/places/casino'
 import Lounge from '@/components/places/lounge'
 import Link from 'next/link'
+import {
+  AgilityAgentLoginAd,
+  AGILITY_AGENT_LOGIN_AD_KEY,
+} from '@/components/agility-agent-login-ad'
 
 type TabId = 'lounge' | 'connect' | 'arena' | 'casino' | 'market' | 'wallet'
 
@@ -18,6 +22,7 @@ export default function AgentTerminal() {
   const { user, logout } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>('lounge')
+  const [showAgilityAd, setShowAgilityAd] = useState(false)
   const [salary, setYield] = useState<{ tier: number; salary: number; activeCount: number } | null>(null)
   const [bridgerCount, setBridgerCount] = useState(0)
   const [commissions, setCommissions] = useState<{ commissionRate: number; totalEarnings: number; recentCommissions: any[] } | null>(null)
@@ -41,6 +46,12 @@ export default function AgentTerminal() {
   useEffect(() => {
     if (!user || user.role !== 'agent') {
       router.push('/dashboard')
+      return
+    }
+
+    if (sessionStorage.getItem(AGILITY_AGENT_LOGIN_AD_KEY) === '1') {
+      sessionStorage.removeItem(AGILITY_AGENT_LOGIN_AD_KEY)
+      setShowAgilityAd(true)
     }
   }, [user, router])
 
@@ -55,6 +66,13 @@ export default function AgentTerminal() {
   }
 
   const checklist: ChecklistItem[] = []
+  checklist.push({
+    id: 'agility-tutorial',
+    label: 'How does Agility work?',
+    detail: 'Open the WEAVE-assisted tutorial for ordering, OPay verification, delivery, Retailer/Wholesaler selling and profit tracking.',
+    actLabel: 'Open tutorial',
+    onAct: () => router.push('/agility?tutorial=1'),
+  })
   checklist.push({
     id: 'loop-1',
     label: 'Support Bridgers to close Loop 1',
@@ -91,7 +109,16 @@ export default function AgentTerminal() {
   ]
 
   return (
-    <div className="max-w-7xl mx-auto pb-20 sm:pb-0">
+    <>
+      <AgilityAgentLoginAd
+        open={showAgilityAd}
+        onOpenChange={setShowAgilityAd}
+        onBuy={() => {
+          setShowAgilityAd(false)
+          router.push('/agility')
+        }}
+      />
+      <div className="max-w-7xl mx-auto pb-20 sm:pb-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
@@ -141,6 +168,26 @@ export default function AgentTerminal() {
           </div>
         </div>
       </div>
+
+      {/* Agility Agent Store */}
+      <Link href="/agility" className="mb-6 block group">
+        <div className="relative overflow-hidden rounded-xl border border-orange-400/20 bg-gradient-to-r from-orange-500/10 via-amber-400/5 to-transparent p-5 transition group-hover:border-orange-300/40">
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-orange-400/10 blur-2xl" />
+          <div className="relative flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-400/10 text-orange-300">
+                <ShoppingBag className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">Agent Store · Morning Food</p>
+                <h2 className="mt-1 text-lg font-bold text-white">Agility — Intelligence in Action</h2>
+                <p className="mt-1 text-xs text-slate-500">Buy Agility stock through the existing Weave OPay method: 10 packages per box, ₦28,000 Agent box price, ₦30,000 sell-out value, ₦2,000 gross Agent profit per box.</p>
+              </div>
+            </div>
+            <ArrowUpRight className="hidden h-5 w-5 text-orange-300 sm:block" />
+          </div>
+        </div>
+      </Link>
 
       {/* Tabs — top row on desktop, fixed bottom bar on mobile */}
       <div className="hidden sm:flex gap-2 mb-6 border-b overflow-x-auto pb-px" style={{ borderColor: 'var(--field-border)' }}>
@@ -193,7 +240,8 @@ export default function AgentTerminal() {
       </div>
 
       <WeaveAssistant role="agent" checklist={checklist} />
-    </div>
+      </div>
+    </>
   )
 }
 
@@ -282,7 +330,7 @@ function WalletSection({ user }: { user: any }) {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">Deposit</h3>
-                  <p className="text-sm text-slate-400">Add funds via Flutterwave</p>
+                  <p className="text-sm text-slate-400">Add funds via OPay</p>
                 </div>
               </div>
             </div>

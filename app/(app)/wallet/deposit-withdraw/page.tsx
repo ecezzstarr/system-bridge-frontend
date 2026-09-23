@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, Home 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 
 // TRX rate: 1 USD = 10 TRX (example rate)
 const TRX_RATE = 10
@@ -390,7 +391,7 @@ export default function WalletDepositWithdrawPage() {
                     <>
                       <h2 className="text-xl font-bold text-white mb-4">Submit Payment Proof</h2>
                       <p className="text-slate-400 text-sm mb-6">
-                        Your deposit record has been created for <strong>{pendingDepositAmountTrx} TRX</strong>. Send the NGN payment to OPay account <strong>8136003459</strong>, then paste your transaction reference or receipt details below. An admin will verify and credit your wallet.
+                        Your deposit record has been created for <strong>{pendingDepositAmountTrx} TRX</strong>. Send the NGN payment to OPay account <strong>{WEAVE_OPAY_ACCOUNT_NUMBER}</strong>, then paste your transaction reference or receipt details below. An admin will verify and credit your wallet.
                       </p>
 
                       <div className="mb-6">
@@ -529,7 +530,7 @@ export default function WalletDepositWithdrawPage() {
 
                   <p className="text-xs text-slate-500 text-center mt-4">
                     {['admin', 'agent', 'bridger'].includes(user.role) 
-                      ? 'Manual OPay Deposit: Send NGN to OPay 8136003459, then submit your deposit for admin verification.' 
+                      ? `Manual OPay Deposit: Send NGN to OPay ${WEAVE_OPAY_ACCOUNT_NUMBER}, then submit your deposit for admin verification.` 
                       : 'Transfers are typically confirmed within 1-5 minutes'}
                   </p>
                 </div>

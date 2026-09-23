@@ -26,4 +26,103 @@ const valid={status:'successful',tx_ref:'test-ref',currency:'USD',amount:20}
 assert.equal(matchesVerifiedPayment(valid,'test-ref',20),true)
 for(const change of [{currency:'NGN'},{amount:1},{status:'failed'},{tx_ref:'other'}])assert.equal(matchesVerifiedPayment({...valid,...change},'test-ref',20),false)
 assert.equal(matchesVerifiedPayment(valid,'test-ref',NaN),false)
-console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification')
+const {
+  AGILITY_VARIANTS,
+  AGILITY_RETAIL_UNIT_PRICE_NGN,
+  AGILITY_PACKAGES_PER_BOX,
+  AGILITY_RETAIL_BOX_VALUE_NGN,
+  AGILITY_AGENT_BOX_PRICE_NGN,
+  AGILITY_AGENT_UNIT_COST_NGN,
+  AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
+  AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
+  AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
+  AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
+  AGILITY_OPAY_ACCOUNT_NUMBER,
+}=require('../lib/agility-catalog.ts')
+assert.equal(AGILITY_RETAIL_UNIT_PRICE_NGN,3000)
+assert.equal(AGILITY_PACKAGES_PER_BOX,10)
+assert.equal(AGILITY_RETAIL_BOX_VALUE_NGN,30000)
+assert.equal(AGILITY_AGENT_BOX_PRICE_NGN,28000)
+assert.equal(AGILITY_AGENT_UNIT_COST_NGN,2800)
+assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,200)
+assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,2000)
+assert.equal(AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,21000)
+assert.equal(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,7000)
+assert.equal(AGILITY_OPAY_ACCOUNT_NUMBER,'8136003459')
+assert.ok(AGILITY_VARIANTS.length>=4,'Agility variants')
+const {getAgilityTotals,getAgilityCompanyEconomics,isValidAgilityCompanyCost,nextAgilityAdminStage}=require('../lib/agility.ts')
+assert.deepEqual(getAgilityTotals(2),{
+ boxCount:2,
+ packageCount:20,
+ packagesPerBox:10,
+ retailUnitPriceNgn:3000,
+ retailBoxValueNgn:30000,
+ agentBoxPriceNgn:28000,
+ agentUnitCostNgn:2800,
+ agentPayableNgn:56000,
+ retailValueNgn:60000,
+ agentExpectedGrossProfitNgn:4000,
+})
+assert.deepEqual(getAgilityCompanyEconomics(2,21000),{
+ wholesaleRevenueNgn:56000,
+ totalPlannedCostNgn:42000,
+ grossProfitNgn:14000,
+ grossProfitPerBoxNgn:7000,
+})
+assert.equal(getAgilityCompanyEconomics(1,29000).grossProfitNgn,-1000)
+assert.equal(isValidAgilityCompanyCost(21000),true)
+assert.equal(isValidAgilityCompanyCost(20000),false)
+assert.equal(isValidAgilityCompanyCost(21001),false)
+assert.equal(nextAgilityAdminStage('paid'),'heating')
+assert.equal(nextAgilityAdminStage('heating'),'packed')
+assert.equal(nextAgilityAdminStage('packed'),'boxed')
+assert.equal(nextAgilityAdminStage('boxed'),'dispatched')
+assert.equal(nextAgilityAdminStage('dispatched'),'delivered')
+assert.equal(nextAgilityAdminStage('delivered'),null)
+auth={...auth,user:{id:'agent-test',name:'Agent',role:'agent'},token:'test-token'}
+const Agility=require('../app/(app)/agility/page.tsx').default
+const agilityHtml=renderToStaticMarkup(React.createElement(Agility))
+for(const label of ['AGILITY','Intelligence in Action','Agent Store','₦3,000','10 packages','₦28,000','₦2,000','₦7,000','Wholesaler','Retailer','OPay'])assert.ok(agilityHtml.includes(label),label)
+for(const route of [
+ '/api/agility/payment/opay/receipt/route.ts',
+ '/api/admin/agility/payment/opay/verify/route.ts',
+ '/api/agility/receive/route.ts',
+ '/api/agility/sales/route.ts',
+ '/api/admin/agility/stock/route.ts',
+])assert.ok(fs.existsSync(path.join(root,'app',route)),route+' exists')
+assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/callback/route.ts')),'Agility Flutterwave callback removed')
+assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/webhook/route.ts')),'Agility Flutterwave webhook removed')
+assert.ok(fs.existsSync(path.join(root,'gcp-migration/agility.sql')),'Agility production migration exists')
+const opayApiSource=fs.readFileSync(path.join(root,'app/api/deposit/opay/route.ts'),'utf8')
+assert.match(opayApiSource,/deposit:\s*result\[0\]/)
+assert.match(opayApiSource,/admin', 'agent', 'bridger/)
+assert.match(opayApiSource,/WEAVE_OPAY_ACCOUNT_NUMBER/)
+const agilityLoginAdSource=fs.readFileSync(path.join(root,'components/agility-agent-login-ad.tsx'),'utf8')
+const weaveAssistantSource=fs.readFileSync(path.join(root,'components/weave-assistant.tsx'),'utf8')
+const agilityTutorialSource=fs.readFileSync(path.join(root,'lib/agility-tutorial.ts'),'utf8')
+const riverSource=fs.readFileSync(path.join(root,'lib/river-assistant.ts'),'utf8')
+const chatRouteSource=fs.readFileSync(path.join(root,'app/api/chat/route.ts'),'utf8')
+for(const label of ['How Agility works','Choose how you want to sell','Create the order and pay with OPay','Confirm that you received the stock','Sell and record the movement'])assert.ok(agilityTutorialSource.includes(label),label+' tutorial')
+assert.ok(weaveAssistantSource.includes("tab === 'guide'"),'WEAVE Assistant guide tab')
+assert.ok(weaveAssistantSource.includes('Ask River what to do next'),'WEAVE Assistant River handoff')
+assert.ok(riverSource.includes('Agility Agent Store facts'),'River Agility grounding')
+assert.ok(chatRouteSource.includes("return 'Agility Agent Store'"),'River Agility page context')
+const loginSource=fs.readFileSync(path.join(root,'app/(auth)/login/page.tsx'),'utf8')
+const agentDashboardSource=fs.readFileSync(path.join(root,'app/(app)/agent/dashboard/page.tsx'),'utf8')
+for(const label of ['AGILITY','For Wholesalers','For Retailers','₦10,000','₦20,000','Buy Agility'])assert.ok(agilityLoginAdSource.includes(label),label+' login ad')
+assert.match(loginSource,/sessionStorage\.setItem\(AGILITY_AGENT_LOGIN_AD_KEY, '1'\)/)
+assert.match(agentDashboardSource,/AgilityAgentLoginAd/)
+assert.match(agentDashboardSource,/sessionStorage\.removeItem\(AGILITY_AGENT_LOGIN_AD_KEY\)/)
+const agilityStockSource=fs.readFileSync(path.join(root,'app/api/agility/stock/route.ts'),'utf8')
+const agilitySalesSource=fs.readFileSync(path.join(root,'app/api/agility/sales/route.ts'),'utf8')
+assert.match(agilityStockSource,/distributionMode/)
+assert.ok(agilityStockSource.includes('deliveryAddress'))
+assert.ok(agilityStockSource.includes('deliveryPhone'))
+assert.match(agilityStockSource,/wholesaler/)
+assert.match(agilityStockSource,/retailer/)
+assert.match(agilitySalesSource,/wholesale_box/)
+assert.match(agilitySalesSource,/retail_package/)
+assert.ok(agilitySalesSource.includes('order.retail_unit_price_ngn'))
+assert.ok(agilitySalesSource.includes('order.retail_box_value_ngn'))
+assert.ok(agilitySalesSource.includes('order.agent_unit_cost_ngn'))
+console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')

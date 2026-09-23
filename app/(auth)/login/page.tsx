@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, Lock, Mail, KeyRound, Loader2 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
+import { AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,7 +29,10 @@ export default function LoginPage() {
     try {
       const loggedInUser = await login(email, password)
       if (loggedInUser?.role === 'admin') router.push('/admin/dashboard')
-      else if (loggedInUser?.role === 'agent') router.push('/agent/dashboard')
+      else if (loggedInUser?.role === 'agent') {
+        sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
+        router.push('/agent/dashboard')
+      }
       else if (loggedInUser?.role === 'bridger') router.push('/bridger/dashboard')
       else router.push('/weave')
     } catch (err) {

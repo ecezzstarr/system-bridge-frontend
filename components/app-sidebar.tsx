@@ -90,6 +90,8 @@ const navigation = [
   // 4. ENTERPRISE
   { group: "Enterprise", items: [
     { name: "Exchange", href: "/marketplace", icon: Store },
+    { name: "Agility Agent Store", href: "/agility", icon: Store, agentOnly: true },
+    { name: "Agility Fulfillment", href: "/admin/agility", icon: FileBox, adminOnly: true },
     { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
     { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
           { name: "Company Loops", href: "/company/loops", icon: GitBranch },
