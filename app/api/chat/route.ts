@@ -12,6 +12,7 @@ function getSystemArea(pathname?: unknown): string {
   if (path.startsWith('/admin/dashboard')) return 'admin dashboard'
   if (path.startsWith('/agent/dashboard')) return 'agent dashboard'
   if (path.startsWith('/bridger/dashboard')) return 'bridger dashboard'
+  if (path.startsWith('/agility')) return 'Agility Agent Store'
   if (path.startsWith('/wallet')) return 'wallet'
   if (path.startsWith('/places')) return 'places'
   if (path.startsWith('/admin')) return 'admin system'
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
           systemArea: getSystemArea(pathname || page),
           userId: (session.user as { id?: string }).id,
           userName: session.user.name || undefined,
+          userRole: (session.user as { role?: string }).role || undefined,
         }
       : {
           systemName: SYSTEM_NAME,
