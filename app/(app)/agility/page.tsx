@@ -15,14 +15,22 @@ import {
   Store,
   Truck,
   UtensilsCrossed,
+  WalletCards,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  AGILITY_BOX_PRICE_NGN,
+  AGILITY_AGENT_BOX_PRICE_NGN,
+  AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
+  AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
+  AGILITY_AGENT_UNIT_COST_NGN,
+  AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,
+  AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
+  AGILITY_OPAY_ACCOUNT_NUMBER,
   AGILITY_PACKAGES_PER_BOX,
   AGILITY_PROCESS,
-  AGILITY_UNIT_PRICE_NGN,
+  AGILITY_RETAIL_BOX_VALUE_NGN,
+  AGILITY_RETAIL_UNIT_PRICE_NGN,
   AGILITY_VARIANTS,
   type AgilityVariant,
 } from '@/lib/agility-catalog'
@@ -33,11 +41,16 @@ type AgilityOrder = {
   box_count: number
   packages_per_box: number
   package_count: number
-  unit_price_ngn: number | string
-  box_price_ngn: number | string
+  retail_unit_price_ngn: number | string
+  retail_box_value_ngn: number | string
+  agent_box_price_ngn: number | string
+  agent_unit_cost_ngn: number | string
   total_ngn: number | string
+  agent_expected_gross_profit_ngn: number | string
   payment_reference: string
-  payment_link?: string | null
+  payment_method: string
+  opay_account_number: string
+  opay_receipt_data?: string | null
   payment_status: string
   fulfillment_status: string
   agent_note?: string | null
@@ -46,6 +59,8 @@ type AgilityOrder = {
   delivered_at?: string | null
   received_at?: string | null
   sold_packages: number
+  recorded_revenue_ngn?: number | string
+  realized_agent_gross_profit_ngn?: number | string
   created_at: string
 }
 
@@ -57,9 +72,9 @@ const naira = (value: number | string) =>
   }).format(Number(value))
 
 const fulfillmentLabel: Record<string, string> = {
-  awaiting_payment: 'Awaiting payment',
-  paid: 'Paid · queued',
-  heating: 'Heating',
+  awaiting_payment: 'Awaiting OPay verification',
+  paid: 'Paid · company queue',
+  heating: 'Heating / preparation',
   packed: 'Packages sealed',
   boxed: 'Company box ready',
   dispatched: 'On the way',
@@ -74,6 +89,7 @@ export default function AgilityPage() {
   const [selected, setSelected] = useState<AgilityVariant>(AGILITY_VARIANTS[0])
   const [boxCount, setBoxCount] = useState(1)
   const [note, setNote] = useState('')
+  const [proof, setProof] = useState<Record<string, string>>({})
   const [saleQty, setSaleQty] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(false)
   const [workingOrder, setWorkingOrder] = useState<string | null>(null)
@@ -81,7 +97,9 @@ export default function AgilityPage() {
   const [message, setMessage] = useState('')
 
   const packageCount = boxCount * AGILITY_PACKAGES_PER_BOX
-  const total = boxCount * AGILITY_BOX_PRICE_NGN
+  const agentPayable = boxCount * AGILITY_AGENT_BOX_PRICE_NGN
+  const retailValue = boxCount * AGILITY_RETAIL_BOX_VALUE_NGN
+  const expectedAgentGross = boxCount * AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN
 
   const loadOrders = async () => {
     if (!isAgent || !token) return
@@ -102,22 +120,6 @@ export default function AgilityPage() {
     loadOrders()
   }, [isAgent, token])
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    const payment = params.get('payment')
-    if (!payment) return
-
-    if (payment === 'success') {
-      setMessage('Payment verified. Your Agility order has entered company fulfillment.')
-      loadOrders()
-    } else {
-      setMessage(`Payment was not completed: ${payment.replaceAll('_', ' ')}.`)
-    }
-
-    window.history.replaceState({}, '', '/agility')
-  }, [token, isAgent])
-
   const beginOrder = async () => {
     if (!token || !isAgent) return
     setLoading(true)
@@ -132,13 +134,49 @@ export default function AgilityPage() {
         body: JSON.stringify({ variantId: selected.id, boxCount, note }),
       })
       const data = await response.json()
-      if (!response.ok || !data.success || !data.paymentLink) {
-        throw new Error(data.error || 'Unable to open company payment')
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Unable to create Agility order')
       }
-      window.location.assign(data.paymentLink)
+      setMessage(
+        `Order created. Send exactly ${naira(data.payment.amountNgn)} to OPay ${data.payment.accountNumber}, then submit the transaction reference or receipt below.`
+      )
+      setNote('')
+      await loadOrders()
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Unable to begin Agility order')
+      setMessage(error instanceof Error ? error.message : 'Unable to create Agility order')
+    } finally {
       setLoading(false)
+    }
+  }
+
+  const submitProof = async (order: AgilityOrder) => {
+    if (!token) return
+    const receipt = String(proof[order.id] || '').trim()
+    if (!receipt) {
+      setMessage('Enter the OPay transaction reference or receipt before submitting.')
+      return
+    }
+
+    setWorkingOrder(order.id)
+    setMessage('')
+    try {
+      const response = await fetch('/api/agility/payment/opay/receipt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId: order.id, receipt }),
+      })
+      const data = await response.json()
+      if (!response.ok || !data.success) throw new Error(data.error || 'Unable to submit OPay proof')
+      setProof((current) => ({ ...current, [order.id]: '' }))
+      setMessage('OPay proof submitted. Administration will verify it before the food order enters preparation.')
+      await loadOrders()
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to submit OPay proof')
+    } finally {
+      setWorkingOrder(null)
     }
   }
 
@@ -157,7 +195,7 @@ export default function AgilityPage() {
       })
       const data = await response.json()
       if (!response.ok || !data.success) throw new Error(data.error || 'Unable to confirm receipt')
-      setMessage('Receipt confirmed. These packages are now Agent Store inventory.')
+      setMessage('Receipt confirmed. These Agility packages are now Agent Store inventory.')
       await loadOrders()
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to confirm receipt')
@@ -168,7 +206,8 @@ export default function AgilityPage() {
 
   const recordSale = async (order: AgilityOrder) => {
     if (!token) return
-    const quantity = Math.max(1, Number(saleQty[order.id] || 1))
+    const remaining = Math.max(0, Number(order.package_count) - Number(order.sold_packages || 0))
+    const quantity = Math.max(1, Math.min(remaining, Number(saleQty[order.id] || 1)))
     setWorkingOrder(order.id)
     setMessage('')
     try {
@@ -183,7 +222,9 @@ export default function AgilityPage() {
       const data = await response.json()
       if (!response.ok || !data.success) throw new Error(data.error || 'Unable to record sale')
       setSaleQty((current) => ({ ...current, [order.id]: 1 }))
-      setMessage(`Recorded ${quantity} Agility package${quantity === 1 ? '' : 's'} sold to consumers.`)
+      setMessage(
+        `Recorded ${quantity} consumer sale${quantity === 1 ? '' : 's'}: ${naira(data.economics.saleRevenueNgn)} revenue and ${naira(data.economics.agentGrossProfitNgn)} gross Agent spread.`
+      )
       await loadOrders()
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to record sale')
@@ -200,6 +241,10 @@ export default function AgilityPage() {
     (sum, order) => sum + Math.max(0, Number(order.package_count) - Number(order.sold_packages || 0)),
     0
   )
+  const realizedGross = orders.reduce(
+    (sum, order) => sum + Number(order.realized_agent_gross_profit_ngn || 0),
+    0
+  )
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 pb-16">
@@ -214,22 +259,27 @@ export default function AgilityPage() {
             <h1 className="text-5xl font-black tracking-tight text-white md:text-7xl">AGILITY</h1>
             <p className="mt-2 text-xl font-semibold text-orange-200 md:text-2xl">Intelligence in Action</p>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
-              One company product family for the morning: prepared food, protein, fruit, water and milk,
-              paid for by the Agent, fulfilled by Weave, delivered to the Agent Store, then sold to consumers.
+              Agility is a company food-distribution product. The Agent buys a discounted company box through the
+              existing OPay payment method, receives the physical stock, then sells each complete morning package
+              to consumers at the fixed retail price.
             </p>
 
-            <div className="mt-6 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="mt-6 grid max-w-3xl grid-cols-2 gap-3 md:grid-cols-4">
               <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">1 package</p>
-                <p className="mt-1 text-2xl font-black text-orange-300">{naira(AGILITY_UNIT_PRICE_NGN)}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Consumer price</p>
+                <p className="mt-1 text-xl font-black text-orange-300">{naira(AGILITY_RETAIL_UNIT_PRICE_NGN)}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">1 company box</p>
-                <p className="mt-1 text-2xl font-black text-white">{AGILITY_PACKAGES_PER_BOX} packages</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">1 box</p>
+                <p className="mt-1 text-xl font-black text-white">{AGILITY_PACKAGES_PER_BOX} packages</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Box price</p>
-                <p className="mt-1 text-2xl font-black text-emerald-300">{naira(AGILITY_BOX_PRICE_NGN)}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Agent buys box</p>
+                <p className="mt-1 text-xl font-black text-cyan-300">{naira(AGILITY_AGENT_BOX_PRICE_NGN)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Agent gross / box</p>
+                <p className="mt-1 text-xl font-black text-emerald-300">{naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)}</p>
               </div>
             </div>
           </div>
@@ -250,17 +300,46 @@ export default function AgilityPage() {
                 ))}
               </div>
               <p className="mt-4 text-center text-xs font-bold uppercase tracking-[0.16em] text-[#7a3510]">
-                {AGILITY_PACKAGES_PER_BOX} complete packages per company box
+                {AGILITY_PACKAGES_PER_BOX} packages · {naira(AGILITY_RETAIL_BOX_VALUE_NGN)} retail value
               </p>
             </div>
           </div>
         </div>
       </section>
 
+      <section className="rounded-[2rem] border border-emerald-400/15 bg-emerald-400/[0.04] p-6 md:p-8">
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-300">Agility economics</p>
+        <h2 className="mt-1 text-2xl font-bold text-white">The box creates room for both company and Agent.</h2>
+        <div className="mt-5 grid gap-3 md:grid-cols-4">
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-xs text-slate-500">Box retail value</p>
+            <p className="mt-2 text-2xl font-black text-white">{naira(AGILITY_RETAIL_BOX_VALUE_NGN)}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-xs text-slate-500">Agent wholesale price</p>
+            <p className="mt-2 text-2xl font-black text-cyan-300">{naira(AGILITY_AGENT_BOX_PRICE_NGN)}</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-xs text-slate-500">Agent gross spread if sold out</p>
+            <p className="mt-2 text-2xl font-black text-emerald-300">{naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)}</p>
+            <p className="mt-1 text-[11px] text-slate-600">{naira(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN)} per package</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <p className="text-xs text-slate-500">Company cost discipline</p>
+            <p className="mt-2 text-2xl font-black text-orange-200">≤ {naira(AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN)}</p>
+            <p className="mt-1 text-[11px] text-slate-600">Target gross contribution ≥ {naira(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)} / box</p>
+          </div>
+        </div>
+        <p className="mt-4 text-[11px] leading-5 text-slate-500">
+          These are gross operating economics. Company net profit still depends on keeping actual food, preparation,
+          packaging, delivery, spoilage and other overhead within the planned cost.
+        </p>
+      </section>
+
       <section>
         <div className="mb-4">
           <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-300">Package family</p>
-          <h2 className="mt-1 text-2xl font-bold text-white">Different Agility meals. Same ₦3,000 package standard.</h2>
+          <h2 className="mt-1 text-2xl font-bold text-white">Different morning combinations. One retail standard.</h2>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -271,7 +350,7 @@ export default function AgilityPage() {
             >
               <p className="text-[10px] uppercase tracking-[0.2em] text-orange-300">{variant.accent}</p>
               <h3 className="mt-1 text-lg font-bold text-white">{variant.name}</h3>
-              <p className="mt-1 text-xl font-black text-orange-200">{naira(AGILITY_UNIT_PRICE_NGN)}</p>
+              <p className="mt-1 text-xl font-black text-orange-200">{naira(AGILITY_RETAIL_UNIT_PRICE_NGN)} retail</p>
               <div className="mt-4 space-y-2 text-xs text-slate-300">
                 <p><span className="text-slate-500">Five foods:</span> {variant.foods.join(', ')}</p>
                 <p><span className="text-slate-500">Protein:</span> {variant.protein}</p>
@@ -296,10 +375,10 @@ export default function AgilityPage() {
 
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.025] p-6 md:p-8">
         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-300">Company movement</p>
-        <h2 className="mt-1 text-2xl font-bold text-white">Pay first. Then Agility moves.</h2>
+        <h2 className="mt-1 text-2xl font-bold text-white">Order → OPay → Verify → Prepare → Pack → Sell</h2>
         <div className="mt-6 grid gap-3 md:grid-cols-3 xl:grid-cols-6">
           {AGILITY_PROCESS.map((step, index) => {
-            const icons = [CreditCard, UtensilsCrossed, PackageCheck, Box, Truck, Store]
+            const icons = [ShoppingBag, WalletCards, CreditCard, UtensilsCrossed, Box, Store]
             const Icon = icons[index]
             return (
               <div key={step.stage} className="relative rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -324,15 +403,15 @@ export default function AgilityPage() {
               <div className="flex items-center gap-3">
                 <ShoppingBag className="h-6 w-6 text-orange-300" />
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-orange-300">Agent Store Purchase</p>
-                  <h2 className="text-xl font-bold text-white">Buy Agility boxes from Weave</h2>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-orange-300">Agent Store Order</p>
+                  <h2 className="text-xl font-bold text-white">Order discounted Agility boxes</h2>
                 </div>
               </div>
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4">
                 <p className="font-semibold text-white">{selected.name}</p>
                 <p className="mt-1 text-xs text-slate-500">
-                  {AGILITY_PACKAGES_PER_BOX} packages per box · {naira(AGILITY_BOX_PRICE_NGN)} per box
+                  {AGILITY_PACKAGES_PER_BOX} packages per box · Agent price {naira(AGILITY_AGENT_BOX_PRICE_NGN)}
                 </p>
               </div>
 
@@ -357,24 +436,25 @@ export default function AgilityPage() {
 
               <div className="mt-5 space-y-2 rounded-2xl bg-white/[0.04] px-4 py-3 text-sm">
                 <div className="flex justify-between gap-3 text-slate-400">
-                  <span>Packages</span>
-                  <span>{packageCount}</span>
+                  <span>Packages</span><span>{packageCount}</span>
                 </div>
                 <div className="flex justify-between gap-3 text-slate-400">
-                  <span>Price per package</span>
-                  <span>{naira(AGILITY_UNIT_PRICE_NGN)}</span>
+                  <span>Retail value</span><span>{naira(retailValue)}</span>
+                </div>
+                <div className="flex justify-between gap-3 text-slate-400">
+                  <span>Expected Agent gross spread</span><span className="text-emerald-300">{naira(expectedAgentGross)}</span>
                 </div>
                 <div className="flex justify-between gap-3 border-t border-white/10 pt-2 font-black text-white">
-                  <span>Pay now</span>
-                  <span className="text-orange-200">{naira(total)}</span>
+                  <span>Pay Weave through OPay</span><span className="text-orange-200">{naira(agentPayable)}</span>
                 </div>
               </div>
 
               <Button className="mt-4 w-full" disabled={loading} onClick={beginOrder}>
-                {loading ? 'Opening payment…' : `Pay ${naira(total)} and order ${boxCount} box${boxCount === 1 ? '' : 'es'}`}
+                {loading ? 'Creating order…' : `Create ${boxCount}-box OPay order`}
               </Button>
               <p className="mt-3 text-[11px] leading-5 text-slate-500">
-                Company fulfillment does not open until Flutterwave returns a verified successful NGN payment.
+                Payment method: OPay. After the order is created, send the exact amount to {AGILITY_OPAY_ACCOUNT_NUMBER}
+                and submit the transaction reference or receipt.
               </p>
             </div>
 
@@ -406,18 +486,28 @@ export default function AgilityPage() {
                     const variant = AGILITY_VARIANTS.find((item) => item.id === order.variant_id)
                     const sold = Number(order.sold_packages || 0)
                     const remaining = Math.max(0, Number(order.package_count) - sold)
+                    const canSubmitProof = ['pending', 'rejected'].includes(order.payment_status)
                     return (
                       <div key={order.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <p className="font-semibold text-white">{variant?.name || order.variant_id}</p>
                             <p className="mt-1 text-xs text-slate-500">
-                              {order.box_count} box{Number(order.box_count) === 1 ? '' : 'es'} · {order.package_count} packages · {naira(order.total_ngn)}
+                              {order.box_count} box{Number(order.box_count) === 1 ? '' : 'es'} · {order.package_count} packages · Agent pays {naira(order.total_ngn)}
+                            </p>
+                            <p className="mt-1 text-[11px] text-emerald-300">
+                              Sell-out gross spread: {naira(order.agent_expected_gross_profit_ngn)}
                             </p>
                           </div>
                           <div className="text-right">
-                            <span className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${order.payment_status === 'paid' ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200' : 'border-amber-400/30 bg-amber-400/10 text-amber-200'}`}>
-                              {order.payment_status}
+                            <span className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${
+                              order.payment_status === 'paid'
+                                ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
+                                : order.payment_status === 'rejected'
+                                  ? 'border-rose-400/30 bg-rose-400/10 text-rose-200'
+                                  : 'border-amber-400/30 bg-amber-400/10 text-amber-200'
+                            }`}>
+                              OPay · {order.payment_status.replaceAll('_', ' ')}
                             </span>
                             <p className="mt-2 text-[10px] uppercase tracking-[0.14em] text-slate-500">
                               {fulfillmentLabel[order.fulfillment_status] || order.fulfillment_status}
@@ -431,15 +521,34 @@ export default function AgilityPage() {
                           </p>
                         )}
 
-                        {order.payment_status === 'pending' && order.payment_link && (
-                          <Button
-                            variant="outline"
-                            className="mt-4 w-full"
-                            onClick={() => window.location.assign(order.payment_link as string)}
-                          >
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            Resume payment
-                          </Button>
+                        {canSubmitProof && (
+                          <div className="mt-4 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4">
+                            <p className="text-xs font-bold text-cyan-200">Pay through existing Weave OPay</p>
+                            <div className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
+                              <p className="text-slate-400">OPay account: <strong className="text-white">{order.opay_account_number || AGILITY_OPAY_ACCOUNT_NUMBER}</strong></p>
+                              <p className="text-slate-400">Exact amount: <strong className="text-white">{naira(order.total_ngn)}</strong></p>
+                              <p className="text-slate-400 sm:col-span-2">Order reference: <strong className="font-mono text-white">{order.payment_reference}</strong></p>
+                            </div>
+                            <textarea
+                              className="mt-3 min-h-20 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white outline-none focus:border-cyan-300/40"
+                              value={proof[order.id] || ''}
+                              placeholder="Paste OPay transaction reference or receipt details"
+                              onChange={(event) => setProof((current) => ({ ...current, [order.id]: event.target.value }))}
+                            />
+                            <Button
+                              className="mt-3 w-full"
+                              disabled={workingOrder === order.id || !(proof[order.id] || '').trim()}
+                              onClick={() => submitProof(order)}
+                            >
+                              Submit OPay proof for verification
+                            </Button>
+                          </div>
+                        )}
+
+                        {order.payment_status === 'proof_submitted' && (
+                          <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 text-xs text-amber-100">
+                            OPay proof submitted. Administration must verify the payment before preparation can begin.
+                          </div>
                         )}
 
                         {order.fulfillment_status === 'delivered' && (
@@ -460,7 +569,10 @@ export default function AgilityPage() {
                                 <p className="text-xs font-bold text-emerald-200">Agent Store inventory</p>
                                 <p className="mt-1 text-[11px] text-slate-500">{remaining} available · {sold} sold</p>
                               </div>
-                              <p className="text-sm font-black text-white">{naira(remaining * AGILITY_UNIT_PRICE_NGN)}</p>
+                              <div className="text-right">
+                                <p className="text-sm font-black text-white">{naira(remaining * AGILITY_RETAIL_UNIT_PRICE_NGN)}</p>
+                                <p className="text-[10px] text-slate-600">remaining retail value</p>
+                              </div>
                             </div>
                             {remaining > 0 && (
                               <div className="mt-3 flex gap-2">
@@ -500,14 +612,14 @@ export default function AgilityPage() {
               <p className="mt-1 text-[11px] text-slate-600">Agility packages</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-              <p className="text-xs text-slate-500">Consumer unit price</p>
-              <p className="mt-2 text-3xl font-black text-orange-200">{naira(AGILITY_UNIT_PRICE_NGN)}</p>
-              <p className="mt-1 text-[11px] text-slate-600">Per package</p>
+              <p className="text-xs text-slate-500">Consumer retail price</p>
+              <p className="mt-2 text-3xl font-black text-orange-200">{naira(AGILITY_RETAIL_UNIT_PRICE_NGN)}</p>
+              <p className="mt-1 text-[11px] text-slate-600">Agent cost basis {naira(AGILITY_AGENT_UNIT_COST_NGN)} per package</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-              <p className="text-xs text-slate-500">Available retail value</p>
-              <p className="mt-2 text-3xl font-black text-emerald-200">{naira(availablePackages * AGILITY_UNIT_PRICE_NGN)}</p>
-              <p className="mt-1 text-[11px] text-slate-600">From confirmed received stock</p>
+              <p className="text-xs text-slate-500">Realized Agent gross spread</p>
+              <p className="mt-2 text-3xl font-black text-emerald-200">{naira(realizedGross)}</p>
+              <p className="mt-1 text-[11px] text-slate-600">from recorded consumer sales</p>
             </div>
           </section>
         </>
@@ -516,7 +628,7 @@ export default function AgilityPage() {
           <PackageCheck className="mx-auto h-9 w-9 text-orange-300" />
           <h2 className="mt-3 text-xl font-bold text-white">Agility distribution belongs to Weave Agent accounts</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
-            The product standard is visible here; paid stock purchasing, receipt confirmation and consumer-sale inventory are restricted to Agents.
+            Product information is visible here; OPay stock ordering, receipt confirmation and consumer-sale inventory are restricted to Agents.
           </p>
         </section>
       )}
