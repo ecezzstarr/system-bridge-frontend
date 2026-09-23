@@ -14,8 +14,28 @@ export interface RiverContext {
   systemArea?: string
   userId?: string
   userName?: string
+  userRole?: string
   outreachPurpose?: string
 }
+
+const AGILITY_AGENT_CONTEXT = `
+Agility Agent Store facts:
+- Agility is WEAVE morning-food stock for Agent accounts.
+- One company box contains 10 complete Agility packages.
+- Current Agent box price is ₦28,000.
+- Current sell-out value is ₦30,000.
+- Retailer position: sell individual packages at ₦3,000 each.
+- Wholesaler position: sell the complete 10-package box at ₦30,000.
+- Base Agent gross profit is ₦2,000 per completed box before the Agent's own expenses.
+- WEAVE's standard preparation cost is ₦21,000 per box, giving WEAVE a planned ₦7,000 gross profit at the ₦28,000 Agent price.
+- Agent ordering requires the Agility variant, wholesaler/retailer position, box quantity, Agent Store delivery address, and delivery phone.
+- Payment uses the existing WEAVE OPay method. The Agent creates the order, sends the exact amount shown, and submits the OPay transaction reference or receipt.
+- Administration verifies the OPay proof before preparation begins.
+- Company fulfillment moves sequentially: paid → preparation/heating → packed → boxed → dispatched → delivered.
+- The Agent confirms physical receipt after delivery. Only then does the stock become sellable Agent Store inventory.
+- Sales recorded in Agility reduce available inventory and record realized Agent gross profit.
+- If the Agent asks what to do next, use the visible/current Agility state when supplied; otherwise explain the relevant next step without claiming that a payment, delivery, or sale happened.
+`
 
 const RIVER_SYSTEM_PROMPT = `You are River.
 
@@ -40,13 +60,17 @@ function buildSystemMessage(context?: RiverContext): string {
     context?.systemName ? `System: ${context.systemName}` : null,
     context?.systemArea ? `Current area: ${context.systemArea}` : null,
     context?.userName ? `Person: ${context.userName}` : null,
+    context?.userRole ? `Person role: ${context.userRole}` : null,
     context?.userId ? `Person identifier: ${context.userId}` : null,
     context?.outreachPurpose ? `Approved outreach purpose: ${context.outreachPurpose.slice(0, 1000)}` : null,
   ].filter(Boolean)
 
+  const area = String(context?.systemArea || '').toLowerCase()
+  const agilityContext = area.includes('agility') ? `\n\n${AGILITY_AGENT_CONTEXT}` : ''
+
   return contextLines.length > 0
-    ? `${RIVER_SYSTEM_PROMPT}\n\nCurrent system context:\n${contextLines.join('\n')}`
-    : RIVER_SYSTEM_PROMPT
+    ? `${RIVER_SYSTEM_PROMPT}${agilityContext}\n\nCurrent system context:\n${contextLines.join('\n')}`
+    : `${RIVER_SYSTEM_PROMPT}${agilityContext}`
 }
 
 function getAI(): GoogleGenerativeAI | null {
