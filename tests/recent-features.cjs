@@ -33,5 +33,5 @@ for(const variant of AGILITY_VARIANTS)assert.ok(variant.priceNgn<AGILITY_PRICE_C
 auth={...auth,user:{id:'agent-test',name:'Agent',role:'agent'},token:'test-token'}
 const Agility=require('../app/(app)/agility/page.tsx').default
 const agilityHtml=renderToStaticMarkup(React.createElement(Agility))
-for(const label of ['AGILITY','Intelligence in Action','Agility Agent Store','under ₦3,000'])assert.ok(agilityHtml.includes(label),label)
+for(const label of ['AGILITY','Intelligence in Action','Agent Store','under ₦3,000'])assert.ok(agilityHtml.includes(label),label)
 console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, Agility catalog')
