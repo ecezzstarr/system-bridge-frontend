@@ -154,7 +154,7 @@ export default function AgentTerminal() {
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">Agent Store · Morning Food</p>
                 <h2 className="mt-1 text-lg font-bold text-white">Agility — Intelligence in Action</h2>
-                <p className="mt-1 text-xs text-slate-500">Buy Agility stock through the existing Weave OPay method: 10 packages per box, ₦24,000 Agent box price, then sell each package to consumers at ₦3,000.</p>
+                <p className="mt-1 text-xs text-slate-500">Buy Agility stock through the existing Weave OPay method: 10 packages per box, ₦28,000 Agent box price, ₦30,000 sell-out value, ₦2,000 gross Agent profit per box.</p>
               </div>
             </div>
             <ArrowUpRight className="hidden h-5 w-5 text-orange-300 sm:block" />
