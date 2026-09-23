@@ -54,6 +54,8 @@ type AgilityOrder = {
   opay_receipt_data?: string | null
   payment_status: string
   fulfillment_status: string
+  delivery_address?: string | null
+  delivery_phone?: string | null
   agent_note?: string | null
   admin_note?: string | null
   paid_at?: string | null
@@ -90,6 +92,8 @@ export default function AgilityPage() {
   const [selected, setSelected] = useState<AgilityVariant>(AGILITY_VARIANTS[0])
   const [boxCount, setBoxCount] = useState(1)
   const [distributionMode, setDistributionMode] = useState<'wholesaler' | 'retailer'>('retailer')
+  const [deliveryAddress, setDeliveryAddress] = useState('')
+  const [deliveryPhone, setDeliveryPhone] = useState('')
   const [note, setNote] = useState('')
   const [proof, setProof] = useState<Record<string, string>>({})
   const [saleQty, setSaleQty] = useState<Record<string, number>>({})
@@ -133,7 +137,7 @@ export default function AgilityPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ variantId: selected.id, boxCount, distributionMode, note }),
+        body: JSON.stringify({ variantId: selected.id, boxCount, distributionMode, deliveryAddress, deliveryPhone, note }),
       })
       const data = await response.json()
       if (!response.ok || !data.success) {
@@ -468,6 +472,25 @@ export default function AgilityPage() {
                 onChange={(event) => setBoxCount(Math.max(1, Math.min(50, Number(event.target.value) || 1)))}
               />
 
+              <label className="mt-4 block text-xs font-semibold text-slate-300">Agent Store delivery address</label>
+              <textarea
+                className="mt-2 min-h-20 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-orange-300/40"
+                value={deliveryAddress}
+                maxLength={500}
+                placeholder="Street / area / landmark where the Agility box should be delivered"
+                onChange={(event) => setDeliveryAddress(event.target.value)}
+              />
+
+              <label className="mt-4 block text-xs font-semibold text-slate-300">Delivery phone</label>
+              <Input
+                className="mt-2"
+                type="tel"
+                value={deliveryPhone}
+                maxLength={40}
+                placeholder="Phone number for delivery contact"
+                onChange={(event) => setDeliveryPhone(event.target.value)}
+              />
+
               <label className="mt-4 block text-xs font-semibold text-slate-300">Agent delivery note</label>
               <textarea
                 className="mt-2 min-h-24 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-orange-300/40"
@@ -492,7 +515,11 @@ export default function AgilityPage() {
                 </div>
               </div>
 
-              <Button className="mt-4 w-full" disabled={loading} onClick={beginOrder}>
+              <Button
+                className="mt-4 w-full"
+                disabled={loading || deliveryAddress.trim().length < 5 || deliveryPhone.replace(/\D/g, '').length < 7}
+                onClick={beginOrder}
+              >
                 {loading ? 'Creating order…' : `Create ${boxCount}-box OPay order`}
               </Button>
               <p className="mt-3 text-[11px] leading-5 text-slate-500">
@@ -544,6 +571,11 @@ export default function AgilityPage() {
                             <p className="mt-1 text-[11px] text-emerald-300">
                               Sell-out gross spread: {naira(order.agent_expected_gross_profit_ngn)}
                             </p>
+                            {(order.delivery_address || order.delivery_phone) && (
+                              <p className="mt-2 text-[11px] leading-5 text-slate-500">
+                                Delivery: {order.delivery_address || '—'}{order.delivery_phone ? ` · ${order.delivery_phone}` : ''}
+                              </p>
+                            )}
                           </div>
                           <div className="text-right">
                             <span className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${
@@ -616,7 +648,7 @@ export default function AgilityPage() {
                                 <p className="mt-1 text-[11px] text-slate-500">{remaining} available · {sold} sold</p>
                               </div>
                               <div className="text-right">
-                                <p className="text-sm font-black text-white">{naira(remaining * AGILITY_RETAIL_UNIT_PRICE_NGN)}</p>
+                                <p className="text-sm font-black text-white">{naira(remaining * Number(order.retail_unit_price_ngn))}</p>
                                 <p className="text-[10px] text-slate-600">remaining retail value</p>
                               </div>
                             </div>
@@ -624,8 +656,8 @@ export default function AgilityPage() {
                               <div className="mt-3">
                                 <p className="mb-2 text-[11px] text-slate-500">
                                   {order.distribution_mode === 'wholesaler'
-                                    ? `Record complete boxes sold at ${naira(AGILITY_RETAIL_BOX_VALUE_NGN)} each.`
-                                    : `Record individual packages sold to consumers at ${naira(AGILITY_RETAIL_UNIT_PRICE_NGN)} each.`}
+                                    ? `Record complete boxes sold at ${naira(order.retail_box_value_ngn)} each.`
+                                    : `Record individual packages sold to consumers at ${naira(order.retail_unit_price_ngn)} each.`}
                                 </p>
                                 <div className="flex gap-2">
                                   <Input
