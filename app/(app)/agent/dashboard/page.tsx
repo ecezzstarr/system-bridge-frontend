@@ -142,6 +142,26 @@ export default function AgentTerminal() {
         </div>
       </div>
 
+      {/* Agility Agent Store */}
+      <Link href="/agility" className="mb-6 block group">
+        <div className="relative overflow-hidden rounded-xl border border-orange-400/20 bg-gradient-to-r from-orange-500/10 via-amber-400/5 to-transparent p-5 transition group-hover:border-orange-300/40">
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-orange-400/10 blur-2xl" />
+          <div className="relative flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-400/10 text-orange-300">
+                <ShoppingBag className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">Agent Store · Morning Food</p>
+                <h2 className="mt-1 text-lg font-bold text-white">Agility — Intelligence in Action</h2>
+                <p className="mt-1 text-xs text-slate-500">Request boxed morning-food stock from Weave to sell to consumers. Every package stays under ₦3,000.</p>
+              </div>
+            </div>
+            <ArrowUpRight className="hidden h-5 w-5 text-orange-300 sm:block" />
+          </div>
+        </div>
+      </Link>
+
       {/* Tabs — top row on desktop, fixed bottom bar on mobile */}
       <div className="hidden sm:flex gap-2 mb-6 border-b overflow-x-auto pb-px" style={{ borderColor: 'var(--field-border)' }}>
         {tabs.map((tab) => (
