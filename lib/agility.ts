@@ -38,6 +38,8 @@ export async function ensureAgilitySchema() {
       box_count integer NOT NULL,
       packages_per_box integer NOT NULL,
       package_count integer NOT NULL,
+      unit_price_ngn numeric(14,2),
+      box_price_ngn numeric(14,2),
       retail_unit_price_ngn numeric(14,2) NOT NULL,
       retail_box_value_ngn numeric(14,2) NOT NULL,
       agent_box_price_ngn numeric(14,2) NOT NULL,
@@ -70,6 +72,8 @@ export async function ensureAgilitySchema() {
     )
   `
 
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS unit_price_ngn numeric(14,2)`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS box_price_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS retail_unit_price_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS retail_box_value_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS agent_box_price_ngn numeric(14,2)`
@@ -95,6 +99,8 @@ export async function ensureAgilitySchema() {
       order_id uuid NOT NULL,
       agent_id uuid NOT NULL,
       quantity_packages integer NOT NULL,
+      unit_price_ngn numeric(14,2),
+      total_ngn numeric(14,2),
       retail_unit_price_ngn numeric(14,2) NOT NULL,
       agent_unit_cost_ngn numeric(14,2) NOT NULL,
       total_revenue_ngn numeric(14,2) NOT NULL,
@@ -103,6 +109,8 @@ export async function ensureAgilitySchema() {
       created_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE agility_agent_sales ADD COLUMN IF NOT EXISTS unit_price_ngn numeric(14,2)`
+  await sql`ALTER TABLE agility_agent_sales ADD COLUMN IF NOT EXISTS total_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_agent_sales ADD COLUMN IF NOT EXISTS retail_unit_price_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_agent_sales ADD COLUMN IF NOT EXISTS agent_unit_cost_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_agent_sales ADD COLUMN IF NOT EXISTS total_revenue_ngn numeric(14,2)`
