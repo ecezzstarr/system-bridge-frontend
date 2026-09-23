@@ -38,6 +38,7 @@ import {
 type AgilityOrder = {
   id: string
   variant_id: string
+  distribution_mode: 'wholesaler' | 'retailer'
   box_count: number
   packages_per_box: number
   package_count: number
@@ -88,6 +89,7 @@ export default function AgilityPage() {
   const [orders, setOrders] = useState<AgilityOrder[]>([])
   const [selected, setSelected] = useState<AgilityVariant>(AGILITY_VARIANTS[0])
   const [boxCount, setBoxCount] = useState(1)
+  const [distributionMode, setDistributionMode] = useState<'wholesaler' | 'retailer'>('retailer')
   const [note, setNote] = useState('')
   const [proof, setProof] = useState<Record<string, string>>({})
   const [saleQty, setSaleQty] = useState<Record<string, number>>({})
@@ -131,7 +133,7 @@ export default function AgilityPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ variantId: selected.id, boxCount, note }),
+        body: JSON.stringify({ variantId: selected.id, boxCount, distributionMode, note }),
       })
       const data = await response.json()
       if (!response.ok || !data.success) {
@@ -223,7 +225,9 @@ export default function AgilityPage() {
       if (!response.ok || !data.success) throw new Error(data.error || 'Unable to record sale')
       setSaleQty((current) => ({ ...current, [order.id]: 1 }))
       setMessage(
-        `Recorded ${quantity} consumer sale${quantity === 1 ? '' : 's'}: ${naira(data.economics.saleRevenueNgn)} revenue and ${naira(data.economics.agentGrossProfitNgn)} gross Agent spread.`
+        data.economics.saleMode === 'wholesale_box'
+          ? `Recorded ${quantity} wholesale box sale${quantity === 1 ? '' : 's'}: ${naira(data.economics.saleRevenueNgn)} revenue and ${naira(data.economics.agentGrossProfitNgn)} Agent gross profit.`
+          : `Recorded ${quantity} consumer package sale${quantity === 1 ? '' : 's'}: ${naira(data.economics.saleRevenueNgn)} revenue and ${naira(data.economics.agentGrossProfitNgn)} Agent gross profit.`
       )
       await loadOrders()
     } catch (error) {
@@ -432,6 +436,28 @@ export default function AgilityPage() {
                 </p>
               </div>
 
+              <label className="mt-5 block text-xs font-semibold text-slate-300">How this Agent will sell Agility</label>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={distributionMode === 'retailer' ? 'default' : 'outline'}
+                  onClick={() => setDistributionMode('retailer')}
+                >
+                  Retailer
+                </Button>
+                <Button
+                  type="button"
+                  variant={distributionMode === 'wholesaler' ? 'default' : 'outline'}
+                  onClick={() => setDistributionMode('wholesaler')}
+                >
+                  Wholesaler
+                </Button>
+              </div>
+              <p className="mt-2 text-[11px] leading-5 text-slate-500">
+                Retailer: sell the 10 packages directly to consumers at {naira(AGILITY_RETAIL_UNIT_PRICE_NGN)} each.
+                Wholesaler: move the complete box at {naira(AGILITY_RETAIL_BOX_VALUE_NGN)}.
+              </p>
+
               <label className="mt-5 block text-xs font-semibold text-slate-300">Number of company boxes</label>
               <Input
                 className="mt-2"
@@ -459,10 +485,10 @@ export default function AgilityPage() {
                   <span>Retail value</span><span>{naira(retailValue)}</span>
                 </div>
                 <div className="flex justify-between gap-3 text-slate-400">
-                  <span>Expected Agent gross spread</span><span className="text-emerald-300">{naira(expectedAgentGross)}</span>
+                  <span>Agent gross profit</span><span className="text-emerald-300">{naira(expectedAgentGross)}</span>
                 </div>
                 <div className="flex justify-between gap-3 border-t border-white/10 pt-2 font-black text-white">
-                  <span>Pay Weave through OPay</span><span className="text-orange-200">{naira(agentPayable)}</span>
+                  <span>Pay WEAVE through OPay</span><span className="text-orange-200">{naira(agentPayable)}</span>
                 </div>
               </div>
 
@@ -511,6 +537,9 @@ export default function AgilityPage() {
                             <p className="font-semibold text-white">{variant?.name || order.variant_id}</p>
                             <p className="mt-1 text-xs text-slate-500">
                               {order.box_count} box{Number(order.box_count) === 1 ? '' : 'es'} · {order.package_count} packages · Agent pays {naira(order.total_ngn)}
+                            </p>
+                            <p className="mt-1 text-[11px] uppercase tracking-[0.12em] text-cyan-300">
+                              {order.distribution_mode === 'wholesaler' ? 'Wholesaler · box sales' : 'Retailer · direct consumer sales'}
                             </p>
                             <p className="mt-1 text-[11px] text-emerald-300">
                               Sell-out gross spread: {naira(order.agent_expected_gross_profit_ngn)}
@@ -592,24 +621,36 @@ export default function AgilityPage() {
                               </div>
                             </div>
                             {remaining > 0 && (
-                              <div className="mt-3 flex gap-2">
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  max={remaining}
-                                  value={saleQty[order.id] || 1}
-                                  onChange={(event) => setSaleQty((current) => ({
-                                    ...current,
-                                    [order.id]: Math.max(1, Math.min(remaining, Number(event.target.value) || 1)),
-                                  }))}
-                                />
-                                <Button
-                                  className="shrink-0"
-                                  disabled={workingOrder === order.id}
-                                  onClick={() => recordSale(order)}
-                                >
-                                  Record consumer sale
-                                </Button>
+                              <div className="mt-3">
+                                <p className="mb-2 text-[11px] text-slate-500">
+                                  {order.distribution_mode === 'wholesaler'
+                                    ? `Record complete boxes sold at ${naira(AGILITY_RETAIL_BOX_VALUE_NGN)} each.`
+                                    : `Record individual packages sold to consumers at ${naira(AGILITY_RETAIL_UNIT_PRICE_NGN)} each.`}
+                                </p>
+                                <div className="flex gap-2">
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    max={order.distribution_mode === 'wholesaler' ? Math.floor(remaining / AGILITY_PACKAGES_PER_BOX) : remaining}
+                                    value={saleQty[order.id] || 1}
+                                    onChange={(event) => {
+                                      const max = order.distribution_mode === 'wholesaler'
+                                        ? Math.max(1, Math.floor(remaining / AGILITY_PACKAGES_PER_BOX))
+                                        : remaining
+                                      setSaleQty((current) => ({
+                                        ...current,
+                                        [order.id]: Math.max(1, Math.min(max, Number(event.target.value) || 1)),
+                                      }))
+                                    }}
+                                  />
+                                  <Button
+                                    className="shrink-0"
+                                    disabled={workingOrder === order.id || (order.distribution_mode === 'wholesaler' && remaining < AGILITY_PACKAGES_PER_BOX)}
+                                    onClick={() => recordSale(order)}
+                                  >
+                                    {order.distribution_mode === 'wholesaler' ? 'Record box sale' : 'Record consumer sale'}
+                                  </Button>
+                                </div>
                               </div>
                             )}
                           </div>
