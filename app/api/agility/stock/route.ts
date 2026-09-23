@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import { getApiUser } from '@/lib/api-auth'
+import { getAuthUser } from '@/lib/auth-api'
 import {
-  AGILITY_BOX_PRICE_NGN,
+  AGILITY_AGENT_BOX_PRICE_NGN,
+  AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
+  AGILITY_AGENT_UNIT_COST_NGN,
+  AGILITY_OPAY_ACCOUNT_NUMBER,
   AGILITY_PACKAGES_PER_BOX,
-  AGILITY_UNIT_PRICE_NGN,
+  AGILITY_RETAIL_BOX_VALUE_NGN,
+  AGILITY_RETAIL_UNIT_PRICE_NGN,
   ensureAgilitySchema,
   getAgilityTotals,
   getAgilityVariant,
 } from '@/lib/agility'
 
 export async function GET(request: NextRequest) {
-  const user = await getApiUser(request)
+  const user = await getAuthUser(request)
   if (!user || user.role !== 'agent') {
     return NextResponse.json({ success: false, error: 'Agent account required' }, { status: 403 })
   }
@@ -21,7 +25,9 @@ export async function GET(request: NextRequest) {
     const orders = await sql`
       SELECT
         o.*,
-        COALESCE((SELECT SUM(s.quantity_packages) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::int AS sold_packages
+        COALESCE((SELECT SUM(s.quantity_packages) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::int AS sold_packages,
+        COALESCE((SELECT SUM(s.total_revenue_ngn) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::numeric AS recorded_revenue_ngn,
+        COALESCE((SELECT SUM(s.agent_gross_profit_ngn) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::numeric AS realized_agent_gross_profit_ngn
       FROM agility_stock_orders o
       WHERE o.agent_id = ${user.id}::uuid
       ORDER BY o.created_at DESC
@@ -31,9 +37,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       companyStandard: {
-        unitPriceNgn: AGILITY_UNIT_PRICE_NGN,
+        retailUnitPriceNgn: AGILITY_RETAIL_UNIT_PRICE_NGN,
         packagesPerBox: AGILITY_PACKAGES_PER_BOX,
-        boxPriceNgn: AGILITY_BOX_PRICE_NGN,
+        retailBoxValueNgn: AGILITY_RETAIL_BOX_VALUE_NGN,
+        agentBoxPriceNgn: AGILITY_AGENT_BOX_PRICE_NGN,
+        agentUnitCostNgn: AGILITY_AGENT_UNIT_COST_NGN,
+        agentGrossProfitPerBoxNgn: AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
+        opayAccountNumber: AGILITY_OPAY_ACCOUNT_NUMBER,
       },
       orders,
     })
@@ -44,12 +54,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getApiUser(request)
+  const user = await getAuthUser(request)
   if (!user || user.role !== 'agent') {
     return NextResponse.json({ success: false, error: 'Agent account required' }, { status: 403 })
-  }
-  if (!process.env.FLW_SECRET_KEY) {
-    return NextResponse.json({ success: false, error: 'Company payment gateway is unavailable' }, { status: 503 })
   }
 
   try {
@@ -65,9 +72,6 @@ export async function POST(request: NextRequest) {
     if (!Number.isInteger(boxCount) || boxCount < 1 || boxCount > 50) {
       return NextResponse.json({ success: false, error: 'Choose between 1 and 50 Agility boxes' }, { status: 400 })
     }
-    if (!user.email) {
-      return NextResponse.json({ success: false, error: 'Agent email is required for payment' }, { status: 409 })
-    }
 
     await ensureAgilitySchema()
     const totals = getAgilityTotals(boxCount)
@@ -80,10 +84,15 @@ export async function POST(request: NextRequest) {
         box_count,
         packages_per_box,
         package_count,
-        unit_price_ngn,
-        box_price_ngn,
+        retail_unit_price_ngn,
+        retail_box_value_ngn,
+        agent_box_price_ngn,
+        agent_unit_cost_ngn,
         total_ngn,
+        agent_expected_gross_profit_ngn,
         payment_reference,
+        payment_method,
+        opay_account_number,
         payment_status,
         fulfillment_status,
         agent_note
@@ -94,10 +103,15 @@ export async function POST(request: NextRequest) {
         ${totals.boxCount},
         ${totals.packagesPerBox},
         ${totals.packageCount},
-        ${totals.unitPriceNgn},
-        ${totals.boxPriceNgn},
-        ${totals.totalNgn},
+        ${totals.retailUnitPriceNgn},
+        ${totals.retailBoxValueNgn},
+        ${totals.agentBoxPriceNgn},
+        ${totals.agentUnitCostNgn},
+        ${totals.agentPayableNgn},
+        ${totals.agentExpectedGrossProfitNgn},
         ${paymentReference},
+        'OPay',
+        ${AGILITY_OPAY_ACCOUNT_NUMBER},
         'pending',
         'awaiting_payment',
         ${agentNote || null}
@@ -105,68 +119,24 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `
 
-    const baseUrl = process.env.NEXTAUTH_URL || new URL(request.url).origin
-    const callbackUrl = `${baseUrl}/api/agility/payment/callback?order=${encodeURIComponent(order.id)}&ref=${encodeURIComponent(paymentReference)}`
-
-    const paymentResponse = await fetch('https://api.flutterwave.com/v3/payments', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        tx_ref: paymentReference,
-        amount: totals.totalNgn,
-        currency: 'NGN',
-        redirect_url: callbackUrl,
-        customer: {
-          email: user.email,
-          name: user.name || user.username || 'Weave Agent',
-        },
-        customizations: {
-          title: 'WEAVE Agility',
-          description: `${boxCount} Agility box${boxCount === 1 ? '' : 'es'} · ${totals.packageCount} morning packages`,
-          logo: 'https://ssbnow.shop/logo.png',
-        },
-        meta: {
-          type: 'agility_stock',
-          order_id: order.id,
-          agent_id: user.id,
-          box_count: boxCount,
-          packages_per_box: AGILITY_PACKAGES_PER_BOX,
-        },
-      }),
-    })
-
-    const payment = await paymentResponse.json()
-    if (!paymentResponse.ok || payment.status !== 'success' || !payment.data?.link) {
-      await sql`
-        UPDATE agility_stock_orders
-        SET payment_status='initialization_failed', updated_at=NOW()
-        WHERE id=${order.id}::uuid
-      `
-      return NextResponse.json({ success: false, error: payment.message || 'Unable to open Agility payment' }, { status: 502 })
-    }
-
-    const [readyOrder] = await sql`
-      UPDATE agility_stock_orders
-      SET payment_link=${payment.data.link}, updated_at=NOW()
-      WHERE id=${order.id}::uuid
-      RETURNING *
-    `
-
     return NextResponse.json({
       success: true,
-      order: readyOrder || order,
-      paymentLink: payment.data.link,
-      companyStandard: {
-        unitPriceNgn: AGILITY_UNIT_PRICE_NGN,
-        packagesPerBox: AGILITY_PACKAGES_PER_BOX,
-        boxPriceNgn: AGILITY_BOX_PRICE_NGN,
+      order,
+      payment: {
+        method: 'OPay',
+        accountNumber: AGILITY_OPAY_ACCOUNT_NUMBER,
+        amountNgn: totals.agentPayableNgn,
+        reference: paymentReference,
+        instruction: `Send exactly ₦${totals.agentPayableNgn.toLocaleString()} to OPay ${AGILITY_OPAY_ACCOUNT_NUMBER}, then submit the OPay transaction reference or receipt for Administration verification.`,
+      },
+      economics: {
+        retailValueNgn: totals.retailValueNgn,
+        agentPayableNgn: totals.agentPayableNgn,
+        agentExpectedGrossProfitNgn: totals.agentExpectedGrossProfitNgn,
       },
     }, { status: 201 })
   } catch (error) {
     console.error('[agility/stock] POST failed', error)
-    return NextResponse.json({ success: false, error: 'Unable to begin Agility order' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to create Agility order' }, { status: 500 })
   }
 }
