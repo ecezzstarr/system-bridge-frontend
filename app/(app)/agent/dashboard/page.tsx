@@ -323,7 +323,7 @@ function WalletSection({ user }: { user: any }) {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">Deposit</h3>
-                  <p className="text-sm text-slate-400">Add funds via Flutterwave</p>
+                  <p className="text-sm text-slate-400">Add funds via OPay</p>
                 </div>
               </div>
             </div>
