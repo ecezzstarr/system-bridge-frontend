@@ -35,19 +35,19 @@ const {
   AGILITY_AGENT_UNIT_COST_NGN,
   AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
   AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
-  AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,
+  AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
   AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
   AGILITY_OPAY_ACCOUNT_NUMBER,
 }=require('../lib/agility-catalog.ts')
 assert.equal(AGILITY_RETAIL_UNIT_PRICE_NGN,3000)
 assert.equal(AGILITY_PACKAGES_PER_BOX,10)
 assert.equal(AGILITY_RETAIL_BOX_VALUE_NGN,30000)
-assert.equal(AGILITY_AGENT_BOX_PRICE_NGN,24000)
-assert.equal(AGILITY_AGENT_UNIT_COST_NGN,2400)
-assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,600)
-assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,6000)
-assert.equal(AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,21000)
-assert.equal(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,3000)
+assert.equal(AGILITY_AGENT_BOX_PRICE_NGN,28000)
+assert.equal(AGILITY_AGENT_UNIT_COST_NGN,2800)
+assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,200)
+assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,2000)
+assert.equal(AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,21000)
+assert.equal(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,7000)
 assert.equal(AGILITY_OPAY_ACCOUNT_NUMBER,'8136003459')
 assert.ok(AGILITY_VARIANTS.length>=4,'Agility variants')
 const {getAgilityTotals,getAgilityCompanyEconomics,isValidAgilityCompanyCost,nextAgilityAdminStage}=require('../lib/agility.ts')
@@ -57,20 +57,21 @@ assert.deepEqual(getAgilityTotals(2),{
  packagesPerBox:10,
  retailUnitPriceNgn:3000,
  retailBoxValueNgn:30000,
- agentBoxPriceNgn:24000,
- agentUnitCostNgn:2400,
- agentPayableNgn:48000,
+ agentBoxPriceNgn:28000,
+ agentUnitCostNgn:2800,
+ agentPayableNgn:56000,
  retailValueNgn:60000,
- agentExpectedGrossProfitNgn:12000,
+ agentExpectedGrossProfitNgn:4000,
 })
 assert.deepEqual(getAgilityCompanyEconomics(2,21000),{
- wholesaleRevenueNgn:48000,
+ wholesaleRevenueNgn:56000,
  totalPlannedCostNgn:42000,
- grossProfitNgn:6000,
- grossProfitPerBoxNgn:3000,
+ grossProfitNgn:14000,
+ grossProfitPerBoxNgn:7000,
 })
-assert.equal(getAgilityCompanyEconomics(1,25000).grossProfitNgn,-1000)
+assert.equal(getAgilityCompanyEconomics(1,29000).grossProfitNgn,-1000)
 assert.equal(isValidAgilityCompanyCost(21000),true)
+assert.equal(isValidAgilityCompanyCost(20000),false)
 assert.equal(isValidAgilityCompanyCost(21001),false)
 assert.equal(nextAgilityAdminStage('paid'),'heating')
 assert.equal(nextAgilityAdminStage('heating'),'packed')
@@ -81,7 +82,7 @@ assert.equal(nextAgilityAdminStage('delivered'),null)
 auth={...auth,user:{id:'agent-test',name:'Agent',role:'agent'},token:'test-token'}
 const Agility=require('../app/(app)/agility/page.tsx').default
 const agilityHtml=renderToStaticMarkup(React.createElement(Agility))
-for(const label of ['AGILITY','Intelligence in Action','Agent Store','₦3,000','10 packages','₦24,000','₦6,000','OPay'])assert.ok(agilityHtml.includes(label),label)
+for(const label of ['AGILITY','Intelligence in Action','Agent Store','₦3,000','10 packages','₦28,000','₦2,000','₦7,000','Wholesaler','Retailer','OPay'])assert.ok(agilityHtml.includes(label),label)
 for(const route of [
  '/api/agility/payment/opay/receipt/route.ts',
  '/api/admin/agility/payment/opay/verify/route.ts',
@@ -95,4 +96,11 @@ const opayApiSource=fs.readFileSync(path.join(root,'app/api/deposit/opay/route.t
 assert.match(opayApiSource,/deposit:\s*result\[0\]/)
 assert.match(opayApiSource,/admin', 'agent', 'bridger/)
 assert.match(opayApiSource,/WEAVE_OPAY_ACCOUNT_NUMBER/)
-console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, shared OPay rail, Agility economics and fulfillment')
+const agilityStockSource=fs.readFileSync(path.join(root,'app/api/agility/stock/route.ts'),'utf8')
+const agilitySalesSource=fs.readFileSync(path.join(root,'app/api/agility/sales/route.ts'),'utf8')
+assert.match(agilityStockSource,/distributionMode/)
+assert.match(agilityStockSource,/wholesaler/)
+assert.match(agilityStockSource,/retailer/)
+assert.match(agilitySalesSource,/wholesale_box/)
+assert.match(agilitySalesSource,/retail_package/)
+console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, shared OPay rail, Agility 21k-28k-30k economics and fulfillment')
