@@ -67,6 +67,8 @@ export async function ensureAgilitySchema() {
       proof_submitted_at timestamptz,
       payment_verified_at timestamptz,
       fulfillment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment',
+      delivery_address text,
+      delivery_phone varchar(40),
       agent_note text,
       admin_note text,
       paid_at timestamptz,
@@ -102,6 +104,8 @@ export async function ensureAgilitySchema() {
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS payment_verified_by uuid`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS proof_submitted_at timestamptz`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS delivery_address text`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS delivery_phone varchar(40)`
 
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_orders_agent ON agility_stock_orders(agent_id, created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_orders_payment ON agility_stock_orders(payment_status, created_at DESC)`
