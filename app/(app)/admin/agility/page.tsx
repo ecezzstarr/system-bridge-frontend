@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input'
 import {
   AGILITY_AGENT_BOX_PRICE_NGN,
   AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
-  AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,
+  AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
   AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
   AGILITY_OPAY_ACCOUNT_NUMBER,
   AGILITY_PACKAGES_PER_BOX,
@@ -92,7 +92,6 @@ export default function AdminAgilityPage() {
   const { user, token } = useAuth()
   const router = useRouter()
   const [orders, setOrders] = useState<OrderRow[]>([])
-  const [plannedCost, setPlannedCost] = useState<Record<string, number>>({})
   const [actualCost, setActualCost] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState<string | null>(null)
@@ -109,15 +108,6 @@ export default function AdminAgilityPage() {
       const data = await response.json()
       if (!response.ok || !data.success) throw new Error(data.error || 'Unable to load Agility company orders')
       setOrders(data.orders || [])
-      setPlannedCost((current) => {
-        const next = { ...current }
-        for (const order of data.orders || []) {
-          if (next[order.id] == null && order.planned_company_cost_per_box_ngn) {
-            next[order.id] = Number(order.planned_company_cost_per_box_ngn)
-          }
-        }
-        return next
-      })
       setActualCost((current) => {
         const next = { ...current }
         for (const order of data.orders || []) {
@@ -188,17 +178,8 @@ export default function AdminAgilityPage() {
     const movement = nextStage[order.fulfillment_status]
     if (!movement) return
 
-    const costPerBox = Number(plannedCost[order.id] || 0)
+    const costPerBox = AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
     const actualCostPerBox = Number(actualCost[order.id] || 0)
-    if (
-      movement.status === 'heating' &&
-      (!costPerBox || costPerBox > AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN)
-    ) {
-      setMessage(
-        `Before preparation, enter a planned all-in cost per box from ₦1 to ${naira(AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN)}.`
-      )
-      return
-    }
     if (movement.status === 'delivered' && (!actualCostPerBox || actualCostPerBox <= 0)) {
       setMessage('Before closing delivery, enter the actual all-in company cost per box for profit reconciliation.')
       return
@@ -217,7 +198,6 @@ export default function AdminAgilityPage() {
           orderId: order.id,
           status: movement.status,
           adminNote: order.admin_note || '',
-          plannedCostPerBox: costPerBox,
           actualCostPerBox,
         }),
       })
@@ -294,10 +274,11 @@ export default function AdminAgilityPage() {
           <p className="text-slate-300"><strong className="text-white">Retail value:</strong> {naira(AGILITY_RETAIL_BOX_VALUE_NGN)}</p>
           <p className="text-slate-300"><strong className="text-white">Agent pays:</strong> {naira(AGILITY_AGENT_BOX_PRICE_NGN)}</p>
           <p className="text-slate-300"><strong className="text-white">Agent gross:</strong> {naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)}</p>
-          <p className="text-slate-300"><strong className="text-white">Company target gross:</strong> ≥ {naira(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)}</p>
+          <p className="text-slate-300"><strong className="text-white">Company gross:</strong> {naira(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)}</p>
         </div>
         <p className="mt-3 text-xs text-slate-500">
-          Production may begin only when planned all-in cost is ≤ {naira(AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN)} per box.
+          Standard preparation cost is {naira(AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN)} per box.
+          At the {naira(AGILITY_AGENT_BOX_PRICE_NGN)} Agent box price, WEAVE makes {naira(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)} gross profit per box.
           OPay receiving account: {AGILITY_OPAY_ACCOUNT_NUMBER}.
         </p>
       </section>
@@ -321,10 +302,10 @@ export default function AdminAgilityPage() {
             const variant = AGILITY_VARIANTS.find((item) => item.id === order.variant_id)
             const movement = nextStage[order.fulfillment_status]
             const paid = order.payment_status === 'paid'
-            const cost = Number(plannedCost[order.id] || order.planned_company_cost_per_box_ngn || 0)
+            const cost = AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
             const actual = Number(actualCost[order.id] || order.actual_company_cost_per_box_ngn || 0)
             const previewCompanyGross =
-              cost > 0 ? (AGILITY_AGENT_BOX_PRICE_NGN - cost) * Number(order.box_count) : 0
+              AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN * Number(order.box_count)
             const previewActualCompanyGross =
               actual > 0 ? (AGILITY_AGENT_BOX_PRICE_NGN - actual) * Number(order.box_count) : 0
 
@@ -476,29 +457,16 @@ export default function AdminAgilityPage() {
                         {order.fulfillment_status === 'paid' && (
                           <>
                             <p className="mt-2 text-xs leading-5 text-slate-500">
-                              Enter planned all-in cost per box: food + preparation + packaging + delivery.
-                              It must remain at or below {naira(AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN)}.
+                              Agility preparation is fixed at {naira(AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN)} per box.
+                              The Agent pays {naira(AGILITY_AGENT_BOX_PRICE_NGN)}, so company gross profit is
+                              {naira(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)} per box.
                             </p>
-                            <Input
-                              className="mt-3"
-                              type="number"
-                              min={1}
-                              max={AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN}
-                              value={plannedCost[order.id] || ''}
-                              placeholder={AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN.toString()}
-                              onChange={(event) => setPlannedCost((current) => ({
-                                ...current,
-                                [order.id]: Math.max(0, Number(event.target.value) || 0),
-                              }))}
-                            />
-                            {cost > 0 && (
-                              <div className="mt-3 rounded-xl bg-white/[0.04] p-3 text-xs">
-                                <p className="text-slate-500">Projected company gross for this order</p>
-                                <p className={`mt-1 text-lg font-black ${previewCompanyGross > 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
-                                  {naira(previewCompanyGross)}
-                                </p>
-                              </div>
-                            )}
+                            <div className="mt-3 rounded-xl bg-white/[0.04] p-3 text-xs">
+                              <p className="text-slate-500">Company gross for this order</p>
+                              <p className="mt-1 text-lg font-black text-emerald-300">
+                                {naira(previewCompanyGross)}
+                              </p>
+                            </div>
                           </>
                         )}
 
