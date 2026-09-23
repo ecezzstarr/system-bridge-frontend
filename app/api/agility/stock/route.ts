@@ -148,9 +148,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: payment.message || 'Unable to open Agility payment' }, { status: 502 })
     }
 
+    const [readyOrder] = await sql`
+      UPDATE agility_stock_orders
+      SET payment_link=${payment.data.link}, updated_at=NOW()
+      WHERE id=${order.id}::uuid
+      RETURNING *
+    `
+
     return NextResponse.json({
       success: true,
-      order,
+      order: readyOrder || order,
       paymentLink: payment.data.link,
       companyStandard: {
         unitPriceNgn: AGILITY_UNIT_PRICE_NGN,
