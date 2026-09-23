@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import FileFolderPurchase from '@/components/system-switch/file-folder-purchase'
 import { normalizeWeaveTopic } from '@/lib/weave-architecture'
@@ -19,7 +19,7 @@ type Crossing = {
   provider_name?: string | null
 }
 
-export default function SystemSwitchPage() {
+function SystemSwitchContent() {
   const params = useSearchParams()
   const bridge = params.get('bridge')
   const [crossing, setCrossing] = useState<Crossing | null>(null)
@@ -39,7 +39,26 @@ export default function SystemSwitchPage() {
         flameName={crossing?.flame_name || null}
         topic={normalizeWeaveTopic(crossing?.topic)}
       />
-      <FileFolderPurchase bridgeCode={bridge || undefined} providerKey={crossing?.provider_key || undefined} providerName={crossing?.provider_name || undefined} flameName={crossing?.flame_name || undefined} />
+      <FileFolderPurchase
+        bridgeCode={bridge || undefined}
+        providerKey={crossing?.provider_key || undefined}
+        providerName={crossing?.provider_name || undefined}
+        flameName={crossing?.flame_name || undefined}
+      />
     </main>
+  )
+}
+
+export default function SystemSwitchPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-black p-3 text-white md:p-6">
+          <div className="min-h-[720px] rounded-[2rem] border border-white/10 bg-[#02040a]" />
+        </main>
+      }
+    >
+      <SystemSwitchContent />
+    </Suspense>
   )
 }
