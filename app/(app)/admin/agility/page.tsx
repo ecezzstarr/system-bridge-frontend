@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { Box, CheckCircle2, Clock3, PackageCheck, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AGILITY_VARIANTS } from '@/lib/agility'
+import { AGILITY_VARIANTS } from '@/lib/agility-catalog'
 
 type RequestRow = {
   id: string
