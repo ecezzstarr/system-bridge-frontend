@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
 import {
-  AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,
+  AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
   AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
   AGILITY_VARIANTS,
   ensureAgilitySchema,
   getAgilityCompanyEconomics,
-  isValidAgilityCompanyCost,
   nextAgilityAdminStage,
 } from '@/lib/agility'
 
@@ -57,7 +56,7 @@ export async function GET(request: NextRequest) {
       success: true,
       variants: AGILITY_VARIANTS,
       economics: {
-        companyCostCeilingPerBoxNgn: AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,
+        companyStandardPreparationCostPerBoxNgn: AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
         companyTargetGrossProfitPerBoxNgn: AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
       },
       orders,
@@ -79,7 +78,7 @@ export async function PATCH(request: NextRequest) {
     const orderId = String(body.orderId || '').trim()
     const nextStatus = String(body.status || '').trim()
     const adminNote = String(body.adminNote || '').trim().slice(0, 500)
-    const plannedCostPerBox = Number(body.plannedCostPerBox)
+    const plannedCostPerBox = AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
     const actualCostPerBox = Number(body.actualCostPerBox)
 
     if (!orderId) {
@@ -118,17 +117,11 @@ export async function PATCH(request: NextRequest) {
     let actualEconomics: ReturnType<typeof getAgilityCompanyEconomics> | null = null
 
     if (nextStatus === 'heating') {
-      if (!isValidAgilityCompanyCost(plannedCostPerBox)) {
-        return NextResponse.json({
-          success: false,
-          error: `Before preparation begins, planned all-in cost must be above ₦0 and no more than ₦${AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN.toLocaleString()} per box.`,
-        }, { status: 409 })
-      }
       economics = getAgilityCompanyEconomics(Number(current.box_count), plannedCostPerBox)
-      if (economics.grossProfitNgn <= 0) {
+      if (economics.grossProfitPerBoxNgn !== AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN) {
         return NextResponse.json({
           success: false,
-          error: 'This production plan does not leave company gross profit. Rework sourcing before preparation.',
+          error: 'Agility company economics are out of alignment: ₦21,000 preparation cost must produce ₦7,000 company gross profit per box.',
         }, { status: 409 })
       }
     } else if (!current.planned_company_cost_per_box_ngn) {
