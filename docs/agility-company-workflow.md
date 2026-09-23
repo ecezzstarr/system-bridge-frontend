@@ -43,7 +43,7 @@ The Agility order has its own OPay proof and Administration verification because
 9. **Packed** — each complete Agility meal is sealed. Milk, water and fruit remain separate from hot-food handling.
 10. **Boxed** — 10 sealed Agility packages are placed into one company delivery box.
 11. **Dispatched** — the company sends the paid box to the Agent Store.
-12. **Delivered** — Administration records delivery.
+12. **Delivered + actual-cost reconciliation** — before closing delivery, Administration records the actual all-in company cost per box. The system calculates actual company gross contribution and flags a loss if actual cost exceeded wholesale revenue.
 13. **Received** — the Agent confirms physical receipt. Only then does the stock become sellable inventory.
 14. **Consumer sale** — Agent sells each package at ₦3,000. The system reduces inventory and records both retail revenue and Agent gross spread.
 
@@ -57,6 +57,7 @@ The Agility order has its own OPay proof and Administration verification because
 - Administration cannot start fulfillment before OPay payment approval.
 - Administration cannot skip fulfillment stages.
 - Preparation cannot begin unless planned all-in company cost is within the ₦21,000-per-box ceiling.
+- Delivery cannot close without recording actual all-in cost, so planned and actual company gross performance remain visible.
 - The Agent cannot record consumer sales until Administration marks delivery and the Agent confirms receipt.
 - Sales cannot exceed received inventory.
 - Every order keeps its own payment reference, OPay proof, verifying administrator, timestamps, box count, package count and economics.
