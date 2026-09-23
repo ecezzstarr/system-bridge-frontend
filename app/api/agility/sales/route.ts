@@ -71,17 +71,21 @@ export async function POST(request: NextRequest) {
         order_id,
         agent_id,
         quantity_packages,
+        unit_price_ngn,
+        total_ngn,
         retail_unit_price_ngn,
         agent_unit_cost_ngn,
         total_revenue_ngn,
         agent_gross_profit_ngn
        )
-       VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7)
+       VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9)
        RETURNING *`,
       [
         orderId,
         user.id,
         quantity,
+        AGILITY_RETAIL_UNIT_PRICE_NGN,
+        totalRevenueNgn,
         AGILITY_RETAIL_UNIT_PRICE_NGN,
         AGILITY_AGENT_UNIT_COST_NGN,
         totalRevenueNgn,
