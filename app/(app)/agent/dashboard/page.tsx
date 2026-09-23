@@ -11,6 +11,10 @@ import Arena from '@/components/places/arena'
 import Casino from '@/components/places/casino'
 import Lounge from '@/components/places/lounge'
 import Link from 'next/link'
+import {
+  AgilityAgentLoginAd,
+  AGILITY_AGENT_LOGIN_AD_KEY,
+} from '@/components/agility-agent-login-ad'
 
 type TabId = 'lounge' | 'connect' | 'arena' | 'casino' | 'market' | 'wallet'
 
@@ -18,6 +22,7 @@ export default function AgentTerminal() {
   const { user, logout } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>('lounge')
+  const [showAgilityAd, setShowAgilityAd] = useState(false)
   const [salary, setYield] = useState<{ tier: number; salary: number; activeCount: number } | null>(null)
   const [bridgerCount, setBridgerCount] = useState(0)
   const [commissions, setCommissions] = useState<{ commissionRate: number; totalEarnings: number; recentCommissions: any[] } | null>(null)
@@ -41,6 +46,12 @@ export default function AgentTerminal() {
   useEffect(() => {
     if (!user || user.role !== 'agent') {
       router.push('/dashboard')
+      return
+    }
+
+    if (sessionStorage.getItem(AGILITY_AGENT_LOGIN_AD_KEY) === '1') {
+      sessionStorage.removeItem(AGILITY_AGENT_LOGIN_AD_KEY)
+      setShowAgilityAd(true)
     }
   }, [user, router])
 
@@ -91,7 +102,16 @@ export default function AgentTerminal() {
   ]
 
   return (
-    <div className="max-w-7xl mx-auto pb-20 sm:pb-0">
+    <>
+      <AgilityAgentLoginAd
+        open={showAgilityAd}
+        onOpenChange={setShowAgilityAd}
+        onBuy={() => {
+          setShowAgilityAd(false)
+          router.push('/agility')
+        }}
+      />
+      <div className="max-w-7xl mx-auto pb-20 sm:pb-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
@@ -213,7 +233,8 @@ export default function AgentTerminal() {
       </div>
 
       <WeaveAssistant role="agent" checklist={checklist} />
-    </div>
+      </div>
+    </>
   )
 }
 
