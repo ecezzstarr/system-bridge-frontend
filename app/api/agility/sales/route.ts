@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPool } from '@/lib/db'
-import { getApiUser } from '@/lib/api-auth'
-import { AGILITY_UNIT_PRICE_NGN, ensureAgilitySchema } from '@/lib/agility'
+import { getAuthUser } from '@/lib/auth-api'
+import {
+  AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
+  AGILITY_AGENT_UNIT_COST_NGN,
+  AGILITY_RETAIL_UNIT_PRICE_NGN,
+  ensureAgilitySchema,
+} from '@/lib/agility'
 import type { PoolClient } from 'pg'
 
 export async function POST(request: NextRequest) {
-  const user = await getApiUser(request)
+  const user = await getAuthUser(request)
   if (!user || user.role !== 'agent') {
     return NextResponse.json({ success: false, error: 'Agent account required' }, { status: 403 })
   }
@@ -37,7 +42,7 @@ export async function POST(request: NextRequest) {
       await db.query('ROLLBACK')
       return NextResponse.json({
         success: false,
-        error: 'Agility can be sold only after the paid stock is delivered and received by the Agent',
+        error: 'Agility can be sold only after paid stock is delivered and received by the Agent',
       }, { status: 409 })
     }
 
@@ -58,14 +63,30 @@ export async function POST(request: NextRequest) {
       }, { status: 409 })
     }
 
-    const totalNgn = quantity * AGILITY_UNIT_PRICE_NGN
+    const totalRevenueNgn = quantity * AGILITY_RETAIL_UNIT_PRICE_NGN
+    const agentGrossProfitNgn = quantity * AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN
+
     const saleResult = await db.query(
       `INSERT INTO agility_agent_sales (
-        order_id,agent_id,quantity_packages,unit_price_ngn,total_ngn
+        order_id,
+        agent_id,
+        quantity_packages,
+        retail_unit_price_ngn,
+        agent_unit_cost_ngn,
+        total_revenue_ngn,
+        agent_gross_profit_ngn
        )
-       VALUES ($1::uuid,$2::uuid,$3,$4,$5)
+       VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7)
        RETURNING *`,
-      [orderId, user.id, quantity, AGILITY_UNIT_PRICE_NGN, totalNgn]
+      [
+        orderId,
+        user.id,
+        quantity,
+        AGILITY_RETAIL_UNIT_PRICE_NGN,
+        AGILITY_AGENT_UNIT_COST_NGN,
+        totalRevenueNgn,
+        agentGrossProfitNgn,
+      ]
     )
 
     await db.query('COMMIT')
@@ -73,6 +94,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       sale: saleResult.rows[0],
+      economics: {
+        retailUnitPriceNgn: AGILITY_RETAIL_UNIT_PRICE_NGN,
+        agentUnitCostNgn: AGILITY_AGENT_UNIT_COST_NGN,
+        agentGrossProfitPerPackageNgn: AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
+        saleRevenueNgn: totalRevenueNgn,
+        agentGrossProfitNgn,
+      },
       inventory: {
         packageCount: Number(order.package_count),
         soldPackages: sold + quantity,
