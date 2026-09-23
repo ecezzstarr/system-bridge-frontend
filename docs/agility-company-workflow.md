@@ -53,6 +53,7 @@ The Agility order has its own OPay proof and Administration verification because
 - Agility uses the same OPay manual-payment pattern already present for Agents / Bridgers.
 - An Agility order is **not** a wallet deposit; OPay approval does not credit TRX.
 - Agent payment proof can be rejected and resubmitted.
+- The same normalized OPay proof cannot be attached to more than one Agility order.
 - Administration cannot start fulfillment before OPay payment approval.
 - Administration cannot skip fulfillment stages.
 - Preparation cannot begin unless planned all-in company cost is within the ₦21,000-per-box ceiling.
