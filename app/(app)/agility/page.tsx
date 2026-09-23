@@ -24,7 +24,7 @@ import {
   AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
   AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,
   AGILITY_AGENT_UNIT_COST_NGN,
-  AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN,
+  AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
   AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
   AGILITY_OPAY_ACCOUNT_NUMBER,
   AGILITY_PACKAGES_PER_BOX,
@@ -325,14 +325,31 @@ export default function AgilityPage() {
             <p className="mt-1 text-[11px] text-slate-600">{naira(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN)} per package</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-            <p className="text-xs text-slate-500">Company cost discipline</p>
-            <p className="mt-2 text-2xl font-black text-orange-200">≤ {naira(AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN)}</p>
-            <p className="mt-1 text-[11px] text-slate-600">Target gross contribution ≥ {naira(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)} / box</p>
+            <p className="text-xs text-slate-500">Company preparation cost</p>
+            <p className="mt-2 text-2xl font-black text-orange-200">{naira(AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN)}</p>
+            <p className="mt-1 text-[11px] text-slate-600">Company gross profit {naira(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)} / box</p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <p className="text-xs font-bold text-white">Wholesaler Agent</p>
+            <p className="mt-1 text-[11px] leading-5 text-slate-500">
+              Buys one Agility box from WEAVE for {naira(AGILITY_AGENT_BOX_PRICE_NGN)} and moves the complete
+              10-package box for {naira(AGILITY_RETAIL_BOX_VALUE_NGN)}. Gross Agent profit: {naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)} per box.
+            </p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <p className="text-xs font-bold text-white">Retailer Agent</p>
+            <p className="mt-1 text-[11px] leading-5 text-slate-500">
+              Buys the same box for {naira(AGILITY_AGENT_BOX_PRICE_NGN)}, opens it into 10 consumer packages,
+              and sells each at {naira(AGILITY_RETAIL_UNIT_PRICE_NGN)}. Base gross profit remains {naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)} per full box,
+              while direct consumer patronage can create repeat demand around the Agent Store.
+            </p>
           </div>
         </div>
         <p className="mt-4 text-[11px] leading-5 text-slate-500">
-          These are gross operating economics. Company net profit still depends on keeping actual food, preparation,
-          packaging, delivery, spoilage and other overhead within the planned cost.
+          These figures are gross operating economics. Company net profit can still be affected by overhead,
+          spoilage, refunds and other operating expenses.
         </p>
       </section>
 
