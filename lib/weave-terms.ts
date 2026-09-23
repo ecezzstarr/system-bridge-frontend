@@ -1,7 +1,7 @@
 import { WORLD_RULES } from './world/constants'
 import { WEAVE_ARCHITECTURE } from './weave-architecture'
 
-export const CURRENT_TERMS_VERSION = 6
+export const CURRENT_TERMS_VERSION = 7
 
 const TRX_RATE = WORLD_RULES.TRX_NGN_RATE
 const FILE_FOLDER_TRX = WORLD_RULES.FILE_FOLDER_PRICE_TRX
