@@ -80,6 +80,7 @@ export async function PATCH(request: NextRequest) {
     const nextStatus = String(body.status || '').trim()
     const adminNote = String(body.adminNote || '').trim().slice(0, 500)
     const plannedCostPerBox = Number(body.plannedCostPerBox)
+    const actualCostPerBox = Number(body.actualCostPerBox)
 
     if (!orderId) {
       return NextResponse.json({ success: false, error: 'Order is required' }, { status: 400 })
@@ -114,6 +115,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     let economics: ReturnType<typeof getAgilityCompanyEconomics> | null = null
+    let actualEconomics: ReturnType<typeof getAgilityCompanyEconomics> | null = null
 
     if (nextStatus === 'heating') {
       if (!isValidAgilityCompanyCost(plannedCostPerBox)) {
@@ -136,6 +138,16 @@ export async function PATCH(request: NextRequest) {
       }, { status: 409 })
     }
 
+    if (nextStatus === 'delivered') {
+      if (!Number.isFinite(actualCostPerBox) || actualCostPerBox <= 0) {
+        return NextResponse.json({
+          success: false,
+          error: 'Record the actual all-in company cost per box before closing delivery',
+        }, { status: 409 })
+      }
+      actualEconomics = getAgilityCompanyEconomics(Number(current.box_count), actualCostPerBox)
+    }
+
     const [updated] = await sql`
       UPDATE agility_stock_orders
       SET
@@ -152,6 +164,18 @@ export async function PATCH(request: NextRequest) {
         planned_company_gross_profit_ngn=CASE
           WHEN ${nextStatus}='heating' THEN ${economics?.grossProfitNgn ?? null}
           ELSE planned_company_gross_profit_ngn
+        END,
+        actual_company_cost_per_box_ngn=CASE
+          WHEN ${nextStatus}='delivered' THEN ${actualEconomics ? actualCostPerBox : null}
+          ELSE actual_company_cost_per_box_ngn
+        END,
+        actual_company_total_cost_ngn=CASE
+          WHEN ${nextStatus}='delivered' THEN ${actualEconomics?.totalPlannedCostNgn ?? null}
+          ELSE actual_company_total_cost_ngn
+        END,
+        actual_company_gross_profit_ngn=CASE
+          WHEN ${nextStatus}='delivered' THEN ${actualEconomics?.grossProfitNgn ?? null}
+          ELSE actual_company_gross_profit_ngn
         END,
         heated_at=CASE WHEN ${nextStatus}='heating' THEN COALESCE(heated_at,NOW()) ELSE heated_at END,
         packed_at=CASE WHEN ${nextStatus}='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
@@ -189,6 +213,10 @@ export async function PATCH(request: NextRequest) {
       success: true,
       order: updated,
       companyEconomics: economics,
+      actualCompanyEconomics: actualEconomics,
+      economicsWarning: actualEconomics && actualEconomics.grossProfitNgn < 0
+        ? 'Actual company cost exceeded wholesale revenue for this order.'
+        : null,
     })
   } catch (error) {
     console.error('[admin/agility/stock] PATCH failed', error)
