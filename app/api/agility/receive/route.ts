@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import { getApiUser } from '@/lib/api-auth'
+import { getAuthUser } from '@/lib/auth-api'
 import { ensureAgilitySchema } from '@/lib/agility'
 
 export async function POST(request: NextRequest) {
-  const user = await getApiUser(request)
+  const user = await getAuthUser(request)
   if (!user || user.role !== 'agent') {
     return NextResponse.json({ success: false, error: 'Agent account required' }, { status: 403 })
   }
