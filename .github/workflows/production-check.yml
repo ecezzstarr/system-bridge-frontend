@@ -1,0 +1,32 @@
+name: Production Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - 'feature/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Regression checks
+        run: node tests/recent-features.cjs
+
+      - name: Production build
+        run: npm run build
