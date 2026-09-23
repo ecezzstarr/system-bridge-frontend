@@ -37,7 +37,7 @@ export async function ensureAgilitySchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS agility_stock_orders (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      agent_id uuid NOT NULL,
+      agent_id uuid NOT NULL REFERENCES users(id),
       variant_id varchar(80) NOT NULL,
       distribution_mode varchar(40) NOT NULL DEFAULT 'retailer',
       box_count integer NOT NULL,
@@ -63,7 +63,7 @@ export async function ensureAgilitySchema() {
       opay_receipt_data text,
       opay_proof_hash varchar(64),
       payment_status varchar(40) NOT NULL DEFAULT 'pending',
-      payment_verified_by uuid,
+      payment_verified_by uuid REFERENCES users(id),
       proof_submitted_at timestamptz,
       payment_verified_at timestamptz,
       fulfillment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment',
@@ -79,7 +79,12 @@ export async function ensureAgilitySchema() {
       delivered_at timestamptz,
       received_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT NOW(),
-      updated_at timestamptz NOT NULL DEFAULT NOW()
+      updated_at timestamptz NOT NULL DEFAULT NOW(),
+      CHECK (distribution_mode IN ('wholesaler','retailer')),
+      CHECK (box_count > 0),
+      CHECK (packages_per_box > 0),
+      CHECK (package_count > 0),
+      CHECK (total_ngn > 0)
     )
   `
 
@@ -115,8 +120,8 @@ export async function ensureAgilitySchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS agility_agent_sales (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      order_id uuid NOT NULL,
-      agent_id uuid NOT NULL,
+      order_id uuid NOT NULL REFERENCES agility_stock_orders(id),
+      agent_id uuid NOT NULL REFERENCES users(id),
       quantity_packages integer NOT NULL,
       sale_mode varchar(40) NOT NULL DEFAULT 'retail_package',
       box_quantity integer NOT NULL DEFAULT 0,
@@ -127,7 +132,10 @@ export async function ensureAgilitySchema() {
       total_revenue_ngn numeric(14,2) NOT NULL,
       agent_gross_profit_ngn numeric(14,2) NOT NULL,
       sold_at timestamptz NOT NULL DEFAULT NOW(),
-      created_at timestamptz NOT NULL DEFAULT NOW()
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      CHECK (quantity_packages > 0),
+      CHECK (box_quantity >= 0),
+      CHECK (sale_mode IN ('retail_package','wholesale_box'))
     )
   `
   await sql`ALTER TABLE agility_agent_sales ADD COLUMN IF NOT EXISTS sale_mode varchar(40) DEFAULT 'retail_package'`
