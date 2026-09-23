@@ -49,6 +49,9 @@ export async function ensureAgilitySchema() {
       planned_company_cost_per_box_ngn numeric(14,2),
       planned_company_total_cost_ngn numeric(14,2),
       planned_company_gross_profit_ngn numeric(14,2),
+      actual_company_cost_per_box_ngn numeric(14,2),
+      actual_company_total_cost_ngn numeric(14,2),
+      actual_company_gross_profit_ngn numeric(14,2),
       payment_reference varchar(255) UNIQUE NOT NULL,
       payment_method varchar(40) NOT NULL DEFAULT 'OPay',
       opay_account_number varchar(40) NOT NULL,
@@ -83,6 +86,9 @@ export async function ensureAgilitySchema() {
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS planned_company_cost_per_box_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS planned_company_total_cost_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS planned_company_gross_profit_ngn numeric(14,2)`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS actual_company_cost_per_box_ngn numeric(14,2)`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS actual_company_total_cost_ngn numeric(14,2)`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS actual_company_gross_profit_ngn numeric(14,2)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS payment_method varchar(40) DEFAULT 'OPay'`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS opay_account_number varchar(40)`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS opay_receipt_data text`
