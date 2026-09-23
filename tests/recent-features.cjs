@@ -26,4 +26,12 @@ const valid={status:'successful',tx_ref:'test-ref',currency:'USD',amount:20}
 assert.equal(matchesVerifiedPayment(valid,'test-ref',20),true)
 for(const change of [{currency:'NGN'},{amount:1},{status:'failed'},{tx_ref:'other'}])assert.equal(matchesVerifiedPayment({...valid,...change},'test-ref',20),false)
 assert.equal(matchesVerifiedPayment(valid,'test-ref',NaN),false)
-console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification')
+const {AGILITY_VARIANTS,AGILITY_PRICE_CEILING_NGN}=require('../lib/agility-catalog.ts')
+assert.equal(AGILITY_PRICE_CEILING_NGN,3000)
+assert.ok(AGILITY_VARIANTS.length>=4,'Agility variants')
+for(const variant of AGILITY_VARIANTS)assert.ok(variant.priceNgn<AGILITY_PRICE_CEILING_NGN,variant.name+' stays under price ceiling')
+auth={...auth,user:{id:'agent-test',name:'Agent',role:'agent'},token:'test-token'}
+const Agility=require('../app/(app)/agility/page.tsx').default
+const agilityHtml=renderToStaticMarkup(React.createElement(Agility))
+for(const label of ['AGILITY','Intelligence in Action','Agility Agent Store','under ₦3,000'])assert.ok(agilityHtml.includes(label),label)
+console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, Agility catalog')
