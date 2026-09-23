@@ -3,24 +3,29 @@ import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 export const AGILITY_RETAIL_UNIT_PRICE_NGN = 3000
 export const AGILITY_PACKAGES_PER_BOX = 10
 export const AGILITY_RETAIL_BOX_VALUE_NGN = AGILITY_RETAIL_UNIT_PRICE_NGN * AGILITY_PACKAGES_PER_BOX
+export const AGILITY_WHOLESALE_BOX_SELL_PRICE_NGN = AGILITY_RETAIL_BOX_VALUE_NGN
 
-// Agent wholesale economics.
-// The Agent pays ₦24,000 for 10 packages, giving a ₦600 gross spread per package
-// when every package is sold to consumers at the fixed ₦3,000 retail price.
-export const AGILITY_AGENT_BOX_PRICE_NGN = 24000
+// Agent economics.
+// WEAVE sells one 10-package box to an Agent for ₦28,000.
+// A wholesaler resells the full box for ₦30,000.
+// A retailer sells the 10 individual packages at ₦3,000 each.
+// Either route produces a ₦2,000 gross spread per completed box before the Agent's own expenses.
+export const AGILITY_AGENT_BOX_PRICE_NGN = 28000
 export const AGILITY_AGENT_UNIT_COST_NGN = AGILITY_AGENT_BOX_PRICE_NGN / AGILITY_PACKAGES_PER_BOX
 export const AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN =
   AGILITY_RETAIL_UNIT_PRICE_NGN - AGILITY_AGENT_UNIT_COST_NGN
 export const AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN =
   AGILITY_RETAIL_BOX_VALUE_NGN - AGILITY_AGENT_BOX_PRICE_NGN
 
-// Company production discipline.
-// Before preparation starts, Administration must record a planned all-in cost
-// (food + preparation + packaging + delivery) at or below this ceiling.
-// At the ceiling the company retains ₦3,000 gross contribution per box.
-export const AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN = 21000
+// Company economics.
+// Standard preparation cost is ₦21,000 per box.
+// WEAVE sells that box to the Agent for ₦28,000, giving the company a ₦7,000
+// gross profit per box before broader company overhead.
+export const AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN = 21000
+export const AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN =
+  AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
 export const AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN =
-  AGILITY_AGENT_BOX_PRICE_NGN - AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN
+  AGILITY_AGENT_BOX_PRICE_NGN - AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
 
 export const AGILITY_OPAY_ACCOUNT_NUMBER = WEAVE_OPAY_ACCOUNT_NUMBER
 
@@ -110,7 +115,7 @@ export const AGILITY_PROCESS = [
   },
   {
     stage: 'Prepare',
-    detail: `Before heating begins, the all-in planned company cost must be at or below ₦${AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN.toLocaleString()} per box so the company retains a positive gross contribution.`,
+    detail: `The company standard preparation cost is ₦${AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN.toLocaleString()} per box. At the ₦${AGILITY_AGENT_BOX_PRICE_NGN.toLocaleString()} Agent price, WEAVE targets ₦${AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN.toLocaleString()} gross profit per box.`,
   },
   {
     stage: 'Pack',
@@ -118,6 +123,6 @@ export const AGILITY_PROCESS = [
   },
   {
     stage: 'Sell',
-    detail: `After the Agent confirms receipt, each Agility package is sold to consumers at ₦${AGILITY_RETAIL_UNIT_PRICE_NGN.toLocaleString()}.`,
+    detail: `A wholesaler can move the full box at ₦${AGILITY_WHOLESALE_BOX_SELL_PRICE_NGN.toLocaleString()}, while a retailer sells the individual packages at ₦${AGILITY_RETAIL_UNIT_PRICE_NGN.toLocaleString()} each and builds direct consumer patronage.`,
   },
 ] as const
