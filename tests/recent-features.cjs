@@ -69,6 +69,7 @@ assert.deepEqual(getAgilityCompanyEconomics(2,21000),{
  grossProfitNgn:6000,
  grossProfitPerBoxNgn:3000,
 })
+assert.equal(getAgilityCompanyEconomics(1,25000).grossProfitNgn,-1000)
 assert.equal(isValidAgilityCompanyCost(21000),true)
 assert.equal(isValidAgilityCompanyCost(21001),false)
 assert.equal(nextAgilityAdminStage('paid'),'heating')
@@ -90,4 +91,8 @@ for(const route of [
 ])assert.ok(fs.existsSync(path.join(root,'app',route)),route+' exists')
 assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/callback/route.ts')),'Agility Flutterwave callback removed')
 assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/webhook/route.ts')),'Agility Flutterwave webhook removed')
-console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, Agility OPay economics and fulfillment')
+const opayApiSource=fs.readFileSync(path.join(root,'app/api/deposit/opay/route.ts'),'utf8')
+assert.match(opayApiSource,/deposit:\s*result\[0\]/)
+assert.match(opayApiSource,/admin', 'agent', 'bridger/)
+assert.match(opayApiSource,/WEAVE_OPAY_ACCOUNT_NUMBER/)
+console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, shared OPay rail, Agility economics and fulfillment')
