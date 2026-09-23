@@ -55,6 +55,9 @@ type OrderRow = {
   planned_company_cost_per_box_ngn?: number | string | null
   planned_company_total_cost_ngn?: number | string | null
   planned_company_gross_profit_ngn?: number | string | null
+  actual_company_cost_per_box_ngn?: number | string | null
+  actual_company_total_cost_ngn?: number | string | null
+  actual_company_gross_profit_ngn?: number | string | null
   agent_note?: string | null
   admin_note?: string | null
   sold_packages: number
@@ -90,6 +93,7 @@ export default function AdminAgilityPage() {
   const router = useRouter()
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [plannedCost, setPlannedCost] = useState<Record<string, number>>({})
+  const [actualCost, setActualCost] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
@@ -110,6 +114,15 @@ export default function AdminAgilityPage() {
         for (const order of data.orders || []) {
           if (next[order.id] == null && order.planned_company_cost_per_box_ngn) {
             next[order.id] = Number(order.planned_company_cost_per_box_ngn)
+          }
+        }
+        return next
+      })
+      setActualCost((current) => {
+        const next = { ...current }
+        for (const order of data.orders || []) {
+          if (next[order.id] == null && order.actual_company_cost_per_box_ngn) {
+            next[order.id] = Number(order.actual_company_cost_per_box_ngn)
           }
         }
         return next
@@ -137,6 +150,7 @@ export default function AdminAgilityPage() {
       paidOrders: paid.length,
       paidWholesaleValue: paid.reduce((sum, order) => sum + Number(order.total_ngn), 0),
       plannedCompanyGross: paid.reduce((sum, order) => sum + Number(order.planned_company_gross_profit_ngn || 0), 0),
+      actualCompanyGross: paid.reduce((sum, order) => sum + Number(order.actual_company_gross_profit_ngn || 0), 0),
       received: paid.filter((order) => order.fulfillment_status === 'received').length,
     }
   }, [orders])
@@ -175,6 +189,7 @@ export default function AdminAgilityPage() {
     if (!movement) return
 
     const costPerBox = Number(plannedCost[order.id] || 0)
+    const actualCostPerBox = Number(actualCost[order.id] || 0)
     if (
       movement.status === 'heating' &&
       (!costPerBox || costPerBox > AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN)
@@ -182,6 +197,10 @@ export default function AdminAgilityPage() {
       setMessage(
         `Before preparation, enter a planned all-in cost per box from ₦1 to ${naira(AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN)}.`
       )
+      return
+    }
+    if (movement.status === 'delivered' && (!actualCostPerBox || actualCostPerBox <= 0)) {
+      setMessage('Before closing delivery, enter the actual all-in company cost per box for profit reconciliation.')
       return
     }
 
@@ -199,6 +218,7 @@ export default function AdminAgilityPage() {
           status: movement.status,
           adminNote: order.admin_note || '',
           plannedCostPerBox: costPerBox,
+          actualCostPerBox,
         }),
       })
       const data = await response.json()
@@ -206,6 +226,10 @@ export default function AdminAgilityPage() {
       if (data.companyEconomics) {
         setMessage(
           `Production economics approved: planned company gross contribution ${naira(data.companyEconomics.grossProfitNgn)} for this order.`
+        )
+      } else if (data.actualCompanyEconomics) {
+        setMessage(
+          `Delivery reconciled: actual company gross contribution ${naira(data.actualCompanyEconomics.grossProfitNgn)} for this order.${data.economicsWarning ? ' ' + data.economicsWarning : ''}`
         )
       }
       await load()
@@ -229,7 +253,7 @@ export default function AdminAgilityPage() {
         </p>
       </div>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
           <WalletCards className="h-5 w-5 text-amber-300" />
           <p className="mt-3 text-xs text-slate-500">OPay proofs waiting</p>
@@ -249,6 +273,11 @@ export default function AdminAgilityPage() {
           <Store className="h-5 w-5 text-orange-300" />
           <p className="mt-3 text-xs text-slate-500">Planned company gross</p>
           <p className="mt-1 text-xl font-black text-emerald-200">{naira(summary.plannedCompanyGross)}</p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <Store className="h-5 w-5 text-cyan-300" />
+          <p className="mt-3 text-xs text-slate-500">Actual company gross</p>
+          <p className="mt-1 text-xl font-black text-cyan-200">{naira(summary.actualCompanyGross)}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
           <CheckCircle2 className="h-5 w-5 text-emerald-300" />
@@ -293,8 +322,11 @@ export default function AdminAgilityPage() {
             const movement = nextStage[order.fulfillment_status]
             const paid = order.payment_status === 'paid'
             const cost = Number(plannedCost[order.id] || order.planned_company_cost_per_box_ngn || 0)
+            const actual = Number(actualCost[order.id] || order.actual_company_cost_per_box_ngn || 0)
             const previewCompanyGross =
               cost > 0 ? (AGILITY_AGENT_BOX_PRICE_NGN - cost) * Number(order.box_count) : 0
+            const previewActualCompanyGross =
+              actual > 0 ? (AGILITY_AGENT_BOX_PRICE_NGN - actual) * Number(order.box_count) : 0
 
             return (
               <article key={order.id} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
@@ -368,6 +400,20 @@ export default function AdminAgilityPage() {
                         </p>
                         <p className="rounded-xl bg-emerald-400/5 px-3 py-2 text-slate-400">
                           Planned company gross <strong className="text-emerald-300">{naira(order.planned_company_gross_profit_ngn || 0)}</strong>
+                        </p>
+                      </div>
+                    )}
+
+                    {order.actual_company_cost_per_box_ngn && (
+                      <div className="mt-4 grid gap-2 text-xs sm:grid-cols-3">
+                        <p className="rounded-xl bg-cyan-400/5 px-3 py-2 text-slate-400">
+                          Actual cost / box <strong className="text-white">{naira(order.actual_company_cost_per_box_ngn)}</strong>
+                        </p>
+                        <p className="rounded-xl bg-cyan-400/5 px-3 py-2 text-slate-400">
+                          Actual total cost <strong className="text-white">{naira(order.actual_company_total_cost_ngn || 0)}</strong>
+                        </p>
+                        <p className="rounded-xl bg-cyan-400/5 px-3 py-2 text-slate-400">
+                          Actual company gross <strong className={Number(order.actual_company_gross_profit_ngn || 0) >= 0 ? 'text-emerald-300' : 'text-rose-300'}>{naira(order.actual_company_gross_profit_ngn || 0)}</strong>
                         </p>
                       </div>
                     )}
@@ -450,6 +496,33 @@ export default function AdminAgilityPage() {
                                 <p className="text-slate-500">Projected company gross for this order</p>
                                 <p className={`mt-1 text-lg font-black ${previewCompanyGross > 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
                                   {naira(previewCompanyGross)}
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {order.fulfillment_status === 'dispatched' && (
+                          <>
+                            <p className="mt-2 text-xs leading-5 text-slate-500">
+                              Before marking delivered, record the actual all-in cost per box to reconcile company gross performance.
+                            </p>
+                            <Input
+                              className="mt-3"
+                              type="number"
+                              min={1}
+                              value={actualCost[order.id] || ''}
+                              placeholder="Actual all-in cost per box"
+                              onChange={(event) => setActualCost((current) => ({
+                                ...current,
+                                [order.id]: Math.max(0, Number(event.target.value) || 0),
+                              }))}
+                            />
+                            {actual > 0 && (
+                              <div className="mt-3 rounded-xl bg-white/[0.04] p-3 text-xs">
+                                <p className="text-slate-500">Actual company gross preview for this order</p>
+                                <p className={`mt-1 text-lg font-black ${previewActualCompanyGross >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+                                  {naira(previewActualCompanyGross)}
                                 </p>
                               </div>
                             )}
