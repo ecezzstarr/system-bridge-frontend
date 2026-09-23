@@ -79,7 +79,10 @@ export async function PATCH(request: NextRequest) {
     const nextStatus = String(body.status || '').trim()
     const adminNote = String(body.adminNote || '').trim().slice(0, 500)
     const plannedCostPerBox = AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
-    const actualCostPerBox = Number(body.actualCostPerBox)
+    const requestedActualCostPerBox = Number(body.actualCostPerBox)
+    const actualCostPerBox = Number.isFinite(requestedActualCostPerBox) && requestedActualCostPerBox > 0
+      ? requestedActualCostPerBox
+      : AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
 
     if (!orderId) {
       return NextResponse.json({ success: false, error: 'Order is required' }, { status: 400 })
@@ -132,12 +135,6 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (nextStatus === 'delivered') {
-      if (!Number.isFinite(actualCostPerBox) || actualCostPerBox <= 0) {
-        return NextResponse.json({
-          success: false,
-          error: 'Record the actual all-in company cost per box before closing delivery',
-        }, { status: 409 })
-      }
       actualEconomics = getAgilityCompanyEconomics(Number(current.box_count), actualCostPerBox)
     }
 
