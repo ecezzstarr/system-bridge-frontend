@@ -3,8 +3,13 @@ import { ClientNavigation } from '@/components/client-navigation'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 
 export const metadata: Metadata = {
-  title: 'SSBNOW.SHOP - Client Services',
-  description: 'Client Services Portal - Connect with your dedicated service team',
+  title: 'WEAVE of Presence — Client Services',
+  description: 'WEAVE of Presence · System Switch · Bridge Radiance — Client Services',
+  icons: {
+    icon: [{ url: '/icon.svg?v=3', type: 'image/svg+xml' }],
+    shortcut: '/icon.svg?v=3',
+    apple: '/icon.svg?v=3',
+  },
 }
 
 export const viewport: Viewport = {
