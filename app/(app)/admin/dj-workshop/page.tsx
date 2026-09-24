@@ -80,6 +80,24 @@ export default function DJWorkshopPage() {
     if (user?.role === 'admin') loadAll()
   }, [user])
 
+  useEffect(() => {
+    if (user?.role !== 'admin') return
+
+    const refreshBroadcast = async () => {
+      try {
+        const res = await fetch('/api/admin/dj/broadcast', {
+          headers: authHeaders(),
+          cache: 'no-store',
+        })
+        const data = await res.json()
+        if (res.ok && data.success) setBroadcast(data.broadcast)
+      } catch {}
+    }
+
+    const interval = window.setInterval(refreshBroadcast, 4000)
+    return () => window.clearInterval(interval)
+  }, [user?.id])
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -161,31 +179,35 @@ export default function DJWorkshopPage() {
     }
   }
 
+  const runBroadcastAction = async (payload: Record<string, unknown>, fallbackError: string) => {
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/dj/broadcast', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) throw new Error(data.error || fallbackError)
+      await loadAll()
+    } catch (error) {
+      setError(error instanceof Error ? error.message : fallbackError)
+    }
+  }
+
   const handleStop = async () => {
-    await fetch('/api/admin/dj/broadcast', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ action: 'stop' }),
-    })
-    loadAll()
+    await runBroadcastAction({ action: 'stop' }, 'Failed to stop broadcast')
   }
 
   const handleSkip = async (trackId: string) => {
-    await fetch('/api/admin/dj/broadcast', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ action: 'skip', trackId }),
-    })
-    loadAll()
+    await runBroadcastAction({ action: 'skip', trackId }, 'Failed to change track')
   }
 
   const handleAnnounce = async () => {
-    await fetch('/api/admin/dj/broadcast', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({ action: 'announce', announcementText: announcementDraft.trim() || null }),
-    })
-    loadAll()
+    await runBroadcastAction(
+      { action: 'announce', announcementText: announcementDraft.trim() || null },
+      'Failed to update announcement'
+    )
   }
 
   if (!user || user.role !== 'admin') return null
@@ -221,6 +243,9 @@ export default function DJWorkshopPage() {
             <div>
               <p className="text-white font-bold">{broadcast.track_title || 'No track'}</p>
               <p className="text-sm text-slate-500">{broadcast.track_artist}</p>
+              <p className="mt-1 text-[10px] uppercase tracking-wider text-cyan-500">
+                {Math.floor(Number(broadcast.elapsed_seconds || 0))}s into current track
+              </p>
             </div>
             <button onClick={handleStop} className="flex items-center gap-2 text-sm bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg px-3 py-1.5 hover:bg-red-500/20 transition">
               <Square className="h-3.5 w-3.5" /> Stop Broadcast
@@ -297,7 +322,9 @@ export default function DJWorkshopPage() {
                   <Icon className="h-4 w-4 text-slate-500" />
                   <span className="text-sm text-white">{t.title}</span>
                   <span className="text-xs text-slate-500">{t.artist}</span>
-                  <span className="text-xs text-slate-600 ml-auto">{t.duration_seconds}s</span>
+                  <span className={`text-xs ml-auto ${t.duration_seconds > 0 ? 'text-slate-600' : 'text-amber-400'}`}>
+                    {t.duration_seconds > 0 ? `${t.duration_seconds}s` : 'Duration unknown · manual skip'}
+                  </span>
                 </label>
               )
             })}
