@@ -34,6 +34,7 @@ import {
 import type { WeaveEvent } from '@/lib/weave-event'
 import { getEventProgress } from '@/lib/weave-event'
 import { useAuth } from '@/lib/auth-provider'
+import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
 
 type WorldNode = {
   label: string
@@ -165,7 +166,8 @@ export default function ClientFlameEventDashboard({ event }: { event: WeaveEvent
   return (
     <main className="min-h-screen overflow-hidden bg-[#010713] text-white">
       <div className="relative mx-auto max-w-[1800px]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(14,165,233,0.17),transparent_34%),radial-gradient(circle_at_46%_46%,rgba(239,68,68,0.14),transparent_25%),radial-gradient(circle_at_80%_25%,rgba(37,99,235,0.12),transparent_28%)]" />
+        <FlameEventRiverField />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(14,165,233,0.12),transparent_34%),radial-gradient(circle_at_46%_46%,rgba(239,68,68,0.10),transparent_25%),radial-gradient(circle_at_80%_25%,rgba(37,99,235,0.09),transparent_28%)]" />
 
         <div className="relative grid min-h-screen lg:grid-cols-[205px_1fr]">
           <aside className="border-b border-white/10 bg-[#020813]/95 p-4 lg:border-b-0 lg:border-r lg:p-5">
