@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
+import { ensureDjSchema } from '@/lib/dj-broadcast'
 
 async function requireAdmin(request: NextRequest) {
   const user = await getAuthUser(request)
@@ -15,6 +16,7 @@ export async function GET(request: NextRequest) {
   if (auth.error) return auth.error
 
   try {
+    await ensureDjSchema()
     const playlists = await sql`SELECT * FROM dj_playlists ORDER BY created_at DESC`
     const playlistIds = (playlists as any[]).map(p => p.id)
 
@@ -46,9 +48,23 @@ export async function POST(request: NextRequest) {
   if (auth.error) return auth.error
 
   try {
+    await ensureDjSchema()
     const { name, trackIds } = await request.json()
     if (!name || !Array.isArray(trackIds) || trackIds.length === 0) {
       return NextResponse.json({ success: false, error: 'name and at least one trackId are required' }, { status: 400 })
+    }
+
+    const uniqueTrackIds = [...new Set(trackIds.map((id: unknown) => String(id || '').trim()).filter(Boolean))]
+    if (uniqueTrackIds.length !== trackIds.length) {
+      return NextResponse.json({ success: false, error: 'A playlist cannot contain duplicate tracks.' }, { status: 400 })
+    }
+
+    const existingTracks = await sql`
+      SELECT id FROM dj_tracks
+      WHERE id = ANY(${uniqueTrackIds}::uuid[])
+    `
+    if (existingTracks.length !== uniqueTrackIds.length) {
+      return NextResponse.json({ success: false, error: 'One or more selected tracks no longer exist.' }, { status: 400 })
     }
 
     const pkgResult = await sql`
@@ -58,10 +74,10 @@ export async function POST(request: NextRequest) {
     `
     const playlist = pkgResult[0]
 
-    for (let i = 0; i < trackIds.length; i++) {
+    for (let i = 0; i < uniqueTrackIds.length; i++) {
       await sql`
         INSERT INTO dj_playlist_tracks (playlist_id, track_id, position)
-        VALUES (${playlist.id}::uuid, ${trackIds[i]}::uuid, ${i})
+        VALUES (${playlist.id}::uuid, ${uniqueTrackIds[i]}::uuid, ${i})
       `
     }
 
@@ -78,11 +94,19 @@ export async function DELETE(request: NextRequest) {
   if (auth.error) return auth.error
 
   try {
+    await ensureDjSchema()
     const { searchParams } = new URL(request.url)
     const playlistId = searchParams.get('id')
     if (!playlistId) {
       return NextResponse.json({ success: false, error: 'Playlist id required' }, { status: 400 })
     }
+
+    await sql`
+      UPDATE dj_broadcast_state
+      SET is_live=false, playlist_id=NULL, current_track_id=NULL, updated_at=NOW()
+      WHERE id=1 AND playlist_id=${playlistId}::uuid
+    `
+    await sql`DELETE FROM dj_playlist_tracks WHERE playlist_id=${playlistId}::uuid`
     await sql`DELETE FROM dj_playlists WHERE id = ${playlistId}::uuid`
     return NextResponse.json({ success: true })
   } catch (error: any) {

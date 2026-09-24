@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { ensureDjSchema } from '@/lib/dj-broadcast'
 
 export async function GET() {
   try {
+    await ensureDjSchema()
     const tracks = await sql`
       SELECT id, title, artist, file_url, duration_seconds
       FROM dj_tracks
