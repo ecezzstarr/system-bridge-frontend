@@ -61,7 +61,20 @@ async function fileNumberAlreadyExists(fileNumber: string) {
     ) existing
     LIMIT 1
   `
-  return result.length > 0
+  if (result.length > 0) return true
+
+  // client_file_folders predates some FNE flows, so include it when present.
+  const table = await sql`
+    SELECT to_regclass('public.client_file_folders') AS name
+  `
+  if (!table[0]?.name) return false
+
+  const clientFolder = await sql`
+    SELECT 1 FROM client_file_folders
+    WHERE file_number = ${fileNumber}
+    LIMIT 1
+  `
+  return clientFolder.length > 0
 }
 
 function isUniqueViolation(error: any) {
