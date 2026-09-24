@@ -18,6 +18,15 @@ export async function POST(
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
 
+    const players = await sql`
+      SELECT id FROM users
+      WHERE id = ${userId}::uuid AND role = 'client' AND is_active = true
+      LIMIT 1
+    `
+    if (players.length === 0) {
+      return NextResponse.json({ error: 'Arena participation is reserved for Client players' }, { status: 403 })
+    }
+
     // Get match
     const matches = await sql`SELECT * FROM arena_matches WHERE id = ${id}`
     if (matches.length === 0) {
