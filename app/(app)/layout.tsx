@@ -13,6 +13,7 @@ import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Toaster } from '@/components/ui/sonner'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
+import { WeaveWorldBackdrop } from '@/components/world/weave-world-backdrop'
 
 export default function AppLayout({
   children,
@@ -104,13 +105,14 @@ export default function AppLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-950">
+    <div className="relative flex min-h-screen overflow-hidden bg-[#010711]">
+      <WeaveWorldBackdrop />
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
         <AppSidebar user={user as any} />
       </div>
-      <div className="flex-1 flex flex-col lg:pl-64">
+      <div className="relative z-10 flex-1 flex flex-col lg:pl-64">
         <AppHeader user={user as any} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 max-w-[100vw]">
+        <main className="relative flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 max-w-[100vw]">
           <FlameEventRoleAtmosphere
             userRole={user?.role}
             userName={user?.name}
