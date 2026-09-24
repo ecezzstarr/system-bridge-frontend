@@ -48,9 +48,9 @@ export async function initializePayment(
           name,
         },
         customizations: {
-          title: 'SSB Now',
-          description: 'Wallet Deposit',
-          logo: 'https://ssbnow.shop/logo.png',
+          title: 'WEAVE of Presence',
+          description: 'WEAVE Wallet Deposit',
+          logo: 'https://ssbnow.shop/icon.svg?v=3',
         },
         meta: {
           userId,
