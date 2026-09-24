@@ -36,6 +36,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
 
+    const playerRes = await client.query(
+      "SELECT id FROM users WHERE id = $1::uuid AND role = 'client' AND is_active = true LIMIT 1",
+      [userId]
+    )
+    if (playerRes.rows.length === 0) {
+      return NextResponse.json({ error: 'Casino participation is reserved for Client players' }, { status: 403 })
+    }
+
     if (!betAmount || betAmount < 2) {
       return NextResponse.json({ error: 'Minimum bet is 2 TRX' }, { status: 400 })
     }
