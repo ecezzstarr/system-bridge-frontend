@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { ComponentType } from 'react'
 import {
   Activity,
   ArrowRight,
@@ -38,7 +39,7 @@ type WorldNode = {
   label: string
   detail: string
   href: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: ComponentType<{ className?: string }>
   accent: 'blue' | 'red' | 'violet' | 'emerald'
 }
 
@@ -273,7 +274,7 @@ export default function ClientFlameEventDashboard({ event }: { event: WeaveEvent
                         ['Agent', Users, 'Supports continuity'],
                         ['Administration', Shield, 'Recognizes movement'],
                       ].map(([label, Icon, detail]) => {
-                        const I = Icon as React.ComponentType<{ className?: string }>
+                        const I = Icon as ComponentType<{ className?: string }>
                         return (
                           <div key={String(label)} className="rounded-xl border border-white/10 bg-black/30 p-3">
                             <I className="mx-auto h-4 w-4 text-sky-300" />
@@ -351,7 +352,7 @@ function SidebarGroup({
   active,
 }: {
   title: string
-  items: [string, string, React.ComponentType<{ className?: string }>][]
+  items: [string, string, ComponentType<{ className?: string }>][]
   active?: string
 }) {
   return (
