@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-provider'
+import { WeaveLogo } from '@/components/weave-logo'
 
 export default function ClientLoginPage() {
   const router = useRouter()
@@ -56,18 +57,19 @@ export default function ClientLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-transparent p-4 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-950 rounded-full blur-[120px]" />
       </div>
 
-      <div className="mb-8 text-center relative z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 mb-4 shadow-sm shadow-blue-500/10">
+      <div className="mb-8 text-center relative z-10 flex flex-col items-center">
+        <WeaveLogo size="lg" className="mb-4" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 shadow-sm shadow-blue-500/10">
           <KeyRound className="h-3 w-3" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Authorized Access Point</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Authorized Client Access</span>
         </div>
-        <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">WEAVE Terminal</h1>
+        <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Interaction in Motion</p>
       </div>
 
       <Card className="w-full max-w-md border-slate-700 bg-slate-900/50 backdrop-blur-xl relative z-10 shadow-2xl">
@@ -143,7 +145,7 @@ export default function ClientLoginPage() {
 
       <div className="mt-12 flex items-center gap-6 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
         <div className="h-[1px] w-12 bg-slate-700" />
-        <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.5em]">System-Bridge Terminal v2.4</p>
+        <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.5em]">WEAVE of Presence · System Switch · Bridge Radiance</p>
         <div className="h-[1px] w-12 bg-slate-700" />
       </div>
     </div>
