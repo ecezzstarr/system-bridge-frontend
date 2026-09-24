@@ -7,6 +7,7 @@ import {
   LayoutTemplate,
   Sparkles,
   Radio,
+  Megaphone,
   Headphones,
   Wallet,
   Users,
@@ -98,6 +99,8 @@ const navigation = [
       { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
 { name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
     { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
+    { name: "Ad Workshop", href: "/admin/ad-workshop", icon: Megaphone, adminOnly: true },
+    { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
     { name: "Echo", href: "/echo", icon: Sparkles },
   ]},
 
@@ -244,11 +247,12 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
   }
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-white/5 bg-slate-950 overflow-hidden">
+    <aside className="relative flex h-screen w-64 flex-col overflow-hidden border-r border-sky-300/10 bg-[#020b17]/92 shadow-[22px_0_70px_rgba(2,8,23,.38)] backdrop-blur-2xl">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_28%_10%,rgba(56,189,248,.09),transparent_25%),radial-gradient(circle_at_72%_82%,rgba(245,158,11,.055),transparent_28%)]" />
       {/* Logo and System Status */}
-      <div className="flex flex-col items-center justify-center border-b border-white/5 p-6">
+      <div className="relative flex flex-col items-center justify-center border-b border-sky-300/10 p-6">
         <WeaveLogo size="md" className="mb-1" />
-        <span className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">Ecosystem Authority</span>
+        <span className="text-[9px] text-slate-500 uppercase tracking-[0.22em] font-bold">System Switch · Bridge Radiance</span>
 
         {/* PWA Download Button */}
         <Button
@@ -276,7 +280,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
 
       {/* User Profile */}
       {user && (
-        <div className="flex items-center gap-3 border-b border-sidebar-border p-4">
+        <div className="relative flex items-center gap-3 border-b border-sky-300/10 p-4">
           <div className="relative">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary">
               {user.avatar ? (
@@ -310,7 +314,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 scrollbar-hide">
+      <nav className="relative flex-1 overflow-y-auto p-3 scrollbar-hide">
         <div className="space-y-6">
           {navigation.map((group) => {
             const visibleItems = group.items.filter((item: any) => {
@@ -327,22 +331,29 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
             return (
               <div key={group.group}>
                 <h3 className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500/70">
-                  {group.group}
+                  {group.group} District
                 </h3>
                 <ul className="space-y-0.5">
                   {visibleItems.map((item) => {
-                    const isActive = pathname === item.href
+                    const homeHref =
+                      user?.role === 'admin' ? '/admin/dashboard'
+                      : user?.role === 'agent' ? '/agent/dashboard'
+                      : user?.role === 'bridger' ? '/bridger/dashboard'
+                      : user?.role === 'client' ? '/client/dashboard'
+                      : '/dashboard'
+                    const href = item.name === 'Home' ? homeHref : item.href
+                    const isActive = pathname === href
                     const isSubItem = item.name === "Bridger Continuance"
 
                     return (
                       <li key={item.name}>
                         <Link
-                          href={item.href}
+                          href={href}
                           className={cn(
-                            "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+                            "flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-all",
                             isActive
-                              ? "bg-sidebar-accent text-sidebar-primary"
-                              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              ? "border-sky-300/25 bg-sky-400/10 text-sky-100 shadow-[0_0_20px_rgba(56,189,248,.07)]"
+                              : "border-transparent text-sidebar-foreground hover:border-white/10 hover:bg-white/[0.04] hover:text-white"
                           )}
                         >
                           <div className="flex items-center gap-3">
@@ -433,7 +444,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       </nav>
 
       {/* Bottom Actions */}
-      <div className="border-t border-white/5 p-3">
+      <div className="relative border-t border-sky-300/10 bg-black/10 p-3">
         <div className="space-y-1">
           <Link
             href="/roles"
