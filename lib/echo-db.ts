@@ -1,6 +1,6 @@
 import { sql } from './db'
 
-const ECHO_SUBSCRIPTION_FEE_TRX = 7
+const ECHO_SUBSCRIPTION_FEE_FLAME_COIN = 7
 
 export async function ensureEchoTables() {
   await sql`
@@ -50,7 +50,7 @@ export async function ensureEchoTables() {
   `
 }
 
-// Echo has its own subscription (7 TRX / month, open to every user type),
+// Echo has its own subscription (7 Flame Coin / month, open to every user type),
 // separate from bridger-subscription.ts which is bridger-role-specific
 // and denominated in NGN.
 export async function getEchoContinuance(userId: string) {
@@ -69,9 +69,9 @@ export async function hasActiveContinuance(userId: string): Promise<boolean> {
   return sub.status === 'active' && sub.expiry && new Date(sub.expiry) > new Date()
 }
 
-// Deducts 7 TRX from the user's primary wallet and activates/renews Echo
+// Deducts 7 Flame Coin from the user's primary wallet and activates/renews Echo
 // for 30 days. Mirrors the wallet-deduct pattern in bridger-subscription.ts's
-// autoDeductContinuance, but flat-rate in TRX (no NGN conversion needed).
+// autoDeductContinuance, but flat-rate in Flame Coin (no NGN conversion needed).
 export async function subscribeToEcho(userId: string) {
   await ensureEchoTables()
 
@@ -82,12 +82,12 @@ export async function subscribeToEcho(userId: string) {
     `
     const balance = walletRows[0]?.balance_trx ?? 0
 
-    if (balance < ECHO_SUBSCRIPTION_FEE_TRX) {
+    if (balance < ECHO_SUBSCRIPTION_FEE_FLAME_COIN) {
       await sql`ROLLBACK`
-      return { success: false, reason: 'insufficient_balance', requiredTrx: ECHO_SUBSCRIPTION_FEE_TRX, availableTrx: balance }
+      return { success: false, reason: 'insufficient_balance', requiredFlameCoin: ECHO_SUBSCRIPTION_FEE_FLAME_COIN, availableFlameCoin: balance }
     }
 
-    const newBalance = balance - ECHO_SUBSCRIPTION_FEE_TRX
+    const newBalance = balance - ECHO_SUBSCRIPTION_FEE_FLAME_COIN
     await sql`
       UPDATE wallets SET balance_trx = ${newBalance}, updated_at = NOW()
       WHERE user_id = ${userId}::uuid AND is_primary = true
@@ -104,7 +104,7 @@ export async function subscribeToEcho(userId: string) {
     `
 
     await sql`COMMIT`
-    return { success: true, expiry: nextExpiry, trxAmount: ECHO_SUBSCRIPTION_FEE_TRX }
+    return { success: true, expiry: nextExpiry, trxAmount: ECHO_SUBSCRIPTION_FEE_FLAME_COIN }
   } catch (error) {
     await sql`ROLLBACK`
     console.error('Echo subscribe failed:', error)

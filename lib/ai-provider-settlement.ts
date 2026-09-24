@@ -24,7 +24,7 @@ export async function ensureAiProviderSettlementSchema(sql: SqlQuery) {
       file_folder_purchase_id uuid NOT NULL,
       file_number varchar(120) NULL,
       gross_amount numeric(30,8) NOT NULL,
-      currency varchar(16) NOT NULL DEFAULT 'TRX',
+      currency varchar(16) NOT NULL DEFAULT 'Flame Coin',
       allocation_rate numeric(8,6) NOT NULL DEFAULT 0.10,
       allocation_amount numeric(30,8) NOT NULL,
       status varchar(40) NOT NULL DEFAULT 'accrued',
@@ -66,7 +66,7 @@ export async function accrueAiProviderAllocation({
     INSERT INTO ai_provider_allocations
       (provider_id,flame_external_id,flame_name,bridge_code,file_folder_purchase_id,file_number,gross_amount,currency,allocation_rate,allocation_amount,status)
     VALUES
-      (${provider.id}::uuid,${flameExternalId || null},${flameName || null},${bridgeCode || null},${purchaseId}::uuid,${fileNumber || null},${grossAmount},'TRX',${AI_PROVIDER_ALLOCATION_RATE},${allocationAmount},'accrued')
+      (${provider.id}::uuid,${flameExternalId || null},${flameName || null},${bridgeCode || null},${purchaseId}::uuid,${fileNumber || null},${grossAmount},'Flame Coin',${AI_PROVIDER_ALLOCATION_RATE},${allocationAmount},'accrued')
     ON CONFLICT(file_folder_purchase_id,provider_id) DO UPDATE SET
       file_number=EXCLUDED.file_number,
       bridge_code=COALESCE(ai_provider_allocations.bridge_code,EXCLUDED.bridge_code),

@@ -129,16 +129,16 @@ export default function TerminalPage() {
             <div className="bg-slate-900/60 rounded-xl p-3 border border-slate-800">
               <p className="text-xs text-slate-400 mb-1">Escrow</p>
               <p className="text-lg font-bold text-yellow-400">{user.escrow_balance || 0}</p>
-              <p className="text-xs text-slate-500">TRX</p>
+              <p className="text-xs text-slate-500">Flame Coin</p>
             </div>
             <div className="bg-slate-900/60 rounded-xl p-3 border border-slate-800">
               <p className="text-xs text-slate-400 mb-1">Platform</p>
               <p className="text-lg font-bold text-green-400">{user.platform_wallet_balance || 0}</p>
-              <p className="text-xs text-slate-500">TRX</p>
+              <p className="text-xs text-slate-500">Flame Coin</p>
             </div>
           </div>
 
-          {/* Action Buttons - Flutterwave Deposit & TRX Withdraw */}
+          {/* Action Buttons - Flutterwave Deposit & Flame Coin Withdraw */}
           <div className="space-y-2 pt-2">
             <Link href="/wallet/deposit-withdraw">
               <button className="w-full bg-green-600/20 hover:bg-green-600/30 border border-green-600/50 rounded-xl p-3 flex items-center justify-between transition">
@@ -146,7 +146,7 @@ export default function TerminalPage() {
                   <Zap className="h-5 w-5 text-green-400 flex-shrink-0" />
                   <div className="text-left">
                     <span className="text-sm font-medium block">Deposit & Withdraw</span>
-                    <span className="text-xs text-slate-500">Flutterwave / TRX</span>
+                    <span className="text-xs text-slate-500">Flutterwave / Flame Coin</span>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-green-400 flex-shrink-0" />

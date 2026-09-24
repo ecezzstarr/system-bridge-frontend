@@ -74,7 +74,7 @@ function TipDialog({ videoId, onSuccess }: { videoId: string; onSuccess: () => v
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Send a Tip</DialogTitle>
-          <DialogDescription>Support the creator with TRX</DialogDescription>
+          <DialogDescription>Support the creator with Flame Coin</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-4">
           <div className="grid grid-cols-4 gap-2">
@@ -97,11 +97,11 @@ function TipDialog({ videoId, onSuccess }: { videoId: string; onSuccess: () => v
               className="pr-16"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-              TRX
+              Flame Coin
             </span>
           </div>
           <Button className="w-full" disabled={!amount || isLoading} onClick={handleTip}>
-            Send {amount || "0"} TRX
+            Send {amount || "0"} Flame Coin
           </Button>
         </div>
       </DialogContent>

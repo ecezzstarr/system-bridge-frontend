@@ -39,13 +39,13 @@ export async function POST(request: NextRequest) {
         ${clientId}::uuid,
         'deposit',
         ${Number(amountTrx)},
-        'TRX',
+        'Flame Coin',
         'Vault funded by Admin',
         ${JSON.stringify({ funded_by: admin.id, source: 'admin_vault_fund' })}
       )
     `
 
-    return NextResponse.json({ success: true, message: `Vault funded with ${amountTrx} TRX` })
+    return NextResponse.json({ success: true, message: `Vault funded with ${amountTrx} Flame Coin` })
   } catch (error: any) {
     console.error('Vault fund error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

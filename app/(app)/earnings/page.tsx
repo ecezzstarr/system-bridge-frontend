@@ -104,7 +104,7 @@ export default function EarningsPage() {
                 <p className="text-sm text-muted-foreground">Total Earnings</p>
                 <p className="text-2xl font-bold">
                   {summaryLoading ? "..." : (summary?.totalEarnings || 0).toLocaleString()}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">Flame Coin</span>
                 </p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function EarningsPage() {
                 <p className="text-sm text-muted-foreground">Pending</p>
                 <p className="text-2xl font-bold">
                   {summaryLoading ? "..." : (summary?.pendingEarnings || 0).toLocaleString()}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">Flame Coin</span>
                 </p>
               </div>
             </div>
@@ -136,7 +136,7 @@ export default function EarningsPage() {
                 <p className="text-sm text-muted-foreground">This Week</p>
                 <p className="text-2xl font-bold">
                   {summaryLoading ? "..." : (summary?.thisWeek || 0).toLocaleString()}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">Flame Coin</span>
                 </p>
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function EarningsPage() {
                 <p className="text-sm text-muted-foreground">Withdrawn</p>
                 <p className="text-2xl font-bold">
                   {summaryLoading ? "..." : (summary?.withdrawnEarnings || 0).toLocaleString()}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">TRX</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">Flame Coin</span>
                 </p>
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function EarningsPage() {
                         <span>{cat.label}</span>
                       </div>
                       <span className="font-mono font-medium">
-                        {amount.toLocaleString()} TRX
+                        {amount.toLocaleString()} Flame Coin
                       </span>
                     </div>
                     <Progress value={percent} className="mt-2 h-2" />
@@ -251,7 +251,7 @@ export default function EarningsPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-mono font-medium text-primary">
-                        +{tx.amount.toLocaleString()} TRX
+                        +{tx.amount.toLocaleString()} Flame Coin
                       </p>
                       <Badge
                         variant="secondary"

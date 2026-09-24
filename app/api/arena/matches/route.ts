@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
             ${hostId}::uuid,
             'arena_entry_fee',
             ${-fee},
-            'TRX',
+            'Flame Coin',
             ${'Arena entry fee (host): ' + title},
             NOW()
           )

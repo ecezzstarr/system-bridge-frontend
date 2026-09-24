@@ -18,16 +18,16 @@ export async function POST(request: NextRequest) {
     const bridgeCode=typeof body.bridgeCode==='string'?body.bridgeCode.trim().slice(0,32):null
     let providerKey:string|null=null, providerName:string|null=null, flameName:string|null=null, flameExternalId:string|null=null
     const amountUSD=Number(body.amountUSD ?? body.amount)
-    const trxAmount=amountUSD*FILE_FOLDER_PRICING.trxPerUsd
+    const flameCoinAmount=amountUSD*FILE_FOLDER_PRICING.flameCoinPerUsd
     if(!Number.isFinite(amountUSD)||amountUSD<=0||amountUSD>10000000)return NextResponse.json({success:false,error:'Valid payment amount required'},{status:400})
-    if(isFileFolder&&!isValidFileFolderAmount(trxAmount))return NextResponse.json({success:false,error:`File Folder value must be at least ${FILE_FOLDER_PRICING.minimumTrx} TRX`},{status:400})
+    if(isFileFolder&&!isValidFileFolderAmount(flameCoinAmount))return NextResponse.json({success:false,error:`File Folder value must be at least ${FILE_FOLDER_PRICING.minimumFlameCoin} Flame Coin`},{status:400})
     if(!email)return NextResponse.json({success:false,error:'Email required'},{status:400})
     if(!FLUTTERWAVE_SECRET_KEY)return NextResponse.json({success:false,error:'Flutterwave is not configured'},{status:500})
 
     const reference=`SSB-${isFileFolder?'FOLDER':userId!.slice(0,8)}-${crypto.randomUUID()}`
     const baseUrl=process.env.NEXTAUTH_URL || 'https://system-bridge-frontend-823579957639.us-central1.run.app'
     const redirectUrl=`${baseUrl}/api/deposit/callback?ref=${encodeURIComponent(reference)}&type=${isFileFolder?'file_folder':'wallet'}`
-    const response=await fetch('https://api.flutterwave.com/v3/payments',{method:'POST',headers:{Authorization:`Bearer ${FLUTTERWAVE_SECRET_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({tx_ref:reference,amount:amountUSD,currency:'USD',payment_options:'card,banktransfer,ussd,mobilemoney',redirect_url:redirectUrl,customer:{email,name:name||'Weave User',phonenumber:typeof body.buyerPhone==='string'?body.buyerPhone.slice(0,80):''},customizations:{title:'SSBNOW.SHOP',description:`${trxAmount} TRX ${isFileFolder?'File Folder':'wallet'} payment`,logo:''},meta:{userId,fileNumber:typeof body.fileNumber==='string'?body.fileNumber:null,trxAmount,type:isFileFolder?'file_folder_purchase':'wallet_deposit'}})})
+    const response=await fetch('https://api.flutterwave.com/v3/payments',{method:'POST',headers:{Authorization:`Bearer ${FLUTTERWAVE_SECRET_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({tx_ref:reference,amount:amountUSD,currency:'USD',payment_options:'card,banktransfer,ussd,mobilemoney',redirect_url:redirectUrl,customer:{email,name:name||'Weave User',phonenumber:typeof body.buyerPhone==='string'?body.buyerPhone.slice(0,80):''},customizations:{title:'SSBNOW.SHOP',description:`${flameCoinAmount} Flame Coin ${isFileFolder?'File Folder':'wallet'} payment`,logo:''},meta:{userId,fileNumber:typeof body.fileNumber==='string'?body.fileNumber:null,flameCoinAmount,type:isFileFolder?'file_folder_purchase':'wallet_deposit'}})})
     const data=await response.json(); if(data.status!=='success')return NextResponse.json({success:false,error:data.message||'Failed to initialize payment'},{status:400})
 
     const sql=getDb()
@@ -43,10 +43,10 @@ export async function POST(request: NextRequest) {
       await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS provider_name varchar(255)`
       await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_name varchar(120)`
       await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_external_id varchar(255)`
-      await sql`INSERT INTO file_folder_purchases(file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,status,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES(${typeof body.fileNumber==='string'?body.fileNumber.trim().toUpperCase():null},${userId},${typeof body.buyerName==='string'?body.buyerName.slice(0,255):name||null},${email},${typeof body.buyerPhone==='string'?body.buyerPhone.slice(0,80):null},${trxAmount},'flutterwave',${reference},'pending_flutterwave',${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) ON CONFLICT(payment_reference) DO NOTHING`
+      await sql`INSERT INTO file_folder_purchases(file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,status,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES(${typeof body.fileNumber==='string'?body.fileNumber.trim().toUpperCase():null},${userId},${typeof body.buyerName==='string'?body.buyerName.slice(0,255):name||null},${email},${typeof body.buyerPhone==='string'?body.buyerPhone.slice(0,80):null},${flameCoinAmount},'flutterwave',${reference},'pending_flutterwave',${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) ON CONFLICT(payment_reference) DO NOTHING`
     } else {
-      await sql`INSERT INTO pending_deposits(reference,user_id,amount_usd,amount_trx,status,created_at) VALUES(${reference},${userId}::uuid,${amountUSD},${trxAmount},'pending',NOW())`
+      await sql`INSERT INTO pending_deposits(reference,user_id,amount_usd,amount_trx,status,created_at) VALUES(${reference},${userId}::uuid,${amountUSD},${flameCoinAmount},'pending',NOW())`
     }
-    return NextResponse.json({success:true,paymentLink:data.data.link,reference,trxAmount},{headers:{'Cache-Control':'no-store'}})
+    return NextResponse.json({success:true,paymentLink:data.data.link,reference,flameCoinAmount},{headers:{'Cache-Control':'no-store'}})
   } catch(error){return NextResponse.json({success:false,error:'Payment initialization failed'},{status:500})}
 }

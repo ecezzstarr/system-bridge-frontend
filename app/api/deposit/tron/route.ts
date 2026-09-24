@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
+import { WORLD_RULES } from '@/lib/world/constants'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,21 +17,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { amount, txHash } = body
 
-    if (!amount || amount <= 0) {
+    if (!amount || Number(amount) <= 0) {
       return NextResponse.json({ error: 'Valid amount required' }, { status: 400 })
+    }
+
+    if (!txHash || typeof txHash !== 'string' || !txHash.trim()) {
+      return NextResponse.json({ error: 'TRX transaction hash is required for verification' }, { status: 400 })
     }
 
     const result = await sql`
       INSERT INTO deposits (id, user_id, amount_trx, status, method, currency, receipt_data, created_at, updated_at)
-      VALUES (gen_random_uuid(), ${user.id}::uuid, ${amount}, 'pending', 'tron', 'TRX', ${txHash || null}, NOW(), NOW())
+      VALUES (gen_random_uuid(), ${user.id}::uuid, ${Number(amount)}, 'pending', 'tron', 'TRX', ${txHash.trim()}, NOW(), NOW())
       RETURNING id
     `
 
     return NextResponse.json({
       success: true,
-      message: 'Deposit submitted for verification. An admin will confirm and credit your wallet shortly.',
+      message: 'TRX payment submitted for verification. Administration will verify its value and credit the equivalent Flame Coin.',
       depositId: result[0].id,
-      txHash: txHash || null,
+      txHash: txHash.trim(),
+      companyTrxWallet: WORLD_RULES.COMPANY_TRX_WALLET,
     })
   } catch (error: any) {
     console.error('TRON Deposit error:', error)

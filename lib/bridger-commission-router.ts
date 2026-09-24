@@ -19,7 +19,7 @@ export async function creditBridgerActivityCommission(params: {
     await creditBridgerCommission({
       bridgerId,
       baseAmount,
-      description: `30% commission: Client purchased File Folder (${baseAmount} TRX)`
+      description: `30% commission: Client purchased File Folder (${baseAmount} Flame Coin)`
     }).catch(err => console.error('[bridger-router] Bridger commission error:', err))
   }
 

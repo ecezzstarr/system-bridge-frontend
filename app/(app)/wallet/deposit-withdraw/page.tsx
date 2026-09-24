@@ -8,9 +8,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 
-// TRX rate: 1 USD = 10 TRX (example rate)
-const TRX_RATE = 10
-
 export default function WalletDepositWithdrawPage() {
   const { user } = useAuth()
   const isOpayRole = user?.role === 'admin' || user?.role === 'agent' || user?.role === 'bridger'
@@ -22,7 +19,10 @@ export default function WalletDepositWithdrawPage() {
   const [balance, setBalance] = useState(0)
   const [copied, setCopied] = useState(false)
   const [withdrawAddress, setWithdrawAddress] = useState('')
-  const [trxRate, setTrxRate] = useState<number | null>(null)
+  const [flameCoinRate, setFlameCoinRate] = useState<number | null>(null)
+  const [trxPaymentRate, setTrxPaymentRate] = useState<number | null>(null)
+  const [companyTrxWallet, setCompanyTrxWallet] = useState('')
+  const [depositTxHash, setDepositTxHash] = useState('')
   const [platformFeePercent, setPlatformFeePercent] = useState(5)
   const [withdrawBankName, setWithdrawBankName] = useState('')
   const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('')
@@ -30,7 +30,7 @@ export default function WalletDepositWithdrawPage() {
   const [conversions, setConversions] = useState<any[]>([])
   const [depositStep, setDepositStep] = useState<'amount' | 'receipt'>('amount')
   const [pendingDepositId, setPendingDepositId] = useState<string | null>(null)
-  const [pendingDepositAmountTrx, setPendingDepositAmountTrx] = useState<string>('')
+  const [pendingDepositFlameCoin, setPendingDepositFlameCoin] = useState<string>('')
   const [receiptText, setReceiptText] = useState('')
 
   // Determine the correct dashboard route based on user role
@@ -45,10 +45,10 @@ export default function WalletDepositWithdrawPage() {
   }
 
   useEffect(() => {
-    fetch('/api/rate/trx-ngn')
+    fetch('/api/rate/flame-coin-ngn')
       .then(res => res.json())
       .then(data => {
-        setTrxRate(data.rate)
+        setFlameCoinRate(data.rate)
         setPlatformFeePercent(data.platformFeePercent)
       })
       .catch(() => {})
@@ -56,10 +56,22 @@ export default function WalletDepositWithdrawPage() {
 
   useEffect(() => {
     fetchBalance()
-    if (user && ['admin', 'agent', 'bridger'].includes(user.role)) {
+    if (user && isOpayRole) {
       fetchConversions()
     }
-  }, [user])
+  }, [user, isOpayRole])
+
+  useEffect(() => {
+    if (!user || isOpayRole) return
+    fetch('/api/rate/trx-payment-ngn')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) return
+        setTrxPaymentRate(data.rateNgnPerTrx)
+        setCompanyTrxWallet(data.companyTrxWallet || '')
+      })
+      .catch(() => {})
+  }, [user, isOpayRole])
 
   const fetchBalance = async () => {
     if (!user) return
@@ -70,7 +82,7 @@ export default function WalletDepositWithdrawPage() {
       })
       const data = await response.json()
       if (data.success) {
-        setBalance(data.coreTrx || 0)
+        setBalance(data.flameCoinBalance ?? 0)
       }
     } catch (e) {
       console.error('Failed to fetch balance:', e)
@@ -105,42 +117,42 @@ export default function WalletDepositWithdrawPage() {
       setMessage('Please enter a valid amount')
       return
     }
+    if (!isOpayRole && !depositTxHash.trim()) {
+      setMessage('Enter the TRX transaction hash after sending to the Company TRX wallet')
+      return
+    }
 
     setLoading(true)
     setMessage('')
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const isOpay = ['admin', 'agent', 'bridger'].includes(user?.role || '')
-      const endpoint = isOpay ? '/api/deposit/opay' : '/api/deposit/tron'
-      
+      const endpoint = isOpayRole ? '/api/deposit/opay' : '/api/deposit/tron'
+
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-          userId: user.id,
           amount: parseFloat(amount),
-          txHash: !isOpay && message.includes('hash:') ? message.split('hash:')[1].trim() : '',
+          ...(isOpayRole ? {} : { txHash: depositTxHash.trim() }),
         }),
       })
 
       const data = await response.json()
       if (data.success) {
-        if (isOpay && data.paymentLink) {
-          // Redirect to OPay/Flutterwave payment page
+        if (isOpayRole && data.paymentLink) {
           window.location.href = data.paymentLink
-        } else if (isOpay && data.deposit?.id) {
-          // Move to receipt-submission step for manual OPay verification
+        } else if (isOpayRole && data.deposit?.id) {
           setPendingDepositId(data.deposit.id)
-          setPendingDepositAmountTrx(data.deposit.amount_trx || '')
+          setPendingDepositFlameCoin(data.deposit.amount_trx || '')
           setDepositStep('receipt')
           setMessage('')
         } else {
-          setMessage(`Success! Your deposit of ${amount} ${isOpay ? 'NGN' : 'TRX'} is being verified. Hash: ${data.txHash || 'Pending'}`)
+          setMessage(`TRX payment submitted. Administration will verify it and credit the equivalent Flame Coin.`)
           setAmount('')
-          fetchBalance()
+          setDepositTxHash('')
         }
       } else {
         setMessage(data.error || 'Deposit initialization failed')
@@ -174,7 +186,7 @@ export default function WalletDepositWithdrawPage() {
         setMessage('Receipt submitted! Admin will verify your deposit shortly.')
         setDepositStep('amount')
         setPendingDepositId(null)
-        setPendingDepositAmountTrx('')
+        setPendingDepositFlameCoin('')
         setReceiptText('')
         setAmount('')
         fetchBalance()
@@ -188,10 +200,9 @@ export default function WalletDepositWithdrawPage() {
     }
   }
 
-  const PLATFORM_TRON_WALLET = 'TNzNPekX1tbeFYRe3DPjnNV2dG6QfvHymt'
-
   const copyPlatformWallet = () => {
-    navigator.clipboard.writeText(PLATFORM_TRON_WALLET)
+    if (!companyTrxWallet) return
+    navigator.clipboard.writeText(companyTrxWallet)
     setMessage('Wallet address copied to clipboard!')
     setTimeout(() => setMessage(''), 3000)
   }
@@ -208,7 +219,7 @@ export default function WalletDepositWithdrawPage() {
     }
 
     if (!withdrawAddress) {
-      setMessage('Please enter a TRON wallet address')
+      setMessage('Please enter a external wallet address')
       return
     }
 
@@ -231,7 +242,7 @@ export default function WalletDepositWithdrawPage() {
 
       const data = await response.json()
       if (data.success) {
-        setMessage(`Withdrawal of ${amount} TRX initiated! Processing time: 1-24 hours`)
+        setMessage(`Withdrawal of ${amount} Flame Coin initiated! Processing time: 1-24 hours`)
         setAmount('')
         setWithdrawAddress('')
         fetchBalance()
@@ -278,7 +289,7 @@ export default function WalletDepositWithdrawPage() {
       })
       const data = await response.json()
       if (data.success) {
-        setMessage(data.message || `Withdrawal of ${amount} TRX initiated via OPay!`)
+        setMessage(data.message || `Withdrawal of ${amount} Flame Coin initiated via OPay!`)
         setAmount('')
         setWithdrawBankName('')
         setWithdrawAccountNumber('')
@@ -341,9 +352,9 @@ export default function WalletDepositWithdrawPage() {
                   <p className="text-slate-400 text-sm mb-1">Current Balance</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-cyan-400">{balance.toFixed(2)}</span>
-                    <span className="text-xl text-slate-400">TRX</span>
+                    <span className="text-xl text-slate-400">Flame Coin</span>
                   </div>
-                  {['admin', 'agent', 'bridger'].includes(user.role) && (
+                  {isOpayRole && (
                     <p className="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
                       <Check className="h-3 w-3 text-green-500" />
                       Automatic conversion active
@@ -391,7 +402,7 @@ export default function WalletDepositWithdrawPage() {
                     <>
                       <h2 className="text-xl font-bold text-white mb-4">Submit Payment Proof</h2>
                       <p className="text-slate-400 text-sm mb-6">
-                        Your deposit record has been created for <strong>{pendingDepositAmountTrx} TRX</strong>. Send the NGN payment to OPay account <strong>{WEAVE_OPAY_ACCOUNT_NUMBER}</strong>, then paste your transaction reference or receipt details below. An admin will verify and credit your wallet.
+                        Your deposit record has been created for <strong>{pendingDepositFlameCoin} Flame Coin</strong>. Send the NGN payment to OPay account <strong>{WEAVE_OPAY_ACCOUNT_NUMBER}</strong>, then paste your transaction reference or receipt details below. An admin will verify and credit your wallet.
                       </p>
 
                       <div className="mb-6">
@@ -428,21 +439,21 @@ export default function WalletDepositWithdrawPage() {
                         </Button>
                       </div>
                     </>
-                  ) : ['admin', 'agent', 'bridger'].includes(user.role) ? (
+                  ) : isOpayRole ? (
                     <>
                       <h2 className="text-xl font-bold text-white mb-4">Deposit via OPay (NGN) - Manual Verification</h2>
                       <p className="text-slate-400 text-sm mb-6">
-                        Deposit Naira (NGN) safely with OPay. Funds will be <strong>automatically converted to TRX</strong> at the current platform rate and credited to your wallet for use in the Arena and Casino.
+                        Deposit Naira (NGN) through the Company OPay account. The verified Naira amount is converted at the current TRX/NGN price and credited as Flame Coin for purchases, subscriptions, workshops, Arena, Casino, and other paid participation across Weave.
                       </p>
                       
                       <div className="mb-6 grid grid-cols-2 gap-4">
                         <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
                           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Exchange Rate</p>
-                          <p className="text-cyan-400 font-bold">{trxRate ? `1 TRX = ₦${trxRate.toFixed(2)}` : 'Loading...'}</p>
+                          <p className="text-cyan-400 font-bold">{flameCoinRate ? `1 Flame Coin = ₦${flameCoinRate.toFixed(2)}` : 'Loading...'}</p>
                         </div>
                         <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl">
                           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Target Asset</p>
-                          <p className="text-white font-bold">TRX (TRON)</p>
+                          <p className="text-white font-bold">Flame Coin</p>
                         </div>
                       </div>
 
@@ -459,23 +470,23 @@ export default function WalletDepositWithdrawPage() {
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">NGN</div>
                         </div>
-                        {amount && trxRate && (
+                        {amount && flameCoinRate && (
                           <p className="text-xs text-cyan-400 mt-2">
-                            Estimated conversion: <span className="font-bold">{(parseFloat(amount) / trxRate).toFixed(6)} TRX</span>
+                            Estimated conversion: <span className="font-bold">{(parseFloat(amount) / flameCoinRate).toFixed(6)} Flame Coin</span>
                           </p>
                         )}
                       </div>
                     </>
                   ) : (
                     <>
-                      <h2 className="text-xl font-bold text-white mb-4">Deposit via TRON (TRX)</h2>
-                      <p className="text-slate-400 text-sm mb-6">Send TRX to the platform vault address below. Your balance will be updated automatically once the transaction is confirmed on the blockchain.</p>
+                      <h2 className="text-xl font-bold text-white mb-4">Fund Flame Coin with TRX</h2>
+                      <p className="text-slate-400 text-sm mb-6">Send real TRX to the Company TRX payment wallet below. After verification, the same number of Flame Coins is credited to your Weave balance.</p>
 
                       {/* Platform Wallet Address */}
                       <div className="mb-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-                        <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Platform Vault Address</p>
+                        <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Company TRX Payment Wallet</p>
                         <div className="flex items-center justify-between gap-2">
-                          <code className="text-cyan-400 font-mono text-sm break-all">{PLATFORM_TRON_WALLET}</code>
+                          <code className="text-cyan-400 font-mono text-sm break-all">{companyTrxWallet}</code>
                           <Button onClick={copyPlatformWallet} variant="ghost" size="sm" className="shrink-0 hover:bg-slate-700">
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -484,25 +495,41 @@ export default function WalletDepositWithdrawPage() {
 
                       {/* Amount Input */}
                       <div className="mb-6">
-                        <label className="block text-sm font-semibold text-white mb-3">Amount Deposited (TRX)</label>
+                        <label className="block text-sm font-semibold text-white mb-3">Amount Sent (TRX)</label>
                         <div className="relative">
                           <input
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
-                            placeholder="Enter amount in TRX"
+                            placeholder="Enter TRX amount"
                             className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
                           />
                         </div>
+                      </div>
+                      {amount && (
+                        <p className="text-xs text-cyan-400 -mt-4 mb-6">
+                          After verification: <span className="font-bold">{parseFloat(amount).toLocaleString(undefined, { maximumFractionDigits: 6 })} TRX = {parseFloat(amount).toLocaleString(undefined, { maximumFractionDigits: 6 })} Flame Coin</span>
+                          {trxPaymentRate ? <> · NGN value ≈ ₦{(parseFloat(amount) * trxPaymentRate).toLocaleString(undefined, { maximumFractionDigits: 2 })}</> : null}
+                        </p>
+                      )}
+                      <div className="mb-6">
+                        <label className="block text-sm font-semibold text-white mb-3">TRX Transaction Hash</label>
+                        <input
+                          type="text"
+                          value={depositTxHash}
+                          onChange={(e) => setDepositTxHash(e.target.value)}
+                          placeholder="Paste the TRX transaction hash"
+                          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                        />
                       </div>
                     </>
                   )}
 
                   {/* Quick Amounts */}
                   <div className="mb-6">
-                    <p className="text-sm text-slate-400 mb-3">Quick select ({['admin', 'agent', 'bridger'].includes(user.role) ? 'NGN' : 'TRX'}):</p>
+                    <p className="text-sm text-slate-400 mb-3">Quick select ({isOpayRole ? 'NGN' : 'TRX'}):</p>
                     <div className="grid grid-cols-5 gap-2">
-                      {[1000, 5000, 10000, 50000, 100000].map((amt) => (
+                      {(isOpayRole ? [1000, 5000, 10000, 50000, 100000] : [1, 5, 10, 50, 100]).map((amt) => (
                         <button
                           key={amt}
                           onClick={() => setAmount(amt.toString())}
@@ -522,21 +549,21 @@ export default function WalletDepositWithdrawPage() {
 
                   <Button
                     onClick={handleDeposit}
-                    disabled={loading || !amount}
+                    disabled={loading || !amount || (!isOpayRole && !depositTxHash.trim())}
                     className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-0 py-6 text-lg"
                   >
-                    {loading ? 'Processing...' : `Deposit ${['admin', 'agent', 'bridger'].includes(user.role) ? 'NGN' : 'TRX'}`}
+                    {loading ? 'Processing...' : `Deposit ${isOpayRole ? 'NGN' : 'TRX'}`}
                   </Button>
 
                   <p className="text-xs text-slate-500 text-center mt-4">
-                    {['admin', 'agent', 'bridger'].includes(user.role) 
+                    {isOpayRole 
                       ? `Manual OPay Deposit: Send NGN to OPay ${WEAVE_OPAY_ACCOUNT_NUMBER}, then submit your deposit for admin verification.` 
-                      : 'Transfers are typically confirmed within 1-5 minutes'}
+                      : 'Send TRX, submit its transaction hash, and Administration will verify 1 TRX = 1 Flame Coin.'}
                   </p>
                 </div>
               </div>
 
-              {['admin', 'agent', 'bridger'].includes(user.role) && (
+              {isOpayRole && (
                 <div className="space-y-6">
                   <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
                     <h3 className="text-lg font-bold text-white mb-4">Conversion Rationale</h3>
@@ -545,19 +572,19 @@ export default function WalletDepositWithdrawPage() {
                         <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
                           <span className="text-cyan-400 text-xs font-bold">1</span>
                         </div>
-                        <p className="text-slate-400 text-sm">All Arena matches and Casino games operate exclusively on the TRON (TRX) blockchain for transparency and speed.</p>
+                        <p className="text-slate-400 text-sm">Flame Coin is Weave's internal purchasing unit for platform purchases, subscriptions, workshops, Arena, Casino, and other paid participation.</p>
                       </div>
                       <div className="flex gap-4">
                         <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
                           <span className="text-cyan-400 text-xs font-bold">2</span>
                         </div>
-                        <p className="text-slate-400 text-sm">By depositing in Naira, the system handles the liquidity bridge for you, ensuring you always have TRX ready for play.</p>
+                        <p className="text-slate-400 text-sm">Agents and Bridgers fund Flame Coin through verified Naira payments to the Company OPay account.</p>
                       </div>
                       <div className="flex gap-4">
                         <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
                           <span className="text-cyan-400 text-xs font-bold">3</span>
                         </div>
-                        <p className="text-slate-400 text-sm">Winnings are also accumulated in TRX and can be withdrawn to any TRON-compatible wallet.</p>
+                        <p className="text-slate-400 text-sm">Clients fund Flame Coin by sending TRX to the Company TRX wallet; after verification, 1 TRX credits 1 Flame Coin.</p>
                       </div>
                     </div>
                   </div>
@@ -573,7 +600,7 @@ export default function WalletDepositWithdrawPage() {
                               <p className="text-[10px] text-slate-500">{new Date(conv.created_at).toLocaleDateString()}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-bold text-cyan-400">+{conv.amount} TRX</p>
+                              <p className="text-sm font-bold text-cyan-400">+{conv.amount} Flame Coin</p>
                               <p className="text-[9px] text-slate-500">Converted from NGN</p>
                             </div>
                           </div>
@@ -594,22 +621,22 @@ export default function WalletDepositWithdrawPage() {
                 {isOpayRole ? (
                   <>
                     <h2 className="text-xl font-bold text-white mb-4">Withdraw via OPay (NGN)</h2>
-                    <p className="text-slate-400 text-sm mb-6">Cash out your TRX balance to your bank account via OPay.</p>
+                    <p className="text-slate-400 text-sm mb-6">Cash out your Flame Coin balance to your bank account via OPay.</p>
 
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold text-white mb-3">Amount (TRX)</label>
+                      <label className="block text-sm font-semibold text-white mb-3">Amount (Flame Coin)</label>
                       <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="Enter TRX amount"
+                        placeholder="Enter Flame Coin amount"
                         className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       />
-                      <p className="text-slate-500 text-sm mt-2">Available: {balance.toFixed(2)} TRX</p>
-                      {amount && trxRate && (
+                      <p className="text-slate-500 text-sm mt-2">Available: {balance.toFixed(2)} Flame Coin</p>
+                      {amount && flameCoinRate && (
                         <p className="text-xs text-orange-400 mt-2">
-                          You'll receive: <span className="font-bold">₦{(parseFloat(amount) * trxRate * (1 - platformFeePercent / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                          {' '}(rate: 1 TRX = ₦{trxRate.toFixed(2)}, {platformFeePercent}% fee)
+                          You'll receive: <span className="font-bold">₦{(parseFloat(amount) * flameCoinRate * (1 - platformFeePercent / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                          {' '}(rate: 1 Flame Coin = ₦{flameCoinRate.toFixed(2)}, {platformFeePercent}% fee)
                         </p>
                       )}
                     </div>
@@ -662,24 +689,24 @@ export default function WalletDepositWithdrawPage() {
                     </Button>
 
                     <p className="text-xs text-slate-500 text-center mt-4">
-                      Minimum withdrawal: 10 TRX - Processing time: 1-24 hours
+                      Minimum withdrawal: 10 Flame Coin - Processing time: 1-24 hours
                     </p>
                   </>
                 ) : (
                   <>
-                    <h2 className="text-xl font-bold text-white mb-4">Withdraw TRX</h2>
-                    <p className="text-slate-400 text-sm mb-6">Withdraw TRX to your external TRON wallet</p>
+                    <h2 className="text-xl font-bold text-white mb-4">Withdraw Flame Coin</h2>
+                    <p className="text-slate-400 text-sm mb-6">Withdraw Flame Coin as TRX to your external TRON wallet</p>
 
                     <div className="mb-6">
-                      <label className="block text-sm font-semibold text-white mb-3">Amount (TRX)</label>
+                      <label className="block text-sm font-semibold text-white mb-3">Amount (Flame Coin)</label>
                       <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="Enter TRX amount"
+                        placeholder="Enter Flame Coin amount"
                         className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       />
-                      <p className="text-slate-500 text-sm mt-2">Available: {balance.toFixed(2)} TRX</p>
+                      <p className="text-slate-500 text-sm mt-2">Available: {balance.toFixed(2)} Flame Coin</p>
                     </div>
 
                     <div className="mb-6">
@@ -688,7 +715,7 @@ export default function WalletDepositWithdrawPage() {
                         type="text"
                         value={withdrawAddress}
                         onChange={(e) => setWithdrawAddress(e.target.value)}
-                        placeholder="Enter your TRON wallet address (T...)"
+                        placeholder="Enter your external wallet address (T...)"
                         className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       />
                     </div>
@@ -708,7 +735,7 @@ export default function WalletDepositWithdrawPage() {
                     </Button>
 
                     <p className="text-xs text-slate-500 text-center mt-4">
-                      Minimum withdrawal: 10 TRX - Processing time: 1-24 hours
+                      Minimum withdrawal: 10 Flame Coin - Processing time: 1-24 hours
                     </p>
                   </>
                 )}

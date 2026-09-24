@@ -126,7 +126,7 @@ export default function AdminPaymentPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Amount */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Amount (TRX)</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Amount (Flame Coin)</label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                   <input
@@ -206,7 +206,7 @@ export default function AdminPaymentPage() {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="font-bold text-cyan-400">{payment.amount} TRX</span>
+                        <span className="font-bold text-cyan-400">{payment.amount} Flame Coin</span>
                       </td>
                       <td className="py-4 px-4 text-slate-300">{payment.month}</td>
                       <td className="py-4 px-4 text-slate-400 text-sm max-w-xs">{payment.confirmed_functions}</td>

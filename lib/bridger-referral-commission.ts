@@ -85,7 +85,7 @@ export async function creditBridgerReferralCommission(params: {
 
     await sql`
       INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at)
-      VALUES (gen_random_uuid(), ${referrerId}::uuid, 'bridger_referral_commission', ${commissionAmount}, 'TRX', ${description}, NOW())
+      VALUES (gen_random_uuid(), ${referrerId}::uuid, 'bridger_referral_commission', ${commissionAmount}, 'Flame Coin', ${description}, NOW())
     `
 
     await sql`
@@ -101,7 +101,7 @@ export async function creditBridgerReferralCommission(params: {
           ${referrerId}::uuid,
           'commission',
           'A return has come to you',
-          ${`You earned ${commissionAmount.toFixed(2)} TRX referral commission (30%) from a Bridger you referred.`},
+          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin referral commission (30%) from a Bridger you referred.`},
           'WEAVE'
         )
       `

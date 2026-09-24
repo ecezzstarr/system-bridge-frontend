@@ -191,9 +191,10 @@ const REMINDER_DAYS_BEFORE = 3
 
 export async function autoDeductContinuance(userId: string) {
   await ensureContinuanceTables()
-  const { getTrxNgnRate, ngnToTrx } = await import('./trx-rate')
-  const { rate } = await getTrxNgnRate()
-  const trxAmount = ngnToTrx(WORLD_RULES.BRIDGER_CONTINUANCE_NGN, rate)
+  const { ngnToFlameCoin } = await import('./flame-coin')
+  const { getTrxPaymentNgnRate } = await import('./trx-payment')
+  const { rateNgnPerTrx: rate } = await getTrxPaymentNgnRate()
+  const flameCoinAmount = ngnToFlameCoin(WORLD_RULES.BRIDGER_CONTINUANCE_NGN, rate)
 
   await sql`BEGIN`
   try {
@@ -202,12 +203,12 @@ export async function autoDeductContinuance(userId: string) {
     `
     const balance = walletRows[0]?.balance_trx ?? 0
 
-    if (balance < trxAmount) {
+    if (balance < flameCoinAmount) {
       await sql`ROLLBACK`
-      return { success: false, reason: 'insufficient_balance', requiredTrx: trxAmount, availableTrx: balance, rate }
+      return { success: false, reason: 'insufficient_balance', requiredFlameCoin: flameCoinAmount, availableFlameCoin: balance, rate }
     }
 
-    const newBalance = balance - trxAmount
+    const newBalance = balance - flameCoinAmount
     await sql`
       UPDATE wallets SET balance_trx = ${newBalance}, updated_at = NOW()
       WHERE user_id = ${userId}::uuid AND is_primary = true
@@ -218,7 +219,7 @@ export async function autoDeductContinuance(userId: string) {
 
     await sql`
       INSERT INTO subscription_payments (user_id, amount, currency, payment_method, transaction_reference, status, period_start, period_end)
-      VALUES (${userId}, ${trxAmount}, 'TRX', 'trx_wallet', ${'AUTO-' + Date.now()}, 'success', ${now}, ${nextExpiry})
+      VALUES (${userId}, ${flameCoinAmount}, 'Flame Coin', 'flame_coin_wallet', ${'AUTO-' + Date.now()}, 'success', ${now}, ${nextExpiry})
     `
 
     await sql`
@@ -228,7 +229,7 @@ export async function autoDeductContinuance(userId: string) {
     `
 
     await sql`COMMIT`
-    return { success: true, trxAmount, rate, nextExpiry }
+    return { success: true, flameCoinAmount, rate, nextExpiry }
   } catch (error) {
     await sql`ROLLBACK`
     console.error('Auto-deduct continuance failed:', error)

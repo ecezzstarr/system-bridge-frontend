@@ -53,11 +53,11 @@ export async function POST(request: NextRequest) {
     }
 
     // status === 'approved'
-    const trxAmount = Number(deposit[0].amount_trx)
+    const flameCoinAmount = Number(deposit[0].amount_trx)
 
     await sql`
       UPDATE wallets
-      SET balance_trx = balance_trx + ${trxAmount},
+      SET balance_trx = balance_trx + ${flameCoinAmount},
           updated_at = NOW()
       WHERE user_id = ${deposit[0].user_id}::uuid
       AND is_primary = true
@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
       VALUES (
         ${deposit[0].user_id}::uuid,
         'deposit',
-        ${trxAmount},
-        'TRX',
+        ${flameCoinAmount},
+        'Flame Coin',
         'OPay Deposit Approved',
         ${JSON.stringify({
           deposit_id: depositId,
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'TRX credited successfully'
+      message: 'Flame Coin credited successfully'
     })
 
   } catch (error: any) {

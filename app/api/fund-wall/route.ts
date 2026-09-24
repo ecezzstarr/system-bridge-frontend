@@ -40,20 +40,20 @@ export async function GET() {
     const escrowStats = await sql`
       SELECT COALESCE(SUM(CAST(amount AS DECIMAL)), 0) as total_locked
       FROM escrow
-      WHERE status = 'locked' AND currency = 'TRX'
+      WHERE status = 'locked' AND currency = 'Flame Coin'
     `
 
     // Get total transaction count
     const txStats = await sql`
       SELECT COUNT(*) as total_transactions
       FROM transactions
-      WHERE currency = 'TRX' AND status = 'completed'
+      WHERE currency = 'Flame Coin' AND status = 'completed'
     `
 
     // Get recent sweeps from platform wallet to company wallet
     const recentSweeps = await sql`
       SELECT * FROM transactions
-      WHERE type = 'sweep' AND currency = 'TRX' AND status = 'completed'
+      WHERE type = 'sweep' AND currency = 'Flame Coin' AND status = 'completed'
       ORDER BY completed_at DESC
       LIMIT 10
     `

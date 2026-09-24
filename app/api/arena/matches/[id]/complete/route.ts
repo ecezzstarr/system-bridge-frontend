@@ -97,8 +97,8 @@ export async function POST(
           ${winnerId}::uuid,
           'arena_win',
           ${winnerPayout},
-          'TRX',
-          ${'Arena match win: ' + match.title + ' (70% of ' + prizePool + ' TRX prize pool)'},
+          'Flame Coin',
+          ${'Arena match win: ' + match.title + ' (70% of ' + prizePool + ' Flame Coin prize pool)'},
           NOW()
         )
       `
@@ -111,8 +111,8 @@ export async function POST(
           ${PLATFORM_WALLET_USER_ID}::uuid,
           'arena_platform_fee',
           ${platformFee},
-          'TRX',
-          ${'Arena platform fee: ' + match.title + ' (30% of ' + prizePool + ' TRX prize pool)'},
+          'Flame Coin',
+          ${'Arena platform fee: ' + match.title + ' (30% of ' + prizePool + ' Flame Coin prize pool)'},
           NOW()
         )
       `
@@ -128,7 +128,7 @@ export async function POST(
       bridgerId: winnerId,
       activity: 'arena_win',
       baseAmount: winnerPayout,
-      description: `30% commission: referred Bridger won ${winnerPayout.toFixed(2)} TRX in Arena (${match.title})`,
+      description: `30% commission: referred Bridger won ${winnerPayout.toFixed(2)} Flame Coin in Arena (${match.title})`,
     }).catch(err => console.error('[arena complete] commission error:', err))
 
     return NextResponse.json({
@@ -139,7 +139,7 @@ export async function POST(
       prizePool,
       winnerPayout,
       platformFee,
-      message: `Match completed! ${winnerName} wins ${winnerPayout.toFixed(2)} TRX (70%). Platform fee: ${platformFee.toFixed(2)} TRX (30%)`
+      message: `Match completed! ${winnerName} wins ${winnerPayout.toFixed(2)} Flame Coin (70%). Platform fee: ${platformFee.toFixed(2)} Flame Coin (30%)`
     })
 
   } catch (error) {

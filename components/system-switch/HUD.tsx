@@ -628,34 +628,34 @@ export function HUD({
 
               <div className="grid grid-cols-1 gap-4">
                 <button
-                  onClick={() => depositFlow.setTier(WORLD_RULES.FILE_FOLDER_PRICE_TRX)}
+                  onClick={() => depositFlow.setTier(WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN)}
                   className={`p-6 rounded-[32px] border transition-all text-left relative overflow-hidden group ${
-                    depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_TRX
+                    depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
                       ? 'bg-[#e8b93f] border-[#e8b93f]'
                       : 'bg-white/5 border-white/10 hover:border-white/20'
                   }`}
                 >
                   <div
                     className={`text-3xl font-black mb-1 ${
-                      depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_TRX
+                      depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
                         ? 'text-black'
                         : 'text-[#e8b93f]'
                     }`}
                   >
-                    {WORLD_RULES.FILE_FOLDER_PRICE_TRX.toLocaleString()} TRX
+                    {WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN.toLocaleString()} Flame Coin
                   </div>
 
                   <p
                     className={`text-sm font-bold uppercase tracking-widest ${
-                      depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_TRX
+                      depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
                         ? 'text-black/60'
                         : 'text-white/40'
                     }`}
                   >
-                    File Folder Amount
+                    Flame Coin Price · Same Amount in TRX
                   </p>
 
-                  {depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_TRX && (
+                  {depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN && (
                     <motion.div
                       layoutId="tier-check"
                       className="absolute top-6 right-6 w-8 h-8 bg-black rounded-full flex items-center justify-center"
@@ -674,18 +674,18 @@ export function HUD({
                 >
                   <div className="p-6 bg-black border border-white/5 rounded-3xl space-y-4">
                     <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
-                      Institutional Wallet (TRON)
+                      Company TRX Payment Wallet
                     </p>
 
                     <div className="flex items-center justify-between gap-4 p-4 bg-white/5 rounded-2xl border border-white/5">
                       <p className="font-mono text-xs md:text-sm text-[#e8b93f] break-all leading-relaxed">
-                        {WORLD_RULES.COMPANY_WALLET}
+                        {WORLD_RULES.COMPANY_TRX_WALLET}
                       </p>
 
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(
-                            WORLD_RULES.COMPANY_WALLET
+                            WORLD_RULES.COMPANY_TRX_WALLET
                           )
                         }}
                         className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl transition-colors shrink-0"
@@ -712,7 +712,7 @@ export function HUD({
                   </div>
 
                   <input
-                    placeholder="Transaction Hash (Optional)"
+                    placeholder="TRX Transaction Hash"
                     value={depositFlow.txHash}
                     onChange={(e) => depositFlow.setTxHash(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-white/20 outline-none focus:border-[#e8b93f]/50 transition-colors"
@@ -731,7 +731,8 @@ export function HUD({
                       disabled={
                         depositFlow.submitting ||
                         !depositFlow.name.trim() ||
-                        !depositFlow.phone.trim()
+                        !depositFlow.phone.trim() ||
+                        !depositFlow.txHash.trim()
                       }
                       className="flex-[2] bg-[#e8b93f] text-black font-black py-5 rounded-[24px] shadow-2xl shadow-[#e8b93f]/20 hover:bg-[#d4a935] transition-all active:scale-95 disabled:opacity-40"
                     >

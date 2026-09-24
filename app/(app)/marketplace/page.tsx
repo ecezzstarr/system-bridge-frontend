@@ -235,13 +235,13 @@ export default function MarketplacePage() {
                       <span className="text-sm">3 Prospective Client Contacts</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Contact details revealed after purchase. 1.1 TRX per prospect.
+                      Contact details revealed after purchase. 1.1 Flame Coin per prospect.
                     </p>
                   </CardContent>
                   <CardFooter className="flex items-center justify-between border-t border-border p-4">
                     <p className="font-mono text-lg font-bold">
                       {Number(pkg.price_trx).toLocaleString()}{" "}
-                      <span className="text-sm font-normal text-muted-foreground">TRX</span>
+                      <span className="text-sm font-normal text-muted-foreground">Flame Coin</span>
                     </p>
                     <Button
                       size="sm"
@@ -401,7 +401,7 @@ export default function MarketplacePage() {
                 <CardFooter className="flex items-center justify-between border-t border-border p-4">
                   <p className="font-mono text-lg font-bold">
                     {item.price.toLocaleString()}{" "}
-                    <span className="text-sm font-normal text-muted-foreground">TRX</span>
+                    <span className="text-sm font-normal text-muted-foreground">Flame Coin</span>
                   </p>
                   <Button
                     size="sm"
@@ -456,7 +456,7 @@ export default function MarketplacePage() {
                         <p className="font-mono text-lg font-bold">
                           {item.price.toLocaleString()}{" "}
                           <span className="text-sm font-normal text-muted-foreground">
-                            TRX
+                            Flame Coin
                           </span>
                         </p>
                       </div>

@@ -31,8 +31,9 @@ export async function POST(request: NextRequest) {
     await ensureClientFileFolderSchema(sql); await ensurePurchaseSchema()
     const body = await request.json()
     const fileNumber = typeof body.fileNumber === 'string' && body.fileNumber.trim() ? body.fileNumber.trim().toUpperCase() : null
-    const amountTrx = body.amountTrx == null || body.amountTrx === '' ? FILE_FOLDER_PRICING.standardTrx : Number(body.amountTrx)
-    const paymentMethod = body.paymentMethod === 'flutterwave' ? 'flutterwave' : 'trx'
+    const rawAmount = body.amountFlameCoin ?? body.amountTrx // amountTrx kept only for legacy clients
+    const amountFlameCoin = rawAmount == null || rawAmount === '' ? FILE_FOLDER_PRICING.standardFlameCoin : Number(rawAmount)
+    const paymentMethod = 'trx'
     const paymentReference = typeof body.paymentReference === 'string' ? body.paymentReference.trim() : ''
     const buyerName = typeof body.buyerName === 'string' ? body.buyerName.trim() : null
     const buyerEmail = typeof body.buyerEmail === 'string' ? body.buyerEmail.trim() : null
@@ -52,8 +53,8 @@ export async function POST(request: NextRequest) {
       flameName = trustedCrossing.flame_name || null
       flameExternalId = trustedCrossing.flame_external_id || null
     }
-    if (!validPrice(amountTrx)) return NextResponse.json({ error: `File Folder value must be at least ${FILE_FOLDER_PRICING.minimumTrx.toLocaleString()} TRX.` }, { status: 400 })
-    if (!paymentReference) return NextResponse.json({ error: 'Payment reference is required.' }, { status: 400 })
+    if (!validPrice(amountFlameCoin)) return NextResponse.json({ error: `File Folder value must be at least ${FILE_FOLDER_PRICING.minimumFlameCoin.toLocaleString()} Flame Coin.` }, { status: 400 })
+    if (!paymentReference) return NextResponse.json({ error: 'TRX transaction hash is required.' }, { status: 400 })
     if (fileNumber) {
       const [folder] = await sql`SELECT * FROM client_file_folders WHERE file_number=${fileNumber} LIMIT 1`
       if (!folder) return NextResponse.json({ error: 'File Folder not found' }, { status: 404 })
@@ -61,8 +62,8 @@ export async function POST(request: NextRequest) {
     }
     const [existing] = await sql`SELECT id FROM file_folder_purchases WHERE payment_reference=${paymentReference} LIMIT 1`
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
-    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountTrx},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) RETURNING *`
-    await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'system-switch', payload: { fileNumber, amountTrx, paymentMethod, paymentReference } })
+    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) RETURNING *`
+    await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'system-switch', payload: { fileNumber, amountFlameCoin, paymentMethod, paymentReference } })
     return NextResponse.json({ success: true, purchase: record, message: 'Payment recorded. Administration must confirm the payment before the File Folder is activated.' }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }

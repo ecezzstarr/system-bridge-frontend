@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       success: true,
       totalMinutes,
       hoursInField: Math.floor(totalMinutes / 60),
-      // Presence value: 1 TRX per 60 minutes (accrues, paid monthly)
+      // Presence value: 1 Flame Coin per 60 minutes (accrues, paid monthly)
       accruedValue: (totalMinutes / 60).toFixed(2)
     })
 
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     const totalMinutes = Number(users[0].field_presence_minutes) || 0
     const memberSince = users[0].created_at
 
-    // Calculate presence value (1 TRX per hour in field)
+    // Calculate presence value (1 Flame Coin per hour in field)
     const accruedValue = totalMinutes / 60
 
     return NextResponse.json({

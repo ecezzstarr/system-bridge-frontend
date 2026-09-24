@@ -100,7 +100,7 @@ export default function Home() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-4 max-w-5xl mx-auto w-full px-2">
             {[
-              { val: "TRX", label: "Native Wallet" },
+              { val: "Flame Coin", label: "Native Wallet" },
               { val: "24/7", label: "Participation" },
               { val: "3-tier", label: "Human Network" },
               { val: "AI", label: "Institutional Support" }
@@ -125,7 +125,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {[
-                { icon: Wallet, title: "Wallet & Ledger", desc: "Manage your TRX and USDT. A single, transparent source of truth for your value.", color: "text-[#e8b93f]" },
+                { icon: Wallet, title: "Wallet & Ledger", desc: "Manage your Flame Coin and USDT. A single, transparent source of truth for your value.", color: "text-[#e8b93f]" },
                 { icon: Network, title: "Institutional Network", desc: "Coordinate with Agents, Bridgers, and Clients within a structured human network.", color: "text-[#14b8a6]" },
                 { icon: MessageSquare, title: "The Lounge", desc: "Participate in real-time communication and stay in sync with your team.", color: "text-[#8b7cf6]" },
                 { icon: Trophy, title: "Arena", desc: "Compete and participate in specialized environments designed for action.", color: "text-[#e8b93f]" }

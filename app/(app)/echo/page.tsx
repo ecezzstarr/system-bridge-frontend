@@ -7,7 +7,7 @@ import { Sparkles, ShieldCheck, Smartphone, Chrome, Globe, BrainCircuit } from '
 
 const EchoOrb = dynamic(() => import('@/components/echo-orb'), { ssr: false })
 
-const SUBSCRIPTION_FEE_TRX = 7
+const SUBSCRIPTION_FEE_FLAME_COIN = 7
 
 type Continuance = {
   user_id: string
@@ -89,7 +89,7 @@ export default function EchoPage() {
         setMessage('Echo activated. Your reflective insights will build over time.')
         await load()
       } else if (data.reason === 'insufficient_balance') {
-        setError(`Insufficient balance. Need ${data.requiredTrx} TRX, wallet has ${data.availableTrx} TRX.`)
+        setError(`Insufficient balance. Need ${data.requiredFlameCoin} Flame Coin, wallet has ${data.availableFlameCoin} Flame Coin.`)
       } else {
         setError('Continuance failed. Please try again.')
       }
@@ -222,7 +222,7 @@ export default function EchoPage() {
 
       {!isActive ? (
         <div className="border border-slate-800 rounded-2xl p-5 bg-slate-900/50 space-y-4">
-          <h2 className="text-lg font-medium text-white">Subscribe — {SUBSCRIPTION_FEE_TRX} TRX / month</h2>
+          <h2 className="text-lg font-medium text-white">Subscribe — {SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin / month</h2>
           <p className="text-sm text-slate-500">
             Deducted from your primary wallet. Available to every account type. Cancel anytime by letting it lapse.
           </p>
@@ -231,7 +231,7 @@ export default function EchoPage() {
             disabled={subscribing}
             className="w-full bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl py-2.5 font-medium disabled:opacity-50 transition"
           >
-            {subscribing ? 'Activating...' : `Subscribe for ${SUBSCRIPTION_FEE_TRX} TRX`}
+            {subscribing ? 'Activating...' : `Subscribe for ${SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin`}
           </button>
         </div>
       ) : (

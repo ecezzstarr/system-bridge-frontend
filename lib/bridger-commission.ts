@@ -29,7 +29,7 @@ export async function creditBridgerCommission(params: {
 
     await sql`
       INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at)
-      VALUES (gen_random_uuid(), ${bridgerId}::uuid, 'bridger_commission', ${commissionAmount}, 'TRX', ${description}, NOW())
+      VALUES (gen_random_uuid(), ${bridgerId}::uuid, 'bridger_commission', ${commissionAmount}, 'Flame Coin', ${description}, NOW())
     `
 
     await sql`
@@ -45,7 +45,7 @@ export async function creditBridgerCommission(params: {
           ${bridgerId}::uuid,
           'commission',
           'A return has come to you',
-          ${`You earned ${commissionAmount.toLocaleString()} TRX commission (${(rate * 100).toFixed(0)}%) from a Client crossing.`},
+          ${`You earned ${commissionAmount.toLocaleString()} Flame Coin commission (${(rate * 100).toFixed(0)}%) from a Client crossing.`},
           'WEAVE'
         )
       `

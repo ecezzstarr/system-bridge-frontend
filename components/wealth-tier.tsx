@@ -62,7 +62,7 @@ export function WealthTier({ tier, balance, className }: WealthTierProps) {
       <span>{config.label}</span>
       {balance !== undefined && (
         <span className="text-muted-foreground">
-          {balance.toLocaleString()} TRX
+          {balance.toLocaleString()} Flame Coin
         </span>
       )}
     </div>

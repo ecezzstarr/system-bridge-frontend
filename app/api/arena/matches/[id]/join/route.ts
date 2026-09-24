@@ -99,7 +99,7 @@ export async function POST(
             ${userId}::uuid,
             'arena_entry_fee',
             ${-entryFee},
-            'TRX',
+            'Flame Coin',
             ${'Arena entry fee: ' + match.title},
             NOW()
           )

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
-import { getTrxNgnRate, trxToNgn, PLATFORM_FEE_PERCENT } from '@/lib/trx-rate'
+import { flameCoinToNgn } from '@/lib/flame-coin'
+import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
+import { WORLD_RULES } from '@/lib/world/constants'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (authedUser.role === 'client') {
-      return NextResponse.json({ success: false, error: 'OPay withdrawal is reserved for admin, agent, and bridger accounts. Please use TRON withdrawal.' }, { status: 403 })
+      return NextResponse.json({ success: false, error: 'OPay withdrawal is reserved for admin, agent, and bridger accounts. This account is not enabled for OPay withdrawal.' }, { status: 403 })
     }
 
     const { userId, amount, bankName, accountNumber, accountName } = await request.json()
@@ -24,9 +26,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing required fields: amount, bankName, accountNumber, accountName' }, { status: 400 })
     }
 
-    const amountTrx = Number(amount)
-    if (amountTrx < 10) {
-      return NextResponse.json({ success: false, error: 'Minimum withdrawal is 10 TRX' }, { status: 400 })
+    const amountFlameCoin = Number(amount)
+    if (amountFlameCoin < 10) {
+      return NextResponse.json({ success: false, error: 'Minimum withdrawal is 10 Flame Coin' }, { status: 400 })
     }
 
     const wallets = await sql`
@@ -40,12 +42,13 @@ export async function POST(request: NextRequest) {
     const wallet = wallets[0]
     const currentBalance = parseFloat(wallet.balance_trx) || 0
 
-    if (currentBalance < amountTrx) {
+    if (currentBalance < amountFlameCoin) {
       return NextResponse.json({ success: false, error: 'Insufficient balance' }, { status: 400 })
     }
 
-    const { rate, source } = await getTrxNgnRate()
-    const amountNgn = trxToNgn(amountTrx, rate)
+    const { rateNgnPerTrx: rate, source } = await getTrxPaymentNgnRate()
+    const grossNgn = flameCoinToNgn(amountFlameCoin, rate)
+    const amountNgn = Math.round(grossNgn * (1 - WORLD_RULES.PLATFORM_FEE_PERCENT / 100) * 100) / 100
 
     const reference = 'WD-OPAY-' + userId.substring(0, 8) + '-' + Date.now()
     const payoutDetails = JSON.stringify({ bankName, accountNumber, accountName })
@@ -55,17 +58,17 @@ export async function POST(request: NextRequest) {
         user_id, amount_trx, wallet_address, status, admin_note, method, payout_details, amount_ngn, created_at, updated_at
       )
       VALUES (
-        ${userId}::uuid, ${amountTrx}, ${accountNumber}, 'pending', ${reference}, 'opay', ${payoutDetails}, ${amountNgn}, NOW(), NOW()
+        ${userId}::uuid, ${amountFlameCoin}, ${accountNumber}, 'pending', ${reference}, 'opay', ${payoutDetails}, ${amountNgn}, NOW(), NOW()
       )
     `
 
     return NextResponse.json({
       success: true,
-      message: 'Withdrawal request submitted: ' + amountTrx + ' TRX approx NGN ' + amountNgn.toLocaleString() + ' via OPay',
+      message: 'Withdrawal request submitted: ' + amountFlameCoin + ' Flame Coin approx NGN ' + amountNgn.toLocaleString() + ' via OPay',
       reference,
       rateUsed: rate,
       rateSource: source,
-      platformFeePercent: PLATFORM_FEE_PERCENT,
+      platformFeePercent: WORLD_RULES.PLATFORM_FEE_PERCENT,
       amountNgn,
     })
   } catch (error: any) {

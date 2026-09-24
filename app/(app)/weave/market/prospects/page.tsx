@@ -205,7 +205,7 @@ export default function ProspectMarketPage() {
             <Wallet className="h-5 w-5 text-[#e8b93f]" />
             <div>
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Your Balance</p>
-              <p className="text-lg font-black text-white">{user?.platform_wallet_balance?.toFixed(2) || '0.00'} <span className="text-[#e8b93f] text-xs">TRX</span></p>
+              <p className="text-lg font-black text-white">{user?.platform_wallet_balance?.toFixed(2) || '0.00'} <span className="text-[#e8b93f] text-xs">Flame Coin</span></p>
             </div>
           </CardContent>
         </Card>
@@ -264,7 +264,7 @@ export default function ProspectMarketPage() {
 
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl font-black text-white">{pkg.price_trx}</span>
-                        <span className="text-xs font-black text-[#e8b93f] uppercase tracking-widest">TRX</span>
+                        <span className="text-xs font-black text-[#e8b93f] uppercase tracking-widest">Flame Coin</span>
                       </div>
                     </CardContent>
                     <CardFooter className="pt-0">

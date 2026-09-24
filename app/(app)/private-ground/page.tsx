@@ -125,7 +125,7 @@ export default function PrivateGroundPage() {
                     .filter((s) => s.status === "completed")
                     .reduce((sum, s) => sum + (s.totalAmount || 0), 0)
                     .toLocaleString()}{" "}
-                  <span className="text-sm font-normal text-muted-foreground">TRX</span>
+                  <span className="text-sm font-normal text-muted-foreground">Flame Coin</span>
                 </p>
               </div>
             </div>
@@ -220,7 +220,7 @@ export default function PrivateGroundPage() {
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <p className="font-mono font-medium">
-                              {session.rate.toLocaleString()} TRX
+                              {session.rate.toLocaleString()} Flame Coin
                             </p>
                             <p className="text-xs text-muted-foreground">per hour</p>
                           </div>

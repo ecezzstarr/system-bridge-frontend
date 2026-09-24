@@ -84,7 +84,7 @@ export async function ensureMarketTables() {
 export async function createProspectPackage(adminId: string, contactIds: string[], priceTrx?: number) {
   await ensureMarketTables()
   
-  // Calculate price: 1.1 TRX per prospect if no specific price is provided
+  // Calculate price: 1.1 Flame Coin per prospect if no specific price is provided
   const finalPrice = priceTrx || (contactIds.length * 1.1)
   const title = `Prospect Package #${Math.floor(Math.random() * 9000) + 1000}`
   const description = `${contactIds.length} qualified prospects generated via Weave Engine.`

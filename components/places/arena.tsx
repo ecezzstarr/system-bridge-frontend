@@ -302,11 +302,11 @@ export default function Arena({ user: propUser }: { user?: any }) {
                         <div className="grid grid-cols-3 gap-2">
                           <div className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/50 text-center">
                             <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Pool</p>
-                            <p className="text-sm font-black text-white">{match.prizePool || 0} TRX</p>
+                            <p className="text-sm font-black text-white">{match.prizePool || 0} Flame Coin</p>
                           </div>
                           <div className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/50 text-center">
                             <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Entry</p>
-                            <p className="text-sm font-black text-yellow-500">{match.entryFee || 0} TRX</p>
+                            <p className="text-sm font-black text-yellow-500">{match.entryFee || 0} Flame Coin</p>
                           </div>
                           <div className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/50 text-center">
                             <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Players</p>
@@ -400,7 +400,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Entry (TRX)</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Entry (Flame Coin)</label>
                   <Input
                     type="number"
                     value={newMatch.entryFee}

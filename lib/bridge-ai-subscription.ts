@@ -1,6 +1,6 @@
 import { sql } from './db'
 
-const BRIDGE_AI_SUBSCRIPTION_FEE_TRX = 15
+const BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN = 15
 
 export async function ensureBridgeAiContinuanceTable() {
   await sql`
@@ -14,7 +14,7 @@ export async function ensureBridgeAiContinuanceTable() {
   `
 }
 
-// Bridge AI has its own subscription (15 TRX / month, bridger-only),
+// Bridge AI has its own subscription (15 Flame Coin / month, bridger-only),
 // separate from bridger-subscription.ts (the whole-account NGN-denominated
 // one) and separate from echo-db.ts's Echo subscription. Same wallet-deduct
 // pattern as subscribeToEcho, different fee and table.
@@ -44,12 +44,12 @@ export async function subscribeToBridgeAi(userId: string) {
     `
     const balance = walletRows[0]?.balance_trx ?? 0
 
-    if (balance < BRIDGE_AI_SUBSCRIPTION_FEE_TRX) {
+    if (balance < BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN) {
       await sql`ROLLBACK`
-      return { success: false, reason: 'insufficient_balance', requiredTrx: BRIDGE_AI_SUBSCRIPTION_FEE_TRX, availableTrx: balance }
+      return { success: false, reason: 'insufficient_balance', requiredFlameCoin: BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN, availableFlameCoin: balance }
     }
 
-    const newBalance = balance - BRIDGE_AI_SUBSCRIPTION_FEE_TRX
+    const newBalance = balance - BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN
     await sql`
       UPDATE wallets SET balance_trx = ${newBalance}, updated_at = NOW()
       WHERE user_id = ${userId}::uuid AND is_primary = true
@@ -66,7 +66,7 @@ export async function subscribeToBridgeAi(userId: string) {
     `
 
     await sql`COMMIT`
-    return { success: true, expiry: nextExpiry, trxAmount: BRIDGE_AI_SUBSCRIPTION_FEE_TRX }
+    return { success: true, expiry: nextExpiry, trxAmount: BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN }
   } catch (error) {
     await sql`ROLLBACK`
     console.error('Bridge AI subscribe failed:', error)

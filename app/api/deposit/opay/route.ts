@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getSql } from '@/lib/db'
-import { getTrxNgnRate, ngnToTrx } from '@/lib/trx-rate'
+import { ngnToFlameCoin } from '@/lib/flame-coin'
+import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 
 export async function POST(request: NextRequest) {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     if (!['admin', 'agent', 'bridger'].includes(user.role)) {
       return NextResponse.json(
-        { error: 'OPay deposit is available to Administration, Agents, and Bridgers' },
+        { error: 'OPay funding is available to Administration, Agents, and Bridgers. Clients fund Flame Coin through the Company TRX wallet.' },
         { status: 403 }
       )
     }
@@ -33,8 +34,8 @@ export async function POST(request: NextRequest) {
     }
 
     const sql = getSql()
-    const { rate, source: rateSource } = await getTrxNgnRate()
-    const trxAmount = ngnToTrx(Number(amount), rate)
+    const { rateNgnPerTrx, source: rateSource } = await getTrxPaymentNgnRate()
+    const flameCoinAmount = ngnToFlameCoin(Number(amount), rateNgnPerTrx)
 
     const result = await sql`
       INSERT INTO deposits (
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
       VALUES (
         ${user.id}::uuid,
         ${Number(amount)},
-        ${trxAmount},
+        ${flameCoinAmount},
         'pending'
       )
       RETURNING *
@@ -64,16 +65,17 @@ export async function POST(request: NextRequest) {
       VALUES (
         ${user.id}::uuid,
         'deposit',
-        ${trxAmount},
-        'TRX',
-        'Manual OPay NGN Deposit Pending Verification',
+        ${flameCoinAmount},
+        'Flame Coin',
+        'Manual OPay NGN Deposit Pending Flame Coin Verification',
         ${JSON.stringify({
           deposit_id: result[0].id,
           payment_method: 'OPay',
           opay_number: WEAVE_OPAY_ACCOUNT_NUMBER,
           ngn_amount: Number(amount),
-          rate_used: rate,
+          rate_used: rateNgnPerTrx,
           rate_source: rateSource,
+          peg: '1 Flame Coin = 1 TRX',
           status: 'pending'
         })}
       )

@@ -172,7 +172,7 @@ export default function BridgePage() {
   }
 
   const handleSubmitDeposit = async () => {
-    if (!selectedTier || !prospectName.trim() || !prospectPhone.trim()) return
+    if (!selectedTier || !prospectName.trim() || !prospectPhone.trim() || !txHash.trim()) return
     setSubmittingDeposit(true)
     try {
       const res = await fetch(`/api/bridge/${code}/deposit`, {
@@ -183,8 +183,9 @@ export default function BridgePage() {
           prospectId,
           name: prospectName.trim(),
           phone: prospectPhone.trim(),
-          tierTrx: selectedTier,
-          txHash: txHash.trim() || undefined,
+          amountFlameCoin: selectedTier,
+          tierTrx: selectedTier, // legacy API compatibility
+          txHash: txHash.trim(),
         }),
       })
       const data = await res.json()

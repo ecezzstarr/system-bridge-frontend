@@ -1,28 +1,25 @@
 /**
- * Conversion utility for NGN (Naira) to TRX (TRON)
- * Used for OPay deposits by Administration, Agents, and Bridgers.
+ * Compatibility conversion helpers for NGN -> Weave Flame Coin.
+ * Flame Coin is pegged 1:1 to TRX, so its NGN value follows TRX/NGN.
  */
+import { ngnToFlameCoin } from './flame-coin'
+import { WORLD_RULES } from './world/constants'
 
-// Default exchange rate: 1600 NGN = 10 TRX (Approximate)
-// This should ideally be fetched from an external API or env variable
-const DEFAULT_NGN_TO_TRX_RATE = parseFloat(process.env.NGN_TO_TRX_RATE || '0.00625')
-
-/**
- * Converts NGN amount to TRX
- */
-export function convertNgnToTrx(ngnAmount: number): number {
-  return ngnAmount * DEFAULT_NGN_TO_TRX_RATE
+export function convertNgnToFlameCoin(
+  ngnAmount: number,
+  rateNgnPerTrx = WORLD_RULES.TRX_PAYMENT_NGN_FALLBACK_RATE
+): number {
+  return ngnToFlameCoin(ngnAmount, rateNgnPerTrx)
 }
 
-/**
- * Gets current exchange rate info
- */
 export function getExchangeRateInfo() {
+  const rate = WORLD_RULES.TRX_PAYMENT_NGN_FALLBACK_RATE
   return {
-    rate: DEFAULT_NGN_TO_TRX_RATE,
-    inverse: 1 / DEFAULT_NGN_TO_TRX_RATE,
-    source: 'Platform Configured Rate',
+    rate,
+    inverse: 1 / rate,
+    source: 'Configured TRX/NGN Reference Rate',
     currency: 'NGN',
-    target: 'TRX'
+    target: 'Flame Coin',
+    peg: '1 Flame Coin = 1 TRX',
   }
 }

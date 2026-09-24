@@ -44,7 +44,7 @@ export default function AgentCommissionsPage() {
             <div className="text-right">
               <p className="text-xs text-slate-500">Total commission earned</p>
               <p className="text-2xl font-bold text-purple-400">
-                {commissions ? `${commissions.totalEarnings.toFixed(2)} TRX` : '—'}
+                {commissions ? `${commissions.totalEarnings.toFixed(2)} Flame Coin` : '—'}
               </p>
             </div>
           </div>
@@ -60,9 +60,9 @@ export default function AgentCommissionsPage() {
             <div className="bg-slate-800/50 rounded-lg p-4">
               <p className="text-xs text-slate-500 mb-1">Client Crossing</p>
               <p className="text-xl font-bold text-emerald-400">
-                716 TRX
+                716 Flame Coin
               </p>
-              <p className="text-[11px] text-slate-500 mt-1">per 35,800 TRX File Folder purchase (5% of Weave's 40%)</p>
+              <p className="text-[11px] text-slate-500 mt-1">per 35,800 Flame Coin File Folder purchase (5% of Weave's 40%)</p>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-4">
               <p className="text-xs text-slate-500 mb-1">How you get paid</p>
@@ -81,7 +81,7 @@ export default function AgentCommissionsPage() {
                 {commissions.recentCommissions.map((c, i) => (
                   <div key={i} className="flex items-center justify-between text-xs">
                     <span className="text-slate-400">{c.description}</span>
-                    <span className="text-purple-400 font-semibold whitespace-nowrap ml-4">+{c.amount.toFixed(2)} TRX</span>
+                    <span className="text-purple-400 font-semibold whitespace-nowrap ml-4">+{c.amount.toFixed(2)} Flame Coin</span>
                   </div>
                 ))}
               </div>

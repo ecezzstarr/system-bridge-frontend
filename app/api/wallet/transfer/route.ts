@@ -53,12 +53,12 @@ export async function POST(request: NextRequest) {
       // Record in ledger
       await sql`
         INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at)
-        VALUES (gen_random_uuid(), ${userId}::uuid, 'transfer_to_play', ${amount}, 'TRX', 'Transfer to arena play balance', ${coreBalance}, ${newCore}, NOW())
+        VALUES (gen_random_uuid(), ${userId}::uuid, 'transfer_to_play', ${amount}, 'Flame Coin', 'Transfer to arena play balance', ${coreBalance}, ${newCore}, NOW())
       `
 
       return NextResponse.json({
         success: true,
-        message: `Transferred ${amount} TRX to play balance`,
+        message: `Transferred ${amount} Flame Coin to play balance`,
         coreBalance: newCore,
         playBalance: newPlay
       })
@@ -85,12 +85,12 @@ export async function POST(request: NextRequest) {
       // Record in ledger
       await sql`
         INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at)
-        VALUES (gen_random_uuid(), ${userId}::uuid, 'transfer_to_core', ${amount}, 'TRX', 'Transfer from arena to core wallet', ${playBalance}, ${newPlay}, NOW())
+        VALUES (gen_random_uuid(), ${userId}::uuid, 'transfer_to_core', ${amount}, 'Flame Coin', 'Transfer from arena to core wallet', ${playBalance}, ${newPlay}, NOW())
       `
 
       return NextResponse.json({
         success: true,
-        message: `Transferred ${amount} TRX to core wallet`,
+        message: `Transferred ${amount} Flame Coin to core wallet`,
         coreBalance: newCore,
         playBalance: newPlay
       })

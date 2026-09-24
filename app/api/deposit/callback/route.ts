@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   const [pending]=fileFolder
    ?await sql`SELECT * FROM file_folder_purchases WHERE payment_reference=${reference} FOR UPDATE`
    :await sql`SELECT * FROM pending_deposits WHERE reference=${reference} FOR UPDATE`
-  const expected=fileFolder?Number(pending?.amount_trx)/FILE_FOLDER_PRICING.trxPerUsd:Number(pending?.amount_usd)
+  const expected=fileFolder?Number(pending?.amount_trx)/FILE_FOLDER_PRICING.flameCoinPerUsd:Number(pending?.amount_usd)
   if(!pending||!matchesVerifiedPayment(verified.data,reference,expected)){await db.query('ROLLBACK');return back('error=payment_verification_mismatch')}
   if(fileFolder){
    if(!['confirmed','folder_issued','paid_pending_folder'].includes(pending.status)){
