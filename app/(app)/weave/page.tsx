@@ -100,7 +100,7 @@ export default function WeavePage() {
     return (
       <div className="mx-auto max-w-3xl space-y-6 p-8">
         <div>
-          <p className="text-sm font-medium text-primary">SYSTEM SWITCH</p>
+          <p className="text-sm font-medium text-primary">CLIENT PLAYER · SYSTEM SWITCH</p>
           <h1 className="mt-2 text-3xl font-bold">The Crossing</h1>
           <p className="mt-2 text-muted-foreground">
             {crossingMessage[state.crossing.phase] ?? 'Your crossing is being prepared.'}
@@ -188,7 +188,7 @@ export default function WeavePage() {
             <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 flex flex-col h-[560px]">
               <div className="flex items-center gap-2 mb-6">
                 <FileText className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-lg font-bold">System Switch</h2>
+                <h2 className="text-lg font-bold">Client Player Support</h2>
               </div>
 
               <div className="relative mb-4">
@@ -241,7 +241,7 @@ export default function WeavePage() {
 
               <div className="mt-6 pt-6 border-t border-slate-800">
                 <p className="text-[10px] text-slate-500 leading-relaxed italic">
-                  Select a File Folder to enter the Client&apos;s System Switch crossing and provide movement support.
+                  Select a Client Player&apos;s File Folder to enter their System Switch environment as support. The Client remains the player position.
                 </p>
               </div>
             </div>
