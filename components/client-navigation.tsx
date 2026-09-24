@@ -38,10 +38,10 @@ export function ClientNavigation() {
 
   // Login is an entry gate. During Flame Event, the Client Dashboard owns its
   // open-world sidebar and should not inherit the ordinary horizontal nav.
-  if (pathname === '/client/login' || (pathname === '/client/dashboard' && eventIsLive)) return null
+  if (pathname === '/client/login' || pathname === '/client/dashboard') return null
 
   return (
-    <nav className="flex gap-4 border-b border-white/10 px-5 py-3 text-sm text-slate-300">
+    <nav className="sticky top-0 z-40 flex gap-4 border-b border-sky-300/10 bg-[#03101d]/78 px-5 py-3 text-sm text-slate-300 backdrop-blur-2xl">
       <Link href="/client/dashboard">Client Portal</Link>
       <Link href="/client/system-switch">My Workshop & Store</Link>
       <Link href="/client/loops">Company Loops</Link>
