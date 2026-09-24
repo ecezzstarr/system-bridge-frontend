@@ -1,6 +1,8 @@
 import { sql } from '@/lib/db'
 
 export const COMPANY_LOOP_ROLES = ['client', 'agent', 'bridger', 'admin'] as const
+export const COMPANY_LOOP_PLAYER_ROLE = 'client' as const
+export const COMPANY_LOOP_SUPPORT_ROLES = ['agent', 'bridger', 'admin'] as const
 export type CompanyLoopRole = typeof COMPANY_LOOP_ROLES[number]
 
 export function getDb() { return sql }
