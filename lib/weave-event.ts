@@ -1,6 +1,7 @@
 export type EventRole = 'client' | 'bridger' | 'agent'
 
 export type EventPosition = {
+  mode: 'player' | 'support'
   headline: string
   purpose: string
   focus: string[]
@@ -30,18 +31,21 @@ export const FLAME_EVENT: WeaveEvent = {
   announcement: 'The event is being prepared by Administration. Position movement opens when the event is activated.',
   positions: {
     client: {
+      mode: 'player',
       headline: 'Your File Folder in the Event',
       purpose: 'The Event moves through your existing File Folder. Continue your life participation while Weave opens event opportunities around what you are building.',
       focus: ['File Folder', 'Workshop', 'Client Vault', 'Bridge AI', 'Company Support', 'Event Opportunities'],
       movement: ['Continue your Interaction in Motion', 'Work through your File Folder functions', 'Receive event opportunities relevant to your participation', 'See event movement recognized inside your environment'],
     },
     bridger: {
+      mode: 'support',
       headline: 'Prospects, Clients and Movement',
       purpose: 'Follow Weave activities to acquire more prospects. When you already accompany Clients, continue supporting their movement while remaining open to new prospects.',
       focus: ['Available Prospects', 'Prospects in Motion', 'My Clients', 'Weave Activities', 'Client Support', 'Event Opportunities'],
       movement: ['Follow active Weave activities', 'Acquire and work available prospects', 'Accompany prospects toward Client formation', 'Support Clients you already accompany', 'Continue into new opportunities as the Event develops'],
     },
     agent: {
+      mode: 'support',
       headline: 'Your Bridgers and Company Movement',
       purpose: 'The Event reaches you through your Agent position: organize, support and extend the Bridger movement assigned to you while maintaining company continuity.',
       focus: ['My Bridgers', 'Team Movement', 'Company Activities', 'Support Required', 'New Bridger Opportunities', 'Event Record'],
