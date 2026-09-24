@@ -23,7 +23,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const [search, setSearch] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { user: authUser } = useAuth()
-  const [flameCoinBalance, setCoreTrx] = useState<number | null>(null)
+  const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
 
   useEffect(() => {
     if (!authUser?.id) return
@@ -32,7 +32,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     })
       .then(res => res.json())
-      .then(data => { if (data.success) setCoreTrx(data.flameCoinBalance) })
+      .then(data => { if (data.success) setFlameCoinBalance(data.flameCoinBalance) })
       .catch(() => {})
   }, [authUser?.id])
 
