@@ -251,7 +251,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       {/* Logo and System Status */}
       <div className="flex flex-col items-center justify-center border-b border-white/5 p-6">
         <WeaveLogo size="md" className="mb-1" />
-        <span className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">Ecosystem Authority</span>
+        <span className="text-[9px] text-slate-500 uppercase tracking-[0.22em] font-bold">System Switch · Bridge Radiance</span>
 
         {/* PWA Download Button */}
         <Button
