@@ -1,21 +1,17 @@
 {
-  "name": "WEAVE - System Bridge",
+  "name": "WEAVE of Presence — System Switch — Bridge Radiance",
   "short_name": "WEAVE",
-  "description": "Unified ecosystem for bridgers, agents, and administrators",
+  "description": "Interaction in Motion: people, ideas, opportunities, value and livelihood.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0e27",
-  "theme_color": "#0a0e27",
+  "background_color": "#02060d",
+  "theme_color": "#06111f",
   "icons": [
     {
-      "src": "/icon-light-32x32.png",
-      "sizes": "32x32",
-      "type": "image/png"
-    },
-    {
-      "src": "/apple-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
+      "src": "/icon.svg?v=3",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

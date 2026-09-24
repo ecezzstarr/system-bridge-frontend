@@ -1,43 +1,124 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">WEAVE of Presence</title>
+  <desc id="desc">Official WEAVE of Presence app icon: interwoven blue and flame-red presence streams around a radiant center.</desc>
   <defs>
-    <radialGradient id="bgGrad" cx="50%" cy="35%" r="75%">
-      <stop offset="0%" stop-color="#12141a"/>
-      <stop offset="100%" stop-color="#050608"/>
+    <radialGradient id="bg" cx="50%" cy="42%" r="72%">
+      <stop offset="0%" stop-color="#0d2341"/>
+      <stop offset="55%" stop-color="#06111f"/>
+      <stop offset="100%" stop-color="#02060d"/>
     </radialGradient>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fff3c4"/>
-      <stop offset="30%" stop-color="#e6b422"/>
-      <stop offset="60%" stop-color="#b8860b"/>
-      <stop offset="100%" stop-color="#f5d565"/>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e7fbff"/>
+      <stop offset="18%" stop-color="#63e7ff"/>
+      <stop offset="52%" stop-color="#1687ff"/>
+      <stop offset="100%" stop-color="#1834d7"/>
     </linearGradient>
-    <linearGradient id="goldGradSoft" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f7dd8f"/>
-      <stop offset="100%" stop-color="#c9971f"/>
+    <linearGradient id="fire" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff7be"/>
+      <stop offset="20%" stop-color="#ffd34f"/>
+      <stop offset="52%" stop-color="#ff6a19"/>
+      <stop offset="100%" stop-color="#d71935"/>
     </linearGradient>
-    <radialGradient id="orbGrad" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#fffdf3"/>
-      <stop offset="55%" stop-color="#ffd75e"/>
-      <stop offset="100%" stop-color="#c9971f"/>
+    <linearGradient id="bridge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="48%" stop-color="#bdefff"/>
+      <stop offset="100%" stop-color="#d5b8ff"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#48d9ff"/>
+      <stop offset="48%" stop-color="#f7fbff"/>
+      <stop offset="52%" stop-color="#ffd86a"/>
+      <stop offset="100%" stop-color="#ff5b2e"/>
+    </linearGradient>
+    <radialGradient id="star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="28%" stop-color="#fff3b8"/>
+      <stop offset="68%" stop-color="#79dfff" stop-opacity=".92"/>
+      <stop offset="100%" stop-color="#79dfff" stop-opacity="0"/>
     </radialGradient>
-    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.45"/>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="round"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath>
   </defs>
 
-  <rect x="4" y="4" width="192" height="192" rx="42" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="3"/>
-  <rect x="14" y="14" width="172" height="172" rx="34" fill="none" stroke="url(#goldGradSoft)" stroke-width="1" opacity="0.5"/>
+  <g clip-path="url(#round)">
+    <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bg)"/>
+    <circle cx="256" cy="246" r="167" fill="none" stroke="url(#ring)" stroke-width="5" opacity=".78" filter="url(#soft)"/>
+    <circle cx="256" cy="246" r="142" fill="none" stroke="#87dcff" stroke-opacity=".18" stroke-width="2"/>
+    <path d="M76 246H436" stroke="url(#ring)" stroke-width="3" opacity=".55"/>
+    <path d="M256 66V430" stroke="url(#ring)" stroke-width="2" opacity=".18"/>
 
-  <circle cx="100" cy="92" r="62" fill="none" stroke="url(#goldGrad)" stroke-width="5" opacity="0.9" filter="url(#softShadow)"/>
+    <!-- blue Presence stream -->
+    <path d="M246 432
+             C171 379 151 323 184 269
+             C208 230 244 216 229 177
+             C214 138 177 123 180 78
+             C139 113 121 161 136 205
+             C151 248 183 270 172 311
+             C160 356 179 400 246 432Z"
+          fill="url(#blue)" filter="url(#glow)"/>
+    <path d="M227 400
+             C187 357 188 321 211 289
+             C238 252 262 234 251 199
+             C243 174 225 156 222 128
+             C195 161 194 192 210 220
+             C231 257 207 279 195 306
+             C181 340 194 373 227 400Z"
+          fill="#c9f7ff" opacity=".34"/>
 
-  <g filter="url(#softShadow)">
-    <path d="M56 62 C50 90 58 118 72 138 C74 118 78 100 88 86 C78 82 64 74 56 62 Z" fill="url(#goldGrad)"/>
-    <path d="M78 70 C74 94 80 116 92 134 C93 116 97 100 104 88 C96 84 84 78 78 70 Z" fill="url(#goldGradSoft)"/>
-    <path d="M144 62 C150 90 142 118 128 138 C126 118 122 100 112 86 C122 82 136 74 144 62 Z" fill="url(#goldGrad)"/>
-    <path d="M122 70 C126 94 120 116 108 134 C107 116 103 100 96 88 C104 84 116 78 122 70 Z" fill="url(#goldGradSoft)"/>
+    <!-- flame / movement stream -->
+    <path d="M266 432
+             C343 377 365 321 333 267
+             C309 226 274 211 289 171
+             C305 130 345 112 329 60
+             C373 98 394 151 377 200
+             C362 246 330 268 341 311
+             C353 357 334 401 266 432Z"
+          fill="url(#fire)" filter="url(#glow)"/>
+    <path d="M288 399
+             C329 355 327 321 302 287
+             C276 251 251 232 262 197
+             C270 170 289 152 291 122
+             C320 156 321 189 304 219
+             C283 256 307 279 319 307
+             C334 341 321 374 288 399Z"
+          fill="#fff4c6" opacity=".31"/>
+
+    <!-- bridge ribbon -->
+    <path d="M175 142
+             C225 177 300 189 329 237
+             C354 279 324 321 282 351
+             C253 372 239 392 252 432
+             C214 401 205 366 226 338
+             C251 305 304 287 306 251
+             C307 220 262 204 226 190
+             C195 178 178 164 175 142Z"
+          fill="url(#bridge)" filter="url(#soft)"/>
+    <path d="M337 143
+             C286 177 213 190 184 238
+             C159 280 189 321 232 351
+             C261 371 275 392 262 432
+             C300 401 309 366 288 338
+             C263 305 210 288 208 251
+             C207 221 252 204 288 191
+             C319 179 334 165 337 143Z"
+          fill="url(#bridge)" opacity=".92" filter="url(#soft)"/>
+
+    <!-- radiant presence -->
+    <circle cx="256" cy="246" r="43" fill="url(#star)" filter="url(#glow)"/>
+    <path d="M256 186L266 236L326 246L266 256L256 316L246 256L186 246L246 236Z"
+          fill="#fff9df" filter="url(#glow)"/>
+    <circle cx="256" cy="246" r="8" fill="#ffffff"/>
+
+    <circle cx="90" cy="246" r="7" fill="#57dfff" filter="url(#soft)"/>
+    <circle cx="422" cy="246" r="7" fill="#ff8252" filter="url(#soft)"/>
+
+    <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="url(#ring)" stroke-width="4" opacity=".72"/>
   </g>
-
-  <circle cx="100" cy="58" r="11" fill="url(#orbGrad)" filter="url(#softShadow)"/>
-  <path d="M100 47 L100 30 M100 69 L100 86 M89 58 L72 58 M111 58 L128 58" stroke="url(#goldGrad)" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
-
-  <text x="100" y="172" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="700" letter-spacing="6" fill="url(#goldGrad)">WEAVE</text>
 </svg>

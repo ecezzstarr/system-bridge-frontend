@@ -1,8 +1,16 @@
 import type { Metadata, Viewport } from 'next'
+import { ClientNavigation } from '@/components/client-navigation'
+import { LiveAdSurface } from '@/components/live-ad-surface'
+import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 
 export const metadata: Metadata = {
-  title: 'SSBNOW.SHOP - Client Services',
-  description: 'Client Services Portal - Connect with your dedicated service team',
+  title: 'WEAVE of Presence — Client Services',
+  description: 'WEAVE of Presence · System Switch · Bridge Radiance — Client Services',
+  icons: {
+    icon: [{ url: '/icon.svg?v=3', type: 'image/svg+xml' }],
+    shortcut: '/icon.svg?v=3',
+    apple: '/icon.svg?v=3',
+  },
 }
 
 export const viewport: Viewport = {
@@ -20,9 +28,13 @@ export default function ClientLayout({
 }) {
   // Client routes share the root AuthProvider.
   return (
-    <div className="min-h-screen bg-slate-950">
-      <nav className="flex gap-4 border-b border-white/10 px-5 py-3 text-sm text-slate-300"><a href="/client/dashboard">Client Portal</a><a href="/client/system-switch">My Workshop & Store</a><a href="/client/loops">Company Loops</a></nav>
-      {children}
+    <div className="relative min-h-screen overflow-hidden bg-slate-950">
+      <WeaveWorldEnvironment />
+      <div className="relative z-10 min-h-screen">
+        <ClientNavigation />
+        <LiveAdSurface />
+        {children}
+      </div>
     </div>
   )
 }

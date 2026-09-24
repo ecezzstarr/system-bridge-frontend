@@ -1,6 +1,6 @@
 'use client'
 
-import { Background3D } from '@/components/3d-background'
+import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -23,7 +23,8 @@ export default function AuthLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <WeaveWorldEnvironment soft />
         <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
       </div>
     )
@@ -31,7 +32,7 @@ export default function AuthLayout({
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4">
-      <Background3D />
+      <FlameEventWorldGate intensity="soft" />
       <div className="w-full max-w-md relative z-10">
         {children}
       </div>
