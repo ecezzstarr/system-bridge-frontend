@@ -40,6 +40,12 @@ export async function ensureDepartmentEntryTicketSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE departmental_codes ADD COLUMN IF NOT EXISTS registration_request_id UUID`
+  await sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_departmental_codes_registration_request
+    ON departmental_codes(registration_request_id)
+    WHERE registration_request_id IS NOT NULL
+  `
   await sql`CREATE INDEX IF NOT EXISTS idx_department_entry_tickets_status ON departmental_entry_tickets(status)`
   await sql`CREATE INDEX IF NOT EXISTS idx_department_entry_tickets_department ON departmental_entry_tickets(department)`
   await sql`CREATE INDEX IF NOT EXISTS idx_department_entry_tickets_created_at ON departmental_entry_tickets(created_at DESC)`
