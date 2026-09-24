@@ -6,6 +6,9 @@
 export const WORLD_RULES = {
 
   // File Folder (Client Crossing)
+  FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN: 35800,
+  FILE_FOLDER_STANDARD_MIN_FLAME_COIN: 180,
+  // Compatibility alias: existing callers that expect the premium price.
   FILE_FOLDER_PRICE_FLAME_COIN: 35800,
   
   // Commissions (Yields)
