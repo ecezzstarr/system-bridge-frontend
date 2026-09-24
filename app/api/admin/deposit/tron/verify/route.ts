@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { creditAgentCommission } from '@/lib/agent-commission'
 import { trxPaymentToFlameCoin } from '@/lib/trx-payment'
+import { notifyDepositDecision } from '@/lib/deposit-notifications'
 
 // Resolves the Bridger for a client, checking both the legacy users(role='client')
 // path and the dedicated clients table — matches app/api/client/bridger/route.ts.
@@ -52,6 +53,14 @@ export async function POST(request: NextRequest) {
         SET status = 'rejected', verifier_id = ${admin.id}::uuid, verified_at = NOW(), updated_at = NOW()
         WHERE id = ${depositId}::uuid
       `
+      await notifyDepositDecision({
+        userId: deposit[0].user_id,
+        approved: false,
+        rail: 'TRX',
+        depositId,
+        amountLabel: `${Number(deposit[0].amount_trx).toLocaleString()} TRX`,
+        adminId: admin.id,
+      })
       return NextResponse.json({ success: true, message: 'TRON deposit rejected' })
     }
 
@@ -103,6 +112,16 @@ export async function POST(request: NextRequest) {
         description: `2% commission (5% of Weave's 40%): referred Bridger's client funded ${flameCoinAmount.toFixed(2)} Flame Coin from ${paidTrx.toFixed(6)} TRX`,
       }).catch(err => console.error('[tron verify] commission error:', err))
     }
+
+    await notifyDepositDecision({
+      userId: clientId,
+      approved: true,
+      rail: 'TRX',
+      depositId,
+      amountLabel: `${paidTrx.toLocaleString()} TRX`,
+      creditedFlameCoin: flameCoinAmount,
+      adminId: admin.id,
+    })
 
     return NextResponse.json({ success: true, message: 'Flame Coin credited successfully', bridgerId, paidTrx, flameCoinAmount, peg: '1 Flame Coin = 1 TRX' })
   } catch (error: any) {
