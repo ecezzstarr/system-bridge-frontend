@@ -4,6 +4,7 @@ import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
 import { recordSystemEvent } from '@/lib/system-events'
+import { notifyAdministrators } from '@/lib/deposit-notifications'
 
 function cleanText(value: unknown, max = 10000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -140,6 +141,15 @@ export async function POST(request: NextRequest) {
       subjectId: client.file_number,
       source: 'enterprise-dream',
       payload: { applicationId: application.id, requestedPosition, enterpriseName, sector },
+    })
+
+    await notifyAdministrators({
+      type: 'enterprise_plan_submitted',
+      title: `${requestedPosition === 'lady' ? 'Lady' : 'Lord'} elevation plan submitted`,
+      content: `${client.name} submitted ${enterpriseName} for ${requestedPosition} elevation in File Folder ${client.file_number}.`,
+      link: '/admin/enterprise-dream',
+      fromUserId: clientId,
+      fromUserName: client.name,
     })
 
     return NextResponse.json({ success: true, application }, { status: 201 })
