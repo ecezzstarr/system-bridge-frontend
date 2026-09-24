@@ -58,6 +58,8 @@ export function FlameEventAd() {
 
   if (!isInitialized || !eligible || hiddenPath || !event.adEnabled || effectiveStatus === 'closed' || !role) return null
 
+  if (role === 'client' && pathname === '/client/dashboard' && effectiveStatus === 'active') return null
+
   const copy = ROLE_COPY[role as keyof typeof ROLE_COPY]
   const statusText = effectiveStatus === 'active' ? 'LOOP 1 LIVE NOW' : 'LOOP 1 COMING UP SOON'
   const startLabel = new Date(event.startsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
