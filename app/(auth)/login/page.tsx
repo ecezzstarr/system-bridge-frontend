@@ -46,7 +46,7 @@ export default function LoginPage() {
       <CardHeader className="text-center flex flex-col items-center">
         <WeaveLogo size="md" className="mb-2" />
         <CardDescription className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-          Ecosystem Authority · Secure Access
+          System Switch · Bridge Radiance · Secure Access
         </CardDescription>
       </CardHeader>
       <CardContent>
