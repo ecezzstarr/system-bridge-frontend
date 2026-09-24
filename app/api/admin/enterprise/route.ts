@@ -5,6 +5,7 @@ import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { recordSystemEvent } from '@/lib/system-events'
+import { notifyUser } from '@/lib/deposit-notifications'
 
 export async function GET(request: NextRequest) {
   const auth = await requireWorkshopAuthorization(request)
@@ -74,6 +75,14 @@ export async function PATCH(request: NextRequest) {
         source: 'enterprise-dream',
         payload: { applicationId, note },
       })
+      await notifyUser(application.client_id, {
+        type: 'enterprise_plan_rejected',
+        title: 'Enterprise Dream plan returned',
+        content: `Administration returned your ${application.requested_position} elevation plan for ${application.enterprise_name}.${note ? ` Note: ${note}` : ''}`,
+        link: '/client/system-switch',
+        fromUserId: auth.session.user.id,
+        fromUserName: 'WEAVE Administration',
+      })
       return NextResponse.json({ success: true, application: rejected })
     }
 
@@ -126,6 +135,15 @@ export async function PATCH(request: NextRequest) {
         enterpriseName: application.enterprise_name,
         sector: application.sector,
       },
+    })
+
+    await notifyUser(application.client_id, {
+      type: 'enterprise_plan_approved',
+      title: `${application.requested_position === 'lady' ? 'Lady' : 'Lord'} elevation approved`,
+      content: `Administration approved ${application.enterprise_name}. Your File Folder is now an Enterprise Dream Workshop and Legion participation is open.`,
+      link: '/client/system-switch',
+      fromUserId: auth.session.user.id,
+      fromUserName: 'WEAVE Administration',
     })
 
     return NextResponse.json({ success: true, application: approved })
