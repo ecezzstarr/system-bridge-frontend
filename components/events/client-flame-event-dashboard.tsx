@@ -35,6 +35,7 @@ import type { WeaveEvent } from '@/lib/weave-event'
 import { getEventProgress } from '@/lib/weave-event'
 import { useAuth } from '@/lib/auth-provider'
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
+import { WeaveLogo } from '@/components/weave-logo'
 
 type WorldNode = {
   label: string
@@ -172,16 +173,8 @@ export default function ClientFlameEventDashboard({ event }: { event: WeaveEvent
         <div className="relative grid min-h-screen lg:grid-cols-[205px_1fr]">
           <aside className="border-b border-white/10 bg-[#020813]/95 p-4 lg:border-b-0 lg:border-r lg:p-5">
             <div className="mb-6">
-              <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-red-400/30 bg-gradient-to-b from-sky-500/10 to-red-500/10">
-                  <Flame className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-xl font-black tracking-[0.24em]">WEAVE</p>
-                  <p className="text-[8px] uppercase tracking-[0.28em] text-slate-500">of Presence</p>
-                </div>
-              </div>
-              <p className="mt-3 text-[8px] uppercase tracking-[0.18em] text-slate-600">System Switch — Bridge Radiance</p>
+              <WeaveLogo size="md" />
+              <p className="mt-3 text-[8px] uppercase tracking-[0.18em] text-slate-600">Interaction in Motion</p>
             </div>
 
             <SidebarGroup title="Core" items={[
@@ -208,6 +201,7 @@ export default function ClientFlameEventDashboard({ event }: { event: WeaveEvent
 
           <div className="min-w-0 p-3 sm:p-4 lg:p-6">
             <header className="text-center">
+              <WeaveLogo size="md" className="mb-3 justify-center" />
               <div className="flex flex-wrap items-center justify-center gap-2 text-[8px] font-bold uppercase tracking-[0.22em] text-slate-500">
                 <span>Real People</span><span>·</span><span>Real Participation</span><span>·</span><span>A More Coherent World</span>
               </div>
