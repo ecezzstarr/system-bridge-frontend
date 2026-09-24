@@ -3,8 +3,8 @@ import { sql } from '@/lib/db'
 
 import { WORLD_RULES } from '@/lib/world/constants'
 
-const FILE_FOLDER_PRICE_TRX = WORLD_RULES.FILE_FOLDER_PRICE_TRX
-const COMPANY_WALLET = WORLD_RULES.COMPANY_WALLET
+const FILE_FOLDER_PRICE_FLAME_COIN = WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
+const COMPANY_TRX_WALLET = WORLD_RULES.COMPANY_TRX_WALLET
 
 export async function POST(
   request: NextRequest,
@@ -30,6 +30,13 @@ export async function POST(
       )
     }
 
+    if (!txHash || typeof txHash !== 'string' || !txHash.trim()) {
+      return NextResponse.json(
+        { error: 'TRX transaction hash is required' },
+        { status: 400 }
+      )
+    }
+
     /*
      * AUTHORITATIVE FILE FOLDER PRICE
      * The browser cannot choose another amount.
@@ -38,13 +45,13 @@ export async function POST(
 
     if (
       !Number.isFinite(submittedAmount) ||
-      submittedAmount !== FILE_FOLDER_PRICE_TRX
+      submittedAmount !== FILE_FOLDER_PRICE_FLAME_COIN
     ) {
       return NextResponse.json(
         {
           error: 'Invalid File Folder amount',
-          required: FILE_FOLDER_PRICE_TRX,
-          currency: 'TRX',
+          required: FILE_FOLDER_PRICE_FLAME_COIN,
+          currency: 'Flame Coin',
         },
         { status: 400 }
       )
@@ -72,7 +79,7 @@ export async function POST(
 
     /*
      * IMPORTANT:
-     * Store the authoritative 35,800 TRX amount,
+     * Store the authoritative 35,800 Flame Coin amount,
      * never the client-supplied value.
      */
     const result = await sql`
@@ -99,10 +106,10 @@ export async function POST(
         ${prospectId || null},
         ${name.trim()},
         ${phone.trim()},
-        ${FILE_FOLDER_PRICE_TRX},
+        ${FILE_FOLDER_PRICE_FLAME_COIN},
         'pending',
-        ${txHash || null},
-        ${COMPANY_WALLET},
+        ${txHash.trim()},
+        ${COMPANY_TRX_WALLET},
         NOW(),
         NOW()
       )
@@ -112,12 +119,14 @@ export async function POST(
     return NextResponse.json({
       success: true,
       depositId: result[0].id,
-      amount: FILE_FOLDER_PRICE_TRX,
-      currency: 'TRX',
+      amount: FILE_FOLDER_PRICE_FLAME_COIN,
+      currency: 'Flame Coin',
+      fundingAsset: 'TRX',
+      peg: '1 Flame Coin = 1 TRX',
       status: 'pending',
-      companyWallet: COMPANY_WALLET,
+      companyWallet: COMPANY_TRX_WALLET,
       message:
-        'File Folder payment submitted for administrator verification.',
+        'TRX File Folder payment submitted for administrator verification. Verified TRX is recognized 1:1 as Flame Coin.',
     })
   } catch (error: any) {
     console.error('[bridge deposit] error:', error)

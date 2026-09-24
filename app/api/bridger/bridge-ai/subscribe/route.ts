@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ subscription })
 }
 
-// POST: subscribe / renew (15 TRX/month, deducted from primary wallet)
+// POST: subscribe / renew (15 Flame Coin/month, deducted from primary wallet)
 export async function POST(request: NextRequest) {
   const authUser = await getAuthUser(request)
   if (!authUser) {

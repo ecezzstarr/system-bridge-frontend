@@ -23,7 +23,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const [search, setSearch] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { user: authUser } = useAuth()
-  const [coreTrx, setCoreTrx] = useState<number | null>(null)
+  const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
 
   useEffect(() => {
     if (!authUser?.id) return
@@ -32,7 +32,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     })
       .then(res => res.json())
-      .then(data => { if (data.success) setCoreTrx(data.coreTrx) })
+      .then(data => { if (data.success) setFlameCoinBalance(data.flameCoinBalance) })
       .catch(() => {})
   }, [authUser?.id])
 
@@ -65,7 +65,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           {/* Wallet Quick View - Icon only on mobile */}
           <Button variant="outline" size="sm" className="gap-2 bg-white/5 border-white/10 h-9 px-2 md:px-3">
             <Wallet className="h-4 w-4 text-cyan-400" />
-            <span className="font-mono text-[10px] md:text-xs hidden sm:inline">{coreTrx !== null ? `${coreTrx.toLocaleString()} TRX` : '—'}</span>
+            <span className="font-mono text-[10px] md:text-xs hidden sm:inline">{flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString()} Flame Coin` : '—'}</span>
           </Button>
 
           {/* User Avatar */}

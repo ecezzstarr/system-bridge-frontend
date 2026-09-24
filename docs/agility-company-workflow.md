@@ -28,7 +28,7 @@ Existing OPay receiving account in the codebase:
 
 Agility does **not** use Flutterwave.
 
-The Agility order has its own OPay proof and Administration verification because an Agility payment purchases physical stock. It must not be processed as a wallet deposit or credit the Agent with TRX.
+The Agility order has its own OPay proof and Administration verification because an Agility payment purchases physical stock. It must not be processed as a wallet deposit or credit the Agent with Flame Coin.
 
 ## Operating movement
 
@@ -51,7 +51,7 @@ The Agility order has its own OPay proof and Administration verification because
 
 - Only users with the Agent role can buy Agility stock.
 - Agility uses the same OPay manual-payment pattern already present for Agents / Bridgers.
-- An Agility order is **not** a wallet deposit; OPay approval does not credit TRX.
+- An Agility order is **not** a wallet deposit; OPay approval does not credit Flame Coin.
 - Agent payment proof can be rejected and resubmitted.
 - The same normalized OPay proof cannot be attached to more than one Agility order.
 - Administration cannot start fulfillment before OPay payment approval.

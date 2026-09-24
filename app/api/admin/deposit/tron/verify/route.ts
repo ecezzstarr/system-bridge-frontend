@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { creditAgentCommission } from '@/lib/agent-commission'
+import { trxPaymentToFlameCoin } from '@/lib/trx-payment'
 
 // Resolves the Bridger for a client, checking both the legacy users(role='client')
 // path and the dedicated clients table — matches app/api/client/bridger/route.ts.
@@ -54,12 +55,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'TRON deposit rejected' })
     }
 
-    const trxAmount = Number(deposit[0].amount_trx)
+    const paidTrx = Number(deposit[0].amount_trx)
     const clientId = deposit[0].user_id
+    const flameCoinAmount = trxPaymentToFlameCoin(paidTrx)
+
+    if (!Number.isFinite(flameCoinAmount) || flameCoinAmount <= 0) {
+      return NextResponse.json({ error: 'Unable to calculate Flame Coin value for this TRX payment' }, { status: 503 })
+    }
 
     await sql`
       UPDATE wallets
-      SET balance_trx = balance_trx + ${trxAmount}, updated_at = NOW()
+      SET balance_trx = balance_trx + ${flameCoinAmount}, updated_at = NOW()
       WHERE user_id = ${clientId}::uuid AND is_primary = true
     `
 
@@ -74,10 +80,17 @@ export async function POST(request: NextRequest) {
       VALUES (
         ${clientId}::uuid,
         'deposit',
-        ${trxAmount},
-        'TRX',
-        'TRON Deposit Approved',
-        ${JSON.stringify({ deposit_id: depositId, approved_by: admin.id })}
+        ${flameCoinAmount},
+        'Flame Coin',
+        'Client TRX payment verified and credited as Flame Coin',
+        ${JSON.stringify({
+          deposit_id: depositId,
+          approved_by: admin.id,
+          funding_asset: 'TRX',
+          paid_trx: paidTrx,
+          peg: '1 Flame Coin = 1 TRX',
+          credited_flame_coin: flameCoinAmount
+        })}
       )
     `
 
@@ -86,12 +99,12 @@ export async function POST(request: NextRequest) {
       creditAgentCommission({
         bridgerId,
         activity: 'client_deposit',
-        baseAmount: trxAmount,
-        description: `2% commission (5% of Weave's 40%): referred Bridger's client deposited ${trxAmount.toFixed(2)} TRX`,
+        baseAmount: flameCoinAmount,
+        description: `2% commission (5% of Weave's 40%): referred Bridger's client funded ${flameCoinAmount.toFixed(2)} Flame Coin from ${paidTrx.toFixed(6)} TRX`,
       }).catch(err => console.error('[tron verify] commission error:', err))
     }
 
-    return NextResponse.json({ success: true, message: 'TRX credited successfully', bridgerId })
+    return NextResponse.json({ success: true, message: 'Flame Coin credited successfully', bridgerId, paidTrx, flameCoinAmount, peg: '1 Flame Coin = 1 TRX' })
   } catch (error: any) {
     console.error('TRON verify error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

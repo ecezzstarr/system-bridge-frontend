@@ -152,8 +152,8 @@ export default function DevWorkshop() {
     newUsersToday: number
   } | null>(null)
   
-  // TRX balance for Eight usage - NOW FREE
-  const [trxBalance, setTrxBalance] = useState<number>(0)
+  // Flame Coin balance for Eight usage - NOW FREE
+  const [flameCoinBalance, setFlameCoinBalance] = useState<number>(0)
   const [eightCostPerRequest] = useState(0) // FREE
 
   // SQL Console State
@@ -453,7 +453,7 @@ export default function DevWorkshop() {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         })
         const balanceData = await balanceRes.json()
-        if (balanceData.success) setTrxBalance(balanceData.coreTrx || 0)
+        if (balanceData.success) setFlameCoinBalance(balanceData.flameCoinBalance || 0)
       } catch (e) {
         console.error('Failed to fetch data:', e)
       }
@@ -853,7 +853,7 @@ export default function DevWorkshop() {
           </div>
         )}
 
-        {activeTab === 'users' && <div className="p-6 h-full overflow-auto"><Button onClick={fetchUsers}>Load Users</Button><div className="mt-4 grid gap-2">{usersList.map(u => <div key={u.id} className="p-3 bg-slate-900 rounded border border-slate-800 flex justify-between"><span>{u.email} ({u.role})</span><Button size="sm" onClick={() => fundUserWallet(u.id, 10, 'core')}>+10 TRX</Button></div>)}</div></div>}
+        {activeTab === 'users' && <div className="p-6 h-full overflow-auto"><Button onClick={fetchUsers}>Load Users</Button><div className="mt-4 grid gap-2">{usersList.map(u => <div key={u.id} className="p-3 bg-slate-900 rounded border border-slate-800 flex justify-between"><span>{u.email} ({u.role})</span><Button size="sm" onClick={() => fundUserWallet(u.id, 10, 'core')}>+10 Flame Coin</Button></div>)}</div></div>}
         {activeTab === 'arena' && (
           <div className="p-6 h-full overflow-auto">
             <div className="flex items-center justify-between mb-4">
@@ -866,7 +866,7 @@ export default function DevWorkshop() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{m.title} <span className="text-xs text-slate-500">({m.category})</span></p>
-                      <p className="text-xs text-slate-500">{m.participant_count}/{m.max_participants} players · Entry {m.entry_fee} TRX · Pool {m.prize_pool} TRX</p>
+                      <p className="text-xs text-slate-500">{m.participant_count}/{m.max_participants} players · Entry {m.entry_fee} Flame Coin · Pool {m.prize_pool} Flame Coin</p>
                     </div>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${m.status === 'active' ? 'bg-green-500/20 text-green-400' : m.status === 'completed' ? 'bg-slate-700 text-slate-400' : m.status === 'cancelled' ? 'bg-red-500/20 text-red-400' : 'bg-cyan-500/20 text-cyan-400'}`}>{m.status}</span>
                   </div>
@@ -892,7 +892,7 @@ export default function DevWorkshop() {
               {casinoStats.map(s => (
                 <div key={s.game_type} className="p-3 bg-slate-900 rounded border border-slate-800 flex items-center justify-between">
                   <span className="font-medium capitalize">{s.game_type}</span>
-                  <span className="text-xs text-slate-400">{s.game_count} games · Wagered {Number(s.total_wagered).toFixed(2)} TRX · House {Number(s.house_result).toFixed(2)} TRX</span>
+                  <span className="text-xs text-slate-400">{s.game_count} games · Wagered {Number(s.total_wagered).toFixed(2)} Flame Coin · House {Number(s.house_result).toFixed(2)} Flame Coin</span>
                 </div>
               ))}
               {casinoStats.length === 0 && !isLoadingCasino && <p className="text-sm text-slate-500">No stats loaded yet.</p>}

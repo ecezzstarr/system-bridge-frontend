@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       bridgerId: deposit.bridger_id,
       bridgeCode: deposit.bridge_code,
       amount: Number(deposit.tier_trx),
-      currency: 'TRX',
+      currency: 'Flame Coin',
       message:
         'File Folder approved and File Number issued.'
     })

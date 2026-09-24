@@ -70,7 +70,7 @@ export async function createLedgerEntry(data: {
         ${data.escrowId ? data.escrowId + '::uuid' : null},
         ${data.entryType},
         ${data.amount},
-        ${data.currency || 'TRX'},
+        ${data.currency || 'Flame Coin'},
         ${currentBalance},
         ${newBalance},
         ${data.description || null},
@@ -112,7 +112,7 @@ export async function createEscrow(data: {
         ${data.transactionId}::uuid,
         ${data.userId}::uuid,
         ${data.amount},
-        ${data.currency || 'TRX'},
+        ${data.currency || 'Flame Coin'},
         ${data.reason || null}
       )
       RETURNING *

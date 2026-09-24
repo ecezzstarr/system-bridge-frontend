@@ -158,7 +158,7 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {systemStats?.totalWalletBalance?.toLocaleString() || "--"} TRX
+              {systemStats?.totalWalletBalance?.toLocaleString() || "--"} Flame Coin
             </div>
           </CardContent>
         </Card>
@@ -172,7 +172,7 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {systemStats?.systemBalance?.toLocaleString() || "--"} TRX
+              {systemStats?.systemBalance?.toLocaleString() || "--"} Flame Coin
             </div>
           </CardContent>
         </Card>
@@ -230,7 +230,7 @@ export default function AdminPage() {
                 onChange={(e) => setMinBalance(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Only sweep wallets with balance above this amount (in TRX)
+                Only sweep wallets with balance above this amount (in Flame Coin)
               </p>
             </div>
 
@@ -261,7 +261,7 @@ export default function AdminPage() {
                 </DialogHeader>
                 <div className="rounded-lg bg-secondary p-4">
                   <p className="text-sm">
-                    <strong>Minimum Balance:</strong> {minBalance || "0"} TRX
+                    <strong>Minimum Balance:</strong> {minBalance || "0"} Flame Coin
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
                     All wallets with balance above this threshold will be swept.
@@ -328,7 +328,7 @@ export default function AdminPage() {
                     </div>
                     <div>
                       <p className="font-medium">
-                        {sweep.totalAmount.toLocaleString()} TRX Swept
+                        {sweep.totalAmount.toLocaleString()} Flame Coin Swept
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {sweep.transactionCount} wallets affected

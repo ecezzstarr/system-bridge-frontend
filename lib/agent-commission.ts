@@ -60,7 +60,7 @@ export async function creditAgentCommission(params: {
 
     await sql`
       INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at)
-      VALUES (gen_random_uuid(), ${agentId}::uuid, 'agent_commission', ${commissionAmount}, 'TRX', ${description}, NOW())
+      VALUES (gen_random_uuid(), ${agentId}::uuid, 'agent_commission', ${commissionAmount}, 'Flame Coin', ${description}, NOW())
     `
 
     await sql`
@@ -76,7 +76,7 @@ export async function creditAgentCommission(params: {
           ${agentId}::uuid,
           'commission',
           'A return has come to you',
-          ${`You earned ${commissionAmount.toFixed(2)} TRX commission (${(rate * 100).toFixed(0)}%) from a referred Bridger's activity.`},
+          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin commission (${(rate * 100).toFixed(0)}%) from a referred Bridger's activity.`},
           'WEAVE'
         )
       `

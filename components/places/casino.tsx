@@ -47,7 +47,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       })
       const data = await res.json()
-      if (data.coreTrx !== undefined) setBalance(data.coreTrx)
+      if (data.flameCoinBalance !== undefined) setBalance(data.flameCoinBalance)
     } catch (e) {
       console.log('Failed to fetch balance', e)
     }
@@ -61,12 +61,12 @@ export default function Casino({ user: propUser }: { user?: any }) {
       return
     }
     if (value < MIN_BET) {
-      setBetAmountError(`Minimum bet is ${MIN_BET} TRX`)
+      setBetAmountError(`Minimum bet is ${MIN_BET} Flame Coin`)
       setBetAmount(value)
       return
     }
     if (value > MAX_BET) {
-      setBetAmountError(`Maximum bet is ${MAX_BET} TRX`)
+      setBetAmountError(`Maximum bet is ${MAX_BET} Flame Coin`)
       setBetAmount(value)
       return
     }
@@ -90,11 +90,11 @@ export default function Casino({ user: propUser }: { user?: any }) {
       return
     }
     if (betAmount < MIN_BET) {
-      setError(`Minimum bet is ${MIN_BET} TRX`)
+      setError(`Minimum bet is ${MIN_BET} Flame Coin`)
       return
     }
     if (betAmount > MAX_BET) {
-      setError(`Maximum bet is ${MAX_BET} TRX`)
+      setError(`Maximum bet is ${MAX_BET} Flame Coin`)
       return
     }
 
@@ -244,7 +244,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Available to Play</p>
-                  <p className="text-xl font-black text-orange-400">{demoMode ? demoBalance.toFixed(0) : balance.toFixed(2)} <span className="text-xs font-normal text-slate-400">{demoMode ? 'Credits' : 'TRX'}</span></p>
+                  <p className="text-xl font-black text-orange-400">{demoMode ? demoBalance.toFixed(0) : balance.toFixed(2)} <span className="text-xs font-normal text-slate-400">{demoMode ? 'Credits' : 'Flame Coin'}</span></p>
                 </div>
                 {!demoMode && (
                   <a href="/wallet/deposit-withdraw">
@@ -277,7 +277,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
               </div>
 
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1.5">Or enter a custom amount (min {MIN_BET} TRX)</p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1.5">Or enter a custom amount (min {MIN_BET} Flame Coin)</p>
                 <Input
                   type="number"
                   min={MIN_BET}
@@ -298,7 +298,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
                 onClick={rollDice}
                 disabled={!canPlay}
               >
-                {isRolling ? <Loader2 className="h-7 w-7 animate-spin" /> : `PLAY ${betAmount} ${demoMode ? 'CREDITS' : 'TRX'}`}
+                {isRolling ? <Loader2 className="h-7 w-7 animate-spin" /> : `PLAY ${betAmount} ${demoMode ? 'CREDITS' : 'Flame Coin'}`}
               </Button>
             </div>
           </div>
@@ -358,7 +358,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
       <div className="flex items-center justify-between p-4 bg-slate-900 rounded-2xl border border-slate-800">
         <div>
           <p className="text-sm font-bold text-white">{demoMode ? 'Practice Mode' : 'Authentic Play'}</p>
-          <p className="text-[10px] text-slate-500">{demoMode ? 'Virtual credits only' : 'Using actual TRX resources'}</p>
+          <p className="text-[10px] text-slate-500">{demoMode ? 'Virtual credits only' : 'Using actual Flame Coin resources'}</p>
         </div>
         <button
           onClick={() => { setDemoMode(!demoMode); setError(null); setGameResult(null) }}
@@ -366,7 +366,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
             demoMode ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'
           }`}
         >
-          {demoMode ? 'SWITCH TO TRX' : 'TRY PRACTICE'}
+          {demoMode ? 'SWITCH TO Flame Coin' : 'TRY PRACTICE'}
         </button>
       </div>
     </div>

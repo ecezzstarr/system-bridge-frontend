@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const clientId = String(body.client_id || '')
   const amount = Number(body.amount)
-  const currency = String(body.currency || 'TRX')
+  const currency = String(body.currency || 'Flame Coin')
   if (!clientId || !Number.isFinite(amount) || amount <= 0) return NextResponse.json({ error: 'Valid client and amount are required' }, { status: 400 })
   await ensureClientVaultSchema(sql)
   await ensureClientVaultLedgerSchema(sql)

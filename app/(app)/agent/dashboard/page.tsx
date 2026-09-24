@@ -76,7 +76,7 @@ export default function AgentTerminal() {
   checklist.push({
     id: 'loop-1',
     label: 'Support Bridgers to close Loop 1',
-    detail: 'Agents earn 30% on lead purchases and 5% of Weave\'s 40% (716 TRX) on Client crossings.',
+    detail: 'Agents earn 30% on lead purchases and 5% of Weave\'s 40% (716 Flame Coin) on Client crossings.',
     actLabel: 'View Bridgers',
     onAct: () => router.push('/agent/bridgers'),
   })
@@ -85,7 +85,7 @@ export default function AgentTerminal() {
     const latest = commissions.recentCommissions[0]
     checklist.push({
       id: 'commission-earned',
-      label: `+${latest.amount.toFixed(2)} TRX commission credited`,
+      label: `+${latest.amount.toFixed(2)} Flame Coin commission credited`,
       detail: latest.description,
       actLabel: 'View wallet',
       onAct: () => setActiveTab('wallet'),
@@ -137,11 +137,11 @@ export default function AgentTerminal() {
         </div>
         <div className="rounded-xl p-4 border" style={{ background: 'var(--field-surface)', borderColor: 'var(--field-border)' }}>
           <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Platform Balance</p>
-          <p className="text-2xl font-bold" style={{ color: 'var(--success)' }}>{user.platform_wallet_balance || 0} TRX</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--success)' }}>{user.platform_wallet_balance || 0} Flame Coin</p>
         </div>
         <div className="rounded-xl p-4 border" style={{ background: 'var(--field-surface)', borderColor: 'var(--field-border)' }}>
           <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Escrow Balance</p>
-          <p className="text-2xl font-bold" style={{ color: 'var(--warning)' }}>{user.escrow_balance || 0} TRX</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--warning)' }}>{user.escrow_balance || 0} Flame Coin</p>
         </div>
         <div className="rounded-xl p-4 border" style={{ background: 'var(--field-surface)', borderColor: 'var(--field-border)' }}>
           <p className="text-xs mb-1" style={{ color: 'var(--muted-foreground)' }}>Department</p>
@@ -156,7 +156,7 @@ export default function AgentTerminal() {
           <div>
             <p className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>Total Loop 1 Earnings</p>
             <p className="text-3xl font-bold" style={{ color: 'var(--success)' }}>
-              {commissions ? `${commissions.totalEarnings.toFixed(2)} TRX` : '—'}
+              {commissions ? `${commissions.totalEarnings.toFixed(2)} Flame Coin` : '—'}
             </p>
           </div>
           <div className="text-right">
@@ -306,14 +306,14 @@ function WalletSection({ user }: { user: any }) {
           <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl opacity-30 blur"></div>
           <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
             <p className="text-sm text-slate-400 mb-2">Platform Balance</p>
-            <p className="text-4xl font-bold text-cyan-400">{user.platform_wallet_balance || 0} TRX</p>
+            <p className="text-4xl font-bold text-cyan-400">{user.platform_wallet_balance || 0} Flame Coin</p>
           </div>
         </div>
         <div className="group relative">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl opacity-30 blur"></div>
           <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
             <p className="text-sm text-slate-400 mb-2">Escrow Balance</p>
-            <p className="text-4xl font-bold text-yellow-400">{user.escrow_balance || 0} TRX</p>
+            <p className="text-4xl font-bold text-yellow-400">{user.escrow_balance || 0} Flame Coin</p>
           </div>
         </div>
       </div>
@@ -367,7 +367,7 @@ function WalletSection({ user }: { user: any }) {
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">Join Arena</h3>
-              <p className="text-sm text-slate-400">Compete for TRX</p>
+              <p className="text-sm text-slate-400">Compete for Flame Coin</p>
             </div>
           </div>
         </div>
@@ -423,7 +423,7 @@ function MarketSection() {
           <ShoppingBag className="h-8 w-8 text-emerald-400" />
           <div>
             <h2 className="text-2xl font-bold text-white">Market</h2>
-            <p className="text-slate-400 text-sm">Buy and sell items with TRX</p>
+            <p className="text-slate-400 text-sm">Buy and sell items with Flame Coin</p>
           </div>
         </div>
         
@@ -439,7 +439,7 @@ function MarketSection() {
             <div key={i} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 hover:border-emerald-500/50 transition">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">{item.category}</span>
-                <span className="text-lg font-bold text-white">{item.price} TRX</span>
+                <span className="text-lg font-bold text-white">{item.price} Flame Coin</span>
               </div>
               <h3 className="text-white font-semibold mb-3">{item.name}</h3>
               <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-sm">

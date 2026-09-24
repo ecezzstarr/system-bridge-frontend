@@ -518,13 +518,13 @@ export async function POST(request: NextRequest) {
           if (filter === 'all' || filter === 'db') {
             const games = await sql`SELECT created_at, user_id, outcome, bet_amount FROM casino_games ORDER BY created_at DESC LIMIT 5`
             for (const g of (games as any[])) {
-              logs.push({ time: g.created_at, type: 'db', message: `Casino ${g.outcome}: ${g.bet_amount} TRX` })
+              logs.push({ time: g.created_at, type: 'db', message: `Casino ${g.outcome}: ${g.bet_amount} Flame Coin` })
             }
           }
           if (filter === 'all' || filter === 'db') {
             const ledger = await sql`SELECT created_at, entry_type, amount FROM ledger_entries ORDER BY created_at DESC LIMIT 5`
             for (const l of (ledger as any[])) {
-              logs.push({ time: l.created_at, type: 'db', message: `Ledger: ${l.entry_type} - ${l.amount} TRX` })
+              logs.push({ time: l.created_at, type: 'db', message: `Ledger: ${l.entry_type} - ${l.amount} Flame Coin` })
             }
           }
           logs.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())

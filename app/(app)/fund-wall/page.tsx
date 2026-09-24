@@ -126,7 +126,7 @@ export default function FundWallPage() {
             <span className="text-3xl sm:text-4xl font-bold text-blue-900">
               {isFetching ? '...' : (data?.platformWallet.trx ?? 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}
             </span>
-            <span className="text-lg sm:text-xl text-blue-700 font-semibold">TRX</span>
+            <span className="text-lg sm:text-xl text-blue-700 font-semibold">Flame Coin</span>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Address</p>
@@ -161,7 +161,7 @@ export default function FundWallPage() {
             <span className="text-3xl sm:text-4xl font-bold text-green-900">
               {isFetching ? '...' : (data?.companyWallet.trx ?? 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}
             </span>
-            <span className="text-lg sm:text-xl text-green-700 font-semibold">TRX</span>
+            <span className="text-lg sm:text-xl text-green-700 font-semibold">Flame Coin</span>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Address</p>
@@ -189,7 +189,7 @@ export default function FundWallPage() {
               <p className="text-lg sm:text-2xl font-bold">
                 {isFetching ? '...' : (data?.stats.totalLocked ?? 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}
               </p>
-              <p className="text-xs text-muted-foreground">TRX in escrow</p>
+              <p className="text-xs text-muted-foreground">Flame Coin in escrow</p>
             </div>
           </CardContent>
         </Card>
@@ -270,7 +270,7 @@ export default function FundWallPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-green-600">+{sweep.amount.toLocaleString('en-US', { maximumFractionDigits: 2 })} TRX</p>
+                    <p className="font-semibold text-green-600">+{sweep.amount.toLocaleString('en-US', { maximumFractionDigits: 2 })} Flame Coin</p>
                   </div>
                 </div>
               ))}

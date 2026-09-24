@@ -2,7 +2,7 @@ import { WORLD_RULES } from './world/constants'
 
 export const PLATFORM_FEE_PERCENT = WORLD_RULES.PLATFORM_FEE_PERCENT
 
-const FALLBACK_TRX_NGN_RATE = WORLD_RULES.TRX_NGN_RATE
+const FALLBACK_TRX_NGN_RATE = WORLD_RULES.TRX_PAYMENT_NGN_FALLBACK_RATE
 
 export async function getTrxNgnRate(): Promise<{ rate: number; source: 'live' | 'fallback' }> {
   try {

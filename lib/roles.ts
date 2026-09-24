@@ -133,8 +133,8 @@ export async function distributeCommission(
     await sql`
       INSERT INTO ledger_entries (user_id, entry_type, amount, currency, description)
       VALUES 
-        (${agentId}::uuid, 'earning', ${agentCommission}, 'TRX', 'Agent commission'),
-        (${bridgerId}::uuid, 'earning', ${bridgerCommission}, 'TRX', 'Bridger commission')
+        (${agentId}::uuid, 'earning', ${agentCommission}, 'Flame Coin', 'Agent commission'),
+        (${bridgerId}::uuid, 'earning', ${bridgerCommission}, 'Flame Coin', 'Bridger commission')
     `
     
     console.log('[v0] Commissions distributed - Agent:', agentCommission, 'Bridger:', bridgerCommission)

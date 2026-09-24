@@ -1,7 +1,7 @@
 // User Roles
 export type UserRole = 'admin' | 'client' | 'bridger' | 'agent'
 
-// Wealth Tiers based on TRX balance
+// Wealth Tiers based on Flame Coin balance
 export type WealthTierType = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond'
 
 // Presence Status

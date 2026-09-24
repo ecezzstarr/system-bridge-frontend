@@ -20,7 +20,7 @@ interface Bridge {
   views: number; conversations: number; registrations: number
 }
 
-const BRIDGE_AI_SUBSCRIPTION_FEE_TRX = 15
+const BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN = 15
 
 const PALETTE = [
   { from: '#06b6d4', to: '#3b82f6', glow: 'rgba(6,182,212,0.25)' },
@@ -92,7 +92,7 @@ export default function BridgerWorkshopPage() {
       const data = await res.json()
       if (!res.ok || !data.success) {
         if (data.reason === 'insufficient_balance') {
-          setSubError(`Insufficient balance. Need ${data.requiredTrx} TRX, wallet has ${data.availableTrx} TRX.`)
+          setSubError(`Insufficient balance. Need ${data.requiredFlameCoin} Flame Coin, wallet has ${data.availableFlameCoin} Flame Coin.`)
         } else {
           setSubError('Continuance failed. Try again.')
         }
@@ -236,13 +236,13 @@ export default function BridgerWorkshopPage() {
         <Card className="border-slate-800 bg-slate-900/50">
           <CardContent className="pt-6 space-y-4">
             <h2 className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>
-              Subscribe — {BRIDGE_AI_SUBSCRIPTION_FEE_TRX} TRX / month
+              Subscribe — {BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin / month
             </h2>
             <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
               Deducted from your primary wallet. Required to create and run Bridge AI links. Cancel anytime by letting it lapse.
             </p>
             <Button onClick={handleSubscribe} disabled={subscribing} className="w-full">
-              {subscribing ? 'Activating...' : `Subscribe for ${BRIDGE_AI_SUBSCRIPTION_FEE_TRX} TRX`}
+              {subscribing ? 'Activating...' : `Subscribe for ${BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin`}
             </Button>
           </CardContent>
         </Card>

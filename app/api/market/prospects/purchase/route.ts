@@ -66,10 +66,10 @@ export async function POST(request: NextRequest) {
     const currentBalance = Number(wallet.balance_trx) || 0
     if (currentBalance < priceTrx) {
       await client.query('ROLLBACK')
-      return NextResponse.json({ error: 'Insufficient TRX balance', currentBalance, required: priceTrx }, { status: 400 })
+      return NextResponse.json({ error: 'Insufficient Flame Coin balance', currentBalance, required: priceTrx }, { status: 400 })
     }
 
-    // 4. Deduct TRX
+    // 4. Deduct Flame Coin
     const newBalance = currentBalance - priceTrx
     await client.query(
       `UPDATE wallets SET balance_trx = $1, updated_at = NOW() WHERE user_id = $2::uuid AND is_primary = true`,
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     // 5. Ledger entry
     await client.query(
       `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at)
-       VALUES (gen_random_uuid(), $1::uuid, 'prospect_package_purchase', $2, 'TRX', $3, $4, $5, NOW())`,
+       VALUES (gen_random_uuid(), $1::uuid, 'prospect_package_purchase', $2, 'Flame Coin', $3, $4, $5, NOW())`,
       [userId, priceTrx, `Purchased prospect package ${packageId}`, currentBalance, newBalance]
     )
 
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       bridgerId: userId,
       activity: 'prospect_package_purchase',
       baseAmount: priceTrx,
-      description: `30% commission: Bridger purchased a ${priceTrx} TRX prospect package`,
+      description: `30% commission: Bridger purchased a ${priceTrx} Flame Coin prospect package`,
     }).catch(err => console.error('[market purchase] commission error:', err))
 
     return NextResponse.json({

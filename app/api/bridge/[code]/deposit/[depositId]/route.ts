@@ -49,7 +49,7 @@ export async function GET(
         id: d.id,
         status: d.status,
         amount: Number(d.tier_trx),
-        currency: 'TRX',
+        currency: 'Flame Coin',
         companyWallet: d.company_wallet,
         fileNumber: d.file_number,
         txHash: d.tx_hash,

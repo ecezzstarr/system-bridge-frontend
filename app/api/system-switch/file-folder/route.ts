@@ -1,16 +1,23 @@
 import { NextResponse } from 'next/server'
-
-const STANDARD_PRICE_TRX = 35800
-const MINIMUM_PROSPECT_PRICE_TRX = 1800
+import { WORLD_RULES } from '@/lib/world/constants'
 
 export async function GET() {
+  const standardPriceFlameCoin = WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
+  const minimumProspectPriceFlameCoin = 1800
+
   return NextResponse.json({
     success: true,
-    depositWallet: process.env.COMPANY_TRON_WALLET || '',
-    currency: 'TRX',
-    standardPriceTrx: STANDARD_PRICE_TRX,
-    minimumProspectPriceTrx: MINIMUM_PROSPECT_PRICE_TRX,
-    depositMethods: ['TRX', 'Flutterwave'],
-    withdrawalMethods: ['TRX'],
+    fundingAsset: 'TRX',
+    creditedAsset: 'Flame Coin',
+    companyTrxWallet: WORLD_RULES.COMPANY_TRX_WALLET,
+    depositWallet: WORLD_RULES.COMPANY_TRX_WALLET,
+    standardPriceFlameCoin,
+    minimumProspectPriceFlameCoin,
+    requiredTrx: standardPriceFlameCoin,
+    peg: '1 Flame Coin = 1 TRX',
+    // Compatibility aliases for existing clients while the DB/API migration completes.
+    standardPriceTrx: standardPriceFlameCoin,
+    minimumProspectPriceTrx: minimumProspectPriceFlameCoin,
+    depositMethods: ['TRX'],
   })
 }

@@ -9,7 +9,7 @@ export interface BalanceSummaryProps {
   currency?: string
 }
 
-export function BalanceSummary({ available, locked, currency = 'TRX' }: BalanceSummaryProps) {
+export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: BalanceSummaryProps) {
   const total = available + locked
 
   return (

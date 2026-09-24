@@ -4,11 +4,9 @@
  */
 
 export const WORLD_RULES = {
-  // Exchange Rates
-  TRX_NGN_RATE: 441.09,
-  
+
   // File Folder (Client Crossing)
-  FILE_FOLDER_PRICE_TRX: 35800,
+  FILE_FOLDER_PRICE_FLAME_COIN: 35800,
   
   // Commissions (Yields)
   BRIDGER_YIELD_RATE: 0.30,      // 30% on client crossing
@@ -21,6 +19,7 @@ export const WORLD_RULES = {
   // Wallet Fees
   PLATFORM_FEE_PERCENT: 5,
   
-  // Institutional Wallets
-  COMPANY_WALLET: 'THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk',
+  // Client funding rail: real TRX is paid here, then verified value is credited as Flame Coin.
+  COMPANY_TRX_WALLET: 'THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk',
+  TRX_PAYMENT_NGN_FALLBACK_RATE: Number(process.env.TRX_NGN_FALLBACK_RATE || 441.09),
 }

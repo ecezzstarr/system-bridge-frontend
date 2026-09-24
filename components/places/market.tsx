@@ -10,7 +10,7 @@ export default function MarketPlace() {
       {/* Header */}
       <div className="mb-4">
         <h1 className="text-xl font-bold text-white mb-1">Marketplace</h1>
-        <p className="text-xs text-slate-400">Buy and sell digital assets with TRX</p>
+        <p className="text-xs text-slate-400">Buy and sell digital assets with Flame Coin</p>
       </div>
 
       {/* Market Grid - Mobile optimized */}
@@ -48,7 +48,7 @@ export default function MarketPlace() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-500">Price</p>
-                <p className="text-lg font-bold text-emerald-400">{item.price} TRX</p>
+                <p className="text-lg font-bold text-emerald-400">{item.price} Flame Coin</p>
               </div>
             </div>
 

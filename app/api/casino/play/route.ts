@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (!betAmount || betAmount < 2) {
-      return NextResponse.json({ error: 'Minimum bet is 2 TRX' }, { status: 400 })
+      return NextResponse.json({ error: 'Minimum bet is 2 Flame Coin' }, { status: 400 })
     }
 
     if (betAmount > 1000) {
-      return NextResponse.json({ error: 'Maximum bet is 1000 TRX' }, { status: 400 })
+      return NextResponse.json({ error: 'Maximum bet is 1000 Flame Coin' }, { status: 400 })
     }
 
     await client.query('BEGIN')
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         const entryType = outcome === 'win' ? 'earning' : 'fee'
         await client.query(
           `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at)
-           VALUES (gen_random_uuid(), $1::uuid, $2, $3, 'TRX', $4, $5, $6, NOW())`,
+           VALUES (gen_random_uuid(), $1::uuid, $2, $3, 'Flame Coin', $4, $5, $6, NOW())`,
           [
             userId,
             entryType,
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
           bridgerId: userId,
           activity: 'casino_win',
           baseAmount: payout,
-          description: `30% commission: referred Bridger won ${payout.toFixed(2)} TRX at Casino`,
+          description: `30% commission: referred Bridger won ${payout.toFixed(2)} Flame Coin at Casino`,
         }).catch(err => console.error('[casino play] commission error:', err))
       }
 
@@ -150,10 +150,10 @@ export async function POST(request: NextRequest) {
         newBalance,
         hostedBy: 'Platform',
         message: outcome === 'win'
-          ? `You won ${payout.toFixed(6)} TRX!`
+          ? `You won ${payout.toFixed(6)} Flame Coin!`
           : outcome === 'lose'
-          ? `You lost ${betAmount} TRX to the platform`
-          : `Push - ${PUSH_RETURN_PERCENT}% of your stake returned (${payout.toFixed(6)} TRX)`
+          ? `You lost ${betAmount} Flame Coin to the platform`
+          : `Push - ${PUSH_RETURN_PERCENT}% of your stake returned (${payout.toFixed(6)} Flame Coin)`
       })
     } catch (innerError) {
       await client.query('ROLLBACK')

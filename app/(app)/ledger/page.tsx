@@ -49,7 +49,7 @@ export default function LedgerPage() {
         <BalanceSummary
           available={data.balance.available}
           locked={data.balance.locked}
-          currency="TRX"
+          currency="Flame Coin"
         />
       )}
 

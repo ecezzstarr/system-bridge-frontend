@@ -49,14 +49,14 @@ export async function GET(request: NextRequest) {
     if (wallets.length === 0) {
       return NextResponse.json({ 
         success: true, 
-        coreTrx: 0, 
+        flameCoinBalance: 0, 
         playTrx: 0 
       })
     }
     
     return NextResponse.json({
       success: true,
-      coreTrx: parseFloat(wallets[0].balance_trx) || 0,
+      flameCoinBalance: parseFloat(wallets[0].balance_trx) || 0,
       playTrx: parseFloat(wallets[0].play_balance) || 0,
     })
   } catch (error) {
