@@ -4,10 +4,11 @@ import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
 import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
+import { FlameEventAd } from '@/components/events/flame-event-ad'
 
 export const metadata: Metadata = {
   title: 'WEAVE - System Bridge',
-  description: 'Unified ecosystem for bridgers, agents, and administrators',
+  description: 'Unified ecosystem for bridgers, agents, administrators, and clients',
   manifest: '/manifest.webmanifest',
 }
 
@@ -30,6 +31,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <AuthProvider>
             <PWARegister />
+            <FlameEventAd />
             {children}
             <DJBroadcastPlayer />
           </AuthProvider>
