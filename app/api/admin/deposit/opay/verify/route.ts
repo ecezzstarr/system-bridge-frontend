@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getSql } from '@/lib/db'
+import { notifyDepositDecision } from '@/lib/deposit-notifications'
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,6 +46,15 @@ export async function POST(request: NextRequest) {
             updated_at = NOW()
         WHERE id = ${depositId}::uuid
       `
+
+      await notifyDepositDecision({
+        userId: deposit[0].user_id,
+        approved: false,
+        rail: 'OPAY',
+        depositId,
+        amountLabel: `₦${Number(deposit[0].amount_usd || 0).toLocaleString()}`,
+        adminId: admin.id,
+      })
 
       return NextResponse.json({
         success: true,
@@ -91,6 +101,16 @@ export async function POST(request: NextRequest) {
         })}
       )
     `
+
+    await notifyDepositDecision({
+      userId: deposit[0].user_id,
+      approved: true,
+      rail: 'OPAY',
+      depositId,
+      amountLabel: `₦${Number(deposit[0].amount_usd || 0).toLocaleString()}`,
+      creditedFlameCoin: flameCoinAmount,
+      adminId: admin.id,
+    })
 
     return NextResponse.json({
       success: true,

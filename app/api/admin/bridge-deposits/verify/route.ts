@@ -4,6 +4,7 @@ import { sql } from '@/lib/db'
 import { generateFileNumber } from '@/lib/fne'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 import { getFileFolderTier } from '@/lib/file-folder-pricing'
+import { notifyUser } from '@/lib/deposit-notifications'
 
 export async function POST(request: NextRequest) {
   try {
@@ -89,6 +90,17 @@ export async function POST(request: NextRequest) {
         WHERE id = ${depositId}::uuid
           AND status = 'pending'
       `
+
+      if (deposit.bridger_id) {
+        await notifyUser(deposit.bridger_id, {
+          type: 'client_deposit_rejected',
+          title: 'Client File Folder payment rejected',
+          content: `Administration rejected ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX File Folder payment. No File Number was issued.`,
+          link: '/bridger/clients',
+          fromUserId: admin.id,
+          fromUserName: 'WEAVE Administration',
+        })
+      }
 
       return NextResponse.json({
         success: true,
@@ -178,6 +190,17 @@ export async function POST(request: NextRequest) {
         baseAmount: Number(deposit.tier_trx),
         description: `Commission for ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
       }).catch(err => console.error('[bridge verify] commission error:', err))
+    }
+
+    if (deposit.bridger_id) {
+      await notifyUser(deposit.bridger_id, {
+        type: 'client_deposit_approved',
+        title: 'Client File Folder payment approved',
+        content: `Administration approved ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment. File Number ${fileNumber} was issued.`,
+        link: '/bridger/clients',
+        fromUserId: admin.id,
+        fromUserName: 'WEAVE Administration',
+      })
     }
 
     return NextResponse.json({

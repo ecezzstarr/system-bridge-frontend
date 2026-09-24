@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { WORLD_RULES } from '@/lib/world/constants'
+import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +31,19 @@ export async function POST(request: NextRequest) {
       VALUES (gen_random_uuid(), ${user.id}::uuid, ${Number(amount)}, 'pending', 'tron', 'TRX', ${txHash.trim()}, NOW(), NOW())
       RETURNING id
     `
+
+    if (user.role !== 'admin') {
+      await notifyDepositSubmitted({
+        depositorId: user.id,
+        depositorName: user.name || user.username || user.email,
+        role: 'Client',
+        depositId: result[0].id,
+        rail: 'TRX',
+        amountLabel: `${Number(amount).toLocaleString()} TRX`,
+        secondaryLabel: `${Number(amount).toLocaleString()} Flame Coin after verification`,
+        adminLink: '/admin/dashboard#tron',
+      })
+    }
 
     return NextResponse.json({
       success: true,

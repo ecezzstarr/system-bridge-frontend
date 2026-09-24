@@ -3,6 +3,7 @@ import { sql } from '@/lib/db'
 
 import { WORLD_RULES } from '@/lib/world/constants'
 import { getFileFolderTier } from '@/lib/file-folder-pricing'
+import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
 
 const COMPANY_TRX_WALLET = WORLD_RULES.COMPANY_TRX_WALLET
 
@@ -112,6 +113,17 @@ export async function POST(
       )
       RETURNING id
     `
+
+    await notifyDepositSubmitted({
+      depositorId: null,
+      depositorName: name.trim(),
+      role: 'Prospect Client',
+      depositId: result[0].id,
+      rail: 'BRIDGE_TRX',
+      amountLabel: `${submittedAmount.toLocaleString()} TRX`,
+      secondaryLabel: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder`,
+      adminLink: '/admin/dashboard#bridge',
+    })
 
     return NextResponse.json({
       success: true,

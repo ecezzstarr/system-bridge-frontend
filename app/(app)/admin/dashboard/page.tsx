@@ -87,7 +87,17 @@ export default function AdminTerminal() {
     // Handle hash navigation for direct links from sidebar
     const handleHash = () => {
       const hash = window.location.hash
-      if (hash === '#panel' || hash === '#bridgers' || hash === '#users' || hash === '#sweeps') {
+      if (
+        hash === '#panel' ||
+        hash === '#bridgers' ||
+        hash === '#users' ||
+        hash === '#sweeps' ||
+        hash === '#deposits' ||
+        hash === '#tron' ||
+        hash === '#bridge' ||
+        hash === '#withdrawals' ||
+        hash === '#departmental'
+      ) {
         setActiveTab('panel')
       } else if (hash === '#lounge') {
         setActiveTab('lounge')

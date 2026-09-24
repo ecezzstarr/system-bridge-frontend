@@ -298,7 +298,10 @@ export default function Lounge() {
         if (selectedChat.type === 'private') {
           await fetch('/api/notifications', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
             body: JSON.stringify({
               userId: selectedChat.id,
               type: 'message',
