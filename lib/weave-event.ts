@@ -1,4 +1,5 @@
-export type EventRole = 'client' | 'bridger' | 'agent'
+export type EventRole = 'client' | 'bridger' | 'agent' | 'admin'
+export type WeaveEventStatus = 'planned' | 'active' | 'closed'
 
 export type EventPosition = {
   mode: 'player' | 'support'
@@ -12,23 +13,29 @@ export type WeaveEvent = {
   key: string
   title: string
   subtitle: string
-  status: 'planned' | 'active' | 'closed'
+  status: WeaveEventStatus
   startsAt: string
   endsAt: string
   loopNumber: number
   announcement: string
+  adEnabled: boolean
+  autoStart: boolean
+  effectiveStatus?: WeaveEventStatus
   positions: Record<EventRole, EventPosition>
 }
 
 export const FLAME_EVENT: WeaveEvent = {
   key: 'flame-event-01',
   title: 'Flame Event',
-  subtitle: 'One event. Your position. Your movement.',
+  subtitle: 'The opening of WEAVE to the world. One event. Your position. Your movement.',
   status: 'planned',
-  startsAt: '2026-10-01T00:00:00.000Z',
-  endsAt: '2026-12-31T23:59:59.000Z',
+  // October 1, 2026 at 00:00 in West Africa Time (UTC+1).
+  startsAt: '2026-10-01T00:00:00+01:00',
+  endsAt: '2026-12-31T23:59:59+01:00',
   loopNumber: 1,
-  announcement: 'The event is being prepared by Administration. Position movement opens when the event is activated.',
+  announcement: 'Flame Event opens October 1. Administration is preparing the event ground for every WEAVE position.',
+  adEnabled: true,
+  autoStart: true,
   positions: {
     client: {
       mode: 'player',
@@ -51,7 +58,27 @@ export const FLAME_EVENT: WeaveEvent = {
       focus: ['My Bridgers', 'Team Movement', 'Company Activities', 'Support Required', 'New Bridger Opportunities', 'Event Record'],
       movement: ['Keep assigned Bridgers moving', 'Recognize Bridgers requiring support', 'Support company activities opened to Agents', 'Extend the Bridger team where appropriate', 'Follow resulting Client movement without owning the Client position'],
     },
+    admin: {
+      mode: 'support',
+      headline: 'Administration Holds the Event Ground',
+      purpose: 'Administration prepares, opens and governs the Flame Event while every other position moves from its own place inside WEAVE.',
+      focus: ['Event Control', 'Four User Positions', 'Announcements', 'Schedule', 'Event Ground', 'Continuity'],
+      movement: ['Prepare the event before opening', 'Keep the platform-wide event signal visible', 'Open the event on schedule', 'Coordinate role movement and announcements', 'Close or extend the event when Administration decides'],
+    },
   },
+}
+
+export function resolveEventStatus(event: Pick<WeaveEvent, 'status' | 'startsAt' | 'endsAt' | 'autoStart'>, now = new Date()): WeaveEventStatus {
+  if (event.status === 'closed') return 'closed'
+  if (event.status === 'active') return 'active'
+
+  const current = now.getTime()
+  const start = new Date(event.startsAt).getTime()
+  const end = new Date(event.endsAt).getTime()
+
+  if (Number.isFinite(end) && current > end) return 'closed'
+  if (event.autoStart && Number.isFinite(start) && current >= start) return 'active'
+  return 'planned'
 }
 
 export function getEventProgress(event: WeaveEvent, now = new Date()) {
