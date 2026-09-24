@@ -8,6 +8,7 @@ import { useArenaMatches } from '@/lib/hooks'
 import { useAuth } from '@/lib/auth-provider'
 import { toast } from 'sonner'
 import api from '@/lib/api'
+import { isClientPlayerRole } from '@/lib/weave-participation'
 
 const CATEGORIES = [
   { id: 'all', name: 'All', icon: Target },
@@ -20,6 +21,7 @@ const CATEGORIES = [
 export default function Arena({ user: propUser }: { user?: any }) {
   const { user: authUser } = useAuth()
   const user = propUser || authUser
+  const isPlayer = isClientPlayerRole(user?.role)
   const [activeCategory, setActiveCategory] = useState('all')
   const { data: matchesData, isLoading, mutate } = useArenaMatches({ limit: 20 })
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -47,7 +49,10 @@ export default function Arena({ user: propUser }: { user?: any }) {
   })
 
   const handleJoinMatch = async (matchId: string, prediction?: string) => {
-    if (!user?.id) return
+    if (!user?.id || !isPlayer) {
+      toast.error('Arena participation is reserved for Client players')
+      return
+    }
     setJoining(matchId)
     try {
       await api.joinArenaMatch(matchId, user.id, prediction)
@@ -185,6 +190,12 @@ export default function Arena({ user: propUser }: { user?: any }) {
         )}
       </div>
 
+      {!isPlayer && user?.role !== 'admin' && (
+        <div className="rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4 text-xs leading-5 text-slate-400">
+          Support view. Clients are the Arena players; your position can observe and support Client movement without entering as a participant.
+        </div>
+      )}
+
       {/* Content */}
       <div className="space-y-4">
         {isLoading ? (
@@ -315,7 +326,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
                         </div>
 
                         {/* Prediction Choices (User View) */}
-                        {isUpcoming && !isAdmin && (
+                        {isUpcoming && isPlayer && (
                           <div className="grid grid-cols-3 gap-2 mt-2">
                              <Button 
                               variant="outline" 
