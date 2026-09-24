@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
-import { resolveBridgerForClient } from '@/lib/client-player-support'
 
 // Platform wallet ID (company wallet)
 const PLATFORM_WALLET_USER_ID = 'be4f0618-d666-4e13-ae8f-13c986784ff7'
@@ -38,10 +37,7 @@ export async function POST(
 
     // Verify winner is a participant
     const participants = await sql`
-      SELECT ap.user_id
-      FROM arena_participants ap
-      JOIN users u ON u.id = ap.user_id::uuid
-      WHERE ap.match_id = ${id} AND u.role = 'client' AND u.is_active = true
+      SELECT user_id FROM arena_participants WHERE match_id = ${id}
     `
     const participantIds = participants.map((p: any) => p.user_id)
     
@@ -128,14 +124,12 @@ export async function POST(
     const winners = await sql`SELECT name, username FROM users WHERE id = ${winnerId}::uuid`
     const winnerName = winners.length > 0 ? (winners[0].name || winners[0].username) : 'Unknown'
 
-    resolveBridgerForClient(winnerId)
-      .then((bridgerId) => bridgerId ? creditBridgerActivityCommission({
-        bridgerId,
-        activity: 'arena_win',
-        baseAmount: winnerPayout,
-        description: `Support commission: Client player won ${winnerPayout.toFixed(2)} TRX in Arena (${match.title})`,
-      }) : null)
-      .catch(err => console.error('[arena complete] commission error:', err))
+    creditBridgerActivityCommission({
+      bridgerId: winnerId,
+      activity: 'arena_win',
+      baseAmount: winnerPayout,
+      description: `30% commission: referred Bridger won ${winnerPayout.toFixed(2)} TRX in Arena (${match.title})`,
+    }).catch(err => console.error('[arena complete] commission error:', err))
 
     return NextResponse.json({
       success: true,
