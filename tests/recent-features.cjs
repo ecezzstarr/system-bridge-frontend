@@ -182,4 +182,26 @@ assert.ok(bridgeDepositSource.includes('/admin/dashboard#bridge'),'Bridge notifi
 assert.ok(adminDashboardNotificationSource.includes("hash === '#deposits'"),'Admin dashboard handles OPay notification hash')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#tron'"),'Admin dashboard handles TRX notification hash')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#bridge'"),'Admin dashboard handles Bridge notification hash')
-console.log('PASS: Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
+const enterpriseDreamLibSource=fs.readFileSync(path.join(root,'lib/enterprise-dream.ts'),'utf8')
+const enterpriseClientSource=fs.readFileSync(path.join(root,'app/api/client/enterprise/route.ts'),'utf8')
+const enterpriseAdminSource=fs.readFileSync(path.join(root,'app/api/admin/enterprise/route.ts'),'utf8')
+const enterpriseSystemSwitchSource=fs.readFileSync(path.join(root,'app/api/client/system-switch/route.ts'),'utf8')
+const enterprisePanelSource=fs.readFileSync(path.join(root,'components/system-switch/enterprise-dream-panel.tsx'),'utf8')
+const enterpriseSidebarSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+assert.ok(enterpriseDreamLibSource.includes('enterprise_applications'),'Enterprise Dream application schema exists')
+assert.ok(enterpriseDreamLibSource.includes('enterprise_legions'),'Enterprise Legion schema exists')
+assert.ok(enterpriseClientSource.includes("['lord', 'lady']"),'Client may request only Lord or Lady elevation')
+assert.ok(enterpriseClientSource.includes('sustainabilityPlan'),'Elevation requires a life-sustainability plan')
+assert.ok(enterpriseClientSource.includes('notifyAdministrators'),'Administration is notified of enterprise-plan submission')
+assert.ok(enterpriseAdminSource.includes("workshop_type='enterprise_dream'"),'Approval changes the File Folder workshop to Enterprise Dream')
+assert.ok(enterpriseAdminSource.includes('notifyUser'),'Client is notified after Administration decision')
+assert.ok(enterpriseSystemSwitchSource.includes('getEnterpriseDream'),'Client System Switch returns Enterprise Dream state')
+assert.ok(enterpriseSystemSwitchSource.includes("'Legions'"),'Approved Enterprise Dream exposes Legions module')
+assert.ok(enterprisePanelSource.includes('Add Legion'),'Approved Lord/Lady can add Legion participation')
+assert.ok(enterpriseSidebarSource.includes('/admin/enterprise-dream'),'Administration can reach Enterprise Dream authority')
+for(const file of [
+ 'app/(app)/admin/enterprise-dream/page.tsx',
+ 'app/api/client/enterprise/legions/route.ts',
+ 'migrations/20260923_enterprise_dream_workshop.sql',
+])assert.ok(fs.existsSync(path.join(root,file)),file+' exists')
+console.log('PASS: Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
