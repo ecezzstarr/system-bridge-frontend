@@ -628,34 +628,37 @@ export function HUD({
 
               <div className="grid grid-cols-1 gap-4">
                 <button
-                  onClick={() => depositFlow.setTier(WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN)}
+                  onClick={() => depositFlow.setTier(WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN)}
                   className={`p-6 rounded-[32px] border transition-all text-left relative overflow-hidden group ${
-                    depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
+                    depositFlow.tier === WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
                       ? 'bg-[#e8b93f] border-[#e8b93f]'
                       : 'bg-white/5 border-white/10 hover:border-white/20'
                   }`}
                 >
+                  <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${
+                    depositFlow.tier === WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
+                      ? 'text-black/55'
+                      : 'text-[#e8b93f]'
+                  }`}>
+                    Premium File Folder
+                  </p>
                   <div
-                    className={`text-3xl font-black mb-1 ${
-                      depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
+                    className={`mt-2 text-3xl font-black mb-1 ${
+                      depositFlow.tier === WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
                         ? 'text-black'
                         : 'text-[#e8b93f]'
                     }`}
                   >
-                    {WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN.toLocaleString()} Flame Coin
+                    {WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN.toLocaleString()} Flame Coin
                   </div>
-
-                  <p
-                    className={`text-sm font-bold uppercase tracking-widest ${
-                      depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
-                        ? 'text-black/60'
-                        : 'text-white/40'
-                    }`}
-                  >
-                    Flame Coin Price · Same Amount in TRX
+                  <p className={`text-sm font-bold uppercase tracking-widest ${
+                    depositFlow.tier === WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
+                      ? 'text-black/60'
+                      : 'text-white/40'
+                  }`}>
+                    {WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN.toLocaleString()} TRX · Fixed Premium Price
                   </p>
-
-                  {depositFlow.tier === WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN && (
+                  {depositFlow.tier === WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN && (
                     <motion.div
                       layoutId="tier-check"
                       className="absolute top-6 right-6 w-8 h-8 bg-black rounded-full flex items-center justify-center"
@@ -664,6 +667,71 @@ export function HUD({
                     </motion.div>
                   )}
                 </button>
+
+                <div
+                  className={`p-6 rounded-[32px] border transition-all ${
+                    depositFlow.tier !== null &&
+                    depositFlow.tier >= WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN &&
+                    depositFlow.tier < WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
+                      ? 'bg-[#14b8a6]/10 border-[#14b8a6]/40'
+                      : 'bg-white/5 border-white/10'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => depositFlow.setTier(WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN)}
+                    className="w-full text-left"
+                  >
+                    <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#14b8a6]">
+                      Standard File Folder
+                    </p>
+                    <p className="mt-2 text-2xl font-black text-white">
+                      From {WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toLocaleString()} Flame Coin
+                    </p>
+                    <p className="mt-1 text-xs text-white/40">
+                      Choose any value below {WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN.toLocaleString()}. Same numeric amount in TRX.
+                    </p>
+                  </button>
+
+                  <div className="mt-4">
+                    <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
+                      Your Standard File Folder Value
+                    </label>
+                    <div className="mt-2 flex items-center rounded-2xl border border-white/10 bg-black/30 px-4">
+                      <input
+                        type="number"
+                        min={WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN}
+                        max={WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN - 0.000001}
+                        step="0.000001"
+                        value={
+                          depositFlow.tier !== null &&
+                          depositFlow.tier < WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
+                            ? depositFlow.tier
+                            : ''
+                        }
+                        onFocus={() => {
+                          if (
+                            depositFlow.tier === null ||
+                            depositFlow.tier >= WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
+                          ) {
+                            depositFlow.setTier(WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN)
+                          }
+                        }}
+                        onChange={(e) => depositFlow.setTier(Number(e.target.value))}
+                        placeholder={WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toString()}
+                        className="w-full bg-transparent py-3 text-lg font-bold text-white outline-none"
+                      />
+                      <span className="text-xs text-white/35">Flame Coin / TRX</span>
+                    </div>
+                    {depositFlow.tier !== null &&
+                      depositFlow.tier < WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN &&
+                      depositFlow.tier < WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN && (
+                        <p className="mt-2 text-xs text-red-300">
+                          Standard begins at {WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN.toLocaleString()} Flame Coin.
+                        </p>
+                      )}
+                  </div>
+                </div>
               </div>
 
               {depositFlow.tier && (
@@ -730,6 +798,9 @@ export function HUD({
                       onClick={depositFlow.onSubmit}
                       disabled={
                         depositFlow.submitting ||
+                        !depositFlow.tier ||
+                        depositFlow.tier < WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN ||
+                        depositFlow.tier > WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN ||
                         !depositFlow.name.trim() ||
                         !depositFlow.phone.trim() ||
                         !depositFlow.txHash.trim()

@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { generateFileNumber } from '@/lib/fne'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
+import { getFileFolderTier } from '@/lib/file-folder-pricing'
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,6 +65,14 @@ export async function POST(request: NextRequest) {
     }
 
     const deposit = deposits[0]
+    const fileFolderTier = getFileFolderTier(Number(deposit.tier_trx))
+
+    if (!fileFolderTier) {
+      return NextResponse.json(
+        { error: 'Stored File Folder amount is outside the current Standard/Premium pricing rules' },
+        { status: 409 }
+      )
+    }
 
     /*
      * REJECTION
@@ -167,7 +176,7 @@ export async function POST(request: NextRequest) {
         bridgerId: deposit.bridger_id,
         activity: 'client_deposit',
         baseAmount: Number(deposit.tier_trx),
-        description: `Commission for File Folder purchase: ${fileNumber}`
+        description: `Commission for ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
       }).catch(err => console.error('[bridge verify] commission error:', err))
     }
 
@@ -179,6 +188,7 @@ export async function POST(request: NextRequest) {
       bridgerId: deposit.bridger_id,
       bridgeCode: deposit.bridge_code,
       amount: Number(deposit.tier_trx),
+      fileFolderTier,
       currency: 'Flame Coin',
       message:
         'File Folder approved and File Number issued.'

@@ -1,12 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Copy, Wallet } from 'lucide-react'
-import { FILE_FOLDER_PRICING } from '@/lib/file-folder-pricing'
+import { Copy, Wallet, Crown } from 'lucide-react'
+import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
 
 const {
-  standardFlameCoin: STANDARD_PRICE_FLAME_COIN,
-  minimumFlameCoin: MINIMUM_PROSPECT_PRICE_FLAME_COIN,
+  premiumFlameCoin: PREMIUM_PRICE,
+  standardMinimumFlameCoin: STANDARD_MIN,
 } = FILE_FOLDER_PRICING
 
 export default function FileFolderPurchase({
@@ -22,7 +22,8 @@ export default function FileFolderPurchase({
   providerName?: string
   flameName?: string
 }) {
-  const [customPrice, setCustomPrice] = useState('')
+  const [selectedTier, setSelectedTier] = useState<'standard' | 'premium'>('standard')
+  const [standardPrice, setStandardPrice] = useState(String(STANDARD_MIN))
   const [email, setEmail] = useState('')
   const [copied, setCopied] = useState(false)
   const [wallet, setWallet] = useState('')
@@ -31,10 +32,13 @@ export default function FileFolderPurchase({
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const selectedPrice = customPrice ? Number(customPrice) : STANDARD_PRICE_FLAME_COIN
+  const selectedPrice =
+    selectedTier === 'premium' ? PREMIUM_PRICE : Number(standardPrice)
+
+  const resolvedTier = getFileFolderTier(selectedPrice)
   const validPrice =
-    Number.isFinite(selectedPrice) &&
-    selectedPrice >= MINIMUM_PROSPECT_PRICE_FLAME_COIN
+    resolvedTier === selectedTier &&
+    (selectedTier !== 'standard' || selectedPrice < PREMIUM_PRICE)
 
   useEffect(() => {
     fetch('/api/system-switch/file-folder')
@@ -63,6 +67,7 @@ export default function FileFolderPurchase({
         body: JSON.stringify({
           fileNumber: fileNumber || undefined,
           amountFlameCoin: selectedPrice,
+          fileFolderTier: selectedTier,
           paymentMethod: 'trx',
           paymentReference: reference.trim(),
           buyerEmail: email.trim() || undefined,
@@ -76,7 +81,7 @@ export default function FileFolderPurchase({
       if (!res.ok) throw new Error(body.error || 'Unable to record payment')
 
       setMessage(
-        `Payment recorded as ${body.purchase.status}. Administration will verify the TRX payment. 1 TRX = 1 Flame Coin inside Weave.`
+        `${selectedTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration will verify ${selectedPrice.toLocaleString()} TRX and recognize the same amount as Flame Coin.`
       )
     } catch (error: any) {
       setMessage(error.message || 'Unable to record payment')
@@ -87,63 +92,80 @@ export default function FileFolderPurchase({
 
   return (
     <section className="mt-4 rounded-[2rem] border border-white/10 bg-slate-950/95 p-6 text-white md:p-8">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300">System Switch · File Folder</p>
-          <h2 className="mt-2 text-2xl font-semibold">Establish your File Folder</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-            The standard File Folder is {STANDARD_PRICE_FLAME_COIN.toLocaleString()} Flame Coin.
-            Flame Coin is Weave&apos;s internal wrapper for TRX value, so the same numeric amount is paid in TRX.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-sky-400/20 bg-sky-400/5 px-4 py-3 text-right">
-          <p className="text-[9px] uppercase tracking-[0.25em] text-sky-300">Standard</p>
-          <p className="mt-1 text-xl font-semibold">{STANDARD_PRICE_FLAME_COIN.toLocaleString()} Flame Coin</p>
-          <p className="mt-1 text-[10px] text-slate-500">{STANDARD_PRICE_FLAME_COIN.toLocaleString()} TRX payment</p>
-        </div>
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300">System Switch · File Folder</p>
+        <h2 className="mt-2 text-2xl font-semibold">Choose your File Folder</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+          Every File Folder establishes a Client inside Weave. Premium remains {PREMIUM_PRICE.toLocaleString()} Flame Coin.
+          Standard lets anyone enter from {STANDARD_MIN.toLocaleString()} Flame Coin up to any value below Premium.
+          1 Flame Coin = 1 TRX.
+        </p>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-5">
-        <p className="text-[9px] uppercase tracking-[0.22em] text-slate-500">File Folder pricing</p>
-        <div className="mt-3 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
-          <div>
-            <label htmlFor="folder-price" className="text-xs text-slate-400">Choose your File Folder value</label>
-            <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-slate-900/60 px-4">
-              <input
-                id="folder-price"
-                type="number"
-                min={MINIMUM_PROSPECT_PRICE_FLAME_COIN}
-                step="1"
-                value={customPrice}
-                onChange={event => setCustomPrice(event.target.value)}
-                placeholder={STANDARD_PRICE_FLAME_COIN.toLocaleString()}
-                className="w-full bg-transparent py-3 text-lg text-white outline-none"
-              />
-              <span className="text-xs font-semibold text-slate-500">Flame Coin</span>
-            </div>
-            <p className="mt-2 text-[10px] text-slate-500">
-              Minimum prospect value: {MINIMUM_PROSPECT_PRICE_FLAME_COIN.toLocaleString()} Flame Coin.
-              Required TRX payment is the same number because 1 Flame Coin = 1 TRX.
-            </p>
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => setSelectedTier('premium')}
+          className={`rounded-2xl border p-5 text-left transition-all ${selectedTier === 'premium' ? 'border-[#e8b93f]/50 bg-[#e8b93f]/10' : 'border-white/10 bg-black/30'}`}
+        >
+          <div className="flex items-center gap-2">
+            <Crown className="h-4 w-4 text-[#e8b93f]" />
+            <p className="text-sm font-semibold">Premium File Folder</p>
           </div>
-          <div className={`rounded-xl border px-5 py-3 text-right ${validPrice ? 'border-emerald-400/20 bg-emerald-400/5' : 'border-red-400/20 bg-red-400/5'}`}>
-            <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Selected value</p>
-            <p className="mt-1 text-xl font-semibold">{Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : '—'} Flame Coin</p>
-            <p className="mt-1 text-[10px] text-slate-500">{Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : '—'} TRX required</p>
-          </div>
-        </div>
+          <p className="mt-3 text-3xl font-black text-[#e8b93f]">{PREMIUM_PRICE.toLocaleString()}</p>
+          <p className="text-xs text-slate-400">Flame Coin · {PREMIUM_PRICE.toLocaleString()} TRX</p>
+          <p className="mt-3 text-xs leading-5 text-slate-500">Fixed premium crossing value.</p>
+        </button>
 
-        <div className="mt-4">
-          <label htmlFor="folder-email" className="text-xs text-slate-400">Email for payment record</label>
-          <input
-            id="folder-email"
-            type="email"
-            value={email}
-            onChange={event => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-white outline-none"
-          />
+        <button
+          type="button"
+          onClick={() => setSelectedTier('standard')}
+          className={`rounded-2xl border p-5 text-left transition-all ${selectedTier === 'standard' ? 'border-sky-400/40 bg-sky-400/5' : 'border-white/10 bg-black/30'}`}
+        >
+          <div className="flex items-center gap-2">
+            <Wallet className="h-4 w-4 text-sky-300" />
+            <p className="text-sm font-semibold">Standard File Folder</p>
+          </div>
+          <p className="mt-3 text-3xl font-black text-sky-300">From {STANDARD_MIN.toLocaleString()}</p>
+          <p className="text-xs text-slate-400">Flame Coin · same amount in TRX</p>
+          <p className="mt-3 text-xs leading-5 text-slate-500">Choose any amount from {STANDARD_MIN.toLocaleString()} up to anything below {PREMIUM_PRICE.toLocaleString()}.</p>
+        </button>
+      </div>
+
+      {selectedTier === 'standard' && (
+        <div className="mt-4 rounded-2xl border border-sky-400/20 bg-sky-400/5 p-5">
+          <label htmlFor="standard-folder-price" className="text-xs text-slate-300">Choose Standard File Folder value</label>
+          <div className="mt-2 flex items-center rounded-xl border border-white/10 bg-slate-900/60 px-4">
+            <input
+              id="standard-folder-price"
+              type="number"
+              min={STANDARD_MIN}
+              max={PREMIUM_PRICE - 0.000001}
+              step="0.000001"
+              value={standardPrice}
+              onChange={event => setStandardPrice(event.target.value)}
+              className="w-full bg-transparent py-3 text-lg text-white outline-none"
+            />
+            <span className="text-xs font-semibold text-slate-500">Flame Coin</span>
+          </div>
+          <p className={`mt-2 text-[10px] ${validPrice ? 'text-slate-500' : 'text-red-300'}`}>
+            {validPrice
+              ? `You will send ${selectedPrice.toLocaleString()} TRX.`
+              : `Standard must be at least ${STANDARD_MIN.toLocaleString()} and below ${PREMIUM_PRICE.toLocaleString()} Flame Coin.`}
+          </p>
         </div>
+      )}
+
+      <div className="mt-4 rounded-2xl border border-white/10 bg-black/30 p-5">
+        <label htmlFor="folder-email" className="text-xs text-slate-400">Email for payment record</label>
+        <input
+          id="folder-email"
+          type="email"
+          value={email}
+          onChange={event => setEmail(event.target.value)}
+          placeholder="you@example.com"
+          className="mt-2 w-full rounded-xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-white outline-none"
+        />
       </div>
 
       <div className="mt-4 rounded-2xl border border-sky-400/30 bg-sky-400/5 p-5">
@@ -165,8 +187,8 @@ export default function FileFolderPurchase({
           {copied ? 'Copied' : 'Copy wallet'}
         </button>
         <p className="mt-3 text-xs leading-5 text-slate-500">
-          Send exactly {Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : 'the selected amount'} TRX,
-          then enter the transaction hash. Administration verifies the payment before activating the File Folder.
+          Send exactly {Number.isFinite(selectedPrice) ? selectedPrice.toLocaleString() : 'the selected amount'} TRX.
+          Administration verifies the payment before activating the File Folder.
         </p>
         <input
           value={reference}
@@ -180,7 +202,7 @@ export default function FileFolderPurchase({
           onClick={recordTrxPayment}
           className="mt-3 w-full rounded-full bg-white/10 px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.16em] disabled:opacity-30"
         >
-          {busy ? 'Recording…' : 'I sent the TRX payment'}
+          {busy ? 'Recording…' : `I sent ${selectedTier === 'premium' ? 'Premium' : 'Standard'} TRX payment`}
         </button>
       </div>
 
