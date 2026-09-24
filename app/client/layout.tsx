@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { ClientNavigation } from '@/components/client-navigation'
 import { LiveAdSurface } from '@/components/live-ad-surface'
-import { WeaveWorldBackdrop } from '@/components/world/weave-world-backdrop'
+import { FlameEventWorldGate } from '@/components/events/flame-event-world-gate'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
@@ -28,8 +28,8 @@ export default function ClientLayout({
 }) {
   // Client routes share the root AuthProvider.
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#010711]">
-      <WeaveWorldBackdrop />
+    <div className="relative min-h-screen overflow-hidden bg-slate-950">
+      <FlameEventWorldGate intensity="event" />
       <div className="relative z-10 min-h-screen">
         <ClientNavigation />
         <LiveAdSurface />
