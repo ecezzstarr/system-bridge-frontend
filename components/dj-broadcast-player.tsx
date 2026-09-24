@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
-import { Radio, Play, GripVertical } from 'lucide-react'
+import { Music2, Play, GripVertical, Volume2 } from 'lucide-react'
 
 const POSITION_KEY = 'ssb_dj_player_pos'
-const WIDGET_WIDTH = 260
-const WIDGET_HEIGHT = 64
+const EVENT_SOUND_KEY = 'weave_flame_event_sound_joined'
+const WIDGET_WIDTH = 290
+const WIDGET_HEIGHT = 68
 
 function getDefaultPosition() {
   if (typeof window === 'undefined') return { x: 0, y: 0 }
@@ -20,29 +21,30 @@ function clamp(pos: { x: number; y: number }) {
   return { x: Math.min(Math.max(0, pos.x), Math.max(0, maxX)), y: Math.min(Math.max(0, pos.y), Math.max(0, maxY)) }
 }
 
-// The institution's continuous broadcast. Silent by default (browsers block
-// autoplay with sound), so it shows a small "tap to join" prompt until the
-// person opts in — after that it syncs to the current moment automatically.
-// The widget is a movable, app-like tab the user can drag anywhere on screen;
-// its position persists across reloads.
+// Shared institutional sound. During Flame Event the four positions enter the
+// same synchronized sound field. The player attempts event autoplay; when the
+// browser blocks audible autoplay it presents a single "Enter Sound" action.
 export function DJBroadcastPlayer() {
   const { user } = useAuth()
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const currentUrlRef = useRef<string | null>(null)
+  const autoplayAttemptedRef = useRef(false)
+
   const [live, setLive] = useState(false)
+  const [flameEventLive, setFlameEventLive] = useState(false)
   const [trackTitle, setTrackTitle] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState<string | null>(null)
   const [joined, setJoined] = useState(false)
-  const currentUrlRef = useRef<string | null>(null)
-
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
+
   const dragState = useRef<{ dragging: boolean; offsetX: number; offsetY: number }>({ dragging: false, offsetX: 0, offsetY: 0 })
-  const hasDraggedRef = useRef(false)
 
   useEffect(() => {
     let initial = getDefaultPosition()
     try {
       const saved = localStorage.getItem(POSITION_KEY)
       if (saved) initial = clamp(JSON.parse(saved))
+      setJoined(localStorage.getItem(EVENT_SOUND_KEY) === '1')
     } catch {}
     setPosition(initial)
 
@@ -53,55 +55,86 @@ export function DJBroadcastPlayer() {
 
   const authHeaders = () => {
     const token = localStorage.getItem('ssb_auth_token')
-    return token ? { 'Authorization': `Bearer ${token}` } : {}
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
+  const beginPlayback = async (remember = false) => {
+    if (!audioRef.current || !audioRef.current.src) return false
+    try {
+      audioRef.current.muted = false
+      await audioRef.current.play()
+      setJoined(true)
+      if (remember) {
+        try { localStorage.setItem(EVENT_SOUND_KEY, '1') } catch {}
+      }
+      return true
+    } catch {
+      setJoined(false)
+      return false
+    }
   }
 
   const syncBroadcast = async () => {
+    if (!user) return
     try {
       const res = await fetch('/api/dj/broadcast', { headers: authHeaders() })
       const data = await res.json()
-      if (!data.success || !data.live) {
+
+      setFlameEventLive(Boolean(data.flameEventLive))
+
+      if (!data.success || !data.live || !data.track?.fileUrl) {
         setLive(false)
         return
       }
+
       setLive(true)
       setTrackTitle(data.track?.title || null)
       setAnnouncement(data.announcementText || null)
 
-      if (!joined || !audioRef.current) return
+      const audio = audioRef.current
+      if (!audio) return
 
-      if (currentUrlRef.current !== data.track?.fileUrl) {
-        currentUrlRef.current = data.track?.fileUrl
-        audioRef.current.src = data.track.fileUrl
-        audioRef.current.currentTime = data.elapsedSeconds || 0
-        audioRef.current.play().catch(() => {})
-      } else if (Math.abs(audioRef.current.currentTime - data.elapsedSeconds) > 3) {
-        // Drift correction — keep everyone on the same moment.
-        audioRef.current.currentTime = data.elapsedSeconds
+      if (currentUrlRef.current !== data.track.fileUrl) {
+        currentUrlRef.current = data.track.fileUrl
+        audio.src = data.track.fileUrl
+        audio.currentTime = Math.max(0, Number(data.elapsedSeconds || 0))
+      } else if (Math.abs(audio.currentTime - Number(data.elapsedSeconds || 0)) > 3) {
+        audio.currentTime = Math.max(0, Number(data.elapsedSeconds || 0))
+      }
+
+      if (joined) {
+        await beginPlayback(false)
+        return
+      }
+
+      // At event arrival, attempt audible playback immediately. Browsers that
+      // require a gesture will reject this and the event-sound button remains.
+      if (data.flameEventLive && !autoplayAttemptedRef.current) {
+        autoplayAttemptedRef.current = true
+        await beginPlayback(true)
       }
     } catch {
-      // stay quiet on transient errors
+      // Keep the page usable if sound synchronization is temporarily unavailable.
     }
   }
 
-  const canHearBroadcast = user && ['admin', 'agent', 'bridger'].includes(user.role)
+  const eligibleRole = Boolean(user && ['admin', 'agent', 'bridger', 'client'].includes(user.role))
 
   useEffect(() => {
-    if (!canHearBroadcast) return
+    if (!eligibleRole) return
     syncBroadcast()
-    const interval = setInterval(syncBroadcast, 8000)
-    return () => clearInterval(interval)
-  }, [canHearBroadcast, joined])
+    const interval = window.setInterval(syncBroadcast, 8000)
+    return () => window.clearInterval(interval)
+  }, [eligibleRole, joined, user?.id])
 
-  const handleJoin = () => {
-    setJoined(true)
-    if (audioRef.current) audioRef.current.muted = false
+  const handleJoin = async () => {
+    autoplayAttemptedRef.current = true
+    await beginPlayback(true)
   }
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (!position) return
     dragState.current.dragging = true
-    hasDraggedRef.current = false
     dragState.current.offsetX = e.clientX - position.x
     dragState.current.offsetY = e.clientY - position.y
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
@@ -109,12 +142,10 @@ export function DJBroadcastPlayer() {
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragState.current.dragging) return
-    hasDraggedRef.current = true
-    const next = clamp({
+    setPosition(clamp({
       x: e.clientX - dragState.current.offsetX,
       y: e.clientY - dragState.current.offsetY,
-    })
-    setPosition(next)
+    }))
   }
 
   const onPointerUp = () => {
@@ -122,46 +153,57 @@ export function DJBroadcastPlayer() {
     dragState.current.dragging = false
     setPosition((p) => {
       if (p) {
-        try {
-          localStorage.setItem(POSITION_KEY, JSON.stringify(p))
-        } catch {}
+        try { localStorage.setItem(POSITION_KEY, JSON.stringify(p)) } catch {}
       }
       return p
     })
   }
 
-  if (!canHearBroadcast || !live || !position) return null
+  const canShow = eligibleRole && live && position && (user?.role !== 'client' || flameEventLive)
+  if (!canShow) return null
 
   return (
     <div
-      className="fixed z-40 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-2xl px-3 py-3 shadow-2xl flex items-center gap-2 max-w-xs select-none touch-none"
+      className={`fixed z-[85] flex max-w-xs select-none items-center gap-2 rounded-2xl border px-3 py-3 shadow-2xl backdrop-blur-xl touch-none ${
+        flameEventLive
+          ? 'border-sky-300/25 bg-[#03101e]/95 shadow-sky-950/40'
+          : 'border-slate-800 bg-slate-900/90'
+      }`}
       style={{ left: position.x, top: position.y, width: WIDGET_WIDTH }}
     >
-      <audio ref={audioRef} muted={!joined} />
+      <audio ref={audioRef} />
       <div
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        className="flex-shrink-0 cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 transition"
+        className="flex-shrink-0 cursor-grab text-slate-600 transition hover:text-slate-400 active:cursor-grabbing"
         title="Drag to move"
       >
         <GripVertical className="h-4 w-4" />
       </div>
-      <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
-        <Radio className="h-4 w-4 text-cyan-400" />
+
+      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${
+        flameEventLive ? 'bg-gradient-to-b from-sky-500/20 to-red-500/15' : 'bg-cyan-500/20'
+      }`}>
+        {joined ? <Volume2 className="h-4 w-4 text-sky-300" /> : <Music2 className="h-4 w-4 text-sky-300" />}
       </div>
+
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Live</p>
-        <p className="text-xs text-white truncate">{announcement || trackTitle || 'Broadcasting'}</p>
+        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-sky-300">
+          {flameEventLive ? 'Flame Event Sound · Loop 1' : 'Weave Live'}
+        </p>
+        <p className="truncate text-xs text-white">{announcement || trackTitle || 'Broadcasting'}</p>
       </div>
+
       {!joined && (
         <button
           onClick={handleJoin}
-          className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-600 hover:bg-cyan-500 flex items-center justify-center transition"
-          title="Join broadcast"
+          className="flex-shrink-0 rounded-full border border-sky-300/25 bg-sky-500/15 px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-sky-200 transition hover:bg-sky-500/25"
+          title="Enter event sound"
         >
-          <Play className="h-3.5 w-3.5 text-white" />
+          <Play className="mr-1 inline h-3 w-3" />
+          Enter Sound
         </button>
       )}
     </div>
