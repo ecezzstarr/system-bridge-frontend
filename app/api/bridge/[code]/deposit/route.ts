@@ -4,7 +4,6 @@ import { sql } from '@/lib/db'
 import { WORLD_RULES } from '@/lib/world/constants'
 import { getFileFolderTier } from '@/lib/file-folder-pricing'
 
-const FILE_FOLDER_PRICE_FLAME_COIN = WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
 const COMPANY_TRX_WALLET = WORLD_RULES.COMPANY_TRX_WALLET
 
 export async function POST(
@@ -117,7 +116,8 @@ export async function POST(
     return NextResponse.json({
       success: true,
       depositId: result[0].id,
-      amount: FILE_FOLDER_PRICE_FLAME_COIN,
+      amount: submittedAmount,
+      fileFolderTier,
       currency: 'Flame Coin',
       fundingAsset: 'TRX',
       peg: '1 Flame Coin = 1 TRX',
