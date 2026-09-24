@@ -15,7 +15,7 @@ export default function ClientHomePage() {
   }, [user])
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen w-full bg-transparent flex flex-col items-center justify-center p-6">
       {/* Official WEAVE identity */}
       <div className="text-center mb-8 flex flex-col items-center">
         <WeaveLogo size="lg" className="mb-4" />
