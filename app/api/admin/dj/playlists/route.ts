@@ -54,6 +54,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'name and at least one trackId are required' }, { status: 400 })
     }
 
+    const uniqueTrackIds = [...new Set(trackIds.map((id: unknown) => String(id || '').trim()).filter(Boolean))]
+    if (uniqueTrackIds.length !== trackIds.length) {
+      return NextResponse.json({ success: false, error: 'A playlist cannot contain duplicate tracks.' }, { status: 400 })
+    }
+
+    const existingTracks = await sql`
+      SELECT id FROM dj_tracks
+      WHERE id = ANY(${uniqueTrackIds}::uuid[])
+    `
+    if (existingTracks.length !== uniqueTrackIds.length) {
+      return NextResponse.json({ success: false, error: 'One or more selected tracks no longer exist.' }, { status: 400 })
+    }
+
     const pkgResult = await sql`
       INSERT INTO dj_playlists (name, created_by)
       VALUES (${name}, ${auth.userId}::uuid)
@@ -61,10 +74,10 @@ export async function POST(request: NextRequest) {
     `
     const playlist = pkgResult[0]
 
-    for (let i = 0; i < trackIds.length; i++) {
+    for (let i = 0; i < uniqueTrackIds.length; i++) {
       await sql`
         INSERT INTO dj_playlist_tracks (playlist_id, track_id, position)
-        VALUES (${playlist.id}::uuid, ${trackIds[i]}::uuid, ${i})
+        VALUES (${playlist.id}::uuid, ${uniqueTrackIds[i]}::uuid, ${i})
       `
     }
 
