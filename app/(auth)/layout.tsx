@@ -1,6 +1,6 @@
 'use client'
 
-import { FlameEventWorldGate } from '@/components/events/flame-event-world-gate'
+import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -24,7 +24,7 @@ export default function AuthLayout({
   if (isLoading) {
     return (
       <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <FlameEventWorldGate intensity="soft" />
+        <WeaveWorldEnvironment soft />
         <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
       </div>
     )
