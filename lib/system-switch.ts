@@ -1,7 +1,8 @@
-// System Switch Bridge - Routes authenticated users to appropriate engine
-// Based on user role and context, routes to Arena, Marketplace, or Role engine
+// System Switch Bridge - routes authenticated positions into their Weave function.
+// The Client is the player. Admin, Agent, Bridger and other positions remain support.
 
 import { getSql } from './db'
+import { isClientPlayerRole } from './weave-participation'
 
 const CLOUD_RUN_BASE_URL = process.env.GOOGLE_CLOUD_RUN_URL || 'https://ssbnow-backend.run.app'
 
@@ -42,17 +43,18 @@ export async function getEngineRoute(userId: string): Promise<EngineRoute> {
       walletAddress: user.tron_wallet_address,
     }
     
-    // Route based on user role and status
+    // Only a Client receives player routing. Every other role remains in a
+    // support/operations engine and must never fall through into gameplay.
     let engine: 'arena' | 'marketplace' | 'role' | 'dashboard' = 'dashboard'
     
-    if (user.role === 'admin') {
-      engine = 'dashboard'
+    if (isClientPlayerRole(user.role)) {
+      engine = 'arena'
     } else if (user.role === 'bridger') {
-      engine = 'role' // Bridger goes to role management
+      engine = 'role'
     } else if (user.role === 'agent') {
-      engine = 'marketplace' // Agent can access marketplace
+      engine = 'marketplace'
     } else {
-      engine = 'arena' // Default user starts in arena
+      engine = 'dashboard'
     }
     
     console.log('[v0] Routing to engine:', engine)
