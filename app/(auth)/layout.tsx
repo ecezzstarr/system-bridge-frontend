@@ -1,6 +1,7 @@
 'use client'
 
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
+import { FlameEventWorldGate } from '@/components/events/flame-event-world-gate'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
