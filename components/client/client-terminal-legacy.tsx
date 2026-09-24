@@ -75,33 +75,8 @@ export default function LegacyClientDashboard() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 md:space-y-10 px-4 md:px-0 py-6 md:py-10">
-      {/* Visual Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-slate-900 border border-white/10 p-6 md:p-12 shadow-2xl shadow-blue-500/10 group">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/20 via-blue-600/10 to-purple-600/20 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/20 rounded-full blur-[80px] animate-pulse"></div>
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px] animate-pulse delay-1000"></div>
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full mb-2">
-              <Zap className="h-3 w-3 text-cyan-400" />
-              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Active Protocol</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
-              COMMAND<br className="md:hidden" /> CENTER
-            </h1>
-            <p className="text-slate-400 text-xs md:text-sm font-bold uppercase tracking-[0.3em] flex items-center gap-2">
-              WEAVE ECOSYSTEM <span className="h-1 w-1 rounded-full bg-slate-600"></span> RADIANCE LAYER
-            </p>
-          </div>
-          <div className="flex flex-col items-end text-right">
-            <div className="text-4xl md:text-6xl font-black text-white/10 select-none hidden md:block">WEAVE</div>
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl">
-              <Globe className="h-8 w-8 text-cyan-400 animate-spin-slow" />
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* The normal WEAVE world shell now carries the visual world header.
+          Existing Client functions continue below unchanged. */}
 
       <Link href="/client/loops" className="block rounded-3xl border border-cyan-500/20 bg-slate-900 p-6 hover:border-cyan-400/50">
         <p className="text-xs uppercase tracking-widest text-cyan-400">Client Position</p>
