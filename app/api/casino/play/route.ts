@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { randomInt } from 'crypto'
 import { sql, getPool } from '@/lib/db'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
+import { resolveBridgerForClient } from '@/lib/client-player-support'
 
 // Platform wallet ID (company wallet for casino operations)
 const PLATFORM_WALLET_USER_ID = 'be4f0618-d666-4e13-ae8f-13c986784ff7'
@@ -139,12 +140,14 @@ export async function POST(request: NextRequest) {
       await client.query('COMMIT')
 
       if (outcome === 'win') {
-        creditBridgerActivityCommission({
-          bridgerId: userId,
-          activity: 'casino_win',
-          baseAmount: payout,
-          description: `30% commission: referred Bridger won ${payout.toFixed(2)} TRX at Casino`,
-        }).catch(err => console.error('[casino play] commission error:', err))
+        resolveBridgerForClient(userId)
+          .then((bridgerId) => bridgerId ? creditBridgerActivityCommission({
+            bridgerId,
+            activity: 'casino_win',
+            baseAmount: payout,
+            description: `Support commission: Client player won ${payout.toFixed(2)} TRX at Casino`,
+          }) : null)
+          .catch(err => console.error('[casino play] commission error:', err))
       }
 
       return NextResponse.json({
