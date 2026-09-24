@@ -37,7 +37,10 @@ export async function POST(
 
     // Verify winner is a participant
     const participants = await sql`
-      SELECT user_id FROM arena_participants WHERE match_id = ${id}
+      SELECT ap.user_id
+      FROM arena_participants ap
+      JOIN users u ON u.id = ap.user_id::uuid
+      WHERE ap.match_id = ${id} AND u.role = 'client' AND u.is_active = true
     `
     const participantIds = participants.map((p: any) => p.user_id)
     
