@@ -38,7 +38,8 @@ export function generateCode(department: Department): string {
 export async function issueDepartmentalCode(
   department: Department,
   adminId: string,
-  expiresInDays?: number
+  expiresInDays?: number,
+  registrationRequestId?: string
 ): Promise<string> {
   const code = generateCode(department)
   const expiresAt = expiresInDays 
@@ -46,8 +47,17 @@ export async function issueDepartmentalCode(
     : null
 
   await sql`
-    INSERT INTO departmental_codes (code, department, issued_by, expires_at, status)
-    VALUES (${code}, ${department}, ${adminId}::uuid, ${expiresAt ? expiresAt.toISOString() : null}, 'ACTIVE')
+    INSERT INTO departmental_codes (
+      code, department, issued_by, expires_at, status, registration_request_id
+    )
+    VALUES (
+      ${code},
+      ${department},
+      ${adminId}::uuid,
+      ${expiresAt ? expiresAt.toISOString() : null},
+      'ACTIVE',
+      ${registrationRequestId || null}::uuid
+    )
   `
 
   // Log the issuance

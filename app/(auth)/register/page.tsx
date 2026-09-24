@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, Lock, Mail, User, Briefcase, Handshake, Gift, ShieldCheck, ScrollText, Target, ArrowLeft, CheckCircle2, MessageCircle, ShieldAlert, Key, Loader2 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
-import { RegistrationChat } from '@/components/registration-chat'
+import { DepartmentEntryTicketGate } from '@/components/department-entry-ticket-gate'
 
 type Step = 'role' | 'dept-gate' | 'notice' | 'terms' | 'guide' | 'details'
 
@@ -175,85 +175,30 @@ function RegisterContent() {
     )
   }
 
-  // Step 2: Departmental Gate
+  // Step 2: Departmental Entry Ticket Gate
   if (step === 'dept-gate') {
     return (
       <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
         <CardHeader className="text-center flex flex-col items-center">
           <ShieldAlert className="h-10 w-10 text-amber-500 mb-2" />
-          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Departmental Registration</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Department Entry Ticket</CardTitle>
           <CardDescription>
-            Registration for {formData.role === 'agent' ? 'Agents' : 'Bridgers'} requires authorization from Administration.
+            {formData.role === 'agent' ? 'Agent' : 'Bridger'} entry is released through a verified 3 Flame Coin ticket.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {!isChatOpen ? (
-            <div className="space-y-6">
-              <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-5 text-center">
-                <p className="text-sm text-slate-300 mb-4">
-                  Need your departmental code?
-                </p>
-                <Button 
-                  onClick={() => setIsChatOpen(true)}
-                  className="w-full bg-slate-100 text-slate-900 hover:bg-white font-black uppercase tracking-widest h-12"
-                >
-                  <MessageCircle className="h-5 w-5 mr-2" /> Chat Administration
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-slate-700"></span>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-slate-800 px-2 text-slate-500 font-bold">Already received your code?</span>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="relative">
-                    <Key className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                    <Input
-                      placeholder="ENTER DEPARTMENTAL CODE"
-                      value={formData.departmentalCode}
-                      onChange={(e) => setFormData({ ...formData, departmentalCode: e.target.value.toUpperCase() })}
-                      className="pl-10 bg-slate-900 border-slate-700 text-white placeholder:text-slate-600 font-mono tracking-widest text-center"
-                    />
-                  </div>
-                  
-                  {error && (
-                    <p className="text-xs text-red-400 text-center font-bold">{error}</p>
-                  )}
-
-                  <Button 
-                    onClick={handleVerifyCode}
-                    disabled={isValidatingCode || !formData.departmentalCode}
-                    className="w-full bg-cyan-600 hover:bg-cyan-700 font-black uppercase tracking-widest h-12"
-                  >
-                    {isValidatingCode ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Verify Code'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-              <RegistrationChat 
-                department={formData.role.toUpperCase()} 
-              />
-              <Button 
-                variant="ghost" 
-                onClick={() => setIsChatOpen(false)}
-                className="w-full text-slate-500 hover:text-white"
-              >
-                Back to Code Entry
-              </Button>
-            </div>
-          )}
-          
-          <Button type="button" variant="ghost" onClick={() => setStep('role')} className="w-full text-slate-500">
-            <ArrowLeft className="h-3 w-3 mr-2" /> Select Different Role
-          </Button>
+        <CardContent>
+          <DepartmentEntryTicketGate
+            department={formData.role.toUpperCase() as 'AGENT' | 'BRIDGER'}
+            onCodeReady={(code) => {
+              setFormData(prev => ({ ...prev, departmentalCode: code }))
+              setError(null)
+              setStep('notice')
+            }}
+            onBack={() => {
+              setError(null)
+              setStep('role')
+            }}
+          />
         </CardContent>
       </Card>
     )

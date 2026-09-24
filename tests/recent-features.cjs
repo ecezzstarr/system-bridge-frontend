@@ -133,4 +133,25 @@ assert.match(agilitySalesSource,/retail_package/)
 assert.ok(agilitySalesSource.includes('order.retail_unit_price_ngn'))
 assert.ok(agilitySalesSource.includes('order.retail_box_value_ngn'))
 assert.ok(agilitySalesSource.includes('order.agent_unit_cost_ngn'))
-console.log('PASS: Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
+const departmentEntrySource=fs.readFileSync(path.join(root,'components/department-entry-ticket-gate.tsx'),'utf8')
+const departmentTicketLibSource=fs.readFileSync(path.join(root,'lib/department-entry-tickets.ts'),'utf8')
+const departmentRegisterSource=fs.readFileSync(path.join(root,'app/(auth)/register/page.tsx'),'utf8')
+const departmentAdminPanelSource=fs.readFileSync(path.join(root,'components/admin/department-entry-tickets-panel.tsx'),'utf8')
+assert.ok(departmentEntrySource.includes('Enter With Music'),'Department Entry is music-gated')
+assert.ok(departmentEntrySource.includes('3 Flame Coin'),'Department Entry ticket price shown')
+assert.ok(departmentEntrySource.includes('WEAVE Payment Center · OPay'),'Department Entry OPay center shown')
+assert.ok(departmentEntrySource.includes('Use Code & Continue Registration'),'Departmental code release flow shown')
+assert.ok(departmentTicketLibSource.includes('DEPARTMENT_ENTRY_TICKET_PRICE_FLAME_COIN = 3'),'Department Entry ticket costs 3 Flame Coin')
+assert.ok(departmentTicketLibSource.includes('getTrxPaymentNgnRate'),'Department Entry converts Flame Coin/TRX value to Naira')
+assert.ok(departmentTicketLibSource.includes("'department_entry'"),'Administration notifications created for Department Entry')
+assert.ok(departmentTicketLibSource.includes('issueDepartmentalCode'),'Code is issued from verified ticket flow')
+assert.ok(departmentRegisterSource.includes('DepartmentEntryTicketGate'),'Agent/Bridger registration uses paid ticket gate')
+assert.ok(!departmentRegisterSource.includes('Chat Administration'),'Old manual visitor code-request gate removed')
+assert.ok(departmentAdminPanelSource.includes('Awaiting Verification'),'Administration can verify entry payments')
+for(const route of [
+ 'app/api/department-entry/ticket/route.ts',
+ 'app/api/department-entry/music/route.ts',
+ 'app/api/admin/department-entry/tickets/route.ts',
+ 'migrations/20260924_department_entry_tickets.sql',
+])assert.ok(fs.existsSync(path.join(root,route)),route+' exists')
+console.log('PASS: Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
