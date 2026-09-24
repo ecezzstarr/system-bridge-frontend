@@ -158,24 +158,29 @@ export async function resolveDjBroadcastState() {
     ...playlistTracks.slice(0, startIndex),
   ]
 
-  const usable = rotated.filter((row: any) => Number(row.duration_seconds || 0) > 0)
-  if (usable.length !== rotated.length) {
-    // A duration-less track cannot be scheduled reliably. Keep it live until
-    // Administration skips it instead of inventing timing.
-    return { state, elapsedSeconds }
-  }
+  // Unknown-duration tracks are allowed, but once playback reaches one,
+  // scheduling pauses there until Administration skips it. Positive-duration
+  // portions still advance correctly.
+  const currentDuration = Number(rotated[0]?.duration_seconds || 0)
+  if (currentDuration <= 0) return { state, elapsedSeconds }
 
-  const cycleDuration = rotated.reduce(
-    (sum: number, row: any) => sum + Number(row.duration_seconds || 0),
-    0
-  )
-  if (cycleDuration <= 0) return { state, elapsedSeconds }
+  const allDurationsKnown = rotated.every((row: any) => Number(row.duration_seconds || 0) > 0)
+  const cycleDuration = allDurationsKnown
+    ? rotated.reduce((sum: number, row: any) => sum + Number(row.duration_seconds || 0), 0)
+    : 0
 
-  let offset = elapsedSeconds % cycleDuration
+  let offset = allDurationsKnown && cycleDuration > 0
+    ? elapsedSeconds % cycleDuration
+    : elapsedSeconds
   let nextTrack = rotated[0]
 
   for (const row of rotated) {
     const rowDuration = Number(row.duration_seconds || 0)
+    if (rowDuration <= 0) {
+      nextTrack = row
+      offset = 0
+      break
+    }
     if (offset < rowDuration) {
       nextTrack = row
       break
