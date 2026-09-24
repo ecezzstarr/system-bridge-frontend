@@ -98,7 +98,7 @@ const navigation = [
       { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
 { name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
     { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
-    { name: "Flame Event Workshop", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
+    { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
     { name: "Echo", href: "/echo", icon: Sparkles },
   ]},
 
