@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { DepartmentEntryTicketsPanel } from '@/components/admin/department-entry-tickets-panel'
 
 interface DepartmentalCode {
   id: string
@@ -263,6 +264,7 @@ export default function DepartmentalRegistrationAdmin() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+      <DepartmentEntryTicketsPanel />
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
