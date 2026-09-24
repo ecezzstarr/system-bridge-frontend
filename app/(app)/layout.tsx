@@ -13,7 +13,7 @@ import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Toaster } from '@/components/ui/sonner'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
-import { WeaveWorldBackdrop } from '@/components/world/weave-world-backdrop'
+import { FlameEventWorldGate } from '@/components/events/flame-event-world-gate'
 
 export default function AppLayout({
   children,
@@ -105,8 +105,8 @@ export default function AppLayout({
   }
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden bg-[#010711]">
-      <WeaveWorldBackdrop />
+    <div className="relative flex min-h-screen overflow-hidden bg-slate-950">
+      <FlameEventWorldGate intensity="event" />
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
         <AppSidebar user={user as any} />
       </div>
