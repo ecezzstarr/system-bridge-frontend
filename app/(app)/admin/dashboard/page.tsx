@@ -330,8 +330,8 @@ function AdminWorkshopsSection() {
       color: 'from-pink-500 to-purple-500'
     },
     {
-      title: 'Flame Event Workshop',
-      desc: 'Control the Flame Event advertisement, October 1 opening, Administration announcement, schedule and live state.',
+      title: 'Flame Event · Loop 1',
+      desc: 'Control Company Loop 1: the Flame Event advertisement, October 1 opening, Administration announcement, schedule and live state.',
       icon: <Flame className="h-10 w-10 text-orange-400" />,
       link: '/admin/flame-event',
       tags: ['EVENT', 'OCT 1', '4 POSITIONS'],
