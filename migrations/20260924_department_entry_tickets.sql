@@ -32,3 +32,11 @@ CREATE INDEX IF NOT EXISTS idx_department_entry_tickets_department
   ON departmental_entry_tickets(department);
 CREATE INDEX IF NOT EXISTS idx_department_entry_tickets_created_at
   ON departmental_entry_tickets(created_at DESC);
+
+
+ALTER TABLE departmental_codes
+  ADD COLUMN IF NOT EXISTS registration_request_id UUID;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_departmental_codes_registration_request
+  ON departmental_codes(registration_request_id)
+  WHERE registration_request_id IS NOT NULL;
