@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { getFileFolderTier } from '@/lib/file-folder-pricing'
 
 export async function GET(
   request: NextRequest,
@@ -49,6 +50,7 @@ export async function GET(
         id: d.id,
         status: d.status,
         amount: Number(d.tier_trx),
+        fileFolderTier: getFileFolderTier(Number(d.tier_trx)),
         currency: 'Flame Coin',
         companyWallet: d.company_wallet,
         fileNumber: d.file_number,
