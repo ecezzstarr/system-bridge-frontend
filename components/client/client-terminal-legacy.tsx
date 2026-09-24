@@ -50,7 +50,7 @@ export default function LegacyClientDashboard() {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         })
         const data = await res.json()
-        if (data.success) setVaultBalance(data.coreTrx || 0)
+        if (data.success) setVaultBalance(data.flameCoinBalance || 0)
       } catch (error) {
         console.error('Error fetching vault balance:', error)
       } finally {
