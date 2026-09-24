@@ -41,7 +41,7 @@ export function ClientNavigation() {
   if (pathname === '/client/login' || (pathname === '/client/dashboard' && eventIsLive)) return null
 
   return (
-    <nav className="sticky top-0 z-40 flex gap-4 border-b border-sky-300/10 bg-[#020a16]/78 px-5 py-3 text-sm text-slate-300 backdrop-blur-2xl">
+    <nav className="flex gap-4 border-b border-white/10 px-5 py-3 text-sm text-slate-300">
       <Link href="/client/dashboard">Client Portal</Link>
       <Link href="/client/system-switch">My Workshop & Store</Link>
       <Link href="/client/loops">Company Loops</Link>
