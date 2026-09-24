@@ -33,6 +33,7 @@ import {
   UserPlus,
   Database,
   Brain,
+  Flame,
   Copy,
   Plus
 } from 'lucide-react'
@@ -327,6 +328,14 @@ function AdminWorkshopsSection() {
       link: '/admin/dev-workshop',
       tags: ['GEMINI 2.0', 'AI OPERATOR', 'CORE'],
       color: 'from-pink-500 to-purple-500'
+    },
+    {
+      title: 'Flame Event Workshop',
+      desc: 'Control the Flame Event advertisement, October 1 opening, Administration announcement, schedule and live state.',
+      icon: <Flame className="h-10 w-10 text-orange-400" />,
+      link: '/admin/flame-event',
+      tags: ['EVENT', 'OCT 1', '4 POSITIONS'],
+      color: 'from-orange-500 to-red-500'
     }
   ]
 
