@@ -38,7 +38,7 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sky-300/10 bg-[#020a16]/78 px-4 md:px-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(2,8,23,0.35)]">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/5 bg-slate-950/80 px-4 md:px-6 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/60">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -55,7 +55,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <Input
               type="search"
               placeholder="Search human cadences..." aria-label="Search human cadences" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => { if (e.key === "Enter") router.push(`/search?q=${encodeURIComponent(search.trim())}`) }}
-              className="pl-10 bg-[#071426]/70 border-sky-300/15 text-xs h-9 focus-visible:ring-cyan-500/50 shadow-inner"
+              className="pl-10 bg-white/5 border-white/10 text-xs h-9 focus-visible:ring-cyan-500/50"
             />
           </div>
         </div>
