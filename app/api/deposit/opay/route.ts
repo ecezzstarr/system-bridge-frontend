@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         rail: 'OPAY',
         amountLabel: `₦${Number(amount).toLocaleString()}`,
         secondaryLabel: `${flameCoinAmount.toLocaleString()} Flame Coin`,
-        adminLink: '/admin/dashboard#payments',
+        adminLink: '/admin/dashboard#deposits',
       })
     }
 
