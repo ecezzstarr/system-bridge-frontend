@@ -90,6 +90,18 @@ export async function ensureWeaveEventSchema() {
     ALTER TABLE weave_events
     ADD COLUMN IF NOT EXISTS loop_number integer NOT NULL DEFAULT 1
   `
+  await sql`
+    ALTER TABLE weave_events
+    ADD COLUMN IF NOT EXISTS ad_enabled boolean NOT NULL DEFAULT true
+  `
+  await sql`
+    ALTER TABLE weave_events
+    ADD COLUMN IF NOT EXISTS auto_start boolean NOT NULL DEFAULT true
+  `
+  await sql`
+    ALTER TABLE weave_events
+    ADD COLUMN IF NOT EXISTS updated_by uuid
+  `
 
   await sql`
     INSERT INTO weave_events (
