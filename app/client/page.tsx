@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-provider'
+import { WeaveLogo } from '@/components/weave-logo'
 
 export default function ClientHomePage() {
   const { user } = useAuth()
@@ -15,13 +16,10 @@ export default function ClientHomePage() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 flex flex-col items-center justify-center p-6">
-      {/* Branding */}
-      <div className="text-center mb-8">
-        <div className="inline-block mb-4 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
-          <span className="text-5xl">🌐</span>
-        </div>
-        <h1 className="text-4xl font-black text-white tracking-tighter mb-1">WEAVE</h1>
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Ecosystem Authority</p>
+      {/* Official WEAVE identity */}
+      <div className="text-center mb-8 flex flex-col items-center">
+        <WeaveLogo size="lg" className="mb-4" />
+        <p className="text-[10px] font-bold text-sky-300/70 uppercase tracking-[0.24em] mb-2">Interaction in Motion</p>
         <p className="text-lg text-slate-400">Client Services Portal</p>
       </div>
 
