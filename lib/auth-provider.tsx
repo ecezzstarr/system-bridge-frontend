@@ -11,7 +11,7 @@ interface User {
   email: string
   username: string
   name: string
-  role?: 'agent' | 'bridger' | 'admin'
+  role?: 'agent' | 'bridger' | 'admin' | 'client'
   wallet_balance?: number
   wallet_address?: string
   personal_wallet_address?: string
@@ -188,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: result.user.email,
           username: result.user.username,
           name: result.user.name,
-          role: result.user.role as 'agent' | 'bridger' | 'admin',
+          role: result.user.role as 'agent' | 'bridger' | 'admin' | 'client',
           platform_wallet_balance: result.user.platform_wallet_balance || 0,
           escrow_balance: result.user.escrow_balance || 0,
           departmental_code: result.user.departmental_code,
