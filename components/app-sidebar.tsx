@@ -103,8 +103,8 @@ const navigation = [
 
   // 5. WEAVE
   { group: "Weave", items: [
-    { name: "Contest", href: "/arena", icon: Gamepad2 },
-    { name: "Pattern", href: "/casino", icon: Dices },
+    { name: "Contest", href: "/arena", icon: Gamepad2, clientOnly: true },
+    { name: "Pattern", href: "/casino", icon: Dices, clientOnly: true },
     { name: "Stream", href: "/video-feed", icon: Video },
     { name: "Standing", href: "/weave/standing", icon: Globe },
   ]},
@@ -318,6 +318,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
               if (item.creatorOnly && user?.role !== "creator") return false
               if (item.bridgerOnly && user?.role !== "bridger") return false
               if (item.agentOnly && user?.role !== "agent") return false
+              if (item.clientOnly && user?.role !== "client") return false
               if (item.staffOnly && user?.role !== "admin" && user?.role !== "agent") return false
               return true
             })
