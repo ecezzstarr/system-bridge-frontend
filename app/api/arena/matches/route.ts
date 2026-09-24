@@ -90,25 +90,8 @@ export async function POST(request: NextRequest) {
 
     const fee = parseFloat(entryFee) || 0
 
-    const hosts = await sql`
-      SELECT id, role FROM users
-      WHERE id = ${hostId}::uuid AND is_active = true
-      LIMIT 1
-    `
-    if (hosts.length === 0) {
-      return NextResponse.json({ error: 'Host not found' }, { status: 404 })
-    }
-
-    const hostRole = hosts[0].role
-    const hostIsPlayer = hostRole === 'client'
-    const hostIsSupport = hostRole === 'admin'
-    if (!hostIsPlayer && !hostIsSupport) {
-      return NextResponse.json({ error: 'Only a Client player or Administration support may open an Arena match' }, { status: 403 })
-    }
-
-    // A Client host is a player and may stake the entry fee. Administration can
-    // curate a match as support without being inserted into arena_participants.
-    if (hostIsPlayer && fee > 0) {
+    // Check host has enough balance for entry fee
+    if (fee > 0) {
       const wallets = await sql`SELECT balance_trx FROM wallets WHERE user_id = ${hostId}::uuid`
       const balance = wallets.length > 0 ? parseFloat(wallets[0].balance_trx) : 0
       
@@ -122,41 +105,42 @@ export async function POST(request: NextRequest) {
     }
 
     const id = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    const prizePool = hostIsPlayer ? fee : 0
+    const prizePool = fee // Initial prize pool is host's entry fee
 
     await sql`
       INSERT INTO arena_matches (id, title, description, host_id, entry_fee, prize_pool, max_participants, category, scheduled_at, status)
       VALUES (${id}, ${title}, ${description || ''}, ${hostId}, ${fee}, ${prizePool}, ${maxParticipants || 10}, ${category || 'general'}, ${startsAt}, 'upcoming')
     `
 
-    if (hostIsPlayer) {
+    // Auto-join host as participant
+    await sql`
+      INSERT INTO arena_participants (id, match_id, user_id)
+      VALUES (${`part_${Date.now()}`}, ${id}, ${hostId})
+    `
+
+    // Deduct entry fee from host wallet if applicable
+    if (fee > 0) {
       await sql`
-        INSERT INTO arena_participants (id, match_id, user_id)
-        VALUES (${`part_${Date.now()}`}, ${id}, ${hostId})
+        UPDATE wallets SET balance_trx = balance_trx - ${fee}, updated_at = NOW()
+        WHERE user_id = ${hostId}::uuid
       `
 
-      if (fee > 0) {
+      // Record ledger entry
+      try {
         await sql`
-          UPDATE wallets SET balance_trx = balance_trx - ${fee}, updated_at = NOW()
-          WHERE user_id = ${hostId}::uuid
+          INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at)
+          VALUES (
+            gen_random_uuid(),
+            ${hostId}::uuid,
+            'arena_entry_fee',
+            ${-fee},
+            'TRX',
+            ${'Arena entry fee (host): ' + title},
+            NOW()
+          )
         `
-
-        try {
-          await sql`
-            INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at)
-            VALUES (
-              gen_random_uuid(),
-              ${hostId}::uuid,
-              'arena_entry_fee',
-              ${-fee},
-              'TRX',
-              ${'Arena entry fee (host): ' + title},
-              NOW()
-            )
-          `
-        } catch (e) {
-          console.log('Ledger entry failed:', e)
-        }
+      } catch (e) {
+        console.log('Ledger entry failed:', e)
       }
     }
 
@@ -168,8 +152,7 @@ export async function POST(request: NextRequest) {
         status: 'upcoming', 
         prizePool,
         entryFee: fee,
-        potentialWinnings: prizePool * 0.70,
-        hostMode: hostIsPlayer ? 'player' : 'support'
+        potentialWinnings: prizePool * 0.70
       } 
     })
   } catch (error) {
