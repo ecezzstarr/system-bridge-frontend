@@ -13,7 +13,8 @@ import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Toaster } from '@/components/ui/sonner'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
-import { FlameEventWorldGate } from '@/components/events/flame-event-world-gate'
+import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
+import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
 
 export default function AppLayout({
   children,
@@ -106,20 +107,26 @@ export default function AppLayout({
 
   return (
     <div className="relative flex min-h-screen overflow-hidden bg-slate-950">
-      <FlameEventWorldGate intensity="event" />
+      <WeaveWorldEnvironment />
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
         <AppSidebar user={user as any} />
       </div>
       <div className="relative z-10 flex-1 flex flex-col lg:pl-64">
         <AppHeader user={user as any} />
         <main className="relative flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 max-w-[100vw]">
-          <FlameEventRoleAtmosphere
+          <NormalWeaveRoleAtmosphere
             userRole={user?.role}
             userName={user?.name}
             pathname={pathname}
           >
-            {children}
-          </FlameEventRoleAtmosphere>
+            <FlameEventRoleAtmosphere
+              userRole={user?.role}
+              userName={user?.name}
+              pathname={pathname}
+            >
+              {children}
+            </FlameEventRoleAtmosphere>
+          </NormalWeaveRoleAtmosphere>
         </main>
       </div>
       <Toaster position="top-center" richColors />
