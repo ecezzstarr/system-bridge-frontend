@@ -13,16 +13,21 @@ export function ClientNavigation() {
   useEffect(() => {
     if (pathname !== '/client/dashboard') return
     let mounted = true
-    fetch('/api/events/flame', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => {
-        if (mounted && data?.success && data.event) setEvent(data.event)
-      })
-      .catch(() => {})
-    const timer = window.setInterval(() => setNow(new Date()), 30000)
+    const load = () => {
+      fetch('/api/events/flame', { cache: 'no-store' })
+        .then(res => res.json())
+        .then(data => {
+          if (mounted && data?.success && data.event) setEvent(data.event)
+        })
+        .catch(() => {})
+    }
+    load()
+    const clock = window.setInterval(() => setNow(new Date()), 30000)
+    const refresh = window.setInterval(load, 60000)
     return () => {
       mounted = false
-      window.clearInterval(timer)
+      window.clearInterval(clock)
+      window.clearInterval(refresh)
     }
   }, [pathname])
 
