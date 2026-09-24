@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { ClientNavigation } from '@/components/client-navigation'
+import { LiveAdSurface } from '@/components/live-ad-surface'
 
 export const metadata: Metadata = {
   title: 'SSBNOW.SHOP - Client Services',
@@ -23,6 +24,7 @@ export default function ClientLayout({
   return (
     <div className="min-h-screen bg-slate-950">
       <ClientNavigation />
+      <LiveAdSurface />
       {children}
     </div>
   )

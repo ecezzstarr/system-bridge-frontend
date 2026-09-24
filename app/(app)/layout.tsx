@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { usePathname } from 'next/navigation'
 import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Toaster } from '@/components/ui/sonner'
+import { LiveAdSurface } from '@/components/live-ad-surface'
 
 export default function AppLayout({
   children,
@@ -113,6 +114,7 @@ export default function AppLayout({
         </main>
       </div>
       <Toaster position="top-center" richColors />
+      <LiveAdSurface />
       {termsChecked && termsNeeded && user?.role && ['agent', 'bridger'].includes(user.role) && (
         <TermsAcceptanceModal
           role={user.role as 'agent' | 'bridger'}
