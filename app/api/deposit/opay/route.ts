@@ -4,6 +4,7 @@ import { getSql } from '@/lib/db'
 import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
+import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,6 +81,19 @@ export async function POST(request: NextRequest) {
         })}
       )
     `
+
+    if (user.role !== 'admin') {
+      await notifyDepositSubmitted({
+        depositorId: user.id,
+        depositorName: user.name || user.username || user.email,
+        role: user.role === 'bridger' ? 'Bridger' : 'Agent',
+        depositId: result[0].id,
+        rail: 'OPAY',
+        amountLabel: `₦${Number(amount).toLocaleString()}`,
+        secondaryLabel: `${flameCoinAmount.toLocaleString()} Flame Coin`,
+        adminLink: '/admin/dashboard#payments',
+      })
+    }
 
     return NextResponse.json({
       success: true,
