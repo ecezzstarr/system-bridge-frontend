@@ -1,10 +1,11 @@
 import { WORLD_RULES } from './world/constants'
 import { WEAVE_ARCHITECTURE } from './weave-architecture'
 
-export const CURRENT_TERMS_VERSION = 7
+export const CURRENT_TERMS_VERSION = 8
 
 const FLAME_COIN_RATE = WORLD_RULES.TRX_PAYMENT_NGN_FALLBACK_RATE
-const FILE_FOLDER_FLAME_COIN = WORLD_RULES.FILE_FOLDER_PRICE_FLAME_COIN
+const FILE_FOLDER_FLAME_COIN = WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN
+const STANDARD_FILE_FOLDER_MIN = WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN
 const FILE_FOLDER_NGN = (FILE_FOLDER_FLAME_COIN * FLAME_COIN_RATE).toLocaleString()
 const BRIDGER_30_FLAME_COIN = (FILE_FOLDER_FLAME_COIN * WORLD_RULES.BRIDGER_YIELD_RATE).toLocaleString()
 const BRIDGER_30_NGN = (FILE_FOLDER_FLAME_COIN * WORLD_RULES.BRIDGER_YIELD_RATE * FLAME_COIN_RATE).toLocaleString()
@@ -18,7 +19,7 @@ export const AGENT_CONTENT = {
   role: 'Your role is to build, manage and support Bridgers who work with Weave.',
   earningMovements: [
     `You earn ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% whenever your Bridger purchases a prospect lead from the marketplace.`,
-    `When that prospect becomes a Weave Client through the ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin File Folder, you earn 5% of Weave's 40% company percentage from that purchase.`,
+    `When that prospect becomes a Weave Client through a Standard or Premium File Folder, you earn 5% of Weave's 40% company percentage from the actual File Folder purchase value.`,
   ],
   calculations: [
     `Reference value: 1 Flame Coin = 1 TRX (₦${FLAME_COIN_RATE} per TRX at the configured reference rate):`,
@@ -36,7 +37,7 @@ export const BRIDGER_CONTENT = {
   positionSummary:
     'Weave is an interactional company. This whole platform is an interaction in motion real life gaming operating system for human presence. We create services, instruments, and systems that turn human participation into organized work, value, and opportunity. Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value. As a Bridger, you have a place within that movement as a partner working with Weave.',
   role: 'Your role is to take a prospect provided through Weave, make the human connection, introduce the person to Weave and guide the interaction toward participation.',
-  action: `You purchase prospects from the marketplace and use the available outreach system to contact them. When your prospect purchases the ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin File Folder, that prospect becomes a Client of Weave. Flame Coin is the internal wrapper for TRX value; OPay funding is converted using the current TRX/NGN rate.`,
+  action: `You purchase prospects from the marketplace and use the available outreach system to contact them. A prospect may enter through a Standard File Folder from ${STANDARD_FILE_FOLDER_MIN.toLocaleString()} Flame Coin up to anything below ${FILE_FOLDER_FLAME_COIN.toLocaleString()}, or through the Premium File Folder at ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin. Once the File Folder is verified, that prospect becomes a Client of Weave. Flame Coin is the internal wrapper for TRX value; OPay funding is converted using the current TRX/NGN rate.`,
   earnings: [
     `Reference value: 1 Flame Coin = 1 TRX (₦${FLAME_COIN_RATE} per TRX at the configured reference rate):`,
     `File Folder: ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin = ₦${FILE_FOLDER_NGN}`,
@@ -85,9 +86,9 @@ export const TERMS_SECTIONS = [
   { title: '1. Acceptance', body: "By accepting your Agent appointment or Bridger partnership, you agree to follow WEAVE's operational rules, policies, confidentiality requirements, and lawful instructions." },
   { title: '2. Agent Status', body: 'An Agent is an employee and authorized representative of WEAVE. The Agent does not receive ownership or partnership rights in the Company unless separately agreed in writing.' },
   { title: '3. Bridger Status', body: 'A Bridger is an independent operational partner and is not an employee of WEAVE. A Bridger does not receive ownership of the Company.' },
-  { title: '4. Bridger Earning Movement', body: 'A Bridger earns 30% of the 35,800 Flame Coin File Folder price when a prospect they guide becomes a Weave Client. This closes Loop 1 for the Bridger partnership.' },
+  { title: '4. Bridger Earning Movement', body: 'A Bridger earns 30% of the actual verified File Folder purchase value when a prospect they guide becomes a Weave Client. A Standard File Folder may be any value from 180 Flame Coin up to anything below 35,800; the Premium File Folder is fixed at 35,800 Flame Coin.' },
   { title: '5. Agent Earning Movement', body: 'An Agent earns 30% on Bridger prospect lead purchases and 5% of Weave\'s 40% company percentage from File Folder purchases. This establishes Loop 1 for the Agent role.' },
-  { title: '6. The File Folder', body: 'The File Folder is the persistent workshop at System Switch containing one Client and the Weave support assembled around that Client. It is issued upon purchase and establishes the Client\'s crossing.' },
+  { title: '6. The File Folder', body: 'The File Folder is the persistent workshop at System Switch containing one Client and the Weave support assembled around that Client. Standard access begins at 180 Flame Coin and may be any value below the 35,800 Flame Coin Premium price. Premium remains fixed at 35,800 Flame Coin. A verified File Folder purchase establishes the Client\'s crossing.' },
   { title: '7. System Switch', body: `System Switch is the Client's crossing environment. It carries the Client and the current topic into the fixed subject: ${WEAVE_ARCHITECTURE.subject.name}. The Client's enterprise, workshop, store, problem, build, or other movement can continue there as the topic develops.` },
   { title: '8. Bridge Plaza', body: 'Bridge Plaza is the support entrance for Agents and Bridgers. It is where they select which File Folder environment to enter and visit.' },
   { title: '9. Company Information', body: 'Agents and Bridgers must protect confidential Company information, Client information, operational procedures, internal communications, and system information during and after their relationship with WEAVE.' },
