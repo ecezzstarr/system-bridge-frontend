@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowLeftRight, Gamepad2, Trophy, Loader2, Dice6, Zap, Star, Flame, Sparkles, LayoutGrid, Users } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
-import { isClientPlayerRole } from '@/lib/weave-participation'
 
 // Dice icons mapping
 import { Dice1, Dice2, Dice3, Dice4, Dice5 } from 'lucide-react'
@@ -25,7 +24,6 @@ const PUSH_RETURN_PERCENT = 50 // must mirror app/api/casino/play/route.ts
 export default function Casino({ user: propUser }: { user?: any }) {
   const { user: authUser } = useAuth()
   const user = propUser || authUser
-  const isPlayer = isClientPlayerRole(user?.role)
   const [activeGame, setActiveGame] = useState('dice')
   const [betAmount, setBetAmount] = useState(10)
   const [customAmountInput, setCustomAmountInput] = useState('')
@@ -87,10 +85,6 @@ export default function Casino({ user: propUser }: { user?: any }) {
   }
 
   const rollDice = async () => {
-    if (!isPlayer) {
-      setError('Casino participation is reserved for Client players')
-      return
-    }
     if (!user?.id) {
       setError('Please login to participate')
       return
@@ -179,15 +173,10 @@ export default function Casino({ user: propUser }: { user?: any }) {
   }
 
   const currentBalance = demoMode ? demoBalance : balance
-  const canPlay = isPlayer && !isRolling && betAmount >= MIN_BET && betAmount <= MAX_BET && betAmount <= currentBalance
+  const canPlay = !isRolling && betAmount >= MIN_BET && betAmount <= MAX_BET && betAmount <= currentBalance
 
   return (
     <div className="px-4 py-4 space-y-6">
-      {!isPlayer && (
-        <div className="rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4 text-xs leading-5 text-slate-300">
-          Support view only. Casino gameplay belongs to the Client player position.
-        </div>
-      )}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600 to-red-600 p-6 shadow-lg shadow-orange-900/20">
         <div className="relative z-10">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
