@@ -122,7 +122,7 @@ export async function POST(
       rail: 'BRIDGE_TRX',
       amountLabel: `${submittedAmount.toLocaleString()} TRX`,
       secondaryLabel: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder`,
-      adminLink: '/admin/dashboard#payments',
+      adminLink: '/admin/dashboard#bridge',
     })
 
     return NextResponse.json({
