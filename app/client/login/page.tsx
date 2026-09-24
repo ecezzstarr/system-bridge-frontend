@@ -87,7 +87,7 @@ export default function ClientLoginPage() {
               <div className="relative group">
                 <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <Input
-                  placeholder="WEAVE-2026-XXXX-XXXX"
+                  placeholder="WEAVE-583104927361"
                   value={fileNumber}
                   onChange={(e) => setFileNumber(e.target.value.toUpperCase())}
                   className="pl-10 bg-slate-800/50 border-slate-700 text-white font-mono text-sm h-12 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"

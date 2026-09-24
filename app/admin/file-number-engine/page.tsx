@@ -148,7 +148,7 @@ export default function FileNumberEnginePage() {
               <UserPlus className="h-5 w-5 text-blue-400" />
               Issue New File Folder
             </CardTitle>
-            <CardDescription className="text-xs">Create a unique file number for a new client.</CardDescription>
+            <CardDescription className="text-xs">Issue a collision-safe random File Number for a new Client. Numbers are not sequential and do not reveal issuance order.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleGenerate} className="space-y-4">
@@ -219,7 +219,7 @@ export default function FileNumberEnginePage() {
               <CheckCircle2 className="h-5 w-5 text-green-400" />
               Active File Folders
             </CardTitle>
-            <CardDescription className="text-xs">Track status of issued registration keys.</CardDescription>
+            <CardDescription className="text-xs">Track issued Client File Numbers and their registration status.</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
