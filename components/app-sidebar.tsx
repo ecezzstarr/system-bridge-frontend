@@ -247,9 +247,10 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
   }
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-white/5 bg-slate-950 overflow-hidden">
+    <aside className="relative flex h-screen w-64 flex-col overflow-hidden border-r border-sky-300/10 bg-[#020a16]/90 shadow-[20px_0_60px_rgba(2,8,23,0.38)] backdrop-blur-2xl">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_12%,rgba(56,189,248,0.10),transparent_28%),radial-gradient(circle_at_70%_88%,rgba(239,68,68,0.07),transparent_30%)]" />
       {/* Logo and System Status */}
-      <div className="flex flex-col items-center justify-center border-b border-white/5 p-6">
+      <div className="relative flex flex-col items-center justify-center border-b border-sky-300/10 p-6">
         <WeaveLogo size="md" className="mb-1" />
         <span className="text-[9px] text-slate-500 uppercase tracking-[0.22em] font-bold">System Switch · Bridge Radiance</span>
 
@@ -313,7 +314,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 scrollbar-hide">
+      <nav className="relative flex-1 overflow-y-auto p-3 scrollbar-hide">
         <div className="space-y-6">
           {navigation.map((group) => {
             const visibleItems = group.items.filter((item: any) => {
@@ -342,10 +343,10 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                         <Link
                           href={item.href}
                           className={cn(
-                            "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+                            "flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-all",
                             isActive
-                              ? "bg-sidebar-accent text-sidebar-primary"
-                              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              ? "border-sky-300/25 bg-sky-400/10 text-sky-100 shadow-[0_0_22px_rgba(56,189,248,0.08)]"
+                              : "border-transparent text-sidebar-foreground hover:border-white/10 hover:bg-white/[0.04] hover:text-white"
                           )}
                         >
                           <div className="flex items-center gap-3">
