@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { CalendarDays, Flame, Home, Radio, Sparkles, Waves } from 'lucide-react'
 import { FLAME_EVENT, type WeaveEvent, getEventProgress, resolveEventStatus } from '@/lib/weave-event'
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
+import { WeaveLogo } from '@/components/weave-logo'
 
 type Role = 'bridger' | 'agent' | 'admin'
 
@@ -100,9 +101,8 @@ export function FlameEventRoleAtmosphere({
         <section className="border-b border-white/10 bg-black/25 px-4 py-5 backdrop-blur-xl md:px-6 lg:px-8">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-start gap-4">
-              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-red-400/30 bg-gradient-to-b from-sky-500/10 to-red-500/10 shadow-[0_0_35px_rgba(56,189,248,0.12)]">
-                <div className="absolute inset-2 rounded-xl border border-sky-300/10 animate-pulse" />
-                <Flame className="relative h-6 w-6 text-white" />
+              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-sky-400/20 bg-black/30 shadow-[0_0_35px_rgba(56,189,248,0.12)]">
+                <WeaveLogo size="md" showText={false} />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.22em]">
