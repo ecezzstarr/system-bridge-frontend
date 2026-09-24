@@ -39,6 +39,7 @@ import {
   UserCog,
   Gamepad2,
   Dices,
+  Crown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -95,6 +96,7 @@ const navigation = [
     { name: "Agility Fulfillment", href: "/admin/agility", icon: FileBox, adminOnly: true },
     { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
     { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
+    { name: "Enterprise Dream", href: "/admin/enterprise-dream", icon: Crown, adminOnly: true },
           { name: "Company Loops", href: "/company/loops", icon: GitBranch },
       { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
 { name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
