@@ -115,10 +115,10 @@ export default function FlameEventWorkshopPage() {
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.24em] text-orange-300">
-              <Flame className="h-4 w-4" /> Administration Workshop
+              <Flame className="h-4 w-4" /> Administration Workshop · Company Loop 1
             </div>
-            <h1 className="mt-2 text-3xl font-black uppercase tracking-tight text-white">Flame Event Control</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Prepare the platform-wide event signal, schedule the opening, publish Administration announcements, and control when the Flame Event is active.</p>
+            <h1 className="mt-2 text-3xl font-black uppercase tracking-tight text-white">Flame Event · Loop One Control</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Control Company Loop 1: prepare the platform-wide Flame Event signal, schedule the opening, publish Administration announcements, and govern its live state.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="rounded-full border border-white/10 bg-black/30 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-slate-300">
@@ -137,7 +137,7 @@ export default function FlameEventWorkshopPage() {
         <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/60 p-5">
           <div>
             <h2 className="text-sm font-black uppercase tracking-wider text-white">Event identity</h2>
-            <p className="mt-1 text-xs text-slate-500">This copy is what the four user positions see in the event advertisement.</p>
+            <p className="mt-1 text-xs text-slate-500">This is Company Loop 1. The copy below is what Client, Bridger, Agent and Administration see in the event advertisement.</p>
           </div>
           <label className="block">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Title</span>
@@ -156,7 +156,7 @@ export default function FlameEventWorkshopPage() {
         <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/60 p-5">
           <div>
             <h2 className="text-sm font-black uppercase tracking-wider text-white">Schedule & visibility</h2>
-            <p className="mt-1 text-xs text-slate-500">The default opening is October 1, 2026 at 12:00 AM local time. Auto-start moves the event from Coming Soon to Live when that moment arrives.</p>
+            <p className="mt-1 text-xs text-slate-500">Company Loop 1 opens October 1, 2026 at 12:00 AM West Africa Time. Auto-start moves Flame Event from Preparing to Live when that moment arrives.</p>
           </div>
           <label className="block">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-500"><CalendarDays className="mr-1 inline h-3 w-3" /> Start</span>
