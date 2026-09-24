@@ -50,8 +50,11 @@ def main():
  if not any(e['name']=='PLATFORM_ADMIN_FALLBACK_PASSWORD' for e in env):
   env.append({'name':'PLATFORM_ADMIN_FALLBACK_PASSWORD','valueFrom':{'secretKeyRef':{'name':'weave-admin-fallback-password','key':'latest'}}})
  annotations={k:v for k,v in baseline['metadata'].get('annotations',{}).items() if k.startswith('autoscaling.knative.dev/') or k in ['run.googleapis.com/cloudsql-instances','run.googleapis.com/startup-cpu-boost','run.googleapis.com/cpu-throttling','run.googleapis.com/vpc-access-connector','run.googleapis.com/vpc-access-egress','run.googleapis.com/execution-environment']}
- traffic=[{k:v for k,v in t.items() if k in ['revisionName','percent','tag']} for t in service['status']['traffic'] if t.get('tag')!='weave-candidate']
- traffic.append({'revisionName':rev,'tag':'weave-candidate','percent':0})
+ active_revision=active[0]['revisionName']
+ traffic=[
+  {'revisionName':active_revision,'percent':100},
+  {'revisionName':rev,'tag':'weave-candidate','percent':0},
+ ]
  metadata={k:v for k,v in service['metadata'].items() if k in ['name','namespace','labels','annotations']}
  for key in ['run.googleapis.com/operation-id','run.googleapis.com/urls']:metadata.get('annotations',{}).pop(key,None)
  manifest={'apiVersion':'serving.knative.dev/v1','kind':'Service','metadata':metadata,'spec':{'template':{'metadata':{'name':rev,'labels':{'commit-sha':sha,'weave-source':'canonical-main'},'annotations':annotations},'spec':spec},'traffic':traffic}}
