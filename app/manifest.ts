@@ -1,20 +1,17 @@
 import { MetadataRoute } from 'next'
 
-// Bump this whenever icon.svg's visual content changes. Browsers/OS only
-// re-fetch a manifest icon when its URL changes — a static path means an
-// already-installed app's home-screen icon never updates even after a
-// fresh deploy. Versioning the URL forces a refresh on the next manifest check.
-const ICON_VERSION = '2'
+// Bump whenever the official WEAVE mark changes so installed devices refresh it.
+const ICON_VERSION = '3'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'WEAVE - System Switch Bridge Radiance',
+    name: 'WEAVE of Presence — System Switch — Bridge Radiance',
     short_name: 'WEAVE',
-    description: 'WEAVE ecosystem platform - Wallet, Lounge, Arena, Marketplace',
+    description: 'Interaction in Motion: people, ideas, opportunities, value and livelihood in one living WEAVE environment.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#050608',
-    theme_color: '#0a0a0a',
+    background_color: '#02060d',
+    theme_color: '#06111f',
     icons: [
       {
         src: `/icon.svg?v=${ICON_VERSION}`,
