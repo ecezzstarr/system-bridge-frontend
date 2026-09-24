@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { Storage } from '@google-cloud/storage'
 import { randomUUID } from 'crypto'
+import { ensureDjSchema } from '@/lib/dj-broadcast'
 
 const storage = new Storage()
 const BUCKET_NAME = 'ssbnow-status-feed-media'
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
   if (auth.error) return auth.error
 
   try {
+    await ensureDjSchema()
     const tracks = await sql`
       SELECT * FROM dj_tracks ORDER BY created_at DESC
     `
@@ -39,6 +41,7 @@ export async function POST(request: NextRequest) {
   if (auth.error) return auth.error
 
   try {
+    await ensureDjSchema()
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const title = (formData.get('title') as string) || 'Untitled'
@@ -92,11 +95,19 @@ export async function DELETE(request: NextRequest) {
   if (auth.error) return auth.error
 
   try {
+    await ensureDjSchema()
     const { searchParams } = new URL(request.url)
     const trackId = searchParams.get('id')
     if (!trackId) {
       return NextResponse.json({ success: false, error: 'Track id required' }, { status: 400 })
     }
+
+    await sql`DELETE FROM dj_playlist_tracks WHERE track_id = ${trackId}::uuid`
+    await sql`
+      UPDATE dj_broadcast_state
+      SET is_live=false, current_track_id=NULL, playlist_id=NULL, updated_at=NOW()
+      WHERE id=1 AND current_track_id=${trackId}::uuid
+    `
     await sql`DELETE FROM dj_tracks WHERE id = ${trackId}::uuid`
     return NextResponse.json({ success: true })
   } catch (error: any) {
