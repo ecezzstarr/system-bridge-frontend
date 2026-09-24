@@ -59,7 +59,7 @@ export function FlameEventAd() {
   if (!isInitialized || !eligible || hiddenPath || !event.adEnabled || effectiveStatus === 'closed' || !role) return null
 
   const copy = ROLE_COPY[role as keyof typeof ROLE_COPY]
-  const statusText = effectiveStatus === 'active' ? 'LIVE NOW' : 'COMING UP SOON'
+  const statusText = effectiveStatus === 'active' ? 'LOOP 1 LIVE NOW' : 'LOOP 1 COMING UP SOON'
   const startLabel = new Date(event.startsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 
   return (
@@ -77,7 +77,7 @@ export function FlameEventAd() {
               <span className="text-white/20">•</span>
               <span className="text-sky-300">YOUR POSITION: {copy.label}</span>
             </div>
-            <p className="mt-1 truncate text-sm font-black uppercase tracking-tight sm:text-base">{event.title}</p>
+            <p className="mt-1 truncate text-sm font-black uppercase tracking-tight sm:text-base">Company Loop {event.loopNumber} · {event.title}</p>
             <p className="mt-0.5 hidden text-xs text-slate-400 md:block">{event.subtitle}</p>
           </div>
         </div>
