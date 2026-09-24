@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 310" role="img" aria-labelledby="title desc">
+  <title id="title">WEAVE of Presence — System Switch — Bridge Radiance</title>
+  <desc id="desc">Official WEAVE of Presence logo with the interwoven Presence flame and institutional wordmark.</desc>
+  <defs>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8fcff"/>
+      <stop offset="22%" stop-color="#63e7ff"/>
+      <stop offset="58%" stop-color="#1687ff"/>
+      <stop offset="100%" stop-color="#2736d7"/>
+    </linearGradient>
+    <linearGradient id="fire" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff7bd"/>
+      <stop offset="22%" stop-color="#ffd34f"/>
+      <stop offset="58%" stop-color="#ff6718"/>
+      <stop offset="100%" stop-color="#d91c3e"/>
+    </linearGradient>
+    <linearGradient id="bridge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#c4f1ff"/>
+      <stop offset="100%" stop-color="#d9beff"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2=".25">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#dff7ff"/>
+      <stop offset="62%" stop-color="#fff5d8"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4bdcff"/>
+      <stop offset="48%" stop-color="#ffffff"/>
+      <stop offset="52%" stop-color="#ffd66b"/>
+      <stop offset="100%" stop-color="#ff6437"/>
+    </linearGradient>
+    <radialGradient id="star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff"/>
+      <stop offset="32%" stop-color="#fff0ae"/>
+      <stop offset="72%" stop-color="#5cdcff" stop-opacity=".7"/>
+      <stop offset="100%" stop-color="#5cdcff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- emblem -->
+  <g transform="translate(25 12) scale(.56)">
+    <circle cx="256" cy="246" r="178" fill="none" stroke="url(#accent)" stroke-width="5" opacity=".58"/>
+    <path d="M246 432 C171 379 151 323 184 269 C208 230 244 216 229 177 C214 138 177 123 180 78 C139 113 121 161 136 205 C151 248 183 270 172 311 C160 356 179 400 246 432Z" fill="url(#blue)" filter="url(#glow)"/>
+    <path d="M266 432 C343 377 365 321 333 267 C309 226 274 211 289 171 C305 130 345 112 329 60 C373 98 394 151 377 200 C362 246 330 268 341 311 C353 357 334 401 266 432Z" fill="url(#fire)" filter="url(#glow)"/>
+    <path d="M175 142 C225 177 300 189 329 237 C354 279 324 321 282 351 C253 372 239 392 252 432 C214 401 205 366 226 338 C251 305 304 287 306 251 C307 220 262 204 226 190 C195 178 178 164 175 142Z" fill="url(#bridge)" filter="url(#glow)"/>
+    <path d="M337 143 C286 177 213 190 184 238 C159 280 189 321 232 351 C261 371 275 392 262 432 C300 401 309 366 288 338 C263 305 210 288 208 251 C207 221 252 204 288 191 C319 179 334 165 337 143Z" fill="url(#bridge)" opacity=".94" filter="url(#glow)"/>
+    <circle cx="256" cy="246" r="42" fill="url(#star)" filter="url(#glow)"/>
+    <path d="M256 192L265 237L316 246L265 255L256 306L247 255L196 246L247 237Z" fill="#fff9df" filter="url(#glow)"/>
+  </g>
+
+  <!-- wordmark -->
+  <g transform="translate(340 0)">
+    <text x="0" y="112" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="800" letter-spacing="20" fill="url(#word)">WEAVE</text>
+    <text x="8" y="165" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="600" letter-spacing="15" fill="#eef6ff">OF PRESENCE</text>
+
+    <rect x="5" y="192" width="765" height="2" rx="1" fill="url(#accent)" opacity=".76"/>
+    <text x="7" y="235" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="600" letter-spacing="7" fill="#8fdfff">SYSTEM SWITCH</text>
+    <circle cx="385" cy="227" r="4" fill="#fff5d8"/>
+    <text x="420" y="235" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="600" letter-spacing="7" fill="#ffb274">BRIDGE RADIANCE</text>
+    <text x="7" y="280" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="600" letter-spacing="5" fill="#8b98aa">INTERACTION IN MOTION</text>
+  </g>
+</svg>
