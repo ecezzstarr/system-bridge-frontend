@@ -39,7 +39,10 @@ export function NotificationBell() {
 
     const fetchNotifications = async () => {
       try {
-        const res = await fetch(`/api/notifications?userId=${user.id}`)
+        const token = localStorage.getItem('ssb_auth_token')
+        const res = await fetch('/api/notifications', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
         if (res.ok) {
           const data = await res.json()
           if (data.success) {
@@ -78,16 +81,20 @@ export function NotificationBell() {
     }
 
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 10000) // Poll every 10 seconds
+    const interval = setInterval(fetchNotifications, 5000) // Surface deposit/admin decisions promptly
     return () => clearInterval(interval)
   }, [user?.id])
 
   const markAsRead = async (notificationId: string) => {
     try {
+      const token = localStorage.getItem('ssb_auth_token')
       await fetch('/api/notifications', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationIds: [notificationId], isRead: true })
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ notificationIds: [notificationId] })
       })
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
@@ -101,10 +108,14 @@ export function NotificationBell() {
   const markAllAsRead = async () => {
     if (!user?.id) return
     try {
+      const token = localStorage.getItem('ssb_auth_token')
       await fetch('/api/notifications', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, markAllRead: true })
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ markAllRead: true })
       })
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
       setUnreadCount(0)
