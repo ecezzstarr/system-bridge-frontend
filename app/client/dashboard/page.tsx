@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-provider'
 import ClientFlameEventDashboard from '@/components/events/client-flame-event-dashboard'
 import LegacyClientDashboard from '@/components/client/client-terminal-legacy'
 import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
+import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 
 export default function ClientDashboardPage() {
   const { user, isInitialized } = useAuth()
@@ -48,5 +49,9 @@ export default function ClientDashboardPage() {
     return <ClientFlameEventDashboard event={event} />
   }
 
-  return <LegacyClientDashboard />
+  return (
+    <WeaveDashboardWorld role="client" userName={user?.name}>
+      <LegacyClientDashboard />
+    </WeaveDashboardWorld>
+  )
 }
