@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
+import { getFileFolderTier } from '@/lib/file-folder-pricing'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +27,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      deposits
+      deposits: deposits.map((deposit: any) => ({
+        ...deposit,
+        fileFolderTier: getFileFolderTier(Number(deposit.tier_trx)),
+      }))
     })
   } catch (error) {
     console.error('[bridge deposits pending]', error)
