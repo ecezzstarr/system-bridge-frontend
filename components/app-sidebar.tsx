@@ -335,13 +335,20 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                 </h3>
                 <ul className="space-y-0.5">
                   {visibleItems.map((item) => {
-                    const isActive = pathname === item.href
+                    const homeHref =
+                      user?.role === 'admin' ? '/admin/dashboard'
+                      : user?.role === 'agent' ? '/agent/dashboard'
+                      : user?.role === 'bridger' ? '/bridger/dashboard'
+                      : user?.role === 'client' ? '/client/dashboard'
+                      : '/dashboard'
+                    const href = item.name === 'Home' ? homeHref : item.href
+                    const isActive = pathname === href
                     const isSubItem = item.name === "Bridger Continuance"
 
                     return (
                       <li key={item.name}>
                         <Link
-                          href={item.href}
+                          href={href}
                           className={cn(
                             "flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-all",
                             isActive
