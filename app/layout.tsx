@@ -7,9 +7,14 @@ import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
 
 export const metadata: Metadata = {
-  title: 'WEAVE - System Bridge',
-  description: 'Unified ecosystem for bridgers, agents, administrators, and clients',
+  title: 'WEAVE of Presence — System Switch — Bridge Radiance',
+  description: 'Interaction in Motion: a living WEAVE environment for real participation, systems, value and livelihood.',
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [{ url: '/icon.svg?v=3', type: 'image/svg+xml' }],
+    shortcut: '/icon.svg?v=3',
+    apple: '/icon.svg?v=3',
+  },
 }
 
 export const viewport: Viewport = {
