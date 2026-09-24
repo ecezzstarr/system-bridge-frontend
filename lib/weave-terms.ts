@@ -23,10 +23,10 @@ export const AGENT_CONTENT = {
   ],
   calculations: [
     `Reference value: 1 Flame Coin = 1 TRX (₦${FLAME_COIN_RATE} per TRX at the configured reference rate):`,
-    `File Folder: ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin = ₦${FILE_FOLDER_NGN}`,
-    `Bridger's 30%: ${BRIDGER_30_FLAME_COIN} Flame Coin = ₦${BRIDGER_30_NGN}`,
+    `Premium File Folder example: ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin = ₦${FILE_FOLDER_NGN}`,
+    `Bridger's 30% on the Premium example: ${BRIDGER_30_FLAME_COIN} Flame Coin = ₦${BRIDGER_30_NGN}`,
     `Weave's 40% company percentage: ${(FILE_FOLDER_FLAME_COIN * 0.4).toLocaleString()} Flame Coin`,
-    `Agent's 5%: ${AGENT_5_FLAME_COIN} Flame Coin = ₦${AGENT_5_NGN}`,
+    `Agent's 5% on the Premium example: ${AGENT_5_FLAME_COIN} Flame Coin = ₦${AGENT_5_NGN}`,
   ],
   movement: 'Build Bridgers → Bridger purchases prospects → support the movement → prospect becomes Client → earn from both movements. This is Loop 1 for the Weave Agent.',
   folderWork: 'Open Bridge Plaza. Select the Client\'s File Folder. Enter the environment. See what is moving. Participate where your function is required. Use Bridge AI where it extends the movement. Bring in the appropriate company support. Record what happens. Continue the relationship.',
@@ -43,7 +43,7 @@ export const BRIDGER_CONTENT = {
     `File Folder: ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin = ₦${FILE_FOLDER_NGN}`,
     `Your Bridger earning is ${(WORLD_RULES.BRIDGER_YIELD_RATE * 100).toFixed(0)}% of the File Folder price: ${BRIDGER_30_FLAME_COIN} Flame Coin = ₦${BRIDGER_30_NGN}`,
   ],
-  movement: `Purchase prospect → make contact → bridge the prospect → prospect participates → File Folder purchase → prospect becomes Client → earn ${BRIDGER_30_FLAME_COIN} Flame Coin / ₦${BRIDGER_30_NGN}. This closes Loop 1 for the Bridger.`,
+  movement: `Purchase prospect → make contact → bridge the prospect → prospect participates → Standard or Premium File Folder purchase → prospect becomes Client → earn 30% of the actual verified File Folder purchase value. This closes Loop 1 for the Bridger.`,
   relationship: 'The Bridger accompanies the Client beyond the first introduction. The File Folder gives that relationship a persistent place inside System Switch. You can return to the Client\'s environment, understand what has moved, communicate, coordinate support, and continue the bridge.',
 }
 
@@ -51,7 +51,7 @@ export const FILE_FOLDER_CONTENT = {
   title: 'THE FILE FOLDER',
   subtitle: 'Your place inside System Switch',
   body: `A File Folder is the persistent workshop created for one Client at System Switch. It is where the Client's movement becomes a continuing topic inside ${WEAVE_ARCHITECTURE.subject.name} and meets the people, AI technologies, company functions, systems, records, and supports of Weave. One Client. One File Folder. One continuing environment.`,
-  establishment: 'When a Prospect purchases a File Folder, their place in System Switch is established. The Folder then becomes the environment through which their enterprise, decisions, actions, needs, support, and progress can continue to move. Your File Folder is not a document. It is your working environment inside Weave.',
+  establishment: 'When a Prospect purchases either a Standard or Premium File Folder and the payment is verified, their place in System Switch is established. Standard begins at 180 Flame Coin and can be any value below the 35,800 Flame Coin Premium price. The Folder then becomes the environment through which their enterprise, decisions, actions, needs, support, and progress can continue to move. Your File Folder is not a document. It is your working environment inside Weave.',
 }
 
 export const BRIDGE_PLAZA_CONTENT = {
