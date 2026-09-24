@@ -1,7 +1,8 @@
-const CACHE_NAME = 'weave-v3';
+const CACHE_NAME = 'weave-v4';
 const URLS_TO_CACHE = [
   '/',
-  '/icon.svg?v=2',
+  '/icon.svg?v=3',
+  '/weave-logo.svg',
   '/manifest.webmanifest'
 ];
 
@@ -26,7 +27,6 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network-first for HTML/API so users always get fresh app shell + data
   if (event.request.mode === 'navigate' || event.request.url.includes('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
