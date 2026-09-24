@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { DepartmentEntryTicketsPanel } from '@/components/admin/department-entry-tickets-panel'
 
 interface DepartmentalCode {
   id: string
@@ -151,6 +152,7 @@ export function DepartmentalCodesSection() {
 
   return (
     <div className="p-4 space-y-8 text-white">
+      <DepartmentEntryTicketsPanel />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="bg-purple-600 p-2 rounded-lg shadow-lg shadow-purple-900/20">
