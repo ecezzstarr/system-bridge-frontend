@@ -1,219 +1,219 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sql } from '@/lib/db'
+import { getPool } from '@/lib/db'
 import { agentHasApprovedChannel } from '@/lib/agent-channels'
+import { getAuthUser, type AuthUser } from '@/lib/auth-api'
 
-// GET - Fetch messages for a client/position
+async function bridgerOwnsClient(client: any, bridgerId: string, clientId: string) {
+  const modern = await client.query(
+    "SELECT id FROM users WHERE id=$1::uuid AND role='client' AND referred_by=$2::uuid LIMIT 1",
+    [clientId, bridgerId]
+  )
+  if (modern.rows.length) return true
+  const legacy = await client.query(
+    'SELECT id FROM clients WHERE id=$1::uuid AND (referred_by=$2::uuid OR assigned_bridger_id=$2::uuid) LIMIT 1',
+    [clientId, bridgerId]
+  )
+  return legacy.rows.length > 0
+}
+
+async function agentOwnsClient(client: any, agentId: string, clientId: string) {
+  const modern = await client.query(
+    "SELECT id FROM users WHERE id=$1::uuid AND role='client' AND assigned_agent_id=$2::uuid LIMIT 1",
+    [clientId, agentId]
+  ).catch(() => ({ rows: [] }))
+  if (modern.rows.length) return true
+  const legacy = await client.query(
+    'SELECT id FROM clients WHERE id=$1::uuid AND assigned_agent_id=$2::uuid LIMIT 1',
+    [clientId, agentId]
+  )
+  return legacy.rows.length > 0
+}
+
+async function canAccess(client: any, user: AuthUser, clientId: string, position: string) {
+  if (user.role === 'admin') return true
+  if (user.role === 'client') return String(user.id) === String(clientId)
+  if (user.role === 'bridger') {
+    return position === 'bridger' && await bridgerOwnsClient(client, user.id, clientId)
+  }
+  if (user.role === 'agent') {
+    if (!(await agentOwnsClient(client, user.id, clientId))) return false
+    return agentHasApprovedChannel(user.id, position)
+  }
+  return false
+}
+
+async function resolveClientName(client: any, clientId: string) {
+  const modern = await client.query(
+    "SELECT name FROM users WHERE id=$1::uuid AND role='client' LIMIT 1",
+    [clientId]
+  )
+  if (modern.rows[0]) return modern.rows[0].name || 'Client'
+  const legacy = await client.query('SELECT name FROM clients WHERE id=$1::uuid LIMIT 1', [clientId])
+  return legacy.rows[0]?.name || 'Client'
+}
+
+async function staffClientIds(client: any, user: AuthUser): Promise<string[]> {
+  if (user.role === 'bridger') {
+    const result = await client.query(
+      `SELECT id FROM users WHERE role='client' AND referred_by=$1::uuid
+       UNION
+       SELECT id FROM clients WHERE referred_by=$1::uuid OR assigned_bridger_id=$1::uuid`,
+      [user.id]
+    )
+    return result.rows.map((r: any) => String(r.id))
+  }
+
+  if (user.role === 'agent') {
+    const result = await client.query(
+      `SELECT id FROM users WHERE role='client' AND assigned_agent_id=$1::uuid
+       UNION
+       SELECT id FROM clients WHERE assigned_agent_id=$1::uuid`,
+      [user.id]
+    ).catch(async () => client.query(
+      'SELECT id FROM clients WHERE assigned_agent_id=$1::uuid',
+      [user.id]
+    ))
+    return result.rows.map((r: any) => String(r.id))
+  }
+
+  return []
+}
+
 export async function GET(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+
+  const pool = getPool()
+  const client = await pool.connect()
   try {
-    const { searchParams } = new URL(request.url)
-    const clientId = searchParams.get('clientId')
-    const position = searchParams.get('position')
-    const isAdmin = searchParams.get('admin') === 'true'
-    const isBridger = searchParams.get('bridger') === 'true'
-    const isAgent = searchParams.get('agent') === 'true'
+    const requestedClientId = request.nextUrl.searchParams.get('clientId')
+    const position = (request.nextUrl.searchParams.get('position') || '').slice(0, 50)
+    const targetClientId = user.role === 'client' ? user.id : requestedClientId
 
-    if (isAdmin || isBridger || isAgent) {
-      const enforcedPosition = isBridger ? 'bridger' : position
-
-      if (clientId && enforcedPosition) {
-        if (isBridger) {
-          const bridgerId = searchParams.get('bridgerId')
-          const ownership = await sql`
-            SELECT id FROM clients
-            WHERE id = ${clientId}::uuid AND (referred_by = ${bridgerId}::uuid OR assigned_bridger_id = ${bridgerId}::uuid)
-          `
-          if (ownership.length === 0) {
-            return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
-          }
-        }
-
-        if (isAgent) {
-          const agentId = searchParams.get('agentId')
-          const ownership = await sql`
-            SELECT id FROM clients
-            WHERE id = ${clientId}::uuid AND assigned_agent_id = ${agentId}::uuid
-          `
-          if (ownership.length === 0) {
-            return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
-          }
-
-          const hasChannel = await agentHasApprovedChannel(agentId || '', enforcedPosition || '')
-          if (!hasChannel) {
-            return NextResponse.json({ success: false, error: 'Not approved for this channel' }, { status: 403 })
-          }
-        }
-
-        const messages = await sql`
-          SELECT * FROM client_messages
-          WHERE client_id = ${clientId} AND position = ${enforcedPosition}
-          ORDER BY created_at ASC
-        `
-
-        await sql`
-          UPDATE client_messages
-          SET is_read = true
-          WHERE client_id = ${clientId} AND position = ${enforcedPosition} AND sender_type = 'client'
-        `
-
-        return NextResponse.json({ success: true, messages })
-      } else if (clientId && isAdmin) {
-        const messages = await sql`
-          SELECT * FROM client_messages
-          WHERE client_id = ${clientId}
-          ORDER BY created_at ASC
-        `
-        return NextResponse.json({ success: true, messages })
-      } else {
-        let summary;
-
-        if (isBridger) {
-          const bridgerId = searchParams.get('bridgerId')
-          const myClients = await sql`
-            SELECT id FROM clients
-            WHERE referred_by = ${bridgerId}::uuid OR assigned_bridger_id = ${bridgerId}::uuid
-          `
-          const clientIds = myClients.map(c => c.id)
-
-          if (clientIds.length === 0) {
-            return NextResponse.json({ success: true, summary: [] })
-          }
-
-          summary = await sql`
-            SELECT
-              client_id,
-              client_name,
-              position,
-              COUNT(*) as total_messages,
-              SUM(CASE WHEN is_read = false AND sender_type = 'client' THEN 1 ELSE 0 END) as unread_count,
-              MAX(created_at) as last_message_at
-            FROM client_messages
-            WHERE client_id = ANY(${clientIds}) AND position = 'bridger'
-            GROUP BY client_id, client_name, position
-            ORDER BY MAX(created_at) DESC
-          `
-        } else if (isAgent) {
-          const agentId = searchParams.get('agentId')
-          const myClients = await sql`
-            SELECT id FROM clients
-            WHERE assigned_agent_id = ${agentId}::uuid
-          `
-          const clientIds = myClients.map(c => c.id)
-
-          if (clientIds.length === 0) {
-            return NextResponse.json({ success: true, summary: [] })
-          }
-
-          const approvedChannels = await sql`
-            SELECT channel FROM agent_channel_applications
-            WHERE agent_id = ${agentId}::uuid AND status = 'approved'
-          `
-          const channelList = approvedChannels.map((c: any) => c.channel)
-
-          if (channelList.length === 0) {
-            return NextResponse.json({ success: true, summary: [] })
-          }
-
-          summary = await sql`
-            SELECT
-              client_id,
-              client_name,
-              position,
-              COUNT(*) as total_messages,
-              SUM(CASE WHEN is_read = false AND sender_type = 'client' THEN 1 ELSE 0 END) as unread_count,
-              MAX(created_at) as last_message_at
-            FROM client_messages
-            WHERE client_id = ANY(${clientIds}) AND position = ANY(${channelList})
-            GROUP BY client_id, client_name, position
-            ORDER BY MAX(created_at) DESC
-          `
-        } else {
-          summary = await sql`
-            SELECT
-              client_id,
-              client_name,
-              position,
-              COUNT(*) as total_messages,
-              SUM(CASE WHEN is_read = false AND sender_type = 'client' THEN 1 ELSE 0 END) as unread_count,
-              MAX(created_at) as last_message_at
-            FROM client_messages
-            GROUP BY client_id, client_name, position
-            ORDER BY MAX(created_at) DESC
-          `
-        }
-        return NextResponse.json({ success: true, summary })
+    if (targetClientId && position) {
+      if (!(await canAccess(client, user, targetClientId, position))) {
+        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
       }
-    } else {
-      if (!clientId || !position) {
-        return NextResponse.json({ success: false, error: 'Missing clientId or position' }, { status: 400 })
-      }
-
-      const messages = await sql`
-        SELECT * FROM client_messages
-        WHERE client_id = ${clientId} AND position = ${position}
-        ORDER BY created_at ASC
-      `
-
-      await sql`
-        UPDATE client_messages
-        SET is_read = true
-        WHERE client_id = ${clientId} AND position = ${position} AND sender_type = 'admin'
-      `
-
-      return NextResponse.json({ success: true, messages })
+      const messages = await client.query(
+        'SELECT * FROM client_messages WHERE client_id=$1::uuid AND position=$2 ORDER BY created_at ASC',
+        [targetClientId, position]
+      )
+      const otherSender = user.role === 'client' ? 'admin' : 'client'
+      await client.query(
+        'UPDATE client_messages SET is_read=true WHERE client_id=$1::uuid AND position=$2 AND sender_type=$3',
+        [targetClientId, position, otherSender]
+      )
+      return NextResponse.json({ success: true, messages: messages.rows }, { headers: { 'Cache-Control': 'private, no-store' } })
     }
+
+    if (user.role === 'admin') {
+      const summary = await client.query(
+        `SELECT client_id,client_name,position,COUNT(*) AS total_messages,
+                SUM(CASE WHEN is_read=false AND sender_type='client' THEN 1 ELSE 0 END) AS unread_count,
+                MAX(created_at) AS last_message_at
+         FROM client_messages
+         GROUP BY client_id,client_name,position
+         ORDER BY MAX(created_at) DESC`
+      )
+      return NextResponse.json({ success: true, summary: summary.rows })
+    }
+
+    if (user.role === 'bridger' || user.role === 'agent') {
+      const ids = await staffClientIds(client, user)
+      if (!ids.length) return NextResponse.json({ success: true, summary: [] })
+
+      let channels = ['bridger']
+      if (user.role === 'agent') {
+        const approved = await client.query(
+          "SELECT channel FROM agent_channel_applications WHERE agent_id=$1::uuid AND status='approved'",
+          [user.id]
+        )
+        channels = approved.rows.map((r: any) => String(r.channel))
+        if (!channels.length) return NextResponse.json({ success: true, summary: [] })
+      }
+
+      const summary = await client.query(
+        `SELECT client_id,client_name,position,COUNT(*) AS total_messages,
+                SUM(CASE WHEN is_read=false AND sender_type='client' THEN 1 ELSE 0 END) AS unread_count,
+                MAX(created_at) AS last_message_at
+         FROM client_messages
+         WHERE client_id=ANY($1::uuid[]) AND position=ANY($2::text[])
+         GROUP BY client_id,client_name,position
+         ORDER BY MAX(created_at) DESC`,
+        [ids, channels]
+      )
+      return NextResponse.json({ success: true, summary: summary.rows })
+    }
+
+    return NextResponse.json({ success: false, error: 'clientId and position are required' }, { status: 400 })
   } catch (error) {
     console.error('Error fetching messages:', error)
     return NextResponse.json({ success: false, error: 'Failed to fetch messages' }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
 
-// POST - Send a new message
 export async function POST(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+
+  const pool = getPool()
+  const client = await pool.connect()
   try {
     const body = await request.json()
-    const { clientId, clientName, position, content, senderType, agentId } = body
+    const position = typeof body.position === 'string' ? body.position.slice(0, 50) : ''
+    const content = typeof body.content === 'string' ? body.content.trim().slice(0, 10000) : ''
+    const targetClientId = user.role === 'client' ? user.id : String(body.clientId || '')
 
-    if (!clientId || !position || !content || !senderType) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
+    if (!targetClientId || !position || !content) {
+      return NextResponse.json({ success: false, error: 'Client, position and content are required' }, { status: 400 })
+    }
+    if (!(await canAccess(client, user, targetClientId, position))) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
-    if (agentId) {
-      const hasChannel = await agentHasApprovedChannel(agentId, position)
-      if (!hasChannel) {
-        return NextResponse.json({ success: false, error: 'Not approved for this channel' }, { status: 403 })
-      }
-    }
-
-    const result = await sql`
-      INSERT INTO client_messages (client_id, client_name, position, sender_type, content)
-      VALUES (${clientId}, ${clientName || 'Client'}, ${position}, ${senderType}, ${content})
-      RETURNING id, client_id, client_name, position, sender_type, content, is_read, created_at
-    `
-
-    return NextResponse.json({ success: true, message: result[0] })
+    const name = await resolveClientName(client, targetClientId)
+    const senderType = user.role === 'client' ? 'client' : 'admin'
+    const result = await client.query(
+      `INSERT INTO client_messages (client_id,client_name,position,sender_type,content)
+       VALUES ($1::uuid,$2,$3,$4,$5)
+       RETURNING id,client_id,client_name,position,sender_type,content,is_read,created_at`,
+      [targetClientId, name, position, senderType, content]
+    )
+    return NextResponse.json({ success: true, message: result.rows[0] })
   } catch (error) {
     console.error('Error sending message:', error)
     return NextResponse.json({ success: false, error: 'Failed to send message' }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
 
-// PATCH - Mark messages as read
 export async function PATCH(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+
+  const pool = getPool()
+  const client = await pool.connect()
   try {
     const body = await request.json()
-    const { clientId, position, senderType } = body
+    const position = typeof body.position === 'string' ? body.position.slice(0, 50) : ''
+    const targetClientId = user.role === 'client' ? user.id : String(body.clientId || '')
+    if (!targetClientId || !position || !(await canAccess(client, user, targetClientId, position))) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
+    }
 
-    await sql`
-      UPDATE client_messages
-      SET is_read = true
-      WHERE client_id = ${clientId}
-        AND position = ${position}
-        AND sender_type = ${senderType}
-    `
-
+    const otherSender = user.role === 'client' ? 'admin' : 'client'
+    await client.query(
+      'UPDATE client_messages SET is_read=true WHERE client_id=$1::uuid AND position=$2 AND sender_type=$3',
+      [targetClientId, position, otherSender]
+    )
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error marking messages read:', error)
     return NextResponse.json({ success: false, error: 'Failed to update' }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
