@@ -41,7 +41,10 @@ export default function AppLayout({
     const checkSub = async () => {
       if (user?.role === 'bridger' && pathname !== '/bridger/functions') {
         try {
-          const res = await fetch(`/api/bridger/subscription?userId=${user.id}`)
+          const token = localStorage.getItem('ssb_auth_token')
+          const res = await fetch('/api/bridger/subscription', {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          })
           const data = await res.json()
           if (data.success && data.subscription.subscription_status === 'suspended') {
             router.push('/bridger/functions')
