@@ -1448,7 +1448,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
   const fetchPendingDeposits = async () => {
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch('/api/admin/bridge-ai/deposits', {
+      const response = await fetch('/api/admin/bridge-deposits/pending', {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       })
       const data = await response.json()
