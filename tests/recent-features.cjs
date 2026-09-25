@@ -377,9 +377,10 @@ assert.ok(!clientNavUnifiedSource.includes('eventIsLive'),'Client navigation rem
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
 assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Loop 1 Ground'),'Sidebar exposes Loop 1 as a WEAVE destination')
-assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Bridger Functions'),'Sidebar exposes Bridger functions separately')
-assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Agent Functions'),'Sidebar exposes Agent functions separately')
-assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Administration Functions'),'Sidebar exposes Administration functions separately')
+const canonicalSidebarSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+assert.ok(canonicalSidebarSource.includes('Bridger Operating Room'),'Sidebar exposes the Bridger operating room in Position')
+assert.ok(canonicalSidebarSource.includes('Agent Operating Room'),'Sidebar exposes the Agent operating room in Position')
+assert.ok(canonicalSidebarSource.includes('Administration Operating Room'),'Sidebar exposes the Administration operating room in Position')
 for(const route of [
  'app/(app)/bridger/functions/page.tsx',
  'app/(app)/agent/functions/page.tsx',
