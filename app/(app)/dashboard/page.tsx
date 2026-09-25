@@ -1,280 +1,46 @@
 'use client'
 
-import { useAuth } from '@/lib/auth-provider'
-import { clearToken } from '@/lib/auth-client'
-import { LogOut, Store, Gamepad2, MessageCircle, ChevronRight, Zap, Globe, Code, Trophy } from 'lucide-react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { EcosystemNav } from '@/components/ecosystem-nav'
-import { WeaveAssistant } from '@/components/weave-assistant'
+import { useAuth } from '@/lib/auth-provider'
 
-export default function TerminalPage() {
-  const { user, isLoading, logout } = useAuth()
+export default function DashboardRedirect() {
+  const { user, isLoading, isInitialized } = useAuth()
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Route users to their appropriate dashboard
-  useEffect(() => {
-    if (mounted && user && !isLoading) {
-      if (user.role === 'admin') {
-        router.replace('/admin/dashboard')
-      } else if (user.role === 'agent') {
-        router.replace('/agent/dashboard')
-      } else if (user.role === 'bridger') {
-        router.replace('/bridger/dashboard')
-      }
-      // Client stays on this dashboard
+    if (!isInitialized || isLoading) return
+    if (!user) {
+      router.replace('/login')
+      return
     }
-  }, [mounted, user, isLoading, router])
 
-  if (!mounted || isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mb-4"></div>
-          <p className="text-slate-400">Loading your dashboard...</p>
-        </div>
-      </div>
-    )
-  }
+    if (user.role === 'client') {
+      router.replace('/client/dashboard')
+      return
+    }
+    if (user.role === 'admin') {
+      router.replace('/admin/dashboard')
+      return
+    }
+    if (user.role === 'agent') {
+      router.replace('/agent/dashboard')
+      return
+    }
+    if (user.role === 'bridger') {
+      router.replace('/bridger/dashboard')
+      return
+    }
 
-  if (!user) {
-    return null
-  }
-
-  const handleLogout = () => {
-    logout()
-    clearToken()
-    router.push('/')
-  }
+    router.replace('/weave')
+  }, [isInitialized, isLoading, user, router])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      {/* Mobile-First Scrollable Terminal */}
-      <div className="max-w-md mx-auto bg-slate-950">
-        {/* Header Section - Sticky */}
-        <div className="sticky top-0 z-50 bg-slate-950 border-b border-slate-800 px-4 py-4 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h1 className="text-2xl font-black text-white tracking-tighter">WEAVE</h1>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">WEAVE Ecosystem</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-2 hover:bg-slate-800 rounded-lg transition"
-              title="Sign Out"
-            >
-              <LogOut className="h-5 w-5 text-slate-400" />
-            </button>
-          </div>
-          {/* Ecosystem Navigation */}
-          {user.role === 'admin' && (
-            <div className="mb-4">
-              <p className="text-xs text-slate-500 mb-2 font-semibold">NAVIGATE SYSTEMS</p>
-              <EcosystemNav currentSystem="shop" />
-            </div>
-          )}
-
-          {user.role === 'admin' && (
-            <div className="grid grid-cols-3 gap-2">
-              <Link href="/admin/dashboard">
-                <button className="w-full h-full text-[10px] bg-purple-600/20 text-purple-400 border border-purple-600/50 rounded-lg py-2 hover:bg-purple-600/30 transition font-medium flex flex-col items-center justify-center gap-1">
-                  <Zap className="h-3.5 w-3.5" />
-                  The Weave
-                </button>
-              </Link>
-              <Link href="/admin">
-                <button className="w-full h-full text-[10px] bg-cyan-600/20 text-cyan-400 border border-cyan-600/50 rounded-lg py-2 hover:bg-cyan-600/30 transition font-medium flex flex-col items-center justify-center gap-1">
-                  <Zap className="h-3.5 w-3.5" />
-                  Panel
-                </button>
-              </Link>
-              <Link href="/admin/origin-systems">
-                <button className="w-full h-full text-[10px] bg-indigo-600/20 text-indigo-400 border border-indigo-600/50 rounded-lg py-2 hover:bg-indigo-600/30 transition font-medium flex flex-col items-center justify-center gap-1">
-                  <Globe className="h-3.5 w-3.5" />
-                  Origin
-                </button>
-              </Link>
-            </div>
-          )}
-
-        {/* Scrollable Content */}
-        <div className="px-4 pb-20 space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto">
-          {/* User Profile Card */}
-          <div className="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 mt-2">
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center text-xl font-bold flex-shrink-0">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-white truncate">{user.name}</h2>
-                <p className="text-xs text-slate-400">@{user.username}</p>
-                <div className="flex gap-2 mt-1 flex-wrap">
-                  <span className="bg-slate-800/80 px-2 py-1 rounded-lg text-xs font-medium">{user.role}</span>
-                  {!user.assigned_by_admin && (
-                    <span className="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-lg text-xs">Pending</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-900/60 rounded-xl p-3 border border-slate-800">
-              <p className="text-xs text-slate-400 mb-1">Escrow</p>
-              <p className="text-lg font-bold text-yellow-400">{user.escrow_balance || 0}</p>
-              <p className="text-xs text-slate-500">Flame Coin</p>
-            </div>
-            <div className="bg-slate-900/60 rounded-xl p-3 border border-slate-800">
-              <p className="text-xs text-slate-400 mb-1">Platform</p>
-              <p className="text-lg font-bold text-green-400">{user.platform_wallet_balance || 0}</p>
-              <p className="text-xs text-slate-500">Flame Coin</p>
-            </div>
-          </div>
-
-          {/* Action Buttons - Flutterwave Deposit & Flame Coin Withdraw */}
-          <div className="space-y-2 pt-2">
-            <Link href="/wallet/deposit-withdraw">
-              <button className="w-full bg-green-600/20 hover:bg-green-600/30 border border-green-600/50 rounded-xl p-3 flex items-center justify-between transition">
-                <div className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-green-400 flex-shrink-0" />
-                  <div className="text-left">
-                    <span className="text-sm font-medium block">Deposit & Withdraw</span>
-                    <span className="text-xs text-slate-500">Flutterwave / Flame Coin</span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-green-400 flex-shrink-0" />
-              </button>
-            </Link>
-          </div>
-
-          {/* Places Section */}
-          <div className="pt-4 border-t border-slate-800">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase mb-3">Explore</h3>
-            <div className="space-y-2">
-              <Link href="/places?place=market">
-                <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
-                  <div className="flex items-center gap-3">
-                    <Store className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-                    <div className="text-left min-w-0">
-                      <p className="text-sm font-medium">Market</p>
-                      <p className="text-xs text-slate-500">Trade assets</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
-                </button>
-              </Link>
-
-              <Link href="/arena">
-                <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
-                  <div className="flex items-center gap-3">
-                    <Gamepad2 className="h-5 w-5 text-yellow-400 flex-shrink-0" />
-                    <div className="text-left min-w-0">
-                      <p className="text-sm font-medium">Arena</p>
-                      <p className="text-xs text-slate-500">Live predictions</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
-                </button>
-              </Link>
-
-              <Link href="/casino">
-                <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
-                  <div className="flex items-center gap-3">
-                    <Trophy className="h-5 w-5 text-purple-400 flex-shrink-0" />
-                    <div className="text-left min-w-0">
-                      <p className="text-sm font-medium">Casino</p>
-                      <p className="text-xs text-slate-500">Test your luck</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
-                </button>
-              </Link>
-
-              <Link href="/places?place=lounge">
-                <button className="w-full bg-slate-900/60 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 flex items-center justify-between transition">
-                  <div className="flex items-center gap-3">
-                    <MessageCircle className="h-5 w-5 text-cyan-400 flex-shrink-0" />
-                    <div className="text-left min-w-0">
-                      <p className="text-sm font-medium">Lounge</p>
-                      <p className="text-xs text-slate-500">Chat</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
-                </button>
-              </Link>
-
-              {user.role === 'admin' && (
-                <Link href="/client-interactions">
-                  <button className="w-full bg-green-600/20 hover:bg-green-600/30 border border-green-600/50 rounded-xl p-3 flex items-center justify-between transition">
-                    <div className="flex items-center gap-3">
-                      <MessageCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
-                      <div className="text-left min-w-0">
-                        <p className="text-sm font-medium">Client Interactions</p>
-                        <p className="text-xs text-slate-500">Customer service</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-green-400 flex-shrink-0" />
-                  </button>
-                </Link>
-              )}
-            </div>
-          </div>
-
-          {/* Wallets Section */}
-          <div className="pt-4 border-t border-slate-800">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase mb-3">Wallets</h3>
-            
-            <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-800 mb-3">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-slate-400 font-medium">EIGHT Escrow</p>
-                <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-1 rounded-lg">AI</span>
-              </div>
-              <p className="text-2xl font-bold text-purple-400">{user.escrow_balance || 0}</p>
-              <p className="text-xs text-slate-500 mt-2">From arena losses</p>
-            </div>
-
-            <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-800">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-slate-400 font-medium">Company Wallet</p>
-                <span className="text-xs bg-cyan-600/30 text-cyan-300 px-2 py-1 rounded-lg">Master</span>
-              </div>
-              {user.role === 'admin' ? (
-                <>
-                  <p className="text-2xl font-bold text-cyan-400">{user.personal_wallet_address || 'Not Set'}</p>
-                  <p className="text-xs text-slate-500 mt-2 break-all">{user.personal_wallet_address}</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl font-bold text-cyan-400">***</p>
-                  <p className="text-xs text-slate-500 mt-2">Admin controlled</p>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Status Footer */}
-          <div className="pt-4 border-t border-slate-800 pb-4">
-            <div className="bg-slate-900/60 rounded-xl p-3 border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <p className="text-sm text-white">System Status</p>
-              </div>
-              <p className="text-xs text-green-400 font-medium">Online</p>
-            </div>
-          </div>
-        </div>
-        </div>
+    <div className="flex min-h-[45vh] items-center justify-center">
+      <div className="rounded-2xl border border-sky-300/10 bg-black/20 px-5 py-4 text-center backdrop-blur-md">
+        <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-sky-300/20 border-b-sky-300" />
+        <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Opening your WEAVE position</p>
       </div>
-      
-      {/* River Chat Widget */}
-      <WeaveAssistant role="client" checklist={[]} />
     </div>
   )
 }
