@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,7 +14,9 @@ import { LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-a
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login, isLoading } = useAuth()
+  const administrationPortal = searchParams.get('portal') === 'admin'
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -29,7 +31,7 @@ export default function LoginPage() {
 
     try {
       const loggedInUser = await login(email, password)
-      if (loggedInUser?.role === 'admin') router.push('/admin/dashboard')
+      if (loggedInUser?.role === 'admin') router.push(administrationPortal ? '/authority/workshops' : '/admin/dashboard')
       else if (loggedInUser?.role === 'agent') {
         sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
         sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
@@ -48,7 +50,7 @@ export default function LoginPage() {
       <CardHeader className="text-center flex flex-col items-center">
         <WeaveLogo size="md" className="mb-2" />
         <CardDescription className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-          System Switch · Bridge Radiance · Secure Access
+          {administrationPortal ? 'Administration Workshop · Secure Access' : 'System Switch · Bridge Radiance · Secure Access'}
         </CardDescription>
       </CardHeader>
       <CardContent>
