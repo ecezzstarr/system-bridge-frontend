@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
 // POST - Bridger reports a purchased prospect as not reachable on WhatsApp.
 // Flags the contact + outreach record for admin visibility, then apologizes
@@ -75,7 +76,7 @@ export async function POST(
        FOR UPDATE SKIP LOCKED`
     )
 
-    const bridgeUrlBase = process.env.NEXT_PUBLIC_BRIDGE_URL || 'https://system-bridge-frontend-823579957639.us-central1.run.app'
+    const bridgeUrlBase = getWeaveBridgeOrigin()
     const bridgeAiId = outreach.bridge_ai_id
     let bridgeCode: string | null = null
     if (bridgeAiId) {
