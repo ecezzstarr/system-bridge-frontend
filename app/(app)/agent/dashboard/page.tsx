@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { LogOut, MessageCircle, Gamepad2, ShoppingBag, Wallet, ArrowUpRight, ArrowDownLeft, Phone, Trophy, Globe } from 'lucide-react'
-import { clearToken } from '@/lib/auth-client'
+import { clearToken, getAuthHeaders } from '@/lib/auth-client'
 import { WeaveAssistant, type ChecklistItem } from '@/components/weave-assistant'
 import Arena from '@/components/places/arena'
 import Casino from '@/components/places/casino'
@@ -19,7 +19,6 @@ import {
   Loop1AgentLoginAd,
   LOOP1_AGENT_LOGIN_AD_KEY,
 } from '@/components/agent/loop1-agent-login-ad'
-import { getAuthHeaders } from '@/lib/auth-client'
 
 type TabId = 'lounge' | 'connect' | 'arena' | 'casino' | 'market' | 'wallet'
 
@@ -91,7 +90,7 @@ export default function AgentTerminal() {
   checklist.push({
     id: 'loop-1',
     label: 'Support Bridgers to close Loop 1',
-    detail: 'Agents earn 30% on lead purchases and 5% of Weave\'s 40% (716 Flame Coin) on Client crossings.',
+    detail: 'Agents earn 30% when Bridgers under their Agent position purchase Prospect packages, plus the current Client crossing return.',
     actLabel: 'View Bridgers',
     onAct: () => router.push('/agent/bridgers'),
   })
@@ -135,6 +134,10 @@ export default function AgentTerminal() {
           }
         }}
         onOpenContinuance={() => {
+          if (agilityAdQueued) {
+            sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
+            setAgilityAdQueued(false)
+          }
           setShowLoop1Ad(false)
           router.push('/agent/commissions')
         }}
