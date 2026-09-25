@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
       await client.query('ROLLBACK')
       return NextResponse.json({
         success: false,
-        error: 'No free verified prospect is available today. Check again later.',
+        error: 'No free prospect is available today. Check again later.',
       }, { status: 404 })
     }
 
@@ -225,6 +225,19 @@ export async function POST(request: NextRequest) {
        VALUES ($1::uuid, $2::uuid, $3::uuid, CURRENT_DATE, 'daily_bonus')
        RETURNING id, prospect_id, outreach_id, claim_date, claimed_at`,
       [bridger.id, prospect.id, outreachId]
+    )
+
+    await client.query(
+      `INSERT INTO market_prospect_audit (package_id, actor_id, action, details)
+       VALUES (NULL, $1::uuid, 'daily_free_claim', $2::jsonb)`,
+      [
+        bridger.id,
+        JSON.stringify({
+          contactId: prospect.id,
+          outreachId,
+          claimId: claimResult.rows[0].id,
+        }),
+      ]
     )
 
     await client.query('COMMIT')
