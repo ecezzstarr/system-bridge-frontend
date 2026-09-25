@@ -74,15 +74,6 @@ export function useMarketplace(params?: { category?: string; status?: string }) 
   })
 }
 
-// Earnings
-export function useEarnings(params?: { category?: string; period?: string }) {
-  return useSWR(['earnings', params], async () => {
-    const res = await api.getEarnings(params)
-    if (!res.success) throw new Error(res.error)
-    return res.data
-  })
-}
-
 // Campaigns (Fund Wall)
 export function useCampaigns(params?: { status?: string }) {
   return useSWR(['campaigns', params], async () => {
@@ -152,28 +143,6 @@ export function useFundWallEntries(params?: { status?: string }) {
   return useSWR(['fundWallEntries', params], async () => {
     const res = await api.getCampaigns(params)
     if (!res.success) throw new Error(res.error)
-    return res.data
-  })
-}
-
-// Earnings Summary (used by earnings page)
-export function useEarningsSummary(params?: { period?: string }) {
-  return useSWR(['earningsSummary', params], async () => {
-    const res = await api.getEarnings(params)
-    if (!res.success || !res.data) {
-      throw new Error(res.error || 'Failed to load earnings')
-    }
-    return res.data
-  })
-}
-
-// Earnings History (used by earnings page)
-export function useEarningsHistory(params?: { category?: string; period?: string; limit?: number }) {
-  return useSWR(['earningsHistory', params], async () => {
-    const res = await api.getEarnings(params)
-    if (!res.success || !res.data) {
-      throw new Error(res.error || 'Failed to load earnings')
-    }
     return res.data
   })
 }
