@@ -87,6 +87,7 @@ const navigation = [
     { name: "Bridger Continuance", href: "/bridger/functions", icon: CreditCard, bridgerOnly: true },
     { name: "Verify Continuances", href: "/admin/dashboard#bridgers", icon: FileCheck, adminOnly: true },
     { name: "Admin Verification", href: "/admin/dashboard#panel", icon: Shield, adminOnly: true },
+    { name: "Client Deposits", href: "/admin/client-deposits", icon: Wallet, adminOnly: true },
   ]},
 
   // 4. ENTERPRISE
@@ -97,6 +98,7 @@ const navigation = [
     { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
     { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
     { name: "Enterprise Dream", href: "/admin/enterprise-dream", icon: Crown, adminOnly: true },
+    { name: "Client Build Catalog", href: "/admin/client-build-catalog", icon: FileBox, adminOnly: true },
           { name: "Company Loops", href: "/company/loops", icon: GitBranch },
       { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
 { name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
