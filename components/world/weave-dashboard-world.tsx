@@ -80,7 +80,7 @@ const ROLE: Record<WorldRole, {
       { label: 'Clients', detail: 'People in motion', href: '/clients', icon: Users, tone: 'emerald' },
       { label: 'Guidance', detail: 'Company support', href: '/company-chat', icon: Headphones, tone: 'sky' },
       { label: 'Marketplace', detail: 'Trade and value', href: '/marketplace', icon: Store, tone: 'sky' },
-      { label: 'Earnings', detail: 'Movement and returns', href: '/earnings', icon: CircleDollarSign, tone: 'emerald' },
+      { label: 'Record', detail: 'Ledger and preserved movement', href: '/ledger', icon: CircleDollarSign, tone: 'emerald' },
       { label: 'Arena', detail: 'Contest district', href: '/arena', icon: Gamepad2, tone: 'gold' },
       { label: 'Bridge Plaza', detail: 'Shared world', href: '/weave', icon: Globe2, tone: 'violet' },
     ],
