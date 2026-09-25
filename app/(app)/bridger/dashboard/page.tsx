@@ -245,14 +245,18 @@ export default function BridgerTerminal() {
 
       {/* Content */}
       <div className="space-y-6">
-        <DailyProspectClaim />
         {activeTab === 'lounge' && <Lounge />}
         {activeTab === 'connect' && <ConnectSection />}
         {activeTab === 'arena' && <Arena />}
         {activeTab === 'casino' && <Casino />}
         {activeTab === 'wallet' && <WalletSection user={user} />}
         {activeTab === 'clients' && <MyClients user={user} />}
-        {activeTab === 'prospects' && <MyProspects />}
+        {activeTab === 'prospects' && (
+          <div className="space-y-6">
+            <DailyProspectClaim />
+            <MyProspects />
+          </div>
+        )}
         {activeTab === 'referrals' && <MyReferrals user={user} />}
       </div>
 
