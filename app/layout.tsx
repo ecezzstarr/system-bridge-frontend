@@ -7,6 +7,7 @@ import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
 import { WEAVE_PUBLIC_ORIGIN } from '@/lib/weave-origin'
 import { PresenceCameraProvider, PresenceCameraRootViewport } from '@/components/world/presence-camera'
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
+import { DivineShieldGate } from '@/components/divine-shield-gate'
 
 export const metadata: Metadata = {
   metadataBase: new URL(WEAVE_PUBLIC_ORIGIN),
@@ -43,8 +44,10 @@ export default function RootLayout({
             <PresenceCameraProvider>
               <WeaveWorldEnvironment />
               <PWARegister />
-              <PresenceCameraRootViewport>{children}</PresenceCameraRootViewport>
-              <DJBroadcastPlayer />
+              <DivineShieldGate>
+                <PresenceCameraRootViewport>{children}</PresenceCameraRootViewport>
+                <DJBroadcastPlayer />
+              </DivineShieldGate>
             </PresenceCameraProvider>
           </AuthProvider>
         </ThemeProvider>
