@@ -78,6 +78,8 @@ export function DJBroadcastPlayer() {
 
     const sources = [...audienceSourcesRef.current]
     audienceSourcesRef.current = []
+    audienceContextRef.current = null
+    audienceGainRef.current = null
 
     try {
       if (master) {
@@ -93,11 +95,7 @@ export function DJBroadcastPlayer() {
         try { source.stop() } catch {}
         try { source.disconnect() } catch {}
       }
-      if (audienceContextRef.current === context) {
-        audienceContextRef.current = null
-        audienceGainRef.current = null
-        try { void context.close() } catch {}
-      }
+      try { void context.close() } catch {}
     }, immediate ? 20 : 360)
   }, [])
 
@@ -451,7 +449,10 @@ export function DJBroadcastPlayer() {
           stopHarmonyAudience()
           void syncBroadcast()
         }}
-        onError={() => void syncBroadcast()}
+        onError={() => {
+          stopHarmonyAudience()
+          void syncBroadcast()
+        }}
       />
 
       {canShow && position && (
