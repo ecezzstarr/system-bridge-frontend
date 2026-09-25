@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
 import { FILE_FOLDER_PRICING, isValidFileFolderAmount } from '@/lib/file-folder-pricing'
 import { requireApiUser } from '@/lib/api-auth'
+import { getWeavePublicOrigin } from '@/lib/weave-origin'
 
 const FLUTTERWAVE_SECRET_KEY = process.env.FLW_SECRET_KEY
 function getDb() { const url=process.env.DATABASE_URL||process.env.POSTGRES_URL; if(!url)throw new Error('Database not configured'); return neon(url) }
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
     if(!FLUTTERWAVE_SECRET_KEY)return NextResponse.json({success:false,error:'Flutterwave is not configured'},{status:500})
 
     const reference=`SSB-${isFileFolder?'FOLDER':userId!.slice(0,8)}-${crypto.randomUUID()}`
-    const baseUrl=process.env.NEXTAUTH_URL || 'https://system-bridge-frontend-823579957639.us-central1.run.app'
+    const baseUrl=getWeavePublicOrigin()
     const redirectUrl=`${baseUrl}/api/deposit/callback?ref=${encodeURIComponent(reference)}&type=${isFileFolder?'file_folder':'wallet'}`
     const response=await fetch('https://api.flutterwave.com/v3/payments',{method:'POST',headers:{Authorization:`Bearer ${FLUTTERWAVE_SECRET_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({tx_ref:reference,amount:amountUSD,currency:'USD',payment_options:'card,banktransfer,ussd,mobilemoney',redirect_url:redirectUrl,customer:{email,name:name||'Weave User',phonenumber:typeof body.buyerPhone==='string'?body.buyerPhone.slice(0,80):''},customizations:{title:'WEAVE of Presence',description:`${flameCoinAmount} Flame Coin ${isFileFolder?'File Folder':'wallet'} payment`,logo:`${baseUrl}/icon.svg?v=3`},meta:{userId,fileNumber:typeof body.fileNumber==='string'?body.fileNumber:null,flameCoinAmount,type:isFileFolder?'file_folder_purchase':'wallet_deposit'}})})
     const data=await response.json(); if(data.status!=='success')return NextResponse.json({success:false,error:data.message||'Failed to initialize payment'},{status:400})
