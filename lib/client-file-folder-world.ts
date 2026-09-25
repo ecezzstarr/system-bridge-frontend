@@ -182,7 +182,7 @@ async function seedFileFolderWorld(sql: any) {
     ['operations_board', 'Operations Board', 'formation_yard', 'operations_board', 'A persistent working board for tasks, decisions and movement inside the Client File Folder.', 4, 'planning_kit', 1],
     ['research_room', 'Research Room', 'library_district', 'research_room', 'A persistent research system for findings, sources, questions and decisions.', 6, 'research_kit', 1],
     ['service_workflow', 'Service Workflow', 'formation_yard', 'service_workflow', 'A working service pipeline that can hold steps, responsibilities and completion records.', 8, 'automation_kit', 1],
-    ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A customer-facing system connected to the Client business/store movement.', 12, 'launch_kit', 1],
+    ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A public customer-facing system where people outside WEAVE can discover, request and purchase the Client’s products or services.', 6, null, 0],
     ['data_room', 'Data Room', 'technology_district', 'data_room', 'A structured system for persistent records and reusable information.', 10, 'data_kit', 1],
     ['enterprise_shell', 'Enterprise System Shell', 'formation_yard', 'enterprise_shell', 'A larger multi-function system shell that can hold operations, people, records and later enterprise modules.', 24, 'architecture_kit', 1],
     ['integration_network', 'Integration Network', 'technology_district', 'integration_network', 'A long-form build that organizes connections between several systems in the Client File Folder.', 48, 'integration_kit', 1],
@@ -198,7 +198,16 @@ async function seedFileFolderWorld(sql: any) {
         ${blueprint[0]}, ${blueprint[1]}, ${blueprint[2]}, ${blueprint[3]},
         ${blueprint[4]}, ${blueprint[5]}, ${blueprint[6]}, ${blueprint[7]}, true
       )
-      ON CONFLICT (blueprint_key) DO NOTHING
+      ON CONFLICT (blueprint_key) DO UPDATE SET
+        name=EXCLUDED.name,
+        district=EXCLUDED.district,
+        system_type=EXCLUDED.system_type,
+        description=EXCLUDED.description,
+        build_hours=EXCLUDED.build_hours,
+        required_item_key=EXCLUDED.required_item_key,
+        required_item_quantity=EXCLUDED.required_item_quantity,
+        published=EXCLUDED.published,
+        updated_at=NOW()
     `
   }
 
@@ -218,6 +227,49 @@ async function seedFileFolderWorld(sql: any) {
         ${entry[0]}, ${entry[1]}, ${entry[2]}, ${entry[3]}, ${entry[4]}, ${entry[5]}, true
       )
       ON CONFLICT (entry_key) DO NOTHING
+    `
+  }
+}
+
+export async function ensureCustomerDoorFormation(sql: any, clientId: string, fileNumber: string) {
+  const [existing] = await sql`
+    SELECT id,status
+    FROM client_file_folder_builds
+    WHERE client_id=${clientId}::uuid
+      AND file_number=${fileNumber}
+      AND blueprint_key='customer_door'
+    ORDER BY created_at DESC
+    LIMIT 1
+  `
+
+  const [activeSystem] = await sql`
+    SELECT id
+    FROM client_built_systems
+    WHERE client_id=${clientId}::uuid
+      AND file_number=${fileNumber}
+      AND system_type='customer_door'
+      AND status='active'
+    LIMIT 1
+  `
+
+  if (!existing && !activeSystem) {
+    await sql`
+      INSERT INTO client_file_folder_builds (
+        client_id,file_number,blueprint_key,title,purpose,
+        system_type,status,duration_hours,started_at,completes_at
+      )
+      VALUES (
+        ${clientId}::uuid,
+        ${fileNumber},
+        'customer_door',
+        'Customer Door',
+        'Open a public door so customers outside WEAVE can patronize this Client while the Client continues learning, building and participating.',
+        'customer_door',
+        'building',
+        6,
+        NOW(),
+        NOW() + INTERVAL '6 hours'
+      )
     `
   }
 }
@@ -250,6 +302,21 @@ export async function finalizeReadyBuilds(sql: any, clientId: string) {
       )
       ON CONFLICT (build_id) DO NOTHING
     `
+
+    if (build.system_type === 'customer_door') {
+      await sql`
+        UPDATE client_business_stores
+        SET
+          formation_status=CASE
+            WHEN first_offer_published_at IS NOT NULL THEN 'selling'
+            ELSE 'ready_for_offer'
+          END,
+          public_opened_at=COALESCE(public_opened_at,NOW()),
+          updated_at=NOW()
+        WHERE client_id=${build.client_id}::uuid
+          AND file_number=${build.file_number}
+      `
+    }
   }
 }
 
@@ -270,6 +337,7 @@ export async function getFileFolderWorldSnapshot(
 ): Promise<FileFolderWorldSnapshot> {
   await ensureFileFolderWorldSchema(sql)
   await ensureClientLibraryProgress(sql, clientId)
+  await ensureCustomerDoorFormation(sql, clientId, fileNumber)
   await finalizeReadyBuilds(sql, clientId)
 
   const blueprints = await sql`
