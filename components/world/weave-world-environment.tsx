@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
 import { WeaveNormalWorldBackdrop } from '@/components/world/weave-normal-world-backdrop'
+import { FlameEventWorldDecorations } from '@/components/events/flame-event-world-decorations'
 
 export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
   const pathname=usePathname() || '/'
@@ -41,10 +42,13 @@ export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
     <>
       <WeaveNormalWorldBackdrop />
       {active && (
-        <div
-          aria-hidden="true"
-          className={`pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_82%_20%,rgba(239,68,68,.055),transparent_30%),radial-gradient(circle_at_50%_58%,rgba(56,189,248,.045),transparent_34%)] ${effectiveSoft ? 'opacity-45' : 'opacity-80'}`}
-        />
+        <>
+          <div
+            aria-hidden="true"
+            className={`pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_82%_20%,rgba(239,68,68,.055),transparent_30%),radial-gradient(circle_at_50%_58%,rgba(56,189,248,.045),transparent_34%)] ${effectiveSoft ? 'opacity-45' : 'opacity-80'}`}
+          />
+          <FlameEventWorldDecorations event={event} soft={effectiveSoft} />
+        </>
       )}
     </>
   )
