@@ -59,7 +59,10 @@ export default function BridgerTerminal() {
     if (!user?.id) return
     setIsSubLoading(true)
     try {
-      const res = await fetch(`/api/bridger/subscription?userId=${user.id}`)
+      const token = localStorage.getItem('ssb_auth_token')
+      const res = await fetch('/api/bridger/subscription', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
       const data = await res.json()
       if (data.success) {
         setContinuance(data.continuance)
