@@ -73,9 +73,13 @@ export default function AdminTerminal() {
 
   useEffect(() => {
     if (!user || user.role !== 'admin') return
+    const token = localStorage.getItem('ssb_auth_token')
     fetch('/api/eight/execute', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ action: 'stats', payload: {} })
     })
       .then(res => res.json())
