@@ -15,6 +15,7 @@ export type DjBroadcastState = {
   track_artist?: string | null
   track_file_url?: string | null
   duration_seconds?: number | null
+  track_type?: 'music' | 'voice' | 'announcement' | null
 }
 
 export async function ensureDjSchema() {
@@ -89,7 +90,8 @@ export async function readDjBroadcastState(): Promise<DjBroadcastState | null> {
       t.title AS track_title,
       t.artist AS track_artist,
       t.file_url AS track_file_url,
-      t.duration_seconds
+      t.duration_seconds,
+      t.track_type
     FROM dj_broadcast_state b
     LEFT JOIN dj_tracks t ON t.id = b.current_track_id
     WHERE b.id = 1
