@@ -239,7 +239,7 @@ export default function FileFolderOpenWorld({
                 {activeBuilds.length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">Nothing is constructing yet. Travel to Blueprint Foundry to begin a build.</p>}
                 {activeBuilds.map((build:any) => {
                   const remaining = Math.max(0, Math.floor((new Date(build.completes_at).getTime() - now) / 1000))
-                  const total = Math.max(1, Number(build.duration_hours || 1) * 3600)
+                  const total = Math.max(1, Number(build.duration_minutes || (Number(build.duration_hours || 1) * 60)) * 60)
                   const progress = Math.min(100, Math.max(0, ((total - remaining) / total) * 100))
                   return <div key={build.id} className="rounded-2xl border border-amber-300/15 bg-amber-400/[0.04] p-5">
                     <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold text-white">{build.title}</p><p className="mt-1 text-[10px] text-slate-500">{build.system_type.replaceAll('_',' ')}</p></div><div className="flex items-center gap-1 text-[10px] text-amber-300"><Clock3 className="h-3.5 w-3.5"/>{duration(remaining)}</div></div>
@@ -258,12 +258,15 @@ export default function FileFolderOpenWorld({
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {(world?.blueprints || []).map((blueprint:any) => {
                   const owned = Number(inventory.get(blueprint.required_item_key) || 0)
-                  const canStart = !blueprint.required_item_key || owned >= Number(blueprint.required_item_quantity || 0)
+                  const hasComponents = !blueprint.required_item_key || owned >= Number(blueprint.required_item_quantity || 0)
+                  const canStart = hasComponents && !fundingGateLocked
+                  const effectiveMinutes = Math.max(15, Math.ceil(Number(blueprint.build_hours || 1) * 60 / Number(buildFunding?.buildSpeedMultiplier || 1)))
+                  const effectiveLabel = effectiveMinutes >= 60 ? `${(effectiveMinutes / 60).toFixed(effectiveMinutes % 60 === 0 ? 0 : 1)}h` : `${effectiveMinutes}m`
                   return <div key={blueprint.blueprint_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-                    <div className="flex items-center justify-between gap-3"><h4 className="font-bold text-white">{blueprint.name}</h4><span className="rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">{blueprint.build_hours}h</span></div>
+                    <div className="flex items-center justify-between gap-3"><h4 className="font-bold text-white">{blueprint.name}</h4><span className="rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">Base {blueprint.build_hours}h · Yours {effectiveLabel}</span></div>
                     <p className="mt-2 text-xs leading-5 text-slate-400">{blueprint.description}</p>
                     <p className="mt-3 text-[10px] text-slate-500">Requires: {blueprint.required_item_quantity || 0} × {blueprint.required_item_name || 'No component'} · Owned {owned}</p>
-                    {!readOnly && <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':canStart?'Start Build':'Acquire Component'}</button>}
+                    {!readOnly && <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Start Build':'Acquire Component'}</button>}
                   </div>
                 })}
               </div>
