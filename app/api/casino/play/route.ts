@@ -119,8 +119,8 @@ export async function POST(request: NextRequest) {
 
     const week = await client.query(
       `SELECT date_trunc('week', NOW())::date AS week_start,
-              COALESCE(SUM(GREATEST(bet_amount-payout,0)),0)::numeric AS losses
-       FROM casino_games
+              COALESCE(SUM(ABS(amount)) FILTER (WHERE entry_type='casino_loss' AND amount<0),0)::numeric AS losses
+       FROM ledger_entries
        WHERE user_id=$1::uuid
          AND created_at>=date_trunc('week',NOW())
          AND created_at<date_trunc('week',NOW())+interval '7 days'`,
