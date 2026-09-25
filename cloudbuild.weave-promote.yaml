@@ -1,0 +1,42 @@
+substitutions:
+  _REGION: us-central1
+  _SERVICE: system-bridge-frontend
+  _CANDIDATE_TAG: weave-candidate
+
+steps:
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        gcloud run services describe "${_SERVICE}" --region="${_REGION}" --format=json > /workspace/weave-service.json
+        REVISION="$(python3 - <<'PY'
+        import json
+        data=json.load(open('/workspace/weave-service.json'))
+        traffic=data.get('status',{}).get('traffic',[])
+        candidate=next((item for item in traffic if item.get('tag')=='weave-candidate'),None)
+        assert candidate and candidate.get('revisionName'), 'No verified weave-candidate revision exists'
+        print(candidate['revisionName'])
+        PY
+        )"
+        echo "Promoting candidate revision: $REVISION"
+        gcloud run services update-traffic "${_SERVICE}"           --region="${_REGION}"           --to-revisions="$REVISION=100"           --quiet
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        python3 - <<'PY'
+        import json, urllib.request
+        url='https://weavingsystem.online'
+        with urllib.request.urlopen(url+'/api/health',timeout=60) as response:
+            body=json.load(response)
+            assert response.status==200 and body.get('status')=='healthy', body
+        print('WEAVE production health verified:',url)
+        PY
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 600s
