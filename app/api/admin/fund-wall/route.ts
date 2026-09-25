@@ -1,17 +1,16 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    const identity = await getAuthUser(request)
+    if (!identity?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Check if user is admin
-    const userResult = await sql`SELECT role FROM users WHERE id = ${session.user.id}::uuid`
+    const userResult = await sql`SELECT role FROM users WHERE id = ${identity.id}::uuid`
     const user = userResult[0]
     if (user?.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
