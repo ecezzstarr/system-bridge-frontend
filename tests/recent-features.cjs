@@ -716,4 +716,17 @@ for(const [source,label] of [
   assert.ok(source.includes('status: 410'),label+' endpoint is retired')
 }
 
+const prospectInventoryAdminSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/list-available/route.ts'),'utf8')
+const prospectMarketLibSource=fs.readFileSync(path.join(root,'lib/market.ts'),'utf8')
+const tronWalletHardeningSource=fs.readFileSync(path.join(root,'lib/tron-wallet.ts'),'utf8')
+const retiredDepositSource=fs.readFileSync(path.join(root,'app/api/deposit/route.ts'),'utf8')
+assert.ok(prospectInventoryAdminSource.includes("authUser.role !== 'admin'"),'Prospect inventory requires Administration')
+assert.ok(prospectInventoryAdminSource.includes("status: 403"),'Non-admin Prospect inventory access is forbidden')
+assert.ok(!prospectMarketLibSource.includes('Simulate reachability check'),'Prospect Engine does not simulate contact reachability')
+assert.ok(prospectMarketLibSource.includes('Reachability has not been independently verified'),'Generated Prospect candidates are labeled truthfully')
+assert.ok(!tronWalletHardeningSource.includes('Generate a placeholder address'),'TRON wallet creation has no fake wallet fallback')
+assert.ok(tronWalletHardeningSource.includes('No placeholder wallet was created'),'TRON wallet creation fails closed')
+assert.ok(tronWalletHardeningSource.includes('userWalletAddress,\n          COMPANY_WALLET'),'TRX sweep passes the real source wallet address')
+assert.ok(retiredDepositSource.includes('status: 410'),'Legacy deposit endpoint cannot report uncredited payment success')
+
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
