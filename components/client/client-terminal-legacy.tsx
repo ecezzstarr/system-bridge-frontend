@@ -26,6 +26,8 @@ export default function LegacyClientDashboard() {
   const { user, isLoading: authLoading } = useAuth()
   const [bridger, setBridger] = useState<{ name: string; whatsapp_number?: string } | null>(null)
   const [vaultBalance, setVaultBalance] = useState(0)
+  const [siblingsFundsBalance, setSiblingsFundsBalance] = useState(0)
+  const [mainWalletBalance, setMainWalletBalance] = useState(0)
   const [isLoadingVault, setIsLoadingVault] = useState(true)
 
   useEffect(() => {
@@ -53,7 +55,11 @@ export default function LegacyClientDashboard() {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
         const data = await res.json()
-        if (data.success) setVaultBalance(data.flameCoinBalance || 0)
+        if (data.success) {
+          setVaultBalance(data.clientMoney?.vault?.balance || 0)
+          setSiblingsFundsBalance(data.clientMoney?.siblingsFundsWallet?.flameCoin || 0)
+          setMainWalletBalance(data.clientMoney?.mainClientWallet?.flameCoin ?? data.flameCoinBalance ?? 0)
+        }
       } catch (error) {
         console.error('Error fetching vault balance:', error)
       } finally {
@@ -101,9 +107,9 @@ export default function LegacyClientDashboard() {
             <p className="text-4xl md:text-5xl font-black text-white">
               {isLoadingVault ? '—' : vaultBalance.toFixed(2)} <span className="text-lg font-bold text-slate-500">Flame Coin</span>
             </p>
-            <p className="text-xs text-slate-500 mt-2">Your Vault holds WEAVE Flame Coin. 1 Flame Coin carries the value of 1 TRX inside WEAVE.</p>
+            <p className="text-xs text-slate-500 mt-2">Administration can credit Flame Coin into your Client Vault. Siblings Funds and your Main Client Wallet remain separate.</p><div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-xl border border-violet-400/15 bg-violet-400/5 p-3"><p className="text-[9px] uppercase tracking-wider text-violet-300">Siblings Funds Wallet</p><p className="mt-1 text-lg font-bold text-white">{isLoadingVault ? '—' : siblingsFundsBalance.toFixed(2)} <span className="text-[10px] text-slate-500">Flame Coin</span></p></div><div className="rounded-xl border border-sky-400/15 bg-sky-400/5 p-3"><p className="text-[9px] uppercase tracking-wider text-sky-300">Main Client Wallet</p><p className="mt-1 text-lg font-bold text-white">{isLoadingVault ? '—' : mainWalletBalance.toFixed(2)} <span className="text-[10px] text-slate-500">Flame Coin</span></p></div></div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-2"><p className="text-[9px] font-black uppercase tracking-widest text-sky-300">Main Client Wallet</p><div className="flex gap-3">
             <Link href="/client/deposit">
               <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-green-500 hover:text-slate-950 hover:border-green-500 font-bold text-xs uppercase tracking-widest h-12 rounded-xl px-6">
                 <ArrowDownLeft className="mr-2 h-4 w-4" /> Deposit
@@ -114,7 +120,7 @@ export default function LegacyClientDashboard() {
                 <ArrowUpRight className="mr-2 h-4 w-4" /> Withdraw
               </Button>
             </Link>
-          </div>
+          </div></div>
         </div>
       </div>
 
@@ -171,7 +177,7 @@ export default function LegacyClientDashboard() {
                 <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Play</span>
               </div>
               <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Casino</h3>
-              <p className="text-sm text-slate-400 mb-6">Test your luck with your Vault balance.</p>
+              <p className="text-sm text-slate-400 mb-6">Test your luck with your Main Client Wallet balance.</p>
               <div className="flex items-center gap-2 text-purple-400 font-bold text-xs uppercase tracking-widest">
                 Enter Casino <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
