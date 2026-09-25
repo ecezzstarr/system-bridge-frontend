@@ -1,0 +1,43 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "weave-of-presence",
+  "version": "0.1.0",
+  "description": "Connect people with genuine participation, work, enterprise, or system-building needs to Weave of Presence workflows.",
+  "author": {
+    "name": "Weave of Presence",
+    "url": "https://weavingsystem.online"
+  },
+  "homepage": "https://weavingsystem.online",
+  "repository": "https://github.com/ecezzstarr/system-bridge-frontend",
+  "keywords": [
+    "participation",
+    "livelihood",
+    "enterprise",
+    "systems",
+    "work"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Weave of Presence",
+        "shortDescription": "Organize work into systems",
+        "longDescription": "Weave of Presence helps people organize what they already do into structured participation, work, enterprise development, and system-building paths. It can check whether a need fits Weave before creating an optional short-lived crossing into System Switch.",
+        "developerName": "Weave of Presence",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://weavingsystem.online",
+        "privacyPolicyURL": "https://weavingsystem.online/privacy",
+        "termsOfServiceURL": "https://weavingsystem.online/terms",
+        "defaultPrompt": [
+          "Help me organize what I already do into a practical participation path.",
+          "I have a business idea and need a structured path to develop it.",
+          "Check whether Weave is relevant to this need before opening a referral."
+        ],
+        "brandColor": "#715A1A"
+      }
+    }
+  }
+}
