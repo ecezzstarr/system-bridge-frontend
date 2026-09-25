@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import {
   DEFAULT_PRESENCE_SCENE,
@@ -18,6 +18,7 @@ import {
   PRESENCE_TRACE_LIMIT,
   resolvePresenceScene,
   sceneDirection,
+  isPresenceCameraShellManaged,
   type PresenceOutput,
   type PresenceScene,
 } from '@/lib/presence-camera'
@@ -70,6 +71,7 @@ export function PresenceCameraProvider({ children }: { children: ReactNode; role
   const [previousScene,setPreviousScene] = useState(scene)
   const [moving,setMoving] = useState(false)
   const [lastOutput,setLastOutput] = useState<PresenceOutput|null>(null)
+  const motionTimerRef = useRef<number | null>(null)
 
   const recordOutput = useCallback((input: Omit<PresenceOutput,'id'|'at'|'fromPath'|'fromScene'> & { fromPath?: string; fromScene?: string })=>{
     const output: PresenceOutput = {
@@ -83,7 +85,8 @@ export function PresenceCameraProvider({ children }: { children: ReactNode; role
     setLastOutput(output)
     if (input.type === 'action') {
       setMoving(true)
-      window.setTimeout(()=>setMoving(false),360)
+      if (motionTimerRef.current) window.clearTimeout(motionTimerRef.current)
+      motionTimerRef.current=window.setTimeout(()=>setMoving(false),360)
     }
   },[pathname,scene.key])
 
@@ -93,6 +96,8 @@ export function PresenceCameraProvider({ children }: { children: ReactNode; role
       if (!(raw instanceof Element)) return
       const target = raw.closest('a,button,[role="button"]')
       if (!target) return
+      if (target instanceof HTMLButtonElement && target.disabled) return
+      if (target.getAttribute('aria-disabled') === 'true') return
 
       const anchor = target.closest('a') as HTMLAnchorElement | null
       const href = anchor?.getAttribute('href') || null
@@ -107,7 +112,19 @@ export function PresenceCameraProvider({ children }: { children: ReactNode; role
         toScene: destinationScene?.key || null,
       })
 
-      if (localDestination && localDestination !== pathname) setMoving(true)
+      const normalInPlaceNavigation = Boolean(
+        localDestination &&
+        localDestination !== pathname &&
+        !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey &&
+        event.button === 0 &&
+        anchor?.target !== '_blank' &&
+        !anchor?.hasAttribute('download')
+      )
+      if (normalInPlaceNavigation) {
+        setMoving(true)
+        if (motionTimerRef.current) window.clearTimeout(motionTimerRef.current)
+        motionTimerRef.current=window.setTimeout(()=>setMoving(false),900)
+      }
     }
 
     document.addEventListener('click',onClick,true)
@@ -130,11 +147,15 @@ export function PresenceCameraProvider({ children }: { children: ReactNode; role
       previousPathRef.current=pathname
       previousSceneRef.current=scene
       setMoving(true)
-      const timer=window.setTimeout(()=>setMoving(false),620)
-      return ()=>window.clearTimeout(timer)
+      if (motionTimerRef.current) window.clearTimeout(motionTimerRef.current)
+      motionTimerRef.current=window.setTimeout(()=>setMoving(false),620)
     }
     previousSceneRef.current=scene
   },[pathname,scene,recordOutput])
+
+  useEffect(()=>()=>{
+    if (motionTimerRef.current) window.clearTimeout(motionTimerRef.current)
+  },[])
 
   const value=useMemo(()=>({
     pathname,
@@ -154,12 +175,13 @@ export function usePresenceCamera() {
 
 export function PresenceCameraSignal() {
   const { scene,moving,lastOutput }=usePresenceCamera()
+  const reduceMotion=useReducedMotion()
   return (
     <motion.div
       aria-hidden="true"
       initial={false}
-      animate={{ opacity:moving?0.9:0.48, scale:moving?1.02:1 }}
-      transition={{ duration:0.25 }}
+      animate={{ opacity:moving?0.9:0.48, scale:reduceMotion?1:(moving?1.02:1) }}
+      transition={{ duration:reduceMotion?0:0.25 }}
       className="pointer-events-none fixed bottom-3 right-3 z-[35] hidden rounded-full border border-sky-300/10 bg-[#020b17]/72 px-3 py-2 text-[8px] font-black uppercase tracking-[0.16em] text-slate-500 shadow-2xl backdrop-blur-xl md:block"
     >
       <span className="text-sky-300">Camera</span>
@@ -174,8 +196,15 @@ export function PresenceCameraSignal() {
   )
 }
 
+export function PresenceCameraRootViewport({ children }: { children: ReactNode }) {
+  const pathname=usePathname() || '/'
+  if (isPresenceCameraShellManaged(pathname)) return <>{children}</>
+  return <PresenceCameraViewport>{children}</PresenceCameraViewport>
+}
+
 export function PresenceCameraViewport({ children, className='' }: { children: ReactNode; className?: string }) {
   const { pathname,scene,previousScene }=usePresenceCamera()
+  const reduceMotion=useReducedMotion()
   const direction=sceneDirection(previousScene,scene)
 
   return (
@@ -185,7 +214,7 @@ export function PresenceCameraViewport({ children, className='' }: { children: R
           key={pathname}
           data-presence-scene={scene.key}
           data-presence-level={scene.level}
-          initial={{
+          initial={reduceMotion ? false : {
             opacity:0,
             x:direction * 22,
             y:8,
@@ -203,7 +232,7 @@ export function PresenceCameraViewport({ children, className='' }: { children: R
             rotateX:0,
             filter:'blur(0px)',
           }}
-          exit={{
+          exit={reduceMotion ? undefined : {
             opacity:0,
             x:direction * -14,
             y:-4,
@@ -211,7 +240,7 @@ export function PresenceCameraViewport({ children, className='' }: { children: R
             rotateY:direction * -0.8,
             filter:'blur(3px)',
           }}
-          transition={{ duration:0.42, ease:[0.22,1,0.36,1] }}
+          transition={{ duration:reduceMotion?0:0.42, ease:[0.22,1,0.36,1] }}
           style={{ transformStyle:'preserve-3d', transformOrigin:'50% 40%' }}
         >
           {children}
