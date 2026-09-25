@@ -31,6 +31,7 @@ export function DJBroadcastPlayer() {
   const autoplayAttemptedRef = useRef(false)
   const syncInFlightRef = useRef(false)
   const userPausedRef = useRef(false)
+  const personalDjActiveRef = useRef(false)
   const trackTypeRef = useRef<'music' | 'voice' | 'announcement'>('music')
   const audienceContextRef = useRef<AudioContext | null>(null)
   const audienceGainRef = useRef<GainNode | null>(null)
@@ -43,6 +44,7 @@ export function DJBroadcastPlayer() {
   const [announcement, setAnnouncement] = useState<string | null>(null)
   const [joined, setJoined] = useState(false)
   const [userPaused, setUserPaused] = useState(false)
+  const [personalDjActive, setPersonalDjActive] = useState(false)
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
 
   const dragState = useRef({ dragging: false, offsetX: 0, offsetY: 0 })
@@ -210,6 +212,7 @@ export function DJBroadcastPlayer() {
   const beginPlayback = useCallback(async (remember = false, force = false) => {
     const audio = audioRef.current
     if (!audio || !audio.src) return false
+    if (personalDjActiveRef.current) return false
     if (userPausedRef.current && !force) return false
 
     try {
@@ -289,6 +292,11 @@ export function DJBroadcastPlayer() {
 
       if (!audio) return
 
+      if (personalDjActiveRef.current) {
+        applyPersonalPause()
+        return
+      }
+
       if (userPausedRef.current) {
         applyPersonalPause()
       }
@@ -341,6 +349,23 @@ export function DJBroadcastPlayer() {
       syncInFlightRef.current = false
     }
   }, [user?.id, joined, beginPlayback, applyPersonalPause, stopHarmonyAudience])
+
+  useEffect(() => {
+    const onPersonalDj = (event: Event) => {
+      const active = Boolean((event as CustomEvent<{ active?: boolean }>).detail?.active)
+      personalDjActiveRef.current = active
+      setPersonalDjActive(active)
+
+      if (active) {
+        applyPersonalPause()
+      } else if (!userPausedRef.current) {
+        void syncBroadcast()
+      }
+    }
+
+    window.addEventListener('weave:personal-dj', onPersonalDj as EventListener)
+    return () => window.removeEventListener('weave:personal-dj', onPersonalDj as EventListener)
+  }, [applyPersonalPause, syncBroadcast])
 
   const eligibleRole = Boolean(user && ['admin', 'agent', 'bridger', 'client'].includes(user.role))
 
@@ -423,7 +448,7 @@ export function DJBroadcastPlayer() {
     })
   }
 
-  const canShow = eligibleRole && live && Boolean(position)
+  const canShow = eligibleRole && live && Boolean(position) && !personalDjActive
 
   return (
     <>
