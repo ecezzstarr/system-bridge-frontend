@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureEnterpriseSystemsSchema } from '@/lib/enterprise-systems'
+import { gbpToFlameCoin, getTrxGbpRate } from '@/lib/trx-payment'
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
@@ -49,10 +50,16 @@ export async function POST(request: NextRequest) {
     `
     if (!system) return NextResponse.json({ error: 'Enterprise system is not available' }, { status: 404 })
 
+    const { rateGbpPerTrx, source: rateSource } = await getTrxGbpRate()
+    const quotedFlameCoin = rateGbpPerTrx
+      ? gbpToFlameCoin(Number(system.price_gbp), rateGbpPerTrx)
+      : null
+
     const [order] = await sql`
       INSERT INTO enterprise_system_orders (
         system_key,buyer_user_id,buyer_role,buyer_name,buyer_email,
-        quoted_price_gbp,status,acquisition_note
+        quoted_price_gbp,quoted_flame_coin,gbp_per_flame_coin,rate_source,
+        status,acquisition_note
       )
       VALUES (
         ${system.system_key},
@@ -61,10 +68,13 @@ export async function POST(request: NextRequest) {
         ${user.name},
         ${user.email},
         ${system.price_gbp},
+        ${quotedFlameCoin},
+        ${rateGbpPerTrx},
+        ${rateSource},
         'requested',
         ${note || null}
       )
-      RETURNING id,status,quoted_price_gbp,created_at
+      RETURNING id,status,quoted_price_gbp,quoted_flame_coin,gbp_per_flame_coin,rate_source,created_at
     `
 
     await sql`
@@ -79,7 +89,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       order,
-      message: 'Enterprise acquisition request recorded. Administration can now structure scope, commercial terms, hardware requirements and delivery movement.',
+      peg: '1 Flame Coin = 1 TRX',
+      message: 'Enterprise acquisition request recorded. GBP remains the contract denomination; the Flame Coin amount is a rate-time reference. Administration can now structure scope, commercial terms, hardware requirements and delivery movement.',
     }, { status: 201 })
   } catch (error) {
     console.error('[enterprise-systems POST]', error)
