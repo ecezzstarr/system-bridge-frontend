@@ -152,6 +152,7 @@ export async function GET(request: NextRequest) {
       client:{id:client.id,name:client.name,email:client.email,business_name:client.business_name,file_number:client.file_number},
       file_folder:folder,
       file_folder_world:fileFolderWorld,
+      build_funding:fileFolderWorld.buildFunding,
       vault:{
         balance:money.vault.balance,
         currency:money.vault.currency,
