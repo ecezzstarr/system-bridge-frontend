@@ -1,52 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 
-// GET - Fetch bridgers assigned to a specific agent
 export async function GET(request: NextRequest) {
+  const agent = await getAuthUser(request)
+  if (!agent) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+  }
+  if (agent.role !== 'agent') {
+    return NextResponse.json({ success: false, error: 'Agent access required' }, { status: 403 })
+  }
+
   try {
-    const { searchParams } = new URL(request.url)
-    const agentId = searchParams.get('agentId')
-
-    if (!agentId) {
-      return NextResponse.json({ success: false, error: 'Agent ID required' }, { status: 400 })
-    }
-
-    // Get bridgers assigned to this agent with their client count
     const bridgers = await sql`
-      SELECT 
+      SELECT
         u.id,
         u.name,
         u.email,
         u.username,
         u.created_at,
-        (SELECT COUNT(*) FROM clients c WHERE c.referred_by = u.id OR c.assigned_bridger_id = u.id) as client_count
+        u.subscription_status,
+        (
+          SELECT COUNT(*)
+          FROM clients c
+          WHERE c.referred_by = u.id OR c.assigned_bridger_id = u.id
+        ) AS client_count
       FROM users u
-      WHERE u.assigned_agent_id = ${agentId}::uuid
-      AND u.role = 'bridger'
+      WHERE u.assigned_agent_id = ${agent.id}::uuid
+        AND u.role = 'bridger'
       ORDER BY u.name ASC
       LIMIT 3
     `
 
     return NextResponse.json({
       success: true,
-      bridgers: (bridgers || []).map(b => ({
-        id: b.id,
-        name: b.name || b.username || 'Bridger',
-        email: b.email,
-        clientCount: parseInt(b.client_count) || 0,
-        earnings: 0,
-        balance: 0,
+      bridgers: bridgers.map((bridger: any) => ({
+        id: bridger.id,
+        name: bridger.name || bridger.username || 'Bridger',
+        email: bridger.email,
+        subscriptionStatus: bridger.subscription_status || 'unknown',
+        clientCount: Number(bridger.client_count || 0),
       })),
-      count: (bridgers || []).length,
-      maxAllowed: 3
+      count: bridgers.length,
+      maxAllowed: 3,
     })
-
   } catch (error) {
-    console.error('Error fetching agent bridgers:', error)
-    return NextResponse.json({ 
-      success: false, 
-      bridgers: [],
-      error: String(error)
-    }, { status: 500 })
+    console.error('Error fetching Agent Bridgers:', error)
+    return NextResponse.json(
+      { success: false, bridgers: [], error: 'Unable to load Bridgers' },
+      { status: 500 }
+    )
   }
 }

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { LogOut, MessageCircle, Gamepad2, ShoppingBag, Wallet, ArrowUpRight, ArrowDownLeft, Phone, Trophy, Globe } from 'lucide-react'
-import { clearToken } from '@/lib/auth-client'
+import { clearToken, getAuthHeaders } from '@/lib/auth-client'
 import { WeaveAssistant, type ChecklistItem } from '@/components/weave-assistant'
 import Arena from '@/components/places/arena'
 import Casino from '@/components/places/casino'
@@ -15,6 +15,10 @@ import {
   AgilityAgentLoginAd,
   AGILITY_AGENT_LOGIN_AD_KEY,
 } from '@/components/agility-agent-login-ad'
+import {
+  Loop1AgentLoginAd,
+  LOOP1_AGENT_LOGIN_AD_KEY,
+} from '@/components/agent/loop1-agent-login-ad'
 
 type TabId = 'lounge' | 'connect' | 'arena' | 'casino' | 'market' | 'wallet'
 
@@ -22,7 +26,9 @@ export default function AgentTerminal() {
   const { user, logout } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>('lounge')
+  const [showLoop1Ad, setShowLoop1Ad] = useState(false)
   const [showAgilityAd, setShowAgilityAd] = useState(false)
+  const [agilityAdQueued, setAgilityAdQueued] = useState(false)
   const [salary, setYield] = useState<{ tier: number; salary: number; activeCount: number } | null>(null)
   const [bridgerCount, setBridgerCount] = useState(0)
   const [commissions, setCommissions] = useState<{ commissionRate: number; totalEarnings: number; recentCommissions: any[] } | null>(null)
@@ -33,11 +39,11 @@ export default function AgentTerminal() {
       .then(r => r.json())
       .then(d => { if (d.success) setYield(d) })
       .catch(() => {})
-    fetch(`/api/agent/bridgers?agentId=${user.id}`)
+    fetch('/api/agent/bridgers', { headers: getAuthHeaders() })
       .then(r => r.json())
       .then(d => setBridgerCount(d.count || 0))
       .catch(() => {})
-    fetch(`/api/agent/commissions?agentId=${user.id}`)
+    fetch('/api/agent/commissions', { headers: getAuthHeaders() })
       .then(r => r.json())
       .then(d => { if (d.success) setCommissions(d) })
       .catch(() => {})
@@ -49,8 +55,16 @@ export default function AgentTerminal() {
       return
     }
 
-    if (sessionStorage.getItem(AGILITY_AGENT_LOGIN_AD_KEY) === '1') {
-      sessionStorage.removeItem(AGILITY_AGENT_LOGIN_AD_KEY)
+    const wantsLoop1Ad = sessionStorage.getItem(LOOP1_AGENT_LOGIN_AD_KEY) === '1'
+    const wantsAgilityAd = sessionStorage.getItem(AGILITY_AGENT_LOGIN_AD_KEY) === '1'
+
+    if (wantsLoop1Ad) sessionStorage.removeItem(LOOP1_AGENT_LOGIN_AD_KEY)
+    if (wantsAgilityAd) sessionStorage.removeItem(AGILITY_AGENT_LOGIN_AD_KEY)
+
+    if (wantsLoop1Ad) {
+      setShowLoop1Ad(true)
+      setAgilityAdQueued(wantsAgilityAd)
+    } else if (wantsAgilityAd) {
       setShowAgilityAd(true)
     }
   }, [user, router])
@@ -76,7 +90,7 @@ export default function AgentTerminal() {
   checklist.push({
     id: 'loop-1',
     label: 'Support Bridgers to close Loop 1',
-    detail: 'Agents earn 30% on lead purchases and 5% of Weave\'s 40% (716 Flame Coin) on Client crossings.',
+    detail: 'Agents earn 30% when Bridgers under their Agent position purchase Prospect packages, plus the current Client crossing return.',
     actLabel: 'View Bridgers',
     onAct: () => router.push('/agent/bridgers'),
   })
@@ -110,6 +124,25 @@ export default function AgentTerminal() {
 
   return (
     <>
+      <Loop1AgentLoginAd
+        open={showLoop1Ad}
+        onOpenChange={(open) => {
+          setShowLoop1Ad(open)
+          if (!open && agilityAdQueued) {
+            setAgilityAdQueued(false)
+            setShowAgilityAd(true)
+          }
+        }}
+        onOpenContinuance={() => {
+          if (agilityAdQueued) {
+            sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
+            setAgilityAdQueued(false)
+          }
+          setShowLoop1Ad(false)
+          router.push('/agent/commissions')
+        }}
+      />
+
       <AgilityAgentLoginAd
         open={showAgilityAd}
         onOpenChange={setShowAgilityAd}

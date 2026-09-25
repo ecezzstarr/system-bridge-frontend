@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Users } from 'lucide-react'
+import { getAuthHeaders } from '@/lib/auth-client'
 
 export default function AgentBridgersPage() {
   const { user } = useAuth()
@@ -46,7 +47,7 @@ function MyBridgers() {
     const fetchBridgers = async () => {
       if (!user?.id) return
       try {
-        const response = await fetch(`/api/agent/bridgers?agentId=${user.id}`)
+        const response = await fetch('/api/agent/bridgers', { headers: getAuthHeaders() })
         const data = await response.json()
         setBridgers(data.bridgers || [])
       } catch (error) {
