@@ -225,11 +225,11 @@ export function PresenceCameraViewport({ children, className='' }: { children: R
           }}
           animate={{
             opacity:1,
-            x:0,
-            y:0,
-            scale:1,
-            rotateY:0,
-            rotateX:0,
+            x:reduceMotion ? 0 : -scene.camera.x * 0.08,
+            y:reduceMotion ? 0 : -scene.camera.y * 0.06,
+            scale:reduceMotion ? 1 : 1 + Math.min(0.008, scene.camera.depth * 0.00012),
+            rotateY:reduceMotion ? 0 : -scene.camera.yaw * 0.11,
+            rotateX:reduceMotion ? 0 : scene.camera.pitch * 0.09,
             filter:'blur(0px)',
           }}
           exit={reduceMotion ? undefined : {
