@@ -103,7 +103,7 @@ export function DivineShieldGate({children}:{children:ReactNode}){
           <h1 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">{state.title}</h1>
           <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-300">{state.message}</p>
           <div className="mt-7 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-slate-500">
-            Your position remains preserved. WEAVE will reopen here when Administration releases the shield.
+            Your WEAVE session has been closed for maintenance. Your records and position remain preserved. Sign in again after Administration releases the shield.
           </div>
           <Link href="/login?administration=1" className="mt-5 inline-flex rounded-full border border-sky-300/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 transition hover:text-sky-200">Administration access</Link>
         </section>
