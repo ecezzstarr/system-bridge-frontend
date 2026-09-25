@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
+import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 
 type GateStage =
   | 'bridge_file_folder'
@@ -42,6 +43,8 @@ export async function GET(request: NextRequest) {
 
     if (!client) return NextResponse.json({ error: 'Client record not found' }, { status: 404 })
 
+    const money = await ensureClientMoneyEnvironment(sql, client.id)
+
     const [bridger] = client.bridger_id
       ? await sql`
           SELECT id, name, username
@@ -64,6 +67,7 @@ export async function GET(request: NextRequest) {
         },
         client: { id: client.id, name: client.name, file_number: null },
         bridger: bridger || null,
+        money,
       }, { headers: { 'Cache-Control': 'private, no-store' } })
     }
 
@@ -189,6 +193,7 @@ export async function GET(request: NextRequest) {
       bridger: bridger || null,
       file_folder: folder || null,
       workshop: workshop || null,
+      money,
       evidence: {
         purchase: purchase || null,
         bridge_deposit: bridgeDeposit,
