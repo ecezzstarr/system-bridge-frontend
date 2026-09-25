@@ -521,9 +521,11 @@ function FileNumberEngineSection() {
   const fetchData = async () => {
     setIsLoading(true)
     try {
+      const token = localStorage.getItem('ssb_auth_token')
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
       const [bridgersRes, foldersRes] = await Promise.all([
-        fetch('/api/users'),
-        fetch('/api/admin/fne/list')
+        fetch('/api/users', { headers }),
+        fetch('/api/admin/fne/list', { headers })
       ])
       
       const bridgersData = await bridgersRes.json()
@@ -549,10 +551,14 @@ function FileNumberEngineSection() {
 
     setIsSubmitting(true)
     try {
+      const token = localStorage.getItem('ssb_auth_token')
       const res = await fetch('/api/admin/fne/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, adminId: user?.id })
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(formData)
       })
       
       const result = await res.json()
@@ -723,7 +729,10 @@ function BridgerManagementSection() {
   const fetchBridgers = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/bridger/list')
+      const token = localStorage.getItem('ssb_auth_token')
+      const res = await fetch('/api/admin/bridger/list', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
       const data = await res.json()
       if (data.success) {
         setBridgers(data.bridgers || [])
@@ -738,10 +747,14 @@ function BridgerManagementSection() {
   const toggleExempt = async (userId: string, currentExempt: boolean) => {
     setUpdating(userId)
     try {
+      const token = localStorage.getItem('ssb_auth_token')
       const res = await fetch('/api/admin/bridger/exemption', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, isExempt: !currentExempt, adminId: user?.id })
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ userId, isExempt: !currentExempt })
       })
       const data = await res.json()
       if (data.success) {
@@ -1123,7 +1136,10 @@ function FundSweepsSection({ user }: { user: any }) {
 
   const fetchSweeps = async () => {
     try {
-      const response = await fetch('/api/admin/sweeps')
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/admin/sweeps', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
       const data = await response.json()
       setSweeps(data.sweeps || [])
     } catch (error) {
@@ -1135,9 +1151,13 @@ function FundSweepsSection({ user }: { user: any }) {
 
   const approveSweep = async (sweepId: string, userId: string) => {
     try {
+      const token = localStorage.getItem('ssb_auth_token')
       await fetch('/api/admin/sweeps', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ sweepId, adminId: userId, action: 'approve' }),
       })
       fetchSweeps()
