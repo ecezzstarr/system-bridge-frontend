@@ -102,7 +102,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-slate-950 border-r border-white/10 shadow-2xl animate-in slide-in-from-left duration-300">
+          <div className="absolute left-0 top-0 bottom-0 w-[86vw] max-w-72 bg-slate-950 border-r border-white/10 shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="flex justify-end p-4">
               <Button
                 variant="ghost"
