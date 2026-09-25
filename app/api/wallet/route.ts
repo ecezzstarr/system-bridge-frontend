@@ -1,32 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getWalletBalance, sendTRX, sendUSDT } from '@/lib/tron-wallet'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { getWalletByUserId, getTransactionsByUserId, createTransaction, updateTransactionStatus } from '@/lib/db'
+import { getWalletBalance } from '@/lib/tron-wallet'
+import { getWalletByUserId, getTransactionsByUserId, createTransaction } from '@/lib/db'
+import { getAuthUser } from '@/lib/auth-api'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = await getAuthUser(request)
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Get wallet from database
-    const wallet = await getWalletByUserId(session.user.id)
+    const wallet = await getWalletByUserId(user.id)
     if (!wallet) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         wallet: { address: null, trx: 0, usdt: 0 },
         transactions: [],
-        message: 'No wallet connected' 
+        message: 'No external TRON wallet connected',
       })
     }
 
-    // Get real balance from TRON network
     const balance = await getWalletBalance(wallet.tron_address)
-    
-    // Get transactions from database
-    const transactions = await getTransactionsByUserId(session.user.id, 20)
-    
+    const transactions = await getTransactionsByUserId(user.id, 20)
+
     return NextResponse.json({
       wallet: {
         id: wallet.id,
@@ -47,8 +40,8 @@ export async function GET() {
         description: tx.description,
         createdAt: tx.created_at,
       })),
-    })
-  } catch (error: unknown) {
+    }, { headers: { 'Cache-Control': 'private, no-store' } })
+  } catch (error) {
     console.error('Wallet GET error:', error)
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 })
   }
@@ -56,43 +49,39 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = await getAuthUser(request)
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-    const { action, toAddress, amount, tokenType } = body
+    const action = body.action
+    const toAddress = typeof body.toAddress === 'string' ? body.toAddress.trim() : ''
+    const amount = Number(body.amount)
+    const tokenType = body.tokenType === 'USDT' ? 'USDT' : 'TRX'
 
-    // Get user's wallet
-    const wallet = await getWalletByUserId(session.user.id)
-    if (!wallet) {
-      return NextResponse.json({ error: 'No wallet found' }, { status: 400 })
+    const wallet = await getWalletByUserId(user.id)
+    if (!wallet) return NextResponse.json({ error: 'No external wallet found' }, { status: 400 })
+
+    if (action !== 'send') return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    if (!toAddress || !Number.isFinite(amount) || amount <= 0) {
+      return NextResponse.json({ error: 'Valid destination and amount are required' }, { status: 400 })
     }
 
-    if (action === 'send') {
-      // Create pending transaction record
-      const tx = await createTransaction({
-        userId: session.user.id,
-        type: 'transfer',
-        amount: amount,
-        currency: tokenType || 'TRX',
-        fromAddress: wallet.tron_address,
-        toAddress: toAddress,
-        description: `Send ${amount} ${tokenType || 'TRX'} to ${toAddress}`,
-      })
+    const tx = await createTransaction({
+      userId: user.id,
+      type: 'transfer',
+      amount,
+      currency: tokenType,
+      fromAddress: wallet.tron_address,
+      toAddress,
+      description: `External transfer request: ${amount} ${tokenType} to ${toAddress}`,
+    })
 
-      // For now, users cannot send directly - they need Eight (admin) to approve
-      // This is a security measure for real funds
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Transfer request submitted. Awaiting Eight approval.',
-        transactionId: tx.id,
-      })
-    }
-
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  } catch (error: unknown) {
+    return NextResponse.json({
+      success: true,
+      message: 'External transfer request submitted for Administration approval.',
+      transactionId: tx.id,
+    })
+  } catch (error) {
     console.error('Wallet POST error:', error)
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 })
   }
