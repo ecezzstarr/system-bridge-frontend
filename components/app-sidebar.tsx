@@ -48,71 +48,79 @@ import { WeaveLogo } from "@/components/weave-logo"
 import { useAuth } from "@/lib/auth-provider"
 import { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
+import { WEAVE_SYSTEM_MAP } from "@/lib/weave-system-map"
 
 const navigation = [
-  // 1. PRESENCE
+  // 1. PRESENCE — identity, participation, value and record.
   { group: "Presence", items: [
     { name: "Home", href: "/", icon: Home },
     { name: "Loop 1 Ground", href: "/event", icon: Flame },
-    { name: "Bridger Functions", href: "/bridger/functions", icon: LayoutTemplate, bridgerOnly: true },
+    { name: "Company Loops", href: "/company/loops", icon: GitBranch },
     { name: "Human Cadences", href: "/search", icon: MessageSquare },
     { name: "Presences", href: "/profiles", icon: UserCircle },
-    { name: "Agent Functions", href: "/agent/functions", icon: LayoutTemplate, agentOnly: true },
-    { name: "Administration Functions", href: "/admin/functions", icon: ShieldCheck, adminOnly: true },
-    { name: "Holding", href: "/wallet", icon: Wallet },
-    { name: "Record", href: "/ledger", icon: BookOpen },
+    { name: WEAVE_SYSTEM_MAP.language.wallet, href: "/wallet", icon: Wallet },
+    { name: WEAVE_SYSTEM_MAP.language.ledger, href: "/ledger", icon: BookOpen },
     { name: "Reserve", href: "/fund-wall", icon: DollarSign, creatorOnly: true },
   ]},
 
-  // 2. BRIDGE
-  { group: "Bridge", items: [
-    { name: "Bridge Plaza", href: "/weave", icon: LayoutTemplate },
-    { name: "My Bridge", href: "/agent/bridgers", icon: Users, agentOnly: true },
-    { name: "Bridge", href: "/bridger/bridge-ai", icon: GitBranch, bridgerOnly: true },
-    { name: "Bridge Templates", href: "/admin/bridge-templates", icon: Briefcase, adminOnly: true },
-    { name: "File Number Engine", href: "/admin/file-number-engine", icon: FileBox, adminOnly: true },
+  // 2. POSITION — the operating room for the current role.
+  { group: "Position", items: [
+    { name: "Bridger Operating Room", href: "/bridger/functions", icon: LayoutTemplate, bridgerOnly: true },
+    { name: "Agent Operating Room", href: "/agent/functions", icon: LayoutTemplate, agentOnly: true },
+    { name: "Administration Operating Room", href: "/admin/functions", icon: ShieldCheck, adminOnly: true },
+    { name: "My Bridgers", href: "/agent/bridgers", icon: Users, agentOnly: true },
+    { name: "Agent Channels", href: "/agent/channels", icon: ShieldCheck, agentOnly: true },
+    { name: "Agent Continuance", href: "/agent/commissions", icon: DollarSign, agentOnly: true },
   ]},
 
-  // 3. SUPPORT
-  { group: "Support", items: [
-    { name: "Message Hub", href: "/admin/hub", icon: MessageSquare, staffOnly: true },
+  // 3. BRIDGE — connection, support and movement between people.
+  { group: "Bridge", items: [
+    { name: WEAVE_SYSTEM_MAP.language.supportEntrance, href: "/weave", icon: LayoutTemplate },
+    { name: "Bridge AI", href: "/bridger/bridge-ai", icon: GitBranch, bridgerOnly: true },
+    { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
     { name: "Guidance", href: "/company-chat", icon: Headphones },
-    { name: "Management", href: "/lounge?view=private", icon: Shield },
+    { name: "Private Management", href: "/lounge?view=private", icon: Shield },
     { name: "Gathering", href: "/lounge", icon: MessageSquare },
     { name: "Companions", href: "/clients", icon: Users },
-    { name: "Fulfillment Agent", href: "/admin/outreach", icon: ShieldCheck, adminOnly: true },
-    { name: "Channel Applications", href: "/agent/channels", icon: ShieldCheck, agentOnly: true },
-    { name: "Agent Channel Requests", href: "/admin/agent-channels", icon: UserCog, adminOnly: true },
-    { name: "Continuance", href: "/agent/commissions", icon: DollarSign, agentOnly: true },
-    { name: "Bridger Continuance", href: "/bridger/functions", icon: CreditCard, bridgerOnly: true },
-    { name: "Verify Continuances", href: "/admin/dashboard#bridgers", icon: FileCheck, adminOnly: true },
-    { name: "Admin Verification", href: "/admin/dashboard#panel", icon: Shield, adminOnly: true },
   ]},
 
-  // 4. ENTERPRISE
+  // 4. ENTERPRISE — technology, products and commercial systems.
   { group: "Enterprise", items: [
-    { name: "Exchange", href: "/marketplace", icon: Store },
+    { name: WEAVE_SYSTEM_MAP.language.marketplace, href: "/marketplace", icon: Store },
     { name: "Agility Agent Store", href: "/agility", icon: Store, agentOnly: true },
-    { name: "Agility Fulfillment", href: "/admin/agility", icon: FileBox, adminOnly: true },
-    { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
-    { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
-    { name: "Enterprise Dream", href: "/admin/enterprise-dream", icon: Crown, adminOnly: true },
-          { name: "Company Loops", href: "/company/loops", icon: GitBranch },
-      { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
-{ name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
-    { name: "Infrastructure", href: "/admin/infrastructure", icon: Cloud, adminOnly: true },
-    { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
-    { name: "Ad Workshop", href: "/admin/ad-workshop", icon: Megaphone, adminOnly: true },
-    { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
     { name: "Echo", href: "/echo", icon: Sparkles },
   ]},
 
-  // 5. WEAVE
-  { group: "Weave", items: [
+  // 5. WEAVE — shared participation across positions.
+  { group: "WEAVE", items: [
     { name: "Contest", href: "/arena", icon: Gamepad2 },
     { name: "Pattern", href: "/casino", icon: Dices },
     { name: "Stream", href: "/video-feed", icon: Video },
     { name: "Standing", href: "/weave/standing", icon: Globe },
+  ]},
+
+  // 6. ADMINISTRATION — company authority and control surfaces.
+  { group: "Administration", items: [
+    { name: "Message Hub", href: "/admin/hub", icon: MessageSquare, adminOnly: true },
+    { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
+    { name: "Bridge Templates", href: "/admin/bridge-templates", icon: Briefcase, adminOnly: true },
+    { name: "File Number Engine", href: "/admin/file-number-engine", icon: FileBox, adminOnly: true },
+    { name: "Fulfillment Agent", href: "/admin/outreach", icon: ShieldCheck, adminOnly: true },
+    { name: "Agent Channel Requests", href: "/admin/agent-channels", icon: UserCog, adminOnly: true },
+    { name: "Verify Continuances", href: "/admin/dashboard#bridgers", icon: FileCheck, adminOnly: true },
+    { name: "Verification Center", href: "/admin/dashboard#panel", icon: Shield, adminOnly: true },
+    { name: "Client Deposits", href: "/admin/client-deposits", icon: Wallet, adminOnly: true },
+    { name: "Client Vaults", href: "/admin/client-vault", icon: Wallet, adminOnly: true },
+    { name: "Enterprise Systems Workshop", href: "/admin/enterprise-systems", icon: Cloud, adminOnly: true },
+    { name: "Agility Fulfillment", href: "/admin/agility", icon: FileBox, adminOnly: true },
+    { name: "Enterprise Dream", href: "/admin/enterprise-dream", icon: Crown, adminOnly: true },
+    { name: "Client Build Catalog", href: "/admin/client-build-catalog", icon: FileBox, adminOnly: true },
+    { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
+    { name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
+    { name: "Infrastructure", href: "/admin/infrastructure", icon: Cloud, adminOnly: true },
+    { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
+    { name: "Ad Workshop", href: "/admin/ad-workshop", icon: Megaphone, adminOnly: true },
+    { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
   ]},
 ]
 

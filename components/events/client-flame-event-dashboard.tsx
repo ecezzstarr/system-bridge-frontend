@@ -47,10 +47,10 @@ type WorldNode = {
 
 const leftNodes: WorldNode[] = [
   { label: 'Home', detail: 'Start here · your space · your journey', href: '/client/dashboard', icon: Home, accent: 'blue' },
-  { label: 'Market', detail: 'Opportunities · real value · ideas to impact', href: '/marketplace', icon: Store, accent: 'blue' },
+  { label: 'Enterprise Systems', detail: 'Software · infrastructure · large systems', href: '/marketplace', icon: Store, accent: 'blue' },
   { label: 'Arena', detail: 'Ideas into action · real competition', href: '/client/arena', icon: Swords, accent: 'violet' },
   { label: 'Casino', detail: 'Engagement · more possibilities', href: '/client/casino', icon: Dices, accent: 'red' },
-  { label: 'Vault', detail: 'Assets · movement · your progress', href: '/client/deposit', icon: Wallet, accent: 'blue' },
+  { label: 'Client Money', detail: 'Holding · deposits · value movement', href: '/client/deposit', icon: Wallet, accent: 'blue' },
 ]
 
 const rightNodes: WorldNode[] = [
@@ -189,7 +189,7 @@ export default function ClientFlameEventDashboard({ event }: { event: WeaveEvent
               ['Administration', '/client/chat/admin', Shield],
             ]} />
             <SidebarGroup title="Districts" items={[
-              ['Market', '/marketplace', Store],
+              ['Enterprise Systems', '/marketplace', Store],
               ['Arena', '/client/arena', Swords],
               ['Casino', '/client/casino', Dices],
               ['Vault', '/client/deposit', Wallet],

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         rail: 'TRX',
         amountLabel: `${Number(amount).toLocaleString()} TRX`,
         secondaryLabel: `${Number(amount).toLocaleString()} Flame Coin after verification`,
-        adminLink: '/admin/dashboard#tron',
+        adminLink: '/admin/client-deposits',
       })
     }
 

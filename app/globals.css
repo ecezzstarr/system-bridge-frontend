@@ -167,13 +167,21 @@
   
   /* Mobile-first responsive base */
   html {
-    font-size: 16px;
+    font-size: 17px;
   }
   
   @media (min-width: 768px) {
     html {
-      font-size: 16px;
+      font-size: 17px;
     }
+  }
+
+  /* WEAVE uses many dense system labels. Keep them compact but readable. */
+  [class~="text-[8px]"],
+  [class~="text-[9px]"],
+  [class~="text-[10px]"] {
+    font-size: 0.75rem !important;
+    line-height: 1.05rem !important;
   }
   
   /* Touch targets - minimum 44x44px for mobile accessibility */

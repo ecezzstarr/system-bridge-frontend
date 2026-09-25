@@ -251,7 +251,7 @@ function RegisterContent() {
             onScroll={handleTermsScroll}
             className="h-64 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-lg p-4 text-xs text-slate-400 space-y-3"
           >
-            <p><strong className="text-slate-300">1. Platform Nature.</strong> WEAVE is a paid operational platform. Access to Arena, Casino, Marketplace, and related tools may require an active balance, subscription, or company approval.</p>
+            <p><strong className="text-slate-300">1. Platform Nature.</strong> WEAVE is a paid operational platform. Access to Arena, Casino, the Enterprise Systems Exchange, and related paid functions may require an active balance, subscription, contract, or company approval.</p>
             <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents represent WEAVE directly and are compensated on a fixed schedule set by Administration.' : 'Bridgers operate as independent partners connecting clients to WEAVE and earn a share of client activity, subject to an active monthly subscription.'}</p>
             <p><strong className="text-slate-300">3. Financial Conduct.</strong> All deposits, withdrawals, and client fund handling must go through WEAVE's official channels. Off-platform arrangements with clients are not covered or protected by WEAVE.</p>
             <p><strong className="text-slate-300">4. Continuance & Access.</strong> Certain roles may be suspended if recurring dues are not paid within the grace period communicated to you.</p>

@@ -8,6 +8,7 @@ import { ensureClientInternationalPaymentProfile } from '@/lib/client-internatio
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
+import { getFileFolderTier } from '@/lib/file-folder-pricing'
 
 export async function GET(request: NextRequest) {
   try {
@@ -126,6 +127,7 @@ export async function GET(request: NextRequest) {
     const withdrawals=await sql`SELECT id,amount,currency,destination,status,created_at FROM client_vault_withdrawals WHERE client_id=${client.id}::uuid ORDER BY created_at DESC LIMIT 20`
     const enterpriseState=await getEnterpriseDream(sql,client.id)
     const fileFolderWorld=await getFileFolderWorldSnapshot(sql,client.id,client.file_number)
+    const fileFolderTier=getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'legacy'
 
     const workshopType=workshop.workshop_type
     const isCrypto=workshopType==='crypto_exchange'
@@ -153,6 +155,8 @@ export async function GET(request: NextRequest) {
       file_folder:folder,
       file_folder_world:fileFolderWorld,
       build_funding:fileFolderWorld.buildFunding,
+      file_folder_tier:fileFolderTier,
+      premium_dj_enabled:fileFolderTier==='premium',
       vault:{
         balance:money.vault.balance,
         currency:money.vault.currency,

@@ -17,13 +17,14 @@ import {
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
+import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 
 const WeaveHero3D = dynamic(
   () => import('@/components/weave-hero-3d').then(m => m.WeaveHero3D),
   { ssr: false }
 )
 
-const movement = ['Presence', 'Interaction', 'Participation', 'Work', 'Value', 'Opportunity']
+const movement = ['Presence', 'Interaction', 'Work', 'Value', 'Participation', 'Livelihood']
 
 const systems = [
   {
@@ -101,7 +102,7 @@ export default function Home() {
                 </h1>
 
                 <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                  WEAVE is an interactional company. We create services, instruments, and systems that turn human participation into organized work, value, and opportunity.
+                  {WEAVE_SYSTEM_MAP.identity.publicDescription}
                 </p>
 
                 <div className="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -152,7 +153,7 @@ export default function Home() {
             <div className="rounded-[1.6rem] border border-white/10 bg-[#020713]/54 p-4 backdrop-blur-md sm:p-5">
               <p className="text-[8px] font-black uppercase tracking-[0.20em] text-sky-300">What WEAVE Builds</p>
               <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
-                Systems around the movement already present in human life.
+                Technology and systems formed around movement already present in human life.
               </h2>
               <p className="mt-3 text-sm leading-6 text-slate-400">
                 Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value.

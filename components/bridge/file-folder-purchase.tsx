@@ -43,7 +43,7 @@ export default function FileFolderPurchase({
     (selectedTier !== 'standard' || selectedPrice < PREMIUM_PRICE)
 
   useEffect(() => {
-    fetch('/api/system-switch/file-folder')
+    fetch('/api/bridge/file-folder')
       .then(async response => response.ok ? response.json() : null)
       .then(data => setWallet(data?.companyTrxWallet || data?.depositWallet || ''))
       .catch(() => setWallet(''))
@@ -63,7 +63,7 @@ export default function FileFolderPurchase({
     setMessage('')
 
     try {
-      const res = await fetch('/api/system-switch/file-folder/purchase', {
+      const res = await fetch('/api/bridge/file-folder/purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,10 +95,10 @@ export default function FileFolderPurchase({
   return (
     <section className="mt-4 rounded-[2rem] border border-white/10 bg-slate-950/95 p-6 text-white md:p-8">
       <div>
-        <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300">System Switch · File Folder</p>
+        <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300">Bridge → File Folder</p>
         <h2 className="mt-2 text-2xl font-semibold">Choose your File Folder</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-          Every File Folder establishes a Client inside Weave. Premium remains {PREMIUM_PRICE.toLocaleString()} Flame Coin.
+          The File Folder establishes the place that becomes a Client world after payment verification and Client registration. Premium remains {PREMIUM_PRICE.toLocaleString()} Flame Coin.
           Standard lets anyone enter from {STANDARD_MIN.toLocaleString()} Flame Coin up to any value below Premium.
           1 Flame Coin = 1 TRX. File Folder value also establishes starting Build Power.
         </p>
@@ -116,7 +116,7 @@ export default function FileFolderPurchase({
           </div>
           <p className="mt-3 text-3xl font-black text-[#e8b93f]">{PREMIUM_PRICE.toLocaleString()}</p>
           <p className="text-xs text-slate-400">Flame Coin · {PREMIUM_PRICE.toLocaleString()} TRX</p>
-          <p className="mt-3 text-xs leading-5 text-slate-500">Fixed premium crossing value.</p>
+          <p className="mt-3 text-xs leading-5 text-slate-500">Fixed Premium File Folder value.</p>
         </button>
 
         <button
@@ -150,8 +150,8 @@ export default function FileFolderPurchase({
             />
             <span className="text-xs font-semibold text-slate-500">Flame Coin</span>
           </div>
-          {validPrice && selectedPrice < PUBLIC_DOOR_THRESHOLD && <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 text-[10px] leading-5 text-amber-100">This starting value is below half of Premium. Your Client can still enter System Switch and begin the File Folder, but the first Customer Door will stop at a funding gate until total verified participation reaches {PUBLIC_DOOR_THRESHOLD.toLocaleString()} Flame Coin. Additional verified Flame Coin also increases build speed.</div>}
-          {validPrice && selectedPrice >= PUBLIC_DOOR_THRESHOLD && <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-[10px] leading-5 text-emerald-200">This starting value clears the first Customer Door funding threshold. Higher File Folder value and later verified Flame Coin increase construction speed.</div>}
+          {validPrice && selectedPrice < PUBLIC_DOOR_THRESHOLD && <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 text-[10px] leading-5 text-amber-100">This starting value is below half of Premium. After verification and Client registration, System Switch can open and the File Folder can begin early builds, but the first Customer Door will stop at a funding gate until total verified participation reaches {PUBLIC_DOOR_THRESHOLD.toLocaleString()} Flame Coin. Additional verified Flame Coin also increases build speed.</div>}
+          {validPrice && selectedPrice >= PUBLIC_DOOR_THRESHOLD && <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-[10px] leading-5 text-emerald-200">This starting value clears the first Customer Door funding threshold once the Client enters System Switch. Higher File Folder value and later verified Flame Coin increase construction speed.</div>}
           <p className={`mt-2 text-[10px] ${validPrice ? 'text-slate-500' : 'text-red-300'}`}>
             {validPrice
               ? `You will send ${selectedPrice.toLocaleString()} TRX.`

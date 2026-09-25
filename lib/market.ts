@@ -87,7 +87,7 @@ export async function createProspectPackage(adminId: string, contactIds: string[
   // Calculate price: 1.1 Flame Coin per prospect if no specific price is provided
   const finalPrice = priceTrx || (contactIds.length * 1.1)
   const title = `Prospect Package #${Math.floor(Math.random() * 9000) + 1000}`
-  const description = `${contactIds.length} qualified prospects generated via Weave Engine.`
+  const description = `${contactIds.length} Prospect candidates organized through the WEAVE Prospect Engine. Contact reachability is confirmed only through real outreach.`
 
   const pkg = await sql`
     INSERT INTO market_prospect_packages (created_by, title, description, price_trx, status)
@@ -123,17 +123,20 @@ export async function generateNumberSeries(adminId: string, sourceNumber: string
     const currentSuffix = (startSuffix + i).toString().padStart(3, '0')
     const phoneNumber = `+${prefix}${currentSuffix}`
     
-    // Simulate reachability check (80% reachable for demo)
-    const isReachable = Math.random() > 0.2
-    
-    if (isReachable) {
-      const contact = await sql`
-        INSERT INTO market_prospect_contacts (phone, whatsapp_number, source_platform, status)
-        VALUES (${phoneNumber}, ${phoneNumber}, 'number_engine', 'available')
-        RETURNING *
-      `
-      contacts.push(contact[0])
-    }
+    // Number generation creates a candidate only. WEAVE must not invent
+    // reachability; that becomes known through actual outreach and response.
+    const contact = await sql`
+      INSERT INTO market_prospect_contacts (phone, whatsapp_number, source_platform, status, notes)
+      VALUES (
+        ${phoneNumber},
+        ${phoneNumber},
+        'number_engine_candidate',
+        'available',
+        'Generated candidate. Reachability has not been independently verified.'
+      )
+      RETURNING *
+    `
+    contacts.push(contact[0])
   }
 
   const series = await sql`

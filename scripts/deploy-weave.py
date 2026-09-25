@@ -23,7 +23,7 @@ def smoke(url):
  with urllib.request.urlopen(url+'/api/health',timeout=60) as response:
   assert response.status==200 and json.load(response).get('status')=='healthy'
  with urllib.request.urlopen(url,timeout=60) as response:
-  html=html_module.unescape(re.sub(r'<[^>]+>', ' ', response.read().decode()));html=' '.join(html.split());assert 'Interaction in Motion.' in html and 'WEAVE is an interactional company.' in html, 'WEAVE homepage identity missing'
+  html=html_module.unescape(re.sub(r'<[^>]+>', ' ', response.read().decode()));html=' '.join(html.split());assert 'Interaction in Motion.' in html and 'An interactional company that turns human participation into organized work, value, systems and opportunity.' in html, 'WEAVE homepage identity missing'
  for route in ['/login','/client/loops','/company/loops','/admin/loop-workshop']:
   with urllib.request.urlopen(url+route,timeout=60) as response:assert response.status==200,route
  try:

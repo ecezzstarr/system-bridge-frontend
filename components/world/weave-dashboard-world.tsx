@@ -25,6 +25,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
+import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 
 export type WorldRole = 'client' | 'bridger' | 'agent' | 'admin'
 
@@ -55,14 +56,14 @@ const ROLE: Record<WorldRole, {
     eyebrow: 'Client World',
     title: 'Your world. Your movement.',
     subtitle: 'Enter one function at a time while the WEAVE world remains around you.',
-    purpose: 'You are the player. Your File Folder, movement and participation remain centered on your own path.',
+    purpose: WEAVE_SYSTEM_MAP.positions.client.description,
     functionsHref: '/client/functions',
     links: [
       { label: 'System Switch', detail: 'Enter Main File Folder', href: '/client/system-switch', icon: Orbit, tone: 'sky' },
       { label: 'Company Loops', detail: 'Events and participation', href: '/client/loops', icon: GitBranch, tone: 'gold' },
       { label: 'Main Wallet', detail: 'Operational funds', href: '/client/deposit', icon: Wallet, tone: 'emerald' },
       { label: 'Your Bridger', detail: 'Human support', href: '/client/chat/bridger', icon: Users, tone: 'emerald' },
-      { label: 'Marketplace', detail: 'Services and value', href: '/marketplace', icon: Store, tone: 'sky' },
+      { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Million-scale technology', href: '/marketplace', icon: Store, tone: 'sky' },
       { label: 'Arena', detail: 'Participant contest', href: '/client/arena', icon: Gamepad2, tone: 'gold' },
       { label: 'Casino', detail: 'System patterns', href: '/client/casino', icon: Sparkles, tone: 'violet' },
       { label: 'Bridge Plaza', detail: 'Shared WEAVE world', href: '/weave', icon: Globe2, tone: 'sky' },
@@ -72,14 +73,14 @@ const ROLE: Record<WorldRole, {
     eyebrow: 'Bridger World',
     title: 'Connection in motion.',
     subtitle: 'Prospects, Clients and Bridge functions open as separate places, not one long page.',
-    purpose: 'Your position is connection. You move prospects toward Client formation and accompany Clients already in motion.',
+    purpose: WEAVE_SYSTEM_MAP.positions.bridger.description,
     functionsHref: '/bridger/functions',
     links: [
       { label: 'Bridge AI', detail: 'Prospect workshop', href: '/bridger/bridge-ai', icon: GitBranch, tone: 'sky' },
       { label: 'Prospect Market', detail: 'Available prospects', href: '/weave/market/prospects', icon: ShoppingBag, tone: 'gold' },
       { label: 'Clients', detail: 'People in motion', href: '/clients', icon: Users, tone: 'emerald' },
       { label: 'Guidance', detail: 'Company support', href: '/company-chat', icon: Headphones, tone: 'sky' },
-      { label: 'Marketplace', detail: 'Trade and value', href: '/marketplace', icon: Store, tone: 'sky' },
+      { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Software + infrastructure', href: '/marketplace', icon: Store, tone: 'sky' },
       { label: 'Record', detail: 'Ledger and preserved movement', href: '/ledger', icon: CircleDollarSign, tone: 'emerald' },
       { label: 'Arena', detail: 'Contest district', href: '/arena', icon: Gamepad2, tone: 'gold' },
       { label: 'Bridge Plaza', detail: 'Shared world', href: '/weave', icon: Globe2, tone: 'violet' },
@@ -89,14 +90,14 @@ const ROLE: Record<WorldRole, {
     eyebrow: 'Agent World',
     title: 'Support made practical.',
     subtitle: 'Your Bridgers, company work and delivery functions now open independently from Home.',
-    purpose: 'Your position is support and execution. You help Bridgers move and keep company participation operating.',
+    purpose: WEAVE_SYSTEM_MAP.positions.agent.description,
     functionsHref: '/agent/functions',
     links: [
       { label: 'My Bridgers', detail: 'Your working team', href: '/agent/bridgers', icon: Users, tone: 'sky' },
       { label: 'Agility', detail: 'Food distribution', href: '/agility', icon: ShoppingBag, tone: 'gold' },
       { label: 'Channels', detail: 'Company positions', href: '/agent/channels', icon: Network, tone: 'violet' },
       { label: 'Continuance', detail: 'Commission and returns', href: '/agent/commissions', icon: CircleDollarSign, tone: 'emerald' },
-      { label: 'Marketplace', detail: 'Trade and opportunity', href: '/marketplace', icon: Store, tone: 'sky' },
+      { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Large technology systems', href: '/marketplace', icon: Store, tone: 'sky' },
       { label: 'Lounge', detail: 'Communication', href: '/lounge', icon: MessageSquare, tone: 'sky' },
       { label: 'Arena', detail: 'Contest district', href: '/arena', icon: Gamepad2, tone: 'gold' },
       { label: 'Bridge Plaza', detail: 'Shared world', href: '/weave', icon: Globe2, tone: 'violet' },
@@ -106,7 +107,7 @@ const ROLE: Record<WorldRole, {
     eyebrow: 'Administration',
     title: 'The institution in view.',
     subtitle: 'Authority functions remain separate operating rooms inside one WEAVE world.',
-    purpose: 'Administration holds the higher structure: recognition, organization, activation and continuity across WEAVE.',
+    purpose: WEAVE_SYSTEM_MAP.positions.admin.description,
     functionsHref: '/admin/functions',
     links: [
       { label: 'Company Loops', detail: 'Shared movement', href: '/company/loops', icon: GitBranch, tone: 'gold' },

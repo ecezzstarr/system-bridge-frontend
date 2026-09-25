@@ -183,6 +183,17 @@ async function seedFileFolderWorld(sql: any) {
     ['data_kit', 'Data Kit', 'technology', 'Provides the structured data component for a persistent information system.', 10],
     ['architecture_kit', 'Architecture Kit', 'formation', 'Carries a larger multi-function system through longer formation.', 15],
     ['integration_kit', 'Integration Kit', 'technology', 'Carries connections between several persistent WEAVE systems.', 20],
+    ['crypto_exchange_kit', 'Crypto Exchange Workshop Kit', 'technology', 'Core components for a Client-owned crypto exchange workshop: market records, buy/sell movement, holdings and order flow.', 480],
+    ['ai_flame_kit', 'AI Flame Service Kit', 'technology', 'Adds an AI-assisted service desk that can receive questions, organize requests and preserve support movement.', 320],
+    ['commerce_kit', 'Commerce Storefront Kit', 'business', 'Build components for a Client storefront, offers, order intake and customer movement.', 220],
+    ['payments_kit', 'Payments Gateway Kit', 'technology', 'Build components for payment instructions, settlement records and international payment workflow.', 390],
+    ['campaign_kit', 'Campaign System Kit', 'business', 'Build components for structured campaigns, audience movement, response records and follow-up.', 180],
+    ['learning_lab_kit', 'Learning Lab Kit', 'library', 'Build components for lessons, progress, exercises and a persistent learning environment.', 150],
+    ['operations_suite_kit', 'Operations Suite Kit', 'formation', 'A larger working kit for teams, tasks, approvals, records and recurring operating movement.', 650],
+    ['mobile_app_kit', 'Mobile Service App Kit', 'technology', 'Components for a Client-facing mobile service experience with account, request and notification movement.', 900],
+    ['intelligence_lab_kit', 'Intelligence Lab Kit', 'technology', 'Components for structured AI-assisted research, analysis, records and reusable intelligence.', 780],
+    ['market_network_kit', 'Marketplace Network Kit', 'business', 'Components for multi-offer marketplace movement, sellers, buyers, orders and records.', 1200],
+    ['enterprise_core_kit', 'Enterprise Core Kit', 'formation', 'High-capacity components for a long-form enterprise operating system with multiple functions and participants.', 1800],
   ]
 
   for (const item of items) {
@@ -204,7 +215,18 @@ async function seedFileFolderWorld(sql: any) {
     ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A public customer-facing system where people outside WEAVE can discover, request and purchase the Client’s products or services.', 6, null, 0],
     ['data_room', 'Data Room', 'technology_district', 'data_room', 'A structured system for persistent records and reusable information.', 10, 'data_kit', 1],
     ['enterprise_shell', 'Enterprise System Shell', 'formation_yard', 'enterprise_shell', 'A larger multi-function system shell that can hold operations, people, records and later enterprise modules.', 24, 'architecture_kit', 1],
-    ['integration_network', 'Integration Network', 'technology_district', 'integration_network', 'A long-form build that organizes connections between several systems in the Client File Folder.', 48, 'integration_kit', 1],
+    ['integration_network', 'Integration Network', 'technology_district', 'integration_network', 'A long-form build that organizes connections between several persistent WEAVE systems.', 48, 'integration_kit', 1],
+    ['crypto_exchange_workshop', 'Crypto Exchange Workshop', 'technology_district', 'crypto_exchange_workshop', 'A Client-owned workshop inspired by the CJ Dorado build: market movement, buy/sell records, holdings, orders, business operation and technology formation.', 72, 'crypto_exchange_kit', 1],
+    ['ai_service_desk', 'AI Flame Service Desk', 'technology_district', 'ai_service_desk', 'A service system where AI assists the Client with intake, support movement, responses and persistent records.', 36, 'ai_flame_kit', 1],
+    ['commerce_storefront', 'Commerce Storefront', 'market_district', 'commerce_storefront', 'A customer-facing commerce system for offers, orders, patronage and fulfillment movement.', 24, 'commerce_kit', 1],
+    ['payments_gateway', 'Payments Gateway Workshop', 'technology_district', 'payments_gateway', 'A payment-operation workshop for instructions, settlement records and international payment movement.', 48, 'payments_kit', 1],
+    ['campaign_system', 'Campaign System', 'market_district', 'campaign_system', 'A persistent campaign environment for audience, messages, responses, follow-up and conversion records.', 20, 'campaign_kit', 1],
+    ['learning_lab', 'Learning Lab', 'library_district', 'learning_lab', 'A Client-owned learning environment with lessons, progress, exercises and participation records.', 16, 'learning_lab_kit', 1],
+    ['operations_suite', 'Operations Suite', 'formation_yard', 'operations_suite', 'A larger operating system for teams, tasks, approvals, recurring work and institutional records.', 60, 'operations_suite_kit', 1],
+    ['mobile_service_app', 'Mobile Service App', 'technology_district', 'mobile_service_app', 'A Client-facing mobile service system for account access, requests, notifications and continuing customer interaction.', 72, 'mobile_app_kit', 1],
+    ['intelligence_lab', 'Intelligence Lab', 'library_district', 'intelligence_lab', 'A persistent AI-assisted research and analysis system that turns findings into reusable Client intelligence.', 96, 'intelligence_lab_kit', 1],
+    ['marketplace_network', 'Marketplace Network', 'market_district', 'marketplace_network', 'A multi-offer marketplace system with seller, buyer, order and movement records.', 120, 'market_network_kit', 1],
+    ['enterprise_operating_system', 'Enterprise Operating System', 'formation_yard', 'enterprise_operating_system', 'A long-form operating system for multiple functions, participants, records, approvals and enterprise movement.', 168, 'enterprise_core_kit', 1],
   ]
 
   for (const blueprint of blueprints) {
@@ -217,16 +239,7 @@ async function seedFileFolderWorld(sql: any) {
         ${blueprint[0]}, ${blueprint[1]}, ${blueprint[2]}, ${blueprint[3]},
         ${blueprint[4]}, ${blueprint[5]}, ${blueprint[6]}, ${blueprint[7]}, true
       )
-      ON CONFLICT (blueprint_key) DO UPDATE SET
-        name=EXCLUDED.name,
-        district=EXCLUDED.district,
-        system_type=EXCLUDED.system_type,
-        description=EXCLUDED.description,
-        build_hours=EXCLUDED.build_hours,
-        required_item_key=EXCLUDED.required_item_key,
-        required_item_quantity=EXCLUDED.required_item_quantity,
-        published=EXCLUDED.published,
-        updated_at=NOW()
+      ON CONFLICT (blueprint_key) DO NOTHING
     `
   }
 
@@ -456,7 +469,8 @@ export async function getFileFolderWorldSnapshot(
   const blueprints = await sql`
     SELECT
       b.*,
-      COALESCE(i.name,'') AS required_item_name
+      COALESCE(i.name,'') AS required_item_name,
+      COALESCE(i.price_flame_coin,0) AS required_item_price_flame_coin
     FROM weave_file_folder_blueprints b
     LEFT JOIN weave_file_folder_items i ON i.item_key=b.required_item_key
     WHERE b.published=true

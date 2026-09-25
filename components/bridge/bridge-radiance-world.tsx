@@ -67,7 +67,7 @@ function Scene({ active, onSelect }: { active: string | null; onSelect: (id: str
   )
 }
 
-export default function SystemSwitchWorld({ fileNumber, onCrossingRequest, initialMovement, flameName, topic }: { fileNumber?: string | null; onCrossingRequest?: () => void; initialMovement?: string | null; flameName?: string | null; topic?: string | null }) {
+export default function BridgeRadianceWorld({ fileNumber, onCrossingRequest, initialMovement, flameName, topic }: { fileNumber?: string | null; onCrossingRequest?: () => void; initialMovement?: string | null; flameName?: string | null; topic?: string | null }) {
   const [active, setActive] = useState<string | null>(null)
   const [movements, setMovements] = useState(0)
 
@@ -81,8 +81,8 @@ export default function SystemSwitchWorld({ fileNumber, onCrossingRequest, initi
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-6">
         <div>
           <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300/80">The Weave of Presence</p>
-          <h1 className="mt-2 text-3xl font-semibold">SYSTEM SWITCH</h1>
-          <p className="mt-1 text-sm text-slate-400">Subject · System Switch — Bridge Radiance</p>
+          <h1 className="mt-2 text-3xl font-semibold">BRIDGE RADIANCE</h1>
+          <p className="mt-1 text-sm text-slate-400">Bridge · Prospect movement toward Client formation</p>
           <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-white/45">Topic · {topic || 'Interaction in Motion'}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-right backdrop-blur">
@@ -94,15 +94,15 @@ export default function SystemSwitchWorld({ fileNumber, onCrossingRequest, initi
       <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/80 to-transparent px-6 pb-6 pt-28">
         {initialMovement ? (
           <div className="mb-4 max-w-2xl rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4 backdrop-blur">
-            <p className="text-[9px] uppercase tracking-[0.25em] text-sky-300">Crossing arrived · Prospect + {flameName || 'Flame'}</p>
+            <p className="text-[9px] uppercase tracking-[0.25em] text-sky-300">Bridge arrived · Prospect + {flameName || 'Flame'}</p>
             <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">{initialMovement}</p>
           </div>
         ) : null}
         <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">Test Movement · {movements}</p>
         <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-xl font-medium">Your movement changes the world.</h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Your interaction continues here. Encounter the company positions as the movement that arrived with your Flame becomes recognized inside System Switch.</p>
+            <h2 className="text-xl font-medium">Your movement is forming a Client path.</h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Your interaction continues here in Bridge Radiance. Encounter the company positions as the Prospect movement becomes clear enough to form a File Folder and later enter System Switch as a Client.</p>
           </div>
           <button type="button" disabled={!active} onClick={onCrossingRequest} className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] disabled:opacity-30">Approach Recognition</button>
         </div>

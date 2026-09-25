@@ -19,7 +19,7 @@ export const AGENT_CONTENT = {
     "Weave is an interactional company. This whole platform is an interaction in motion real life gaming operating system for human presence. We create services, instruments, and systems that turn human participation into organized work, value, and opportunity. Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value. As an Agent, you have a place inside that movement as a Weave employee.",
   role: 'Your role is to build, manage and support Bridgers who work with Weave.',
   earningMovements: [
-    `You earn ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% whenever your Bridger purchases a prospect lead from the marketplace.`,
+    `You earn ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% whenever your Bridger purchases a Prospect through the Prospect Market.`,
     `When that prospect becomes a Weave Client through a Standard or Premium File Folder, you earn 5% of Weave's 40% company percentage from the actual File Folder purchase value.`,
   ],
   calculations: [
@@ -38,7 +38,7 @@ export const BRIDGER_CONTENT = {
   positionSummary:
     'Weave is an interactional company. This whole platform is an interaction in motion real life gaming operating system for human presence. We create services, instruments, and systems that turn human participation into organized work, value, and opportunity. Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value. As a Bridger, you have a place within that movement as a partner working with Weave.',
   role: 'Your role is to take a prospect provided through Weave, make the human connection, introduce the person to Weave and guide the interaction toward participation.',
-  action: `You purchase prospects from the marketplace and use the available outreach system to contact them. A prospect may enter through a Standard File Folder from ${STANDARD_FILE_FOLDER_MIN.toLocaleString()} Flame Coin up to anything below ${FILE_FOLDER_FLAME_COIN.toLocaleString()}, or through the Premium File Folder at ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin. Once the File Folder is verified, that prospect becomes a Client of Weave. Flame Coin is the internal wrapper for TRX value; OPay funding is converted using the current TRX/NGN rate.`,
+  action: `You acquire Prospects through the Prospect Market and use the authorized outreach system to contact them. A prospect may enter through a Standard File Folder from ${STANDARD_FILE_FOLDER_MIN.toLocaleString()} Flame Coin up to anything below ${FILE_FOLDER_FLAME_COIN.toLocaleString()}, or through the Premium File Folder at ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin. Once the File Folder is verified, that prospect becomes a Client of Weave. Flame Coin is the internal wrapper for TRX value; OPay funding is converted using the current TRX/NGN rate.`,
   earnings: [
     `Reference value: 1 Flame Coin = 1 TRX (₦${FLAME_COIN_RATE} per TRX at the configured reference rate):`,
     `File Folder: ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin = ₦${FILE_FOLDER_NGN}`,
@@ -80,7 +80,7 @@ export const HOW_WEAVE_WORKS = {
   summary:
     'WEAVE is the institution.\n\nAdministration governs the system.\nAgents develop Bridgers.\nBridgers build and maintain Client relationships.\nClients are the center of the experience.\n\nThe Client is the game player inside System Switch, where the Client’s real-life movement forms the continuing game. Arena and Casino are separate shared platform experiences available across user roles; participation in them does not change a user’s institutional position. The Company also provides Client-facing Company positions that serve Clients, present curated experiences, and help resolve private matters.\n\nThe Client remains connected to WEAVE through the relationship with the Bridger and through the experience provided by the Company.',
   institutionalFlow: 'Administration → Agent → Bridger → Client',
-  clientFlow: 'WEAVE → Bridger relationship → Client entry → File Folder → File Number → personalized workshop → Customer Door formation → publish product/service → outside customer patronage → build + learn + participate → Client Vault / Siblings Funds Wallet / Main Client Wallet → continued systems and livelihood',
+  clientFlow: 'WEAVE → Bridger relationship → Prospect movement → File Folder → File Number → System Switch → Client World → build + learn + participate → Customer Door → outside patronage → Enterprise → Client Vault / Siblings Funds Wallet / Main Client Wallet → continued systems and livelihood',
 }
 
 export const TERMS_SECTIONS = [

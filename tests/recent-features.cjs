@@ -177,7 +177,7 @@ assert.ok(notificationsApiSource.includes('getAuthUser'),'Notification inbox req
 assert.ok(!notificationsApiSource.includes("searchParams.get('userId')"),'Notification inbox cannot select another user by query parameter')
 assert.ok(notificationBellSource.includes("setInterval(fetchNotifications, 5000)"),'Notification bell polls promptly')
 assert.ok(opayDepositSource.includes('/admin/dashboard#deposits'),'OPay notification deep-links to OPay review')
-assert.ok(tronDepositSource.includes('/admin/dashboard#tron'),'TRX notification deep-links to TRX review')
+assert.ok(tronDepositSource.includes('/admin/client-deposits'),'TRX notification deep-links to dedicated Client deposit review')
 assert.ok(bridgeDepositSource.includes('/admin/dashboard#bridge'),'Bridge notification deep-links to Bridge review')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#deposits'"),'Admin dashboard handles OPay notification hash')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#tron'"),'Admin dashboard handles TRX notification hash')
@@ -250,8 +250,10 @@ assert.ok(departmentMusicSource.includes('ensureDjSchema'),'Department Entry sou
 assert.ok(fs.existsSync(path.join(root,'migrations/20260924_dj_live_broadcast.sql')),'DJ live migration exists')
 assert.ok(!homePageSource.includes('<WeaveWorldEnvironment'),'Public homepage does not mount a duplicate WEAVE world')
 assert.ok(homePageSource.includes('Interaction in Motion.'),'Homepage presents Interaction in Motion')
-assert.ok(homePageSource.includes('WEAVE is an interactional company.'),'Homepage identifies WEAVE as an interactional company')
-assert.ok(homePageSource.includes('services, instruments, and systems'),'Homepage explains WEAVE services, instruments and systems')
+const weaveSystemMapSource=fs.readFileSync(path.join(root,'lib/weave-system-map.ts'),'utf8')
+assert.ok(homePageSource.includes('WEAVE_SYSTEM_MAP.identity.publicDescription'),'Homepage renders the canonical WEAVE public description')
+assert.ok(weaveSystemMapSource.includes('An interactional company that turns human participation into organized work, value, systems and opportunity.'),'Canonical system map identifies WEAVE as an interactional company')
+assert.ok(homePageSource.includes("title: 'Services'") && homePageSource.includes("title: 'Instruments'") && homePageSource.includes("title: 'Systems'"),'Homepage explains WEAVE services, instruments and systems')
 assert.ok(homePageSource.includes('Client Access Point'),'Homepage contains a dedicated Client access surface')
 assert.ok(homePageSource.includes('href="/client/login"'),'Homepage directs existing Clients to the Client Portal')
 const clientNavSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
@@ -375,9 +377,10 @@ assert.ok(!clientNavUnifiedSource.includes('eventIsLive'),'Client navigation rem
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
 assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Loop 1 Ground'),'Sidebar exposes Loop 1 as a WEAVE destination')
-assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Bridger Functions'),'Sidebar exposes Bridger functions separately')
-assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Agent Functions'),'Sidebar exposes Agent functions separately')
-assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Administration Functions'),'Sidebar exposes Administration functions separately')
+const canonicalSidebarSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+assert.ok(canonicalSidebarSource.includes('Bridger Operating Room'),'Sidebar exposes the Bridger operating room in Position')
+assert.ok(canonicalSidebarSource.includes('Agent Operating Room'),'Sidebar exposes the Agent operating room in Position')
+assert.ok(canonicalSidebarSource.includes('Administration Operating Room'),'Sidebar exposes the Administration operating room in Position')
 for(const route of [
  'app/(app)/bridger/functions/page.tsx',
  'app/(app)/agent/functions/page.tsx',
@@ -443,7 +446,7 @@ const fileFolderWorldApiSource=fs.readFileSync(path.join(root,'app/api/client/fi
 const publicCustomerDoorSource=fs.readFileSync(path.join(root,'app/store/[slug]/page.tsx'),'utf8')
 const publicCustomerOrdersSource=fs.readFileSync(path.join(root,'app/api/public/store/[slug]/orders/route.ts'),'utf8')
 const customerDoorPanelSource=fs.readFileSync(path.join(root,'components/system-switch/client-customer-door-panel.tsx'),'utf8')
-const fileFolderPurchaseSource=fs.readFileSync(path.join(root,'components/system-switch/file-folder-purchase.tsx'),'utf8')
+const fileFolderPurchaseSource=fs.readFileSync(path.join(root,'components/bridge/file-folder-purchase.tsx'),'utf8')
 const worldRulesSource=fs.readFileSync(path.join(root,'lib/world/constants.ts'),'utf8')
 assert.ok(worldRulesSource.includes('FILE_FOLDER_PUBLIC_DOOR_THRESHOLD_FLAME_COIN: 17900'),'Half-Premium Customer Door threshold is canonical')
 assert.ok(worldRulesSource.includes('CLIENT_BUILD_SPEED_MAX: 4'),'Client build speed cap is canonical')
@@ -457,6 +460,11 @@ assert.ok(publicCustomerDoorSource.includes("formation_status='selling'"),'Outsi
 assert.ok(publicCustomerOrdersSource.includes("formation_status='selling'"),'Outsider orders cannot bypass the Customer Door gate')
 assert.ok(customerDoorPanelSource.includes('requiredToOpenPublicDoorFlameCoin'),'Client sees the exact Flame Coin shortfall')
 assert.ok(fileFolderPurchaseSource.includes('PUBLIC_DOOR_THRESHOLD'),'File Folder buyer sees the Customer Door threshold before purchase')
+assert.ok(fileFolderPurchaseSource.includes('/api/bridge/file-folder'),'Pre-client File Folder funding lives under Bridge')
+assert.ok(fileFolderPurchaseSource.includes('/api/bridge/file-folder/purchase'),'Pre-client File Folder purchase lives under Bridge')
+assert.ok(fileFolderWorldSource.includes('crypto_exchange_workshop'),'Client build catalog includes a Crypto Exchange Workshop')
+assert.ok(fileFolderWorldSource.includes('enterprise_operating_system'),'Client build catalog includes high-capacity enterprise systems')
+assert.ok(fileFolderWorldSource.includes('ON CONFLICT (blueprint_key) DO NOTHING'),'Seed bootstrap preserves Administration blueprint edits')
 
 for(const cameraFile of ['components/world/presence-camera.tsx','lib/presence-camera.ts','components/world/weave-normal-world-backdrop.tsx','components/world/weave-world-environment.tsx']){
  const source=fs.readFileSync(path.join(root,cameraFile),'utf8')
@@ -487,6 +495,9 @@ assert.ok(presenceCameraLibSource.includes('PRESENCE_TRACE_KEY'),'Human movement
 assert.ok(presenceCameraSource.includes("document.addEventListener('click',onClick,true)"),'Written navigation and button clicks are captured as human outputs')
 assert.ok(presenceCameraSource.includes("'weave:presence-output'"),'Presence outputs are emitted to the moving system')
 assert.ok(presenceCameraSource.includes("lastOutput?.type === 'action'"),'In-page actions create a camera focus movement')
+assert.ok(presenceCameraSource.includes('data-presence-rhythm'),'Presence Camera keeps a continuous breathing rhythm between interactions')
+assert.ok(presenceCameraSource.includes('scene.camera.yaw'),'Page content settles into the scene camera angle')
+assert.ok(presenceCameraSource.includes('scene.camera.depth'),'Scene depth affects the settled camera scale')
 assert.ok(worldBackdropPresenceSource.includes('usePresenceCamera'),'Persistent WEAVE environment follows camera scene state')
 assert.ok(worldBackdropPresenceSource.includes('rotateY'),'World background uses camera yaw')
 assert.ok(worldBackdropPresenceSource.includes('rotateX'),'World background uses camera pitch')
@@ -600,5 +611,127 @@ assert.ok(sidebarInfrastructureSource.includes('href: "/admin/infrastructure"'),
 assert.ok(devWorkshopInfrastructureSource.includes("fetch('/api/admin/infrastructure'"),'EIGHT Deploy Center uses the shared infrastructure deployment authority')
 assert.ok(devWorkshopInfrastructureSource.includes('Deploy Preview'),'EIGHT Deploy Center no longer labels a zero-traffic build as live production')
 assert.ok(!devWorkshopInfrastructureSource.includes('> Push Live</Button>'),'Old misleading direct Push Live control is removed')
+
+const readableCssSource=fs.readFileSync(path.join(root,'app/globals.css'),'utf8')
+const recordPageSource=fs.readFileSync(path.join(root,'app/(app)/ledger/page.tsx'),'utf8')
+const premiumDjSource=fs.readFileSync(path.join(root,'components/system-switch/client-premium-dj.tsx'),'utf8')
+const clientSystemSwitchPageSource=fs.readFileSync(path.join(root,'app/client/system-switch/page.tsx'),'utf8')
+const adminBuildCatalogApiSource=fs.readFileSync(path.join(root,'app/api/admin/client-build-catalog/route.ts'),'utf8')
+const adminBuildCatalogPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/client-build-catalog/page.tsx'),'utf8')
+const adminClientDepositsApiSource=fs.readFileSync(path.join(root,'app/api/admin/client-deposits/route.ts'),'utf8')
+const adminClientDepositsPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/client-deposits/page.tsx'),'utf8')
+assert.ok(readableCssSource.includes('font-size: 17px'),'WEAVE base reading scale is larger')
+assert.ok(readableCssSource.includes('[class~="text-[10px]"]'),'Dense 10px labels receive a readable minimum size')
+assert.ok(recordPageSource.includes('isInitialized'),'Record waits for WEAVE auth initialization')
+assert.ok(recordPageSource.includes("headers: { Authorization: \`Bearer \${token}\` }"),'Record uses the initialized WEAVE session token')
+assert.ok(premiumDjSource.includes("weave:personal-dj"),'Premium Client DJ can take local sound priority')
+assert.ok(djPlayerSource.includes("window.addEventListener('weave:personal-dj'"),'Platform DJ yields while Premium personal DJ is active')
+assert.ok(enterpriseSystemSwitchSource.includes("premium_dj_enabled:fileFolderTier==='premium'"),'Only Premium File Folders receive the personal DJ capability')
+assert.ok(clientSystemSwitchPageSource.includes('<ClientPremiumDJ'),'Premium DJ is mounted inside the Client File Folder')
+assert.ok(adminBuildCatalogApiSource.includes("user.role !== 'admin'"),'Client build catalog updates are Administration-only')
+assert.ok(adminBuildCatalogPageSource.includes('Client Build Catalog'),'Administration can manage Client build pricing')
+assert.ok(sidebarInfrastructureSource.includes('/admin/client-build-catalog'),'Administration sidebar exposes Client Build Catalog')
+assert.ok(adminClientDepositsApiSource.includes("u.role='client'"),'Client deposit queue is restricted to Client funding requests')
+assert.ok(adminClientDepositsPageSource.includes('Client Deposit Requests'),'Administration has a dedicated Client deposit queue')
+assert.ok(sidebarInfrastructureSource.includes('/admin/client-deposits'),'Administration sidebar exposes Client deposits')
+for(const file of [
+ 'components/system-switch/client-premium-dj.tsx',
+ 'app/api/admin/client-build-catalog/route.ts',
+ 'app/(app)/admin/client-build-catalog/page.tsx',
+ 'app/api/admin/client-deposits/route.ts',
+ 'app/(app)/admin/client-deposits/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' post-deploy syntax/transpile check')
+}
+
+const enterpriseExchangeSource=fs.readFileSync(path.join(root,'app/(app)/marketplace/page.tsx'),'utf8')
+const enterpriseSystemsLibSource=fs.readFileSync(path.join(root,'lib/enterprise-systems.ts'),'utf8')
+const enterpriseSystemsApiSource=fs.readFileSync(path.join(root,'app/api/enterprise-systems/route.ts'),'utf8')
+const adminEnterpriseSystemsApiSource=fs.readFileSync(path.join(root,'app/api/admin/enterprise-systems/route.ts'),'utf8')
+const adminEnterpriseSystemsPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/enterprise-systems/page.tsx'),'utf8')
+const enterpriseExchangeMigrationSource=fs.readFileSync(path.join(root,'migrations/20260925_enterprise_systems_exchange.sql'),'utf8')
+const sidebarEnterpriseSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+assert.ok(enterpriseExchangeSource.includes('Enterprise Systems Exchange'),'Marketplace is now the Enterprise Systems Exchange')
+assert.ok(enterpriseExchangeSource.includes('1 Flame Coin = 1 TRX'),'Enterprise Exchange explains the Flame Coin peg')
+assert.ok(enterpriseExchangeSource.includes('indicative live conversion'),'Enterprise Exchange distinguishes live Flame Coin reference from GBP contract price')
+assert.ok(enterpriseExchangeSource.includes('/api/rate/flame-coin-gbp'),'Enterprise Exchange loads the live GBP/Flame Coin reference')
+assert.ok(enterpriseExchangeSource.includes('Software and hardware technology made buildable'),'Enterprise Exchange presents WEAVE software+hardware capability')
+assert.ok(!enterpriseExchangeSource.includes('/api/market/prospects'),'Enterprise Exchange no longer loads Bridger prospect packages')
+assert.ok(!enterpriseExchangeSource.includes('Prospective Clients'),'Enterprise Exchange no longer embeds the Bridger Prospect Market')
+assert.ok(enterpriseSystemsLibSource.includes('private_cloud_stack'),'Enterprise catalog includes private cloud infrastructure')
+assert.ok(enterpriseSystemsLibSource.includes('smart_factory_os'),'Enterprise catalog includes industrial software+hardware')
+assert.ok(enterpriseSystemsLibSource.includes('robotic_fulfillment_cell'),'Enterprise catalog includes robotics integration')
+assert.ok(enterpriseSystemsLibSource.includes('national_service_platform'),'Enterprise catalog includes national-scale institutional systems')
+assert.ok(enterpriseSystemsLibSource.includes('24000000'),'Enterprise catalog reaches £24M base system scale')
+assert.ok(enterpriseSystemsLibSource.includes('CHECK (price_gbp >= 1000000)'),'Runtime schema forbids cheap enterprise catalog pricing')
+assert.ok(fs.readFileSync(path.join(root,'lib/trx-payment.ts'),'utf8').includes('getTrxGbpRate'),'WEAVE has a live TRX/GBP rate source')
+assert.ok(fs.readFileSync(path.join(root,'lib/trx-payment.ts'),'utf8').includes('gbpToFlameCoin'),'GBP converts to Flame Coin through the 1 Flame Coin = 1 TRX peg')
+assert.ok(fs.existsSync(path.join(root,'app/api/rate/flame-coin-gbp/route.ts')),'GBP/Flame Coin reference API exists')
+assert.ok(enterpriseSystemsApiSource.includes('quotedFlameCoin'),'Enterprise acquisition snapshots the Flame Coin equivalent')
+assert.ok(adminEnterpriseSystemsPageSource.includes('quoted_flame_coin'),'Administration sees the request-time Flame Coin equivalent')
+assert.ok(enterpriseSystemsApiSource.includes("user.role !== 'client' && user.role !== 'admin'"),'Enterprise acquisition opens from Client/Admin positions, not Bridger prospect commerce')
+assert.ok(adminEnterpriseSystemsApiSource.includes('price < 1000000'),'Administration cannot price an Enterprise Exchange system below £1M')
+assert.ok(adminEnterpriseSystemsPageSource.includes('Enterprise Systems Workshop'),'Administration has an Enterprise Systems operating surface')
+assert.ok(enterpriseExchangeMigrationSource.includes('price_gbp >= 1000000'),'Production migration enforces enterprise-scale prices')
+const enterpriseSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),sidebarEnterpriseSource.indexOf('// 5. WEAVE'))
+assert.ok(!enterpriseSection.includes('Prospect Market'),'Bridger Prospect Market is removed from Enterprise navigation')
+assert.ok(!enterpriseSection.includes('Prospect Engine'),'Prospect Engine is removed from Enterprise navigation')
+assert.ok(sidebarEnterpriseSource.indexOf('Prospect Market') < sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),'Prospect Market now belongs to the Bridge side of navigation')
+assert.ok(enterpriseSection.includes('WEAVE_SYSTEM_MAP.language.marketplace'),'Enterprise navigation uses the canonical marketplace label')
+assert.ok(weaveSystemMapSource.includes("marketplace: 'Enterprise Systems Exchange'"),'Canonical marketplace label is Enterprise Systems Exchange')
+const administrationSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.indexOf('// 6. ADMINISTRATION'))
+assert.ok(administrationSection.includes('Enterprise Systems Workshop'),'Administration navigation exposes system sales control')
+for(const file of [
+ 'lib/enterprise-systems.ts',
+ 'app/api/enterprise-systems/route.ts',
+ 'app/(app)/marketplace/page.tsx',
+ 'app/api/admin/enterprise-systems/route.ts',
+ 'app/(app)/admin/enterprise-systems/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Enterprise Systems syntax/transpile check')
+}
+
+const publicSystemSwitchSource=fs.readFileSync(path.join(root,'app/system-switch/page.tsx'),'utf8')
+const bridgeEntryPageSource=fs.readFileSync(path.join(root,'app/bridge/[code]/page.tsx'),'utf8')
+const bridgeArrivalSource=fs.readFileSync(path.join(root,'components/bridge/chatgpt-bridge-arrival.tsx'),'utf8')
+const bridgeRadianceWorldSource=fs.readFileSync(path.join(root,'components/bridge/bridge-radiance-world.tsx'),'utf8')
+const oldSystemSwitchStateSource=fs.readFileSync(path.join(root,'app/api/system-switch/state/route.ts'),'utf8')
+const oldSystemSwitchActionSource=fs.readFileSync(path.join(root,'app/api/system-switch/action/route.ts'),'utf8')
+const oldSystemSwitchBridgeSource=fs.readFileSync(path.join(root,'app/api/system-switch/bridge/route.ts'),'utf8')
+const oldSystemSwitchFolderSource=fs.readFileSync(path.join(root,'app/api/system-switch/file-folder/route.ts'),'utf8')
+const oldSystemSwitchFolderPurchaseSource=fs.readFileSync(path.join(root,'app/api/system-switch/file-folder/purchase/route.ts'),'utf8')
+assert.ok(publicSystemSwitchSource.includes("redirect('/client/system-switch')"),'Public /system-switch resolves to the Client System Switch')
+assert.ok(bridgeEntryPageSource.includes('ChatGptBridgeArrival'),'ChatGPT Prospect arrival stays inside Bridge')
+assert.ok(!bridgeEntryPageSource.includes('/system-switch?bridge='),'Bridge no longer redirects a Prospect into System Switch')
+assert.ok(bridgeArrivalSource.includes('BridgeRadianceWorld'),'Bridge arrival has its own Bridge Radiance world')
+assert.ok(bridgeRadianceWorldSource.includes('BRIDGE RADIANCE'),'Prospect arrival is visibly Bridge Radiance, not System Switch')
+for(const [source,label] of [
+  [oldSystemSwitchStateSource,'legacy System Switch state'],
+  [oldSystemSwitchActionSource,'legacy System Switch action'],
+  [oldSystemSwitchBridgeSource,'legacy Prospect System Switch bridge'],
+  [oldSystemSwitchFolderSource,'legacy System Switch File Folder config'],
+  [oldSystemSwitchFolderPurchaseSource,'legacy System Switch File Folder purchase'],
+]){
+  assert.ok(source.includes('status: 410'),label+' endpoint is retired')
+}
+
+const prospectInventoryAdminSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/list-available/route.ts'),'utf8')
+const prospectMarketLibSource=fs.readFileSync(path.join(root,'lib/market.ts'),'utf8')
+const tronWalletHardeningSource=fs.readFileSync(path.join(root,'lib/tron-wallet.ts'),'utf8')
+const retiredDepositSource=fs.readFileSync(path.join(root,'app/api/deposit/route.ts'),'utf8')
+assert.ok(prospectInventoryAdminSource.includes("authUser.role !== 'admin'"),'Prospect inventory requires Administration')
+assert.ok(prospectInventoryAdminSource.includes("status: 403"),'Non-admin Prospect inventory access is forbidden')
+assert.ok(!prospectMarketLibSource.includes('Simulate reachability check'),'Prospect Engine does not simulate contact reachability')
+assert.ok(prospectMarketLibSource.includes('Reachability has not been independently verified'),'Generated Prospect candidates are labeled truthfully')
+assert.ok(!tronWalletHardeningSource.includes('Generate a placeholder address'),'TRON wallet creation has no fake wallet fallback')
+assert.ok(tronWalletHardeningSource.includes('No placeholder wallet was created'),'TRON wallet creation fails closed')
+assert.ok(tronWalletHardeningSource.includes('userWalletAddress,\n          COMPANY_WALLET'),'TRX sweep passes the real source wallet address')
+assert.ok(retiredDepositSource.includes('status: 410'),'Legacy deposit endpoint cannot report uncredited payment success')
 
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
