@@ -553,15 +553,17 @@ function MyClients({ user }: { user: any }) {
     const content = messageInput.trim()
     setMessageInput('')
     try {
+      const token = localStorage.getItem('ssb_auth_token')
       const response = await fetch('/api/client/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           clientId: selectedClient.id,
-          clientName: selectedClient.name,
           position: activePosition,
           content,
-          senderType: 'admin',
         }),
       })
       const data = await response.json()
