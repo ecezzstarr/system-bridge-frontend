@@ -1,0 +1,189 @@
+import { ensureClientVaultSchema } from '@/lib/client-vault'
+
+export type ClientMoneyEnvironment = {
+  vault: {
+    balance: number
+    currency: string
+  }
+  siblingsFunds: {
+    flameCoin: number
+    trx: number
+    usdt: number
+  }
+  mainWallet: {
+    flameCoin: number
+    usdt: number
+  }
+}
+
+export async function ensureClientMoneySchema(sql: any) {
+  await ensureClientVaultSchema(sql)
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS client_sibling_funds_wallets (
+      client_id uuid PRIMARY KEY,
+      balance_flame_coin numeric(30, 8) NOT NULL DEFAULT 0,
+      balance_trx numeric(30, 8) NOT NULL DEFAULT 0,
+      balance_usdt numeric(30, 8) NOT NULL DEFAULT 0,
+      updated_at timestamptz NOT NULL DEFAULT NOW()
+    )
+  `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS client_sibling_funds_ledger (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      client_id uuid NOT NULL,
+      entry_type varchar(48) NOT NULL,
+      amount numeric(30, 8) NOT NULL,
+      currency varchar(16) NOT NULL,
+      balance_after numeric(30, 8) NOT NULL,
+      source varchar(120) NOT NULL,
+      reference varchar(255),
+      reason text,
+      actor_id uuid,
+      created_at timestamptz NOT NULL DEFAULT NOW()
+    )
+  `
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_client_sibling_funds_ledger_client_time
+    ON client_sibling_funds_ledger(client_id, created_at DESC)
+  `
+}
+
+export async function ensureClientMoneyEnvironment(
+  sql: any,
+  clientId: string,
+): Promise<ClientMoneyEnvironment> {
+  await ensureClientMoneySchema(sql)
+
+  const [vault] = await sql`
+    INSERT INTO client_vaults (client_id, balance, currency)
+    VALUES (${clientId}::uuid, 0, 'Flame Coin')
+    ON CONFLICT (client_id) DO UPDATE SET
+      currency = 'Flame Coin',
+      updated_at = NOW()
+    RETURNING balance, currency
+  `
+
+  const [siblingsFunds] = await sql`
+    INSERT INTO client_sibling_funds_wallets (
+      client_id,
+      balance_flame_coin,
+      balance_trx,
+      balance_usdt
+    )
+    VALUES (${clientId}::uuid, 0, 0, 0)
+    ON CONFLICT (client_id) DO UPDATE SET
+      updated_at = client_sibling_funds_wallets.updated_at
+    RETURNING balance_flame_coin, balance_trx, balance_usdt
+  `
+
+  await sql`
+    INSERT INTO wallets (
+      id,
+      user_id,
+      balance_trx,
+      balance_usdt,
+      is_primary,
+      is_eight_engine_controlled,
+      created_at,
+      updated_at
+    )
+    SELECT
+      gen_random_uuid(),
+      ${clientId}::uuid,
+      0,
+      0,
+      true,
+      true,
+      NOW(),
+      NOW()
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM wallets
+      WHERE user_id = ${clientId}::uuid
+        AND is_primary = true
+    )
+  `
+
+  const [mainWallet] = await sql`
+    SELECT balance_trx, balance_usdt
+    FROM wallets
+    WHERE user_id = ${clientId}::uuid
+      AND is_primary = true
+    ORDER BY created_at ASC
+    LIMIT 1
+  `
+
+  return {
+    vault: {
+      balance: Number(vault?.balance || 0),
+      currency: vault?.currency || 'Flame Coin',
+    },
+    siblingsFunds: {
+      flameCoin: Number(siblingsFunds?.balance_flame_coin || 0),
+      trx: Number(siblingsFunds?.balance_trx || 0),
+      usdt: Number(siblingsFunds?.balance_usdt || 0),
+    },
+    mainWallet: {
+      flameCoin: Number(mainWallet?.balance_trx || 0),
+      usdt: Number(mainWallet?.balance_usdt || 0),
+    },
+  }
+}
+
+export async function ensureAllClientMoneyEnvironments(sql: any) {
+  await ensureClientMoneySchema(sql)
+
+  await sql`
+    INSERT INTO client_vaults (client_id, balance, currency)
+    SELECT id, 0, 'Flame Coin'
+    FROM users
+    WHERE role = 'client'
+    ON CONFLICT (client_id) DO NOTHING
+  `
+
+  await sql`
+    INSERT INTO client_sibling_funds_wallets (
+      client_id,
+      balance_flame_coin,
+      balance_trx,
+      balance_usdt
+    )
+    SELECT id, 0, 0, 0
+    FROM users
+    WHERE role = 'client'
+    ON CONFLICT (client_id) DO NOTHING
+  `
+
+  await sql`
+    INSERT INTO wallets (
+      id,
+      user_id,
+      balance_trx,
+      balance_usdt,
+      is_primary,
+      is_eight_engine_controlled,
+      created_at,
+      updated_at
+    )
+    SELECT
+      gen_random_uuid(),
+      c.id,
+      0,
+      0,
+      true,
+      true,
+      NOW(),
+      NOW()
+    FROM users c
+    WHERE c.role = 'client'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM wallets w
+        WHERE w.user_id = c.id
+          AND w.is_primary = true
+      )
+  `
+}
