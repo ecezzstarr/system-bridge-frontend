@@ -164,7 +164,10 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("/api/users")
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch("/api/users", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.users) {
@@ -226,9 +229,13 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       const isPrivate = targetRoom !== "public"
       const roomId = isPrivate ? [user?.id, targetRoom].sort().join("-") : "main"
 
+      const token = localStorage.getItem('ssb_auth_token')
       const response = await fetch("/api/lounge/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           sender: user?.name,
           senderAvatar: "👤",
