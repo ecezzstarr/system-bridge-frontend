@@ -67,6 +67,13 @@ export function DJBroadcastPlayer() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  const applyPersonalPause = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.pause()
+    audio.muted = true
+  }, [])
+
   const authHeaders = () => {
     const token = localStorage.getItem('ssb_auth_token')
     return token ? { Authorization: `Bearer ${token}` } : {}
@@ -93,6 +100,26 @@ export function DJBroadcastPlayer() {
       return false
     }
   }, [])
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== USER_PAUSED_KEY) return
+      const paused = event.newValue === '1'
+      userPausedRef.current = paused
+      setUserPaused(paused)
+
+      if (paused) {
+        applyPersonalPause()
+      } else {
+        const audio = audioRef.current
+        if (audio) audio.muted = false
+        if (joined) void beginPlayback(false, true)
+      }
+    }
+
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [applyPersonalPause, beginPlayback, joined])
 
   const syncBroadcast = useCallback(async () => {
     if (!user || syncInFlightRef.current) return
@@ -124,6 +151,10 @@ export function DJBroadcastPlayer() {
 
       if (!audio) return
 
+      if (userPausedRef.current) {
+        applyPersonalPause()
+      }
+
       const desiredSeconds = Math.max(0, Number(data.elapsedSeconds || 0))
       const isNewTrack = currentUrlRef.current !== data.track.fileUrl
 
@@ -133,7 +164,7 @@ export function DJBroadcastPlayer() {
         } catch {}
 
         if (userPausedRef.current) {
-          if (!audio.paused) audio.pause()
+          applyPersonalPause()
           return
         }
 
@@ -161,7 +192,7 @@ export function DJBroadcastPlayer() {
         }
 
         if (userPausedRef.current) {
-          if (!audio.paused) audio.pause()
+          applyPersonalPause()
         } else if (joined && audio.paused) {
           await beginPlayback(false)
         }
@@ -171,7 +202,7 @@ export function DJBroadcastPlayer() {
     } finally {
       syncInFlightRef.current = false
     }
-  }, [user?.id, joined, beginPlayback])
+  }, [user?.id, joined, beginPlayback, applyPersonalPause])
 
   const eligibleRole = Boolean(user && ['admin', 'agent', 'bridger', 'client'].includes(user.role))
 
@@ -199,14 +230,14 @@ export function DJBroadcastPlayer() {
     userPausedRef.current = false
     setUserPaused(false)
     try { localStorage.removeItem(USER_PAUSED_KEY) } catch {}
+    const audio = audioRef.current
+    if (audio) audio.muted = false
     await beginPlayback(true, true)
   }
 
   const handlePause = () => {
-    const audio = audioRef.current
-    if (audio && !audio.paused) audio.pause()
-
     userPausedRef.current = true
+    applyPersonalPause()
     setUserPaused(true)
     setJoined(true)
     try {
@@ -221,6 +252,8 @@ export function DJBroadcastPlayer() {
     autoplayAttemptedRef.current = true
     try { localStorage.removeItem(USER_PAUSED_KEY) } catch {}
 
+    const audio = audioRef.current
+    if (audio) audio.muted = false
     await beginPlayback(false, true)
     void syncBroadcast()
   }
@@ -259,6 +292,12 @@ export function DJBroadcastPlayer() {
       <audio
         ref={audioRef}
         preload="auto"
+        onPlay={() => {
+          if (userPausedRef.current) applyPersonalPause()
+        }}
+        onPlaying={() => {
+          if (userPausedRef.current) applyPersonalPause()
+        }}
         onEnded={() => void syncBroadcast()}
         onError={() => void syncBroadcast()}
       />
