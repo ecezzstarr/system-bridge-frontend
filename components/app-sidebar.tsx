@@ -54,7 +54,8 @@ const navigation = [
   // 1. PRESENCE
   { group: "Presence", items: [
     { name: "Home", href: "/", icon: Home },
-    { name: "Loop 1 Ground", href: "/event", icon: Flame },\n    { name: "Bridger Functions", href: "/bridger/functions", icon: LayoutTemplate, bridgerOnly: true },
+    { name: "Loop 1 Ground", href: "/event", icon: Flame },
+    { name: "Bridger Functions", href: "/bridger/functions", icon: LayoutTemplate, bridgerOnly: true },
     { name: "Human Cadences", href: "/search", icon: MessageSquare },
     { name: "Presences", href: "/profiles", icon: UserCircle },
     { name: "Agent Functions", href: "/agent/functions", icon: LayoutTemplate, agentOnly: true },
