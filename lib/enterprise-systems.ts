@@ -38,6 +38,9 @@ export async function ensureEnterpriseSystemsSchema() {
       buyer_name varchar(220),
       buyer_email varchar(255),
       quoted_price_gbp numeric(18,2) NOT NULL CHECK (quoted_price_gbp >= 1000000),
+      quoted_flame_coin numeric(30,8),
+      gbp_per_flame_coin numeric(30,12),
+      rate_source varchar(32),
       status varchar(40) NOT NULL DEFAULT 'requested',
       acquisition_note text,
       admin_note text,
@@ -45,6 +48,10 @@ export async function ensureEnterpriseSystemsSchema() {
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+
+  await sql`ALTER TABLE enterprise_system_orders ADD COLUMN IF NOT EXISTS quoted_flame_coin numeric(30,8)`
+  await sql`ALTER TABLE enterprise_system_orders ADD COLUMN IF NOT EXISTS gbp_per_flame_coin numeric(30,12)`
+  await sql`ALTER TABLE enterprise_system_orders ADD COLUMN IF NOT EXISTS rate_source varchar(32)`
 
   await sql`
     CREATE INDEX IF NOT EXISTS idx_enterprise_system_orders_buyer
