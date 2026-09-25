@@ -79,7 +79,7 @@ const providers: NextAuthOptions['providers'] = [
           return null
         }
 
-        const shield=await getDivineShieldState().catch(()=>({active:false}))
+        const shield=await getDivineShieldState()
         if(shield.active && user.role!=='admin') {
           console.log('[auth] Divine Shield blocked non-admin credential session')
           return null
