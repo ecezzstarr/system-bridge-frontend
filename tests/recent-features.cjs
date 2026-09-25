@@ -443,7 +443,7 @@ const fileFolderWorldApiSource=fs.readFileSync(path.join(root,'app/api/client/fi
 const publicCustomerDoorSource=fs.readFileSync(path.join(root,'app/store/[slug]/page.tsx'),'utf8')
 const publicCustomerOrdersSource=fs.readFileSync(path.join(root,'app/api/public/store/[slug]/orders/route.ts'),'utf8')
 const customerDoorPanelSource=fs.readFileSync(path.join(root,'components/system-switch/client-customer-door-panel.tsx'),'utf8')
-const fileFolderPurchaseSource=fs.readFileSync(path.join(root,'components/system-switch/file-folder-purchase.tsx'),'utf8')
+const fileFolderPurchaseSource=fs.readFileSync(path.join(root,'components/bridge/file-folder-purchase.tsx'),'utf8')
 const worldRulesSource=fs.readFileSync(path.join(root,'lib/world/constants.ts'),'utf8')
 assert.ok(worldRulesSource.includes('FILE_FOLDER_PUBLIC_DOOR_THRESHOLD_FLAME_COIN: 17900'),'Half-Premium Customer Door threshold is canonical')
 assert.ok(worldRulesSource.includes('CLIENT_BUILD_SPEED_MAX: 4'),'Client build speed cap is canonical')
@@ -457,6 +457,8 @@ assert.ok(publicCustomerDoorSource.includes("formation_status='selling'"),'Outsi
 assert.ok(publicCustomerOrdersSource.includes("formation_status='selling'"),'Outsider orders cannot bypass the Customer Door gate')
 assert.ok(customerDoorPanelSource.includes('requiredToOpenPublicDoorFlameCoin'),'Client sees the exact Flame Coin shortfall')
 assert.ok(fileFolderPurchaseSource.includes('PUBLIC_DOOR_THRESHOLD'),'File Folder buyer sees the Customer Door threshold before purchase')
+assert.ok(fileFolderPurchaseSource.includes('/api/bridge/file-folder'),'Pre-client File Folder funding lives under Bridge')
+assert.ok(fileFolderPurchaseSource.includes('/api/bridge/file-folder/purchase'),'Pre-client File Folder purchase lives under Bridge')
 assert.ok(fileFolderWorldSource.includes('crypto_exchange_workshop'),'Client build catalog includes a Crypto Exchange Workshop')
 assert.ok(fileFolderWorldSource.includes('enterprise_operating_system'),'Client build catalog includes high-capacity enterprise systems')
 assert.ok(fileFolderWorldSource.includes('ON CONFLICT (blueprint_key) DO NOTHING'),'Seed bootstrap preserves Administration blueprint edits')
@@ -688,6 +690,30 @@ for(const file of [
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
  assert.equal(syntaxErrors.length,0,file+' Enterprise Systems syntax/transpile check')
+}
+
+const publicSystemSwitchSource=fs.readFileSync(path.join(root,'app/system-switch/page.tsx'),'utf8')
+const bridgeEntryPageSource=fs.readFileSync(path.join(root,'app/bridge/[code]/page.tsx'),'utf8')
+const bridgeArrivalSource=fs.readFileSync(path.join(root,'components/bridge/chatgpt-bridge-arrival.tsx'),'utf8')
+const bridgeRadianceWorldSource=fs.readFileSync(path.join(root,'components/bridge/bridge-radiance-world.tsx'),'utf8')
+const oldSystemSwitchStateSource=fs.readFileSync(path.join(root,'app/api/system-switch/state/route.ts'),'utf8')
+const oldSystemSwitchActionSource=fs.readFileSync(path.join(root,'app/api/system-switch/action/route.ts'),'utf8')
+const oldSystemSwitchBridgeSource=fs.readFileSync(path.join(root,'app/api/system-switch/bridge/route.ts'),'utf8')
+const oldSystemSwitchFolderSource=fs.readFileSync(path.join(root,'app/api/system-switch/file-folder/route.ts'),'utf8')
+const oldSystemSwitchFolderPurchaseSource=fs.readFileSync(path.join(root,'app/api/system-switch/file-folder/purchase/route.ts'),'utf8')
+assert.ok(publicSystemSwitchSource.includes("redirect('/client/system-switch')"),'Public /system-switch resolves to the Client System Switch')
+assert.ok(bridgeEntryPageSource.includes('ChatGptBridgeArrival'),'ChatGPT Prospect arrival stays inside Bridge')
+assert.ok(!bridgeEntryPageSource.includes('/system-switch?bridge='),'Bridge no longer redirects a Prospect into System Switch')
+assert.ok(bridgeArrivalSource.includes('BridgeRadianceWorld'),'Bridge arrival has its own Bridge Radiance world')
+assert.ok(bridgeRadianceWorldSource.includes('BRIDGE RADIANCE'),'Prospect arrival is visibly Bridge Radiance, not System Switch')
+for(const [source,label] of [
+  [oldSystemSwitchStateSource,'legacy System Switch state'],
+  [oldSystemSwitchActionSource,'legacy System Switch action'],
+  [oldSystemSwitchBridgeSource,'legacy Prospect System Switch bridge'],
+  [oldSystemSwitchFolderSource,'legacy System Switch File Folder config'],
+  [oldSystemSwitchFolderPurchaseSource,'legacy System Switch File Folder purchase'],
+]){
+  assert.ok(source.includes('status: 410'),label+' endpoint is retired')
 }
 
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
