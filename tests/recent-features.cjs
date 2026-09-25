@@ -253,7 +253,7 @@ assert.ok(homePageSource.includes('Interaction in Motion.'),'Homepage presents I
 const weaveSystemMapSource=fs.readFileSync(path.join(root,'lib/weave-system-map.ts'),'utf8')
 assert.ok(homePageSource.includes('WEAVE_SYSTEM_MAP.identity.publicDescription'),'Homepage renders the canonical WEAVE public description')
 assert.ok(weaveSystemMapSource.includes('An interactional company that turns human participation into organized work, value, systems and opportunity.'),'Canonical system map identifies WEAVE as an interactional company')
-assert.ok(homePageSource.includes('services, instruments, and systems'),'Homepage explains WEAVE services, instruments and systems')
+assert.ok(homePageSource.includes("title: 'Services'") && homePageSource.includes("title: 'Instruments'") && homePageSource.includes("title: 'Systems'"),'Homepage explains WEAVE services, instruments and systems')
 assert.ok(homePageSource.includes('Client Access Point'),'Homepage contains a dedicated Client access surface')
 assert.ok(homePageSource.includes('href="/client/login"'),'Homepage directs existing Clients to the Client Portal')
 const clientNavSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
