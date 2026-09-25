@@ -94,7 +94,7 @@ export function BridgePlazaMap({
   onTravel: (href: string) => void
 }) {
   const portals: Portal[] = [
-    { name: 'Market District', href: '/marketplace', color: '#14b8a6', position: [-3.4, 0.2, 0], unlocked: true },
+    { name: 'Enterprise Exchange', href: '/marketplace', color: '#14b8a6', position: [-3.4, 0.2, 0], unlocked: true },
     { name: 'Arena District', href: '/arena', color: '#e8b93f', position: [3.4, 0.2, 0], unlocked: true },
     { name: 'Business District', href: '/places', color: '#8b7cf6', position: [0, 0.2, -3.4], unlocked: true },
     { name: 'Knowledge Library', href: '/weave/standing', color: '#38bdf8', position: [0, 0.2, 3.4], unlocked: true },
