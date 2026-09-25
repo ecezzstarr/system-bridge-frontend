@@ -1,69 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPendingSweeps, getAllSweeps, approveSweepRequest, executeSweep } from '@/lib/mock-db'
+import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 
 export async function GET(request: NextRequest) {
+  const auth = await requireWorkshopAuthorization(request)
+  if (!auth.authorized) return auth.response
   try {
-    const searchParams = request.nextUrl.searchParams
-    const status = searchParams.get('status') || 'all'
-
-    let sweeps = []
-    if (status === 'pending') {
-      sweeps = getPendingSweeps()
-    } else {
-      sweeps = getAllSweeps()
-    }
-
-    return NextResponse.json({ sweeps })
+    const status = request.nextUrl.searchParams.get('status') || 'all'
+    const sweeps = status === 'pending' ? getPendingSweeps() : getAllSweeps()
+    return NextResponse.json({ sweeps }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
-    console.error('[v0] Get sweeps error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch sweeps' },
-      { status: 500 }
-    )
+    console.error('Get sweeps error:', error)
+    return NextResponse.json({ error: 'Failed to fetch sweeps' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireWorkshopAuthorization(request)
+  if (!auth.authorized) return auth.response
   try {
-    const body = await request.json()
-    const { sweepId, adminId, action } = body
-
-    if (!sweepId || !adminId || !action) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
+    const { sweepId, action } = await request.json()
+    if (!sweepId || !action) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
 
     if (action === 'approve') {
-      const success = approveSweepRequest(sweepId, adminId)
-      if (!success) {
-        return NextResponse.json(
-          { error: 'Sweep not found or already approved' },
-          { status: 404 }
-        )
-      }
+      const success = approveSweepRequest(sweepId, auth.session.user.id)
+      if (!success) return NextResponse.json({ error: 'Sweep not found or already approved' }, { status: 404 })
       return NextResponse.json({ success: true, message: 'Sweep approved' })
-    } else if (action === 'execute') {
-      const success = executeSweep(sweepId)
-      if (!success) {
-        return NextResponse.json(
-          { error: 'Sweep not approved or already executed' },
-          { status: 400 }
-        )
-      }
-      return NextResponse.json({ success: true, message: 'Sweep executed' })
-    } else {
-      return NextResponse.json(
-        { error: 'Invalid action' },
-        { status: 400 }
-      )
     }
+    if (action === 'execute') {
+      const success = executeSweep(sweepId)
+      if (!success) return NextResponse.json({ error: 'Sweep not approved or already executed' }, { status: 400 })
+      return NextResponse.json({ success: true, message: 'Sweep executed' })
+    }
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
-    console.error('[v0] Sweep action error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process sweep' },
-      { status: 500 }
-    )
+    console.error('Sweep action error:', error)
+    return NextResponse.json({ error: 'Failed to process sweep' }, { status: 500 })
   }
 }
