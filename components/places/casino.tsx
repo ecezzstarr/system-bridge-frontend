@@ -145,10 +145,14 @@ export default function Casino({ user: propUser }: { user?: any }) {
     }, 100)
 
     try {
+      const token = localStorage.getItem('ssb_auth_token')
       const response = await fetch('/api/casino/play', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, betAmount, gameType: 'dice' })
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ betAmount, gameType: 'dice' })
       })
       const data = await response.json()
       setTimeout(() => {
