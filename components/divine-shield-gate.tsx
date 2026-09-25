@@ -52,7 +52,13 @@ export function DivineShieldGate({children}:{children:ReactNode}){
 
         const active=Boolean(body?.active)
         const administrationBypass=Boolean(body?.administrationBypass)
-        if(active && !administrationBypass && token && evacuatedTokenRef.current!==token){
+        const sessionValid=body?.sessionValid!==false
+
+        if(!active && token && !sessionValid){
+          evacuatedTokenRef.current=token
+          logout()
+        }
+        if(active && !administrationBypass && token && sessionValid && evacuatedTokenRef.current!==token){
           evacuatedTokenRef.current=token
           try{
             await fetch('/api/divine-shield/evacuate',{
