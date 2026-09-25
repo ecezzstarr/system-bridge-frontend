@@ -11,6 +11,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     FROM client_business_stores
     WHERE public_slug=${slug}
       AND enabled=true
+      AND formation_status='selling'
     LIMIT 1
   `
   if (!store) return NextResponse.json({ error: 'Customer Door not found' }, { status: 404 })
