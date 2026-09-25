@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './auth'
 import { sql } from './db'
+import { getDivineShieldState } from './weave-infrastructure'
 
 export interface AuthUser {
   id: string
@@ -14,19 +15,25 @@ export interface AuthUser {
 /**
  * Validates authentication from both NextAuth session and Authorization header
  */
+async function applyDivineShield(user:AuthUser):Promise<AuthUser|null>{
+  if(user.role==='admin') return user
+  const shield=await getDivineShieldState().catch(()=>({active:false}))
+  return shield.active ? null : user
+}
+
 export async function getAuthUser(request: NextRequest): Promise<AuthUser | null> {
   try {
     // 1. Try NextAuth session first
     const session = await getServerSession(authOptions)
     if (session?.user) {
       const user = session.user as any
-      return {
+      return applyDivineShield({
         id: user.id,
         name: user.name,
         username: user.username,
         email: user.email,
         role: user.role,
-      }
+      })
     }
 
     // 2. Try Authorization header - look up the session directly by token,
@@ -47,13 +54,13 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
         SELECT id, name, username, email, role FROM users WHERE id = ${userId}::uuid
       `
       if (users.length > 0) {
-        return {
+        return applyDivineShield({
           id: users[0].id,
           name: users[0].name || users[0].username || 'User',
           username: users[0].username || users[0].email?.split('@')[0] || 'user',
           email: users[0].email,
           role: users[0].role,
-        }
+        })
       }
     }
 
