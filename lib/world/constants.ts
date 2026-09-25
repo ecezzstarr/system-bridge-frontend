@@ -21,6 +21,11 @@ export const WORLD_RULES = {
   
   // Wallet Fees
   PLATFORM_FEE_PERCENT: 5,
+
+  // Casino loss-return policy. A player who reaches the weekly loss threshold
+  // receives one 30% return for that week's accumulated losses.
+  CASINO_WEEKLY_LOSS_THRESHOLD_FLAME_COIN: 200000,
+  CASINO_LOSS_RETURN_RATE: 0.30,
   
   // Client funding rail: real TRX is paid here, then verified value is credited as Flame Coin.
   COMPANY_TRX_WALLET: 'THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk',
