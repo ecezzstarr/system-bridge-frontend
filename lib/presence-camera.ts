@@ -17,6 +17,22 @@ export type PresenceScene = {
 
 const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> = [
   {
+    match: path => path === '/' || path === '/login' || path === '/register' || path === '/forgot-password' || path === '/reset-password' || path === '/client-register',
+    scene: { key:'entry', label:'WEAVE Entrance', district:'Presence', level:'world', camera:{x:0,y:2,yaw:0,pitch:0.5,zoom:1.006,depth:8} },
+  },
+  {
+    match: path => path === '/admin/file-number-engine',
+    scene: { key:'file-number-engine', label:'File Number Engine', district:'Institution', level:'system', camera:{x:24,y:-3,yaw:4,pitch:-1,zoom:1.03,depth:42} },
+  },
+  {
+    match: path => path.startsWith('/store/'),
+    scene: { key:'customer-door', label:'Customer Door', district:'Enterprise', level:'interaction', camera:{x:46,y:-2,yaw:7,pitch:-0.5,zoom:1.042,depth:56} },
+  },
+  {
+    match: path => path.startsWith('/river/'),
+    scene: { key:'river', label:'River Interaction', district:'Presence', level:'interaction', camera:{x:-18,y:-5,yaw:-3,pitch:-1,zoom:1.04,depth:54} },
+  },
+  {
     match: path => path === '/dashboard' || path.endsWith('/dashboard'),
     scene: { key:'home', label:'Role Home', district:'Presence', level:'world', camera:{x:0,y:0,yaw:0,pitch:0,zoom:1,depth:0} },
   },
@@ -106,3 +122,17 @@ export type PresenceOutput = {
 
 export const PRESENCE_TRACE_KEY = 'weave_presence_trace_v1'
 export const PRESENCE_TRACE_LIMIT = 80
+
+const APP_SHELL_PREFIXES = [
+  '/admin','/agent','/agility','/arena','/authority','/bridger','/casino',
+  '/client-interactions','/clients','/company-chat','/company','/dashboard','/earnings',
+  '/echo','/event','/fund-wall','/ledger','/lounge','/marketplace','/places',
+  '/private-ground','/profiles','/roles','/search','/transactions','/video-feed',
+  '/wallet','/weave',
+]
+
+export function isPresenceCameraShellManaged(pathname: string) {
+  if (pathname === '/client' || pathname.startsWith('/client/')) return true
+  if (pathname === '/admin/file-number-engine') return false
+  return APP_SHELL_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`))
+}
