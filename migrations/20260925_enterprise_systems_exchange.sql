@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS enterprise_system_orders (
   buyer_name varchar(220),
   buyer_email varchar(255),
   quoted_price_gbp numeric(18,2) NOT NULL CHECK (quoted_price_gbp >= 1000000),
+  quoted_flame_coin numeric(30,8),
+  gbp_per_flame_coin numeric(30,12),
+  rate_source varchar(32),
   status varchar(40) NOT NULL DEFAULT 'requested'
     CHECK (status IN ('requested','reviewing','approved','in_contract','building','delivered','declined')),
   acquisition_note text,
@@ -36,3 +39,8 @@ ON enterprise_system_orders(buyer_user_id, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_enterprise_system_orders_status
 ON enterprise_system_orders(status, created_at DESC);
+
+
+ALTER TABLE enterprise_system_orders ADD COLUMN IF NOT EXISTS quoted_flame_coin numeric(30,8);
+ALTER TABLE enterprise_system_orders ADD COLUMN IF NOT EXISTS gbp_per_flame_coin numeric(30,12);
+ALTER TABLE enterprise_system_orders ADD COLUMN IF NOT EXISTS rate_source varchar(32);
