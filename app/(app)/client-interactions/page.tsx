@@ -23,7 +23,7 @@ const POSITION_LABEL: Record<string, string> = {
 }
 
 export default function ClientInteractionsPage() {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const router = useRouter()
   const [chats, setChats] = useState<ClientChat[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -38,15 +38,14 @@ export default function ClientInteractionsPage() {
       return
     }
     fetchChats()
-  }, [user])
+  }, [user, token])
 
   const fetchChats = async () => {
     if (!user) return
     try {
-      const url = user.role === 'agent'
-        ? `/api/client/messages?agent=true&agentId=${user.id}`
-        : `/api/client/messages?admin=true`
-      const res = await fetch(url)
+      const res = await fetch('/api/client/messages', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
       const data = await res.json()
       if (data.success) setChats(data.summary || [])
     } catch (error) {
