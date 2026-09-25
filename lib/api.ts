@@ -19,8 +19,15 @@ export interface ApiResponse<T> {
 class ApiClient {
   private getToken(): string | null {
     if (typeof window === 'undefined') return null
-    // Token is stored in local storage by auth context
     return localStorage.getItem('ssb_auth_token')
+  }
+
+  private localJsonHeaders(): Record<string, string> {
+    const token = this.getToken()
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    }
   }
 
   private async request<T>(
@@ -263,7 +270,7 @@ class ApiClient {
     try {
       const response = await fetch('/api/arena/matches', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.localJsonHeaders(),
         body: JSON.stringify(data),
       })
       const result = await response.json()
@@ -280,8 +287,8 @@ class ApiClient {
     try {
       const response = await fetch(`/api/arena/matches/${matchId}/join`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, prediction }),
+        headers: this.localJsonHeaders(),
+        body: JSON.stringify({ prediction }),
       })
       const result = await response.json()
       if (!response.ok) {
@@ -297,8 +304,8 @@ class ApiClient {
     try {
       const response = await fetch(`/api/arena/matches/${matchId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'start', userId }),
+        headers: this.localJsonHeaders(),
+        body: JSON.stringify({ action: 'start' }),
       })
       const result = await response.json()
       if (!response.ok) {
@@ -314,8 +321,8 @@ class ApiClient {
     try {
       const response = await fetch(`/api/arena/matches/${matchId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'end', userId, winnerId }),
+        headers: this.localJsonHeaders(),
+        body: JSON.stringify({ action: 'end', winnerId }),
       })
       const result = await response.json()
       if (!response.ok) {
