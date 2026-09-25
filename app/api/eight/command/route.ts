@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
-import { getAllOriginSystems, SOURCE_ADMIN_ID } from '@/lib/core/originTruthLedger'
+import { SOURCE_ADMIN_ID } from '@/lib/core/originTruthLedger'
+import { getInfrastructureRegistry } from '@/lib/weave-infrastructure'
 import { getRegistryStatus } from '@/lib/core/systemRegistry'
 import { getWalletBalance, sendTRX } from '@/lib/tron-wallet'
 import { updateUserBalance, getUserByUsername, getUserByEmail } from '@/lib/mock-db'
@@ -160,7 +161,8 @@ Transaction broadcast to TRON Mainnet and saved to database.`,
 
     if (statusMatch) {
       // Get all connected systems
-      const systems = getAllOriginSystems()
+      const registry = await getInfrastructureRegistry()
+      const systems = registry.map((s:any)=>({name:s.name,status:s.enabled?'active':'paused',domain:s.public_url,deploymentType:s.deployment_target}))
       const activeSystems = systems.filter(s => s.status === 'active').length
       const systemsList = systems.map(s => `  ✓ ${s.name}`).join('\n')
       
@@ -192,7 +194,8 @@ ${systemsList}
 
     if (systemsMatch) {
       // Get all connected systems
-      const systems = getAllOriginSystems()
+      const registry = await getInfrastructureRegistry()
+      const systems = registry.map((s:any)=>({id:s.system_key,name:s.name,status:s.enabled?'active':'paused',domain:s.public_url,deploymentType:s.deployment_target}))
       
       const systemsList = systems.map((sys, idx) => {
         const isOrigin = idx === 0
