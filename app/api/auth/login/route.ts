@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { getDivineShieldState } from '@/lib/weave-infrastructure'
 
 // Platform admin credentials (fallback)
 const PLATFORM_ADMIN = {
@@ -76,6 +77,11 @@ export async function POST(request: NextRequest) {
     }
 
     const user = users[0]
+
+    const shield=await getDivineShieldState().catch(()=>({active:false}))
+    if(shield.active && user.role!=='admin'){
+      return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
+    }
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash)
