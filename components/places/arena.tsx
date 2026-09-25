@@ -70,11 +70,19 @@ export default function Arena({ user: propUser }: { user?: any }) {
         toast.success('The contest has settled')
       } else if (action === 'cancel') {
         // We'll add a cancel method to api or use end with no winner
-        await fetch(`/api/arena/matches/${matchId}`, {
+        const token = localStorage.getItem('ssb_auth_token')
+        const response = await fetch(`/api/arena/matches/${matchId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'cancel', userId: user.id }),
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ action: 'cancel' }),
         })
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}))
+          throw new Error(data.error || 'Failed to cancel match')
+        }
         toast.success('The contest was called off — your entry has returned')
       }
       mutate()
