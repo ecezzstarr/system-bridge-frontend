@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/lib/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BalanceSummary } from '@/components/balance-summary'
 import { EscrowList } from '@/components/escrow-list'
@@ -17,33 +18,58 @@ interface LedgerData {
 }
 
 export default function LedgerPage() {
+  const { token, isInitialized } = useAuth()
   const [data, setData] = useState<LedgerData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
+    if (!isInitialized) return
+    if (!token) {
+      setError('Your WEAVE session is not available. Sign in again to open Record.')
+      setLoading(false)
+      return
+    }
+
+    let cancelled = false
     const fetchLedger = async () => {
+      setLoading(true)
+      setError('')
       try {
-        const token = localStorage.getItem('ssb_auth_token')
         const response = await fetch('/api/ledger', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: { Authorization: `Bearer ${token}` },
           cache: 'no-store',
         })
-        const result = await response.json()
-        if (result.success) {
-          setData(result.data)
+        const result = await response.json().catch(() => null)
+        if (!response.ok || !result?.success) {
+          throw new Error(result?.error || `Record could not load (status ${response.status})`)
         }
+        if (!cancelled) setData(result.data)
       } catch (error) {
-        console.error('[v0] Error fetching ledger:', error)
+        console.error('[Record] Error fetching ledger:', error)
+        if (!cancelled) setError(error instanceof Error ? error.message : 'Record could not load.')
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    fetchLedger()
-  }, [])
+    void fetchLedger()
+    return () => { cancelled = true }
+  }, [isInitialized, token])
 
-  if (loading) {
-    return <div className="p-8 text-center">Loading ledger...</div>
+  if (!isInitialized || loading) {
+    return <div className="p-8 text-center text-base text-slate-300">Opening Record...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-2xl p-8">
+        <div className="rounded-2xl border border-red-400/20 bg-red-400/5 p-6">
+          <p className="text-sm font-black uppercase tracking-wider text-red-300">Record unavailable</p>
+          <p className="mt-3 text-base leading-7 text-slate-300">{error}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
