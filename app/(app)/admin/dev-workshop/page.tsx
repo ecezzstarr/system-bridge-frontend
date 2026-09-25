@@ -216,25 +216,26 @@ export default function DevWorkshop() {
   // Autonomous Deployment
   const triggerDeployment = async (service = 'system-bridge-frontend') => {
     setDeployStatus({ isDeploying: true, error: undefined })
-    setTerminalHistory(prev => [...prev, `$ Starting deployment for ${service}...`, 'Building image and deploying to Cloud Run...', ''])
+    setTerminalHistory(prev => [...prev, `$ Requesting verified preview for ${service}...`, 'Cloud Build will create a zero-traffic candidate revision.', ''])
     
     try {
-      const response = await fetch('/api/eight/execute', {
+      const response = await fetch('/api/admin/infrastructure', {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ action: 'deploy', payload: { service } })
+        body: JSON.stringify({ action: 'deploy_preview', confirm: 'DEPLOY_PREVIEW', service })
       })
       
       const result = await response.json()
       
       if (result.success) {
+        const operation = result.result?.operationName || 'Cloud Build request accepted'
         setDeployStatus({ 
           isDeploying: false, 
           lastSuccess: new Date().toLocaleString(),
-          stdout: result.stdout 
+          stdout: operation
         })
-        setTerminalHistory(prev => [...prev, result.stdout, 'SUCCESS: Deployment complete.', ''])
-        toast.success('Now live in the Weave')
+        setTerminalHistory(prev => [...prev, operation, 'SUCCESS: Candidate preview requested. Production traffic has not moved.', ''])
+        toast.success('Preview deployment requested')
         return true
       } else {
         setDeployStatus({ 
@@ -242,7 +243,7 @@ export default function DevWorkshop() {
           error: result.error,
           stderr: result.stderr || result.details
         })
-        setTerminalHistory(prev => [...prev, result.stderr || result.details, `ERROR: ${result.error}`, ''])
+        setTerminalHistory(prev => [...prev, result.stderr || result.details || '', `ERROR: ${result.error}`, ''])
         toast.error(`That didn't take hold: ${result.error}`)
         return false
       }
@@ -291,7 +292,7 @@ export default function DevWorkshop() {
   // Load EIGHT's persisted memory of past chats/fixes with this admin
   useEffect(() => {
     if (!user?.id) return
-    fetch(`/api/eight/dev?userId=${user.id}`)
+    fetch(`/api/eight/dev?userId=${user.id}`, { headers: getAuthHeaders() })
       .then(res => res.json())
       .then(data => {
         if (data.history && data.history.length > 0) {
@@ -820,16 +821,11 @@ export default function DevWorkshop() {
               <h2 className="text-xl font-bold flex items-center gap-2"><Rocket className="h-6 w-6 text-cyan-400" /> Deploy Center</h2>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={runSelfRepair} disabled={isRepairing}><Wrench className="h-4 w-4 mr-2" /> Repair</Button>
-                <Button 
-                  variant="outline" 
-                  onClick={pushToGithub} 
-                  disabled={isPushing || deployStatus.isDeploying}
-                  className="border-purple-600/50 text-purple-400 hover:bg-purple-600/10"
-                >
-                  {isPushing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <GitBranch className="h-4 w-4 mr-2" />}
-                  Push to GitHub
+                <Button variant="outline" disabled className="border-purple-600/30 text-purple-300/60">
+                  <GitBranch className="h-4 w-4 mr-2" /> Source Controlled
                 </Button>
-                <Button onClick={() => triggerDeployment()} disabled={deployStatus.isDeploying} className="bg-cyan-600"><Rocket className="h-4 w-4 mr-2" /> Push Live</Button>
+                <Button onClick={() => triggerDeployment()} disabled={deployStatus.isDeploying} className="bg-cyan-600"><Rocket className="h-4 w-4 mr-2" /> Deploy Preview</Button>
+                <Link href="/admin/infrastructure"><Button variant="outline" className="border-emerald-600/40 text-emerald-300">Infrastructure</Button></Link>
               </div>
             </div>
             {deployStatus.error && (
