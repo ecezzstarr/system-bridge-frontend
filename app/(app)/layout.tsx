@@ -16,7 +16,7 @@ import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-a
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
-import { PresenceCameraProvider, PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
+import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 
 export default function AppLayout({
   children,
@@ -111,7 +111,6 @@ export default function AppLayout({
   }
 
   return (
-    <PresenceCameraProvider role={user?.role}>
     <div className="relative flex min-h-screen overflow-hidden bg-slate-950">
       <WeaveWorldEnvironment />
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
@@ -149,6 +148,5 @@ export default function AppLayout({
         />
       )}
     </div>
-    </PresenceCameraProvider>
   )
 }
