@@ -6,6 +6,7 @@ import { readFile, readdir } from 'fs/promises'
 import { join } from 'path'
 import { recordToScroll } from '@/lib/eight'
 import { EIGHT_SYSTEM_PROMPT } from '@/lib/eight-constants'
+import { safePublicWebRead } from '@/lib/eight-web'
 
 const vertexAI = new VertexAI({
   project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
@@ -60,6 +61,15 @@ const TOOLS = [
           type: 'OBJECT',
           properties: { query: { type: 'STRING' } },
           required: ['query'],
+        },
+      },
+      {
+        name: 'read_public_web',
+        description: 'Read a public HTTP(S) web page for current information. Private networks, localhost, credential URLs, binary downloads, and unsafe redirects are blocked.',
+        parameters: {
+          type: 'OBJECT',
+          properties: { url: { type: 'STRING', description: 'Fully qualified public HTTP(S) URL' } },
+          required: ['url'],
         },
       },
     ],
@@ -206,6 +216,9 @@ async function executeTool(name: string, args: any) {
       return toolSearchFiles(args?.pattern, args?.directory || '.')
     case 'run_select_query':
       return toolRunSelectQuery(args?.query)
+    case 'read_public_web':
+      try { return await safePublicWebRead(args?.url) }
+      catch (error) { return { error: error instanceof Error ? error.message : 'Web read failed' } }
     default:
       return { error: `Unknown tool: ${name}` }
   }
