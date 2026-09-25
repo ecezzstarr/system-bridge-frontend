@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { clearToken } from '@/lib/auth-client'
+import { clearToken, getAuthHeaders } from '@/lib/auth-client'
 
 import { eightOperate, readScroll } from '@/lib/eight'
 
@@ -90,7 +90,7 @@ export default function DevWorkshop() {
     try {
       const response = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'git_push', payload: { message: 'Admin Workshop Update: Ecosystem Sync' } })
       })
 
@@ -221,7 +221,7 @@ export default function DevWorkshop() {
     try {
       const response = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'deploy', payload: { service } })
       })
       
@@ -264,7 +264,7 @@ export default function DevWorkshop() {
     try {
       const gitRes = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'git_status', payload: {} })
       })
       const gitData = await gitRes.json()
@@ -335,7 +335,7 @@ export default function DevWorkshop() {
       if (block.type === 'database' || block.language === 'sql' || block.language === 'postgresql') {
         const response = await fetch('/api/eight/execute', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ action: 'sql', payload: { query: block.code } })
         })
         const result = await response.json()
@@ -354,7 +354,7 @@ export default function DevWorkshop() {
         }))
         const response = await fetch('/api/eight/execute', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ 
             action: 'write_file', 
             payload: { filename: block.filename, content: block.code, type: block.type } 
@@ -409,7 +409,7 @@ export default function DevWorkshop() {
       } else {
         const response = await fetch('/api/eight/execute', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ 
             action: block.language === 'json' ? 'json_validate' : 'write_file', 
             payload: { filename: block.filename, content: block.code, type: block.type } 
@@ -442,7 +442,7 @@ export default function DevWorkshop() {
       try {
         const statsRes = await fetch('/api/eight/execute', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ action: 'stats', payload: {} })
         })
         const statsData = await statsRes.json()
@@ -485,7 +485,7 @@ export default function DevWorkshop() {
     try {
       const response = await fetch('/api/eight/sql', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ query: sqlQuery }),
       })
       const data = await response.json()
@@ -519,7 +519,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'schema', payload: {} })
       })
       const result = await res.json()
@@ -538,7 +538,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'debug_logs', payload: { filter: 'all' } })
       })
       const data = await res.json()
@@ -552,7 +552,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'user_list', payload: { role: userFilter === 'all' ? undefined : userFilter } })
       })
       const result = await res.json()
@@ -572,7 +572,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'arena_list', payload: {} })
       })
       const result = await res.json()
@@ -585,7 +585,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'arena_set_status', payload: { matchId, status } })
       })
       const result = await res.json()
@@ -604,12 +604,12 @@ export default function DevWorkshop() {
       const [statsRes, recentRes] = await Promise.all([
         fetch('/api/eight/execute', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ action: 'casino_stats', payload: {} })
         }),
         fetch('/api/eight/execute', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ action: 'casino_recent', payload: { limit: 20 } })
         })
       ])
@@ -626,7 +626,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'list_files', payload: { directory: dir } })
       })
       const result = await res.json()
@@ -639,7 +639,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'read_file', payload: { filename: path } })
       })
       const result = await res.json()
@@ -653,7 +653,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'search_files', payload: { pattern: fileSearch } })
       })
       const result = await res.json()
@@ -667,7 +667,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'deploy_status', payload: {} })
       })
       const result = await res.json()
@@ -680,7 +680,7 @@ export default function DevWorkshop() {
     try {
       const res = await fetch('/api/eight/execute', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'fund_wallet', payload: { userId, amount, target } })
       })
       if ((await res.json()).success) fetchUsers()
@@ -692,7 +692,7 @@ export default function DevWorkshop() {
     const diag: any[] = []
     diag.push({ time: new Date().toISOString(), type: 'info', message: 'Running diagnostics...' })
     try {
-      const res = await fetch('/api/eight/execute', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'health_check', payload: {} }) })
+      const res = await fetch('/api/eight/execute', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ action: 'health_check', payload: {} }) })
       const data = await res.json()
       if (data.success) {
         Object.entries(data.checks).forEach(([name, status]: any) => {
