@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { randomBytes } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
+import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,6 +70,10 @@ export async function POST(request: NextRequest) {
       SET status = 'registered', client_id = ${user.id}, registered_at = NOW()
       WHERE id = ${folder.id}
     `
+
+    // Every Client account always carries its three money layers, even if the
+    // account entered outside the normal Bridge path.
+    await ensureClientMoneyEnvironment(sql, user.id)
 
     // A Client login does not create a File Folder by itself.
     // It may only claim a File Folder that the Bridge/company movement already provisioned.
