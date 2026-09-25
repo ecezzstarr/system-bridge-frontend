@@ -73,7 +73,9 @@ export default function InfrastructureWorkshop(){
       const body=await response.json()
       if(!response.ok || !body.success) throw new Error(body.error || 'Divine Shield update failed')
       setData(prev=>prev?{...prev,shield:body.state}:prev)
-      toast.success(next?'Divine Shield raised':'Divine Shield released')
+      toast.success(next
+        ? `Divine Shield raised · ${Number(body.evacuatedSessions || 0)} non-admin sessions evacuated`
+        : 'Divine Shield released')
     }catch(error){
       toast.error(error instanceof Error?error.message:'Divine Shield update failed')
     }finally{setShieldBusy(false)}
