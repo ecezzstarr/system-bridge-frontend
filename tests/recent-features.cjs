@@ -508,4 +508,82 @@ assert.ok(eightCommandSource.includes("authUser.role!=='admin'"),'EIGHT command 
 assert.ok(!systemIdentitySource.includes('"vercel"'),'System identity no longer advertises legacy Vercel deployment')
 assert.ok(!originTruthLedgerSource.includes('"vercel"'),'Origin runtime ledger uses Cloud Run/local/playstore targets only')
 
+const infrastructureMigrationSource=fs.readFileSync(path.join(root,'migrations/20260925_weave_infrastructure_divine_shield.sql'),'utf8')
+const infrastructureLibSource=fs.readFileSync(path.join(root,'lib/weave-infrastructure.ts'),'utf8')
+const cloudControlSource=fs.readFileSync(path.join(root,'lib/weave-cloud-control.ts'),'utf8')
+const eightWebSource=fs.readFileSync(path.join(root,'lib/eight-web.ts'),'utf8')
+const eightDevSource=fs.readFileSync(path.join(root,'app/api/eight/dev/route.ts'),'utf8')
+const infrastructureApiSource=fs.readFileSync(path.join(root,'app/api/admin/infrastructure/route.ts'),'utf8')
+const divineShieldStatusSource=fs.readFileSync(path.join(root,'app/api/divine-shield/status/route.ts'),'utf8')
+const divineShieldAdminSource=fs.readFileSync(path.join(root,'app/api/admin/divine-shield/route.ts'),'utf8')
+const divineShieldGateSource=fs.readFileSync(path.join(root,'components/divine-shield-gate.tsx'),'utf8')
+const infrastructurePageSource=fs.readFileSync(path.join(root,'app/(app)/admin/infrastructure/page.tsx'),'utf8')
+const authLoginShieldSource=fs.readFileSync(path.join(root,'app/api/auth/login/route.ts'),'utf8')
+const authRegisterShieldSource=fs.readFileSync(path.join(root,'app/api/auth/register/route.ts'),'utf8')
+const clientLoginShieldSource=fs.readFileSync(path.join(root,'app/api/client/weave-login/route.ts'),'utf8')
+const clientRegisterShieldSource=fs.readFileSync(path.join(root,'app/api/client/weave-register/route.ts'),'utf8')
+const nextAuthShieldSource=fs.readFileSync(path.join(root,'lib/auth.ts'),'utf8')
+const adminWorkshopInfrastructureSource=fs.readFileSync(path.join(root,'app/(app)/admin/workshop/page.tsx'),'utf8')
+const sidebarInfrastructureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+const devWorkshopInfrastructureSource=fs.readFileSync(path.join(root,'app/(app)/admin/dev-workshop/page.tsx'),'utf8')
+const previewBuildSource=fs.readFileSync(path.join(root,'cloudbuild.weave-preview.yaml'),'utf8')
+const promoteBuildSource=fs.readFileSync(path.join(root,'cloudbuild.weave-promote.yaml'),'utf8')
+
+for(const infraFile of [
+ 'lib/weave-infrastructure.ts',
+ 'lib/weave-cloud-control.ts',
+ 'lib/eight-web.ts',
+ 'app/api/admin/infrastructure/route.ts',
+ 'app/api/divine-shield/status/route.ts',
+ 'app/api/admin/divine-shield/route.ts',
+ 'components/divine-shield-gate.tsx',
+ 'app/(app)/admin/infrastructure/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,infraFile),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,infraFile+' infrastructure syntax/transpile check')
+}
+assert.ok(infrastructureMigrationSource.includes('weave_infrastructure_systems'),'Infrastructure migration persists Origin systems')
+assert.ok(infrastructureMigrationSource.includes('weave_platform_controls'),'Infrastructure migration persists platform controls')
+assert.ok(infrastructureMigrationSource.includes('weave_deployment_requests'),'Infrastructure migration audits deployments')
+assert.ok(infrastructureMigrationSource.includes("'divine_shield'"),'Divine Shield is a persisted platform control')
+assert.ok(infrastructureLibSource.includes('schemaReady'),'Infrastructure schema bootstrap is cached per runtime')
+assert.ok(originSystemsApiSource.includes('getInfrastructureRegistry'),'Origin Systems now reads the persistent live registry')
+assert.ok(!originSystemsApiSource.includes('initializeOriginSystem'),'Origin Systems no longer depends on an in-memory initialization ledger')
+assert.ok(rootLayoutPresenceSource.includes('<DivineShieldGate>'),'Divine Shield wraps the live application at root')
+assert.ok(divineShieldStatusSource.includes("user?.role==='admin'"),'Only authenticated Administration receives shield bypass')
+assert.ok(!divineShieldGateSource.includes("user?.role==='admin'"),'Browser-stored role cannot bypass Divine Shield')
+assert.ok(divineShieldGateSource.includes("pathname!=='/login'"),'Administration login remains reachable while shield is raised')
+assert.ok(divineShieldAdminSource.includes("user.role!=='admin'"),'Divine Shield control endpoint is Administration-only')
+for(const source of [authLoginShieldSource,authRegisterShieldSource,clientLoginShieldSource,clientRegisterShieldSource,nextAuthShieldSource]){
+ assert.ok(source.includes('getDivineShieldState'),'All account-entry paths obey Divine Shield')
+}
+assert.ok(eightWebSource.includes("Private/local hosts are not allowed"),'EIGHT web reader blocks local/private hostnames')
+assert.ok(eightWebSource.includes('lookup(hostname'),"EIGHT web reader resolves DNS before outbound requests")
+assert.ok(eightWebSource.includes("redirect:'manual'"),'EIGHT web reader revalidates redirects')
+assert.ok(eightDevSource.includes("name: 'read_public_web'"),'EIGHT can use the safe public web reader')
+assert.ok(eightDevSource.includes('safePublicWebRead'),'EIGHT web tool is backed by the protected web reader')
+assert.ok(cloudControlSource.includes('GoogleAuth'),'Cloud deployment uses Google Application Default Credentials')
+assert.ok(cloudControlSource.includes("'Authorization':`Bearer ${token}`"),'Cloud Build requests carry an explicit ADC bearer token')
+assert.ok(cloudControlSource.includes('WEAVE_CLOUD_BUILD_PREVIEW_TRIGGER_ID'),'Preview deployment is controlled by a configured Cloud Build trigger')
+assert.ok(cloudControlSource.includes('WEAVE_CLOUD_BUILD_PROMOTE_TRIGGER_ID'),'Promotion is controlled by a separate Cloud Build trigger')
+assert.ok(cloudControlSource.includes("branchName:'main'"),'Cloud Build trigger requests canonical main')
+assert.ok(infrastructureApiSource.includes("authUser") || infrastructureApiSource.includes("user.role!=='admin'") || infrastructureApiSource.includes("user.role !== 'admin'"),'Infrastructure API is authenticated')
+assert.ok(infrastructureApiSource.includes("action==='web_probe'"),'Infrastructure Workshop can inspect the public web safely')
+assert.ok(infrastructureApiSource.includes("action==='deploy_preview'"),'Infrastructure Workshop can request a preview deployment')
+assert.ok(infrastructureApiSource.includes("action==='deploy_promote'"),'Infrastructure Workshop can request production promotion')
+assert.ok(previewBuildSource.includes('--no-traffic'),'WEAVE preview build cannot take production traffic')
+assert.ok(previewBuildSource.includes('--tag=${_CANDIDATE_TAG}'),'WEAVE preview build creates a tagged candidate')
+assert.ok(previewBuildSource.includes('/api/health'),'WEAVE candidate is smoke-tested before promotion')
+assert.ok(promoteBuildSource.includes('update-traffic'),'WEAVE promotion explicitly moves Cloud Run traffic')
+assert.ok(promoteBuildSource.includes("candidate['revisionName']"),'Promotion resolves the verified candidate revision')
+assert.ok(infrastructurePageSource.includes('WEAVE Infrastructure Workshop'),'Administration has one live infrastructure operating surface')
+assert.ok(infrastructurePageSource.includes('Divine Shield'),'Infrastructure Workshop operates maintenance control')
+assert.ok(adminWorkshopInfrastructureSource.includes("href: '/admin/infrastructure'"),'Admin Workshop exposes Infrastructure Workshop')
+assert.ok(sidebarInfrastructureSource.includes('href: "/admin/infrastructure"'),'Administration sidebar exposes Infrastructure Workshop')
+assert.ok(devWorkshopInfrastructureSource.includes("fetch('/api/admin/infrastructure'"),'EIGHT Deploy Center uses the shared infrastructure deployment authority')
+assert.ok(devWorkshopInfrastructureSource.includes('Deploy Preview'),'EIGHT Deploy Center no longer labels a zero-traffic build as live production')
+assert.ok(!devWorkshopInfrastructureSource.includes('> Push Live</Button>'),'Old misleading direct Push Live control is removed')
+
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
