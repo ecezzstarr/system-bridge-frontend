@@ -54,11 +54,11 @@ const navigation = [
   // 1. PRESENCE
   { group: "Presence", items: [
     { name: "Home", href: "/", icon: Home },
-    { name: "Loop 1 Ground", href: "/event", icon: Flame },
+    { name: "Loop 1 Ground", href: "/event", icon: Flame },\n    { name: "Bridger Functions", href: "/bridger/functions", icon: LayoutTemplate, bridgerOnly: true },
     { name: "Human Cadences", href: "/search", icon: MessageSquare },
     { name: "Presences", href: "/profiles", icon: UserCircle },
-    { name: "Agent Terminal", href: "/agent/dashboard", icon: LayoutTemplate, agentOnly: true },
-    { name: "Ecosystem Control", href: "/admin/dashboard", icon: ShieldCheck, adminOnly: true },
+    { name: "Agent Functions", href: "/agent/functions", icon: LayoutTemplate, agentOnly: true },
+    { name: "Administration Functions", href: "/admin/functions", icon: ShieldCheck, adminOnly: true },
     { name: "Holding", href: "/wallet", icon: Wallet },
     { name: "Record", href: "/ledger", icon: BookOpen },
     { name: "Movements", href: "/transactions", icon: ReceiptText },
@@ -86,7 +86,7 @@ const navigation = [
     { name: "Channel Applications", href: "/agent/channels", icon: ShieldCheck, agentOnly: true },
     { name: "Agent Channel Requests", href: "/admin/agent-channels", icon: UserCog, adminOnly: true },
     { name: "Continuance", href: "/agent/commissions", icon: DollarSign, agentOnly: true },
-    { name: "Bridger Continuance", href: "/bridger/dashboard", icon: CreditCard, bridgerOnly: true },
+    { name: "Bridger Continuance", href: "/bridger/functions", icon: CreditCard, bridgerOnly: true },
     { name: "Verify Continuances", href: "/admin/dashboard#bridgers", icon: FileCheck, adminOnly: true },
     { name: "Admin Verification", href: "/admin/dashboard#panel", icon: Shield, adminOnly: true },
   ]},
