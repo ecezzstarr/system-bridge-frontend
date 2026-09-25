@@ -37,7 +37,7 @@ const POSITIONS = [
 ]
 
 export default function AdminClientMessagesPage() {
-  const { user, isLoading: authLoading } = useAuth()
+  const { user, token, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -76,7 +76,7 @@ export default function AdminClientMessagesPage() {
 
   const fetchSummaries = async () => {
     try {
-      const response = await fetch('/api/client/messages?admin=true')
+      const response = await fetch('/api/client/messages', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await response.json()
       if (data.success) {
         setChatSummaries(data.summary || [])
@@ -91,13 +91,16 @@ export default function AdminClientMessagesPage() {
   const fetchMessages = async () => {
     if (!selectedChat) return
     try {
-      const response = await fetch(`/api/client/messages?admin=true&clientId=${selectedChat.clientId}&position=${selectedChat.position}`)
+      const response = await fetch(`/api/client/messages?clientId=${selectedChat.clientId}&position=${encodeURIComponent(selectedChat.position)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await response.json()
       if (data.success) {
         setMessages(data.messages || [])
         await fetch('/api/client/messages', {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({
             clientId: selectedChat.clientId,
             position: selectedChat.position,
@@ -120,7 +123,10 @@ export default function AdminClientMessagesPage() {
     try {
       const response = await fetch('/api/client/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           clientId: selectedChat.clientId,
           clientName: selectedChat.clientName,
