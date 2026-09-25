@@ -119,8 +119,8 @@ export async function GET(request: NextRequest) {
       ORDER BY created_at DESC
       LIMIT 1
     `
-    const store = await ensureClientBusinessStore(sql,client.id,client.file_number,client.business_name||client.name)
-    const items=store?await sql`SELECT id,name,description,price,currency,enabled FROM client_store_items WHERE store_id=${store.id}::uuid ORDER BY created_at DESC`:[]
+    const store = await ensureClientBusinessStore(sql,client.id,client.file_number,client.business_name||client.name,workshop.workshop_type==='crypto_exchange')
+    const items=store?await sql`SELECT id,name,description,price,currency,offer_type,enabled FROM client_store_items WHERE store_id=${store.id}::uuid ORDER BY created_at DESC`:[]
     const orders=store?await sql`SELECT id,item_id,customer_name,customer_contact,customer_wallet,payment_reference,amount,currency,status,payment_status,created_at FROM client_store_orders WHERE store_id=${store.id}::uuid ORDER BY created_at DESC LIMIT 20`:[]
     const internationalPayments=await ensureClientInternationalPaymentProfile(sql,client.id)
     const withdrawals=await sql`SELECT id,amount,currency,destination,status,created_at FROM client_vault_withdrawals WHERE client_id=${client.id}::uuid ORDER BY created_at DESC LIMIT 20`
