@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { generateFileNumber } from '@/lib/fne'
+import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 import { getFileFolderTier } from '@/lib/file-folder-pricing'
 import { notifyUser } from '@/lib/deposit-notifications'
@@ -11,23 +12,14 @@ export async function POST(request: NextRequest) {
     const admin = await getAuthUser(request)
 
     if (!admin || admin.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Admin only' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Admin only' }, { status: 403 })
     }
 
     const { depositId, status } = await request.json()
 
-    if (
-      !depositId ||
-      !['approved', 'rejected'].includes(status)
-    ) {
+    if (!depositId || !['approved', 'rejected'].includes(status)) {
       return NextResponse.json(
-        {
-          error:
-            'depositId and status (approved|rejected) are required'
-        },
+        { error: 'depositId and status (approved|rejected) are required' },
         { status: 400 }
       )
     }
@@ -48,8 +40,7 @@ export async function POST(request: NextRequest) {
         ba.bridger_id,
         ba.bridge_code
       FROM bridge_deposits bd
-      INNER JOIN bridge_ais ba
-        ON ba.id = bd.bridge_id
+      INNER JOIN bridge_ais ba ON ba.id = bd.bridge_id
       WHERE bd.id = ${depositId}::uuid
         AND bd.status = 'pending'
       LIMIT 1
@@ -57,10 +48,7 @@ export async function POST(request: NextRequest) {
 
     if (!deposits[0]) {
       return NextResponse.json(
-        {
-          error:
-            'Bridge deposit not found or already processed'
-        },
+        { error: 'Bridge deposit not found or already processed' },
         { status: 404 }
       )
     }
@@ -75,20 +63,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    /*
-     * REJECTION
-     *
-     * No File Number is created.
-     */
     if (status === 'rejected') {
       await sql`
         UPDATE bridge_deposits
-        SET
-          status = 'rejected',
-          verifier_id = ${admin.id}::uuid,
-          verified_at = NOW()
-        WHERE id = ${depositId}::uuid
-          AND status = 'pending'
+        SET status = 'rejected', verifier_id = ${admin.id}::uuid, verified_at = NOW()
+        WHERE id = ${depositId}::uuid AND status = 'pending'
       `
 
       if (deposit.bridger_id) {
@@ -109,12 +88,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    /*
-     * APPROVAL
-     *
-     * Generate the official File Number using the
-     * Bridger attached to this Bridge.
-     */
     const fileFolder = await generateFileNumber(
       deposit.bridger_id,
       {
@@ -130,12 +103,6 @@ export async function POST(request: NextRequest) {
 
     const fileNumber = fileFolder.file_number
 
-    /*
-     * Attach the File Number to the Bridge payment.
-     *
-     * The payment itself is the event that causes
-     * the File Folder to become issued.
-     */
     await sql`
       UPDATE bridge_deposits
       SET
@@ -147,16 +114,40 @@ export async function POST(request: NextRequest) {
         AND status = 'pending'
     `
 
-    /*
-     * Conversion Tracking
-     */
+    // Provision the persistent File Folder shell only after the paid Bridge movement is approved.
+    // The first workshop is intentionally NOT chosen here: it must come from Client personalization.
+    await ensureClientFileFolderSchema(sql)
+    await sql`
+      INSERT INTO client_file_folders (
+        file_number,
+        client_name,
+        workshop_type,
+        status
+      )
+      VALUES (
+        ${fileNumber},
+        ${deposit.prospect_name},
+        'pending_personalization',
+        'waiting_for_login'
+      )
+      ON CONFLICT (file_number) DO UPDATE SET
+        client_name = COALESCE(client_file_folders.client_name, EXCLUDED.client_name),
+        workshop_type = CASE
+          WHEN client_file_folders.client_id IS NULL
+               AND client_file_folders.workshop_type = 'formation'
+            THEN 'pending_personalization'
+          ELSE client_file_folders.workshop_type
+        END,
+        updated_at = NOW()
+    `
+
     if (deposit.outreach_id) {
       await sql`
         UPDATE market_prospect_outreach
         SET status = 'converted', last_activity_at = NOW()
         WHERE id = ${deposit.outreach_id}::uuid
       `
-      
+
       await sql`
         UPDATE market_prospect_contacts
         SET status = 'converted'
@@ -164,10 +155,6 @@ export async function POST(request: NextRequest) {
       `
     }
 
-    /*
-     * Attach the File Number to the System Switch session
-     * when the Bridge supplied a session.
-     */
     if (deposit.session_id) {
       await sql`
         UPDATE system_switch_state
@@ -179,10 +166,6 @@ export async function POST(request: NextRequest) {
       `
     }
 
-    /*
-     * DISTRIBUTE COMMISSIONS
-     * 30% to Bridger, 2% (5% of Weave's 40%) to Agent
-     */
     if (deposit.bridger_id) {
       creditBridgerActivityCommission({
         bridgerId: deposit.bridger_id,
@@ -190,9 +173,7 @@ export async function POST(request: NextRequest) {
         baseAmount: Number(deposit.tier_trx),
         description: `Commission for ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
       }).catch(err => console.error('[bridge verify] commission error:', err))
-    }
 
-    if (deposit.bridger_id) {
       await notifyUser(deposit.bridger_id, {
         type: 'client_deposit_approved',
         title: 'Client File Folder payment approved',
@@ -213,21 +194,12 @@ export async function POST(request: NextRequest) {
       amount: Number(deposit.tier_trx),
       fileFolderTier,
       currency: 'Flame Coin',
-      message:
-        'File Folder approved and File Number issued.'
+      message: 'File Folder approved, persistent File Folder shell provisioned, and File Number issued.'
     })
   } catch (error: any) {
-    console.error(
-      '[bridge deposit verification]',
-      error
-    )
-
+    console.error('[bridge deposit verification]', error)
     return NextResponse.json(
-      {
-        error:
-          error?.message ||
-          'Failed to verify Bridge File Folder payment'
-      },
+      { error: error?.message || 'Failed to verify Bridge File Folder payment' },
       { status: 500 }
     )
   }
