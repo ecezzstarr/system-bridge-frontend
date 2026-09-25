@@ -162,6 +162,8 @@ async function seedFileFolderWorld(sql: any) {
     ['automation_kit', 'Automation Kit', 'technology', 'Provides the automation component required by workflow builds.', 10],
     ['launch_kit', 'Launch Kit', 'business', 'Provides the launch component for a public customer-facing system.', 12],
     ['data_kit', 'Data Kit', 'technology', 'Provides the structured data component for a persistent information system.', 10],
+    ['architecture_kit', 'Architecture Kit', 'formation', 'Carries a larger multi-function system through longer formation.', 15],
+    ['integration_kit', 'Integration Kit', 'technology', 'Carries connections between several persistent WEAVE systems.', 20],
   ]
 
   for (const item of items) {
@@ -182,6 +184,8 @@ async function seedFileFolderWorld(sql: any) {
     ['service_workflow', 'Service Workflow', 'formation_yard', 'service_workflow', 'A working service pipeline that can hold steps, responsibilities and completion records.', 8, 'automation_kit', 1],
     ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A customer-facing system connected to the Client business/store movement.', 12, 'launch_kit', 1],
     ['data_room', 'Data Room', 'technology_district', 'data_room', 'A structured system for persistent records and reusable information.', 10, 'data_kit', 1],
+    ['enterprise_shell', 'Enterprise System Shell', 'formation_yard', 'enterprise_shell', 'A larger multi-function system shell that can hold operations, people, records and later enterprise modules.', 24, 'architecture_kit', 1],
+    ['integration_network', 'Integration Network', 'technology_district', 'integration_network', 'A long-form build that organizes connections between several systems in the Client File Folder.', 48, 'integration_kit', 1],
   ]
 
   for (const blueprint of blueprints) {
