@@ -1,12 +1,13 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Gift, MessageCircle, Phone, CheckCircle2, RefreshCw } from 'lucide-react'
+import { Gift, MessageCircle, Phone, CheckCircle2, RefreshCw, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getAuthHeaders } from '@/lib/auth-client'
 import { openWhatsAppWithNumber } from '@/components/external-apps-nav'
 
-export function DailyProjectClaim() {
+export function DailyProspectClaim() {
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState(false)
   const [claimed, setClaimed] = useState(false)
@@ -19,11 +20,11 @@ export function DailyProjectClaim() {
     try {
       const response = await fetch('/api/bridger/daily-prospect', { headers: getAuthHeaders() })
       const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Unable to load daily project')
+      if (!response.ok) throw new Error(data.error || 'Unable to load daily prospect')
       setClaimed(Boolean(data.claimed))
       setClaim(data.claim || null)
     } catch (err: any) {
-      setError(err?.message || 'Unable to load daily project')
+      setError(err?.message || 'Unable to load daily prospect')
     } finally {
       setLoading(false)
     }
@@ -47,14 +48,17 @@ export function DailyProjectClaim() {
       setClaimed(true)
       setClaim(data.claim || null)
     } catch (err: any) {
-      setError(err?.message || 'Unable to claim daily project')
+      setError(err?.message || 'Unable to claim daily prospect')
     } finally {
       setClaiming(false)
     }
   }
 
-  const phone = claim?.phone || claim?.whatsapp || claim?.phone_number
+  const phone = claim?.whatsapp || claim?.whatsapp_number || claim?.phone
   const name = claim?.name || claim?.full_name || 'Daily Prospect'
+  const outreachMessage =
+    claim?.message_sent ||
+    `Hi ${name}, this is your Bridger from Weave.`
 
   return (
     <section className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-5 sm:p-6 shadow-lg">
@@ -67,13 +71,13 @@ export function DailyProjectClaim() {
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-bold text-white">Daily Project Claim</h2>
+                <h2 className="text-xl font-bold text-white">Daily Prospect Claim</h2>
                 <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-300">
                   1 FREE / DAY
                 </span>
               </div>
               <p className="mt-1 text-sm text-slate-400">
-                A free verified prospect for today&apos;s Bridger outreach and messaging.
+                Claim one free available prospect each day and move directly into Bridger outreach.
               </p>
             </div>
           </div>
@@ -110,19 +114,31 @@ export function DailyProjectClaim() {
                 </div>
                 <p className="text-lg font-semibold text-white">{name}</p>
                 {phone && <p className="text-sm text-slate-400">{phone}</p>}
+                <p className="mt-2 text-xs text-slate-500">
+                  This prospect is also in My Prospects with its WEAVE outreach record.
+                </p>
               </div>
-              {phone && (
-                <Button
-                  onClick={() => openWhatsAppWithNumber(phone, `Hi ${name}, this is your Bridger from Weave.`)}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Message Prospect
+
+              <div className="flex flex-col gap-2 sm:items-end">
+                {phone && (
+                  <Button
+                    onClick={() => openWhatsAppWithNumber(phone, outreachMessage)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Message Prospect
+                  </Button>
+                )}
+                <Button asChild variant="outline" className="border-slate-700">
+                  <Link href="/weave/market/prospects">
+                    <Users className="mr-2 h-4 w-4" />
+                    Open My Prospects
+                  </Link>
                 </Button>
-              )}
+              </div>
             </div>
             <p className="mt-3 text-xs text-slate-500">
-              Your daily free claim is used. The next free project becomes available on the next calendar day.
+              Your daily free claim is used. The next free prospect becomes available on the next calendar day.
             </p>
           </div>
         )}
