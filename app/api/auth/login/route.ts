@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const shield=await getDivineShieldState().catch(()=>({active:false}))
+    const shield=await getDivineShieldState()
     if(shield.active && user.role!=='admin'){
       return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
     }
