@@ -24,6 +24,8 @@ type Props = {
   workshopPurpose?: string | null
   initialWorld: any
   readOnly?: boolean
+  refreshUrl?: string
+  refreshToken?: string | null
 }
 
 const districts = [
@@ -52,6 +54,8 @@ export default function FileFolderOpenWorld({
   workshopPurpose,
   initialWorld,
   readOnly = false,
+  refreshUrl,
+  refreshToken,
 }: Props) {
   const [world, setWorld] = useState(initialWorld)
   const [district, setDistrict] = useState('workshop_core')
@@ -64,6 +68,28 @@ export default function FileFolderOpenWorld({
     const id = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(id)
   }, [])
+
+  useEffect(() => {
+    const url = refreshUrl || (!readOnly ? '/api/client/file-folder-world' : null)
+    if (!url) return
+
+    const refresh = async () => {
+      try {
+        const token = refreshToken ?? (!readOnly ? getClientToken() : null)
+        const response = await fetch(url, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          cache: 'no-store',
+        })
+        const body = await response.json()
+        if (response.ok && body.world) setWorld(body.world)
+      } catch {
+        // Keep the current world visible if a background refresh fails.
+      }
+    }
+
+    const id = window.setInterval(refresh, 20000)
+    return () => window.clearInterval(id)
+  }, [readOnly, refreshToken, refreshUrl])
 
   const inventory = useMemo(
     () => new Map((world?.inventory || []).map((item: any) => [item.item_key, Number(item.quantity || 0)])),
