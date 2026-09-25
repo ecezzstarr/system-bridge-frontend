@@ -39,7 +39,10 @@ export default function BridgerTerminal() {
       if (!user?.id) return
       try {
         setLoadingClientChats(true)
-        const res = await fetch(`/api/client/messages?bridger=true&bridgerId=${user.id}`)
+        const token = localStorage.getItem('ssb_auth_token')
+        const res = await fetch('/api/client/messages', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
         if (res.ok) {
           const data = await res.json()
           setRecentClientChats(data.messages || data.summary || [])
@@ -81,7 +84,10 @@ export default function BridgerTerminal() {
       try {
         const res = await fetch('/api/bridger/subscription', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('ssb_auth_token') ? { Authorization: `Bearer ${localStorage.getItem('ssb_auth_token')}` } : {}),
+        },
           body: JSON.stringify({
             userId: user?.id,
             amount: 25000,
@@ -469,8 +475,16 @@ function MyClients({ user }: { user: any }) {
       if (!user?.id) return
       try {
         const results = await Promise.allSettled([
-          fetch(`/api/bridger/clients?bridgerId=${user.id}`),
-          fetch(`/api/client/messages?bridger=true&bridgerId=${user.id}`)
+          fetch('/api/bridger/clients', {
+            headers: localStorage.getItem('ssb_auth_token')
+              ? { Authorization: `Bearer ${localStorage.getItem('ssb_auth_token')}` }
+              : {},
+          }),
+          fetch('/api/client/messages', {
+            headers: localStorage.getItem('ssb_auth_token')
+              ? { Authorization: `Bearer ${localStorage.getItem('ssb_auth_token')}` }
+              : {},
+          })
         ])
         
         if (results[0].status === 'fulfilled') {
@@ -516,7 +530,8 @@ function MyClients({ user }: { user: any }) {
   const fetchMessages = async (clientId: string, position: string, silent = false) => {
     if (!silent) setChatLoading(true)
     try {
-      const response = await fetch(`/api/client/messages?clientId=${clientId}&position=${position}&bridger=true`)
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch(`/api/client/messages?clientId=${clientId}&position=${encodeURIComponent(position)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await response.json()
       if (data.success) {
         setMessages(data.messages || [])
