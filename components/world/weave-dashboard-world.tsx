@@ -142,7 +142,7 @@ export function WeaveDashboardWorld({
   const copy = ROLE[role]
 
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#030a15]/76 shadow-[0_30px_100px_rgba(2,8,23,.45)] backdrop-blur-sm">
+    <div className="relative overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#030a15]/58 shadow-[0_34px_110px_rgba(2,8,23,.55)] backdrop-blur-md [transform-style:preserve-3d]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,.08),transparent_24%),radial-gradient(circle_at_20%_44%,rgba(14,165,233,.07),transparent_26%),radial-gradient(circle_at_82%_50%,rgba(59,130,246,.06),transparent_28%)]" />
 
       <div className="relative z-10 p-4 md:p-6 lg:p-8">
@@ -167,7 +167,7 @@ export function WeaveDashboardWorld({
           </div>
         </header>
 
-        <section className="relative mt-6 overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/25 p-4 md:p-5">
+        <section className="relative mt-6 overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/18 p-4 shadow-[0_22px_70px_rgba(2,8,23,.28)] backdrop-blur-sm md:p-5">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(56,189,248,.10),transparent_22%),linear-gradient(180deg,rgba(255,255,255,.015),transparent)]" />
 
           <div className="relative grid gap-4 xl:grid-cols-[230px_1fr_230px]">
@@ -175,7 +175,7 @@ export function WeaveDashboardWorld({
               {copy.links.slice(0,4).map(item => <WorldLinkCard key={item.label} item={item} />)}
             </div>
 
-            <div className="relative flex min-h-[390px] items-center justify-center rounded-[1.6rem] border border-white/10 bg-black/20 px-5 py-8 backdrop-blur-sm">
+            <div className="relative flex min-h-[390px] items-center justify-center rounded-[1.6rem] border border-white/10 bg-[#020713]/42 px-5 py-8 shadow-[0_22px_60px_rgba(2,8,23,.32),inset_0_1px_0_rgba(255,255,255,.035)] backdrop-blur-md [transform:translateZ(18px)]">
               <div className="max-w-xl text-center">
                 <p className="text-[9px] font-black uppercase tracking-[0.25em] text-sky-300">Operating Surface</p>
                 <h2 className="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">{copy.eyebrow}</h2>
@@ -245,7 +245,7 @@ export function WeaveDashboardWorld({
 function WorldLinkCard({ item }: { item: WorldLink }) {
   const Icon = item.icon
   return (
-    <Link href={item.href} className={`group block rounded-2xl border p-3 transition duration-300 hover:-translate-y-0.5 ${toneClass[item.tone]}`}>
+    <Link href={item.href} className={`group block rounded-2xl border p-3 shadow-[0_10px_30px_rgba(2,8,23,.18)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:scale-[1.01] ${toneClass[item.tone]}`}>
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/35">
           <Icon className="h-4 w-4"/>

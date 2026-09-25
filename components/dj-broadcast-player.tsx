@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
-import { Music2, Play, GripVertical, Volume2 } from 'lucide-react'
+import { Music2, Play, Pause, GripVertical, Volume2 } from 'lucide-react'
 
 const POSITION_KEY = 'ssb_dj_player_pos'
 const LIVE_SOUND_KEY = 'weave_live_sound_joined'
 const LEGACY_EVENT_SOUND_KEY = 'weave_flame_event_sound_joined'
-const WIDGET_WIDTH = 290
+const USER_PAUSED_KEY = 'weave_live_sound_user_paused'
+const WIDGET_WIDTH = 310
 const WIDGET_HEIGHT = 68
 
 function getDefaultPosition() {
@@ -29,6 +30,7 @@ export function DJBroadcastPlayer() {
   const currentUrlRef = useRef<string | null>(null)
   const autoplayAttemptedRef = useRef(false)
   const syncInFlightRef = useRef(false)
+  const userPausedRef = useRef(false)
 
   const [live, setLive] = useState(false)
   const [flameEventLive, setFlameEventLive] = useState(false)
@@ -36,6 +38,7 @@ export function DJBroadcastPlayer() {
   const [trackArtist, setTrackArtist] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState<string | null>(null)
   const [joined, setJoined] = useState(false)
+  const [userPaused, setUserPaused] = useState(false)
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
 
   const dragState = useRef({ dragging: false, offsetX: 0, offsetY: 0 })
@@ -45,10 +48,16 @@ export function DJBroadcastPlayer() {
     try {
       const saved = localStorage.getItem(POSITION_KEY)
       if (saved) initial = clamp(JSON.parse(saved))
+
       const remembered =
         localStorage.getItem(LIVE_SOUND_KEY) === '1' ||
         localStorage.getItem(LEGACY_EVENT_SOUND_KEY) === '1'
+      const pausedByUser = localStorage.getItem(USER_PAUSED_KEY) === '1'
+
       setJoined(remembered)
+      setUserPaused(pausedByUser)
+      userPausedRef.current = pausedByUser
+
       if (remembered) localStorage.setItem(LIVE_SOUND_KEY, '1')
     } catch {}
     setPosition(initial)
@@ -63,9 +72,11 @@ export function DJBroadcastPlayer() {
     return token ? { Authorization: `Bearer ${token}` } : {}
   }
 
-  const beginPlayback = useCallback(async (remember = false) => {
+  const beginPlayback = useCallback(async (remember = false, force = false) => {
     const audio = audioRef.current
     if (!audio || !audio.src) return false
+    if (userPausedRef.current && !force) return false
+
     try {
       audio.muted = false
       await audio.play()
@@ -116,10 +127,15 @@ export function DJBroadcastPlayer() {
       const desiredSeconds = Math.max(0, Number(data.elapsedSeconds || 0))
       const isNewTrack = currentUrlRef.current !== data.track.fileUrl
 
-      const seekAndPlay = async () => {
+      const seekAndRespectListener = async () => {
         try {
           if (Number.isFinite(desiredSeconds)) audio.currentTime = desiredSeconds
         } catch {}
+
+        if (userPausedRef.current) {
+          if (!audio.paused) audio.pause()
+          return
+        }
 
         if (joined) {
           await beginPlayback(false)
@@ -133,16 +149,22 @@ export function DJBroadcastPlayer() {
         currentUrlRef.current = data.track.fileUrl
         audio.src = data.track.fileUrl
         audio.load()
+
         if (audio.readyState >= 1) {
-          await seekAndPlay()
+          await seekAndRespectListener()
         } else {
-          audio.addEventListener('loadedmetadata', () => { void seekAndPlay() }, { once: true })
+          audio.addEventListener('loadedmetadata', () => { void seekAndRespectListener() }, { once: true })
         }
       } else {
         if (audio.readyState >= 1 && Math.abs(audio.currentTime - desiredSeconds) > 2.5) {
           try { audio.currentTime = desiredSeconds } catch {}
         }
-        if (joined && audio.paused) await beginPlayback(false)
+
+        if (userPausedRef.current) {
+          if (!audio.paused) audio.pause()
+        } else if (joined && audio.paused) {
+          await beginPlayback(false)
+        }
       }
     } catch {
       // Live sound must never make the rest of WEAVE unusable.
@@ -174,7 +196,33 @@ export function DJBroadcastPlayer() {
 
   const handleJoin = async () => {
     autoplayAttemptedRef.current = true
-    await beginPlayback(true)
+    userPausedRef.current = false
+    setUserPaused(false)
+    try { localStorage.removeItem(USER_PAUSED_KEY) } catch {}
+    await beginPlayback(true, true)
+  }
+
+  const handlePause = () => {
+    const audio = audioRef.current
+    if (audio && !audio.paused) audio.pause()
+
+    userPausedRef.current = true
+    setUserPaused(true)
+    setJoined(true)
+    try {
+      localStorage.setItem(LIVE_SOUND_KEY, '1')
+      localStorage.setItem(USER_PAUSED_KEY, '1')
+    } catch {}
+  }
+
+  const handleResume = async () => {
+    userPausedRef.current = false
+    setUserPaused(false)
+    autoplayAttemptedRef.current = true
+    try { localStorage.removeItem(USER_PAUSED_KEY) } catch {}
+
+    await beginPlayback(false, true)
+    void syncBroadcast()
   }
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -217,12 +265,17 @@ export function DJBroadcastPlayer() {
 
       {canShow && position && (
         <div
-          className={`fixed z-[85] flex max-w-xs select-none items-center gap-2 rounded-2xl border px-3 py-3 shadow-2xl backdrop-blur-xl touch-none ${
+          className={`fixed z-[85] flex max-w-sm select-none items-center gap-2 rounded-2xl border px-3 py-3 shadow-2xl backdrop-blur-xl touch-none ${
             flameEventLive
-              ? 'border-sky-300/25 bg-[#03101e]/95 shadow-sky-950/40'
-              : 'border-slate-800 bg-slate-900/90'
+              ? 'border-sky-300/25 bg-[#03101e]/92 shadow-sky-950/40'
+              : 'border-sky-300/15 bg-[#04101f]/90 shadow-slate-950/50'
           }`}
-          style={{ left: position.x, top: position.y, width: WIDGET_WIDTH }}
+          style={{
+            left: position.x,
+            top: position.y,
+            width: WIDGET_WIDTH,
+            boxShadow: '0 18px 50px rgba(2,8,23,.55), inset 0 1px 0 rgba(255,255,255,.035)',
+          }}
         >
           <div
             onPointerDown={onPointerDown}
@@ -236,27 +289,51 @@ export function DJBroadcastPlayer() {
           </div>
 
           <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${
-            flameEventLive ? 'bg-gradient-to-b from-sky-500/20 to-red-500/15' : 'bg-cyan-500/20'
+            userPaused
+              ? 'bg-slate-500/15'
+              : flameEventLive
+                ? 'bg-gradient-to-b from-sky-500/20 to-red-500/15'
+                : 'bg-cyan-500/20'
           }`}>
-            {joined ? <Volume2 className="h-4 w-4 text-sky-300" /> : <Music2 className="h-4 w-4 text-sky-300" />}
+            {joined ? <Volume2 className={`h-4 w-4 ${userPaused ? 'text-slate-500' : 'text-sky-300'}`} /> : <Music2 className="h-4 w-4 text-sky-300" />}
           </div>
 
           <div className="min-w-0 flex-1">
             <p className="text-[9px] font-black uppercase tracking-[0.16em] text-sky-300">
-              {flameEventLive ? 'Flame Event Sound · Loop 1' : 'Weave Live · DJ'}
+              {flameEventLive ? 'Flame Event Sound · Loop 1' : 'WEAVE Live · DJ'}
             </p>
-            <p className="truncate text-xs text-white">{announcement || trackTitle || 'Broadcasting'}</p>
-            {!announcement && trackArtist && <p className="truncate text-[9px] text-slate-500">{trackArtist}</p>}
+            <p className="truncate text-xs text-white">
+              {userPaused ? 'Paused by you' : announcement || trackTitle || 'Broadcasting'}
+            </p>
+            {!userPaused && !announcement && trackArtist && <p className="truncate text-[9px] text-slate-500">{trackArtist}</p>}
           </div>
 
-          {!joined && (
+          {!joined ? (
             <button
               onClick={handleJoin}
               className="flex-shrink-0 rounded-full border border-sky-300/25 bg-sky-500/15 px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-sky-200 transition hover:bg-sky-500/25"
-              title="Browser autoplay is blocked until you enter sound"
+              title="Enter the live sound"
             >
               <Play className="mr-1 inline h-3 w-3" />
               Enter Sound
+            </button>
+          ) : userPaused ? (
+            <button
+              onClick={handleResume}
+              className="flex-shrink-0 rounded-full border border-emerald-300/25 bg-emerald-500/10 px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-emerald-200 transition hover:bg-emerald-500/20"
+              title="Resume live sound"
+            >
+              <Play className="mr-1 inline h-3 w-3" />
+              Resume
+            </button>
+          ) : (
+            <button
+              onClick={handlePause}
+              className="flex-shrink-0 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
+              title="Pause live sound for you"
+            >
+              <Pause className="mr-1 inline h-3 w-3" />
+              Pause
             </button>
           )}
         </div>

@@ -2,14 +2,16 @@
 
 export function WeaveNormalWorldBackdrop() {
   return (
-    <div className="pointer-events-none fixed inset-0 overflow-hidden bg-[#020815]" aria-hidden="true">
+    <div className="pointer-events-none fixed inset-0 overflow-hidden bg-[#020815] [perspective:1200px] [transform-style:preserve-3d]" aria-hidden="true">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_8%,rgba(245,158,11,0.13),transparent_24%),radial-gradient(circle_at_18%_44%,rgba(14,165,233,0.14),transparent_28%),radial-gradient(circle_at_82%_48%,rgba(59,130,246,0.13),transparent_28%),linear-gradient(180deg,#020815_0%,#061426_50%,#020812_100%)]" />
 
-      <div className="absolute inset-0 opacity-60 [background-image:radial-gradient(circle_at_20%_20%,rgba(255,255,255,.85)_0_1px,transparent_1.5px),radial-gradient(circle_at_72%_18%,rgba(125,211,252,.85)_0_1px,transparent_1.5px),radial-gradient(circle_at_38%_52%,rgba(255,255,255,.55)_0_1px,transparent_1.5px),radial-gradient(circle_at_88%_64%,rgba(250,204,21,.5)_0_1px,transparent_1.5px)] [background-size:190px_190px,260px_260px,230px_230px,310px_310px]" />
+      <div className="absolute inset-0 opacity-60 [transform:translateZ(-90px)_scale(1.08)] [background-image:radial-gradient(circle_at_20%_20%,rgba(255,255,255,.85)_0_1px,transparent_1.5px),radial-gradient(circle_at_72%_18%,rgba(125,211,252,.85)_0_1px,transparent_1.5px),radial-gradient(circle_at_38%_52%,rgba(255,255,255,.55)_0_1px,transparent_1.5px),radial-gradient(circle_at_88%_64%,rgba(250,204,21,.5)_0_1px,transparent_1.5px)] [background-size:190px_190px,260px_260px,230px_230px,310px_310px]" />
 
-      <div className="absolute left-1/2 top-[30%] h-[30rem] w-[66rem] -translate-x-1/2 rounded-full bg-sky-400/[0.055] blur-[120px]" />
+      <div className="absolute left-1/2 top-[30%] h-[30rem] w-[66rem] -translate-x-1/2 rounded-full bg-sky-400/[0.055] blur-[120px] animate-pulse motion-reduce:animate-none" />
+      <div className="absolute left-[8%] top-[36%] h-36 w-72 rounded-full bg-sky-300/[0.035] blur-[70px] [transform:translateZ(-35px)]" />
+      <div className="absolute right-[6%] top-[42%] h-40 w-80 rounded-full bg-amber-300/[0.025] blur-[80px] [transform:translateZ(-20px)]" />
 
-      <svg className="absolute inset-x-0 bottom-0 h-[82%] w-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+      <svg className="absolute inset-x-0 bottom-0 h-[82%] w-full [transform:translateZ(-35px)_scale(1.035)] [transform-origin:center_bottom]" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
         <defs>
           <linearGradient id="nwBlue" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0"/>
@@ -66,7 +68,17 @@ export function WeaveNormalWorldBackdrop() {
         <path d="M0 737 C276 692 449 756 617 733 C785 710 951 704 1114 738 C1288 777 1443 710 1600 741" fill="none" stroke="#38bdf8" strokeOpacity=".16" strokeWidth="3"/>
       </svg>
 
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,8,21,.58),transparent_24%,transparent_76%,rgba(2,8,21,.58)),linear-gradient(180deg,rgba(2,8,21,.08),transparent_54%,rgba(2,8,21,.76))]" />
+      <div
+        className="absolute -bottom-[38%] left-1/2 h-[66%] w-[155%] origin-bottom opacity-[0.14]"
+        style={{
+          transform: 'translateX(-50%) perspective(900px) rotateX(68deg)',
+          backgroundImage: 'linear-gradient(rgba(125,211,252,.16) 1px, transparent 1px), linear-gradient(90deg, rgba(125,211,252,.13) 1px, transparent 1px)',
+          backgroundSize: '76px 76px',
+          maskImage: 'linear-gradient(to top, black, transparent 82%)',
+        }}
+      />
+      <div className="absolute inset-x-0 bottom-[16%] h-28 bg-gradient-to-t from-sky-400/[0.035] to-transparent blur-2xl" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,8,21,.62),transparent_22%,transparent_78%,rgba(2,8,21,.62)),linear-gradient(180deg,rgba(2,8,21,.04),transparent_48%,rgba(2,8,21,.66))]" />
     </div>
   )
 }
