@@ -37,7 +37,7 @@ export default function ClientChatPage() {
   const position = params.position as string
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const { user: client } = useAuth()
+  const { user: client, token } = useAuth()
   const [messages, setMessages] = useState<Message[]>([])
   const [messageInput, setMessageInput] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -70,7 +70,7 @@ export default function ClientChatPage() {
   const fetchMessages = async (clientId: string, silent = false) => {
     if (!silent) setIsLoading(true)
     try {
-      const response = await fetch(`/api/client/messages?clientId=${clientId}&position=${position}`)
+      const response = await fetch(`/api/client/messages?position=${encodeURIComponent(position)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await response.json()
       if (data.success) {
         setMessages(data.messages || [])
@@ -90,12 +90,13 @@ export default function ClientChatPage() {
     try {
       const response = await fetch('/api/client/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
-          clientId: client?.id,
-          position: position,
-          content: content,
-          senderType: 'client'
+          position,
+          content,
         })
       })
       const data = await response.json()
