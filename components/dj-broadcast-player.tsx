@@ -8,8 +8,8 @@ const POSITION_KEY = 'ssb_dj_player_pos'
 const LIVE_SOUND_KEY = 'weave_live_sound_joined'
 const LEGACY_EVENT_SOUND_KEY = 'weave_flame_event_sound_joined'
 const USER_PAUSED_KEY = 'weave_live_sound_user_paused'
-const WIDGET_WIDTH = 310
-const WIDGET_HEIGHT = 68
+const WIDGET_WIDTH = 260
+const WIDGET_HEIGHT = 56
 
 function getDefaultPosition() {
   if (typeof window === 'undefined') return { x: 0, y: 0 }
@@ -265,75 +265,75 @@ export function DJBroadcastPlayer() {
 
       {canShow && position && (
         <div
-          className={`fixed z-[85] flex max-w-sm select-none items-center gap-2 rounded-2xl border px-3 py-3 shadow-2xl backdrop-blur-xl touch-none ${
+          className={`fixed z-[85] flex select-none items-center gap-1.5 overflow-hidden rounded-2xl border px-2 py-2 backdrop-blur-md touch-none ${
             flameEventLive
-              ? 'border-sky-300/25 bg-[#03101e]/92 shadow-sky-950/40'
-              : 'border-sky-300/15 bg-[#04101f]/90 shadow-slate-950/50'
+              ? 'border-sky-100/20 bg-white/[0.045]'
+              : 'border-white/15 bg-white/[0.035]'
           }`}
           style={{
             left: position.x,
             top: position.y,
             width: WIDGET_WIDTH,
-            boxShadow: '0 18px 50px rgba(2,8,23,.55), inset 0 1px 0 rgba(255,255,255,.035)',
+            boxShadow: '0 10px 28px rgba(2,8,23,.22), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(255,255,255,.03)',
           }}
         >
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,.13)_0%,rgba(255,255,255,.035)_28%,transparent_46%,rgba(125,211,252,.045)_72%,rgba(255,255,255,.08)_100%)]" />
+          <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent" />
+
           <div
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
-            className="flex-shrink-0 cursor-grab text-slate-600 transition hover:text-slate-400 active:cursor-grabbing"
+            className="relative z-10 flex-shrink-0 cursor-grab text-white/25 transition hover:text-white/55 active:cursor-grabbing"
             title="Drag to move"
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="h-3.5 w-3.5" />
           </div>
 
-          <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${
+          <div className={`relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/10 backdrop-blur-sm ${
             userPaused
-              ? 'bg-slate-500/15'
+              ? 'bg-black/10'
               : flameEventLive
-                ? 'bg-gradient-to-b from-sky-500/20 to-red-500/15'
-                : 'bg-cyan-500/20'
+                ? 'bg-gradient-to-b from-sky-200/10 to-red-200/[0.06]'
+                : 'bg-sky-200/[0.07]'
           }`}>
             {joined ? <Volume2 className={`h-4 w-4 ${userPaused ? 'text-slate-500' : 'text-sky-300'}`} /> : <Music2 className="h-4 w-4 text-sky-300" />}
           </div>
 
-          <div className="min-w-0 flex-1">
-            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-sky-300">
+          <div className="relative z-10 min-w-0 flex-1">
+            <p className="text-[8px] font-black uppercase tracking-[0.14em] text-sky-200/80">
               {flameEventLive ? 'Flame Event Sound · Loop 1' : 'WEAVE Live · DJ'}
             </p>
-            <p className="truncate text-xs text-white">
+            <p className="truncate text-[10px] font-medium text-white/85">
               {userPaused ? 'Paused by you' : announcement || trackTitle || 'Broadcasting'}
             </p>
-            {!userPaused && !announcement && trackArtist && <p className="truncate text-[9px] text-slate-500">{trackArtist}</p>}
+            {!userPaused && !announcement && trackArtist && <p className="truncate text-[8px] text-white/35">{trackArtist}</p>}
           </div>
 
           {!joined ? (
             <button
               onClick={handleJoin}
-              className="flex-shrink-0 rounded-full border border-sky-300/25 bg-sky-500/15 px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-sky-200 transition hover:bg-sky-500/25"
+              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-sky-100/20 bg-white/[0.055] text-sky-100/85 shadow-inner transition hover:bg-white/[0.10]"
               title="Enter the live sound"
             >
-              <Play className="mr-1 inline h-3 w-3" />
-              Enter Sound
+              <Play className="h-3.5 w-3.5" />
             </button>
           ) : userPaused ? (
             <button
               onClick={handleResume}
-              className="flex-shrink-0 rounded-full border border-emerald-300/25 bg-emerald-500/10 px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-emerald-200 transition hover:bg-emerald-500/20"
+              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-emerald-100/20 bg-white/[0.055] text-emerald-100/85 shadow-inner transition hover:bg-white/[0.10]"
               title="Resume live sound"
             >
-              <Play className="mr-1 inline h-3 w-3" />
-              Resume
+              <Play className="h-3.5 w-3.5" />
             </button>
           ) : (
             <button
               onClick={handlePause}
-              className="flex-shrink-0 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 text-[8px] font-black uppercase tracking-[0.12em] text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
+              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.045] text-white/70 shadow-inner transition hover:bg-white/[0.10] hover:text-white"
               title="Pause live sound for you"
             >
-              <Pause className="mr-1 inline h-3 w-3" />
-              Pause
+              <Pause className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
