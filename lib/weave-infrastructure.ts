@@ -19,6 +19,7 @@ const SYSTEM_SEED = [
 ] as const
 
 let schemaReady:Promise<void>|null=null
+let shieldCache:{value:DivineShieldState;expires:number}|null=null
 
 export async function ensureWeaveInfrastructureSchema() {
   if(schemaReady) return schemaReady
@@ -91,6 +92,7 @@ export async function ensureWeaveInfrastructureSchema() {
 }
 
 export async function getDivineShieldState(): Promise<DivineShieldState> {
+  if(shieldCache && shieldCache.expires>Date.now()) return shieldCache.value
   await ensureWeaveInfrastructureSchema()
   const rows=await sql`
     SELECT enabled,title,message,updated_at
@@ -99,12 +101,14 @@ export async function getDivineShieldState(): Promise<DivineShieldState> {
     LIMIT 1
   `
   const row=rows[0]
-  return {
+  const value={
     active:Boolean(row?.enabled),
     title:row?.title || 'WEAVE is under maintenance',
     message:row?.message || 'The system is being refined. Participation will reopen when Administration releases the Divine Shield.',
     updatedAt:row?.updated_at ? new Date(row.updated_at).toISOString() : null,
   }
+  shieldCache={value,expires:Date.now()+2000}
+  return value
 }
 
 export async function setDivineShieldState(input:{active:boolean;title?:string;message?:string;adminId:string}) {
@@ -128,12 +132,14 @@ export async function setDivineShieldState(input:{active:boolean;title?:string;m
     RETURNING enabled,title,message,updated_at
   `
   const row=rows[0]
-  return {
+  const value={
     active:Boolean(row.enabled),
     title:row.title,
     message:row.message,
     updatedAt:new Date(row.updated_at).toISOString(),
   }
+  shieldCache={value,expires:Date.now()+2000}
+  return value
 }
 
 export async function getInfrastructureRegistry() {
