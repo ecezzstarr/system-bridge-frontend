@@ -7,6 +7,7 @@ import { ensureClientVaultLedgerSchema } from '@/lib/client-vault-ledger'
 import { ensureClientInternationalPaymentProfile } from '@/lib/client-international-payments'
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
+import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
 
 export async function GET(request: NextRequest) {
   try {
@@ -124,6 +125,7 @@ export async function GET(request: NextRequest) {
     const internationalPayments=await ensureClientInternationalPaymentProfile(sql,client.id)
     const withdrawals=await sql`SELECT id,amount,currency,destination,status,created_at FROM client_vault_withdrawals WHERE client_id=${client.id}::uuid ORDER BY created_at DESC LIMIT 20`
     const enterpriseState=await getEnterpriseDream(sql,client.id)
+    const fileFolderWorld=await getFileFolderWorldSnapshot(sql,client.id,client.file_number)
 
     const workshopType=workshop.workshop_type
     const isCrypto=workshopType==='crypto_exchange'
@@ -149,6 +151,7 @@ export async function GET(request: NextRequest) {
       verified:true,
       client:{id:client.id,name:client.name,email:client.email,business_name:client.business_name,file_number:client.file_number},
       file_folder:folder,
+      file_folder_world:fileFolderWorld,
       vault:{
         balance:money.vault.balance,
         currency:money.vault.currency,
