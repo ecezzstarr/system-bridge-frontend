@@ -680,8 +680,10 @@ const enterpriseSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.in
 assert.ok(!enterpriseSection.includes('Prospect Market'),'Bridger Prospect Market is removed from Enterprise navigation')
 assert.ok(!enterpriseSection.includes('Prospect Engine'),'Prospect Engine is removed from Enterprise navigation')
 assert.ok(sidebarEnterpriseSource.indexOf('Prospect Market') < sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),'Prospect Market now belongs to the Bridge side of navigation')
-assert.ok(enterpriseSection.includes('Enterprise Systems Exchange'),'Enterprise navigation leads with systems for sale')
-assert.ok(enterpriseSection.includes('Enterprise Systems Workshop'),'Enterprise navigation exposes Administration system sales control')
+assert.ok(enterpriseSection.includes('WEAVE_SYSTEM_MAP.language.marketplace'),'Enterprise navigation uses the canonical marketplace label')
+assert.ok(weaveSystemMapSource.includes("marketplace: 'Enterprise Systems Exchange'"),'Canonical marketplace label is Enterprise Systems Exchange')
+const administrationSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.indexOf('// 6. ADMINISTRATION'))
+assert.ok(administrationSection.includes('Enterprise Systems Workshop'),'Administration navigation exposes system sales control')
 for(const file of [
  'lib/enterprise-systems.ts',
  'app/api/enterprise-systems/route.ts',
