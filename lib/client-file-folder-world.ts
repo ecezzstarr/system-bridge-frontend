@@ -1,3 +1,5 @@
+import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+
 export type FileFolderWorldSnapshot = {
   blueprints: any[]
   items: any[]
@@ -5,6 +7,7 @@ export type FileFolderWorldSnapshot = {
   builds: any[]
   systems: any[]
   library: any[]
+  customerDoor: any | null
   guarantee: {
     hasActiveBuild: boolean
     hasReadyBlueprint: boolean
@@ -336,6 +339,7 @@ export async function getFileFolderWorldSnapshot(
   fileNumber: string,
 ): Promise<FileFolderWorldSnapshot> {
   await ensureFileFolderWorldSchema(sql)
+  await ensureClientBusinessStoreSchema(sql)
   await ensureClientLibraryProgress(sql, clientId)
   await ensureCustomerDoorFormation(sql, clientId, fileNumber)
   await finalizeReadyBuilds(sql, clientId)
@@ -424,6 +428,27 @@ export async function getFileFolderWorldSnapshot(
     ORDER BY s.activated_at DESC
   `
 
+  const [customerDoor] = await sql`
+    SELECT
+      id,
+      public_slug,
+      name,
+      description,
+      enabled,
+      formation_status,
+      formation_due_at,
+      public_opened_at,
+      first_offer_published_at,
+      customer_wallet_required,
+      EXTRACT(EPOCH FROM (formation_due_at - NOW()))::bigint AS formation_due_seconds,
+      (SELECT COUNT(*)::int FROM client_store_items i WHERE i.store_id=client_business_stores.id AND i.enabled=true) AS active_offer_count,
+      (SELECT COUNT(*)::int FROM client_store_orders o WHERE o.store_id=client_business_stores.id) AS order_count
+    FROM client_business_stores
+    WHERE client_id=${clientId}::uuid
+      AND file_number=${fileNumber}
+    LIMIT 1
+  `
+
   const library = await sql`
     SELECT
       c.entry_key,
@@ -449,6 +474,7 @@ export async function getFileFolderWorldSnapshot(
     builds,
     systems,
     library,
+    customerDoor: customerDoor || null,
     guarantee: {
       hasActiveBuild: builds.some((build: any) => build.status === 'building'),
       hasReadyBlueprint: blueprints.length > 0,
