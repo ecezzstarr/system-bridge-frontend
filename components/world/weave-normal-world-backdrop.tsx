@@ -10,7 +10,7 @@ export function WeaveNormalWorldBackdrop() {
 
   return (
     <motion.div
-      className="pointer-events-none fixed inset-0 overflow-hidden bg-[#020815] [perspective:1200px] [transform-style:preserve-3d]"
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#020815] [perspective:1200px] [transform-style:preserve-3d]"
       aria-hidden="true"
       initial={false}
       animate={reduceMotion ? {
