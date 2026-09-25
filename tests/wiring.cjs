@@ -105,6 +105,25 @@ const sourceFiles = [
   ...walk(path.join(root, 'components')).filter(file => /\.(tsx?|jsx?)$/.test(file)),
 ]
 
+for (const file of sourceFiles) {
+  const source = fs.readFileSync(file, 'utf8')
+  const rel = path.relative(root, file)
+  for (const regex of [
+    /\bhref\s*[:=]\s*['"\x60]([^'"\x60]+)['"\x60]/g,
+    /\brouter\.(?:push|replace)\(\s*['"\x60]([^'"\x60]+)['"\x60]/g,
+    /\bwindow\.location\.href\s*=\s*['"\x60]([^'"\x60]+)['"\x60]/g,
+  ]) {
+    let match
+    while ((match = regex.exec(source))) {
+      const route = normalizeLocal(match[1])
+      if (!route || route.startsWith('/api/')) continue
+      if (!matches(route, pageMatchers)) missingPages.push(rel + ' -> ' + route)
+    }
+  }
+}
+
+const uniqueMissingPages = [...new Set(missingPages)]
+
 const missingApis = []
 for (const file of sourceFiles) {
   const source = fs.readFileSync(file, 'utf8')
@@ -118,7 +137,7 @@ for (const file of sourceFiles) {
   }
 }
 
-assert.deepEqual(missingPages, [], 'Broken internal page wiring:\n' + missingPages.join('\n'))
+assert.deepEqual(uniqueMissingPages, [], 'Broken internal page wiring:\n' + uniqueMissingPages.join('\n'))
 assert.deepEqual(missingApis, [], 'Broken literal API wiring:\n' + missingApis.join('\n'))
 
 console.log('PASS: route wiring audit (' + pagePatterns.length + ' pages, ' + apiPatterns.length + ' API routes)')
