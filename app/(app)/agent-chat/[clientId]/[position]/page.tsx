@@ -26,7 +26,7 @@ const POSITION_INFO: Record<string, { name: string; icon: string }> = {
 }
 
 export default function AgentChatPage() {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const router = useRouter()
   const params = useParams()
   const clientId = params.clientId as string
@@ -58,7 +58,7 @@ export default function AgentChatPage() {
   const fetchMessages = async (isInitial: boolean) => {
     if (isInitial) setIsLoading(true)
     try {
-      const res = await fetch(`/api/client/messages?clientId=${clientId}&position=${position}&agent=true&agentId=${user?.id}`)
+      const res = await fetch(`/api/client/messages?clientId=${clientId}&position=${encodeURIComponent(position)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await res.json()
       if (data.success) {
         setMessages(data.messages || [])
@@ -79,14 +79,14 @@ export default function AgentChatPage() {
     try {
       const res = await fetch('/api/client/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           clientId,
-          clientName,
           position,
           content,
-          senderType: 'admin', // Company-facing reply — client sees this as company/admin
-          agentId: user?.id,
         }),
       })
       const data = await res.json()
