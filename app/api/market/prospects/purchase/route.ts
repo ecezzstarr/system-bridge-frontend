@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 import { ensureMarketTables } from '@/lib/market'
+import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
 export async function POST(request: NextRequest) {
   const authUser = await getAuthUser(request)
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
       [packageId]
     )
 
-      const bridgeUrlBase = process.env.NEXT_PUBLIC_BRIDGE_URL || 'https://weavingsystem.online'
+      const bridgeUrlBase = getWeaveBridgeOrigin()
 
     // 9. Find Bridger's active Bridge AI
     const bridgeResult = await client.query(
