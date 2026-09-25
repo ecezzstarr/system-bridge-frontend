@@ -21,11 +21,7 @@ export function NormalWeaveRoleAtmosphere({
 
   if (!eligible || !isDashboard) return <>{children}</>
 
-  // The normal WEAVE world is the operating-system base. Events and loops
-  // decorate this world; they never replace it.
-  return (
-    <WeaveDashboardWorld role={userRole as WorldRole} userName={userName}>
-      {children}
-    </WeaveDashboardWorld>
-  )
+  // Home is the compact WEAVE world. Operational functions live on their own
+  // role route so phones never stack the world and an entire terminal together.
+  return <WeaveDashboardWorld role={userRole as WorldRole} userName={userName} />
 }
