@@ -81,6 +81,10 @@ export function PresenceCameraProvider({ children }: { children: ReactNode; role
     }
     writeOutput(output)
     setLastOutput(output)
+    if (input.type === 'action') {
+      setMoving(true)
+      window.setTimeout(()=>setMoving(false),360)
+    }
   },[pathname,scene.key])
 
   useEffect(()=>{
@@ -146,6 +150,28 @@ export function PresenceCameraProvider({ children }: { children: ReactNode; role
 
 export function usePresenceCamera() {
   return useContext(PresenceCameraContext)
+}
+
+export function PresenceCameraSignal() {
+  const { scene,moving,lastOutput }=usePresenceCamera()
+  return (
+    <motion.div
+      aria-hidden="true"
+      initial={false}
+      animate={{ opacity:moving?0.9:0.48, scale:moving?1.02:1 }}
+      transition={{ duration:0.25 }}
+      className="pointer-events-none fixed bottom-3 right-3 z-[35] hidden rounded-full border border-sky-300/10 bg-[#020b17]/72 px-3 py-2 text-[8px] font-black uppercase tracking-[0.16em] text-slate-500 shadow-2xl backdrop-blur-xl md:block"
+    >
+      <span className="text-sky-300">Camera</span>
+      <span className="mx-1.5 text-white/20">·</span>
+      <span>{scene.district}</span>
+      <span className="mx-1.5 text-white/20">/</span>
+      <span className="text-slate-300">{scene.label}</span>
+      <span className="mx-1.5 text-white/20">·</span>
+      <span>{scene.level}</span>
+      {moving && lastOutput?.type === 'action' && <span className="ml-2 text-emerald-300">focus</span>}
+    </motion.div>
+  )
 }
 
 export function PresenceCameraViewport({ children, className='' }: { children: ReactNode; className?: string }) {
