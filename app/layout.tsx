@@ -5,6 +5,7 @@ import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
 import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
 import { WEAVE_PUBLIC_ORIGIN } from '@/lib/weave-origin'
+import { PresenceCameraProvider } from '@/components/world/presence-camera'
 
 export const metadata: Metadata = {
   metadataBase: new URL(WEAVE_PUBLIC_ORIGIN),
@@ -38,9 +39,11 @@ export default function RootLayout({
       <body className="bg-slate-950 text-slate-100 overflow-x-hidden antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <AuthProvider>
-            <PWARegister />
-            {children}
-            <DJBroadcastPlayer />
+            <PresenceCameraProvider>
+              <PWARegister />
+              {children}
+              <DJBroadcastPlayer />
+            </PresenceCameraProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
