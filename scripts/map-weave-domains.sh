@@ -6,7 +6,8 @@ REGION="us-central1"
 SERVICE="system-bridge-frontend"
 DOMAINS=("weavingsystem.online" "ssbnow.online" "ssbnow.shop")
 
-gcloud config set project "$PROJECT" >/dev/null
+# Fail on access errors before treating any domain as absent.
+MAPPINGS=$(gcloud beta run domain-mappings list   --region="$REGION" --project="$PROJECT" --format="value(metadata.name)")
 
 echo "WEAVE domain mapping"
 echo "Project: $PROJECT"
@@ -23,8 +24,17 @@ for DOMAIN in "${DOMAINS[@]}"; do
   echo "$DOMAIN"
   echo "============================================================"
 
-  if gcloud beta run domain-mappings describe       --domain="$DOMAIN"       --region="$REGION"       --project="$PROJECT" >/tmp/weave-domain.json 2>/dev/null; then
-    echo "Existing Cloud Run mapping found. It will NOT be overridden."
+  if grep -Fxq "$DOMAIN" <<<"$MAPPINGS"; then
+    CURRENT_SERVICE=$(gcloud beta run domain-mappings describe       --domain="$DOMAIN" --region="$REGION" --project="$PROJECT"       --format="value(spec.routeName)")
+    if [[ "$CURRENT_SERVICE" == "$SERVICE" ]]; then
+      echo "Already mapped to $SERVICE; preserving the existing mapping."
+    elif [[ "$DOMAIN" == "ssbnow.online" && "$CURRENT_SERVICE" == "ssbnowonline" ]]; then
+      echo "Remapping Administration Workshop from $CURRENT_SERVICE to $SERVICE..."
+      gcloud beta run domain-mappings create         --service="$SERVICE" --domain="$DOMAIN" --region="$REGION"         --project="$PROJECT" --force-override --quiet
+    else
+      echo "Unexpected mapping: $DOMAIN -> $CURRENT_SERVICE. Review before replacing it." >&2
+      exit 1
+    fi
   else
     echo "Creating Cloud Run mapping..."
     if ! gcloud beta run domain-mappings create         --service="$SERVICE"         --domain="$DOMAIN"         --region="$REGION"         --project="$PROJECT"         --quiet; then
@@ -38,8 +48,14 @@ for DOMAIN in "${DOMAINS[@]}"; do
   fi
 
   echo
-  echo "DNS records to enter at GoDaddy for $DOMAIN:"
-  gcloud beta run domain-mappings describe     --domain="$DOMAIN"     --region="$REGION"     --project="$PROJECT"     --format="table(status.resourceRecords[].type,status.resourceRecords[].name,status.resourceRecords[].rrdata)"
+  ACTUAL_SERVICE=$(gcloud beta run domain-mappings describe     --domain="$DOMAIN" --region="$REGION" --project="$PROJECT"     --format="value(spec.routeName)")
+  if [[ "$ACTUAL_SERVICE" != "$SERVICE" ]]; then
+    echo "Mapping verification failed: $DOMAIN -> $ACTUAL_SERVICE" >&2
+    exit 1
+  fi
+
+  echo "DNS records to enter at GoDaddy for $DOMAIN (blank apex name means @):"
+  gcloud beta run domain-mappings describe --domain="$DOMAIN" --region="$REGION" --project="$PROJECT"     --flatten="status.resourceRecords[]"     --format="table(status.resourceRecords.type,status.resourceRecords.name,status.resourceRecords.rrdata)"
 
   echo
   echo "Full mapping status:"
@@ -48,6 +64,7 @@ for DOMAIN in "${DOMAINS[@]}"; do
 done
 
 echo "============================================================"
-echo "All Cloud Run mappings exist. Add the printed DNS records in"
+echo "All domains target $SERVICE. This does not imply certificate readiness."
+echo "Check Ready and CertificateProvisioned above. Add the printed DNS records in"
 echo "GoDaddy DNS for the matching domain. Do not copy records from"
 echo "one domain to another unless Google printed the same values."
