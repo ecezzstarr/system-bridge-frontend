@@ -1,42 +1,19 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
+import { Flame, GitBranch, Home, Orbit } from 'lucide-react'
+
+const items = [
+  { label: 'Client Portal', href: '/client/dashboard', icon: Home },
+  { label: 'File Folder', href: '/client/system-switch', icon: Orbit },
+  { label: 'Company Loops', href: '/client/loops', icon: GitBranch },
+  { label: 'Loop 1 Ground', href: '/client/event', icon: Flame },
+]
 
 export function ClientNavigation() {
   const pathname = usePathname()
-  const [event, setEvent] = useState<WeaveEvent>(FLAME_EVENT)
-  const [now, setNow] = useState(() => new Date())
 
-  useEffect(() => {
-    if (pathname !== '/client/dashboard') return
-    let mounted = true
-    const load = () => {
-      fetch('/api/events/flame', { cache: 'no-store' })
-        .then(res => res.json())
-        .then(data => {
-          if (mounted && data?.success && data.event) setEvent(data.event)
-        })
-        .catch(() => {})
-    }
-    load()
-    const clock = window.setInterval(() => setNow(new Date()), 30000)
-    const refresh = window.setInterval(load, 60000)
-    return () => {
-      mounted = false
-      window.clearInterval(clock)
-      window.clearInterval(refresh)
-    }
-  }, [pathname])
-
-  const eventIsLive = useMemo(
-    () => (event.effectiveStatus || resolveEventStatus(event, now)) === 'active',
-    [event, now]
-  )
-
-  // Public Client entry routes do not inherit signed-in navigation.
   const isClientEntry =
     pathname === '/client' ||
     pathname === '/client/login' ||
@@ -46,15 +23,27 @@ export function ClientNavigation() {
 
   if (isClientEntry) return null
 
-  // During Flame Event the Client Dashboard owns the event-world navigation.
-  // Outside the event the normal Client Dashboard keeps the ordinary portal nav.
-  if (pathname === '/client/dashboard' && eventIsLive) return null
-
   return (
-    <nav className="sticky top-0 z-40 flex gap-4 border-b border-sky-300/10 bg-[#03101d]/78 px-5 py-3 text-sm text-slate-300 backdrop-blur-2xl">
-      <Link href="/client/dashboard">Client Portal</Link>
-      <Link href="/client/system-switch">My Workshop & Store</Link>
-      <Link href="/client/loops">Company Loops</Link>
+    <nav className="sticky top-0 z-40 border-b border-sky-300/10 bg-[#03101d]/88 px-3 py-2.5 backdrop-blur-2xl">
+      <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto">
+        {items.map(({ label, href, icon: Icon }) => {
+          const active = pathname === href || (href !== '/client/dashboard' && pathname.startsWith(href + '/'))
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] transition ${
+                active
+                  ? 'border border-sky-300/20 bg-sky-400/[0.08] text-white'
+                  : 'border border-transparent text-slate-400 hover:bg-white/[0.03] hover:text-white'
+              }`}
+            >
+              <Icon className={`h-3.5 w-3.5 ${active ? 'text-sky-300' : 'text-slate-500'}`} />
+              {label}
+            </Link>
+          )
+        })}
+      </div>
     </nav>
   )
 }

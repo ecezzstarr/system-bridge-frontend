@@ -15,6 +15,7 @@ import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
+import { FlameEventAd } from '@/components/events/flame-event-ad'
 
 export default function AppLayout({
   children,
@@ -113,6 +114,7 @@ export default function AppLayout({
       </div>
       <div className="relative z-10 flex-1 flex flex-col lg:pl-64">
         <AppHeader user={user as any} />
+        <FlameEventAd />
         <main className="relative flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 max-w-[100vw]">
           <NormalWeaveRoleAtmosphere
             userRole={user?.role}

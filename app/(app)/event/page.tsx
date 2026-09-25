@@ -17,10 +17,12 @@ export default function EventPage() {
   ]
   const backHref = role === 'admin' ? '/admin/dashboard' : role === 'agent' ? '/agent/dashboard' : '/bridger/dashboard'
 
-  return <main className="min-h-screen bg-black p-4 text-white md:p-8">
-    <div className="mx-auto max-w-7xl">
-      <Link href={backHref} className="mb-5 inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white"><ArrowLeft className="h-3.5 w-3.5"/> Back to {role === 'admin' ? 'Administration' : role} environment</Link>
-      <PositionEventWorld role={role} context={context}/>
+  return (
+    <div className="mx-auto max-w-7xl text-white">
+      <Link href={backHref} className="mb-5 inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white">
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to {role === 'admin' ? 'Administration' : role} environment
+      </Link>
+      <PositionEventWorld role={role} context={context} />
     </div>
-  </main>
+  )
 }

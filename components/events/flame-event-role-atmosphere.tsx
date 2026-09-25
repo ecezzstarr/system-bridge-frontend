@@ -3,29 +3,27 @@
 import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { CalendarDays, Flame, Home, Radio, Sparkles, Waves } from 'lucide-react'
+import { CalendarDays, Radio, Sparkles } from 'lucide-react'
 import { FLAME_EVENT, type WeaveEvent, getEventProgress, resolveEventStatus } from '@/lib/weave-event'
-import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
-import { WeaveLogo } from '@/components/weave-logo'
 
 type Role = 'bridger' | 'agent' | 'admin'
 
-const ROLE_COPY: Record<Role, { title: string; message: string; action: string; href: string }> = {
+const ROLE_COPY: Record<Role, { position: string; message: string; action: string; href: string }> = {
   bridger: {
-    title: 'Bridger Event Ground',
-    message: 'Reach becomes movement. Prospects, Clients and opportunities can now move through one organized event world.',
-    action: 'Enter Loop 1',
+    position: 'Bridger Support',
+    message: 'Prospects, Clients and opportunities are moving through Company Loop 1 while your Bridger tools remain in the same WEAVE world.',
+    action: 'Open Loop 1 Ground',
     href: '/event',
   },
   agent: {
-    title: 'Agent Event Ground',
-    message: 'Support becomes order. Bridgers, company activity and real participation stay connected as the event moves.',
-    action: 'Enter Loop 1',
+    position: 'Agent Support',
+    message: 'Bridger movement, company activity and your Agent functions continue in one operating environment while Company Loop 1 is live.',
+    action: 'Open Loop 1 Ground',
     href: '/event',
   },
   admin: {
-    title: 'Administration Event Ground',
-    message: 'Administration holds the event ground through oversight, recognition, organization and continuity.',
+    position: 'Administration',
+    message: 'Company Loop 1 is a live system state inside WEAVE. Administration keeps its normal authority tools while governing the event.',
     action: 'Open Event Control',
     href: '/admin/flame-event',
   },
@@ -94,80 +92,49 @@ export function FlameEventRoleAtmosphere({
   const daysRemaining = Math.max(0, progress.days - day)
 
   return (
-    <div className="relative min-h-full overflow-hidden rounded-[2rem] border border-sky-400/10 bg-[#010713]">
-      <FlameEventRiverField />
-
-      <div className="relative z-10">
-        <section className="border-b border-white/10 bg-black/25 px-4 py-5 backdrop-blur-xl md:px-6 lg:px-8">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex items-start gap-4">
-              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-sky-400/20 bg-black/30 shadow-[0_0_35px_rgba(56,189,248,0.12)]">
-                <WeaveLogo size="md" showText={false} />
-              </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.22em]">
-                  <span className="text-red-300">Flame Event</span>
-                  <span className="text-white/20">•</span>
-                  <span className="text-sky-300">Company Loop 1</span>
-                  <span className="text-white/20">•</span>
-                  <span className="text-emerald-300"><Radio className="mr-1 inline h-3 w-3" /> Live</span>
-                </div>
-                <h1 className="mt-2 text-2xl font-black uppercase tracking-tight text-white md:text-3xl">{copy.title}</h1>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  Day {day} · Interaction in Motion · Three-month movement
-                </p>
-              </div>
+    <div className="space-y-4">
+      <section className="overflow-hidden rounded-2xl border border-sky-300/15 bg-[#03101d]/78 shadow-[0_18px_55px_rgba(2,8,23,.28)] backdrop-blur-xl">
+        <div className="flex flex-col gap-4 px-4 py-4 md:px-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em]">
+              <span className="text-sky-300">WEAVE System State</span>
+              <span className="text-white/20">•</span>
+              <span className="text-red-300">Company Loop {event.loopNumber}</span>
+              <span className="text-white/20">•</span>
+              <span className="text-emerald-300"><Radio className="mr-1 inline h-3 w-3" /> Live</span>
             </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-full border border-white/10 bg-black/30 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                <CalendarDays className="mr-1.5 inline h-3.5 w-3.5 text-sky-300" />
-                {daysRemaining} days remain
-              </div>
-              <Link
-                href={copy.href}
-                className="rounded-full border border-sky-300/25 bg-sky-400/10 px-4 py-2 text-[9px] font-black uppercase tracking-[0.16em] text-sky-200 transition hover:bg-sky-400/20"
-              >
-                {copy.action}
-              </Link>
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h2 className="text-lg font-black text-white">{event.title}</h2>
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{copy.position}</span>
             </div>
+            <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-400">
+              {userName ? `${userName}, ` : ''}{copy.message}
+            </p>
           </div>
 
-          <div className="mt-5 grid gap-3 lg:grid-cols-[1.3fr_.7fr]">
-            <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-              <div className="flex items-center gap-2 text-sky-300">
-                <Waves className="h-4 w-4" />
-                <p className="text-[9px] font-black uppercase tracking-[0.2em]">Welcome home to your position</p>
-              </div>
-              <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-300">
-                {userName ? `${userName}, ` : ''}{copy.message}
-              </p>
-              <p className="mt-2 text-xs leading-5 text-slate-500">
-                For this event period, WEAVE keeps positions, responsibilities, support and movement in order so long-chased goals can be approached with clearer, calmer participation.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-red-400/15 bg-red-400/[0.04] p-4">
-              <div className="flex items-center gap-2 text-red-300">
-                <Sparkles className="h-4 w-4" />
-                <p className="text-[9px] font-black uppercase tracking-[0.2em]">The event atmosphere</p>
-              </div>
-              <p className="mt-2 text-xs leading-5 text-slate-400">
-                The rivers represent flow: Presence moving through people, opportunities, support and recognition without breaking the continuity of your own work.
-              </p>
-            </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <span className="rounded-full border border-white/10 bg-black/25 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
+              <CalendarDays className="mr-1.5 inline h-3.5 w-3.5 text-sky-300" />
+              Day {day} · {daysRemaining} days remain
+            </span>
+            <Link
+              href={copy.href}
+              className="rounded-full border border-sky-300/25 bg-sky-400/10 px-4 py-2 text-[9px] font-black uppercase tracking-[0.16em] text-sky-200 transition hover:bg-sky-400/20"
+            >
+              <Sparkles className="mr-1.5 inline h-3 w-3" />
+              {copy.action}
+            </Link>
           </div>
-
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-4 text-[8px] font-semibold uppercase tracking-[0.2em] text-slate-600">
-            <span>People · Ideas · Opportunities · Value · Livelihood</span>
-            <span className="inline-flex items-center gap-1.5"><Home className="h-3 w-3 text-sky-300" /> Same account · same tools · one living event world</span>
-          </div>
-        </section>
-
-        <div className="relative p-1 md:p-2 lg:p-3">
-          {children}
         </div>
-      </div>
+        <div className="h-1 bg-white/[0.04]">
+          <div
+            className="h-full bg-gradient-to-r from-sky-400 via-white to-red-400 transition-all"
+            style={{ width: `${progress.percent}%` }}
+          />
+        </div>
+      </section>
+
+      {children}
     </div>
   )
 }

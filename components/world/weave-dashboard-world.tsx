@@ -175,47 +175,39 @@ export function WeaveDashboardWorld({
               {copy.links.slice(0,4).map(item => <WorldLinkCard key={item.label} item={item} />)}
             </div>
 
-            <div className="relative flex min-h-[390px] items-center justify-center overflow-hidden rounded-[1.6rem] border border-sky-300/10 bg-[#030b18]/72">
-              <div className="pointer-events-none absolute inset-0">
-                <svg className="h-full w-full" viewBox="0 0 720 420" preserveAspectRatio="xMidYMid slice">
-                  <defs>
-                    <linearGradient id={`riverA-${role}`} x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#38bdf8" stopOpacity="0"/>
-                      <stop offset="42%" stopColor="#38bdf8" stopOpacity=".75"/>
-                      <stop offset="70%" stopColor="#fef3c7" stopOpacity=".88"/>
-                      <stop offset="100%" stopColor="#f59e0b" stopOpacity="0"/>
-                    </linearGradient>
-                    <filter id={`worldGlow-${role}`} x="-80%" y="-80%" width="260%" height="260%">
-                      <feGaussianBlur stdDeviation="7" result="b"/>
-                      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                    </filter>
-                  </defs>
-                  <path d="M18 235 C150 175 231 212 356 226 C482 240 560 184 704 238" fill="none" stroke={`url(#riverA-${role})`} strokeWidth="7" filter={`url(#worldGlow-${role})`} opacity=".72"/>
-                  <path d="M78 314 C210 258 285 302 360 278 C437 302 515 258 650 314" fill="none" stroke="#38bdf8" strokeOpacity=".25" strokeWidth="4"/>
-                  <path d="M82 220 C150 174 221 179 282 214 C238 248 143 252 82 220Z" fill="#0d2237" stroke="#38bdf8" strokeOpacity=".22"/>
-                  <path d="M438 214 C510 173 590 179 648 223 C584 252 495 251 438 214Z" fill="#0d2237" stroke="#fbbf24" strokeOpacity=".20"/>
-                  <path d="M260 242 C315 200 410 199 464 242 C421 289 307 290 260 242Z" fill="#102840" stroke="#bae6fd" strokeOpacity=".24"/>
-                  <circle cx="360" cy="234" r="65" fill="#38bdf8" fillOpacity=".035" stroke="#7dd3fc" strokeOpacity=".12"/>
-                  <path d="M360 288 C340 266 342 245 354 228 C368 207 367 187 360 167 C382 185 388 211 376 232 C366 249 369 270 360 288Z" fill="#38bdf8" fillOpacity=".78" filter={`url(#worldGlow-${role})`}/>
-                  <path d="M360 288 C380 266 378 245 366 228 C352 207 353 187 360 167 C338 185 332 211 344 232 C354 249 351 270 360 288Z" fill="#fbbf24" fillOpacity=".52" filter={`url(#worldGlow-${role})`}/>
-                </svg>
-              </div>
+            <div className="relative flex min-h-[390px] items-center justify-center rounded-[1.6rem] border border-white/10 bg-black/20 px-5 py-8 backdrop-blur-sm">
+              <div className="max-w-xl text-center">
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-sky-300">Operating Surface</p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">{copy.eyebrow}</h2>
+                <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-300">{copy.purpose}</p>
 
-              <div className="relative z-10 max-w-md px-6 text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-sky-300/25 bg-black/40 shadow-[0_0_55px_rgba(56,189,248,.14)]">
-                  <WeaveLogo size="lg" showText={false} />
+                <div className="mx-auto mt-6 grid max-w-lg gap-2 sm:grid-cols-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
+                    <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">Presence</p>
+                    <p className="mt-1 text-[10px] font-semibold text-white">Your position remains visible.</p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
+                    <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">Interaction</p>
+                    <p className="mt-1 text-[10px] font-semibold text-white">Words and actions move the system.</p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
+                    <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">Movement</p>
+                    <p className="mt-1 text-[10px] font-semibold text-white">Functions open from what is happening.</p>
+                  </div>
                 </div>
-                <p className="mt-4 text-[9px] font-black uppercase tracking-[0.25em] text-sky-300">Bridge Plaza</p>
-                <h2 className="mt-2 text-2xl font-black text-white">The world connects here.</h2>
-                <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-slate-400">Your dashboard is your position inside one WEAVE world. Every page stays available as a district, path, workshop or operating room.</p>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
+
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
                   <Link href="/weave" className="inline-flex items-center gap-2 rounded-full border border-sky-300/25 bg-sky-400/10 px-4 py-2 text-[9px] font-black uppercase tracking-[0.14em] text-sky-200">
-                    Enter Bridge Plaza <ArrowRight className="h-3 w-3"/>
+                    Open Bridge Plaza <ArrowRight className="h-3 w-3"/>
                   </Link>
                   <Link href="/weave/standing" className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-400/[0.06] px-4 py-2 text-[9px] font-black uppercase tracking-[0.14em] text-amber-200">
                     My Standing
                   </Link>
                 </div>
+
+                <p className="mt-5 text-[8px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+                  The moving WEAVE world stays behind this surface. The surface carries the writing, functions and controls.
+                </p>
               </div>
             </div>
 

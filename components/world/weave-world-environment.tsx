@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
-import { WeaveWorldBackdrop } from '@/components/world/weave-world-backdrop'
 import { WeaveNormalWorldBackdrop } from '@/components/world/weave-normal-world-backdrop'
 
 export function WeaveWorldEnvironment({ soft = false }: { soft?: boolean }) {
@@ -34,6 +33,15 @@ export function WeaveWorldEnvironment({ soft = false }: { soft?: boolean }) {
     [event, now]
   )
 
-  if (active) return <WeaveWorldBackdrop intensity={soft ? 'soft' : 'event'} />
-  return <WeaveNormalWorldBackdrop />
+  return (
+    <>
+      <WeaveNormalWorldBackdrop />
+      {active && (
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_82%_20%,rgba(239,68,68,.055),transparent_30%),radial-gradient(circle_at_50%_58%,rgba(56,189,248,.045),transparent_34%)] ${soft ? 'opacity-45' : 'opacity-80'}`}
+        />
+      )}
+    </>
+  )
 }

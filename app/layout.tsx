@@ -4,7 +4,6 @@ import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
 import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
-import { FlameEventAd } from '@/components/events/flame-event-ad'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — System Switch — Bridge Radiance',
@@ -36,7 +35,6 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <AuthProvider>
             <PWARegister />
-            <FlameEventAd />
             {children}
             <DJBroadcastPlayer />
           </AuthProvider>

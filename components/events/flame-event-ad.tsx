@@ -8,13 +8,14 @@ import { useAuth } from '@/lib/auth-provider'
 import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
 
 const ROLE_COPY = {
-  client: { label: 'CLIENT PLAYER', destination: '/client/event', action: 'View Your Event' },
-  bridger: { label: 'BRIDGER SUPPORT', destination: '/event', action: 'View Your Event' },
-  agent: { label: 'AGENT SUPPORT', destination: '/event', action: 'View Your Event' },
-  admin: { label: 'ADMINISTRATION', destination: '/admin/flame-event', action: 'Open Event Control' },
+  client: { label: 'CLIENT PLAYER', destination: '/client/event', action: 'Open Loop 1' },
+  bridger: { label: 'BRIDGER SUPPORT', destination: '/event', action: 'Open Loop 1' },
+  agent: { label: 'AGENT SUPPORT', destination: '/event', action: 'Open Loop 1' },
+  admin: { label: 'ADMINISTRATION', destination: '/admin/flame-event', action: 'Event Control' },
 } as const
 
-const HIDDEN_PATHS = ['/login', '/register', '/client/login', '/client/register']
+const HIDDEN_PATHS = ['/login', '/register', '/client/login', '/client/register', '/event', '/client/event', '/admin/flame-event']
+const DASHBOARD_SIGNAL_OWNED = new Set(['/dashboard', '/bridger/dashboard', '/agent/dashboard', '/admin/dashboard'])
 
 export function FlameEventAd() {
   const { user, isInitialized } = useAuth()
@@ -36,9 +37,7 @@ export function FlameEventAd() {
         .then(data => {
           if (mounted && data?.success && data.event) setEvent(data.event)
         })
-        .catch(() => {
-          // Built-in event state remains visible if the network request fails.
-        })
+        .catch(() => {})
     }
 
     load()
@@ -56,40 +55,47 @@ export function FlameEventAd() {
     [event, now]
   )
 
-  if (!isInitialized || !eligible || hiddenPath || !event.adEnabled || effectiveStatus === 'closed' || !role) return null
-
-  if (role === 'client' && pathname === '/client/dashboard' && effectiveStatus === 'active') return null
+  if (
+    !isInitialized ||
+    !eligible ||
+    hiddenPath ||
+    !event.adEnabled ||
+    effectiveStatus === 'closed' ||
+    !role ||
+    (effectiveStatus === 'active' && DASHBOARD_SIGNAL_OWNED.has(pathname))
+  ) return null
 
   const copy = ROLE_COPY[role as keyof typeof ROLE_COPY]
-  const statusText = effectiveStatus === 'active' ? 'LOOP 1 LIVE NOW' : 'LOOP 1 COMING UP SOON'
+  const statusText = effectiveStatus === 'active' ? 'LOOP 1 LIVE' : 'LOOP 1 SCHEDULED'
   const startLabel = new Date(event.startsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 
   return (
-    <div className="relative z-[70] border-b border-orange-400/20 bg-gradient-to-r from-[#09090b] via-[#241006] to-[#09090b] px-3 py-3 text-white shadow-xl shadow-orange-950/20">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="border-b border-sky-300/10 bg-[#03101d]/88 px-3 py-2.5 text-white backdrop-blur-2xl">
+      <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-500/10">
-            <Flame className="h-5 w-5 text-orange-300" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-sky-300/15 bg-sky-400/[0.06]">
+            <Flame className="h-4 w-4 text-red-300" />
           </div>
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.22em]">
-              <span className={effectiveStatus === 'active' ? 'text-emerald-300' : 'text-orange-300'}>
+            <div className="flex flex-wrap items-center gap-2 text-[8px] font-black uppercase tracking-[0.2em]">
+              <span className={effectiveStatus === 'active' ? 'text-emerald-300' : 'text-amber-300'}>
                 <Radio className="mr-1 inline h-3 w-3" />{statusText}
               </span>
               <span className="text-white/20">•</span>
-              <span className="text-sky-300">YOUR POSITION: {copy.label}</span>
+              <span className="text-sky-300">{copy.label}</span>
+              <span className="text-white/20">•</span>
+              <span className="text-slate-500">WEAVE SYSTEM STATE</span>
             </div>
-            <p className="mt-1 truncate text-sm font-black uppercase tracking-tight sm:text-base">Company Loop {event.loopNumber} · {event.title}</p>
-            <p className="mt-0.5 hidden text-xs text-slate-400 md:block">{event.subtitle}</p>
+            <p className="mt-0.5 truncate text-xs font-bold text-slate-200">Company Loop {event.loopNumber} · {event.title}</p>
           </div>
         </div>
 
         <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300">
-            <CalendarDays className="h-3.5 w-3.5 text-orange-300" />
-            {effectiveStatus === 'active' ? 'Event open' : `Starts ${startLabel}`}
+          <div className="flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+            <CalendarDays className="h-3.5 w-3.5 text-sky-300" />
+            {effectiveStatus === 'active' ? 'Operating now' : `Starts ${startLabel}`}
           </div>
-          <Link href={copy.destination} className="inline-flex items-center gap-1.5 rounded-full border border-orange-300/30 bg-orange-400/10 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-orange-200 transition hover:bg-orange-400/20">
+          <Link href={copy.destination} className="inline-flex items-center gap-1.5 rounded-full border border-sky-300/20 bg-sky-400/[0.07] px-3 py-2 text-[9px] font-black uppercase tracking-wider text-sky-200 transition hover:bg-sky-400/15">
             {copy.action}<ArrowRight className="h-3 w-3" />
           </Link>
         </div>

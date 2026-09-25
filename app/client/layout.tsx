@@ -3,6 +3,7 @@ import { ClientNavigation } from '@/components/client-navigation'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 import { ClientRouteGuard } from '@/components/client/client-route-guard'
+import { FlameEventAd } from '@/components/events/flame-event-ad'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
@@ -34,6 +35,7 @@ export default function ClientLayout({
       <ClientRouteGuard>
         <div className="relative z-10 min-h-screen">
           <ClientNavigation />
+          <FlameEventAd />
           <LiveAdSurface />
           {children}
         </div>

@@ -6,6 +6,7 @@ import {
   Home,
   LayoutTemplate,
   Sparkles,
+  Flame,
   Radio,
   Megaphone,
   Headphones,
@@ -53,6 +54,7 @@ const navigation = [
   // 1. PRESENCE
   { group: "Presence", items: [
     { name: "Home", href: "/", icon: Home },
+    { name: "Loop 1 Ground", href: "/event", icon: Flame },
     { name: "Human Cadences", href: "/search", icon: MessageSquare },
     { name: "Presences", href: "/profiles", icon: UserCircle },
     { name: "Agent Terminal", href: "/agent/dashboard", icon: LayoutTemplate, agentOnly: true },
