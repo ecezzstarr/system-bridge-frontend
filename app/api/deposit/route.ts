@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initializePayment, verifyPayment } from '@/lib/flutterwave'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthUser } from '@/lib/auth-api'
 
 // Initialize a deposit
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
+    const user = await getAuthUser(request)
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -18,7 +17,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Valid amount required' }, { status: 400 })
     }
 
-    const user = session.user as any
     const baseUrl = process.env.NEXTAUTH_URL || 'https://ssbnow.shop'
 
     const result = await initializePayment(
