@@ -13,7 +13,7 @@ import Casino from '@/components/places/casino'
 import Lounge from '@/components/places/lounge'
 import Link from 'next/link'
 import { ExternalAppsNav, openWhatsAppWithNumber } from '@/components/external-apps-nav'
-import { DailyProjectClaim } from '@/components/bridger/daily-project-claim'
+import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
 
 type TabId = 'lounge' | 'arena' | 'casino' | 'wallet' | 'connect' | 'market' | 'clients' | 'prospects' | 'referrals'
 
@@ -236,7 +236,7 @@ export default function BridgerTerminal() {
 
       {/* Content */}
       <div className="space-y-6">
-        <DailyProjectClaim />
+        <DailyProspectClaim />
         {activeTab === 'lounge' && <Lounge />}
         {activeTab === 'connect' && <ConnectSection />}
         {activeTab === 'arena' && <Arena />}
