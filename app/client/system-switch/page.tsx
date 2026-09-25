@@ -89,7 +89,7 @@ export default function ClientSystemSwitchPage() {
         <FileFolderOpenWorld clientName={data.client.name} fileNumber={data.client.file_number} workshopTitle={data.workshop.title} workshopPurpose={data.workshop.purpose} initialWorld={data.file_folder_world} />
 
         <div className="mt-5">
-          <ClientWorkshopWorld client={data.client} folder={data.file_folder} vault={data.vault} bridge={data.bridge} approvedAgents={data.approved_agents || []} workshop={data.workshop} bridgeAi={data.bridge_ai} businessStore={data.business_store} internationalPayments={data.international_payments} />
+          <ClientWorkshopWorld client={data.client} folder={data.file_folder} vault={data.vault} bridge={data.bridge} approvedAgents={data.approved_agents || []} workshop={data.workshop} bridgeAi={data.bridge_ai} businessStore={data.business_store} internationalPayments={data.international_payments} buildFunding={data.build_funding} />
         </div>
         <EnterpriseDreamPanel initialState={data.enterprise || null} />
 
