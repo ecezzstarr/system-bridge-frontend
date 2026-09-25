@@ -69,6 +69,8 @@ const navigation = [
     { name: "Bridge Plaza", href: "/weave", icon: LayoutTemplate },
     { name: "My Bridge", href: "/agent/bridgers", icon: Users, agentOnly: true },
     { name: "Bridge", href: "/bridger/bridge-ai", icon: GitBranch, bridgerOnly: true },
+    { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
+    { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
     { name: "Bridge Templates", href: "/admin/bridge-templates", icon: Briefcase, adminOnly: true },
     { name: "File Number Engine", href: "/admin/file-number-engine", icon: FileBox, adminOnly: true },
   ]},
@@ -92,11 +94,10 @@ const navigation = [
 
   // 4. ENTERPRISE
   { group: "Enterprise", items: [
-    { name: "Exchange", href: "/marketplace", icon: Store },
+    { name: "Enterprise Systems Exchange", href: "/marketplace", icon: Store },
+    { name: "Enterprise Systems Workshop", href: "/admin/enterprise-systems", icon: Cloud, adminOnly: true },
     { name: "Agility Agent Store", href: "/agility", icon: Store, agentOnly: true },
     { name: "Agility Fulfillment", href: "/admin/agility", icon: FileBox, adminOnly: true },
-    { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
-    { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
     { name: "Enterprise Dream", href: "/admin/enterprise-dream", icon: Crown, adminOnly: true },
     { name: "Client Build Catalog", href: "/admin/client-build-catalog", icon: FileBox, adminOnly: true },
           { name: "Company Loops", href: "/company/loops", icon: GitBranch },
