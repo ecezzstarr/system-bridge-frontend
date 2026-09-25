@@ -1,20 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { submitContinuancePayment } from '@/lib/bridger-subscription'
+import { getAuthUser } from '@/lib/auth-api'
+import { WORLD_RULES } from '@/lib/world/constants'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, amount, reference, paymentMethod } = await request.json()
+    const user = await getAuthUser(request)
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (user.role !== 'bridger') return NextResponse.json({ error: 'Bridger access required' }, { status: 403 })
 
-    if (!userId || !amount || !reference || !paymentMethod) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    const { reference, paymentMethod } = await request.json()
+    if (!reference || !paymentMethod) {
+      return NextResponse.json({ error: 'Payment reference and method are required' }, { status: 400 })
     }
 
-    const paymentId = await submitContinuancePayment(userId, amount, reference, paymentMethod)
-
+    const paymentId = await submitContinuancePayment(
+      user.id,
+      WORLD_RULES.BRIDGER_CONTINUANCE_NGN,
+      String(reference).trim().slice(0, 255),
+      String(paymentMethod).trim().slice(0, 50)
+    )
     return NextResponse.json({
-      success: !!paymentId,
+      success: Boolean(paymentId),
       paymentId,
-      message: paymentId ? 'Payment submitted, pending admin approval' : 'Submission failed'
+      message: paymentId ? 'Payment submitted, pending Administration approval' : 'Submission failed',
     })
   } catch (error) {
     console.error('Continuance submit error:', error)
