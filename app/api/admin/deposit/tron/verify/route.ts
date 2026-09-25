@@ -4,6 +4,7 @@ import { sql } from '@/lib/db'
 import { creditAgentCommission } from '@/lib/agent-commission'
 import { trxPaymentToFlameCoin } from '@/lib/trx-payment'
 import { notifyDepositDecision } from '@/lib/deposit-notifications'
+import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
 
 // Resolves the Bridger for a client, checking both the legacy users(role='client')
 // path and the dedicated clients table — matches app/api/client/bridger/route.ts.
@@ -123,7 +124,24 @@ export async function POST(request: NextRequest) {
       adminId: admin.id,
     })
 
-    return NextResponse.json({ success: true, message: 'Flame Coin credited successfully', bridgerId, paidTrx, flameCoinAmount, peg: '1 Flame Coin = 1 TRX' })
+    let buildFunding = null
+    const [clientFolder] = await sql`
+      SELECT file_number
+      FROM users
+      WHERE id=${clientId}::uuid
+        AND role='client'
+      LIMIT 1
+    `
+    if (clientFolder?.file_number) {
+      try {
+        const world = await getFileFolderWorldSnapshot(sql, clientId, clientFolder.file_number)
+        buildFunding = world.buildFunding
+      } catch (worldError) {
+        console.error('[tron verify] unable to refresh Client build economy:', worldError)
+      }
+    }
+
+    return NextResponse.json({ success: true, message: 'Flame Coin credited successfully', bridgerId, paidTrx, flameCoinAmount, buildFunding, peg: '1 Flame Coin = 1 TRX' })
   } catch (error: any) {
     console.error('TRON verify error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
