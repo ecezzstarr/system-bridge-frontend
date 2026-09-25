@@ -518,6 +518,7 @@ const infrastructureApiSource=fs.readFileSync(path.join(root,'app/api/admin/infr
 const divineShieldStatusSource=fs.readFileSync(path.join(root,'app/api/divine-shield/status/route.ts'),'utf8')
 const divineShieldAdminSource=fs.readFileSync(path.join(root,'app/api/admin/divine-shield/route.ts'),'utf8')
 const divineShieldGateSource=fs.readFileSync(path.join(root,'components/divine-shield-gate.tsx'),'utf8')
+const divineShieldEvacuateSource=fs.readFileSync(path.join(root,'app/api/divine-shield/evacuate/route.ts'),'utf8')
 const infrastructurePageSource=fs.readFileSync(path.join(root,'app/(app)/admin/infrastructure/page.tsx'),'utf8')
 const authLoginShieldSource=fs.readFileSync(path.join(root,'app/api/auth/login/route.ts'),'utf8')
 const authRegisterShieldSource=fs.readFileSync(path.join(root,'app/api/auth/register/route.ts'),'utf8')
@@ -537,6 +538,7 @@ for(const infraFile of [
  'app/api/admin/infrastructure/route.ts',
  'app/api/divine-shield/status/route.ts',
  'app/api/admin/divine-shield/route.ts',
+ 'app/api/divine-shield/evacuate/route.ts',
  'components/divine-shield-gate.tsx',
  'app/(app)/admin/infrastructure/page.tsx',
 ]){
@@ -555,8 +557,15 @@ assert.ok(!originSystemsApiSource.includes('initializeOriginSystem'),'Origin Sys
 assert.ok(rootLayoutPresenceSource.includes('<DivineShieldGate>'),'Divine Shield wraps the live application at root')
 assert.ok(divineShieldStatusSource.includes("user?.role==='admin'"),'Only authenticated Administration receives shield bypass')
 assert.ok(!divineShieldGateSource.includes("user?.role==='admin'"),'Browser-stored role cannot bypass Divine Shield')
-assert.ok(divineShieldGateSource.includes("pathname!=='/login'"),'Administration login remains reachable while shield is raised')
+assert.ok(divineShieldGateSource.includes("params.get('administration')==='1'"),'Only the explicit Administration maintenance entrance can reveal login while the shield is raised')
+assert.ok(divineShieldGateSource.includes("fetch('/api/divine-shield/evacuate'"),'Connected non-admin browsers revoke their server session during evacuation')
+assert.ok(divineShieldGateSource.includes('logout()'),'Connected non-admin browsers clear local WEAVE identity during evacuation')
+assert.ok(divineShieldGateSource.includes('window.setInterval(load,5000)'),'Connected users discover Divine Shield changes within the maintenance polling interval')
+assert.ok(divineShieldEvacuateSource.includes("DELETE FROM sessions WHERE token=${token}"),'Per-browser Divine Shield evacuation revokes the presented server session')
+assert.ok(divineShieldEvacuateSource.includes("session.role==='admin'"),'Divine Shield evacuation preserves Administration sessions')
 assert.ok(divineShieldAdminSource.includes("user.role!=='admin'"),'Divine Shield control endpoint is Administration-only')
+assert.ok(divineShieldAdminSource.includes("u.role<>'admin'"),'Raising Divine Shield immediately revokes all non-admin server sessions')
+assert.ok(divineShieldAdminSource.includes('evacuatedSessions=revoked.length'),'Administration receives the evacuation count')
 assert.ok(authApiDivineShieldSource.includes('applyDivineShield'),'Shared authenticated API identity enforces Divine Shield')
 assert.ok(authApiDivineShieldSource.includes("user.role==='admin'"),'Administration bypass is enforced server-side in shared auth')
 assert.ok(infrastructureLibSource.includes('shieldCache'),'Divine Shield authentication checks use a short runtime cache')
