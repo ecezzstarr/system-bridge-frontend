@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllOriginSystems, initializeOriginSystem } from '@/lib/core/originTruthLedger'
+import { getAuthUser } from '@/lib/auth-api'
 
 export async function GET(request: NextRequest) {
   try {
+    const authUser=await getAuthUser(request)
+    if (!authUser) return NextResponse.json({ success:false,error:'Unauthorized' },{ status:401 })
+    if (authUser.role!=='admin') return NextResponse.json({ success:false,error:'Forbidden' },{ status:403 })
+
     // Initialize origin system on first call
     initializeOriginSystem()
 
