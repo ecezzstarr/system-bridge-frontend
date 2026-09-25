@@ -16,6 +16,7 @@ import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-a
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
+import { PresenceCameraProvider, PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 
 export default function AppLayout({
   children,
@@ -110,6 +111,7 @@ export default function AppLayout({
   }
 
   return (
+    <PresenceCameraProvider role={user?.role}>
     <div className="relative flex min-h-screen overflow-hidden bg-slate-950">
       <WeaveWorldEnvironment />
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
@@ -119,6 +121,7 @@ export default function AppLayout({
         <AppHeader user={user as any} />
         <FlameEventAd />
         <main className="relative flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 max-w-[100vw]">
+          <PresenceCameraViewport>
           <NormalWeaveRoleAtmosphere
             userRole={user?.role}
             userName={user?.name}
@@ -132,10 +135,12 @@ export default function AppLayout({
               {children}
             </FlameEventRoleAtmosphere>
           </NormalWeaveRoleAtmosphere>
+          </PresenceCameraViewport>
         </main>
       </div>
       <Toaster position="top-center" richColors />
       <LiveAdSurface />
+      <PresenceCameraSignal />
       {termsChecked && termsNeeded && user?.role && ['agent', 'bridger'].includes(user.role) && (
         <TermsAcceptanceModal
           role={user.role as 'agent' | 'bridger'}
@@ -144,5 +149,6 @@ export default function AppLayout({
         />
       )}
     </div>
+    </PresenceCameraProvider>
   )
 }
