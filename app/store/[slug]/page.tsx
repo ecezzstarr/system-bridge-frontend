@@ -28,6 +28,7 @@ export default async function PublicBusinessStore({
     FROM client_business_stores
     WHERE public_slug=${slug}
       AND enabled=true
+      AND formation_status='selling'
     LIMIT 1
   `
   if (!store) notFound()
