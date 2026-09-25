@@ -42,7 +42,7 @@ export default function BridgerClientsPage() {
 }
 
 function BridgerClientsContent() {
-  const { user, isLoading: authLoading } = useAuth()
+  const { user, token, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialClientId = searchParams.get('clientId')
@@ -96,7 +96,7 @@ function BridgerClientsContent() {
   const fetchClients = async () => {
     if (!user?.id) return
     try {
-      const response = await fetch(`/api/bridger/clients?bridgerId=${user.id}`)
+      const response = await fetch('/api/bridger/clients', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await response.json()
       setClients(data.clients || [])
       
@@ -117,7 +117,7 @@ function BridgerClientsContent() {
   const fetchMessages = async (clientId: string, position: string, silent = false) => {
     if (!silent) setChatLoading(true)
     try {
-      const response = await fetch(`/api/client/messages?clientId=${clientId}&position=${position}&bridger=true`)
+      const response = await fetch(`/api/client/messages?clientId=${clientId}&position=${encodeURIComponent(position)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await response.json()
       if (data.success) {
         setMessages(data.messages || [])
@@ -139,7 +139,10 @@ function BridgerClientsContent() {
     try {
       const response = await fetch('/api/client/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           clientId: selectedClient.id,
           clientName: selectedClient.name,
