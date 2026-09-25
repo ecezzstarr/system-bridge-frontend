@@ -43,7 +43,7 @@ export default function FileFolderPurchase({
     (selectedTier !== 'standard' || selectedPrice < PREMIUM_PRICE)
 
   useEffect(() => {
-    fetch('/api/system-switch/file-folder')
+    fetch('/api/bridge/file-folder')
       .then(async response => response.ok ? response.json() : null)
       .then(data => setWallet(data?.companyTrxWallet || data?.depositWallet || ''))
       .catch(() => setWallet(''))
