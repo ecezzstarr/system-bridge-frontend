@@ -114,7 +114,7 @@ export default function LoopWorkshopPage() {
             <h1 className="mt-2 text-2xl font-bold">Company Loop Workshop</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-400">Create company events, define their position and functions, then publish them to the selected participant positions.</p>
           </div>
-          <button onClick={() => router.push('/admin/dashboard')} className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Admin Dashboard</button>
+          <button onClick={() => router.push('/admin/dashboard')} className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Administration World</button>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
