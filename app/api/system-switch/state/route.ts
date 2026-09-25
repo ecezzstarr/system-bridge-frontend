@@ -1,45 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import {
-  getSystemSwitchState,
-  createSystemSwitchState,
-} from '@/lib/world/system-switch'
+import { NextResponse } from 'next/server'
 
-export async function GET(req: NextRequest) {
-  const sessionId = req.nextUrl.searchParams.get('sessionId')
+const message = 'Legacy System Switch state endpoint has moved. Use /client/system-switch.'
 
-  if (!sessionId) {
-    return NextResponse.json(
-      { success: false, error: 'sessionId required' },
-      { status: 400 },
-    )
-  }
-
-  const state = await getSystemSwitchState(sessionId)
-
-  return NextResponse.json({
-    success: true,
-    state,
-  })
+export async function GET() {
+  return NextResponse.json({ error: message }, { status: 410 })
 }
 
-export async function POST(req: NextRequest) {
-  const body = await req.json()
+export async function POST() {
+  return NextResponse.json({ error: message }, { status: 410 })
+}
 
-  if (!body.sessionId) {
-    return NextResponse.json(
-      { success: false, error: 'sessionId required' },
-      { status: 400 },
-    )
-  }
-
-  const state = await createSystemSwitchState(
-    body.sessionId,
-    body.fileNumber ?? null,
-    body.businessConcept ?? {},
-  )
-
-  return NextResponse.json({
-    success: true,
-    state,
-  })
+export async function PATCH() {
+  return NextResponse.json({ error: message }, { status: 410 })
 }
