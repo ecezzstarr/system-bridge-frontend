@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { neon } from '@/lib/pg-neon'
 import { chatWithRiver, type RiverMessage } from '@/lib/river-assistant'
+import { getWeavePublicOrigin } from '@/lib/weave-origin'
 
 export type RiverOutreachInvite = {
   id: string
@@ -95,7 +96,5 @@ export async function riverExternalReply(token: string, messages: RiverMessage[]
 }
 
 export function riverOutreachUrl(token: string) {
-  const base = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '').replace(/\/$/, '')
-  if (!base) return `/river/connect?token=${encodeURIComponent(token)}`
-  return `${base}/river/connect?token=${encodeURIComponent(token)}`
+  return `${getWeavePublicOrigin()}/river/connect?token=${encodeURIComponent(token)}`
 }
