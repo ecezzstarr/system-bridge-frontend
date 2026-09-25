@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { ensureMarketTables } from '@/lib/market'
+import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
 async function ensureDailyClaimSchema(client?: any) {
   const run = async (query: string) => client ? client.query(query) : null
@@ -200,7 +201,7 @@ export async function POST(request: NextRequest) {
     )
     const bridgeAi = bridgeResult.rows[0]
     const outreachId = randomUUID()
-    const bridgeUrlBase = process.env.NEXT_PUBLIC_BRIDGE_URL || 'https://weavingsystem.online'
+    const bridgeUrlBase = getWeaveBridgeOrigin()
     const message = bridgeAi
       ? `Hello, I'm connecting you with Bridge AI from Weave. You can continue here: ${bridgeUrlBase}/bridge/${bridgeAi.bridge_code}?pid=${outreachId}`
       : `Hello, I'm connecting you with Bridge AI from Weave. You can continue here: ${bridgeUrlBase}/bridge/default`
