@@ -16,7 +16,7 @@ type PendingPayment = {
 }
 
 export default function AdminContinuancesPage() {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const router = useRouter()
   const [pending, setPending] = useState<PendingPayment[]>([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +37,7 @@ export default function AdminContinuancesPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/admin/subscriptions')
+      const res = await fetch('/api/admin/subscriptions', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await res.json()
       if (data.success) {
         setPending(data.pending)
@@ -57,7 +57,10 @@ export default function AdminContinuancesPage() {
     try {
       const res = await fetch(`/api/admin/subscriptions/${id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ action })
       })
       const data = await res.json()
