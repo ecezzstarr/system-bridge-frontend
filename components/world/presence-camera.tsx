@@ -203,7 +203,7 @@ export function PresenceCameraRootViewport({ children }: { children: ReactNode }
 }
 
 export function PresenceCameraViewport({ children, className='' }: { children: ReactNode; className?: string }) {
-  const { pathname,scene,previousScene }=usePresenceCamera()
+  const { pathname,scene,previousScene,moving }=usePresenceCamera()
   const reduceMotion=useReducedMotion()
   const direction=sceneDirection(previousScene,scene)
 
@@ -243,7 +243,31 @@ export function PresenceCameraViewport({ children, className='' }: { children: R
           transition={{ duration:reduceMotion?0:0.42, ease:[0.22,1,0.36,1] }}
           style={{ transformStyle:'preserve-3d', transformOrigin:'50% 40%' }}
         >
-          {children}
+          <motion.div
+            initial={false}
+            animate={reduceMotion ? { y:0, rotateZ:0, scale:1 } : moving ? {
+              y:[0,-3,0],
+              rotateZ:[0,0.08,0],
+              scale:[1,1.0025,1],
+            } : {
+              y:[0,-1.75,0,1.1,0],
+              rotateZ:[0,0.035,0,-0.025,0],
+              scale:[1,1.0015,1,0.9995,1],
+            }}
+            transition={reduceMotion ? { duration:0 } : moving ? {
+              duration:0.72,
+              ease:[0.22,1,0.36,1],
+            } : {
+              duration:6.4,
+              ease:'easeInOut',
+              repeat:Infinity,
+              repeatType:'loop',
+            }}
+            style={{ transformStyle:'preserve-3d', transformOrigin:'50% 46%' }}
+            data-presence-rhythm={moving ? 'response' : 'breathing'}
+          >
+            {children}
+          </motion.div>
         </motion.div>
       </AnimatePresence>
     </div>
