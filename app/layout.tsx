@@ -4,11 +4,15 @@ import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
 import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
+import { WEAVE_PUBLIC_ORIGIN } from '@/lib/weave-origin'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(WEAVE_PUBLIC_ORIGIN),
+  applicationName: 'WEAVE of Presence',
   title: 'WEAVE of Presence — System Switch — Bridge Radiance',
   description: 'Interaction in Motion: a living WEAVE environment for real participation, systems, value and livelihood.',
   manifest: '/manifest.webmanifest',
+  alternates: { canonical: '/' },
   icons: {
     icon: [{ url: '/icon.svg?v=3', type: 'image/svg+xml' }],
     shortcut: '/icon.svg?v=3',
