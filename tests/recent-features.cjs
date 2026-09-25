@@ -491,6 +491,8 @@ assert.ok(presenceCameraSource.includes("document.addEventListener('click',onCli
 assert.ok(presenceCameraSource.includes("'weave:presence-output'"),'Presence outputs are emitted to the moving system')
 assert.ok(presenceCameraSource.includes("lastOutput?.type === 'action'"),'In-page actions create a camera focus movement')
 assert.ok(presenceCameraSource.includes('data-presence-rhythm'),'Presence Camera keeps a continuous breathing rhythm between interactions')
+assert.ok(presenceCameraSource.includes('scene.camera.yaw'),'Page content settles into the scene camera angle')
+assert.ok(presenceCameraSource.includes('scene.camera.depth'),'Scene depth affects the settled camera scale')
 assert.ok(worldBackdropPresenceSource.includes('usePresenceCamera'),'Persistent WEAVE environment follows camera scene state')
 assert.ok(worldBackdropPresenceSource.includes('rotateY'),'World background uses camera yaw')
 assert.ok(worldBackdropPresenceSource.includes('rotateX'),'World background uses camera pitch')
