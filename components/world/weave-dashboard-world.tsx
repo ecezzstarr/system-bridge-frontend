@@ -58,7 +58,7 @@ const ROLE: Record<WorldRole, {
     purpose: 'You are the player. Your File Folder, movement and participation remain centered on your own path.',
     functionsHref: '/client/functions',
     links: [
-      { label: 'System Switch', detail: 'Crossing and movement', href: '/client/system-switch', icon: Orbit, tone: 'sky' },
+      { label: 'System Switch', detail: 'Enter Main File Folder', href: '/client/system-switch', icon: Orbit, tone: 'sky' },
       { label: 'Company Loops', detail: 'Events and participation', href: '/client/loops', icon: GitBranch, tone: 'gold' },
       { label: 'Main Wallet', detail: 'Operational funds', href: '/client/deposit', icon: Wallet, tone: 'emerald' },
       { label: 'Your Bridger', detail: 'Human support', href: '/client/chat/bridger', icon: Users, tone: 'emerald' },
