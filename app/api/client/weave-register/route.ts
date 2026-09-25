@@ -5,9 +5,13 @@ import { randomBytes } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
+import { getDivineShieldState } from '@/lib/weave-infrastructure'
 
 export async function POST(request: NextRequest) {
   try {
+    const shield=await getDivineShieldState().catch(()=>({active:false}))
+    if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
+
     const { fileNumber, email, password, businessName } = await request.json()
 
     if (!fileNumber || !email || !password) {
