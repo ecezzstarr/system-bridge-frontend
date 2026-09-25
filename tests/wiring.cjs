@@ -56,7 +56,8 @@ const apiMatchers = apiPatterns.map(pattern => [pattern, routeRegex(pattern)])
 
 function normalizeLocal(value) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return null
-  const interpolated = value.replace(/\$\{[^}]+\}/g, '__dynamic__')
+  if (value.includes('${')) return null
+  const interpolated = value
   const clean = interpolated.split('#')[0].split('?')[0] || '/'
   if (/\.(svg|png|jpe?g|webp|gif|ico|mp3|wav|mp4|webm|pdf|json|webmanifest)$/i.test(clean)) return null
   return clean
