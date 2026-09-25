@@ -6,6 +6,7 @@ import { ensureClientBusinessStore } from '@/lib/client-business-store'
 import { ensureClientVaultLedgerSchema } from '@/lib/client-vault-ledger'
 import { ensureClientInternationalPaymentProfile } from '@/lib/client-international-payments'
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
+import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,6 +37,9 @@ export async function GET(request: NextRequest) {
     `
 
     if (!client) return NextResponse.json({ error: 'Client record not found' }, { status: 404 })
+
+    const money = await ensureClientMoneyEnvironment(sql, client.id)
+
     if (!client.file_number) {
       return NextResponse.json(
         { error: 'File Folder movement required', gate: 'bridge_file_folder' },
@@ -89,7 +93,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const [vault] = await sql`SELECT balance,currency FROM client_vaults WHERE client_id=${client.id}::uuid`
     const [bridge] = await sql`
       SELECT u.id,u.name,u.username
       FROM users u
@@ -146,7 +149,13 @@ export async function GET(request: NextRequest) {
       verified:true,
       client:{id:client.id,name:client.name,email:client.email,business_name:client.business_name,file_number:client.file_number},
       file_folder:folder,
-      vault:{balance:Number(vault?.balance||0),currency:vault?.currency||'Flame Coin',withdrawals},
+      vault:{
+        balance:money.vault.balance,
+        currency:money.vault.currency,
+        withdrawals,
+        siblings_funds:money.siblingsFunds,
+        main_wallet:money.mainWallet,
+      },
       workshop:{
         type:workshopType,
         title:workshop.title,
