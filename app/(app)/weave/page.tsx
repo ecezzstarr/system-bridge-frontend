@@ -36,6 +36,7 @@ interface FileFolder {
   bridger_id: string
   bridger_name: string
   identity_data: any
+  client_name?: string | null
   created_at: string
 }
 
@@ -226,7 +227,7 @@ export default function WeavePage() {
                         <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-cyan-500 transition-colors" />
                       </div>
                       <p className="text-sm font-bold text-white mb-0.5 truncate">
-                        {folder.identity_data?.name || 'Unnamed Client'}
+                        {folder.client_name || folder.identity_data?.name || 'Unnamed Client'}
                       </p>
                       <div className="flex items-center gap-2">
                         <Users className="w-3 h-3 text-slate-500" />
