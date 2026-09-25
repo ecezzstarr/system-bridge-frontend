@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import { getAuthUser } from '@/lib/auth-api'
 import { neon } from '@/lib/pg-neon'
 
 const getDb = () => {
@@ -31,25 +30,13 @@ async function ensureTable(sql: ReturnType<typeof getDb>) {
 }
 
 async function getUser(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (session?.user?.id) {
-    const rows = await getDb()`
-      SELECT id, name, email
-      FROM users
-      WHERE id = ${session.user.id}::uuid AND is_active = true
-      LIMIT 1
-    `
-    if (rows[0]) return rows[0]
-  }
-
-  const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim()
-  if (!token || token.length < 32 || token.length > 128) return null
+  const identity = await getAuthUser(request)
+  if (!identity) return null
 
   const rows = await getDb()`
-    SELECT u.id, u.name, u.email
-    FROM sessions s
-    JOIN users u ON u.id = s.user_id
-    WHERE s.token = ${token} AND s.expires_at > NOW() AND u.is_active = true
+    SELECT id, name, email
+    FROM users
+    WHERE id = ${identity.id}::uuid AND is_active = true
     LIMIT 1
   `
   return rows[0] || null
