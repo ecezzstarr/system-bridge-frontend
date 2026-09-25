@@ -18,7 +18,11 @@ const SYSTEM_SEED = [
   ['eight-runtime','EIGHT · Infrastructure Operator','intelligence',null,'/api/health',{scope:'administration',web:'read-only',deploy:'cloud-build-trigger'}],
 ] as const
 
+let schemaReady:Promise<void>|null=null
+
 export async function ensureWeaveInfrastructureSchema() {
+  if(schemaReady) return schemaReady
+  schemaReady=(async()=>{
   await query(`
     CREATE TABLE IF NOT EXISTS weave_infrastructure_systems (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -81,6 +85,9 @@ export async function ensureWeaveInfrastructureSchema() {
         updated_at=NOW()
     `
   }
+  })()
+  try{ await schemaReady }
+  catch(error){ schemaReady=null; throw error }
 }
 
 export async function getDivineShieldState(): Promise<DivineShieldState> {
