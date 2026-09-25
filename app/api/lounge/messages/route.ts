@@ -1,213 +1,159 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sql, query } from '@/lib/db'
+import { getPool } from '@/lib/db'
+import { getAuthUser } from '@/lib/auth-api'
 
-// Private DMs are scoped to agent<->bridger management only. Given two
-// user IDs, returns true if they're allowed to message each other:
-// an agent and one of their assigned bridgers, or either side is admin.
-async function canManagementDM(userIdA: string, userIdB: string): Promise<boolean> {
+async function canManagementDM(client: any, userIdA: string, userIdB: string): Promise<boolean> {
   if (userIdA === userIdB) return false
-  const rows = await sql`
-    SELECT id, role, assigned_agent_id FROM users WHERE id IN (${userIdA}::uuid, ${userIdB}::uuid)
-  `
-  if (rows.length !== 2) return false
-  const [u1, u2] = rows as any[]
+  const result = await client.query(
+    'SELECT id,role,assigned_agent_id FROM users WHERE id IN ($1::uuid,$2::uuid)',
+    [userIdA, userIdB]
+  )
+  if (result.rows.length !== 2) return false
+  const [u1, u2] = result.rows
   if (u1.role === 'admin' || u2.role === 'admin') return true
-
   const agent = u1.role === 'agent' ? u1 : u2.role === 'agent' ? u2 : null
   const bridger = u1.role === 'bridger' ? u1 : u2.role === 'bridger' ? u2 : null
-  if (!agent || !bridger || agent.id === bridger.id) return false
-
-  return bridger.assigned_agent_id === agent.id
+  return Boolean(agent && bridger && String(bridger.assigned_agent_id || '') === String(agent.id))
 }
 
-// A private roomId is built as [userA, userB].sort().join('-'). Given the
-// requester's own id (a fixed-length UUID), recover the other party's id.
+function privateRoom(userA: string, userB: string) {
+  return [userA, userB].sort().join('-')
+}
+
 function otherPartyFromRoomId(roomId: string, selfId: string): string | null {
-  if (roomId.startsWith(`${selfId}-`)) return roomId.slice(selfId.length + 1)
-  if (roomId.endsWith(`-${selfId}`)) return roomId.slice(0, roomId.length - selfId.length - 1)
+  if (roomId.startsWith(selfId + '-')) return roomId.slice(selfId.length + 1)
+  if (roomId.endsWith('-' + selfId)) return roomId.slice(0, roomId.length - selfId.length - 1)
   return null
 }
 
-// GET - Fetch messages for a room
 export async function GET(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized', messages: [] }, { status: 401 })
+
+  const pool = getPool()
+  const client = await pool.connect()
   try {
-    const { searchParams } = new URL(request.url)
-    const roomType = searchParams.get('roomType') || 'public'
-    const roomId = searchParams.get('roomId') || 'main'
-    const userId = searchParams.get('userId')
-    const limit = parseInt(searchParams.get('limit') || '50')
+    const roomType = request.nextUrl.searchParams.get('roomType') === 'private' ? 'private' : 'public'
+    const requestedRoomId = request.nextUrl.searchParams.get('roomId') || 'main'
+    const limit = Math.min(100, Math.max(1, Number(request.nextUrl.searchParams.get('limit') || 50)))
+    let roomId = 'main'
 
-    // Ensure schema is up to date ( WhatsApp features )
-    await sql`ALTER TABLE lounge_messages ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false`.catch(() => {})
+    await client.query('ALTER TABLE lounge_messages ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false').catch(() => {})
 
-    // Private DMs are scoped to agent<->bridger management pairs.
-    if (roomType === 'private' && userId) {
-      const otherParty = otherPartyFromRoomId(roomId, userId)
-      if (!otherParty || !(await canManagementDM(userId, otherParty))) {
+    if (roomType === 'private') {
+      const otherParty = otherPartyFromRoomId(requestedRoomId, user.id)
+      if (!otherParty || !(await canManagementDM(client, user.id, otherParty))) {
         return NextResponse.json({ success: false, messages: [], error: 'Not authorized to view this conversation' }, { status: 403 })
       }
-    }
-
-    // Mark as read if private and user is the recipient
-    if (roomType === 'private' && userId) {
-      await sql`
-        UPDATE lounge_messages 
-        SET is_read = true 
-        WHERE room_type = 'private' 
-        AND room_id = ${roomId} 
-        AND user_id != ${userId}::uuid
-        AND is_read = false
-      `
-    }
-
-    const messages = await query(`
-      SELECT 
-        id, 
-        room_type, 
-        room_id, 
-        user_id as "userId", 
-        sender_name as sender, 
-        sender_avatar as "senderAvatar",
-        sender_role as "senderRole",
-        content, 
-        message_type as "messageType",
-        media_url as "mediaUrl",
-        is_read as "isRead",
-        created_at as timestamp
-      FROM lounge_messages
-      WHERE room_type = $1 AND room_id = $2
-      ORDER BY created_at DESC
-      LIMIT $3
-    `, [roomType, roomId, limit])
-
-    // Return in newest-first order (recent on top)
-    return NextResponse.json({ 
-      success: true,
-      messages: messages 
-    })
-  } catch (error) {
-    console.error('Failed to fetch lounge messages:', error)
-    return NextResponse.json({ 
-      success: false, 
-      messages: [],
-      error: String(error)
-    })
-  }
-}
-
-// POST - Send a new message
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { 
-      sender, 
-      senderAvatar = '👤',
-      senderRole = null,
-      content, 
-      userId, 
-      roomType = 'public', 
-      roomId = 'main',
-      messageType = 'text',
-      mediaUrl = null,
-      recipientId = null,
-      recipientName = null
-    } = body
-
-    if (!sender || (!content?.trim() && !mediaUrl)) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
+      roomId = privateRoom(user.id, otherParty)
+      await client.query(
+        "UPDATE lounge_messages SET is_read=true WHERE room_type='private' AND room_id=$1 AND user_id<>$2::uuid AND is_read=false",
+        [roomId, user.id]
       )
     }
 
-    // Private DMs are scoped to agent<->bridger management pairs.
-    if (roomType === 'private') {
-      if (!userId || !recipientId) {
-        return NextResponse.json({ success: false, error: 'Private messages require a sender and recipient' }, { status: 400 })
-      }
-      if (!(await canManagementDM(userId, recipientId))) {
-        return NextResponse.json({ success: false, error: 'You can only message your assigned agent or bridger' }, { status: 403 })
-      }
-    }
-
-    // Check if userId is a valid UUID, if not set to null
-    const isValidUUID = userId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)
-    const safeUserId = isValidUUID ? userId : null
-    
-    const result = await sql`
-      INSERT INTO lounge_messages (room_type, room_id, user_id, sender_name, sender_avatar, sender_role, content, message_type, media_url)
-      VALUES (${roomType}, ${roomId}, ${safeUserId}, ${sender}, ${senderAvatar}, ${senderRole}, ${content?.trim() || ''}, ${messageType}, ${mediaUrl})
-      RETURNING 
-        id, 
-        sender_name as sender, 
-        sender_avatar as "senderAvatar", 
-        sender_role as "senderRole",
-        user_id as "userId",
-        content, 
-        message_type as "messageType", 
-        media_url as "mediaUrl",
-        is_read as "isRead",
-        created_at as timestamp
-    `
-
-    // Create notification for private messages
-    if (roomType === 'private' && recipientId) {
-      const isRecipientValidUUID = recipientId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(recipientId)
-      if (isRecipientValidUUID) {
-        try {
-          await sql`
-            INSERT INTO notifications (user_id, type, title, content, from_user_id, from_user_name, link)
-            VALUES (
-              ${recipientId}, 
-              'private_message', 
-              ${sender + ' reached out'},
-              ${content?.substring(0, 100) || 'Sent media'},
-              ${safeUserId},
-              ${sender},
-              ${'/lounge?chat=' + recipientId}
-            )
-          `
-        } catch (notifError) {
-          console.error('Failed to create notification:', notifError)
-        }
-      }
-    }
-
-    return NextResponse.json({ success: true, ...result[0] })
-  } catch (error) {
-    console.error('Lounge message error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to save message', details: String(error) },
-      { status: 500 }
+    const messages = await client.query(
+      `SELECT id,room_type,room_id,user_id AS "userId",sender_name AS sender,
+              sender_avatar AS "senderAvatar",sender_role AS "senderRole",content,
+              message_type AS "messageType",media_url AS "mediaUrl",is_read AS "isRead",
+              created_at AS timestamp
+       FROM lounge_messages
+       WHERE room_type=$1 AND room_id=$2
+       ORDER BY created_at ASC
+       LIMIT $3`,
+      [roomType, roomId, limit]
     )
+
+    return NextResponse.json({ success: true, messages: messages.rows }, { headers: { 'Cache-Control': 'private, no-store' } })
+  } catch (error) {
+    console.error('Failed to fetch lounge messages:', error)
+    return NextResponse.json({ success: false, messages: [], error: 'Failed to fetch messages' }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
 
-// DELETE - Delete a message
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const messageId = searchParams.get('id')
-    const userId = searchParams.get('userId')
+export async function POST(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
 
-    if (!messageId || !userId) {
-      return NextResponse.json({ success: false, error: 'messageId and userId required' }, { status: 400 })
+  const pool = getPool()
+  const client = await pool.connect()
+  try {
+    const body = await request.json()
+    const content = typeof body.content === 'string' ? body.content.trim().slice(0, 10000) : ''
+    const mediaUrl = typeof body.mediaUrl === 'string' ? body.mediaUrl.slice(0, 2000) : null
+    const messageType = typeof body.messageType === 'string' ? body.messageType.slice(0, 40) : 'text'
+    const roomType = body.roomType === 'private' ? 'private' : 'public'
+    const recipientId = roomType === 'private' && typeof body.recipientId === 'string' ? body.recipientId : null
+
+    if (!content && !mediaUrl) {
+      return NextResponse.json({ success: false, error: 'Message content is required' }, { status: 400 })
     }
 
-    // Verify ownership and delete
-    const result = await sql`
-      DELETE FROM lounge_messages
-      WHERE id = ${messageId}::uuid AND user_id = ${userId}::uuid
-      RETURNING id
-    `
+    let roomId = 'main'
+    if (roomType === 'private') {
+      if (!recipientId || !(await canManagementDM(client, user.id, recipientId))) {
+        return NextResponse.json({ success: false, error: 'You can only message an authorized management contact' }, { status: 403 })
+      }
+      roomId = privateRoom(user.id, recipientId)
+    }
 
-    if (result.length === 0) {
+    const avatar = await client.query('SELECT avatar_url FROM users WHERE id=$1::uuid LIMIT 1', [user.id])
+    const senderAvatar = avatar.rows[0]?.avatar_url || '👤'
+    const senderName = user.name || user.username || 'WEAVE User'
+
+    const result = await client.query(
+      `INSERT INTO lounge_messages
+        (room_type,room_id,user_id,sender_name,sender_avatar,sender_role,content,message_type,media_url)
+       VALUES ($1,$2,$3::uuid,$4,$5,$6,$7,$8,$9)
+       RETURNING id,sender_name AS sender,sender_avatar AS "senderAvatar",
+                 sender_role AS "senderRole",user_id AS "userId",content,
+                 message_type AS "messageType",media_url AS "mediaUrl",
+                 is_read AS "isRead",created_at AS timestamp`,
+      [roomType, roomId, user.id, senderName, senderAvatar, user.role, content, messageType, mediaUrl]
+    )
+
+    if (roomType === 'private' && recipientId) {
+      await client.query(
+        `INSERT INTO notifications
+          (user_id,type,title,content,from_user_id,from_user_name,link)
+         VALUES ($1::uuid,'private_message',$2,$3,$4::uuid,$5,$6)`,
+        [recipientId, senderName + ' reached out', content.slice(0, 100) || 'Sent media', user.id, senderName, '/lounge?chat=' + user.id]
+      ).catch(() => {})
+    }
+
+    return NextResponse.json({ success: true, ...result.rows[0] })
+  } catch (error) {
+    console.error('Lounge message error:', error)
+    return NextResponse.json({ success: false, error: 'Failed to save message' }, { status: 500 })
+  } finally {
+    client.release()
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+
+  const messageId = request.nextUrl.searchParams.get('id')
+  if (!messageId) return NextResponse.json({ success: false, error: 'message id required' }, { status: 400 })
+
+  const pool = getPool()
+  const client = await pool.connect()
+  try {
+    const result = await client.query(
+      'DELETE FROM lounge_messages WHERE id=$1::uuid AND user_id=$2::uuid RETURNING id',
+      [messageId, user.id]
+    )
+    if (!result.rows.length) {
       return NextResponse.json({ success: false, error: 'Message not found or unauthorized' }, { status: 404 })
     }
-
-    return NextResponse.json({ success: true, messageId: result[0].id })
+    return NextResponse.json({ success: true, messageId: result.rows[0].id })
   } catch (error) {
     console.error('Delete message error:', error)
     return NextResponse.json({ success: false, error: 'Failed to delete message' }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
