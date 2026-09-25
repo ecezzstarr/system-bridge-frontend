@@ -17,8 +17,13 @@ export interface AuthUser {
  */
 async function applyDivineShield(user:AuthUser):Promise<AuthUser|null>{
   if(user.role==='admin') return user
-  const shield=await getDivineShieldState().catch(()=>({active:false}))
-  return shield.active ? null : user
+  try{
+    const shield=await getDivineShieldState()
+    return shield.active ? null : user
+  }catch(error){
+    console.error('[Divine Shield] auth state unavailable; non-admin access denied:',error)
+    return null
+  }
 }
 
 export async function getAuthUser(request: NextRequest): Promise<AuthUser | null> {
