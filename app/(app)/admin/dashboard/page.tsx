@@ -902,7 +902,10 @@ function UserManagementSection() {
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch('/api/users?role=agent')
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/users?role=agent', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
       const data = await response.json()
       setAgents(data.users || [])
     } catch (error) {
