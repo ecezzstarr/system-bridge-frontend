@@ -6,6 +6,7 @@ import {
   ensureFileFolderWorldSchema,
   getFileFolderWorldSnapshot,
 } from '@/lib/client-file-folder-world'
+import { effectiveBuildMinutes, getClientBuildEconomy } from '@/lib/client-build-economy'
 
 function clean(value: unknown, max = 4000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -165,6 +166,24 @@ export async function POST(request: NextRequest) {
       `
       if (!blueprint) return NextResponse.json({ error: 'Blueprint not found' }, { status: 404 })
 
+      const economy = await getClientBuildEconomy(ctx.sql, String(ctx.client.id), String(ctx.client.file_number))
+      const [doorGate] = await ctx.sql`
+        SELECT id,status,completes_at
+        FROM client_file_folder_builds
+        WHERE client_id=${ctx.client.id}::uuid
+          AND file_number=${ctx.client.file_number}
+          AND blueprint_key='customer_door'
+        ORDER BY created_at DESC
+        LIMIT 1
+      `
+      if (!economy.publicDoorUnlocked && doorGate && (doorGate.status === 'funding_gate' || new Date(doorGate.completes_at).getTime() <= Date.now())) {
+        return NextResponse.json({
+          error: `Build funding gate: deposit ${economy.requiredToOpenPublicDoorFlameCoin.toLocaleString()} more Flame Coin to open the first Customer Door and continue new construction.`,
+          gate: 'build_funding',
+          buildFunding: economy,
+        }, { status: 409 })
+      }
+
       if (blueprint.blueprint_key === 'customer_door') {
         const [existingDoor] = await ctx.sql`
           SELECT id,status
@@ -193,6 +212,7 @@ export async function POST(request: NextRequest) {
       const requiredQty = Number(blueprint.required_item_quantity || 0)
       const requiredItemKey = blueprint.required_item_key || null
       const durationHours = Math.max(1, Number(blueprint.build_hours || 1))
+      const { baseMinutes, effectiveMinutes } = effectiveBuildMinutes(durationHours, economy.buildSpeedMultiplier)
 
       if (requiredItemKey && requiredQty > 0) {
         const started = await ctx.sql`
@@ -209,7 +229,7 @@ export async function POST(request: NextRequest) {
           build AS (
             INSERT INTO client_file_folder_builds (
               client_id,file_number,blueprint_key,title,purpose,
-              system_type,status,duration_hours,started_at,completes_at
+              system_type,status,duration_hours,base_duration_minutes,duration_minutes,speed_multiplier,started_at,completes_at
             )
             SELECT
               ${ctx.client.id}::uuid,
@@ -220,8 +240,11 @@ export async function POST(request: NextRequest) {
               ${blueprint.system_type},
               'building',
               ${durationHours},
+              ${baseMinutes},
+              ${effectiveMinutes},
+              ${economy.buildSpeedMultiplier},
               NOW(),
-              NOW() + make_interval(hours => ${durationHours})
+              NOW() + make_interval(mins => ${effectiveMinutes})
             FROM consumed
             RETURNING id
           )
@@ -237,7 +260,7 @@ export async function POST(request: NextRequest) {
         await ctx.sql`
           INSERT INTO client_file_folder_builds (
             client_id,file_number,blueprint_key,title,purpose,
-            system_type,status,duration_hours,started_at,completes_at
+            system_type,status,duration_hours,base_duration_minutes,duration_minutes,speed_multiplier,started_at,completes_at
           )
           VALUES (
             ${ctx.client.id}::uuid,
@@ -248,8 +271,11 @@ export async function POST(request: NextRequest) {
             ${blueprint.system_type},
             'building',
             ${durationHours},
+            ${baseMinutes},
+            ${effectiveMinutes},
+            ${economy.buildSpeedMultiplier},
             NOW(),
-            NOW() + make_interval(hours => ${durationHours})
+            NOW() + make_interval(mins => ${effectiveMinutes})
           )
         `
       }
