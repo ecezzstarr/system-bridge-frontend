@@ -56,6 +56,8 @@ export default function SupportFileFolderPage() {
         workshopPurpose={data.workshop.description}
         initialWorld={data.world}
         readOnly
+        refreshUrl={`/api/world/file-folders/${encodeURIComponent(data.client.file_number)}`}
+        refreshToken={token}
       />
     </div>
   </main>
