@@ -177,7 +177,7 @@ assert.ok(notificationsApiSource.includes('getAuthUser'),'Notification inbox req
 assert.ok(!notificationsApiSource.includes("searchParams.get('userId')"),'Notification inbox cannot select another user by query parameter')
 assert.ok(notificationBellSource.includes("setInterval(fetchNotifications, 5000)"),'Notification bell polls promptly')
 assert.ok(opayDepositSource.includes('/admin/dashboard#deposits'),'OPay notification deep-links to OPay review')
-assert.ok(tronDepositSource.includes('/admin/dashboard#tron'),'TRX notification deep-links to TRX review')
+assert.ok(tronDepositSource.includes('/admin/client-deposits'),'TRX notification deep-links to dedicated Client deposit review')
 assert.ok(bridgeDepositSource.includes('/admin/dashboard#bridge'),'Bridge notification deep-links to Bridge review')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#deposits'"),'Admin dashboard handles OPay notification hash')
 assert.ok(adminDashboardNotificationSource.includes("hash === '#tron'"),'Admin dashboard handles TRX notification hash')
