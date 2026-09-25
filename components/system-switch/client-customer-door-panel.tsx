@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Copy, ExternalLink, Plus, Store, TimerReset } from 'lucide-react'
+import { Copy, ExternalLink, Plus, Store, TimerReset, Zap } from 'lucide-react'
+import Link from 'next/link'
 import { getClientToken } from '@/lib/client-auth'
 
-export default function ClientCustomerDoorPanel({ initialStore }: { initialStore?: any | null }) {
+export default function ClientCustomerDoorPanel({ initialStore, buildFunding }: { initialStore?: any | null; buildFunding?: any | null }) {
   const [data,setData]=useState<any>({
     store: initialStore || null,
     items: initialStore?.items || [],
@@ -37,13 +38,15 @@ export default function ClientCustomerDoorPanel({ initialStore }: { initialStore
       const store={...body.store,public_url:publicUrl || (body.store?.public_slug?`/store/${body.store.public_slug}`:null)}
       setData({store,items:body.items||[],orders:body.orders||[]})
       setForm({name:'',description:'',price:'',currency:'NGN',offer_type:'product'})
-      setMessage('Offer published. Your Customer Door is selling to the public.')
+      setMessage(body.store?.formation_status === 'selling' ? 'Offer published. Your Customer Door is selling to the public.' : 'Offer published inside your File Folder. It becomes public when the Customer Door clears its build/funding gate.')
     }catch(error:any){
       setMessage(error?.message||'Unable to publish offer')
     }finally{setBusy(false)}
   }
 
   return <div className="mt-6 space-y-4">
+    {buildFunding && <div className={`rounded-2xl border p-5 ${buildFunding.publicDoorUnlocked?'border-emerald-400/20 bg-emerald-400/5':'border-amber-400/20 bg-amber-400/5'}`}><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">File Folder Build Power</p><p className="mt-2 text-2xl font-black text-white">{Number(buildFunding.totalParticipationFlameCoin||0).toLocaleString()} Flame Coin</p><p className="mt-1 text-[10px] text-slate-500">Build speed ×{Number(buildFunding.buildSpeedMultiplier||1).toFixed(2)} · Public Door threshold {Number(buildFunding.publicDoorThresholdFlameCoin||0).toLocaleString()}</p></div><div className="text-right">{buildFunding.publicDoorUnlocked?<p className="text-xs font-black uppercase tracking-wider text-emerald-300">Funding gate cleared</p>:<><p className="text-xs font-black uppercase tracking-wider text-amber-300">Funding required</p><p className="mt-1 text-sm text-white">{Number(buildFunding.requiredToOpenPublicDoorFlameCoin||0).toLocaleString()} more Flame Coin</p><Link href="/client/deposit" className="mt-3 inline-flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-950"><Zap className="h-3.5 w-3.5"/>Add build power</Link></>}</div></div></div>}
+
     <div className="rounded-2xl border border-sky-400/20 bg-sky-400/5 p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
