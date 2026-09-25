@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getDivineShieldState, setDivineShieldState } from '@/lib/weave-infrastructure'
+import { sql } from '@/lib/db'
 
 export const dynamic='force-dynamic'
 
@@ -28,7 +29,20 @@ export async function POST(request:NextRequest){
     const title=typeof body.title==='string' ? body.title.trim().slice(0,255) : undefined
     const message=typeof body.message==='string' ? body.message.trim().slice(0,2000) : undefined
     const state=await setDivineShieldState({active:body.active,title,message,adminId:user.id})
-    return NextResponse.json({success:true,state})
+
+    let evacuatedSessions=0
+    if(body.active){
+      const revoked=await sql`
+        DELETE FROM sessions s
+        USING users u
+        WHERE s.user_id=u.id
+          AND u.role<>'admin'
+        RETURNING s.id
+      `
+      evacuatedSessions=revoked.length
+    }
+
+    return NextResponse.json({success:true,state,evacuatedSessions})
   }catch(error){
     console.error('[Divine Shield] update error:',error)
     return NextResponse.json({success:false,error:'Unable to update Divine Shield'},{status:500})
