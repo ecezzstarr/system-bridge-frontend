@@ -304,6 +304,30 @@ assert.ok(agentCommissionsApiSource.includes('prospect_package_purchase'),'Commi
 assert.ok(agentCommissionsApiSource.includes('WORLD_RULES.AGENT_LEAD_YIELD_RATE'),'Commission API uses the canonical Agent Prospect rate')
 assert.ok(agentCommissionsApiSource.includes('getAuthUser'),'Agent commission API derives Agent identity from session')
 assert.ok(agentBridgersApiSource.includes('getAuthUser'),'Agent Bridger API derives Agent identity from session')
+assert.ok(!fs.existsSync(path.join(root,'middleware.ts')),'Next.js 16 must have only the domain proxy entry point')
+const {proxy:domainProxy,config:domainProxyConfig}=require('../proxy.ts')
+const {NextRequest:DomainRequest}=require('next/server')
+assert.deepEqual(domainProxyConfig.matcher,['/'])
+for(const [host,pathname,target] of [
+ ['weavingsystem.online','/',null],
+ ['ssbnow.online','/','/login?portal=admin'],
+ ['ssbnow.shop','/','/client'],
+ ['www.ssbnow.online','/','/login?portal=admin'],
+ ['SSBNOW.SHOP:443','/','/client'],
+ ['preview.run.app','/',null],
+ ['ssbnow.online','/api/health',null],
+ ['ssbnow.shop','/client/dashboard',null],
+]) {
+ const request=new DomainRequest('https://'+host+pathname,{headers:{host}})
+ const response=domainProxy(request)
+ if(target) {
+  assert.equal(response.status,307,host)
+  assert.equal(response.headers.get('location'),new URL(target,request.url).toString(),host)
+ } else {
+  assert.equal(response.headers.get('x-middleware-next'),'1',host+pathname)
+  assert.equal(response.headers.get('location'),null,host+pathname)
+ }
+}
 const domainRolesSource=fs.readFileSync(path.join(root,'lib/weave-domains.ts'),'utf8')
 const domainProxySource=fs.readFileSync(path.join(root,'proxy.ts'),'utf8')
 const domainMapScriptSource=fs.readFileSync(path.join(root,'scripts/map-weave-domains.sh'),'utf8')
