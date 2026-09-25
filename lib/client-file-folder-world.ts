@@ -1,4 +1,5 @@
 import { ensureClientBusinessStore, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { effectiveBuildMinutes, getClientBuildEconomy, type ClientBuildEconomy } from '@/lib/client-build-economy'
 
 export type FileFolderWorldSnapshot = {
   blueprints: any[]
@@ -8,6 +9,7 @@ export type FileFolderWorldSnapshot = {
   systems: any[]
   library: any[]
   customerDoor: any | null
+  buildFunding: ClientBuildEconomy
   guarantee: {
     hasActiveBuild: boolean
     hasReadyBlueprint: boolean
@@ -81,6 +83,9 @@ export async function ensureFileFolderWorldSchema(sql: any) {
       system_type varchar(80) NOT NULL,
       status varchar(32) NOT NULL DEFAULT 'building',
       duration_hours integer NOT NULL,
+      base_duration_minutes integer,
+      duration_minutes integer,
+      speed_multiplier numeric(10,4) NOT NULL DEFAULT 1,
       started_at timestamptz NOT NULL DEFAULT NOW(),
       completes_at timestamptz NOT NULL,
       completed_at timestamptz,
@@ -89,6 +94,17 @@ export async function ensureFileFolderWorldSchema(sql: any) {
     )
   `
 
+  await sql`ALTER TABLE client_file_folder_builds ADD COLUMN IF NOT EXISTS base_duration_minutes integer`
+  await sql`ALTER TABLE client_file_folder_builds ADD COLUMN IF NOT EXISTS duration_minutes integer`
+  await sql`ALTER TABLE client_file_folder_builds ADD COLUMN IF NOT EXISTS speed_multiplier numeric(10,4) NOT NULL DEFAULT 1`
+  await sql`
+    UPDATE client_file_folder_builds
+    SET
+      base_duration_minutes=COALESCE(base_duration_minutes,duration_hours*60),
+      duration_minutes=COALESCE(duration_minutes,duration_hours*60),
+      speed_multiplier=COALESCE(speed_multiplier,1)
+    WHERE base_duration_minutes IS NULL OR duration_minutes IS NULL
+  `
   await sql`
     CREATE INDEX IF NOT EXISTS idx_client_file_folder_builds_client_time
     ON client_file_folder_builds(client_id, created_at DESC)
@@ -234,7 +250,12 @@ async function seedFileFolderWorld(sql: any) {
   }
 }
 
-export async function ensureCustomerDoorFormation(sql: any, clientId: string, fileNumber: string) {
+export async function ensureCustomerDoorFormation(
+  sql: any,
+  clientId: string,
+  fileNumber: string,
+  economy: ClientBuildEconomy,
+) {
   const [existing] = await sql`
     SELECT id,status
     FROM client_file_folder_builds
@@ -256,10 +277,16 @@ export async function ensureCustomerDoorFormation(sql: any, clientId: string, fi
   `
 
   if (!existing && !activeSystem) {
+    const { baseMinutes, effectiveMinutes } = effectiveBuildMinutes(
+      6,
+      economy.buildSpeedMultiplier,
+    )
+
     await sql`
       INSERT INTO client_file_folder_builds (
         client_id,file_number,blueprint_key,title,purpose,
-        system_type,status,duration_hours,started_at,completes_at
+        system_type,status,duration_hours,base_duration_minutes,
+        duration_minutes,speed_multiplier,started_at,completes_at
       )
       VALUES (
         ${clientId}::uuid,
@@ -270,27 +297,91 @@ export async function ensureCustomerDoorFormation(sql: any, clientId: string, fi
         'customer_door',
         'building',
         6,
+        ${baseMinutes},
+        ${effectiveMinutes},
+        ${economy.buildSpeedMultiplier},
         NOW(),
-        NOW() + INTERVAL '6 hours'
+        NOW() + make_interval(mins => ${effectiveMinutes})
       )
     `
   }
 }
 
-export async function finalizeReadyBuilds(sql: any, clientId: string) {
-  const ready = await sql`
+export async function applyBuildPowerAcceleration(
+  sql: any,
+  clientId: string,
+  economy: ClientBuildEconomy,
+) {
+  await sql`
     UPDATE client_file_folder_builds
     SET
-      status='complete',
-      completed_at=COALESCE(completed_at,NOW()),
+      speed_multiplier=${economy.buildSpeedMultiplier},
+      duration_minutes=GREATEST(
+        15,
+        CEIL(
+          COALESCE(base_duration_minutes,duration_hours*60)::numeric /
+          ${economy.buildSpeedMultiplier}
+        )::integer
+      ),
+      completes_at=started_at + make_interval(
+        mins => GREATEST(
+          15,
+          CEIL(
+            COALESCE(base_duration_minutes,duration_hours*60)::numeric /
+            ${economy.buildSpeedMultiplier}
+          )::integer
+        )
+      ),
       updated_at=NOW()
     WHERE client_id=${clientId}::uuid
-      AND status='building'
-      AND completes_at <= NOW()
-    RETURNING id, client_id, file_number, system_type, title, blueprint_key
+      AND status IN ('building','funding_gate')
+      AND COALESCE(speed_multiplier,1) < ${economy.buildSpeedMultiplier}
+  `
+}
+
+export async function finalizeReadyBuilds(
+  sql: any,
+  clientId: string,
+  economy: ClientBuildEconomy,
+) {
+  const ready = await sql`
+    SELECT
+      id,client_id,file_number,system_type,title,blueprint_key,status,completes_at
+    FROM client_file_folder_builds
+    WHERE client_id=${clientId}::uuid
+      AND (
+        (status='building' AND completes_at <= NOW())
+        OR
+        (status='funding_gate' AND system_type='customer_door' AND ${economy.publicDoorUnlocked})
+      )
+    ORDER BY created_at ASC
   `
 
   for (const build of ready) {
+    if (build.system_type === 'customer_door' && !economy.publicDoorUnlocked) {
+      await sql`
+        UPDATE client_file_folder_builds
+        SET status='funding_gate',updated_at=NOW()
+        WHERE id=${build.id}::uuid
+      `
+      await sql`
+        UPDATE client_business_stores
+        SET formation_status='funding_gate',updated_at=NOW()
+        WHERE client_id=${build.client_id}::uuid
+          AND file_number=${build.file_number}
+      `
+      continue
+    }
+
+    await sql`
+      UPDATE client_file_folder_builds
+      SET
+        status='complete',
+        completed_at=COALESCE(completed_at,NOW()),
+        updated_at=NOW()
+      WHERE id=${build.id}::uuid
+    `
+
     await sql`
       INSERT INTO client_built_systems (
         build_id, client_id, file_number, system_type, title, configuration
@@ -356,9 +447,11 @@ export async function getFileFolderWorldSnapshot(
     clientIdentity?.workshop_type === 'crypto_exchange',
   )
 
+  const buildFunding = await getClientBuildEconomy(sql, clientId, fileNumber)
   await ensureClientLibraryProgress(sql, clientId)
-  await ensureCustomerDoorFormation(sql, clientId, fileNumber)
-  await finalizeReadyBuilds(sql, clientId)
+  await ensureCustomerDoorFormation(sql, clientId, fileNumber, buildFunding)
+  await applyBuildPowerAcceleration(sql, clientId, buildFunding)
+  await finalizeReadyBuilds(sql, clientId, buildFunding)
 
   const blueprints = await sql`
     SELECT
@@ -398,6 +491,9 @@ export async function getFileFolderWorldSnapshot(
       system_type,
       status,
       duration_hours,
+      base_duration_minutes,
+      duration_minutes,
+      speed_multiplier,
       started_at,
       completes_at,
       completed_at,
@@ -491,6 +587,7 @@ export async function getFileFolderWorldSnapshot(
     systems,
     library,
     customerDoor: customerDoor || null,
+    buildFunding,
     guarantee: {
       hasActiveBuild: builds.some((build: any) => build.status === 'building'),
       hasReadyBlueprint: blueprints.length > 0,
