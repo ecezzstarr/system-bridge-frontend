@@ -4,7 +4,7 @@
  * Append-only, systems cannot remove themselves
  */
 
-export type DeploymentType = "cloudrun" | "vercel" | "local" | "playstore"
+export type DeploymentType = "cloudrun" | "local" | "playstore"
 export type SystemStatus = "active" | "paused" | "archived"
 
 export interface OriginSystemRecord {
