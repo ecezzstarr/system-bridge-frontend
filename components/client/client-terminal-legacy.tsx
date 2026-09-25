@@ -3,23 +3,21 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, ArrowRight, ArrowUpRight, ArrowDownLeft, Phone, Trophy, Globe, Zap, Shield, Wallet, Lock, Sparkles } from 'lucide-react'
+import { MessageCircle, ArrowRight, ArrowUpRight, ArrowDownLeft, Trophy, Globe, Zap, Shield, Wallet, Lock, Sparkles } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
-import { openWhatsAppWithNumber, SUPPORT_NUMBERS, WhatsAppButton } from '@/components/external-apps-nav'
 
 interface SupportPosition {
   position: string
   agent_name: string
   icon: string
   description: string
-  whatsapp?: string
 }
 
 const SUPPORT_POSITIONS: SupportPosition[] = [
-  { position: 'mandate', agent_name: 'Mandate Officer', icon: '📋', description: 'Mandate', whatsapp: SUPPORT_NUMBERS.mandate },
-  { position: 'forensic', agent_name: 'Forensic Expert', icon: '🔍', description: 'Forensic', whatsapp: SUPPORT_NUMBERS.forensic },
-  { position: 'lawyer', agent_name: 'Legal Counsel', icon: '⚖️', description: 'Legal', whatsapp: SUPPORT_NUMBERS.legal },
-  { position: 'admin', agent_name: 'Administrator', icon: '👤', description: 'Admin', whatsapp: SUPPORT_NUMBERS.admin },
+  { position: 'mandate', agent_name: 'Mandate Officer', icon: '📋', description: 'Mandate' },
+  { position: 'forensic', agent_name: 'Forensic Expert', icon: '🔍', description: 'Forensic' },
+  { position: 'lawyer', agent_name: 'Legal Counsel', icon: '⚖️', description: 'Legal' },
+  { position: 'admin', agent_name: 'Administrator', icon: '👤', description: 'Admin' },
 ]
 
 export default function LegacyClientDashboard() {
@@ -199,14 +197,6 @@ export default function LegacyClientDashboard() {
                 <p className="text-[10px] font-bold text-slate-300 truncate">{pos.description}</p>
               </div>
               <div className="flex gap-1 flex-shrink-0">
-                {pos.whatsapp && (
-                  <button
-                    onClick={() => openWhatsAppWithNumber(pos.whatsapp!, `Hi, I need assistance from ${pos.description}`)}
-                    className="w-6 h-6 rounded-full bg-green-500/5 hover:bg-green-500/10 border border-green-500/10 flex items-center justify-center transition-colors"
-                  >
-                    <Phone className="h-3 w-3 text-green-500" />
-                  </button>
-                )}
                 <Link href={`/client/chat/${pos.position}`}>
                   <button className="w-6 h-6 rounded-full bg-white/5 hover:bg-cyan-500/10 border border-white/10 flex items-center justify-center transition-colors">
                     <MessageCircle className="h-3 w-3 text-slate-400" />
@@ -243,9 +233,7 @@ export default function LegacyClientDashboard() {
       {/* Footer */}
       <div className="pt-2">
         <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-slate-900/50 backdrop-blur-2xl border border-white/5 p-6 md:px-10 md:py-6 rounded-[2rem]">
-          <div className="flex gap-4">
-            <WhatsAppButton />
-          </div>
+          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">WEAVE internal support only</div>
           <div className="flex items-center gap-3 px-6 py-2.5 bg-slate-950 border border-white/5 rounded-full shadow-inner">
             <div className="relative flex h-2 w-2">
               <div className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></div>
