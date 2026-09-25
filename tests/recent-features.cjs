@@ -508,6 +508,7 @@ assert.ok(eightCommandSource.includes("authUser.role!=='admin'"),'EIGHT command 
 assert.ok(!systemIdentitySource.includes('"vercel"'),'System identity no longer advertises legacy Vercel deployment')
 assert.ok(!originTruthLedgerSource.includes('"vercel"'),'Origin runtime ledger uses Cloud Run/local/playstore targets only')
 
+const authApiDivineShieldSource=fs.readFileSync(path.join(root,'lib/auth-api.ts'),'utf8')
 const infrastructureMigrationSource=fs.readFileSync(path.join(root,'migrations/20260925_weave_infrastructure_divine_shield.sql'),'utf8')
 const infrastructureLibSource=fs.readFileSync(path.join(root,'lib/weave-infrastructure.ts'),'utf8')
 const cloudControlSource=fs.readFileSync(path.join(root,'lib/weave-cloud-control.ts'),'utf8')
@@ -556,6 +557,9 @@ assert.ok(divineShieldStatusSource.includes("user?.role==='admin'"),'Only authen
 assert.ok(!divineShieldGateSource.includes("user?.role==='admin'"),'Browser-stored role cannot bypass Divine Shield')
 assert.ok(divineShieldGateSource.includes("pathname!=='/login'"),'Administration login remains reachable while shield is raised')
 assert.ok(divineShieldAdminSource.includes("user.role!=='admin'"),'Divine Shield control endpoint is Administration-only')
+assert.ok(authApiDivineShieldSource.includes('applyDivineShield'),'Shared authenticated API identity enforces Divine Shield')
+assert.ok(authApiDivineShieldSource.includes("user.role==='admin'"),'Administration bypass is enforced server-side in shared auth')
+assert.ok(infrastructureLibSource.includes('shieldCache'),'Divine Shield authentication checks use a short runtime cache')
 for(const source of [authLoginShieldSource,authRegisterShieldSource,clientLoginShieldSource,clientRegisterShieldSource,nextAuthShieldSource]){
  assert.ok(source.includes('getDivineShieldState'),'All account-entry paths obey Divine Shield')
 }
