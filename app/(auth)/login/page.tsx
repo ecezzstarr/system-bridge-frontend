@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,9 +14,14 @@ import { LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-a
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const { login, isLoading } = useAuth()
-  const administrationPortal = searchParams.get('portal') === 'admin'
+  const { login, logout, isLoading } = useAuth()
+  const [administrationPortal, setAdministrationPortal] = useState(false)
+
+  useEffect(() => {
+    const portal = new URLSearchParams(window.location.search).get('portal')
+    const host = window.location.hostname.toLowerCase().replace(/^www\./, '')
+    setAdministrationPortal(portal === 'admin' || host === 'ssbnow.online')
+  }, [])
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,6 +36,13 @@ export default function LoginPage() {
 
     try {
       const loggedInUser = await login(email, password)
+      if (administrationPortal && loggedInUser?.role !== 'admin') {
+        logout()
+        setError('Administration account required for this portal.')
+        setIsSubmitting(false)
+        return
+      }
+
       if (loggedInUser?.role === 'admin') router.push(administrationPortal ? '/authority/workshops' : '/admin/dashboard')
       else if (loggedInUser?.role === 'agent') {
         sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
