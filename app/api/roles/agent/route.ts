@@ -1,28 +1,28 @@
-import { NextResponse } from 'next/server'
-import { getSession } from 'next-auth/react'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/auth-api'
 import { getSql } from '@/lib/db'
 
-export async function GET(request: Request) {
+async function requireAgent(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return { user: null, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  if (user.role !== 'agent') return { user: null, response: NextResponse.json({ error: 'Agent access required' }, { status: 403 }) }
+  return { user, response: null }
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const session = await getSession({ req: request })
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireAgent(request)
+    if (auth.response) return auth.response
 
     const sql = getSql()
-    
-    // Get agent profile or create if doesn't exist
-    let agent = await sql`
-      SELECT * FROM agent_profiles WHERE user_id = ${session.user.id}::uuid
+    const agent = await sql`
+      SELECT * FROM agent_profiles
+      WHERE user_id = ${auth.user!.id}::uuid
+      LIMIT 1
     `
-    
-    if (agent.length === 0) {
-      const result = await sql`
-        INSERT INTO agent_profiles (user_id, agent_type, commission_rate, matches_completed, rating)
-        VALUES (${session.user.id}::uuid, 'standard', 0.05, 0, 5.0)
-        RETURNING *
-      `
-      agent = result
+
+    if (!agent[0]) {
+      return NextResponse.json({ error: 'Agent profile not found' }, { status: 404 })
     }
 
     return NextResponse.json({ success: true, data: agent[0] })
@@ -32,26 +32,11 @@ export async function GET(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
-  try {
-    const session = await getSession({ req: request })
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { agent_type, commission_rate } = await request.json()
-    const sql = getSql()
-
-    const result = await sql`
-      UPDATE agent_profiles 
-      SET agent_type = ${agent_type}, commission_rate = ${commission_rate}, updated_at = NOW()
-      WHERE user_id = ${session.user.id}::uuid
-      RETURNING *
-    `
-
-    return NextResponse.json({ success: true, data: result[0] })
-  } catch (error) {
-    console.error('[v0] Update agent error:', error)
-    return NextResponse.json({ error: 'Failed to update agent profile' }, { status: 500 })
-  }
+export async function PUT(request: NextRequest) {
+  const auth = await requireAgent(request)
+  if (auth.response) return auth.response
+  return NextResponse.json(
+    { error: 'Agent profile terms and commission rates are controlled by Administration.' },
+    { status: 403 }
+  )
 }
