@@ -122,12 +122,11 @@ export async function ensureClientBusinessStore(
       AND enabled=true
   `
 
-  if (Number(offerCount?.count || 0) > 0) {
+  if (Number(offerCount?.count || 0) > 0 && store.public_opened_at) {
     const [selling] = await sql`
       UPDATE client_business_stores
       SET
         formation_status='selling',
-        public_opened_at=COALESCE(public_opened_at,NOW()),
         first_offer_published_at=COALESCE(first_offer_published_at,NOW()),
         updated_at=NOW()
       WHERE id=${store.id}::uuid
