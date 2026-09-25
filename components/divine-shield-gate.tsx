@@ -44,7 +44,7 @@ export function DivineShieldGate({children}:{children:ReactNode}){
         setState({
           checked:true,
           active:Boolean(body?.active),
-          administrationBypass:Boolean(body?.administrationBypass || user?.role==='admin'),
+          administrationBypass:Boolean(body?.administrationBypass),
           title:body?.title || DEFAULT_STATE.title,
           message:body?.message || DEFAULT_STATE.message,
         })
