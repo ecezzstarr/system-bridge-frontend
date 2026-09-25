@@ -1,127 +1,101 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sql } from '@/lib/db'
+import { getPool } from '@/lib/db'
+import { getAuthUser } from '@/lib/auth-api'
 
-// Platform wallet ID (company wallet for commission)
-const PLATFORM_WALLET_USER_ID = 'be4f0618-d666-4e13-ae8f-13c986784ff7'
+const WINNER_PERCENTAGE = 0.70
 
-// POST /api/arena/matches/[id]/join - Join a match
+// POST /api/arena/matches/[id]/join - Join using the authenticated account only.
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const user = await getAuthUser(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id } = await params
+  const body = await request.json().catch(() => ({}))
+  const prediction = typeof body.prediction === 'string' ? body.prediction.slice(0, 120) : null
+  const pool = getPool()
+  const client = await pool.connect()
+
   try {
-    const { id } = await params
-    const body = await request.json()
-    const { userId, prediction } = body
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
-    }
-
-    // Get match
-    const matches = await sql`SELECT * FROM arena_matches WHERE id = ${id}`
-    if (matches.length === 0) {
+    await client.query('BEGIN')
+    const matchResult = await client.query('SELECT * FROM arena_matches WHERE id=$1 FOR UPDATE', [id])
+    const match = matchResult.rows[0]
+    if (!match) {
+      await client.query('ROLLBACK')
       return NextResponse.json({ error: 'Match not found' }, { status: 404 })
     }
-
-    const match = matches[0]
-
     if (match.status !== 'upcoming') {
+      await client.query('ROLLBACK')
       return NextResponse.json({ error: 'Match is not open for joining' }, { status: 400 })
     }
 
-    // Check if already joined
-    const existing = await sql`
-      SELECT id FROM arena_participants WHERE match_id = ${id} AND user_id = ${userId}
-    `
-    if (existing.length > 0) {
+    const existing = await client.query(
+      'SELECT id FROM arena_participants WHERE match_id=$1 AND user_id=$2',
+      [id, user.id]
+    )
+    if (existing.rows.length) {
+      await client.query('ROLLBACK')
       return NextResponse.json({ error: 'Already joined this match' }, { status: 400 })
     }
 
-    // Check participant count
-    const countResult = await sql`
-      SELECT COUNT(*) as count FROM arena_participants WHERE match_id = ${id}
-    `
-    if (parseInt(countResult[0].count) >= match.max_participants) {
+    const count = await client.query('SELECT COUNT(*)::int AS count FROM arena_participants WHERE match_id=$1', [id])
+    if (Number(count.rows[0]?.count || 0) >= Number(match.max_participants || 0)) {
+      await client.query('ROLLBACK')
       return NextResponse.json({ error: 'Match is full' }, { status: 400 })
     }
 
-    const entryFee = parseFloat(match.entry_fee) || 0
+    const entryFee = Number(match.entry_fee) || 0
+    let balanceBefore = 0
+    let balanceAfter = 0
 
-    // Check wallet balance (use balance_trx for arena entry fees)
-    const wallets = await sql`SELECT balance_trx FROM wallets WHERE user_id = ${userId}::uuid`
-    const balance = wallets.length > 0 ? parseFloat(wallets[0].balance_trx) : 0
-
-    if (balance < entryFee) {
-      return NextResponse.json({ 
-        error: 'Insufficient balance', 
-        required: entryFee,
-        available: balance
-      }, { status: 400 })
-    }
-
-    // Join match
-    const partId = `part_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
-    await sql`
-      INSERT INTO arena_participants (id, match_id, user_id, prediction)
-      VALUES (${partId}, ${id}, ${userId}, ${prediction || null})
-    `
-
-    // Deduct entry fee from user and add to prize pool (with 10% commission)
     if (entryFee > 0) {
-      const commission = entryFee * 0.10
-      const netToPrizePool = entryFee - commission
-
-      // Deduct from user's wallet
-      await sql`
-        UPDATE wallets SET balance_trx = balance_trx - ${entryFee}, updated_at = NOW()
-        WHERE user_id = ${userId}::uuid
-      `
-      
-      // Add commission to platform wallet
-      await sql`
-        UPDATE wallets SET balance_trx = balance_trx + ${commission}, updated_at = NOW()
-        WHERE user_id = ${PLATFORM_WALLET_USER_ID}::uuid
-      `
-
-      // Add net amount to match prize pool
-      await sql`
-        UPDATE arena_matches SET prize_pool = prize_pool + ${netToPrizePool} WHERE id = ${id}
-      `
-
-      // Record ledger entry
-      try {
-        await sql`
-          INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at)
-          VALUES (
-            gen_random_uuid(),
-            ${userId}::uuid,
-            'arena_entry_fee',
-            ${-entryFee},
-            'Flame Coin',
-            ${'Arena entry fee: ' + match.title},
-            NOW()
-          )
-        `
-      } catch (e) {
-        console.log('Ledger entry failed:', e)
+      const wallet = await client.query(
+        'SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE',
+        [user.id]
+      )
+      balanceBefore = Number(wallet.rows[0]?.balance_trx || 0)
+      if (balanceBefore < entryFee) {
+        await client.query('ROLLBACK')
+        return NextResponse.json({ error: 'Insufficient Flame Coin balance', required: entryFee, available: balanceBefore }, { status: 400 })
       }
+      balanceAfter = balanceBefore - entryFee
+      await client.query(
+        'UPDATE wallets SET balance_trx=$1,updated_at=NOW() WHERE user_id=$2::uuid AND is_primary=true',
+        [balanceAfter, user.id]
+      )
+      await client.query(
+        `INSERT INTO ledger_entries
+          (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
+         VALUES (gen_random_uuid(),$1::uuid,'arena_entry_fee',$2,'Flame Coin',$3,$4,$5,NOW())`,
+        [user.id, -entryFee, `Arena entry fee: ${match.title}`, balanceBefore, balanceAfter]
+      )
     }
 
-    // Get updated prize pool
-    const updatedMatch = await sql`SELECT prize_pool FROM arena_matches WHERE id = ${id}`
-    const newPrizePool = updatedMatch.length > 0 ? parseFloat(updatedMatch[0].prize_pool) : 0
+    await client.query(
+      'INSERT INTO arena_participants (id,match_id,user_id,prediction) VALUES ($1,$2,$3,$4)',
+      [`part_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`, id, user.id, prediction]
+    )
+    if (entryFee > 0) {
+      await client.query('UPDATE arena_matches SET prize_pool=prize_pool+$1 WHERE id=$2', [entryFee, id])
+    }
+    const updated = await client.query('SELECT prize_pool FROM arena_matches WHERE id=$1', [id])
+    const prizePool = Number(updated.rows[0]?.prize_pool || 0)
+    await client.query('COMMIT')
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Successfully joined match',
       entryFee,
-      prizePool: newPrizePool,
-      potentialWinnings: newPrizePool * 0.70 // 70% to winner
+      prizePool,
+      potentialWinnings: prizePool * WINNER_PERCENTAGE,
     })
   } catch (error) {
+    try { await client.query('ROLLBACK') } catch {}
     console.error('Error joining match:', error)
     return NextResponse.json({ error: 'Failed to join match' }, { status: 500 })
+  } finally {
+    client.release()
   }
 }
