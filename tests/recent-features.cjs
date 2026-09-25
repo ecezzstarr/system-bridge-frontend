@@ -457,6 +457,9 @@ assert.ok(publicCustomerDoorSource.includes("formation_status='selling'"),'Outsi
 assert.ok(publicCustomerOrdersSource.includes("formation_status='selling'"),'Outsider orders cannot bypass the Customer Door gate')
 assert.ok(customerDoorPanelSource.includes('requiredToOpenPublicDoorFlameCoin'),'Client sees the exact Flame Coin shortfall')
 assert.ok(fileFolderPurchaseSource.includes('PUBLIC_DOOR_THRESHOLD'),'File Folder buyer sees the Customer Door threshold before purchase')
+assert.ok(fileFolderWorldSource.includes('crypto_exchange_workshop'),'Client build catalog includes a Crypto Exchange Workshop')
+assert.ok(fileFolderWorldSource.includes('enterprise_operating_system'),'Client build catalog includes high-capacity enterprise systems')
+assert.ok(fileFolderWorldSource.includes('ON CONFLICT (blueprint_key) DO NOTHING'),'Seed bootstrap preserves Administration blueprint edits')
 
 for(const cameraFile of ['components/world/presence-camera.tsx','lib/presence-camera.ts','components/world/weave-normal-world-backdrop.tsx','components/world/weave-world-environment.tsx']){
  const source=fs.readFileSync(path.join(root,cameraFile),'utf8')
@@ -487,6 +490,7 @@ assert.ok(presenceCameraLibSource.includes('PRESENCE_TRACE_KEY'),'Human movement
 assert.ok(presenceCameraSource.includes("document.addEventListener('click',onClick,true)"),'Written navigation and button clicks are captured as human outputs')
 assert.ok(presenceCameraSource.includes("'weave:presence-output'"),'Presence outputs are emitted to the moving system')
 assert.ok(presenceCameraSource.includes("lastOutput?.type === 'action'"),'In-page actions create a camera focus movement')
+assert.ok(presenceCameraSource.includes('data-presence-rhythm'),'Presence Camera keeps a continuous breathing rhythm between interactions')
 assert.ok(worldBackdropPresenceSource.includes('usePresenceCamera'),'Persistent WEAVE environment follows camera scene state')
 assert.ok(worldBackdropPresenceSource.includes('rotateY'),'World background uses camera yaw')
 assert.ok(worldBackdropPresenceSource.includes('rotateX'),'World background uses camera pitch')
@@ -600,5 +604,40 @@ assert.ok(sidebarInfrastructureSource.includes('href: "/admin/infrastructure"'),
 assert.ok(devWorkshopInfrastructureSource.includes("fetch('/api/admin/infrastructure'"),'EIGHT Deploy Center uses the shared infrastructure deployment authority')
 assert.ok(devWorkshopInfrastructureSource.includes('Deploy Preview'),'EIGHT Deploy Center no longer labels a zero-traffic build as live production')
 assert.ok(!devWorkshopInfrastructureSource.includes('> Push Live</Button>'),'Old misleading direct Push Live control is removed')
+
+const readableCssSource=fs.readFileSync(path.join(root,'app/globals.css'),'utf8')
+const recordPageSource=fs.readFileSync(path.join(root,'app/(app)/ledger/page.tsx'),'utf8')
+const premiumDjSource=fs.readFileSync(path.join(root,'components/system-switch/client-premium-dj.tsx'),'utf8')
+const clientSystemSwitchPageSource=fs.readFileSync(path.join(root,'app/client/system-switch/page.tsx'),'utf8')
+const adminBuildCatalogApiSource=fs.readFileSync(path.join(root,'app/api/admin/client-build-catalog/route.ts'),'utf8')
+const adminBuildCatalogPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/client-build-catalog/page.tsx'),'utf8')
+const adminClientDepositsApiSource=fs.readFileSync(path.join(root,'app/api/admin/client-deposits/route.ts'),'utf8')
+const adminClientDepositsPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/client-deposits/page.tsx'),'utf8')
+assert.ok(readableCssSource.includes('font-size: 17px'),'WEAVE base reading scale is larger')
+assert.ok(readableCssSource.includes('[class~="text-[10px]"]'),'Dense 10px labels receive a readable minimum size')
+assert.ok(recordPageSource.includes('isInitialized'),'Record waits for WEAVE auth initialization')
+assert.ok(recordPageSource.includes("headers: { Authorization: \`Bearer \${token}\` }"),'Record uses the initialized WEAVE session token')
+assert.ok(premiumDjSource.includes("weave:personal-dj"),'Premium Client DJ can take local sound priority')
+assert.ok(djPlayerSource.includes("window.addEventListener('weave:personal-dj'"),'Platform DJ yields while Premium personal DJ is active')
+assert.ok(enterpriseSystemSwitchSource.includes("premium_dj_enabled:fileFolderTier==='premium'"),'Only Premium File Folders receive the personal DJ capability')
+assert.ok(clientSystemSwitchPageSource.includes('<ClientPremiumDJ'),'Premium DJ is mounted inside the Client File Folder')
+assert.ok(adminBuildCatalogApiSource.includes("user.role !== 'admin'"),'Client build catalog updates are Administration-only')
+assert.ok(adminBuildCatalogPageSource.includes('Client Build Catalog'),'Administration can manage Client build pricing')
+assert.ok(sidebarInfrastructureSource.includes('/admin/client-build-catalog'),'Administration sidebar exposes Client Build Catalog')
+assert.ok(adminClientDepositsApiSource.includes("u.role='client'"),'Client deposit queue is restricted to Client funding requests')
+assert.ok(adminClientDepositsPageSource.includes('Client Deposit Requests'),'Administration has a dedicated Client deposit queue')
+assert.ok(sidebarInfrastructureSource.includes('/admin/client-deposits'),'Administration sidebar exposes Client deposits')
+for(const file of [
+ 'components/system-switch/client-premium-dj.tsx',
+ 'app/api/admin/client-build-catalog/route.ts',
+ 'app/(app)/admin/client-build-catalog/page.tsx',
+ 'app/api/admin/client-deposits/route.ts',
+ 'app/(app)/admin/client-deposits/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' post-deploy syntax/transpile check')
+}
 
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
