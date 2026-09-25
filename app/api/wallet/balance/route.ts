@@ -1,63 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-
-// Platform admin ID (hardcoded)
-const PLATFORM_ADMIN_ID = 'be4f0618-d666-4e13-ae8f-13c986784ff7'
-
-// Extract user ID from token (format: token_{userId}_{timestamp} or ssb_{userId}_{timestamp})
-function getUserIdFromToken(token: string): string | null {
-  if (!token) return null
-  const knownPrefixes = ['token_', 'ssb_']
-  const matchedPrefix = knownPrefixes.find(p => token.startsWith(p))
-  if (!matchedPrefix) return null
-  const rest = token.slice(matchedPrefix.length)
-  const lastUnderscore = rest.lastIndexOf('_')
-  return lastUnderscore !== -1 ? rest.slice(0, lastUnderscore) : rest
-}
+import { getAuthUser } from '@/lib/auth-api'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get token from Authorization header
-    const authHeader = request.headers.get('authorization')
-    const token = authHeader?.replace('Bearer ', '')
-    
-    if (!token) {
+    const user = await getAuthUser(request)
+    if (!user) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
     }
-    
-    const userId = getUserIdFromToken(token)
-    if (!userId) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 })
-    }
-    
-    // Skip session check for platform admin (fallback login doesn't create session)
-    if (userId !== PLATFORM_ADMIN_ID) {
-      const sessions = await sql`
-        SELECT user_id FROM sessions WHERE token = ${token} AND expires_at > NOW()
-      `
-      
-      if (sessions.length === 0) {
-        return NextResponse.json({ success: false, error: 'Session expired' }, { status: 401 })
-      }
-    }
-    
-    // Get wallet balance
+
     const wallets = await sql`
-      SELECT balance_trx, play_balance FROM wallets WHERE user_id = ${userId}::uuid
+      SELECT balance_trx, play_balance
+      FROM wallets
+      WHERE user_id = ${user.id}::uuid
+      ORDER BY is_primary DESC NULLS LAST, created_at ASC
+      LIMIT 1
     `
-    
-    if (wallets.length === 0) {
-      return NextResponse.json({ 
-        success: true, 
-        flameCoinBalance: 0, 
-        playTrx: 0 
-      })
-    }
-    
+
+    const wallet = wallets[0]
     return NextResponse.json({
       success: true,
-      flameCoinBalance: parseFloat(wallets[0].balance_trx) || 0,
-      playTrx: parseFloat(wallets[0].play_balance) || 0,
+      flameCoinBalance: Number(wallet?.balance_trx || 0),
+      playFlameCoin: Number(wallet?.play_balance || 0),
+      currency: 'Flame Coin',
+      peg: '1 Flame Coin = 1 TRX',
     })
   } catch (error) {
     console.error('Wallet balance error:', error)
