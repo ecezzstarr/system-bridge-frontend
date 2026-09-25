@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
 
 const PUBLIC_CLIENT_PATHS = new Set(['/client', '/client/login', '/client/register'])
 
-export function ClientRouteGuard({ children }: { children: React.ReactNode }) {
+export function ClientRouteGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const { user, isInitialized } = useAuth()
