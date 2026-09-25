@@ -42,7 +42,7 @@ export default function CompanyLoopsPage() {
     <main className="min-h-screen bg-slate-950 text-white p-4 lg:p-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
-          <Link href="/dashboard" className="text-xs text-cyan-400 hover:text-cyan-300">← Dashboard</Link>
+          <Link href="/dashboard" className="text-xs text-cyan-400 hover:text-cyan-300">← World</Link>
           <p className="mt-5 text-xs uppercase tracking-[0.2em] text-cyan-400">Weave of Presence</p>
           <h1 className="mt-2 text-3xl font-bold">Company Loops</h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-400">Company events made available to your position. A Loop is opened through actual participation, Administration recognition, and the agreement governing that event.</p>
