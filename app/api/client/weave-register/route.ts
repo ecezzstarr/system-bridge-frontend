@@ -3,6 +3,7 @@ import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { randomBytes } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
+import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,6 +68,21 @@ export async function POST(request: NextRequest) {
       UPDATE file_folders
       SET status = 'registered', client_id = ${user.id}, registered_at = NOW()
       WHERE id = ${folder.id}
+    `
+
+    // A Client login does not create a File Folder by itself.
+    // It may only claim a File Folder that the Bridge/company movement already provisioned.
+    await ensureClientFileFolderSchema(sql)
+    await sql`
+      UPDATE client_file_folders
+      SET
+        client_id = ${user.id}::uuid,
+        client_name = ${name},
+        status = 'active',
+        claimed_at = COALESCE(claimed_at, NOW()),
+        updated_at = NOW()
+      WHERE file_number = ${fileNumber}
+        AND client_id IS NULL
     `
 
     const token = `ssb_${randomBytes(32).toString('base64url')}`
