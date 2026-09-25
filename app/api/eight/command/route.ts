@@ -282,6 +282,10 @@ Quick Commands:
 // GET to view transaction logs from database (admin only)
 export async function GET(request: NextRequest) {
   try {
+    const authUser=await getAuthUser(request)
+    if (!authUser) return NextResponse.json({ error:'Unauthorized' },{ status:401 })
+    if (authUser.role!=='admin') return NextResponse.json({ error:'Forbidden' },{ status:403 })
+
     const transactions = await sql`
       SELECT id, type, amount, currency, status, tx_hash, from_address, to_address, description, metadata, created_at, completed_at
       FROM transactions
