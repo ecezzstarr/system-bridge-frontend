@@ -190,6 +190,10 @@ async function seedFileFolderWorld(sql: any) {
     ['campaign_kit', 'Campaign System Kit', 'business', 'Build components for structured campaigns, audience movement, response records and follow-up.', 180],
     ['learning_lab_kit', 'Learning Lab Kit', 'library', 'Build components for lessons, progress, exercises and a persistent learning environment.', 150],
     ['operations_suite_kit', 'Operations Suite Kit', 'formation', 'A larger working kit for teams, tasks, approvals, records and recurring operating movement.', 650],
+    ['mobile_app_kit', 'Mobile Service App Kit', 'technology', 'Components for a Client-facing mobile service experience with account, request and notification movement.', 900],
+    ['intelligence_lab_kit', 'Intelligence Lab Kit', 'technology', 'Components for structured AI-assisted research, analysis, records and reusable intelligence.', 780],
+    ['market_network_kit', 'Marketplace Network Kit', 'business', 'Components for multi-offer marketplace movement, sellers, buyers, orders and records.', 1200],
+    ['enterprise_core_kit', 'Enterprise Core Kit', 'formation', 'High-capacity components for a long-form enterprise operating system with multiple functions and participants.', 1800],
   ]
 
   for (const item of items) {
