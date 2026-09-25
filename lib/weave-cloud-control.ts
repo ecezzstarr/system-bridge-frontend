@@ -23,9 +23,9 @@ export function cloudBuildControlStatus(){
 
 async function cloudHeaders(){
   const auth=new GoogleAuth({scopes:['https://www.googleapis.com/auth/cloud-platform']})
-  const client=await auth.getClient()
-  const headers=await client.getRequestHeaders()
-  return {'Content-Type':'application/json',...headers}
+  const token=await auth.getAccessToken()
+  if(!token) throw new Error('Google Cloud service-account access token unavailable')
+  return {'Content-Type':'application/json','Authorization':`Bearer ${token}`}
 }
 
 export async function triggerWeaveCloudBuild(action:'preview'|'promote'){
