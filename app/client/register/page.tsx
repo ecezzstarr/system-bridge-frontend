@@ -141,7 +141,7 @@ function ClientRegisterContent() {
                 <div className="relative">
                   <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
-                    placeholder="WEAVE-2026-XXXX-XXXX"
+                    placeholder="WEAVE-583104927361"
                     value={fileNumber}
                     onChange={(e) => setFileNumber(e.target.value.toUpperCase())}
                     className="pl-10 bg-slate-800/50 border-slate-700 text-white font-mono text-sm h-12 focus:border-blue-500 transition-all"
@@ -256,7 +256,7 @@ function ClientRegisterContent() {
         </CardContent>
       </Card>
 
-      <p className="mt-12 text-[10px] text-slate-600 font-black uppercase tracking-[0.4em]">© 2026 WEAVE PROCOL · OMNI-PRESENCE</p>
+      <p className="mt-12 text-[10px] text-slate-600 font-black uppercase tracking-[0.4em]">© 2026 WEAVE of Presence · System Switch · Bridge Radiance</p>
     </div>
   )
 }
