@@ -16,13 +16,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'OPay withdrawal is reserved for admin, agent, and bridger accounts. This account is not enabled for OPay withdrawal.' }, { status: 403 })
     }
 
-    const { userId, amount, bankName, accountNumber, accountName } = await request.json()
+    const { amount, bankName, accountNumber, accountName } = await request.json()
+    const userId = authedUser.id
 
-    if (authedUser.id !== userId) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 })
-    }
-
-    if (!userId || !amount || !bankName || !accountNumber || !accountName) {
+    if (!amount || !bankName || !accountNumber || !accountName) {
       return NextResponse.json({ success: false, error: 'Missing required fields: amount, bankName, accountNumber, accountName' }, { status: 400 })
     }
 
