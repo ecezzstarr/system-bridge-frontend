@@ -15,7 +15,7 @@ const ROLE_COPY = {
 } as const
 
 const HIDDEN_PATHS = ['/login', '/register', '/client/login', '/client/register', '/event', '/client/event', '/admin/flame-event']
-const DASHBOARD_SIGNAL_OWNED = new Set(['/dashboard', '/bridger/dashboard', '/agent/dashboard', '/admin/dashboard'])
+const DASHBOARD_PATHS = new Set(['/dashboard', '/bridger/dashboard', '/agent/dashboard', '/admin/dashboard', '/client/dashboard'])
 
 export function FlameEventAd() {
   const { user, isInitialized } = useAuth()
@@ -62,7 +62,7 @@ export function FlameEventAd() {
     !event.adEnabled ||
     effectiveStatus === 'closed' ||
     !role ||
-    (effectiveStatus === 'active' && DASHBOARD_SIGNAL_OWNED.has(pathname))
+    DASHBOARD_PATHS.has(pathname)
   ) return null
 
   const copy = ROLE_COPY[role as keyof typeof ROLE_COPY]
