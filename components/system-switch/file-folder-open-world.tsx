@@ -14,7 +14,9 @@ import {
   Store,
   Workflow,
   CheckCircle2,
+  Zap,
 } from 'lucide-react'
+import Link from 'next/link'
 import { getClientToken } from '@/lib/client-auth'
 
 type Props = {
@@ -122,6 +124,8 @@ export default function FileFolderOpenWorld({
   }
 
   const activeBuilds = (world?.builds || []).filter((build: any) => build.status === 'building')
+  const buildFunding = world?.buildFunding || null
+  const fundingGateLocked = Boolean(buildFunding && !buildFunding.publicDoorUnlocked && world?.customerDoor?.formation_status === 'funding_gate')
   const completedBuilds = (world?.builds || []).filter((build: any) => build.status === 'complete')
 
   return (
@@ -134,7 +138,7 @@ export default function FileFolderOpenWorld({
             <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
             <p className="mt-2 text-[10px] font-mono text-slate-500">{clientName} · {fileNumber}</p>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+          <div className="grid grid-cols-2 gap-2 text-center text-[10px] md:grid-cols-4">
             <div className="rounded-xl border border-amber-300/15 bg-amber-400/5 px-4 py-3">
               <p className="uppercase tracking-wider text-amber-300">Building now</p>
               <p className="mt-1 text-xl font-black text-white">{activeBuilds.length}</p>
@@ -148,6 +152,11 @@ export default function FileFolderOpenWorld({
               <p className="mt-1 text-xs font-black uppercase text-white">{world?.customerDoor?.formation_status || 'forming'}</p>
               <p className="mt-1 text-[8px] text-slate-500">{world?.customerDoor?.active_offer_count || 0} public offers</p>
             </div>
+            <div className="rounded-xl border border-cyan-300/15 bg-cyan-400/5 px-4 py-3">
+              <p className="uppercase tracking-wider text-cyan-300">Build Power</p>
+              <p className="mt-1 text-xl font-black text-white">×{Number(buildFunding?.buildSpeedMultiplier || 1).toFixed(2)}</p>
+              <p className="mt-1 text-[8px] text-slate-500">{Number(buildFunding?.totalParticipationFlameCoin || 0).toLocaleString()} Flame Coin</p>
+            </div>
           </div>
         </div>
         <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-[10px] leading-5 text-slate-400">
@@ -157,6 +166,22 @@ export default function FileFolderOpenWorld({
               ? 'Formation guarantee: no build is running yet, but buildable blueprints are available now.'
               : 'No buildable blueprint is currently published.'}
         </div>
+        {buildFunding && !buildFunding.grandfathered && (
+          <div className={`mt-3 rounded-xl border px-4 py-3 text-[10px] leading-5 ${buildFunding.publicDoorUnlocked ? 'border-emerald-300/15 bg-emerald-400/5 text-emerald-200' : 'border-amber-300/20 bg-amber-400/5 text-amber-100'}`}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <span className="font-black uppercase tracking-wider">File Folder funding · </span>
+                {Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} Flame Coin for the first public door.
+                {!buildFunding.publicDoorUnlocked && <> Add {Number(buildFunding.requiredToOpenPublicDoorFlameCoin || 0).toLocaleString()} more Flame Coin before the Customer Door can open and new construction can continue after that gate.</>}
+              </div>
+              {!readOnly && !buildFunding.publicDoorUnlocked && (
+                <Link href="/client/deposit" className="inline-flex items-center gap-1.5 rounded-full bg-amber-300 px-3 py-1.5 font-black uppercase tracking-wider text-slate-950">
+                  <Zap className="h-3 w-3"/> Add Flame Credits
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="grid min-h-[650px] lg:grid-cols-[250px_1fr]">
