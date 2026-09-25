@@ -556,6 +556,8 @@ assert.ok(originSystemsApiSource.includes('getInfrastructureRegistry'),'Origin S
 assert.ok(!originSystemsApiSource.includes('initializeOriginSystem'),'Origin Systems no longer depends on an in-memory initialization ledger')
 assert.ok(rootLayoutPresenceSource.includes('<DivineShieldGate>'),'Divine Shield wraps the live application at root')
 assert.ok(divineShieldStatusSource.includes("user?.role==='admin'"),'Only authenticated Administration receives shield bypass')
+assert.ok(divineShieldStatusSource.includes('sessionValid:bearerToken ? tokenRows.length>0 : true'),'Divine Shield status reports whether the presented WEAVE session remains valid')
+assert.ok(divineShieldGateSource.includes('!active && token && !sessionValid'),'Evacuated stale local sessions are cleared even after maintenance is released')
 assert.ok(!divineShieldGateSource.includes("user?.role==='admin'"),'Browser-stored role cannot bypass Divine Shield')
 assert.ok(divineShieldGateSource.includes("params.get('administration')==='1'"),'Only the explicit Administration maintenance entrance can reveal login while the shield is raised')
 assert.ok(divineShieldGateSource.includes("fetch('/api/divine-shield/evacuate'"),'Connected non-admin browsers revoke their server session during evacuation')
