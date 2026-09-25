@@ -53,7 +53,7 @@ export default function ClientLoopsPage() {
   return <main className="min-h-screen bg-slate-950 text-white p-4 lg:p-8">
     <div className="mx-auto max-w-6xl">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
-        <div><Link href="/client/dashboard" className="text-xs text-cyan-400 inline-flex items-center gap-2 mb-3"><ArrowLeft className="w-3 h-3"/> Client Dashboard</Link><h1 className="text-2xl lg:text-3xl font-bold">Client Position</h1><p className="mt-2 text-sm text-slate-400">{client?.business_name || client?.name} · System Switch → Interaction in Motion → Company Loops</p></div>
+        <div><Link href="/client/dashboard" className="text-xs text-cyan-400 inline-flex items-center gap-2 mb-3"><ArrowLeft className="w-3 h-3"/> Client World</Link><h1 className="text-2xl lg:text-3xl font-bold">Client Position</h1><p className="mt-2 text-sm text-slate-400">{client?.business_name || client?.name} · System Switch → Interaction in Motion → Company Loops</p></div>
         <div className="rounded-lg border border-slate-800 bg-slate-900 px-4 py-3"><p className="text-[10px] uppercase tracking-wider text-slate-500">Document status</p><p className={`text-sm font-semibold ${requiredPending?'text-amber-400':'text-green-400'}`}>{requiredPending?`${requiredPending} required to review`:'All required documents current'}</p></div>
       </div>
 
