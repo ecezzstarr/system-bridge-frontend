@@ -216,7 +216,7 @@ export default function WeavePage() {
                   filteredFolders.map((folder) => (
                     <button
                       key={folder.id}
-                      onClick={() => router.push(`/bridge/${folder.bridger_id}?pid=${folder.id}`)}
+                      onClick={() => router.push(`/weave/file-folder/${encodeURIComponent(folder.file_number)}`)}
                       className="w-full text-left bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/30 p-4 rounded-2xl transition-all group"
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -241,7 +241,7 @@ export default function WeavePage() {
 
               <div className="mt-6 pt-6 border-t border-slate-800">
                 <p className="text-[10px] text-slate-500 leading-relaxed italic">
-                  Select a Client Player&apos;s File Folder to enter their System Switch environment as support. The Client remains the player position.
+                  Select a Client Player&apos;s File Folder to travel into the same persistent Main File Folder world through Bridge Plaza. The Client remains the player position.
                 </p>
               </div>
             </div>
