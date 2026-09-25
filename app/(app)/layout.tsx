@@ -13,7 +13,6 @@ import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Toaster } from '@/components/ui/sonner'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
-import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
@@ -112,7 +111,6 @@ export default function AppLayout({
 
   return (
     <div className="relative flex min-h-screen overflow-hidden bg-slate-950">
-      <WeaveWorldEnvironment />
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
         <AppSidebar user={user as any} />
       </div>
