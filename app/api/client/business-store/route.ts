@@ -117,11 +117,13 @@ export async function POST(request: NextRequest) {
     LIMIT 1
   `
 
+  const doorActive = Boolean(doorSystem)
+
   await ctx.sql`
     UPDATE client_business_stores
     SET
-      formation_status=CASE WHEN ${Boolean(false)} THEN formation_status ELSE CASE WHEN ${'${Boolean(doorSystem)}'} THEN 'selling' ELSE formation_status END END,
-      public_opened_at=CASE WHEN ${'${Boolean(doorSystem)}'} THEN COALESCE(public_opened_at,NOW()) ELSE public_opened_at END,
+      formation_status=CASE WHEN ${doorActive} THEN 'selling' ELSE formation_status END,
+      public_opened_at=CASE WHEN ${doorActive} THEN COALESCE(public_opened_at,NOW()) ELSE public_opened_at END,
       first_offer_published_at=COALESCE(first_offer_published_at,NOW()),
       enabled=true,
       updated_at=NOW()
