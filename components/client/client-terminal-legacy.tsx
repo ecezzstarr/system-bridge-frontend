@@ -3,29 +3,29 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, ArrowRight, ArrowUpRight, ArrowDownLeft, Phone, Trophy, Globe, Zap, Shield, Wallet, Lock, Sparkles } from 'lucide-react'
+import { MessageCircle, ArrowRight, ArrowUpRight, ArrowDownLeft, Trophy, Globe, Zap, Shield, Wallet, Lock, Sparkles } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
-import { openWhatsAppWithNumber, SUPPORT_NUMBERS, WhatsAppButton } from '@/components/external-apps-nav'
 
 interface SupportPosition {
   position: string
   agent_name: string
   icon: string
   description: string
-  whatsapp?: string
 }
 
 const SUPPORT_POSITIONS: SupportPosition[] = [
-  { position: 'mandate', agent_name: 'Mandate Officer', icon: '📋', description: 'Mandate', whatsapp: SUPPORT_NUMBERS.mandate },
-  { position: 'forensic', agent_name: 'Forensic Expert', icon: '🔍', description: 'Forensic', whatsapp: SUPPORT_NUMBERS.forensic },
-  { position: 'lawyer', agent_name: 'Legal Counsel', icon: '⚖️', description: 'Legal', whatsapp: SUPPORT_NUMBERS.legal },
-  { position: 'admin', agent_name: 'Administrator', icon: '👤', description: 'Admin', whatsapp: SUPPORT_NUMBERS.admin },
+  { position: 'mandate', agent_name: 'Mandate Officer', icon: '📋', description: 'Mandate' },
+  { position: 'forensic', agent_name: 'Forensic Expert', icon: '🔍', description: 'Forensic' },
+  { position: 'lawyer', agent_name: 'Legal Counsel', icon: '⚖️', description: 'Legal' },
+  { position: 'admin', agent_name: 'Administrator', icon: '👤', description: 'Admin' },
 ]
 
 export default function LegacyClientDashboard() {
   const { user, isLoading: authLoading } = useAuth()
   const [bridger, setBridger] = useState<{ name: string; whatsapp_number?: string } | null>(null)
   const [vaultBalance, setVaultBalance] = useState(0)
+  const [siblingsFundsBalance, setSiblingsFundsBalance] = useState(0)
+  const [mainWalletBalance, setMainWalletBalance] = useState(0)
   const [isLoadingVault, setIsLoadingVault] = useState(true)
 
   useEffect(() => {
@@ -53,7 +53,11 @@ export default function LegacyClientDashboard() {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
         const data = await res.json()
-        if (data.success) setVaultBalance(data.flameCoinBalance || 0)
+        if (data.success) {
+          setVaultBalance(data.clientMoney?.vault?.balance || 0)
+          setSiblingsFundsBalance(data.clientMoney?.siblingsFundsWallet?.flameCoin || 0)
+          setMainWalletBalance(data.clientMoney?.mainClientWallet?.flameCoin ?? data.flameCoinBalance ?? 0)
+        }
       } catch (error) {
         console.error('Error fetching vault balance:', error)
       } finally {
@@ -101,9 +105,9 @@ export default function LegacyClientDashboard() {
             <p className="text-4xl md:text-5xl font-black text-white">
               {isLoadingVault ? '—' : vaultBalance.toFixed(2)} <span className="text-lg font-bold text-slate-500">Flame Coin</span>
             </p>
-            <p className="text-xs text-slate-500 mt-2">Your Vault holds WEAVE Flame Coin. 1 Flame Coin carries the value of 1 TRX inside WEAVE.</p>
+            <p className="text-xs text-slate-500 mt-2">Administration can credit Flame Coin into your Client Vault. Siblings Funds and your Main Client Wallet remain separate.</p><div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-xl border border-violet-400/15 bg-violet-400/5 p-3"><p className="text-[9px] uppercase tracking-wider text-violet-300">Siblings Funds Wallet</p><p className="mt-1 text-lg font-bold text-white">{isLoadingVault ? '—' : siblingsFundsBalance.toFixed(2)} <span className="text-[10px] text-slate-500">Flame Coin</span></p></div><div className="rounded-xl border border-sky-400/15 bg-sky-400/5 p-3"><p className="text-[9px] uppercase tracking-wider text-sky-300">Main Client Wallet</p><p className="mt-1 text-lg font-bold text-white">{isLoadingVault ? '—' : mainWalletBalance.toFixed(2)} <span className="text-[10px] text-slate-500">Flame Coin</span></p></div></div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-2"><p className="text-[9px] font-black uppercase tracking-widest text-sky-300">Main Client Wallet</p><div className="flex gap-3">
             <Link href="/client/deposit">
               <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-green-500 hover:text-slate-950 hover:border-green-500 font-bold text-xs uppercase tracking-widest h-12 rounded-xl px-6">
                 <ArrowDownLeft className="mr-2 h-4 w-4" /> Deposit
@@ -114,7 +118,7 @@ export default function LegacyClientDashboard() {
                 <ArrowUpRight className="mr-2 h-4 w-4" /> Withdraw
               </Button>
             </Link>
-          </div>
+          </div></div>
         </div>
       </div>
 
@@ -171,7 +175,7 @@ export default function LegacyClientDashboard() {
                 <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Play</span>
               </div>
               <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Casino</h3>
-              <p className="text-sm text-slate-400 mb-6">Test your luck with your Vault balance.</p>
+              <p className="text-sm text-slate-400 mb-6">Test your luck with your Main Client Wallet balance.</p>
               <div className="flex items-center gap-2 text-purple-400 font-bold text-xs uppercase tracking-widest">
                 Enter Casino <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -193,14 +197,6 @@ export default function LegacyClientDashboard() {
                 <p className="text-[10px] font-bold text-slate-300 truncate">{pos.description}</p>
               </div>
               <div className="flex gap-1 flex-shrink-0">
-                {pos.whatsapp && (
-                  <button
-                    onClick={() => openWhatsAppWithNumber(pos.whatsapp!, `Hi, I need assistance from ${pos.description}`)}
-                    className="w-6 h-6 rounded-full bg-green-500/5 hover:bg-green-500/10 border border-green-500/10 flex items-center justify-center transition-colors"
-                  >
-                    <Phone className="h-3 w-3 text-green-500" />
-                  </button>
-                )}
                 <Link href={`/client/chat/${pos.position}`}>
                   <button className="w-6 h-6 rounded-full bg-white/5 hover:bg-cyan-500/10 border border-white/10 flex items-center justify-center transition-colors">
                     <MessageCircle className="h-3 w-3 text-slate-400" />
@@ -237,9 +233,7 @@ export default function LegacyClientDashboard() {
       {/* Footer */}
       <div className="pt-2">
         <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-slate-900/50 backdrop-blur-2xl border border-white/5 p-6 md:px-10 md:py-6 rounded-[2rem]">
-          <div className="flex gap-4">
-            <WhatsAppButton />
-          </div>
+          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">WEAVE internal support only</div>
           <div className="flex items-center gap-3 px-6 py-2.5 bg-slate-950 border border-white/5 rounded-full shadow-inner">
             <div className="relative flex h-2 w-2">
               <div className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></div>

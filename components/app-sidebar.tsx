@@ -18,13 +18,11 @@ import {
   Shield,
   Globe,
   Store,
-  TrendingUp,
   DollarSign,
   Settings,
   LogOut,
   ShieldCheck,
   BookOpen,
-  ReceiptText,
   Briefcase,
   Trophy,
   CreditCard,
@@ -41,6 +39,7 @@ import {
   Gamepad2,
   Dices,
   Crown,
+  Cloud,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -62,8 +61,6 @@ const navigation = [
     { name: "Administration Functions", href: "/admin/functions", icon: ShieldCheck, adminOnly: true },
     { name: "Holding", href: "/wallet", icon: Wallet },
     { name: "Record", href: "/ledger", icon: BookOpen },
-    { name: "Movements", href: "/transactions", icon: ReceiptText },
-    { name: "Yield", href: "/earnings", icon: TrendingUp },
     { name: "Reserve", href: "/fund-wall", icon: DollarSign, creatorOnly: true },
   ]},
 
@@ -103,6 +100,7 @@ const navigation = [
           { name: "Company Loops", href: "/company/loops", icon: GitBranch },
       { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
 { name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
+    { name: "Infrastructure", href: "/admin/infrastructure", icon: Cloud, adminOnly: true },
     { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
     { name: "Ad Workshop", href: "/admin/ad-workshop", icon: Megaphone, adminOnly: true },
     { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },

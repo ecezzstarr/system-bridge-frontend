@@ -364,33 +364,6 @@ class ApiClient {
     })
   }
 
-  // Earnings
-  async getEarnings(params?: { category?: string; period?: string; limit?: number }): Promise<ApiResponse<{
-    earnings: Array<{
-      id: string
-      type: string
-      amount: number
-      description?: string | null
-      status: string
-      createdAt: string
-    }>
-    byCategory: Record<string, number>
-    byType: Record<string, number>
-    total: number
-    totalEarnings: number
-    pendingEarnings: number
-    thisWeek: number
-    withdrawnEarnings: number
-  }>> {
-    const searchParams = new URLSearchParams()
-    if (params?.category) searchParams.set('category', params.category)
-    if (params?.period) searchParams.set('period', params.period)
-    if (params?.limit) searchParams.set('limit', String(params.limit))
-
-    const query = searchParams.toString()
-    return this.request(`/earnings${query ? `?${query}` : ''}`)
-  }
-
   // Campaigns (Fund Wall)
   async getCampaigns(params?: { status?: string; creatorId?: string }): Promise<ApiResponse<{ campaigns: unknown[] }>> {
     const searchParams = new URLSearchParams()

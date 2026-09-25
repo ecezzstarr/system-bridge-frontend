@@ -180,7 +180,7 @@ export default function AdminHubPage() {
         const [clientId, pos] = selected.id.split('::')
         await fetch('/api/client/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
           body: JSON.stringify({
             clientId, clientName: selected.name, position: pos, content, senderType: 'admin',
             ...(isAgent ? { agentId: user.id } : {}),
@@ -190,7 +190,7 @@ export default function AdminHubPage() {
         const roomId = [user.id, selected.id].sort().join('-')
         await fetch('/api/lounge/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
           body: JSON.stringify({
             sender: user.name, senderRole: user.role, content, userId: user.id,
             roomType: 'private', roomId, recipientId: selected.id, recipientName: selected.name,

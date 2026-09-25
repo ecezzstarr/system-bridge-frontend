@@ -62,7 +62,8 @@ export default function OriginSystemsPanel() {
 
   const fetchSystems = async () => {
     try {
-      const response = await fetch('/api/origin/systems')
+      const token=localStorage.getItem('ssb_auth_token')
+      const response = await fetch('/api/origin/systems', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await response.json()
       setSystems(data.systems || [])
     } catch (error) {

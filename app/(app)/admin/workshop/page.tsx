@@ -4,9 +4,15 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { GitBranch, Megaphone, Radio, Sparkles } from 'lucide-react'
+import { Cloud, GitBranch, Megaphone, Radio, Sparkles } from 'lucide-react'
 
 const workshops = [
+  {
+    href: '/admin/infrastructure',
+    title: 'Infrastructure Workshop',
+    description: 'Operate Origin systems, Cloud Run health, EIGHT web access, deployment authority and Divine Shield.',
+    icon: Cloud,
+  },
   {
     href: '/admin/ad-workshop',
     title: 'Ad Workshop',

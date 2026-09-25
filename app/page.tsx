@@ -17,7 +17,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
-import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 
 const WeaveHero3D = dynamic(
   () => import('@/components/weave-hero-3d').then(m => m.WeaveHero3D),
@@ -54,8 +53,6 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#020815] text-white">
-      <WeaveWorldEnvironment soft />
-
       <div className="relative z-10 min-h-screen">
         <nav className="sticky top-0 z-50 border-b border-sky-300/10 bg-[#03101d]/76 px-3 py-2.5 backdrop-blur-2xl sm:px-5">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">

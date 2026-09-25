@@ -1,28 +1,28 @@
-import { NextResponse } from 'next/server'
-import { getSession } from 'next-auth/react'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/auth-api'
 import { getSql } from '@/lib/db'
 
-export async function GET(request: Request) {
+async function requireBridger(request: NextRequest) {
+  const user = await getAuthUser(request)
+  if (!user) return { user: null, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  if (user.role !== 'bridger') return { user: null, response: NextResponse.json({ error: 'Bridger access required' }, { status: 403 }) }
+  return { user, response: null }
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const session = await getSession({ req: request })
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireBridger(request)
+    if (auth.response) return auth.response
 
     const sql = getSql()
-    
-    // Get bridger profile or create if doesn't exist
-    let bridger = await sql`
-      SELECT * FROM bridger_profiles WHERE user_id = ${session.user.id}::uuid
+    const bridger = await sql`
+      SELECT * FROM bridger_profiles
+      WHERE user_id = ${auth.user!.id}::uuid
+      LIMIT 1
     `
-    
-    if (bridger.length === 0) {
-      const result = await sql`
-        INSERT INTO bridger_profiles (user_id, commission_rate, referrals, total_earnings)
-        VALUES (${session.user.id}::uuid, 0.1, 0, 0)
-        RETURNING *
-      `
-      bridger = result
+
+    if (!bridger[0]) {
+      return NextResponse.json({ error: 'Bridger profile not found' }, { status: 404 })
     }
 
     return NextResponse.json({ success: true, data: bridger[0] })
@@ -32,26 +32,11 @@ export async function GET(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
-  try {
-    const session = await getSession({ req: request })
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { commission_rate } = await request.json()
-    const sql = getSql()
-
-    const result = await sql`
-      UPDATE bridger_profiles 
-      SET commission_rate = ${commission_rate}, updated_at = NOW()
-      WHERE user_id = ${session.user.id}::uuid
-      RETURNING *
-    `
-
-    return NextResponse.json({ success: true, data: result[0] })
-  } catch (error) {
-    console.error('[v0] Update bridger error:', error)
-    return NextResponse.json({ error: 'Failed to update bridger profile' }, { status: 500 })
-  }
+export async function PUT(request: NextRequest) {
+  const auth = await requireBridger(request)
+  if (auth.response) return auth.response
+  return NextResponse.json(
+    { error: 'Bridger profile terms and commission rates are controlled by Administration.' },
+    { status: 403 }
+  )
 }

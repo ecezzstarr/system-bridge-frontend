@@ -3,9 +3,13 @@ import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { ensureBridgerReferralColumns } from '@/lib/bridger-referral-commission'
 import { validateDepartmentalCode, useDepartmentalCode, Department } from '@/lib/departmental-codes'
+import { getDivineShieldState } from '@/lib/weave-infrastructure'
 
 export async function POST(request: NextRequest) {
   try {
+    const shield=await getDivineShieldState()
+    if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
+
     const body = await request.json()
     const { 
       email, 

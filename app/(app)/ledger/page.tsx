@@ -23,7 +23,11 @@ export default function LedgerPage() {
   useEffect(() => {
     const fetchLedger = async () => {
       try {
-        const response = await fetch('/api/ledger')
+        const token = localStorage.getItem('ssb_auth_token')
+        const response = await fetch('/api/ledger', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          cache: 'no-store',
+        })
         const result = await response.json()
         if (result.success) {
           setData(result.data)
@@ -44,6 +48,12 @@ export default function LedgerPage() {
 
   return (
     <div className="space-y-8 p-8">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-sky-300">WEAVE Record</p>
+        <h1 className="mt-2 text-3xl font-black text-white">Record</h1>
+        <p className="mt-2 text-sm text-slate-400">Your preserved financial movement: available value, value held in escrow, and ledger entries recorded by WEAVE.</p>
+      </div>
+
       {/* Balance Summary */}
       {data?.balance && (
         <BalanceSummary

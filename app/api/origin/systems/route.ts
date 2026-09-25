@@ -1,24 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAllOriginSystems, initializeOriginSystem } from '@/lib/core/originTruthLedger'
+import { getInfrastructureRegistry } from '@/lib/weave-infrastructure'
+import { getAuthUser } from '@/lib/auth-api'
 
 export async function GET(request: NextRequest) {
   try {
-    // Initialize origin system on first call
-    initializeOriginSystem()
+    const authUser=await getAuthUser(request)
+    if (!authUser) return NextResponse.json({ success:false,error:'Unauthorized' },{ status:401 })
+    if (authUser.role!=='admin') return NextResponse.json({ success:false,error:'Forbidden' },{ status:403 })
 
-    // Get all systems from origin ledger
-    const systems = getAllOriginSystems()
+    const systems = await getInfrastructureRegistry()
 
     return NextResponse.json({
       success: true,
       systems: systems.map((sys) => ({
-        id: sys.id,
+        id: sys.system_key,
         name: sys.name,
-        createdAt: sys.createdAt,
-        deploymentType: sys.deploymentType,
-        domain: sys.domain,
-        wallet: sys.wallet,
-        status: sys.status,
+        createdAt: new Date(sys.created_at).getTime(),
+        deploymentType: sys.deployment_target,
+        domain: sys.public_url,
+        wallet: null,
+        status: sys.enabled ? 'active' : 'paused',
       })),
       totalSystems: systems.length,
     })

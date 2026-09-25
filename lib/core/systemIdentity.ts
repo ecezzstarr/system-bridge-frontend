@@ -11,7 +11,7 @@ export interface SystemIdentity {
   ORIGIN_SYSTEM_ID: string
   SYSTEM_NAME: string
   SYSTEM_ROLE: "origin" | "extension" | "arena" | "agent"
-  DEPLOYMENT_TARGET: "cloudrun" | "cloudrun" | "local" | "playstore"
+  DEPLOYMENT_TARGET: "cloudrun" | "local" | "playstore"
   CONNECTED_TO_ORIGIN: boolean
   SOURCE_ADMIN: string
   EIGHT_ENABLED: boolean
@@ -39,7 +39,7 @@ export const mainSystemIdentity: SystemIdentity = {
 export function createSystemIdentity(
   systemName: string,
   systemRole: "extension" | "arena" | "agent",
-  deploymentTarget: "vercel" | "cloudrun" | "local" | "playstore"
+  deploymentTarget: "cloudrun" | "local" | "playstore"
 ): SystemIdentity {
   return {
     SYSTEM_ID: `sys_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,

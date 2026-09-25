@@ -21,12 +21,12 @@ export default function ClientLoopsPage() {
 
   const load = async () => {
     const user = client
-    if (!user || !token) { window.location.href='/login'; return }
+    if (!user || !token) { window.location.href='/client/login'; return }
 
     try {
       const headers = { Authorization:`Bearer ${token}` }
       const [loopRes, docRes] = await Promise.all([fetch('/api/company-loops?role=client',{headers}), fetch('/api/client/agreements',{headers})])
-      if (loopRes.status===401 || docRes.status===401) { window.location.href='/login'; return }
+      if (loopRes.status===401 || docRes.status===401) { window.location.href='/client/login'; return }
       const loopData=await loopRes.json(); const docData=await docRes.json()
       if (!loopRes.ok || !docRes.ok) throw new Error('Unable to load client records')
       setLoops(loopData.loops||[]); setDocuments(docData.documents||[]); setAccepted(docData.accepted||[])

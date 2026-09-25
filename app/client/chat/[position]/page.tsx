@@ -25,6 +25,7 @@ interface ClientUser {
 }
 
 const POSITION_INFO: Record<string, { name: string; color: string; icon: string }> = {
+  bridger: { name: 'Your Bridger', color: 'from-emerald-500 to-cyan-500', icon: '🌉' },
   mandate: { name: 'Mandate Officer', color: 'from-blue-500 to-cyan-500', icon: '📋' },
   lawyer: { name: 'Legal Counsel', color: 'from-purple-500 to-pink-500', icon: '⚖️' },
   forensic: { name: 'Forensic Expert', color: 'from-orange-500 to-red-500', icon: '🔍' },

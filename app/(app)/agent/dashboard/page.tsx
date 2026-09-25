@@ -35,7 +35,7 @@ export default function AgentTerminal() {
 
   useEffect(() => {
     if (!user?.id) return
-    fetch(`/api/agent/salary?agentId=${user.id}`)
+    fetch('/api/agent/salary', { headers: getAuthHeaders() })
       .then(r => r.json())
       .then(d => { if (d.success) setYield(d) })
       .catch(() => {})

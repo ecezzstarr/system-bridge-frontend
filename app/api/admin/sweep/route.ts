@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sweepToCompanyWallet, getWalletBalance } from '@/lib/tron-wallet'
 import { processEightCommand } from '@/lib/eight-engine'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthUser } from '@/lib/auth-api'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
+    const user = await getAuthUser(request)
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Check if user is admin
-    const userRole = (session.user as any).role
-    if (userRole !== 'admin') {
+    if (user.role !== 'admin') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
@@ -26,9 +24,9 @@ export async function POST(request: NextRequest) {
 
     // Log sweep attempt with Eight
     const eightLog = await processEightCommand(
-      `Admin sweep initiated by ${session.user.email} for wallet ${walletAddress}`,
+      `Admin sweep initiated by ${user.email} for wallet ${walletAddress}`,
       { 
-        adminEmail: session.user.email,
+        adminEmail: user.email,
         walletAddress,
         tokenType,
         operation: 'wallet_sweep'
@@ -82,13 +80,12 @@ export async function POST(request: NextRequest) {
 // Get sweep history (from Eight logs)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
+    const user = await getAuthUser(request)
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userRole = (session.user as any).role
-    if (userRole !== 'admin') {
+    if (user.role !== 'admin') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 

@@ -5,6 +5,9 @@ import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
 import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
 import { WEAVE_PUBLIC_ORIGIN } from '@/lib/weave-origin'
+import { PresenceCameraProvider, PresenceCameraRootViewport } from '@/components/world/presence-camera'
+import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
+import { DivineShieldGate } from '@/components/divine-shield-gate'
 
 export const metadata: Metadata = {
   metadataBase: new URL(WEAVE_PUBLIC_ORIGIN),
@@ -38,9 +41,14 @@ export default function RootLayout({
       <body className="bg-slate-950 text-slate-100 overflow-x-hidden antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <AuthProvider>
-            <PWARegister />
-            {children}
-            <DJBroadcastPlayer />
+            <PresenceCameraProvider>
+              <WeaveWorldEnvironment />
+              <PWARegister />
+              <DivineShieldGate>
+                <PresenceCameraRootViewport>{children}</PresenceCameraRootViewport>
+                <DJBroadcastPlayer />
+              </DivineShieldGate>
+            </PresenceCameraProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -2,6 +2,7 @@ import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { getUserByUsername, updateUserLastLogin } from './db'
+import { getDivineShieldState } from './weave-infrastructure'
 
 declare module 'next-auth' {
   interface Session {
@@ -75,6 +76,12 @@ const providers: NextAuthOptions['providers'] = [
         
         if (!isValid) {
           console.log('[v0] Invalid password')
+          return null
+        }
+
+        const shield=await getDivineShieldState()
+        if(shield.active && user.role!=='admin') {
+          console.log('[auth] Divine Shield blocked non-admin credential session')
           return null
         }
 
