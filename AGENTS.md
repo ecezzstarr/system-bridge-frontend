@@ -1,7 +1,8 @@
 # WEAVE production source
 
 Canonical repository: ecezzstarr/system-bridge-frontend, branch main.
-Production: project ssbr-495208, region us-central1, service system-bridge-frontend.
+Official public domain: https://weavingsystem.online/
+Production infrastructure: project ssbr-495208, region us-central1, service system-bridge-frontend.
 
 This source was recovered from the user-selected working revision system-bridge-frontend-00460-lmz. See PRODUCTION.md for provenance. Older branches and older Git history are not deployment sources. Do not replace this tree with a historical branch, alternate repository, newer Cloud Run revision, or generated redesign.
 
