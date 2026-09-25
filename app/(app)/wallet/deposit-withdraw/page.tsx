@@ -234,7 +234,6 @@ export default function WalletDepositWithdrawPage() {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-          userId: user.id,
           amount: parseFloat(amount),
           address: withdrawAddress,
         }),
@@ -280,7 +279,6 @@ export default function WalletDepositWithdrawPage() {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-          userId: user.id,
           amount: parseFloat(amount),
           bankName: withdrawBankName,
           accountNumber: withdrawAccountNumber,
