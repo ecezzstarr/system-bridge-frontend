@@ -642,4 +642,44 @@ for(const file of [
  assert.equal(syntaxErrors.length,0,file+' post-deploy syntax/transpile check')
 }
 
+const enterpriseExchangeSource=fs.readFileSync(path.join(root,'app/(app)/marketplace/page.tsx'),'utf8')
+const enterpriseSystemsLibSource=fs.readFileSync(path.join(root,'lib/enterprise-systems.ts'),'utf8')
+const enterpriseSystemsApiSource=fs.readFileSync(path.join(root,'app/api/enterprise-systems/route.ts'),'utf8')
+const adminEnterpriseSystemsApiSource=fs.readFileSync(path.join(root,'app/api/admin/enterprise-systems/route.ts'),'utf8')
+const adminEnterpriseSystemsPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/enterprise-systems/page.tsx'),'utf8')
+const enterpriseExchangeMigrationSource=fs.readFileSync(path.join(root,'migrations/20260925_enterprise_systems_exchange.sql'),'utf8')
+const sidebarEnterpriseSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+assert.ok(enterpriseExchangeSource.includes('Enterprise Systems Exchange'),'Marketplace is now the Enterprise Systems Exchange')
+assert.ok(enterpriseExchangeSource.includes('Software and hardware technology made buildable'),'Enterprise Exchange presents WEAVE software+hardware capability')
+assert.ok(!enterpriseExchangeSource.includes('/api/market/prospects'),'Enterprise Exchange no longer loads Bridger prospect packages')
+assert.ok(!enterpriseExchangeSource.includes('Prospective Clients'),'Enterprise Exchange no longer embeds the Bridger Prospect Market')
+assert.ok(enterpriseSystemsLibSource.includes('private_cloud_stack'),'Enterprise catalog includes private cloud infrastructure')
+assert.ok(enterpriseSystemsLibSource.includes('smart_factory_os'),'Enterprise catalog includes industrial software+hardware')
+assert.ok(enterpriseSystemsLibSource.includes('robotic_fulfillment_cell'),'Enterprise catalog includes robotics integration')
+assert.ok(enterpriseSystemsLibSource.includes('national_service_platform'),'Enterprise catalog includes national-scale institutional systems')
+assert.ok(enterpriseSystemsLibSource.includes('24000000'),'Enterprise catalog reaches £24M base system scale')
+assert.ok(enterpriseSystemsLibSource.includes('CHECK (price_gbp >= 1000000)'),'Runtime schema forbids cheap enterprise catalog pricing')
+assert.ok(enterpriseSystemsApiSource.includes("user.role !== 'client' && user.role !== 'admin'"),'Enterprise acquisition opens from Client/Admin positions, not Bridger prospect commerce')
+assert.ok(adminEnterpriseSystemsApiSource.includes('price < 1000000'),'Administration cannot price an Enterprise Exchange system below £1M')
+assert.ok(adminEnterpriseSystemsPageSource.includes('Enterprise Systems Workshop'),'Administration has an Enterprise Systems operating surface')
+assert.ok(enterpriseExchangeMigrationSource.includes('price_gbp >= 1000000'),'Production migration enforces enterprise-scale prices')
+const enterpriseSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),sidebarEnterpriseSource.indexOf('// 5. WEAVE'))
+assert.ok(!enterpriseSection.includes('Prospect Market'),'Bridger Prospect Market is removed from Enterprise navigation')
+assert.ok(!enterpriseSection.includes('Prospect Engine'),'Prospect Engine is removed from Enterprise navigation')
+assert.ok(sidebarEnterpriseSource.indexOf('Prospect Market') < sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),'Prospect Market now belongs to the Bridge side of navigation')
+assert.ok(enterpriseSection.includes('Enterprise Systems Exchange'),'Enterprise navigation leads with systems for sale')
+assert.ok(enterpriseSection.includes('Enterprise Systems Workshop'),'Enterprise navigation exposes Administration system sales control')
+for(const file of [
+ 'lib/enterprise-systems.ts',
+ 'app/api/enterprise-systems/route.ts',
+ 'app/(app)/marketplace/page.tsx',
+ 'app/api/admin/enterprise-systems/route.ts',
+ 'app/(app)/admin/enterprise-systems/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Enterprise Systems syntax/transpile check')
+}
+
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
