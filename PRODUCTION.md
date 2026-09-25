@@ -1,7 +1,10 @@
 # WEAVE live app
 
 The canonical source is this repository's main branch.
-Live app: https://system-bridge-frontend-823579957639.us-central1.run.app/
+Official public app: https://weavingsystem.online/
+Internal Cloud Run service endpoint: https://system-bridge-frontend-823579957639.us-central1.run.app/
+
+The public WEAVE identity is `weavingsystem.online`. The repository and Cloud Run service retain the internal name `system-bridge-frontend` for deployment continuity and rollback safety.
 
 ## Recovered baseline
 - Revision: system-bridge-frontend-00460-lmz
