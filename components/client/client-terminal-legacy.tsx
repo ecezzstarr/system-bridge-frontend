@@ -33,9 +33,12 @@ export default function LegacyClientDashboard() {
 
     const fetchBridgerInfo = async () => {
       try {
-        const response = await fetch(`/api/client/bridger?clientId=${user.id}`)
+        const token = localStorage.getItem('ssb_auth_token')
+        const response = await fetch('/api/client/bridger', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
         const data = await response.json()
-        if (data.bridger) {
+        if (response.ok && data.bridger) {
           setBridger(data.bridger)
         }
       } catch (error) {
@@ -46,8 +49,8 @@ export default function LegacyClientDashboard() {
     const fetchVaultBalance = async () => {
       try {
         const token = localStorage.getItem('ssb_auth_token')
-        const res = await fetch(`/api/wallet/balance?userId=${user.id}`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        const res = await fetch('/api/wallet/balance', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
         const data = await res.json()
         if (data.success) setVaultBalance(data.flameCoinBalance || 0)
@@ -96,9 +99,9 @@ export default function LegacyClientDashboard() {
               <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Your Vault</span>
             </div>
             <p className="text-4xl md:text-5xl font-black text-white">
-              {isLoadingVault ? '—' : vaultBalance.toFixed(2)} <span className="text-lg font-bold text-slate-500">TRX</span>
+              {isLoadingVault ? '—' : vaultBalance.toFixed(2)} <span className="text-lg font-bold text-slate-500">Flame Coin</span>
             </p>
-            <p className="text-xs text-slate-500 mt-2">Your Vault holds funds secured by WEAVE and is ready to use.</p>
+            <p className="text-xs text-slate-500 mt-2">Your Vault holds WEAVE Flame Coin. 1 Flame Coin carries the value of 1 TRX inside WEAVE.</p>
           </div>
           <div className="flex gap-3">
             <Link href="/client/deposit">
