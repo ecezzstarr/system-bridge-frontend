@@ -24,10 +24,18 @@ const DEFAULT_STATE:ShieldState={
 }
 
 export function DivineShieldGate({children}:{children:ReactNode}){
-  const {token,user,isInitialized}=useAuth()
+  const {token,isInitialized,logout}=useAuth()
   const pathname=usePathname() || '/'
   const [state,setState]=useState<ShieldState>(DEFAULT_STATE)
+  const [adminEntrance,setAdminEntrance]=useState(false)
   const timerRef=useRef<number|null>(null)
+  const evacuatedTokenRef=useRef<string|null>(null)
+
+  useEffect(()=>{
+    if(typeof window==='undefined') return
+    const params=new URLSearchParams(window.location.search)
+    setAdminEntrance(pathname==='/login' && params.get('administration')==='1')
+  },[pathname])
 
   useEffect(()=>{
     if(!isInitialized) return
@@ -41,10 +49,27 @@ export function DivineShieldGate({children}:{children:ReactNode}){
         })
         const body=await response.json()
         if(!alive) return
+
+        const active=Boolean(body?.active)
+        const administrationBypass=Boolean(body?.administrationBypass)
+        if(active && !administrationBypass && token && evacuatedTokenRef.current!==token){
+          evacuatedTokenRef.current=token
+          try{
+            await fetch('/api/divine-shield/evacuate',{
+              method:'POST',
+              headers:{Authorization:`Bearer ${token}`},
+              cache:'no-store',
+            })
+          }catch{
+            // Local evacuation still proceeds if the revocation request is interrupted.
+          }
+          logout()
+        }
+
         setState({
           checked:true,
-          active:Boolean(body?.active),
-          administrationBypass:Boolean(body?.administrationBypass),
+          active,
+          administrationBypass,
           title:body?.title || DEFAULT_STATE.title,
           message:body?.message || DEFAULT_STATE.message,
         })
@@ -54,18 +79,18 @@ export function DivineShieldGate({children}:{children:ReactNode}){
     }
 
     void load()
-    timerRef.current=window.setInterval(load,state.active?8000:30000)
+    timerRef.current=window.setInterval(load,5000)
     return()=>{
       alive=false
       if(timerRef.current) window.clearInterval(timerRef.current)
     }
-  },[isInitialized,token,user?.role,state.active])
+  },[isInitialized,token,logout])
 
   if(!isInitialized || !state.checked){
     return <div className="relative z-10 flex min-h-screen items-center justify-center bg-[#020815]/92"><Loader2 className="h-7 w-7 animate-spin text-sky-300" aria-label="Opening WEAVE" /></div>
   }
 
-  if(state.active && !state.administrationBypass && pathname!=='/login'){
+  if(state.active && !state.administrationBypass && !adminEntrance){
     return (
       <main className="relative z-[60] flex min-h-screen items-center justify-center overflow-hidden bg-[#020815] px-5 py-10 text-white">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_32%,rgba(56,189,248,.12),transparent_30%),radial-gradient(circle_at_50%_70%,rgba(245,158,11,.07),transparent_28%)]" />
@@ -80,7 +105,7 @@ export function DivineShieldGate({children}:{children:ReactNode}){
           <div className="mt-7 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-slate-500">
             Your position remains preserved. WEAVE will reopen here when Administration releases the shield.
           </div>
-          <Link href="/login" className="mt-5 inline-flex rounded-full border border-sky-300/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 transition hover:text-sky-200">Administration access</Link>
+          <Link href="/login?administration=1" className="mt-5 inline-flex rounded-full border border-sky-300/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 transition hover:text-sky-200">Administration access</Link>
         </section>
       </main>
     )
