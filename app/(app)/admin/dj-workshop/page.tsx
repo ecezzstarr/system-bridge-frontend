@@ -222,7 +222,7 @@ export default function DJWorkshopPage() {
           DJ Workshop
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Set the institution's rhythm. Anyone joining mid-broadcast hears the current moment, not the start.
+          Set the institution's rhythm. Anyone joining mid-broadcast hears the current moment, not the start. Music tracks carry the Harmony audience atmosphere automatically.
         </p>
       </div>
 
