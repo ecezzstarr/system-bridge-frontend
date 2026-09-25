@@ -458,6 +458,12 @@ assert.ok(publicCustomerOrdersSource.includes("formation_status='selling'"),'Out
 assert.ok(customerDoorPanelSource.includes('requiredToOpenPublicDoorFlameCoin'),'Client sees the exact Flame Coin shortfall')
 assert.ok(fileFolderPurchaseSource.includes('PUBLIC_DOOR_THRESHOLD'),'File Folder buyer sees the Customer Door threshold before purchase')
 
+for(const cameraFile of ['components/world/presence-camera.tsx','lib/presence-camera.ts','components/world/weave-normal-world-backdrop.tsx','components/world/weave-world-environment.tsx']){
+ const source=fs.readFileSync(path.join(root,cameraFile),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,cameraFile+' camera syntax/transpile check')
+}
 const presenceCameraSource=fs.readFileSync(path.join(root,'components/world/presence-camera.tsx'),'utf8')
 const presenceCameraLibSource=fs.readFileSync(path.join(root,'lib/presence-camera.ts'),'utf8')
 const rootLayoutPresenceSource=fs.readFileSync(path.join(root,'app/layout.tsx'),'utf8')
