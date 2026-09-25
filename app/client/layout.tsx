@@ -4,7 +4,7 @@ import { LiveAdSurface } from '@/components/live-ad-surface'
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 import { ClientRouteGuard } from '@/components/client/client-route-guard'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
-import { PresenceCameraProvider, PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
+import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
@@ -31,7 +31,6 @@ export default function ClientLayout({
 }) {
   // Client routes share the root AuthProvider.
   return (
-    <PresenceCameraProvider role="client">
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       <WeaveWorldEnvironment />
       <ClientRouteGuard>
@@ -44,6 +43,5 @@ export default function ClientLayout({
         </div>
       </ClientRouteGuard>
     </div>
-    </PresenceCameraProvider>
   )
 }
