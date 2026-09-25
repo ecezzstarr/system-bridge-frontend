@@ -60,7 +60,7 @@ const ROLE: Record<WorldRole, {
     links: [
       { label: 'System Switch', detail: 'Crossing and movement', href: '/client/system-switch', icon: Orbit, tone: 'sky' },
       { label: 'Company Loops', detail: 'Events and participation', href: '/client/loops', icon: GitBranch, tone: 'gold' },
-      { label: 'Vault', detail: 'Secured movement', href: '/client/deposit', icon: Wallet, tone: 'emerald' },
+      { label: 'Main Wallet', detail: 'Operational funds', href: '/client/deposit', icon: Wallet, tone: 'emerald' },
       { label: 'Your Bridger', detail: 'Human support', href: '/client/chat/bridger', icon: Users, tone: 'emerald' },
       { label: 'Marketplace', detail: 'Services and value', href: '/marketplace', icon: Store, tone: 'sky' },
       { label: 'Arena', detail: 'Participant contest', href: '/client/arena', icon: Gamepad2, tone: 'gold' },
