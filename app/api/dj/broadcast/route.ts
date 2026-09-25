@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         artist: state.track_artist,
         fileUrl: state.track_file_url,
         durationSeconds: Number(state.duration_seconds || 0),
+        type: state.track_type || 'music',
       },
       playlistId: state.playlist_id,
       elapsedSeconds,
