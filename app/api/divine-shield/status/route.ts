@@ -6,12 +6,14 @@ import { getDivineShieldState } from '@/lib/weave-infrastructure'
 export const dynamic='force-dynamic'
 
 export async function GET(request:NextRequest){
+  const authHeader=request.headers.get('authorization')
+  const bearerToken=authHeader?.replace(/^Bearer\s+/i,'').trim() || null
+  const user=await getAuthUser(request).catch(()=>null)
+  const administrationBypass=user?.role==='admin'
+
   try{
-    const authHeader=request.headers.get('authorization')
-    const bearerToken=authHeader?.replace(/^Bearer\s+/i,'').trim() || null
-    const [state,user,tokenRows]=await Promise.all([
+    const [state,tokenRows]=await Promise.all([
       getDivineShieldState(),
-      getAuthUser(request),
       bearerToken ? sql`SELECT 1 FROM sessions WHERE token=${bearerToken} AND expires_at>NOW() LIMIT 1` : Promise.resolve([]),
     ])
     return NextResponse.json({
@@ -20,19 +22,22 @@ export async function GET(request:NextRequest){
       title:state.title,
       message:state.message,
       updatedAt:state.updatedAt,
-      administrationBypass:user?.role==='admin',
+      administrationBypass,
       sessionValid:bearerToken ? tokenRows.length>0 : true,
     },{
       headers:{'Cache-Control':'no-store, max-age=0'}
     })
   }catch(error){
     console.error('[Divine Shield] status error:',error)
-    // Fail open: infrastructure trouble must not accidentally lock everyone out.
+    // Fail closed for public/non-admin access. Administration remains reachable
+    // through the dedicated maintenance entrance so infrastructure can be repaired.
     return NextResponse.json({
       success:false,
-      active:false,
-      administrationBypass:false,
-      sessionValid:true,
+      active:!administrationBypass,
+      administrationBypass,
+      sessionValid:administrationBypass,
+      title:'WEAVE maintenance boundary',
+      message:'WEAVE cannot currently verify the maintenance control. Participation remains outside while Administration restores the infrastructure.',
       error:'Divine Shield status unavailable',
     },{status:200,headers:{'Cache-Control':'no-store, max-age=0'}})
   }
