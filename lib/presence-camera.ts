@@ -66,7 +66,7 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
   },
   {
     match: path => path.includes('/marketplace') || path.includes('/agility'),
-    scene: { key:'market', label:'Market', district:'Enterprise', level:'district', camera:{x:42,y:3,yaw:7,pitch:1,zoom:1.022,depth:30} },
+    scene: { key:'enterprise-exchange', label:'Enterprise Exchange', district:'Enterprise', level:'district', camera:{x:42,y:3,yaw:7,pitch:1,zoom:1.022,depth:30} },
   },
   {
     match: path => path.includes('/arena'),
