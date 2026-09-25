@@ -22,9 +22,9 @@ export default function ClientEventPage() {
   if (!client) return <div className="min-h-[40vh]" />
 
   return (
-    <div className="mx-auto max-w-7xl p-4 text-white md:p-8">
-      <Link href="/client/dashboard" className="mb-5 inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to Client World
+    <div className="mx-auto w-full max-w-3xl p-3 pb-24 text-white sm:p-4">
+      <Link href="/client/dashboard" className="mb-3 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 hover:text-white">
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to Home
       </Link>
       <PositionEventWorld
         role="client"
