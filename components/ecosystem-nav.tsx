@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-provider'
 
 interface EcosystemNavProps {
-  currentSystem?: 'home' | 'shop' | 'online' | 'workshop'
+  currentSystem?: 'home' | 'shop' | 'online' | 'workshop' | 'authority'
   showMobile?: boolean
 }
 
@@ -17,28 +17,28 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
   const systems = [
     {
       id: 'home',
-      name: 'Home',
-      subtitle: 'Main Landing',
+      name: 'WEAVINGSYSTEM.ONLINE',
+      subtitle: 'Main WEAVE App',
       icon: Home,
-      href: '/',
+      href: 'https://weavingsystem.online/',
       color: 'from-green-500 to-emerald-500',
-    },
-    {
-      id: 'shop',
-      name: 'SSBNOW.SHOP',
-      subtitle: 'Agent & Bridger Hub',
-      icon: Store,
-      href: '/admin/dashboard',
-      color: 'from-purple-500 to-pink-500',
     },
     {
       id: 'online',
       name: 'SSBNOW.ONLINE',
-      subtitle: 'Service System',
+      subtitle: 'Administration Workshop',
       icon: Globe,
-      // Admin goes to client messages management, clients go to client dashboard
-      href: isAdmin ? '/admin/client-messages' : '/client/dashboard',
+      href: 'https://ssbnow.online/',
       color: 'from-blue-500 to-cyan-500',
+      adminOnly: true,
+    },
+    {
+      id: 'shop',
+      name: 'SSBNOW.SHOP',
+      subtitle: 'Client Service Portal',
+      icon: Store,
+      href: 'https://ssbnow.shop/',
+      color: 'from-purple-500 to-pink-500',
     },
     {
       id: 'workshop',
