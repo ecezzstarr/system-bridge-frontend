@@ -46,7 +46,7 @@ interface FileFolder {
 }
 
 export default function FileNumberEnginePage() {
-  const { user } = useAuth()
+  const { user, token, isInitialized } = useAuth()
   const router = useRouter()
   
   const [bridgers, setBridgers] = useState<Bridger[]>([])
@@ -61,21 +61,21 @@ export default function FileNumberEnginePage() {
   })
 
   useEffect(() => {
+    if (!isInitialized) return
     if (!user || user.role !== 'admin') {
-      // Allow for development access if role isn't perfectly set
-      // router.push('/login')
-      // return
+      router.replace('/login')
+      return
     }
-
     fetchData()
-  }, [user, router])
+  }, [isInitialized, user?.id, user?.role, token, router])
 
   const fetchData = async () => {
     setIsLoading(true)
     try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
       const [bridgersRes, foldersRes] = await Promise.all([
-        fetch('/api/users'), // Updated to match system-bridge-frontend API
-        fetch('/api/admin/fne/list')
+        fetch('/api/users', { headers }),
+        fetch('/api/admin/fne/list', { headers })
       ])
       
       const bridgersData = await bridgersRes.json()
@@ -104,7 +104,10 @@ export default function FileNumberEnginePage() {
     try {
       const res = await fetch('/api/admin/fne/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(formData)
       })
       
