@@ -1,8 +1,29 @@
 'use client'
 
+import { motion } from 'framer-motion'
+import { usePresenceCamera } from '@/components/world/presence-camera'
+
 export function WeaveNormalWorldBackdrop() {
+  const { scene,moving,lastOutput }=usePresenceCamera()
+  const actionFocus = moving && lastOutput?.type === 'action'
+
   return (
-    <div className="pointer-events-none fixed inset-0 overflow-hidden bg-[#020815] [perspective:1200px] [transform-style:preserve-3d]" aria-hidden="true">
+    <motion.div
+      className="pointer-events-none fixed inset-0 overflow-hidden bg-[#020815] [perspective:1200px] [transform-style:preserve-3d]"
+      aria-hidden="true"
+      initial={false}
+      animate={{
+        x: -scene.camera.x * 0.42,
+        y: -scene.camera.y * 0.32,
+        rotateY: -scene.camera.yaw * 0.22,
+        rotateX: scene.camera.pitch * 0.18,
+        scale: scene.camera.zoom + (actionFocus ? 0.006 : 0),
+      }}
+      transition={{ duration: moving ? 0.46 : 0.72, ease:[0.22,1,0.36,1] }}
+      style={{ transformOrigin:'50% 46%', willChange:'transform' }}
+      data-camera-scene={scene.key}
+      data-camera-level={scene.level}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_8%,rgba(245,158,11,0.13),transparent_24%),radial-gradient(circle_at_18%_44%,rgba(14,165,233,0.14),transparent_28%),radial-gradient(circle_at_82%_48%,rgba(59,130,246,0.13),transparent_28%),linear-gradient(180deg,#020815_0%,#061426_50%,#020812_100%)]" />
 
       <div className="absolute inset-0 opacity-60 [transform:translateZ(-90px)_scale(1.08)] [background-image:radial-gradient(circle_at_20%_20%,rgba(255,255,255,.85)_0_1px,transparent_1.5px),radial-gradient(circle_at_72%_18%,rgba(125,211,252,.85)_0_1px,transparent_1.5px),radial-gradient(circle_at_38%_52%,rgba(255,255,255,.55)_0_1px,transparent_1.5px),radial-gradient(circle_at_88%_64%,rgba(250,204,21,.5)_0_1px,transparent_1.5px)] [background-size:190px_190px,260px_260px,230px_230px,310px_310px]" />
@@ -79,6 +100,6 @@ export function WeaveNormalWorldBackdrop() {
       />
       <div className="absolute inset-x-0 bottom-[16%] h-28 bg-gradient-to-t from-sky-400/[0.035] to-transparent blur-2xl" />
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,8,21,.62),transparent_22%,transparent_78%,rgba(2,8,21,.62)),linear-gradient(180deg,rgba(2,8,21,.04),transparent_48%,rgba(2,8,21,.66))]" />
-    </div>
+    </motion.div>
   )
 }
