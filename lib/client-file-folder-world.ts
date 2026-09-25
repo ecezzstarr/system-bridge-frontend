@@ -1,4 +1,4 @@
-import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { ensureClientBusinessStore, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
 
 export type FileFolderWorldSnapshot = {
   blueprints: any[]
@@ -340,6 +340,22 @@ export async function getFileFolderWorldSnapshot(
 ): Promise<FileFolderWorldSnapshot> {
   await ensureFileFolderWorldSchema(sql)
   await ensureClientBusinessStoreSchema(sql)
+
+  const [clientIdentity] = await sql`
+    SELECT u.name,u.business_name,w.workshop_type
+    FROM users u
+    LEFT JOIN client_system_workshops w ON w.client_id=u.id
+    WHERE u.id=${clientId}::uuid
+    LIMIT 1
+  `
+  await ensureClientBusinessStore(
+    sql,
+    clientId,
+    fileNumber,
+    clientIdentity?.business_name || clientIdentity?.name || 'Client Business',
+    clientIdentity?.workshop_type === 'crypto_exchange',
+  )
+
   await ensureClientLibraryProgress(sql, clientId)
   await ensureCustomerDoorFormation(sql, clientId, fileNumber)
   await finalizeReadyBuilds(sql, clientId)
