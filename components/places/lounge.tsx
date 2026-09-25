@@ -146,7 +146,7 @@ export default function Lounge() {
       try {
         setLoadingRecent(true)
         const token = localStorage.getItem('ssb_auth_token')
-        const response = await fetch(`/api/lounge/conversations?userId=${user.id}`, {
+        const response = await fetch(`/api/lounge/conversations`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         })
         if (response.ok) {
@@ -199,7 +199,7 @@ export default function Lounge() {
       
       try {
         const token = localStorage.getItem('ssb_auth_token')
-        const response = await fetch(`/api/lounge/messages?roomType=${selectedChat.type}&roomId=${roomId}&userId=${user.id}`, {
+        const response = await fetch(`/api/lounge/messages?roomType=${selectedChat.type}&roomId=${roomId}`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         })
         if (response.ok) {
@@ -328,8 +328,10 @@ export default function Lounge() {
   const handleDeleteMessage = async (messageId: string) => {
     if (!user?.id) return
     try {
-      const response = await fetch(`/api/lounge/messages?id=${messageId}&userId=${user.id}`, {
+      const token = localStorage.getItem('ssb_auth_token')
+      const response = await fetch(`/api/lounge/messages?id=${messageId}`, {
         method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
       const data = await response.json()
       if (data.success) {
