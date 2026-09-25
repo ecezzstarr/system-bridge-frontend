@@ -199,7 +199,7 @@ export function PresenceCameraSignal() {
 export function PresenceCameraRootViewport({ children }: { children: ReactNode }) {
   const pathname=usePathname() || '/'
   if (isPresenceCameraShellManaged(pathname)) return <>{children}</>
-  return <PresenceCameraViewport>{children}</PresenceCameraViewport>
+  return <PresenceCameraViewport className="z-10">{children}</PresenceCameraViewport>
 }
 
 export function PresenceCameraViewport({ children, className='' }: { children: ReactNode; className?: string }) {
