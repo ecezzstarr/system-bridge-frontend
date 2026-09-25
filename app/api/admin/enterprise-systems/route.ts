@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
     const orders = await sql`
       SELECT
         o.id,o.system_key,o.buyer_user_id,o.buyer_role,o.buyer_name,o.buyer_email,
-        o.quoted_price_gbp,o.status,o.acquisition_note,o.admin_note,o.created_at,o.updated_at,
+        o.quoted_price_gbp,o.quoted_flame_coin,o.gbp_per_flame_coin,o.rate_source,
+        o.status,o.acquisition_note,o.admin_note,o.created_at,o.updated_at,
         c.name AS system_name,c.category,c.delivery_model
       FROM enterprise_system_orders o
       JOIN enterprise_system_catalog c ON c.system_key=o.system_key
