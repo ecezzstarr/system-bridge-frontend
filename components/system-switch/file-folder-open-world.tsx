@@ -134,7 +134,7 @@ export default function FileFolderOpenWorld({
             <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
             <p className="mt-2 text-[10px] font-mono text-slate-500">{clientName} · {fileNumber}</p>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-center text-[10px]">
+          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
             <div className="rounded-xl border border-amber-300/15 bg-amber-400/5 px-4 py-3">
               <p className="uppercase tracking-wider text-amber-300">Building now</p>
               <p className="mt-1 text-xl font-black text-white">{activeBuilds.length}</p>
@@ -142,6 +142,11 @@ export default function FileFolderOpenWorld({
             <div className="rounded-xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-3">
               <p className="uppercase tracking-wider text-emerald-300">Active systems</p>
               <p className="mt-1 text-xl font-black text-white">{world?.systems?.length || 0}</p>
+            </div>
+            <div className="rounded-xl border border-violet-300/15 bg-violet-400/5 px-4 py-3">
+              <p className="uppercase tracking-wider text-violet-300">Customer Door</p>
+              <p className="mt-1 text-xs font-black uppercase text-white">{world?.customerDoor?.formation_status || 'forming'}</p>
+              <p className="mt-1 text-[8px] text-slate-500">{world?.customerDoor?.active_offer_count || 0} public offers</p>
             </div>
           </div>
         </div>
@@ -193,10 +198,10 @@ export default function FileFolderOpenWorld({
                 <h3 className="mt-2 text-2xl font-black text-white">{workshopTitle}</h3>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">{workshopPurpose || 'This workshop is personalized to the Client. Blueprints and systems form around the Client’s actual movement rather than replacing it.'}</p>
               </div>
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid gap-3 md:grid-cols-4">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><p className="text-[9px] uppercase tracking-wider text-slate-500">Blueprints ready</p><p className="mt-2 text-3xl font-black">{world?.blueprints?.length || 0}</p></div>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><p className="text-[9px] uppercase tracking-wider text-slate-500">Finished builds</p><p className="mt-2 text-3xl font-black">{completedBuilds.length}</p></div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><p className="text-[9px] uppercase tracking-wider text-slate-500">Library movements</p><p className="mt-2 text-3xl font-black">{(world?.library || []).filter((x:any)=>x.status==='complete').length}/{world?.library?.length || 0}</p></div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><p className="text-[9px] uppercase tracking-wider text-slate-500">Library movements</p><p className="mt-2 text-3xl font-black">{(world?.library || []).filter((x:any)=>x.status==='complete').length}/{world?.library?.length || 0}</p></div><div className="rounded-2xl border border-violet-300/15 bg-violet-400/[0.035] p-5"><p className="text-[9px] uppercase tracking-wider text-violet-300">Outside customers</p><p className="mt-2 text-3xl font-black">{world?.customerDoor?.order_count || 0}</p>{world?.customerDoor?.public_slug&&<a href={`/store/${world.customerDoor.public_slug}`} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-[9px] font-black uppercase tracking-wider text-violet-200">Open Customer Door →</a>}</div>
               </div>
             </div>
           )}
