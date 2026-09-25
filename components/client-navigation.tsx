@@ -37,7 +37,14 @@ export function ClientNavigation() {
   )
 
   // Public Client entry routes do not inherit signed-in navigation.
-  if (pathname === '/client' || pathname === '/client/login' || pathname === '/client/register') return null
+  const isClientEntry =
+    pathname === '/client' ||
+    pathname === '/client/login' ||
+    pathname.startsWith('/client/login/') ||
+    pathname === '/client/register' ||
+    pathname.startsWith('/client/register/')
+
+  if (isClientEntry) return null
 
   // During Flame Event the Client Dashboard owns the event-world navigation.
   // Outside the event the normal Client Dashboard keeps the ordinary portal nav.
