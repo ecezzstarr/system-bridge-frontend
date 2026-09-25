@@ -41,6 +41,7 @@ import {
   Gamepad2,
   Dices,
   Crown,
+  Cloud,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -103,6 +104,7 @@ const navigation = [
           { name: "Company Loops", href: "/company/loops", icon: GitBranch },
       { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
 { name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
+    { name: "Infrastructure", href: "/admin/infrastructure", icon: Cloud, adminOnly: true },
     { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
     { name: "Ad Workshop", href: "/admin/ad-workshop", icon: Megaphone, adminOnly: true },
     { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
