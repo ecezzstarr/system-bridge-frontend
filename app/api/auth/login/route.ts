@@ -78,11 +78,6 @@ export async function POST(request: NextRequest) {
 
     const user = users[0]
 
-    const shield=await getDivineShieldState().catch(()=>({active:false}))
-    if(shield.active && user.role!=='admin'){
-      return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
-    }
-
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash)
     if (!isValidPassword) {
@@ -90,6 +85,11 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid email or password' },
         { status: 401 }
       )
+    }
+
+    const shield=await getDivineShieldState().catch(()=>({active:false}))
+    if(shield.active && user.role!=='admin'){
+      return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
     }
 
     // Generate token
