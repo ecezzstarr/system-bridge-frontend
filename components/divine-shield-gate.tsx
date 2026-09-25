@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Shield, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
@@ -23,6 +25,7 @@ const DEFAULT_STATE:ShieldState={
 
 export function DivineShieldGate({children}:{children:ReactNode}){
   const {token,user,isInitialized}=useAuth()
+  const pathname=usePathname() || '/'
   const [state,setState]=useState<ShieldState>(DEFAULT_STATE)
   const timerRef=useRef<number|null>(null)
 
@@ -62,7 +65,7 @@ export function DivineShieldGate({children}:{children:ReactNode}){
     return <div className="relative z-10 flex min-h-screen items-center justify-center bg-[#020815]/92"><Loader2 className="h-7 w-7 animate-spin text-sky-300" aria-label="Opening WEAVE" /></div>
   }
 
-  if(state.active && !state.administrationBypass){
+  if(state.active && !state.administrationBypass && pathname!=='/login'){
     return (
       <main className="relative z-[60] flex min-h-screen items-center justify-center overflow-hidden bg-[#020815] px-5 py-10 text-white">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_32%,rgba(56,189,248,.12),transparent_30%),radial-gradient(circle_at_50%_70%,rgba(245,158,11,.07),transparent_28%)]" />
@@ -77,6 +80,7 @@ export function DivineShieldGate({children}:{children:ReactNode}){
           <div className="mt-7 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-slate-500">
             Your position remains preserved. WEAVE will reopen here when Administration releases the shield.
           </div>
+          <Link href="/login" className="mt-5 inline-flex rounded-full border border-sky-300/15 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 transition hover:text-sky-200">Administration access</Link>
         </section>
       </main>
     )
