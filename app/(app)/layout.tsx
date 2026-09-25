@@ -39,12 +39,12 @@ export default function AppLayout({
   // Continuance enforcement for Bridgers
   useEffect(() => {
     const checkSub = async () => {
-      if (user?.role === 'bridger' && pathname !== '/bridger/dashboard') {
+      if (user?.role === 'bridger' && pathname !== '/bridger/functions') {
         try {
           const res = await fetch(`/api/bridger/subscription?userId=${user.id}`)
           const data = await res.json()
           if (data.success && data.subscription.subscription_status === 'suspended') {
-            router.push('/bridger/dashboard')
+            router.push('/bridger/functions')
             toast.error('Your movement here has paused — renewal is needed to continue.')
           }
         } catch (e) {
@@ -115,7 +115,7 @@ export default function AppLayout({
       <div className="relative z-10 flex-1 flex flex-col lg:pl-64">
         <AppHeader user={user as any} />
         <FlameEventAd />
-        <main className="relative flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 max-w-[100vw]">
+        <main className="relative flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 max-w-[100vw]">
           <NormalWeaveRoleAtmosphere
             userRole={user?.role}
             userName={user?.name}
