@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { randomBytes } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
 
 export async function POST(request: NextRequest) {
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       WHERE id = ${folder.id}
     `
 
-    const token = `token_${user.id}_${Date.now()}`
+    const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
       INSERT INTO sessions (id, user_id, token, created_at, expires_at)
       VALUES (gen_random_uuid(), ${user.id}::uuid, ${token}, NOW(), NOW() + INTERVAL '7 days')

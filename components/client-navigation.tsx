@@ -36,9 +36,19 @@ export function ClientNavigation() {
     [event, now]
   )
 
-  // Login is an entry gate. During Flame Event, the Client Dashboard owns its
-  // open-world sidebar and should not inherit the ordinary horizontal nav.
-  if (pathname === '/client/login' || pathname === '/client/dashboard') return null
+  // Public Client entry routes do not inherit signed-in navigation.
+  const isClientEntry =
+    pathname === '/client' ||
+    pathname === '/client/login' ||
+    pathname.startsWith('/client/login/') ||
+    pathname === '/client/register' ||
+    pathname.startsWith('/client/register/')
+
+  if (isClientEntry) return null
+
+  // During Flame Event the Client Dashboard owns the event-world navigation.
+  // Outside the event the normal Client Dashboard keeps the ordinary portal nav.
+  if (pathname === '/client/dashboard' && eventIsLive) return null
 
   return (
     <nav className="sticky top-0 z-40 flex gap-4 border-b border-sky-300/10 bg-[#03101d]/78 px-5 py-3 text-sm text-slate-300 backdrop-blur-2xl">

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { ClientNavigation } from '@/components/client-navigation'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
+import { ClientRouteGuard } from '@/components/client/client-route-guard'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
@@ -30,11 +31,13 @@ export default function ClientLayout({
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950">
       <WeaveWorldEnvironment />
-      <div className="relative z-10 min-h-screen">
-        <ClientNavigation />
-        <LiveAdSurface />
-        {children}
-      </div>
+      <ClientRouteGuard>
+        <div className="relative z-10 min-h-screen">
+          <ClientNavigation />
+          <LiveAdSurface />
+          {children}
+        </div>
+      </ClientRouteGuard>
     </div>
   )
 }
