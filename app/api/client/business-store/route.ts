@@ -107,11 +107,21 @@ export async function POST(request: NextRequest) {
     RETURNING *
   `
 
+  const [doorSystem] = await ctx.sql`
+    SELECT id
+    FROM client_built_systems
+    WHERE client_id=${ctx.client.id}::uuid
+      AND file_number=${ctx.client.file_number}
+      AND system_type='customer_door'
+      AND status='active'
+    LIMIT 1
+  `
+
   await ctx.sql`
     UPDATE client_business_stores
     SET
-      formation_status='selling',
-      public_opened_at=COALESCE(public_opened_at,NOW()),
+      formation_status=CASE WHEN ${Boolean(false)} THEN formation_status ELSE CASE WHEN ${'${Boolean(doorSystem)}'} THEN 'selling' ELSE formation_status END END,
+      public_opened_at=CASE WHEN ${'${Boolean(doorSystem)}'} THEN COALESCE(public_opened_at,NOW()) ELSE public_opened_at END,
       first_offer_published_at=COALESCE(first_offer_published_at,NOW()),
       enabled=true,
       updated_at=NOW()
