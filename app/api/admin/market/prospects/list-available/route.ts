@@ -5,8 +5,11 @@ import { ensureMarketTables } from '@/lib/market'
 
 export async function GET(request: NextRequest) {
   const authUser = await getAuthUser(request)
-  if (!authUser || authUser.role !== 'admin') {
-    // return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!authUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  if (authUser.role !== 'admin') {
+    return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
   }
 
   try {
