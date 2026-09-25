@@ -183,6 +183,13 @@ async function seedFileFolderWorld(sql: any) {
     ['data_kit', 'Data Kit', 'technology', 'Provides the structured data component for a persistent information system.', 10],
     ['architecture_kit', 'Architecture Kit', 'formation', 'Carries a larger multi-function system through longer formation.', 15],
     ['integration_kit', 'Integration Kit', 'technology', 'Carries connections between several persistent WEAVE systems.', 20],
+    ['crypto_exchange_kit', 'Crypto Exchange Workshop Kit', 'technology', 'Core components for a Client-owned crypto exchange workshop: market records, buy/sell movement, holdings and order flow.', 480],
+    ['ai_flame_kit', 'AI Flame Service Kit', 'technology', 'Adds an AI-assisted service desk that can receive questions, organize requests and preserve support movement.', 320],
+    ['commerce_kit', 'Commerce Storefront Kit', 'business', 'Build components for a Client storefront, offers, order intake and customer movement.', 220],
+    ['payments_kit', 'Payments Gateway Kit', 'technology', 'Build components for payment instructions, settlement records and international payment workflow.', 390],
+    ['campaign_kit', 'Campaign System Kit', 'business', 'Build components for structured campaigns, audience movement, response records and follow-up.', 180],
+    ['learning_lab_kit', 'Learning Lab Kit', 'library', 'Build components for lessons, progress, exercises and a persistent learning environment.', 150],
+    ['operations_suite_kit', 'Operations Suite Kit', 'formation', 'A larger working kit for teams, tasks, approvals, records and recurring operating movement.', 650],
   ]
 
   for (const item of items) {
@@ -217,16 +224,7 @@ async function seedFileFolderWorld(sql: any) {
         ${blueprint[0]}, ${blueprint[1]}, ${blueprint[2]}, ${blueprint[3]},
         ${blueprint[4]}, ${blueprint[5]}, ${blueprint[6]}, ${blueprint[7]}, true
       )
-      ON CONFLICT (blueprint_key) DO UPDATE SET
-        name=EXCLUDED.name,
-        district=EXCLUDED.district,
-        system_type=EXCLUDED.system_type,
-        description=EXCLUDED.description,
-        build_hours=EXCLUDED.build_hours,
-        required_item_key=EXCLUDED.required_item_key,
-        required_item_quantity=EXCLUDED.required_item_quantity,
-        published=EXCLUDED.published,
-        updated_at=NOW()
+      ON CONFLICT (blueprint_key) DO NOTHING
     `
   }
 
