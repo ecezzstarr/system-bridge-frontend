@@ -2,158 +2,231 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { Button } from '@/components/ui/button'
-import { ArrowRight, Wallet, MessageSquare, Trophy, Network } from 'lucide-react'
-import { useAuth } from '@/lib/auth-provider'
-import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  DoorOpen,
+  Gamepad2,
+  Network,
+  Orbit,
+  Sparkles,
+  Workflow,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
+import { WeaveWorldEnvironment } from '@/components/world/weave-world-environment'
 
-const WeaveHero3D = dynamic(() => import('@/components/weave-hero-3d').then(m => m.WeaveHero3D), { ssr: false })
+const WeaveHero3D = dynamic(
+  () => import('@/components/weave-hero-3d').then(m => m.WeaveHero3D),
+  { ssr: false }
+)
+
+const movement = ['Presence', 'Interaction', 'Participation', 'Work', 'Value', 'Opportunity']
+
+const systems = [
+  {
+    icon: Workflow,
+    title: 'Services',
+    copy: 'Functions people can enter, use and participate in as real work moves through WEAVE.',
+  },
+  {
+    icon: Orbit,
+    title: 'Instruments',
+    copy: 'Practical tools that recognize movement, record participation and help people act from where they already are.',
+  },
+  {
+    icon: Network,
+    title: 'Systems',
+    copy: 'Organized structures that connect people, roles, work, value and opportunity without separating them from real life.',
+  },
+]
 
 export default function Home() {
   const { user } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (user) {
-      router.push('/weave')
-    }
+    if (user) router.push('/weave')
   }, [user, router])
 
   return (
-    <div className="min-h-screen bg-[#08090f] overflow-x-hidden">
-      {/* Ambient background */}
-      <div className="fixed inset-0 opacity-[0.07] pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(232,185,63,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(20,184,166,0.06)_1px,transparent_1px)] bg-[size:44px_44px]"></div>
-      </div>
-      <div className="fixed top-0 left-0 w-[500px] h-[500px] bg-[#e8b93f]/10 rounded-full filter blur-[130px] pointer-events-none"></div>
-      <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-[#14b8a6]/10 rounded-full filter blur-[130px] pointer-events-none"></div>
+    <div className="relative min-h-screen overflow-x-hidden bg-[#020815] text-white">
+      <WeaveWorldEnvironment soft />
 
-      <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Navigation */}
-        <nav className="flex items-center justify-between p-4 md:p-8 border-b border-white/5 backdrop-blur-xl bg-[#08090f]/50 sticky top-0 z-50">
-          <WeaveLogo />
-          <div className="flex items-center gap-2 md:gap-4">
-            <Link href="/login">
-              <Button variant="ghost" className="text-[#ece7da]/70 hover:text-white hover:bg-white/5 text-sm px-3 md:px-4">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button className="bg-gradient-to-r from-[#e8b93f] to-[#14b8a6] hover:opacity-90 text-[#08090f] font-bold border-0 shadow-lg shadow-[#e8b93f]/20 text-sm px-3 md:px-6">
-                <span className="hidden sm:inline">Get Started</span>
-                <span className="sm:hidden">Join</span>
-                <ArrowRight className="h-4 w-4 ml-1 md:ml-2" />
-              </Button>
-            </Link>
+      <div className="relative z-10 min-h-screen">
+        <nav className="sticky top-0 z-50 border-b border-sky-300/10 bg-[#03101d]/76 px-3 py-2.5 backdrop-blur-2xl sm:px-5">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+            <WeaveLogo size="sm" />
+
+            <div className="flex items-center gap-1.5">
+              <Link href="/client/login">
+                <Button
+                  variant="outline"
+                  className="h-9 border-sky-300/20 bg-sky-400/[0.06] px-3 text-[9px] font-black uppercase tracking-[0.10em] text-sky-100 hover:bg-sky-400/10"
+                >
+                  Client Portal
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button
+                  variant="ghost"
+                  className="h-9 px-3 text-[9px] font-black uppercase tracking-[0.10em] text-slate-300 hover:bg-white/[0.04] hover:text-white"
+                >
+                  Sign In
+                </Button>
+              </Link>
+            </div>
           </div>
         </nav>
 
-        {/* Hero Section */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-16 md:py-28 overflow-hidden">
-          <div className="w-full max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center px-2">
-            <div className="text-center md:text-left">
-              <div className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
-                <div className="w-2 h-2 bg-[#e8b93f] rounded-full animate-pulse" />
-                <p className="text-[#e8b93f] font-bold text-[10px] md:text-xs uppercase tracking-widest">Ecosystem Live</p>
-              </div>
+        <main className="mx-auto w-full max-w-6xl px-3 pb-16 pt-4 sm:px-5 sm:pt-7">
+          <section className="relative overflow-hidden rounded-[1.7rem] border border-sky-300/10 bg-[#030a15]/52 p-4 shadow-[0_30px_100px_rgba(2,8,23,.5)] backdrop-blur-md sm:p-6 md:p-8">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,.09),transparent_30%),radial-gradient(circle_at_85%_35%,rgba(245,158,11,.05),transparent_25%)]" />
 
-              <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-[1.1] tracking-tight">
-                A living system for<br />work, money, and<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-[#e8b93f] to-[#14b8a6]">human presence</span>
-              </h1>
+            <div className="relative grid items-center gap-4 md:grid-cols-[1.12fr_.88fr]">
+              <div>
+                <div className="flex flex-wrap items-center gap-2 text-[8px] font-black uppercase tracking-[0.20em]">
+                  <span className="text-sky-300">The Weave of Presence</span>
+                  <span className="text-white/20">•</span>
+                  <span className="text-amber-300">System Switch</span>
+                  <span className="text-white/20">•</span>
+                  <span className="text-emerald-300">Bridge Radiance</span>
+                </div>
 
-              <p className="text-lg md:text-xl text-[#9a94a6] mb-10 max-w-xl mx-auto md:mx-0 leading-relaxed">
-                WEAVE is an operating environment for your business and participation. One account for your wallet, your network, and your institutional support.
-              </p>
+                <h1 className="mt-4 text-3xl font-black leading-[1.04] tracking-tight text-white sm:text-4xl md:text-6xl">
+                  Interaction in Motion.
+                  <span className="mt-1 block bg-gradient-to-r from-sky-200 via-white to-amber-200 bg-clip-text text-transparent">
+                    A real-life gaming operating system for human presence.
+                  </span>
+                </h1>
 
-              <div className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4 mb-16">
-                <Link href="/register" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto bg-white text-[#08090f] hover:bg-[#ece7da] px-10 py-7 text-lg font-bold border-0 transition-transform active:scale-95 shadow-2xl shadow-white/10">
-                    Create Your Account
-                    <ArrowRight className="h-5 w-5 ml-2" />
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto border-[#14b8a6]/30 bg-[#14b8a6]/5 hover:bg-[#14b8a6]/10 px-10 py-7 text-lg font-bold backdrop-blur-xl transition-transform active:scale-95 text-[#14b8a6]"
-                  onClick={() => {
-                    const prompt = (window as any).deferredPrompt;
-                    if (prompt) {
-                      prompt.prompt();
-                    } else {
-                      alert("To install WEAVE, use 'Add to Home Screen' in your browser's menu.");
-                    }
-                  }}
-                >
-                  Install App
-                </Button>
-              </div>
-            </div>
+                <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+                  WEAVE is an interactional company. We create services, instruments, and systems that turn human participation into organized work, value, and opportunity.
+                </p>
 
-            {/* Signature 3D moment */}
-            <div className="h-[320px] md:h-[440px] w-full">
-              <WeaveHero3D />
-            </div>
-          </div>
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <Link href="/register" className="w-full sm:w-auto">
+                    <Button className="h-11 w-full border-0 bg-white px-5 text-xs font-black text-[#020815] hover:bg-slate-100 sm:w-auto">
+                      Enter WEAVE
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-4 max-w-5xl mx-auto w-full px-2">
-            {[
-              { val: "Flame Coin", label: "Native Wallet" },
-              { val: "24/7", label: "Participation" },
-              { val: "3-tier", label: "Human Network" },
-              { val: "AI", label: "Institutional Support" }
-            ].map((stat, i) => (
-              <div key={i} className="group relative">
-                <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-2xl p-4 md:p-6 transition-all hover:bg-white/[0.08] hover:border-white/20">
-                  <div className="text-xl md:text-3xl font-black text-[#e8b93f] mb-1">{stat.val}</div>
-                  <p className="text-[#9a94a6] text-[10px] md:text-xs font-bold uppercase tracking-widest">{stat.label}</p>
+                  <Link href="/client/login" className="w-full sm:w-auto">
+                    <Button
+                      variant="outline"
+                      className="h-11 w-full border-sky-300/25 bg-sky-400/[0.07] px-5 text-xs font-black text-sky-100 hover:bg-sky-400/12 sm:w-auto"
+                    >
+                      <DoorOpen className="mr-2 h-4 w-4" />
+                      Access Client Portal
+                    </Button>
+                  </Link>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Features Section */}
-        <div className="px-4 md:px-8 py-24 border-t border-white/5 bg-black/20">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16 px-4">
-              <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">One movement. Many places.</h2>
-              <p className="text-[#9a94a6] max-w-2xl mx-auto text-lg">A coherent environment where every interaction counts.</p>
+              <div className="relative h-[250px] overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/15 sm:h-[320px] md:h-[390px]">
+                <div className="pointer-events-none absolute inset-x-5 top-4 z-10 flex items-center justify-between text-[7px] font-black uppercase tracking-[0.16em] text-white/40">
+                  <span>Human Presence</span>
+                  <span>Living World</span>
+                </div>
+                <WeaveHero3D />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {[
-                { icon: Wallet, title: "Wallet & Ledger", desc: "Manage your Flame Coin and USDT. A single, transparent source of truth for your value.", color: "text-[#e8b93f]" },
-                { icon: Network, title: "Institutional Network", desc: "Coordinate with Agents, Bridgers, and Clients within a structured human network.", color: "text-[#14b8a6]" },
-                { icon: MessageSquare, title: "The Lounge", desc: "Participate in real-time communication and stay in sync with your team.", color: "text-[#8b7cf6]" },
-                { icon: Trophy, title: "Arena", desc: "Compete and participate in specialized environments designed for action.", color: "text-[#e8b93f]" }
-              ].map((feat, i) => (
-                <div key={i} className="group h-full">
-                  <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-3xl p-8 transition-all hover:bg-white/[0.07] hover:border-white/20 h-full flex flex-col items-start text-left">
-                    <div className="p-3 rounded-2xl bg-white/5 mb-6 group-hover:scale-110 transition-transform">
-                      <feat.icon className={`h-8 w-8 ${feat.color}`} />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-3 tracking-tight">{feat.title}</h3>
-                    <p className="text-[#9a94a6] text-sm leading-relaxed">{feat.desc}</p>
-                  </div>
+            <div className="relative mt-4 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+              {movement.map((item, index) => (
+                <div
+                  key={item}
+                  className="rounded-xl border border-white/10 bg-black/18 px-2 py-2.5 text-center backdrop-blur-sm"
+                >
+                  <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-500">
+                    {String(index + 1).padStart(2, '0')}
+                  </p>
+                  <p className="mt-1 text-[9px] font-bold text-white">{item}</p>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
+          </section>
 
-        {/* Footer */}
-        <footer className="border-t border-white/5 py-12 px-6 md:px-8 bg-[#08090f]">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-            <WeaveLogo size="sm" />
-            <div className="flex gap-8 text-[#9a94a6] text-sm font-medium">
-              <a href="#" className="hover:text-white transition-colors uppercase tracking-widest text-[10px]">Status</a>
-              <a href="#" className="hover:text-white transition-colors uppercase tracking-widest text-[10px]">Legal</a>
-              <a href="#" className="hover:text-white transition-colors uppercase tracking-widest text-[10px]">Security</a>
+          <section className="mt-3 grid gap-3 md:grid-cols-[1.15fr_.85fr]">
+            <div className="rounded-[1.6rem] border border-white/10 bg-[#020713]/54 p-4 backdrop-blur-md sm:p-5">
+              <p className="text-[8px] font-black uppercase tracking-[0.20em] text-sky-300">What WEAVE Builds</p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
+                Systems around the movement already present in human life.
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value.
+              </p>
+
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                {systems.map(({ icon: Icon, title, copy }) => (
+                  <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.025] p-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-sky-300/15 bg-sky-400/[0.06]">
+                      <Icon className="h-4 w-4 text-sky-300" />
+                    </div>
+                    <h3 className="mt-2 text-xs font-black uppercase tracking-[0.08em] text-white">{title}</h3>
+                    <p className="mt-1.5 text-[10px] leading-4 text-slate-500">{copy}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="text-[10px] text-[#5c586a] font-bold uppercase tracking-[0.2em]">© 2026 WEAVE. ALL RIGHTS RESERVED.</p>
+
+            <aside className="relative overflow-hidden rounded-[1.6rem] border border-amber-300/15 bg-amber-400/[0.035] p-4 backdrop-blur-md sm:p-5">
+              <div className="pointer-events-none absolute right-[-18%] top-[-22%] h-40 w-40 rounded-full bg-amber-300/[0.06] blur-3xl" />
+              <div className="relative">
+                <p className="text-[8px] font-black uppercase tracking-[0.20em] text-amber-300">Client Access Point</p>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-white">Already a WEAVE Client?</h2>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  Enter your Client Portal with your issued WEAVE File Number and secure passkey. Your File Folder, System Switch and Client movement continue from there.
+                </p>
+
+                <Link href="/client/login" className="mt-4 block">
+                  <div className="flex items-center justify-between rounded-2xl border border-amber-200/20 bg-black/22 px-4 py-4 transition active:scale-[.99]">
+                    <div>
+                      <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300">Authorized Access</p>
+                      <p className="mt-1 text-sm font-black text-white">Open Client Portal</p>
+                    </div>
+                    <DoorOpen className="h-5 w-5 text-amber-200" />
+                  </div>
+                </Link>
+
+                <Link href="/client/register" className="mt-2 block text-center text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 hover:text-white">
+                  Register with your File Number
+                </Link>
+              </div>
+            </aside>
+          </section>
+
+          <section className="mt-3 rounded-[1.6rem] border border-white/10 bg-black/18 p-4 backdrop-blur-md sm:p-5">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-sky-300/12 bg-sky-400/[0.035] p-4">
+                <Gamepad2 className="h-5 w-5 text-sky-300" />
+                <h3 className="mt-3 text-sm font-black text-white">Real-life gaming</h3>
+                <p className="mt-1.5 text-[10px] leading-4 text-slate-500">The player moves through real participation, choices, work and opportunity rather than a fictional level system.</p>
+              </div>
+              <div className="rounded-2xl border border-emerald-300/12 bg-emerald-400/[0.035] p-4">
+                <BriefcaseBusiness className="h-5 w-5 text-emerald-300" />
+                <h3 className="mt-3 text-sm font-black text-white">Participation becomes work</h3>
+                <p className="mt-1.5 text-[10px] leading-4 text-slate-500">WEAVE organizes what people are already doing into functions that can become useful work and value.</p>
+              </div>
+              <div className="rounded-2xl border border-violet-300/12 bg-violet-400/[0.035] p-4">
+                <Sparkles className="h-5 w-5 text-violet-300" />
+                <h3 className="mt-3 text-sm font-black text-white">One operating world</h3>
+                <p className="mt-1.5 text-[10px] leading-4 text-slate-500">Services, instruments, systems and user positions remain connected inside the same moving WEAVE environment.</p>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer className="relative z-10 border-t border-sky-300/10 bg-[#020815]/72 px-4 py-8 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+            <WeaveLogo size="sm" />
+            <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-600">
+              Human presence · interaction · participation · work · value · opportunity
+            </p>
           </div>
         </footer>
       </div>
