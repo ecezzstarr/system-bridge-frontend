@@ -10,6 +10,7 @@ import ClientFileFolderGate from '@/components/system-switch/client-file-folder-
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
 import { getClientToken, getClientUser } from '@/lib/client-auth'
 import { WEAVE_ARCHITECTURE } from '@/lib/weave-architecture'
+import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
 
 export default function ClientSystemSwitchPage() {
   const router = useRouter()
@@ -85,6 +86,10 @@ export default function ClientSystemSwitchPage() {
             <div className="flex items-center gap-3"><div className="rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-right"><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">File Number</p><p className="font-mono text-xs text-slate-200">{data.client.file_number}</p></div><div className="hidden sm:flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/5 px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-emerald-300"><ShieldCheck className="h-4 w-4" /> Active</div></div>
           </div>
         </div>
+
+        {data.premium_dj_enabled && (
+          <ClientPremiumDJ fileNumber={data.client.file_number} />
+        )}
 
         <FileFolderOpenWorld clientName={data.client.name} fileNumber={data.client.file_number} workshopTitle={data.workshop.title} workshopPurpose={data.workshop.purpose} initialWorld={data.file_folder_world} />
 
