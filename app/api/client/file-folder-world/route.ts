@@ -165,6 +165,30 @@ export async function POST(request: NextRequest) {
       `
       if (!blueprint) return NextResponse.json({ error: 'Blueprint not found' }, { status: 404 })
 
+      if (blueprint.blueprint_key === 'customer_door') {
+        const [existingDoor] = await ctx.sql`
+          SELECT id,status
+          FROM client_file_folder_builds
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND blueprint_key='customer_door'
+          ORDER BY created_at DESC
+          LIMIT 1
+        `
+        const [activeDoor] = await ctx.sql`
+          SELECT id
+          FROM client_built_systems
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND system_type='customer_door'
+            AND status='active'
+          LIMIT 1
+        `
+        if (existingDoor || activeDoor) {
+          return NextResponse.json({ error: 'Your Customer Door is already forming or active.' }, { status: 409 })
+        }
+      }
+
       const title = customTitle || blueprint.name
       const requiredQty = Number(blueprint.required_item_quantity || 0)
       const requiredItemKey = blueprint.required_item_key || null
