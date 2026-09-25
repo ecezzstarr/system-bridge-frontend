@@ -1171,10 +1171,14 @@ function FundSweepsSection({ user }: { user: any }) {
 
   const executeSweep = async (sweepId: string) => {
     try {
+      const token = localStorage.getItem('ssb_auth_token')
       await fetch('/api/admin/sweeps', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sweepId, action: 'execute', adminId: user?.id }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ sweepId, action: 'execute' }),
       })
       fetchSweeps()
     } catch (error) {
