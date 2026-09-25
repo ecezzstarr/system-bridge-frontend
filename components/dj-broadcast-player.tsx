@@ -31,6 +31,10 @@ export function DJBroadcastPlayer() {
   const autoplayAttemptedRef = useRef(false)
   const syncInFlightRef = useRef(false)
   const userPausedRef = useRef(false)
+  const trackTypeRef = useRef<'music' | 'voice' | 'announcement'>('music')
+  const audienceContextRef = useRef<AudioContext | null>(null)
+  const audienceGainRef = useRef<GainNode | null>(null)
+  const audienceSourcesRef = useRef<Array<AudioBufferSourceNode | OscillatorNode>>([])
 
   const [live, setLive] = useState(false)
   const [flameEventLive, setFlameEventLive] = useState(false)
@@ -67,12 +71,138 @@ export function DJBroadcastPlayer() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  const stopHarmonyAudience = useCallback((immediate = false) => {
+    const context = audienceContextRef.current
+    const master = audienceGainRef.current
+    if (!context) return
+
+    const sources = [...audienceSourcesRef.current]
+    audienceSourcesRef.current = []
+
+    try {
+      if (master) {
+        const now = context.currentTime
+        master.gain.cancelScheduledValues(now)
+        master.gain.setValueAtTime(master.gain.value, now)
+        master.gain.linearRampToValueAtTime(0, now + (immediate ? 0.01 : 0.32))
+      }
+    } catch {}
+
+    window.setTimeout(() => {
+      for (const source of sources) {
+        try { source.stop() } catch {}
+        try { source.disconnect() } catch {}
+      }
+      if (audienceContextRef.current === context) {
+        audienceContextRef.current = null
+        audienceGainRef.current = null
+        try { void context.close() } catch {}
+      }
+    }, immediate ? 20 : 360)
+  }, [])
+
+  const startHarmonyAudience = useCallback(async () => {
+    if (
+      typeof window === 'undefined' ||
+      trackTypeRef.current !== 'music' ||
+      userPausedRef.current
+    ) return
+
+    const existing = audienceContextRef.current
+    if (existing) {
+      try {
+        if (existing.state === 'suspended') await existing.resume()
+      } catch {}
+      return
+    }
+
+    try {
+      const context = new AudioContext()
+      const master = context.createGain()
+      const now = context.currentTime
+
+      master.gain.setValueAtTime(0, now)
+      master.gain.linearRampToValueAtTime(0.052, now + 0.8)
+      master.connect(context.destination)
+
+      audienceContextRef.current = context
+      audienceGainRef.current = master
+
+      const layers = [
+        { frequency: 240, q: 0.55, gain: 0.34, rate: 0.93, pan: -0.75, lfo: 0.08 },
+        { frequency: 430, q: 0.65, gain: 0.30, rate: 0.98, pan: -0.22, lfo: 0.11 },
+        { frequency: 760, q: 0.75, gain: 0.24, rate: 1.03, pan: 0.24, lfo: 0.14 },
+        { frequency: 1320, q: 0.85, gain: 0.17, rate: 1.07, pan: 0.72, lfo: 0.17 },
+      ]
+
+      for (const layer of layers) {
+        const seconds = 7
+        const buffer = context.createBuffer(1, Math.floor(context.sampleRate * seconds), context.sampleRate)
+        const data = buffer.getChannelData(0)
+        let smoothed = 0
+
+        for (let index = 0; index < data.length; index += 1) {
+          const white = Math.random() * 2 - 1
+          smoothed = smoothed * 0.78 + white * 0.22
+          const drift =
+            0.72 +
+            0.18 * Math.sin(index / context.sampleRate * Math.PI * 2 * 0.37) +
+            0.10 * Math.sin(index / context.sampleRate * Math.PI * 2 * 0.83)
+          data[index] = smoothed * drift
+        }
+
+        const source = context.createBufferSource()
+        const band = context.createBiquadFilter()
+        const softener = context.createBiquadFilter()
+        const layerGain = context.createGain()
+        const panner = context.createStereoPanner()
+        const lfo = context.createOscillator()
+        const lfoDepth = context.createGain()
+
+        source.buffer = buffer
+        source.loop = true
+        source.playbackRate.value = layer.rate
+
+        band.type = 'bandpass'
+        band.frequency.value = layer.frequency
+        band.Q.value = layer.q
+
+        softener.type = 'lowpass'
+        softener.frequency.value = 3200
+
+        layerGain.gain.value = layer.gain
+        panner.pan.value = layer.pan
+
+        lfo.frequency.value = layer.lfo
+        lfoDepth.gain.value = layer.gain * 0.14
+        lfo.connect(lfoDepth)
+        lfoDepth.connect(layerGain.gain)
+
+        source.connect(band)
+        band.connect(softener)
+        softener.connect(layerGain)
+        layerGain.connect(panner)
+        panner.connect(master)
+
+        source.start()
+        lfo.start()
+        audienceSourcesRef.current.push(source, lfo)
+      }
+
+      if (context.state === 'suspended') await context.resume()
+    } catch {
+      // Harmony is atmosphere only. The DJ track must keep playing if Web Audio is unavailable.
+      stopHarmonyAudience(true)
+    }
+  }, [stopHarmonyAudience])
+
   const applyPersonalPause = useCallback(() => {
     const audio = audioRef.current
     if (!audio) return
     audio.pause()
     audio.muted = true
-  }, [])
+    stopHarmonyAudience()
+  }, [stopHarmonyAudience])
 
   const authHeaders = () => {
     const token = localStorage.getItem('ssb_auth_token')
@@ -87,6 +217,11 @@ export function DJBroadcastPlayer() {
     try {
       audio.muted = false
       await audio.play()
+      if (trackTypeRef.current === 'music') {
+        await startHarmonyAudience()
+      } else {
+        stopHarmonyAudience()
+      }
       setJoined(true)
       if (remember) {
         try {
@@ -99,7 +234,9 @@ export function DJBroadcastPlayer() {
       setJoined(false)
       return false
     }
-  }, [])
+  }, [startHarmonyAudience, stopHarmonyAudience])
+
+  useEffect(() => () => stopHarmonyAudience(true), [stopHarmonyAudience])
 
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
@@ -141,6 +278,7 @@ export function DJBroadcastPlayer() {
         setTrackArtist(null)
         setAnnouncement(null)
         if (audio && !audio.paused) audio.pause()
+        stopHarmonyAudience()
         return
       }
 
@@ -148,6 +286,8 @@ export function DJBroadcastPlayer() {
       setTrackTitle(data.track.title || null)
       setTrackArtist(data.track.artist || null)
       setAnnouncement(data.announcementText || null)
+      trackTypeRef.current = data.track.type || 'music'
+      if (trackTypeRef.current !== 'music') stopHarmonyAudience()
 
       if (!audio) return
 
@@ -202,7 +342,7 @@ export function DJBroadcastPlayer() {
     } finally {
       syncInFlightRef.current = false
     }
-  }, [user?.id, joined, beginPlayback, applyPersonalPause])
+  }, [user?.id, joined, beginPlayback, applyPersonalPause, stopHarmonyAudience])
 
   const eligibleRole = Boolean(user && ['admin', 'agent', 'bridger', 'client'].includes(user.role))
 
@@ -293,12 +433,24 @@ export function DJBroadcastPlayer() {
         ref={audioRef}
         preload="auto"
         onPlay={() => {
-          if (userPausedRef.current) applyPersonalPause()
+          if (userPausedRef.current) {
+            applyPersonalPause()
+          } else if (trackTypeRef.current === 'music') {
+            void startHarmonyAudience()
+          }
         }}
         onPlaying={() => {
-          if (userPausedRef.current) applyPersonalPause()
+          if (userPausedRef.current) {
+            applyPersonalPause()
+          } else if (trackTypeRef.current === 'music') {
+            void startHarmonyAudience()
+          }
         }}
-        onEnded={() => void syncBroadcast()}
+        onPause={() => stopHarmonyAudience()}
+        onEnded={() => {
+          stopHarmonyAudience()
+          void syncBroadcast()
+        }}
         onError={() => void syncBroadcast()}
       />
 
