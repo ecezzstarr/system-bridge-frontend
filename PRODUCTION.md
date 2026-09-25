@@ -27,3 +27,5 @@ The September feature integration is recorded in docs/recent-feature-integration
 It includes River context/outreach, Human Cadences search, client business stores and international payment settings, and Flame crossings/provider reporting. Authority Workshop is restored at /authority/workshops, linked from the live sidebar. Client workshops use the existing users/sessions identity and the live database pool.
 The legacy EIGHT deployment action is blocked; deploy only through the preview/promotion script. The image build now runs tests/recent-features.cjs before compiling.
 Verify authenticated admin reporting, client authorization, and public cadence search before promotion. External payment and outreach actions must not be exercised as smoke tests.
+
+If the configured eight-CPU Cloud Build machine has no regional quota, use `CLOUDSDK_BUILDS_REGION=us-central1 WEAVE_BUILD_MACHINE_TYPE=e2-standard-2 python3 scripts/deploy-weave.py`. This changes only the build worker; the clean-main requirement, preview checks, production runtime configuration, and explicit promotion remain unchanged.

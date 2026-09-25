@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build canonical main, preview with zero traffic, then explicitly promote."""
-import json, subprocess, sys, tempfile, urllib.request, urllib.error, re, html as html_module
+import os, json, subprocess, sys, tempfile, urllib.request, urllib.error, re, html as html_module
 from pathlib import Path
 PROJECT='ssbr-495208'
 REGION='us-central1'
@@ -40,7 +40,12 @@ def main():
   run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rev+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
   print('Promoted',rev);return
  image='us-central1-docker.pkg.dev/'+PROJECT+'/system-bridge/frontend:'+sha
- run('gcloud','builds','submit',str(ROOT),'--config='+str(ROOT/'cloudbuild.yaml'),'--substitutions=COMMIT_SHA='+sha,'--project='+PROJECT,'--quiet')
+ build_args=['gcloud','builds','submit',str(ROOT),'--config='+str(ROOT/'cloudbuild.yaml'),'--substitutions=COMMIT_SHA='+sha,'--project='+PROJECT,'--quiet']
+ machine=os.environ.get('WEAVE_BUILD_MACHINE_TYPE')
+ if machine:
+  assert machine in ['e2-standard-2','e2-medium','e2-highcpu-8','e2-highcpu-32','n1-highcpu-8','n1-highcpu-32'], 'Unsupported build machine type'
+  build_args.append('--machine-type='+machine)
+ run(*build_args)
  assert check_source()==sha
  service=json.loads(cloud('run','services','describe',SERVICE,'--region='+REGION))
  active=[t for t in service['status']['traffic'] if t.get('percent',0)>0]
