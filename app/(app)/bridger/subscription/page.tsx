@@ -15,7 +15,7 @@ type Continuance = {
 }
 
 export default function BridgerContinuancePage() {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const userId = user?.id ?? null
   const [subscription, setContinuance] = useState<Continuance | null>(null)
   const [loading, setLoading] = useState(true)
@@ -27,16 +27,16 @@ export default function BridgerContinuancePage() {
 
   useEffect(() => {
     if (userId) {
-      fetchContinuance(userId)
+      fetchContinuance()
     } else {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, token])
 
-  async function fetchContinuance(uid: string) {
+  async function fetchContinuance() {
     setLoading(true)
     try {
-      const res = await fetch(`/api/bridger/subscription?userId=${uid}`)
+      const res = await fetch('/api/bridger/subscription', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       const data = await res.json()
       if (data.success) {
         setContinuance(data.subscription)
@@ -65,10 +65,8 @@ export default function BridgerContinuancePage() {
     try {
       const res = await fetch('/api/bridger/subscription/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
-          userId,
-          amount: SUBSCRIPTION_AMOUNT,
           reference: reference.trim(),
           paymentMethod
         })
