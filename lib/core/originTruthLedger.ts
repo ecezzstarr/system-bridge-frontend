@@ -111,8 +111,8 @@ export function initializeOriginSystem() {
     // Register Service System (Child System)
     registerSystemToOrigin("SSBNOW.ONLINE - Service System", "cloudrun", "ssbnow.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
     
-    // Register Admin Workshop (Private Production Layer)
-    registerSystemToOrigin("WEAVINGSYSTEM.ONLINE - Admin Workshop", "cloudrun", "weavingsystem.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
+    // Register the public WEAVE application domain.
+    registerSystemToOrigin("WEAVINGSYSTEM.ONLINE - WEAVE Public App", "cloudrun", "weavingsystem.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
     
     console.log("[v0] Origin Truth Ledger initialized with 3 interconnected systems")
   }
