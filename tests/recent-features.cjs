@@ -284,6 +284,8 @@ assert.ok(dailyProspectUiSource.includes('Daily Prospect Claim'),'Daily claim UI
 assert.ok(dailyProspectUiSource.includes('next free prospect'),'Daily reset wording uses Prospect')
 assert.ok(!dailyProspectUiSource.includes('Daily Project Claim'),'Project typo removed from daily claim')
 assert.ok(bridgerDashboardSource.includes('DailyProspectClaim'),'Bridger dashboard uses corrected Prospect component')
+assert.equal((bridgerDashboardSource.match(/<DailyProspectClaim \/>/g)||[]).length,1,'Daily Prospect claim renders only once in Bridger dashboard')
+assert.ok(bridgerDashboardSource.includes("activeTab === 'prospects' && ("),'Daily Prospect claim belongs to the Prospects tab only')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260925_bridger_daily_prospect_claim.sql')),'Daily Prospect claim migration exists')
 const loop1AgentAdSource=fs.readFileSync(path.join(root,'components/agent/loop1-agent-login-ad.tsx'),'utf8')
 const agentContinuanceSource=fs.readFileSync(path.join(root,'app/(app)/agent/commissions/page.tsx'),'utf8')
