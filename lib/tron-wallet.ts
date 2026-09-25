@@ -254,7 +254,12 @@ export async function sweepToCompanyWallet(
     
     if (tokenType === 'TRX' || tokenType === 'ALL') {
       if (balance.trx > 1) { // Keep 1 TRX for fees
-        const result = await sendTRX(userPrivateKey, COMPANY_WALLET, balance.trx - 1)
+        const result = await sendTRX(
+          userWalletAddress,
+          COMPANY_WALLET,
+          balance.trx - 1,
+          userPrivateKey,
+        )
         results.push(result)
       }
     }
@@ -292,15 +297,7 @@ export async function createWallet(): Promise<{ address: string; privateKey: str
     }
   } catch (error) {
     console.error('Error creating TRON wallet:', error)
-    // Generate a placeholder address if TronWeb fails
-    // This allows registration to proceed even without TRON configuration
-    const randomHex = Array.from({ length: 40 }, () => 
-      Math.floor(Math.random() * 16).toString(16)
-    ).join('')
-    return {
-      address: 'T' + randomHex.substring(0, 33),
-      privateKey: randomHex,
-    }
+    throw new Error('TRON wallet creation failed. No placeholder wallet was created.')
   }
 }
 
