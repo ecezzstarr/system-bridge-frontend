@@ -5,6 +5,7 @@ from pathlib import Path
 PROJECT='ssbr-495208'
 REGION='us-central1'
 SERVICE='system-bridge-frontend'
+PUBLIC_ORIGIN='https://weavingsystem.online'
 ROOT=Path(__file__).resolve().parents[1]
 def run(*args):
  return subprocess.check_output(args,cwd=ROOT,text=True).strip()
@@ -49,6 +50,19 @@ def main():
  env=spec['containers'][0].setdefault('env',[])
  if not any(e['name']=='PLATFORM_ADMIN_FALLBACK_PASSWORD' for e in env):
   env.append({'name':'PLATFORM_ADMIN_FALLBACK_PASSWORD','valueFrom':{'secretKeyRef':{'name':'weave-admin-fallback-password','key':'latest'}}})
+ public_env={
+  'WEAVE_PUBLIC_ORIGIN':PUBLIC_ORIGIN,
+  'NEXTAUTH_URL':PUBLIC_ORIGIN,
+  'NEXT_PUBLIC_APP_URL':PUBLIC_ORIGIN,
+  'APP_URL':PUBLIC_ORIGIN,
+  'NEXT_PUBLIC_BRIDGE_URL':PUBLIC_ORIGIN,
+ }
+ for name,value in public_env.items():
+  existing=next((e for e in env if e.get('name')==name),None)
+  if existing:
+   existing.clear();existing.update({'name':name,'value':value})
+  else:
+   env.append({'name':name,'value':value})
  annotations={k:v for k,v in baseline['metadata'].get('annotations',{}).items() if k.startswith('autoscaling.knative.dev/') or k in ['run.googleapis.com/cloudsql-instances','run.googleapis.com/startup-cpu-boost','run.googleapis.com/cpu-throttling','run.googleapis.com/vpc-access-connector','run.googleapis.com/vpc-access-egress','run.googleapis.com/execution-environment']}
  active_revision=active[0]['revisionName']
  traffic=[
