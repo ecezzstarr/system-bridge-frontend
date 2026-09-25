@@ -79,7 +79,7 @@ export const HOW_WEAVE_WORKS = {
   summary:
     'WEAVE is the institution.\n\nAdministration governs the system.\nAgents develop Bridgers.\nBridgers build and maintain Client relationships.\nClients are the center of the experience.\n\nThe Client is the game player inside System Switch, where the Client’s real-life movement forms the continuing game. Arena and Casino are separate shared platform experiences available across user roles; participation in them does not change a user’s institutional position. The Company also provides Client-facing Company positions that serve Clients, present curated experiences, and help resolve private matters.\n\nThe Client remains connected to WEAVE through the relationship with the Bridger and through the experience provided by the Company.',
   institutionalFlow: 'Administration → Agent → Bridger → Client',
-  clientFlow: 'WEAVE → Bridger relationship → Client entry → File Folder → File Number → Vault → Test Movement → Arena / Casino / Company services → continued relationship',
+  clientFlow: 'WEAVE → Bridger relationship → Client entry → File Folder → File Number → Client Vault → Siblings Funds Wallet → Main Client Wallet → Test Movement → Arena / Casino / Company services → continued relationship',
 }
 
 export const TERMS_SECTIONS = [
