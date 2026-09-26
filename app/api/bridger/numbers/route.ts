@@ -23,19 +23,7 @@ export async function GET(request:NextRequest){
       FROM bridger_whatsapp_numbers WHERE assigned_to=$1::uuid
       ORDER BY assigned_at DESC
     `,[user.id])).rows
-    const inbox=(await client.query(`
-      SELECT i.id,i.number_id,i.channel,i.sender,i.message,i.received_at,i.expires_at,i.viewed_at
-      FROM bridger_number_inbox i
-      JOIN bridger_whatsapp_numbers n ON n.id=i.number_id
-      WHERE n.assigned_to=$1::uuid AND i.expires_at>NOW()
-      ORDER BY i.received_at DESC LIMIT 100
-    `,[user.id])).rows
-    if(inbox.length) await client.query(`
-      UPDATE bridger_number_inbox i SET viewed_at=COALESCE(i.viewed_at,NOW())
-      FROM bridger_whatsapp_numbers n
-      WHERE i.number_id=n.id AND n.assigned_to=$1::uuid AND i.expires_at>NOW()
-    `,[user.id])
-    return NextResponse.json({success:true,available,mine,inbox},{headers:{'Cache-Control':'private, no-store'}})
+    return NextResponse.json({success:true,available,mine},{headers:{'Cache-Control':'private, no-store'}})
   } finally { client.release() }
 }
 
@@ -74,7 +62,15 @@ export async function POST(request:NextRequest){
     `,[user.id,numberId])).rows[0]
     await client.query('COMMIT')
     const receipt=await issueWeaveReceipt({userId:user.id,kind:'purchase',source:'bridger_whatsapp_number',sourceId:String(numberId),amount:price,currency:'Flame Coin',status:'completed',description:'Bridger WhatsApp business number assignment',metadata:{country:number.country,product:'WEAVE Worldwide WhatsApp Number',balanceAfter:after}})
-    return NextResponse.json({success:true,number:assigned,newBalance:after,receipt})
+    const publicNumber={
+      id:assigned.id,
+      phone_e164:assigned.phone_e164,
+      country:assigned.country,
+      price_flame_coin:assigned.price_flame_coin,
+      status:assigned.status,
+      assigned_at:assigned.assigned_at,
+    }
+    return NextResponse.json({success:true,number:publicNumber,newBalance:after,receipt},{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){
     await client.query('ROLLBACK'); console.error('[Bridger Number purchase]',error)
     return NextResponse.json({error:'Number purchase failed'},{status:500})
