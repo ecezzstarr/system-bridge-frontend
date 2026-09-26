@@ -392,6 +392,8 @@ for(const route of [
 const positionEventSource=fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8')
 const compactWorldSource=fs.readFileSync(path.join(root,'components/world/weave-dashboard-world.tsx'),'utf8')
 const roleOperatingRoomSource=fs.readFileSync(path.join(root,'components/world/role-operating-room.tsx'),'utf8')
+const adminDashboardCenterSource=fs.readFileSync(path.join(root,'app/(app)/admin/dashboard/page.tsx'),'utf8')
+const adminControlCenterRouteSource=fs.readFileSync(path.join(root,'app/(app)/admin/control-center/page.tsx'),'utf8')
 const agentFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/agent/functions/page.tsx'),'utf8')
 const adminFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/admin/functions/page.tsx'),'utf8')
 assert.ok(positionEventSource.includes('Global event · personal position'),'Loop 1 remains global while rendering a personal role position')
@@ -404,6 +406,18 @@ assert.ok(bridgerOperatingRoomSource.includes('Crossing') && bridgerOperatingRoo
 assert.ok(roleOperatingRoomSource.includes("title: 'Bridger support'"),'Agent Operating Room organizes Bridger support as a system function')
 assert.ok(roleOperatingRoomSource.includes("title: 'Client system'"),'Administration Operating Room organizes Client authority as a system function')
 assert.ok(roleOperatingRoomSource.includes('Administration Control Panel'),'Administration Operating Room restores the dense middle control panel')
+assert.ok(adminControlCenterRouteSource.includes("export { default } from '../dashboard/page'"),'Administration has a reachable route for the preserved dense control center')
+for(const hash of ['#users','#clients','#fne','#bridgers','#deposits','#tron','#bridge','#withdrawals','#announcements','#wallet','#workshops','#eight']){
+ assert.ok(roleOperatingRoomSource.includes('/admin/control-center'+hash),`Administration middle panel exposes preserved control-center component ${hash}`)
+}
+for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcements'"]){
+ assert.ok(adminDashboardCenterSource.includes(hash),`Administration control center activates direct hash ${hash}`)
+}
+assert.ok(!adminDashboardCenterSource.includes("onClick={() => setActiveSubTab('sweeps')}"),'Mock in-memory EIGHT sweep requests are not exposed as a live Administration tab')
+assert.ok(!roleOperatingRoomSource.includes('/admin/control-center#sweeps'),'Administration middle panel does not present mock sweep requests as live operations')
+assert.ok(roleOperatingRoomSource.includes("label: 'EIGHT AI'"),'Administration middle panel restores EIGHT AI access')
+assert.ok(roleOperatingRoomSource.includes("label: 'Administration Wallet'"),'Administration middle panel restores the existing Admin wallet surface')
+assert.ok(roleOperatingRoomSource.includes("label: 'Administration Workshops'"),'Administration middle panel restores the existing workshop surface')
 assert.ok(roleOperatingRoomSource.includes("title: 'Shared WEAVE'"),'Administration Operating Room begins with the shared WEAVE layer')
 for(const sharedRoute of ['/company/loops','/search','/profiles','/weave','/company-chat','/lounge?view=private','/lounge','/marketplace','/echo','/arena','/casino','/video-feed','/weave/standing','/event','/wallet','/ledger']){
  assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Administration middle panel preserves shared WEAVE component ${sharedRoute}`)
@@ -424,6 +438,12 @@ assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]
 assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
 assert.ok(adminFunctionsSource.includes('<RoleOperatingRoom role="admin"'),'Administration Functions opens the Administration Operating Room instead of importing the dashboard')
 assert.ok(!compactWorldSource.includes('{children}'),'Home no longer stacks the old terminal underneath the world')
+for(const file of ['components/world/role-operating-room.tsx','app/(app)/admin/dashboard/page.tsx','app/(app)/admin/control-center/page.tsx']){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Administration center restoration syntax/transpile check')
+}
 for(const file of ['components/world/role-operating-room.tsx','components/bridger/bridger-operating-environment.tsx']){
  const source=fs.readFileSync(path.join(root,file),'utf8')
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
