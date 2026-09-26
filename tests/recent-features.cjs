@@ -432,6 +432,13 @@ assert.ok(roleOperatingRoomSource.includes("href: '/admin/loop-workshop'"),'Admi
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/dj-workshop'"),'Administration middle panel exposes DJ Workshop')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/ad-workshop'"),'Administration middle panel exposes Ad Workshop')
 assert.ok(roleOperatingRoomSource.includes('Agent Working Panel'),'Agent Operating Room restores the dense middle working panel')
+for(const sharedRoute of ['/company/loops','/search','/profiles','/lounge?view=private','/lounge','/echo','/arena','/casino','/video-feed','/weave/standing']){
+ assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Agent Operating Room preserves shared WEAVE component ${sharedRoute}`)
+ assert.ok(bridgerOperatingRoomSource.includes(`href: '${sharedRoute}'`) || ['/arena','/casino'].includes(sharedRoute),`Bridger Operating Room preserves shared WEAVE component ${sharedRoute}`)
+}
+assert.ok(roleOperatingRoomSource.includes("href: '/clients'"),'Agent Operating Room preserves the Client directory')
+assert.ok(roleOperatingRoomSource.includes('DISTRICT_TONE'),'Agent and Administration components use district color structure')
+assert.ok(bridgerOperatingRoomSource.includes('DISTRICT_TONE'),'Bridger components use district color structure')
 assert.ok(bridgerOperatingRoomSource.includes('Bridger Working Panel'),'Bridger Operating Room restores the dense middle working panel')
 assert.ok(bridgerOperatingRoomSource.includes('Central operating surface'),'Bridger role keeps a central operating surface')
 assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim remains one place after restoring the Bridger middle panel')
@@ -501,6 +508,9 @@ const fileFolderWorldSource=fs.readFileSync(path.join(root,'lib/client-file-fold
 const fileFolderWorldApiSource=fs.readFileSync(path.join(root,'app/api/client/file-folder-world/route.ts'),'utf8')
 const fileFolderOperatingEnvironmentSource=fs.readFileSync(path.join(root,'components/system-switch/client-file-folder-operating-environment.tsx'),'utf8')
 const fileFolderOpenWorldSource=fs.readFileSync(path.join(root,'components/system-switch/file-folder-open-world.tsx'),'utf8')
+const supportFileFolderSource=fs.readFileSync(path.join(root,'app/(app)/weave/file-folder/[fileNumber]/page.tsx'),'utf8')
+const clientOperatingRoomSource=fs.readFileSync(path.join(root,'components/client/client-operating-room.tsx'),'utf8')
+const clientFunctionsPageSource=fs.readFileSync(path.join(root,'app/client/functions/page.tsx'),'utf8')
 const clientSystemSwitchSource=fs.readFileSync(path.join(root,'app/client/system-switch/page.tsx'),'utf8')
 const fileFolderOperatingMigrationSource=fs.readFileSync(path.join(root,'migrations/20260926_file_folder_operating_environment.sql'),'utf8')
 const clientBridgeAiSupportSource=fs.readFileSync(path.join(root,'components/system-switch/client-bridge-ai-support.tsx'),'utf8')
@@ -528,6 +538,18 @@ assert.ok(fileFolderOpenWorldSource.includes("action:'apply_build_item'"),'Activ
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Design preview'),'Client sees a truthful pre-build system preview')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Operation shown here is based on recorded File Folder entries'),'Post-build view distinguishes recorded operation from simulation')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'"),'File Folder is organized as one operating environment with contained surfaces')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('File Folder map'),'File Folder exposes one persistent district map instead of page-like top tabs')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('These are districts of one environment'),'File Folder explains that its sections belong to one operating environment')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('One File Folder. One Client operating environment.'),'File Folder explains itself to first-time viewers')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('Folder status'),'File Folder keeps live status visible beside the active workspace')
+assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Build + Operate'"),'Build and live operation are visibly one File Folder district')
+assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Business + Customers'"),'Business and Customer Door are visibly one File Folder district')
+assert.ok(supportFileFolderSource.includes('You are viewing one Client operating environment.'),'Bridge Plaza support view explains the File Folder to visitors')
+assert.ok(clientFunctionsPageSource.includes('<ClientOperatingRoom'),'Client Functions now opens the organized Client Operating Room')
+assert.ok(!clientFunctionsPageSource.includes('LegacyClientDashboard'),'Client Functions no longer uses the old stacked legacy dashboard as its primary surface')
+for(const route of ['/client/system-switch','/client/loops','/client/deposit','/client/withdraw','/client/chat/bridger','/marketplace','/weave','/lounge','/echo','/video-feed','/weave/standing','/client/arena','/client/casino']){
+ assert.ok(clientOperatingRoomSource.includes(`href: '${route}'`),`Client Operating Room preserves ${route}`)
+}
 assert.ok(fileFolderOperatingEnvironmentSource.includes('function buildDepth'),'File Folder build depth changes as construction progresses')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Foundation') && fileFolderOperatingEnvironmentSource.includes('Commissioning'),'Build depth exposes formation stages before live activation')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Hosted live inside this File Folder'),'Completed Client systems remain hosted inside the File Folder')
@@ -555,6 +577,8 @@ assert.ok(fileFolderWorldSource.includes('ON CONFLICT (blueprint_key) DO NOTHING
 
 for(const file of [
  'components/system-switch/client-file-folder-operating-environment.tsx',
+ 'components/client/client-operating-room.tsx',
+ 'app/(app)/weave/file-folder/[fileNumber]/page.tsx',
  'components/system-switch/client-bridge-ai-support.tsx',
  'app/api/client/bridge-ai/route.ts',
  'components/bridger/bridger-operating-environment.tsx',
@@ -596,9 +620,11 @@ assert.ok(presenceCameraLibSource.includes('PRESENCE_TRACE_KEY'),'Human movement
 assert.ok(presenceCameraSource.includes("document.addEventListener('click',onClick,true)"),'Written navigation and button clicks are captured as human outputs')
 assert.ok(presenceCameraSource.includes("'weave:presence-output'"),'Presence outputs are emitted to the moving system')
 assert.ok(presenceCameraSource.includes("lastOutput?.type === 'action'"),'In-page actions create a camera focus movement')
-assert.ok(presenceCameraSource.includes('data-presence-rhythm'),'Presence Camera keeps a continuous breathing rhythm between interactions')
-assert.ok(presenceCameraSource.includes('scene.camera.yaw'),'Page content settles into the scene camera angle')
-assert.ok(presenceCameraSource.includes('scene.camera.depth'),'Scene depth affects the settled camera scale')
+assert.ok(presenceCameraSource.includes('className="weave-stable-content"'),'Presence Camera marks page content as persistent readable content')
+assert.ok(presenceCameraSource.includes("opacity:1"),'Presence Camera keeps page content fully opaque during navigation')
+assert.ok(presenceCameraSource.includes("filter:'none'"),'Presence Camera does not blur page writing during navigation')
+assert.ok(!presenceCameraSource.includes("filter:'blur("),'Presence Camera no longer blurs page content')
+assert.ok(!presenceCameraSource.includes('rotateZ:['),'Presence Camera no longer continuously rocks text and controls')
 assert.ok(worldBackdropPresenceSource.includes('usePresenceCamera'),'Persistent WEAVE environment follows camera scene state')
 assert.ok(worldBackdropPresenceSource.includes('rotateY'),'World background uses camera yaw')
 assert.ok(worldBackdropPresenceSource.includes('rotateX'),'World background uses camera pitch')
@@ -735,6 +761,9 @@ assert.ok(readableCssSource.includes('[class~="text-[7px]"]'),'Tiny legacy label
 assert.ok(readableCssSource.includes('weave-word-presence'),'WEAVE includes a persistent thick-word treatment')
 assert.ok(readableCssSource.includes('text-shadow'),'WEAVE text keeps visible mass against moving system backgrounds')
 assert.ok(readableCssSource.includes('font-weight: 650'),'Dense system labels use stronger weight instead of visually dissolving')
+assert.ok(readableCssSource.includes('.weave-stable-content'),'WEAVE has a stable-content rule for persistent writing')
+assert.ok(readableCssSource.includes('.weave-reading-surface'),'Organized working surfaces use a high-contrast reading layer')
+assert.ok(!readableCssSource.includes('opacity: calc(var(--ui-opacity) * 0.9)'),'Field breathing no longer fades text-bearing surfaces')
 assert.ok(recordPageSource.includes('isInitialized'),'Record waits for WEAVE auth initialization')
 assert.ok(recordPageSource.includes("headers: { Authorization: \`Bearer \${token}\` }"),'Record uses the initialized WEAVE session token')
 assert.ok(ledgerLibSource.includes('function moneyNumber'),'Ledger normalizes PostgreSQL NUMERIC values before Record renders')
