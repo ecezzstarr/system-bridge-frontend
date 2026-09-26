@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, MessageCircle, Phone, Users, Send, CheckCheck } from 'lucide-react'
 import Link from 'next/link'
 import { openWhatsAppWithNumber } from '@/components/external-apps-nav'
+import { ClientBuildPull } from '@/components/world/client-build-pull'
 
 interface Client {
   id: string
@@ -35,7 +36,7 @@ const POSITIONS = [
 
 export default function BridgerClientsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-transparent flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div></div>}>
       <BridgerClientsContent />
     </Suspense>
   )
@@ -173,9 +174,9 @@ function BridgerClientsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-[72vh] overflow-hidden rounded-[2rem] border border-emerald-300/15 bg-[#030a15]/72 text-white flex flex-col weave-system-depth">
       {/* Header */}
-      <div className="bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3 shrink-0">
+      <div className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(16,185,129,.13),transparent_34%),rgba(3,10,21,.78)] px-4 py-4 backdrop-blur-xl shrink-0">
         <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3">
             <Link href="/bridger/dashboard">
@@ -184,8 +185,9 @@ function BridgerClientsContent() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-white">Client Service Portal</h1>
-              <p className="text-xs text-slate-500">Continue the Client relationship after crossing</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Bridger Client Continuity</p>
+              <h1 className="mt-1 text-lg font-black text-white">Client Relationship System</h1>
+              <p className="text-xs text-slate-300">Crossing does not end the relationship. The Bridger continues beside the Client while the Client builds and operates.</p>
             </div>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full border border-slate-700">
@@ -197,7 +199,7 @@ function BridgerClientsContent() {
 
       <div className="flex-1 flex overflow-hidden max-w-7xl mx-auto w-full">
         {/* Client Sidebar */}
-        <div className="w-80 border-r border-slate-800 flex flex-col bg-slate-900/30 overflow-y-auto hidden md:flex">
+        <div className="w-80 border-r border-white/10 flex flex-col bg-black/20 overflow-y-auto hidden md:flex">
           <div className="p-4 border-b border-slate-800">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Your Clients</h2>
           </div>
@@ -231,7 +233,7 @@ function BridgerClientsContent() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-slate-950 overflow-hidden relative">
+        <div className="flex-1 flex flex-col bg-black/10 overflow-hidden relative">
           {selectedClient ? (
             <>
               {/* Chat Header */}
@@ -356,8 +358,10 @@ function BridgerClientsContent() {
               <div className="w-20 h-20 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mb-6">
                 <MessageCircle className="h-10 w-10 text-emerald-500" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Select a Client</h3>
-              <p className="text-slate-400 max-w-sm">Choose a client from the sidebar to view their message history and provide support across different service contexts.</p>
+              <h3 className="text-xl font-black text-white mb-2">Choose a Client movement.</h3>
+              <p className="text-slate-300 max-w-md">Open a Client to continue the relationship after crossing. Messages, business context and the Client's File Folder movement belong to the same continuity.</p>
+
+              <div className="mt-6 w-full max-w-xl"><ClientBuildPull role="bridger" /></div>
               
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg w-full md:hidden">
                 {clients.map(client => (
