@@ -279,7 +279,7 @@ const clientBridgerSource=fs.readFileSync(path.join(root,'app/api/client/bridger
 assert.ok(clientNavSource.includes("pathname === '/client/login'"),'Client login is excluded from signed-in Client navigation')
 assert.ok(clientNavSource.includes("pathname === '/client/register'"),'Client registration is excluded from signed-in Client navigation')
 assert.ok(clientNavSource.includes('File Folder') || clientNavSource.includes('My Workshop & Store'),'Client File Folder/workshop link remains available after login')
-assert.ok(clientNavSource.includes("label: 'Loops'"),'Company Loops remain available after Client login')
+assert.ok(clientNavSource.includes("label: 'Loop Field'"),'Company Loops remain available after Client login as an environment entrance')
 assert.ok(clientGuardSource.includes("router.replace('/client/login')"),'Protected Client routes send unauthenticated visitors to Client login')
 assert.ok(clientTerminalSource.includes('Flame Coin</span>'),'Client Vault displays Flame Coin instead of TRX')
 assert.ok(clientTerminalSource.includes("fetch('/api/client/bridger'"),'Client Bridger lookup no longer sends clientId in query')
@@ -392,8 +392,8 @@ assert.ok(!worldEnvironmentSource.includes('<WeaveWorldBackdrop'),'Event no long
 assert.ok(flameAdSource.includes('DASHBOARD_PATHS'),'Event banner stays off role Home dashboards')
 assert.ok(!clientDashboardUnifiedSource.includes('ClientFlameEventDashboard'),'Client dashboard is no longer replaced by a second event application')
 assert.ok(clientDashboardUnifiedSource.includes('<WeaveDashboardWorld'),'Client Home keeps one compact persistent world')
-assert.ok(clientNavUnifiedSource.includes("href: '/client/functions'"),'Client navigation exposes Functions as its own page')
-assert.ok(clientNavUnifiedSource.includes("label: 'Loop 1'"),'Client navigation keeps Loop 1 as a separate destination')
+assert.ok(clientNavUnifiedSource.includes("href: '/client/functions'"),'Client navigation keeps the Client Operating Room as a distinct environment entrance')
+assert.ok(clientNavUnifiedSource.includes("label: 'Loop 1 Ground'"),'Client navigation keeps Loop 1 as a separate event environment')
 assert.ok(!clientNavUnifiedSource.includes('eventIsLive'),'Client navigation remains persistent during events')
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
@@ -1144,3 +1144,44 @@ assert.ok(numberBridgerApiBoundary.includes("product:'WEAVE Worldwide WhatsApp N
 assert.ok(!numberBridgerPage.includes('Aphone'),'Bridger Number Engine never exposes the Administration supply source')
 assert.ok(numberBridgerPage.includes('WEAVE Worldwide'),'Bridger sees the WEAVE worldwide product identity')
 assert.ok(!numberVerificationBoundary.includes('received from Aphone'),'Verification API language remains supplier-neutral')
+
+
+const weaveEnvironmentTransitSource=fs.readFileSync(path.join(root,'components/world/weave-environment-transit.tsx'),'utf8')
+const weaveEnvironmentSurfaceSource=fs.readFileSync(path.join(root,'components/world/weave-environment-surface.tsx'),'utf8')
+const weaveEnvironmentMapSource=fs.readFileSync(path.join(root,'lib/weave-environments.ts'),'utf8')
+const rootEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/layout.tsx'),'utf8')
+const appEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
+const clientEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/client/layout.tsx'),'utf8')
+const authEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/(auth)/layout.tsx'),'utf8')
+const clientEnvironmentNavigationSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
+
+assert.ok(weaveEnvironmentTransitSource.includes('INITIAL_BOOT_MS = 2400'),'WEAVE cold entry opens through a deliberate environment boot')
+assert.ok(weaveEnvironmentTransitSource.includes('TRANSIT_MS = 620'),'Internal route movement uses a shorter environment transit')
+assert.ok(weaveEnvironmentTransitSource.includes('Opening the living environment'),'Boot language presents WEAVE as an environment instead of page loading')
+assert.ok(rootEnvironmentLayoutSource.includes('<WeaveEnvironmentTransit>'),'Root layout applies environment boot to the whole app')
+assert.ok(appEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface role={user?.role}'),'Authenticated staff/partner surfaces inherit environment framing')
+assert.ok(clientEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface role="client">'),'Client surfaces inherit one Client world framing')
+assert.ok(authEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface compact>'),'Authentication is framed as a WEAVE entry environment')
+assert.ok(weaveEnvironmentSurfaceSource.includes('data-weave-environment'),'Environment identity is explicit in the rendered shell')
+assert.ok(weaveEnvironmentMapSource.includes("'Client Access Gate'"),'Client login has explicit world-entry language')
+assert.ok(weaveEnvironmentMapSource.includes("'Bridger Operating Room'"),'Bridger functions are written as an operating environment')
+assert.ok(weaveEnvironmentMapSource.includes("'Agent Operating Room'"),'Agent functions are written as an operating environment')
+assert.ok(weaveEnvironmentMapSource.includes("'Administration Operating Room'"),'Administration functions are written as an operating environment')
+assert.ok(clientEnvironmentNavigationSource.includes("'Home World'"),'Client navigation names the home as a world')
+assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
+
+for(const file of [
+  'components/world/weave-environment-transit.tsx',
+  'components/world/weave-environment-surface.tsx',
+  'lib/weave-environments.ts',
+  'app/layout.tsx',
+  'app/(app)/layout.tsx',
+  'app/client/layout.tsx',
+  'app/(auth)/layout.tsx',
+  'components/client-navigation.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' environment-world syntax/transpile check')
+}

@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
+import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 
 export default function AuthLayout({
   children,
@@ -33,7 +34,7 @@ export default function AuthLayout({
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4">
       <FlameEventWorldGate intensity="soft" />
       <div className="w-full max-w-md relative z-10">
-        {children}
+        <WeaveEnvironmentSurface compact>{children}</WeaveEnvironmentSurface>
       </div>
     </div>
   )

@@ -16,6 +16,7 @@ import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-a
 import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
+import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 
 export default function AppLayout({
   children,
@@ -98,7 +99,7 @@ export default function AppLayout({
       <div className="flex min-h-screen w-full items-center justify-center bg-[#020815]/88 backdrop-blur-xl">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] animate-pulse">Establishing WEAVE Connection...</p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] animate-pulse">Synchronizing your WEAVE position...</p>
         </div>
       </div>
     )
@@ -119,19 +120,21 @@ export default function AppLayout({
         <FlameEventAd />
         <main className="relative flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 max-w-[100vw]">
           <PresenceCameraViewport>
-          <NormalWeaveRoleAtmosphere
-            userRole={user?.role}
-            userName={user?.name}
-            pathname={pathname}
-          >
-            <FlameEventRoleAtmosphere
-              userRole={user?.role}
-              userName={user?.name}
-              pathname={pathname}
-            >
-              {children}
-            </FlameEventRoleAtmosphere>
-          </NormalWeaveRoleAtmosphere>
+            <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
+              <NormalWeaveRoleAtmosphere
+                userRole={user?.role}
+                userName={user?.name}
+                pathname={pathname}
+              >
+                <FlameEventRoleAtmosphere
+                  userRole={user?.role}
+                  userName={user?.name}
+                  pathname={pathname}
+                >
+                  {children}
+                </FlameEventRoleAtmosphere>
+              </NormalWeaveRoleAtmosphere>
+            </WeaveEnvironmentSurface>
           </PresenceCameraViewport>
         </main>
       </div>

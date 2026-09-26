@@ -517,3 +517,12 @@
     animation: none;
   }
 }
+
+
+/* WEAVE environment boot: opening the world is a state transition, not a page flash. */
+@keyframes environmentLoad {
+  0% { width: 0%; opacity: .45; }
+  45% { width: 58%; opacity: .9; }
+  82% { width: 88%; opacity: 1; }
+  100% { width: 100%; opacity: 1; }
+}
