@@ -241,7 +241,7 @@ export default function ClientFlameEventDashboard({ event }: { event: WeaveEvent
                     <Link href="/client/event" className="group relative mb-7">
                       <div className="absolute -inset-8 bg-[radial-gradient(circle,rgba(248,113,113,.13),rgba(56,189,248,.06)_45%,transparent_72%)] blur-2xl transition group-hover:scale-110" />
                       <div className="relative flex h-32 w-32 items-center justify-center">
-                        <FlameEventArtifactMark size="lg" className="transition duration-500 group-hover:scale-110" />
+                        <FlameEventArtifactMark size="lg" surface="client-event" className="transition duration-500 group-hover:scale-110" />
                       </div>
                       <p className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-red-300">Flame Event</p>
                       <p className="mt-1 text-[8px] uppercase tracking-[0.16em] text-slate-500">Ideas · participation · global movement</p>
