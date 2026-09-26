@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
-import { ensureClientBusinessStore } from '@/lib/client-business-store'
+import { ensureClientBusinessStore, normalizeStoreEnvironmentConfig } from '@/lib/client-business-store'
 
 const OFFER_TYPES = new Set(['product','service','digital','crypto'])
 
@@ -142,6 +142,10 @@ export async function PATCH(request: NextRequest) {
   const name = body.name == null ? null : String(body.name).trim().slice(0,255)
   const description = body.description == null ? null : String(body.description).trim().slice(0,4000)
   const enabled = body.enabled == null ? null : Boolean(body.enabled)
+  const environmentConfig = body.environment_config == null
+    ? null
+    : normalizeStoreEnvironmentConfig(body.environment_config)
+  const environmentPayload = environmentConfig ? JSON.stringify(environmentConfig) : null
 
   const [store] = await ctx.sql`
     UPDATE client_business_stores
@@ -149,6 +153,10 @@ export async function PATCH(request: NextRequest) {
       name=COALESCE(${name},name),
       description=COALESCE(${description},description),
       enabled=COALESCE(${enabled},enabled),
+      environment_config=CASE
+        WHEN ${environmentPayload}::text IS NULL THEN environment_config
+        ELSE ${environmentPayload}::jsonb
+      END,
       updated_at=NOW()
     WHERE id=${ctx.store.id}::uuid
     RETURNING *
