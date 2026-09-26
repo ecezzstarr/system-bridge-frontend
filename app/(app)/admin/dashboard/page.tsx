@@ -63,6 +63,7 @@ import Casino from '@/components/places/casino'
 import Lounge from '@/components/places/lounge'
 import { eightOperate, readScroll } from '@/lib/eight'
 import { DepartmentalCodesSection } from '@/components/admin/departmental-codes-section'
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 type TabId = 'lounge' | 'arena' | 'casino' | 'wallet' | 'workshops' | 'panel' | 'eight'
 
@@ -313,6 +314,7 @@ function AdminWalletSection({ user }: { user: any }) {
 }
 
 function AdminWorkshopsSection() {
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
   const workshops = [
     {
       title: 'Developer Workshop',
@@ -363,6 +365,7 @@ function AdminWorkshopsSection() {
       color: 'from-orange-500 to-red-500'
     }
   ]
+  const visibleWorkshops = workshops.filter(ws=>isVisible(ws.link)).sort((a,b)=>orderFor(a.link)-orderFor(b.link))
 
   return (
     <div className="space-y-6">
@@ -372,7 +375,7 @@ function AdminWorkshopsSection() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {workshops.map((ws, i) => (
+        {visibleWorkshops.map((ws, i) => (
           <div key={i} className="group relative">
             <div className={`absolute -inset-0.5 bg-gradient-to-r ${ws.color} rounded-xl opacity-20 blur group-hover:opacity-40 transition duration-500`}></div>
             <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6 h-full flex flex-col">
