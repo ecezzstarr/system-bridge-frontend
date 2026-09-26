@@ -29,9 +29,7 @@ import {
   FileCheck,
   Rocket,
   GitBranch,
-  Camera,
-  Image,
-  Loader2,
+  Phone,
   Zap,
   FileBox,
   ShoppingCart,
@@ -46,7 +44,7 @@ import { Button } from "@/components/ui/button"
 import { PresenceIndicator } from "@/components/presence-indicator"
 import { WeaveLogo } from "@/components/weave-logo"
 import { useAuth } from "@/lib/auth-provider"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { WEAVE_SYSTEM_MAP } from "@/lib/weave-system-map"
 
@@ -140,18 +138,9 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
   const { user: authUser, logout } = useAuth()
   const user = propUser || authUser
   const [subscription, setContinuance] = useState<any>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadType, setUploadType] = useState<"image" | "video" | null>(null)
-  const [allUsers, setAllUsers] = useState<any[]>([])
-  const [targetRoom, setTargetRoom] = useState<"public" | string>("public")
-
   useEffect(() => {
     if (user?.role === 'bridger') {
       fetchContinuance()
-    }
-    if (user) {
-      fetchUsers()
     }
   }, [user])
 
@@ -167,105 +156,6 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       }
     } catch (error) {
       console.error('Failed to fetch subscription in sidebar:', error)
-    }
-  }
-
-  const fetchUsers = async () => {
-    try {
-      const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch("/api/users", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && data.users) {
-          setAllUsers(data.users.filter((u: any) => u.id !== user?.id))
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch users:", error)
-    }
-  }
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !user) return
-
-    setIsUploading(true)
-    const reader = new FileReader()
-    reader.onload = async (event) => {
-      const base64 = event.target?.result as string
-      await sendToLounge(base64, file.type.startsWith("video") ? "video" : "image")
-      setIsUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ""
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const handleCaptureScreenshot = async () => {
-    if (!user) return
-    setIsUploading(true)
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: "browser" },
-      })
-      const video = document.createElement("video")
-      video.srcObject = stream
-      await video.play()
-
-      const canvas = document.createElement("canvas")
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-      const ctx = canvas.getContext("2d")
-      ctx?.drawImage(video, 0, 0)
-
-      const dataUrl = canvas.toDataURL("image/png")
-
-      stream.getTracks().forEach((track) => track.stop())
-
-      await sendToLounge(dataUrl, "image")
-    } catch (err) {
-      console.error("Error capturing screenshot:", err)
-      toast.error("That didn't capture")
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const sendToLounge = async (mediaUrl: string, type: "image" | "video") => {
-    try {
-      const isPrivate = targetRoom !== "public"
-      const roomId = isPrivate ? [user?.id, targetRoom].sort().join("-") : "main"
-
-      const token = localStorage.getItem('ssb_auth_token')
-      const response = await fetch("/api/lounge/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          sender: user?.name,
-          senderAvatar: "👤",
-          senderRole: user?.role,
-          content: "Shared a " + type + " via Sidebar",
-          userId: user?.id,
-          roomType: isPrivate ? "private" : "public",
-          roomId,
-          messageType: type,
-          mediaUrl: mediaUrl,
-          recipientId: isPrivate ? targetRoom : null,
-        }),
-      })
-
-      if (response.ok) {
-        toast.success(type.charAt(0).toUpperCase() + type.slice(1) + " sent to " + (isPrivate ? "Private Room" : "Public Lounge"))
-      } else {
-        throw new Error("Failed to send")
-      }
-    } catch (error) {
-      console.error("Failed to send message:", error)
-      toast.error("That didn't reach")
     }
   }
 
@@ -405,65 +295,6 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
           })}
         </div>
 
-        {/* Lounge Media Hub */}
-        <div className="mt-6 pt-6 border-t border-white/5 px-3">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Lounge Media Hub</p>
-
-          <div className="space-y-3">
-            <div className="flex flex-col gap-2">
-              <select
-                value={targetRoom}
-                onChange={(e) => setTargetRoom(e.target.value)}
-                className="bg-white/5 border-0 rounded-md px-2 py-1.5 text-[10px] text-slate-300 focus:ring-1 focus:ring-cyan-500 outline-none"
-              >
-                <option value="public">Public Lounge</option>
-                {allUsers.map(u => (
-                  <option key={u.id} value={u.id}>DM: {u.name}</option>
-                ))}
-              </select>
-
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => { setUploadType("image"); fileInputRef.current?.click(); }}
-                  disabled={isUploading}
-                  className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg bg-white/5 hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-400 transition-all group"
-                  title="Send Photo"
-                >
-                  {isUploading && uploadType === "image" ? <Loader2 className="h-4 w-4 animate-spin text-cyan-400" /> : <Image className="h-4 w-4" />}
-                  <span className="text-[9px]">Photo</span>
-                </button>
-
-                <button
-                  onClick={() => { setUploadType("video"); fileInputRef.current?.click(); }}
-                  disabled={isUploading}
-                  className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg bg-white/5 hover:bg-purple-500/20 text-slate-400 hover:text-purple-400 transition-all group"
-                  title="Send Video"
-                >
-                  {isUploading && uploadType === "video" ? <Loader2 className="h-4 w-4 animate-spin text-purple-400" /> : <Video className="h-4 w-4" />}
-                  <span className="text-[9px]">Video</span>
-                </button>
-
-                <button
-                  onClick={handleCaptureScreenshot}
-                  disabled={isUploading}
-                  className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 transition-all group"
-                  title="Send Screenshot"
-                >
-                  {isUploading && !uploadType ? <Loader2 className="h-4 w-4 animate-spin text-emerald-400" /> : <Camera className="h-4 w-4" />}
-                  <span className="text-[9px]">Screen</span>
-                </button>
-              </div>
-            </div>
-
-            <input
-              type="file"
-              ref={fileInputRef}
-              hidden
-              accept={uploadType === "video" ? "video/*" : "image/*"}
-              onChange={handleFileUpload}
-            />
-          </div>
-        </div>
       </nav>
 
       {/* Bottom Actions */}

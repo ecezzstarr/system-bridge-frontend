@@ -4,7 +4,7 @@ let auth={user:{id:'admin-test',name:'Admin',role:'admin'},token:'test-token',is
 const Box=({children,...props})=>React.createElement('div',{},children)
 Module._load=function(id,parent,isMain){
  if(id==='@/lib/auth-provider')return {useAuth:()=>auth}
- if(id==='next/navigation')return {useRouter:()=>({replace(){},push(){}}),useSearchParams:()=>new URLSearchParams({tab})}
+ if(id==='next/navigation')return {useRouter:()=>({replace(){},push(){}}),useSearchParams:()=>new URLSearchParams({tab}),usePathname:()=>'/'}
  if(id==='next/link')return {__esModule:true,default:({children,href})=>React.createElement('a',{href},children)}
  if(id==='@/components/ecosystem-nav')return {EcosystemNav:()=>null}
  if(id.startsWith('@/components/ui/'))return new Proxy({},{get:(_,name)=>name==='__esModule'?true:Box})
@@ -12,6 +12,20 @@ Module._load=function(id,parent,isMain){
  return originalLoad.call(this,id,parent,isMain)
 }
 for(const ext of ['.ts','.tsx'])require.extensions[ext]=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}}).outputText,file)
+const {AppSidebar}=require('../components/app-sidebar.tsx')
+const initialAuth=auth
+for(const role of ['admin','agent','bridger','client','creator','user',null]){
+ auth={...initialAuth,user:role?{id:'sidebar-test',name:'Sidebar Test',role}:null}
+ const sidebar=renderToStaticMarkup(React.createElement(AppSidebar))
+ assert.doesNotMatch(sidebar,/Lounge Media Hub|Public Lounge|DM:|Send Photo|Send Video|Send Screenshot|type="file"|<select/)
+ assert.ok(sidebar.includes('href="/lounge"'),'Lounge navigation remains for '+role)
+ assert.ok(sidebar.includes('href="/lounge?view=private"'),'Private Lounge navigation remains for '+role)
+ assert.equal(sidebar.includes('href="/bridger/numbers"'),role==='bridger')
+ assert.equal(sidebar.includes('href="/admin/bridger-numbers"'),role==='admin')
+}
+auth=initialAuth
+const sidebarCleanupSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+assert.doesNotMatch(sidebarCleanupSource,/fetchUsers|\/api\/users|\/api\/lounge\/messages|FileReader|getDisplayMedia|sendToLounge|handleFileUpload|handleCaptureScreenshot|fileInputRef|targetRoom|uploadType|isUploading/)
 const Workshop=require('../app/(app)/authority/workshops/page.tsx').default
 auth={...auth,isInitialized:false};assert.match(renderToStaticMarkup(React.createElement(Workshop)),/Loading Authority Workshop/)
 auth={...auth,isInitialized:true};const html=renderToStaticMarkup(React.createElement(Workshop))
