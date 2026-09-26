@@ -27,20 +27,22 @@ export async function POST(request:NextRequest){
   const body=await request.json()
   const phone=normalizeE164(body.phone)
   const country=String(body.country||'').trim().slice(0,100)
-  const provider=String(body.provider||'').trim().slice(0,160)
+  const provider='Aphone'
   const providerReference=String(body.providerReference||'').trim().slice(0,220)
   const notes=String(body.notes||'').trim().slice(0,2000)
+  const acquisitionCost=body.acquisitionCost===''||body.acquisitionCost==null?null:Number(body.acquisitionCost)
   const price=Number(body.priceFlameCoin)
   if(!phone) return NextResponse.json({error:'Enter the provisioned number in E.164 format, for example +2348012345678.'},{status:400})
   if(!country) return NextResponse.json({error:'Country is required'},{status:400})
+  if(acquisitionCost!==null&&(!Number.isFinite(acquisitionCost)||acquisitionCost<0)) return NextResponse.json({error:'Valid Aphone acquisition cost is required'},{status:400})
   if(!Number.isFinite(price)||price<0) return NextResponse.json({error:'Valid Flame Coin price is required'},{status:400})
   const sql=getSql(); await ensureBridgerNumberEngineSchema(sql)
   try{
     const [number]=await sql`
       INSERT INTO bridger_whatsapp_numbers
-        (phone_e164,country,provider,provider_reference,price_flame_coin,status,notes,created_by)
+        (phone_e164,country,provider,provider_reference,acquisition_cost,price_flame_coin,status,notes,created_by)
       VALUES
-        (${phone},${country},${provider||null},${providerReference||null},${price},'available',${notes||null},${user.id}::uuid)
+        (${phone},${country},${provider},${providerReference||null},${acquisitionCost},${price},'available',${notes||null},${user.id}::uuid)
       RETURNING *
     `
     return NextResponse.json({success:true,number})
