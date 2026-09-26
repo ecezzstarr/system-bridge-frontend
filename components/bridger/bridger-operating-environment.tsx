@@ -63,6 +63,14 @@ const commands = [
   { label: 'Lounge', detail: 'Shared WEAVE communication space.', href: '/lounge', icon: MessageSquare, district: 'Participation' },
 ]
 
+const DISTRICT_TONE: Record<string, { card: string; icon: string; label: string }> = {
+  'Shared WEAVE': { card: 'border-sky-300/15 bg-sky-400/[0.04] hover:border-sky-300/30 hover:bg-sky-400/[0.07]', icon: 'text-sky-200', label: 'text-sky-300' },
+  'Crossing': { card: 'border-amber-300/15 bg-amber-400/[0.04] hover:border-amber-300/30 hover:bg-amber-400/[0.07]', icon: 'text-amber-200', label: 'text-amber-300' },
+  'Client continuity': { card: 'border-emerald-300/15 bg-emerald-400/[0.04] hover:border-emerald-300/30 hover:bg-emerald-400/[0.07]', icon: 'text-emerald-200', label: 'text-emerald-300' },
+  'Company continuity': { card: 'border-violet-300/15 bg-violet-400/[0.04] hover:border-violet-300/30 hover:bg-violet-400/[0.07]', icon: 'text-violet-200', label: 'text-violet-300' },
+  'Participation': { card: 'border-cyan-300/15 bg-cyan-400/[0.04] hover:border-cyan-300/30 hover:bg-cyan-400/[0.07]', icon: 'text-cyan-200', label: 'text-cyan-300' },
+}
+
 export function BridgerOperatingEnvironment() {
   const [referral,setReferral]=useState<any>(null)
 
@@ -134,11 +142,12 @@ export function BridgerOperatingEnvironment() {
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {commands.map(item=>{
                 const Icon=item.icon
+                const tone=DISTRICT_TONE[item.district] || DISTRICT_TONE['Shared WEAVE']
                 return (
-                  <Link key={item.label+item.href} href={item.href} className="group min-h-[118px] rounded-2xl border border-white/10 bg-black/25 p-3.5 transition hover:-translate-y-0.5 hover:border-emerald-300/30 hover:bg-emerald-400/[0.05]">
+                  <Link key={item.label+item.href} href={item.href} className={`group min-h-[118px] rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${tone.card}`}>
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035]"><Icon className="h-4 w-4 text-emerald-200"/></div>
-                      <span className="max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] text-slate-500">{item.district}</span>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/25"><Icon className={`h-4 w-4 ${tone.icon}`}/></div>
+                      <span className={`max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] ${tone.label}`}>{item.district}</span>
                     </div>
                     <p className="mt-3 text-sm font-black leading-5 text-white">{item.label}</p>
                     <p className="mt-1 text-[11px] leading-5 text-slate-400">{item.detail}</p>
