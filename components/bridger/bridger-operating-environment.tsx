@@ -10,14 +10,20 @@ import {
   CircleDollarSign,
   Flame,
   Gamepad2,
+  Globe,
   Globe2,
   Headphones,
   MessageSquare,
   Network,
+  Shield,
   ShieldCheck,
   ShoppingBag,
+  Sparkles,
+  Store,
   Trophy,
+  UserCircle,
   Users,
+  Video,
   Wallet,
 } from 'lucide-react'
 import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
@@ -25,6 +31,7 @@ import { getAuthHeaders } from '@/lib/auth-client'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 
 const districts = [
+  { title: 'Shared WEAVE', detail: 'The common WEAVE world remains available from the Bridger position.' },
   { title: 'Crossing', detail: 'Prospects, Bridge AI and the path into Client participation.' },
   { title: 'Client continuity', detail: 'Existing Clients and support after crossing.' },
   { title: 'Company continuity', detail: 'Partnership standing, guidance, holding and records.' },
@@ -32,6 +39,15 @@ const districts = [
 ]
 
 const commands = [
+  { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: Network, district: 'Shared WEAVE' },
+  { label: 'Human Cadences', detail: 'Find people through recorded participation and movement.', href: '/search', icon: MessageSquare, district: 'Shared WEAVE' },
+  { label: 'Presences', detail: 'See people and their place in the WEAVE.', href: '/profiles', icon: UserCircle, district: 'Shared WEAVE' },
+  { label: 'Private Lounge', detail: 'Private WEAVE communication.', href: '/lounge?view=private', icon: Shield, district: 'Shared WEAVE' },
+  { label: 'Lounge', detail: 'Shared WEAVE communication space.', href: '/lounge', icon: MessageSquare, district: 'Shared WEAVE' },
+  { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Enterprise-scale systems available through WEAVE.', href: '/marketplace', icon: Store, district: 'Shared WEAVE' },
+  { label: 'Echo', detail: 'Use the WEAVE Echo surface.', href: '/echo', icon: Sparkles, district: 'Shared WEAVE' },
+  { label: 'Stream', detail: 'Shared WEAVE media stream.', href: '/video-feed', icon: Video, district: 'Shared WEAVE' },
+  { label: 'Standing', detail: 'Shared WEAVE standing and position.', href: '/weave/standing', icon: Globe, district: 'Shared WEAVE' },
   { label: 'Bridge AI Paths', detail: 'Crossing → Client AI support.', href: '/bridger/bridge-ai', icon: Bot, district: 'Crossing' },
   { label: 'Prospect Market', detail: 'Acquire available Prospect movement.', href: '/weave/market/prospects', icon: ShoppingBag, district: 'Crossing' },
   { label: 'My Clients', detail: 'Client continuity and service channels.', href: '/bridger/clients', icon: Users, district: 'Client continuity' },
