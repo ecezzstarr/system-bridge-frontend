@@ -162,6 +162,20 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Flame Event · Loop 1', detail: 'Event-world control and opening movement.', href: '/admin/flame-event', icon: Zap, district: 'Atmosphere + communication' },
 ]
 
+const DISTRICT_TONE: Record<string, { card: string; icon: string; label: string }> = {
+  'Shared WEAVE': { card: 'border-sky-300/15 bg-sky-400/[0.045] hover:border-sky-300/30 hover:bg-sky-400/[0.075]', icon: 'text-sky-200', label: 'text-sky-300' },
+  'Bridger support': { card: 'border-emerald-300/15 bg-emerald-400/[0.04] hover:border-emerald-300/30 hover:bg-emerald-400/[0.07]', icon: 'text-emerald-200', label: 'text-emerald-300' },
+  'Work + livelihood': { card: 'border-amber-300/15 bg-amber-400/[0.04] hover:border-amber-300/30 hover:bg-amber-400/[0.07]', icon: 'text-amber-200', label: 'text-amber-300' },
+  'Client + company support': { card: 'border-cyan-300/15 bg-cyan-400/[0.04] hover:border-cyan-300/30 hover:bg-cyan-400/[0.07]', icon: 'text-cyan-200', label: 'text-cyan-300' },
+  'Record + value': { card: 'border-violet-300/15 bg-violet-400/[0.04] hover:border-violet-300/30 hover:bg-violet-400/[0.07]', icon: 'text-violet-200', label: 'text-violet-300' },
+  'Operations center': { card: 'border-violet-300/15 bg-violet-400/[0.04] hover:border-violet-300/30 hover:bg-violet-400/[0.07]', icon: 'text-violet-200', label: 'text-violet-300' },
+  'People + recognition': { card: 'border-emerald-300/15 bg-emerald-400/[0.04] hover:border-emerald-300/30 hover:bg-emerald-400/[0.07]', icon: 'text-emerald-200', label: 'text-emerald-300' },
+  'Client system': { card: 'border-amber-300/15 bg-amber-400/[0.04] hover:border-amber-300/30 hover:bg-amber-400/[0.07]', icon: 'text-amber-200', label: 'text-amber-300' },
+  'Bridge system': { card: 'border-sky-300/15 bg-sky-400/[0.04] hover:border-sky-300/30 hover:bg-sky-400/[0.07]', icon: 'text-sky-200', label: 'text-sky-300' },
+  'Institution + infrastructure': { card: 'border-cyan-300/15 bg-cyan-400/[0.04] hover:border-cyan-300/30 hover:bg-cyan-400/[0.07]', icon: 'text-cyan-200', label: 'text-cyan-300' },
+  'Atmosphere + communication': { card: 'border-rose-300/15 bg-rose-400/[0.04] hover:border-rose-300/30 hover:bg-rose-400/[0.07]', icon: 'text-rose-200', label: 'text-rose-300' },
+}
+
 const ROLE_COPY = {
   agent: {
     eyebrow: 'Agent Operating Room',
@@ -229,17 +243,18 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {copy.commands.map(item => {
                 const Icon = item.icon
+                const tone = DISTRICT_TONE[item.district] || DISTRICT_TONE['Shared WEAVE']
                 return (
                   <Link
                     key={item.label + item.href}
                     href={item.href}
-                    className="group min-h-[118px] rounded-2xl border border-white/10 bg-black/25 p-3.5 transition hover:-translate-y-0.5 hover:border-sky-300/30 hover:bg-sky-400/[0.05]"
+                    className={`group min-h-[118px] rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${tone.card}`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035]">
-                        <Icon className="h-4 w-4 text-sky-200" />
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/25">
+                        <Icon className={`h-4 w-4 ${tone.icon}`} />
                       </div>
-                      <span className="max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] text-slate-500">{item.district}</span>
+                      <span className={`max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] ${tone.label}`}>{item.district}</span>
                     </div>
                     <p className="mt-3 text-sm font-black leading-5 text-white">{item.label}</p>
                     <p className="mt-1 text-[11px] leading-5 text-slate-400">{item.detail}</p>
