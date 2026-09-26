@@ -38,6 +38,7 @@ import {
   Dices,
   Crown,
   Cloud,
+  Palette,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -120,6 +121,7 @@ const navigation = [
     { name: "Infrastructure", href: "/admin/infrastructure", icon: Cloud, adminOnly: true },
     { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
     { name: "Ad Workshop", href: "/admin/ad-workshop", icon: Megaphone, adminOnly: true },
+    { name: "Visual Systems", href: "/admin/visual-systems", icon: Palette, adminOnly: true },
     { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
   ]},
 ]
