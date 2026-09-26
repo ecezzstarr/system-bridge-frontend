@@ -1,0 +1,312 @@
+export type WeaveEnvironmentCopy = {
+  key: string
+  title: string
+  district: string
+  purpose: string
+  movement: string
+  layer: 'world' | 'district' | 'system' | 'interaction'
+}
+
+const exact: Record<string, WeaveEnvironmentCopy> = {
+  '/': {
+    key: 'public-world',
+    title: 'WEAVE World Entrance',
+    district: 'Presence',
+    purpose: 'Enter the living WEAVE environment where human presence becomes interaction, work, value, participation and livelihood.',
+    movement: 'Arrive → recognize your position → enter the world',
+    layer: 'world',
+  },
+  '/weave': {
+    key: 'bridge-plaza',
+    title: 'Bridge Plaza',
+    district: 'Bridge',
+    purpose: 'The shared crossing ground where WEAVE positions meet Client movement without taking ownership of the Client world.',
+    movement: 'Observe → connect → support → continue',
+    layer: 'district',
+  },
+  '/marketplace': {
+    key: 'enterprise-exchange',
+    title: 'Enterprise Systems Exchange',
+    district: 'Enterprise',
+    purpose: 'A live technology market for serious systems, infrastructure and operating capabilities formed through WEAVE.',
+    movement: 'Inspect → choose → structure → activate',
+    layer: 'district',
+  },
+  '/wallet': {
+    key: 'value-vault',
+    title: 'Value Vault',
+    district: 'Presence',
+    purpose: 'The operating environment for balances, deposits, withdrawals and value movement connected to participation.',
+    movement: 'Hold → move → confirm → record',
+    layer: 'system',
+  },
+  '/ledger': {
+    key: 'movement-record',
+    title: 'Movement Record',
+    district: 'Presence',
+    purpose: 'The preserved record of value and participation already moving through the WEAVE environment.',
+    movement: 'Movement → confirmation → record → continuity',
+    layer: 'system',
+  },
+  '/echo': {
+    key: 'echo-board',
+    title: 'Echo Board',
+    district: 'Enterprise',
+    purpose: 'The operating environment for authorized AI amplification, outreach and truthful extension of human movement.',
+    movement: 'Authorize → extend → speak → return insight',
+    layer: 'system',
+  },
+  '/arena': {
+    key: 'arena-ground',
+    title: 'Arena Ground',
+    district: 'WEAVE',
+    purpose: 'A shared contest environment where participants meet each other through defined rules and recorded outcomes.',
+    movement: 'Enter → participate → resolve → record',
+    layer: 'district',
+  },
+  '/casino': {
+    key: 'pattern-ground',
+    title: 'Pattern Ground',
+    district: 'WEAVE',
+    purpose: 'A user-versus-system environment for defined patterns, stakes, outcomes and recorded movement.',
+    movement: 'Enter → interact → resolve → record',
+    layer: 'district',
+  },
+  '/event': {
+    key: 'loop-ground',
+    title: 'Company Loop Ground',
+    district: 'Presence',
+    purpose: 'The live company-event environment where published loops become shared participation in time.',
+    movement: 'Arrive → recognize the loop → participate → continue',
+    layer: 'district',
+  },
+  '/company/loops': {
+    key: 'company-loops',
+    title: 'Company Loops',
+    district: 'Presence',
+    purpose: 'The operating environment for recurring company movement, stages and participation across positions.',
+    movement: 'See the loop → enter position → move → preserve',
+    layer: 'district',
+  },
+  '/profiles': {
+    key: 'presence-field',
+    title: 'Presence Field',
+    district: 'Presence',
+    purpose: 'A living field of people and positions already participating inside WEAVE.',
+    movement: 'Discover → recognize → connect',
+    layer: 'district',
+  },
+  '/search': {
+    key: 'cadence-field',
+    title: 'Human Cadence Field',
+    district: 'Presence',
+    purpose: 'Search the WEAVE field by the movement, presence and participation people make visible.',
+    movement: 'Notice → recognize → connect',
+    layer: 'district',
+  },
+  '/weave/standing': {
+    key: 'standing-field',
+    title: 'Standing Field',
+    district: 'WEAVE',
+    purpose: 'A shared view of current position, participation and visible movement across the environment.',
+    movement: 'Position → participation → standing',
+    layer: 'district',
+  },
+}
+
+const prefix: Array<[string, WeaveEnvironmentCopy]> = [
+  ['/client/system-switch', {
+    key: 'client-file-folder',
+    title: 'Main File Folder · 4D Operating World',
+    district: 'System Switch',
+    purpose: 'The Client-owned persistent environment where workshops, materials, boosts, builds, live systems, customers and enterprise movement stay together.',
+    movement: 'Recognize → build → activate → operate → continue',
+    layer: 'world',
+  }],
+  ['/client/functions', {
+    key: 'client-operating-room',
+    title: 'Client Operating Room',
+    district: 'Client World',
+    purpose: 'The Client control environment for entering the functions that move the File Folder, value, support and enterprise forward.',
+    movement: 'Choose function → act → return with changed state',
+    layer: 'system',
+  }],
+  ['/client/loops', {
+    key: 'client-loops',
+    title: 'Client Loop Field',
+    district: 'Client World',
+    purpose: 'The Client view of company loops, participation stages and active movement connected to the File Folder.',
+    movement: 'See → enter → participate → preserve',
+    layer: 'district',
+  }],
+  ['/client/event', {
+    key: 'client-event-ground',
+    title: 'Client Event Ground',
+    district: 'Client World',
+    purpose: 'A live event environment where the Client participates inside current WEAVE movement.',
+    movement: 'Arrive → participate → carry movement forward',
+    layer: 'district',
+  }],
+  ['/client/deposit', {
+    key: 'client-value-entry',
+    title: 'Client Value Entry',
+    district: 'Client World',
+    purpose: 'The Client environment for moving value into the operating world and confirming its arrival.',
+    movement: 'Prepare → deposit → verify → use',
+    layer: 'system',
+  }],
+  ['/client/withdraw', {
+    key: 'client-value-release',
+    title: 'Client Value Release',
+    district: 'Client World',
+    purpose: 'The Client environment for requesting controlled release of available value from the operating world.',
+    movement: 'Request → verify → release → record',
+    layer: 'system',
+  }],
+  ['/client/chat', {
+    key: 'client-support-room',
+    title: 'Client Support Room',
+    district: 'Bridge',
+    purpose: 'A direct interaction environment between the Client and authorized WEAVE support positions.',
+    movement: 'Speak → clarify → act → preserve continuity',
+    layer: 'interaction',
+  }],
+  ['/bridger/functions', {
+    key: 'bridger-operating-room',
+    title: 'Bridger Operating Room',
+    district: 'Bridge',
+    purpose: 'The Bridger working environment for connection, prospect movement, Client continuity and authorized support.',
+    movement: 'Connect → clarify → move → support',
+    layer: 'system',
+  }],
+  ['/bridger/bridge-ai', {
+    key: 'bridge-ai-crossing',
+    title: 'Bridge AI Crossing',
+    district: 'Bridge',
+    purpose: 'The intelligent crossing environment that helps move a prospect toward Client entry and then supports Client continuity.',
+    movement: 'Interact → reveal → recognize → cross',
+    layer: 'interaction',
+  }],
+  ['/bridger/clients', {
+    key: 'bridger-client-field',
+    title: 'Client Continuity Field',
+    district: 'Bridge',
+    purpose: 'The Bridger environment for supporting connected Clients while Client ownership remains with each Client.',
+    movement: 'See Client movement → support → confirm continuity',
+    layer: 'district',
+  }],
+  ['/bridger/numbers', {
+    key: 'bridger-number-bay',
+    title: 'Worldwide Number Bay',
+    district: 'Bridge',
+    purpose: 'The authenticated WhatsApp-number environment where Bridgers purchase available numbers and receive verification movement through WEAVE.',
+    movement: 'Select → purchase → receive code or pending state → verify',
+    layer: 'system',
+  }],
+  ['/bridger/subscription', {
+    key: 'bridger-continuance',
+    title: 'Bridger Continuance',
+    district: 'Bridge',
+    purpose: 'The environment that keeps Bridger participation active and connected to company movement.',
+    movement: 'Check standing → renew when due → continue',
+    layer: 'system',
+  }],
+  ['/agent/functions', {
+    key: 'agent-operating-room',
+    title: 'Agent Operating Room',
+    district: 'Support',
+    purpose: 'The Agent working environment for company support, Bridger participation, delivery and earning movement.',
+    movement: 'Receive function → support movement → confirm → continue',
+    layer: 'system',
+  }],
+  ['/agent/bridgers', {
+    key: 'agent-bridger-field',
+    title: 'Bridger Support Field',
+    district: 'Support',
+    purpose: 'The Agent environment for the Bridgers connected to the Agent position and the movement created through them.',
+    movement: 'See → support → follow participation → continue',
+    layer: 'district',
+  }],
+  ['/agent/channels', {
+    key: 'agent-channel-field',
+    title: 'Agent Channel Field',
+    district: 'Support',
+    purpose: 'The company-position environment where Agents enter authorized channels and working functions.',
+    movement: 'Request → enter → work → preserve',
+    layer: 'district',
+  }],
+  ['/agent/commissions', {
+    key: 'agent-continuance',
+    title: 'Agent Continuance',
+    district: 'Support',
+    purpose: 'The Agent value environment for commission logic, Bridger-linked participation and continuing earnings.',
+    movement: 'Participation → qualifying movement → commission → record',
+    layer: 'system',
+  }],
+  ['/admin/dashboard', {
+    key: 'administration-world',
+    title: 'Administration World',
+    district: 'Institution',
+    purpose: 'The institutional environment from which WEAVE authority, verification, infrastructure and company movement are coordinated.',
+    movement: 'Observe → authorize → verify → keep the world moving',
+    layer: 'world',
+  }],
+  ['/admin/functions', {
+    key: 'administration-operating-room',
+    title: 'Administration Operating Room',
+    district: 'Institution',
+    purpose: 'The control environment for entering WEAVE administrative systems without reducing them to disconnected tools.',
+    movement: 'Observe state → enter system → act → verify',
+    layer: 'system',
+  }],
+  ['/admin/', {
+    key: 'administration-system',
+    title: 'Administration System',
+    district: 'Institution',
+    purpose: 'A live institutional system inside the Administration world. Changes here affect real WEAVE operations and participant movement.',
+    movement: 'Inspect → act → verify → preserve continuity',
+    layer: 'system',
+  }],
+  ['/agility', {
+    key: 'agility-market',
+    title: 'Agility Distribution Ground',
+    district: 'Enterprise',
+    purpose: 'The operating environment for Agility food distribution, Agent participation and real-world delivery.',
+    movement: 'Order → distribute → sell → record return',
+    layer: 'district',
+  }],
+  ['/lounge', {
+    key: 'human-lounge',
+    title: 'Human Lounge',
+    district: 'Bridge',
+    purpose: 'A direct interaction environment for communication and continuity between people inside WEAVE.',
+    movement: 'Enter → speak → connect → continue',
+    layer: 'interaction',
+  }],
+  ['/company-chat', {
+    key: 'company-guidance',
+    title: 'Company Guidance Room',
+    district: 'Bridge',
+    purpose: 'The company interaction environment for position-specific guidance and operational clarification.',
+    movement: 'Ask → clarify → act → continue',
+    layer: 'interaction',
+  }],
+]
+
+export function resolveWeaveEnvironment(pathname: string): WeaveEnvironmentCopy {
+  if (exact[pathname]) return exact[pathname]
+
+  const matched = prefix.find(([route]) =>
+    route.endsWith('/') ? pathname.startsWith(route) : pathname === route || pathname.startsWith(route + '/')
+  )
+  if (matched) return matched[1]
+
+  return {
+    key: 'weave-world',
+    title: 'WEAVE Operating Environment',
+    district: 'Presence',
+    purpose: 'A live part of the WEAVE world where interaction changes state and movement continues across connected systems.',
+    movement: 'Notice → recognize → act → move',
+    layer: 'system',
+  }
+}
