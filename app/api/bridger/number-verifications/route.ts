@@ -60,7 +60,7 @@ export async function PATCH(request:NextRequest){
   const message=String(body.message||'').trim().slice(0,1000)
   const code=String(body.code||'').trim().slice(0,120)
   if(status==='pending'&&!message)return NextResponse.json({error:'Explain why the code is pending'},{status:400})
-  if(status==='code_ready'&&!code)return NextResponse.json({error:'Enter the code received from Aphone'},{status:400})
+  if(status==='code_ready'&&!code)return NextResponse.json({error:'Enter the verification code'},{status:400})
   const [row]=await sql`
    UPDATE bridger_number_verification_requests
    SET status=${status},admin_message=${message||null},verification_code=${status==='code_ready'?code:null},
