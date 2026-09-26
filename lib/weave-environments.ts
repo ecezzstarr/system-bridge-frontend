@@ -184,6 +184,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'Position → participation → standing',
     layer: 'district',
   },
+  '/admin/visual-systems': {
+    key: 'administration-visual-systems',
+    title: 'Visual Systems Workshop',
+    district: 'Institution',
+    purpose: 'The Administration runtime-design environment for registered WEAVE artifacts, live publication, placement control and rollback.',
+    movement: 'Draft → preview → publish → observe → roll back when needed',
+    layer: 'system',
+  },
 }
 
 const prefix: Array<[string, WeaveEnvironmentCopy]> = [
