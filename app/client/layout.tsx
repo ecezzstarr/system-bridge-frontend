@@ -4,6 +4,7 @@ import { LiveAdSurface } from '@/components/live-ad-surface'
 import { ClientRouteGuard } from '@/components/client/client-route-guard'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
+import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
@@ -36,7 +37,7 @@ export default function ClientLayout({
           <ClientNavigation />
           <FlameEventAd />
           <LiveAdSurface />
-          <PresenceCameraViewport>{children}</PresenceCameraViewport>
+          <PresenceCameraViewport><WeaveEnvironmentSurface role="client">{children}</WeaveEnvironmentSurface></PresenceCameraViewport>
           <PresenceCameraSignal />
         </div>
       </ClientRouteGuard>
