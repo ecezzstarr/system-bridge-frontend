@@ -18,8 +18,10 @@ for(const role of ['admin','agent','bridger','client','creator','user',null]){
  auth={...initialAuth,user:role?{id:'sidebar-test',name:'Sidebar Test',role}:null}
  const sidebar=renderToStaticMarkup(React.createElement(AppSidebar))
  assert.doesNotMatch(sidebar,/Lounge Media Hub|Public Lounge|DM:|Send Photo|Send Video|Send Screenshot|type="file"|<select/)
- assert.ok(sidebar.includes('href="/lounge"'),'Lounge navigation remains for '+role)
- assert.ok(sidebar.includes('href="/lounge?view=private"'),'Private Lounge navigation remains for '+role)
+ assert.ok(!sidebar.includes('href="/lounge"'),'Retired Lounge navigation stays out of the global environment for '+role)
+ assert.ok(!sidebar.includes('href="/lounge?view=private"'),'Retired Private Lounge navigation stays out of the global environment for '+role)
+ assert.ok(!sidebar.includes('href="/video-feed"'),'Retired Stream navigation stays out of the global environment for '+role)
+ assert.ok(sidebar.includes('href="/echo"'),'Echo Board remains the shared intelligence route for '+role)
  assert.equal(sidebar.includes('href="/bridger/numbers"'),role==='bridger')
  assert.equal(sidebar.includes('href="/admin/bridger-numbers"'),role==='admin')
 }
@@ -411,8 +413,10 @@ for(const route of [
 const positionEventSource=fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8')
 const compactWorldSource=fs.readFileSync(path.join(root,'components/world/weave-dashboard-world.tsx'),'utf8')
 const roleOperatingRoomSource=fs.readFileSync(path.join(root,'components/world/role-operating-room.tsx'),'utf8')
-const adminDashboardCenterSource=fs.readFileSync(path.join(root,'app/(app)/admin/dashboard/page.tsx'),'utf8')
-const adminControlCenterRouteSource=fs.readFileSync(path.join(root,'app/(app)/admin/control-center/page.tsx'),'utf8')
+const adminDashboardCenterSource=fs.readFileSync(path.join(root,'app/(app)/admin/control-center/page.tsx'),'utf8')
+const adminControlCenterRouteSource=adminDashboardCenterSource
+const adminHomeWorldSource=fs.readFileSync(path.join(root,'app/(app)/admin/dashboard/page.tsx'),'utf8')
+const agentHomeWorldSource=fs.readFileSync(path.join(root,'app/(app)/agent/dashboard/page.tsx'),'utf8')
 const agentFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/agent/functions/page.tsx'),'utf8')
 const adminFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/admin/functions/page.tsx'),'utf8')
 assert.ok(positionEventSource.includes('Global event · personal position'),'Loop 1 remains global while rendering a personal role position')
@@ -425,7 +429,13 @@ assert.ok(bridgerOperatingRoomSource.includes('Crossing') && bridgerOperatingRoo
 assert.ok(roleOperatingRoomSource.includes("title: 'Bridger support'"),'Agent Operating Room organizes Bridger support as a system function')
 assert.ok(roleOperatingRoomSource.includes("title: 'Client system'"),'Administration Operating Room organizes Client authority as a system function')
 assert.ok(roleOperatingRoomSource.includes('Administration Control Panel'),'Administration Operating Room restores the dense middle control panel')
-assert.ok(adminControlCenterRouteSource.includes("export { default } from '../dashboard/page'"),'Administration has a reachable route for the preserved dense control center')
+assert.ok(adminControlCenterRouteSource.includes('Administration Control Center'),'Administration has a dedicated dense institutional control center')
+assert.ok(!adminControlCenterRouteSource.includes("export { default } from '../dashboard/page'"),'Administration control center is independent from the compact Home World')
+assert.ok(adminHomeWorldSource.includes('<WeaveDashboardWorld role="admin"'),'Administration Home is one compact role world')
+assert.ok(agentHomeWorldSource.includes('<WeaveDashboardWorld role="agent"'),'Agent Home is one compact role world')
+assert.ok(!adminControlCenterRouteSource.includes("activeTab === 'lounge'"),'Administration control center does not embed retired Lounge')
+assert.ok(!adminControlCenterRouteSource.includes("activeTab === 'arena'"),'Administration control center does not duplicate Arena')
+assert.ok(!adminControlCenterRouteSource.includes("activeTab === 'casino'"),'Administration control center does not duplicate Pattern')
 for(const hash of ['#users','#clients','#fne','#bridgers','#deposits','#tron','#bridge','#withdrawals','#announcements','#wallet','#workshops','#eight']){
  assert.ok(roleOperatingRoomSource.includes('/admin/control-center'+hash),`Administration middle panel exposes preserved control-center component ${hash}`)
 }
@@ -438,7 +448,7 @@ assert.ok(roleOperatingRoomSource.includes("label: 'EIGHT AI'"),'Administration 
 assert.ok(roleOperatingRoomSource.includes("label: 'Administration Wallet'"),'Administration middle panel restores the existing Admin wallet surface')
 assert.ok(roleOperatingRoomSource.includes("label: 'Administration Workshops'"),'Administration middle panel restores the existing workshop surface')
 assert.ok(roleOperatingRoomSource.includes("title: 'Shared WEAVE'"),'Administration Operating Room begins with the shared WEAVE layer')
-for(const sharedRoute of ['/company/loops','/search','/profiles','/weave','/company-chat','/lounge?view=private','/lounge','/marketplace','/echo','/arena','/casino','/video-feed','/weave/standing','/event','/wallet','/ledger']){
+for(const sharedRoute of ['/company/loops','/search','/profiles','/weave','/company-chat','/marketplace','/echo','/arena','/casino','/weave/standing','/event','/wallet','/ledger']){
  assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Administration middle panel preserves shared WEAVE component ${sharedRoute}`)
 }
 assert.ok(roleOperatingRoomSource.indexOf("district: 'Shared WEAVE'") < roleOperatingRoomSource.indexOf("district: 'People + recognition'"),'Administration shared WEAVE components precede authority-specific controls')
@@ -451,7 +461,7 @@ assert.ok(roleOperatingRoomSource.includes("href: '/admin/loop-workshop'"),'Admi
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/dj-workshop'"),'Administration middle panel exposes DJ Workshop')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/ad-workshop'"),'Administration middle panel exposes Ad Workshop')
 assert.ok(roleOperatingRoomSource.includes('Agent Working Panel'),'Agent Operating Room restores the dense middle working panel')
-for(const sharedRoute of ['/company/loops','/search','/profiles','/lounge?view=private','/lounge','/echo','/arena','/casino','/video-feed','/weave/standing']){
+for(const sharedRoute of ['/company/loops','/search','/profiles','/echo','/arena','/casino','/weave/standing']){
  assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Agent Operating Room preserves shared WEAVE component ${sharedRoute}`)
  assert.ok(bridgerOperatingRoomSource.includes(`href: '${sharedRoute}'`) || ['/arena','/casino'].includes(sharedRoute),`Bridger Operating Room preserves shared WEAVE component ${sharedRoute}`)
 }
@@ -585,7 +595,7 @@ assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Business + Cust
 assert.ok(supportFileFolderSource.includes('You are viewing one Client operating environment.'),'Bridge Plaza support view explains the File Folder to visitors')
 assert.ok(clientFunctionsPageSource.includes('<ClientOperatingRoom'),'Client Functions now opens the organized Client Operating Room')
 assert.ok(!clientFunctionsPageSource.includes('LegacyClientDashboard'),'Client Functions no longer uses the old stacked legacy dashboard as its primary surface')
-for(const route of ['/client/system-switch','/client/loops','/client/deposit','/client/withdraw','/client/chat/bridger','/marketplace','/weave','/lounge','/echo','/video-feed','/weave/standing','/client/arena','/client/casino']){
+for(const route of ['/client/system-switch','/client/loops','/client/deposit','/client/withdraw','/client/chat/bridger','/marketplace','/weave','/echo','/weave/standing','/client/arena','/client/casino']){
  assert.ok(clientOperatingRoomSource.includes(`href: '${route}'`),`Client Operating Room preserves ${route}`)
 }
 assert.ok(fileFolderOperatingEnvironmentSource.includes('function buildDepth'),'File Folder build depth changes as construction progresses')
@@ -1013,11 +1023,9 @@ assert.ok(privateGroundSource.includes('Private Ground · Session State'),'Priva
 for(const fakeAction of ['Schedule Session','Start</','End Session']){
  assert.ok(!privateGroundSource.includes(fakeAction),`Private Ground removes false action ${fakeAction}`)
 }
-assert.ok(streamSource.includes('WEAVE Stream Registry'),'Stream is framed around real media state')
-assert.ok(!streamSource.includes('>Like<'),'Stream removes unwired Like control')
-assert.ok(!streamSource.includes('>Comment<'),'Stream removes unwired Comment control')
-assert.ok(!streamSource.includes('Go Live'),'Stream removes unwired Go Live control')
-assert.ok(streamSource.includes('<TipDialog'),'Stream keeps the backend-connected Tip action')
+assert.ok(streamSource.includes("redirect('/echo')"),'Legacy Stream route resolves into Echo Board instead of maintaining a separate media world')
+const loungeRedirectSource=fs.readFileSync(path.join(root,'app/(app)/lounge/page.tsx'),'utf8')
+assert.ok(loungeRedirectSource.includes("redirect('/echo')"),'Legacy Lounge route resolves into Echo Board')
 assert.ok(companyGuidanceSource.includes('Company Guidance Router'),'Company guidance routes by functional consequence')
 assert.ok(companyLoopsMatureSource.includes('Company Loop Registry'),'Company Loops is an operating registry')
 assert.ok(profileMatureSource.includes('Presence Record'),'Profiles exposes one structural Presence record')
@@ -1184,4 +1192,49 @@ for(const file of [
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
  assert.equal(syntaxErrors.length,0,file+' environment-world syntax/transpile check')
+}
+
+
+const deepRoleGuardSource=fs.readFileSync(path.join(root,'components/role-route-guard.tsx'),'utf8')
+const adminRoleLayoutSource=fs.readFileSync(path.join(root,'app/(app)/admin/layout.tsx'),'utf8')
+const agentRoleLayoutSource=fs.readFileSync(path.join(root,'app/(app)/agent/layout.tsx'),'utf8')
+const bridgerRoleLayoutSource=fs.readFileSync(path.join(root,'app/(app)/bridger/layout.tsx'),'utf8')
+const echoBoardSource=fs.readFileSync(path.join(root,'app/(app)/echo/page.tsx'),'utf8')
+const deepHeaderSource=fs.readFileSync(path.join(root,'components/app-header.tsx'),'utf8')
+const deepAdminEntrySource=fs.readFileSync(path.join(root,'app/(app)/admin/page.tsx'),'utf8')
+const deepTermsSource=fs.readFileSync(path.join(root,'lib/weave-terms.ts'),'utf8')
+
+assert.ok(deepRoleGuardSource.includes("if (!allowed) router.replace('/dashboard')"),'Role-specific route trees reject the wrong institutional position')
+assert.ok(adminRoleLayoutSource.includes('role="admin"'),'Administration route tree has an Administration guard')
+assert.ok(agentRoleLayoutSource.includes('role="agent"'),'Agent route tree has an Agent guard')
+assert.ok(bridgerRoleLayoutSource.includes('role="bridger"'),'Bridger route tree has a Bridger guard')
+assert.ok(echoBoardSource.includes('Echo Board'),'Echo is presented as the canonical intelligence and routing board')
+assert.ok(echoBoardSource.includes("fetch('/api/wallet/balance'"),'Echo Board reads the live Holding balance')
+assert.ok(echoBoardSource.includes('World routing'),'Echo Board routes insight back into working WEAVE environments')
+assert.ok(echoBoardSource.includes('does not invent account activity'),'Echo Board states the authorization/data boundary truthfully')
+assert.ok(deepHeaderSource.includes("router.push('/wallet')"),'Header Holding control opens the real Holding environment')
+assert.ok(deepAdminEntrySource.includes("redirect('/admin/dashboard')"),'Legacy Administration entry resolves deterministically to Administration Home')
+assert.ok(deepTermsSource.includes('Agents, Bridgers and Administration enter an existing Client-owned File Folder through a support view'),'Bridge Plaza copy includes every authorized support position without granting ownership')
+assert.ok(weaveEnvironmentMapSource.includes("'Bridger Home World'"),'Bridger Home has an explicit world identity')
+assert.ok(weaveEnvironmentMapSource.includes("'Agent Home World'"),'Agent Home has an explicit world identity')
+assert.ok(weaveEnvironmentMapSource.includes("'Client File Folder · Support View'"),'Support File Folder travel has an explicit support-only world identity')
+assert.ok(weaveEnvironmentMapSource.includes("'Receipt Registry'"),'Receipts have an explicit system identity')
+assert.ok(!fs.existsSync(path.join(root,'app/api/deposit/opay/route.ts.failed-backup')),'Failed API backup is absent from the production tree')
+assert.ok(!fs.existsSync(path.join(root,'app/bridge/[code]/page.tsx.bak-20260821')),'Bridge page backup is absent from the production tree')
+assert.ok(!fs.existsSync(path.join(root,'lib/river-quо.ts')),'Look-alike River duplicate is absent from the production tree')
+assert.ok(!fs.existsSync(path.join(root,'components/places/lounge.tsx')),'Retired Lounge component is absent from the production tree')
+assert.ok(!fs.existsSync(path.join(root,'components/places/market.tsx')),'Unused mock Market component is absent from the production tree')
+
+for(const file of [
+ 'components/role-route-guard.tsx',
+ 'app/(app)/admin/layout.tsx',
+ 'app/(app)/agent/layout.tsx',
+ 'app/(app)/bridger/layout.tsx',
+ 'app/(app)/echo/page.tsx',
+ 'app/(app)/admin/control-center/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' deep-alignment syntax/transpile check')
 }
