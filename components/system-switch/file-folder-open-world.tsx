@@ -316,7 +316,11 @@ export default function FileFolderOpenWorld({
                   const hasComponents = !blueprint.required_item_key || owned >= Number(blueprint.required_item_quantity || 0)
                   const canStart = hasComponents && !fundingGateLocked
                   const effectiveMinutes = Math.max(15, Math.ceil(Number(blueprint.build_hours || 1) * 60 / Number(buildFunding?.buildSpeedMultiplier || 1)))
-                  const effectiveLabel = effectiveMinutes >= 60 ? `${(effectiveMinutes / 60).toFixed(effectiveMinutes % 60 === 0 ? 0 : 1)}h` : `${effectiveMinutes}m`
+                  const effectiveLabel = effectiveMinutes >= 1440
+                    ? `${(effectiveMinutes / 1440).toFixed(effectiveMinutes % 1440 === 0 ? 0 : 1)}d`
+                    : effectiveMinutes >= 60
+                      ? `${(effectiveMinutes / 60).toFixed(effectiveMinutes % 60 === 0 ? 0 : 1)}h`
+                      : `${effectiveMinutes}m`
                   return <div key={blueprint.blueprint_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
                     <div className="flex items-center justify-between gap-3"><h4 className="font-bold text-white">{blueprint.name}</h4><span className="rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">Base {blueprint.build_hours}h · Yours {effectiveLabel}</span></div>
                     <p className="mt-2 text-xs leading-5 text-slate-400">{blueprint.description}</p>
