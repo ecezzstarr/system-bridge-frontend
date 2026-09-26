@@ -122,7 +122,7 @@ assert.ok(environmentAdminApi.includes("action==='set_visibility'")&&environment
 assert.ok(environmentPublicApi.includes('getEnvironmentOrganizerState'),'Running clients can read the active environment organization')
 assert.ok(environmentProvider.includes('EnvironmentPageGuard'),'Withdrawn registered pages are guarded at runtime')
 assert.ok(environmentProvider.includes('weave-environment-refresh'),'Organizer changes can refresh mounted navigation without deployment')
-assert.ok(environmentWorkshop.includes('Environment Organizer')&&environmentWorkshop.includes('Withdraw'),'Administration has the page/card organizer workshop')
+assert.ok(environmentWorkshop.includes('Environment Organizer')&&environmentWorkshop.includes('Remove'),'Administration has the page/card organizer workshop')
 assert.ok(appSidebar.includes('/admin/environment-organizer'),'Administration sidebar exposes Environment Organizer')
 assert.ok(adminWorkshop.includes('/admin/environment-organizer'),'Admin Workshop exposes Environment Organizer')
 assert.ok(operatingRoom.includes('/admin/environment-organizer'),'Administration Operating Room exposes Environment Organizer')
