@@ -203,6 +203,22 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
 }
 
 const prefix: Array<[string, WeaveEnvironmentCopy]> = [
+  ['/stream', {
+    key: 'public-stream-network',
+    title: 'WEAVE Stream Network',
+    district: 'Enterprise',
+    purpose: 'The public broadcast world where completed Client Streaming Open Gates become channels anyone can visit.',
+    movement: 'Enter network → choose channel → watch live or replay → continue into connected Client worlds',
+    layer: 'world',
+  }],
+  ['/enterprise', {
+    key: 'public-enterprise-territory',
+    title: 'WEAVE Enterprise Territory',
+    district: 'Enterprise',
+    purpose: 'The public territory for Administration-approved Lord/Lady enterprises that have completed Enterprise Door construction.',
+    movement: 'Enter territory → inspect enterprise → enter systems, market or stream → participate',
+    layer: 'world',
+  }],
   ['/market', {
     key: 'public-client-market',
     title: 'WEAVE Client Market',
