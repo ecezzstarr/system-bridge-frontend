@@ -87,7 +87,7 @@ export function BridgerOperatingEnvironment() {
 
   return (
     <main className="mx-auto w-full max-w-[1500px] p-3 md:p-6">
-      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-emerald-300/15 bg-[#03100f]">
+      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-emerald-300/15 bg-[#03100f]/82 backdrop-blur-xl">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(52,211,153,.13),transparent_36%),radial-gradient(circle_at_90%_0%,rgba(56,189,248,.08),transparent_30%)] p-5 md:p-7">
           <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Bridger Operating Room</p>
           <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Connection carried in the right order.</h1>

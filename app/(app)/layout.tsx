@@ -95,7 +95,7 @@ export default function AppLayout({
   // Show loading state while checking auth or redirecting
   if (!isInitialized || isLoading || (isRedirecting && !isAuthenticated)) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-slate-950">
+      <div className="flex min-h-screen w-full items-center justify-center bg-[#020815]/88 backdrop-blur-xl">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] animate-pulse">Establishing WEAVE Connection...</p>
@@ -110,7 +110,7 @@ export default function AppLayout({
   }
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden bg-slate-950">
+    <div className="relative flex min-h-screen overflow-hidden bg-transparent">
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
         <AppSidebar user={user as any} />
       </div>

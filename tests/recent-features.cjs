@@ -356,6 +356,7 @@ const clientLayoutSource=fs.readFileSync(path.join(root,'app/client/layout.tsx')
 const normalWorldAtmosphereSource=fs.readFileSync(path.join(root,'components/world/normal-weave-role-atmosphere.tsx'),'utf8')
 const flameWorldAtmosphereSource=fs.readFileSync(path.join(root,'components/events/flame-event-role-atmosphere.tsx'),'utf8')
 const worldEnvironmentSource=fs.readFileSync(path.join(root,'components/world/weave-world-environment.tsx'),'utf8')
+const interactionMotionSource=fs.readFileSync(path.join(root,'components/world/interaction-motion-layer.tsx'),'utf8')
 const flameAdSource=fs.readFileSync(path.join(root,'components/events/flame-event-ad.tsx'),'utf8')
 const clientDashboardUnifiedSource=fs.readFileSync(path.join(root,'app/client/dashboard/page.tsx'),'utf8')
 const clientNavUnifiedSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
@@ -369,6 +370,10 @@ assert.ok(normalWorldAtmosphereSource.includes('<WeaveDashboardWorld'),'Role das
 assert.ok(flameWorldAtmosphereSource.includes('Company Loops are destinations'),'Event state does not occupy dashboard space')
 assert.ok(!flameWorldAtmosphereSource.includes('fetch('),'Dashboard event atmosphere no longer fetches or mounts event UI')
 assert.ok(worldEnvironmentSource.includes('<WeaveNormalWorldBackdrop />'),'Normal WEAVE backdrop remains persistent during events')
+assert.ok(rootLayoutSource.includes('<InteractionMotionLayer />'),'Root mounts visible interaction-in-motion effects')
+assert.ok(interactionMotionSource.includes("document.addEventListener('pointerdown'"),'User taps and clicks create visible movement effects')
+assert.ok(appLayoutSource.includes('bg-transparent'),'Staff shell does not cover the moving WEAVE world')
+assert.ok(clientLayoutSource.includes('bg-transparent'),'Client shell does not cover the moving WEAVE world')
 assert.ok(!worldEnvironmentSource.includes('<WeaveWorldBackdrop'),'Event no longer replaces the global world backdrop')
 assert.ok(flameAdSource.includes('DASHBOARD_PATHS'),'Event banner stays off role Home dashboards')
 assert.ok(!clientDashboardUnifiedSource.includes('ClientFlameEventDashboard'),'Client dashboard is no longer replaced by a second event application')
@@ -508,6 +513,7 @@ const fileFolderWorldSource=fs.readFileSync(path.join(root,'lib/client-file-fold
 const fileFolderWorldApiSource=fs.readFileSync(path.join(root,'app/api/client/file-folder-world/route.ts'),'utf8')
 const fileFolderOperatingEnvironmentSource=fs.readFileSync(path.join(root,'components/system-switch/client-file-folder-operating-environment.tsx'),'utf8')
 const fileFolderOpenWorldSource=fs.readFileSync(path.join(root,'components/system-switch/file-folder-open-world.tsx'),'utf8')
+const fileFolder3dSource=fs.readFileSync(path.join(root,'components/system-switch/client-file-folder-3d.tsx'),'utf8')
 const supportFileFolderSource=fs.readFileSync(path.join(root,'app/(app)/weave/file-folder/[fileNumber]/page.tsx'),'utf8')
 const clientOperatingRoomSource=fs.readFileSync(path.join(root,'components/client/client-operating-room.tsx'),'utf8')
 const clientFunctionsPageSource=fs.readFileSync(path.join(root,'app/client/functions/page.tsx'),'utf8')
@@ -539,6 +545,13 @@ assert.ok(fileFolderOperatingEnvironmentSource.includes('Design preview'),'Clien
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Operation shown here is based on recorded File Folder entries'),'Post-build view distinguishes recorded operation from simulation')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'"),'File Folder is organized as one operating environment with contained surfaces')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('File Folder map'),'File Folder exposes one persistent district map instead of page-like top tabs')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientFileFolder3D'),'Client can see the File Folder as a 3D operating environment')
+assert.ok(fileFolder3dSource.includes("from '@react-three/fiber'"),'3D File Folder uses the real Three.js React renderer')
+assert.ok(fileFolder3dSource.includes('<OrbitControls'),'Client can rotate and inspect the 3D File Folder')
+assert.ok(fileFolder3dSource.includes('onClick={(event)'),'3D districts are interactive rather than decorative')
+assert.ok(fileFolder3dSource.includes('activeBuilds'),'3D File Folder reflects active construction')
+assert.ok(fileFolder3dSource.includes('liveSystems'),'3D File Folder reflects completed live systems')
+assert.ok(clientSystemSwitchSource.includes('bg-transparent'),'System Switch does not cover the moving WEAVE world with an opaque page')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('These are districts of one environment'),'File Folder explains that its sections belong to one operating environment')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('One File Folder. One Client operating environment.'),'File Folder explains itself to first-time viewers')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Folder status'),'File Folder keeps live status visible beside the active workspace')
@@ -577,6 +590,8 @@ assert.ok(fileFolderWorldSource.includes('ON CONFLICT (blueprint_key) DO NOTHING
 
 for(const file of [
  'components/system-switch/client-file-folder-operating-environment.tsx',
+ 'components/system-switch/client-file-folder-3d.tsx',
+ 'components/world/interaction-motion-layer.tsx',
  'components/client/client-operating-room.tsx',
  'app/(app)/weave/file-folder/[fileNumber]/page.tsx',
  'components/system-switch/client-bridge-ai-support.tsx',
@@ -591,7 +606,7 @@ for(const file of [
  assert.equal(syntaxErrors.length,0,file+' system-coherence syntax/transpile check')
 }
 
-for(const cameraFile of ['components/world/presence-camera.tsx','lib/presence-camera.ts','components/world/weave-normal-world-backdrop.tsx','components/world/weave-world-environment.tsx']){
+for(const cameraFile of ['components/world/presence-camera.tsx','lib/presence-camera.ts','components/world/weave-normal-world-backdrop.tsx','components/world/weave-world-environment.tsx','components/world/interaction-motion-layer.tsx']){
  const source=fs.readFileSync(path.join(root,cameraFile),'utf8')
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
@@ -763,6 +778,8 @@ assert.ok(readableCssSource.includes('text-shadow'),'WEAVE text keeps visible ma
 assert.ok(readableCssSource.includes('font-weight: 650'),'Dense system labels use stronger weight instead of visually dissolving')
 assert.ok(readableCssSource.includes('.weave-stable-content'),'WEAVE has a stable-content rule for persistent writing')
 assert.ok(readableCssSource.includes('.weave-reading-surface'),'Organized working surfaces use a high-contrast reading layer')
+assert.ok(readableCssSource.includes('@keyframes weave-interaction-wave'),'WEAVE interaction effects have a visible motion wave')
+assert.ok(readableCssSource.includes('.weave-interaction-ripple'),'Interaction ripple styling is globally available')
 assert.ok(!readableCssSource.includes('opacity: calc(var(--ui-opacity) * 0.9)'),'Field breathing no longer fades text-bearing surfaces')
 assert.ok(recordPageSource.includes('isInitialized'),'Record waits for WEAVE auth initialization')
 assert.ok(recordPageSource.includes("headers: { Authorization: \`Bearer \${token}\` }"),'Record uses the initialized WEAVE session token')

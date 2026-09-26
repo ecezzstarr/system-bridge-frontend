@@ -27,6 +27,7 @@ import ClientWorkshopWorld from '@/components/system-switch/client-workshop-worl
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
 import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
 import { ClientBridgeAiSupport } from '@/components/system-switch/client-bridge-ai-support'
+import { ClientFileFolder3D } from '@/components/system-switch/client-file-folder-3d'
 import { getClientToken } from '@/lib/client-auth'
 
 type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'
@@ -381,7 +382,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }
 
   return (
-    <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711]">
+    <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711]/82 backdrop-blur-xl">
       <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(14,165,233,.18),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(139,92,246,.12),transparent_28%)] p-5 md:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="flex items-start gap-4">
@@ -437,6 +438,20 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           </div>
         </div>
       </header>
+
+      <div className="p-4 pb-0 md:p-6 md:pb-0">
+        <ClientFileFolder3D
+          activeSurface={surface}
+          onSurfaceChange={(next) => {
+            setSurface(next)
+            setSelectedSystemId('')
+            setFormationOpen(false)
+          }}
+          activeBuilds={activeBuilds.map((build:any)=>({ progress: buildProgress(build, now) }))}
+          liveSystems={systems.length}
+          premiumSound={Boolean(data.premium_dj_enabled)}
+        />
+      </div>
 
       <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[230px_minmax(0,1fr)_250px]">
         <aside className="space-y-4">

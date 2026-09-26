@@ -65,19 +65,19 @@ export default function ClientSystemSwitchPage() {
   }, [router])
 
   if (loading) {
-    return <main className="min-h-screen bg-black text-white flex items-center justify-center"><p className="text-sm text-slate-400">Resolving your File Folder movement...</p></main>
+    return <main className="min-h-screen bg-transparent text-white flex items-center justify-center"><p className="text-sm text-slate-400">Resolving your File Folder movement...</p></main>
   }
 
   if (entry && !entry.active) return <ClientFileFolderGate entry={entry} />
 
   if (error || !data?.verified || !data?.workshop) {
-    return <main className="min-h-screen bg-black text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-950 p-8 text-center"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><Link href="/client/dashboard" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Portal</Link></div></main>
+    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-950 p-8 text-center"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><Link href="/client/dashboard" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Portal</Link></div></main>
   }
 
   return (
-    <main className="min-h-screen bg-black p-3 md:p-6 text-white">
+    <main className="min-h-screen bg-transparent p-3 md:p-6 text-white">
       <div className="mx-auto max-w-[1500px]">
-        <div className="mb-4 rounded-3xl border border-white/10 bg-slate-950/90 px-5 py-4">
+        <div className="mb-4 rounded-3xl border border-white/10 bg-[#030a15]/78 px-5 py-4 backdrop-blur-xl">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4"><div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-3"><FolderOpen className="h-6 w-6 text-sky-300" /></div><div><p className="text-[9px] uppercase tracking-[0.3em] text-sky-300">System Switch → Main File Folder</p><h1 className="mt-1 text-lg font-semibold">{data.client.name}</h1><p className="text-xs text-slate-500">{data.client.business_name || data.client.email}</p><p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-slate-500">Current Topic · {data.workshop.title}</p></div></div>
             <div className="flex items-center gap-3"><div className="rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-right"><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">File Number</p><p className="font-mono text-xs text-slate-200">{data.client.file_number}</p></div><div className="hidden sm:flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/5 px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-emerald-300"><ShieldCheck className="h-4 w-4" /> Active</div></div>
