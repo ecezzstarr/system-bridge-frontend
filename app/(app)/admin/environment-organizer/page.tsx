@@ -156,7 +156,7 @@ export default function EnvironmentOrganizerWorkshop(){
                 onClick={()=>void run({action:'set_visibility',surfaceKey:item.surface_key,visible:!item.is_visible},item.surface_key+':visibility')}
                 className={`inline-flex min-w-[118px] items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${item.is_visible?'border-amber-300/20 bg-amber-400/[.05] text-amber-200':'border-emerald-300/20 bg-emerald-400/[.05] text-emerald-200'} disabled:opacity-35`}
               >
-                {item.is_visible?<><EyeOff className="h-3.5 w-3.5"/>Withdraw</>:<><Eye className="h-3.5 w-3.5"/>Restore</>}
+                {item.is_visible?<><EyeOff className="h-3.5 w-3.5"/>Remove</>:<><Eye className="h-3.5 w-3.5"/>Restore</>}
               </button>
             </div>
           </article>)}
