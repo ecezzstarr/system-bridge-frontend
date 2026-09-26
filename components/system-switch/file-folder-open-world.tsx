@@ -109,6 +109,16 @@ export default function FileFolderOpenWorld({
     () => new Map((world?.inventory || []).map((item: any) => [item.item_key, Number(item.quantity || 0)])),
     [world?.inventory],
   )
+  const materialPurpose = useMemo(()=>{
+    const map=new Map<string,string[]>()
+    for(const blueprint of world?.blueprints||[]){
+      if(!blueprint.required_item_key)continue
+      const current=map.get(blueprint.required_item_key)||[]
+      current.push(blueprint.name)
+      map.set(blueprint.required_item_key,current)
+    }
+    return map
+  },[world?.blueprints])
 
   const act = async (payload: any, key: string) => {
     if (readOnly) return
@@ -326,6 +336,10 @@ export default function FileFolderOpenWorld({
                 {buildMarketItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
+                  <div className="mt-3 rounded-xl border border-emerald-300/10 bg-black/20 px-3 py-2 text-[9px] leading-4 text-slate-400">
+                    <span className="font-black uppercase tracking-wider text-emerald-300">Build function · </span>
+                    {(materialPurpose.get(item.item_key)||[]).length ? `Enables ${materialPurpose.get(item.item_key)!.join(', ')}.` : item.build_effect==='component' ? 'Attach to active construction as a functional build part.' : 'Reusable File Folder material for compatible system formation.'}
+                  </div>
                   <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
                   {!readOnly && <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire material'}</button>}
                 </div>)}
