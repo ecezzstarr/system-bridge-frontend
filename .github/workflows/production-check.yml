@@ -5,6 +5,7 @@ on:
     branches: [main]
   push:
     branches:
+      - main
       - 'feature/**'
   workflow_dispatch:
 
@@ -29,6 +30,7 @@ jobs:
         run: |
           node tests/recent-features.cjs
           node tests/wiring.cjs
+          node tests/environment-grade.cjs
 
       - name: Production build
         run: npm run build
