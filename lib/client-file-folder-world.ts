@@ -299,8 +299,8 @@ async function seedFileFolderWorld(sql: any) {
     `
   }
 
-  -- Major systems keep long construction horizons. These upgrades only touch the former shipped defaults,
-  -- so an Administration-customized duration is preserved.
+  // Major systems keep long construction horizons. These upgrades only touch the former shipped defaults,
+  // so an Administration-customized duration is preserved.
   await sql`UPDATE weave_file_folder_blueprints SET build_hours=24,updated_at=NOW() WHERE blueprint_key='customer_door' AND build_hours=6`
   await sql`UPDATE weave_file_folder_blueprints SET build_hours=72,description='A constructed customer-facing store building inside the public WEAVE Client Market, with offers, order intake, patronage and fulfillment movement.',updated_at=NOW() WHERE blueprint_key='commerce_storefront' AND build_hours=24`
   await sql`UPDATE weave_file_folder_blueprints SET build_hours=168,description='A seven-day base construction that expands the Client storefront into a larger public Market Hall with multi-offer commercial movement, buyers, orders and records.',updated_at=NOW() WHERE blueprint_key='marketplace_network' AND build_hours=120`
