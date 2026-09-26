@@ -24,7 +24,7 @@ function PlazaArtifact({ pass }: { pass: number }) {
 
   return (
     <group ref={group}>
-      <FlameEventArtifact3D variant="core" progress={pass} active />
+      <FlameEventArtifact3D variant="core" progress={pass} active surface="bridge-plaza-core" />
       <Text position={[0,-2.15,0]} fontSize={0.22} color="#e2e8f0" anchorX="center">
         FLAME EVENT ARTIFACT
       </Text>
@@ -65,6 +65,7 @@ function DistrictPortal({portal,onTravel}:{portal:Portal;onTravel:(href:string)=
         progress={portal.unlocked?4:0}
         accent={portal.accent}
         active={portal.unlocked}
+        surface="bridge-plaza-portals"
       />
 
       <mesh position={[0,-0.86,0]} rotation={[-Math.PI/2,0,0]}>
@@ -113,8 +114,8 @@ export function BridgePlazaMap({
         <color attach="background" args={['#030712']}/>
         <fog attach="fog" args={['#030712',9,19]}/>
         <ambientLight intensity={0.48}/>
-        <pointLight position={[4,5,4]} intensity={72} color="#fb7185"/>
-        <pointLight position={[-4,3,-3]} intensity={62} color="#7dd3fc"/>
+        <pointLight position={[4,5,4]} intensity={24} color="#ffffff"/>
+        <pointLight position={[-4,3,-3]} intensity={18} color="#cbd5e1"/>
         <pointLight position={[0,6,-4]} intensity={42} color="#ffffff"/>
         <Stars radius={32} depth={20} count={900} factor={2} saturation={0} fade speed={0.4}/>
         <gridHelper args={[15,30,'#164e63','#0f172a']} position={[0,-1.4,0]}/>
