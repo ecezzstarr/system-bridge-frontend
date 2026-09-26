@@ -360,12 +360,12 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   )
 
   const surfaces = [
-    { key: 'command' as Surface, label: 'Command', icon: Home, detail: 'One view of the whole File Folder.' },
-    { key: 'builds' as Surface, label: 'Build + Systems', icon: Hammer, detail: 'Preview, construct and operate systems.' },
-    { key: 'business' as Surface, label: 'Business', icon: Store, detail: 'Workshop, customer door, payments and support.' },
-    { key: 'enterprise' as Surface, label: 'Enterprise', icon: BriefcaseBusiness, detail: 'Lord/Lady elevation and Legions.' },
+    { key: 'command' as Surface, label: 'Overview', icon: Home, detail: 'See the whole File Folder and current movement.', tone: 'sky', step: '01' },
+    { key: 'builds' as Surface, label: 'Build + Operate', icon: Hammer, detail: 'Preview, construct, activate and use live systems.', tone: 'violet', step: '02' },
+    { key: 'business' as Surface, label: 'Business + Customers', icon: Store, detail: 'Workshop, Customer Door, payments and support.', tone: 'emerald', step: '03' },
+    { key: 'enterprise' as Surface, label: 'Enterprise', icon: BriefcaseBusiness, detail: 'Lord/Lady elevation, enterprise plan and Legions.', tone: 'amber', step: '04' },
     ...(data.premium_dj_enabled
-      ? [{ key: 'sound' as Surface, label: 'Sound', icon: Headphones, detail: 'Private premium File Folder DJ.' }]
+      ? [{ key: 'sound' as Surface, label: 'Sound Room', icon: Headphones, detail: 'Private premium File Folder DJ.', tone: 'rose', step: '05' }]
       : []),
   ]
 
@@ -402,29 +402,31 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-          {surfaces.map(item => {
-            const Icon = item.icon
-            const selected = surface === item.key
-            return (
-              <button
-                key={item.key}
-                onClick={() => setSurface(item.key)}
-                className={
-                  'rounded-2xl border p-3 text-left transition ' +
-                  (selected
-                    ? 'border-sky-300/25 bg-sky-400/10'
-                    : 'border-white/5 bg-black/20 hover:border-white/10 hover:bg-white/[0.03]')
-                }
-              >
-                <div className="flex items-center gap-2">
-                  <Icon className={'h-4 w-4 ' + (selected ? 'text-sky-300' : 'text-slate-500')} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.1em] text-white">{item.label}</span>
+        <div className="mt-5 grid gap-3 lg:grid-cols-[1.25fr_.75fr]">
+          <div className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.045] p-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">What this place is</p>
+            <p className="mt-2 text-sm font-black text-white">One File Folder. One Client operating environment.</p>
+            <p className="mt-2 text-xs leading-6 text-slate-300">
+              Blueprints are ideas for systems. Builds turn those ideas into working structures. Completed systems stay hosted here for real Client activity. Business and enterprise grow from the same File Folder instead of becoming disconnected pages.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-violet-300/15 bg-violet-400/[0.04] p-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Movement path</p>
+            <div className="mt-3 grid grid-cols-5 gap-1 text-center">
+              {[
+                ['1','Recognize','sky'],
+                ['2','Preview','violet'],
+                ['3','Build','amber'],
+                ['4','Activate','emerald'],
+                ['5','Operate','cyan'],
+              ].map(([number,label,tone])=>(
+                <div key={label} className="rounded-xl border border-white/10 bg-black/25 px-2 py-3">
+                  <p className="text-[8px] font-black text-slate-400">{number}</p>
+                  <p className={`mt-1 text-[8px] font-black uppercase tracking-[0.08em] ${tone==='violet'?'text-violet-300':tone==='amber'?'text-amber-300':tone==='emerald'?'text-emerald-300':tone==='cyan'?'text-cyan-300':'text-sky-300'}`}>{label}</p>
                 </div>
-                <p className="mt-1 hidden text-[9px] leading-4 text-slate-500 md:block">{item.detail}</p>
-              </button>
-            )
-          })}
+              ))}
+            </div>
+          </div>
         </div>
       </header>
 
