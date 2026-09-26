@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Activity,
   ArrowRight,
@@ -24,6 +24,7 @@ import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-wor
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
 import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
+import { getClientToken } from '@/lib/client-auth'
 
 type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'
 
@@ -63,11 +64,11 @@ function formatDate(value?: string | null) {
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-function buildProgress(build: any) {
-  const start = new Date(build.started_at || build.created_at || Date.now()).getTime()
-  const end = new Date(build.completes_at || Date.now()).getTime()
+function buildProgress(build: any, now: number) {
+  const start = new Date(build.started_at || build.created_at || now).getTime()
+  const end = new Date(build.completes_at || now).getTime()
   if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0
-  return Math.max(0, Math.min(100, ((Date.now() - start) / (end - start)) * 100))
+  return Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100))
 }
 
 function PreviewFrame({ blueprint, label = 'Design preview' }: { blueprint: any; label?: string }) {
@@ -146,6 +147,16 @@ function LiveSystemCard({ system }: { system: any }) {
           <p className="mt-1 text-lg font-black text-white">{completed}</p>
         </div>
       </div>
+      {Array.isArray(system.configuration?.appliedParts) && system.configuration.appliedParts.length > 0 && (
+        <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-3">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-600">Built with</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {system.configuration.appliedParts.map((part:any,index:number)=>(
+              <span key={part.item_key + ':' + index} className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[9px] text-slate-300">{part.name || part.item_key}</span>
+            ))}
+          </div>
+        </div>
+      )}
       <p className="mt-4 text-[10px] leading-5 text-slate-500">
         Activated {formatDate(system.activated_at)}. Operation shown here is based on recorded File Folder entries, not simulated traffic.
       </p>
@@ -157,9 +168,35 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [surface, setSurface] = useState<Surface>('command')
   const [world, setWorld] = useState(data.file_folder_world)
   const [formationOpen, setFormationOpen] = useState(false)
+  const [now, setNow] = useState(Date.now())
   const [selectedBlueprintKey, setSelectedBlueprintKey] = useState(
     data.file_folder_world?.blueprints?.[0]?.blueprint_key || '',
   )
+
+  useEffect(() => {
+    const tick = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(tick)
+  }, [])
+
+  useEffect(() => {
+    const refresh = async () => {
+      try {
+        const token = getClientToken()
+        if (!token) return
+        const response = await fetch('/api/client/file-folder-world', {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
+        })
+        const body = await response.json()
+        if (response.ok && body.world) setWorld(body.world)
+      } catch {
+        // Keep the current File Folder visible if a background refresh fails.
+      }
+    }
+
+    const interval = window.setInterval(refresh, 15000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   const blueprints = Array.isArray(world?.blueprints) ? world.blueprints : []
   const builds = Array.isArray(world?.builds) ? world.builds : []
@@ -320,10 +357,10 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                             {String(build.system_type || '').replaceAll('_', ' ')}
                           </p>
                         </div>
-                        <span className="text-[10px] font-black text-amber-200">{Math.round(buildProgress(build))}%</span>
+                        <span className="text-[10px] font-black text-amber-200">{Math.round(buildProgress(build, now))}%</span>
                       </div>
                       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
-                        <div className="h-full rounded-full bg-amber-300" style={{ width: buildProgress(build) + '%' }} />
+                        <div className="h-full rounded-full bg-amber-300" style={{ width: buildProgress(build, now) + '%' }} />
                       </div>
                     </div>
                   ))}
@@ -447,7 +484,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                               <p className="mt-1 text-[10px] text-slate-500">{build.purpose}</p>
                             </div>
                             <span className="rounded-full bg-amber-400/10 px-3 py-1 text-[9px] font-black text-amber-200">
-                              {Math.round(buildProgress(build))}%
+                              {Math.round(buildProgress(build, now))}%
                             </span>
                           </div>
                           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
