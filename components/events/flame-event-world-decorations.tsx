@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import { usePresenceCamera } from '@/components/world/presence-camera'
-import type { WeaveEvent } from '@/lib/weave-event'
+import type { WeaveEvent } from '@/lib/weave-event'\nimport { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 
 export function FlameEventWorldDecorations({
   event,
@@ -86,19 +86,13 @@ export function FlameEventWorldDecorations({
         ))}
       </div>
 
-      <div className="absolute left-1/2 top-[38%] h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.045] [transform:translateZ(-70px)] sm:h-96 sm:w-96">
-        <motion.div
-          className="absolute inset-[8%] rounded-full border border-sky-200/[0.055]"
-          animate={reduceMotion ? undefined : { rotate: 360 }}
-          transition={{ duration: 42, repeat: Infinity, ease: 'linear' }}
-        />
-        <motion.div
-          className="absolute inset-[22%] rounded-full border border-red-200/[0.045]"
-          animate={reduceMotion ? undefined : { rotate: -360 }}
-          transition={{ duration: 34, repeat: Infinity, ease: 'linear' }}
-        />
-        <div className="absolute inset-[36%] rounded-full bg-white/[0.018] shadow-[0_0_80px_rgba(125,211,252,.08)]" />
-      </div>
+      <motion.div
+        className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 [transform:translateZ(-70px)]"
+        animate={reduceMotion ? undefined : { rotate:[-2,2,-2], scale:[0.98,1.03,0.98] }}
+        transition={{ duration:8.5, repeat:Infinity, ease:'easeInOut' }}
+      >
+        <FlameEventArtifactMark size="lg" className="opacity-45 sm:scale-150" />
+      </motion.div>
 
       <div className="absolute inset-x-[12%] bottom-[18%] h-20 [transform:translateZ(-38px)]">
         <motion.div
