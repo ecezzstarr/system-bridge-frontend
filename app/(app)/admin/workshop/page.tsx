@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Cloud, GitBranch, Megaphone, Radio, Sparkles } from 'lucide-react'
+import { Cloud, GitBranch, Megaphone, Palette, Radio, Sparkles } from 'lucide-react'
 
 const workshops = [
   {
@@ -18,6 +18,12 @@ const workshops = [
     title: 'Ad Workshop',
     description: 'Create live advertisements, target participant roles, choose placement and publish without redeploying the app.',
     icon: Megaphone,
+  },
+  {
+    href: '/admin/visual-systems',
+    title: 'Visual Systems Workshop',
+    description: 'Draft, publish, hide and roll back registered WEAVE visual artifacts live without a Cloud Run deployment.',
+    icon: Palette,
   },
   {
     href: '/admin/loop-workshop',
