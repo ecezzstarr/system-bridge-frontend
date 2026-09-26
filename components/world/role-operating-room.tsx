@@ -52,6 +52,25 @@ type FunctionItem = {
   district: string
 }
 
+const OPERATING_SEQUENCE = {
+  agent: [
+    { title: 'Shared WEAVE' },
+    { title: 'Bridger support' },
+    { title: 'Work + livelihood' },
+    { title: 'Client + company support' },
+    { title: 'Record + value' },
+  ],
+  admin: [
+    { title: 'Shared WEAVE' },
+    { title: 'Operations center' },
+    { title: 'People + recognition' },
+    { title: 'Client system' },
+    { title: 'Bridge system' },
+    { title: 'Institution + infrastructure' },
+    { title: 'Atmosphere + communication' },
+  ],
+} as const
+
 const AGENT_COMMANDS: FunctionItem[] = [
   { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: GitBranch, district: 'Shared WEAVE' },
   { label: 'Human Cadences', detail: 'Find people through recorded participation and movement.', href: '/search', icon: MessageSquare, district: 'Shared WEAVE' },
@@ -186,7 +205,12 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
   const copy = ROLE_COPY[role]
   const { scene, moving } = usePresenceCamera()
   const { isVisible, orderFor } = useEnvironmentOrganizer()
-  const visibleCommands = copy.commands.filter(item => isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
+  const sequence = OPERATING_SEQUENCE[role]
+  const districtRank = new Map(sequence.map((item,index)=>[item.title,index]))
+  const visibleCommands = copy.commands.filter(item => isVisible(item.href)).sort((a,b)=>{
+    const districtDelta=(districtRank.get(a.district as any)??999)-(districtRank.get(b.district as any)??999)
+    return districtDelta || (orderFor(a.href)-orderFor(b.href))
+  })
 
   return (
     <main className="relative mx-auto w-full max-w-[1500px] p-3 md:p-6">
