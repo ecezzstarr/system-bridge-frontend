@@ -192,6 +192,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'Draft → preview → publish → observe → roll back when needed',
     layer: 'system',
   },
+  '/admin/environment-organizer': {
+    key: 'administration-environment-organizer',
+    title: 'Environment Organizer',
+    district: 'Institution',
+    purpose: 'Administration control for withdrawing, restoring and ordering registered pages and cards while preserving source and records.',
+    movement: 'Inspect → withdraw or restore → reorder → observe',
+    layer: 'system',
+  },
 }
 
 const prefix: Array<[string, WeaveEnvironmentCopy]> = [
