@@ -35,7 +35,8 @@ import {
   Brain,
   Flame,
   Copy,
-  Plus
+  Plus,
+  LayoutTemplate
 } from 'lucide-react'
 import { 
   Select, 
@@ -344,6 +345,14 @@ function AdminWorkshopsSection() {
       link: '/admin/dev-workshop',
       tags: ['GEMINI 2.0', 'AI OPERATOR', 'CORE'],
       color: 'from-pink-500 to-purple-500'
+    },
+    {
+      title: 'Environment Organizer',
+      desc: 'Withdraw, restore and reorder registered WEAVE pages and cards while preserving source and records.',
+      icon: <LayoutTemplate className="h-10 w-10 text-cyan-400" />,
+      link: '/admin/environment-organizer',
+      tags: ['RUNTIME', 'PAGES', 'CARDS'],
+      color: 'from-cyan-500 to-blue-500'
     },
     {
       title: 'Flame Event · Loop 1',
