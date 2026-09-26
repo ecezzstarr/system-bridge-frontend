@@ -23,7 +23,7 @@ interface Message {
   client_id: string
   client_name: string
   position: string
-  sender_type: 'client' | 'admin'
+  sender_type: 'client' | 'bridger' | 'agent' | 'admin' | 'bridge_ai'
   content: string
   is_read: boolean
   created_at: string
@@ -148,7 +148,7 @@ function BridgerClientsContent() {
           clientName: selectedClient.name,
           position: activePosition,
           content,
-          senderType: 'admin', // Bridger replies as 'admin' position
+          senderType: 'bridger',
         }),
       })
 
@@ -185,7 +185,7 @@ function BridgerClientsContent() {
             </Link>
             <div>
               <h1 className="text-lg font-bold text-white">Client Service Portal</h1>
-              <p className="text-xs text-slate-500">Interact with your referred clients</p>
+              <p className="text-xs text-slate-500">Continue the Client relationship after crossing</p>
             </div>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full border border-slate-700">
@@ -301,12 +301,12 @@ function BridgerClientsContent() {
                   messages.map((msg) => (
                     <div 
                       key={msg.id} 
-                      className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${msg.sender_type === 'bridger' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`max-w-[80%] ${msg.sender_type === 'admin' ? 'order-2' : 'order-1'}`}>
+                      <div className={`max-w-[80%] ${msg.sender_type === 'bridger' ? 'order-2' : 'order-1'}`}>
                         <div
                           className={`rounded-2xl px-4 py-2 text-sm shadow-sm ${
-                            msg.sender_type === 'admin'
+                            msg.sender_type === 'bridger'
                               ? 'bg-emerald-600 text-white rounded-br-none'
                               : 'bg-slate-800 text-slate-100 rounded-bl-none'
                           }`}
@@ -316,9 +316,9 @@ function BridgerClientsContent() {
                           )}
                           <p className="whitespace-pre-wrap">{msg.content}</p>
                         </div>
-                        <div className={`flex items-center gap-1 mt-1 px-1 text-[10px] text-slate-500 ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`flex items-center gap-1 mt-1 px-1 text-[10px] text-slate-500 ${msg.sender_type === 'bridger' ? 'justify-end' : 'justify-start'}`}>
                           <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                          {msg.sender_type === 'admin' && (
+                          {msg.sender_type === 'bridger' && (
                             <CheckCheck className={`h-3 w-3 ${msg.is_read ? 'text-emerald-400' : 'text-slate-600'}`} />
                           )}
                         </div>
