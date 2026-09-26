@@ -279,7 +279,7 @@ const clientBridgerSource=fs.readFileSync(path.join(root,'app/api/client/bridger
 assert.ok(clientNavSource.includes("pathname === '/client/login'"),'Client login is excluded from signed-in Client navigation')
 assert.ok(clientNavSource.includes("pathname === '/client/register'"),'Client registration is excluded from signed-in Client navigation')
 assert.ok(clientNavSource.includes('File Folder') || clientNavSource.includes('My Workshop & Store'),'Client File Folder/workshop link remains available after login')
-assert.ok(clientNavSource.includes("label: 'Loops'"),'Company Loops remain available after Client login')
+assert.ok(clientNavSource.includes("label: 'Loop Field'"),'Company Loops remain available after Client login as an environment entrance')
 assert.ok(clientGuardSource.includes("router.replace('/client/login')"),'Protected Client routes send unauthenticated visitors to Client login')
 assert.ok(clientTerminalSource.includes('Flame Coin</span>'),'Client Vault displays Flame Coin instead of TRX')
 assert.ok(clientTerminalSource.includes("fetch('/api/client/bridger'"),'Client Bridger lookup no longer sends clientId in query')
