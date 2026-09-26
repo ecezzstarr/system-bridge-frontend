@@ -66,6 +66,7 @@ const navigation = [
   // 2. POSITION — the operating room for the current role.
   { group: "Position", items: [
     { name: "Bridger Operating Room", href: "/bridger/functions", icon: LayoutTemplate, bridgerOnly: true },
+    { name: "WhatsApp Numbers", href: "/bridger/numbers", icon: Phone, bridgerOnly: true },
     { name: "Agent Operating Room", href: "/agent/functions", icon: LayoutTemplate, agentOnly: true },
     { name: "Administration Operating Room", href: "/admin/functions", icon: ShieldCheck, adminOnly: true },
     { name: "My Bridgers", href: "/agent/bridgers", icon: Users, agentOnly: true },
@@ -103,6 +104,7 @@ const navigation = [
   { group: "Administration", items: [
     { name: "Message Hub", href: "/admin/hub", icon: MessageSquare, adminOnly: true },
     { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
+    { name: "WhatsApp Number Engine", href: "/admin/bridger-numbers", icon: Phone, adminOnly: true },
     { name: "Bridge Templates", href: "/admin/bridge-templates", icon: Briefcase, adminOnly: true },
     { name: "File Number Engine", href: "/admin/file-number-engine", icon: FileBox, adminOnly: true },
     { name: "Fulfillment Agent", href: "/admin/outreach", icon: ShieldCheck, adminOnly: true },
