@@ -203,6 +203,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
 }
 
 const prefix: Array<[string, WeaveEnvironmentCopy]> = [
+  ['/market', {
+    key: 'public-client-market',
+    title: 'WEAVE Client Market',
+    district: 'Enterprise',
+    purpose: 'The public district where constructed Client Customer Doors, storefronts and Market Halls can be visited without a WEAVE account.',
+    movement: 'Enter market → visit store → inspect offer → purchase or request',
+    layer: 'world',
+  }],
   ['/client/system-switch', {
     key: 'client-file-folder',
     title: 'Main File Folder · 4D Operating World',
