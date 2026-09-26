@@ -374,6 +374,16 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const builds = Array.isArray(world?.builds) ? world.builds : []
   const systems = Array.isArray(world?.systems) ? world.systems : []
   const activeBuilds = builds.filter((build: any) => build.status === 'building')
+  const liveSystemTypes=new Set(systems.filter((system:any)=>system.status==='active').map((system:any)=>system.system_type))
+  const marketLevel=liveSystemTypes.has('marketplace_network')
+    ? 3
+    : liveSystemTypes.has('commerce_storefront')
+      ? 2
+      : liveSystemTypes.has('customer_door')
+        ? 1
+        : 0
+  const activeMarketBuild=activeBuilds.find((build:any)=>['marketplace_network','commerce_storefront','customer_door'].includes(build.system_type))
+  const marketBuildProgress=activeMarketBuild?buildProgress(activeMarketBuild,now):0
   const selectedSystem = systems.find((system:any)=>system.id===selectedSystemId) || null
   const selectedBlueprint = useMemo(
     () => blueprints.find((blueprint: any) => blueprint.blueprint_key === selectedBlueprintKey) || blueprints[0] || null,
@@ -460,6 +470,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           liveSystems={systems.length}
           premiumSound={Boolean(data.premium_dj_enabled)}
           visibleSurfaceKeys={surfaces.map(item=>item.key)}
+          marketLevel={marketLevel}
+          marketBuildProgress={marketBuildProgress}
         />
       </div>
 
