@@ -1,196 +1,44 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect,useState } from 'react'
+import Link from 'next/link'
+import { ArrowLeft,CalendarClock,CheckCircle2,Clock3,ReceiptText,ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WORLD_RULES } from '@/lib/world/constants'
+import { WeaveSystemRoom } from '@/components/world/weave-system-room'
 
-const SUBSCRIPTION_AMOUNT = WORLD_RULES.BRIDGER_CONTINUANCE_NGN
+const SUBSCRIPTION_AMOUNT=WORLD_RULES.BRIDGER_CONTINUANCE_NGN
+type Continuance={id:string;role:string;subscription_status:'active'|'due'|'suspended';subscription_expiry:string|null;is_subscription_exempt:boolean;subscription_last_paid_at:string|null}
 
-type Continuance = {
-  id: string
-  role: string
-  subscription_status: 'active' | 'due' | 'suspended'
-  subscription_expiry: string | null
-  is_subscription_exempt: boolean
-  subscription_last_paid_at: string | null
-}
+export default function BridgerContinuancePage(){
+ const {user,token}=useAuth();const userId=user?.id??null
+ const [subscription,setContinuance]=useState<Continuance|null>(null),[loading,setLoading]=useState(true),[submitting,setSubmitting]=useState(false),[reference,setReference]=useState(''),[paymentMethod,setPaymentMethod]=useState('bank_transfer'),[message,setMessage]=useState<string|null>(null),[error,setError]=useState<string|null>(null)
 
-export default function BridgerContinuancePage() {
-  const { user, token } = useAuth()
-  const userId = user?.id ?? null
-  const [subscription, setContinuance] = useState<Continuance | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [reference, setReference] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('bank_transfer')
-  const [message, setMessage] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+ useEffect(()=>{if(userId)void fetchContinuance();else setLoading(false)},[userId,token])
+ async function fetchContinuance(){setLoading(true);try{const res=await fetch('/api/bridger/subscription',{headers:token?{Authorization:`Bearer ${token}`}:{},cache:'no-store'});const data=await res.json();if(data.success)setContinuance(data.subscription);else setError(data.error||'Failed to load continuance')}catch{setError('Failed to load continuance')}finally{setLoading(false)}}
+ async function handleSubmit(e:React.FormEvent){e.preventDefault();if(!userId)return;if(!reference.trim()){setError('Enter a payment reference');return}setSubmitting(true);setError(null);setMessage(null);try{const res=await fetch('/api/bridger/subscription/submit',{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:JSON.stringify({reference:reference.trim(),paymentMethod})});const data=await res.json();if(data.success){setMessage('Continuance payment submitted to Administration for review.');setReference('')}else setError(data.message||'Submission failed')}catch{setError('Submission failed')}finally{setSubmitting(false)}}
 
-  useEffect(() => {
-    if (userId) {
-      fetchContinuance()
-    } else {
-      setLoading(false)
-    }
-  }, [userId, token])
+ const status=subscription?.subscription_status||'due'
+ const statusTone=status==='active'?'text-emerald-300 border-emerald-300/20 bg-emerald-400/[.05]':status==='suspended'?'text-red-300 border-red-300/20 bg-red-400/[.05]':'text-amber-300 border-amber-300/20 bg-amber-400/[.05]'
+ const left=<>
+  <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[.035] p-4"><ShieldCheck className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">Partnership continuity</p><p className="mt-2 text-xs leading-5 text-slate-400">Continuance keeps the Bridger position connected to Prospect movement, Client continuity and company functions.</p></section>
+  <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Movement</p><div className="mt-3 space-y-3 text-xs text-slate-300"><p>1 · Check standing</p><p>2 · Submit continuance when due</p><p>3 · Administration verifies</p><p>4 · Position continues</p></div></section>
+ </>
 
-  async function fetchContinuance() {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/bridger/subscription', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-      const data = await res.json()
-      if (data.success) {
-        setContinuance(data.subscription)
-      } else {
-        setError(data.error || 'Failed to load subscription')
-      }
-    } catch (err) {
-      setError('Failed to load subscription')
-    } finally {
-      setLoading(false)
-    }
-  }
+ const center=loading?<div className="flex min-h-[420px] items-center justify-center"><Clock3 className="h-7 w-7 animate-pulse text-emerald-300"/></div>:!userId?<div className="rounded-2xl border border-red-300/15 bg-red-400/[.035] p-5 text-sm text-red-200">A Bridger position is required.</div>:<>
+  <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4"><div><p className="text-[9px] font-black uppercase tracking-[.2em] text-emerald-300">Standing console</p><h2 className="mt-1 text-xl font-black text-white">Your partnership state</h2></div><span className={`rounded-full border px-3 py-1 text-[9px] font-black uppercase ${statusTone}`}>{status}</span></div>
+  {subscription&&<div className="mt-4 grid gap-3 sm:grid-cols-3">
+   <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><CalendarClock className="h-4 w-4 text-sky-300"/><p className="mt-3 text-[9px] uppercase text-slate-500">Expiry</p><p className="mt-1 text-sm font-black text-white">{subscription.subscription_expiry?new Date(subscription.subscription_expiry).toLocaleDateString():'Not set'}</p></div>
+   <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><ReceiptText className="h-4 w-4 text-amber-300"/><p className="mt-3 text-[9px] uppercase text-slate-500">Last movement</p><p className="mt-1 text-sm font-black text-white">{subscription.subscription_last_paid_at?new Date(subscription.subscription_last_paid_at).toLocaleDateString():'Never'}</p></div>
+   <div className="rounded-2xl border border-white/10 bg-black/20 p-4"><CheckCircle2 className="h-4 w-4 text-emerald-300"/><p className="mt-3 text-[9px] uppercase text-slate-500">Position</p><p className="mt-1 text-sm font-black text-white">{subscription.is_subscription_exempt?'Exempt':'Continuance governed'}</p></div>
+  </div>}
+  {!subscription?.is_subscription_exempt&&<form onSubmit={handleSubmit} className="mt-5 rounded-2xl border border-emerald-300/10 bg-emerald-400/[.025] p-4"><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Continuance movement</p><h3 className="mt-1 text-lg font-black text-white">₦{SUBSCRIPTION_AMOUNT.toLocaleString()} monthly continuance</h3><p className="mt-2 text-xs leading-5 text-slate-400">Submit the real payment reference. Administration verifies it before the standing changes.</p><div className="mt-4 grid gap-3 sm:grid-cols-2"><label><span className="text-[9px] font-black uppercase text-slate-500">Payment method</span><select value={paymentMethod} onChange={e=>setPaymentMethod(e.target.value)} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-white"><option value="bank_transfer">Bank Transfer</option><option value="cash">Cash</option><option value="other">Other</option></select></label><label><span className="text-[9px] font-black uppercase text-slate-500">Reference / proof</span><input value={reference} onChange={e=>setReference(e.target.value)} placeholder="Transaction ID or teller number" className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-white"/></label></div>{error&&<div className="mt-3 rounded-xl border border-red-300/15 bg-red-400/[.04] px-3 py-2 text-xs text-red-200">{error}</div>}{message&&<div className="mt-3 rounded-xl border border-emerald-300/15 bg-emerald-400/[.04] px-3 py-2 text-xs text-emerald-200">{message}</div>}<button data-presence-output="Submit Bridger continuance movement" disabled={submitting} className="mt-4 w-full rounded-xl bg-emerald-300 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-950 disabled:opacity-40">{submitting?'Submitting movement…':'Submit to Administration'}</button></form>}
+ </>
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!userId) return
-    if (!reference.trim()) {
-      setError('Please enter a payment reference')
-      return
-    }
+ const right=<>
+  <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Continuance value</p><p className="mt-2 text-2xl font-black text-white">₦{SUBSCRIPTION_AMOUNT.toLocaleString()}</p><p className="mt-2 text-xs leading-5 text-slate-400">Administration review is part of the movement; submission alone does not activate standing.</p></section>
+  <Link href="/bridger/functions" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white"><span className="inline-flex items-center gap-2"><ArrowLeft className="h-4 w-4 text-emerald-300"/>Bridger Operating Room</span></Link>
+ </>
 
-    setSubmitting(true)
-    setError(null)
-    setMessage(null)
-
-    try {
-      const res = await fetch('/api/bridger/subscription/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({
-          reference: reference.trim(),
-          paymentMethod
-        })
-      })
-      const data = await res.json()
-
-      if (data.success) {
-        setMessage('Payment submitted. An admin will review and approve it shortly.')
-        setReference('')
-      } else {
-        setError(data.message || 'Submission failed')
-      }
-    } catch (err) {
-      setError('Submission failed')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  function statusBadge(status: string) {
-    const styles: Record<string, string> = {
-      active: 'bg-green-100 text-green-800',
-      due: 'bg-yellow-100 text-yellow-800',
-      suspended: 'bg-red-100 text-red-800'
-    }
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    )
-  }
-
-  if (loading) {
-    return <div className="p-6 text-center text-gray-500">Loading subscription...</div>
-  }
-
-  if (!userId) {
-    return <div className="p-6 text-center text-red-600">You must be logged in to view this page.</div>
-  }
-
-  return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Bridger Continuance</h1>
-
-      {subscription && (
-        <div className="border rounded-xl p-5 space-y-3 bg-white shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-600">Status</span>
-            {statusBadge(subscription.subscription_status)}
-          </div>
-
-          {subscription.is_subscription_exempt ? (
-            <div className="text-sm text-gray-500">
-              Your account is exempt from subscription payments.
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Expiry date</span>
-                <span>
-                  {subscription.subscription_expiry
-                    ? new Date(subscription.subscription_expiry).toLocaleDateString()
-                    : 'Not set'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Last paid</span>
-                <span>
-                  {subscription.subscription_last_paid_at
-                    ? new Date(subscription.subscription_last_paid_at).toLocaleDateString()
-                    : 'Never'}
-                </span>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {!subscription?.is_subscription_exempt && (
-        <div className="border rounded-xl p-5 bg-white shadow-sm space-y-4">
-          <h2 className="text-lg font-medium">Pay Monthly Continuance — ₦{SUBSCRIPTION_AMOUNT.toLocaleString()}</h2>
-          <p className="text-sm text-gray-500">
-            Transfer ₦{SUBSCRIPTION_AMOUNT.toLocaleString()} using the method below, then submit your payment reference for admin approval.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Payment method</label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2"
-              >
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="cash">Cash</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Payment reference / proof</label>
-              <input
-                type="text"
-                value={reference}
-                onChange={(e) => setReference(e.target.value)}
-                placeholder="e.g. transaction ID or teller number"
-                className="w-full border rounded-lg px-3 py-2"
-              />
-            </div>
-
-            {error && <div className="text-sm text-red-600">{error}</div>}
-            {message && <div className="text-sm text-green-600">{message}</div>}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-blue-600 text-white rounded-lg py-2 font-medium disabled:opacity-50"
-            >
-              {submitting ? 'Submitting...' : 'Submit Payment'}
-            </button>
-          </form>
-        </div>
-      )}
-    </div>
-  )
+ return <WeaveSystemRoom roomKey="bridger-continuance" eyebrow="Bridge · Partnership Continuity" title="Bridger Continuance Chamber" detail="Standing, expiry, payment movement and Administration verification occupy one persistent Bridger system instead of a separate payment page." tone="emerald" left={left} center={center} right={right} pulse={status==='active'?'Partnership active':status==='suspended'?'Movement suspended':'Continuance due'}/>
 }
