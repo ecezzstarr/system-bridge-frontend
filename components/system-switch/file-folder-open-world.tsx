@@ -29,6 +29,7 @@ type Props = {
   refreshUrl?: string
   refreshToken?: string | null
   onWorldChange?: (world: any) => void
+  initialDistrict?: string
 }
 
 const districts = [
@@ -60,9 +61,10 @@ export default function FileFolderOpenWorld({
   refreshUrl,
   refreshToken,
   onWorldChange,
+  initialDistrict = 'workshop_core',
 }: Props) {
   const [world, setWorld] = useState(initialWorld)
-  const [district, setDistrict] = useState('workshop_core')
+  const [district, setDistrict] = useState(initialDistrict)
   const [busy, setBusy] = useState('')
   const [message, setMessage] = useState('')
   const [now, setNow] = useState(Date.now())
