@@ -765,7 +765,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             enterprise={data.enterprise || null}
             onOpenConstruction={(district)=>{setSurface('builds');openFormation(district)}}
           />
-          <EnterpriseDreamPanel initialState={data.enterprise || null} />
+          <EnterpriseDreamPanel initialState={data.enterprise || null} growth={world?.growth || data.file_folder_world?.growth} />
         </div>}
 
         {surface === 'sound' && data.premium_dj_enabled && (
