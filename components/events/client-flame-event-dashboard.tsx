@@ -34,7 +34,7 @@ import {
 import type { WeaveEvent } from '@/lib/weave-event'
 import { getEventProgress } from '@/lib/weave-event'
 import { useAuth } from '@/lib/auth-provider'
-import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
+import { FlameEventRiverField } from '@/components/events/flame-event-river-field'\nimport { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { WeaveLogo } from '@/components/weave-logo'
 
 type WorldNode = {
@@ -238,10 +238,9 @@ export default function ClientFlameEventDashboard({ event }: { event: WeaveEvent
 
                   <div id="client-core" className="flex min-h-[520px] flex-col items-center justify-center text-center">
                     <Link href="/client/event" className="group relative mb-7">
-                      <div className="absolute -inset-8 rounded-full bg-red-500/10 blur-3xl transition group-hover:bg-red-500/20" />
-                      <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-sky-300/30 bg-gradient-to-b from-sky-500/10 via-black/50 to-red-500/10 shadow-[0_0_80px_rgba(56,189,248,0.15)]">
-                        <div className="absolute inset-3 rounded-full border border-red-300/20 animate-pulse" />
-                        <Flame className="h-12 w-12 text-white" />
+                      <div className="absolute -inset-8 bg-[radial-gradient(circle,rgba(248,113,113,.13),rgba(56,189,248,.06)_45%,transparent_72%)] blur-2xl transition group-hover:scale-110" />
+                      <div className="relative flex h-32 w-32 items-center justify-center">
+                        <FlameEventArtifactMark size="lg" className="transition duration-500 group-hover:scale-110" />
                       </div>
                       <p className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-red-300">Flame Event</p>
                       <p className="mt-1 text-[8px] uppercase tracking-[0.16em] text-slate-500">Ideas · participation · global movement</p>
