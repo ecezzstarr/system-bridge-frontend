@@ -34,11 +34,13 @@ function DistrictStructure({
   active,
   marketLevel=0,
   marketBuildProgress=0,
+  enterpriseLevel=0,
 }: {
   district: District
   active: boolean
   marketLevel?: number
   marketBuildProgress?: number
+  enterpriseLevel?: number
 }) {
   const color = COLORS[district.tone]
   const material = (intensity=0.24) => (
@@ -87,10 +89,21 @@ function DistrictStructure({
   }
 
   if (district.key === 'enterprise') {
+    const height=enterpriseLevel>=4?2.65:enterpriseLevel>=3?2.2:enterpriseLevel>=2?1.72:enterpriseLevel>=1?1.18:0.62
+    const radius=enterpriseLevel>=2?0.82:0.62
     return <group>
-      <mesh position={[0,0.92,0]}><cylinderGeometry args={[0.52,0.76,1.72,8]}/>{material(0.32)}</mesh>
-      <mesh position={[0,2.0,0]}><coneGeometry args={[0.42,0.86,8]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.95:0.42}/></mesh>
-      <mesh position={[0,2.54,0]}><octahedronGeometry args={[0.18,0]}/><meshBasicMaterial color={color}/></mesh>
+      <mesh position={[0,height/2,0]}><cylinderGeometry args={[radius*0.72,radius,height,8]}/>{material(0.32)}</mesh>
+      {enterpriseLevel>=2&&<>
+        <mesh position={[-0.86,0.58,0]}><boxGeometry args={[0.48,1.05,0.7]}/>{material(0.24)}</mesh>
+        <mesh position={[0.86,0.58,0]}><boxGeometry args={[0.48,1.05,0.7]}/>{material(0.24)}</mesh>
+      </>}
+      {enterpriseLevel>=3&&<>
+        <mesh position={[-1.02,1.42,0]}><cylinderGeometry args={[0.18,0.28,1.35,8]}/>{material(0.26)}</mesh>
+        <mesh position={[1.02,1.42,0]}><cylinderGeometry args={[0.18,0.28,1.35,8]}/>{material(0.26)}</mesh>
+      </>}
+      {enterpriseLevel>=4&&<mesh position={[0,height+0.78,0]}><octahedronGeometry args={[0.28,0]}/><meshBasicMaterial color={color}/></mesh>}
+      <mesh position={[0,height+0.34,0]}><coneGeometry args={[enterpriseLevel>=2?0.5:0.36,0.72,8]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.95:0.42}/></mesh>
+      <mesh position={[0,0.04,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[enterpriseLevel>=4?1.55:1.16,0.035,10,64]}/><meshBasicMaterial color={color} transparent opacity={active?0.78:0.28}/></mesh>
     </group>
   }
 
@@ -117,12 +130,14 @@ function DistrictNode({
   onSelect,
   marketLevel,
   marketBuildProgress,
+  enterpriseLevel,
 }: {
   district: District
   active: boolean
   onSelect: () => void
   marketLevel: number
   marketBuildProgress: number
+  enterpriseLevel: number
 }) {
   const group = useRef<THREE.Group>(null)
   const color = COLORS[district.tone]
@@ -161,7 +176,7 @@ function DistrictNode({
         />
       </mesh>
 
-      <DistrictStructure district={district} active={active} marketLevel={marketLevel} marketBuildProgress={marketBuildProgress} />
+      <DistrictStructure district={district} active={active} marketLevel={marketLevel} marketBuildProgress={marketBuildProgress} enterpriseLevel={enterpriseLevel} />
 
       {active && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.22, 0]}>
@@ -171,6 +186,39 @@ function DistrictNode({
       )}
     </group>
   )
+}
+
+function StreamingTower({level}:{level:number}) {
+  if(level<=0)return null
+  const height=level>=4?2.8:level>=3?2.2:level>=2?1.55:0.9
+  return <group position={[5.15,0,1.45]}>
+    <mesh position={[0,height/2,0]}><cylinderGeometry args={[0.22,0.46,height,10]}/><meshStandardMaterial color="#10101c" emissive="#fb7185" emissiveIntensity={0.46} metalness={0.5} roughness={0.25}/></mesh>
+    {level>=2&&<mesh position={[0,height+0.18,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[0.64,0.045,10,48]}/><meshBasicMaterial color="#fb7185" transparent opacity={0.72}/></mesh>}
+    {level>=3&&<mesh position={[0,height+0.68,0]}><sphereGeometry args={[0.18,18,18]}/><meshBasicMaterial color="#fda4af"/></mesh>}
+    {level>=4&&<>
+      <mesh position={[0,height+1.06,0]}><coneGeometry args={[0.18,0.7,8]}/><meshBasicMaterial color="#a78bfa"/></mesh>
+      <mesh position={[0,0.04,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[1.0,0.03,10,56]}/><meshBasicMaterial color="#a78bfa" transparent opacity={0.42}/></mesh>
+    </>}
+  </group>
+}
+
+function RouteNetwork({count,vitality}:{count:number;vitality:number}) {
+  if(count<=0)return null
+  const visible=Math.min(8,count)
+  return <group>
+    {Array.from({length:visible}).map((_,index)=>{
+      const angle=(index/visible)*Math.PI*2
+      const radius=4.5+(index%2)*0.75
+      const x=Math.cos(angle)*radius
+      const z=Math.sin(angle)*radius
+      const length=Math.sqrt(x*x+z*z)
+      const rotation=Math.atan2(x,z)
+      return <group key={'route-'+index}>
+        <mesh position={[x/2,-0.20,z/2]} rotation={[0,rotation,0]}><boxGeometry args={[0.055,0.035,length]}/><meshBasicMaterial color="#22d3ee" transparent opacity={0.18+Math.min(0.42,vitality/240)}/></mesh>
+        <mesh position={[x,0.25,z]}><sphereGeometry args={[0.12,12,12]}/><meshBasicMaterial color="#67e8f9"/></mesh>
+      </group>
+    })}
+  </group>
 }
 
 function BuildCore({
@@ -223,6 +271,10 @@ function Scene({
   liveSystems,
   marketLevel,
   marketBuildProgress,
+  streamLevel,
+  enterpriseLevel,
+  routeCount,
+  vitalityScore,
 }: {
   districts: District[]
   activeSurface: DistrictKey
@@ -231,6 +283,10 @@ function Scene({
   liveSystems: number
   marketLevel: number
   marketBuildProgress: number
+  streamLevel: number
+  enterpriseLevel: number
+  routeCount: number
+  vitalityScore: number
 }) {
   const root = useRef<THREE.Group>(null)
 
@@ -269,10 +325,13 @@ function Scene({
             onSelect={() => onSurfaceChange(district.key)}
             marketLevel={marketLevel}
             marketBuildProgress={marketBuildProgress}
+            enterpriseLevel={enterpriseLevel}
           />
         ))}
 
         <BuildCore activeBuilds={activeBuilds} liveSystems={liveSystems} />
+        <StreamingTower level={streamLevel} />
+        <RouteNetwork count={routeCount} vitality={vitalityScore} />
 
         <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.18, -3.7]}>
           <mesh>
@@ -326,6 +385,10 @@ export function ClientFileFolder3D({
   visibleSurfaceKeys,
   marketLevel=0,
   marketBuildProgress=0,
+  streamLevel=0,
+  enterpriseLevel=0,
+  routeCount=0,
+  vitalityScore=0,
 }: {
   activeSurface: DistrictKey
   onSurfaceChange: (key: DistrictKey) => void
@@ -335,6 +398,10 @@ export function ClientFileFolder3D({
   visibleSurfaceKeys?: DistrictKey[]
   marketLevel?: number
   marketBuildProgress?: number
+  streamLevel?: number
+  enterpriseLevel?: number
+  routeCount?: number
+  vitalityScore?: number
 }) {
   const districts = useMemo<District[]>(
     () => [
@@ -367,6 +434,10 @@ export function ClientFileFolder3D({
             liveSystems={liveSystems}
             marketLevel={marketLevel}
             marketBuildProgress={marketBuildProgress}
+            streamLevel={streamLevel}
+            enterpriseLevel={enterpriseLevel}
+            routeCount={routeCount}
+            vitalityScore={vitalityScore}
           />
         </Canvas>
 
