@@ -53,6 +53,7 @@ type FunctionGroup = {
 }
 
 const AGENT_GROUPS: FunctionGroup[] = [
+  { title: 'Shared WEAVE', detail: 'The common WEAVE world remains available from the Agent position.' },
   { title: 'Bridger support', detail: 'Develop and support Bridger movement.' },
   { title: 'Work + livelihood', detail: 'Company work, earnings and practical participation.' },
   { title: 'Client + company support', detail: 'Serve approved Client and company functions.' },
@@ -70,6 +71,16 @@ const ADMIN_GROUPS: FunctionGroup[] = [
 ]
 
 const AGENT_COMMANDS: FunctionItem[] = [
+  { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: GitBranch, district: 'Shared WEAVE' },
+  { label: 'Human Cadences', detail: 'Find people through recorded participation and movement.', href: '/search', icon: MessageSquare, district: 'Shared WEAVE' },
+  { label: 'Presences', detail: 'See people and their place in the WEAVE.', href: '/profiles', icon: UserCircle, district: 'Shared WEAVE' },
+  { label: 'Private Lounge', detail: 'Private WEAVE communication.', href: '/lounge?view=private', icon: Shield, district: 'Shared WEAVE' },
+  { label: 'Lounge', detail: 'Shared WEAVE communication.', href: '/lounge', icon: MessageSquare, district: 'Shared WEAVE' },
+  { label: 'Echo', detail: 'Use the WEAVE Echo surface.', href: '/echo', icon: Sparkles, district: 'Shared WEAVE' },
+  { label: 'Contest', detail: 'Shared participant contest movement.', href: '/arena', icon: Gamepad2, district: 'Shared WEAVE' },
+  { label: 'Pattern', detail: 'Shared system pattern play.', href: '/casino', icon: Trophy, district: 'Shared WEAVE' },
+  { label: 'Stream', detail: 'Shared WEAVE media stream.', href: '/video-feed', icon: Video, district: 'Shared WEAVE' },
+  { label: 'Standing', detail: 'Shared WEAVE standing and position.', href: '/weave/standing', icon: Globe, district: 'Shared WEAVE' },
   { label: 'My Bridgers', detail: 'Assigned Bridgers and team movement.', href: '/agent/bridgers', icon: Users, district: 'Bridger support' },
   { label: 'Agent Channels', detail: 'Approved company channels and responsibilities.', href: '/agent/channels', icon: Network, district: 'Bridger support' },
   { label: 'Agent Continuance', detail: 'Commission records, performance and rewards.', href: '/agent/commissions', icon: Gauge, district: 'Work + livelihood' },
@@ -155,7 +166,7 @@ const ROLE_COPY = {
   agent: {
     eyebrow: 'Agent Operating Room',
     title: 'Company support in working order.',
-    detail: 'The Agent is a WEAVE employee. The Operating Room is the Agent central working panel: Bridgers, company work, Client support, livelihood and records remain visible together.',
+    detail: 'The Agent is a WEAVE employee. The Operating Room keeps the shared WEAVE world, Bridger support, company work, Client service, livelihood and records visible together.',
     groups: AGENT_GROUPS,
     commands: AGENT_COMMANDS,
     panelTitle: 'Agent Working Panel',
