@@ -12,6 +12,7 @@ import {
   Globe2,
   Headphones,
   Landmark,
+  LayoutTemplate,
   MessageSquare,
   Network,
   Orbit,
@@ -27,6 +28,7 @@ import {
 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 export type WorldRole = 'client' | 'bridger' | 'agent' | 'admin'
 
@@ -118,6 +120,7 @@ const ROLE: Record<WorldRole, {
       { label: 'Authority', detail: 'Operating structures', href: '/authority/workshops', icon: BriefcaseBusiness, tone: 'violet' },
       { label: 'Ad Workshop', detail: 'Communication control', href: '/admin/ad-workshop', icon: Radio, tone: 'sky' },
       { label: 'Visual Systems', detail: 'Live artifact control', href: '/admin/visual-systems', icon: Palette, tone: 'violet' },
+      { label: 'Environment Organizer', detail: 'Pages + cards', href: '/admin/environment-organizer', icon: LayoutTemplate, tone: 'sky' },
       { label: 'DJ Workshop', detail: 'Sound and atmosphere', href: '/admin/dj-workshop', icon: Waves, tone: 'violet' },
       { label: 'Bridge Plaza', detail: 'Institution world', href: '/weave', icon: Landmark, tone: 'sky' },
     ],
@@ -132,6 +135,8 @@ export function WeaveDashboardWorld({
   userName?: string | null
 }) {
   const copy = ROLE[role]
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
+  const visibleLinks = copy.links.filter(item=>isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
 
   return (
     <div className="relative mx-auto w-full max-w-6xl overflow-visible rounded-[1.6rem] border border-sky-200/[0.07] bg-[#030a15]/22 shadow-[0_28px_90px_rgba(2,8,23,.22)] backdrop-blur-md">
@@ -170,7 +175,7 @@ export function WeaveDashboardWorld({
 
           <div className="mt-5 flex items-center gap-3 text-[7px] font-black uppercase tracking-[0.18em] text-white/35"><span className="h-px flex-1 bg-gradient-to-r from-transparent via-sky-200/15 to-transparent" /><span>District entrances</span><span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-200/15 to-transparent" /></div>
           <section className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {copy.links.map(item => <WorldLinkCard key={item.label} item={item} />)}
+            {visibleLinks.map(item => <WorldLinkCard key={item.label} item={item} />)}
           </section>
 
           <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3 text-[7px] font-semibold uppercase tracking-[0.16em] text-slate-600">
