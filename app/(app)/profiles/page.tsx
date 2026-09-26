@@ -336,6 +336,8 @@ export default function ProfilePage() {
           <p className="text-sm text-slate-500">Profile details are available for Agent and Bridger accounts.</p>
         </div>
       )}
-    </div>
+      </div>
+      </section>
+    </main>
   )
 }
