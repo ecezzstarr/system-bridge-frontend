@@ -53,6 +53,7 @@ type FunctionGroup = {
 }
 
 const AGENT_GROUPS: FunctionGroup[] = [
+  { title: 'Shared WEAVE', detail: 'The common WEAVE world remains available from the Agent position.' },
   { title: 'Bridger support', detail: 'Develop and support Bridger movement.' },
   { title: 'Work + livelihood', detail: 'Company work, earnings and practical participation.' },
   { title: 'Client + company support', detail: 'Serve approved Client and company functions.' },
@@ -70,6 +71,16 @@ const ADMIN_GROUPS: FunctionGroup[] = [
 ]
 
 const AGENT_COMMANDS: FunctionItem[] = [
+  { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: GitBranch, district: 'Shared WEAVE' },
+  { label: 'Human Cadences', detail: 'Find people through recorded participation and movement.', href: '/search', icon: MessageSquare, district: 'Shared WEAVE' },
+  { label: 'Presences', detail: 'See people and their place in the WEAVE.', href: '/profiles', icon: UserCircle, district: 'Shared WEAVE' },
+  { label: 'Private Lounge', detail: 'Private WEAVE communication.', href: '/lounge?view=private', icon: Shield, district: 'Shared WEAVE' },
+  { label: 'Lounge', detail: 'Shared WEAVE communication.', href: '/lounge', icon: MessageSquare, district: 'Shared WEAVE' },
+  { label: 'Echo', detail: 'Use the WEAVE Echo surface.', href: '/echo', icon: Sparkles, district: 'Shared WEAVE' },
+  { label: 'Contest', detail: 'Shared participant contest movement.', href: '/arena', icon: Gamepad2, district: 'Shared WEAVE' },
+  { label: 'Pattern', detail: 'Shared system pattern play.', href: '/casino', icon: Trophy, district: 'Shared WEAVE' },
+  { label: 'Stream', detail: 'Shared WEAVE media stream.', href: '/video-feed', icon: Video, district: 'Shared WEAVE' },
+  { label: 'Standing', detail: 'Shared WEAVE standing and position.', href: '/weave/standing', icon: Globe, district: 'Shared WEAVE' },
   { label: 'My Bridgers', detail: 'Assigned Bridgers and team movement.', href: '/agent/bridgers', icon: Users, district: 'Bridger support' },
   { label: 'Agent Channels', detail: 'Approved company channels and responsibilities.', href: '/agent/channels', icon: Network, district: 'Bridger support' },
   { label: 'Agent Continuance', detail: 'Commission records, performance and rewards.', href: '/agent/commissions', icon: Gauge, district: 'Work + livelihood' },
@@ -77,6 +88,7 @@ const AGENT_COMMANDS: FunctionItem[] = [
   { label: 'Company Activities', detail: 'Company loops and current movement.', href: '/company/loops', icon: Activity, district: 'Work + livelihood' },
   { label: 'Event Tasks', detail: 'Current WEAVE event participation.', href: '/event', icon: Flame, district: 'Work + livelihood' },
   { label: 'Client Interactions', detail: 'Approved Client service channels.', href: '/client-interactions', icon: MessageSquare, district: 'Client + company support' },
+  { label: 'Clients', detail: 'Client directory and company-side Client continuity.', href: '/clients', icon: Users, district: 'Client + company support' },
   { label: 'Bridge Plaza', detail: 'Shared Client worlds and support entrance.', href: '/weave', icon: Landmark, district: 'Client + company support' },
   { label: 'Company Guidance', detail: 'Internal company support and clarification.', href: '/company-chat', icon: Headphones, district: 'Client + company support' },
   { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Operational holding and funds.', href: '/wallet', icon: Wallet, district: 'Record + value' },
@@ -151,11 +163,25 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Flame Event · Loop 1', detail: 'Event-world control and opening movement.', href: '/admin/flame-event', icon: Zap, district: 'Atmosphere + communication' },
 ]
 
+const DISTRICT_TONE: Record<string, { card: string; icon: string; label: string }> = {
+  'Shared WEAVE': { card: 'border-sky-300/15 bg-sky-400/[0.045] hover:border-sky-300/30 hover:bg-sky-400/[0.075]', icon: 'text-sky-200', label: 'text-sky-300' },
+  'Bridger support': { card: 'border-emerald-300/15 bg-emerald-400/[0.04] hover:border-emerald-300/30 hover:bg-emerald-400/[0.07]', icon: 'text-emerald-200', label: 'text-emerald-300' },
+  'Work + livelihood': { card: 'border-amber-300/15 bg-amber-400/[0.04] hover:border-amber-300/30 hover:bg-amber-400/[0.07]', icon: 'text-amber-200', label: 'text-amber-300' },
+  'Client + company support': { card: 'border-cyan-300/15 bg-cyan-400/[0.04] hover:border-cyan-300/30 hover:bg-cyan-400/[0.07]', icon: 'text-cyan-200', label: 'text-cyan-300' },
+  'Record + value': { card: 'border-violet-300/15 bg-violet-400/[0.04] hover:border-violet-300/30 hover:bg-violet-400/[0.07]', icon: 'text-violet-200', label: 'text-violet-300' },
+  'Operations center': { card: 'border-violet-300/15 bg-violet-400/[0.04] hover:border-violet-300/30 hover:bg-violet-400/[0.07]', icon: 'text-violet-200', label: 'text-violet-300' },
+  'People + recognition': { card: 'border-emerald-300/15 bg-emerald-400/[0.04] hover:border-emerald-300/30 hover:bg-emerald-400/[0.07]', icon: 'text-emerald-200', label: 'text-emerald-300' },
+  'Client system': { card: 'border-amber-300/15 bg-amber-400/[0.04] hover:border-amber-300/30 hover:bg-amber-400/[0.07]', icon: 'text-amber-200', label: 'text-amber-300' },
+  'Bridge system': { card: 'border-sky-300/15 bg-sky-400/[0.04] hover:border-sky-300/30 hover:bg-sky-400/[0.07]', icon: 'text-sky-200', label: 'text-sky-300' },
+  'Institution + infrastructure': { card: 'border-cyan-300/15 bg-cyan-400/[0.04] hover:border-cyan-300/30 hover:bg-cyan-400/[0.07]', icon: 'text-cyan-200', label: 'text-cyan-300' },
+  'Atmosphere + communication': { card: 'border-rose-300/15 bg-rose-400/[0.04] hover:border-rose-300/30 hover:bg-rose-400/[0.07]', icon: 'text-rose-200', label: 'text-rose-300' },
+}
+
 const ROLE_COPY = {
   agent: {
     eyebrow: 'Agent Operating Room',
     title: 'Company support in working order.',
-    detail: 'The Agent is a WEAVE employee. The Operating Room is the Agent central working panel: Bridgers, company work, Client support, livelihood and records remain visible together.',
+    detail: 'The Agent is a WEAVE employee. The Operating Room keeps the shared WEAVE world, Bridger support, company work, Client service, livelihood and records visible together.',
     groups: AGENT_GROUPS,
     commands: AGENT_COMMANDS,
     panelTitle: 'Agent Working Panel',
@@ -218,17 +244,18 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {copy.commands.map(item => {
                 const Icon = item.icon
+                const tone = DISTRICT_TONE[item.district] || DISTRICT_TONE['Shared WEAVE']
                 return (
                   <Link
                     key={item.label + item.href}
                     href={item.href}
-                    className="group min-h-[118px] rounded-2xl border border-white/10 bg-black/25 p-3.5 transition hover:-translate-y-0.5 hover:border-sky-300/30 hover:bg-sky-400/[0.05]"
+                    className={`group min-h-[118px] rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${tone.card}`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035]">
-                        <Icon className="h-4 w-4 text-sky-200" />
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/25">
+                        <Icon className={`h-4 w-4 ${tone.icon}`} />
                       </div>
-                      <span className="max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] text-slate-500">{item.district}</span>
+                      <span className={`max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] ${tone.label}`}>{item.district}</span>
                     </div>
                     <p className="mt-3 text-sm font-black leading-5 text-white">{item.label}</p>
                     <p className="mt-1 text-[11px] leading-5 text-slate-400">{item.detail}</p>
