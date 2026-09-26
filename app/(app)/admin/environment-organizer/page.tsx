@@ -104,13 +104,13 @@ export default function EnvironmentOrganizerWorkshop(){
     <section className="rounded-3xl border border-cyan-300/15 bg-cyan-400/[.035] p-4">
       <LayoutTemplate className="h-5 w-5 text-cyan-300"/>
       <p className="mt-3 text-sm font-black text-white">Runtime environment authority</p>
-      <p className="mt-2 text-xs leading-5 text-slate-400">Withdraw a badly placed card or page from the active environment without deleting its source. Restore it when the structure is ready.</p>
+      <p className="mt-2 text-xs leading-5 text-slate-400">Remove a badly placed card or page from the active environment without deleting its source. Restore it when the structure is ready.</p>
     </section>
     <section className="rounded-3xl border border-white/10 bg-black/20 p-4">
       <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Registry state</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="rounded-xl border border-emerald-300/10 bg-emerald-400/[.035] p-3 text-center"><p className="text-[8px] uppercase text-emerald-300">Live</p><p className="mt-1 text-2xl font-black text-white">{live}</p></div>
-        <div className="rounded-xl border border-amber-300/10 bg-amber-400/[.035] p-3 text-center"><p className="text-[8px] uppercase text-amber-300">Withdrawn</p><p className="mt-1 text-2xl font-black text-white">{hidden}</p></div>
+        <div className="rounded-xl border border-amber-300/10 bg-amber-400/[.035] p-3 text-center"><p className="text-[8px] uppercase text-amber-300">Removed</p><p className="mt-1 text-2xl font-black text-white">{hidden}</p></div>
       </div>
     </section>
     <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[.035] p-4">
@@ -124,7 +124,7 @@ export default function EnvironmentOrganizerWorkshop(){
       <div>
         <p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Environment registry</p>
         <h2 className="mt-1 text-xl font-black text-white">Pages and cards in operating order</h2>
-        <p className="mt-2 text-xs leading-5 text-slate-400">Removal here means withdrawn from active navigation/runtime. Source code and records remain intact.</p>
+        <p className="mt-2 text-xs leading-5 text-slate-400">Removal here means hidden from active navigation/runtime. Source code and records remain intact.</p>
       </div>
       <label className="flex min-w-[260px] items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
         <Search className="h-4 w-4 text-slate-500"/>
@@ -184,6 +184,6 @@ export default function EnvironmentOrganizerWorkshop(){
     left={left}
     center={center}
     right={right}
-    pulse={hidden?`${hidden} surfaces withdrawn`:'Environment registry fully visible'}
+    pulse={hidden?`${hidden} surfaces removed from the active environment`:'Environment registry fully visible'}
   />
 }
