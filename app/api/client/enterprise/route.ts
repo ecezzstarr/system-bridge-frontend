@@ -3,6 +3,7 @@ import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
+import { publicGrowthSlug } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
 
@@ -96,12 +97,12 @@ export async function POST(request: NextRequest) {
 
     const [application] = await sql`
       INSERT INTO enterprise_applications (
-        client_id,file_number,requested_position,enterprise_name,sector,business_plan,
+        client_id,file_number,requested_position,enterprise_name,public_slug,sector,business_plan,
         profit_model,participant_model,sustainability_plan,projected_monthly_revenue,
         projected_monthly_costs,status,submitted_at,updated_at,admin_note,reviewed_at,reviewed_by
       )
       VALUES (
-        ${clientId}::uuid,${client.file_number},${requestedPosition},${enterpriseName},${sector},${businessPlan},
+        ${clientId}::uuid,${client.file_number},${requestedPosition},${enterpriseName},${publicGrowthSlug(client.file_number)},${sector},${businessPlan},
         ${profitModel},${participantModel},${sustainabilityPlan},${projectedRevenue},${projectedCosts},
         'submitted',NOW(),NOW(),NULL,NULL,NULL
       )
@@ -109,6 +110,7 @@ export async function POST(request: NextRequest) {
         file_number=EXCLUDED.file_number,
         requested_position=EXCLUDED.requested_position,
         enterprise_name=EXCLUDED.enterprise_name,
+        public_slug=EXCLUDED.public_slug,
         sector=EXCLUDED.sector,
         business_plan=EXCLUDED.business_plan,
         profit_model=EXCLUDED.profit_model,
