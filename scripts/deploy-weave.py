@@ -24,8 +24,13 @@ def smoke(url):
   assert response.status==200 and json.load(response).get('status')=='healthy'
  with urllib.request.urlopen(url,timeout=60) as response:
   html=html_module.unescape(re.sub(r'<[^>]+>', ' ', response.read().decode()));html=' '.join(html.split());assert 'Interaction in Motion.' in html and 'An interactional company that turns human participation into organized work, value, systems and opportunity.' in html, 'WEAVE homepage identity missing'
- for route in ['/login','/client/loops','/company/loops','/admin/loop-workshop']:
+ for route in ['/login','/client/loops','/company/loops','/admin/loop-workshop','/admin/visual-systems']:
   with urllib.request.urlopen(url+route,timeout=60) as response:assert response.status==200,route
+ with urllib.request.urlopen(url+'/api/visual-runtime',timeout=60) as response:
+  visual=json.load(response)
+  assert response.status==200 and visual.get('success') is True, 'Visual runtime unavailable'
+  assert visual.get('profileKey')=='flame-event-artifact', 'Visual runtime profile missing'
+  assert isinstance(visual.get('config'),dict) and visual['config'].get('enabled') is not None, 'Visual runtime config invalid'
  try:
   urllib.request.urlopen(url+'/api/client/agreements',timeout=60)
   raise AssertionError('Agreements accepted unauthenticated request')
