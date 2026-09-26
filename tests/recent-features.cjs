@@ -1087,3 +1087,13 @@ assert.ok(numberWebhookSource.includes('timingSafeEqual'),'Number inbox validate
 assert.ok(numberEngineSource.includes("interval '30 minutes'"),'Verification inbox is transient')
 assert.ok(numberBridgerSource.includes('n.assigned_to=$1::uuid'),'Only the owning Bridger receives number inbox messages')
 assert.ok(numberBridgerPage.includes('SMS + Call Verification Inbox'),'Bridger Number Market exposes its private verification inbox')
+
+const numberVerificationSource=fs.readFileSync(path.join(root,'app/api/bridger/number-verifications/route.ts'),'utf8')
+assert.ok(numberEngineSource.includes("provider varchar(160) NOT NULL DEFAULT 'Aphone'"),'Number Engine stock is explicitly Aphone')
+assert.ok(numberEngineSource.includes('acquisition_cost'),'Administration can track Aphone acquisition cost')
+assert.ok(numberVerificationSource.includes("interval '10 minutes'")||numberEngineSource.includes("interval '10 minutes'"),'Manual verification opens a timed code window')
+assert.ok(numberVerificationSource.includes("status IN ('requested','pending')"),'Administration can return to pending Aphone requests')
+assert.ok(numberVerificationSource.includes("status='verified'"),'Bridger can complete the verification movement')
+assert.ok(numberVerificationSource.includes('verification_code=NULL'),'Completed verification clears the code')
+assert.ok(numberAdminPage.includes('Load battery'),'Administration loads Aphone numbers as battery stock')
+assert.ok(numberBridgerPage.includes('Request SMS')&&numberBridgerPage.includes('Request Call'),'Bridger can request either Aphone verification method')
