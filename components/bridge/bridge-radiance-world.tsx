@@ -16,7 +16,7 @@ function Core({ active }: { active: boolean }) {
   return (
     <Float floatIntensity={0.45} rotationIntensity={0.12}>
       <group position={[0,2.2,-5]} scale={0.82}>
-        <FlameEventArtifact3D variant="core" progress={active?4:2} active={active} />
+        <FlameEventArtifact3D variant="core" progress={active?4:2} active={active} surface="bridge-radiance-core" />
       </group>
     </Float>
   )
@@ -31,7 +31,7 @@ function Portal({ item, active, onSelect, z }: { item: typeof positions[number];
       onPointerOut={()=>{document.body.style.cursor='auto'}}
       scale={active?1.12:0.92}
     >
-      <FlameEventArtifact3D variant="portal" progress={active?4:3} accent={item.color} active />
+      <FlameEventArtifact3D variant="portal" progress={active?4:3} accent={item.color} active surface="bridge-radiance-portals" />
       <Html center position={[0,-1.2,0]}>
         <button type="button" onClick={onSelect} className="rounded-xl border border-white/10 bg-black/70 px-3 py-1.5 text-[9px] font-semibold tracking-[0.2em] text-white backdrop-blur">
           {item.name}
@@ -48,8 +48,8 @@ function Scene({ active, onSelect }: { active: string | null; onSelect: (id: str
       <fog attach="fog" args={['#02040a', 10, 30]} />
       <ambientLight intensity={0.35} />
       <pointLight position={[0, 6, 2]} intensity={12} />
-      <pointLight position={[-7, 4, -7]} intensity={7} color="#38bdf8" />
-      <pointLight position={[7, 4, -7]} intensity={7} color="#f472b6" />
+      <pointLight position={[-7, 4, -7]} intensity={4} color="#cbd5e1" />
+      <pointLight position={[7, 4, -7]} intensity={4} color="#ffffff" />
       <Core active={Boolean(active)} />
       <Portal item={positions[0]} z={-2} active={active === 'mandate'} onSelect={() => onSelect('mandate')} />
       <Portal item={positions[1]} z={-2} active={active === 'attorney'} onSelect={() => onSelect('attorney')} />
