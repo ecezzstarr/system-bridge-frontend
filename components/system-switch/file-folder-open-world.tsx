@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { getClientToken } from '@/lib/client-auth'
+import { usePresenceCamera } from '@/components/world/presence-camera'
 
 type Props = {
   clientName: string
@@ -69,6 +70,7 @@ export default function FileFolderOpenWorld({
   const [message, setMessage] = useState('')
   const [now, setNow] = useState(Date.now())
   const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})
+  const { recordOutput } = usePresenceCamera()
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000)
@@ -203,7 +205,10 @@ export default function FileFolderOpenWorld({
               return (
                 <button
                   key={item.key}
-                  onClick={() => setDistrict(item.key)}
+                  onClick={() => {
+                    setDistrict(item.key)
+                    recordOutput({ type:'action', label:`File Folder district: ${item.label}`, toScene:'file-folder' })
+                  }}
                   className={`rounded-xl border p-3 text-left transition ${selected ? 'border-sky-300/25 bg-sky-400/10' : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04]'}`}
                 >
                   <div className="flex items-center gap-2">
