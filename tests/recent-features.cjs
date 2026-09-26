@@ -404,6 +404,11 @@ assert.ok(bridgerOperatingRoomSource.includes('Crossing') && bridgerOperatingRoo
 assert.ok(roleOperatingRoomSource.includes("title: 'Bridger support'"),'Agent Operating Room organizes Bridger support as a system function')
 assert.ok(roleOperatingRoomSource.includes("title: 'Client system'"),'Administration Operating Room organizes Client authority as a system function')
 assert.ok(roleOperatingRoomSource.includes('Administration Control Panel'),'Administration Operating Room restores the dense middle control panel')
+assert.ok(roleOperatingRoomSource.includes("title: 'Shared WEAVE'"),'Administration Operating Room begins with the shared WEAVE layer')
+for(const sharedRoute of ['/company/loops','/search','/profiles','/weave','/company-chat','/lounge?view=private','/lounge','/marketplace','/echo','/arena','/casino','/video-feed','/weave/standing','/event','/wallet','/ledger']){
+ assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Administration middle panel preserves shared WEAVE component ${sharedRoute}`)
+}
+assert.ok(roleOperatingRoomSource.indexOf("district: 'Shared WEAVE'") < roleOperatingRoomSource.indexOf("district: 'People + recognition'"),'Administration shared WEAVE components precede authority-specific controls')
 assert.ok(roleOperatingRoomSource.includes('Central operating surface'),'Role Operating Rooms keep the middle working surface explicit')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/file-number-engine'"),'Administration middle panel exposes File Number Engine')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/agent-channels'"),'Administration middle panel exposes Agent Channel Requests')
