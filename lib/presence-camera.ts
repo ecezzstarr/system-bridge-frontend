@@ -25,6 +25,46 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
     scene: { key:'file-number-engine', label:'File Number Engine', district:'Institution', level:'system', camera:{x:24,y:-3,yaw:4,pitch:-1,zoom:1.03,depth:42} },
   },
   {
+    match: path => path === '/client/loops',
+    scene: { key:'client-loop-field', label:'Client Loop Field', district:'Client World', level:'district', camera:{x:-8,y:-7,yaw:-1.5,pitch:-1.8,zoom:1.033,depth:41} },
+  },
+  {
+    match: path => path === '/bridger/numbers',
+    scene: { key:'number-bay', label:'Number Bay', district:'Bridge', level:'system', camera:{x:-31,y:-4,yaw:-5,pitch:-1,zoom:1.035,depth:46} },
+  },
+  {
+    match: path => path === '/bridger/subscription',
+    scene: { key:'bridger-continuance', label:'Bridger Continuance', district:'Bridge', level:'system', camera:{x:-25,y:6,yaw:-4,pitch:1.5,zoom:1.027,depth:37} },
+  },
+  {
+    match: path => path === '/agent/commissions',
+    scene: { key:'agent-continuance', label:'Agent Continuance', district:'Support', level:'system', camera:{x:13,y:7,yaw:2,pitch:1.5,zoom:1.026,depth:36} },
+  },
+  {
+    match: path => path === '/admin/loop-workshop',
+    scene: { key:'loop-workshop', label:'Loop Formation Room', district:'Institution', level:'system', camera:{x:12,y:-9,yaw:2,pitch:-2,zoom:1.037,depth:49} },
+  },
+  {
+    match: path => path === '/admin/bridger-numbers',
+    scene: { key:'number-control', label:'Number Engine Control Bay', district:'Institution', level:'system', camera:{x:30,y:-5,yaw:5,pitch:-1,zoom:1.034,depth:47} },
+  },
+  {
+    match: path => path === '/admin/infrastructure',
+    scene: { key:'infrastructure', label:'Infrastructure Workshop', district:'Institution', level:'system', camera:{x:38,y:2,yaw:6,pitch:0.5,zoom:1.032,depth:44} },
+  },
+  {
+    match: path => path === '/admin/dj-workshop',
+    scene: { key:'dj-workshop', label:'DJ Workshop', district:'Institution', level:'system', camera:{x:9,y:8,yaw:1.5,pitch:2,zoom:1.025,depth:35} },
+  },
+  {
+    match: path => path === '/admin/client-deposits',
+    scene: { key:'client-deposit-control', label:'Client Deposit Control', district:'Institution', level:'system', camera:{x:35,y:6,yaw:5.5,pitch:1.5,zoom:1.03,depth:42} },
+  },
+  {
+    match: path => path === '/admin/enterprise-dream',
+    scene: { key:'enterprise-dream-authority', label:'Enterprise Dream Authority', district:'Institution', level:'system', camera:{x:44,y:-1,yaw:7,pitch:0,zoom:1.032,depth:45} },
+  },
+  {
     match: path => path.startsWith('/store/'),
     scene: { key:'customer-door', label:'Customer Door', district:'Enterprise', level:'interaction', camera:{x:46,y:-2,yaw:7,pitch:-0.5,zoom:1.042,depth:56} },
   },
