@@ -671,6 +671,14 @@ assert.ok(!devWorkshopInfrastructureSource.includes('> Push Live</Button>'),'Old
 
 const readableCssSource=fs.readFileSync(path.join(root,'app/globals.css'),'utf8')
 const recordPageSource=fs.readFileSync(path.join(root,'app/(app)/ledger/page.tsx'),'utf8')
+const ledgerLibSource=fs.readFileSync(path.join(root,'lib/ledger.ts'),'utf8')
+const balanceSummarySource=fs.readFileSync(path.join(root,'components/balance-summary.tsx'),'utf8')
+for(const file of ['lib/ledger.ts','components/balance-summary.tsx']){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Record numeric-value syntax/transpile check')
+}
 const premiumDjSource=fs.readFileSync(path.join(root,'components/system-switch/client-premium-dj.tsx'),'utf8')
 const clientSystemSwitchPageSource=fs.readFileSync(path.join(root,'app/client/system-switch/page.tsx'),'utf8')
 const adminBuildCatalogApiSource=fs.readFileSync(path.join(root,'app/api/admin/client-build-catalog/route.ts'),'utf8')
@@ -685,6 +693,12 @@ assert.ok(readableCssSource.includes('text-shadow'),'WEAVE text keeps visible ma
 assert.ok(readableCssSource.includes('font-weight: 650'),'Dense system labels use stronger weight instead of visually dissolving')
 assert.ok(recordPageSource.includes('isInitialized'),'Record waits for WEAVE auth initialization')
 assert.ok(recordPageSource.includes("headers: { Authorization: \`Bearer \${token}\` }"),'Record uses the initialized WEAVE session token')
+assert.ok(ledgerLibSource.includes('function moneyNumber'),'Ledger normalizes PostgreSQL NUMERIC values before Record renders')
+assert.ok(ledgerLibSource.includes('const available = moneyNumber'),'Record balance converts wallet NUMERIC values to JavaScript numbers')
+assert.ok(ledgerLibSource.includes('const locked = moneyNumber'),'Record escrow totals convert PostgreSQL NUMERIC values to JavaScript numbers')
+assert.ok(ledgerLibSource.includes('amount: moneyNumber(entry.amount)'),'Record transaction amounts are normalized at the ledger boundary')
+assert.ok(balanceSummarySource.includes('const safeAvailable = Number.isFinite(Number(available))'),'Record balance cards defensively accept numeric-string values')
+assert.ok(balanceSummarySource.includes('const safeLocked = Number.isFinite(Number(locked))'),'Record locked balance cannot crash on a PostgreSQL numeric string')
 assert.ok(premiumDjSource.includes("weave:personal-dj"),'Premium Client DJ can take local sound priority')
 assert.ok(djPlayerSource.includes("window.addEventListener('weave:personal-dj'"),'Platform DJ yields while Premium personal DJ is active')
 assert.ok(enterpriseSystemSwitchSource.includes("premium_dj_enabled:fileFolderTier==='premium'"),'Only Premium File Folders receive the personal DJ capability')
