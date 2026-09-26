@@ -54,6 +54,34 @@ function duration(seconds: number) {
   return `${minutes}m`
 }
 
+function branchLabel(district: string) {
+  const labels: Record<string,string> = {
+    market_district: 'Market Expansion',
+    streaming_district: 'Streaming',
+    network_district: 'Business Network',
+    enterprise_district: 'Enterprise',
+    technology_district: 'Technology',
+    formation_yard: 'Operations',
+    library_district: 'Intelligence',
+  }
+  return labels[district] || 'System'
+}
+
+function operatingEffect(item: any) {
+  const value = Number(item.effect_value || 0)
+  const effects: Record<string,string> = {
+    route_capacity: `Adds ${value || 1} persistent Business Route slot after installation into compatible network infrastructure.`,
+    legion_capacity: `Adds ${value || 1} Legion operating positions after installation into compatible enterprise infrastructure.`,
+    stream_capacity: `Adds ${value || 1} simultaneous scheduled/live program slots after installation into compatible streaming infrastructure.`,
+    audience_capacity: `Adds ${value || 0} points of public audience infrastructure to the Client streaming environment.`,
+    ai_node: 'Adds one persistent AI Flame capability node to the completed system.',
+    automation: 'Adds one persistent automation capability node to the completed system.',
+    verification: 'Adds one persistent verification/testing capability to the completed system.',
+    component: 'Becomes a recorded functional part of the completed system.',
+  }
+  return effects[String(item.build_effect || 'component')] || 'Becomes recorded capability inside a compatible completed Client system.'
+}
+
 export default function FileFolderOpenWorld({
   clientName,
   fileNumber,
@@ -322,7 +350,7 @@ export default function FileFolderOpenWorld({
                       ? `${(effectiveMinutes / 60).toFixed(effectiveMinutes % 60 === 0 ? 0 : 1)}h`
                       : `${effectiveMinutes}m`
                   return <div key={blueprint.blueprint_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-                    <div className="flex items-center justify-between gap-3"><h4 className="font-bold text-white">{blueprint.name}</h4><span className="rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">Base {blueprint.build_hours}h · Yours {effectiveLabel}</span></div>
+                    <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-violet-300">{branchLabel(blueprint.district)}</p><h4 className="mt-1 font-bold text-white">{blueprint.name}</h4></div><span className="shrink-0 rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">Base {blueprint.build_hours}h · Yours {effectiveLabel}</span></div>
                     <p className="mt-2 text-xs leading-5 text-slate-400">{blueprint.description}</p>
                     <p className="mt-3 text-[10px] text-slate-500">Requires: {blueprint.required_item_quantity || 0} × {blueprint.required_item_name || 'No component'} · Owned {owned}{blueprint.required_item_key ? <> · <span className="font-bold text-amber-200">{Number(blueprint.required_item_price_flame_coin || 0).toLocaleString()} Flame Coin each</span></> : null}</p>
                     {!readOnly && <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Start Build':'Acquire Component'}</button>}
@@ -341,8 +369,8 @@ export default function FileFolderOpenWorld({
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
                   <div className="mt-3 rounded-xl border border-emerald-300/10 bg-black/20 px-3 py-2 text-[9px] leading-4 text-slate-400">
-                    <span className="font-black uppercase tracking-wider text-emerald-300">Build function · </span>
-                    {(materialPurpose.get(item.item_key)||[]).length ? `Enables ${materialPurpose.get(item.item_key)!.join(', ')}.` : item.build_effect==='component' ? 'Attach to active construction as a functional build part.' : 'Reusable File Folder material for compatible system formation.'}
+                    <span className="font-black uppercase tracking-wider text-emerald-300">Operating result · </span>
+                    {(materialPurpose.get(item.item_key)||[]).length ? `Required to begin ${materialPurpose.get(item.item_key)!.join(', ')}. ${operatingEffect(item)}` : operatingEffect(item)}
                   </div>
                   <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
                   {!readOnly && <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire material'}</button>}
