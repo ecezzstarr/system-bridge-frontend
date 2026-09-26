@@ -36,7 +36,7 @@ assert.ok(!continuance.includes('bg-white shadow-sm'),'Bridger Continuance no lo
 assert.ok(!continuance.includes('text-gray-'),'Bridger Continuance uses WEAVE environment language')
 
 const camera=read('lib/presence-camera.ts')
-for(const key of ['client-loop-field','number-bay','bridger-continuance','loop-workshop','number-control','infrastructure','visual-systems','dj-workshop','client-deposit-control','enterprise-dream-authority']){
+for(const key of ['client-loop-field','number-bay','bridger-continuance','loop-workshop','number-control','infrastructure','visual-systems','environment-organizer','dj-workshop','client-deposit-control','enterprise-dream-authority']){
  assert.ok(camera.includes("key:'"+key+"'"),key+' has a distinct Presence Camera scene')
 }
 
@@ -96,5 +96,48 @@ for(const source of [adminWorkshop,appSidebar,operatingRoom,dashboardWorld]){
  assert.ok(source.includes('/admin/visual-systems'),'Administration navigation exposes Visual Systems Workshop')
 }
 assert.ok(fs.existsSync(path.join(root,'db/migrations/20260926_visual_systems_workshop.sql')),'Visual Systems Workshop migration exists')
+
+const environmentRegistry=read('lib/weave-environment-registry.ts')
+const environmentRuntime=read('lib/weave-environment-organizer.ts')
+const environmentAdminApi=read('app/api/admin/environment-organizer/route.ts')
+const environmentPublicApi=read('app/api/environment-organizer/route.ts')
+const environmentProvider=read('components/world/environment-organizer-provider.tsx')
+const environmentWorkshop=read('app/(app)/admin/environment-organizer/page.tsx')
+const bridgerOperatingRoom=read('components/bridger/bridger-operating-environment.tsx')
+const clientFileFolder=read('components/system-switch/client-file-folder-operating-environment.tsx')
+const clientFileFolder3d=read('components/system-switch/client-file-folder-3d.tsx')
+const fileFolderOpenWorld=read('components/system-switch/file-folder-open-world.tsx')
+const clientNavigation=read('components/client-navigation.tsx')
+const clientLayout=read('app/client/layout.tsx')
+
+assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent/Admin Operating Room removes Position Map card')
+assert.ok(!bridgerOperatingRoom.toLowerCase().includes('position map'),'Bridger Operating Room removes Position Map card')
+assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit page/card registry')
+assert.ok(environmentRegistry.includes("kind:'card'")&&environmentRegistry.includes("kind:'page'"),'Environment Organizer registers both cards and pages')
+assert.ok(environmentRegistry.includes("protected:true"),'Environment Organizer protects critical control surfaces')
+assert.ok(environmentRuntime.includes('weave_environment_surfaces'),'Environment organization persists in the database')
+assert.ok(environmentRuntime.includes('setEnvironmentSurfaceVisibility')&&environmentRuntime.includes('setEnvironmentSurfaceOrder'),'Environment runtime supports withdrawal/restoration and ordering')
+assert.ok(environmentAdminApi.includes("user.role!=='admin'"),'Only Administration can mutate environment organization')
+assert.ok(environmentAdminApi.includes("action==='set_visibility'")&&environmentAdminApi.includes("action==='set_order'"),'Environment Organizer API exposes visibility and ordering actions')
+assert.ok(environmentPublicApi.includes('getEnvironmentOrganizerState'),'Running clients can read the active environment organization')
+assert.ok(environmentProvider.includes('EnvironmentPageGuard'),'Withdrawn registered pages are guarded at runtime')
+assert.ok(environmentProvider.includes('weave-environment-refresh'),'Organizer changes can refresh mounted navigation without deployment')
+assert.ok(environmentWorkshop.includes('Environment Organizer')&&environmentWorkshop.includes('Withdraw'),'Administration has the page/card organizer workshop')
+assert.ok(appSidebar.includes('/admin/environment-organizer'),'Administration sidebar exposes Environment Organizer')
+assert.ok(adminWorkshop.includes('/admin/environment-organizer'),'Admin Workshop exposes Environment Organizer')
+assert.ok(operatingRoom.includes('/admin/environment-organizer'),'Administration Operating Room exposes Environment Organizer')
+assert.ok(dashboardWorld.includes('/admin/environment-organizer'),'Administration World exposes Environment Organizer')
+assert.ok(clientNavigation.includes('useEnvironmentOrganizer'),'Client navigation honors the organizer registry')
+assert.ok(clientLayout.includes('EnvironmentOrganizerProvider'),'Client world mounts the organizer runtime')
+assert.ok(clientFileFolder.includes('Command Citadel'),'Main File Folder has one strategic command center')
+assert.ok(clientFileFolder.includes('BUILD_LADDER'),'Main File Folder exposes an ordered construction lifecycle')
+assert.ok(clientFileFolder.includes('Blueprint')&&clientFileFolder.includes('Foundation')&&clientFileFolder.includes('Commissioning')&&clientFileFolder.includes('Live operation'),'File Folder construction communicates real build stages')
+assert.ok(clientFileFolder.includes('visibleSurfaceKeys'),'File Folder 3D receives runtime-organized districts')
+assert.ok(clientFileFolder3d.includes('DistrictStructure'),'File Folder world gives districts distinct build silhouettes')
+assert.ok(clientFileFolder3d.includes('RoadLink'),'File Folder world visually connects its business districts')
+assert.ok(clientFileFolder3d.includes('Persistent Business World'),'File Folder is framed as a persistent business-building environment')
+assert.ok(fileFolderOpenWorld.includes('Materials Depot')&&fileFolderOpenWorld.includes('Construction Yard')&&fileFolderOpenWorld.includes('Build Intelligence'),'Build support surfaces are ordered by construction purpose')
+assert.ok(fileFolderOpenWorld.includes('materialPurpose'),'Materials explain which blueprints/functions they enable')
+assert.ok(fs.existsSync(path.join(root,'db/migrations/20260926_environment_organizer.sql')),'Environment Organizer migration exists')
 
 console.log('environment-grade regression checks passed')
