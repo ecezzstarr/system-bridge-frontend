@@ -4,14 +4,13 @@ import { useState } from "react"
 import {
   Play,
   Heart,
-  MessageSquare,
-  Share2,
   Eye,
   Clock,
   Sparkles,
   Radio,
   Filter,
   DollarSign,
+  ShieldCheck,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -121,22 +120,18 @@ export default function VideoFeedPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Play className="h-6 w-6 text-primary" />
-            Video Feed
+      <div className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72">
+        <div className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(14,165,233,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.08),transparent_28%)] p-5 md:p-7">
+          <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">WEAVE Stream Registry</p>
+          <h1 className="mt-2 flex items-center gap-2 text-2xl font-black text-white md:text-3xl">
+            <Play className="h-6 w-6 text-sky-300" />
+            Recorded and live media movement
           </h1>
-          <p className="text-muted-foreground">
-            Watch and interact with creator content
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+            Stream shows media state returned by the connected video service. Visible actions are limited to operations that have an actual backend path; tipping is live, while publishing, liking and commenting are not implied until those action channels exist.
           </p>
         </div>
-        <Button className="gap-2">
-          <Radio className="h-4 w-4" />
-          Go Live
-        </Button>
-      </div>
+        <div className="p-4 md:p-6">
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab}>
@@ -267,20 +262,12 @@ export default function VideoFeedPage() {
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="mt-4 flex items-center gap-2 border-t border-border pt-4">
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <Heart className="h-4 w-4" />
-                        Like
-                      </Button>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        Comment
-                      </Button>
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
+                      <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                        <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                        <span>Recorded engagement is displayed; only verified actions are clickable.</span>
+                      </div>
                       <TipDialog videoId={video.id} onSuccess={() => mutate()} />
-                      <Button variant="ghost" size="icon" className="ml-auto">
-                        <Share2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -289,6 +276,8 @@ export default function VideoFeedPage() {
           )}
         </TabsContent>
       </Tabs>
+        </div>
+      </div>
     </div>
   )
 }
