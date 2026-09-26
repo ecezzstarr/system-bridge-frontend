@@ -226,6 +226,54 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      const constructionDependency:Record<string,{systemType:string;label:string}> = {
+        commerce_storefront:{systemType:'customer_door',label:'Customer Door'},
+        marketplace_network:{systemType:'commerce_storefront',label:'Commerce Storefront'},
+      }
+      const dependency=constructionDependency[String(blueprint.blueprint_key)]
+      if(dependency){
+        const [requiredStructure]=await ctx.sql`
+          SELECT id
+          FROM client_built_systems
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND system_type=${dependency.systemType}
+            AND status='active'
+          LIMIT 1
+        `
+        if(!requiredStructure){
+          return NextResponse.json({
+            error:`${dependency.label} must finish construction before ${blueprint.name} can begin.`,
+            gate:'construction_dependency',
+            requiredSystem:dependency.systemType,
+          },{status:409})
+        }
+      }
+
+      if(['commerce_storefront','marketplace_network'].includes(String(blueprint.blueprint_key))){
+        const [existingStructure]=await ctx.sql`
+          SELECT id,status
+          FROM client_file_folder_builds
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND blueprint_key=${blueprint.blueprint_key}
+          ORDER BY created_at DESC
+          LIMIT 1
+        `
+        const [liveStructure]=await ctx.sql`
+          SELECT id
+          FROM client_built_systems
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND system_type=${blueprint.system_type}
+            AND status='active'
+          LIMIT 1
+        `
+        if(existingStructure||liveStructure){
+          return NextResponse.json({error:`${blueprint.name} is already forming or active in this File Folder.`},{status:409})
+        }
+      }
+
       const title = customTitle || blueprint.name
       const requiredQty = Number(blueprint.required_item_quantity || 0)
       const requiredItemKey = blueprint.required_item_key || null
@@ -271,7 +319,7 @@ export async function POST(request: NextRequest) {
 
         if (!started[0]?.id) {
           return NextResponse.json({
-            error: `This blueprint requires ${requiredQty} × ${blueprint.required_item_key}. Acquire it in the Materials Market first.`,
+            error: `This blueprint requires ${requiredQty} × ${blueprint.required_item_key}. Acquire it in the Materials Depot first.`,
           }, { status: 409 })
         }
       } else {
@@ -380,7 +428,7 @@ export async function POST(request: NextRequest) {
 
       if (!applied[0]?.part_id) {
         return NextResponse.json({
-          error: `Purchase ${item.name} in the Materials Market or Boost Bay before attaching it to this build.`,
+          error: `Purchase ${item.name} in the Materials Depot or Acceleration Bay before attaching it to this build.`,
         }, { status: 409 })
       }
     } else if (action === 'library_start' || action === 'library_complete') {
