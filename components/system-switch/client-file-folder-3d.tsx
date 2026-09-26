@@ -29,6 +29,63 @@ const POSITIONS: Record<DistrictKey, [number, number, number]> = {
   sound: [2.35, 0, 2.65],
 }
 
+function DistrictStructure({ district, active }: { district: District; active: boolean }) {
+  const color = COLORS[district.tone]
+  const material = (intensity=0.24) => (
+    <meshStandardMaterial color="#08111f" emissive={color} emissiveIntensity={active ? intensity * 2.2 : intensity} metalness={0.4} roughness={0.28} />
+  )
+
+  if (district.key === 'command') {
+    return <group>
+      <mesh position={[0,0.88,0]}><boxGeometry args={[1.05,1.55,1.05]}/>{material(0.3)}</mesh>
+      <mesh position={[-0.62,0.58,0]}><boxGeometry args={[0.28,1.05,0.58]}/>{material(0.24)}</mesh>
+      <mesh position={[0.62,0.58,0]}><boxGeometry args={[0.28,1.05,0.58]}/>{material(0.24)}</mesh>
+      <mesh position={[0,1.85,0]}><coneGeometry args={[0.42,0.72,6]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.9:0.42}/></mesh>
+    </group>
+  }
+
+  if (district.key === 'builds') {
+    return <group>
+      <mesh position={[0,0.72,0]}><boxGeometry args={[0.62,1.16,0.62]}/>{material(0.28)}</mesh>
+      {[-0.56,0.56].map(x=><mesh key={x} position={[x,0.82,0]}><boxGeometry args={[0.12,1.7,0.12]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.75:0.28}/></mesh>)}
+      {[0.35,0.9,1.4].map(y=><mesh key={y} position={[0,y,0]}><boxGeometry args={[1.3,0.09,0.18]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.65:0.22}/></mesh>)}
+      <mesh position={[0.24,1.72,0]} rotation={[0,0,-0.46]}><boxGeometry args={[1.1,0.08,0.08]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.65}/></mesh>
+    </group>
+  }
+
+  if (district.key === 'business') {
+    return <group>
+      <mesh position={[0,0.58,0]}><boxGeometry args={[1.36,0.85,0.86]}/>{material(0.28)}</mesh>
+      {[-0.48,0,0.48].map(x=><mesh key={x} position={[x,0.33,0.5]}><boxGeometry args={[0.3,0.46,0.24]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.7:0.25}/></mesh>)}
+      <mesh position={[0,1.16,0]}><coneGeometry args={[0.92,0.52,4]}/><meshStandardMaterial color="#091827" emissive={color} emissiveIntensity={active?0.55:0.18}/></mesh>
+    </group>
+  }
+
+  if (district.key === 'enterprise') {
+    return <group>
+      <mesh position={[0,0.92,0]}><cylinderGeometry args={[0.52,0.76,1.72,8]}/>{material(0.32)}</mesh>
+      <mesh position={[0,2.0,0]}><coneGeometry args={[0.42,0.86,8]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.95:0.42}/></mesh>
+      <mesh position={[0,2.54,0]}><octahedronGeometry args={[0.18,0]}/><meshBasicMaterial color={color}/></mesh>
+    </group>
+  }
+
+  return <group>
+    <mesh position={[0,0.7,0]}><sphereGeometry args={[0.78,20,14,0,Math.PI*2,0,Math.PI/1.85]}/>{material(0.28)}</mesh>
+    <mesh position={[0,0.78,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[0.88,0.06,10,48]}/><meshBasicMaterial color={color} transparent opacity={active?0.82:0.34}/></mesh>
+  </group>
+}
+
+function RoadLink({ district }: { district: District }) {
+  if (district.key === 'command') return null
+  const [x,,z] = POSITIONS[district.key]
+  const length = Math.sqrt(x*x + z*z)
+  const angle = Math.atan2(x,z)
+  return <mesh position={[x/2,-0.27,z/2]} rotation={[0,angle,0]}>
+    <boxGeometry args={[0.28,0.055,length]}/>
+    <meshStandardMaterial color="#0a1b2a" emissive={COLORS[district.tone]} emissiveIntensity={0.18} metalness={0.25} roughness={0.7}/>
+  </mesh>
+}
+
 function DistrictNode({
   district,
   active,
@@ -75,26 +132,7 @@ function DistrictNode({
         />
       </mesh>
 
-      <mesh position={[0, 0.78, 0]} scale={active ? 1.08 : 0.9}>
-        <boxGeometry args={[1.08, 1.28, 1.08]} />
-        <meshStandardMaterial
-          color="#08111f"
-          emissive={color}
-          emissiveIntensity={active ? 0.52 : 0.18}
-          metalness={0.34}
-          roughness={0.3}
-        />
-      </mesh>
-
-      <mesh position={[0, 1.62, 0]}>
-        <octahedronGeometry args={[0.32, 0]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={active ? 1.2 : 0.54}
-          toneMapped={false}
-        />
-      </mesh>
+      <DistrictStructure district={district} active={active} />
 
       {active && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.22, 0]}>
@@ -140,6 +178,10 @@ function BuildCore({
         <sphereGeometry args={[0.25, 20, 20]} />
         <meshBasicMaterial color={liveSystems > 0 ? '#6ee7b7' : '#fde68a'} />
       </mesh>
+      {activeBuilds.length > 0 && <>
+        {[-0.82,0.82].map(x=><mesh key={'post-'+x} position={[x,1.25,0]}><boxGeometry args={[0.08,2.5,0.08]}/><meshBasicMaterial color="#fbbf24" transparent opacity={0.42}/></mesh>)}
+        {[0.45,1.15,1.85].map(y=><mesh key={'beam-'+y} position={[0,y,0]}><boxGeometry args={[1.75,0.07,0.11]}/><meshBasicMaterial color="#fde68a" transparent opacity={0.36}/></mesh>)}
+      </>}
     </group>
   )
 }
@@ -180,6 +222,11 @@ function Scene({
           <meshStandardMaterial color="#030b16" metalness={0.22} roughness={0.72} />
         </mesh>
         <gridHelper args={[15, 24, '#38bdf8', '#172033']} position={[0, -0.32, 0]} />
+        <mesh rotation={[-Math.PI/2,0,0]} position={[0,-0.28,0]}>
+          <torusGeometry args={[6.65,0.09,12,96]}/>
+          <meshStandardMaterial color="#0a1b2a" emissive="#38bdf8" emissiveIntensity={0.16} metalness={0.45} roughness={0.5}/>
+        </mesh>
+        {districts.map(district=><RoadLink key={'road-'+district.key} district={district}/>)}
 
         {districts.map((district) => (
           <DistrictNode
@@ -241,32 +288,34 @@ export function ClientFileFolder3D({
   activeBuilds,
   liveSystems,
   premiumSound,
+  visibleSurfaceKeys,
 }: {
   activeSurface: DistrictKey
   onSurfaceChange: (key: DistrictKey) => void
   activeBuilds: Array<{ progress: number }>
   liveSystems: number
   premiumSound: boolean
+  visibleSurfaceKeys?: DistrictKey[]
 }) {
   const districts = useMemo<District[]>(
     () => [
-      { key: 'command', label: 'Overview', tone: 'sky' },
-      { key: 'builds', label: 'Build + Operate', tone: 'violet' },
-      { key: 'business', label: 'Business + Customers', tone: 'emerald' },
-      { key: 'enterprise', label: 'Enterprise', tone: 'amber' },
+      { key: 'command', label: 'Command Citadel', tone: 'sky' },
+      { key: 'builds', label: 'Construction', tone: 'violet' },
+      { key: 'business', label: 'Market', tone: 'emerald' },
+      { key: 'enterprise', label: 'Expansion', tone: 'amber' },
       ...(premiumSound ? [{ key: 'sound' as const, label: 'Sound Room', tone: 'rose' as const }] : []),
     ],
     [premiumSound],
-  )
+  ).filter(district=>!visibleSurfaceKeys||visibleSurfaceKeys.includes(district.key))
 
   return (
     <section className="overflow-hidden rounded-[1.75rem] border border-sky-300/15 bg-[#020711]/80 shadow-[0_24px_70px_rgba(2,8,23,.5)] backdrop-blur-xl">
       <div className="flex flex-col gap-2 border-b border-white/10 bg-[linear-gradient(90deg,rgba(14,165,233,.08),rgba(139,92,246,.05),rgba(52,211,153,.05))] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">4D File Folder · Space + Time</p>
-          <p className="mt-1 text-xs font-bold text-white">Move through one environment while builds, activity and time continue changing it.</p>
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">4D File Folder · Persistent Business World</p>
+          <p className="mt-1 text-xs font-bold text-white">Your operating base changes as systems are designed, supplied, constructed, commissioned, used and expanded through real business activity.</p>
         </div>
-        <p className="text-[9px] leading-4 text-slate-300">Drag to look · scroll/pinch to move · tap a district · live state keeps moving</p>
+        <p className="text-[9px] leading-4 text-slate-300">Drag to inspect · tap a district · construction persists through time · live systems remain usable</p>
       </div>
 
       <div className="relative h-[360px] sm:h-[430px]">
