@@ -7,6 +7,18 @@ export type WeaveEnvironmentCopy = {
   layer: 'world' | 'district' | 'system' | 'interaction'
 }
 
+
+function administrationSystem(key: string, title: string, purpose: string): WeaveEnvironmentCopy {
+  return {
+    key,
+    title,
+    district: 'Institution',
+    purpose,
+    movement: 'Inspect state → act → verify → preserve continuity',
+    layer: 'system',
+  }
+}
+
 const exact: Record<string, WeaveEnvironmentCopy> = {
   '/login': {
     key: 'position-entry',
