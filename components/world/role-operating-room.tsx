@@ -61,6 +61,7 @@ const AGENT_GROUPS: FunctionGroup[] = [
 
 const ADMIN_GROUPS: FunctionGroup[] = [
   { title: 'Shared WEAVE', detail: 'The common WEAVE components Administration keeps because Administration is also present inside the same system as every other user.' },
+  { title: 'Operations center', detail: 'The dense Administration center preserved from the existing codebase: wallet, workshops, user operations, deposits, withdrawals, announcements and EIGHT.' },
   { title: 'People + recognition', detail: 'Users, Clients, Bridgers, departments and verification.' },
   { title: 'Client system', detail: 'Client money, builds, File Folders and enterprise elevation.' },
   { title: 'Bridge system', detail: 'Prospects, crossing intelligence and Agent/Bridger support.' },
@@ -100,10 +101,25 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Loop 1 Ground', detail: 'Enter the current shared WEAVE event ground.', href: '/event', icon: Flame, district: 'Shared WEAVE' },
   { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Administration holding inside the same value system used across WEAVE.', href: '/wallet', icon: Wallet, district: 'Shared WEAVE' },
   { label: WEAVE_SYSTEM_MAP.language.ledger, detail: 'Administration record inside the same preserved movement system used across WEAVE.', href: '/ledger', icon: BookOpen, district: 'Shared WEAVE' },
-  { label: 'Users & Participants', detail: 'People active across the WEAVE institution.', href: '/admin/dashboard#users', icon: Users, district: 'People + recognition' },
-  { label: 'Clients', detail: 'Client records and participation oversight.', href: '/admin/dashboard#clients', icon: BriefcaseBusiness, district: 'People + recognition' },
-  { label: 'Verify Continuances', detail: 'Review Bridger continuance and standing.', href: '/admin/dashboard#bridgers', icon: FileCheck, district: 'People + recognition' },
-  { label: 'Verification Center', detail: 'Administrative verification and review controls.', href: '/admin/dashboard#panel', icon: ShieldCheck, district: 'People + recognition' },
+
+  { label: 'Administration Control Center', detail: 'Open the preserved dense Administration center and its live embedded components.', href: '/admin/control-center', icon: ShieldCheck, district: 'Operations center' },
+  { label: 'Administration Wallet', detail: 'Platform balances, deposit, withdrawal and participation controls.', href: '/admin/control-center#wallet', icon: Wallet, district: 'Operations center' },
+  { label: 'Administration Workshops', detail: 'Developer, Authority, AI Registry, EIGHT Dev Core and event workshop access.', href: '/admin/control-center#workshops', icon: Rocket, district: 'Operations center' },
+  { label: 'User Management', detail: 'Manage users, departments, roles and Bridger-to-Agent assignment.', href: '/admin/control-center#users', icon: Users, district: 'Operations center' },
+  { label: 'Department Authorization', detail: 'Open the embedded departmental authorization component.', href: '/admin/control-center#departmental', icon: Network, district: 'Operations center' },
+  { label: 'File Number Registry', detail: 'Open the existing File Number Engine component and registry history.', href: '/admin/control-center#fne', icon: FileBox, district: 'Operations center' },
+  { label: 'Bridger Operations', detail: 'Open Bridger operations, standing and exemption controls.', href: '/admin/control-center#bridgers', icon: Users, district: 'Operations center' },
+  { label: 'Client Communications', detail: 'Open the existing Client communications panel.', href: '/admin/control-center#clients', icon: MessageSquare, district: 'Operations center' },
+  { label: 'OPay Deposit Review', detail: 'Review and decide pending OPay deposits.', href: '/admin/control-center#deposits', icon: CreditCard, district: 'Operations center' },
+  { label: 'TRON Deposit Review', detail: 'Review and decide pending TRON deposits.', href: '/admin/control-center#tron', icon: Wallet, district: 'Operations center' },
+  { label: 'Bridge Deposit Review', detail: 'Review Bridge AI and File Folder deposit movement.', href: '/admin/control-center#bridge', icon: Landmark, district: 'Operations center' },
+  { label: 'Withdrawal Review', detail: 'Review and decide pending withdrawal requests.', href: '/admin/control-center#withdrawals', icon: Wallet, district: 'Operations center' },
+  { label: 'Announcements', detail: 'Send role-targeted WEAVE announcements and update notices.', href: '/admin/control-center#announcements', icon: Radio, district: 'Operations center' },
+  { label: 'EIGHT AI', detail: 'Direct Administration interaction with EIGHT and its Scroll.', href: '/admin/control-center#eight', icon: Bot, district: 'Operations center' },
+  { label: 'Users & Participants', detail: 'People active across the WEAVE institution.', href: '/admin/control-center#users', icon: Users, district: 'People + recognition' },
+  { label: 'Clients', detail: 'Client records and participation oversight.', href: '/admin/control-center#clients', icon: BriefcaseBusiness, district: 'People + recognition' },
+  { label: 'Verify Continuances', detail: 'Review Bridger continuance and standing.', href: '/admin/control-center#bridgers', icon: FileCheck, district: 'People + recognition' },
+  { label: 'Verification Center', detail: 'Administrative verification and review controls.', href: '/admin/control-center#users', icon: ShieldCheck, district: 'People + recognition' },
   { label: 'Departmental Registration', detail: 'Departmental codes and company placement.', href: '/admin/departmental-registration', icon: Network, district: 'People + recognition' },
   { label: 'Agent Channel Requests', detail: 'Approve Agent service channels.', href: '/admin/agent-channels', icon: Users, district: 'People + recognition' },
 
@@ -148,11 +164,11 @@ const ROLE_COPY = {
   admin: {
     eyebrow: 'Administration Operating Room',
     title: 'The institution operating as one system.',
-    detail: 'Administration remains inside the same WEAVE used by every participant, so its Operating Room begins with the shared WEAVE components and then adds recognition, approval, Client, Bridge, infrastructure and institutional authority controls.',
+    detail: 'Administration remains inside the same WEAVE used by every participant. Its Operating Room begins with shared WEAVE, preserves the dense Administration control center already present in the codebase, then adds the newer institutional control surfaces.',
     groups: ADMIN_GROUPS,
     commands: ADMIN_COMMANDS,
     panelTitle: 'Administration Control Panel',
-    panelDetail: 'The middle panel is the Administration working center: first the components shared with every WEAVE user, then the additional Administration instruments for people, Clients, Bridge movement, infrastructure, workshops, finance, communication and events.',
+    panelDetail: 'The middle panel is the Administration working center: shared WEAVE first, the preserved live control-center components next, then the newer Administration instruments for Clients, Bridge movement, infrastructure, workshops, finance, communication and events.',
   },
 } as const
 
