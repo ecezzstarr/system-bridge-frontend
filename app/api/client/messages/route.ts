@@ -98,11 +98,17 @@ export async function GET(request: NextRequest) {
         'SELECT * FROM client_messages WHERE client_id=$1::uuid AND position=$2 ORDER BY created_at ASC',
         [targetClientId, position]
       )
-      const otherSender = user.role === 'client' ? 'admin' : 'client'
-      await client.query(
-        'UPDATE client_messages SET is_read=true WHERE client_id=$1::uuid AND position=$2 AND sender_type=$3',
-        [targetClientId, position, otherSender]
-      )
+      if (user.role === 'client') {
+        await client.query(
+          "UPDATE client_messages SET is_read=true WHERE client_id=$1::uuid AND position=$2 AND sender_type<>'client'",
+          [targetClientId, position]
+        )
+      } else {
+        await client.query(
+          "UPDATE client_messages SET is_read=true WHERE client_id=$1::uuid AND position=$2 AND sender_type='client'",
+          [targetClientId, position]
+        )
+      }
       return NextResponse.json({ success: true, messages: messages.rows }, { headers: { 'Cache-Control': 'private, no-store' } })
     }
 
@@ -174,7 +180,7 @@ export async function POST(request: NextRequest) {
     }
 
     const name = await resolveClientName(client, targetClientId)
-    const senderType = user.role === 'client' ? 'client' : 'admin'
+    const senderType = user.role
     const result = await client.query(
       `INSERT INTO client_messages (client_id,client_name,position,sender_type,content)
        VALUES ($1::uuid,$2,$3,$4,$5)
@@ -204,11 +210,17 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 })
     }
 
-    const otherSender = user.role === 'client' ? 'admin' : 'client'
-    await client.query(
-      'UPDATE client_messages SET is_read=true WHERE client_id=$1::uuid AND position=$2 AND sender_type=$3',
-      [targetClientId, position, otherSender]
-    )
+    if (user.role === 'client') {
+      await client.query(
+        "UPDATE client_messages SET is_read=true WHERE client_id=$1::uuid AND position=$2 AND sender_type<>'client'",
+        [targetClientId, position]
+      )
+    } else {
+      await client.query(
+        "UPDATE client_messages SET is_read=true WHERE client_id=$1::uuid AND position=$2 AND sender_type='client'",
+        [targetClientId, position]
+      )
+    }
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error marking messages read:', error)
