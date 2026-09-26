@@ -88,6 +88,7 @@ const AGENT_COMMANDS: FunctionItem[] = [
   { label: 'Company Activities', detail: 'Company loops and current movement.', href: '/company/loops', icon: Activity, district: 'Work + livelihood' },
   { label: 'Event Tasks', detail: 'Current WEAVE event participation.', href: '/event', icon: Flame, district: 'Work + livelihood' },
   { label: 'Client Interactions', detail: 'Approved Client service channels.', href: '/client-interactions', icon: MessageSquare, district: 'Client + company support' },
+  { label: 'Clients', detail: 'Client directory and company-side Client continuity.', href: '/clients', icon: Users, district: 'Client + company support' },
   { label: 'Bridge Plaza', detail: 'Shared Client worlds and support entrance.', href: '/weave', icon: Landmark, district: 'Client + company support' },
   { label: 'Company Guidance', detail: 'Internal company support and clarification.', href: '/company-chat', icon: Headphones, district: 'Client + company support' },
   { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Operational holding and funds.', href: '/wallet', icon: Wallet, district: 'Record + value' },
