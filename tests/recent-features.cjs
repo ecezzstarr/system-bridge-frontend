@@ -1097,3 +1097,12 @@ assert.ok(numberVerificationSource.includes("status='verified'"),'Bridger can co
 assert.ok(numberVerificationSource.includes('verification_code=NULL'),'Completed verification clears the code')
 assert.ok(numberAdminPage.includes('Load battery'),'Administration loads Aphone numbers as battery stock')
 assert.ok(numberBridgerPage.includes('Request SMS')&&numberBridgerPage.includes('Request Call'),'Bridger can request either Aphone verification method')
+
+const numberBridgerApiBoundary=fs.readFileSync(path.join(root,'app/api/bridger/numbers/route.ts'),'utf8')
+const numberVerificationBoundary=fs.readFileSync(path.join(root,'app/api/bridger/number-verifications/route.ts'),'utf8')
+assert.ok(!numberBridgerApiBoundary.includes('SELECT id,country,provider,price_flame_coin'),'Bridger available inventory does not expose supplier')
+assert.ok(!numberBridgerApiBoundary.includes('phone_e164,country,provider,provider_reference'),'Assigned-number API does not expose supplier reference')
+assert.ok(numberBridgerApiBoundary.includes("product:'WEAVE Worldwide WhatsApp Number'"),'Receipt identifies the WEAVE product rather than its supplier')
+assert.ok(!numberBridgerPage.includes('Aphone'),'Bridger Number Engine never exposes the Administration supply source')
+assert.ok(numberBridgerPage.includes('WEAVE Worldwide'),'Bridger sees the WEAVE worldwide product identity')
+assert.ok(!numberVerificationBoundary.includes('received from Aphone'),'Verification API language remains supplier-neutral')
