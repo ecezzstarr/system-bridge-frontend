@@ -15,7 +15,6 @@ import {
   Headphones,
   MessageSquare,
   Network,
-  Shield,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
