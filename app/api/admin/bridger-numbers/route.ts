@@ -31,11 +31,12 @@ export async function POST(request:NextRequest){
   const providerReference=String(body.providerReference||'').trim().slice(0,220)
   const notes=String(body.notes||'').trim().slice(0,2000)
   const acquisitionCost=body.acquisitionCost===''||body.acquisitionCost==null?null:Number(body.acquisitionCost)
-  const price=Number(body.priceFlameCoin)
+  const priceRaw=body.priceFlameCoin
+  const price=priceRaw===''||priceRaw==null?NaN:Number(priceRaw)
   if(!phone) return NextResponse.json({error:'Enter the provisioned number in E.164 format, for example +2348012345678.'},{status:400})
   if(!country) return NextResponse.json({error:'Country is required'},{status:400})
   if(acquisitionCost!==null&&(!Number.isFinite(acquisitionCost)||acquisitionCost<0)) return NextResponse.json({error:'Valid Aphone acquisition cost is required'},{status:400})
-  if(!Number.isFinite(price)||price<0) return NextResponse.json({error:'Valid Flame Coin price is required'},{status:400})
+  if(!Number.isFinite(price)||price<=0) return NextResponse.json({error:'Enter the Bridger purchase price in Flame Coin (greater than 0)'},{status:400})
   const sql=getSql(); await ensureBridgerNumberEngineSchema(sql)
   try{
     const [number]=await sql`
