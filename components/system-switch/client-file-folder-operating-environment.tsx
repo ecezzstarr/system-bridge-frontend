@@ -381,7 +381,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }
 
   return (
-    <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711]">
+    <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711]/82 backdrop-blur-xl">
       <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(14,165,233,.18),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(139,92,246,.12),transparent_28%)] p-5 md:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="flex items-start gap-4">
