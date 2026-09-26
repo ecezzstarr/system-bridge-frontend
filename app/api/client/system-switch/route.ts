@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
       international_payments:internationalPayments,
       bridge:bridge||null,
       approved_agents:agents,
-      bridge_ai:{available:true,name:'Bridge AI',purpose:'The AI participant inside the File Folder and System Switch.',last_report:report||null}
+      bridge_ai:{available:true,name:'Bridge AI',purpose:'Your Client AI support continuing from the crossing into this File Folder, your builds and your live systems.',continuity:'crossing_to_client',last_report:report||null}
     }, {headers:{'Cache-Control':'private, no-store'}})
   } catch(error){
     console.error('[client/system-switch] error:',error instanceof Error?error.message:'unknown error')
