@@ -1064,3 +1064,19 @@ for(const file of [
 }
 
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
+
+const numberEngineSource=fs.readFileSync(path.join(root,'lib/bridger-number-engine.ts'),'utf8')
+const numberAdminSource=fs.readFileSync(path.join(root,'app/api/admin/bridger-numbers/route.ts'),'utf8')
+const numberBridgerSource=fs.readFileSync(path.join(root,'app/api/bridger/numbers/route.ts'),'utf8')
+const numberAdminPage=fs.readFileSync(path.join(root,'app/(app)/admin/bridger-numbers/page.tsx'),'utf8')
+const numberBridgerPage=fs.readFileSync(path.join(root,'app/(app)/bridger/numbers/page.tsx'),'utf8')
+assert.ok(numberEngineSource.includes('phone_e164 varchar(32) NOT NULL UNIQUE'),'Number Engine prevents duplicate provisioned numbers')
+assert.ok(numberEngineSource.includes('assigned_to uuid REFERENCES users(id)'),'Number Engine preserves Bridger ownership')
+assert.ok(numberAdminSource.includes("user.role!=='admin'"),'Only Administration can manage Number Engine inventory')
+assert.ok(numberBridgerSource.includes("user.role!=='bridger'"),'Only Bridgers can purchase Number Engine inventory')
+assert.ok(numberBridgerSource.includes("FOR UPDATE"),'Number purchase locks scarce inventory and wallet rows')
+assert.ok(numberBridgerSource.includes("status='assigned'"),'Successful purchase permanently assigns the number')
+assert.ok(numberBridgerSource.includes("issueWeaveReceipt"),'Number purchases issue canonical WEAVE receipts')
+assert.ok(numberAdminPage.includes('WEAVE does not store WhatsApp OTPs'),'Administration Number Engine excludes WhatsApp credentials')
+assert.ok(numberBridgerPage.includes('number itself is revealed after successful assignment'),'Available inventory does not expose numbers before purchase')
+assert.ok(fs.existsSync(path.join(root,'migrations/20260926_bridger_whatsapp_number_engine.sql')),'Number Engine migration exists')
