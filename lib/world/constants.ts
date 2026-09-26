@@ -20,7 +20,7 @@ export const WORLD_RULES = {
   AGENT_CROSSING_YIELD_RATE: 0.02, // 5% of 40% = 2% total on client crossing
   
   // Continuance (formerly Continuance)
-  BRIDGER_CONTINUANCE_NGN: 25000,
+  BRIDGER_CONTINUANCE_NGN: 5000,
   
   // Wallet Fees
   PLATFORM_FEE_PERCENT: 5,
