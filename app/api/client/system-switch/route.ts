@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
         modules
       },
       enterprise,
-      business_store:store?{...store,items,orders,public_url:`/store/${store.public_slug}`} : null,
+      business_store:store?{...store,items,orders,public_url:`/market/${store.public_slug}`} : null,
       international_payments:internationalPayments,
       bridge:bridge||null,
       approved_agents:agents,
