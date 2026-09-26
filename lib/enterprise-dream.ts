@@ -15,6 +15,7 @@ export async function ensureEnterpriseDreamSchema(sql = getEnterpriseDreamDb()) 
       file_number varchar(120) UNIQUE NOT NULL,
       requested_position varchar(20) NOT NULL,
       enterprise_name varchar(255) NOT NULL,
+      public_slug varchar(160),
       sector varchar(255) NOT NULL,
       business_plan text NOT NULL,
       profit_model text NOT NULL,
@@ -30,6 +31,13 @@ export async function ensureEnterpriseDreamSchema(sql = getEnterpriseDreamDb()) 
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE enterprise_applications ADD COLUMN IF NOT EXISTS public_slug varchar(160)`
+  await sql`
+    UPDATE enterprise_applications
+    SET public_slug=LOWER(REGEXP_REPLACE(TRIM(BOTH '-' FROM REGEXP_REPLACE(file_number,'[^A-Za-z0-9]+','-','g')),'[^A-Za-z0-9-]+','','g'))
+    WHERE public_slug IS NULL OR public_slug=''
+  `
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_enterprise_applications_public_slug ON enterprise_applications(public_slug) WHERE public_slug IS NOT NULL`
   await sql`CREATE INDEX IF NOT EXISTS idx_enterprise_applications_status ON enterprise_applications(status, submitted_at DESC)`
 
   await sql`
