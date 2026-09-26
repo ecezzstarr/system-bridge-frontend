@@ -45,9 +45,24 @@ export default function SupportFileFolderPage() {
 
   return <main className="min-h-screen bg-[#020711] p-3 text-white md:p-6">
     <div className="mx-auto max-w-[1500px]">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-300/10 bg-violet-400/[0.035] px-4 py-3">
-        <div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Bridge Plaza → Client File Folder</p><p className="mt-1 text-xs text-slate-400">Support enters the Client’s existing world. The Client remains the player.</p></div>
-        <Link href="/weave" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-xs text-slate-300"><ArrowLeft className="h-3.5 w-3.5"/>Bridge Plaza</Link>
+      <div className="mb-4 rounded-3xl border border-violet-300/15 bg-[linear-gradient(135deg,rgba(139,92,246,.08),rgba(14,165,233,.05))] p-4 md:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Bridge Plaza → Client File Folder</p>
+            <h1 className="mt-1 text-lg font-black text-white">You are viewing one Client operating environment.</h1>
+            <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-300">Support enters the Client’s existing world. Blueprints become builds, builds become live systems, and real activity stays attached to the Client File Folder. The Client remains the player.</p>
+          </div>
+          <Link href="/weave" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs text-slate-200"><ArrowLeft className="h-3.5 w-3.5"/>Bridge Plaza</Link>
+        </div>
+        <div className="mt-4 grid grid-cols-5 gap-2 text-center">
+          {[
+            ['Recognize','text-sky-300 bg-sky-400/[0.05] border-sky-300/15'],
+            ['Preview','text-violet-300 bg-violet-400/[0.05] border-violet-300/15'],
+            ['Build','text-amber-300 bg-amber-400/[0.05] border-amber-300/15'],
+            ['Activate','text-emerald-300 bg-emerald-400/[0.05] border-emerald-300/15'],
+            ['Operate','text-cyan-300 bg-cyan-400/[0.05] border-cyan-300/15'],
+          ].map(([label,tone])=><div key={label} className={`rounded-xl border px-2 py-2 text-[8px] font-black uppercase tracking-[0.08em] ${tone}`}>{label}</div>)}
+        </div>
       </div>
       <FileFolderOpenWorld
         clientName={data.client.name}
