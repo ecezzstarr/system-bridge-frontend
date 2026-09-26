@@ -427,7 +427,8 @@ export async function finalizeReadyBuilds(
 ) {
   const ready = await sql`
     SELECT
-      id,client_id,file_number,system_type,title,blueprint_key,status,completes_at
+      id,client_id,file_number,system_type,title,blueprint_key,status,completes_at,
+      speed_multiplier,purchase_speed_multiplier
     FROM client_file_folder_builds
     WHERE client_id=${clientId}::uuid
       AND (
@@ -463,6 +464,20 @@ export async function finalizeReadyBuilds(
       WHERE id=${build.id}::uuid
     `
 
+    const appliedParts = await sql`
+      SELECT
+        p.item_key,
+        i.name,
+        p.quantity,
+        p.effect_type,
+        p.effect_value,
+        p.applied_at
+      FROM client_file_folder_build_parts p
+      JOIN weave_file_folder_items i ON i.item_key=p.item_key
+      WHERE p.build_id=${build.id}::uuid
+      ORDER BY p.applied_at ASC
+    `
+
     await sql`
       INSERT INTO client_built_systems (
         build_id, client_id, file_number, system_type, title, configuration
@@ -473,7 +488,13 @@ export async function finalizeReadyBuilds(
         ${build.file_number},
         ${build.system_type},
         ${build.title},
-        ${JSON.stringify({ blueprintKey: build.blueprint_key, district: 'main_file_folder' })}::jsonb
+        ${JSON.stringify({
+          blueprintKey: build.blueprint_key,
+          district: 'main_file_folder',
+          finalSpeedMultiplier: Number(build.speed_multiplier || 1),
+          purchasedSpeedMultiplier: Number(build.purchase_speed_multiplier || 1),
+          appliedParts,
+        })}::jsonb
       )
       ON CONFLICT (build_id) DO NOTHING
     `
