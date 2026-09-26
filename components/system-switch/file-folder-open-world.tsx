@@ -28,6 +28,7 @@ type Props = {
   readOnly?: boolean
   refreshUrl?: string
   refreshToken?: string | null
+  onWorldChange?: (world: any) => void
 }
 
 const districts = [
@@ -58,6 +59,7 @@ export default function FileFolderOpenWorld({
   readOnly = false,
   refreshUrl,
   refreshToken,
+  onWorldChange,
 }: Props) {
   const [world, setWorld] = useState(initialWorld)
   const [district, setDistrict] = useState('workshop_core')
@@ -83,7 +85,10 @@ export default function FileFolderOpenWorld({
           cache: 'no-store',
         })
         const body = await response.json()
-        if (response.ok && body.world) setWorld(body.world)
+        if (response.ok && body.world) {
+          setWorld(body.world)
+          onWorldChange?.(body.world)
+        }
       } catch {
         // Keep the current world visible if a background refresh fails.
       }
@@ -91,7 +96,7 @@ export default function FileFolderOpenWorld({
 
     const id = window.setInterval(refresh, 20000)
     return () => window.clearInterval(id)
-  }, [readOnly, refreshToken, refreshUrl])
+  }, [onWorldChange, readOnly, refreshToken, refreshUrl])
 
   const inventory = useMemo(
     () => new Map((world?.inventory || []).map((item: any) => [item.item_key, Number(item.quantity || 0)])),
@@ -115,6 +120,7 @@ export default function FileFolderOpenWorld({
       const body = await response.json()
       if (!response.ok) throw new Error(body.error || 'Movement failed')
       setWorld(body.world)
+      onWorldChange?.(body.world)
       setMessage('Movement recorded in the Main File Folder.')
     } catch (error: any) {
       setMessage(error?.message || 'Movement failed')
@@ -127,6 +133,7 @@ export default function FileFolderOpenWorld({
   const buildFunding = world?.buildFunding || null
   const fundingGateLocked = Boolean(buildFunding && !buildFunding.publicDoorUnlocked && world?.customerDoor?.formation_status === 'funding_gate')
   const completedBuilds = (world?.builds || []).filter((build: any) => build.status === 'complete')
+  const availableBuildItems = (world?.inventory || []).filter((item: any) => Number(item.quantity || 0) > 0)
 
   return (
     <section className="overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711] shadow-2xl">
@@ -244,7 +251,22 @@ export default function FileFolderOpenWorld({
                   return <div key={build.id} className="rounded-2xl border border-amber-300/15 bg-amber-400/[0.04] p-5">
                     <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold text-white">{build.title}</p><p className="mt-1 text-[10px] text-slate-500">{build.system_type.replaceAll('_',' ')}</p></div><div className="flex items-center gap-1 text-[10px] text-amber-300"><Clock3 className="h-3.5 w-3.5"/>{duration(remaining)}</div></div>
                     <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-amber-300/80" style={{width:`${progress}%`}} /></div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[9px]">
+                      <span className="rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 font-black uppercase tracking-wider text-amber-200">Live speed ×{Number(build.speed_multiplier || 1).toFixed(2)}</span>
+                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-slate-400">{(build.applied_parts || []).length} attached parts</span>
+                    </div>
                     <p className="mt-3 text-[10px] text-slate-500">{build.purpose}</p>
+                    {(build.applied_parts || []).length > 0 && <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-3">
+                      <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-600">Installed during this build</p>
+                      <div className="mt-2 flex flex-wrap gap-2">{(build.applied_parts || []).map((part:any)=><span key={part.id} className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[9px] text-slate-300">{part.name}{part.effect_type==='speed_boost' ? ` · ×${Number(part.effect_value || 1).toFixed(2)}` : ''}</span>)}</div>
+                    </div>}
+                    {!readOnly && <div className="mt-4 rounded-xl border border-sky-300/10 bg-sky-400/[0.025] p-3">
+                      <div className="flex items-center justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Continue building live</p><p className="mt-1 text-[9px] text-slate-500">Attach purchased parts to this active build. Speed boosts immediately change its live formation time.</p></div><Zap className="h-4 w-4 text-sky-300"/></div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {availableBuildItems.length === 0 && <span className="text-[9px] text-slate-600">No purchased build items are waiting in inventory.</span>}
+                        {availableBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
+                      </div>
+                    </div>}
                   </div>
                 })}
               </div>
@@ -282,6 +304,7 @@ export default function FileFolderOpenWorld({
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
                   <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
+                  {item.build_effect==='speed_boost' && <p className="mt-2 inline-flex rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 text-[9px] font-black text-amber-200">Applies live · ×{Number(item.effect_value || 1).toFixed(2)} build speed</p>}
                   {!readOnly && <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire item'}</button>}
                 </div>)}
               </div>
