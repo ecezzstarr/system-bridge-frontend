@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Cloud, GitBranch, Megaphone, Palette, Radio, Sparkles } from 'lucide-react'
+import { Cloud, GitBranch, LayoutTemplate, Megaphone, Palette, Radio, Sparkles } from 'lucide-react'
 
 const workshops = [
   {
@@ -24,6 +24,12 @@ const workshops = [
     title: 'Visual Systems Workshop',
     description: 'Draft, publish, hide and roll back registered WEAVE visual artifacts live without a Cloud Run deployment.',
     icon: Palette,
+  },
+  {
+    href: '/admin/environment-organizer',
+    title: 'Environment Organizer',
+    description: 'Withdraw, restore and reorder registered WEAVE pages and cards without deleting their source or rebuilding Cloud Run.',
+    icon: LayoutTemplate,
   },
   {
     href: '/admin/loop-workshop',
