@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { getPool } from '@/lib/db'
+import { getPool, getSql } from '@/lib/db'
 import { ensureBridgerNumberEngineSchema } from '@/lib/bridger-number-engine'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
@@ -10,9 +10,9 @@ export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user) return NextResponse.json({error:'Unauthorized'},{status:401})
   if(user.role!=='bridger') return NextResponse.json({error:'Only Bridgers can access this inventory'},{status:403})
+  await ensureBridgerNumberEngineSchema(getSql())
   const pool=getPool(); const client=await pool.connect()
   try{
-    await ensureBridgerNumberEngineSchema((strings:any,...values:any[])=>client.query(strings.reduce((q:string,s:string,i:number)=>q+s+(i<values.length?'$'+(i+1):''),''),values).then(r=>r.rows) as any)
     const available=(await client.query(`
       SELECT id,country,provider,price_flame_coin,status,created_at
       FROM bridger_whatsapp_numbers WHERE status='available' AND assigned_to IS NULL
@@ -33,6 +33,7 @@ export async function POST(request:NextRequest){
   if(user.role!=='bridger') return NextResponse.json({error:'Only Bridgers can purchase numbers'},{status:403})
   const {numberId}=await request.json()
   if(!numberId) return NextResponse.json({error:'numberId required'},{status:400})
+  await ensureBridgerNumberEngineSchema(getSql())
   const pool=getPool(); const client=await pool.connect()
   try{
     await client.query('BEGIN')
