@@ -6,10 +6,14 @@ import {
   ensureFileFolderWorldSchema,
   getFileFolderWorldSnapshot,
 } from '@/lib/client-file-folder-world'
-import { effectiveBuildMinutes, getClientBuildEconomy } from '@/lib/client-build-economy'
+import { CLIENT_BUILD_SPEED_MAX, effectiveBuildMinutes, getClientBuildEconomy } from '@/lib/client-build-economy'
 
 function clean(value: unknown, max = 4000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 }
 
 async function resolveClientWorld(request: NextRequest) {
@@ -278,6 +282,92 @@ export async function POST(request: NextRequest) {
             NOW() + make_interval(mins => ${effectiveMinutes})
           )
         `
+      }
+    } else if (action === 'apply_build_item') {
+      const buildId = clean(body.build_id, 80)
+      const itemKey = clean(body.item_key, 80)
+      if (!isUuid(buildId) || !itemKey) {
+        return NextResponse.json({ error: 'Active build and build item are required' }, { status: 400 })
+      }
+
+      const [item] = await ctx.sql`
+        SELECT item_key,name,build_effect,effect_value
+        FROM weave_file_folder_items
+        WHERE item_key=${itemKey}
+          AND published=true
+        LIMIT 1
+      `
+      if (!item) return NextResponse.json({ error: 'Build item not found' }, { status: 404 })
+
+      const [activeBuild] = await ctx.sql`
+        SELECT id,title,status
+        FROM client_file_folder_builds
+        WHERE id=${buildId}::uuid
+          AND client_id=${ctx.client.id}::uuid
+          AND file_number=${ctx.client.file_number}
+          AND status='building'
+        LIMIT 1
+      `
+      if (!activeBuild) {
+        return NextResponse.json({ error: 'That build is no longer active' }, { status: 409 })
+      }
+
+      const effectType = String(item.build_effect || 'component')
+      const effectFactor = effectType === 'speed_boost'
+        ? Math.max(1, Number(item.effect_value) || 1)
+        : 1
+
+      const applied = await ctx.sql`
+        WITH consumed AS (
+          UPDATE client_file_folder_inventory
+          SET quantity=quantity-1,updated_at=NOW()
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND item_key=${itemKey}
+            AND quantity >= 1
+          RETURNING item_key
+        ),
+        part AS (
+          INSERT INTO client_file_folder_build_parts (
+            build_id,client_id,file_number,item_key,quantity,effect_type,effect_value,applied_at
+          )
+          SELECT
+            ${buildId}::uuid,
+            ${ctx.client.id}::uuid,
+            ${ctx.client.file_number},
+            ${itemKey},
+            1,
+            ${effectType},
+            ${Number(item.effect_value) || 0},
+            NOW()
+          FROM consumed
+          RETURNING id
+        ),
+        build_update AS (
+          UPDATE client_file_folder_builds
+          SET
+            purchase_speed_multiplier=CASE
+              WHEN ${effectType}='speed_boost'
+              THEN LEAST(
+                ${CLIENT_BUILD_SPEED_MAX},
+                COALESCE(purchase_speed_multiplier,1) * ${effectFactor}
+              )
+              ELSE COALESCE(purchase_speed_multiplier,1)
+            END,
+            updated_at=NOW()
+          WHERE id=${buildId}::uuid
+            AND EXISTS (SELECT 1 FROM part)
+          RETURNING purchase_speed_multiplier
+        )
+        SELECT
+          (SELECT id FROM part LIMIT 1) AS part_id,
+          (SELECT purchase_speed_multiplier FROM build_update LIMIT 1) AS purchase_speed_multiplier
+      `
+
+      if (!applied[0]?.part_id) {
+        return NextResponse.json({
+          error: `Purchase ${item.name} in the Build Market before attaching it to this build.`,
+        }, { status: 409 })
       }
     } else if (action === 'library_start' || action === 'library_complete') {
       const entryKey = clean(body.entry_key, 80)
