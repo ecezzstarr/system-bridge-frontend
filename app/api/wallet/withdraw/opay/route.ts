@@ -4,6 +4,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { flameCoinToNgn } from '@/lib/flame-coin'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 import { WORLD_RULES } from '@/lib/world/constants'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function POST(request: NextRequest) {
   try {
