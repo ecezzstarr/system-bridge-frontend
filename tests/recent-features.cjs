@@ -535,6 +535,9 @@ const clientSystemSwitchSource=fs.readFileSync(path.join(root,'app/client/system
 const fileFolderOperatingMigrationSource=fs.readFileSync(path.join(root,'migrations/20260926_file_folder_operating_environment.sql'),'utf8')
 const clientBridgeAiSupportSource=fs.readFileSync(path.join(root,'components/system-switch/client-bridge-ai-support.tsx'),'utf8')
 const clientBridgeAiApiSource=fs.readFileSync(path.join(root,'app/api/client/bridge-ai/route.ts'),'utf8')
+const fileFolderEnvironmentLoaderSource=fs.readFileSync(path.join(root,'components/system-switch/file-folder-environment-loader.tsx'),'utf8')
+const fileFolderPurchaseApiSource=fs.readFileSync(path.join(root,'app/api/bridge/file-folder/purchase/route.ts'),'utf8')
+const weaveTermsFileFolderSource=fs.readFileSync(path.join(root,'lib/weave-terms.ts'),'utf8')
 const bridgeAiEngineSource=fs.readFileSync(path.join(root,'lib/bridge-ai-engine.ts'),'utf8')
 const publicCustomerDoorSource=fs.readFileSync(path.join(root,'app/store/[slug]/page.tsx'),'utf8')
 const publicCustomerOrdersSource=fs.readFileSync(path.join(root,'app/api/public/store/[slug]/orders/route.ts'),'utf8')
@@ -559,6 +562,14 @@ assert.ok(fileFolderOperatingEnvironmentSource.includes('Design preview'),'Clien
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Operation shown here is based on recorded File Folder entries'),'Post-build view distinguishes recorded operation from simulation')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'"),'File Folder is organized as one operating environment with contained surfaces')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('aria-label="File Folder districts"'),'File Folder exposes one ordered district navigator')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('Studio transit'),'File Folder exposes direct transit to studio destinations')
+assert.ok(fileFolderOperatingEnvironmentSource.includes("['Materials','build_market']"),'Studio transit opens the Materials Market directly')
+assert.ok(fileFolderOperatingEnvironmentSource.includes("['Boosts','boost_bay']"),'Studio transit opens Boost Bay directly')
+assert.ok(fileFolderOpenWorldSource.includes("key: 'boost_bay'"),'File Folder contains a dedicated Boost Bay district')
+assert.ok(fileFolderOpenWorldSource.includes('Materials Market'),'Build materials are separated from live acceleration boosts')
+assert.ok(fileFolder3dSource.includes('4D File Folder · Space + Time'),'File Folder presents space, time and live movement as one operating view')
+assert.ok(fileFolderEnvironmentLoaderSource.includes('Loading your whole operating environment'),'Client sees a world-loading boot sequence before entry')
+assert.ok(fileFolderEnvironmentLoaderSource.includes('animate-spin'),'File Folder boot sequence visibly spins while environment data loads')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientFileFolder3D'),'Client can see the File Folder as a 3D operating environment')
 assert.ok(fileFolder3dSource.includes("from '@react-three/fiber'"),'3D File Folder uses the real Three.js React renderer')
 assert.ok(fileFolder3dSource.includes('<OrbitControls'),'Client can rotate and inspect the 3D File Folder')
@@ -596,6 +607,10 @@ assert.ok(clientBridgeAiApiSource.includes("position='bridge_ai'"),'Client Bridg
 assert.ok(clientBridgeAiApiSource.includes('ensureClientBridgeAiMessageSchema'),'Client Bridge AI repairs legacy message schemas before loading support')
 assert.ok(clientBridgeAiApiSource.includes('ADD COLUMN IF NOT EXISTS sender_type'),'Client Bridge AI upgrades legacy sender columns safely')
 assert.ok(clientBridgeAiApiSource.includes('ALTER COLUMN sender DROP NOT NULL'),'Legacy sender constraints cannot break Bridge AI writes')
+assert.ok(clientBridgeAiApiSource.includes('CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN'),'Bridge AI Client assistance uses the configured Flame Coin fee')
+assert.ok(clientBridgeAiApiSource.includes("code: 'INSUFFICIENT_FLAME_COIN'"),'Bridge AI refuses paid assistance when the Client wallet cannot cover the fee')
+assert.ok(clientBridgeAiApiSource.includes('balance_trx=balance_trx+${feeFlameCoin}'),'Failed Bridge AI generation refunds the Client fee')
+assert.ok(clientBridgeAiSupportSource.includes('Flame Coin / assisted reply'),'Bridge AI console shows the Client assistance fee before use')
 assert.ok(bridgeAiEngineSource.includes('CROSSING → CLIENT CONTINUITY'),'Bridge AI engine carries one identity across crossing and Client support')
 assert.ok(clientSystemSwitchSource.includes('ClientFileFolderOperatingEnvironment'),'Client System Switch enters the unified File Folder operating environment')
 assert.ok(fileFolderOperatingMigrationSource.includes('client_file_folder_build_parts'),'Production migration persists live build attachments')
@@ -606,6 +621,9 @@ assert.ok(customerDoorPanelSource.includes('requiredToOpenPublicDoorFlameCoin'),
 assert.ok(fileFolderPurchaseSource.includes('PUBLIC_DOOR_THRESHOLD'),'File Folder buyer sees the Customer Door threshold before purchase')
 assert.ok(fileFolderPurchaseSource.includes('/api/bridge/file-folder'),'Pre-client File Folder funding lives under Bridge')
 assert.ok(fileFolderPurchaseSource.includes('/api/bridge/file-folder/purchase'),'Pre-client File Folder purchase lives under Bridge')
+assert.ok(fileFolderPurchaseApiSource.includes("user && user.role !== 'client'"),'Authenticated support positions cannot purchase a File Folder for themselves')
+assert.ok(fileFolderPurchaseApiSource.includes("role='client'"),'File Folder assignment validates that the owner is a Client account')
+assert.ok(weaveTermsFileFolderSource.includes('support-only view'),'WEAVE terms codify support-only File Folder entry')
 assert.ok(fileFolderWorldSource.includes('crypto_exchange_workshop'),'Client build catalog includes a Crypto Exchange Workshop')
 assert.ok(fileFolderWorldSource.includes('enterprise_operating_system'),'Client build catalog includes high-capacity enterprise systems')
 assert.ok(fileFolderWorldSource.includes('ON CONFLICT (blueprint_key) DO NOTHING'),'Seed bootstrap preserves Administration blueprint edits')
@@ -617,6 +635,7 @@ for(const file of [
  'components/client/client-operating-room.tsx',
  'app/(app)/weave/file-folder/[fileNumber]/page.tsx',
  'components/system-switch/client-bridge-ai-support.tsx',
+ 'components/system-switch/file-folder-environment-loader.tsx',
  'app/api/client/bridge-ai/route.ts',
  'components/bridger/bridger-operating-environment.tsx',
  'components/world/role-operating-room.tsx',
