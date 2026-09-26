@@ -1119,9 +1119,9 @@ assert.ok(numberBridgerSource.includes("FOR UPDATE"),'Number purchase locks scar
 assert.ok(numberBridgerSource.includes("status='assigned'"),'Successful purchase permanently assigns the number')
 assert.ok(numberBridgerSource.includes("issueWeaveReceipt"),'Number purchases issue canonical WEAVE receipts')
 assert.ok(!numberAdminPage.toLowerCase().includes('password'),'Administration Number Engine never collects WhatsApp passwords')
-assert.ok(numberBridgerPage.includes('Number revealed after assignment.'),'Available inventory does not expose numbers before purchase')
-assert.ok(numberBridgerSource.includes('acquisition_cost'),'Bridger Number Engine API exposes the admin-entered acquisition cost')
-assert.ok(numberBridgerPage.includes('Acquisition cost'),'Bridger Number Engine renders the admin-entered acquisition cost')
+assert.ok(numberBridgerPage.includes('Identity revealed only after successful assignment.'),'Available inventory does not expose numbers before purchase')
+assert.ok(!numberBridgerSource.includes('acquisition_cost'),'Bridger Number Engine API keeps Administration acquisition cost private')
+assert.ok(!numberBridgerPage.includes('n.acquisition_cost'),'Bridger Number Engine never renders Administration acquisition cost')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260926_bridger_whatsapp_number_engine.sql')),'Number Engine migration exists')
 
 
