@@ -526,3 +526,20 @@
   82% { width: 88%; opacity: 1; }
   100% { width: 100%; opacity: 1; }
 }
+
+
+/* Environment-first enforcement.
+   Legacy authenticated route roots are absorbed into the persistent WEAVE world
+   so an old min-h-screen surface cannot visually become a separate webpage. */
+[data-weave-environment] > div.relative > main.min-h-screen,
+[data-weave-environment] > div.relative > div.min-h-screen {
+  min-height: auto !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* A room owns local depth; the global world owns the viewport background. */
+[data-weave-environment] [data-weave-room] {
+  isolation: isolate;
+  transform: translateZ(0);
+}
