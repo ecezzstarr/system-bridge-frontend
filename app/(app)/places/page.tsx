@@ -7,7 +7,6 @@ import {
   Gamepad2,
   GitBranch,
   Globe2,
-  MessageCircle,
   Sparkles,
   Store,
 } from 'lucide-react'
@@ -48,12 +47,12 @@ const DISTRICTS = [
     consequence: 'System interaction',
   },
   {
-    label: 'Lounge',
-    detail: 'Move into shared WEAVE communication without leaving the same world.',
-    href: '/lounge',
-    icon: MessageCircle,
+    label: 'Echo Board',
+    detail: 'Enter authorized intelligence, continuity, balances and world-routing movement.',
+    href: '/echo',
+    icon: Sparkles,
     tone: 'border-cyan-300/20 bg-cyan-400/[0.05] text-cyan-200',
-    consequence: 'Human communication',
+    consequence: 'Intelligence + continuity',
   },
   {
     label: 'Bridge Plaza',
@@ -78,7 +77,7 @@ export default function BusinessDistrictPage() {
           <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Business District</p>
           <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">One district routes movement into the canonical WEAVE systems.</h1>
           <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
-            This district no longer embeds miniature copies of Market, Arena or Lounge. Each destination is one authoritative system with its own state and record.
+            This district does not embed miniature copies of other systems. Each destination is one authoritative environment with its own state and record.
           </p>
         </header>
 
@@ -113,7 +112,7 @@ export default function BusinessDistrictPage() {
           <aside className="space-y-4">
             <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
               <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">District rule</p>
-              <p className="mt-3 text-xs leading-5 text-slate-300">A portal is navigation, not duplication. Market data lives in Market. Arena state lives in Arena. Communication lives in Lounge. The Business District only organizes how those systems relate.</p>
+              <p className="mt-3 text-xs leading-5 text-slate-300">A portal is navigation, not duplication. Enterprise state lives in Enterprise Exchange. Arena state lives in Arena. Authorized intelligence and continuity live in Echo Board. The Business District only organizes how those systems relate.</p>
             </section>
 
             {staffRole && <ClientBuildPull role={staffRole} />}

@@ -98,7 +98,7 @@ const ROLE: Record<WorldRole, {
       { label: 'Channels', detail: 'Company positions', href: '/agent/channels', icon: Network, tone: 'violet' },
       { label: 'Continuance', detail: 'Commission and returns', href: '/agent/commissions', icon: CircleDollarSign, tone: 'emerald' },
       { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Large technology systems', href: '/marketplace', icon: Store, tone: 'sky' },
-      { label: 'Lounge', detail: 'Communication', href: '/lounge', icon: MessageSquare, tone: 'sky' },
+      { label: 'Echo Board', detail: 'Intelligence + world routing', href: '/echo', icon: Sparkles, tone: 'sky' },
       { label: 'Arena', detail: 'Contest district', href: '/arena', icon: Gamepad2, tone: 'gold' },
       { label: 'Bridge Plaza', detail: 'Shared world', href: '/weave', icon: Globe2, tone: 'violet' },
     ],

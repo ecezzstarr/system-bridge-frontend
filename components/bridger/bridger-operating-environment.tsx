@@ -15,7 +15,6 @@ import {
   Headphones,
   MessageSquare,
   Network,
-  Shield,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
@@ -23,7 +22,6 @@ import {
   Trophy,
   UserCircle,
   Users,
-  Video,
   Wallet,
 } from 'lucide-react'
 import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
@@ -43,11 +41,8 @@ const commands = [
   { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: Network, district: 'Shared WEAVE' },
   { label: 'Human Cadences', detail: 'Find people through recorded participation and movement.', href: '/search', icon: MessageSquare, district: 'Shared WEAVE' },
   { label: 'Presences', detail: 'See people and their place in the WEAVE.', href: '/profiles', icon: UserCircle, district: 'Shared WEAVE' },
-  { label: 'Private Lounge', detail: 'Private WEAVE communication.', href: '/lounge?view=private', icon: Shield, district: 'Shared WEAVE' },
-  { label: 'Lounge', detail: 'Shared WEAVE communication space.', href: '/lounge', icon: MessageSquare, district: 'Shared WEAVE' },
   { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Enterprise-scale systems available through WEAVE.', href: '/marketplace', icon: Store, district: 'Shared WEAVE' },
-  { label: 'Echo', detail: 'Use the WEAVE Echo surface.', href: '/echo', icon: Sparkles, district: 'Shared WEAVE' },
-  { label: 'Stream', detail: 'Shared WEAVE media stream.', href: '/video-feed', icon: Video, district: 'Shared WEAVE' },
+  { label: 'Echo Board', detail: 'Authorized intelligence, world routing and continuity.', href: '/echo', icon: Sparkles, district: 'Shared WEAVE' },
   { label: 'Standing', detail: 'Shared WEAVE standing and position.', href: '/weave/standing', icon: Globe, district: 'Shared WEAVE' },
   { label: 'Bridge AI Paths', detail: 'Crossing → Client AI support.', href: '/bridger/bridge-ai', icon: Bot, district: 'Crossing' },
   { label: 'Prospect Market', detail: 'Acquire available Prospect movement.', href: '/weave/market/prospects', icon: ShoppingBag, district: 'Crossing' },
@@ -61,7 +56,6 @@ const commands = [
   { label: 'Loop 1 Ground', detail: 'Current event movement.', href: '/event', icon: Flame, district: 'Participation' },
   { label: 'Arena', detail: 'Participant contest.', href: '/arena', icon: Gamepad2, district: 'Participation' },
   { label: 'Casino', detail: 'System pattern play.', href: '/casino', icon: Trophy, district: 'Participation' },
-  { label: 'Lounge', detail: 'Shared WEAVE communication space.', href: '/lounge', icon: MessageSquare, district: 'Participation' },
 ]
 
 const DISTRICT_TONE: Record<string, { card: string; icon: string; label: string }> = {

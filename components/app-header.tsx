@@ -63,7 +63,13 @@ export function AppHeader({ user }: AppHeaderProps) {
         {/* Actions */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* Wallet Quick View - Icon only on mobile */}
-          <Button variant="outline" size="sm" className="gap-2 bg-[#061426]/72 border-amber-300/12 h-9 px-2 md:px-3 shadow-inner">
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label="Open Holding"
+            onClick={() => router.push('/wallet')}
+            className="gap-2 bg-[#061426]/72 border-amber-300/12 h-9 px-2 md:px-3 shadow-inner"
+          >
             <Wallet className="h-4 w-4 text-cyan-400" />
             <span className="font-mono text-[10px] md:text-xs hidden sm:inline">{flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString()} Flame Coin` : '—'}</span>
           </Button>

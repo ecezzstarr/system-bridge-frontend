@@ -14,7 +14,6 @@ import {
   Users,
   UserCircle,
   MessageSquare,
-  Video,
   Shield,
   Globe,
   Store,
@@ -78,8 +77,6 @@ const navigation = [
     { name: WEAVE_SYSTEM_MAP.language.bridgeAI, href: "/bridger/bridge-ai", icon: GitBranch, bridgerOnly: true },
     { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
     { name: "Company Guidance", href: "/company-chat", icon: Headphones },
-    { name: "Private Lounge", href: "/lounge?view=private", icon: Shield },
-    { name: "Lounge", href: "/lounge", icon: MessageSquare },
     { name: "Clients", href: "/clients", icon: Users },
   ]},
 
@@ -87,14 +84,13 @@ const navigation = [
   { group: "Enterprise", items: [
     { name: WEAVE_SYSTEM_MAP.language.marketplace, href: "/marketplace", icon: Store },
     { name: "Agility Agent Store", href: "/agility", icon: Store, agentOnly: true },
-    { name: "Echo", href: "/echo", icon: Sparkles },
+    { name: "Echo Board", href: "/echo", icon: Sparkles },
   ]},
 
   // 5. WEAVE — shared participation across positions.
   { group: "WEAVE", items: [
     { name: "Contest", href: "/arena", icon: Gamepad2 },
     { name: "Pattern", href: "/casino", icon: Dices },
-    { name: "Stream", href: "/video-feed", icon: Video },
     { name: "Standing", href: "/weave/standing", icon: Globe },
   ]},
 
