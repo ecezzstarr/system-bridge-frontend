@@ -2,22 +2,19 @@
 
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, Home } from 'lucide-react'
+import { ArrowRight, ArrowDownToLine, ArrowUpFromLine, Wallet, Copy, Check, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 
 export default function WalletDepositWithdrawPage() {
   const { user } = useAuth()
   const isOpayRole = user?.role === 'admin' || user?.role === 'agent' || user?.role === 'bridger'
-  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit')
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [balance, setBalance] = useState(0)
-  const [copied, setCopied] = useState(false)
   const [withdrawAddress, setWithdrawAddress] = useState('')
   const [flameCoinRate, setFlameCoinRate] = useState<number | null>(null)
   const [trxPaymentRate, setTrxPaymentRate] = useState<number | null>(null)
@@ -303,43 +300,30 @@ export default function WalletDepositWithdrawPage() {
     }
   }
 
-  const copyReferralLink = () => {
-    const link = `https://ssbnow.shop/register?ref=${user.id}`
-    navigator.clipboard.writeText(link)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   const quickAmounts = [10, 50, 100, 500, 1000]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950">
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,212,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.1)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
-      </div>
-
-      <div className="relative z-10 p-6 md:p-8">
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="mb-8 flex items-start justify-between">
+    <main className="mx-auto w-full max-w-5xl p-3 md:p-6">
+      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-cyan-300/15 bg-[#030a15]/72">
+        <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(34,211,238,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(16,185,129,.07),transparent_28%)] p-5 md:p-7">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <Link href={getTerminalRoute()}>
-                <Button variant="outline" className="border-slate-600 hover:bg-slate-800 mb-4">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Terminal
-                </Button>
+              <Link href={getTerminalRoute()} className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.14em] text-sky-300">
+                Return to operating room <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 mb-2">
-                Deposit & Withdraw
-              </h1>
-              <p className="text-slate-400">Manage your platform wallet funds</p>
+              <p className="mt-4 weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Value Movement Engine</p>
+              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Deposit, verification, conversion and withdrawal are one recorded value lifecycle.</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Every deposit creates a verifiable movement before Flame Coin is credited. Every withdrawal moves from recorded balance into an authorized external rail.</p>
             </div>
-            <div className="text-right">
-              <div className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-full inline-block">
-                <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">{user.role}</span>
-              </div>
+            <div className="rounded-xl border border-cyan-300/15 bg-cyan-400/[0.05] px-4 py-3 text-right">
+              <p className="text-[8px] font-black uppercase tracking-wider text-cyan-300">Current position</p>
+              <p className="mt-1 text-sm font-black capitalize text-white">{user.role}</p>
             </div>
           </div>
+        </header>
+
+        <div className="grid gap-4 p-4 md:p-6 lg:grid-cols-[1fr_280px]">
+          <section className="min-w-0">
 
           {/* Balance Card */}
           <div className="group relative mb-6">
@@ -741,30 +725,34 @@ export default function WalletDepositWithdrawPage() {
             </div>
           )}
 
-          {/* Referral Link Section */}
-          <div className="mt-8 group relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl opacity-20 blur"></div>
-            <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-white mb-2">Your Referral Link</h3>
-              <p className="text-slate-400 text-sm mb-4">Share your link and earn rewards when people join!</p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={`https://ssbnow.shop/register?ref=${user.id}`}
-                  className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 text-sm"
-                />
-                <Button
-                  onClick={copyReferralLink}
-                  className="bg-purple-500 hover:bg-purple-600 text-white"
-                >
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
+
+          </section>
+
+          <aside className="space-y-4">
+            <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
+              <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Value causality</p></div>
+              <div className="mt-3 space-y-2 text-xs font-semibold text-slate-300">
+                <p>External value → deposit record.</p>
+                <p>Deposit record → verification.</p>
+                <p>Verification → Flame Coin credit.</p>
+                <p>Flame Coin → participation or withdrawal.</p>
               </div>
-            </div>
-          </div>
+            </section>
+
+            <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[0.04] p-4">
+              <div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Recorded balance</p></div>
+              <p className="mt-3 text-2xl font-black text-white">{balance.toFixed(2)}</p>
+              <p className="text-xs font-black text-slate-300">Flame Coin</p>
+              <Link href="/ledger" className="mt-4 inline-flex w-full items-center justify-between rounded-xl border border-sky-300/15 bg-sky-400/[0.06] px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-sky-100">Open Record <ArrowRight className="h-3.5 w-3.5"/></Link>
+            </section>
+
+            <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[0.04] p-4">
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Referral separation</p>
+              <p className="mt-3 text-xs leading-5 text-slate-300">Referral movement no longer appears inside Wallet because value transfer and role referral are separate systems. Bridger referral continuity remains in the Bridger Operating Room where it is actually recorded.</p>
+            </section>
+          </aside>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }
