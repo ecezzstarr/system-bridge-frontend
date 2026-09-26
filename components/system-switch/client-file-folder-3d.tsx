@@ -29,7 +29,17 @@ const POSITIONS: Record<DistrictKey, [number, number, number]> = {
   sound: [2.35, 0, 2.65],
 }
 
-function DistrictStructure({ district, active }: { district: District; active: boolean }) {
+function DistrictStructure({
+  district,
+  active,
+  marketLevel=0,
+  marketBuildProgress=0,
+}: {
+  district: District
+  active: boolean
+  marketLevel?: number
+  marketBuildProgress?: number
+}) {
   const color = COLORS[district.tone]
   const material = (intensity=0.24) => (
     <meshStandardMaterial color="#08111f" emissive={color} emissiveIntensity={active ? intensity * 2.2 : intensity} metalness={0.4} roughness={0.28} />
@@ -54,10 +64,25 @@ function DistrictStructure({ district, active }: { district: District; active: b
   }
 
   if (district.key === 'business') {
+    const structureHeight=marketLevel>=3?1.65:marketLevel>=2?1.18:marketLevel>=1?0.76:0.38
+    const structureWidth=marketLevel>=3?1.55:marketLevel>=2?1.25:0.82
+    const buildRise=Math.max(0,Math.min(1,marketBuildProgress/100))*0.55
     return <group>
-      <mesh position={[0,0.58,0]}><boxGeometry args={[1.36,0.85,0.86]}/>{material(0.28)}</mesh>
-      {[-0.48,0,0.48].map(x=><mesh key={x} position={[x,0.33,0.5]}><boxGeometry args={[0.3,0.46,0.24]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.7:0.25}/></mesh>)}
-      <mesh position={[0,1.16,0]}><coneGeometry args={[0.92,0.52,4]}/><meshStandardMaterial color="#091827" emissive={color} emissiveIntensity={active?0.55:0.18}/></mesh>
+      <mesh position={[0,(structureHeight+buildRise)/2,0]}>
+        <boxGeometry args={[structureWidth,structureHeight+buildRise,0.92]}/>
+        {material(0.3)}
+      </mesh>
+      {marketLevel>=2&&[-0.58,0,0.58].map(x=><mesh key={x} position={[x,0.42,0.5]}><boxGeometry args={[0.27,0.52,0.24]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.74:0.28}/></mesh>)}
+      {marketLevel>=3&&<>
+        <mesh position={[-0.98,0.48,0]}><boxGeometry args={[0.38,0.9,0.72]}/>{material(0.24)}</mesh>
+        <mesh position={[0.98,0.48,0]}><boxGeometry args={[0.38,0.9,0.72]}/>{material(0.24)}</mesh>
+        <mesh position={[0,1.96+buildRise,0]}><coneGeometry args={[0.48,0.72,6]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={active?0.85:0.34}/></mesh>
+      </>}
+      {marketBuildProgress>0&&marketBuildProgress<100&&<>
+        {[-0.86,0.86].map(x=><mesh key={'market-post-'+x} position={[x,0.9,0]}><boxGeometry args={[0.06,1.8,0.06]}/><meshBasicMaterial color="#fbbf24" transparent opacity={0.48}/></mesh>)}
+        {[0.4,0.88,1.35].map(y=><mesh key={'market-beam-'+y} position={[0,y,0]}><boxGeometry args={[1.8,0.05,0.08]}/><meshBasicMaterial color="#fde68a" transparent opacity={0.4}/></mesh>)}
+      </>}
+      <mesh position={[0,0.04,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[marketLevel>=3?1.42:1.08,0.03,10,48]}/><meshBasicMaterial color={color} transparent opacity={active?0.7:0.25}/></mesh>
     </group>
   }
 
@@ -90,10 +115,14 @@ function DistrictNode({
   district,
   active,
   onSelect,
+  marketLevel,
+  marketBuildProgress,
 }: {
   district: District
   active: boolean
   onSelect: () => void
+  marketLevel: number
+  marketBuildProgress: number
 }) {
   const group = useRef<THREE.Group>(null)
   const color = COLORS[district.tone]
@@ -132,7 +161,7 @@ function DistrictNode({
         />
       </mesh>
 
-      <DistrictStructure district={district} active={active} />
+      <DistrictStructure district={district} active={active} marketLevel={marketLevel} marketBuildProgress={marketBuildProgress} />
 
       {active && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.22, 0]}>
@@ -192,12 +221,16 @@ function Scene({
   onSurfaceChange,
   activeBuilds,
   liveSystems,
+  marketLevel,
+  marketBuildProgress,
 }: {
   districts: District[]
   activeSurface: DistrictKey
   onSurfaceChange: (key: DistrictKey) => void
   activeBuilds: Array<{ progress: number }>
   liveSystems: number
+  marketLevel: number
+  marketBuildProgress: number
 }) {
   const root = useRef<THREE.Group>(null)
 
@@ -234,6 +267,8 @@ function Scene({
             district={district}
             active={district.key === activeSurface}
             onSelect={() => onSurfaceChange(district.key)}
+            marketLevel={marketLevel}
+            marketBuildProgress={marketBuildProgress}
           />
         ))}
 
@@ -289,6 +324,8 @@ export function ClientFileFolder3D({
   liveSystems,
   premiumSound,
   visibleSurfaceKeys,
+  marketLevel=0,
+  marketBuildProgress=0,
 }: {
   activeSurface: DistrictKey
   onSurfaceChange: (key: DistrictKey) => void
@@ -296,6 +333,8 @@ export function ClientFileFolder3D({
   liveSystems: number
   premiumSound: boolean
   visibleSurfaceKeys?: DistrictKey[]
+  marketLevel?: number
+  marketBuildProgress?: number
 }) {
   const districts = useMemo<District[]>(
     () => [
@@ -326,6 +365,8 @@ export function ClientFileFolder3D({
             onSurfaceChange={onSurfaceChange}
             activeBuilds={activeBuilds}
             liveSystems={liveSystems}
+            marketLevel={marketLevel}
+            marketBuildProgress={marketBuildProgress}
           />
         </Canvas>
 
