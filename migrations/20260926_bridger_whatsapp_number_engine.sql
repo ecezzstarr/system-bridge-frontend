@@ -17,19 +17,6 @@ CREATE TABLE IF NOT EXISTS bridger_whatsapp_numbers (
 CREATE INDEX IF NOT EXISTS idx_bridger_whatsapp_numbers_status ON bridger_whatsapp_numbers(status,created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_bridger_whatsapp_numbers_owner ON bridger_whatsapp_numbers(assigned_to,assigned_at DESC);
 
-CREATE TABLE IF NOT EXISTS bridger_number_inbox (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  number_id uuid NOT NULL REFERENCES bridger_whatsapp_numbers(id) ON DELETE CASCADE,
-  provider_message_id varchar(220),
-  channel varchar(20) NOT NULL CHECK (channel IN ('sms','call')),
-  sender varchar(120),
-  message text NOT NULL,
-  received_at timestamptz NOT NULL DEFAULT NOW(),
-  expires_at timestamptz NOT NULL DEFAULT (NOW() + interval '30 minutes'),
-  viewed_at timestamptz
-);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_bridger_number_inbox_provider_message ON bridger_number_inbox(provider_message_id) WHERE provider_message_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_bridger_number_inbox_number_received ON bridger_number_inbox(number_id,received_at DESC);
 
 CREATE TABLE IF NOT EXISTS bridger_number_verification_requests (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
