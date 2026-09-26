@@ -58,7 +58,7 @@ export const FILE_FOLDER_CONTENT = {
 export const BRIDGE_PLAZA_CONTENT = {
   title: 'BRIDGE PLAZA',
   subtitle: 'Enter the Client you are supporting',
-  body: 'Bridge Plaza is where the movement of support begins. Agents and Bridgers do not enter System Switch into an undefined space. They enter through a File Folder. Choose the File Folder of the Client you are visiting.',
+  body: 'Bridge Plaza is where authorized support begins. Agents, Bridgers and Administration enter an existing Client-owned File Folder through a support view. They assist the Client's movement; they do not receive or operate their own File Folder through a support position. Choose the File Folder of the Client you are visiting.',
 }
 
 export const MOVEMENT_CONTENT = {
