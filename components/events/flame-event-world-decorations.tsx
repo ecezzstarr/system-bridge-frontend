@@ -2,7 +2,8 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import { usePresenceCamera } from '@/components/world/presence-camera'
-import type { WeaveEvent } from '@/lib/weave-event'\nimport { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
+import type { WeaveEvent } from '@/lib/weave-event'
+import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 
 export function FlameEventWorldDecorations({
   event,
