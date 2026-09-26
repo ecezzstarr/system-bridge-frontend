@@ -491,15 +491,15 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">{data.workshop.purpose}</p>
                 <div className="mt-5 grid gap-2 sm:grid-cols-5">
                   {[
-                    ['1', 'Recognize'],
-                    ['2', 'Preview'],
-                    ['3', 'Build'],
-                    ['4', 'Activate'],
-                    ['5', 'Operate'],
-                  ].map(([number, label]) => (
-                    <div key={label} className="rounded-xl border border-white/10 bg-black/20 p-3">
-                      <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">Stage {number}</p>
-                      <p className="mt-1 text-xs font-bold text-white">{label}</p>
+                    ['1', 'Recognize', 'border-sky-300/15 bg-sky-400/[0.05] text-sky-300'],
+                    ['2', 'Preview', 'border-violet-300/15 bg-violet-400/[0.05] text-violet-300'],
+                    ['3', 'Build', 'border-amber-300/15 bg-amber-400/[0.05] text-amber-300'],
+                    ['4', 'Activate', 'border-emerald-300/15 bg-emerald-400/[0.05] text-emerald-300'],
+                    ['5', 'Operate', 'border-cyan-300/15 bg-cyan-400/[0.05] text-cyan-300'],
+                  ].map(([number, label, tone]) => (
+                    <div key={label} className={`rounded-xl border p-3 ${tone}`}>
+                      <p className="text-[8px] font-black uppercase tracking-wider opacity-90">Stage {number}</p>
+                      <p className="mt-1 text-xs font-black text-white">{label}</p>
                     </div>
                   ))}
                 </div>
