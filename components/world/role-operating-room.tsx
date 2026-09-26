@@ -13,7 +13,10 @@ import {
   FileBox,
   FileCheck,
   Flame,
+  Gamepad2,
   Gauge,
+  GitBranch,
+  Globe,
   Headphones,
   Landmark,
   MessageSquare,
@@ -23,8 +26,12 @@ import {
   Shield,
   ShieldCheck,
   ShoppingBag,
+  Sparkles,
   Store,
+  Trophy,
+  UserCircle,
   Users,
+  Video,
   Wallet,
   Zap,
 } from 'lucide-react'
@@ -53,6 +60,7 @@ const AGENT_GROUPS: FunctionGroup[] = [
 ]
 
 const ADMIN_GROUPS: FunctionGroup[] = [
+  { title: 'Shared WEAVE', detail: 'The common WEAVE components Administration keeps because Administration is also present inside the same system as every other user.' },
   { title: 'People + recognition', detail: 'Users, Clients, Bridgers, departments and verification.' },
   { title: 'Client system', detail: 'Client money, builds, File Folders and enterprise elevation.' },
   { title: 'Bridge system', detail: 'Prospects, crossing intelligence and Agent/Bridger support.' },
@@ -76,6 +84,22 @@ const AGENT_COMMANDS: FunctionItem[] = [
 ]
 
 const ADMIN_COMMANDS: FunctionItem[] = [
+  { label: 'Company Loops', detail: 'Shared company movement visible across WEAVE.', href: '/company/loops', icon: GitBranch, district: 'Shared WEAVE' },
+  { label: 'Human Cadences', detail: 'Find people through their recorded participation and movement.', href: '/search', icon: MessageSquare, district: 'Shared WEAVE' },
+  { label: 'Presences', detail: 'See people and their place in the WEAVE.', href: '/profiles', icon: UserCircle, district: 'Shared WEAVE' },
+  { label: 'Bridge Plaza', detail: 'Enter the shared WEAVE world and Client support entrance.', href: '/weave', icon: Landmark, district: 'Shared WEAVE' },
+  { label: 'Company Guidance', detail: 'Use the shared company clarification channel.', href: '/company-chat', icon: Headphones, district: 'Shared WEAVE' },
+  { label: 'Private Lounge', detail: 'Enter private WEAVE communication.', href: '/lounge?view=private', icon: Shield, district: 'Shared WEAVE' },
+  { label: 'Lounge', detail: 'Enter the shared WEAVE communication space.', href: '/lounge', icon: MessageSquare, district: 'Shared WEAVE' },
+  { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Access enterprise-scale systems available through WEAVE.', href: '/marketplace', icon: Store, district: 'Shared WEAVE' },
+  { label: 'Echo', detail: 'Use the WEAVE Echo surface.', href: '/echo', icon: Sparkles, district: 'Shared WEAVE' },
+  { label: 'Contest', detail: 'Enter shared participant contest movement.', href: '/arena', icon: Gamepad2, district: 'Shared WEAVE' },
+  { label: 'Pattern', detail: 'Enter shared system pattern play.', href: '/casino', icon: Trophy, district: 'Shared WEAVE' },
+  { label: 'Stream', detail: 'Enter the shared WEAVE media stream.', href: '/video-feed', icon: Video, district: 'Shared WEAVE' },
+  { label: 'Standing', detail: 'See shared WEAVE standing and position.', href: '/weave/standing', icon: Globe, district: 'Shared WEAVE' },
+  { label: 'Loop 1 Ground', detail: 'Enter the current shared WEAVE event ground.', href: '/event', icon: Flame, district: 'Shared WEAVE' },
+  { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Administration holding inside the same value system used across WEAVE.', href: '/wallet', icon: Wallet, district: 'Shared WEAVE' },
+  { label: WEAVE_SYSTEM_MAP.language.ledger, detail: 'Administration record inside the same preserved movement system used across WEAVE.', href: '/ledger', icon: BookOpen, district: 'Shared WEAVE' },
   { label: 'Users & Participants', detail: 'People active across the WEAVE institution.', href: '/admin/dashboard#users', icon: Users, district: 'People + recognition' },
   { label: 'Clients', detail: 'Client records and participation oversight.', href: '/admin/dashboard#clients', icon: BriefcaseBusiness, district: 'People + recognition' },
   { label: 'Verify Continuances', detail: 'Review Bridger continuance and standing.', href: '/admin/dashboard#bridgers', icon: FileCheck, district: 'People + recognition' },
@@ -104,9 +128,6 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Origin Systems', detail: 'Inspect origin runtime and system foundations.', href: '/admin/origin-systems', icon: Cloud, district: 'Institution + infrastructure' },
   { label: 'Enterprise Systems Workshop', detail: 'Million-scale software, hardware and infrastructure systems.', href: '/admin/enterprise-systems', icon: Cloud, district: 'Institution + infrastructure' },
   { label: 'Infrastructure', detail: 'Cloud Run, runtime and maintenance control.', href: '/admin/infrastructure', icon: Cloud, district: 'Institution + infrastructure' },
-  { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Administration holding and funds.', href: '/wallet', icon: Wallet, district: 'Institution + infrastructure' },
-  { label: WEAVE_SYSTEM_MAP.language.ledger, detail: 'Institutional movement and value record.', href: '/ledger', icon: BookOpen, district: 'Institution + infrastructure' },
-
   { label: 'Loop Workshop', detail: 'Create and publish company loops.', href: '/admin/loop-workshop', icon: Network, district: 'Atmosphere + communication' },
   { label: 'DJ Workshop', detail: 'System sound and live atmosphere.', href: '/admin/dj-workshop', icon: Radio, district: 'Atmosphere + communication' },
   { label: 'Ad Workshop', detail: 'Role-targeted communication without deployment.', href: '/admin/ad-workshop', icon: MessageSquare, district: 'Atmosphere + communication' },
@@ -127,11 +148,11 @@ const ROLE_COPY = {
   admin: {
     eyebrow: 'Administration Operating Room',
     title: 'The institution operating as one system.',
-    detail: 'Administration governs recognition, approval, infrastructure and continuity. The central panel carries the full Administration instrument set instead of reducing Administration to a few links.',
+    detail: 'Administration remains inside the same WEAVE used by every participant, so its Operating Room begins with the shared WEAVE components and then adds recognition, approval, Client, Bridge, infrastructure and institutional authority controls.',
     groups: ADMIN_GROUPS,
     commands: ADMIN_COMMANDS,
     panelTitle: 'Administration Control Panel',
-    panelDetail: 'The middle panel is the Administration working center: people, Client systems, Bridge movement, infrastructure, workshops, finance, communication and event controls remain present together.',
+    panelDetail: 'The middle panel is the Administration working center: first the components shared with every WEAVE user, then the additional Administration instruments for people, Clients, Bridge movement, infrastructure, workshops, finance, communication and events.',
   },
 } as const
 
