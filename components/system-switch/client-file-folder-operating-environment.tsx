@@ -396,6 +396,26 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         : 0
   const activeMarketBuild=activeBuilds.find((build:any)=>['marketplace_network','commerce_storefront','customer_door'].includes(build.system_type))
   const marketBuildProgress=activeMarketBuild?buildProgress(activeMarketBuild,now):0
+  const streamLevel=liveSystemTypes.has('media_network')
+    ? 4
+    : liveSystemTypes.has('streaming_gate')
+      ? 3
+      : liveSystemTypes.has('broadcast_studio')
+        ? 2
+        : liveSystemTypes.has('creator_booth')
+          ? 1
+          : 0
+  const enterpriseLevel=liveSystemTypes.has('distribution_network')
+    ? 4
+    : liveSystemTypes.has('operations_command') || liveSystemTypes.has('enterprise_treasury')
+      ? 3
+      : liveSystemTypes.has('enterprise_hall')
+        ? 2
+        : liveSystemTypes.has('enterprise_door')
+          ? 1
+          : 0
+  const routeCount=Number(world?.growth?.routes?.length||0)
+  const vitalityScore=Number(world?.growth?.vitality?.score||0)
   const selectedSystem = systems.find((system:any)=>system.id===selectedSystemId) || null
   const selectedBlueprint = useMemo(
     () => blueprints.find((blueprint: any) => blueprint.blueprint_key === selectedBlueprintKey) || blueprints[0] || null,
@@ -484,6 +504,10 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           visibleSurfaceKeys={surfaces.map(item=>item.key)}
           marketLevel={marketLevel}
           marketBuildProgress={marketBuildProgress}
+          streamLevel={streamLevel}
+          enterpriseLevel={enterpriseLevel}
+          routeCount={routeCount}
+          vitalityScore={vitalityScore}
         />
       </div>
 
