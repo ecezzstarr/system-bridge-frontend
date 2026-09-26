@@ -406,6 +406,7 @@ export async function POST(request: NextRequest) {
       const systemId = clean(body.system_id, 80)
       const title = clean(body.title, 220)
       const entryBody = clean(body.body, 4000)
+      const moduleKey = clean(body.module_key, 120)
       if (!systemId || !title) {
         return NextResponse.json({ error: 'System and entry title are required' }, { status: 400 })
       }
@@ -422,15 +423,16 @@ export async function POST(request: NextRequest) {
 
       await ctx.sql`
         INSERT INTO client_built_system_entries (
-          system_id,client_id,entry_type,title,body,status
+          system_id,client_id,entry_type,title,body,status,metadata
         )
         VALUES (
           ${system.id}::uuid,
           ${ctx.client.id}::uuid,
-          ${system.system_type},
+          ${moduleKey || system.system_type},
           ${title},
           ${entryBody || null},
-          'open'
+          'open',
+          ${JSON.stringify({ moduleKey: moduleKey || null, source: 'file_folder_system_host' })}::jsonb
         )
       `
     } else if (action === 'toggle_system_entry') {
