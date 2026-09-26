@@ -904,4 +904,42 @@ assert.ok(tronWalletHardeningSource.includes('No placeholder wallet was created'
 assert.ok(tronWalletHardeningSource.includes('userWalletAddress,\n          COMPANY_WALLET'),'TRX sweep passes the real source wallet address')
 assert.ok(retiredDepositSource.includes('status: 410'),'Legacy deposit endpoint cannot report uncredited payment success')
 
+const clientBuildPullSource=fs.readFileSync(path.join(root,'components/world/client-build-pull.tsx'),'utf8')
+const agentChannelsSystemSource=fs.readFileSync(path.join(root,'app/(app)/agent/channels/page.tsx'),'utf8')
+const clientInteractionsSystemSource=fs.readFileSync(path.join(root,'app/(app)/client-interactions/page.tsx'),'utf8')
+const bridgerClientsSystemSource=fs.readFileSync(path.join(root,'app/(app)/bridger/clients/page.tsx'),'utf8')
+const standingSystemSource=fs.readFileSync(path.join(root,'app/(app)/weave/standing/page.tsx'),'utf8')
+const clientSettingsSystemSource=fs.readFileSync(path.join(root,'app/client/settings/page.tsx'),'utf8')
+const clientPortalSource=fs.readFileSync(path.join(root,'app/client/page.tsx'),'utf8')
+assert.ok(clientBuildPullSource.includes('Client system-building path'),'Agent/Bridger surfaces expose the Client build path')
+assert.ok(clientBuildPullSource.includes('valid WEAVE File Number'),'Client build signal states the real access requirement')
+assert.ok(roleOperatingRoomSource.includes('<ClientBuildPull role="agent"'),'Agent Operating Room keeps the Client build path visible')
+assert.ok(bridgerOperatingRoomSource.includes('<ClientBuildPull role="bridger"'),'Bridger Operating Room keeps the Client build path visible')
+assert.ok(agentChannelsSystemSource.includes('Agent Channel Engine'),'Agent Channels is a working responsibility engine instead of a generic application list')
+assert.ok(agentChannelsSystemSource.includes('approval unlocks a Client-support function'),'Agent Channels explains the consequence of approval')
+assert.ok(clientInteractionsSystemSource.includes('Client Service Queue'),'Client Interactions is a movement queue instead of a generic chat list')
+assert.ok(clientInteractionsSystemSource.includes('A message is not isolated chat'),'Client service explicitly belongs to the Client process')
+assert.ok(bridgerClientsSystemSource.includes('Bridger Client Continuity'),'Bridger Clients is framed as post-crossing continuity')
+assert.ok(bridgerClientsSystemSource.includes('<ClientBuildPull role="bridger"'),'Bridger Client continuity retains the Client build signal')
+assert.ok(standingSystemSource.includes('Standing Engine'),'Standing is rendered as live system state')
+assert.ok(standingSystemSource.includes('does not simulate progress'),'Standing does not fabricate crossing progress')
+assert.ok(clientSettingsSystemSource.includes("fetch('/api/auth/profile'"),'Client Settings updates the live authenticated account')
+assert.ok(!clientSettingsSystemSource.includes('/api/client/admin/settings'),'Client Settings no longer uses the mock admin settings endpoint')
+assert.ok(!clientSettingsSystemSource.includes('Only admins can access settings'),'Client Settings no longer rejects actual Clients')
+assert.ok(clientPortalSource.includes("user?.role === 'client'"),'Staff roles can inspect the Client path without being redirected into a Client dashboard')
+for(const file of [
+ 'components/world/client-build-pull.tsx',
+ 'app/(app)/agent/channels/page.tsx',
+ 'app/(app)/client-interactions/page.tsx',
+ 'app/(app)/bridger/clients/page.tsx',
+ 'app/(app)/weave/standing/page.tsx',
+ 'app/client/settings/page.tsx',
+ 'app/client/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' working-system surface syntax/transpile check')
+}
+
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
