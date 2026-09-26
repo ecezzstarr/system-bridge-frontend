@@ -55,7 +55,7 @@ export function FlameEventArtifact3D({
   ] as [number,number,number][]
 
   return (
-    <group ref={root} scale={scale} data-flame-event-artifact="4d">
+    <group ref={root} scale={scale}>
       <pointLight position={[0,0.2,1.4]} intensity={variant==='portal'?4:8} color={FLAME_EVENT_ARTIFACT_COLORS.red} distance={6}/>
       <pointLight position={[0.8,1.1,-1]} intensity={variant==='portal'?3:6} color={FLAME_EVENT_ARTIFACT_COLORS.sky} distance={6}/>
 
