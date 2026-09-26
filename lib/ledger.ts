@@ -3,6 +3,11 @@
 
 import { getSql } from './db'
 
+function moneyNumber(value: unknown): number {
+  const parsed = Number(value ?? 0)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
 export interface LedgerEntry {
   id: string
   user_id: string
@@ -50,9 +55,11 @@ export async function createLedgerEntry(data: {
       AND is_primary = true
     `
     
-    const currentBalance = data.currency === 'USDT' 
-      ? walletResult[0]?.balance_usdt || 0 
-      : walletResult[0]?.balance_trx || 0
+    const currentBalance = moneyNumber(
+      data.currency === 'USDT'
+        ? walletResult[0]?.balance_usdt
+        : walletResult[0]?.balance_trx
+    )
 
     const newBalance = data.entryType === 'deposit' || data.entryType === 'earning' || data.entryType === 'escrow_release'
       ? currentBalance + data.amount
@@ -187,7 +194,12 @@ export async function getUserLedger(userId: string, limit = 50): Promise<LedgerE
       ORDER BY created_at DESC
       LIMIT ${limit}
     `
-    return result
+    return result.map((entry: any) => ({
+      ...entry,
+      amount: moneyNumber(entry.amount),
+      balance_before: entry.balance_before == null ? undefined : moneyNumber(entry.balance_before),
+      balance_after: entry.balance_after == null ? undefined : moneyNumber(entry.balance_after),
+    }))
   } catch (error) {
     console.error('[v0] Error fetching user ledger:', error)
     return []
@@ -204,7 +216,10 @@ export async function getUserEscrow(userId: string): Promise<EscrowRecord[]> {
       AND status = 'locked'
       ORDER BY locked_at DESC
     `
-    return result
+    return result.map((record: any) => ({
+      ...record,
+      amount: moneyNumber(record.amount),
+    }))
   } catch (error) {
     console.error('[v0] Error fetching user escrow:', error)
     return []
@@ -228,8 +243,8 @@ export async function getUserTotalBalance(userId: string): Promise<{ available: 
       AND status = 'locked'
     `
 
-    const available = wallet[0]?.balance_trx || 0
-    const locked = escrowResult[0]?.total || 0
+    const available = moneyNumber(wallet[0]?.balance_trx)
+    const locked = moneyNumber(escrowResult[0]?.total)
 
     return {
       available,
