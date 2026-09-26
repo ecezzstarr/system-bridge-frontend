@@ -19,6 +19,7 @@ import {
 import Link from 'next/link'
 import { getClientToken } from '@/lib/client-auth'
 import { usePresenceCamera } from '@/components/world/presence-camera'
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 type Props = {
   clientName: string
@@ -34,13 +35,13 @@ type Props = {
 }
 
 const districts = [
-  { key: 'workshop_core', label: 'Workshop Core', icon: Workflow, detail: 'Your personalized workshop and current movement.' },
-  { key: 'formation_yard', label: 'Formation Yard', icon: Hammer, detail: 'Structures currently being built in real time.' },
-  { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Choose the next real system to form.' },
-  { key: 'build_market', label: 'Materials Market', icon: Store, detail: 'Acquire functional components required by blueprints.' },
-  { key: 'boost_bay', label: 'Boost Bay', icon: Zap, detail: 'Acquire live build-speed boosts and attach them to active construction.' },
-  { key: 'active_systems', label: 'Active Systems', icon: PackageOpen, detail: 'Use systems that have finished construction.' },
-  { key: 'library_district', label: 'Library District', icon: Library, detail: 'Learn by movement and record progress.' },
+  { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Read the business objective, resources and build state from one place.' },
+  { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Choose the next real system and understand its required functions.' },
+  { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire functional components matched to the systems they enable.' },
+  { key: 'formation_yard', label: 'Construction Yard', icon: Hammer, detail: 'Watch real structures form through time and attach build parts.' },
+  { key: 'boost_bay', label: 'Acceleration Bay', icon: Zap, detail: 'Use recorded acceleration instruments on active construction.' },
+  { key: 'active_systems', label: 'Live Systems', icon: PackageOpen, detail: 'Operate completed systems and record real movement inside them.' },
+  { key: 'library_district', label: 'Build Intelligence', icon: Library, detail: 'Understand why each build works and learn through movement.' },
 ]
 
 function duration(seconds: number) {
@@ -65,6 +66,7 @@ export default function FileFolderOpenWorld({
   onWorldChange,
   initialDistrict = 'workshop_core',
 }: Props) {
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [world, setWorld] = useState(initialWorld)
   const [district, setDistrict] = useState(initialDistrict)
   const [busy, setBusy] = useState('')
@@ -134,6 +136,17 @@ export default function FileFolderOpenWorld({
     }
   }
 
+  const visibleDistricts = districts.filter(item=>item.key==='workshop_core'||isVisible(`/client/system-switch#studio:${item.key}`))
+    .sort((a,b)=>{
+      if(a.key==='workshop_core')return -1
+      if(b.key==='workshop_core')return 1
+      return orderFor(`/client/system-switch#studio:${a.key}`)-orderFor(`/client/system-switch#studio:${b.key}`)
+    })
+
+  useEffect(()=>{
+    if(!visibleDistricts.some(item=>item.key===district))setDistrict('workshop_core')
+  },[district,isVisible])
+
   const activeBuilds = (world?.builds || []).filter((build: any) => build.status === 'building')
   const buildFunding = world?.buildFunding || null
   const fundingGateLocked = Boolean(buildFunding && !buildFunding.publicDoorUnlocked && world?.customerDoor?.formation_status === 'funding_gate')
@@ -202,7 +215,7 @@ export default function FileFolderOpenWorld({
         <aside className="border-b border-white/10 bg-black/20 p-3 lg:border-b-0 lg:border-r">
           <p className="px-2 pb-2 text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">District travel</p>
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
-            {districts.map((item) => {
+            {visibleDistricts.map((item) => {
               const Icon = item.icon
               const selected = district === item.key
               return (
@@ -236,7 +249,7 @@ export default function FileFolderOpenWorld({
           {district === 'workshop_core' && (
             <div className="space-y-4">
               <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Workshop Core</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Command Core</p>
                 <h3 className="mt-2 text-2xl font-black text-white">{workshopTitle}</h3>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">{workshopPurpose || 'This workshop is personalized to the Client. Blueprints and systems form around the Client’s actual movement rather than replacing it.'}</p>
               </div>
@@ -250,10 +263,10 @@ export default function FileFolderOpenWorld({
 
           {district === 'formation_yard' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Formation Yard</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Construction Yard</p>
               <h3 className="mt-2 text-2xl font-black">Construction continues while you are away.</h3>
               <div className="mt-5 space-y-3">
-                {activeBuilds.length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">Nothing is constructing yet. Travel to Blueprint Foundry to begin a build.</p>}
+                {activeBuilds.length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">Nothing is constructing yet. Travel to Blueprint Foundry to choose the next system, then supply it through Materials Depot.</p>}
                 {activeBuilds.map((build:any) => {
                   const remaining = Math.max(0, Math.floor((new Date(build.completes_at).getTime() - now) / 1000))
                   const total = Math.max(1, Number(build.duration_minutes || (Number(build.duration_hours || 1) * 60)) * 60)
@@ -307,8 +320,8 @@ export default function FileFolderOpenWorld({
 
           {district === 'build_market' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Materials Market</p>
-              <h3 className="mt-2 text-2xl font-black">Build materials have function, inventory and price.</h3>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Materials Depot</p>
+              <h3 className="mt-2 text-2xl font-black">Every material is tied to a build function, inventory state and price.</h3>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {buildMarketItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
@@ -322,7 +335,7 @@ export default function FileFolderOpenWorld({
 
           {district === 'boost_bay' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Boost Bay</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Acceleration Bay</p>
               <h3 className="mt-2 text-2xl font-black">Speed is a live construction instrument.</h3>
               <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire a boost here, then attach it to an active build in Formation Yard. The build timer recalculates from recorded File Folder state.</p>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -339,7 +352,7 @@ export default function FileFolderOpenWorld({
 
           {district === 'active_systems' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Active Systems</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Live Systems</p>
               <h3 className="mt-2 text-2xl font-black">Finished structures are usable systems.</h3>
               <div className="mt-5 space-y-4">
                 {(world?.systems || []).length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No system has finished construction yet.</p>}
@@ -354,8 +367,8 @@ export default function FileFolderOpenWorld({
 
           {district === 'library_district' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Library District</p>
-              <h3 className="mt-2 text-2xl font-black">Learning moves with the Client.</h3>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Build Intelligence</p>
+              <h3 className="mt-2 text-2xl font-black">Understand the build while the Client is using it.</h3>
               <div className="mt-5 space-y-3">
                 {(world?.library || []).map((entry:any)=><div key={entry.entry_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
                   <div className="flex items-start gap-3"><BookOpen className="mt-0.5 h-5 w-5 text-cyan-300"/><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-bold text-white">{entry.title}</h4><span className="text-[9px] uppercase tracking-wider text-slate-500">{entry.status || 'available'}</span></div><p className="mt-2 text-xs leading-5 text-slate-400">{entry.summary}</p>{entry.status!=='available'&&<p className="mt-3 rounded-xl border border-cyan-300/10 bg-cyan-400/[0.03] p-3 text-[11px] leading-5 text-slate-300">{entry.lesson}</p>}<p className="mt-3 text-[10px] text-slate-500">Movement: {entry.movement}</p>{!readOnly&&entry.status!=='complete'&&<button onClick={()=>act({action:entry.status==='in_progress'?'library_complete':'library_start',entry_key:entry.entry_key},entry.entry_key)} disabled={busy===entry.entry_key} className="mt-4 inline-flex items-center gap-1 rounded-full border border-cyan-300/20 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-cyan-200 disabled:opacity-50">{entry.status==='in_progress'?'Complete movement':'Begin movement'}<ChevronRight className="h-3.5 w-3.5"/></button>}</div></div>
