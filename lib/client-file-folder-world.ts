@@ -268,21 +268,21 @@ async function seedFileFolderWorld(sql: any) {
     ['operations_board', 'Operations Board', 'formation_yard', 'operations_board', 'A persistent working board for tasks, decisions and movement inside the Client File Folder.', 4, 'planning_kit', 1],
     ['research_room', 'Research Room', 'library_district', 'research_room', 'A persistent research system for findings, sources, questions and decisions.', 6, 'research_kit', 1],
     ['service_workflow', 'Service Workflow', 'formation_yard', 'service_workflow', 'A working service pipeline that can hold steps, responsibilities and completion records.', 8, 'automation_kit', 1],
-    ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A public customer-facing system where people outside WEAVE can discover, request and purchase the Client’s products or services.', 6, null, 0],
+    ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A public customer-facing system where people outside WEAVE can discover, request and purchase the Client’s products or services.', 24, null, 0],
     ['data_room', 'Data Room', 'technology_district', 'data_room', 'A structured system for persistent records and reusable information.', 10, 'data_kit', 1],
     ['enterprise_shell', 'Enterprise System Shell', 'formation_yard', 'enterprise_shell', 'A larger multi-function system shell that can hold operations, people, records and later enterprise modules.', 24, 'architecture_kit', 1],
-    ['integration_network', 'Integration Network', 'technology_district', 'integration_network', 'A long-form build that organizes connections between several persistent WEAVE systems.', 48, 'integration_kit', 1],
-    ['crypto_exchange_workshop', 'Crypto Exchange Workshop', 'technology_district', 'crypto_exchange_workshop', 'A Client-owned workshop inspired by the CJ Dorado build: market movement, buy/sell records, holdings, orders, business operation and technology formation.', 72, 'crypto_exchange_kit', 1],
+    ['integration_network', 'Integration Network', 'technology_district', 'integration_network', 'A long-form build that organizes connections between several persistent WEAVE systems.', 72, 'integration_kit', 1],
+    ['crypto_exchange_workshop', 'Crypto Exchange Workshop', 'technology_district', 'crypto_exchange_workshop', 'A Client-owned workshop inspired by the CJ Dorado build: market movement, buy/sell records, holdings, orders, business operation and technology formation.', 168, 'crypto_exchange_kit', 1],
     ['ai_service_desk', 'AI Flame Service Desk', 'technology_district', 'ai_service_desk', 'A service system where AI assists the Client with intake, support movement, responses and persistent records.', 36, 'ai_flame_kit', 1],
-    ['commerce_storefront', 'Commerce Storefront', 'market_district', 'commerce_storefront', 'A customer-facing commerce system for offers, orders, patronage and fulfillment movement.', 24, 'commerce_kit', 1],
-    ['payments_gateway', 'Payments Gateway Workshop', 'technology_district', 'payments_gateway', 'A payment-operation workshop for instructions, settlement records and international payment movement.', 48, 'payments_kit', 1],
+    ['commerce_storefront', 'Commerce Storefront', 'market_district', 'commerce_storefront', 'A constructed customer-facing store building inside the public WEAVE Client Market, with offers, order intake, patronage and fulfillment movement.', 72, 'commerce_kit', 1],
+    ['payments_gateway', 'Payments Gateway Workshop', 'technology_district', 'payments_gateway', 'A payment-operation workshop for instructions, settlement records and international payment movement.', 72, 'payments_kit', 1],
     ['campaign_system', 'Campaign System', 'market_district', 'campaign_system', 'A persistent campaign environment for audience, messages, responses, follow-up and conversion records.', 20, 'campaign_kit', 1],
     ['learning_lab', 'Learning Lab', 'library_district', 'learning_lab', 'A Client-owned learning environment with lessons, progress, exercises and participation records.', 16, 'learning_lab_kit', 1],
-    ['operations_suite', 'Operations Suite', 'formation_yard', 'operations_suite', 'A larger operating system for teams, tasks, approvals, recurring work and institutional records.', 60, 'operations_suite_kit', 1],
-    ['mobile_service_app', 'Mobile Service App', 'technology_district', 'mobile_service_app', 'A Client-facing mobile service system for account access, requests, notifications and continuing customer interaction.', 72, 'mobile_app_kit', 1],
-    ['intelligence_lab', 'Intelligence Lab', 'library_district', 'intelligence_lab', 'A persistent AI-assisted research and analysis system that turns findings into reusable Client intelligence.', 96, 'intelligence_lab_kit', 1],
-    ['marketplace_network', 'Marketplace Network', 'market_district', 'marketplace_network', 'A multi-offer marketplace system with seller, buyer, order and movement records.', 120, 'market_network_kit', 1],
-    ['enterprise_operating_system', 'Enterprise Operating System', 'formation_yard', 'enterprise_operating_system', 'A long-form operating system for multiple functions, participants, records, approvals and enterprise movement.', 168, 'enterprise_core_kit', 1],
+    ['operations_suite', 'Operations Suite', 'formation_yard', 'operations_suite', 'A larger operating system for teams, tasks, approvals, recurring work and institutional records.', 96, 'operations_suite_kit', 1],
+    ['mobile_service_app', 'Mobile Service App', 'technology_district', 'mobile_service_app', 'A Client-facing mobile service system for account access, requests, notifications and continuing customer interaction.', 120, 'mobile_app_kit', 1],
+    ['intelligence_lab', 'Intelligence Lab', 'library_district', 'intelligence_lab', 'A persistent AI-assisted research and analysis system that turns findings into reusable Client intelligence.', 168, 'intelligence_lab_kit', 1],
+    ['marketplace_network', 'Marketplace Network', 'market_district', 'marketplace_network', 'A seven-day base construction that expands the Client storefront into a larger public Market Hall with multi-offer commercial movement, buyers, orders and records.', 168, 'market_network_kit', 1],
+    ['enterprise_operating_system', 'Enterprise Operating System', 'formation_yard', 'enterprise_operating_system', 'A long-form operating system for multiple functions, participants, records, approvals and enterprise movement.', 336, 'enterprise_core_kit', 1],
   ]
 
   for (const blueprint of blueprints) {
@@ -298,6 +298,19 @@ async function seedFileFolderWorld(sql: any) {
       ON CONFLICT (blueprint_key) DO NOTHING
     `
   }
+
+  -- Major systems keep long construction horizons. These upgrades only touch the former shipped defaults,
+  -- so an Administration-customized duration is preserved.
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=24,updated_at=NOW() WHERE blueprint_key='customer_door' AND build_hours=6`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=72,description='A constructed customer-facing store building inside the public WEAVE Client Market, with offers, order intake, patronage and fulfillment movement.',updated_at=NOW() WHERE blueprint_key='commerce_storefront' AND build_hours=24`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=168,description='A seven-day base construction that expands the Client storefront into a larger public Market Hall with multi-offer commercial movement, buyers, orders and records.',updated_at=NOW() WHERE blueprint_key='marketplace_network' AND build_hours=120`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=168,updated_at=NOW() WHERE blueprint_key='crypto_exchange_workshop' AND build_hours=72`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=72,updated_at=NOW() WHERE blueprint_key='payments_gateway' AND build_hours=48`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=96,updated_at=NOW() WHERE blueprint_key='operations_suite' AND build_hours=60`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=120,updated_at=NOW() WHERE blueprint_key='mobile_service_app' AND build_hours=72`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=168,updated_at=NOW() WHERE blueprint_key='intelligence_lab' AND build_hours=96`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=336,updated_at=NOW() WHERE blueprint_key='enterprise_operating_system' AND build_hours=168`
+  await sql`UPDATE weave_file_folder_blueprints SET build_hours=72,updated_at=NOW() WHERE blueprint_key='integration_network' AND build_hours=48`
 
   const library = [
     ['movement_to_blueprint', 'Movement → Blueprint', 'Learn how an interaction becomes a buildable system instead of remaining an idea.', 'Notice the movement, name the result it should create, identify the functions required, then choose or form a blueprint that can carry those functions.', 'Choose one Client movement and turn it into a blueprint.', 10],
@@ -346,8 +359,15 @@ export async function ensureCustomerDoorFormation(
   `
 
   if (!existing && !activeSystem) {
+    const [doorBlueprint]=await sql`
+      SELECT build_hours
+      FROM weave_file_folder_blueprints
+      WHERE blueprint_key='customer_door'
+      LIMIT 1
+    `
+    const doorHours=Math.max(1,Number(doorBlueprint?.build_hours||24))
     const { baseMinutes, effectiveMinutes } = effectiveBuildMinutes(
-      6,
+      doorHours,
       economy.buildSpeedMultiplier,
     )
 
@@ -362,10 +382,10 @@ export async function ensureCustomerDoorFormation(
         ${fileNumber},
         'customer_door',
         'Customer Door',
-        'Open a public door so customers outside WEAVE can patronize this Client while the Client continues learning, building and participating.',
+        'Construct the public entrance that places this Client inside the WEAVE Client Market so customers outside WEAVE can visit and patronize the business.',
         'customer_door',
         'building',
-        6,
+        ${doorHours},
         ${baseMinutes},
         ${effectiveMinutes},
         ${economy.buildSpeedMultiplier},
