@@ -13,6 +13,7 @@ import {
   getAgilityTotals,
   getAgilityVariant,
 } from '@/lib/agility'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
@@ -141,9 +142,22 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `
 
+    const receipt = await issueWeaveReceipt({
+      userId: user.id,
+      kind: 'purchase',
+      source: 'agility_stock_order',
+      sourceId: String(order.id),
+      amount: totals.agentPayableNgn,
+      currency: 'NGN',
+      status: 'awaiting_payment',
+      description: `Agility stock order · ${totals.boxCount} box${totals.boxCount === 1 ? '' : 'es'}`,
+      metadata: { variantId: variant.id, distributionMode, paymentReference, boxCount: totals.boxCount },
+    })
+
     return NextResponse.json({
       success: true,
       order,
+      receipt,
       payment: {
         method: 'OPay',
         accountNumber: AGILITY_OPAY_ACCOUNT_NUMBER,
