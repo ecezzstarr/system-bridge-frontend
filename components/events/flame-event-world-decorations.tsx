@@ -92,7 +92,7 @@ export function FlameEventWorldDecorations({
         animate={reduceMotion ? undefined : { rotate:[-2,2,-2], scale:[0.98,1.03,0.98] }}
         transition={{ duration:8.5, repeat:Infinity, ease:'easeInOut' }}
       >
-        <FlameEventArtifactMark size="lg" className="opacity-45 sm:scale-150" />
+        <FlameEventArtifactMark size="lg" surface="event-atmosphere" className="opacity-45 sm:scale-150" />
       </motion.div>
 
       <div className="absolute inset-x-[12%] bottom-[18%] h-20 [transform:translateZ(-38px)]">
