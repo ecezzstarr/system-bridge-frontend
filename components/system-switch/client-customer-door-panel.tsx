@@ -135,6 +135,17 @@ export default function ClientCustomerDoorPanel({
   const doorBuild=activeBuild('customer_door')
   const storefrontBuild=activeBuild('commerce_storefront')
   const marketBuild=activeBuild('marketplace_network')
+  const blueprintHours=(key:string,fallback:number)=>{
+    const blueprint=(world?.blueprints||[]).find((item:any)=>item.blueprint_key===key)
+    return Math.max(1,Number(blueprint?.build_hours||fallback))
+  }
+  const baseDuration=(hours:number)=>{
+    if(hours>=24){
+      const days=hours/24
+      return `${days % 1 === 0 ? days.toFixed(0) : days.toFixed(1)} day${days===1?'':'s'} base`
+    }
+    return `${hours}h base`
+  }
 
   const dueText=useMemo(()=>{
     if(doorBuild)return remaining(Number(doorBuild.remaining_seconds||0))
@@ -208,7 +219,7 @@ export default function ClientCustomerDoorPanel({
       key:'customer_door',
       title:'Customer Door',
       detail:'Public entrance for customers outside WEAVE.',
-      base:'1 day base',
+      base:baseDuration(blueprintHours('customer_door',24)),
       live:hasDoor,
       build:doorBuild,
     },
@@ -216,7 +227,7 @@ export default function ClientCustomerDoorPanel({
       key:'commerce_storefront',
       title:'Commerce Storefront',
       detail:'A constructed store building with branded public shopping space.',
-      base:'3 days base',
+      base:baseDuration(blueprintHours('commerce_storefront',72)),
       live:hasStorefront,
       build:storefrontBuild,
     },
@@ -224,7 +235,7 @@ export default function ClientCustomerDoorPanel({
       key:'marketplace_network',
       title:'Marketplace Network',
       detail:'A larger Market Hall for multi-offer commercial movement and expansion.',
-      base:'7 days base',
+      base:baseDuration(blueprintHours('marketplace_network',168)),
       live:hasMarketHall,
       build:marketBuild,
     },
