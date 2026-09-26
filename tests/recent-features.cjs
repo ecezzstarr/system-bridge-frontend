@@ -1012,4 +1012,55 @@ for(const file of [
  assert.equal(syntaxErrors.length,0,file+' PhD-maturity syntax/transpile check')
 }
 
+const legacyClientAdminChatSource=fs.readFileSync(path.join(root,'app/client/admin-chat/page.tsx'),'utf8')
+const adminAgentYieldApiSource=fs.readFileSync(path.join(root,'app/api/admin/agent-yields/route.ts'),'utf8')
+const adminAgentYieldPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/payments/page.tsx'),'utf8')
+const adminChannelAuthoritySource=fs.readFileSync(path.join(root,'app/(app)/admin/agent-channels/page.tsx'),'utf8')
+const adminContinuanceSource=fs.readFileSync(path.join(root,'app/(app)/admin/subscriptions/page.tsx'),'utf8')
+const adminOutreachSource=fs.readFileSync(path.join(root,'app/(app)/admin/outreach/page.tsx'),'utf8')
+const adminOutreachApiSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/outreach/pending/route.ts'),'utf8')
+const adminVaultAuthoritySource=fs.readFileSync(path.join(root,'app/(app)/admin/client-vault/page.tsx'),'utf8')
+const adminHubMatureSource=fs.readFileSync(path.join(root,'app/(app)/admin/hub/page.tsx'),'utf8')
+const adminSidebarMatureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+
+assert.ok(legacyClientAdminChatSource.includes("redirect('/client/chat/admin')"),'Legacy mock Client Admin chat resolves to canonical Client Administration chat')
+assert.ok(!legacyClientAdminChatSource.includes('mockSessions'),'Legacy Client Admin chat no longer fabricates conversations')
+assert.ok(adminAgentYieldApiSource.includes("user.role !== 'admin'"),'Agent Yield registry endpoint is Administration-only')
+assert.ok(adminAgentYieldApiSource.includes('getAllAgentSalaries'),'Agent Yield registry derives state from live salary logic')
+assert.ok(adminAgentYieldPageSource.includes('Agent Yield Registry'),'Administration payments route exposes live Yield state')
+assert.ok(!adminAgentYieldPageSource.includes("from '@/lib/mock-db'"),'Administration financial surface no longer writes mock Agent payments')
+assert.ok(!adminAgentYieldPageSource.includes('Record Payment via EIGHT'),'Mock EIGHT payment claim is removed')
+assert.ok(adminChannelAuthoritySource.includes('Channel Authority Engine'),'Agent channel review is an authority state engine')
+assert.ok(adminChannelAuthoritySource.includes('Approval changes what an Agent is authorized to do'),'Agent channel approval exposes its actual consequence')
+assert.ok(adminContinuanceSource.includes('Continuance Verification Engine'),'Continuance review exposes verification causality')
+assert.ok(adminOutreachSource.includes('Outreach Movement Registry'),'Outreach is a recorded movement registry')
+assert.ok(adminOutreachSource.includes('Bridge Radiance'),'Prospects remain in Bridge Radiance before Client conversion')
+assert.ok(!adminOutreachSource.includes('Entered System Switch'),'Outreach no longer describes Prospects as System Switch users')
+assert.ok(adminOutreachApiSource.includes("authUser.role !== 'admin'"),'Outreach funnel enforces Administration authority')
+assert.ok(adminOutreachApiSource.includes("status: 403"),'Non-Admin outreach access is forbidden')
+assert.ok(adminVaultAuthoritySource.includes('Client Vault Authority Engine'),'Client Vault is an Administration authority system')
+assert.ok(adminVaultAuthoritySource.includes('ready for manual settlement'),'Withdrawal approval is distinguished from completed settlement')
+assert.ok(adminHubMatureSource.includes('Communication Matrix'),'Hub is a causal communication system')
+assert.ok(adminHubMatureSource.includes('senderType: user.role'),'Agent messages retain Agent identity instead of being stamped Admin')
+assert.ok(adminHubMatureSource.includes('const pos = isAgent ? threadPosition : position'),'Administration Prospect position selector controls the real channel')
+assert.ok(adminSidebarMatureSource.includes('/admin/control-center#bridgers'),'Administration Continuance verification sidebar route reaches the control center')
+assert.ok(adminSidebarMatureSource.includes('/admin/control-center#users'),'Administration verification sidebar route reaches the control center')
+
+for(const file of [
+ 'app/client/admin-chat/page.tsx',
+ 'app/api/admin/agent-yields/route.ts',
+ 'app/(app)/admin/payments/page.tsx',
+ 'app/(app)/admin/agent-channels/page.tsx',
+ 'app/(app)/admin/subscriptions/page.tsx',
+ 'app/(app)/admin/outreach/page.tsx',
+ 'app/api/admin/market/prospects/outreach/pending/route.ts',
+ 'app/(app)/admin/client-vault/page.tsx',
+ 'app/(app)/admin/hub/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Administration-maturity syntax/transpile check')
+}
+
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')

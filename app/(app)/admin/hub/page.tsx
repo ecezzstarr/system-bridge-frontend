@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send, Users, UserCircle, GitBranch, Briefcase } from 'lucide-react'
+import { Activity, Send, Users, UserCircle, GitBranch, Briefcase, ShieldCheck } from 'lucide-react'
 
 type TabId = 'prospects' | 'clients' | 'bridgers' | 'agents'
 
@@ -130,7 +130,8 @@ export default function AdminHubPage() {
     if (!user) return
     try {
       if (tab === 'prospects') {
-        const [sessionId, pos] = selected.id.split('::')
+        const [sessionId, threadPosition] = selected.id.split('::')
+        const pos = isAgent ? threadPosition : position
         const url = isAgent
           ? `/api/agent/support-inbox?sessionId=${sessionId}&position=${pos}`
           : `/api/admin/bridge-support?sessionId=${sessionId}&position=${pos}`
@@ -147,7 +148,7 @@ export default function AdminHubPage() {
         const res = await fetch(url, { headers: authHeaders() })
         const data = await res.json()
         if (data.success) {
-          setMessages(data.messages.map((m: any) => ({ id: m.id, content: m.content, createdAt: m.created_at, fromAdmin: m.sender_type === 'admin' })))
+          setMessages(data.messages.map((m: any) => ({ id: m.id, content: m.content, createdAt: m.created_at, fromAdmin: m.sender_type === user.role })))
         }
       } else {
         const roomId = [user.id, selected.id].sort().join('-')
@@ -169,7 +170,8 @@ export default function AdminHubPage() {
     setInput('')
     try {
       if (tab === 'prospects') {
-        const [sessionId, pos] = selected.id.split('::')
+        const [sessionId, threadPosition] = selected.id.split('::')
+        const pos = isAgent ? threadPosition : position
         const url = isAgent ? '/api/agent/support-inbox' : '/api/admin/bridge-support'
         await fetch(url, {
           method: 'POST',
@@ -182,7 +184,7 @@ export default function AdminHubPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...authHeaders() },
           body: JSON.stringify({
-            clientId, clientName: selected.name, position: pos, content, senderType: 'admin',
+            clientId, clientName: selected.name, position: pos, content, senderType: user.role,
             ...(isAgent ? { agentId: user.id } : {}),
           }),
         })
@@ -220,14 +222,22 @@ export default function AdminHubPage() {
     : threads
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-      <div className="w-72 border-r border-slate-800 flex flex-col">
+    <main className="mx-auto w-full max-w-[1500px] p-3 md:p-6">
+      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-cyan-300/15 bg-[#030a15]/72">
+        <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(34,211,238,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.08),transparent_28%)] p-4 md:p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10"><Activity className="h-5 w-5 text-cyan-200"/></div>
+            <div><p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">{isAgent ? 'Agent Communication Matrix' : 'Administration Communication Matrix'}</p><h1 className="mt-1 text-xl font-black text-white md:text-2xl">Every conversation stays attached to a person, position and movement state.</h1><p className="mt-2 max-w-4xl text-xs leading-5 text-slate-300">Prospects remain in Bridge Radiance; Clients use company positions; Bridger and Agent conversations use private WEAVE communication. Selecting a position changes the actual communication channel.</p></div>
+          </div>
+        </header>
+        <div className="flex h-[calc(100vh-13rem)] min-h-[600px] overflow-hidden">
+      <div className="w-72 border-r border-white/10 bg-black/15 flex flex-col">
         <div className="flex border-b border-slate-800">
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-bold uppercase ${tab === t.id ? 'bg-slate-900 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-bold uppercase ${tab === t.id ? 'bg-cyan-400/[0.08] text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}
             >
               <t.icon className="h-4 w-4" />
               {t.label}
@@ -259,11 +269,9 @@ export default function AdminHubPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-black/10">
         {!selected ? (
-          <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
-            Select a conversation
-          </div>
+          <div className="flex-1 flex items-center justify-center p-8 text-center"><div><ShieldCheck className="mx-auto h-8 w-8 text-slate-600"/><p className="mt-3 text-sm font-black text-white">Select recorded movement.</p><p className="mt-2 max-w-sm text-xs leading-5 text-slate-400">Choose a Prospect, Client, Bridger or Agent thread. The channel and participant determine where the next message is recorded.</p></div></div>
         ) : (
           <>
             <div className="border-b border-slate-800 px-4 py-3 flex items-center justify-between">
@@ -314,6 +322,8 @@ export default function AdminHubPage() {
           </>
         )}
       </div>
-    </div>
+        </div>
+      </section>
+    </main>
   )
 }
