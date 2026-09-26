@@ -30,7 +30,7 @@ export default function ClientLayout({
 }) {
   // Client routes share the root AuthProvider.
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950">
+    <div className="relative min-h-screen overflow-hidden bg-transparent">
       <ClientRouteGuard>
         <div className="relative z-10 min-h-screen">
           <ClientNavigation />
