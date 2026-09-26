@@ -18,6 +18,7 @@ export function ClientBridgeAiSupport() {
   const [loading,setLoading]=useState(true)
   const [sending,setSending]=useState(false)
   const [error,setError]=useState('')
+  const [billing,setBilling]=useState<{feeFlameCoin:number;walletBalanceFlameCoin:number;currency:string}|null>(null)
   const endRef=useRef<HTMLDivElement|null>(null)
 
   useEffect(()=>{
@@ -33,6 +34,7 @@ export function ClientBridgeAiSupport() {
         if(!response.ok)throw new Error(body.error||'Unable to load Bridge AI')
         setMessages(Array.isArray(body.messages)?body.messages:[])
         setIdentity(body.identity||null)
+        setBilling(body.billing||null)
       }catch(e:any){
         setError(e?.message||'Unable to load Bridge AI')
       }finally{
@@ -65,6 +67,13 @@ export function ClientBridgeAiSupport() {
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Bridge AI support is unavailable')
       if(body.message)setMessages(current=>[...current,body.message])
+      if(body.billing){
+        setBilling(current=>({
+          feeFlameCoin:Number(current?.feeFlameCoin ?? body.billing.chargedFlameCoin ?? 0),
+          walletBalanceFlameCoin:Number(body.billing.walletBalanceFlameCoin ?? current?.walletBalanceFlameCoin ?? 0),
+          currency:String(body.billing.currency||current?.currency||'Flame Coin'),
+        }))
+      }
     }catch(e:any){
       setError(e?.message||'Bridge AI support is unavailable')
     }finally{
@@ -88,9 +97,14 @@ export function ClientBridgeAiSupport() {
               </p>
             </div>
           </div>
-          <span className="rounded-full border border-emerald-300/15 bg-emerald-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-200">
-            {identity?.continuity==='crossing-linked'?'Crossing linked':'Continuity active'}
-          </span>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <span className="rounded-full border border-emerald-300/15 bg-emerald-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-200">
+              {identity?.continuity==='crossing-linked'?'Crossing linked':'Continuity active'}
+            </span>
+            {billing&&<span className="rounded-full border border-amber-300/15 bg-amber-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">
+              {billing.feeFlameCoin.toLocaleString()} Flame Coin / assisted reply
+            </span>}
+          </div>
         </div>
       </header>
 
@@ -115,6 +129,10 @@ export function ClientBridgeAiSupport() {
       </div>
 
       <div className="border-t border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-[9px]">
+          <span className="text-slate-500">Bridge AI assistance is a Client File Folder service.</span>
+          {billing&&<span className="font-black text-amber-200">Wallet: {billing.walletBalanceFlameCoin.toLocaleString()} Flame Coin</span>}
+        </div>
         {error&&<p className="mb-2 text-xs font-bold text-rose-300">{error}</p>}
         <div className="flex gap-2">
           <textarea
@@ -136,6 +154,7 @@ export function ClientBridgeAiSupport() {
             className="inline-flex w-12 items-center justify-center rounded-2xl bg-sky-400 text-slate-950 disabled:opacity-40"
             aria-label="Send to Bridge AI"
           >
+            <span className="sr-only">{billing ? `Send for ${billing.feeFlameCoin} Flame Coin` : 'Send to Bridge AI'}</span>
             <Send className="h-4 w-4"/>
           </button>
         </div>

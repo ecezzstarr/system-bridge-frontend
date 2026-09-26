@@ -11,6 +11,7 @@ export const WORLD_RULES = {
   FILE_FOLDER_PUBLIC_DOOR_THRESHOLD_FLAME_COIN: 17900, // 50% of Premium
   CLIENT_BUILD_SPEED_MIN: 0.25,
   CLIENT_BUILD_SPEED_MAX: 4,
+  CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN: Math.max(0, Number(process.env.CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN || 1)),
   // Compatibility alias: existing callers that expect the premium price.
   FILE_FOLDER_PRICE_FLAME_COIN: 35800,
   

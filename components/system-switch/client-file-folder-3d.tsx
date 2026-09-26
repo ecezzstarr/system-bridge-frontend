@@ -192,6 +192,17 @@ function Scene({
 
         <BuildCore activeBuilds={activeBuilds} liveSystems={liveSystems} />
 
+        <group rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.18, -3.7]}>
+          <mesh>
+            <torusGeometry args={[1.45, 0.018, 10, 96]} />
+            <meshBasicMaterial color="#38bdf8" transparent opacity={activeBuilds.length ? 0.42 : 0.14} />
+          </mesh>
+          <mesh rotation={[0, 0, Math.PI / 3]}>
+            <torusGeometry args={[1.9, 0.012, 10, 96]} />
+            <meshBasicMaterial color="#a78bfa" transparent opacity={liveSystems ? 0.34 : 0.1} />
+          </mesh>
+        </group>
+
         {Array.from({ length: Math.min(8, liveSystems) }).map((_, index) => {
           const angle = (index / Math.max(1, Math.min(8, liveSystems))) * Math.PI * 2
           const x = Math.cos(angle) * 5.5
@@ -252,10 +263,10 @@ export function ClientFileFolder3D({
     <section className="overflow-hidden rounded-[1.75rem] border border-sky-300/15 bg-[#020711]/80 shadow-[0_24px_70px_rgba(2,8,23,.5)] backdrop-blur-xl">
       <div className="flex flex-col gap-2 border-b border-white/10 bg-[linear-gradient(90deg,rgba(14,165,233,.08),rgba(139,92,246,.05),rgba(52,211,153,.05))] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">3D File Folder</p>
-          <p className="mt-1 text-xs font-bold text-white">Move around the same environment you operate.</p>
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">4D File Folder · Space + Time</p>
+          <p className="mt-1 text-xs font-bold text-white">Move through one environment while builds, activity and time continue changing it.</p>
         </div>
-        <p className="text-[9px] leading-4 text-slate-300">Drag to look · scroll/pinch to move · tap a district to operate it</p>
+        <p className="text-[9px] leading-4 text-slate-300">Drag to look · scroll/pinch to move · tap a district · live state keeps moving</p>
       </div>
 
       <div className="relative h-[360px] sm:h-[430px]">

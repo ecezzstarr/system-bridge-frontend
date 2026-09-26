@@ -41,6 +41,11 @@ export async function POST(request: NextRequest) {
     const buyerEmail = typeof body.buyerEmail === 'string' ? body.buyerEmail.trim() : null
     const buyerPhone = typeof body.buyerPhone === 'string' ? body.buyerPhone.trim() : null
     const user = await requireApiUser(request)
+    if (user && user.role !== 'client') {
+      return NextResponse.json({
+        error: 'File Folder ownership belongs to Clients. Support positions may support Client File Folders but cannot own one.',
+      }, { status: 403 })
+    }
     const clientId = user?.role === 'client' ? user.id : null
     const bridgeCode = typeof body.bridgeCode === 'string' ? body.bridgeCode.trim().slice(0,32) : null
     let providerKey: string | null = null
@@ -82,6 +87,8 @@ export async function PATCH(request: NextRequest) {
     const clientId = typeof body.clientId === 'string' ? body.clientId : ''
     const clientName = typeof body.clientName === 'string' ? body.clientName : ''
     if (!purchaseId || !fileNumber || !clientId || !clientName) return NextResponse.json({ error: 'purchaseId, fileNumber, clientId and clientName are required' }, { status: 400 })
+    const [targetClient] = await sql`SELECT id,role FROM users WHERE id=${clientId}::uuid AND role='client' LIMIT 1`
+    if (!targetClient) return NextResponse.json({ error: 'File Folder can only be assigned to a Client account' }, { status: 400 })
     const [purchase] = await sql`SELECT * FROM file_folder_purchases WHERE id=${purchaseId}::uuid LIMIT 1`
     if (!purchase) return NextResponse.json({ error: 'Purchase record not found' }, { status: 404 })
     if (purchase.status === 'confirmed') return NextResponse.json({ error: 'Purchase is already confirmed' }, { status: 409 })

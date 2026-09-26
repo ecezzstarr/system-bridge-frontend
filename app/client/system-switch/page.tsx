@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, FolderOpen, ShieldCheck } from 'lucide-react'
 import ClientFileFolderGate from '@/components/system-switch/client-file-folder-gate'
 import ClientFileFolderOperatingEnvironment from '@/components/system-switch/client-file-folder-operating-environment'
+import { FileFolderEnvironmentLoader } from '@/components/system-switch/file-folder-environment-loader'
 import { getClientToken, getClientUser } from '@/lib/client-auth'
 import { WEAVE_ARCHITECTURE } from '@/lib/weave-architecture'
 
@@ -64,9 +65,7 @@ export default function ClientSystemSwitchPage() {
     void load()
   }, [router])
 
-  if (loading) {
-    return <main className="min-h-screen bg-transparent text-white flex items-center justify-center"><p className="text-sm text-slate-400">Resolving your File Folder movement...</p></main>
-  }
+  if (loading) return <FileFolderEnvironmentLoader />
 
   if (entry && !entry.active) return <ClientFileFolderGate entry={entry} />
 

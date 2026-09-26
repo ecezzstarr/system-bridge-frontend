@@ -37,7 +37,8 @@ const districts = [
   { key: 'workshop_core', label: 'Workshop Core', icon: Workflow, detail: 'Your personalized workshop and current movement.' },
   { key: 'formation_yard', label: 'Formation Yard', icon: Hammer, detail: 'Structures currently being built in real time.' },
   { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Choose the next real system to form.' },
-  { key: 'build_market', label: 'Build Market', icon: Store, detail: 'Acquire components required by blueprints.' },
+  { key: 'build_market', label: 'Materials Market', icon: Store, detail: 'Acquire functional components required by blueprints.' },
+  { key: 'boost_bay', label: 'Boost Bay', icon: Zap, detail: 'Acquire live build-speed boosts and attach them to active construction.' },
   { key: 'active_systems', label: 'Active Systems', icon: PackageOpen, detail: 'Use systems that have finished construction.' },
   { key: 'library_district', label: 'Library District', icon: Library, detail: 'Learn by movement and record progress.' },
 ]
@@ -138,6 +139,8 @@ export default function FileFolderOpenWorld({
   const fundingGateLocked = Boolean(buildFunding && !buildFunding.publicDoorUnlocked && world?.customerDoor?.formation_status === 'funding_gate')
   const completedBuilds = (world?.builds || []).filter((build: any) => build.status === 'complete')
   const availableBuildItems = (world?.inventory || []).filter((item: any) => Number(item.quantity || 0) > 0)
+  const buildMarketItems = (world?.items || []).filter((item: any) => item.build_effect !== 'speed_boost')
+  const boostItems = (world?.items || []).filter((item: any) => item.build_effect === 'speed_boost')
 
   return (
     <section className="overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711] shadow-2xl">
@@ -304,15 +307,31 @@ export default function FileFolderOpenWorld({
 
           {district === 'build_market' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Build Market</p>
-              <h3 className="mt-2 text-2xl font-black">Components have function, inventory and price.</h3>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Materials Market</p>
+              <h3 className="mt-2 text-2xl font-black">Build materials have function, inventory and price.</h3>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
-                {(world?.items || []).map((item:any) => <div key={item.item_key} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.035] p-5">
+                {buildMarketItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
                   <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
-                  {item.build_effect==='speed_boost' && <p className="mt-2 inline-flex rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 text-[9px] font-black text-amber-200">Applies live · ×{Number(item.effect_value || 1).toFixed(2)} build speed</p>}
-                  {!readOnly && <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire item'}</button>}
+                  {!readOnly && <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire material'}</button>}
+                </div>)}
+              </div>
+            </div>
+          )}
+
+          {district === 'boost_bay' && (
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Boost Bay</p>
+              <h3 className="mt-2 text-2xl font-black">Speed is a live construction instrument.</h3>
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire a boost here, then attach it to an active build in Formation Yard. The build timer recalculates from recorded File Folder state.</p>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {boostItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-amber-300/12 bg-amber-400/[0.035] p-5">
+                  <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-amber-300">Live acceleration</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
+                  <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
+                  <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
+                  <p className="mt-2 inline-flex rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 text-[9px] font-black text-amber-200">Applies live · ×{Number(item.effect_value || 1).toFixed(2)} build speed</p>
+                  {!readOnly && <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-amber-300/20 bg-amber-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-amber-100 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire boost'}</button>}
                 </div>)}
               </div>
             </div>

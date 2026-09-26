@@ -68,7 +68,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       world,
-      receipt,
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('[client/file-folder-world GET]', error)
@@ -272,7 +271,7 @@ export async function POST(request: NextRequest) {
 
         if (!started[0]?.id) {
           return NextResponse.json({
-            error: `This blueprint requires ${requiredQty} × ${blueprint.required_item_key}. Acquire it in the Build Market first.`,
+            error: `This blueprint requires ${requiredQty} × ${blueprint.required_item_key}. Acquire it in the Materials Market first.`,
           }, { status: 409 })
         }
       } else {
@@ -381,7 +380,7 @@ export async function POST(request: NextRequest) {
 
       if (!applied[0]?.part_id) {
         return NextResponse.json({
-          error: `Purchase ${item.name} in the Build Market before attaching it to this build.`,
+          error: `Purchase ${item.name} in the Materials Market or Boost Bay before attaching it to this build.`,
         }, { status: 409 })
       }
     } else if (action === 'library_start' || action === 'library_complete') {
