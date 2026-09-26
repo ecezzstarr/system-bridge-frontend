@@ -30,14 +30,7 @@ import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
 import { getAuthHeaders } from '@/lib/auth-client'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { ClientBuildPull } from '@/components/world/client-build-pull'
-
-const districts = [
-  { title: 'Shared WEAVE', detail: 'The common WEAVE world remains available from the Bridger position.' },
-  { title: 'Crossing', detail: 'Prospects, Bridge AI and the path into Client participation.' },
-  { title: 'Client continuity', detail: 'Existing Clients and support after crossing.' },
-  { title: 'Company continuity', detail: 'Partnership standing, guidance, holding and records.' },
-  { title: 'Participation', detail: 'Shared WEAVE places and current events.' },
-]
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const commands = [
   { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: Network, district: 'Shared WEAVE' },
@@ -74,6 +67,8 @@ const DISTRICT_TONE: Record<string, { card: string; icon: string; label: string 
 
 export function BridgerOperatingEnvironment() {
   const [referral,setReferral]=useState<any>(null)
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
+  const visibleCommands = commands.filter(item => isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
 
   useEffect(()=>{
     fetch('/api/bridger/referral-commissions',{headers:getAuthHeaders()})
@@ -97,24 +92,7 @@ export function BridgerOperatingEnvironment() {
           </p>
         </header>
 
-        <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[220px_minmax(0,1fr)_230px]">
-          <aside className="space-y-4">
-            <section className="rounded-3xl border border-white/10 bg-black/20 p-4">
-              <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">Position map</p>
-              <div className="mt-4 space-y-3">
-                {districts.map((district,index)=>(
-                  <div key={district.title} className="rounded-2xl border border-white/8 bg-white/[0.025] p-3">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-emerald-300/20 bg-emerald-400/[0.06] text-[9px] font-black text-emerald-200">{index+1}</span>
-                      <p className="text-xs font-black text-white">{district.title}</p>
-                    </div>
-                    <p className="mt-2 text-[11px] leading-5 text-slate-400">{district.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </aside>
-
+        <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[minmax(0,1fr)_250px]">
           <section className="min-w-0 rounded-[1.75rem] border border-emerald-300/20 bg-[linear-gradient(180deg,rgba(16,185,129,.055),rgba(2,6,23,.72))] p-4 shadow-[0_24px_70px_rgba(2,8,23,.38)] md:p-5">
             <div className="rounded-2xl border border-amber-300/15 bg-amber-400/[0.035] p-4">
               <div className="flex items-start gap-3">
@@ -136,12 +114,12 @@ export function BridgerOperatingEnvironment() {
               </div>
               <div className="shrink-0 rounded-xl border border-emerald-300/15 bg-emerald-400/[0.045] px-3 py-2 text-right">
                 <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">Functions present</p>
-                <p className="mt-0.5 text-xl font-black text-white">{commands.length}</p>
+                <p className="mt-0.5 text-xl font-black text-white">{visibleCommands.length}</p>
               </div>
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {commands.map(item=>{
+              {visibleCommands.map(item=>{
                 const Icon=item.icon
                 const tone=DISTRICT_TONE[item.district] || DISTRICT_TONE['Shared WEAVE']
                 return (
