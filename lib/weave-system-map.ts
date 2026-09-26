@@ -15,6 +15,12 @@ export const WEAVE_SYSTEM_MAP = {
     participation: 'Value becomes participation.',
     livelihood: 'Participation can become livelihood.',
   },
+  bridgeAI: {
+    name: 'Bridge AI',
+    crossingRole: 'Begins with the human at the crossing.',
+    clientRole: 'Continues as the Client AI support inside the File Folder, builds and live systems.',
+    bridgerRole: 'The Bridger opens and accompanies the path; the Client remains the player.',
+  },
   positions: {
     client: {
       name: 'Client',
@@ -97,6 +103,7 @@ export const WEAVE_SYSTEM_MAP = {
     clientWorkspace: 'File Folder',
     clientEntry: 'System Switch',
     supportEntrance: 'Bridge Plaza',
+    bridgeAI: 'Bridge AI · Client Support',
   },
 } as const
 
