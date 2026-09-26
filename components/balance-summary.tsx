@@ -10,7 +10,9 @@ export interface BalanceSummaryProps {
 }
 
 export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: BalanceSummaryProps) {
-  const total = available + locked
+  const safeAvailable = Number.isFinite(Number(available)) ? Number(available) : 0
+  const safeLocked = Number.isFinite(Number(locked)) ? Number(locked) : 0
+  const total = safeAvailable + safeLocked
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -19,7 +21,7 @@ export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: B
           <CardTitle className="text-sm font-medium text-muted-foreground">Available Balance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{available.toFixed(2)} {currency}</div>
+          <div className="text-2xl font-bold">{safeAvailable.toFixed(2)} {currency}</div>
           <p className="text-xs text-muted-foreground mt-1">Ready to use</p>
         </CardContent>
       </Card>
@@ -32,7 +34,7 @@ export function BalanceSummary({ available, locked, currency = 'Flame Coin' }: B
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-yellow-600">{locked.toFixed(2)} {currency}</div>
+          <div className="text-2xl font-bold text-yellow-600">{safeLocked.toFixed(2)} {currency}</div>
           <p className="text-xs text-muted-foreground mt-1">In active transactions</p>
         </CardContent>
       </Card>
