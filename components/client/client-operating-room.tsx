@@ -83,7 +83,7 @@ export function ClientOperatingRoom() {
 
   return (
     <main className="mx-auto w-full max-w-[1500px] p-3 md:p-6">
-      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]">
+      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/82 backdrop-blur-xl">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(56,189,248,.15),transparent_35%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.09),transparent_30%)] p-5 md:p-7">
           <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Client Operating Room</p>
           <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">The Client is the player. The File Folder is the working world.</h1>
