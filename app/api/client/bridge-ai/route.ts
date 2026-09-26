@@ -4,6 +4,9 @@ import { resolveClientToken } from '@/lib/client-vault'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { ensureFileFolderWorldSchema } from '@/lib/client-file-folder-world'
 import { chatWithBridge, type BridgeMessage } from '@/lib/bridge-ai-engine'
+import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
+import { WORLD_RULES } from '@/lib/world/constants'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 async function ensureClientBridgeAiMessageSchema(sql: any) {
   await sql`
@@ -60,17 +63,29 @@ async function contextFor(request: NextRequest) {
   await ensureClientWorkshopSchema(sql)
   await ensureFileFolderWorldSchema(sql)
   await ensureClientBridgeAiMessageSchema(sql)
+  await ensureClientMoneyEnvironment(sql, clientId)
 
-  const [client] = await sql`
-    SELECT
-      id,name,business_name,file_number,
-      COALESCE(referred_by,referred_by_bridger_id) AS assigned_bridger_id
-    FROM users
-    WHERE id=${clientId}::uuid
-      AND role='client'
-      AND COALESCE(is_active,true)=true
-    LIMIT 1
+  const [userColumnState] = await sql`
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema='public' AND table_name='users' AND column_name='referred_by_bridger_id'
+    ) AS has_referred_by_bridger_id
   `
+  const clientRows = userColumnState?.has_referred_by_bridger_id
+    ? await sql`
+        SELECT id,name,business_name,file_number,
+               COALESCE(referred_by,referred_by_bridger_id) AS assigned_bridger_id
+        FROM users
+        WHERE id=${clientId}::uuid AND role='client' AND COALESCE(is_active,true)=true
+        LIMIT 1
+      `
+    : await sql`
+        SELECT id,name,business_name,file_number,referred_by AS assigned_bridger_id
+        FROM users
+        WHERE id=${clientId}::uuid AND role='client' AND COALESCE(is_active,true)=true
+        LIMIT 1
+      `
+  const client = clientRows[0]
   if (!client?.file_number) {
     return { sql, error: NextResponse.json({ error: 'Active Client File Folder required' }, { status: 409 }) }
   }
@@ -148,6 +163,14 @@ export async function GET(request: NextRequest) {
     const ctx = await contextFor(request)
     if (ctx.error) return ctx.error
     const messages = await supportHistory(ctx.sql, String(ctx.client.id))
+    const [wallet] = await ctx.sql`
+      SELECT balance_trx
+      FROM wallets
+      WHERE user_id=${ctx.client.id}::uuid AND is_primary=true
+      ORDER BY created_at ASC
+      LIMIT 1
+    `
+    const feeFlameCoin = WORLD_RULES.CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN
 
     return NextResponse.json({
       success: true,
@@ -156,6 +179,12 @@ export async function GET(request: NextRequest) {
         role: 'Client AI Support',
         continuity: ctx.crossing?.id ? 'crossing-linked' : 'client-continuity',
         template: ctx.crossing?.template_name || null,
+      },
+      billing: {
+        feeFlameCoin,
+        walletBalanceFlameCoin: Number(wallet?.balance_trx || 0),
+        currency: 'Flame Coin',
+        unit: 'assisted reply',
       },
       messages,
     }, { headers: { 'Cache-Control': 'private, no-store' } })
@@ -173,6 +202,30 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const message = typeof body.message === 'string' ? body.message.trim().slice(0, 6000) : ''
     if (!message) return NextResponse.json({ error: 'Message required' }, { status: 400 })
+
+    const feeFlameCoin = WORLD_RULES.CLIENT_BRIDGE_AI_ASSIST_FEE_FLAME_COIN
+    let balanceAfter: number | null = null
+    let charged = false
+
+    if (feeFlameCoin > 0) {
+      const chargedRows = await ctx.sql`
+        UPDATE wallets
+        SET balance_trx=balance_trx-${feeFlameCoin},updated_at=NOW()
+        WHERE user_id=${ctx.client.id}::uuid
+          AND is_primary=true
+          AND balance_trx >= ${feeFlameCoin}
+        RETURNING balance_trx
+      `
+      if (!chargedRows[0]) {
+        return NextResponse.json({
+          error: `Bridge AI assistance requires ${feeFlameCoin.toLocaleString()} Flame Coin per assisted reply. Add Flame Coin to continue.`,
+          code: 'INSUFFICIENT_FLAME_COIN',
+          billing: { feeFlameCoin, currency: 'Flame Coin' },
+        }, { status: 409 })
+      }
+      balanceAfter = Number(chargedRows[0].balance_trx || 0)
+      charged = true
+    }
 
     await ctx.sql`
       INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
@@ -224,15 +277,55 @@ Client-support rules:
 - The human remains the source of direction and judgment.
 `.trim()
 
-    const response = await chatWithBridge(history, supportPrompt)
+    let saved: any
+    try {
+      const response = await chatWithBridge(history, supportPrompt)
+      ;[saved] = await ctx.sql`
+        INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
+        VALUES (${String(ctx.client.id)},${ctx.client.name},'bridge_ai','bridge_ai',${response},true)
+        RETURNING id,sender_type,content,created_at
+      `
+    } catch (error) {
+      if (charged && feeFlameCoin > 0) {
+        await ctx.sql`
+          UPDATE wallets
+          SET balance_trx=balance_trx+${feeFlameCoin},updated_at=NOW()
+          WHERE user_id=${ctx.client.id}::uuid AND is_primary=true
+        `.catch(() => null)
+      }
+      throw error
+    }
 
-    const [saved] = await ctx.sql`
-      INSERT INTO client_messages (client_id,client_name,position,sender_type,content,is_read)
-      VALUES (${String(ctx.client.id)},${ctx.client.name},'bridge_ai','bridge_ai',${response},true)
-      RETURNING id,sender_type,content,created_at
-    `
+    let receipt = null
+    if (charged && feeFlameCoin > 0) {
+      try {
+        receipt = await issueWeaveReceipt({
+          userId: String(ctx.client.id),
+          kind: 'payment',
+          source: 'bridge_ai_client_support',
+          sourceId: String(saved.id),
+          amount: feeFlameCoin,
+          currency: 'Flame Coin',
+          status: 'completed',
+          description: 'Bridge AI assisted reply inside Client File Folder',
+          metadata: { fileNumber: ctx.client.file_number, balanceAfter },
+          sql: ctx.sql,
+        })
+      } catch (receiptError) {
+        console.error('[client/bridge-ai receipt]', receiptError)
+      }
+    }
 
-    return NextResponse.json({ success: true, message: saved })
+    return NextResponse.json({
+      success: true,
+      message: saved,
+      billing: {
+        chargedFlameCoin: feeFlameCoin,
+        walletBalanceFlameCoin: balanceAfter,
+        currency: 'Flame Coin',
+      },
+      receipt,
+    })
   } catch (error) {
     console.error('[client/bridge-ai POST]', error)
     return NextResponse.json({ error: 'Bridge AI support is unavailable' }, { status: 500 })
