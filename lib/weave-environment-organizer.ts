@@ -70,7 +70,7 @@ export async function setEnvironmentSurfaceVisibility(surfaceKey:string,visible:
     LIMIT 1
   `
   if(!surface)throw new Error('Environment surface not found')
-  if(surface.is_protected&&!visible)throw new Error('This control surface is protected and cannot be withdrawn.')
+  if(surface.is_protected&&!visible)throw new Error('This control surface is protected and cannot be removed.')
 
   await sql`
     UPDATE weave_environment_surfaces
