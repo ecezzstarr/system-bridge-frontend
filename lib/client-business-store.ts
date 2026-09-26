@@ -69,7 +69,7 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
   await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS environment_config jsonb NOT NULL DEFAULT '{}'::jsonb`
   await sql`
     UPDATE client_business_stores
-    SET formation_due_at = COALESCE(formation_due_at, created_at + INTERVAL '3 days')
+    SET formation_due_at = COALESCE(formation_due_at, created_at + INTERVAL '1 day')
     WHERE formation_due_at IS NULL
   `
 
@@ -142,7 +142,7 @@ export async function ensureClientBusinessStore(
       ${slug},
       ${businessName || 'Business Store'},
       'forming',
-      NOW() + INTERVAL '3 days',
+      NOW() + INTERVAL '1 day',
       ${customerWalletRequired}
     )
     ON CONFLICT (client_id) DO UPDATE SET
