@@ -62,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     RETURNING id,status,payment_status
   `
 
-  const destination = new URL(`/store/${encodeURIComponent(slug)}`, request.url)
+  const destination = new URL(`/market/${encodeURIComponent(slug)}`, request.url)
   destination.searchParams.set('order', String(order.id))
   return NextResponse.redirect(destination, 303)
 }
