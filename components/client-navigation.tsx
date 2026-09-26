@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Flame, GitBranch, Home, LayoutGrid, Orbit } from 'lucide-react'
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const items = [
   { label: 'Home World', href: '/client/dashboard', icon: Home },
@@ -14,6 +15,8 @@ const items = [
 
 export function ClientNavigation() {
   const pathname = usePathname()
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
+  const visibleItems = items.filter(item => isVisible(item.href)).sort((a,b) => orderFor(a.href) - orderFor(b.href))
 
   const isClientEntry =
     pathname === '/client' ||
@@ -26,8 +29,8 @@ export function ClientNavigation() {
 
   return (
     <nav className="sticky top-0 z-40 border-b border-sky-300/10 bg-[#03101d]/90 px-1.5 py-1.5 backdrop-blur-2xl">
-      <div className="mx-auto grid max-w-3xl grid-cols-5 gap-1">
-        {items.map(({ label, href, icon: Icon }) => {
+      <div className="mx-auto grid max-w-3xl gap-1" style={{gridTemplateColumns:`repeat(${Math.max(1,visibleItems.length)},minmax(0,1fr))`}}>
+        {visibleItems.map(({ label, href, icon: Icon }) => {
           const active = pathname === href || (href !== '/client/dashboard' && pathname.startsWith(href + '/'))
           return (
             <Link
