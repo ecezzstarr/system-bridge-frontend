@@ -257,7 +257,7 @@ function BridgerClientsContent() {
                         variant="outline" 
                         size="sm" 
                         className="bg-green-600/10 border-green-500/30 text-green-400 hover:bg-green-600/20"
-                        onClick={() => openWhatsAppWithNumber(selectedClient.phone, `Hi ${selectedClient.name}, this is your bridger from SSBNOW`)}
+                        onClick={() => openWhatsAppWithNumber(selectedClient.phone, `Hi ${selectedClient.name}, this is your Bridger from WEAVE`)}
                       >
                         <Phone className="h-4 w-4 mr-2" /> WhatsApp
                       </Button>
