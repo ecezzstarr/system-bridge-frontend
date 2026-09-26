@@ -14,12 +14,12 @@ export async function GET(request:NextRequest){
   const pool=getPool(); const client=await pool.connect()
   try{
     const available=(await client.query(`
-      SELECT id,country,provider,price_flame_coin,status,created_at
+      SELECT id,country,price_flame_coin,status,created_at
       FROM bridger_whatsapp_numbers WHERE status='available' AND assigned_to IS NULL
       ORDER BY price_flame_coin ASC,created_at ASC LIMIT 100
     `)).rows
     const mine=(await client.query(`
-      SELECT id,phone_e164,country,provider,provider_reference,price_flame_coin,status,assigned_at,notes
+      SELECT id,phone_e164,country,price_flame_coin,status,assigned_at
       FROM bridger_whatsapp_numbers WHERE assigned_to=$1::uuid
       ORDER BY assigned_at DESC
     `,[user.id])).rows
@@ -73,7 +73,7 @@ export async function POST(request:NextRequest){
       WHERE id=$2::uuid RETURNING *
     `,[user.id,numberId])).rows[0]
     await client.query('COMMIT')
-    const receipt=await issueWeaveReceipt({userId:user.id,kind:'purchase',source:'bridger_whatsapp_number',sourceId:String(numberId),amount:price,currency:'Flame Coin',status:'completed',description:'Bridger WhatsApp business number assignment',metadata:{country:number.country,provider:number.provider,balanceAfter:after}})
+    const receipt=await issueWeaveReceipt({userId:user.id,kind:'purchase',source:'bridger_whatsapp_number',sourceId:String(numberId),amount:price,currency:'Flame Coin',status:'completed',description:'Bridger WhatsApp business number assignment',metadata:{country:number.country,product:'WEAVE Worldwide WhatsApp Number',balanceAfter:after}})
     return NextResponse.json({success:true,number:assigned,newBalance:after,receipt})
   }catch(error){
     await client.query('ROLLBACK'); console.error('[Bridger Number purchase]',error)
