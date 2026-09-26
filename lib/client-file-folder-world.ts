@@ -1,5 +1,5 @@
 import { ensureClientBusinessStore, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
-import { effectiveBuildMinutes, getClientBuildEconomy, type ClientBuildEconomy } from '@/lib/client-build-economy'
+import { CLIENT_BUILD_SPEED_MAX, effectiveBuildMinutes, getClientBuildEconomy, type ClientBuildEconomy } from '@/lib/client-build-economy'
 
 export type FileFolderWorldSnapshot = {
   blueprints: any[]
@@ -24,11 +24,16 @@ export async function ensureFileFolderWorldSchema(sql: any) {
       category varchar(80) NOT NULL,
       description text,
       price_flame_coin numeric(30,8) NOT NULL DEFAULT 0,
+      build_effect varchar(40) NOT NULL DEFAULT 'component',
+      effect_value numeric(10,4) NOT NULL DEFAULT 0,
       published boolean NOT NULL DEFAULT true,
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+
+  await sql`ALTER TABLE weave_file_folder_items ADD COLUMN IF NOT EXISTS build_effect varchar(40) NOT NULL DEFAULT 'component'`
+  await sql`ALTER TABLE weave_file_folder_items ADD COLUMN IF NOT EXISTS effect_value numeric(10,4) NOT NULL DEFAULT 0`
 
   await sql`
     CREATE TABLE IF NOT EXISTS weave_file_folder_blueprints (
@@ -86,6 +91,7 @@ export async function ensureFileFolderWorldSchema(sql: any) {
       base_duration_minutes integer,
       duration_minutes integer,
       speed_multiplier numeric(10,4) NOT NULL DEFAULT 1,
+      purchase_speed_multiplier numeric(10,4) NOT NULL DEFAULT 1,
       started_at timestamptz NOT NULL DEFAULT NOW(),
       completes_at timestamptz NOT NULL,
       completed_at timestamptz,
@@ -97,17 +103,37 @@ export async function ensureFileFolderWorldSchema(sql: any) {
   await sql`ALTER TABLE client_file_folder_builds ADD COLUMN IF NOT EXISTS base_duration_minutes integer`
   await sql`ALTER TABLE client_file_folder_builds ADD COLUMN IF NOT EXISTS duration_minutes integer`
   await sql`ALTER TABLE client_file_folder_builds ADD COLUMN IF NOT EXISTS speed_multiplier numeric(10,4) NOT NULL DEFAULT 1`
+  await sql`ALTER TABLE client_file_folder_builds ADD COLUMN IF NOT EXISTS purchase_speed_multiplier numeric(10,4) NOT NULL DEFAULT 1`
   await sql`
     UPDATE client_file_folder_builds
     SET
       base_duration_minutes=COALESCE(base_duration_minutes,duration_hours*60),
       duration_minutes=COALESCE(duration_minutes,duration_hours*60),
-      speed_multiplier=COALESCE(speed_multiplier,1)
-    WHERE base_duration_minutes IS NULL OR duration_minutes IS NULL
+      speed_multiplier=COALESCE(speed_multiplier,1),
+      purchase_speed_multiplier=COALESCE(purchase_speed_multiplier,1)
+    WHERE base_duration_minutes IS NULL OR duration_minutes IS NULL OR purchase_speed_multiplier IS NULL
   `
   await sql`
     CREATE INDEX IF NOT EXISTS idx_client_file_folder_builds_client_time
     ON client_file_folder_builds(client_id, created_at DESC)
+  `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS client_file_folder_build_parts (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      build_id uuid NOT NULL,
+      client_id uuid NOT NULL,
+      file_number varchar(120) NOT NULL,
+      item_key varchar(80) NOT NULL,
+      quantity integer NOT NULL DEFAULT 1,
+      effect_type varchar(40) NOT NULL DEFAULT 'component',
+      effect_value numeric(10,4) NOT NULL DEFAULT 0,
+      applied_at timestamptz NOT NULL DEFAULT NOW()
+    )
+  `
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_client_file_folder_build_parts_build
+    ON client_file_folder_build_parts(build_id, applied_at DESC)
   `
 
   await sql`
@@ -205,6 +231,36 @@ async function seedFileFolderWorld(sql: any) {
         ${item[0]}, ${item[1]}, ${item[2]}, ${item[3]}, ${item[4]}, true
       )
       ON CONFLICT (item_key) DO NOTHING
+    `
+  }
+
+  const liveBuildUpgrades = [
+    ['build_speed_15', 'Build Speed Boost · 15%', 'acceleration', 'Attach to one active build to increase its formation speed live.', 25, 'speed_boost', 1.15],
+    ['build_speed_35', 'Build Speed Boost · 35%', 'acceleration', 'Attach to one active build to increase its formation speed live.', 60, 'speed_boost', 1.35],
+    ['build_speed_75', 'Build Speed Boost · 75%', 'acceleration', 'Attach to one active build for a larger live formation-speed increase.', 140, 'speed_boost', 1.75],
+    ['verification_module', 'Verification Module', 'build_part', 'Attach a visible verification/testing part to the active build.', 90, 'component', 0],
+    ['interface_module', 'Interface Module', 'build_part', 'Attach an interface part to the active build and preserve it in the build record.', 110, 'component', 0],
+    ['integration_module', 'Integration Module', 'build_part', 'Attach an integration part to the active build and preserve it in the build record.', 160, 'component', 0],
+  ]
+
+  for (const upgrade of liveBuildUpgrades) {
+    await sql`
+      INSERT INTO weave_file_folder_items (
+        item_key,name,category,description,price_flame_coin,build_effect,effect_value,published
+      )
+      VALUES (
+        ${upgrade[0]},${upgrade[1]},${upgrade[2]},${upgrade[3]},${upgrade[4]},${upgrade[5]},${upgrade[6]},true
+      )
+      ON CONFLICT (item_key)
+      DO UPDATE SET
+        name=EXCLUDED.name,
+        category=EXCLUDED.category,
+        description=EXCLUDED.description,
+        price_flame_coin=EXCLUDED.price_flame_coin,
+        build_effect=EXCLUDED.build_effect,
+        effect_value=EXCLUDED.effect_value,
+        published=true,
+        updated_at=NOW()
     `
   }
 
@@ -328,12 +384,18 @@ export async function applyBuildPowerAcceleration(
   await sql`
     UPDATE client_file_folder_builds
     SET
-      speed_multiplier=${economy.buildSpeedMultiplier},
+      speed_multiplier=LEAST(
+        ${CLIENT_BUILD_SPEED_MAX},
+        ${economy.buildSpeedMultiplier} * COALESCE(purchase_speed_multiplier,1)
+      ),
       duration_minutes=GREATEST(
         15,
         CEIL(
           COALESCE(base_duration_minutes,duration_hours*60)::numeric /
-          ${economy.buildSpeedMultiplier}
+          LEAST(
+            ${CLIENT_BUILD_SPEED_MAX},
+            ${economy.buildSpeedMultiplier} * COALESCE(purchase_speed_multiplier,1)
+          )
         )::integer
       ),
       completes_at=started_at + make_interval(
@@ -341,14 +403,20 @@ export async function applyBuildPowerAcceleration(
           15,
           CEIL(
             COALESCE(base_duration_minutes,duration_hours*60)::numeric /
-            ${economy.buildSpeedMultiplier}
+            LEAST(
+              ${CLIENT_BUILD_SPEED_MAX},
+              ${economy.buildSpeedMultiplier} * COALESCE(purchase_speed_multiplier,1)
+            )
           )::integer
         )
       ),
       updated_at=NOW()
     WHERE client_id=${clientId}::uuid
       AND status IN ('building','funding_gate')
-      AND COALESCE(speed_multiplier,1) < ${economy.buildSpeedMultiplier}
+      AND COALESCE(speed_multiplier,1) < LEAST(
+        ${CLIENT_BUILD_SPEED_MAX},
+        ${economy.buildSpeedMultiplier} * COALESCE(purchase_speed_multiplier,1)
+      )
   `
 }
 
@@ -359,7 +427,8 @@ export async function finalizeReadyBuilds(
 ) {
   const ready = await sql`
     SELECT
-      id,client_id,file_number,system_type,title,blueprint_key,status,completes_at
+      id,client_id,file_number,system_type,title,blueprint_key,status,completes_at,
+      speed_multiplier,purchase_speed_multiplier
     FROM client_file_folder_builds
     WHERE client_id=${clientId}::uuid
       AND (
@@ -395,6 +464,20 @@ export async function finalizeReadyBuilds(
       WHERE id=${build.id}::uuid
     `
 
+    const appliedParts = await sql`
+      SELECT
+        p.item_key,
+        i.name,
+        p.quantity,
+        p.effect_type,
+        p.effect_value,
+        p.applied_at
+      FROM client_file_folder_build_parts p
+      JOIN weave_file_folder_items i ON i.item_key=p.item_key
+      WHERE p.build_id=${build.id}::uuid
+      ORDER BY p.applied_at ASC
+    `
+
     await sql`
       INSERT INTO client_built_systems (
         build_id, client_id, file_number, system_type, title, configuration
@@ -405,7 +488,13 @@ export async function finalizeReadyBuilds(
         ${build.file_number},
         ${build.system_type},
         ${build.title},
-        ${JSON.stringify({ blueprintKey: build.blueprint_key, district: 'main_file_folder' })}::jsonb
+        ${JSON.stringify({
+          blueprintKey: build.blueprint_key,
+          district: 'main_file_folder',
+          finalSpeedMultiplier: Number(build.speed_multiplier || 1),
+          purchasedSpeedMultiplier: Number(build.purchase_speed_multiplier || 1),
+          appliedParts,
+        })}::jsonb
       )
       ON CONFLICT (build_id) DO NOTHING
     `
@@ -489,7 +578,9 @@ export async function getFileFolderWorldSnapshot(
       inv.item_key,
       inv.quantity,
       i.name,
-      i.category
+      i.category,
+      i.build_effect,
+      i.effect_value
     FROM client_file_folder_inventory inv
     JOIN weave_file_folder_items i ON i.item_key=inv.item_key
     WHERE inv.client_id=${clientId}::uuid
@@ -498,27 +589,48 @@ export async function getFileFolderWorldSnapshot(
 
   const builds = await sql`
     SELECT
-      id,
-      blueprint_key,
-      title,
-      purpose,
-      system_type,
-      status,
-      duration_hours,
-      base_duration_minutes,
-      duration_minutes,
-      speed_multiplier,
-      started_at,
-      completes_at,
-      completed_at,
+      b.id,
+      b.blueprint_key,
+      b.title,
+      b.purpose,
+      b.system_type,
+      b.status,
+      b.duration_hours,
+      b.base_duration_minutes,
+      b.duration_minutes,
+      b.speed_multiplier,
+      b.purchase_speed_multiplier,
+      b.started_at,
+      b.completes_at,
+      b.completed_at,
       GREATEST(
         0,
-        EXTRACT(EPOCH FROM (completes_at - NOW()))::bigint
-      ) AS remaining_seconds
-    FROM client_file_folder_builds
-    WHERE client_id=${clientId}::uuid
-      AND file_number=${fileNumber}
-    ORDER BY created_at DESC
+        EXTRACT(EPOCH FROM (b.completes_at - NOW()))::bigint
+      ) AS remaining_seconds,
+      COALESCE(
+        (
+          SELECT json_agg(
+            json_build_object(
+              'id',p.id,
+              'item_key',p.item_key,
+              'name',i.name,
+              'quantity',p.quantity,
+              'effect_type',p.effect_type,
+              'effect_value',p.effect_value,
+              'applied_at',p.applied_at
+            )
+            ORDER BY p.applied_at DESC
+          )
+          FROM client_file_folder_build_parts p
+          JOIN weave_file_folder_items i ON i.item_key=p.item_key
+          WHERE p.build_id=b.id
+        ),
+        '[]'::json
+      ) AS applied_parts
+    FROM client_file_folder_builds b
+    WHERE b.client_id=${clientId}::uuid
+      AND b.file_number=${fileNumber}
+    ORDER BY b.created_at DESC
     LIMIT 100
   `
 
