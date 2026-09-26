@@ -6,6 +6,8 @@ import {
   normalizeStoreEnvironmentConfig,
 } from '@/lib/client-business-store'
 import { ensureClientInternationalPaymentProfile } from '@/lib/client-international-payments'
+import { ensureClientGrowthWorldSchema } from '@/lib/client-growth-world'
+import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 
 export default async function PublicClientMarketStore({
   params,
@@ -18,6 +20,8 @@ export default async function PublicClientMarketStore({
   const query=await searchParams
   const sql=getBusinessDb()
   await ensureClientBusinessStoreSchema(sql)
+  await ensureClientGrowthWorldSchema(sql)
+  await ensureEnterpriseDreamSchema(sql)
 
   const [store]=await sql`
     SELECT
@@ -58,6 +62,32 @@ export default async function PublicClientMarketStore({
   `
   const payments=await ensureClientInternationalPaymentProfile(sql,store.client_id)
   const level=structure?.has_market_hall?'market_hall':structure?.has_storefront?'storefront':'door'
+  const [channel]=await sql`
+    SELECT c.public_slug
+    FROM client_stream_channels c
+    WHERE c.client_id=${store.client_id}::uuid
+      AND c.enabled=true
+      AND EXISTS(
+        SELECT 1 FROM client_built_systems s
+        WHERE s.client_id=c.client_id
+          AND s.system_type='streaming_gate'
+          AND s.status='active'
+      )
+    LIMIT 1
+  `
+  const [enterprise]=await sql`
+    SELECT a.public_slug
+    FROM enterprise_applications a
+    WHERE a.client_id=${store.client_id}::uuid
+      AND a.status='approved'
+      AND EXISTS(
+        SELECT 1 FROM client_built_systems s
+        WHERE s.client_id=a.client_id
+          AND s.system_type='enterprise_door'
+          AND s.status='active'
+      )
+    LIMIT 1
+  `
 
   return <ClientMarketEnvironment
     slug={slug}
@@ -67,5 +97,7 @@ export default async function PublicClientMarketStore({
     config={normalizeStoreEnvironmentConfig(store.environment_config)}
     level={level}
     orderRef={query.order||null}
+    streamUrl={channel?.public_slug?'/stream/'+channel.public_slug:null}
+    enterpriseUrl={enterprise?.public_slug?'/enterprise/'+enterprise.public_slug:null}
   />
 }
