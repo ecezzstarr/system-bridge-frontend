@@ -23,7 +23,19 @@ export async function GET(request:NextRequest){
       FROM bridger_whatsapp_numbers WHERE assigned_to=$1::uuid
       ORDER BY assigned_at DESC
     `,[user.id])).rows
-    return NextResponse.json({success:true,available,mine},{headers:{'Cache-Control':'private, no-store'}})
+    const inbox=(await client.query(`
+      SELECT i.id,i.number_id,i.channel,i.sender,i.message,i.received_at,i.expires_at,i.viewed_at
+      FROM bridger_number_inbox i
+      JOIN bridger_whatsapp_numbers n ON n.id=i.number_id
+      WHERE n.assigned_to=$1::uuid AND i.expires_at>NOW()
+      ORDER BY i.received_at DESC LIMIT 100
+    `,[user.id])).rows
+    if(inbox.length) await client.query(`
+      UPDATE bridger_number_inbox i SET viewed_at=COALESCE(i.viewed_at,NOW())
+      FROM bridger_whatsapp_numbers n
+      WHERE i.number_id=n.id AND n.assigned_to=$1::uuid AND i.expires_at>NOW()
+    `,[user.id])
+    return NextResponse.json({success:true,available,mine,inbox},{headers:{'Cache-Control':'private, no-store'}})
   } finally { client.release() }
 }
 
