@@ -71,7 +71,7 @@ function buildProgress(build: any, now: number) {
   return Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100))
 }
 
-function PreviewFrame({ blueprint, label = 'Design preview' }: { blueprint: any; label?: string }) {
+function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { blueprint: any; label?: string; onBuild?: () => void }) {
   const modules = systemModules(blueprint?.system_type)
   if (!blueprint) {
     return (
@@ -105,8 +105,11 @@ function PreviewFrame({ blueprint, label = 'Design preview' }: { blueprint: any;
           </div>
         ))}
       </div>
-      <div className="border-t border-white/10 px-5 py-4 text-[10px] leading-5 text-slate-500">
-        Preview only. It shows the intended operating shape before construction; it does not claim live users, transactions, activity or results.
+      <div className="flex flex-col gap-3 border-t border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-[10px] leading-5 text-slate-500">
+          Preview only. It shows the intended operating shape before construction; it does not claim live users, transactions, activity or results.
+        </p>
+        {onBuild && <button onClick={onBuild} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white">Continue into build workspace <ArrowRight className="h-3.5 w-3.5"/></button>}
       </div>
     </div>
   )
@@ -168,6 +171,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [surface, setSurface] = useState<Surface>('command')
   const [world, setWorld] = useState(data.file_folder_world)
   const [formationOpen, setFormationOpen] = useState(false)
+  const [formationDistrict, setFormationDistrict] = useState('workshop_core')
   const [now, setNow] = useState(Date.now())
   const [selectedBlueprintKey, setSelectedBlueprintKey] = useState(
     data.file_folder_world?.blueprints?.[0]?.blueprint_key || '',
@@ -197,6 +201,11 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     const interval = window.setInterval(refresh, 15000)
     return () => window.clearInterval(interval)
   }, [])
+
+  const openFormation = (district: string) => {
+    setFormationDistrict(district)
+    setFormationOpen(true)
+  }
 
   const blueprints = Array.isArray(world?.blueprints) ? world.blueprints : []
   const builds = Array.isArray(world?.builds) ? world.builds : []
@@ -427,7 +436,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <p className="mt-1 text-xs text-slate-500">Inspect the intended system first, then enter the formation workspace when ready.</p>
               </div>
               <button
-                onClick={() => setFormationOpen(value => !value)}
+                onClick={() => formationOpen ? setFormationOpen(false) : openFormation('workshop_core')}
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-sky-300/20 bg-sky-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-sky-200"
               >
                 <Layers3 className="h-3.5 w-3.5" />
@@ -467,13 +476,15 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     </div>
                   </div>
 
-                  <PreviewFrame blueprint={selectedBlueprint} />
+                  <PreviewFrame blueprint={selectedBlueprint} onBuild={() => openFormation('blueprint_foundry')} />
                 </div>
 
                 <div className="grid gap-4 xl:grid-cols-2">
                   <div className="rounded-3xl border border-amber-300/10 bg-amber-400/[0.025] p-5">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Under construction</p>
-                    <h3 className="mt-1 text-lg font-black text-white">Target systems in formation</h3>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Under construction</p><h3 className="mt-1 text-lg font-black text-white">Target systems in formation</h3></div>
+                      <button onClick={() => openFormation('formation_yard')} className="rounded-full border border-amber-300/15 bg-amber-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">Open live build</button>
+                    </div>
                     <div className="mt-4 space-y-3">
                       {activeBuilds.length === 0 && <p className="text-xs text-slate-500">No build is currently running.</p>}
                       {activeBuilds.map((build: any) => (
@@ -500,8 +511,10 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   </div>
 
                   <div className="rounded-3xl border border-emerald-300/10 bg-emerald-400/[0.025] p-5">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">After build</p>
-                    <h3 className="mt-1 text-lg font-black text-white">Operational systems and recorded movement</h3>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">After build</p><h3 className="mt-1 text-lg font-black text-white">Operational systems and recorded movement</h3></div>
+                      <button onClick={() => openFormation('active_systems')} className="rounded-full border border-emerald-300/15 bg-emerald-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-200">Operate systems</button>
+                    </div>
                     <div className="mt-4 space-y-3">
                       {systems.length === 0 && <p className="text-xs text-slate-500">Finished systems will appear here with their real recorded activity.</p>}
                       {systems.map((system: any) => <LiveSystemCard key={system.id} system={system} />)}
@@ -519,6 +532,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 workshopPurpose={data.workshop.purpose}
                 initialWorld={world}
                 onWorldChange={setWorld}
+                initialDistrict={formationDistrict}
               />
             )}
           </div>
