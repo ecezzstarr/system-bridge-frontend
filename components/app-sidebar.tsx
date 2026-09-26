@@ -48,6 +48,7 @@ import { useAuth } from "@/lib/auth-provider"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { WEAVE_SYSTEM_MAP } from "@/lib/weave-system-map"
+import { useEnvironmentOrganizer } from "@/components/world/environment-organizer-provider"
 
 const navigation = [
   // 1. PRESENCE — identity, participation, value and record.
@@ -122,6 +123,7 @@ const navigation = [
     { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
     { name: "Ad Workshop", href: "/admin/ad-workshop", icon: Megaphone, adminOnly: true },
     { name: "Visual Systems", href: "/admin/visual-systems", icon: Palette, adminOnly: true },
+    { name: "Environment Organizer", href: "/admin/environment-organizer", icon: LayoutTemplate, adminOnly: true },
     { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
   ]},
 ]
@@ -138,6 +140,7 @@ interface AppSidebarProps {
 export function AppSidebar({ user: propUser }: AppSidebarProps) {
   const pathname = usePathname()
   const { user: authUser, logout } = useAuth()
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
   const user = propUser || authUser
   const [subscription, setContinuance] = useState<any>(null)
   useEffect(() => {
@@ -238,8 +241,8 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
               if (item.bridgerOnly && user?.role !== "bridger") return false
               if (item.agentOnly && user?.role !== "agent") return false
               if (item.staffOnly && user?.role !== "admin" && user?.role !== "agent") return false
-              return true
-            })
+              return isVisible(item.href)
+            }).sort((a:any,b:any)=>orderFor(a.href)-orderFor(b.href))
 
             if (visibleItems.length === 0) return null
 
