@@ -352,6 +352,13 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     setFormationOpen(true)
   }
 
+  const travelToStudio = (district: string) => {
+    setSurface('builds')
+    setSelectedSystemId('')
+    setFormationDistrict(district)
+    setFormationOpen(true)
+  }
+
   const blueprints = Array.isArray(world?.blueprints) ? world.blueprints : []
   const builds = Array.isArray(world?.builds) ? world.builds : []
   const systems = Array.isArray(world?.systems) ? world.systems : []
@@ -453,6 +460,34 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             )
           })}
         </nav>
+
+        <div className="mt-3 overflow-x-auto rounded-2xl border border-white/8 bg-black/20 p-2">
+          <div className="flex min-w-max items-center gap-2">
+            <span className="px-2 text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">Studio transit</span>
+            {[
+              ['Workshop','workshop_core'],
+              ['Blueprints','blueprint_foundry'],
+              ['Materials','build_market'],
+              ['Boosts','boost_bay'],
+              ['Construction','formation_yard'],
+              ['Live Systems','active_systems'],
+              ['Library','library_district'],
+            ].map(([label,district])=>(
+              <button key={district} onClick={()=>travelToStudio(district)} className="rounded-full border border-white/10 bg-white/[0.025] px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] text-slate-300 transition hover:border-sky-300/25 hover:text-sky-200">
+                {label}
+              </button>
+            ))}
+            <button onClick={()=>{setSurface('business');setSelectedSystemId('');setFormationOpen(false)}} className="rounded-full border border-emerald-300/15 bg-emerald-400/[0.04] px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] text-emerald-200">
+              Store + Customers
+            </button>
+            <button onClick={()=>{setSurface('enterprise');setSelectedSystemId('');setFormationOpen(false)}} className="rounded-full border border-amber-300/15 bg-amber-400/[0.04] px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] text-amber-200">
+              Enterprise
+            </button>
+            {data.premium_dj_enabled && <button onClick={()=>{setSurface('sound');setSelectedSystemId('');setFormationOpen(false)}} className="rounded-full border border-rose-300/15 bg-rose-400/[0.04] px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] text-rose-200">
+              Sound Room
+            </button>}
+          </div>
+        </div>
 
         <div className="mt-4 min-w-0">
           <div className="mb-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
