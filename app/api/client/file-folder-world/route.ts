@@ -252,6 +252,15 @@ export async function POST(request: NextRequest) {
           ],
           enterpriseApproval:true,
         },
+        enterprise_operating_system:{
+          systems:[
+            {systemType:'enterprise_hall',label:'Enterprise Hall'},
+            {systemType:'operations_command',label:'Operations Command'},
+            {systemType:'enterprise_treasury',label:'Enterprise Treasury'},
+            {systemType:'distribution_network',label:'Distribution Network'},
+          ],
+          enterpriseApproval:true,
+        },
       }
       const requirement=constructionRequirements[String(blueprint.blueprint_key)]
       if(requirement?.enterpriseApproval){
