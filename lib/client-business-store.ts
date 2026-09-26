@@ -4,6 +4,43 @@ export const getBusinessDb = () => {
   return neon(process.env.DATABASE_URL)
 }
 
+export type StoreEnvironmentPreset = 'radiant_arcade' | 'glass_citadel' | 'night_market' | 'garden_exchange'
+
+export type StoreEnvironmentConfig = {
+  preset: StoreEnvironmentPreset
+  sign: string
+  tagline: string
+  marketSection: string
+  featuredMessage: string
+}
+
+export const DEFAULT_STORE_ENVIRONMENT: StoreEnvironmentConfig = {
+  preset: 'radiant_arcade',
+  sign: 'OPEN FOR BUSINESS',
+  tagline: 'Built inside the WEAVE Client Market.',
+  marketSection: 'Main Arcade',
+  featuredMessage: 'Enter the store, inspect the offers and purchase directly from this Client.',
+}
+
+export function normalizeStoreEnvironmentConfig(value: unknown): StoreEnvironmentConfig {
+  const input = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+  const allowed = new Set<StoreEnvironmentPreset>(['radiant_arcade','glass_citadel','night_market','garden_exchange'])
+  const preset = allowed.has(input.preset as StoreEnvironmentPreset)
+    ? input.preset as StoreEnvironmentPreset
+    : DEFAULT_STORE_ENVIRONMENT.preset
+  const clean=(entry:unknown,fallback:string,max:number)=>{
+    const value=String(entry ?? '').trim().slice(0,max)
+    return value || fallback
+  }
+  return {
+    preset,
+    sign: clean(input.sign,DEFAULT_STORE_ENVIRONMENT.sign,80),
+    tagline: clean(input.tagline,DEFAULT_STORE_ENVIRONMENT.tagline,180),
+    marketSection: clean(input.marketSection,DEFAULT_STORE_ENVIRONMENT.marketSection,80),
+    featuredMessage: clean(input.featuredMessage,DEFAULT_STORE_ENVIRONMENT.featuredMessage,320),
+  }
+}
+
 export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
   await sql`
     CREATE TABLE IF NOT EXISTS client_business_stores (
@@ -19,6 +56,7 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
       public_opened_at timestamptz,
       first_offer_published_at timestamptz,
       customer_wallet_required boolean NOT NULL DEFAULT false,
+      environment_config jsonb NOT NULL DEFAULT '{}'::jsonb,
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
@@ -28,6 +66,7 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
   await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS public_opened_at timestamptz`
   await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS first_offer_published_at timestamptz`
   await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS customer_wallet_required boolean NOT NULL DEFAULT false`
+  await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS environment_config jsonb NOT NULL DEFAULT '{}'::jsonb`
   await sql`
     UPDATE client_business_stores
     SET formation_due_at = COALESCE(formation_due_at, created_at + INTERVAL '3 days')
