@@ -115,8 +115,12 @@ export async function POST(request:NextRequest){
         : 'program'
       const mediaUrl=safeExternalUrl(body.media_url)
       const scheduledAt=clean(body.scheduled_at,80)
+      const scheduledDate=scheduledAt?new Date(scheduledAt):null
       const durationMinutes=Math.max(5,Math.min(1440,Number(body.duration_minutes)||60))
       if(!title)return NextResponse.json({error:'Program title is required'},{status:400})
+      if(scheduledDate&&Number.isNaN(scheduledDate.getTime())){
+        return NextResponse.json({error:'Scheduled program time is invalid'},{status:400})
+      }
 
       const [count]=await ctx.sql`
         SELECT COUNT(*)::int AS count
@@ -145,7 +149,7 @@ export async function POST(request:NextRequest){
           ${description||null},
           ${programType},
           ${mediaUrl},
-          ${scheduledAt||null}::timestamptz,
+          ${scheduledDate?scheduledDate.toISOString():null}::timestamptz,
           'scheduled',
           ${durationMinutes}
         )
