@@ -14,12 +14,12 @@ export async function GET(request:NextRequest){
   const pool=getPool(); const client=await pool.connect()
   try{
     const available=(await client.query(`
-      SELECT id,country,price_flame_coin,status,created_at
+      SELECT id,country,acquisition_cost,price_flame_coin,status,created_at
       FROM bridger_whatsapp_numbers WHERE status='available' AND assigned_to IS NULL
       ORDER BY price_flame_coin ASC,created_at ASC LIMIT 100
     `)).rows
     const mine=(await client.query(`
-      SELECT id,phone_e164,country,price_flame_coin,status,assigned_at
+      SELECT id,phone_e164,country,acquisition_cost,price_flame_coin,status,assigned_at
       FROM bridger_whatsapp_numbers WHERE assigned_to=$1::uuid
       ORDER BY assigned_at DESC
     `,[user.id])).rows
@@ -66,6 +66,7 @@ export async function POST(request:NextRequest){
       id:assigned.id,
       phone_e164:assigned.phone_e164,
       country:assigned.country,
+      acquisition_cost:assigned.acquisition_cost,
       price_flame_coin:assigned.price_flame_coin,
       status:assigned.status,
       assigned_at:assigned.assigned_at,
