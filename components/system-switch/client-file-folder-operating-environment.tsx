@@ -25,6 +25,7 @@ import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
 import { ClientBridgeAiSupport } from '@/components/system-switch/client-bridge-ai-support'
 import { ClientFileFolder3D } from '@/components/system-switch/client-file-folder-3d'
 import { getClientToken } from '@/lib/client-auth'
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'
 
@@ -78,6 +79,15 @@ function buildDepth(progress: number) {
   if (progress < 90) return { label: 'Integration', layer: 4, detail: 'Parts and functions are being connected.' }
   return { label: 'Commissioning', layer: 5, detail: 'The system is being prepared for live operation.' }
 }
+
+const BUILD_LADDER = [
+  { label:'Blueprint', detail:'Choose the system and understand what it must do.' },
+  { label:'Foundation', detail:'Secure the required build kit and establish the core.' },
+  { label:'Structure', detail:'Functions appear as construction progresses through time.' },
+  { label:'Integration', detail:'Attach components, verification and connections.' },
+  { label:'Commissioning', detail:'Prepare the finished build for real users and activity.' },
+  { label:'Live operation', detail:'Use the system, record movement, serve customers and expand.' },
+]
 
 function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { blueprint: any; label?: string; onBuild?: () => void }) {
   const modules = systemModules(blueprint?.system_type)
@@ -312,6 +322,7 @@ function HostedSystem({
 }
 
 export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [surface, setSurface] = useState<Surface>('command')
   const [world, setWorld] = useState(data.file_folder_world)
   const [formationOpen, setFormationOpen] = useState(false)
@@ -370,16 +381,31 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   )
 
   const surfaces = [
-    { key: 'command' as Surface, label: 'Overview', icon: Home, detail: 'See the whole File Folder and current movement.', tone: 'sky', step: '01' },
-    { key: 'builds' as Surface, label: 'Build + Operate', icon: Hammer, detail: 'Preview, construct, activate and use live systems.', tone: 'violet', step: '02' },
-    { key: 'business' as Surface, label: 'Business + Customers', icon: Store, detail: 'Workshop, Customer Door, payments and support.', tone: 'emerald', step: '03' },
-    { key: 'enterprise' as Surface, label: 'Enterprise', icon: BriefcaseBusiness, detail: 'Lord/Lady elevation, enterprise plan and Legions.', tone: 'amber', step: '04' },
+    { key: 'command' as Surface, label: 'Command Citadel', icon: Home, detail: 'Read the whole business world, its resources and its next movement.', tone: 'sky', step: '01' },
+    { key: 'builds' as Surface, label: 'Construction + Systems', icon: Hammer, detail: 'Blueprint, supply, build, commission and operate real systems.', tone: 'violet', step: '02' },
+    { key: 'business' as Surface, label: 'Market + Customers', icon: Store, detail: 'Turn finished systems into customer movement, orders, payments and service.', tone: 'emerald', step: '03' },
+    { key: 'enterprise' as Surface, label: 'Expansion Council', icon: BriefcaseBusiness, detail: 'Develop the business into a Lord/Lady enterprise with Legions and wider operations.', tone: 'amber', step: '04' },
     ...(data.premium_dj_enabled
-      ? [{ key: 'sound' as Surface, label: 'Sound Room', icon: Headphones, detail: 'Private premium File Folder DJ.', tone: 'rose', step: '05' }]
+      ? [{ key: 'sound' as Surface, label: 'Sound Room', icon: Headphones, detail: 'Private premium File Folder atmosphere and DJ.', tone: 'rose', step: '05' }]
       : []),
-  ]
+  ].filter(item=>isVisible(`/client/system-switch#${item.key}`))
+    .sort((a,b)=>orderFor(`/client/system-switch#${a.key}`)-orderFor(`/client/system-switch#${b.key}`))
 
-  const current = surfaces.find(item => item.key === surface) || surfaces[0]
+  const studioDistricts = [
+    { label:'Blueprint Foundry', district:'blueprint_foundry', phase:'Design' },
+    { label:'Materials Depot', district:'build_market', phase:'Supply' },
+    { label:'Construction Yard', district:'formation_yard', phase:'Build' },
+    { label:'Acceleration Bay', district:'boost_bay', phase:'Accelerate' },
+    { label:'Live Systems', district:'active_systems', phase:'Operate' },
+    { label:'Build Intelligence', district:'library_district', phase:'Understand' },
+  ].filter(item=>isVisible(`/client/system-switch#studio:${item.district}`))
+    .sort((a,b)=>orderFor(`/client/system-switch#studio:${a.district}`)-orderFor(`/client/system-switch#studio:${b.district}`))
+
+  useEffect(()=>{
+    if(!surfaces.some(item=>item.key===surface))setSurface((surfaces[0]?.key||'command') as Surface)
+  },[surface,isVisible])
+
+  const current = surfaces.find(item => item.key === surface) || surfaces[0] || { key:'command' as Surface,label:'Command Citadel',icon:Home,detail:'',tone:'sky',step:'01' }
   const CurrentIcon = current.icon
 
   const surfaceTone: Record<string, { selected: string; icon: string; badge: string }> = {
@@ -414,8 +440,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               <p className="mt-1 text-xl font-black text-white">{systems.length}</p>
             </div>
             <div className="rounded-xl border border-violet-300/15 bg-violet-400/5 px-4 py-3">
-              <p className="uppercase tracking-wider text-violet-300">Position</p>
-              <p className="mt-1 text-xs font-black uppercase text-white">{data.enterprise?.position || 'client'}</p>
+              <p className="uppercase tracking-wider text-violet-300">Build Power</p>
+              <p className="mt-1 text-xl font-black text-white">×{Number(world?.buildFunding?.buildSpeedMultiplier || data.build_funding?.buildSpeedMultiplier || 1).toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -424,7 +450,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
       <div className="p-4 pb-0 md:p-6 md:pb-0">
         <ClientFileFolder3D
-          activeSurface={surface}
+          activeSurface={current.key}
           onSurfaceChange={(next) => {
             setSurface(next)
             setSelectedSystemId('')
@@ -433,61 +459,34 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           activeBuilds={activeBuilds.map((build:any)=>({ progress: buildProgress(build, now) }))}
           liveSystems={systems.length}
           premiumSound={Boolean(data.premium_dj_enabled)}
+          visibleSurfaceKeys={surfaces.map(item=>item.key)}
         />
       </div>
 
       <div className="p-4 md:p-6">
-        <nav aria-label="File Folder districts" className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-          {surfaces.map(item => {
-            const Icon = item.icon
-            const selected = surface === item.key
-            const colors = surfaceTone[item.tone] || surfaceTone.sky
-            return (
-              <button
-                key={item.key}
-                onClick={() => { setSurface(item.key); setSelectedSystemId(''); setFormationOpen(false) }}
-                className={`rounded-2xl border p-4 text-left transition ${selected ? colors.selected : 'border-white/8 bg-black/20 hover:border-white/15 hover:bg-white/[0.035]'}`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Icon className={`h-4 w-4 ${selected ? colors.icon : 'text-slate-400'}`} />
-                    <span className="text-[10px] font-black uppercase tracking-[0.08em] text-white">{item.label}</span>
-                  </div>
-                  <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black ${colors.badge}`}>{item.step}</span>
-                </div>
-                <p className="mt-2 text-[10px] leading-5 text-slate-300">{item.detail}</p>
-              </button>
-            )
-          })}
-        </nav>
-
-        <div className="mt-3 overflow-x-auto rounded-2xl border border-white/8 bg-black/20 p-2">
-          <div className="flex min-w-max items-center gap-2">
-            <span className="px-2 text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">Studio transit</span>
-            {[
-              ['Workshop','workshop_core'],
-              ['Blueprints','blueprint_foundry'],
-              ['Materials','build_market'],
-              ['Boosts','boost_bay'],
-              ['Construction','formation_yard'],
-              ['Live Systems','active_systems'],
-              ['Library','library_district'],
-            ].map(([label,district])=>(
-              <button key={district} onClick={()=>travelToStudio(district)} className="rounded-full border border-white/10 bg-white/[0.025] px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] text-slate-300 transition hover:border-sky-300/25 hover:text-sky-200">
-                {label}
-              </button>
-            ))}
-            <button onClick={()=>{setSurface('business');setSelectedSystemId('');setFormationOpen(false)}} className="rounded-full border border-emerald-300/15 bg-emerald-400/[0.04] px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] text-emerald-200">
-              Store + Customers
-            </button>
-            <button onClick={()=>{setSurface('enterprise');setSelectedSystemId('');setFormationOpen(false)}} className="rounded-full border border-amber-300/15 bg-amber-400/[0.04] px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] text-amber-200">
-              Enterprise
-            </button>
-            {data.premium_dj_enabled && <button onClick={()=>{setSurface('sound');setSelectedSystemId('');setFormationOpen(false)}} className="rounded-full border border-rose-300/15 bg-rose-400/[0.04] px-3 py-2 text-[9px] font-black uppercase tracking-[0.08em] text-rose-200">
-              Sound Room
-            </button>}
+        <section className="mt-4 rounded-3xl border border-violet-300/10 bg-[linear-gradient(135deg,rgba(139,92,246,.055),rgba(14,165,233,.03),rgba(2,6,23,.3))] p-4 md:p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">System-building campaign</p>
+              <h2 className="mt-1 text-lg font-black text-white">Build capability, put it into the world, then expand through real business movement.</h2>
+              <p className="mt-2 max-w-4xl text-[11px] leading-5 text-slate-400">The File Folder behaves like a persistent operating base: construction continues through time, materials have function, completed structures become usable systems, and customers or enterprise movement are the expansion layer.</p>
+            </div>
+            <button onClick={()=>setSurface('builds')} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/10 px-4 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-violet-100"><Hammer className="h-3.5 w-3.5"/>Enter construction</button>
           </div>
-        </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
+            {BUILD_LADDER.map((stage,index)=><div key={stage.label} className="rounded-2xl border border-white/8 bg-black/20 p-3">
+              <div className="flex items-center justify-between gap-2"><span className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-500">Stage {index+1}</span><span className="h-1.5 w-1.5 rounded-full bg-violet-300"/></div>
+              <p className="mt-2 text-[10px] font-black text-white">{stage.label}</p>
+              <p className="mt-1 text-[9px] leading-4 text-slate-500">{stage.detail}</p>
+            </div>)}
+          </div>
+          {surface==='builds'&&<div className="mt-4 border-t border-white/8 pt-4">
+            <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">Build support chain</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {studioDistricts.map((item,index)=><button key={item.district} onClick={()=>travelToStudio(item.district)} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.025] px-3 py-2 text-[9px] font-black text-slate-300 transition hover:border-sky-300/25 hover:text-sky-100"><span className="text-sky-300">{String(index+1).padStart(2,'0')}</span>{item.label}<span className="text-[7px] uppercase tracking-wider text-slate-600">{item.phase}</span></button>)}
+            </div>
+          </div>}
+        </section>
 
         <div className="mt-4 min-w-0">
           <div className="mb-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
@@ -506,7 +505,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   onClick={() => setSurface('builds')}
                   className="mt-5 inline-flex items-center gap-2 rounded-full bg-sky-400 px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950"
                 >
-                  Open build environment <ArrowRight className="h-3.5 w-3.5" />
+                  Enter construction + systems <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </div>
 
@@ -605,8 +604,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
             {!selectedSystem && <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Build Studio</p>
-                <p className="mt-1 text-xs text-slate-500">Inspect the intended system first, then enter the formation workspace when ready.</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Construction Command</p>
+                <p className="mt-1 text-xs text-slate-500">Inspect the blueprint first. Construction, materials, acceleration, commissioning and live operation stay inside one build chain.</p>
               </div>
               <button
                 onClick={() => formationOpen ? setFormationOpen(false) : openFormation('workshop_core')}
