@@ -132,7 +132,7 @@ export function WeaveDashboardWorld({
   const copy = ROLE[role]
 
   return (
-    <div className="relative mx-auto w-full max-w-6xl overflow-visible rounded-[1.6rem] border border-transparent bg-transparent">
+    <div className="relative mx-auto w-full max-w-6xl overflow-visible rounded-[1.6rem] border border-sky-200/[0.07] bg-[#030a15]/22 shadow-[0_28px_90px_rgba(2,8,23,.22)] backdrop-blur-md">
       <div className="relative p-3.5 sm:p-5 md:p-7">
         <div className="pointer-events-none absolute inset-x-[4%] top-[8%] h-[58%] rounded-[50%] bg-[radial-gradient(circle_at_50%_50%,rgba(56,189,248,.07),transparent_68%)] blur-2xl" />
 
