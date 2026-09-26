@@ -942,4 +942,74 @@ for(const file of [
  assert.equal(syntaxErrors.length,0,file+' working-system surface syntax/transpile check')
 }
 
+const positionIdentitySource=fs.readFileSync(path.join(root,'app/(app)/roles/page.tsx'),'utf8')
+const businessDistrictSource=fs.readFileSync(path.join(root,'app/(app)/places/page.tsx'),'utf8')
+const clientRegistrySource=fs.readFileSync(path.join(root,'app/(app)/clients/page.tsx'),'utf8')
+const privateGroundSource=fs.readFileSync(path.join(root,'app/(app)/private-ground/page.tsx'),'utf8')
+const streamSource=fs.readFileSync(path.join(root,'app/(app)/video-feed/page.tsx'),'utf8')
+const companyGuidanceSource=fs.readFileSync(path.join(root,'app/(app)/company-chat/page.tsx'),'utf8')
+const companyLoopsMatureSource=fs.readFileSync(path.join(root,'app/(app)/company/loops/page.tsx'),'utf8')
+const profileMatureSource=fs.readFileSync(path.join(root,'app/(app)/profiles/page.tsx'),'utf8')
+const walletCanonicalSource=fs.readFileSync(path.join(root,'app/(app)/wallet/page.tsx'),'utf8')
+const valueMovementSource=fs.readFileSync(path.join(root,'app/(app)/wallet/deposit-withdraw/page.tsx'),'utf8')
+const reserveEngineSource=fs.readFileSync(path.join(root,'app/(app)/fund-wall/page.tsx'),'utf8')
+const bridgePlazaMatureSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
+const cadenceEngineSource=fs.readFileSync(path.join(root,'app/(app)/search/page.tsx'),'utf8')
+const sidebarMatureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+
+assert.ok(positionIdentitySource.includes('Position + Identity Engine'),'Legacy roles/settings route is a real Position and Identity system')
+assert.ok(positionIdentitySource.includes('Changing your name or password does not silently change'),'Identity changes do not masquerade as institutional role changes')
+assert.ok(sidebarMatureSource.includes('Position + Identity'),'Sidebar names the identity surface truthfully')
+assert.ok(businessDistrictSource.includes('Business District'),'Places route is the canonical Business District')
+assert.ok(!businessDistrictSource.includes('<Market'),'Business District no longer embeds a duplicate Market mini-app')
+assert.ok(!businessDistrictSource.includes('<Arena'),'Business District no longer embeds a duplicate Arena mini-app')
+assert.ok(!businessDistrictSource.includes('<Lounge'),'Business District no longer embeds a duplicate Lounge mini-app')
+assert.ok(clientRegistrySource.includes('Client Presence Registry'),'Clients route is a state registry rather than a generic CRM')
+assert.ok(!clientRegistrySource.includes('Add Client'),'Client registry does not advertise an unwired Add Client action')
+assert.ok(!clientRegistrySource.includes('Edit Client'),'Client registry does not advertise an unwired Edit Client action')
+assert.ok(!clientRegistrySource.includes('Remove Client'),'Client registry does not advertise an unwired Remove Client action')
+assert.ok(privateGroundSource.includes('Private Ground · Session State'),'Private Ground exposes recorded session state')
+for(const fakeAction of ['Schedule Session','Start</','End Session']){
+ assert.ok(!privateGroundSource.includes(fakeAction),`Private Ground removes false action ${fakeAction}`)
+}
+assert.ok(streamSource.includes('WEAVE Stream Registry'),'Stream is framed around real media state')
+assert.ok(!streamSource.includes('>Like<'),'Stream removes unwired Like control')
+assert.ok(!streamSource.includes('>Comment<'),'Stream removes unwired Comment control')
+assert.ok(!streamSource.includes('Go Live'),'Stream removes unwired Go Live control')
+assert.ok(streamSource.includes('<TipDialog'),'Stream keeps the backend-connected Tip action')
+assert.ok(companyGuidanceSource.includes('Company Guidance Router'),'Company guidance routes by functional consequence')
+assert.ok(companyLoopsMatureSource.includes('Company Loop Registry'),'Company Loops is an operating registry')
+assert.ok(profileMatureSource.includes('Presence Record'),'Profiles exposes one structural Presence record')
+assert.ok(profileMatureSource.includes('<ClientBuildPull'),'Agent/Bridger profile keeps the Client build path visible')
+assert.ok(walletCanonicalSource.includes("redirect('/wallet/deposit-withdraw')"),'Wallet base route resolves directly to canonical Value Movement')
+assert.ok(valueMovementSource.includes('Value Movement Engine'),'Wallet is a recorded value lifecycle')
+assert.ok(!valueMovementSource.includes('Your Referral Link'),'Wallet no longer mixes referral UI with financial movement')
+assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a coherent Reserve Engine')
+assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
+assert.ok(bridgePlazaMatureSource.includes('Bridge Plaza · World Router'),'Bridge Plaza exposes world-routing causality')
+assert.ok(bridgePlazaMatureSource.includes('The Crossing is a recorded transition'),'Client crossing exposes recorded state')
+assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
+assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
+
+for(const file of [
+ 'app/(app)/roles/page.tsx',
+ 'app/(app)/places/page.tsx',
+ 'app/(app)/clients/page.tsx',
+ 'app/(app)/private-ground/page.tsx',
+ 'app/(app)/video-feed/page.tsx',
+ 'app/(app)/company-chat/page.tsx',
+ 'app/(app)/company/loops/page.tsx',
+ 'app/(app)/profiles/page.tsx',
+ 'app/(app)/wallet/page.tsx',
+ 'app/(app)/wallet/deposit-withdraw/page.tsx',
+ 'app/(app)/fund-wall/page.tsx',
+ 'app/(app)/weave/page.tsx',
+ 'app/(app)/search/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' PhD-maturity syntax/transpile check')
+}
+
 console.log('PASS: Agent Loop 1 commission awareness, separate Agility ad, Bridger Prospect visibility;  Bridger daily free Prospect claim, active outreach integration, Prospect wording;  Client portal entry isolation, authenticated Client identity, Flame Coin dashboard;  DJ Workshop and institutional live sound operation;  Lord/Lady Enterprise Dream integration, Legion access, enterprise notifications;  Deposit lifecycle notifications, authenticated inbox, review deep links;  Department Entry tickets, music gate, OPay verification, paid code release;  Authority hydration, admin panels, destination routes, client workshop rendering, payment verification, random File Numbers, shared OPay rail, Agility economics, delivery, historical pricing, fulfillment, login advertisement, tutorial, and River assistance')
