@@ -34,7 +34,8 @@ import {
 import type { WeaveEvent } from '@/lib/weave-event'
 import { getEventProgress } from '@/lib/weave-event'
 import { useAuth } from '@/lib/auth-provider'
-import { FlameEventRiverField } from '@/components/events/flame-event-river-field'\nimport { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
+import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
+import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { WeaveLogo } from '@/components/weave-logo'
 
 type WorldNode = {
