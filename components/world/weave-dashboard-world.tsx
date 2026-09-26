@@ -55,7 +55,7 @@ const ROLE: Record<WorldRole, {
   client: {
     eyebrow: 'Client World',
     title: 'Your world. Your movement.',
-    subtitle: 'Enter one function at a time while the WEAVE world remains around you.',
+    subtitle: 'Your functions remain inside one WEAVE operating world while your File Folder carries the live systems you build and use.',
     purpose: WEAVE_SYSTEM_MAP.positions.client.description,
     functionsHref: '/client/functions',
     links: [
@@ -72,13 +72,13 @@ const ROLE: Record<WorldRole, {
   bridger: {
     eyebrow: 'Bridger World',
     title: 'Connection in motion.',
-    subtitle: 'Prospects, Clients and Bridge functions open as separate places, not one long page.',
+    subtitle: 'Crossing, Prospect movement and Client continuity remain distinct functions inside one Bridger operating system.',
     purpose: WEAVE_SYSTEM_MAP.positions.bridger.description,
     functionsHref: '/bridger/functions',
     links: [
-      { label: 'Bridge AI', detail: 'Prospect workshop', href: '/bridger/bridge-ai', icon: GitBranch, tone: 'sky' },
+      { label: 'Bridge AI', detail: 'Crossing → Client AI support', href: '/bridger/bridge-ai', icon: GitBranch, tone: 'sky' },
       { label: 'Prospect Market', detail: 'Available prospects', href: '/weave/market/prospects', icon: ShoppingBag, tone: 'gold' },
-      { label: 'Clients', detail: 'People in motion', href: '/clients', icon: Users, tone: 'emerald' },
+      { label: 'Clients', detail: 'Client continuity and support', href: '/bridger/clients', icon: Users, tone: 'emerald' },
       { label: 'Guidance', detail: 'Company support', href: '/company-chat', icon: Headphones, tone: 'sky' },
       { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Software + infrastructure', href: '/marketplace', icon: Store, tone: 'sky' },
       { label: 'Record', detail: 'Ledger and preserved movement', href: '/ledger', icon: CircleDollarSign, tone: 'emerald' },
@@ -89,7 +89,7 @@ const ROLE: Record<WorldRole, {
   agent: {
     eyebrow: 'Agent World',
     title: 'Support made practical.',
-    subtitle: 'Your Bridgers, company work and delivery functions now open independently from Home.',
+    subtitle: 'Your Bridgers, company work and delivery functions stay ordered as parts of one Agent operating system.',
     purpose: WEAVE_SYSTEM_MAP.positions.agent.description,
     functionsHref: '/agent/functions',
     links: [
@@ -106,7 +106,7 @@ const ROLE: Record<WorldRole, {
   admin: {
     eyebrow: 'Administration',
     title: 'The institution in view.',
-    subtitle: 'Authority functions remain separate operating rooms inside one WEAVE world.',
+    subtitle: 'Authority, verification, infrastructure and company controls remain distinct functions inside one institutional system.',
     purpose: WEAVE_SYSTEM_MAP.positions.admin.description,
     functionsHref: '/admin/functions',
     links: [
