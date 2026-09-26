@@ -1,0 +1,61 @@
+import { NextRequest,NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/auth-api'
+import { logAudit } from '@/lib/db'
+import {
+  getEnvironmentOrganizerState,
+  restoreEnvironmentDefaults,
+  setEnvironmentSurfaceOrder,
+  setEnvironmentSurfaceVisibility,
+} from '@/lib/weave-environment-organizer'
+
+export const dynamic='force-dynamic'
+
+async function requireAdmin(request:NextRequest){
+  const user=await getAuthUser(request)
+  if(!user)return {error:NextResponse.json({success:false,error:'Unauthorized'},{status:401})}
+  if(user.role!=='admin')return {error:NextResponse.json({success:false,error:'Administration access required'},{status:403})}
+  return {user}
+}
+
+export async function GET(request:NextRequest){
+  const auth=await requireAdmin(request)
+  if(auth.error)return auth.error
+  try{
+    return NextResponse.json({success:true,...await getEnvironmentOrganizerState()},{headers:{'Cache-Control':'no-store, max-age=0'}})
+  }catch(error:any){
+    return NextResponse.json({success:false,error:error.message||'Unable to load Environment Organizer'},{status:500})
+  }
+}
+
+export async function PATCH(request:NextRequest){
+  const auth=await requireAdmin(request)
+  if(auth.error)return auth.error
+
+  try{
+    const input=await request.json()
+    const action=String(input.action||'')
+    let state
+
+    if(action==='set_visibility'){
+      const surfaceKey=String(input.surfaceKey||'')
+      state=await setEnvironmentSurfaceVisibility(surfaceKey,Boolean(input.visible),auth.user.id)
+      await logAudit(auth.user.id,'environment_organizer.visibility',{surfaceKey,visible:Boolean(input.visible)})
+    }else if(action==='set_order'){
+      const surfaceKey=String(input.surfaceKey||'')
+      const sortOrder=Number(input.sortOrder)
+      if(!Number.isFinite(sortOrder))return NextResponse.json({success:false,error:'Valid sort order required'},{status:400})
+      state=await setEnvironmentSurfaceOrder(surfaceKey,sortOrder,auth.user.id)
+      await logAudit(auth.user.id,'environment_organizer.order',{surfaceKey,sortOrder})
+    }else if(action==='restore_defaults'){
+      state=await restoreEnvironmentDefaults(auth.user.id)
+      await logAudit(auth.user.id,'environment_organizer.restore_defaults',{})
+    }else{
+      return NextResponse.json({success:false,error:'Unknown Environment Organizer action'},{status:400})
+    }
+
+    return NextResponse.json({success:true,...state},{headers:{'Cache-Control':'no-store, max-age=0'}})
+  }catch(error:any){
+    console.error('[Environment Organizer] update error',error)
+    return NextResponse.json({success:false,error:error.message||'Unable to update environment organization'},{status:500})
+  }
+}
