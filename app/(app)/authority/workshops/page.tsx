@@ -11,6 +11,7 @@ import {
   FileText,
   Globe,
   Cloud,
+  Palette,
   Sparkles,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,7 @@ const panels = {
       'Publish company loops, shape participant positions, and manage the workshop surfaces already exposed through Ecosystem Authority.',
     cards: [
       { title: 'WEAVE Infrastructure Workshop', description: 'Operate the persistent Origin registry, Cloud Run runtime, deployment controls, EIGHT web access and Divine Shield.', href: '/admin/infrastructure', icon: Cloud, tags: ['CLOUD RUN', 'ORIGIN', 'DIVINE SHIELD'] },
+      { title: 'Visual Systems Workshop', description: 'Control registered WEAVE artifacts live with draft, publish and rollback instead of rebuilding Cloud Run for every visual correction.', href: '/admin/visual-systems', icon: Palette, tags: ['RUNTIME', 'VISUALS', 'ROLLBACK'] },
       { title: 'EIGHT Developer Workshop', description: 'Open the existing live developer workspace and system tools.', href: '/admin/dev-workshop', icon: Code, tags: ['EIGHT', 'DEVELOPMENT'] },
       { title: 'Client Vault', description: 'Review client balances and withdrawal requests.', href: '/admin/client-vault', icon: Database, tags: ['CLIENTS', 'VAULT'] },
       { title: 'Campaign Flame', description: 'Review crossings and originating provider allocations.', href: '/admin/campaign-flame', icon: Sparkles, tags: ['FLAME', 'REPORTS'] },
