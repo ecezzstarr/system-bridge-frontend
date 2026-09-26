@@ -1,9 +1,8 @@
 'use client'
 
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Float, Html } from '@react-three/drei'
-import { useRef, useState } from 'react'
-import * as THREE from 'three'
+import { useState } from 'react'
 import { FlameEventArtifact3D } from '@/components/events/flame-event-artifact'
 
 const positions = [
