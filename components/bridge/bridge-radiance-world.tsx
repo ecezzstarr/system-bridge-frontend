@@ -4,6 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Float, Html } from '@react-three/drei'
 import { useRef, useState } from 'react'
 import * as THREE from 'three'
+import { FlameEventArtifact3D } from '@/components/events/flame-event-artifact'
 
 const positions = [
   { id: 'mandate', name: 'MANDATE', color: '#f59e0b', x: -4 },
@@ -13,33 +14,27 @@ const positions = [
 ]
 
 function Core({ active }: { active: boolean }) {
-  const ref = useRef<THREE.Mesh>(null)
-  useFrame((_, delta) => {
-    if (ref.current) ref.current.rotation.y += delta * (active ? 0.8 : 0.25)
-  })
   return (
-    <Float floatIntensity={0.5} rotationIntensity={0.15}>
-      <mesh ref={ref} position={[0, 2.2, -5]}>
-        <icosahedronGeometry args={[1.35, 2]} />
-        <meshStandardMaterial color={active ? '#ffffff' : '#64748b'} emissive={active ? '#38bdf8' : '#172033'} emissiveIntensity={active ? 2 : 0.7} wireframe />
-      </mesh>
+    <Float floatIntensity={0.45} rotationIntensity={0.12}>
+      <group position={[0,2.2,-5]} scale={0.82}>
+        <FlameEventArtifact3D variant="core" progress={active?4:2} active={active} />
+      </group>
     </Float>
   )
 }
 
 function Portal({ item, active, onSelect, z }: { item: typeof positions[number]; active: boolean; onSelect: () => void; z: number }) {
-  const ref = useRef<THREE.Mesh>(null)
-  useFrame((_, delta) => {
-    if (ref.current) ref.current.rotation.z += delta * (active ? 0.7 : 0.2)
-  })
   return (
-    <group position={[item.x, 1, z]}>
-      <mesh ref={ref} onClick={onSelect}>
-        <torusGeometry args={[1, 0.09, 16, 64]} />
-        <meshStandardMaterial color={item.color} emissive={item.color} emissiveIntensity={active ? 2.5 : 0.5} />
-      </mesh>
-      <Html center>
-        <button type="button" onClick={onSelect} className="rounded-full border border-white/10 bg-black/70 px-3 py-1 text-[9px] font-semibold tracking-[0.2em] text-white backdrop-blur">
+    <group
+      position={[item.x,1,z]}
+      onClick={onSelect}
+      onPointerOver={()=>{document.body.style.cursor='pointer'}}
+      onPointerOut={()=>{document.body.style.cursor='auto'}}
+      scale={active?1.12:0.92}
+    >
+      <FlameEventArtifact3D variant="portal" progress={active?4:3} accent={item.color} active />
+      <Html center position={[0,-1.2,0]}>
+        <button type="button" onClick={onSelect} className="rounded-xl border border-white/10 bg-black/70 px-3 py-1.5 text-[9px] font-semibold tracking-[0.2em] text-white backdrop-blur">
           {item.name}
         </button>
       </Html>
