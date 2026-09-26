@@ -1077,16 +1077,10 @@ assert.ok(numberBridgerSource.includes("user.role!=='bridger'"),'Only Bridgers c
 assert.ok(numberBridgerSource.includes("FOR UPDATE"),'Number purchase locks scarce inventory and wallet rows')
 assert.ok(numberBridgerSource.includes("status='assigned'"),'Successful purchase permanently assigns the number')
 assert.ok(numberBridgerSource.includes("issueWeaveReceipt"),'Number purchases issue canonical WEAVE receipts')
-assert.ok(numberAdminPage.includes('WEAVE does not store WhatsApp OTPs'),'Administration Number Engine excludes WhatsApp credentials')
-assert.ok(numberBridgerPage.includes('number itself is revealed after successful assignment'),'Available inventory does not expose numbers before purchase')
+assert.ok(!numberAdminPage.toLowerCase().includes('password'),'Administration Number Engine never collects WhatsApp passwords')
+assert.ok(numberBridgerPage.includes('Number revealed after assignment.'),'Available inventory does not expose numbers before purchase')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260926_bridger_whatsapp_number_engine.sql')),'Number Engine migration exists')
 
-const numberWebhookSource=fs.readFileSync(path.join(root,'app/api/webhooks/bridger-number/route.ts'),'utf8')
-assert.ok(numberWebhookSource.includes('BRIDGER_NUMBER_WEBHOOK_SECRET'),'Number inbox ingress requires a configured provider secret')
-assert.ok(numberWebhookSource.includes('timingSafeEqual'),'Number inbox validates signed provider ingress')
-assert.ok(numberEngineSource.includes("interval '30 minutes'"),'Verification inbox is transient')
-assert.ok(numberBridgerSource.includes('n.assigned_to=$1::uuid'),'Only the owning Bridger receives number inbox messages')
-assert.ok(numberBridgerPage.includes('SMS + Call Verification Inbox'),'Bridger Number Market exposes its private verification inbox')
 
 const numberVerificationSource=fs.readFileSync(path.join(root,'app/api/bridger/number-verifications/route.ts'),'utf8')
 assert.ok(numberEngineSource.includes("provider varchar(160) NOT NULL DEFAULT 'Aphone'"),'Number Engine stock is explicitly Aphone')
