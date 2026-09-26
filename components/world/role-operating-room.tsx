@@ -36,6 +36,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
+import { usePresenceCamera } from '@/components/world/presence-camera'
 import { ClientBuildPull } from '@/components/world/client-build-pull'
 
 type Role = 'agent' | 'admin'
@@ -201,12 +202,14 @@ const ROLE_COPY = {
 
 export function RoleOperatingRoom({ role }: { role: Role }) {
   const copy = ROLE_COPY[role]
+  const { scene, moving } = usePresenceCamera()
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] p-3 md:p-6">
-      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/82 backdrop-blur-xl">
+    <main className="relative mx-auto w-full max-w-[1500px] p-3 md:p-6">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-[7%] top-1 h-28 rounded-[50%] bg-sky-300/[0.035] blur-3xl" />
+      <section className="weave-system-depth relative overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/68 shadow-[0_32px_100px_rgba(2,8,23,.38)] backdrop-blur-xl">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(56,189,248,.13),transparent_36%),radial-gradient(circle_at_88%_0%,rgba(245,158,11,.06),transparent_28%)] p-5 md:p-7">
-          <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">{copy.eyebrow}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2"><p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">{copy.eyebrow}</p><p className="text-[8px] font-black uppercase tracking-[0.16em] text-white/35">{scene.district} · {scene.level}{moving ? " · moving" : " · present"}</p></div>
           <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">{copy.title}</h1>
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">{copy.detail}</p>
         </header>
