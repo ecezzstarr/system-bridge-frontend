@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb } from '@/lib/client-file-folder'
 import { resolveClientToken, ensureClientVaultSchema } from '@/lib/client-vault'
 import { ensureClientVaultLedgerSchema } from '@/lib/client-vault-ledger'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function POST(request: NextRequest) {
   const sql = getFileFolderDb()
@@ -16,5 +17,6 @@ export async function POST(request: NextRequest) {
   const [vault] = await sql`SELECT balance,currency FROM client_vaults WHERE client_id=${clientId}::uuid LIMIT 1`
   if (!vault || Number(vault.balance) < amount) return NextResponse.json({ error: 'Insufficient available value' }, { status: 409 })
   const [requestRow] = await sql`INSERT INTO client_vault_withdrawals (client_id,amount,currency,destination,status) VALUES (${clientId}::uuid,${amount},${vault.currency},${destination},'pending_approval') RETURNING id,amount,currency,destination,status,created_at`
-  return NextResponse.json({ success: true, withdrawal: requestRow })
+  const receipt = await issueWeaveReceipt({ userId: clientId, kind: 'withdrawal', source: 'client_vault_withdrawal', sourceId: String(requestRow.id), amount, currency: String(vault.currency), status: 'pending_approval', description: 'Client Vault withdrawal request', metadata: { destination }, sql })
+  return NextResponse.json({ success: true, withdrawal: requestRow, receipt })
 }
