@@ -7,6 +7,8 @@ import {
   ShoppingBag,
   Sparkles,
   Store,
+  Radio,
+  Crown,
 } from 'lucide-react'
 import type { StoreEnvironmentConfig } from '@/lib/client-business-store'
 
@@ -108,6 +110,8 @@ export function ClientMarketEnvironment({
   config,
   level,
   orderRef,
+  streamUrl,
+  enterpriseUrl,
 }:{
   slug:string
   store:{name:string;description?:string|null;customer_wallet_required?:boolean}
@@ -116,6 +120,8 @@ export function ClientMarketEnvironment({
   config:StoreEnvironmentConfig
   level:'door'|'storefront'|'market_hall'
   orderRef?:string|null
+  streamUrl?:string|null
+  enterpriseUrl?:string|null
 }){
   const style=presetClass[config.preset]||presetClass.radiant_arcade
   const levelLabel=level==='market_hall'?'Market Hall':level==='storefront'?'Constructed Storefront':'Customer Door'
@@ -138,6 +144,8 @@ export function ClientMarketEnvironment({
             <div className="mt-6 flex flex-wrap gap-2">
               <a href="#offers" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-black text-slate-950">Enter store <ArrowRight className="h-4 w-4"/></a>
               <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><ShoppingBag className="h-4 w-4"/>No WEAVE account required</span>
+              {streamUrl&&<Link href={streamUrl} className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><Radio className="h-4 w-4"/>Streaming Gate</Link>}
+              {enterpriseUrl&&<Link href={enterpriseUrl} className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><Crown className="h-4 w-4"/>Enterprise Door</Link>}
             </div>
           </div>
           <Architecture level={level} preset={config.preset}/>
