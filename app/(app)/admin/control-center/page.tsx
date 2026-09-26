@@ -57,18 +57,15 @@ import { toast } from 'sonner'
 import { clearToken } from '@/lib/auth-client'
 import { RiverChat } from '@/components/river-chat'
 import { EcosystemNav } from '@/components/ecosystem-nav'
-import Arena from '@/components/places/arena'
-import Casino from '@/components/places/casino'
-import Lounge from '@/components/places/lounge'
 import { eightOperate, readScroll } from '@/lib/eight'
 import { DepartmentalCodesSection } from '@/components/admin/departmental-codes-section'
 
-type TabId = 'lounge' | 'arena' | 'casino' | 'wallet' | 'workshops' | 'panel' | 'eight'
+type TabId = 'wallet' | 'workshops' | 'panel' | 'eight'
 
 export default function AdminTerminal() {
   const { user, logout } = useAuth()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<TabId>('lounge')
+  const [activeTab, setActiveTab] = useState<TabId>('panel')
   const [liveStats, setLiveStats] = useState<{ totalUsers: number; platformVaultTrx: number; escrowPoolTrx: number } | null>(null)
 
   useEffect(() => {
@@ -105,12 +102,6 @@ export default function AdminTerminal() {
         hash === '#departmental'
       ) {
         setActiveTab('panel')
-      } else if (hash === '#lounge') {
-        setActiveTab('lounge')
-      } else if (hash === '#arena') {
-        setActiveTab('arena')
-      } else if (hash === '#casino') {
-        setActiveTab('casino')
       } else if (hash === '#wallet') {
         setActiveTab('wallet')
       } else if (hash === '#workshops') {
@@ -142,9 +133,6 @@ export default function AdminTerminal() {
   }
 
   const tabs = [
-    { id: 'lounge' as TabId, label: 'Lounge', icon: <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" /> },
-    { id: 'arena' as TabId, label: 'Arena', icon: <Gamepad2 className="h-4 w-4 sm:h-5 sm:w-5" /> },
-    { id: 'casino' as TabId, label: 'Casino', icon: <Trophy className="h-4 w-4 sm:h-5 sm:w-5" /> },
     { id: 'wallet' as TabId, label: 'Wallet', icon: <Wallet className="h-4 w-4 sm:h-5 sm:w-5" /> },
     { id: 'workshops' as TabId, label: 'Admin Workshops', icon: <Code className="h-4 w-4 sm:h-5 sm:w-5" /> },
     { id: 'panel' as TabId, label: 'Admin Panel', icon: <Shield className="h-4 w-4 sm:h-5 sm:w-5" /> },
@@ -157,9 +145,9 @@ export default function AdminTerminal() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400 mb-1">
-            The Keeping
+Administration Control Center
           </h1>
-          <p className="text-slate-400 text-sm">Ecosystem Authority: {user.name}</p>
+          <p className="text-slate-400 text-sm">Authority, verification, value and infrastructure · {user.name}</p>
         </div>
       </div>
 
@@ -205,9 +193,6 @@ export default function AdminTerminal() {
 
       {/* Content Area */}
       <div className="space-y-6">
-        {activeTab === 'lounge' && <Lounge />}
-        {activeTab === 'arena' && <Arena />}
-        {activeTab === 'casino' && <Casino />}
         {activeTab === 'wallet' && <AdminWalletSection user={user} />}
         {activeTab === 'workshops' && <AdminWorkshopsSection />}
         {activeTab === 'panel' && <AdminPanelSection user={user} />}
