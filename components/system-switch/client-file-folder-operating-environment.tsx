@@ -500,22 +500,28 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                       No construction is running. Preview a blueprint before starting the next build.
                     </p>
                   )}
-                  {activeBuilds.slice(0, 4).map((build: any) => (
-                    <div key={build.id} className="rounded-xl border border-white/10 bg-black/20 p-4">
+                  {activeBuilds.slice(0, 4).map((build: any) => {
+                    const progress=buildProgress(build,now)
+                    const depth=buildDepth(progress)
+                    return <div key={build.id} className="rounded-xl border border-white/10 bg-black/20 p-4" style={{boxShadow:`0 ${8+depth.layer*4}px ${20+depth.layer*8}px rgba(2,8,23,.45), inset 0 1px 0 rgba(255,255,255,.03)`}}>
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-bold text-white">{build.title}</p>
+                          <p className="text-sm font-black text-white">{build.title}</p>
                           <p className="mt-1 text-[9px] uppercase tracking-wider text-slate-500">
                             {String(build.system_type || '').replaceAll('_', ' ')}
                           </p>
                         </div>
-                        <span className="text-[10px] font-black text-amber-200">{Math.round(buildProgress(build, now))}%</span>
+                        <div className="text-right">
+                          <span className="text-[10px] font-black text-amber-200">{Math.round(progress)}%</span>
+                          <p className="mt-1 text-[8px] font-black uppercase tracking-[0.14em] text-amber-300">{depth.label} · Layer {depth.layer}/5</p>
+                        </div>
                       </div>
                       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
-                        <div className="h-full rounded-full bg-amber-300" style={{ width: buildProgress(build, now) + '%' }} />
+                        <div className="h-full rounded-full bg-amber-300" style={{ width: progress + '%' }} />
                       </div>
+                      <p className="mt-2 text-[9px] text-slate-400">{depth.detail}</p>
                     </div>
-                  ))}
+                  })}
                 </div>
               </div>
 
@@ -628,26 +634,33 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     </div>
                     <div className="mt-4 space-y-3">
                       {activeBuilds.length === 0 && <p className="text-xs text-slate-500">No build is currently running.</p>}
-                      {activeBuilds.map((build: any) => (
-                        <div key={build.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      {activeBuilds.map((build: any) => {
+                        const progress=buildProgress(build,now)
+                        const depth=buildDepth(progress)
+                        return <div key={build.id} className="rounded-2xl border border-white/10 bg-black/20 p-4" style={{boxShadow:`0 ${10+depth.layer*5}px ${24+depth.layer*9}px rgba(2,8,23,.48)`}}>
                           <div className="flex items-center justify-between gap-3">
                             <div>
                               <p className="text-sm font-bold text-white">{build.title}</p>
                               <p className="mt-1 text-[10px] text-slate-500">{build.purpose}</p>
                             </div>
                             <span className="rounded-full bg-amber-400/10 px-3 py-1 text-[9px] font-black text-amber-200">
-                              {Math.round(buildProgress(build, now))}%
+                              {Math.round(progress)}%
                             </span>
                           </div>
+                          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-300/10 bg-amber-400/[0.025] px-3 py-2">
+                            <div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-amber-300">{depth.label} · depth layer {depth.layer}/5</p><p className="mt-1 text-[9px] text-slate-400">{depth.detail}</p></div>
+                            <span className="text-[9px] font-black text-amber-200">×{Number(build.speed_multiplier||1).toFixed(2)} speed</span>
+                          </div>
                           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            {systemModules(build.system_type).map(module => (
-                              <div key={module} className="rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 text-[9px] text-slate-400">
+                            {systemModules(build.system_type).map((module,index) => {
+                              const ready = progress >= ((index+1)/systemModules(build.system_type).length)*70
+                              return <div key={module} className={`rounded-lg border px-3 py-2 text-[9px] ${ready?'border-emerald-300/10 bg-emerald-400/[0.035] text-emerald-100':'border-white/5 bg-white/[0.02] text-slate-400'}`}>
                                 {module}
                               </div>
-                            ))}
+                            })}
                           </div>
                         </div>
-                      ))}
+                      })}
                     </div>
                   </div>
 
