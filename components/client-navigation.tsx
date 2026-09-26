@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation'
 import { Flame, GitBranch, Home, LayoutGrid, Orbit } from 'lucide-react'
 
 const items = [
-  { label: 'Home', href: '/client/dashboard', icon: Home },
-  { label: 'Functions', href: '/client/functions', icon: LayoutGrid },
+  { label: 'Home World', href: '/client/dashboard', icon: Home },
+  { label: 'Operating Room', href: '/client/functions', icon: LayoutGrid },
   { label: 'File Folder', href: '/client/system-switch', icon: Orbit },
-  { label: 'Loops', href: '/client/loops', icon: GitBranch },
-  { label: 'Loop 1', href: '/client/event', icon: Flame },
+  { label: 'Loop Field', href: '/client/loops', icon: GitBranch },
+  { label: 'Loop 1 Ground', href: '/client/event', icon: Flame },
 ]
 
 export function ClientNavigation() {
