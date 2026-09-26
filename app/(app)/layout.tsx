@@ -17,6 +17,7 @@ import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-
 import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
+import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
 
 export default function AppLayout({
   children,
@@ -111,6 +112,7 @@ export default function AppLayout({
   }
 
   return (
+    <EnvironmentOrganizerProvider>
     <div className="relative flex min-h-screen overflow-hidden bg-transparent">
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
         <AppSidebar user={user as any} />
@@ -131,7 +133,7 @@ export default function AppLayout({
                   userName={user?.name}
                   pathname={pathname}
                 >
-                  {children}
+                  <EnvironmentPageGuard>{children}</EnvironmentPageGuard>
                 </FlameEventRoleAtmosphere>
               </NormalWeaveRoleAtmosphere>
             </WeaveEnvironmentSurface>
@@ -149,5 +151,6 @@ export default function AppLayout({
         />
       )}
     </div>
+    </EnvironmentOrganizerProvider>
   )
 }
