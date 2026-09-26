@@ -57,6 +57,10 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
     scene: { key:'visual-systems', label:'Visual Systems Workshop', district:'Institution', level:'system', camera:{x:27,y:8,yaw:4.2,pitch:2,zoom:1.028,depth:39} },
   },
   {
+    match: path => path === '/admin/environment-organizer',
+    scene: { key:'environment-organizer', label:'Environment Organizer', district:'Institution', level:'system', camera:{x:31,y:5,yaw:4.8,pitch:1.2,zoom:1.03,depth:42} },
+  },
+  {
     match: path => path === '/admin/dj-workshop',
     scene: { key:'dj-workshop', label:'DJ Workshop', district:'Institution', level:'system', camera:{x:9,y:8,yaw:1.5,pitch:2,zoom:1.025,depth:35} },
   },
