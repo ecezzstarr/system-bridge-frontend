@@ -58,9 +58,13 @@ const commands: Item[] = [
   { label: 'Administration', detail: 'Institutional support and higher structure.', href: '/client/chat/admin', icon: Landmark, district: 'Human support', tone: 'violet' },
 
   { label: 'Bridge Plaza', detail: 'Enter the shared WEAVE world.', href: '/weave', icon: Globe2, district: 'Shared WEAVE', tone: 'sky' },
+  { label: 'Human Cadences', detail: 'Find people through recorded participation and movement.', href: '/search', icon: MessageCircle, district: 'Shared WEAVE', tone: 'sky' },
+  { label: 'Company Guidance', detail: 'Use the shared company clarification channel.', href: '/company-chat', icon: Headphones, district: 'Shared WEAVE', tone: 'emerald' },
+  { label: 'Private Lounge', detail: 'Private WEAVE communication.', href: '/lounge?view=private', icon: ShieldCheck, district: 'Shared WEAVE', tone: 'violet' },
   { label: 'Lounge', detail: 'Shared communication across WEAVE.', href: '/lounge', icon: MessageCircle, district: 'Shared WEAVE', tone: 'emerald' },
   { label: 'Echo', detail: 'Use the WEAVE Echo surface.', href: '/echo', icon: Sparkles, district: 'Shared WEAVE', tone: 'violet' },
   { label: 'Stream', detail: 'Shared WEAVE media stream.', href: '/video-feed', icon: Video, district: 'Shared WEAVE', tone: 'sky' },
+  { label: 'Standing', detail: 'See shared WEAVE standing and position.', href: '/weave/standing', icon: Globe2, district: 'Shared WEAVE', tone: 'emerald' },
   { label: 'Presences', detail: 'See people and their place in WEAVE.', href: '/profiles', icon: UserCircle, district: 'Shared WEAVE', tone: 'amber' },
   { label: 'Arena', detail: 'Participant contest movement.', href: '/client/arena', icon: Gamepad2, district: 'Shared WEAVE', tone: 'amber' },
   { label: 'Casino', detail: 'System pattern play.', href: '/client/casino', icon: Sparkles, district: 'Shared WEAVE', tone: 'violet' },
