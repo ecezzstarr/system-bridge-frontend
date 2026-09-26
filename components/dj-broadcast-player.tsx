@@ -8,8 +8,8 @@ const POSITION_KEY = 'ssb_dj_player_pos'
 const LIVE_SOUND_KEY = 'weave_live_sound_joined'
 const LEGACY_EVENT_SOUND_KEY = 'weave_flame_event_sound_joined'
 const USER_PAUSED_KEY = 'weave_live_sound_user_paused'
-const WIDGET_WIDTH = 260
-const WIDGET_HEIGHT = 56
+const WIDGET_WIDTH = 232
+const WIDGET_HEIGHT = 48
 
 function getDefaultPosition() {
   if (typeof window === 'undefined') return { x: 0, y: 0 }
@@ -482,19 +482,20 @@ export function DJBroadcastPlayer() {
 
       {canShow && position && (
         <div
-          className={`fixed z-[85] flex select-none items-center gap-1.5 overflow-hidden rounded-2xl border px-2 py-2 backdrop-blur-md touch-none ${
+          className={`pointer-events-none fixed z-[85] flex select-none items-center gap-1.5 overflow-hidden rounded-2xl border px-1.5 py-1.5 backdrop-blur-[18px] touch-none ${
             flameEventLive
-              ? 'border-sky-100/20 bg-white/[0.045]'
-              : 'border-white/15 bg-white/[0.035]'
+              ? 'border-sky-100/15 bg-white/[0.022]'
+              : 'border-white/10 bg-white/[0.018]'
           }`}
           style={{
             left: position.x,
             top: position.y,
             width: WIDGET_WIDTH,
-            boxShadow: '0 10px 28px rgba(2,8,23,.22), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(255,255,255,.03)',
+            boxShadow: '0 8px 24px rgba(2,8,23,.12), inset 0 1px 0 rgba(255,255,255,.16)',
+            WebkitBackdropFilter: 'blur(18px) saturate(135%)',
           }}
         >
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,.13)_0%,rgba(255,255,255,.035)_28%,transparent_46%,rgba(125,211,252,.045)_72%,rgba(255,255,255,.08)_100%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,.10)_0%,rgba(255,255,255,.018)_30%,transparent_48%,rgba(125,211,252,.025)_72%,rgba(255,255,255,.055)_100%)]" />
           <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent" />
 
           <div
@@ -502,7 +503,7 @@ export function DJBroadcastPlayer() {
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
-            className="relative z-10 flex-shrink-0 cursor-grab text-white/25 transition hover:text-white/55 active:cursor-grabbing"
+            className="pointer-events-auto relative z-10 flex-shrink-0 cursor-grab text-white/25 transition hover:text-white/55 active:cursor-grabbing"
             title="Drag to move"
           >
             <GripVertical className="h-3.5 w-3.5" />
@@ -531,7 +532,7 @@ export function DJBroadcastPlayer() {
           {!joined ? (
             <button
               onClick={handleJoin}
-              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-sky-100/20 bg-white/[0.055] text-sky-100/85 shadow-inner transition hover:bg-white/[0.10]"
+              className="pointer-events-auto relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-sky-100/20 bg-white/[0.055] text-sky-100/85 shadow-inner transition hover:bg-white/[0.10]"
               title="Enter the live sound"
             >
               <Play className="h-3.5 w-3.5" />
@@ -539,7 +540,7 @@ export function DJBroadcastPlayer() {
           ) : userPaused ? (
             <button
               onClick={handleResume}
-              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-emerald-100/20 bg-white/[0.055] text-emerald-100/85 shadow-inner transition hover:bg-white/[0.10]"
+              className="pointer-events-auto relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-emerald-100/20 bg-white/[0.055] text-emerald-100/85 shadow-inner transition hover:bg-white/[0.10]"
               title="Resume live sound"
             >
               <Play className="h-3.5 w-3.5" />
@@ -547,7 +548,7 @@ export function DJBroadcastPlayer() {
           ) : (
             <button
               onClick={handlePause}
-              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.045] text-white/70 shadow-inner transition hover:bg-white/[0.10] hover:text-white"
+              className="pointer-events-auto relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.035] text-white/70 shadow-inner transition hover:bg-white/[0.08] hover:text-white"
               title="Pause live sound for you"
             >
               <Pause className="h-3.5 w-3.5" />
