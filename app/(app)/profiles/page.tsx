@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { ChevronDown, Shield, UserCheck, User, Wallet, TrendingUp, FileText, Info, Camera, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-provider"
+import { ClientBuildPull } from "@/components/world/client-build-pull"
 import {
   AGENT_CONTENT,
   BRIDGER_CONTENT,
@@ -27,7 +28,9 @@ function CollapsibleSection({ title, defaultOpen = false, children }: { title: s
         <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && <div className="px-4 pb-4">{children}</div>}
-    </div>
+      </div>
+      </section>
+    </main>
   )
 }
 
@@ -96,8 +99,14 @@ export default function ProfilePage() {
   const isBridger = user.role === "bridger"
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      {/* Header */}
+    <main className="mx-auto w-full max-w-5xl p-3 md:p-6">
+      <section className="weave-system-depth rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72 p-4 md:p-6">
+      <div className="space-y-6">
+      <div className="mb-2">
+        <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Presence Record</p>
+        <h1 className="mt-1 text-2xl font-black text-white md:text-3xl">Identity, position, movement and institutional context in one record.</h1>
+      </div>
+
       <div className="flex items-center gap-4">
         <div className="relative w-16 h-16 flex-shrink-0">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 p-[2px]">
@@ -227,7 +236,9 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Architectural Context */}
+      {(isAgent || isBridger) && <ClientBuildPull role={isAgent ? "agent" : "bridger"} />}
+
+            {/* Architectural Context */}
       {(isAgent || isBridger) && (
         <div className="space-y-4">
           <CollapsibleSection title={FILE_FOLDER_CONTENT.title}>
