@@ -1,4 +1,5 @@
 import { neon } from '@/lib/pg-neon'
+import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 
 export const getClientGrowthDb=()=>neon(process.env.DATABASE_URL!)
 
@@ -196,6 +197,7 @@ export async function getClientGrowthSnapshot(
   clientName='Client',
 ):Promise<ClientGrowthSnapshot>{
   await ensureClientGrowthWorldSchema(sql)
+  await ensureEnterpriseDreamSchema(sql)
   const channel=await ensureClientStreamChannel(sql,clientId,fileNumber,`${clientName} Stream`)
 
   const [
@@ -228,7 +230,7 @@ export async function getClientGrowthSnapshot(
   const capabilities={
     routeCapacity:routeStation?Math.max(1,1+Math.floor(capabilitiesRaw.routeCapacityBonus)):0,
     legionCapacity:legionQuarters?Math.max(3,3+Math.floor(capabilitiesRaw.legionCapacityBonus)):0,
-    streamProgramCapacity:streamingGate?Math.max(3,3+Math.floor(capabilitiesRaw.streamCapacityBonus)):0,
+    streamProgramCapacity:broadcastStudio?Math.max(3,3+Math.floor(capabilitiesRaw.streamCapacityBonus)):0,
     aiFlameNodes:capabilitiesRaw.aiFlameNodes,
     automationNodes:capabilitiesRaw.automationNodes,
     verificationLabs:capabilitiesRaw.verificationLabs,
