@@ -36,7 +36,7 @@ assert.ok(!continuance.includes('bg-white shadow-sm'),'Bridger Continuance no lo
 assert.ok(!continuance.includes('text-gray-'),'Bridger Continuance uses WEAVE environment language')
 
 const camera=read('lib/presence-camera.ts')
-for(const key of ['client-loop-field','number-bay','bridger-continuance','loop-workshop','number-control','infrastructure','dj-workshop','client-deposit-control','enterprise-dream-authority']){
+for(const key of ['client-loop-field','number-bay','bridger-continuance','loop-workshop','number-control','infrastructure','visual-systems','dj-workshop','client-deposit-control','enterprise-dream-authority']){
  assert.ok(camera.includes("key:'"+key+"'"),key+' has a distinct Presence Camera scene')
 }
 
@@ -68,5 +68,33 @@ assert.ok(bridgeRadiance.includes('FlameEventArtifact3D'),'Bridge Radiance porta
 assert.ok(!bridgeRadiance.includes('torusGeometry'),'Bridge Radiance no longer uses generic torus portals')
 assert.ok(eventDecor.includes('FlameEventArtifactMark'),'Global Flame Event atmosphere uses the canonical artifact')
 assert.ok(clientEvent.includes('FlameEventArtifactMark'),'Client Flame Event center uses the canonical artifact')
+
+const visualProfile=read('lib/weave-visual-profile.ts')
+const visualRuntime=read('lib/weave-visual-runtime.ts')
+const visualAdminApi=read('app/api/admin/visual-systems/route.ts')
+const visualPublicApi=read('app/api/visual-runtime/route.ts')
+const visualWorkshop=read('app/(app)/admin/visual-systems/page.tsx')
+const adminWorkshop=read('app/(app)/admin/workshop/page.tsx')
+const appSidebar=read('components/app-sidebar.tsx')
+const operatingRoom=read('components/world/role-operating-room.tsx')
+const dashboardWorld=read('components/world/weave-dashboard-world.tsx')
+assert.ok(visualProfile.includes('FLAME_ARTIFACT_SURFACES'),'Visual runtime has an explicit surface registry')
+assert.ok(visualProfile.includes("'bridge-plaza-core'")&&visualProfile.includes("'client-event'"),'Visual runtime covers Bridge Plaza through Client Flame Event')
+assert.ok(visualRuntime.includes('weave_visual_profiles')&&visualRuntime.includes('weave_visual_profile_history'),'Visual runtime persists draft, published state and history')
+assert.ok(visualRuntime.includes('rollbackVisualProfile'),'Visual runtime supports published rollback')
+assert.ok(visualAdminApi.includes("user.role!=='admin'"),'Only Administration can publish visual runtime changes')
+assert.ok(visualAdminApi.includes("action==='publish'")&&visualAdminApi.includes("action==='rollback'"),'Administration API exposes publish and rollback actions')
+assert.ok(visualPublicApi.includes('getPublishedVisualProfile'),'Public runtime exposes published visual state only')
+assert.ok(visualPublicApi.includes('DEFAULT_FLAME_ARTIFACT_CONFIG'),'Public runtime has a compiled safe fallback')
+assert.ok(artifact.includes("fetch('/api/visual-runtime'"),'Canonical artifact reads its published runtime profile')
+assert.ok(artifact.includes('15000'),'Mounted artifacts refresh published runtime state without deployment')
+assert.ok(artifact.includes('surface?:FlameArtifactSurface'),'Artifact applies per-surface runtime placement controls')
+assert.ok(visualWorkshop.includes('Visual Systems Workshop')&&visualWorkshop.includes('Publish Live'),'Administration has a live Visual Systems Workshop')
+assert.ok(visualWorkshop.includes("run('rollback'"),'Visual Systems Workshop can roll back a published revision')
+assert.ok(visualWorkshop.includes('configOverride={draft}'),'Visual Systems Workshop previews draft state before publishing')
+for(const source of [adminWorkshop,appSidebar,operatingRoom,dashboardWorld]){
+ assert.ok(source.includes('/admin/visual-systems'),'Administration navigation exposes Visual Systems Workshop')
+}
+assert.ok(fs.existsSync(path.join(root,'db/migrations/20260926_visual_systems_workshop.sql')),'Visual Systems Workshop migration exists')
 
 console.log('environment-grade regression checks passed')
