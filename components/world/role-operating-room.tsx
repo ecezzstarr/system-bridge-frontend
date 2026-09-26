@@ -36,6 +36,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
+import { ClientBuildPull } from '@/components/world/client-build-pull'
 
 type Role = 'agent' | 'admin'
 
@@ -286,6 +287,8 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
                 <p>Return to the same Operating Room.</p>
               </div>
             </section>
+
+            {role === 'agent' && <ClientBuildPull role="agent" />}
 
             <Link
               href={role === 'admin' ? '/admin/dashboard' : '/agent/dashboard'}
