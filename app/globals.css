@@ -219,6 +219,24 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.045),
       0 0 30px rgba(56, 189, 248, 0.035);
   }
+
+  /* Camera/environment motion belongs behind the interface. Text and controls
+     stay fully present so navigation never makes words blur, fade or vanish. */
+  .weave-stable-content,
+  .weave-stable-content :where(p, span, label, li, td, th, h1, h2, h3, h4, h5, h6, a, button) {
+    opacity: 1;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .weave-reading-surface {
+    background: linear-gradient(180deg, rgba(7, 15, 28, 0.94), rgba(3, 10, 21, 0.91));
+    border: 1px solid rgba(186, 230, 253, 0.14);
+    box-shadow:
+      0 22px 54px rgba(2, 8, 23, 0.52),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px);
+  }
   
   /* Touch targets - minimum 44x44px for mobile accessibility */
   button, a, input[type="button"], input[type="submit"], [role="button"] {
@@ -332,12 +350,12 @@
 /* Field Ecosystem Styles */
 @keyframes field-breathe {
   0%, 100% {
-    opacity: var(--ui-opacity);
+    opacity: 1;
     transform: scale(var(--motion-scale));
   }
   50% {
-    opacity: calc(var(--ui-opacity) * 0.9);
-    transform: scale(calc(var(--motion-scale) * 1.002));
+    opacity: 1;
+    transform: scale(calc(var(--motion-scale) * 1.001));
   }
 }
 
