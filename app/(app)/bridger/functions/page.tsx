@@ -1,7 +1,5 @@
-'use client'
-
-import BridgerTerminal from '../dashboard/page'
+import { BridgerOperatingEnvironment } from '@/components/bridger/bridger-operating-environment'
 
 export default function BridgerFunctionsPage() {
-  return <BridgerTerminal />
+  return <BridgerOperatingEnvironment />
 }

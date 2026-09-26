@@ -12,7 +12,7 @@ interface Message {
   client_id: string
   client_name: string
   position: string
-  sender_type: 'client' | 'admin'
+  sender_type: 'client' | 'bridger' | 'agent' | 'admin' | 'bridge_ai'
   content: string
   is_read: boolean
   created_at: string

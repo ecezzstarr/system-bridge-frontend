@@ -153,6 +153,10 @@
     @apply bg-background text-foreground;
     background: linear-gradient(135deg, var(--background) 0%, #12131e 50%, var(--background) 100%);
     position: relative;
+    font-weight: 500;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: auto;
+    text-shadow: 0 0 0.55px currentColor, 0 1px 1px rgba(0, 0, 0, 0.58);
   }
   
   body::before {
@@ -177,11 +181,43 @@
   }
 
   /* WEAVE uses many dense system labels. Keep them compact but readable. */
+  [class~="text-[7px]"],
   [class~="text-[8px]"],
   [class~="text-[9px]"],
   [class~="text-[10px]"] {
-    font-size: 0.75rem !important;
-    line-height: 1.05rem !important;
+    font-size: 0.76rem !important;
+    line-height: 1.08rem !important;
+    font-weight: 650 !important;
+    letter-spacing: 0.035em;
+  }
+
+  /* Words remain present against the moving WEAVE environment instead of
+     visually dissolving into low-contrast backgrounds. */
+  [class*="text-slate-500"] {
+    color: rgb(148 163 184 / 0.96) !important;
+  }
+
+  [class*="text-slate-600"] {
+    color: rgb(100 116 139 / 0.98) !important;
+  }
+
+  :where(p, span, label, li, td, th, h1, h2, h3, h4, h5, h6) {
+    text-wrap: pretty;
+  }
+
+  .weave-word-presence {
+    font-weight: 650;
+    text-shadow:
+      0 0 0.7px currentColor,
+      0 1px 1px rgba(0, 0, 0, 0.72),
+      0 0 12px rgba(226, 232, 240, 0.055);
+  }
+
+  .weave-system-depth {
+    box-shadow:
+      0 26px 80px rgba(2, 8, 23, 0.66),
+      inset 0 1px 0 rgba(255, 255, 255, 0.045),
+      0 0 30px rgba(56, 189, 248, 0.035);
   }
   
   /* Touch targets - minimum 44x44px for mobile accessibility */

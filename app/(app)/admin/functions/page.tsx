@@ -1,7 +1,5 @@
-'use client'
-
-import AdminTerminal from '../dashboard/page'
+import { RoleOperatingRoom } from '@/components/world/role-operating-room'
 
 export default function AdminFunctionsPage() {
-  return <AdminTerminal />
+  return <RoleOperatingRoom role="admin" />
 }

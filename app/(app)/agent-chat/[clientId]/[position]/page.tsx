@@ -12,7 +12,7 @@ interface Message {
   client_id: string
   client_name: string
   position: string
-  sender_type: 'client' | 'admin'
+  sender_type: 'client' | 'bridger' | 'agent' | 'admin' | 'bridge_ai'
   content: string
   is_read: boolean
   created_at: string
@@ -127,8 +127,8 @@ export default function AgentChatPage() {
           <div className="text-center text-slate-500 text-sm mt-8">No messages yet.</div>
         ) : (
           messages.map((msg) => (
-            <div key={msg.id} className={`flex gap-3 ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs rounded-lg p-3 ${msg.sender_type === 'admin' ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-100'}`}>
+            <div key={msg.id} className={`flex gap-3 ${msg.sender_type === 'agent' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-xs rounded-lg p-3 ${msg.sender_type === 'agent' ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-100'}`}>
                 <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                 <p className="text-xs mt-1 opacity-70">
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

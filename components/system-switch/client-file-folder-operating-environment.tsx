@@ -8,6 +8,7 @@ import {
   Boxes,
   BriefcaseBusiness,
   CheckCircle2,
+  ChevronLeft,
   Clock3,
   Eye,
   FolderOpen,
@@ -15,6 +16,7 @@ import {
   Headphones,
   Home,
   Layers3,
+  Plus,
   ShieldCheck,
   Store,
   Users,
@@ -24,6 +26,7 @@ import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-wor
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
 import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
+import { ClientBridgeAiSupport } from '@/components/system-switch/client-bridge-ai-support'
 import { getClientToken } from '@/lib/client-auth'
 
 type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'
@@ -71,6 +74,14 @@ function buildProgress(build: any, now: number) {
   return Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100))
 }
 
+function buildDepth(progress: number) {
+  if (progress < 12) return { label: 'Blueprint', layer: 1, detail: 'System shape fixed; construction is beginning.' }
+  if (progress < 38) return { label: 'Foundation', layer: 2, detail: 'Core structure is being established.' }
+  if (progress < 68) return { label: 'Structure', layer: 3, detail: 'Working functions are taking shape.' }
+  if (progress < 90) return { label: 'Integration', layer: 4, detail: 'Parts and functions are being connected.' }
+  return { label: 'Commissioning', layer: 5, detail: 'The system is being prepared for live operation.' }
+}
+
 function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { blueprint: any; label?: string; onBuild?: () => void }) {
   const modules = systemModules(blueprint?.system_type)
   if (!blueprint) {
@@ -115,7 +126,7 @@ function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { bluepr
   )
 }
 
-function LiveSystemCard({ system }: { system: any }) {
+function LiveSystemCard({ system, onEnter }: { system: any; onEnter?: () => void }) {
   const entries = Array.isArray(system.entries) ? system.entries : []
   const completed = entries.filter((entry: any) => entry.status === 'done').length
   const open = entries.filter((entry: any) => entry.status !== 'done').length
@@ -163,7 +174,137 @@ function LiveSystemCard({ system }: { system: any }) {
       <p className="mt-4 text-[10px] leading-5 text-slate-500">
         Activated {formatDate(system.activated_at)}. Operation shown here is based on recorded File Folder entries, not simulated traffic.
       </p>
+      {onEnter && <button onClick={onEnter} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-100">Enter hosted system <ArrowRight className="h-3.5 w-3.5"/></button>}
     </div>
+  )
+}
+
+function HostedSystem({
+  system,
+  onClose,
+  onWorldChange,
+}: {
+  system: any
+  onClose: () => void
+  onWorldChange: (world: any) => void
+}) {
+  const modules = systemModules(system.system_type)
+  const [moduleKey,setModuleKey]=useState(modules[0] || 'Operation')
+  const [title,setTitle]=useState('')
+  const [body,setBody]=useState('')
+  const [busy,setBusy]=useState('')
+  const [message,setMessage]=useState('')
+
+  const entries = Array.isArray(system.entries) ? system.entries : []
+  const moduleEntries = entries.filter((entry:any)=>{
+    const recordedModule = entry.metadata?.moduleKey || entry.entry_type
+    return recordedModule === moduleKey || (!entry.metadata?.moduleKey && entry.entry_type === system.system_type)
+  })
+
+  const act=async(payload:any,key:string)=>{
+    setBusy(key)
+    setMessage('')
+    try{
+      const token=getClientToken()
+      const response=await fetch('/api/client/file-folder-world',{
+        method:'POST',
+        headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify(payload),
+      })
+      const result=await response.json()
+      if(!response.ok)throw new Error(result.error||'System movement failed')
+      if(result.world)onWorldChange(result.world)
+      setMessage('Recorded in the live system.')
+    }catch(error:any){
+      setMessage(error?.message||'System movement failed')
+    }finally{
+      setBusy('')
+    }
+  }
+
+  const add=async()=>{
+    if(!title.trim())return
+    await act({
+      action:'add_system_entry',
+      system_id:system.id,
+      module_key:moduleKey,
+      title:title.trim(),
+      body:body.trim(),
+    },'add')
+    setTitle('')
+    setBody('')
+  }
+
+  return (
+    <section className="weave-system-depth overflow-hidden rounded-3xl border border-emerald-300/15 bg-[#020b0c]">
+      <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(52,211,153,.13),transparent_34%)] p-5 md:p-6">
+        <button onClick={onClose} className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-300"><ChevronLeft className="h-3.5 w-3.5"/>Build + Systems</button>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Hosted live inside this File Folder</p>
+            <h2 className="mt-2 text-2xl font-black text-white">{system.title}</h2>
+            <p className="mt-2 text-xs uppercase tracking-[0.12em] text-slate-400">{String(system.system_type||'system').replaceAll('_',' ')} · activated {formatDate(system.activated_at)}</p>
+          </div>
+          <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-3 text-right">
+            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">Runtime</p>
+            <p className="mt-1 text-sm font-black text-white">Live · {entries.length} records</p>
+          </div>
+        </div>
+      </header>
+
+      <div className="grid lg:grid-cols-[240px_1fr]">
+        <aside className="border-b border-white/10 bg-black/20 p-3 lg:border-b-0 lg:border-r">
+          <p className="px-2 pb-2 text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">System functions</p>
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+            {modules.map(module=>{
+              const count=entries.filter((entry:any)=>(entry.metadata?.moduleKey||entry.entry_type)===module).length
+              const active=moduleKey===module
+              return <button key={module} onClick={()=>setModuleKey(module)} className={`rounded-xl border p-3 text-left ${active?'border-emerald-300/25 bg-emerald-400/10':'border-white/5 bg-white/[0.02]'}`}>
+                <p className="text-[10px] font-black text-white">{module}</p>
+                <p className="mt-1 text-[8px] text-slate-500">{count} recorded movements</p>
+              </button>
+            })}
+          </div>
+        </aside>
+
+        <div className="p-4 md:p-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Operating function</p>
+              <h3 className="mt-1 text-xl font-black text-white">{moduleKey}</h3>
+              <p className="mt-1 text-xs text-slate-400">Real-life activity recorded here remains attached to this live Client system.</p>
+            </div>
+            <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[9px] font-black text-slate-300">{moduleEntries.length} records</span>
+          </div>
+
+          <div className="mt-5 space-y-2">
+            {moduleEntries.length===0&&<p className="rounded-2xl border border-dashed border-white/10 p-5 text-sm text-slate-400">No movement recorded in this function yet. The system is live and ready for its first real activity.</p>}
+            {moduleEntries.map((entry:any)=><div key={entry.id} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+              <button
+                onClick={()=>void act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)}
+                disabled={busy===entry.id}
+                className={`mt-0.5 h-5 w-5 min-h-0 min-w-0 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-500'}`}
+                aria-label={entry.status==='done'?'Reopen record':'Mark record complete'}
+              />
+              <div className="min-w-0">
+                <p className={`text-sm font-black ${entry.status==='done'?'text-slate-500 line-through':'text-white'}`}>{entry.title}</p>
+                {entry.body&&<p className="mt-1 whitespace-pre-wrap text-xs leading-5 text-slate-400">{entry.body}</p>}
+              </div>
+            </div>)}
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.025] p-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Record new real activity</p>
+            <div className="mt-3 grid gap-2">
+              <input value={title} onChange={event=>setTitle(event.target.value)} placeholder={`What happened in ${moduleKey}?`} className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-white outline-none"/>
+              <textarea value={body} onChange={event=>setBody(event.target.value)} rows={3} placeholder="Details, result, next action or real-world record…" className="resize-none rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none"/>
+              <button onClick={()=>void add()} disabled={!title.trim()||busy==='add'} className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/>{busy==='add'?'Recording…':'Record in live system'}</button>
+            </div>
+            {message&&<p className="mt-3 text-xs font-bold text-emerald-200">{message}</p>}
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -176,6 +317,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [selectedBlueprintKey, setSelectedBlueprintKey] = useState(
     data.file_folder_world?.blueprints?.[0]?.blueprint_key || '',
   )
+  const [selectedSystemId,setSelectedSystemId]=useState('')
 
   useEffect(() => {
     const tick = window.setInterval(() => setNow(Date.now()), 1000)
@@ -211,6 +353,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const builds = Array.isArray(world?.builds) ? world.builds : []
   const systems = Array.isArray(world?.systems) ? world.systems : []
   const activeBuilds = builds.filter((build: any) => build.status === 'building')
+  const selectedSystem = systems.find((system:any)=>system.id===selectedSystemId) || null
   const selectedBlueprint = useMemo(
     () => blueprints.find((blueprint: any) => blueprint.blueprint_key === selectedBlueprintKey) || blueprints[0] || null,
     [blueprints, selectedBlueprintKey],
@@ -230,7 +373,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const CurrentIcon = current.icon
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711] shadow-2xl">
+    <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711]">
       <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(14,165,233,.18),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(139,92,246,.12),transparent_28%)] p-5 md:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="flex items-start gap-4">
@@ -357,22 +500,28 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                       No construction is running. Preview a blueprint before starting the next build.
                     </p>
                   )}
-                  {activeBuilds.slice(0, 4).map((build: any) => (
-                    <div key={build.id} className="rounded-xl border border-white/10 bg-black/20 p-4">
+                  {activeBuilds.slice(0, 4).map((build: any) => {
+                    const progress=buildProgress(build,now)
+                    const depth=buildDepth(progress)
+                    return <div key={build.id} className="rounded-xl border border-white/10 bg-black/20 p-4" style={{boxShadow:`0 ${8+depth.layer*4}px ${20+depth.layer*8}px rgba(2,8,23,.45), inset 0 1px 0 rgba(255,255,255,.03)`}}>
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-bold text-white">{build.title}</p>
+                          <p className="text-sm font-black text-white">{build.title}</p>
                           <p className="mt-1 text-[9px] uppercase tracking-wider text-slate-500">
                             {String(build.system_type || '').replaceAll('_', ' ')}
                           </p>
                         </div>
-                        <span className="text-[10px] font-black text-amber-200">{Math.round(buildProgress(build, now))}%</span>
+                        <div className="text-right">
+                          <span className="text-[10px] font-black text-amber-200">{Math.round(progress)}%</span>
+                          <p className="mt-1 text-[8px] font-black uppercase tracking-[0.14em] text-amber-300">{depth.label} · Layer {depth.layer}/5</p>
+                        </div>
                       </div>
                       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/5">
-                        <div className="h-full rounded-full bg-amber-300" style={{ width: buildProgress(build, now) + '%' }} />
+                        <div className="h-full rounded-full bg-amber-300" style={{ width: progress + '%' }} />
                       </div>
+                      <p className="mt-2 text-[9px] text-slate-400">{depth.detail}</p>
                     </div>
-                  ))}
+                  })}
                 </div>
               </div>
 
@@ -390,20 +539,14 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                       No completed system is active yet.
                     </p>
                   )}
-                  {systems.slice(0, 3).map((system: any) => <LiveSystemCard key={system.id} system={system} />)}
+                  {systems.slice(0, 3).map((system: any) => <LiveSystemCard key={system.id} system={system} onEnter={()=>{setSelectedSystemId(system.id);setSurface('builds');setFormationOpen(false)}} />)}
                 </div>
               </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-sky-300" />
-                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Bridge AI</p>
-                </div>
-                <p className="mt-3 text-sm font-bold text-white">{data.bridge_ai?.name || 'Bridge AI'}</p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">{data.bridge_ai?.purpose}</p>
-              </div>
+            <ClientBridgeAiSupport />
+
+            <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-violet-300" />
@@ -430,7 +573,11 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
         {surface === 'builds' && (
           <div className="space-y-5">
-            <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+            {selectedSystem && !formationOpen && (
+              <HostedSystem system={selectedSystem} onClose={()=>setSelectedSystemId('')} onWorldChange={setWorld} />
+            )}
+
+            {!selectedSystem && <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Build Studio</p>
                 <p className="mt-1 text-xs text-slate-500">Inspect the intended system first, then enter the formation workspace when ready.</p>
@@ -442,9 +589,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <Layers3 className="h-3.5 w-3.5" />
                 {formationOpen ? 'Close formation workspace' : 'Open formation workspace'}
               </button>
-            </div>
+            </div>}
 
-            {!formationOpen && (
+            {!selectedSystem && !formationOpen && (
               <>
                 <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
                   <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
@@ -487,26 +634,33 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     </div>
                     <div className="mt-4 space-y-3">
                       {activeBuilds.length === 0 && <p className="text-xs text-slate-500">No build is currently running.</p>}
-                      {activeBuilds.map((build: any) => (
-                        <div key={build.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      {activeBuilds.map((build: any) => {
+                        const progress=buildProgress(build,now)
+                        const depth=buildDepth(progress)
+                        return <div key={build.id} className="rounded-2xl border border-white/10 bg-black/20 p-4" style={{boxShadow:`0 ${10+depth.layer*5}px ${24+depth.layer*9}px rgba(2,8,23,.48)`}}>
                           <div className="flex items-center justify-between gap-3">
                             <div>
                               <p className="text-sm font-bold text-white">{build.title}</p>
                               <p className="mt-1 text-[10px] text-slate-500">{build.purpose}</p>
                             </div>
                             <span className="rounded-full bg-amber-400/10 px-3 py-1 text-[9px] font-black text-amber-200">
-                              {Math.round(buildProgress(build, now))}%
+                              {Math.round(progress)}%
                             </span>
                           </div>
+                          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-300/10 bg-amber-400/[0.025] px-3 py-2">
+                            <div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-amber-300">{depth.label} · depth layer {depth.layer}/5</p><p className="mt-1 text-[9px] text-slate-400">{depth.detail}</p></div>
+                            <span className="text-[9px] font-black text-amber-200">×{Number(build.speed_multiplier||1).toFixed(2)} speed</span>
+                          </div>
                           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            {systemModules(build.system_type).map(module => (
-                              <div key={module} className="rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 text-[9px] text-slate-400">
+                            {systemModules(build.system_type).map((module,index) => {
+                              const ready = progress >= ((index+1)/systemModules(build.system_type).length)*70
+                              return <div key={module} className={`rounded-lg border px-3 py-2 text-[9px] ${ready?'border-emerald-300/10 bg-emerald-400/[0.035] text-emerald-100':'border-white/5 bg-white/[0.02] text-slate-400'}`}>
                                 {module}
                               </div>
-                            ))}
+                            })}
                           </div>
                         </div>
-                      ))}
+                      })}
                     </div>
                   </div>
 
@@ -517,14 +671,14 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     </div>
                     <div className="mt-4 space-y-3">
                       {systems.length === 0 && <p className="text-xs text-slate-500">Finished systems will appear here with their real recorded activity.</p>}
-                      {systems.map((system: any) => <LiveSystemCard key={system.id} system={system} />)}
+                      {systems.map((system: any) => <LiveSystemCard key={system.id} system={system} onEnter={()=>setSelectedSystemId(system.id)} />)}
                     </div>
                   </div>
                 </div>
               </>
             )}
 
-            {formationOpen && (
+            {!selectedSystem && formationOpen && (
               <FileFolderOpenWorld
                 clientName={data.client.name}
                 fileNumber={data.client.file_number}

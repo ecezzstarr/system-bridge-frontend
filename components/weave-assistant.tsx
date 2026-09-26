@@ -45,7 +45,7 @@ export function WeaveAssistant({ role, checklist = [], tutorial, openTutorial = 
   const [isOpen, setIsOpen] = useState(false)
   const [tab, setTab] = useState<'checklist' | 'guide' | 'ask'>(checklist.length > 0 ? 'checklist' : tutorial ? 'guide' : 'ask')
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'I am River. Truth untold I simple make known. How can I help you today?' }
+    { role: 'assistant', content: 'I am River. I help make the part of WEAVE you are in understandable. What are you trying to do?' }
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)

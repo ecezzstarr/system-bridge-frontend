@@ -76,12 +76,12 @@ const navigation = [
   // 3. BRIDGE — connection, support and movement between people.
   { group: "Bridge", items: [
     { name: WEAVE_SYSTEM_MAP.language.supportEntrance, href: "/weave", icon: LayoutTemplate },
-    { name: "Bridge AI", href: "/bridger/bridge-ai", icon: GitBranch, bridgerOnly: true },
+    { name: WEAVE_SYSTEM_MAP.language.bridgeAI, href: "/bridger/bridge-ai", icon: GitBranch, bridgerOnly: true },
     { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
-    { name: "Guidance", href: "/company-chat", icon: Headphones },
-    { name: "Private Management", href: "/lounge?view=private", icon: Shield },
-    { name: "Gathering", href: "/lounge", icon: MessageSquare },
-    { name: "Companions", href: "/clients", icon: Users },
+    { name: "Company Guidance", href: "/company-chat", icon: Headphones },
+    { name: "Private Lounge", href: "/lounge?view=private", icon: Shield },
+    { name: "Lounge", href: "/lounge", icon: MessageSquare },
+    { name: "Clients", href: "/clients", icon: Users },
   ]},
 
   // 4. ENTERPRISE — technology, products and commercial systems.
