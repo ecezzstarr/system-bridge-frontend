@@ -21,6 +21,7 @@ import {
 import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-world'
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
+import ClientGrowthWorld from '@/components/system-switch/client-growth-world'
 import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
 import { ClientBridgeAiSupport } from '@/components/system-switch/client-bridge-ai-support'
 import { ClientFileFolder3D } from '@/components/system-switch/client-file-folder-3d'
@@ -51,6 +52,17 @@ const previewModules: Record<string, string[]> = {
   mobile_service_app: ['Account', 'Request', 'Notification', 'Continuing service'],
   intelligence_lab: ['Research intake', 'Analysis', 'Knowledge record', 'Reusable intelligence'],
   marketplace_network: ['Sellers', 'Offers', 'Buyers', 'Orders'],
+  route_station: ['Connected systems', 'Routes', 'Movement records', 'Throughput'],
+  creator_booth: ['Program ideas', 'Production notes', 'Publishing queue', 'Media records'],
+  broadcast_studio: ['Programs', 'Schedule', 'Production control', 'Broadcast preparation'],
+  streaming_gate: ['Public channel', 'Live source', 'Audience entry', 'Replay movement'],
+  media_network: ['Programming', 'Distribution', 'Audience', 'Media routes'],
+  enterprise_door: ['Public enterprise entrance', 'Identity', 'Systems', 'Customer paths'],
+  enterprise_hall: ['Headquarters', 'Public hall', 'Participants', 'Enterprise records'],
+  legion_quarters: ['Legions', 'Functions', 'Capacity', 'Participation'],
+  operations_command: ['Operations', 'Approvals', 'Coordination', 'Recurring movement'],
+  enterprise_treasury: ['Budgets', 'Allocations', 'Revenue records', 'Controls'],
+  distribution_network: ['Routes', 'Distribution', 'Destinations', 'Movement records'],
   enterprise_operating_system: ['Functions', 'Participants', 'Approvals', 'Institutional records'],
 }
 
@@ -746,7 +758,15 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           />
         )}
 
-        {surface === 'enterprise' && <EnterpriseDreamPanel initialState={data.enterprise || null} />}
+        {surface === 'enterprise' && <div className="space-y-5">
+          <ClientGrowthWorld
+            initialGrowth={world?.growth || data.file_folder_world?.growth}
+            systems={systems}
+            enterprise={data.enterprise || null}
+            onOpenConstruction={(district)=>{setSurface('builds');openFormation(district)}}
+          />
+          <EnterpriseDreamPanel initialState={data.enterprise || null} />
+        </div>}
 
         {surface === 'sound' && data.premium_dj_enabled && (
           <ClientPremiumDJ fileNumber={data.client.file_number} />
