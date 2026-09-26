@@ -35,16 +35,16 @@ export function ClientRouteGuard({ children }: { children: ReactNode }) {
 
   if (!isInitialized) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-400">
-        Loading Client Portal...
+      <div className="flex min-h-screen items-center justify-center bg-[#020713]/82 text-slate-400 backdrop-blur-xl">
+        Synchronizing Client environment...
       </div>
     )
   }
 
   if (!isPublic && (!user || user.role !== 'client')) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-400">
-        Opening Client access...
+      <div className="flex min-h-screen items-center justify-center bg-[#020713]/82 text-slate-400 backdrop-blur-xl">
+        Opening authorized Client world...
       </div>
     )
   }
