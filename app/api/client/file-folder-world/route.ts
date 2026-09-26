@@ -405,7 +405,7 @@ export async function POST(request: NextRequest) {
       if (!item) return NextResponse.json({ error: 'Build item not found' }, { status: 404 })
 
       const [activeBuild] = await ctx.sql`
-        SELECT id,title,status
+        SELECT id,title,status,system_type
         FROM client_file_folder_builds
         WHERE id=${buildId}::uuid
           AND client_id=${ctx.client.id}::uuid
@@ -418,6 +418,24 @@ export async function POST(request: NextRequest) {
       }
 
       const effectType = String(item.build_effect || 'component')
+      const capabilityCompatibility:Record<string,string[]> = {
+        route_capacity:['route_station','integration_network','distribution_network','enterprise_operating_system'],
+        legion_capacity:['legion_quarters','enterprise_hall','enterprise_operating_system'],
+        stream_capacity:['broadcast_studio','streaming_gate','media_network'],
+        audience_capacity:['streaming_gate','media_network'],
+        ai_node:['ai_service_desk','intelligence_lab','operations_command','media_network','enterprise_operating_system'],
+        automation:['service_workflow','operations_suite','operations_command','distribution_network','enterprise_operating_system'],
+        verification:['payments_gateway','crypto_exchange_workshop','operations_command','enterprise_treasury','enterprise_operating_system'],
+      }
+      const compatibleSystems=capabilityCompatibility[effectType]
+      if(compatibleSystems && !compatibleSystems.includes(String(activeBuild.system_type))){
+        return NextResponse.json({
+          error:`${item.name} is not compatible with ${activeBuild.title}. Install it during a compatible ${effectType.replaceAll('_',' ')} build.`,
+          gate:'module_compatibility',
+          effectType,
+          compatibleSystems,
+        },{status:409})
+      }
       const effectFactor = effectType === 'speed_boost'
         ? Math.max(1, Number(item.effect_value) || 1)
         : 1
