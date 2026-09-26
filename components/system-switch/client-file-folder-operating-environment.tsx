@@ -729,6 +729,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             businessStore={data.business_store}
             internationalPayments={data.international_payments}
             buildFunding={world?.buildFunding || data.build_funding}
+            fileFolderWorld={world}
+            onOpenConstruction={(district)=>{setSurface('builds');openFormation(district)}}
           />
         )}
 
