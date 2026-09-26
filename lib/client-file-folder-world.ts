@@ -276,10 +276,8 @@ async function seedFileFolderWorld(sql: any) {
         name=EXCLUDED.name,
         category=EXCLUDED.category,
         description=EXCLUDED.description,
-        price_flame_coin=EXCLUDED.price_flame_coin,
         build_effect=EXCLUDED.build_effect,
         effect_value=EXCLUDED.effect_value,
-        published=true,
         updated_at=NOW()
     `
   }
