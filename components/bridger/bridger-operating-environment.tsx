@@ -29,6 +29,7 @@ import {
 import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
 import { getAuthHeaders } from '@/lib/auth-client'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
+import { ClientBuildPull } from '@/components/world/client-build-pull'
 
 const districts = [
   { title: 'Shared WEAVE', detail: 'The common WEAVE world remains available from the Bridger position.' },
@@ -185,6 +186,8 @@ export function BridgerOperatingEnvironment() {
               <p className="mt-3 text-sm font-black text-white">Connection active</p>
               <p className="mt-2 text-xs leading-5 text-slate-400">Crossing → Client continuity → company record remains one Bridger movement.</p>
             </section>
+
+            <ClientBuildPull role="bridger" />
 
             <Link href="/bridger/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.025] px-4 py-3 text-xs font-black text-white transition hover:border-emerald-300/20 hover:bg-emerald-400/[0.04]">
               WEAVE World <ArrowRight className="h-4 w-4 text-emerald-300"/>
