@@ -5,6 +5,7 @@ import { ClientRouteGuard } from '@/components/client/client-route-guard'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
+import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
@@ -31,16 +32,18 @@ export default function ClientLayout({
 }) {
   // Client routes share the root AuthProvider.
   return (
+    <EnvironmentOrganizerProvider>
     <div className="relative min-h-screen overflow-hidden bg-transparent">
       <ClientRouteGuard>
         <div className="relative z-10 min-h-screen">
           <ClientNavigation />
           <FlameEventAd />
           <LiveAdSurface />
-          <PresenceCameraViewport><WeaveEnvironmentSurface role="client">{children}</WeaveEnvironmentSurface></PresenceCameraViewport>
+          <PresenceCameraViewport><WeaveEnvironmentSurface role="client"><EnvironmentPageGuard>{children}</EnvironmentPageGuard></WeaveEnvironmentSurface></PresenceCameraViewport>
           <PresenceCameraSignal />
         </div>
       </ClientRouteGuard>
     </div>
+    </EnvironmentOrganizerProvider>
   )
 }
