@@ -95,6 +95,7 @@ const AGENT_COMMANDS: FunctionItem[] = [
   { label: 'Company Guidance', detail: 'Internal company support and clarification.', href: '/company-chat', icon: Headphones, district: 'Client + company support' },
   { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Operational holding and funds.', href: '/wallet', icon: Wallet, district: 'Record + value' },
   { label: WEAVE_SYSTEM_MAP.language.ledger, detail: 'Preserved movement and value record.', href: '/ledger', icon: BookOpen, district: 'Record + value' },
+  { label: 'Receipts', detail: 'Receipts for payments, withdrawals and purchases.', href: '/receipts', icon: FileCheck, district: 'Record + value' },
   { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Enterprise-scale systems available through WEAVE.', href: '/marketplace', icon: Store, district: 'Record + value' },
 ]
 
@@ -115,6 +116,7 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Loop 1 Ground', detail: 'Enter the current shared WEAVE event ground.', href: '/event', icon: Flame, district: 'Shared WEAVE' },
   { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Administration holding inside the same value system used across WEAVE.', href: '/wallet', icon: Wallet, district: 'Shared WEAVE' },
   { label: WEAVE_SYSTEM_MAP.language.ledger, detail: 'Administration record inside the same preserved movement system used across WEAVE.', href: '/ledger', icon: BookOpen, district: 'Shared WEAVE' },
+  { label: 'Receipts', detail: 'Receipts issued for Administration value movement.', href: '/receipts', icon: FileCheck, district: 'Shared WEAVE' },
 
   { label: 'Administration Control Center', detail: 'Open the preserved dense Administration center and its live embedded components.', href: '/admin/control-center', icon: ShieldCheck, district: 'Operations center' },
   { label: 'Administration Wallet', detail: 'Platform balances, deposit, withdrawal and participation controls.', href: '/admin/control-center#wallet', icon: Wallet, district: 'Operations center' },
