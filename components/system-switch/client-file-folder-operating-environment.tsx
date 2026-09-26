@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Activity,
   ArrowRight,
-  Boxes,
   BriefcaseBusiness,
   CheckCircle2,
   ChevronLeft,
