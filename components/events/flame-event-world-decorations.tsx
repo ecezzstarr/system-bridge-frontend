@@ -100,6 +100,21 @@ export function FlameEventWorldDecorations({
         <div className="absolute inset-[36%] rounded-full bg-white/[0.018] shadow-[0_0_80px_rgba(125,211,252,.08)]" />
       </div>
 
+      <div className="absolute inset-x-[12%] bottom-[18%] h-20 [transform:translateZ(-38px)]">
+        <motion.div
+          className="absolute inset-x-0 bottom-3 h-px bg-gradient-to-r from-transparent via-red-300/35 to-transparent"
+          animate={reduceMotion ? undefined : { opacity:[0.18,0.55,0.18], scaleX:[0.82,1,0.82] }}
+          transition={{ duration:5.8, repeat:Infinity, ease:'easeInOut' }}
+        />
+        <motion.div
+          className="absolute left-1/2 bottom-0 -translate-x-1/2 rounded-full border border-red-200/10 bg-[#12070b]/28 px-4 py-1.5 backdrop-blur-sm"
+          animate={reduceMotion ? undefined : { y:moving ? -4 : 0, opacity:moving ? 0.9 : 0.58 }}
+          transition={{ duration:0.42 }}
+        >
+          <span className="text-[6px] font-black uppercase tracking-[0.2em] text-red-100/70">Flame Event in {scene.district} · {scene.label}</span>
+        </motion.div>
+      </div>
+
       <div className="absolute inset-x-0 bottom-[8%] flex items-end justify-center gap-3 opacity-55 [transform:translateZ(-26px)]">
         {Array.from({ length: 11 }).map((_, index) => (
           <motion.div

@@ -6,6 +6,7 @@ import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { recordSystemEvent } from '@/lib/system-events'
 import { requireApiUser } from '@/lib/api-auth'
 import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 const sql = neon(process.env.DATABASE_URL!)
 function validPrice(value: unknown) { const amount = Number(value); return isValidFileFolderAmount(amount) && amount <= 100000000 }
@@ -65,7 +66,8 @@ export async function POST(request: NextRequest) {
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
     const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) RETURNING *`
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
-    return NextResponse.json({ success: true, purchase: { ...record, fileFolderTier }, fileFolderTier, message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration must confirm the payment before the File Folder is activated.` }, { status: 201 })
+    const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
+    return NextResponse.json({ success: true, purchase: { ...record, fileFolderTier }, receipt, fileFolderTier, message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration must confirm the payment before the File Folder is activated.` }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
 

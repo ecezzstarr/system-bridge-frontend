@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,10 +47,22 @@ export async function POST(request: NextRequest) {
         (${user.id}::uuid,${amountFlameCoin},${address},'pending',${reference},NOW(),NOW())
     `
 
+    const receipt = await issueWeaveReceipt({
+      userId: user.id,
+      kind: 'withdrawal',
+      source: 'wallet_tron_withdrawal',
+      sourceId: reference,
+      amount: amountFlameCoin,
+      currency: 'Flame Coin',
+      status: 'pending',
+      description: 'External TRON withdrawal request',
+      metadata: { destination: address, reference },
+    })
     return NextResponse.json({
       success: true,
       message: 'Withdrawal request submitted',
       reference,
+      receipt,
       availableBalance: currentBalance - reserved - amountFlameCoin,
     })
   } catch (error: any) {

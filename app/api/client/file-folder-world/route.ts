@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
@@ -67,6 +68,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       world,
+      receipt,
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('[client/file-folder-world GET]', error)
@@ -81,6 +83,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const action = clean(body.action, 80)
+    let receipt = null as Awaited<ReturnType<typeof issueWeaveReceipt>> | null
 
     if (action === 'purchase_item') {
       const itemKey = clean(body.item_key, 80)
@@ -156,6 +159,18 @@ export async function POST(request: NextRequest) {
           error: `Insufficient Main Client Wallet balance for ${item.name}`,
         }, { status: 409 })
       }
+      receipt = await issueWeaveReceipt({
+        userId: String(ctx.client.id),
+        kind: 'purchase',
+        source: 'file_folder_build_market',
+        sourceId: String(rows[0].order_id),
+        amount: total,
+        currency: 'Flame Coin',
+        status: 'completed',
+        description: `${quantity} × ${item.name}`,
+        metadata: { itemKey, quantity, unitPrice, balanceAfter: Number(rows[0].balance_after || 0), fileNumber: ctx.client.file_number },
+        sql: ctx.sql,
+      })
     } else if (action === 'start_build') {
       const blueprintKey = clean(body.blueprint_key, 80)
       const customTitle = clean(body.title, 220)

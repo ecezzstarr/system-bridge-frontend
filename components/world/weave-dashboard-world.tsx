@@ -132,9 +132,9 @@ export function WeaveDashboardWorld({
   const copy = ROLE[role]
 
   return (
-    <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-[1.6rem] border border-sky-300/10 bg-[#030a15]/52 shadow-[0_28px_90px_rgba(2,8,23,.48)] backdrop-blur-md">
-      <div className="relative p-3.5 sm:p-5 md:p-6">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,.08),transparent_30%),radial-gradient(circle_at_90%_35%,rgba(245,158,11,.05),transparent_24%)]" />
+    <div className="relative mx-auto w-full max-w-6xl overflow-visible rounded-[1.6rem] border border-sky-200/[0.07] bg-[#030a15]/22 shadow-[0_28px_90px_rgba(2,8,23,.22)] backdrop-blur-md">
+      <div className="relative p-3.5 sm:p-5 md:p-7">
+        <div className="pointer-events-none absolute inset-x-[4%] top-[8%] h-[58%] rounded-[50%] bg-[radial-gradient(circle_at_50%_50%,rgba(56,189,248,.07),transparent_68%)] blur-2xl" />
 
         <div className="relative">
           <WeaveLogo size="sm" />
@@ -149,7 +149,7 @@ export function WeaveDashboardWorld({
           <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{copy.title}</h1>
           <p className="mt-1.5 text-xs leading-5 text-slate-400 sm:text-sm">{copy.subtitle}</p>
 
-          <div className="mt-4 rounded-2xl border border-amber-300/15 bg-amber-400/[0.035] p-3.5">
+          <div className="mt-4 max-w-2xl rounded-2xl border border-amber-300/15 bg-[#030a15]/38 p-3.5 shadow-[0_18px_60px_rgba(2,8,23,.22)] backdrop-blur-sm">
             <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300">Your position</p>
             <p className="mt-1 text-base font-bold text-white">{userName || copy.eyebrow}</p>
             <p className="mt-1.5 text-[10px] leading-4 text-slate-400">{copy.purpose}</p>
@@ -157,7 +157,7 @@ export function WeaveDashboardWorld({
 
           <Link
             href={copy.functionsHref}
-            className="mt-3 flex w-full items-center justify-between rounded-2xl border border-sky-300/25 bg-sky-400/10 px-4 py-3.5 text-sky-100 shadow-[0_14px_40px_rgba(14,165,233,.08)] transition active:scale-[.99]"
+            className="mt-3 flex w-full max-w-2xl items-center justify-between rounded-2xl border border-sky-300/25 bg-[#061426]/48 px-4 py-3.5 text-sky-100 shadow-[0_14px_40px_rgba(14,165,233,.08)] backdrop-blur-sm transition hover:-translate-y-0.5 active:scale-[.99]"
           >
             <div>
               <p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Operating room</p>
@@ -166,6 +166,7 @@ export function WeaveDashboardWorld({
             <ArrowRight className="h-4 w-4" />
           </Link>
 
+          <div className="mt-5 flex items-center gap-3 text-[7px] font-black uppercase tracking-[0.18em] text-white/35"><span className="h-px flex-1 bg-gradient-to-r from-transparent via-sky-200/15 to-transparent" /><span>District entrances</span><span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-200/15 to-transparent" /></div>
           <section className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {copy.links.map(item => <WorldLinkCard key={item.label} item={item} />)}
           </section>
@@ -185,7 +186,7 @@ function WorldLinkCard({ item }: { item: WorldLink }) {
   return (
     <Link
       href={item.href}
-      className={`min-w-0 rounded-2xl border p-3 shadow-[0_10px_26px_rgba(2,8,23,.16)] backdrop-blur-sm transition active:scale-[.98] ${toneClass[item.tone]}`}
+      className={`group min-w-0 rounded-2xl border p-3 shadow-[0_12px_32px_rgba(2,8,23,.18)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(2,8,23,.24)] active:scale-[.98] ${toneClass[item.tone]}`}
     >
       <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-black/30">
         <Icon className="h-3.5 w-3.5" />

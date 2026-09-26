@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
+import { WORLD_RULES } from '@/lib/world/constants'
 
-const SUBSCRIPTION_AMOUNT = 25000 // NGN, monthly
+const SUBSCRIPTION_AMOUNT = WORLD_RULES.BRIDGER_CONTINUANCE_NGN
 
 type Continuance = {
   id: string

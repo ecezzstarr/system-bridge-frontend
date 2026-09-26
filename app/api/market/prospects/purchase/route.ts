@@ -4,6 +4,7 @@ import { getPool } from '@/lib/db'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 import { ensureMarketTables } from '@/lib/market'
 import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function POST(request: NextRequest) {
   const authUser = await getAuthUser(request)
@@ -143,11 +144,23 @@ export async function POST(request: NextRequest) {
       description: `30% commission: Bridger purchased a ${priceTrx} Flame Coin prospect package`,
     }).catch(err => console.error('[market purchase] commission error:', err))
 
+    const receipt = await issueWeaveReceipt({
+      userId,
+      kind: 'purchase',
+      source: 'prospect_package',
+      sourceId: String(packageId),
+      amount: priceTrx,
+      currency: 'Flame Coin',
+      status: 'completed',
+      description: 'Bridger prospect package purchase',
+      metadata: { packageId, contactCount: contactsResult.rows.length, balanceAfter: newBalance },
+    })
     return NextResponse.json({
       success: true,
       package: soldResult.rows[0],
       contacts: contactsResult.rows,
       newBalance,
+      receipt,
     })
   } catch (error) {
     await client.query('ROLLBACK')

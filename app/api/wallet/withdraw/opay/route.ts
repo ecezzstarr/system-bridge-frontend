@@ -4,6 +4,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { flameCoinToNgn } from '@/lib/flame-coin'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 import { WORLD_RULES } from '@/lib/world/constants'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,10 +60,23 @@ export async function POST(request: NextRequest) {
       )
     `
 
+    const receipt = await issueWeaveReceipt({
+      userId,
+      kind: 'withdrawal',
+      source: 'wallet_opay_withdrawal',
+      sourceId: reference,
+      amount: amountFlameCoin,
+      currency: 'Flame Coin',
+      status: 'pending',
+      description: 'OPay withdrawal request',
+      metadata: { bankName, accountNumber, accountName, amountNgn, rateUsed: rate, platformFeePercent: WORLD_RULES.PLATFORM_FEE_PERCENT },
+    })
+
     return NextResponse.json({
       success: true,
       message: 'Withdrawal request submitted: ' + amountFlameCoin + ' Flame Coin approx NGN ' + amountNgn.toLocaleString() + ' via OPay',
       reference,
+      receipt,
       rateUsed: rate,
       rateSource: source,
       platformFeePercent: WORLD_RULES.PLATFORM_FEE_PERCENT,

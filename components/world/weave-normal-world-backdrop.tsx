@@ -101,6 +101,38 @@ export function WeaveNormalWorldBackdrop() {
           maskImage: 'linear-gradient(to top, black, transparent 82%)',
         }}
       />
+      <div className="absolute inset-x-[5%] bottom-[23%] hidden items-end justify-between gap-2 md:flex [transform:translateZ(-12px)]">
+        {[
+          ['Bridge','Bridge'],
+          ['System Switch','System Switch'],
+          ['Presence','Presence'],
+          ['Enterprise','Enterprise'],
+          ['Support','Support'],
+          ['Institution','Institution'],
+        ].map(([label,district], index) => {
+          const active = scene.district === district
+          return (
+            <motion.div
+              key={district}
+              initial={false}
+              animate={reduceMotion ? undefined : {
+                y: active ? -8 : 0,
+                opacity: active ? 0.92 : 0.24,
+                scale: active ? 1.05 : 0.96,
+              }}
+              transition={{ duration: 0.55, ease:[0.22,1,0.36,1] }}
+              className="relative flex min-w-0 flex-1 flex-col items-center"
+            >
+              <div className={`h-10 w-px bg-gradient-to-t ${active ? 'from-sky-200/65 to-transparent' : 'from-white/10 to-transparent'}`} />
+              <div className={`mt-1 h-1.5 w-1.5 rounded-full ${active ? 'bg-sky-100 shadow-[0_0_18px_rgba(125,211,252,.9)]' : 'bg-white/20'}`} />
+              <span className={`mt-2 text-center text-[6px] font-black uppercase tracking-[0.18em] ${active ? 'text-sky-100' : 'text-white/30'}`}>{label}</span>
+              {active && <span className="mt-1 text-[5px] font-bold uppercase tracking-[0.16em] text-amber-200/70">{scene.level}</span>}
+              <span className="sr-only">District {index + 1}</span>
+            </motion.div>
+          )
+        })}
+      </div>
+
       <div className="absolute inset-x-0 bottom-[16%] h-28 bg-gradient-to-t from-sky-400/[0.035] to-transparent blur-2xl" />
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,8,21,.62),transparent_22%,transparent_78%,rgba(2,8,21,.62)),linear-gradient(180deg,rgba(2,8,21,.04),transparent_48%,rgba(2,8,21,.66))]" />
     </motion.div>

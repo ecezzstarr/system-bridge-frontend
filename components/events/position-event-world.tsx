@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, Flame, Music2, Radio, Sparkles } from 'lucide-react'
+import { CalendarDays, Flame, Music2, Radio, Sparkles, Wind, Waves, ArrowRight } from 'lucide-react'
 import {
   FLAME_EVENT,
   type EventRole,
@@ -50,6 +50,12 @@ export default function PositionEventWorld({
   const effectiveStatus = event.effectiveStatus || resolveEventStatus(event, now)
   const status = effectiveStatus === 'active' ? 'LIVE' : effectiveStatus === 'planned' ? 'PREPARING' : 'CLOSED'
   const dateRange = `${new Date(event.startsAt).toLocaleDateString()} — ${new Date(event.endsAt).toLocaleDateString()}`
+  const flowIndex = effectiveStatus === 'planned' ? 0 : Math.floor(now.getTime() / 4200) % 3
+  const flow = [
+    { key: 'air', label: 'AIR · PRESENCE', detail: effectiveStatus === 'planned' ? 'The ground is forming. Presence, sound and possibility remain available before opening.' : 'Presence holds the open field: your position, available movement and the living WEAVE around it.', icon: Wind },
+    { key: 'fire', label: 'FIRE · INTERACTION', detail: effectiveStatus === 'planned' ? 'Interaction ignites when Loop One opens.' : position.movement[flowIndex % position.movement.length] || 'Act from your position. The system recognizes the movement as it happens.', icon: Flame },
+    { key: 'water', label: 'WATER · CONTINUITY', detail: effectiveStatus === 'planned' ? 'Results will return into the system as continuity.' : 'Action becomes record, changed state, opportunity and the next available movement.', icon: Waves },
+  ] as const
 
   return (
     <section className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#020611]/72 text-white shadow-2xl backdrop-blur-xl">
@@ -91,6 +97,32 @@ export default function PositionEventWorld({
             </span>
           )}
         </div>
+
+        <section aria-label="Loop One living system" className="relative mt-4 overflow-hidden rounded-2xl border border-white/10 bg-black/15 p-3 backdrop-blur-sm">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(56,189,248,.06),rgba(251,146,60,.07),rgba(34,211,238,.05))]" />
+          <div className="relative grid gap-2 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-stretch">
+            {flow.map((state, index) => {
+              const Icon = state.icon
+              const active = effectiveStatus === 'active' && index === flowIndex
+              return (
+                <div key={state.key} className="contents">
+                  <div className={`relative rounded-xl border p-3 transition-all duration-700 ${active ? 'border-white/25 bg-white/[0.08] shadow-[0_0_35px_rgba(125,211,252,.08)]' : 'border-white/[0.07] bg-white/[0.02]'}`}>
+                    <div className="flex items-center gap-2">
+                      <Icon className={`h-4 w-4 ${state.key === 'fire' ? 'text-orange-300' : state.key === 'water' ? 'text-cyan-300' : 'text-sky-200'}`} />
+                      <p className="text-[8px] font-black uppercase tracking-[0.18em] text-white/75">{state.label}</p>
+                    </div>
+                    <p className="mt-2 text-[10px] leading-4 text-slate-400">{state.detail}</p>
+                    {active && <div className="mt-2 h-px animate-pulse bg-gradient-to-r from-transparent via-white/70 to-transparent" />}
+                  </div>
+                  {index < flow.length - 1 && <div className="hidden items-center justify-center md:flex"><ArrowRight className="h-3.5 w-3.5 text-white/25" /></div>}
+                </div>
+              )
+            })}
+          </div>
+          <div className="relative mt-2 flex items-center justify-center gap-2 text-[7px] font-black uppercase tracking-[0.18em] text-white/30">
+            <span>Presence</span><ArrowRight className="h-3 w-3" /><span>Interaction</span><ArrowRight className="h-3 w-3" /><span>Record</span><ArrowRight className="h-3 w-3" /><span>Next movement</span>
+          </div>
+        </section>
 
         <section id="your-position" className="mt-4 rounded-2xl border border-sky-300/20 bg-sky-400/[0.055] p-4">
           <p className="text-[8px] font-black uppercase tracking-[0.22em] text-sky-300">Your Loop 1 Position</p>
