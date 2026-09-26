@@ -155,20 +155,20 @@ export default function BridgerWorkshopPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Bridge</h1>
-          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            Create shareable AI conversation links that convert visitors into clients.
+          <h1 className="text-2xl font-black" style={{ color: 'var(--foreground)' }}>Bridge AI Paths</h1>
+          <p className="weave-word-presence text-sm" style={{ color: 'var(--muted-foreground)' }}>
+            Open a Client crossing with Bridge AI. When the person becomes a Client, the same Bridge AI continues as their AI support inside the File Folder.
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button disabled={templates.length === 0 || !isSubscribed}>
-              <Plus className="h-4 w-4 mr-2" /> New Bridge AI
+              <Plus className="h-4 w-4 mr-2" /> New Bridge AI Path
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create a Bridge AI</DialogTitle>
+              <DialogTitle>Create a Bridge AI Path</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
@@ -198,7 +198,7 @@ export default function BridgerWorkshopPage() {
             </div>
             <DialogFooter>
               <Button onClick={handleCreate} disabled={!selectedTemplateId || creating}>
-                {creating ? 'Creating...' : 'Create Bridge AI'}
+                {creating ? 'Creating...' : 'Create Bridge AI Path'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -239,7 +239,7 @@ export default function BridgerWorkshopPage() {
               Subscribe — {BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin / month
             </h2>
             <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Deducted from your primary wallet. Required to create and run Bridge AI links. Cancel anytime by letting it lapse.
+              Deducted from your primary wallet. Required to open and maintain Bridge AI crossing paths for Clients. The Bridger opens the path; Bridge AI continues with the Client after crossing.
             </p>
             <Button onClick={handleSubscribe} disabled={subscribing} className="w-full">
               {subscribing ? 'Activating...' : `Subscribe for ${BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin`}
@@ -259,7 +259,7 @@ export default function BridgerWorkshopPage() {
       {isSubscribed && bridges.length === 0 && templates.length > 0 && (
         <Card>
           <CardContent className="py-6 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            You haven't created a Bridge AI yet. Click "New Bridge AI" to get your first shareable link.
+            You have not opened a Bridge AI path yet. Create one to begin a crossing that can continue as Client AI support after entry.
           </CardContent>
         </Card>
       )}
@@ -313,7 +313,7 @@ export default function BridgerWorkshopPage() {
 
       <Dialog open={!!qrBridge} onOpenChange={(open) => !open && setQrBridge(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Share this Bridge AI</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Share this Bridge AI crossing path</DialogTitle></DialogHeader>
           {qrBridge && (
             <div className="space-y-4">
               <div className="flex justify-center bg-white p-4 rounded-lg">
