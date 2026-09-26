@@ -372,6 +372,14 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const current = surfaces.find(item => item.key === surface) || surfaces[0]
   const CurrentIcon = current.icon
 
+  const surfaceTone: Record<string, { selected: string; icon: string; badge: string }> = {
+    sky: { selected: 'border-sky-300/30 bg-sky-400/10', icon: 'text-sky-300', badge: 'border-sky-300/15 bg-sky-400/5 text-sky-200' },
+    violet: { selected: 'border-violet-300/30 bg-violet-400/10', icon: 'text-violet-300', badge: 'border-violet-300/15 bg-violet-400/5 text-violet-200' },
+    emerald: { selected: 'border-emerald-300/30 bg-emerald-400/10', icon: 'text-emerald-300', badge: 'border-emerald-300/15 bg-emerald-400/5 text-emerald-200' },
+    amber: { selected: 'border-amber-300/30 bg-amber-400/10', icon: 'text-amber-300', badge: 'border-amber-300/15 bg-amber-400/5 text-amber-200' },
+    rose: { selected: 'border-rose-300/30 bg-rose-400/10', icon: 'text-rose-300', badge: 'border-rose-300/15 bg-rose-400/5 text-rose-200' },
+  }
+
   return (
     <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711]">
       <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(14,165,233,.18),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(139,92,246,.12),transparent_28%)] p-5 md:p-7">
@@ -430,11 +438,49 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         </div>
       </header>
 
-      <div className="p-4 md:p-6">
-        <div className="mb-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-          <CurrentIcon className="h-3.5 w-3.5 text-sky-300" />
-          File Folder / {current.label}
-        </div>
+      <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[230px_minmax(0,1fr)_250px]">
+        <aside className="space-y-4">
+          <section className="weave-reading-surface rounded-3xl p-4">
+            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">File Folder map</p>
+            <p className="mt-2 text-xs leading-5 text-slate-300">These are districts of one environment, not separate products or disconnected pages.</p>
+            <div className="mt-4 grid grid-cols-2 gap-2 xl:grid-cols-1">
+              {surfaces.map(item => {
+                const Icon = item.icon
+                const selected = surface === item.key
+                const colors = surfaceTone[item.tone] || surfaceTone.sky
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => { setSurface(item.key); setSelectedSystemId(''); setFormationOpen(false) }}
+                    className={`rounded-2xl border p-3 text-left transition ${selected ? colors.selected : 'border-white/8 bg-black/20 hover:border-white/15 hover:bg-white/[0.035]'}`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Icon className={`h-4 w-4 ${selected ? colors.icon : 'text-slate-400'}`} />
+                        <span className="text-[10px] font-black uppercase tracking-[0.08em] text-white">{item.label}</span>
+                      </div>
+                      <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black ${colors.badge}`}>{item.step}</span>
+                    </div>
+                    <p className="mt-2 text-[10px] leading-5 text-slate-300">{item.detail}</p>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[0.04] p-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Simple meaning</p>
+            <p className="mt-3 text-xs leading-5 text-slate-300">
+              The Client starts with a workshop, chooses what to build, watches it form, activates it, then uses the finished system here for real-life activity.
+            </p>
+          </section>
+        </aside>
+
+        <div className="min-w-0">
+          <div className="mb-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
+            <CurrentIcon className={`h-3.5 w-3.5 ${surfaceTone[current.tone]?.icon || 'text-sky-300'}`} />
+            Main File Folder <span className="text-white/25">/</span> <span className="text-white">{current.label}</span>
+          </div>
 
         {surface === 'command' && (
           <div className="space-y-5">
@@ -714,6 +760,48 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         {surface === 'sound' && data.premium_dj_enabled && (
           <ClientPremiumDJ fileNumber={data.client.file_number} />
         )}
+        </div>
+
+        <aside className="space-y-4">
+          <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Folder status</p>
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between rounded-xl border border-white/8 bg-black/20 px-3 py-2">
+                <span className="text-[10px] text-slate-300">Building</span>
+                <span className="text-sm font-black text-amber-200">{activeBuilds.length}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-white/8 bg-black/20 px-3 py-2">
+                <span className="text-[10px] text-slate-300">Live systems</span>
+                <span className="text-sm font-black text-emerald-200">{systems.length}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-white/8 bg-black/20 px-3 py-2">
+                <span className="text-[10px] text-slate-300">Customer Door</span>
+                <span className="text-[10px] font-black uppercase text-violet-200">{world?.customerDoor?.formation_status || 'forming'}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-white/8 bg-black/20 px-3 py-2">
+                <span className="text-[10px] text-slate-300">Position</span>
+                <span className="text-[10px] font-black uppercase text-sky-200">{data.enterprise?.position || 'client'}</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[0.04] p-4">
+            <div className="flex items-center gap-2">
+              <Bot className="h-4 w-4 text-violet-300"/>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Bridge AI continuity</p>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-slate-300">
+              Bridge AI begins at the crossing and continues here as Client AI support for the File Folder, builds and live systems.
+            </p>
+          </section>
+
+          <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[0.04] p-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Support around the Client</p>
+            <p className="mt-3 text-sm font-black text-white">{data.bridge?.name || 'Assigned Bridge'}</p>
+            <p className="mt-1 text-xs text-slate-300">{data.approved_agents?.length || 0} approved company agents</p>
+            <p className="mt-3 text-[10px] leading-5 text-slate-400">Support positions accompany the Client. The Client remains the player and owner of this movement.</p>
+          </section>
+        </aside>
       </div>
     </section>
   )
