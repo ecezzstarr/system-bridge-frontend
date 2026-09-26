@@ -95,11 +95,13 @@ export default function AdminTerminal() {
         hash === '#panel' ||
         hash === '#bridgers' ||
         hash === '#users' ||
-        hash === '#sweeps' ||
+        hash === '#clients' ||
+        hash === '#fne' ||
         hash === '#deposits' ||
         hash === '#tron' ||
         hash === '#bridge' ||
         hash === '#withdrawals' ||
+        hash === '#announcements' ||
         hash === '#departmental'
       ) {
         setActiveTab('panel')
@@ -398,7 +400,6 @@ function AdminPanelSection({ user }: { user: any }) {
       const hash = window.location.hash
       if (hash === '#bridgers') setActiveSubTab('bridgers')
       else if (hash === '#users') setActiveSubTab('users')
-      else if (hash === '#sweeps') setActiveSubTab('sweeps')
       else if (hash === '#clients') setActiveSubTab('clients')
       else if (hash === '#fne') setActiveSubTab('fne')
       else if (hash === '#deposits') setActiveSubTab('deposits')
@@ -439,12 +440,6 @@ function AdminPanelSection({ user }: { user: any }) {
           className={`pb-2 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeSubTab === 'bridgers' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500 hover:text-slate-400'}`}
         >
           Bridger Ops
-        </button>
-        <button 
-          onClick={() => setActiveSubTab('sweeps')}
-          className={`pb-2 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeSubTab === 'sweeps' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500 hover:text-slate-400'}`}
-        >
-          Sweeps
         </button>
         <button 
           onClick={() => setActiveSubTab('clients')}
@@ -489,7 +484,6 @@ function AdminPanelSection({ user }: { user: any }) {
         {activeSubTab === 'departmental' && <DepartmentalCodesSection />}
         {activeSubTab === 'fne' && <FileNumberEngineSection />}
         {activeSubTab === 'bridgers' && <BridgerManagementSection />}
-        {activeSubTab === 'sweeps' && <FundSweepsSection user={user} />}
         {activeSubTab === 'clients' && <ClientMessagesPreview />}
         {activeSubTab === 'deposits' && <DepositApprovalSection user={user} />}
         {activeSubTab === 'tron' && <TronDepositApprovalSection user={user} />}
