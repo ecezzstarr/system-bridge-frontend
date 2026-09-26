@@ -1,7 +1,11 @@
 import { sql } from '@/lib/db'
 import { WEAVE_ENVIRONMENT_REGISTRY } from '@/lib/weave-environment-registry'
 
+let environmentSchemaPromise:Promise<void>|null=null
+
 export async function ensureEnvironmentOrganizerSchema(){
+  if(environmentSchemaPromise)return environmentSchemaPromise
+  environmentSchemaPromise=(async()=>{
   await sql`
     CREATE TABLE IF NOT EXISTS weave_environment_surfaces (
       surface_key varchar(180) PRIMARY KEY,
@@ -36,9 +40,15 @@ export async function ensureEnvironmentOrganizerSchema(){
         route=EXCLUDED.route,
         area=EXCLUDED.area,
         scope=EXCLUDED.scope,
-        is_protected=EXCLUDED.is_protected
+        is_protected=EXCLUDED.is_protected,
+        is_visible=CASE WHEN EXCLUDED.is_protected THEN true ELSE weave_environment_surfaces.is_visible END
     `
   }
+  })().catch(error=>{
+    environmentSchemaPromise=null
+    throw error
+  })
+  return environmentSchemaPromise
 }
 
 export async function getEnvironmentOrganizerState(){
