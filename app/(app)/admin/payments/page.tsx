@@ -142,7 +142,7 @@ export default function AdminAgentYieldRegistryPage() {
             <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[0.04] p-4">
               <div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-amber-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Settlement boundary</p></div>
               <p className="mt-3 text-xs leading-5 text-slate-300">{settlementDetail || 'Recognized Yield is not the same as completed settlement.'}</p>
-              <p className="mt-3 text-[10px] leading-5 text-slate-400">The old mock “Record Payment via EIGHT” control has been removed. A settlement action should return only when a real ledger/wallet settlement endpoint exists.</p>
+              <p className="mt-3 text-[10px] leading-5 text-slate-400">A settlement control belongs here only when a real ledger or wallet settlement endpoint exists and can return a verifiable settlement record.</p>
             </section>
 
             <Link href="/ledger" className="flex items-center justify-between rounded-2xl border border-sky-300/15 bg-sky-400/[0.05] px-4 py-3 text-xs font-black text-sky-100">
