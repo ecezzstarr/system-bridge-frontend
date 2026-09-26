@@ -643,7 +643,7 @@ assert.ok(recordPageSource.includes("headers: { Authorization: \`Bearer \${token
 assert.ok(premiumDjSource.includes("weave:personal-dj"),'Premium Client DJ can take local sound priority')
 assert.ok(djPlayerSource.includes("window.addEventListener('weave:personal-dj'"),'Platform DJ yields while Premium personal DJ is active')
 assert.ok(enterpriseSystemSwitchSource.includes("premium_dj_enabled:fileFolderTier==='premium'"),'Only Premium File Folders receive the personal DJ capability')
-assert.ok(clientSystemSwitchPageSource.includes('<ClientPremiumDJ'),'Premium DJ is mounted inside the Client File Folder')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientPremiumDJ'),'Premium DJ is contained inside the Client File Folder Sound surface')
 assert.ok(adminBuildCatalogApiSource.includes("user.role !== 'admin'"),'Client build catalog updates are Administration-only')
 assert.ok(adminBuildCatalogPageSource.includes('Client Build Catalog'),'Administration can manage Client build pricing')
 assert.ok(sidebarInfrastructureSource.includes('/admin/client-build-catalog'),'Administration sidebar exposes Client Build Catalog')
