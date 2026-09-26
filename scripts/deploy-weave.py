@@ -128,4 +128,3 @@ def main():
  print('Production remains on',active[0]['revisionName'])
  print('After review: python3 scripts/deploy-weave.py promote')
 if __name__=='__main__':main()
-
