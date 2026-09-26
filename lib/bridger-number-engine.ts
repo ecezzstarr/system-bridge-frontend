@@ -21,9 +21,6 @@ export async function ensureBridgerNumberEngineSchema(sql = getSql()) {
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_bridger_whatsapp_numbers_status ON bridger_whatsapp_numbers(status,created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_bridger_whatsapp_numbers_owner ON bridger_whatsapp_numbers(assigned_to,assigned_at DESC)`
-  await sql`\n    CREATE TABLE IF NOT EXISTS bridger_number_inbox (\n      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n      number_id uuid NOT NULL REFERENCES bridger_whatsapp_numbers(id) ON DELETE CASCADE,\n      provider_message_id varchar(220),\n      channel varchar(20) NOT NULL CHECK (channel IN ('sms','call')),\n      sender varchar(120),\n      message text NOT NULL,\n      received_at timestamptz NOT NULL DEFAULT NOW(),\n      expires_at timestamptz NOT NULL DEFAULT (NOW() + interval '30 minutes'),\n      viewed_at timestamptz\n    )\n  `
-  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_bridger_number_inbox_provider_message ON bridger_number_inbox(provider_message_id) WHERE provider_message_id IS NOT NULL`
-  await sql`CREATE INDEX IF NOT EXISTS idx_bridger_number_inbox_number_received ON bridger_number_inbox(number_id,received_at DESC)`
   await sql`
     CREATE TABLE IF NOT EXISTS bridger_number_verification_requests (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
