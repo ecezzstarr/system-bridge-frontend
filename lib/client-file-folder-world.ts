@@ -327,26 +327,6 @@ export async function ensureCustomerDoorFormation(
 ) {
   const [existing] = await sql`
     SELECT id,status
-      COALESCE(
-        (
-          SELECT json_agg(
-            json_build_object(
-              'id',p.id,
-              'item_key',p.item_key,
-              'name',i.name,
-              'quantity',p.quantity,
-              'effect_type',p.effect_type,
-              'effect_value',p.effect_value,
-              'applied_at',p.applied_at
-            )
-            ORDER BY p.applied_at DESC
-          )
-          FROM client_file_folder_build_parts p
-          JOIN weave_file_folder_items i ON i.item_key=p.item_key
-          WHERE p.build_id=client_file_folder_builds.id
-        ),
-        '[]'::json
-      ) AS applied_parts
     FROM client_file_folder_builds
     WHERE client_id=${clientId}::uuid
       AND file_number=${fileNumber}
@@ -577,7 +557,9 @@ export async function getFileFolderWorldSnapshot(
       inv.item_key,
       inv.quantity,
       i.name,
-      i.category
+      i.category,
+      i.build_effect,
+      i.effect_value
     FROM client_file_folder_inventory inv
     JOIN weave_file_folder_items i ON i.item_key=inv.item_key
     WHERE inv.client_id=${clientId}::uuid
@@ -586,28 +568,48 @@ export async function getFileFolderWorldSnapshot(
 
   const builds = await sql`
     SELECT
-      id,
-      blueprint_key,
-      title,
-      purpose,
-      system_type,
-      status,
-      duration_hours,
-      base_duration_minutes,
-      duration_minutes,
-      speed_multiplier,
-      purchase_speed_multiplier,
-      started_at,
-      completes_at,
-      completed_at,
+      b.id,
+      b.blueprint_key,
+      b.title,
+      b.purpose,
+      b.system_type,
+      b.status,
+      b.duration_hours,
+      b.base_duration_minutes,
+      b.duration_minutes,
+      b.speed_multiplier,
+      b.purchase_speed_multiplier,
+      b.started_at,
+      b.completes_at,
+      b.completed_at,
       GREATEST(
         0,
-        EXTRACT(EPOCH FROM (completes_at - NOW()))::bigint
-      ) AS remaining_seconds
-    FROM client_file_folder_builds
-    WHERE client_id=${clientId}::uuid
-      AND file_number=${fileNumber}
-    ORDER BY created_at DESC
+        EXTRACT(EPOCH FROM (b.completes_at - NOW()))::bigint
+      ) AS remaining_seconds,
+      COALESCE(
+        (
+          SELECT json_agg(
+            json_build_object(
+              'id',p.id,
+              'item_key',p.item_key,
+              'name',i.name,
+              'quantity',p.quantity,
+              'effect_type',p.effect_type,
+              'effect_value',p.effect_value,
+              'applied_at',p.applied_at
+            )
+            ORDER BY p.applied_at DESC
+          )
+          FROM client_file_folder_build_parts p
+          JOIN weave_file_folder_items i ON i.item_key=p.item_key
+          WHERE p.build_id=b.id
+        ),
+        '[]'::json
+      ) AS applied_parts
+    FROM client_file_folder_builds b
+    WHERE b.client_id=${clientId}::uuid
+      AND b.file_number=${fileNumber}
+    ORDER BY b.created_at DESC
     LIMIT 100
   `
 
