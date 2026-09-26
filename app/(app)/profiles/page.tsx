@@ -28,9 +28,7 @@ function CollapsibleSection({ title, defaultOpen = false, children }: { title: s
         <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && <div className="px-4 pb-4">{children}</div>}
-      </div>
-      </section>
-    </main>
+    </div>
   )
 }
 
