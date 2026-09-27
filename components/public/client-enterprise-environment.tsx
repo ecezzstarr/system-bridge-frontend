@@ -13,7 +13,7 @@ export function ClientEnterpriseEnvironment({
   streamUrl?:string|null
 }){
   const position=String(enterprise.requested_position||'lord')
-  return <main className="min-h-screen bg-[#03050a] text-white">
+  return <main className="min-h-screen bg-transparent text-white" data-client-enterprise-world>
     <header className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_18%_0%,rgba(245,158,11,.2),transparent_34%),radial-gradient(circle_at_82%_10%,rgba(56,189,248,.11),transparent_32%),linear-gradient(180deg,#151005,#03050a)] px-5 py-10 md:px-8 md:py-16">
       <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_bottom,black,transparent_84%)]"/>
       <div className="relative mx-auto max-w-7xl">
@@ -24,7 +24,7 @@ export function ClientEnterpriseEnvironment({
         <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_.72fr] lg:items-end">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-300">Enterprise Door · Open</p>
-            <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-[-0.045em] sm:text-6xl">{enterprise.enterprise_name}</h1>
+            <h1 data-weave-live-word="title" className="mt-3 max-w-4xl text-4xl font-black tracking-[-0.045em] sm:text-6xl">{enterprise.enterprise_name}</h1>
             <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">An Administration-approved Client enterprise carried through a constructed public Enterprise Door. This territory reflects systems, participants and business movement actually present in the File Folder.</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -38,7 +38,7 @@ export function ClientEnterpriseEnvironment({
     <section className="mx-auto max-w-7xl px-5 py-10 md:px-8">
       <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
         <section className="rounded-[2rem] border border-amber-300/12 bg-[linear-gradient(145deg,rgba(245,158,11,.06),rgba(255,255,255,.015))] p-6">
-          <div className="flex items-center gap-3"><Building2 className="h-5 w-5 text-amber-300"/><div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Enterprise structures</p><h2 className="mt-1 text-2xl font-black">Constructed territory</h2></div></div>
+          <div className="flex items-center gap-3"><Building2 className="h-5 w-5 text-amber-300"/><div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Enterprise structures</p><h2 data-weave-live-word="title" className="mt-1 text-2xl font-black">Constructed territory</h2></div></div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {[
               ['Enterprise Door',growth.enterprise.doorOpen],
