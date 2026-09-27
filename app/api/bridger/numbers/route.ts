@@ -253,7 +253,6 @@ export async function POST(request:NextRequest){
         WHERE id=$1::uuid
           AND status='available'
           AND assigned_to IS NULL
-          AND price_flame_coin>0
         FOR UPDATE
       `,[numberId])).rows[0]
     }else{
@@ -287,13 +286,34 @@ export async function POST(request:NextRequest){
       },{status:409})
     }
 
-    const price=Number(number.price_flame_coin)
+    let price=Number(number.price_flame_coin)
     if(!Number.isFinite(price)||price<=0){
-      await client.query('ROLLBACK')
-      return NextResponse.json({
-        error:'This stocked number does not have a valid Bridger purchase price. Administration must correct the stock price.',
-        gate:'invalid_stock_price',
-      },{status:409})
+      const fallbackOffer=(await client.query(`
+        SELECT price_flame_coin
+        FROM bridger_number_country_offers
+        WHERE LOWER(TRIM(country))=LOWER(TRIM($1))
+          AND enabled=true
+          AND price_flame_coin>0
+        ORDER BY updated_at DESC
+        LIMIT 1
+      `,[number.country])).rows[0]
+
+      const repairedPrice=Number(fallbackOffer?.price_flame_coin)
+      if(!Number.isFinite(repairedPrice)||repairedPrice<=0){
+        await client.query('ROLLBACK')
+        return NextResponse.json({
+          error:'This stocked number is missing its Bridger price. Administration must publish a valid country price.',
+          gate:'invalid_stock_price',
+        },{status:409})
+      }
+
+      price=repairedPrice
+      await client.query(`
+        UPDATE bridger_whatsapp_numbers
+        SET price_flame_coin=$1,updated_at=NOW()
+        WHERE id=$2::uuid
+      `,[price,number.id])
+      number.price_flame_coin=price
     }
 
     const debited=(await client.query(`
