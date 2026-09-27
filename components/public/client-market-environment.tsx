@@ -125,7 +125,7 @@ export function ClientMarketEnvironment({
 }){
   const style=presetClass[config.preset]||presetClass.radiant_arcade
   const levelLabel=level==='market_hall'?'Market Hall':level==='storefront'?'Constructed Storefront':'Customer Door'
-  return <main className="min-h-screen bg-[#02050b] text-white">
+  return <main className="min-h-screen bg-transparent text-white" data-client-market-world>
     <section className={`relative isolate overflow-hidden border-b border-white/10 bg-gradient-to-b ${style.sky}`}>
       <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.04)_1px,transparent_1px)] [background-size:42px_42px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]"/>
       <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-sky-400/10 blur-3xl"/>
@@ -138,7 +138,7 @@ export function ClientMarketEnvironment({
         <div className="mt-8 grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(520px,1.1fr)]">
           <div>
             <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${style.accent}`}>{config.sign}</p>
-            <h1 className="mt-3 max-w-3xl text-4xl font-black leading-[0.96] tracking-[-0.04em] sm:text-6xl lg:text-7xl">{store.name}</h1>
+            <h1 data-weave-live-word="title" className="mt-3 max-w-3xl text-4xl font-black leading-[0.96] tracking-[-0.04em] sm:text-6xl lg:text-7xl">{store.name}</h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">{config.tagline}</p>
             {store.description&&<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">{store.description}</p>}
             <div className="mt-6 flex flex-wrap gap-2">
@@ -187,7 +187,7 @@ export function ClientMarketEnvironment({
         <div id="offers" className="space-y-5">
           <div>
             <p className={`text-[9px] font-black uppercase tracking-[0.22em] ${style.accent}`}>Store windows</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight">Walk through the offers.</h2>
+            <h2 data-weave-live-word="title" className="mt-2 text-3xl font-black tracking-tight">Walk through the offers.</h2>
             <p className="mt-2 text-sm leading-6 text-slate-400">Each offer is a working sales window. Choose one, give the Client the required delivery details, and submit the purchase/request directly.</p>
           </div>
 
