@@ -1,8 +1,8 @@
 'use client'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
-import { useMemo,useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useEffect,useMemo,useRef } from 'react'
+import { useFrame,useThree } from '@react-three/fiber'
 import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
@@ -375,21 +375,40 @@ function DistrictPlot({
 
 function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
   const controls=useRef<any>(null)
+  const {camera}=useThree()
+  const travel=useRef(1)
   const target=useMemo(()=>{
     const [x,,z]=POSITIONS[activeSurface]
-    return new THREE.Vector3(x*.58,.58,z*.58)
+    return new THREE.Vector3(x*.78,.72,z*.78)
   },[activeSurface])
+  const cameraDestination=useMemo(()=>{
+    if(activeSurface==='command')return new THREE.Vector3(0,10.5,14.6)
+    const [x,,z]=POSITIONS[activeSurface]
+    const outward=new THREE.Vector3(x,0,z).normalize()
+    return new THREE.Vector3(
+      x+outward.x*5.6,
+      6.8,
+      z+outward.z*5.6,
+    )
+  },[activeSurface])
+
+  useEffect(()=>{travel.current=1},[activeSurface])
 
   useFrame((_,delta)=>{
     if(!controls.current)return
-    controls.current.target.lerp(target,1-Math.pow(.925,Math.min(delta,.05)*60))
+    const step=1-Math.pow(.91,Math.min(delta,.05)*60)
+    controls.current.target.lerp(target,step)
+    if(travel.current>.01){
+      camera.position.lerp(cameraDestination,1-Math.pow(.88,Math.min(delta,.05)*60))
+      travel.current*=Math.pow(.82,Math.min(delta,.05)*60)
+    }
     controls.current.update()
   })
 
   return <OrbitControls
     ref={controls}
     enablePan={false}
-    minDistance={10}
+    minDistance={6.8}
     maxDistance={19}
     minPolarAngle={.58}
     maxPolarAngle={1.31}
