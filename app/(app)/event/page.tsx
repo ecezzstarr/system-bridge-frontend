@@ -18,7 +18,7 @@ export default function EventPage() {
   const backHref = role === 'admin' ? '/admin/dashboard' : role === 'agent' ? '/agent/dashboard' : '/bridger/dashboard'
 
   return (
-    <div className="mx-auto w-full max-w-3xl text-white">
+    <div className="mx-auto w-full max-w-6xl text-white">
       <Link href={backHref} className="mb-3 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 hover:text-white">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to Home
       </Link>
