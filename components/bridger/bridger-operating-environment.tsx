@@ -31,6 +31,7 @@ import { getAuthHeaders } from '@/lib/auth-client'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { ClientBuildPull } from '@/components/world/client-build-pull'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
+import { WeaveRouteNetwork, type WeaveRouteTone } from '@/components/world/weave-route-network'
 
 const commands = [
   { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: Network, district: 'Shared WEAVE' },
@@ -57,18 +58,19 @@ const commands = [
   { label: 'Lounge', detail: 'Shared WEAVE communication space.', href: '/lounge', icon: MessageSquare, district: 'Participation' },
 ]
 
-const DISTRICT_TONE: Record<string, { card: string; icon: string; label: string }> = {
-  'Shared WEAVE': { card: 'border-sky-300/15 bg-sky-400/[0.04] hover:border-sky-300/30 hover:bg-sky-400/[0.07]', icon: 'text-sky-200', label: 'text-sky-300' },
-  'Crossing': { card: 'border-amber-300/15 bg-amber-400/[0.04] hover:border-amber-300/30 hover:bg-amber-400/[0.07]', icon: 'text-amber-200', label: 'text-amber-300' },
-  'Client continuity': { card: 'border-emerald-300/15 bg-emerald-400/[0.04] hover:border-emerald-300/30 hover:bg-emerald-400/[0.07]', icon: 'text-emerald-200', label: 'text-emerald-300' },
-  'Company continuity': { card: 'border-violet-300/15 bg-violet-400/[0.04] hover:border-violet-300/30 hover:bg-violet-400/[0.07]', icon: 'text-violet-200', label: 'text-violet-300' },
-  'Participation': { card: 'border-cyan-300/15 bg-cyan-400/[0.04] hover:border-cyan-300/30 hover:bg-cyan-400/[0.07]', icon: 'text-cyan-200', label: 'text-cyan-300' },
+const DISTRICT_ROUTE_TONE:Record<string,WeaveRouteTone>={
+  'Shared WEAVE':'sky',
+  'Crossing':'amber',
+  'Client continuity':'emerald',
+  'Company continuity':'violet',
+  'Participation':'cyan',
 }
 
 export function BridgerOperatingEnvironment() {
   const [referral,setReferral]=useState<any>(null)
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const visibleCommands = commands.filter(item => isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
+  const stations=visibleCommands.map(item=>({...item,tone:DISTRICT_ROUTE_TONE[item.district]||'sky' as WeaveRouteTone}))
 
   useEffect(()=>{
     fetch('/api/bridger/referral-commissions',{headers:getAuthHeaders()})
@@ -82,8 +84,8 @@ export function BridgerOperatingEnvironment() {
     : ''
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] p-3 md:p-6">
-      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-emerald-300/15 bg-[#03100f]/82 backdrop-blur-xl">
+    <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-6">
+      <section className="weave-system-depth weave-operating-environment overflow-hidden border-y border-emerald-300/15 bg-[#03100f]/82 backdrop-blur-xl sm:rounded-[2rem] sm:border">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(52,211,153,.13),transparent_36%),radial-gradient(circle_at_90%_0%,rgba(56,189,248,.08),transparent_30%)] p-5 md:p-7">
           <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Bridger Operating Room</p>
           <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Connection carried in the right order.</h1>
@@ -92,84 +94,68 @@ export function BridgerOperatingEnvironment() {
           </p>
         </header>
 
-        <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[minmax(0,1fr)_250px]">
-          <section className="min-w-0 rounded-[1.75rem] border border-emerald-300/20 bg-[linear-gradient(180deg,rgba(16,185,129,.055),rgba(2,6,23,.72))] p-4 shadow-[0_24px_70px_rgba(2,8,23,.38)] md:p-5">
-            <div className="rounded-2xl border border-amber-300/15 bg-amber-400/[0.035] p-4">
-              <div className="flex items-start gap-3">
-                <Network className="mt-0.5 h-5 w-5 text-amber-300"/>
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Prospect intake · one place</p>
-                  <p className="mt-1 text-sm font-black text-white">Daily Prospect movement</p>
-                  <p className="mt-1 text-xs leading-5 text-slate-400">The free daily Prospect claim lives inside the Bridger working panel and is not repeated around the app.</p>
+        <div className="grid min-h-[620px] xl:grid-cols-[minmax(0,1fr)_250px]">
+          <section className="min-w-0 border-b border-white/[0.07] p-4 md:p-6 xl:border-b-0 xl:border-r">
+            <section className="border-b border-amber-300/15 pb-5">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex items-start gap-3">
+                  <Network className="mt-0.5 h-5 w-5 text-amber-300"/>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Prospect intake dock</p>
+                    <p className="mt-1 text-sm font-black text-white">Daily Prospect movement</p>
+                    <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">Prospect intake is a live station in the Bridger environment. It is not repeated as an advertisement elsewhere.</p>
+                  </div>
                 </div>
+                <span className="border-l border-amber-300/20 pl-3 text-[8px] font-black uppercase tracking-[0.14em] text-amber-200">Crossing route</span>
               </div>
-              <div className="mt-4"><DailyProspectClaim/></div>
-            </div>
+              <div className="mt-4" data-weave-station="prospect-intake"><DailyProspectClaim/></div>
+            </section>
 
-            <div className="mt-4 flex items-end justify-between gap-3 border-b border-white/10 pb-4">
-              <div>
-                <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Central operating surface</p>
-                <h2 className="mt-1 text-xl font-black text-white md:text-2xl">Bridger Working Panel</h2>
-                <p className="mt-2 text-xs leading-6 text-slate-300">The middle panel contains the Bridger’s actual functions instead of sending the role through disconnected navigation.</p>
-              </div>
-              <div className="shrink-0 rounded-xl border border-emerald-300/15 bg-emerald-400/[0.045] px-3 py-2 text-right">
-                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">Functions present</p>
-                <p className="mt-0.5 text-xl font-black text-white">{visibleCommands.length}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleCommands.map(item=>{
-                const Icon=item.icon
-                const tone=DISTRICT_TONE[item.district] || DISTRICT_TONE['Shared WEAVE']
-                return (
-                  <Link key={item.label+item.href} href={item.href} className={`group min-h-[118px] rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${tone.card}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/25"><Icon className={`h-4 w-4 ${tone.icon}`}/></div>
-                      <span className={`max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] ${tone.label}`}>{item.district}</span>
-                    </div>
-                    <p className="mt-3 text-sm font-black leading-5 text-white">{item.label}</p>
-                    <p className="mt-1 text-[11px] leading-5 text-slate-400">{item.detail}</p>
-                  </Link>
-                )
-              })}
+            <div className="mt-5">
+              <WeaveRouteNetwork
+                stations={stations}
+                title="Bridger route network"
+                detail="Crossing, Client continuity, company continuity and participation remain lanes in one Bridger environment."
+              />
             </div>
           </section>
 
-          <aside className="space-y-4">
-            <section className="rounded-3xl border border-sky-300/10 bg-sky-400/[0.025] p-4">
-              <div className="flex items-center gap-2">
-                <CircleDollarSign className="h-4 w-4 text-sky-300"/>
-                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Referral continuity</p>
-              </div>
-              <p className="mt-3 text-xs leading-5 text-slate-400">Invite another Bridger through the recorded partnership path.</p>
-              {referralLink&&<input readOnly value={referralLink} className="mt-3 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-[10px] font-semibold text-white"/>}
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-center">
-                  <p className="text-[8px] uppercase tracking-wider text-slate-500">Referred</p>
-                  <p className="mt-1 text-lg font-black text-white">{referral?.referralCount??0}</p>
+          <aside className="bg-black/10 p-4 md:p-5">
+            <div className="sticky top-20 space-y-6">
+              <section className="border-l border-sky-300/20 pl-4">
+                <div className="flex items-center gap-2">
+                  <CircleDollarSign className="h-4 w-4 text-sky-300"/>
+                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Referral continuity</p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-center">
-                  <p className="text-[8px] uppercase tracking-wider text-slate-500">Earnings</p>
-                  <p className="mt-1 text-sm font-black text-emerald-200">{referral?.referralEarnings??0} TRX</p>
+                <p className="mt-3 text-xs leading-5 text-slate-400">Invite another Bridger through the recorded partnership route.</p>
+                {referralLink&&<input readOnly value={referralLink} className="mt-3 w-full border-b border-white/10 bg-transparent px-0 py-2 text-[10px] font-semibold text-white outline-none"/>}
+                <div className="mt-4 grid grid-cols-2 divide-x divide-white/10 border-y border-white/10 py-3 text-center">
+                  <div>
+                    <p className="text-[8px] uppercase tracking-wider text-slate-500">Referred</p>
+                    <p className="mt-1 text-lg font-black text-white">{referral?.referralCount??0}</p>
+                  </div>
+                  <div>
+                    <p className="text-[8px] uppercase tracking-wider text-slate-500">Earnings</p>
+                    <p className="mt-1 text-sm font-black text-emerald-200">{referral?.referralEarnings??0} TRX</p>
+                  </div>
                 </div>
-              </div>
-            </section>
+              </section>
 
-            <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.035] p-4">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-emerald-300"/>
-                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">System pulse</p>
-              </div>
-              <p className="mt-3 text-sm font-black text-white">Connection active</p>
-              <p className="mt-2 text-xs leading-5 text-slate-400">Crossing → Client continuity → company record remains one Bridger movement.</p>
-            </section>
+              <section className="border-l border-emerald-300/20 pl-4">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-emerald-300"/>
+                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">System pulse</p>
+                </div>
+                <p className="mt-3 text-sm font-black text-white">Connection active</p>
+                <p className="mt-2 text-xs leading-5 text-slate-400">Crossing → Client continuity → company record remains one Bridger movement.</p>
+              </section>
 
-            <ClientBuildPull role="bridger" />
+              <ClientBuildPull role="bridger" />
 
-            <Link href="/bridger/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.025] px-4 py-3 text-xs font-black text-white transition hover:border-emerald-300/20 hover:bg-emerald-400/[0.04]">
-              WEAVE World <ArrowRight className="h-4 w-4 text-emerald-300"/>
-            </Link>
+              <Link href="/bridger/dashboard" className="group flex items-center justify-between border-y border-white/10 py-3 text-xs font-black text-white transition hover:border-emerald-300/20">
+                WEAVE World <ArrowRight className="h-4 w-4 text-emerald-300 transition group-hover:translate-x-1"/>
+              </Link>
+            </div>
           </aside>
         </div>
       </section>
