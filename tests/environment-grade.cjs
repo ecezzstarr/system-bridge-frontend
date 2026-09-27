@@ -270,3 +270,9 @@ assert.ok(cleanRevealWorld2026.includes("root.dataset.weaveEvent=active?'flame-l
 assert.ok(!cleanRevealWorld2026.includes('FlameEventWorldDecorations'),'Flame Live is not mounted as a full-world wallpaper decoration')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-sidebar')&&cleanRevealCss2026.includes('.weave-flame-live-indicator'),'Flame Live changes operating chrome and exposes a live state indicator')
 assert.ok(cleanRevealBridgeMap2026.includes("name:'System Switch · File Folders'")&&cleanRevealBridgeMap2026.includes("href:'/client/system-switch'"),'Bridge Plaza exposes both support File Folder view and the Client System Switch route')
+
+const cleanRevealDashboard2026=read('components/world/weave-dashboard-world.tsx')
+assert.ok(bridgePlazaPage.includes('System Switch · File Folder View')&&bridgePlazaPage.includes('setSupportOpen(true)'),'Bridge Plaza HUD exposes System Switch File Folder View without requiring discovery of a hidden panel')
+assert.ok(cleanRevealDashboard2026.includes('weave-dashboard-world')&&cleanRevealDashboard2026.includes('weave-dashboard-link'),'Dashboard surfaces expose live-theme hooks')
+assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-dashboard-world'),'Flame Live themes dashboard surfaces rather than adding a wallpaper')
+assert.ok(cleanRevealTransit2026.includes('if(hasPendingSurface())'),'Hard resource timeout cannot uncover an explicitly pending application environment')
