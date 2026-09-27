@@ -116,6 +116,8 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
       root.style.removeProperty('--weave-flame-camera-x')
       root.style.removeProperty('--weave-flame-camera-y')
       root.style.removeProperty('--weave-flame-camera-depth')
+      root.style.removeProperty('--weave-flame-shift-x')
+      root.style.removeProperty('--weave-flame-shift-y')
     }
   },[reduceMotion])
 
@@ -124,6 +126,8 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
     root.style.setProperty('--weave-flame-camera-x',String(scene.camera.x))
     root.style.setProperty('--weave-flame-camera-y',String(scene.camera.y))
     root.style.setProperty('--weave-flame-camera-depth',String(scene.camera.depth))
+    root.style.setProperty('--weave-flame-shift-x',`${(-scene.camera.x*.035).toFixed(2)}px`)
+    root.style.setProperty('--weave-flame-shift-y',`${(-scene.camera.y*.025).toFixed(2)}px`)
   },[scene.camera.depth,scene.camera.x,scene.camera.y])
 
   useEffect(()=>{
