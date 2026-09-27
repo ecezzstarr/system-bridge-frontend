@@ -13,7 +13,12 @@ const BridgePlazaMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[560px] animate-pulse rounded-3xl border border-white/10 bg-slate-950" />
+      <div className="flex min-h-[720px] h-[calc(100dvh-1rem)] items-center justify-center bg-[#0e0906]">
+        <div className="text-center">
+          <div className="mx-auto h-14 w-14 animate-[spin_3s_linear_infinite] rounded-full border border-amber-200/10 border-t-amber-200/60"/>
+          <p className="mt-4 text-[8px] font-black uppercase tracking-[.24em] text-amber-200">Forming Bridge Plaza</p>
+        </div>
+      </div>
     ),
   },
 )
