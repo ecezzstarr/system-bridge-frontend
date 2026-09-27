@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect,useMemo,useRef } from 'react'
+import { useEffect,useMemo,useRef,useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import {
   DEFAULT_FLAME_ARTIFACT_CONFIG,
@@ -8,6 +8,7 @@ import {
   type FlameArtifactVisualConfig,
 } from '@/lib/weave-visual-profile'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
+import type { WeaveMotionDetail } from '@/lib/weave-interaction-motion'
 
 type Ember={
   x:number
@@ -87,14 +88,45 @@ export function InteractionMotionField({
   )
   const canvasRef=useRef<HTMLCanvasElement>(null)
   const reduceMotion=useReducedMotion()
+  const [impulse,setImpulse]=useState({flame:0,river:0,heat:0})
+  const impulseTimer=useRef<number|null>(null)
   const world=config.world
+
+  useEffect(()=>{
+    const onMotion=(event:Event)=>{
+      const detail=(event as CustomEvent<WeaveMotionDetail>).detail
+      if(!detail?.kind)return
+      const power=Math.max(.15,Math.min(2.5,Number(detail.intensity||1)))
+      const next=detail.kind==='route'||detail.kind==='river'||detail.kind==='arrival'
+        ?{flame:.08*power,river:.48*power,heat:.05*power}
+        :detail.kind==='ignition'
+          ?{flame:.62*power,river:.18*power,heat:.28*power}
+          :detail.kind==='emergence'
+            ?{flame:.42*power,river:.22*power,heat:.16*power}
+            :detail.kind==='value'
+              ?{flame:.3*power,river:.16*power,heat:.1*power}
+              :detail.kind==='confirmation'
+                ?{flame:.18*power,river:.22*power,heat:.05*power}
+                :detail.kind==='interruption'
+                  ?{flame:-.08*power,river:-.06*power,heat:0}
+                  :{flame:.06*power,river:.08*power,heat:0}
+      setImpulse(next)
+      if(impulseTimer.current)window.clearTimeout(impulseTimer.current)
+      impulseTimer.current=window.setTimeout(()=>setImpulse({flame:0,river:0,heat:0}),1350)
+    }
+    window.addEventListener('weave:system-motion',onMotion as EventListener)
+    return()=>{
+      window.removeEventListener('weave:system-motion',onMotion as EventListener)
+      if(impulseTimer.current)window.clearTimeout(impulseTimer.current)
+    }
+  },[])
   const mode=forceEvent?'flame-event':world.mode
 
   const flameIntensity=world.flameEnabled
-    ? world.flameIntensity*(forceEvent?1.45:mode==='flame-event'?1.25:mode==='ceremony'?1.08:mode==='quiet-river' ? .35:mode==='night-operations' ? .65:.72)
+    ? Math.max(0,world.flameIntensity*(forceEvent?1.45:mode==='flame-event'?1.25:mode==='ceremony'?1.08:mode==='quiet-river' ? .35:mode==='night-operations' ? .65:.72)+impulse.flame)
     : 0
   const riverIntensity=world.riverEnabled
-    ? world.riverIntensity*(forceEvent?1.2:mode==='quiet-river'?1.32:mode==='flame-event'?1.1:1)
+    ? Math.max(0,world.riverIntensity*(forceEvent?1.2:mode==='quiet-river'?1.32:mode==='flame-event'?1.1:1)+impulse.river)
     : 0
 
   useEffect(()=>{
@@ -259,7 +291,7 @@ export function InteractionMotionField({
 
     const drawHeat=(t:number)=>{
       if(world.heatDistortion<=0||reduceMotion)return
-      const strength=world.heatDistortion*flameIntensity
+      const strength=(world.heatDistortion+impulse.heat)*flameIntensity
       if(strength<=.01)return
 
       ctx.save()
@@ -309,6 +341,7 @@ export function InteractionMotionField({
     world.enabled,
     world.flameFlow,
     world.heatDistortion,
+    impulse.heat,
     world.reflection,
     world.riverSpeed,
   ])
