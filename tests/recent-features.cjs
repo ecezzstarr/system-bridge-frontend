@@ -413,6 +413,7 @@ const clientEventUnifiedSource=fs.readFileSync(path.join(root,'app/client/event/
 assert.ok(!rootLayoutSource.includes('<FlameEventAd />'),'Flame Event signal is not mounted above every application shell')
 assert.ok(appLayoutSource.includes('<FlameEventAd />'),'Staff operating shell owns the Flame Event system signal')
 assert.ok(clientLayoutSource.includes('<FlameEventAd />'),'Client operating shell owns the Flame Event system signal')
+assert.ok(clientLayoutSource.includes('<FlameEventRoleAtmosphere userRole="client">'),'Client environments carry the live Burning River atmosphere')
 assert.ok(normalWorldAtmosphereSource.includes('Home is the compact WEAVE world'),'Role Home is a compact WEAVE landing page')
 assert.ok(normalWorldAtmosphereSource.includes('<WeaveDashboardWorld'),'Role dashboards keep one persistent WEAVE world')
 assert.ok(flameWorldAtmosphereSource.includes('flame-event-role-signal'),'Live Flame Event atmosphere exposes a platform event signal')
