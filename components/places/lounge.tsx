@@ -1,4 +1,5 @@
 'use client'
+import { visiblePoll } from '@/lib/visible-poll'
 
 import { Button } from '@/components/ui/button'
 import { 
@@ -160,8 +161,8 @@ export default function Lounge() {
       }
     }
     if (user) fetchRecentChats()
-    const interval = setInterval(fetchRecentChats, 10000)
-    return () => clearInterval(interval)
+    const interval = visiblePoll(()=>fetchRecentChats(), 10000, false)
+    return () => interval()
   }, [user])
 
   // Fetch notifications count
@@ -184,8 +185,8 @@ export default function Lounge() {
       }
     }
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 10000)
-    return () => clearInterval(interval)
+    const interval = visiblePoll(()=>fetchNotifications(), 10000, false)
+    return () => interval()
   }, [user])
 
   // Fetch messages for the selected chat
@@ -254,8 +255,8 @@ export default function Lounge() {
       markRead()
     }
 
-    const interval = setInterval(fetchMessages, 3000)
-    return () => clearInterval(interval)
+    const interval = visiblePoll(()=>fetchMessages(), 3000, false)
+    return () => interval()
   }, [selectedChat, user])
 
   const handleSendMessage = async () => {

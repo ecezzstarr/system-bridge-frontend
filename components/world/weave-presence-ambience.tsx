@@ -240,7 +240,7 @@ export function WeavePresenceAmbience(){
   },[playDistantMovement])
 
   const startRuntime=useCallback(async()=>{
-    if(!enabled||runtimeRef.current||typeof window==='undefined')return
+    if(!enabled||document.hidden||runtimeRef.current||typeof window==='undefined')return
     try{
       const context=new AudioContext()
       const master=context.createGain()
@@ -288,6 +288,7 @@ export function WeavePresenceAmbience(){
       runtimeRef.current=runtime
 
       if(context.state==='suspended')await context.resume()
+      if(!runtime.active||runtimeRef.current!==runtime||document.hidden)return
       const now=context.currentTime
       master.gain.setValueAtTime(0,now)
       master.gain.linearRampToValueAtTime(targetMaster(),now+1.5)
@@ -315,6 +316,25 @@ export function WeavePresenceAmbience(){
   },[enabled,startRuntime,stopRuntime])
 
   useEffect(()=>()=>stopRuntime(),[stopRuntime])
+  useEffect(()=>{
+    const visibility=()=>{
+      const runtime=runtimeRef.current
+      if(!runtime)return
+      if(document.hidden){
+        runtime.active=false
+        if(runtime.footstepTimer)clearTimeout(runtime.footstepTimer)
+        if(runtime.bellTimer)clearTimeout(runtime.bellTimer)
+        if(runtime.movementTimer)clearTimeout(runtime.movementTimer)
+        void runtime.context.suspend().catch(()=>{})
+      }else{
+        runtime.active=true
+        void runtime.context.resume().catch(()=>{})
+        scheduleFootsteps(runtime);scheduleBell(runtime);scheduleMovement(runtime)
+      }
+    }
+    document.addEventListener('visibilitychange',visibility)
+    return ()=>document.removeEventListener('visibilitychange',visibility)
+  },[scheduleFootsteps,scheduleBell,scheduleMovement])
 
   useEffect(()=>{
     const onPreview=(event:Event)=>{
@@ -339,7 +359,7 @@ export function WeavePresenceAmbience(){
   useEffect(()=>{
     const onSystemMotion=(event:Event)=>{
       const runtime=runtimeRef.current
-      if(!runtime)return
+      if(!runtime||!runtime.active||document.hidden)return
       const detail=(event as CustomEvent<WeaveMotionDetail>).detail
       if(!detail?.kind||detail.confirmed===false)return
 

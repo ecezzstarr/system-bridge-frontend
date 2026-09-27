@@ -543,3 +543,9 @@
   isolation: isolate;
   transform: translateZ(0);
 }
+
+/* Hidden tabs retain state without compositor animation work. */
+html[data-weave-hidden="true"] *, html[data-weave-hidden="true"] *::before, html[data-weave-hidden="true"] *::after {
+  animation-play-state: paused !important;
+}
+html[data-weave-quality="0"] [data-interaction-motion-field] { contain: paint; }

@@ -1,7 +1,8 @@
 'use client'
+import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
 import { useRef, useMemo, Suspense, useEffect } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Player } from './Player'
 import { Stations } from './Stations'
@@ -97,6 +98,7 @@ function WeaveThread({ from, to, phase, cool }: { from: THREE.Vector3; to: THREE
 
   const geometry = useMemo(() => new THREE.TubeGeometry(curve, 24, 0.035, 6, false), [curve])
 
+  useEffect(()=>()=>geometry.dispose(),[geometry])
   useFrame(({ clock }) => {
     if (!materialRef.current) return
     const t = clock.getElapsedTime()
@@ -186,6 +188,7 @@ interface SceneProps {
 export default function SystemSwitchScene({ onStationChange, activeStation, onPlayerMove, externalDir }: SceneProps) {
   const monoliths = useMonolithLayout()
   const skyTexture = useSkyTexture()
+  useEffect(()=>()=>skyTexture?.dispose(),[skyTexture])
 
   const stations = [
     { id: 'bridge', pos: new THREE.Vector3(0, -1.5, -15) },
@@ -216,7 +219,7 @@ export default function SystemSwitchScene({ onStationChange, activeStation, onPl
 
   return (
     <div style={{ width: '100%', height: '100%', background: VOID }}>
-      <Canvas
+      <AdaptiveCanvas
         shadows
         camera={{ fov: 55, near: 0.1, far: 300, position: [0, 0, 6] }}
         dpr={[1, 1.75]}
@@ -252,7 +255,7 @@ export default function SystemSwitchScene({ onStationChange, activeStation, onPl
           <Player onMove={handlePlayerMove} externalDir={externalDir} />
           <Stations activeStation={activeStation || null} />
         </Suspense>
-      </Canvas>
+      </AdaptiveCanvas>
     </div>
   )
 }

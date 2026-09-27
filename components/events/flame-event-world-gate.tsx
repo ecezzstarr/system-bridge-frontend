@@ -1,4 +1,5 @@
 'use client'
+import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useMemo, useState } from 'react'
 import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
@@ -10,8 +11,8 @@ export function FlameEventWorldGate({ intensity = 'normal' }: { intensity?: 'sof
 
   useEffect(() => {
     let mounted = true
-    const load = () => {
-      fetch('/api/events/flame', { cache: 'no-store' })
+    const load = (signal:AbortSignal) => {
+      return fetch('/api/events/flame', { cache: 'no-store',signal })
         .then(res => res.json())
         .then(data => {
           if (mounted && data?.success && data.event) setEvent(data.event)
@@ -19,13 +20,12 @@ export function FlameEventWorldGate({ intensity = 'normal' }: { intensity?: 'sof
         .catch(() => {})
     }
 
-    load()
-    const refresh = window.setInterval(load, 60000)
-    const clock = window.setInterval(() => setNow(new Date()), 30000)
+    const refresh = visiblePoll(load, 60000)
+    const clock = visiblePoll(() => setNow(new Date()), 30000)
     return () => {
       mounted = false
-      window.clearInterval(refresh)
-      window.clearInterval(clock)
+      refresh()
+      clock()
     }
   }, [])
 

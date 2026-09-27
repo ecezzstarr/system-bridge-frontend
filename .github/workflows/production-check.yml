@@ -31,6 +31,7 @@ jobs:
           node tests/recent-features.cjs
           node tests/wiring.cjs
           node tests/environment-grade.cjs
+          node tests/adaptive-runtime.cjs
 
       - name: Production build
         run: npm run build

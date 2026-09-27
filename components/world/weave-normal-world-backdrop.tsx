@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import { usePresenceCamera } from '@/components/world/presence-camera'
+import { useAdaptiveRuntime } from './use-adaptive-runtime'
 import { InteractionMotionField } from '@/components/world/interaction-motion-field'
 
 const DISTRICTS=[
@@ -29,7 +30,8 @@ function FlameBrazier({side}:{side:'left'|'right'}){
 
 export function WeaveNormalWorldBackdrop() {
   const { scene,moving,lastOutput }=usePresenceCamera()
-  const reduceMotion=useReducedMotion()
+  const budget=useAdaptiveRuntime()
+  const reduceMotion=useReducedMotion()||budget.hidden||budget.covered||budget.level<2
   const actionFocus=moving&&lastOutput?.type==='action'
 
   return (
@@ -45,7 +47,7 @@ export function WeaveNormalWorldBackdrop() {
         scale:scene.camera.zoom+(actionFocus?0.004:0),
       }}
       transition={{duration:reduceMotion?0:(moving?.46:.75),ease:[.22,1,.36,1]}}
-      style={{transformOrigin:'50% 48%',willChange:'transform'}}
+      style={{transformOrigin:'50% 48%',willChange:moving&&!reduceMotion?'transform':'auto'}}
       data-camera-scene={scene.key}
       data-camera-level={scene.level}
       data-weave-world-material="stone-bronze-fire-water"

@@ -1,4 +1,5 @@
 'use client'
+import { visiblePoll } from '@/lib/visible-poll'
 
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -81,8 +82,8 @@ export default function StatusFeed({ user }: { user: any }) {
 
   useEffect(() => {
     fetchPosts()
-    const interval = setInterval(fetchPosts, 10000)
-    return () => clearInterval(interval)
+    const interval = visiblePoll(()=>fetchPosts(), 10000, false)
+    return () => interval()
   }, [])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

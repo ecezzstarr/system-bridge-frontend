@@ -1,100 +1,70 @@
 'use client'
 
-import { useCallback,useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
+import { useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
+import { visiblePoll } from '@/lib/visible-poll'
+import { setRuntimeCovered } from './use-adaptive-runtime'
 import { ArrowRight,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-runtime-config'
 import type { EnvironmentRuntimeConfig } from '@/lib/weave-environment-runtime-profile'
 
-const sleep=(ms:number)=>new Promise<void>(resolve=>window.setTimeout(resolve,ms))
-
-async function waitForFonts(enabled:boolean,maxWaitMs:number){
-  if(!enabled||typeof document==='undefined'||!('fonts' in document))return
-  try{
-    await Promise.race([
-      document.fonts.ready.then(()=>undefined),
-      sleep(maxWaitMs),
-    ])
-  }catch{}
-}
-
-async function waitForImages(enabled:boolean,maxWaitMs:number){
-  if(!enabled||typeof document==='undefined')return
-  const images=[...document.images].filter(image=>{
-    if(image.complete)return false
-    if(image.loading!=='lazy')return true
-    const rect=image.getBoundingClientRect()
-    return rect.top<window.innerHeight*1.5&&rect.bottom>-window.innerHeight*.5
-  })
-  if(images.length===0)return
-
-  const settle=Promise.all(images.map(image=>new Promise<void>(resolve=>{
-    let done=false
-    const finish=()=>{
-      if(done)return
-      done=true
-      image.removeEventListener('load',finish)
-      image.removeEventListener('error',finish)
-      resolve()
-    }
-    image.addEventListener('load',finish,{once:true})
-    image.addEventListener('error',finish,{once:true})
-    if(typeof image.decode==='function'){
-      void image.decode().then(finish).catch(()=>{})
-    }
-  }))).then(()=>undefined)
-
-  await Promise.race([settle,sleep(maxWaitMs)])
-}
-
-function waitForDomQuiet(quietMs:number,maxWaitMs:number){
+// Every readiness resource has one bounded lifetime, including image listeners.
+export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:EnvironmentRuntimeConfig,signal:AbortSignal){
   return new Promise<void>(resolve=>{
-    if(typeof document==='undefined'||!document.body){
-      resolve()
-      return
-    }
-
+    const loading=config.loading
+    const maximum=Math.min(loading.maxWaitMs,mode==='boot'?8000:3000)
+    const minimum=Math.min(mode==='boot'?loading.bootMinMs:loading.transitMinMs,maximum)
+    const started=performance.now()
+    const cleanup:Array<()=>void>=[]
     let settled=false
-    let quietTimer=0
-    let hardTimer=0
+    let quietTimer:ReturnType<typeof setTimeout>
+    let hardTimer:ReturnType<typeof setTimeout>
     const finish=()=>{
       if(settled)return
       settled=true
-      observer.disconnect()
-      window.clearTimeout(quietTimer)
-      window.clearTimeout(hardTimer)
-      requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))
+      clearTimeout(quietTimer);clearTimeout(hardTimer)
+      cleanup.forEach(dispose=>dispose())
+      resolve()
     }
-    const reset=()=>{
-      window.clearTimeout(quietTimer)
-      quietTimer=window.setTimeout(finish,quietMs)
+    const pending=new Set<object>()
+    const check=()=>{
+      clearTimeout(quietTimer)
+      if(!pending.size)quietTimer=setTimeout(finish,Math.max(0,minimum-(performance.now()-started),loading.settleQuietMs))
     }
-    const observer=new MutationObserver(reset)
-    observer.observe(document.body,{
-      childList:true,
-      subtree:true,
-      characterData:true,
+    signal.addEventListener('abort',finish,{once:true})
+    cleanup.push(()=>signal.removeEventListener('abort',finish))
+    if(signal.aborted){finish();return}
+    if(loading.waitForFonts&&document.fonts){
+      const token={};pending.add(token)
+      void document.fonts.ready.then(()=>{pending.delete(token);if(!settled)check()})
+    }
+    if(loading.waitForImages){
+      for(const image of [...document.images]){
+        if(image.complete)continue
+        const rect=image.getBoundingClientRect()
+        if(rect.bottom<=0||rect.top>=window.innerHeight)continue
+        pending.add(image)
+        const loaded=()=>{pending.delete(image);if(!settled)check()}
+        image.addEventListener('load',loaded,{once:true})
+        image.addEventListener('error',loaded,{once:true})
+        cleanup.push(()=>{image.removeEventListener('load',loaded);image.removeEventListener('error',loaded)})
+        if(image.complete)loaded()
+      }
+    }
+    const observer=new MutationObserver(records=>{
+      // Brief rotation is presentation, not destination work to wait for.
+      if(records.some(record=>{
+        const target=record.target instanceof Element?record.target:record.target.parentElement
+        return !target?.closest('[data-environment-readiness-gate]')
+      }))check()
     })
-    reset()
-    hardTimer=window.setTimeout(finish,maxWaitMs)
+    if(document.body)observer.observe(document.body,{childList:true,subtree:true})
+    cleanup.push(()=>observer.disconnect())
+    hardTimer=setTimeout(finish,maximum)
+    check()
   })
-}
-
-async function waitForEnvironmentReadiness(
-  mode:'boot'|'transit',
-  config:EnvironmentRuntimeConfig,
-){
-  const loading=config.loading
-  const minimum=mode==='boot'?loading.bootMinMs:loading.transitMinMs
-
-  await Promise.all([
-    sleep(minimum),
-    waitForFonts(loading.waitForFonts,loading.maxWaitMs),
-    waitForImages(loading.waitForImages,loading.maxWaitMs),
-    waitForDomQuiet(loading.settleQuietMs,loading.maxWaitMs),
-  ])
 }
 
 type LoadingBrief={
@@ -128,47 +98,29 @@ const PLATFORM_BRIEFS:LoadingBrief[]=[
 export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const pathname=usePathname()||'/'
   const environment=useMemo(()=>resolveWeaveEnvironment(pathname),[pathname])
-  const {config,ready:runtimeReady}=useEnvironmentRuntimeConfig()
+  const {config}=useEnvironmentRuntimeConfig()
   const configRef=useRef(config)
+  configRef.current=config
   const [booting,setBooting]=useState(true)
   const [transiting,setTransiting]=useState(false)
   const [briefIndex,setBriefIndex]=useState(0)
-  const previousPath=useRef(pathname)
-  const mounted=useRef(false)
-  const bootStarted=useRef(false)
-  const transitSequence=useRef(0)
-
-  useEffect(()=>{configRef.current=config},[config])
-
-  const releaseBoot=useCallback(async()=>{
-    await waitForEnvironmentReadiness('boot',configRef.current)
-    mounted.current=true
-    setBooting(false)
-  },[])
-
+  const first=useRef(true)
   useEffect(()=>{
-    if(!runtimeReady||bootStarted.current)return
-    bootStarted.current=true
-    void releaseBoot()
-  },[runtimeReady,releaseBoot])
-
+    setRuntimeCovered(booting||transiting)
+    return ()=>setRuntimeCovered(false)
+  },[booting,transiting])
   useEffect(()=>{
-    if(!mounted.current){
-      previousPath.current=pathname
-      return
-    }
-    if(previousPath.current===pathname)return
-
-    previousPath.current=pathname
-    const sequence=++transitSequence.current
+    const controller=new AbortController()
+    const mode=first.current?'boot':'transit'
     setBriefIndex(0)
-    setTransiting(true)
-
-    void waitForEnvironmentReadiness('transit',configRef.current).then(()=>{
-      if(transitSequence.current===sequence)setTransiting(false)
+    if(mode==='transit')setTransiting(true)
+    void waitForEnvironmentReadiness(mode,configRef.current,controller.signal).then(()=>{
+      if(controller.signal.aborted)return
+      first.current=false
+      setBooting(false);setTransiting(false)
     })
+    return ()=>controller.abort()
   },[pathname])
-
   const destinationBrief=useMemo<LoadingBrief>(()=>({
     eyebrow:(booting?'Entering':'Next environment')+' · '+environment.layer,
     title:environment.title,
@@ -193,11 +145,11 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     if(!booting&&!transiting)return
     setBriefIndex(0)
     if(briefs.length<2)return
-    const interval=window.setInterval(
+    const interval=visiblePoll(
       ()=>setBriefIndex(index=>(index+1)%briefs.length),
-      booting?1250:1100,
+      booting?1250:1100,false,
     )
-    return ()=>window.clearInterval(interval)
+    return ()=>interval()
   },[booting,transiting,pathname,briefs.length])
 
   const briefing=briefs[briefIndex%briefs.length]||destinationBrief

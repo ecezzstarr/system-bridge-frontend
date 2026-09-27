@@ -2,6 +2,7 @@
 
 import { AnimatePresence,motion,useReducedMotion } from 'framer-motion'
 import { useEffect,useMemo,useRef,useState } from 'react'
+import { useAdaptiveRuntime } from './use-adaptive-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 import {
   classifyWeaveMotion,
@@ -222,7 +223,8 @@ export function InteractionMotionLayer(){
   const [pulses,setPulses]=useState<Pulse[]>([])
   const nextId=useRef(1)
   const lastPointer=useRef({x:typeof window==='undefined'?0:window.innerWidth/2,y:typeof window==='undefined'?0:window.innerHeight/2})
-  const reduceMotion=Boolean(useReducedMotion())
+  const budget=useAdaptiveRuntime()
+  const reduceMotion=Boolean(useReducedMotion())||budget.level===0
   const {config}=useVisualRuntime()
 
   const scales=useMemo(()=>({
@@ -238,8 +240,14 @@ export function InteractionMotionLayer(){
   ])
 
   useEffect(()=>{
+    setPulses([])
+    const timers=new Set<number>()
+    let lastPulse=0
     const add=(detail:WeaveMotionDetail,position?:{x:number;y:number})=>{
-      if(!config.world.enabled)return
+      if(!config.world.enabled||document.hidden)return
+      const now=performance.now()
+      if(now-lastPulse<80)return
+      lastPulse=now
       const id=nextId.current++
       const point=position||(
         detail.x!=null&&detail.y!=null
@@ -257,10 +265,12 @@ export function InteractionMotionLayer(){
         label:String(detail.label||detail.kind).slice(0,140),
         confirmed:Boolean(detail.confirmed),
       }
-      setPulses(current=>[...current.slice(-11),pulse])
-      window.setTimeout(()=>{
+      setPulses(current=>[...current.slice(budget.level===2?-7:-2),pulse])
+      const timer=window.setTimeout(()=>{
+        timers.delete(timer)
         setPulses(current=>current.filter(item=>item.id!==id))
       },DURATION[pulse.kind]+250)
+      timers.add(timer)
     }
 
     const onPointer=(event:PointerEvent)=>{
@@ -292,12 +302,16 @@ export function InteractionMotionLayer(){
     document.addEventListener('pointerdown',onPointer,true)
     window.addEventListener('weave:presence-output',onPresence as EventListener)
     window.addEventListener('weave:system-motion',onSystem as EventListener)
+    const clear=()=>{if(document.hidden){timers.forEach(clearTimeout);timers.clear();setPulses([])}}
+    document.addEventListener('visibilitychange',clear)
     return()=>{
+      timers.forEach(clearTimeout)
+      document.removeEventListener('visibilitychange',clear)
       document.removeEventListener('pointerdown',onPointer,true)
       window.removeEventListener('weave:presence-output',onPresence as EventListener)
       window.removeEventListener('weave:system-motion',onSystem as EventListener)
     }
-  },[config.world.enabled])
+  },[config.world.enabled,budget.level])
 
   return <div
     aria-hidden="true"

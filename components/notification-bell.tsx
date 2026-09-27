@@ -1,4 +1,5 @@
 'use client'
+import { visiblePoll } from '@/lib/visible-poll'
 
 import { useState, useEffect, useRef } from 'react'
 import { Bell, X, MessageCircle, Check } from 'lucide-react'
@@ -37,15 +38,16 @@ export function NotificationBell() {
   useEffect(() => {
     if (!user?.id) return
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = async (signal:AbortSignal) => {
       try {
         const token = localStorage.getItem('ssb_auth_token')
         const res = await fetch('/api/notifications', {
+          signal,
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
         if (res.ok) {
           const data = await res.json()
-          if (data.success) {
+          if (data.success&&!signal.aborted) {
             const list: Notification[] = data.notifications || []
 
             if (isFirstLoad.current) {
@@ -71,7 +73,8 @@ export function NotificationBell() {
               list.forEach(n => knownIds.current.add(n.id))
             }
 
-            setNotifications(list)
+            knownIds.current=new Set(list.map(n=>n.id))
+            setNotifications(current=>JSON.stringify(current)===JSON.stringify(list)?current:list)
             setUnreadCount(list.filter((n: Notification) => !n.is_read).length)
           }
         }
@@ -80,9 +83,8 @@ export function NotificationBell() {
       }
     }
 
-    fetchNotifications()
-    const interval = setInterval(fetchNotifications, 5000) // Surface deposit/admin decisions promptly
-    return () => clearInterval(interval)
+    const interval = visiblePoll(fetchNotifications, 5000) // Surface deposit/admin decisions promptly
+    return () => interval()
   }, [user?.id])
 
   const markAsRead = async (notificationId: string) => {

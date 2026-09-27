@@ -1,4 +1,5 @@
 'use client'
+import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -346,28 +347,28 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [selectedSystemId,setSelectedSystemId]=useState('')
 
   useEffect(() => {
-    const tick = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(tick)
+    const tick = visiblePoll(() => setNow(Date.now()), 5000)
+    return () => tick()
   }, [])
 
   useEffect(() => {
-    const refresh = async () => {
+    const refresh = async (signal:AbortSignal) => {
       try {
         const token = getClientToken()
         if (!token) return
         const response = await fetch('/api/client/file-folder-world', {
           headers: { Authorization: `Bearer ${token}` },
-          cache: 'no-store',
+          cache: 'no-store',signal,
         })
         const body = await response.json()
-        if (response.ok && body.world) setWorld(body.world)
+        if (!signal.aborted && response.ok && body.world) setWorld(body.world)
       } catch {
         // Keep the current File Folder visible if a background refresh fails.
       }
     }
 
-    const interval = window.setInterval(refresh, 15000)
-    return () => window.clearInterval(interval)
+    const interval = visiblePoll(refresh, 15000, false)
+    return () => interval()
   }, [])
 
   const openFormation = (district: string) => {
