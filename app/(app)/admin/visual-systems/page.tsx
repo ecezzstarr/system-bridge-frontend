@@ -22,6 +22,7 @@ import { getAuthHeaders } from '@/lib/auth-client'
 import { WeaveSystemRoom } from '@/components/world/weave-system-room'
 import { FlameEventArtifact3D,FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { InteractionMotionField } from '@/components/world/interaction-motion-field'
+import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 import {
   DEFAULT_FLAME_ARTIFACT_CONFIG,
   FLAME_ARTIFACT_SURFACES,
@@ -144,7 +145,16 @@ export default function VisualSystemsWorkshop(){
         reset_draft:'Default artifact restored to draft.',
         rollback:'Published revision restored live.',
       }
-      if(action==='publish'||action==='rollback')window.dispatchEvent(new Event('weave:visual-runtime-published'))
+      if(action==='publish'||action==='rollback'){
+        window.dispatchEvent(new Event('weave:visual-runtime-published'))
+        emitWeaveMotion({
+          kind:action==='publish'?'ignition':'river',
+          label:action==='publish'?'Visual Runtime published live':'Visual Runtime rolled back',
+          intensity:1.35,
+          confirmed:true,
+          source:'visual-systems',
+        })
+      }
       toast.success(labels[action]||'Visual system updated.')
     }catch(error:any){
       toast.error(error.message||'Visual update failed')
