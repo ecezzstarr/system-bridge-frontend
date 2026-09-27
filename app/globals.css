@@ -160,13 +160,7 @@
   }
   
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at 20% 30%, rgba(232, 185, 63, 0.06) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(20, 184, 166, 0.06) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -1;
+    content: none;
   }
   
   /* Mobile-first responsive base */
@@ -639,14 +633,6 @@ html[data-weave-event="flame-live"] .weave-dashboard-position {
   border-color: rgba(251,146,60,.20);
   background: linear-gradient(180deg, rgba(96,30,18,.22), rgba(24,10,9,.72));
 }
-html[data-weave-event="flame-live"] .weave-dashboard-link {
-  border-color: rgba(251,146,60,.14);
-  background: linear-gradient(160deg, rgba(55,18,14,.54), rgba(15,10,10,.84));
-}
-html[data-weave-event="flame-live"] .weave-dashboard-link:hover {
-  border-color: rgba(253,186,116,.32);
-  box-shadow: 0 20px 46px rgba(124,45,18,.18);
-}
 
 
 /* WEAVE operating-environment grammar.
@@ -704,4 +690,264 @@ html[data-weave-event="flame-live"] .weave-operating-environment {
 }
 html[data-weave-event="flame-live"] [data-weave-route-station]:hover {
   background: rgba(249,115,22,.045);
+}
+
+
+/* LIVE FLAME SYSTEM
+   The viewport has no illustrated world wallpaper. The field is generated in
+   real time from Presence, pointer position, camera movement and confirmed
+   WEAVE motion. */
+:root {
+  --weave-flame-x: 50%;
+  --weave-flame-y: 72%;
+  --weave-flame-energy: .42;
+  --weave-flame-camera-x: 0;
+  --weave-flame-camera-y: 0;
+  --weave-flame-camera-depth: 0;
+}
+
+body {
+  background: #050607;
+}
+
+.weave-live-flame-field {
+  background:
+    radial-gradient(circle at var(--weave-flame-x) var(--weave-flame-y),
+      rgb(124 45 18 / calc(.12 * var(--weave-flame-energy))) 0,
+      rgb(69 10 10 / calc(.045 * var(--weave-flame-energy))) 24%,
+      transparent 54%),
+    #050607;
+  transform: translate3d(
+    calc(var(--weave-flame-camera-x) * -0.035px),
+    calc(var(--weave-flame-camera-y) * -0.025px),
+    0
+  );
+  transition: background-color .35s ease;
+  will-change: transform;
+}
+
+.weave-live-flame-current {
+  position: absolute;
+  inset: -38%;
+  opacity: calc(.18 + .17 * var(--weave-flame-energy));
+  mix-blend-mode: screen;
+  transform-origin: var(--weave-flame-x) var(--weave-flame-y);
+  will-change: transform, opacity;
+}
+
+.weave-live-flame-current-a {
+  background:
+    conic-gradient(
+      from 206deg at var(--weave-flame-x) var(--weave-flame-y),
+      transparent 0 14%,
+      rgb(239 68 68 / .02) 22%,
+      rgb(249 115 22 / .15) 31%,
+      rgb(251 191 36 / .07) 38%,
+      transparent 48% 72%,
+      rgb(249 115 22 / .08) 81%,
+      transparent 91%
+    );
+  filter: blur(58px);
+  animation: weave-live-current-a 8.6s ease-in-out infinite alternate;
+}
+
+.weave-live-flame-current-b {
+  background:
+    radial-gradient(ellipse at 42% 78%, rgb(251 146 60 / .16), transparent 24%),
+    radial-gradient(ellipse at 64% 86%, rgb(239 68 68 / .12), transparent 27%),
+    radial-gradient(ellipse at 51% 64%, rgb(254 215 170 / .055), transparent 19%);
+  filter: blur(72px);
+  animation: weave-live-current-b 6.4s ease-in-out infinite alternate;
+}
+
+.weave-live-flame-core {
+  position: absolute;
+  left: var(--weave-flame-x);
+  top: var(--weave-flame-y);
+  width: calc(150px + 120px * var(--weave-flame-energy));
+  height: calc(210px + 150px * var(--weave-flame-energy));
+  transform: translate(-50%,-76%);
+  border-radius: 52% 48% 58% 42% / 72% 68% 32% 28%;
+  background:
+    radial-gradient(ellipse at 50% 86%,
+      rgb(255 247 237 / calc(.13 * var(--weave-flame-energy))) 0 7%,
+      rgb(251 191 36 / calc(.11 * var(--weave-flame-energy))) 18%,
+      rgb(249 115 22 / calc(.09 * var(--weave-flame-energy))) 36%,
+      rgb(239 68 68 / calc(.045 * var(--weave-flame-energy))) 53%,
+      transparent 72%);
+  filter: blur(13px);
+  mix-blend-mode: screen;
+  animation: weave-live-core 2.35s ease-in-out infinite alternate;
+  will-change: transform, border-radius, opacity;
+}
+
+.weave-live-flame-heat {
+  position: absolute;
+  inset: 8% 6% 30%;
+  background:
+    repeating-linear-gradient(
+      91deg,
+      transparent 0 42px,
+      rgb(251 146 60 / calc(.008 * var(--weave-flame-energy))) 44px,
+      transparent 48px 96px
+    );
+  filter: blur(16px);
+  opacity: calc(.18 + .18 * var(--weave-flame-energy));
+  animation: weave-live-heat 4.8s linear infinite;
+  mix-blend-mode: screen;
+}
+
+.weave-live-flame-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(5 6 7 / .72), transparent 17%, transparent 83%, rgb(5 6 7 / .72)),
+    linear-gradient(180deg, rgb(5 6 7 / .34), transparent 34%, rgb(5 6 7 / .62));
+}
+
+html[data-weave-event="flame-live"] .weave-live-flame-field {
+  background:
+    radial-gradient(circle at var(--weave-flame-x) var(--weave-flame-y),
+      rgb(249 115 22 / calc(.18 * var(--weave-flame-energy))) 0,
+      rgb(127 29 29 / calc(.075 * var(--weave-flame-energy))) 27%,
+      transparent 58%),
+    #070505;
+}
+
+html[data-weave-event="flame-live"] .weave-live-flame-current {
+  opacity: calc(.28 + .24 * var(--weave-flame-energy));
+}
+
+html[data-weave-pulse="ignition"] .weave-live-flame-core,
+html[data-weave-pulse="emergence"] .weave-live-flame-core,
+html[data-weave-pulse="value"] .weave-live-flame-core {
+  animation: weave-live-core .72s cubic-bezier(.18,.82,.22,1) 1,
+             weave-live-core 2.35s ease-in-out .72s infinite alternate;
+}
+
+/* Words are part of the live system. Important words hold their mass, carry a
+   low continuous heat glow, and flare briefly when a WEAVE motion is emitted. */
+[data-weave-live-word],
+.weave-word-presence,
+[data-weave-environment] :is(h1,h2,h3) {
+  position: relative;
+  text-shadow:
+    0 1px 1px rgb(0 0 0 / .82),
+    0 0 calc(5px + 5px * var(--weave-flame-energy)) rgb(251 146 60 / calc(.035 * var(--weave-flame-energy)));
+  transition: text-shadow .28s ease, filter .28s ease;
+}
+
+html[data-weave-event="flame-live"] [data-weave-live-word="title"],
+html[data-weave-event="flame-live"] [data-weave-live-word="station"] {
+  color: transparent !important;
+  background-image: linear-gradient(
+    100deg,
+    #fff7ed 0%,
+    #fed7aa 18%,
+    #fb923c 38%,
+    #fecaca 51%,
+    #fef3c7 65%,
+    #fff7ed 82%
+  );
+  background-size: 220% 100%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 9px rgb(249 115 22 / .12));
+  animation: weave-live-word-flow 5.8s linear infinite;
+}
+
+html[data-weave-event="flame-live"] .weave-word-presence {
+  text-shadow:
+    0 0 1px currentColor,
+    0 0 9px rgb(251 146 60 / .2),
+    0 0 20px rgb(239 68 68 / .07);
+}
+
+html[data-weave-pulse] [data-weave-live-word],
+html[data-weave-pulse] .weave-word-presence,
+html[data-weave-pulse] [data-weave-environment] :is(h1,h2,h3) {
+  animation: weave-word-flare .92s cubic-bezier(.16,1,.3,1);
+}
+
+html[data-weave-pulse][data-weave-event="flame-live"] [data-weave-live-word="title"],
+html[data-weave-pulse][data-weave-event="flame-live"] [data-weave-live-word="station"] {
+  animation: weave-word-flare .92s cubic-bezier(.16,1,.3,1),
+             weave-live-word-flow 5.8s linear .92s infinite;
+}
+
+.weave-nav-item[data-active="true"] [data-weave-live-word],
+[data-weave-route-station]:hover [data-weave-live-word],
+[data-weave-route-station]:focus-visible [data-weave-live-word] {
+  text-shadow:
+    0 0 1px currentColor,
+    0 0 10px rgb(251 146 60 / .22),
+    0 0 24px rgb(239 68 68 / .08);
+}
+
+@keyframes weave-live-current-a {
+  0% { transform: rotate(-5deg) scale(.96) translate3d(-1.5%,2%,0); }
+  48% { transform: rotate(3deg) scale(1.04) translate3d(1%,-1.5%,0); }
+  100% { transform: rotate(7deg) scale(1.01) translate3d(-.5%,-3%,0); }
+}
+
+@keyframes weave-live-current-b {
+  0% { transform: translate3d(-2%,2%,0) scale(.93) rotate(-2deg); }
+  55% { transform: translate3d(2%,-1%,0) scale(1.06) rotate(2deg); }
+  100% { transform: translate3d(0,-3%,0) scale(1) rotate(-1deg); }
+}
+
+@keyframes weave-live-core {
+  0% {
+    transform: translate(-50%,-74%) scaleX(.88) scaleY(.95) rotate(-1.5deg);
+    border-radius: 56% 44% 61% 39% / 70% 63% 37% 30%;
+    opacity: .72;
+  }
+  52% {
+    transform: translate(-50%,-79%) scaleX(1.08) scaleY(1.08) rotate(1.8deg);
+    border-radius: 43% 57% 48% 52% / 77% 58% 42% 23%;
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%,-76%) scaleX(.96) scaleY(1.02) rotate(-.8deg);
+    border-radius: 50% 50% 58% 42% / 69% 72% 28% 31%;
+    opacity: .82;
+  }
+}
+
+@keyframes weave-live-heat {
+  from { transform: translate3d(-1.5%,0,0) skewX(-.8deg); }
+  to { transform: translate3d(1.5%,-2%,0) skewX(.8deg); }
+}
+
+@keyframes weave-live-word-flow {
+  from { background-position: 0% 50%; }
+  to { background-position: 220% 50%; }
+}
+
+@keyframes weave-word-flare {
+  0% { filter: brightness(1); text-shadow: 0 1px 1px rgb(0 0 0 / .8); }
+  32% {
+    filter: brightness(1.18);
+    text-shadow:
+      0 0 2px currentColor,
+      0 0 14px rgb(251 146 60 / .38),
+      0 0 30px rgb(239 68 68 / .15);
+  }
+  100% { filter: brightness(1); }
+}
+
+html[data-weave-quality="0"] .weave-live-flame-current,
+html[data-weave-quality="0"] .weave-live-flame-core,
+html[data-weave-quality="0"] .weave-live-flame-heat {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weave-live-flame-current,
+  .weave-live-flame-core,
+  .weave-live-flame-heat,
+  [data-weave-live-word] {
+    animation: none !important;
+  }
 }
