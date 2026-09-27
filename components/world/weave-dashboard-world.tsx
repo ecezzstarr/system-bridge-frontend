@@ -139,7 +139,7 @@ export function WeaveDashboardWorld({
   const visibleLinks = copy.links.filter(item=>isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
 
   return (
-    <div className="relative mx-auto w-full max-w-6xl overflow-visible rounded-[1.6rem] border border-amber-200/10 bg-[#120c08]/70 shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-md">
+    <div className="weave-dashboard-world relative mx-auto w-full max-w-6xl overflow-visible rounded-[1.6rem] border border-amber-200/10 bg-[#120c08]/70 shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-md">
       <div className="relative p-3.5 sm:p-5 md:p-7">
         <div className="pointer-events-none absolute inset-x-[4%] top-[8%] h-[58%] rounded-[50%] bg-[radial-gradient(circle_at_50%_50%,rgba(251,146,60,.09),transparent_68%)] blur-2xl" />
 
@@ -156,7 +156,7 @@ export function WeaveDashboardWorld({
           <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{copy.title}</h1>
           <p className="mt-1.5 text-xs leading-5 text-slate-400 sm:text-sm">{copy.subtitle}</p>
 
-          <div className="mt-4 max-w-2xl rounded-2xl border border-amber-300/15 bg-[linear-gradient(180deg,rgba(69,45,24,.36),rgba(16,12,9,.72))] p-3.5 shadow-[0_18px_60px_rgba(0,0,0,.26)] backdrop-blur-sm">
+          <div className="weave-dashboard-position mt-4 max-w-2xl rounded-2xl border border-amber-300/15 bg-[linear-gradient(180deg,rgba(69,45,24,.36),rgba(16,12,9,.72))] p-3.5 shadow-[0_18px_60px_rgba(0,0,0,.26)] backdrop-blur-sm">
             <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300">Your position</p>
             <p className="mt-1 text-base font-bold text-white">{userName || copy.eyebrow}</p>
             <p className="mt-1.5 text-[10px] leading-4 text-slate-400">{copy.purpose}</p>
@@ -193,7 +193,7 @@ function WorldLinkCard({ item }: { item: WorldLink }) {
   return (
     <Link
       href={item.href}
-      className={`group min-w-0 rounded-2xl border p-3 shadow-[inset_0_1px_rgba(255,236,214,.02),0_12px_32px_rgba(0,0,0,.22)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-amber-200/25 hover:shadow-[0_20px_45px_rgba(0,0,0,.3)] active:scale-[.98] ${toneClass[item.tone]}`}
+      className={`weave-dashboard-link group min-w-0 rounded-2xl border p-3 shadow-[inset_0_1px_rgba(255,236,214,.02),0_12px_32px_rgba(0,0,0,.22)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-amber-200/25 hover:shadow-[0_20px_45px_rgba(0,0,0,.3)] active:scale-[.98] ${toneClass[item.tone]}`}
     >
       <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-black/30">
         <Icon className="h-3.5 w-3.5" />
