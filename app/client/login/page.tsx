@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-provider'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { WeaveLogo } from '@/components/weave-logo'
 
 export default function ClientLoginPage() {
@@ -35,7 +36,7 @@ export default function ClientLoginPage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch('/api/client/weave-login', {
+      const res = await fetchWithTimeout('/api/client/weave-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileNumber, password })
