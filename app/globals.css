@@ -629,3 +629,21 @@ html[data-weave-event="flame-live"] :where(.weave-header,.weave-sidebar,.weave-c
 html[data-weave-event="flame-live"] :where(.weave-header,.weave-sidebar,.weave-client-nav,.weave-environment-panel) .text-sky-300 {
   color: rgb(253 186 116) !important;
 }
+
+html[data-weave-event="flame-live"] .weave-dashboard-world {
+  border-color: rgba(251,146,60,.22);
+  background: linear-gradient(145deg, rgba(28,10,9,.88), rgba(13,9,10,.82));
+  box-shadow: 0 28px 90px rgba(69,10,10,.22), inset 0 1px 0 rgba(254,215,170,.04);
+}
+html[data-weave-event="flame-live"] .weave-dashboard-position {
+  border-color: rgba(251,146,60,.20);
+  background: linear-gradient(180deg, rgba(96,30,18,.22), rgba(24,10,9,.72));
+}
+html[data-weave-event="flame-live"] .weave-dashboard-link {
+  border-color: rgba(251,146,60,.14);
+  background: linear-gradient(160deg, rgba(55,18,14,.54), rgba(15,10,10,.84));
+}
+html[data-weave-event="flame-live"] .weave-dashboard-link:hover {
+  border-color: rgba(253,186,116,.32);
+  box-shadow: 0 20px 46px rgba(124,45,18,.18);
+}
