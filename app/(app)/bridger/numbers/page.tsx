@@ -26,7 +26,6 @@ function deadlineLabel(deadline:string,now:number){
 }
 
 export default function BridgerNumbersPage(){
- const [available,setAvailable]=useState<any[]>([])
  const [offers,setOffers]=useState<any[]>([])
  const [mine,setMine]=useState<any[]>([])
  const [orders,setOrders]=useState<any[]>([])
@@ -47,7 +46,6 @@ export default function BridgerNumbersPage(){
    const x=await a.json(),y=await b.json()
    if(!a.ok)throw new Error(x.error||'Unable to load Number Bay')
    if(!b.ok)throw new Error(y.error||'Unable to load verification movement')
-   setAvailable(x.available||[])
    setOffers(x.offers||[])
    setMine(x.mine||[])
    const nextOrders=x.orders||[]
