@@ -39,8 +39,8 @@ export function WeaveSystemRoom({
   const t=TONES[tone]
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] p-2 sm:p-3 md:p-5" data-weave-room={roomKey}>
-      <section className={`weave-system-depth relative overflow-hidden rounded-[2rem] border ${t.border} bg-[#120c08]/82 shadow-[0_28px_90px_rgba(0,0,0,.38)] backdrop-blur-xl`}>
+    <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-5" data-weave-room={roomKey}>
+      <section className={`weave-system-depth weave-operating-environment relative overflow-hidden border-y ${t.border} bg-[#0d0a08]/86 shadow-[0_28px_90px_rgba(0,0,0,.38)] backdrop-blur-xl sm:rounded-[2rem] sm:border`}>
         <div className="pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(115deg,rgba(214,164,95,.05),transparent_20%,transparent_76%,rgba(249,115,22,.035)),repeating-linear-gradient(0deg,rgba(255,255,255,.018)_0_1px,transparent_1px_5px)]" />
         <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${t.wash} via-transparent to-transparent`} />
         <header className="relative border-b border-amber-100/10 bg-[linear-gradient(180deg,rgba(92,55,28,.12),rgba(18,12,8,.02))] p-5 md:p-7">
@@ -54,32 +54,47 @@ export function WeaveSystemRoom({
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">{detail}</p>
         </header>
 
-        <div className="relative grid gap-4 p-3 sm:p-4 md:p-6 xl:grid-cols-[220px_minmax(0,1fr)_240px]">
-          <aside className="space-y-4">
-            {left || (
-              <section className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${t.accent}`}>Room map</p>
-                <p className="mt-3 text-xs leading-5 text-slate-400">This function remains inside the same WEAVE world and returns with changed state after every completed movement.</p>
-              </section>
-            )}
+        <div className="relative grid min-h-[520px] xl:grid-cols-[210px_minmax(0,1fr)_230px]">
+          <aside className="border-b border-white/[0.07] bg-black/10 p-4 xl:border-b-0 xl:border-r">
+            <div className="sticky top-20">
+              <div className="mb-4 flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${t.soft}`}/>
+                <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${t.accent}`}>Environment rail</p>
+              </div>
+              {left || (
+                <div className="border-l border-white/10 pl-4">
+                  <p className="text-xs font-black text-white">Room map</p>
+                  <p className="mt-2 text-[10px] leading-5 text-slate-400">The room remains part of the same WEAVE world. Complete movement here, then continue without losing position.</p>
+                </div>
+              )}
+            </div>
           </aside>
 
-          <section className="min-w-0 rounded-[1.75rem] border border-amber-100/10 bg-[linear-gradient(180deg,rgba(42,29,20,.82),rgba(10,9,8,.9))] p-4 shadow-[inset_0_1px_rgba(255,229,190,.025),0_24px_70px_rgba(0,0,0,.32)] md:p-5">
+          <section className="min-w-0 bg-[linear-gradient(180deg,rgba(42,29,20,.42),rgba(10,9,8,.72))] p-4 md:p-6" data-weave-room-stage>
+            <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/[0.07] pb-3">
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-600">Active stage</p>
+                <p className="mt-1 text-xs font-black text-white">{title}</p>
+              </div>
+              <span className={`text-[8px] font-black uppercase tracking-[0.14em] ${t.accent}`}>{moving?'movement detected':'position held'}</span>
+            </div>
             {center}
           </section>
 
-          <aside className="space-y-4">
-            <section className={`rounded-3xl border ${t.border} ${t.soft} p-4`}>
-              <div className="flex items-center gap-2">
-                <Activity className={`h-4 w-4 ${t.accent}`} />
-                <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${t.accent}`}>System pulse</p>
-              </div>
-              <p className="mt-3 text-sm font-black text-white">{pulse}</p>
-              <p className="mt-2 text-xs leading-5 text-slate-400">
-                Actions here change live WEAVE state; this is a working room, not a disconnected page.
-              </p>
-            </section>
-            {right}
+          <aside className="border-t border-white/[0.07] bg-black/10 p-4 xl:border-l xl:border-t-0">
+            <div className="sticky top-20 space-y-5">
+              <section className="border-l border-white/10 pl-4">
+                <div className="flex items-center gap-2">
+                  <Activity className={`h-4 w-4 ${t.accent}`} />
+                  <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${t.accent}`}>System pulse</p>
+                </div>
+                <p className="mt-3 text-sm font-black text-white">{pulse}</p>
+                <p className="mt-2 text-[10px] leading-5 text-slate-400">
+                  Actions alter live WEAVE state. This rail reports the room while the center remains the working stage.
+                </p>
+              </section>
+              {right}
+            </div>
           </aside>
         </div>
       </section>
