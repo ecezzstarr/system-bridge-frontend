@@ -36,7 +36,7 @@ export default function ClientArenaPage() {
           <Link href="/client/dashboard">
             <Button variant="ghost" className="text-slate-400 hover:text-white -ml-2">
               <ChevronLeft className="h-4 w-4 mr-2" />
-              Back to Terminal
+              Back to Client World
             </Button>
           </Link>
         </div>
