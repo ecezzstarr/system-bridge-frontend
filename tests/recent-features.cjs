@@ -593,7 +593,7 @@ assert.ok(fileFolderEnvironmentLoaderSource.includes('animate-spin'),'File Folde
 assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientFileFolder3D'),'Client can see the File Folder as a 3D operating environment')
 assert.ok(fileFolder3dSource.includes("from '@react-three/fiber'"),'3D File Folder uses the real Three.js React renderer')
 assert.ok(fileFolder3dSource.includes('<OrbitControls'),'Client can rotate and inspect the 3D File Folder')
-assert.ok(fileFolder3dSource.includes('onClick={(event)'),'3D districts are interactive rather than decorative')
+assert.ok(fileFolder3dSource.includes('onClick={event=>')&&fileFolder3dSource.includes('onSelect()'),'3D districts are interactive rather than decorative')
 assert.ok(fileFolder3dSource.includes('activeBuilds'),'3D File Folder reflects active construction')
 assert.ok(fileFolder3dSource.includes('ConstructionSite')&&fileFolder3dSource.includes('FOUNDATION')&&fileFolder3dSource.includes('COMMISSIONING'),'Active builds visibly rise through real construction stages')
 assert.ok(fileFolder3dSource.includes('ScaffoldEnvelope')&&fileFolder3dSource.includes('Crane'),'Active builds visibly carry construction equipment and scaffolding')
