@@ -41,7 +41,7 @@ export function WeaveNormalWorldBackdrop() {
         y:-scene.camera.y*.22,
         rotateY:-scene.camera.yaw*.13,
         rotateX:scene.camera.pitch*.11,
-        scale:scene.camera.zoom+(actionFocus?.004:0),
+        scale:scene.camera.zoom+(actionFocus?0.004:0),
       }}
       transition={{duration:reduceMotion?0:(moving?.46:.75),ease:[.22,1,.36,1]}}
       style={{transformOrigin:'50% 48%',willChange:'transform'}}
