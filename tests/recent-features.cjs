@@ -1077,7 +1077,7 @@ assert.ok(publicSystemSwitchSource.includes("redirect('/client/system-switch')")
 assert.ok(bridgeEntryPageSource.includes('ChatGptBridgeArrival'),'ChatGPT Prospect arrival stays inside Bridge')
 assert.ok(!bridgeEntryPageSource.includes('/system-switch?bridge='),'Bridge no longer redirects a Prospect into System Switch')
 assert.ok(bridgeArrivalSource.includes('BridgeRadianceWorld'),'Bridge arrival has its own Bridge Radiance world')
-assert.ok(bridgeRadianceWorldSource.includes('BRIDGE RADIANCE'),'Prospect arrival is visibly Bridge Radiance, not System Switch')
+assert.ok(bridgeRadianceWorldSource.includes('WEAVE_WRITING.bridgeRadiance.eyebrow')&&weaveWritingSource.includes("eyebrow: 'Bridge Radiance'"),'Prospect arrival is visibly Bridge Radiance, not System Switch')
 assert.ok(weaveWritingSource.includes("cadence: ['Place', 'Movement', 'State', 'Action', 'Continuation']"),'WEAVE has one explicit institutional writing cadence')
 assert.ok(weaveWritingSource.includes("'Forensics'"),'Canonical company language preserves the Forensics department name')
 assert.ok(bridgeRadianceWorldSource.includes('WEAVE_WRITING.bridgeRadiance'),'Bridge Radiance uses the shared WEAVE writing system')
@@ -1094,7 +1094,7 @@ for(const [source,label] of [
 ]){
   assert.ok(!/\b(?:protocol|terminal|ecosystem)\b/i.test(source),label+' avoids generic protocol/terminal/ecosystem presentation language')
 }
-assert.ok(bridgeRadianceWorldSource.includes('BURNING RIVER')&&bridgeRadianceWorldSource.includes('The River that Burns'),'Bridge Radiance visibly carries the Flame Event')
+assert.ok(bridgeRadianceWorldSource.includes('WEAVE_WRITING.bridgeRadiance.event')&&bridgeRadianceWorldSource.includes('WEAVE_WRITING.bridgeRadiance.eventName')&&weaveWritingSource.includes("event: 'Flame Event · Burning River'")&&weaveWritingSource.includes("eventName: 'The River that Burns'"),'Bridge Radiance visibly carries the Flame Event')
 assert.ok(bridgeArrivalSource.includes('scrollIntoView')&&bridgeArrivalSource.includes('onCrossingRequest'),'Bridge recognition moves the prospect to the File Folder crossing environment')
 assert.ok(clientSystemSwitchPageSource.includes('data-system-switch-flame-event="burning-river"'),'Client System Switch visibly carries the Flame Event crossing state')
 for(const [source,label] of [
