@@ -102,7 +102,7 @@ export default function WeavePage() {
       <main className="mx-auto w-full max-w-4xl p-3 md:p-6">
         <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72">
           <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(14,165,233,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.08),transparent_28%)] p-5 md:p-7">
-            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Client Player · System Switch</p>
+            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-amber-200">Client Player · System Switch</p>
             <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">The Crossing is a recorded transition into the Client world.</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">{crossingMessage[state.crossing.phase] ?? 'Your crossing is being prepared.'}</p>
           </header>
@@ -111,7 +111,7 @@ export default function WeavePage() {
             <section className="weave-reading-surface rounded-3xl p-5 md:p-6">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.04] p-5">
-                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Current pass</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-200">Current pass</p>
                   <p className="mt-3 text-3xl font-black text-white">{pass || 'Not started'}</p>
                   <p className="mt-2 text-xs text-slate-400">Recorded System Switch progress.</p>
                 </div>
@@ -162,32 +162,33 @@ export default function WeavePage() {
   )
 
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-6 p-3 md:p-6">
-      <header className="weave-system-depth rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72 p-5 md:p-7">
-        <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Bridge Plaza · World Router</p>
-        <h1 className="mt-2 text-3xl font-black text-white md:text-5xl">One world. Distinct districts. Recorded movement between them.</h1>
-        <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
+    <main className="mx-auto w-full max-w-7xl space-y-6 p-3 md:p-6" data-bridge-plaza-theme="realistic-flame-world">
+      <header className="weave-system-depth relative overflow-hidden rounded-[2rem] border border-amber-200/15 bg-[#160e09]/82 p-5 shadow-[0_30px_90px_rgba(0,0,0,.35)] md:p-7">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.12),transparent_28%),radial-gradient(circle_at_82%_0%,rgba(251,191,36,.08),transparent_25%),repeating-linear-gradient(0deg,rgba(255,255,255,.015)_0_1px,transparent_1px_6px)]"/>
+        <p className="relative weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-amber-200">Bridge Plaza · Living World Hub</p>
+        <h1 className="relative mt-2 text-3xl font-black text-white md:text-5xl">A real plaza for movement between WEAVE districts.</h1>
+        <p className="relative mt-3 max-w-4xl text-sm leading-7 text-stone-300">
           Interaction in motion. The subject remains WEAVE while Client movement, workshops, problems, builds, discovery and participation become functional topics inside the same world.
         </p>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+        <div className="rounded-2xl border border-amber-100/10 bg-[#120d09]/78 p-4">
           <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">School</p>
           <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.school.name}</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">Earth and beyond: the field in which learning and participation continue.</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+        <div className="rounded-2xl border border-amber-100/10 bg-[#120d09]/78 p-4">
           <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">Board</p>
           <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.board.name}</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">The responsive surface that can turn writing into organized movement.</p>
         </div>
-        <div className="rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4">
-          <p className="text-[9px] uppercase tracking-[0.24em] text-sky-300">Subject</p>
+        <div className="rounded-2xl border border-amber-300/20 bg-amber-400/[.045] p-4">
+          <p className="text-[9px] uppercase tracking-[0.24em] text-amber-200">Subject</p>
           <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.subject.name}</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">The institutional frame remains constant.</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
+        <div className="rounded-2xl border border-amber-100/10 bg-[#120d09]/78 p-4">
           <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">Topics</p>
           <p className="mt-2 text-sm font-semibold">What we build and do</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">Each current interaction becomes a topic that can be made functional through Weave.</p>
@@ -198,8 +199,8 @@ export default function WeavePage() {
         {/* Map View */}
         <div className="space-y-6">
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-[40px] blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-slate-950 border border-white/10 rounded-[38px] overflow-hidden shadow-2xl">
+            <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 via-amber-400/10 to-stone-400/10 rounded-[40px] blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative bg-[#100b08] border border-amber-100/10 rounded-[38px] overflow-hidden shadow-2xl">
               <BridgePlazaMap
                 currentPass={state.crossing.currentPass}
                 worldRoles={state.worldRoles}
@@ -213,9 +214,9 @@ export default function WeavePage() {
         {/* Support: File Folder Selection */}
         {isSupport && (
           <div className="flex flex-col gap-6">
-            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 flex flex-col h-[560px]">
+            <div className="bg-[#140f0b]/82 border border-amber-100/10 rounded-3xl p-6 flex flex-col h-[560px]">
               <div className="flex items-center gap-2 mb-6">
-                <FileText className="w-5 h-5 text-cyan-400" />
+                <FileText className="w-5 h-5 text-amber-300" />
                 <h2 className="text-lg font-bold">Client Player Support</h2>
               </div>
 
@@ -226,7 +227,7 @@ export default function WeavePage() {
                   placeholder="Search file or client..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm focus:border-cyan-500/50 outline-none transition-colors"
+                  className="w-full bg-slate-950 border border-amber-100/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:border-amber-300/50 outline-none transition-colors"
                 />
               </div>
 
@@ -237,7 +238,7 @@ export default function WeavePage() {
                     <p className="text-xs uppercase tracking-widest">Scanning folders...</p>
                   </div>
                 ) : filteredFolders.length === 0 ? (
-                  <div className="text-center py-12 border border-dashed border-slate-800 rounded-2xl">
+                  <div className="text-center py-12 border border-dashed border-amber-100/10 rounded-2xl">
                     <p className="text-sm text-slate-500">No active movements found.</p>
                   </div>
                 ) : (
@@ -245,13 +246,13 @@ export default function WeavePage() {
                     <button
                       key={folder.id}
                       onClick={() => router.push(`/weave/file-folder/${encodeURIComponent(folder.file_number)}`)}
-                      className="w-full text-left bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/30 p-4 rounded-2xl transition-all group"
+                      className="w-full text-left bg-[#0d0a08] hover:bg-[#1b120c] border border-amber-100/10 hover:border-amber-300/30 p-4 rounded-2xl transition-all group"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest">
+                        <span className="text-[10px] font-mono text-orange-300 uppercase tracking-widest">
                           File {folder.file_number}
                         </span>
-                        <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-cyan-500 transition-colors" />
+                        <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-orange-300 transition-colors" />
                       </div>
                       <p className="text-sm font-bold text-white mb-0.5 truncate">
                         {folder.client_name || folder.identity_data?.name || 'Unnamed Client'}
@@ -267,7 +268,7 @@ export default function WeavePage() {
                 )}
               </div>
 
-              <div className="mt-6 pt-6 border-t border-slate-800">
+              <div className="mt-6 pt-6 border-t border-amber-100/10">
                 <p className="text-[10px] text-slate-500 leading-relaxed italic">
                   Select a Client Player&apos;s File Folder to travel into the same persistent Main File Folder world through Bridge Plaza. The Client remains the player position.
                 </p>
