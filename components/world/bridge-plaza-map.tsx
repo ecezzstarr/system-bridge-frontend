@@ -4,6 +4,8 @@ import { Canvas,useFrame,useThree } from '@react-three/fiber'
 import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
 import { useCallback,useMemo,useRef,useState } from 'react'
 import * as THREE from 'three'
+import { InteractionMotionField } from '@/components/world/interaction-motion-field'
+import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 
 type PortalAction='route'|'support'
 
@@ -190,7 +192,7 @@ function Arcade({side}:{side:-1|1}){
   </group>
 }
 
-function SystemRoute({portal,active,index}:{portal:BridgePlazaPortal;active:boolean;index:number}){
+function SystemRoute({portal,active,index,currentStrength}:{portal:BridgePlazaPortal;active:boolean;index:number;currentStrength:number}){
   const signal=useRef<THREE.Mesh>(null)
   const start=new THREE.Vector3(0,-.92,0)
   const end=new THREE.Vector3(portal.position[0],-.92,portal.position[2])
@@ -201,7 +203,7 @@ function SystemRoute({portal,active,index}:{portal:BridgePlazaPortal;active:bool
 
   useFrame(({clock})=>{
     if(!signal.current)return
-    const speed=active ? .22:.095
+    const speed=(active ? .22:.095)*(.45+Math.max(0,Math.min(2,currentStrength))*.55)
     const t=(clock.getElapsedTime()*speed+index*.17)%1
     signal.current.position.lerpVectors(start,end,t)
     const pulse=.7+Math.sin(clock.getElapsedTime()*4+index)*.22
@@ -211,7 +213,7 @@ function SystemRoute({portal,active,index}:{portal:BridgePlazaPortal;active:bool
   return <group>
     <mesh position={[midpoint.x,-.94,midpoint.z]} rotation={[0,angle,0]}>
       <boxGeometry args={[active ? .18:.11,.035,length]}/>
-      <meshStandardMaterial color={portal.accent} emissive={portal.accent} emissiveIntensity={active ? .26:.055} transparent opacity={active ? .62:.24}/>
+      <meshStandardMaterial color={portal.accent} emissive={portal.accent} emissiveIntensity={(active ? .26:.055)*(.55+currentStrength*.45)} transparent opacity={active ? .62:.24}/>
     </mesh>
     <mesh ref={signal} position={[0,-.84,0]}>
       <sphereGeometry args={[active ? .085:.055,10,10]}/>
@@ -360,6 +362,8 @@ export function BridgePlazaMap({
 }){
   const [focus,setFocus]=useState<BridgePlazaPortal|null>(null)
   const [movement,setMovement]=useState<'present'|'moving'|'station'>('present')
+  const {config:visualRuntime}=useVisualRuntime()
+  const routeCurrent=Math.max(0,Math.min(2,visualRuntime.world.routeCurrent))
 
   const portals=useMemo<BridgePlazaPortal[]>(()=>{
     const base:BridgePlazaPortal[]=[
@@ -413,6 +417,7 @@ export function BridgePlazaMap({
   },[onOpenSupport,onTravel])
 
   return <div className="relative h-full min-h-[690px] w-full overflow-hidden bg-[#0e0906]" data-bridge-plaza-system="continuous-moving-world">
+    <InteractionMotionField className="z-[2] mix-blend-screen" opacity={0.58}/>
     <Canvas shadows camera={{position:[0,8.3,14.1],fov:45}} dpr={[1,1.5]}>
       <color attach="background" args={['#130b07']}/>
       <fog attach="fog" args={['#160d08',12,28]}/>
@@ -431,7 +436,7 @@ export function BridgePlazaMap({
       <FlameFountain/>
       <WorldInscriptions/>
 
-      {portals.map((portal,index)=><SystemRoute key={'route-'+portal.id} portal={portal} active={focus?.id===portal.id} index={index}/>)}
+      {portals.map((portal,index)=><SystemRoute key={'route-'+portal.id} portal={portal} active={focus?.id===portal.id} index={index} currentStrength={routeCurrent}/>)}
       {portals.map(portal=><DistrictEntrance key={portal.id} portal={portal} selected={focus?.id===portal.id} onSelect={handleSelect}/>)}
 
       <FlameBowl position={[-3.2,-.9,2.55]} scale={.8}/>
