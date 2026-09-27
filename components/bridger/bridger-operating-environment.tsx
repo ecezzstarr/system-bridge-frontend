@@ -88,7 +88,7 @@ export function BridgerOperatingEnvironment() {
       <section className="weave-system-depth weave-operating-environment overflow-hidden border-y border-emerald-300/15 bg-[#03100f]/82 backdrop-blur-xl sm:rounded-[2rem] sm:border">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(52,211,153,.13),transparent_36%),radial-gradient(circle_at_90%_0%,rgba(56,189,248,.08),transparent_30%)] p-5 md:p-7">
           <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Bridger Operating Room</p>
-          <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Connection carried in the right order.</h1>
+          <h1 data-weave-live-word="title" className="mt-2 text-2xl font-black text-white md:text-3xl">Connection carried in the right order.</h1>
           <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
             The Bridger is a WEAVE partner who opens and maintains the human connection. The central panel keeps Prospect movement, Client continuity, partnership work and records together while the Client remains the player.
           </p>
@@ -102,7 +102,7 @@ export function BridgerOperatingEnvironment() {
                   <Network className="mt-0.5 h-5 w-5 text-amber-300"/>
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Prospect intake dock</p>
-                    <p className="mt-1 text-sm font-black text-white">Daily Prospect movement</p>
+                    <p data-weave-live-word="station" className="mt-1 text-sm font-black text-white">Daily Prospect movement</p>
                     <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">Prospect intake is a live station in the Bridger environment. It is not repeated as an advertisement elsewhere.</p>
                   </div>
                 </div>
@@ -146,7 +146,7 @@ export function BridgerOperatingEnvironment() {
                   <Activity className="h-4 w-4 text-emerald-300"/>
                   <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">System pulse</p>
                 </div>
-                <p className="mt-3 text-sm font-black text-white">Connection active</p>
+                <p data-weave-live-word="station" className="mt-3 text-sm font-black text-white">Connection active</p>
                 <p className="mt-2 text-xs leading-5 text-slate-400">Crossing → Client continuity → company record remains one Bridger movement.</p>
               </section>
 

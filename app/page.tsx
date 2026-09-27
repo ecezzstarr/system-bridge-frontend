@@ -56,7 +56,7 @@ export default function Home() {
   }, [user, router])
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#020815] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-transparent text-white" data-public-weave-world>
       <div className="relative z-10 min-h-screen">
         <nav className="sticky top-0 z-50 border-b border-sky-300/10 bg-[#03101d]/76 px-3 py-2.5 backdrop-blur-2xl sm:px-5">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
@@ -98,14 +98,14 @@ export default function Home() {
             <div className="relative grid items-center gap-4 md:grid-cols-[1.12fr_.88fr]">
               <div>
                 <div className="flex flex-wrap items-center gap-2 text-[8px] font-black uppercase tracking-[0.20em]">
-                  <span className="text-sky-300">The Weave of Presence</span>
+                  <span data-weave-live-word="station" className="text-sky-300">The Weave of Presence</span>
                   <span className="text-white/20">•</span>
-                  <span className="text-amber-300">System Switch</span>
+                  <span data-weave-live-word="station" className="text-amber-300">System Switch</span>
                   <span className="text-white/20">•</span>
-                  <span className="text-emerald-300">Bridge Radiance</span>
+                  <span data-weave-live-word="station" className="text-emerald-300">Bridge Radiance</span>
                 </div>
 
-                <h1 className="mt-4 text-3xl font-black leading-[1.04] tracking-tight text-white sm:text-4xl md:text-6xl">
+                <h1 data-weave-live-word="title" className="mt-4 text-3xl font-black leading-[1.04] tracking-tight text-white sm:text-4xl md:text-6xl">
                   Interaction in Motion.
                   <span className="mt-1 block bg-gradient-to-r from-sky-200 via-white to-amber-200 bg-clip-text text-transparent">
                     A real-life gaming operating system for human presence.
@@ -190,7 +190,7 @@ export default function Home() {
           <section className="mt-3 grid gap-3 md:grid-cols-[1.15fr_.85fr]">
             <div className="rounded-[1.6rem] border border-white/10 bg-[#020713]/54 p-4 backdrop-blur-md sm:p-5">
               <p className="text-[8px] font-black uppercase tracking-[0.20em] text-sky-300">What WEAVE Builds</p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
+              <h2 data-weave-live-word="title" className="mt-2 text-2xl font-black tracking-tight text-white">
                 Technology and systems formed around movement already present in human life.
               </h2>
               <p className="mt-3 text-sm leading-6 text-slate-400">
@@ -214,7 +214,7 @@ export default function Home() {
               <div className="pointer-events-none absolute right-[-18%] top-[-22%] h-40 w-40 rounded-full bg-amber-300/[0.06] blur-3xl" />
               <div className="relative">
                 <p className="text-[8px] font-black uppercase tracking-[0.20em] text-amber-300">Client Access Point</p>
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-white">Already a WEAVE Client?</h2>
+                <h2 data-weave-live-word="title" className="mt-2 text-2xl font-black tracking-tight text-white">Already a WEAVE Client?</h2>
                 <p className="mt-2 text-xs leading-5 text-slate-400">
                   Enter your Client Portal with your issued WEAVE File Number and secure passkey. Your File Folder, System Switch and Client movement continue from there.
                 </p>
@@ -240,24 +240,24 @@ export default function Home() {
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-sky-300/12 bg-sky-400/[0.035] p-4">
                 <Gamepad2 className="h-5 w-5 text-sky-300" />
-                <h3 className="mt-3 text-sm font-black text-white">Real-life gaming</h3>
+                <h3 data-weave-live-word="station" className="mt-3 text-sm font-black text-white">Real-life gaming</h3>
                 <p className="mt-1.5 text-[10px] leading-4 text-slate-500">The player moves through real participation, choices, work and opportunity rather than a fictional level system.</p>
               </div>
               <div className="rounded-2xl border border-emerald-300/12 bg-emerald-400/[0.035] p-4">
                 <BriefcaseBusiness className="h-5 w-5 text-emerald-300" />
-                <h3 className="mt-3 text-sm font-black text-white">Participation becomes work</h3>
+                <h3 data-weave-live-word="station" className="mt-3 text-sm font-black text-white">Participation becomes work</h3>
                 <p className="mt-1.5 text-[10px] leading-4 text-slate-500">WEAVE organizes what people are already doing into functions that can become useful work and value.</p>
               </div>
               <div className="rounded-2xl border border-violet-300/12 bg-violet-400/[0.035] p-4">
                 <Sparkles className="h-5 w-5 text-violet-300" />
-                <h3 className="mt-3 text-sm font-black text-white">One operating world</h3>
+                <h3 data-weave-live-word="station" className="mt-3 text-sm font-black text-white">One operating world</h3>
                 <p className="mt-1.5 text-[10px] leading-4 text-slate-500">Services, instruments, systems and user positions remain connected inside the same moving WEAVE environment.</p>
               </div>
             </div>
           </section>
         </main>
 
-        <footer className="relative z-10 border-t border-sky-300/10 bg-[#020815]/72 px-4 py-8 backdrop-blur-xl">
+        <footer className="relative z-10 border-t border-sky-300/10 bg-black/35 px-4 py-8 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
             <WeaveLogo size="sm" />
             <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-slate-600">

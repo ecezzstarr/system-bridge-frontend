@@ -34,7 +34,7 @@ export function ClientStreamEnvironment({
   const replays=programs.filter(item=>item.status==='replay').slice(0,12)
   const activeProgramCount=programs.filter(item=>['scheduled','live'].includes(item.status)).length
 
-  return <main className="min-h-screen bg-[#02040a] text-white">
+  return <main className="min-h-screen bg-transparent text-white" data-client-stream-world>
     <header className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_18%_0%,rgba(244,63,94,.2),transparent_32%),radial-gradient(circle_at_82%_12%,rgba(139,92,246,.17),transparent_30%),linear-gradient(180deg,#100510,#030611)] px-5 py-7 md:px-8 md:py-10">
       <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.045)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_86%)]"/>
       <div className="relative mx-auto max-w-7xl">
@@ -45,7 +45,7 @@ export function ClientStreamEnvironment({
         <div className="mt-8 grid gap-7 lg:grid-cols-[1fr_.75fr] lg:items-end">
           <div>
             <div className="flex items-center gap-2"><span className={'h-2.5 w-2.5 rounded-full '+(live?'bg-rose-400 shadow-[0_0_24px_rgba(251,113,133,.9)]':'bg-slate-600')}/><p className="text-[9px] font-black uppercase tracking-[0.23em] text-rose-300">{live?'Live now':'Public channel open'}</p></div>
-            <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] sm:text-6xl">{channel.name}</h1>
+            <h1 data-weave-live-word="title" className="mt-3 text-4xl font-black tracking-[-0.04em] sm:text-6xl">{channel.name}</h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300">{channel.tagline||'A Client-built broadcast environment in the WEAVE Stream Network.'}</p>
             {channel.description&&<p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">{channel.description}</p>}
           </div>
@@ -61,7 +61,7 @@ export function ClientStreamEnvironment({
       <div className="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-rose-300">Broadcast chamber</p>
-          <h2 className="mt-2 text-2xl font-black">{live?(channel.live_title||'Live broadcast'):'The gate is open.'}</h2>
+          <h2 data-weave-live-word="title" className="mt-2 text-2xl font-black">{live?(channel.live_title||'Live broadcast'):'The gate is open.'}</h2>
           <div className="mt-5"><SourcePlayer url={live?channel.live_source_url:null} title={channel.live_title||channel.name}/></div>
         </div>
         <aside className="space-y-4">

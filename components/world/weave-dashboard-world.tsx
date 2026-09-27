@@ -194,13 +194,13 @@ export function WeaveDashboardWorld({
             <span className="text-emerald-300">Interaction in Motion</span>
           </div>
 
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{copy.title}</h1>
+          <h1 data-weave-live-word="title" className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{copy.title}</h1>
           <p className="mt-1.5 text-xs leading-5 text-slate-400 sm:text-sm">{copy.subtitle}</p>
 
           <div className="weave-dashboard-position mt-5 grid gap-4 border-y border-amber-300/15 py-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-center">
             <div>
               <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300">Present position</p>
-              <p className="mt-1 text-lg font-black text-white">{userName || copy.eyebrow}</p>
+              <p data-weave-live-word="station" className="mt-1 text-lg font-black text-white">{userName || copy.eyebrow}</p>
               <p className="mt-1.5 max-w-3xl text-[10px] leading-5 text-slate-400">{copy.purpose}</p>
             </div>
             <Link
@@ -209,7 +209,7 @@ export function WeaveDashboardWorld({
             >
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Control station</p>
-                <p className="mt-0.5 text-sm font-black">Operating Room</p>
+                <p data-weave-live-word="station" className="mt-0.5 text-sm font-black">Operating Room</p>
               </div>
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </Link>

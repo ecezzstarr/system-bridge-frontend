@@ -171,7 +171,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
         <div className="flex items-center gap-3">
           <WeaveLogo size="md" className="shrink-0" />
           <div className="min-w-0">
-            <p className="truncate text-xs font-black uppercase tracking-[0.14em] text-white">WEAVE of Presence</p>
+            <p data-weave-live-word="title" className="truncate text-xs font-black uppercase tracking-[0.14em] text-white">WEAVE of Presence</p>
             <span className="mt-1 block truncate text-[8px] font-bold uppercase tracking-[0.16em] text-slate-500">System Switch · Bridge Radiance</span>
           </div>
         </div>
@@ -257,7 +257,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
             return (
               <section key={group.group} className="weave-nav-group rounded-2xl border border-white/[0.055] bg-white/[0.018] p-2">
                 <div className="mb-1.5 flex items-center justify-between px-2 py-1">
-                  <h3 className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">
+                  <h3 data-weave-live-word="station" className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">
                     {group.group} District
                   </h3>
                   <span className="font-mono text-[8px] text-slate-600">{String(visibleItems.length).padStart(2,'0')}</span>
@@ -290,7 +290,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/[0.055] bg-black/15">
                               <item.icon className="h-3.5 w-3.5" />
                             </span>
-                            <span className="min-w-0 truncate">{item.name}</span>
+                            <span data-weave-live-word="station" className="min-w-0 truncate">{item.name}</span>
                           </div>
                           {isSubItem && subscription && (
                             <span className={cn(

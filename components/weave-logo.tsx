@@ -24,7 +24,7 @@ export function WeaveLogo({ className, size = "md", showText = true }: WeaveLogo
   return (
     <div
       className={cn(
-        "inline-flex items-center select-none",
+        "weave-logo-live inline-flex items-center select-none",
         className
       )}
       aria-label="WEAVE of Presence — System Switch — Bridge Radiance"
