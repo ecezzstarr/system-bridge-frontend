@@ -417,7 +417,7 @@ assert.ok(normalWorldAtmosphereSource.includes('Home is the compact WEAVE world'
 assert.ok(normalWorldAtmosphereSource.includes('<WeaveDashboardWorld'),'Role dashboards keep one persistent WEAVE world')
 assert.ok(flameWorldAtmosphereSource.includes('Company Loops are destinations'),'Event state does not occupy dashboard space')
 assert.ok(!flameWorldAtmosphereSource.includes('fetch('),'Dashboard event atmosphere no longer fetches or mounts event UI')
-assert.ok(worldEnvironmentSource.includes('<WeaveNormalWorldBackdrop />'),'Normal WEAVE backdrop remains persistent during events')
+assert.ok(worldEnvironmentSource.includes('<WeaveLiveFlameField flameLive={active} />'),'One persistent live flame field remains mounted and intensifies during Flame Live')
 assert.ok(rootLayoutSource.includes('<InteractionMotionLayer />'),'Root mounts visible interaction-in-motion effects')
 assert.ok(interactionMotionSource.includes("document.addEventListener('pointerdown'"),'User taps and clicks create visible movement effects')
 assert.ok(appLayoutSource.includes('bg-transparent'),'Staff shell does not cover the moving WEAVE world')
