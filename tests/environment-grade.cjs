@@ -300,3 +300,17 @@ assert.ok(arenaEnvironment.includes('data-arena-environment')&&arenaEnvironment.
 assert.ok(loungeEnvironment.includes('data-lounge-environment'),'Lounge owns a continuous communication environment instead of a floating chat card')
 assert.ok(patternEnvironment.includes('data-pattern-ground')&&patternEnvironment.includes('data-pattern-stage="dice"'),'Pattern Ground exposes a continuous play stage')
 assert.ok(echoEnvironment.includes('data-echo-board')&&echoEnvironment.includes('data-echo-station="insights"'),'Echo is a continuous intelligence board with functional stations')
+
+
+const bridgeAiEnvironment=read('app/(app)/bridger/bridge-ai/page.tsx')
+const prospectEngineEnvironment=read('app/(app)/admin/prospect-engine/page.tsx')
+const originSystemsEnvironment=read('app/(app)/admin/origin-systems/page.tsx')
+const adminRootEnvironment=read('app/(app)/admin/page.tsx')
+
+assert.ok(bridgeAiEnvironment.includes('data-bridge-ai-environment')&&bridgeAiEnvironment.includes('data-bridge-ai-paths'),'Bridge AI renders crossing paths inside one environment')
+assert.ok(!bridgeAiEnvironment.includes('<Card'),'Bridge AI no longer uses Card as its primary path surface')
+assert.ok(prospectEngineEnvironment.includes('roomKey="administration-prospect-engine"')&&prospectEngineEnvironment.includes('data-prospect-pool'),'Prospect Engine is a shared Administration system room')
+assert.ok(!prospectEngineEnvironment.includes('<Card'),'Prospect Engine no longer uses literal cards as its operating structure')
+assert.ok(originSystemsEnvironment.includes('roomKey="administration-origin-systems"')&&originSystemsEnvironment.includes('data-origin-systems-network'),'Origin Systems is one infrastructure environment')
+assert.ok(!originSystemsEnvironment.includes('<Card'),'Origin Systems no longer uses literal cards as its infrastructure structure')
+assert.ok(adminRootEnvironment.includes("redirect('/admin/dashboard')")&&!adminRootEnvironment.includes('<Card'),'Duplicate Administration root routes directly into the Administration world')
