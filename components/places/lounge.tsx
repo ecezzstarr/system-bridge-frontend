@@ -603,7 +603,7 @@ export default function Lounge() {
                     </div>
                     <div className="flex-1 text-left">
                       <p className="text-sm font-bold">Public Lounge</p>
-                      <p className="text-[10px] opacity-60">Global ecosystem chat</p>
+                      <p className="text-[10px] opacity-60">Shared WEAVE communication</p>
                     </div>
                   </button>
                 </div>
