@@ -3,11 +3,12 @@
 import { useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { setRuntimeCovered } from './use-adaptive-runtime'
-import { ArrowRight,Orbit } from 'lucide-react'
+import { ArrowRight,Flame,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-runtime-config'
 import type { EnvironmentRuntimeConfig } from '@/lib/weave-environment-runtime-profile'
+import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
 
 // Every readiness resource has one bounded lifetime, including image listeners.
 export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:EnvironmentRuntimeConfig,signal:AbortSignal){
@@ -111,6 +112,30 @@ const PLATFORM_BRIEFS:LoadingBrief[]=[
 
 const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS
 
+const FLAME_REENTRY_AFTER_MS=30*60*1000
+const FLAME_REENTRY_LAST_ACTIVE_KEY='weave:flame-event:last-active-at'
+
+const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
+  {
+    eyebrow:'FLAME EVENT',
+    title:'Burning River',
+    body:'The River that Burns. Water and flame move together as one living current through WEAVE.',
+    movement:'Company Loop 1 · FLAME EVENT LIVE',
+  },
+  {
+    eyebrow:'BURNING RIVER',
+    title:'Water as flame.',
+    body:'The river keeps its flow. The flame keeps its transformation. Neither disappears; both move as one current.',
+    movement:'Water + Flame → one current → continuous change of state',
+  },
+  {
+    eyebrow:'THE RIVER THAT BURNS',
+    title:'Enter the Burning River.',
+    body:'Presence enters motion. Interaction becomes living transformation. Move through WEAVE while the Flame Event is live.',
+    movement:'Flow · transformation · continuity',
+  },
+]
+
 function waitForBriefingSequence(startedAt:number,signal:AbortSignal){
   return new Promise<void>(resolve=>{
     const remaining=Math.max(0,LOADING_SEQUENCE_MS-(performance.now()-startedAt))
@@ -133,6 +158,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const [briefIndex,setBriefIndex]=useState(0)
   const [sequenceId,setSequenceId]=useState(0)
   const [requestedPath,setRequestedPath]=useState<string|null>(null)
+  const [flameReentry,setFlameReentry]=useState(false)
   const first=useRef(true)
   const transitionStartedAtRef=useRef<number|null>(null)
   const queryTransitionControllerRef=useRef<AbortController|null>(null)
@@ -141,6 +167,36 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     setRuntimeCovered(covered)
     return ()=>setRuntimeCovered(false)
   },[covered])
+
+  useEffect(()=>{
+    const now=Date.now()
+    try{
+      const previous=Number(window.localStorage.getItem(FLAME_REENTRY_LAST_ACTIVE_KEY)||0)
+      const eventIsLive=resolveEventStatus(FLAME_EVENT,new Date(now))==='active'
+      setFlameReentry(eventIsLive&&Number.isFinite(previous)&&previous>0&&now-previous>=FLAME_REENTRY_AFTER_MS)
+      window.localStorage.setItem(FLAME_REENTRY_LAST_ACTIVE_KEY,String(now))
+    }catch{
+      setFlameReentry(false)
+    }
+
+    const markPresence=()=>{
+      try{window.localStorage.setItem(FLAME_REENTRY_LAST_ACTIVE_KEY,String(Date.now()))}catch{}
+    }
+    const onVisibilityChange=()=>{
+      if(document.visibilityState==='hidden')markPresence()
+    }
+    const presenceClock=window.setInterval(()=>{
+      if(document.visibilityState==='visible')markPresence()
+    },60000)
+
+    document.addEventListener('visibilitychange',onVisibilityChange)
+    window.addEventListener('pagehide',markPresence)
+    return ()=>{
+      window.clearInterval(presenceClock)
+      document.removeEventListener('visibilitychange',onVisibilityChange)
+      window.removeEventListener('pagehide',markPresence)
+    }
+  },[])
   useEffect(()=>{
     const controller=new AbortController()
     const mode=first.current?'boot':'transit'
@@ -221,25 +277,35 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     }
   },[])
 
+  const showFlameBriefing=booting&&flameReentry
+
   useEffect(()=>{
     if(!covered)return
     setBriefIndex(0)
-    const timers=PLATFORM_BRIEFS.slice(1).map((_,index)=>
+    const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
+    const timers=briefs.slice(1).map((_,index)=>
       window.setTimeout(()=>setBriefIndex(index+1),(index+1)*LOADING_CARD_HOLD_MS)
     )
     return ()=>timers.forEach(timer=>window.clearTimeout(timer))
-  },[covered,sequenceId])
+  },[covered,sequenceId,showFlameBriefing])
 
   const requestedEnvironment=useMemo(
     ()=>requestedPath?resolveWeaveEnvironment(requestedPath.split('?')[0]):null,
     [requestedPath],
   )
   const destinationEnvironment=requestedEnvironment||environment
-  const briefing=PLATFORM_BRIEFS[Math.min(briefIndex,PLATFORM_BRIEFS.length-1)]||PLATFORM_BRIEFS[0]
-  const openingLabel=booting?'Forming the living environment':`Opening ${destinationEnvironment.title}`
-  const statusLabel=booting
-    ? 'Preparing WEAVE world · preserving continuity'
-    : `Moving through ${destinationEnvironment.district} · keeping your position intact`
+  const activeBriefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
+  const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
+  const openingLabel=showFlameBriefing
+    ? 'Flame Event · Burning River'
+    : booting
+      ? 'Forming the living environment'
+      : `Opening ${destinationEnvironment.title}`
+  const statusLabel=showFlameBriefing
+    ? 'FLAME EVENT · BURNING RIVER · THE RIVER THAT BURNS'
+    : booting
+      ? 'Preparing WEAVE world · preserving continuity'
+      : `Moving through ${destinationEnvironment.district} · keeping your position intact`
 
   return <>
     <div
@@ -250,13 +316,21 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       {children}
     </div>
     {covered&&<div
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#090807]/98 px-5 text-white backdrop-blur-2xl"
+      className={'fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden px-5 text-white backdrop-blur-2xl '+(showFlameBriefing?'bg-[#120603]/98':'bg-[#090807]/98')}
       role="status"
       aria-live="polite"
       aria-label={booting?'Loading WEAVE environment':'Moving to '+environment.title}
       data-environment-readiness-gate={booting?'boot':'transit'}
+      data-flame-event-reentry={showFlameBriefing?'true':undefined}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(249,115,22,.18),transparent_24%),radial-gradient(circle_at_18%_78%,rgba(214,164,95,.10),transparent_26%),radial-gradient(circle_at_84%_72%,rgba(125,211,252,.06),transparent_23%),linear-gradient(180deg,rgba(31,17,9,.68),rgba(4,5,7,.94))]"/>
+      <div className={showFlameBriefing
+        ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(251,113,133,.24),transparent_22%),radial-gradient(circle_at_18%_78%,rgba(249,115,22,.20),transparent_26%),radial-gradient(circle_at_82%_70%,rgba(125,211,252,.13),transparent_24%),linear-gradient(180deg,rgba(47,12,6,.82),rgba(3,6,10,.96))]"
+        : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(249,115,22,.18),transparent_24%),radial-gradient(circle_at_18%_78%,rgba(214,164,95,.10),transparent_26%),radial-gradient(circle_at_84%_72%,rgba(125,211,252,.06),transparent_23%),linear-gradient(180deg,rgba(31,17,9,.68),rgba(4,5,7,.94))]"
+      }/>
+      {showFlameBriefing&&<>
+        <div className="pointer-events-none absolute inset-x-[-8%] bottom-[-8%] h-[34%] rotate-[-2deg] bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,.30),rgba(251,113,133,.12)_38%,rgba(56,189,248,.08)_58%,transparent_72%)] blur-2xl"/>
+        <div className="pointer-events-none absolute inset-x-0 bottom-[12%] h-px bg-gradient-to-r from-transparent via-orange-300/55 to-transparent shadow-[0_0_35px_rgba(249,115,22,.7)]"/>
+      </>}
       <div className="pointer-events-none absolute left-1/2 top-[34%] h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-100/[.035]"/>
       <div className="pointer-events-none absolute left-1/2 top-[34%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-200/[.045]"/>
       <div className="pointer-events-none absolute inset-x-[7%] bottom-[13%] h-px bg-gradient-to-r from-transparent via-amber-200/15 to-transparent"/>
@@ -267,11 +341,18 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
             <div className="absolute inset-0 animate-[spin_5.4s_linear_infinite] rounded-full border border-amber-200/15 border-t-orange-300/70 motion-reduce:animate-none"/>
             <div className="absolute inset-3 animate-[spin_3.2s_linear_infinite_reverse] rounded-full border border-stone-300/10 border-r-amber-100/50 motion-reduce:animate-none"/>
             <div className="absolute inset-7 animate-pulse rounded-full border border-orange-300/10 bg-orange-400/[.035] motion-reduce:animate-none"/>
-            <Orbit className="h-7 w-7 text-amber-100"/>
+            {showFlameBriefing
+              ? <Flame className="h-8 w-8 text-orange-200 drop-shadow-[0_0_18px_rgba(249,115,22,.8)]"/>
+              : <Orbit className="h-7 w-7 text-amber-100"/>
+            }
           </div>
 
-          <p className="mt-4 text-[9px] font-black uppercase tracking-[.3em] text-amber-200">WEAVE of Presence</p>
-          <p className="mt-1 text-[8px] font-bold uppercase tracking-[.18em] text-stone-500">System Switch — Bridge Radiance</p>
+          <p className={'mt-4 text-[9px] font-black uppercase tracking-[.3em] '+(showFlameBriefing?'text-orange-200':'text-amber-200')}>
+            {showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
+          </p>
+          <p className={'mt-1 text-[8px] font-bold uppercase tracking-[.18em] '+(showFlameBriefing?'text-rose-200/70':'text-stone-500')}>
+            {showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
+          </p>
           <h1 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
         </div>
 
@@ -283,7 +364,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
             <span className="rounded-full border border-white/10 bg-white/[.035] px-2.5 py-1 text-[7px] font-black uppercase tracking-[.16em] text-stone-400">
-              {destinationEnvironment.district}
+              {showFlameBriefing?'LIVE · LOOP 1':destinationEnvironment.district}
             </span>
           </div>
           <h2 className="mt-2 text-lg font-black text-white sm:text-xl">{briefing.title}</h2>
@@ -295,7 +376,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         </section>
 
         <div className="mx-auto mt-5 flex max-w-sm items-center gap-2" aria-hidden="true">
-          {PLATFORM_BRIEFS.map((_,index)=><span
+          {activeBriefs.map((_,index)=><span
             key={index}
             className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,PLATFORM_BRIEFS.length-1)?'bg-amber-200/80':'bg-white/10')}
           />)}

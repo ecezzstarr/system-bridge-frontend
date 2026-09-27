@@ -49,6 +49,14 @@ assert.equal((rootLayout.match(/<WeaveWorldEnvironment\s*\/>/g)||[]).length,1,'E
 assert.ok(rootLayout.includes('<WeaveEnvironmentTransit>'),'Global environment transit remains active')
 assert.ok(rootLayout.includes('<InteractionMotionLayer />'),'Interaction output remains globally visible')
 assert.ok(rootLayout.includes('<WeavePresenceAmbience />'),'Persistent WEAVE world mounts one adaptive presence ambience engine')
+const flameReentryTransit=read('components/world/weave-environment-transit.tsx')
+assert.ok(flameReentryTransit.includes("FLAME_REENTRY_AFTER_MS=30*60*1000"),'Flame Event re-entry briefing waits for meaningful absence')
+assert.ok(flameReentryTransit.includes("FLAME_REENTRY_LAST_ACTIVE_KEY"),'Flame Event re-entry state persists last app presence')
+assert.ok(flameReentryTransit.includes("resolveEventStatus(FLAME_EVENT"),'Flame Event re-entry briefing follows the October 1 event lifecycle')
+assert.ok(flameReentryTransit.includes("const showFlameBriefing=booting&&flameReentry"),'Flame Event briefing is boot-only and cannot replace ordinary route transit')
+assert.ok(flameReentryTransit.includes("const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS"),'Normal WEAVE loading briefs remain intact outside eligible Flame Event re-entry')
+assert.ok(flameReentryTransit.includes("Burning River")&&flameReentryTransit.includes("The River that Burns"),'Flame Event re-entry identifies the Burning River explicitly')
+
 
 const liveFlameField=read('components/world/weave-live-flame-field.tsx')
 const bridgePlazaPage=read('app/(app)/weave/page.tsx')
@@ -279,7 +287,7 @@ assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weav
 assert.ok(cleanRevealTransit2026.includes('hasPendingSurface()&&elapsed<absoluteMaximum'),'Pending application state holds the clean reveal only until the absolute recovery ceiling')
 assert.ok(cleanRevealTransit2026.includes('const LOADING_CARD_HOLD_MS=2000'),'Loading briefs remain visible long enough to read')
 assert.ok(cleanRevealTransit2026.includes('const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS'),'Environment reveal waits for the complete three-card briefing sequence')
-assert.ok(cleanRevealTransit2026.includes('PLATFORM_BRIEFS.map((_,index)'),'Loading progress exposes exactly the platform briefing sequence')
+assert.ok(cleanRevealTransit2026.includes('activeBriefs.map((_,index)'),'Loading progress follows whichever three-card briefing is active without removing the normal platform sequence')
 assert.ok(cleanRevealTransit2026.includes("document.addEventListener('click',handleInternalNavigation,true)"),'Internal navigation primes the environment cover at click time, including sidebar links')
 assert.ok(cleanRevealTransit2026.includes('setReadyPath(null)')&&cleanRevealTransit2026.includes('setTransiting(true)'),'Sidebar movement hides the old environment immediately while preserving destination formation')
 assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence(startedAt,controller.signal)\n          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations finish the readable briefing before the final readiness check')

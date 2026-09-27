@@ -139,7 +139,7 @@ export default function FileNumberEnginePage() {
         </div>
         <div>
           <h1 className="text-3xl font-black tracking-tighter text-white uppercase">File Number Engine</h1>
-          <p className="text-slate-400 font-medium">WEAVE Ecosystem · Client Identity Authority</p>
+          <p className="text-slate-400 font-medium">WEAVE · Client Identity Authority</p>
         </div>
       </div>
 

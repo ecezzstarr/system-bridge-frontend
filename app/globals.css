@@ -968,3 +968,61 @@ html[data-weave-quality="1"] .weave-live-flame-core {
     animation: none !important;
   }
 }
+
+
+/* Flame Event role atmosphere: a live Burning River signal inside authenticated
+   WEAVE. It is invisible outside the active event and never replaces the world. */
+.flame-event-role-signal {
+  display: none;
+}
+html[data-weave-event="flame-live"] .flame-event-role-signal {
+  display: block;
+}
+.flame-event-burning-river {
+  background:
+    radial-gradient(ellipse at 50% 52%, rgba(255,247,237,.16) 0 5%, rgba(251,191,36,.16) 12%, rgba(249,115,22,.20) 26%, rgba(239,68,68,.12) 44%, rgba(56,189,248,.09) 58%, transparent 74%);
+  opacity: .78;
+  mix-blend-mode: screen;
+  animation: flame-event-river-breathe 5.2s ease-in-out infinite alternate;
+}
+.flame-event-burning-river-line {
+  background: linear-gradient(90deg, transparent, rgba(125,211,252,.14), rgba(255,247,237,.72), rgba(249,115,22,.62), rgba(239,68,68,.24), transparent);
+  box-shadow: 0 0 24px rgba(249,115,22,.22), 0 0 46px rgba(56,189,248,.08);
+  animation: flame-event-river-flow 7.5s linear infinite;
+}
+.flame-event-burning-river-line-secondary {
+  opacity: .5;
+  animation-duration: 10.5s;
+  animation-direction: reverse;
+}
+.flame-event-ember-column {
+  background: linear-gradient(180deg, transparent, rgba(251,146,60,.16), rgba(255,247,237,.55), transparent);
+  filter: blur(.2px);
+  opacity: .45;
+  animation: flame-event-ember-rise 3.8s ease-in-out infinite;
+}
+@keyframes flame-event-river-breathe {
+  0% { transform: translate3d(-1%,2%,0) scaleX(.97) scaleY(.82); opacity: .58; }
+  100% { transform: translate3d(1%,-2%,0) scaleX(1.04) scaleY(1.08); opacity: .86; }
+}
+@keyframes flame-event-river-flow {
+  0% { transform: translate3d(-3%,0,0) scaleX(.96); filter: brightness(.9); }
+  50% { transform: translate3d(2%,0,0) scaleX(1.04); filter: brightness(1.2); }
+  100% { transform: translate3d(-3%,0,0) scaleX(.96); filter: brightness(.9); }
+}
+@keyframes flame-event-ember-rise {
+  0%,100% { transform: translate3d(0,8%,0) scaleY(.82); opacity: .22; }
+  50% { transform: translate3d(0,-8%,0) scaleY(1.08); opacity: .55; }
+}
+html[data-weave-quality="0"] .flame-event-burning-river,
+html[data-weave-quality="0"] .flame-event-burning-river-line,
+html[data-weave-quality="0"] .flame-event-ember-column {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flame-event-burning-river,
+  .flame-event-burning-river-line,
+  .flame-event-ember-column {
+    animation: none !important;
+  }
+}

@@ -6,6 +6,163 @@ import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 import { getFileFolderTier } from '@/lib/file-folder-pricing'
 import { notifyUser } from '@/lib/deposit-notifications'
+import { ensureFlameSchema } from '@/lib/flame-schema'
+import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
+import { recordSystemEvent } from '@/lib/system-events'
+
+async function provisionPersistentFolder(fileNumber: string, clientName: string) {
+  await ensureClientFileFolderSchema(sql)
+  await sql`
+    INSERT INTO client_file_folders (
+      file_number,
+      client_name,
+      workshop_type,
+      status
+    )
+    VALUES (
+      ${fileNumber},
+      ${clientName},
+      'pending_personalization',
+      'waiting_for_login'
+    )
+    ON CONFLICT (file_number) DO UPDATE SET
+      client_name = COALESCE(client_file_folders.client_name, EXCLUDED.client_name),
+      workshop_type = CASE
+        WHEN client_file_folders.client_id IS NULL
+             AND client_file_folders.workshop_type = 'formation'
+          THEN 'pending_personalization'
+        ELSE client_file_folders.workshop_type
+      END,
+      updated_at = NOW()
+  `
+}
+
+async function verifyBridgeRadiancePurchase({
+  admin,
+  purchaseId,
+  status,
+}: {
+  admin: any
+  purchaseId: string
+  status: 'approved' | 'rejected'
+}) {
+  await ensureFlameSchema()
+
+  const [purchase] = await sql`
+    SELECT *
+    FROM file_folder_purchases
+    WHERE id=${purchaseId}::uuid
+      AND status='pending_admin_confirmation'
+    LIMIT 1
+  `
+
+  if (!purchase) {
+    return NextResponse.json({ error: 'Bridge Radiance File Folder purchase not found or already processed' }, { status: 404 })
+  }
+
+  const fileFolderTier = getFileFolderTier(Number(purchase.amount_trx))
+  if (!fileFolderTier) {
+    return NextResponse.json({ error: 'Stored File Folder amount is outside the current Standard/Premium pricing rules' }, { status: 409 })
+  }
+
+  if (status === 'rejected') {
+    await sql`
+      UPDATE file_folder_purchases
+      SET status='rejected', confirmed_by=${admin.id}::uuid, confirmed_at=NOW()
+      WHERE id=${purchaseId}::uuid
+        AND status='pending_admin_confirmation'
+    `
+    return NextResponse.json({
+      success: true,
+      status: 'rejected',
+      source: 'file_folder_purchase',
+      message: 'Bridge Radiance File Folder payment rejected. No File Number was issued.',
+    })
+  }
+
+  const prospectName = String(purchase.buyer_name || purchase.buyer_email || 'Bridge Radiance Prospect').trim().slice(0, 255)
+  const prospectPhone = String(purchase.buyer_phone || '').trim().slice(0, 80)
+
+  const fileFolder = await generateFileNumber(null, {
+    name: prospectName,
+    phone: prospectPhone,
+    bridgeCode: purchase.bridge_code || null,
+    purchaseId: purchase.id,
+    txHash: purchase.payment_reference,
+    amountTrx: Number(purchase.amount_trx),
+    providerName: purchase.provider_name || null,
+    flameName: purchase.flame_name || null,
+  })
+  const fileNumber = fileFolder.file_number
+
+  await provisionPersistentFolder(fileNumber, prospectName)
+
+  const [confirmed] = await sql`
+    UPDATE file_folder_purchases
+    SET
+      file_number=${fileNumber},
+      status='confirmed',
+      confirmed_at=NOW(),
+      confirmed_by=${admin.id}::uuid
+    WHERE id=${purchaseId}::uuid
+      AND status='pending_admin_confirmation'
+    RETURNING *
+  `
+
+  if (!confirmed) {
+    return NextResponse.json({ error: 'File Folder purchase changed before verification completed' }, { status: 409 })
+  }
+
+  if (confirmed.bridge_code) {
+    await sql`
+      UPDATE chatgpt_bridge_sessions
+      SET crossing_state='file_number_issued'
+      WHERE code=${confirmed.bridge_code}
+    `
+  }
+
+  const allocation = await accrueAiProviderAllocation({
+    sql,
+    purchaseId: String(confirmed.id),
+    fileNumber,
+    grossAmount: Number(confirmed.amount_trx),
+    bridgeCode: confirmed.bridge_code,
+    providerKey: confirmed.provider_key,
+    providerName: confirmed.provider_name,
+    flameExternalId: confirmed.flame_external_id,
+    flameName: confirmed.flame_name,
+  })
+
+  await recordSystemEvent({
+    eventType: 'file_number_issued',
+    actorId: admin.id,
+    actorRole: 'admin',
+    subjectType: 'client_file_folder',
+    subjectId: fileNumber,
+    source: 'bridge-radiance-file-folder',
+    payload: {
+      purchaseId,
+      bridgeCode: confirmed.bridge_code || null,
+      amountFlameCoin: Number(confirmed.amount_trx),
+      fileFolderTier,
+    },
+  })
+
+  return NextResponse.json({
+    success: true,
+    status: 'approved',
+    source: 'file_folder_purchase',
+    purchaseId,
+    fileNumber,
+    amount: Number(confirmed.amount_trx),
+    fileFolderTier,
+    currency: 'Flame Coin',
+    registerUrl: `/client/register?fileNumber=${encodeURIComponent(fileNumber)}`,
+    systemSwitchUrl: '/client/system-switch',
+    aiProviderAllocation: allocation?.allocation || null,
+    message: 'File Folder approved. File Number issued. Prospect can now register as Client and cross into System Switch.',
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,13 +172,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin only' }, { status: 403 })
     }
 
-    const { depositId, status } = await request.json()
+    const { depositId, status, source } = await request.json()
 
     if (!depositId || !['approved', 'rejected'].includes(status)) {
       return NextResponse.json(
         { error: 'depositId and status (approved|rejected) are required' },
         { status: 400 }
       )
+    }
+
+    if (source === 'file_folder_purchase') {
+      return verifyBridgeRadiancePurchase({ admin, purchaseId: depositId, status })
     }
 
     const deposits = await sql`
@@ -47,10 +208,9 @@ export async function POST(request: NextRequest) {
     `
 
     if (!deposits[0]) {
-      return NextResponse.json(
-        { error: 'Bridge deposit not found or already processed' },
-        { status: 404 }
-      )
+      // Older Admin clients did not send a source discriminator. Fall through
+      // to the new Bridge Radiance purchase stream before returning 404.
+      return verifyBridgeRadiancePurchase({ admin, purchaseId: depositId, status })
     }
 
     const deposit = deposits[0]
@@ -84,6 +244,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         status: 'rejected',
+        source: 'bridge_deposit',
         message: 'Bridge File Folder payment rejected'
       })
     }
@@ -114,32 +275,7 @@ export async function POST(request: NextRequest) {
         AND status = 'pending'
     `
 
-    // Provision the persistent File Folder shell only after the paid Bridge movement is approved.
-    // The first workshop is intentionally NOT chosen here: it must come from Client personalization.
-    await ensureClientFileFolderSchema(sql)
-    await sql`
-      INSERT INTO client_file_folders (
-        file_number,
-        client_name,
-        workshop_type,
-        status
-      )
-      VALUES (
-        ${fileNumber},
-        ${deposit.prospect_name},
-        'pending_personalization',
-        'waiting_for_login'
-      )
-      ON CONFLICT (file_number) DO UPDATE SET
-        client_name = COALESCE(client_file_folders.client_name, EXCLUDED.client_name),
-        workshop_type = CASE
-          WHEN client_file_folders.client_id IS NULL
-               AND client_file_folders.workshop_type = 'formation'
-            THEN 'pending_personalization'
-          ELSE client_file_folders.workshop_type
-        END,
-        updated_at = NOW()
-    `
+    await provisionPersistentFolder(fileNumber, deposit.prospect_name)
 
     if (deposit.outreach_id) {
       await sql`
@@ -187,6 +323,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       status: 'approved',
+      source: 'bridge_deposit',
       depositId: deposit.id,
       fileNumber,
       bridgerId: deposit.bridger_id,
@@ -194,6 +331,8 @@ export async function POST(request: NextRequest) {
       amount: Number(deposit.tier_trx),
       fileFolderTier,
       currency: 'Flame Coin',
+      registerUrl: `/client/register?fileNumber=${encodeURIComponent(fileNumber)}`,
+      systemSwitchUrl: '/client/system-switch',
       message: 'File Folder approved, persistent File Folder shell provisioned, and File Number issued.'
     })
   } catch (error: any) {

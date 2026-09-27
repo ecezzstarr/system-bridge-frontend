@@ -85,7 +85,7 @@ export default function OriginSystemsPanel() {
       left={
         <section className="border-l border-blue-300/20 pl-4">
           <div className="flex items-center gap-2"><Bot className="h-4 w-4 text-blue-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300">AI Registry</p></div>
-          <p className="mt-2 text-[10px] leading-5 text-slate-500">Autonomous agents active within the ecosystem.</p>
+          <p className="mt-2 text-[10px] leading-5 text-slate-500">Autonomous agents active within WEAVE.</p>
           {agentsLoading ? <p className="mt-4 text-xs text-slate-500">Loading agents...</p> : (
             <div className="mt-4 divide-y divide-white/10 border-y border-white/10">
               {agents.map(agent=>(
@@ -151,7 +151,7 @@ export default function OriginSystemsPanel() {
           <div className="mt-3 space-y-2 text-[10px] leading-5 text-slate-400">
             <p>All systems inherit from SSBNOW.SHOP origin authority.</p>
             <p>EIGHT manages cross-system operations.</p>
-            <p>Administration enforces ecosystem rules.</p>
+            <p>Administration governs WEAVE rules and system authority.</p>
             <p>No system disconnects from origin without recorded authority.</p>
           </div>
         </section>

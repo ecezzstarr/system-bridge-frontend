@@ -19,6 +19,7 @@ import {
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-provider'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 function ClientRegisterContent() {
   const router = useRouter()
@@ -118,27 +119,27 @@ function ClientRegisterContent() {
       <div className="mb-8 text-center relative z-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 mb-4">
           <ShieldCheck className="h-3 w-3" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Secure Registration Protocol</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">{WEAVE_WRITING.clientAccess.registerEyebrow}</span>
         </div>
-        <h1 data-weave-live-word="title" className="text-4xl font-black text-white tracking-tighter uppercase italic">WEAVE Identity</h1>
+        <h1 data-weave-live-word="title" className="text-4xl font-black text-white tracking-tighter uppercase italic">{WEAVE_WRITING.clientAccess.registerTitle}</h1>
       </div>
 
       <Card className="w-full max-w-md border-slate-700 bg-slate-900/50 backdrop-blur-xl relative z-10 shadow-2xl">
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-xl font-bold text-white uppercase tracking-tight">
-            {step === 'validate' ? 'Protocol Initiation' : 'Finalize Credentials'}
+            {step === 'validate' ? WEAVE_WRITING.clientAccess.recognizeTitle : WEAVE_WRITING.clientAccess.detailsTitle}
           </CardTitle>
           <CardDescription className="text-xs font-medium text-slate-400">
             {step === 'validate'
-              ? 'Enter your issued File Number to begin.'
-              : 'Secure your presence in the WEAVE ecosystem.'}
+              ? WEAVE_WRITING.clientAccess.recognizeDetail
+              : WEAVE_WRITING.clientAccess.detailsDetail}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {step === 'validate' ? (
             <form onSubmit={handleValidate} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">File Number Authority</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{WEAVE_WRITING.clientAccess.fileNumber}</label>
                 <div className="relative">
                   <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
@@ -151,13 +152,13 @@ function ClientRegisterContent() {
                 </div>
               </div>
               <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 h-12 font-bold uppercase tracking-tighter" disabled={isLoading}>
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Validate Credentials'}
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : WEAVE_WRITING.clientAccess.recognizeAction}
                 {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
               </Button>
 
               <div className="text-center">
                 <p className="text-[10px] text-slate-500 italic">
-                  Don't have a File Number? Contact an authorized Bridger.
+                  A File Number is issued after Administration verifies a File Folder movement.
                 </p>
               </div>
             </form>
@@ -167,7 +168,7 @@ function ClientRegisterContent() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-blue-400">
                     <CheckCircle2 className="h-3 w-3" />
-                    <span className="text-[9px] font-black uppercase tracking-wider">Identity Confirmed</span>
+                    <span className="text-[9px] font-black uppercase tracking-wider">{WEAVE_WRITING.clientAccess.recognized}</span>
                   </div>
                   <div className="h-1 w-12 bg-blue-500/30 rounded-full" />
                 </div>
@@ -177,7 +178,7 @@ function ClientRegisterContent() {
                     <p className="text-sm text-white font-bold">{identityData?.name}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">File Authority</p>
+                    <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">{WEAVE_WRITING.clientAccess.fileNumber}</p>
                     <p className="text-sm font-mono text-blue-300 font-bold">{fileNumber.split('-').pop()}</p>
                   </div>
                 </div>
@@ -210,7 +211,7 @@ function ClientRegisterContent() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     type="password"
-                    placeholder="Create Secure Password"
+                    placeholder="Create Password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="pl-10 bg-slate-800/50 border-slate-700 text-white text-sm h-11"
@@ -233,7 +234,7 @@ function ClientRegisterContent() {
 
               <div className="pt-2">
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 h-12 font-bold uppercase tracking-tighter" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Complete Registration'}
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : WEAVE_WRITING.clientAccess.completeAction}
                 </Button>
 
                 <Button
@@ -251,7 +252,7 @@ function ClientRegisterContent() {
 
           <div className="mt-8 text-center border-t border-slate-800 pt-6">
             <p className="text-xs text-slate-500 font-medium">
-              Already have an account? <Link href="/client/login" className="text-blue-400 font-bold hover:text-blue-300 ml-1">Secure Sign In</Link>
+              {WEAVE_WRITING.clientAccess.existing} <Link href="/client/login" className="text-blue-400 font-bold hover:text-blue-300 ml-1">{WEAVE_WRITING.clientAccess.enter}</Link>
             </p>
           </div>
         </CardContent>

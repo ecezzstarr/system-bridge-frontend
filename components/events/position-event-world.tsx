@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, Flame, Music2, Radio, Sparkles, Wind, Waves, ArrowRight } from 'lucide-react'
+import { ArrowRight, CalendarDays, Flame, Music2, Radio, Sparkles, Waves, Wind } from 'lucide-react'
 import {
   FLAME_EVENT,
   type EventRole,
@@ -10,6 +10,8 @@ import {
   getEventProgress,
   resolveEventStatus,
 } from '@/lib/weave-event'
+import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
+import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 
 const ROLE_LABELS: Record<EventRole, string> = {
   client: 'CLIENT',
@@ -52,138 +54,220 @@ export default function PositionEventWorld({
   const dateRange = `${new Date(event.startsAt).toLocaleDateString()} — ${new Date(event.endsAt).toLocaleDateString()}`
   const flowIndex = effectiveStatus === 'planned' ? 0 : Math.floor(now.getTime() / 4200) % 3
   const flow = [
-    { key: 'air', label: 'AIR · PRESENCE', detail: effectiveStatus === 'planned' ? 'The ground is forming. Presence, sound and possibility remain available before opening.' : 'Presence holds the open field: your position, available movement and the living WEAVE around it.', icon: Wind },
-    { key: 'fire', label: 'FIRE · INTERACTION', detail: effectiveStatus === 'planned' ? 'Interaction ignites when Loop One opens.' : position.movement[flowIndex % position.movement.length] || 'Act from your position. The system recognizes the movement as it happens.', icon: Flame },
-    { key: 'water', label: 'WATER · CONTINUITY', detail: effectiveStatus === 'planned' ? 'Results will return into the system as continuity.' : 'Action becomes record, changed state, opportunity and the next available movement.', icon: Waves },
+    {
+      key: 'air',
+      label: 'AIR · PRESENCE',
+      detail: effectiveStatus === 'planned'
+        ? 'The ground is forming. Presence, sound and possibility remain available before opening.'
+        : 'Presence holds the open field: your position, available movement and the living WEAVE around it.',
+      icon: Wind,
+    },
+    {
+      key: 'fire',
+      label: 'FIRE · INTERACTION',
+      detail: effectiveStatus === 'planned'
+        ? 'Interaction ignites when Loop One opens.'
+        : position.movement[flowIndex % position.movement.length] || 'Act from your position. The system recognizes movement as it happens.',
+      icon: Flame,
+    },
+    {
+      key: 'water',
+      label: 'WATER · CONTINUITY',
+      detail: effectiveStatus === 'planned'
+        ? 'Results will return into the system as continuity.'
+        : 'Action becomes record, changed state, opportunity and the next available movement.',
+      icon: Waves,
+    },
   ] as const
 
   return (
-    <section className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#020611]/72 text-white shadow-2xl backdrop-blur-xl">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,.16),transparent_34%),radial-gradient(circle_at_85%_34%,rgba(239,68,68,.08),transparent_28%)]" />
+    <section
+      className="weave-operating-environment relative isolate w-full overflow-hidden border-y border-orange-300/15 bg-[#070505]/72 text-white shadow-[0_34px_120px_rgba(69,10,10,.18)] backdrop-blur-xl"
+      data-loop-one-environment="burning-river"
+      data-weave-environment="flame-event-loop-one"
+    >
+      <FlameEventRiverField />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,247,237,.018),transparent_18%,transparent_78%,rgba(249,115,22,.035)),radial-gradient(circle_at_50%_42%,rgba(249,115,22,.08),transparent_30%)]" />
 
-      <div className="relative z-10 p-3.5 sm:p-5">
-        <header className="flex items-start justify-between gap-3 border-b border-white/10 pb-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-300/20 bg-gradient-to-b from-blue-500/10 to-red-500/10">
-                <Flame className="h-4 w-4 text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-red-300">Company Loop {event.loopNumber}</p>
-                <h1 className="truncate text-xl font-black uppercase tracking-[0.08em] sm:text-2xl">{event.title}</h1>
-              </div>
+      <div className="relative z-10">
+        <header className="grid gap-5 border-b border-white/8 px-4 py-5 sm:px-6 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:px-8 lg:py-7">
+          <FlameEventArtifactMark size="md" surface="client-event" className="mx-auto lg:mx-0" />
+
+          <div className="min-w-0 text-center lg:text-left">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-[8px] font-black uppercase tracking-[.24em] text-orange-200 lg:justify-start">
+              <span>Company Loop {event.loopNumber}</span>
+              <span className="text-white/20">·</span>
+              <span>Flame Event</span>
             </div>
-            <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-500">Global event · personal position</p>
+            <h1 data-weave-live-word="title" className="mt-2 text-3xl font-black uppercase tracking-[-.035em] sm:text-4xl lg:text-5xl">
+              Burning River
+            </h1>
+            <p className="mt-1 text-[10px] font-black uppercase tracking-[.28em] text-rose-100/55">
+              The River that Burns
+            </p>
+            <p className="mx-auto mt-3 max-w-2xl text-xs leading-5 text-stone-400 lg:mx-0">
+              Water as flame. Flow and transformation moving together as one living current through WEAVE.
+            </p>
           </div>
 
-          <div className={`shrink-0 rounded-full border px-2.5 py-1.5 text-[8px] font-black uppercase tracking-[0.14em] ${
-            effectiveStatus === 'active'
-              ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
-              : effectiveStatus === 'closed'
-                ? 'border-slate-500/30 bg-slate-500/10 text-slate-400'
-                : 'border-amber-400/30 bg-amber-400/10 text-amber-300'
-          }`}>
-            <Radio className="mr-1 inline h-3 w-3" /> {status}
+          <div className="flex flex-col items-center gap-2 lg:items-end">
+            <div className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-[8px] font-black uppercase tracking-[.16em] ${
+              effectiveStatus === 'active'
+                ? 'border-orange-300/30 bg-orange-400/10 text-orange-100'
+                : effectiveStatus === 'closed'
+                  ? 'border-stone-500/30 bg-stone-500/10 text-stone-400'
+                  : 'border-amber-300/30 bg-amber-300/10 text-amber-200'
+            }`}>
+              <Radio className="h-3 w-3" /> {status}
+            </div>
+            <p className="text-[8px] font-bold uppercase tracking-[.14em] text-white/35">{ROLE_LABELS[role]} POSITION</p>
           </div>
         </header>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-2.5 py-1.5 text-[8px] font-bold uppercase tracking-[0.12em] text-slate-400">
-            <CalendarDays className="h-3 w-3 text-sky-300" /> {dateRange}
-          </span>
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-b border-white/8 px-4 py-3 text-[8px] font-bold uppercase tracking-[.13em] text-stone-500 sm:px-6 lg:justify-start lg:px-8">
+          <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3 w-3 text-orange-200" /> {dateRange}</span>
           {effectiveStatus === 'planned' && (
-            <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1.5 text-[8px] font-bold uppercase tracking-[0.12em] text-slate-400">
-              {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
-            </span>
+            <>
+              <span className="hidden text-white/15 sm:inline">·</span>
+              <span>{countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s to ignition</span>
+            </>
+          )}
+          {effectiveStatus === 'active' && (
+            <>
+              <span className="hidden text-white/15 sm:inline">·</span>
+              <span>Day {Math.max(1, progress.day)} · Current open</span>
+            </>
           )}
         </div>
 
-        <section aria-label="Loop One living system" className="relative mt-4 overflow-hidden rounded-2xl border border-white/10 bg-black/15 p-3 backdrop-blur-sm">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(56,189,248,.06),rgba(251,146,60,.07),rgba(34,211,238,.05))]" />
-          <div className="relative grid gap-2 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-stretch">
+        <section aria-label="Burning River current" className="relative min-h-[22rem] overflow-hidden border-b border-white/8 px-4 py-8 sm:px-6 lg:px-8">
+          <div className="pointer-events-none absolute left-[5%] right-[5%] top-1/2 h-24 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,247,237,.13),rgba(249,115,22,.12)_22%,rgba(239,68,68,.07)_42%,rgba(56,189,248,.06)_58%,transparent_76%)] blur-2xl" />
+          <div className="pointer-events-none absolute left-[8%] right-[8%] top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-sky-200/30 via-40% to-orange-200/40 shadow-[0_0_28px_rgba(249,115,22,.28)]" />
+
+          <div className="relative grid min-h-[18rem] gap-8 md:grid-cols-3 md:items-center md:gap-5">
             {flow.map((state, index) => {
               const Icon = state.icon
               const active = effectiveStatus === 'active' && index === flowIndex
               return (
-                <div key={state.key} className="contents">
-                  <div className={`relative rounded-xl border p-3 transition-all duration-700 ${active ? 'border-white/25 bg-white/[0.08] shadow-[0_0_35px_rgba(125,211,252,.08)]' : 'border-white/[0.07] bg-white/[0.02]'}`}>
-                    <div className="flex items-center gap-2">
-                      <Icon className={`h-4 w-4 ${state.key === 'fire' ? 'text-orange-300' : state.key === 'water' ? 'text-cyan-300' : 'text-sky-200'}`} />
-                      <p className="text-[8px] font-black uppercase tracking-[0.18em] text-white/75">{state.label}</p>
-                    </div>
-                    <p className="mt-2 text-[10px] leading-4 text-slate-400">{state.detail}</p>
-                    {active && <div className="mt-2 h-px animate-pulse bg-gradient-to-r from-transparent via-white/70 to-transparent" />}
+                <div
+                  key={state.key}
+                  data-weave-route-station
+                  data-loop-current={state.key}
+                  data-active={active ? 'true' : 'false'}
+                  className="group relative flex min-h-36 flex-col justify-center border-l border-white/8 pl-4 transition duration-700 md:border-l-0 md:border-t md:px-4 md:pt-5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`flex h-8 w-8 items-center justify-center rounded-full border ${
+                      active ? 'border-orange-200/50 bg-orange-300/12 shadow-[0_0_32px_rgba(249,115,22,.22)]' : 'border-white/10 bg-black/25'
+                    }`}>
+                      <Icon className={`h-4 w-4 ${state.key === 'fire' ? 'text-orange-200' : state.key === 'water' ? 'text-sky-200' : 'text-stone-200'}`} />
+                    </span>
+                    <p data-weave-live-word="station" className="text-[9px] font-black uppercase tracking-[.18em]">{state.label}</p>
                   </div>
-                  {index < flow.length - 1 && <div className="hidden items-center justify-center md:flex"><ArrowRight className="h-3.5 w-3.5 text-white/25" /></div>}
+                  <p className="mt-3 max-w-sm text-[11px] leading-5 text-stone-400">{state.detail}</p>
+                  <span className={`mt-4 h-px w-full origin-left bg-gradient-to-r from-orange-200/55 via-rose-300/20 to-transparent transition duration-700 ${active ? 'scale-x-100 opacity-100' : 'scale-x-50 opacity-30'}`} />
                 </div>
               )
             })}
           </div>
-          <div className="relative mt-2 flex items-center justify-center gap-2 text-[7px] font-black uppercase tracking-[0.18em] text-white/30">
+
+          <div className="relative mx-auto mt-3 flex max-w-3xl items-center justify-center gap-2 text-[7px] font-black uppercase tracking-[.2em] text-white/28">
             <span>Presence</span><ArrowRight className="h-3 w-3" /><span>Interaction</span><ArrowRight className="h-3 w-3" /><span>Record</span><ArrowRight className="h-3 w-3" /><span>Next movement</span>
           </div>
         </section>
 
-        <section id="your-position" className="mt-4 rounded-2xl border border-sky-300/20 bg-sky-400/[0.055] p-4">
-          <p className="text-[8px] font-black uppercase tracking-[0.22em] text-sky-300">Your Loop 1 Position</p>
-          <h2 className="mt-1.5 text-2xl font-black tracking-tight">{ROLE_LABELS[role]}</h2>
-          <h3 className="mt-2 text-sm font-bold leading-5 text-white">{position.headline}</h3>
-          <p className="mt-2 text-xs leading-5 text-slate-400">{position.purpose}</p>
+        <section id="your-position" className="grid border-b border-white/8 lg:grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)]">
+          <div className="border-b border-white/8 px-4 py-6 sm:px-6 lg:border-b-0 lg:border-r lg:px-8 lg:py-8">
+            <p className="text-[8px] font-black uppercase tracking-[.24em] text-orange-200">Your Loop 1 Position</p>
+            <h2 data-weave-live-word="title" className="mt-2 text-4xl font-black tracking-[-.04em] sm:text-5xl">{ROLE_LABELS[role]}</h2>
+            <h3 className="mt-3 max-w-md text-base font-black leading-6 text-white">{position.headline}</h3>
+            <p className="mt-3 max-w-xl text-xs leading-6 text-stone-400">{position.purpose}</p>
+          </div>
 
-          {context?.length ? (
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {context.map(item => (
-                <div key={item.label} className="min-w-0 rounded-xl border border-white/10 bg-black/20 p-3">
-                  <p className="text-[8px] uppercase tracking-[0.12em] text-slate-500">{item.label}</p>
-                  <p className="mt-1 truncate text-sm font-bold text-white">{item.value}</p>
+          <div className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <p className="text-[8px] font-black uppercase tracking-[.2em] text-white/35">Position State</p>
+            {context?.length ? (
+              <div className="mt-4 divide-y divide-white/8 border-y border-white/8">
+                {context.map(item => (
+                  <div key={item.label} className="flex items-center justify-between gap-4 py-3">
+                    <p className="text-[8px] font-bold uppercase tracking-[.14em] text-stone-500">{item.label}</p>
+                    <p className="min-w-0 truncate text-sm font-black text-white">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 text-xs leading-5 text-stone-500">Your event position is connected to the live WEAVE state.</p>
+            )}
+          </div>
+        </section>
+
+        <section className="border-b border-white/8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[8px] font-black uppercase tracking-[.22em] text-orange-200">River Bank · Functions</p>
+              <h2 className="mt-1 text-xl font-black text-white">What is available from your position</h2>
+            </div>
+            <p className="text-[8px] font-bold uppercase tracking-[.14em] text-white/25">Each station belongs to one Loop 1 current</p>
+          </div>
+
+          <div className="mt-5 grid border-y border-white/8 sm:grid-cols-2 lg:grid-cols-3">
+            {position.focus.map((item, index) => (
+              <div
+                key={item}
+                data-weave-route-station
+                className="group flex min-h-24 items-start gap-3 border-b border-white/8 px-1 py-4 sm:px-4 sm:[&:nth-last-child(-n+2)]:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
+              >
+                <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-200/80" />
+                <div>
+                  <p className="text-[8px] font-black uppercase tracking-[.15em] text-white/25">Station {String(index + 1).padStart(2, '0')}</p>
+                  <p data-weave-live-word="station" className="mt-1 text-[11px] font-bold leading-5 text-stone-200">{item}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid border-b border-white/8 lg:grid-cols-[.72fr_1.28fr]">
+          <div className="border-b border-white/8 px-4 py-6 sm:px-6 lg:border-b-0 lg:border-r lg:px-8 lg:py-8">
+            <p className="text-[8px] font-black uppercase tracking-[.22em] text-rose-200">Movement Current</p>
+            <h2 className="mt-2 text-2xl font-black tracking-tight">Move from where you already are.</h2>
+            <p className="mt-3 text-xs leading-6 text-stone-400">
+              Loop 1 does not give every position the same task. The current changes according to what your position can actually carry.
+            </p>
+          </div>
+          <div className="px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+            <div className="divide-y divide-white/8">
+              {position.movement.map((item, index) => (
+                <div key={item} className="grid grid-cols-[2.5rem_1fr] gap-3 py-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full border border-orange-300/18 bg-orange-300/[.045] text-[9px] font-black text-orange-200">
+                    {index + 1}
+                  </div>
+                  <p className="pt-1 text-[11px] leading-5 text-stone-300">{item}</p>
                 </div>
               ))}
             </div>
-          ) : null}
-        </section>
-
-        <section className="mt-3 rounded-2xl border border-white/10 bg-black/22 p-4">
-          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Your Functions</p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {position.focus.map(item => (
-              <div key={item} className="flex min-h-16 items-start gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-3 text-[10px] font-semibold leading-4 text-slate-300">
-                <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-300" />
-                <span>{item}</span>
-              </div>
-            ))}
           </div>
         </section>
 
-        <section className="mt-3 rounded-2xl border border-white/10 bg-black/22 p-4">
-          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Your Movement</p>
-          <div className="mt-3 space-y-2">
-            {position.movement.map((item, index) => (
-              <div key={item} className="flex items-start gap-3 rounded-xl border border-white/8 bg-white/[0.02] p-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-sky-400/20 bg-sky-400/5 text-[9px] font-black text-sky-300">
-                  {index + 1}
-                </div>
-                <p className="pt-0.5 text-[11px] leading-5 text-slate-300">{item}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <div className="rounded-2xl border border-violet-400/15 bg-violet-400/[0.04] p-3.5">
-            <div className="flex items-center gap-2 text-violet-300">
+        <footer className="grid lg:grid-cols-2">
+          <div className="border-b border-white/8 px-4 py-5 sm:px-6 lg:border-b-0 lg:border-r lg:px-8">
+            <div className="flex items-center gap-2 text-violet-200">
               <Music2 className="h-3.5 w-3.5" />
-              <p className="text-[8px] font-black uppercase tracking-[0.16em]">WEAVE Live</p>
+              <p className="text-[8px] font-black uppercase tracking-[.18em]">WEAVE Live</p>
             </div>
-            <p className="mt-2 text-[10px] leading-4 text-slate-400">Live sound and Loop 1 announcements remain available while you operate from your own position.</p>
+            <p className="mt-2 text-[10px] leading-5 text-stone-400">Live sound and Loop 1 announcements remain part of the event current while you operate.</p>
           </div>
-          <div className="rounded-2xl border border-red-400/15 bg-red-400/[0.04] p-3.5">
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-red-300">Administration Notice</p>
-            <p className="mt-2 text-[10px] leading-4 text-slate-400">{event.announcement}</p>
+          <div className="px-4 py-5 sm:px-6 lg:px-8">
+            <p className="text-[8px] font-black uppercase tracking-[.18em] text-orange-200">Administration Signal</p>
+            <p className="mt-2 text-[10px] leading-5 text-stone-400">{event.announcement}</p>
           </div>
-        </div>
+        </footer>
 
-        <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/5">
-          <div className="h-full rounded-full bg-gradient-to-r from-red-400 via-white to-blue-400 transition-all" style={{ width: `${progress.percent}%` }} />
+        <div className="h-1 bg-white/5">
+          <div
+            className="h-full bg-gradient-to-r from-sky-300/70 via-white/80 to-orange-300/80 transition-all duration-700"
+            style={{ width: `${progress.percent}%` }}
+          />
         </div>
       </div>
     </section>

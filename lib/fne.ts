@@ -82,7 +82,7 @@ function isUniqueViolation(error: any) {
     String(error?.message || '').toLowerCase().includes('unique constraint')
 }
 
-export async function generateFileNumber(bridgerId: string, identityData: IdentityData) {
+export async function generateFileNumber(bridgerId: string | null, identityData: IdentityData) {
   const ready = await ensureFneTables()
   if (!ready) throw new Error('File Number Engine is unavailable')
 

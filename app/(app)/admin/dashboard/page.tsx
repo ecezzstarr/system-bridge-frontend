@@ -161,7 +161,7 @@ export default function AdminTerminal() {
           <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400 mb-1">
             The Keeping
           </h1>
-          <p className="text-slate-400 text-sm">Ecosystem Authority: {user.name}</p>
+          <p className="text-slate-400 text-sm">Administration · {user.name}</p>
         </div>
       </div>
 
@@ -318,7 +318,7 @@ function AdminWorkshopsSection() {
   const workshops = [
     {
       title: 'Developer Workshop',
-      desc: 'System refinement layer for ecosystem operators. Build and refine origin systems.',
+      desc: 'System refinement layer for Administration. Build and refine origin systems.',
       icon: <Code className="h-10 w-10 text-purple-400" />,
       link: '/admin/workshop',
       tags: ['NEXT.JS 16', 'POSTGRES', 'GCLOUD'],
@@ -326,10 +326,10 @@ function AdminWorkshopsSection() {
     },
     {
       title: 'Authority Workshops',
-      desc: 'Define and govern the core protocols and permissions of the WEAVE ecosystem.',
+      desc: 'Define and govern the core rules, permissions and authority of WEAVE.',
       icon: <Database className="h-10 w-10 text-emerald-400" />,
       link: '/admin/workshop',
-      tags: ['PROTOCOL', 'GOVERNANCE', 'KEYS'],
+      tags: ['AUTHORITY', 'GOVERNANCE', 'KEYS'],
       color: 'from-emerald-500 to-teal-500'
     },
     {
@@ -370,7 +370,7 @@ function AdminWorkshopsSection() {
   return (
     <div className="space-y-6">
       <div className="p-4 bg-slate-900/60 rounded-xl border border-purple-900/30 backdrop-blur-sm">
-        <p className="text-xs text-purple-400 mb-3 font-bold uppercase tracking-wider">Navigate Ecosystem</p>
+        <p className="text-xs text-purple-400 mb-3 font-bold uppercase tracking-wider">Navigate WEAVE</p>
         <EcosystemNav currentSystem="dashboard" />
       </div>
 
@@ -1470,7 +1470,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
     }
   }
 
-  const verifyDeposit = async (depositId: string, status: 'approved' | 'rejected') => {
+  const verifyDeposit = async (depositId: string, status: 'approved' | 'rejected', source?: string) => {
     setProcessingId(depositId)
     try {
       const token = localStorage.getItem('ssb_auth_token')
@@ -1480,7 +1480,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ depositId, status }),
+        body: JSON.stringify({ depositId, status, source }),
       })
       const data = await response.json()
       if (data.success) {
@@ -1499,7 +1499,8 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
 
   return (
     <div className="p-4">
-      <h3 className="font-bold text-white mb-4">Pending Bridge AI Deposits</h3>
+      <h3 className="font-bold text-white mb-1">Pending File Folder Crossings</h3>
+      <p className="mb-4 text-[10px] leading-5 text-slate-500">One Administration verification point for Bridger Bridge deposits and direct Bridge Radiance prospect purchases.</p>
 
       {loading ? (
         <p className="text-slate-500 text-center py-8 text-xs">Loading deposits...</p>
@@ -1513,13 +1514,15 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
                 <div className="flex-1">
                   <p className="font-semibold text-white text-sm">{deposit.prospect_name} <span className="text-slate-500 font-normal">({deposit.prospect_phone})</span></p>
                   <p className="text-[10px] text-slate-400 mt-1">
-                    {Number(deposit.tier_trx).toLocaleString()} TRX · via {deposit.bridger_name}'s Bridge AI (/bridge/{deposit.bridge_code})
+                    {Number(deposit.tier_trx).toLocaleString()} TRX · {deposit.source === 'file_folder_purchase'
+                      ? `Bridge Radiance purchase${deposit.bridge_code ? ` · /bridge/${deposit.bridge_code}` : ''}`
+                      : `via ${deposit.bridger_name || 'Bridger'}'s Bridge AI${deposit.bridge_code ? ` · /bridge/${deposit.bridge_code}` : ''}`}
                   </p>
                   <p className="text-[10px] text-slate-500 mt-1">
                     {new Date(deposit.created_at).toLocaleString()}
                   </p>
                 </div>
-                <span className="text-[10px] font-semibold text-yellow-400 uppercase">{deposit.status}</span>
+                <span className="text-[10px] font-semibold text-yellow-400 uppercase">{deposit.status === 'pending_admin_confirmation' ? 'awaiting verification' : deposit.status}</span>
               </div>
               {deposit.tx_hash && (
                 <div className="mt-2 p-2 bg-slate-900/50 rounded border border-slate-700">
@@ -1531,7 +1534,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
                 <Button
                   size="sm"
                   disabled={processingId === deposit.id}
-                  onClick={() => verifyDeposit(deposit.id, 'approved')}
+                  onClick={() => verifyDeposit(deposit.id, 'approved', deposit.source)}
                   className="bg-green-600 hover:bg-green-700 h-8 text-xs"
                 >
                   {processingId === deposit.id ? 'Processing...' : 'Approve & Issue File Number'}
@@ -1539,7 +1542,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
                 <Button
                   size="sm"
                   disabled={processingId === deposit.id}
-                  onClick={() => verifyDeposit(deposit.id, 'rejected')}
+                  onClick={() => verifyDeposit(deposit.id, 'rejected', deposit.source)}
                   className="bg-red-600 hover:bg-red-700 h-8 text-xs"
                 >
                   Reject
@@ -1755,7 +1758,7 @@ function ClientMessagesPreview() {
         <p className="text-xs text-slate-500 mt-1">Manage support tickets and direct messages from platform clients.</p>
       </div>
       <Link href="/admin/client-messages">
-        <Button className="bg-cyan-600 hover:bg-cyan-700 text-xs">Open Messages Terminal</Button>
+        <Button className="bg-cyan-600 hover:bg-cyan-700 text-xs">Open Message Hub</Button>
       </Link>
     </div>
   )

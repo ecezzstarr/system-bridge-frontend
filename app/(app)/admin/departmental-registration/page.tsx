@@ -271,7 +271,7 @@ export default function DepartmentalRegistrationAdmin() {
         <div>
           <div className="flex items-center gap-2 text-slate-500 mb-2">
             <Link href="/admin/dashboard" className="hover:text-white transition-colors flex items-center gap-1">
-              <ArrowLeft className="h-3 w-3" /> Terminal
+              <ArrowLeft className="h-3 w-3" /> Administration
             </Link>
             <span>{'/'}</span>
             <span className="text-slate-300">Departmental Registration</span>

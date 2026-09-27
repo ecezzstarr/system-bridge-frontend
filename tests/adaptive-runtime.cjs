@@ -104,7 +104,7 @@ async function readiness(){
   h.sandbox.MutationObserver=class{observe(){observed++}disconnect(){observed--}}
   const noop={}
   const {waitForEnvironmentReadiness}=h.load('components/world/weave-environment-transit.tsx',{
-    react:noop,'react/jsx-runtime':noop,'next/navigation':noop,'lucide-react':noop,'@/lib/weave-environments':noop,'@/components/world/use-environment-runtime-config':noop,'@/lib/weave-system-map':{WEAVE_SYSTEM_MAP:{identity:{publicDescription:'WEAVE'}}},'@/lib/visible-poll':noop,'./use-adaptive-runtime':noop,
+    react:noop,'react/jsx-runtime':noop,'next/navigation':noop,'lucide-react':noop,'@/lib/weave-environments':noop,'@/components/world/use-environment-runtime-config':noop,'@/lib/weave-system-map':{WEAVE_SYSTEM_MAP:{identity:{publicDescription:'WEAVE'}}},'@/lib/weave-event':{FLAME_EVENT:{},resolveEventStatus:()=> 'planned'},'@/lib/visible-poll':noop,'./use-adaptive-runtime':noop,
   })
   const config={loading:{maxWaitMs:15000,bootMinMs:10000,transitMinMs:5000,settleQuietMs:2000,waitForFonts:true,waitForImages:true}}
   let done=false

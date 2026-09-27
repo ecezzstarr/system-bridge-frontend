@@ -4,11 +4,13 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Float, Html } from '@react-three/drei'
 import { useState } from 'react'
 import { FlameEventArtifact3D } from '@/components/events/flame-event-artifact'
+import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 const positions = [
   { id: 'mandate', name: 'MANDATE', color: '#f59e0b', x: -4 },
   { id: 'attorney', name: 'ATTORNEY', color: '#38bdf8', x: 4 },
-  { id: 'forensic', name: 'FORENSIC', color: '#a78bfa', x: -4 },
+  { id: 'forensic', name: 'FORENSICS', color: '#a78bfa', x: -4 },
   { id: 'administration', name: 'ADMINISTRATION', color: '#f472b6', x: 4 },
 ]
 
@@ -64,6 +66,8 @@ function Scene({ active, onSelect }: { active: string | null; onSelect: (id: str
 export default function BridgeRadianceWorld({ fileNumber, onCrossingRequest, initialMovement, flameName, topic }: { fileNumber?: string | null; onCrossingRequest?: () => void; initialMovement?: string | null; flameName?: string | null; topic?: string | null }) {
   const [active, setActive] = useState<string | null>(null)
   const [movements, setMovements] = useState(0)
+  const flameStatus = resolveEventStatus(FLAME_EVENT, new Date())
+  const flameLive = flameStatus === 'active'
 
   const select = (id: string) => {
     setActive(id)
@@ -71,34 +75,40 @@ export default function BridgeRadianceWorld({ fileNumber, onCrossingRequest, ini
   }
 
   return (
-    <section className="relative min-h-[720px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#02040a] text-white">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-6">
+    <section className="relative min-h-[720px] overflow-hidden border-y border-orange-200/15 bg-[#02040a] text-white" data-bridge-radiance-environment="flame-event-crossing">
+      <div className="pointer-events-none absolute inset-x-[6%] bottom-[17%] z-[5] h-24 -rotate-[2deg] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,247,237,.13),rgba(249,115,22,.15)_24%,rgba(239,68,68,.08)_44%,rgba(56,189,248,.07)_58%,transparent_76%)] blur-2xl" />
+      <div className="pointer-events-none absolute inset-x-[9%] bottom-[23%] z-[6] h-px -rotate-[2deg] bg-gradient-to-r from-transparent via-sky-200/30 via-45% to-orange-200/55 shadow-[0_0_30px_rgba(249,115,22,.3)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-4 p-6">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300/80">The Weave of Presence</p>
-          <h1 className="mt-2 text-3xl font-semibold">BRIDGE RADIANCE</h1>
-          <p className="mt-1 text-sm text-slate-400">Bridge · Prospect movement toward Client formation</p>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-white/45">Topic · {topic || 'Interaction in Motion'}</p>
+          <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.24em] text-orange-200">
+            <span>{WEAVE_WRITING.bridgeRadiance.event}</span>
+          </div>
+          <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.18em] text-rose-100/50">{WEAVE_WRITING.bridgeRadiance.eventName} · {flameLive ? 'LIVE' : flameStatus === 'planned' ? 'PREPARING' : 'CLOSED'}</p>
+          <p className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-sky-300/80">{WEAVE_WRITING.identity.institution}</p>
+          <h1 data-weave-live-word="title" className="mt-2 text-3xl font-black">{WEAVE_WRITING.bridgeRadiance.eyebrow}</h1>
+          <p className="mt-1 max-w-xl text-sm font-semibold text-slate-300">{WEAVE_WRITING.bridgeRadiance.title}</p>
+          <p className="mt-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/45">{WEAVE_WRITING.bridgeRadiance.position} · {WEAVE_WRITING.bridgeRadiance.topic}: {topic || WEAVE_WRITING.identity.movement}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-right backdrop-blur">
           <p className="text-[9px] uppercase tracking-[0.25em] text-slate-500">File Number</p>
-          <p className="mt-1 font-mono text-sm">{fileNumber || 'Awaiting recognition'}</p>
+          <p className="mt-1 font-mono text-sm">{fileNumber || WEAVE_WRITING.bridgeRadiance.fileNumberPending}</p>
         </div>
       </div>
       <div className="absolute inset-0"><Scene active={active} onSelect={select} /></div>
       <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/80 to-transparent px-6 pb-6 pt-28">
         {initialMovement ? (
           <div className="mb-4 max-w-2xl rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4 backdrop-blur">
-            <p className="text-[9px] uppercase tracking-[0.25em] text-sky-300">Bridge arrived · Prospect + {flameName || 'Flame'}</p>
+            <p className="text-[9px] uppercase tracking-[0.25em] text-sky-300">{WEAVE_WRITING.bridgeRadiance.arrival} · Prospect + {flameName || 'Flame'}</p>
             <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">{initialMovement}</p>
           </div>
         ) : null}
-        <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">Test Movement · {movements}</p>
+        <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">{WEAVE_WRITING.bridgeRadiance.movementCount} · {movements}</p>
         <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-xl font-medium">Your movement is forming a Client path.</h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Your interaction continues here in Bridge Radiance. Encounter the company positions as the Prospect movement becomes clear enough to form a File Folder and later enter System Switch as a Client.</p>
+            <h2 data-weave-live-word="title" className="text-xl font-black">{WEAVE_WRITING.bridgeRadiance.title}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{WEAVE_WRITING.bridgeRadiance.detail}</p>
           </div>
-          <button type="button" disabled={!active} onClick={onCrossingRequest} className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] disabled:opacity-30">Approach Recognition</button>
+          <button type="button" disabled={!active} onClick={onCrossingRequest} className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] disabled:opacity-30">{WEAVE_WRITING.bridgeRadiance.action}</button>
         </div>
       </div>
     </section>

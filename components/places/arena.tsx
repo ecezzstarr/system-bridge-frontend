@@ -126,7 +126,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
               <Swords className="h-6 w-6 text-yellow-500" />
               ARENA
             </h1>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Ecosystem Combat & Predictions</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Shared Contest · Participant Movement</p>
           </div>
           <div className="flex gap-2">
             {user?.role === 'admin' && (

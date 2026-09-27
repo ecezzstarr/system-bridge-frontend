@@ -20,6 +20,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-provider'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { WeaveLogo } from '@/components/weave-logo'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 export default function ClientLoginPage() {
   const router = useRouter()
@@ -68,7 +69,7 @@ export default function ClientLoginPage() {
         <WeaveLogo size="lg" className="mb-4" />
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 shadow-sm shadow-blue-500/10">
           <KeyRound className="h-3 w-3" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Authorized Client Access</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">{WEAVE_WRITING.clientAccess.loginEyebrow}</span>
         </div>
         <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Interaction in Motion</p>
       </div>
@@ -77,16 +78,16 @@ export default function ClientLoginPage() {
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-xl font-bold text-white uppercase tracking-tight flex items-center justify-center gap-2">
             <ShieldCheck className="h-5 w-5 text-blue-500" />
-            Client Portal
+            {WEAVE_WRITING.clientAccess.loginTitle}
           </CardTitle>
           <CardDescription className="text-xs font-medium text-slate-400">
-            Sign in using your issued WEAVE File Number.
+            {WEAVE_WRITING.clientAccess.loginDetail}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">File Number Identifier</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{WEAVE_WRITING.clientAccess.fileNumber}</label>
               <div className="relative group">
                 <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <Input
@@ -100,7 +101,7 @@ export default function ClientLoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Secure Passkey</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{WEAVE_WRITING.clientAccess.password}</label>
               <div className="relative group">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <Input
@@ -127,7 +128,7 @@ export default function ClientLoginPage() {
               ) : (
                 <>
                   <LogIn className="mr-2 h-4 w-4" />
-                  Initiate Session
+                  {WEAVE_WRITING.clientAccess.loginAction}
                 </>
               )}
             </Button>
@@ -135,10 +136,10 @@ export default function ClientLoginPage() {
 
           <div className="mt-8 text-center border-t border-slate-800 pt-6">
             <p className="text-xs text-slate-500 font-medium">
-              Don't have an account yet?
+              Have an issued File Number but no Client position yet?
             </p>
             <Link href="/client/register" className="inline-block mt-2 text-blue-400 font-bold hover:text-blue-300 text-sm tracking-tight transition-colors">
-              Register with your File Number
+              {WEAVE_WRITING.clientAccess.registerAction}
             </Link>
           </div>
         </CardContent>
