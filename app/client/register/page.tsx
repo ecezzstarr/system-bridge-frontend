@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-provider'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 function ClientRegisterContent() {
   const router = useRouter()
@@ -40,7 +41,7 @@ function ClientRegisterContent() {
     if (!fn) return
     setIsLoading(true)
     try {
-      const valRes = await fetch(`/api/client/weave-validate?fileNumber=${fn}`)
+      const valRes = await fetchWithTimeout(`/api/client/weave-validate?fileNumber=${fn}`)
       const result = await valRes.json()
 
       if (result.success) {
@@ -81,7 +82,7 @@ function ClientRegisterContent() {
 
     setIsLoading(true)
     try {
-      const res = await fetch('/api/client/weave-register', {
+      const res = await fetchWithTimeout('/api/client/weave-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
