@@ -90,25 +90,40 @@ export async function ensureBridgerNumberPosition(client: { query: (query:string
   )).rows[0]
   if(!user || user.role!=='bridger' || !user.is_active) return {ok:false as const,error:'An active Bridger position is required'}
 
-  let profile=(await client.query(
-    `SELECT status FROM bridger_profiles WHERE user_id=$1::uuid ORDER BY updated_at DESC NULLS LAST LIMIT 1`,
+  let profiles=(await client.query(
+    `SELECT id,status
+     FROM bridger_profiles
+     WHERE user_id=$1::uuid
+     ORDER BY CASE WHEN status='active' THEN 0 WHEN status='suspended' THEN 2 ELSE 1 END,
+              updated_at DESC NULLS LAST`,
     [userId],
-  )).rows[0]
+  )).rows
 
-  if(!profile){
+  if(profiles.length===0){
     await client.query(
       `INSERT INTO bridger_profiles (user_id,commission_rate,status)
        VALUES ($1::uuid,0.50,'active')`,
       [userId],
     )
-    profile=(await client.query(
-      `SELECT status FROM bridger_profiles WHERE user_id=$1::uuid ORDER BY updated_at DESC NULLS LAST LIMIT 1`,
-      [userId],
-    )).rows[0]
+    profiles=[{status:'active'}]
   }
 
-  if(profile?.status!=='active') return {ok:false as const,error:'Your Bridger position is not active'}
-  return {ok:true as const}
+  if(profiles.some(profile=>profile.status==='active')) return {ok:true as const}
+
+  const current=profiles[0]
+  if(current?.status==='suspended'){
+    return {ok:false as const,error:'Your Bridger position is suspended'}
+  }
+
+  if(current?.id){
+    await client.query(
+      `UPDATE bridger_profiles SET status='active',updated_at=NOW() WHERE id=$1::uuid`,
+      [current.id],
+    )
+    return {ok:true as const}
+  }
+
+  return {ok:false as const,error:'Your Bridger position could not be confirmed'}
 }
 
 export async function ensurePrimaryWallet(client: { query: (query:string,values?:unknown[])=>Promise<{rows:any[]}> }, userId:string) {
