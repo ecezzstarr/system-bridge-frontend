@@ -220,7 +220,7 @@ function RegisterContent() {
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 space-y-2">
             <p className="text-sm text-amber-200 font-semibold">WEAVE is a company platform.</p>
             <p className="text-sm text-slate-300">
-              Most services on this platform are paid. As {formData.role === 'agent' ? 'an Agent' : 'a Bridger'}, you are joining as a representative of the WEAVE ecosystem, not a free client account.
+              Most services on this platform are paid. As {formData.role === 'agent' ? 'an Agent' : 'a Bridger'}, you are entering an authorized WEAVE position, not a Client position.
             </p>
           </div>
           <ul className="text-sm text-slate-400 space-y-2">
