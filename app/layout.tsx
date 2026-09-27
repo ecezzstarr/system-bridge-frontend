@@ -10,6 +10,7 @@ import { WeaveWorldEnvironment } from '@/components/world/weave-world-environmen
 import { InteractionMotionLayer } from '@/components/world/interaction-motion-layer'
 import { DivineShieldGate } from '@/components/divine-shield-gate'
 import { WeaveEnvironmentTransit } from '@/components/world/weave-environment-transit'
+import { WeavePresenceAmbience } from '@/components/world/weave-presence-ambience'
 
 export const metadata: Metadata = {
   metadataBase: new URL(WEAVE_PUBLIC_ORIGIN),
@@ -50,6 +51,7 @@ export default function RootLayout({
               <WeaveEnvironmentTransit>
                 <DivineShieldGate>
                   <PresenceCameraRootViewport>{children}</PresenceCameraRootViewport>
+                  <WeavePresenceAmbience />
                   <DJBroadcastPlayer />
                 </DivineShieldGate>
               </WeaveEnvironmentTransit>
