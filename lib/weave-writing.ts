@@ -1,3 +1,40 @@
+export const WEAVE_WRITING_STYLE = {
+  cadence: ['Place', 'Movement', 'State', 'Action', 'Continuation'],
+  canonicalTerms: [
+    'WEAVE',
+    'The Weave of Presence',
+    'System Switch',
+    'Bridge Radiance',
+    'Interaction in Motion',
+    'Prospect',
+    'Client',
+    'Agent',
+    'Bridger',
+    'Administration',
+    'Attorney',
+    'Mandate',
+    'Forensics',
+    'File Folder',
+    'File Number',
+    'Operating Room',
+    'movement',
+    'position',
+    'function',
+    'environment',
+    'record',
+    'value',
+    'continuation',
+  ],
+  rules: [
+    'Name the place before explaining it.',
+    'Describe what is moving, not what the interface resembles.',
+    'State the current condition before the available action.',
+    'Use direct verbs for actions.',
+    'Keep institutional terms stable across roles and routes.',
+    'Reserve technical words such as terminal and protocol for actual technical functions.',
+  ],
+} as const
+
 export const WEAVE_WRITING = {
   identity: {
     institution: 'The Weave of Presence',
