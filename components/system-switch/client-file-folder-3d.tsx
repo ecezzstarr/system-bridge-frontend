@@ -4,6 +4,7 @@ import { useMemo,useRef } from 'react'
 import { Canvas,useFrame } from '@react-three/fiber'
 import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
 import * as THREE from 'three'
+import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
 type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber'|'rose'}
@@ -160,7 +161,7 @@ function SoundPavilion({active}:{active:boolean}){
   </group>
 }
 
-function ConstructionYard({activeBuilds}:{activeBuilds:ActiveBuild[]}){
+function ConstructionYard({activeBuilds,emergence}:{activeBuilds:ActiveBuild[];emergence:number}){
   const shown=activeBuilds.slice(0,4)
   return <group>
     <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[3.5,.16,2.85]}/><meshStandardMaterial color="#2b241d" roughness={.92}/></mesh>
@@ -174,7 +175,7 @@ function ConstructionYard({activeBuilds}:{activeBuilds:ActiveBuild[]}){
       const row=Math.floor(index/2)
       const x=-.8+col*1.6
       const z=-.6+row*1.2
-      return <ConstructionSite key={build.id||index} build={build} position={[x,.15,z]}/>
+      return <ConstructionSite key={build.id||index} build={build} position={[x,.15,z]} emergence={emergence}/>
     })}
   </group>
 }
@@ -202,17 +203,27 @@ function Crane({height=2.6}:{height?:number}){
   </group>
 }
 
-function ConstructionSite({build,position}:{build:ActiveBuild;position:[number,number,number]}){
+function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position:[number,number,number];emergence:number}){
+  const pulse=useRef<THREE.MeshBasicMaterial>(null)
   const progress=Math.max(0,Math.min(100,build.progress||0))
   const phase=progress<15?'FOUNDATION':progress<42?'FRAME':progress<70?'STRUCTURE':progress<92?'INTEGRATION':'COMMISSIONING'
   const height=.28+(progress/100)*1.75
   const walls=progress>=42
   const roof=progress>=78
+  useFrame(({clock})=>{
+    if(!pulse.current)return
+    const wave=.35+Math.sin(clock.getElapsedTime()*2.1+progress*.03)*.18
+    pulse.current.opacity=Math.max(.04,wave*Math.min(1.4,emergence)*(.35+progress/160))
+  })
   return <group position={position}>
     <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#514032" roughness={.86}/></mesh>
     {progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#8b6945" metalness={.35} roughness={.5}/></mesh>))}
     {walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#4b3a2c" transparent opacity={.68} roughness={.66}/></mesh>}
     {roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#765234" roughness={.5} metalness={.16}/></mesh>}
+    <mesh position={[0,.09,0]} rotation={[-Math.PI/2,0,0]}>
+      <ringGeometry args={[.58,.72,32]}/>
+      <meshBasicMaterial ref={pulse} color="#f59e0b" transparent opacity={.12}/>
+    </mesh>
     {progress < 96 && (
       <ScaffoldEnvelope width={1.22} depth={.94} height={Math.max(.55,height+.28)} progress={progress}/>
     )}
@@ -223,13 +234,13 @@ function ConstructionSite({build,position}:{build:ActiveBuild;position:[number,n
   </group>
 }
 
-function LiveBuilding({system,index,total}:{system:LiveSystem;index:number;total:number}){
+function LiveBuilding({system,index,total,emergence}:{system:LiveSystem;index:number;total:number;emergence:number}){
   const angle=(index/Math.max(1,total))*Math.PI*2
   const radius=7.05+(index%2)*.42
   const x=Math.cos(angle)*radius
   const z=Math.sin(angle)*radius
   const type=String(system.systemType||'')
-  const activity=.16+Math.min(.28,Number(system.activity||0)/36)
+  const activity=(.16+Math.min(.28,Number(system.activity||0)/36))*(.55+Math.min(1.45,emergence)*.45)
   const isMarket=/customer|commerce|marketplace|payment/.test(type)
   const isMedia=/creator|broadcast|stream|media/.test(type)
   const isEnterprise=/enterprise|operations_command|treasury|distribution/.test(type)
@@ -289,7 +300,7 @@ function StreamingTower({level}:{level:number}){
   </group>
 }
 
-function RouteNetwork({count,vitality}:{count:number;vitality:number}){
+function RouteNetwork({count,vitality,currentStrength}:{count:number;vitality:number;currentStrength:number}){
   if(count<=0)return null
   const visible=Math.min(8,count)
   return <group>
@@ -301,7 +312,7 @@ function RouteNetwork({count,vitality}:{count:number;vitality:number}){
       const length=Math.sqrt(x*x+z*z)
       const rotation=Math.atan2(x,z)
       return <group key={index}>
-        <mesh position={[x/2,-.13,z/2]} rotation={[0,rotation,0]}><boxGeometry args={[.13,.025,length]}/><meshStandardMaterial color="#355e60" emissive="#22d3ee" emissiveIntensity={.04+Math.min(.12,vitality/700)} roughness={.7}/></mesh>
+        <mesh position={[x/2,-.13,z/2]} rotation={[0,rotation,0]}><boxGeometry args={[.13,.025,length]}/><meshStandardMaterial color="#355e60" emissive="#22d3ee" emissiveIntensity={(.04+Math.min(.12,vitality/700))*(.5+currentStrength*.5)} roughness={.7}/></mesh>
         <mesh position={[x,.1,z]}><cylinderGeometry args={[.12,.15,.2,12]}/><meshStandardMaterial color="#496b69" emissive="#67e8f9" emissiveIntensity={.08}/></mesh>
       </group>
     })}
@@ -309,7 +320,7 @@ function RouteNetwork({count,vitality}:{count:number;vitality:number}){
 }
 
 function DistrictPlot({
-  district,active,onSelect,marketLevel,marketBuildProgress,enterpriseLevel,activeBuilds,
+  district,active,onSelect,marketLevel,marketBuildProgress,enterpriseLevel,activeBuilds,emergence,
 }:{
   district:District
   active:boolean
@@ -318,6 +329,7 @@ function DistrictPlot({
   marketBuildProgress:number
   enterpriseLevel:number
   activeBuilds:ActiveBuild[]
+  emergence:number
 }){
   const position=POSITIONS[district.key]
   const color=COLORS[district.tone]
@@ -334,7 +346,7 @@ function DistrictPlot({
   return <group position={position}>
     {clickable}
     {district.key==='command'&&<CommandHall active={active}/>}
-    {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds}/>}
+    {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence}/>} 
     {district.key==='business'&&<MarketDistrict level={marketLevel} buildProgress={marketBuildProgress} active={active}/>}
     {district.key==='enterprise'&&<EnterpriseKeep level={enterpriseLevel} active={active}/>}
     {district.key==='sound'&&<SoundPavilion active={active}/>}
@@ -371,7 +383,7 @@ function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,routeCount,vitalityScore,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,routeCount,vitalityScore,emergence,routeCurrent,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -384,6 +396,8 @@ function Scene({
   enterpriseLevel:number
   routeCount:number
   vitalityScore:number
+  emergence:number
+  routeCurrent:number
 }){
   return <>
     <color attach="background" args={['#17100b']}/>
@@ -408,11 +422,12 @@ function Scene({
       marketBuildProgress={marketBuildProgress}
       enterpriseLevel={enterpriseLevel}
       activeBuilds={activeBuilds}
+      emergence={emergence}
     />)}
 
-    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length}/>)}
+    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence}/>)}
     <StreamingTower level={streamLevel}/>
-    <RouteNetwork count={routeCount} vitality={vitalityScore}/>
+    <RouteNetwork count={routeCount} vitality={vitalityScore} currentStrength={routeCurrent}/>
 
     <FlameBeacon position={[-7.7,.02,-5.9]} scale={.55}/>
     <FlameBeacon position={[7.7,.02,-5.9]} scale={.55}/>
@@ -441,6 +456,10 @@ export function ClientFileFolder3D({
   routeCount?:number
   vitalityScore?:number
 }){
+  const {config:visualRuntime}=useVisualRuntime()
+  const emergence=Math.max(0,Math.min(2,visualRuntime.world.emergence))
+  const routeCurrent=Math.max(0,Math.min(2,visualRuntime.world.routeCurrent))
+
   const districts=useMemo<District[]>(()=>[
     {key:'command',label:'Command Hall',tone:'sky'},
     {key:'builds',label:'Construction Yard',tone:'violet'},
@@ -479,6 +498,8 @@ export function ClientFileFolder3D({
           enterpriseLevel={enterpriseLevel}
           routeCount={routeCount}
           vitalityScore={vitalityScore}
+          emergence={emergence}
+          routeCurrent={routeCurrent}
         />
       </Canvas>
     </div>
