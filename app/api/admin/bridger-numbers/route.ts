@@ -84,7 +84,7 @@ export async function POST(request:NextRequest){
   if(action==='upsert_offer'){
     const country=normalizeCountry(body.country)
     const price=Number(body.priceFlameCoin)
-    const deliveryMinutes=Math.max(5,Math.min(120,Number(body.deliveryMinutes)||BRIDGER_NUMBER_ORDER_DELIVERY_MINUTES))
+    const deliveryMinutes=BRIDGER_NUMBER_ORDER_DELIVERY_MINUTES
     if(!country) return NextResponse.json({error:'Country is required'},{status:400})
     if(!Number.isFinite(price)||price<=0) return NextResponse.json({error:'Enter a valid Bridger price in Flame Coin'},{status:400})
 
