@@ -21,7 +21,12 @@ async function waitForFonts(enabled:boolean,maxWaitMs:number){
 
 async function waitForImages(enabled:boolean,maxWaitMs:number){
   if(!enabled||typeof document==='undefined')return
-  const images=[...document.images].filter(image=>!image.complete)
+  const images=[...document.images].filter(image=>{
+    if(image.complete)return false
+    if(image.loading!=='lazy')return true
+    const rect=image.getBoundingClientRect()
+    return rect.top<window.innerHeight*1.5&&rect.bottom>-window.innerHeight*.5
+  })
   if(images.length===0)return
 
   const settle=Promise.all(images.map(image=>new Promise<void>(resolve=>{
