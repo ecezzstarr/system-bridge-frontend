@@ -1222,7 +1222,7 @@ assert.ok(numberBridgerSource.includes("action==='order_country'"),'Bridgers can
 assert.ok(numberBridgerSource.includes("gate:'stock_available'"),'Country ordering redirects Bridgers to instant purchase when stock is present')
 assert.ok(numberBridgerSource.includes("entry_type,'whatsapp_number_order'")||numberBridgerSource.includes("'whatsapp_number_order'"),'Country orders debit Flame Coin through the ledger')
 assert.ok(numberBridgerSource.includes("type:'bridger_number_order'"),'Country orders notify Administration for fulfillment')
-assert.ok(numberAdminSource.includes("action==='deliver_order'"),'Administration can deliver a timed number order through the engine')
+assert.ok(numberAdminSource.includes("'deliver_order'")&&numberAdminSource.includes("status='delivered'")&&numberAdminSource.includes('number_id=$2::uuid'),'Administration can deliver a timed number order through the engine')
 assert.ok(numberAdminSource.includes("action==='cancel_order'"),'Administration can cancel an unfulfilled number order')
 assert.ok(numberAdminSource.includes("'whatsapp_number_order_refund'"),'Cancelled number orders return Flame Coin through the ledger')
 assert.ok(numberAdminPage.includes('30-minute delivery dock'),'Administration has a dedicated timed number-order fulfillment dock')
