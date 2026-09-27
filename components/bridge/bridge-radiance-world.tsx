@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Float, Html } from '@react-three/drei'
 import { useState } from 'react'
 import { FlameEventArtifact3D } from '@/components/events/flame-event-artifact'
+import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
 
 const positions = [
   { id: 'mandate', name: 'MANDATE', color: '#f59e0b', x: -4 },
@@ -64,6 +65,8 @@ function Scene({ active, onSelect }: { active: string | null; onSelect: (id: str
 export default function BridgeRadianceWorld({ fileNumber, onCrossingRequest, initialMovement, flameName, topic }: { fileNumber?: string | null; onCrossingRequest?: () => void; initialMovement?: string | null; flameName?: string | null; topic?: string | null }) {
   const [active, setActive] = useState<string | null>(null)
   const [movements, setMovements] = useState(0)
+  const flameStatus = resolveEventStatus(FLAME_EVENT, new Date())
+  const flameLive = flameStatus === 'active'
 
   const select = (id: string) => {
     setActive(id)
@@ -71,12 +74,18 @@ export default function BridgeRadianceWorld({ fileNumber, onCrossingRequest, ini
   }
 
   return (
-    <section className="relative min-h-[720px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#02040a] text-white">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-6">
+    <section className="relative min-h-[720px] overflow-hidden border-y border-orange-200/15 bg-[#02040a] text-white" data-bridge-radiance-environment="flame-event-crossing">
+      <div className="pointer-events-none absolute inset-x-[6%] bottom-[17%] z-[5] h-24 -rotate-[2deg] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,247,237,.13),rgba(249,115,22,.15)_24%,rgba(239,68,68,.08)_44%,rgba(56,189,248,.07)_58%,transparent_76%)] blur-2xl" />
+      <div className="pointer-events-none absolute inset-x-[9%] bottom-[23%] z-[6] h-px -rotate-[2deg] bg-gradient-to-r from-transparent via-sky-200/30 via-45% to-orange-200/55 shadow-[0_0_30px_rgba(249,115,22,.3)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-4 p-6">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.35em] text-sky-300/80">The Weave of Presence</p>
-          <h1 className="mt-2 text-3xl font-semibold">BRIDGE RADIANCE</h1>
-          <p className="mt-1 text-sm text-slate-400">Bridge · Prospect movement toward Client formation</p>
+          <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.24em] text-orange-200">
+            <span>FLAME EVENT</span><span className="text-white/20">·</span><span>BURNING RIVER</span>
+          </div>
+          <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.18em] text-rose-100/50">The River that Burns · {flameLive ? 'LIVE' : flameStatus === 'planned' ? 'PREPARING' : 'CLOSED'}</p>
+          <p className="mt-3 text-[10px] uppercase tracking-[0.35em] text-sky-300/80">The Weave of Presence</p>
+          <h1 data-weave-live-word="title" className="mt-2 text-3xl font-black">BRIDGE RADIANCE</h1>
+          <p className="mt-1 text-sm text-slate-400">Bridge · Prospect → File Folder → Client → System Switch</p>
           <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-white/45">Topic · {topic || 'Interaction in Motion'}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-right backdrop-blur">
@@ -95,10 +104,10 @@ export default function BridgeRadianceWorld({ fileNumber, onCrossingRequest, ini
         <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">Test Movement · {movements}</p>
         <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-xl font-medium">Your movement is forming a Client path.</h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Your interaction continues here in Bridge Radiance. Encounter the company positions as the Prospect movement becomes clear enough to form a File Folder and later enter System Switch as a Client.</p>
+            <h2 className="text-xl font-black">Your movement is forming a Client path through the Burning River.</h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Bridge Radiance carries the Prospect toward recognition. Form the File Folder, let Administration verify the movement and issue the File Number, then cross as Client into System Switch.</p>
           </div>
-          <button type="button" disabled={!active} onClick={onCrossingRequest} className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] disabled:opacity-30">Approach Recognition</button>
+          <button type="button" disabled={!active} onClick={onCrossingRequest} className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] disabled:opacity-30">Approach File Folder</button>
         </div>
       </div>
     </section>
