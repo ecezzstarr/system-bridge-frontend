@@ -46,7 +46,7 @@ export async function GET(request:NextRequest){
           COUNT(*)::int AS stock_count,
           (ARRAY_AGG(n.price_flame_coin ORDER BY n.created_at ASC))[1] AS next_price
         FROM bridger_whatsapp_numbers n
-        WHERE LOWER(n.country)=LOWER(o.country)
+        WHERE LOWER(TRIM(n.country))=LOWER(TRIM(o.country))
           AND n.status='available'
           AND n.assigned_to IS NULL
       ) stock ON true
@@ -122,7 +122,7 @@ export async function POST(request:NextRequest){
       const offer=(await client.query(`
         SELECT country,price_flame_coin,delivery_minutes
         FROM bridger_number_country_offers
-        WHERE LOWER(country)=LOWER($1) AND enabled=true
+        WHERE LOWER(TRIM(country))=LOWER(TRIM($1)) AND enabled=true
         FOR UPDATE
       `,[country])).rows[0]
       if(!offer){
@@ -133,7 +133,7 @@ export async function POST(request:NextRequest){
       const stocked=(await client.query(`
         SELECT id
         FROM bridger_whatsapp_numbers
-        WHERE LOWER(country)=LOWER($1)
+        WHERE LOWER(TRIM(country))=LOWER(TRIM($1))
           AND status='available'
           AND assigned_to IS NULL
         ORDER BY created_at ASC
@@ -253,13 +253,14 @@ export async function POST(request:NextRequest){
         WHERE id=$1::uuid
           AND status='available'
           AND assigned_to IS NULL
+          AND price_flame_coin>0
         FOR UPDATE
       `,[numberId])).rows[0]
     }else{
       const offer=(await client.query(`
         SELECT country
         FROM bridger_number_country_offers
-        WHERE LOWER(country)=LOWER($1) AND enabled=true
+        WHERE LOWER(TRIM(country))=LOWER(TRIM($1)) AND enabled=true
         LIMIT 1
       `,[country])).rows[0]
       if(!offer){
@@ -269,7 +270,7 @@ export async function POST(request:NextRequest){
       number=(await client.query(`
         SELECT *
         FROM bridger_whatsapp_numbers
-        WHERE LOWER(country)=LOWER($1)
+        WHERE LOWER(TRIM(country))=LOWER(TRIM($1))
           AND status='available'
           AND assigned_to IS NULL
         ORDER BY created_at ASC
@@ -287,7 +288,23 @@ export async function POST(request:NextRequest){
     }
 
     const price=Number(number.price_flame_coin)
-    if(before<price){
+    if(!Number.isFinite(price)||price<=0){
+      await client.query('ROLLBACK')
+      return NextResponse.json({
+        error:'This stocked number does not have a valid Bridger purchase price. Administration must correct the stock price.',
+        gate:'invalid_stock_price',
+      },{status:409})
+    }
+
+    const debited=(await client.query(`
+      UPDATE wallets
+      SET balance_trx=balance_trx-$1,updated_at=NOW()
+      WHERE id=$2::uuid
+        AND balance_trx >= $1
+      RETURNING balance_trx
+    `,[price,wallet.id])).rows[0]
+
+    if(!debited){
       await client.query('ROLLBACK')
       return NextResponse.json({
         error:'Insufficient Flame Coin balance',
@@ -296,12 +313,7 @@ export async function POST(request:NextRequest){
       },{status:400})
     }
 
-    const after=before-price
-    await client.query(`
-      UPDATE wallets
-      SET balance_trx=$1,updated_at=NOW()
-      WHERE id=$2::uuid
-    `,[after,wallet.id])
+    const after=Number(debited.balance_trx)||0
 
     await client.query(`
       INSERT INTO ledger_entries(
@@ -322,26 +334,41 @@ export async function POST(request:NextRequest){
       UPDATE bridger_whatsapp_numbers
       SET status='assigned',assigned_to=$1::uuid,assigned_at=NOW(),updated_at=NOW()
       WHERE id=$2::uuid
+        AND status='available'
+        AND assigned_to IS NULL
       RETURNING *
     `,[user.id,number.id])).rows[0]
 
+    if(!assigned){
+      await client.query('ROLLBACK')
+      return NextResponse.json({
+        error:'That number changed state before assignment. Your Flame Coin was not charged. Refresh the Number Bay.',
+        gate:'stock_changed',
+      },{status:409})
+    }
+
     await client.query('COMMIT')
 
-    const receipt=await issueWeaveReceipt({
-      userId:user.id,
-      kind:'purchase',
-      source:'bridger_whatsapp_number',
-      sourceId:String(number.id),
-      amount:price,
-      currency:'Flame Coin',
-      status:'completed',
-      description:'Bridger WhatsApp business number assignment',
-      metadata:{
-        country:number.country,
-        product:'WEAVE Worldwide WhatsApp Number',
-        balanceAfter:after,
-      },
-    })
+    let receipt:any=null
+    try{
+      receipt=await issueWeaveReceipt({
+        userId:user.id,
+        kind:'purchase',
+        source:'bridger_whatsapp_number',
+        sourceId:String(number.id),
+        amount:price,
+        currency:'Flame Coin',
+        status:'completed',
+        description:'Bridger WhatsApp business number assignment',
+        metadata:{
+          country:number.country,
+          product:'WEAVE Worldwide WhatsApp Number',
+          balanceAfter:after,
+        },
+      })
+    }catch(receiptError){
+      console.error('[Bridger Number receipt after completed purchase]',receiptError)
+    }
 
     const publicNumber={
       id:assigned.id,
