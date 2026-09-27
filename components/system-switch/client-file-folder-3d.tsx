@@ -219,19 +219,58 @@ function ConstructionSite({build,position}:{build:ActiveBuild;position:[number,n
   </group>
 }
 
-function LiveBuilding({system,index}:{system:LiveSystem;index:number}){
-  const angle=(index/Math.max(1,8))*Math.PI*2
-  const radius=7.05+(index%2)*.34
+function LiveBuilding({system,index,total}:{system:LiveSystem;index:number;total:number}){
+  const angle=(index/Math.max(1,total))*Math.PI*2
+  const radius=7.05+(index%2)*.42
   const x=Math.cos(angle)*radius
   const z=Math.sin(angle)*radius
   const type=String(system.systemType||'')
-  const tall=/enterprise|operations|intelligence|media|network/.test(type)
-  const height=tall?1.9+(index%3)*.3:1.0+(index%3)*.22
+  const activity=.16+Math.min(.28,Number(system.activity||0)/36)
+  const isMarket=/customer|commerce|marketplace|payment/.test(type)
+  const isMedia=/creator|broadcast|stream|media/.test(type)
+  const isEnterprise=/enterprise|operations_command|treasury|distribution/.test(type)
+  const isIntelligence=/intelligence|research|ai_|data_room/.test(type)
+  const isNetwork=/route|integration|network/.test(type)
+
   return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]}>
-    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.0,.16,.86]}/><meshStandardMaterial color="#32261d" roughness={.86}/></mesh>
-    <mesh position={[0,height/2+.15,0]} castShadow><boxGeometry args={[.78,height,.64]}/><meshStandardMaterial color="#4d3b2d" roughness={.62} metalness={.12}/></mesh>
-    <mesh position={[0,.72,.34]}><boxGeometry args={[.4,.42,.04]}/><meshStandardMaterial color="#12221b" emissive="#34d399" emissiveIntensity={.22+Math.min(.24,Number(system.activity||0)/40)}/></mesh>
-    {tall&&<mesh position={[0,height+.44,0]}><coneGeometry args={[.34,.68,6]}/><meshStandardMaterial color="#6e4a2b" metalness={.3} roughness={.5}/></mesh>}
+    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial color="#32261d" roughness={.86}/></mesh>
+
+    {isMarket&&<group>
+      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.0,1.25,.72]}/><meshStandardMaterial color="#4d3b2d" roughness={.62}/></mesh>
+      <mesh position={[0,1.42,0]} castShadow><boxGeometry args={[1.12,.16,.82]}/><meshStandardMaterial color="#765234" metalness={.18} roughness={.48}/></mesh>
+      {[-.3,.3].map(v=><mesh key={v} position={[v,.68,.38]}><boxGeometry args={[.22,.42,.05]}/><meshStandardMaterial color="#14241b" emissive="#34d399" emissiveIntensity={activity}/></mesh>)}
+    </group>}
+
+    {isMedia&&<group>
+      <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.32,.5,1.9,10]}/><meshStandardMaterial color="#4a352d" roughness={.54} metalness={.2}/></mesh>
+      <mesh position={[0,2.12,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[.46,.045,10,40]}/><meshStandardMaterial color="#916b61" emissive="#fb7185" emissiveIntensity={activity}/></mesh>
+      <mesh position={[0,2.58,0]}><sphereGeometry args={[.12,14,14]}/><meshBasicMaterial color="#fda4af"/></mesh>
+    </group>}
+
+    {isEnterprise&&<group>
+      <mesh position={[0,1.15,0]} castShadow><cylinderGeometry args={[.48,.68,2.05,8]}/><meshStandardMaterial color="#533c28" roughness={.56} metalness={.18}/></mesh>
+      {[-.62,.62].map(v=><mesh key={v} position={[v,.7,0]} castShadow><cylinderGeometry args={[.14,.2,1.18,8]}/><meshStandardMaterial color="#65482d" roughness={.58}/></mesh>)}
+      <mesh position={[0,2.48,0]}><coneGeometry args={[.46,.76,8]}/><meshStandardMaterial color="#7a522e" metalness={.3} roughness={.45}/></mesh>
+      <pointLight position={[0,2.0,.45]} intensity={2.5} distance={2.4} color="#fbbf24"/>
+    </group>}
+
+    {isIntelligence&&<group>
+      <mesh position={[0,.72,0]} castShadow><cylinderGeometry args={[.64,.72,1.18,12]}/><meshStandardMaterial color="#403b36" roughness={.58} metalness={.2}/></mesh>
+      <mesh position={[0,1.48,0]} scale={[1,.62,1]}><sphereGeometry args={[.62,24,16,0,Math.PI*2,0,Math.PI/2]}/><meshStandardMaterial color="#433c43" emissive="#a78bfa" emissiveIntensity={activity*.55} roughness={.36}/></mesh>
+      <mesh position={[0,1.9,0]}><cylinderGeometry args={[.03,.03,.65,8]}/><meshStandardMaterial color="#bca8d8" metalness={.65} roughness={.3}/></mesh>
+    </group>}
+
+    {isNetwork&&<group>
+      <mesh position={[0,.58,0]} castShadow><boxGeometry args={[.9,.98,.72]}/><meshStandardMaterial color="#3d403b" roughness={.64}/></mesh>
+      <mesh position={[0,1.28,0]} rotation={[0,0,Math.PI/2]}><torusGeometry args={[.44,.08,10,30,Math.PI]}/><meshStandardMaterial color="#54706c" emissive="#22d3ee" emissiveIntensity={activity*.5}/></mesh>
+      <mesh position={[0,.6,.38]}><boxGeometry args={[.44,.24,.04]}/><meshStandardMaterial color="#122526" emissive="#67e8f9" emissiveIntensity={activity*.65}/></mesh>
+    </group>}
+
+    {!isMarket&&!isMedia&&!isEnterprise&&!isIntelligence&&!isNetwork&&<group>
+      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[.78,1.2,.64]}/><meshStandardMaterial color="#4d3b2d" roughness={.62} metalness={.12}/></mesh>
+      <mesh position={[0,.72,.34]}><boxGeometry args={[.4,.42,.04]}/><meshStandardMaterial color="#12221b" emissive="#34d399" emissiveIntensity={activity}/></mesh>
+      <mesh position={[0,1.55,0]}><coneGeometry args={[.3,.54,6]}/><meshStandardMaterial color="#6e4a2b" metalness={.28} roughness={.5}/></mesh>
+    </group>}
   </group>
 }
 
@@ -367,7 +406,7 @@ function Scene({
       activeBuilds={activeBuilds}
     />)}
 
-    {liveSystems.slice(0,8).map((system,index)=><LiveBuilding key={system.id||index} system={system} index={index}/>)}
+    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length}/>)}
     <StreamingTower level={streamLevel}/>
     <RouteNetwork count={routeCount} vitality={vitalityScore}/>
 
