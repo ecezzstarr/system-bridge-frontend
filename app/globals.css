@@ -940,6 +940,25 @@ html[data-weave-quality="0"] .weave-live-flame-core,
 html[data-weave-quality="0"] .weave-live-flame-heat {
   animation: none !important;
 }
+html[data-weave-covered="true"] .weave-live-flame-current,
+html[data-weave-covered="true"] .weave-live-flame-core,
+html[data-weave-covered="true"] .weave-live-flame-heat {
+  animation-play-state: paused !important;
+}
+
+html[data-weave-quality="1"] .weave-live-flame-current-b,
+html[data-weave-quality="1"] .weave-live-flame-heat {
+  display: none;
+}
+html[data-weave-quality="1"] .weave-live-flame-current-a {
+  filter: blur(48px);
+  animation-duration: 12s;
+}
+html[data-weave-quality="1"] .weave-live-flame-core {
+  filter: blur(10px);
+  animation-duration: 3.4s;
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   .weave-live-flame-current,
