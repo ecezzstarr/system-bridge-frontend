@@ -41,6 +41,7 @@ import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { ClientBuildPull } from '@/components/world/client-build-pull'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
+import { WeaveRouteNetwork, type WeaveRouteTone } from '@/components/world/weave-route-network'
 
 type Role = 'agent' | 'admin'
 
@@ -168,18 +169,18 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Flame Event · Loop 1', detail: 'Event-world control and opening movement.', href: '/admin/flame-event', icon: Zap, district: 'Atmosphere + communication' },
 ]
 
-const DISTRICT_TONE: Record<string, { card: string; icon: string; label: string }> = {
-  'Shared WEAVE': { card: 'border-sky-300/15 bg-sky-400/[0.045] hover:border-sky-300/30 hover:bg-sky-400/[0.075]', icon: 'text-sky-200', label: 'text-sky-300' },
-  'Bridger support': { card: 'border-emerald-300/15 bg-emerald-400/[0.04] hover:border-emerald-300/30 hover:bg-emerald-400/[0.07]', icon: 'text-emerald-200', label: 'text-emerald-300' },
-  'Work + livelihood': { card: 'border-amber-300/15 bg-amber-400/[0.04] hover:border-amber-300/30 hover:bg-amber-400/[0.07]', icon: 'text-amber-200', label: 'text-amber-300' },
-  'Client + company support': { card: 'border-cyan-300/15 bg-cyan-400/[0.04] hover:border-cyan-300/30 hover:bg-cyan-400/[0.07]', icon: 'text-cyan-200', label: 'text-cyan-300' },
-  'Record + value': { card: 'border-violet-300/15 bg-violet-400/[0.04] hover:border-violet-300/30 hover:bg-violet-400/[0.07]', icon: 'text-violet-200', label: 'text-violet-300' },
-  'Operations center': { card: 'border-violet-300/15 bg-violet-400/[0.04] hover:border-violet-300/30 hover:bg-violet-400/[0.07]', icon: 'text-violet-200', label: 'text-violet-300' },
-  'People + recognition': { card: 'border-emerald-300/15 bg-emerald-400/[0.04] hover:border-emerald-300/30 hover:bg-emerald-400/[0.07]', icon: 'text-emerald-200', label: 'text-emerald-300' },
-  'Client system': { card: 'border-amber-300/15 bg-amber-400/[0.04] hover:border-amber-300/30 hover:bg-amber-400/[0.07]', icon: 'text-amber-200', label: 'text-amber-300' },
-  'Bridge system': { card: 'border-sky-300/15 bg-sky-400/[0.04] hover:border-sky-300/30 hover:bg-sky-400/[0.07]', icon: 'text-sky-200', label: 'text-sky-300' },
-  'Institution + infrastructure': { card: 'border-cyan-300/15 bg-cyan-400/[0.04] hover:border-cyan-300/30 hover:bg-cyan-400/[0.07]', icon: 'text-cyan-200', label: 'text-cyan-300' },
-  'Atmosphere + communication': { card: 'border-rose-300/15 bg-rose-400/[0.04] hover:border-rose-300/30 hover:bg-rose-400/[0.07]', icon: 'text-rose-200', label: 'text-rose-300' },
+const DISTRICT_ROUTE_TONE:Record<string,WeaveRouteTone>={
+  'Shared WEAVE':'sky',
+  'Bridger support':'emerald',
+  'Work + livelihood':'amber',
+  'Client + company support':'cyan',
+  'Record + value':'violet',
+  'Operations center':'violet',
+  'People + recognition':'emerald',
+  'Client system':'amber',
+  'Bridge system':'sky',
+  'Institution + infrastructure':'cyan',
+  'Atmosphere + communication':'rose',
 }
 
 const ROLE_COPY = {
@@ -211,86 +212,75 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
     const districtDelta=(districtRank.get(a.district as any)??999)-(districtRank.get(b.district as any)??999)
     return districtDelta || (orderFor(a.href)-orderFor(b.href))
   })
+  const stations=visibleCommands.map(item=>({
+    ...item,
+    tone:DISTRICT_ROUTE_TONE[item.district]||'sky' as WeaveRouteTone,
+  }))
 
   return (
-    <main className="relative mx-auto w-full max-w-[1500px] p-3 md:p-6">
+    <main className="relative mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-6">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-[7%] top-1 h-28 rounded-[50%] bg-sky-300/[0.035] blur-3xl" />
-      <section className="weave-system-depth relative overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/68 shadow-[0_32px_100px_rgba(2,8,23,.38)] backdrop-blur-xl">
+      <section className="weave-system-depth weave-operating-environment relative overflow-hidden border-y border-sky-300/15 bg-[#030a15]/74 shadow-[0_32px_100px_rgba(2,8,23,.38)] backdrop-blur-xl sm:rounded-[2rem] sm:border">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(56,189,248,.13),transparent_36%),radial-gradient(circle_at_88%_0%,rgba(245,158,11,.06),transparent_28%)] p-5 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-2"><p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">{copy.eyebrow}</p><p className="text-[8px] font-black uppercase tracking-[0.16em] text-white/35">{scene.district} · {scene.level}{moving ? " · moving" : " · present"}</p></div>
           <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">{copy.title}</h1>
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">{copy.detail}</p>
         </header>
 
-        <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[minmax(0,1fr)_250px]">
-          <section className="min-w-0 rounded-[1.75rem] border border-sky-300/20 bg-[linear-gradient(180deg,rgba(14,165,233,.055),rgba(2,6,23,.72))] p-4 shadow-[0_24px_70px_rgba(2,8,23,.38)] md:p-5">
-            <div className="flex flex-col gap-2 border-b border-white/10 pb-4 md:flex-row md:items-end md:justify-between">
+        <div className="grid min-h-[560px] xl:grid-cols-[minmax(0,1fr)_250px]">
+          <section className="min-w-0 border-b border-white/[0.07] p-4 md:p-6 xl:border-b-0 xl:border-r">
+            <div className="mb-5 flex flex-col gap-3 border-b border-white/10 pb-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Central operating surface</p>
+                <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Operating routes</p>
                 <h2 className="mt-1 text-xl font-black text-white md:text-2xl">{copy.panelTitle}</h2>
                 <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-300">{copy.panelDetail}</p>
               </div>
-              <div className="shrink-0 rounded-xl border border-emerald-300/15 bg-emerald-400/[0.045] px-3 py-2 text-right">
+              <div className="border-l border-emerald-300/20 pl-3">
                 <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">Functions present</p>
                 <p className="mt-0.5 text-xl font-black text-white">{visibleCommands.length}</p>
               </div>
             </div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleCommands.map(item => {
-                const Icon = item.icon
-                const tone = DISTRICT_TONE[item.district] || DISTRICT_TONE['Shared WEAVE']
-                return (
-                  <Link
-                    key={item.label + item.href}
-                    href={item.href}
-                    className={`group min-h-[118px] rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${tone.card}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/25">
-                        <Icon className={`h-4 w-4 ${tone.icon}`} />
-                      </div>
-                      <span className={`max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] ${tone.label}`}>{item.district}</span>
-                    </div>
-                    <p className="mt-3 text-sm font-black leading-5 text-white">{item.label}</p>
-                    <p className="mt-1 text-[11px] leading-5 text-slate-400">{item.detail}</p>
-                  </Link>
-                )
-              })}
-            </div>
+            <WeaveRouteNetwork
+              stations={stations}
+              title="Role route network"
+              detail="Each district is a connected lane in the same Operating Room. Enter a station to work; the role position remains continuous."
+            />
           </section>
 
-          <aside className="space-y-4">
-            <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.035] p-4">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-emerald-300" />
-                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">System pulse</p>
-              </div>
-              <p className="mt-3 text-sm font-black text-white">Operating Room active</p>
-              <p className="mt-2 text-xs leading-5 text-slate-400">
-                The middle panel is the role’s working surface. Sidebar navigation remains a route map, not a replacement for the Operating Room.
-              </p>
-            </section>
+          <aside className="bg-black/10 p-4 md:p-5">
+            <div className="sticky top-20 space-y-6">
+              <section className="border-l border-emerald-300/20 pl-4">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-emerald-300" />
+                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">System pulse</p>
+                </div>
+                <p className="mt-3 text-sm font-black text-white">Operating Room active</p>
+                <p className="mt-2 text-xs leading-5 text-slate-400">
+                  The role stays present while functions open as stations inside the same operational route.
+                </p>
+              </section>
 
-            <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[0.035] p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Movement</p>
-              <div className="mt-3 space-y-2 text-xs font-semibold text-slate-300">
-                <p>Notice the role.</p>
-                <p>Recognize the needed function.</p>
-                <p>Open it from the central panel.</p>
-                <p>Return to the same Operating Room.</p>
-              </div>
-            </section>
+              <section className="border-l border-amber-300/20 pl-4">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Movement law</p>
+                <div className="mt-3 space-y-2 text-xs font-semibold text-slate-300">
+                  <p>Notice the role.</p>
+                  <p>Recognize the needed district.</p>
+                  <p>Enter a station.</p>
+                  <p>Act and return with changed state.</p>
+                </div>
+              </section>
 
-            {role === 'agent' && <ClientBuildPull role="agent" />}
+              {role === 'agent' && <ClientBuildPull role="agent" />}
 
-            <Link
-              href={role === 'admin' ? '/admin/dashboard' : '/agent/dashboard'}
-              className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.025] px-4 py-3 text-xs font-black text-white transition hover:border-sky-300/20 hover:bg-sky-400/[0.04]"
-            >
-              WEAVE World
-              <ArrowRight className="h-4 w-4 text-sky-300" />
-            </Link>
+              <Link
+                href={role === 'admin' ? '/admin/dashboard' : '/agent/dashboard'}
+                className="group flex items-center justify-between border-y border-white/10 py-3 text-xs font-black text-white transition hover:border-sky-300/20"
+              >
+                Return to WEAVE World
+                <ArrowRight className="h-4 w-4 text-sky-300 transition group-hover:translate-x-1" />
+              </Link>
+            </div>
           </aside>
         </div>
       </section>

@@ -522,7 +522,7 @@ export default function Lounge() {
   )
 
   return (
-    <div className="flex h-[calc(100vh-140px)] bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl relative">
+    <div className="weave-operating-environment relative flex min-h-[calc(100dvh-140px)] overflow-hidden border-y border-slate-800 bg-slate-950/86 shadow-2xl sm:rounded-[2rem] sm:border" data-lounge-environment>
       {/* Sidebar */}
       <div className={`w-full lg:w-80 flex flex-col border-r border-slate-800 bg-slate-900/30 absolute lg:relative z-20 h-full transition-transform duration-300 ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-4 border-b border-slate-800 flex items-center justify-between gap-2">
@@ -592,7 +592,7 @@ export default function Lounge() {
                       setSelectedChat({ type: 'public', id: 'main', name: 'Public Lounge' })
                       if (window.innerWidth < 1024) setShowSidebar(false)
                     }}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all border ${
+                    className={`w-full flex items-center gap-3 border-b border-slate-800/70 p-3 transition-all ${
                       selectedChat?.type === 'public' ? 'bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 shadow-[0_0_15px_-5px_rgba(6,182,212,0.3)]' : 'text-slate-400 hover:bg-slate-800/50 border border-transparent'
                     }`}
                   >
@@ -663,7 +663,7 @@ export default function Lounge() {
                           if (window.innerWidth < 1024) setShowSidebar(false)
                         }}
                         className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all border ${
-                          isActive ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400 shadow-sm' : 'text-slate-400 hover:bg-slate-800/40 border-transparent'
+                          isActive ? 'bg-cyan-500/[0.07] text-cyan-300' : 'text-slate-400 hover:bg-slate-800/30'
                         }`}
                       >
                         <div className="relative flex-shrink-0">

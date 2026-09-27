@@ -273,6 +273,44 @@ assert.ok(cleanRevealBridgeMap2026.includes("name:'System Switch · File Folders
 
 const cleanRevealDashboard2026=read('components/world/weave-dashboard-world.tsx')
 assert.ok(bridgePlazaPage.includes('System Switch · File Folder View')&&bridgePlazaPage.includes('setSupportOpen(true)'),'Bridge Plaza HUD exposes System Switch File Folder View without requiring discovery of a hidden panel')
-assert.ok(cleanRevealDashboard2026.includes('weave-dashboard-world')&&cleanRevealDashboard2026.includes('weave-dashboard-link'),'Dashboard surfaces expose live-theme hooks')
+assert.ok(cleanRevealDashboard2026.includes('weave-dashboard-world')&&cleanRevealDashboard2026.includes('<WeaveRouteNetwork'),'Dashboard world exposes live-theme shell and route-network movement')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-dashboard-world'),'Flame Live themes dashboard surfaces rather than adding a wallpaper')
 assert.ok(cleanRevealTransit2026.includes('if(hasPendingSurface())'),'Hard resource timeout cannot uncover an explicitly pending application environment')
+
+
+/* Environment grammar: major operating surfaces may contain instruments,
+   but their primary navigation cannot regress into a card grid. */
+const routeNetwork=read('components/world/weave-route-network.tsx')
+const clientOperatingRoom=read('components/client/client-operating-room.tsx')
+const marketplaceEnvironment=read('app/(app)/marketplace/page.tsx')
+const arenaEnvironment=read('components/places/arena.tsx')
+const loungeEnvironment=read('components/places/lounge.tsx')
+const patternEnvironment=read('components/places/casino.tsx')
+const echoEnvironment=read('app/(app)/echo/page.tsx')
+
+assert.ok(routeNetwork.includes('data-weave-route-network')&&routeNetwork.includes('data-weave-route-station'),'Shared route grammar exposes connected lanes and stations')
+assert.ok(dashboardWorld.includes('<WeaveRouteNetwork'),'Role Home Worlds use route stations instead of WorldLinkCard tiles')
+assert.ok(!dashboardWorld.includes('WorldLinkCard'),'Role Home Worlds cannot regress to a link-card grid')
+assert.ok(operatingRoom.includes('<WeaveRouteNetwork')&&operatingRoom.includes('Role route network'),'Agent/Admin Operating Rooms use connected route lanes')
+assert.ok(bridgerOperatingRoom.includes('<WeaveRouteNetwork')&&bridgerOperatingRoom.includes('Prospect intake dock'),'Bridger Operating Room combines route lanes with one Prospect intake station')
+assert.ok(clientOperatingRoom.includes('<WeaveRouteNetwork')&&clientOperatingRoom.includes('Client route network'),'Client Operating Room uses connected lanes around the File Folder')
+assert.ok(room.includes('data-weave-room-stage'),'Reusable WEAVE rooms expose one active stage between environment rails')
+assert.ok(marketplaceEnvironment.includes('data-enterprise-exchange-floor')&&!marketplaceEnvironment.includes('grid gap-5 md:grid-cols-2 xl:grid-cols-3'),'Enterprise Exchange is a continuous bay floor, not a product-card grid')
+assert.ok(arenaEnvironment.includes('data-arena-environment')&&arenaEnvironment.includes('data-arena-lane'),'Arena renders contests as lanes inside one ground')
+assert.ok(loungeEnvironment.includes('data-lounge-environment'),'Lounge owns a continuous communication environment instead of a floating chat card')
+assert.ok(patternEnvironment.includes('data-pattern-ground')&&patternEnvironment.includes('data-pattern-stage="dice"'),'Pattern Ground exposes a continuous play stage')
+assert.ok(echoEnvironment.includes('data-echo-board')&&echoEnvironment.includes('data-echo-station="insights"'),'Echo is a continuous intelligence board with functional stations')
+
+
+const bridgeAiEnvironment=read('app/(app)/bridger/bridge-ai/page.tsx')
+const prospectEngineEnvironment=read('app/(app)/admin/prospect-engine/page.tsx')
+const originSystemsEnvironment=read('app/(app)/admin/origin-systems/page.tsx')
+const adminRootEnvironment=read('app/(app)/admin/page.tsx')
+
+assert.ok(bridgeAiEnvironment.includes('data-bridge-ai-environment')&&bridgeAiEnvironment.includes('data-bridge-ai-paths'),'Bridge AI renders crossing paths inside one environment')
+assert.ok(!bridgeAiEnvironment.includes('<Card'),'Bridge AI no longer uses Card as its primary path surface')
+assert.ok(prospectEngineEnvironment.includes('roomKey="administration-prospect-engine"')&&prospectEngineEnvironment.includes('data-prospect-pool'),'Prospect Engine is a shared Administration system room')
+assert.ok(!prospectEngineEnvironment.includes('<Card'),'Prospect Engine no longer uses literal cards as its operating structure')
+assert.ok(originSystemsEnvironment.includes('roomKey="administration-origin-systems"')&&originSystemsEnvironment.includes('data-origin-systems-network'),'Origin Systems is one infrastructure environment')
+assert.ok(!originSystemsEnvironment.includes('<Card'),'Origin Systems no longer uses literal cards as its infrastructure structure')
+assert.ok(adminRootEnvironment.includes("redirect('/admin/dashboard')")&&!adminRootEnvironment.includes('<Card'),'Duplicate Administration root routes directly into the Administration world')

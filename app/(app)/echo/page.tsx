@@ -130,27 +130,27 @@ export default function EchoPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-8">
+    <main className="weave-operating-environment mx-auto max-w-5xl overflow-hidden border-y border-cyan-300/15 bg-[#040a10]/78 sm:rounded-[2rem] sm:border" data-echo-board>
       {/* 3D Hero */}
-      <div className="relative h-64 rounded-2xl overflow-hidden border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950">
+      <section className="relative h-72 overflow-hidden border-b border-cyan-300/15 bg-gradient-to-b from-slate-900 to-slate-950">
         <EchoOrb />
         <div className="absolute top-4 left-4 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-cyan-400" />
           <span className="text-xs font-bold uppercase tracking-widest text-cyan-400">Echo</span>
         </div>
-      </div>
+      </section>
 
-      <div>
+      <header className="border-b border-white/10 px-5 py-6 md:px-7">
         <h1 className="text-2xl font-bold text-white">Echo</h1>
         <p className="text-sm text-slate-400 mt-2 leading-relaxed">
           Echo is the institutional participation layer and continuity engine of Weave of Presence. 
           It governs how different intelligences participate with humans and systems, preserving 
           the memory of the institution so it does not forget itself across movement.
         </p>
-      </div>
+      </header>
 
       {/* What it does */}
-      <div className="border border-slate-800 rounded-2xl p-5 bg-slate-900/50 space-y-4">
+      <section className="space-y-4 border-b border-slate-800 bg-slate-900/20 px-5 py-6 md:px-7" data-echo-station="continuity">
         <div className="flex items-center gap-2">
           <BrainCircuit className="h-4 w-4 text-cyan-400" />
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">How it works</h2>
@@ -191,10 +191,10 @@ export default function EchoPage() {
             your subscription lapses, and nothing is shared with other users or admins.
           </p>
         </div>
-      </div>
+      </section>
 
       {/* Status */}
-      <div className="border border-slate-800 rounded-2xl p-5 space-y-3 bg-slate-900/50">
+      <section className="space-y-3 border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-echo-station="status">
         <div className="flex items-center justify-between">
           <span className="text-slate-400 text-sm">Status</span>
           <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
@@ -215,13 +215,13 @@ export default function EchoPage() {
             <span className="text-white">{new Date(subscription.last_paid_at).toLocaleDateString()}</span>
           </div>
         )}
-      </div>
+      </section>
 
       {error && <div className="text-sm text-red-400">{error}</div>}
       {message && <div className="text-sm text-green-400">{message}</div>}
 
       {!isActive ? (
-        <div className="border border-slate-800 rounded-2xl p-5 bg-slate-900/50 space-y-4">
+        <section className="space-y-4 border-b border-slate-800 bg-slate-900/20 px-5 py-6 md:px-7" data-echo-station="continuance">
           <h2 className="text-lg font-medium text-white">Subscribe — {SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin / month</h2>
           <p className="text-sm text-slate-500">
             Deducted from your primary wallet. Available to every account type. Cancel anytime by letting it lapse.
@@ -229,26 +229,26 @@ export default function EchoPage() {
           <button
             onClick={handleSubscribe}
             disabled={subscribing}
-            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl py-2.5 font-medium disabled:opacity-50 transition"
+            className="w-full border-y border-cyan-300/25 bg-cyan-500/15 py-3 font-medium text-cyan-50 transition hover:bg-cyan-500/20 disabled:opacity-50"
           >
             {subscribing ? 'Activating...' : `Subscribe for ${SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin`}
           </button>
-        </div>
+        </section>
       ) : (
-        <div className="space-y-4">
+        <section className="space-y-4 px-5 py-6 md:px-7" data-echo-station="insights">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium text-white">Insights</h2>
             <button
               onClick={handleAnalyze}
               disabled={analyzing}
-              className="bg-slate-800 hover:bg-slate-700 text-white rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50 transition"
+              className="border-y border-cyan-300/20 bg-cyan-300/[0.04] px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-300/[0.08] disabled:opacity-50"
             >
               {analyzing ? 'Analyzing...' : 'Analyze now'}
             </button>
           </div>
 
           {insights.length === 0 ? (
-            <div className="border border-slate-800 rounded-2xl p-8 text-center bg-slate-900/50">
+            <div className="border-y border-slate-800 bg-slate-900/20 p-8 text-center">
               <p className="text-slate-500 text-sm">
                 No insights yet. Keep using the extension and apps, then run an analysis.
               </p>
@@ -256,7 +256,7 @@ export default function EchoPage() {
           ) : (
             <div className="space-y-3">
               {insights.map((insight) => (
-                <div key={insight.id} className="border border-slate-800 rounded-xl p-4 bg-slate-900/50">
+                <article key={insight.id} className="border-b border-slate-800 bg-slate-900/20 p-4 last:border-b-0">
                   <div className="flex items-center justify-between mb-1">
                     {insight.category && (
                       <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">
@@ -268,12 +268,12 @@ export default function EchoPage() {
                     </span>
                   </div>
                   <p className="text-sm text-white leading-relaxed">{insight.summary}</p>
-                </div>
+                </article>
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
-    </div>
+    </main>
   )
 }

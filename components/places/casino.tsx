@@ -180,8 +180,8 @@ export default function Casino({ user: propUser }: { user?: any }) {
   const canPlay = !isRolling && betAmount >= MIN_BET && betAmount <= MAX_BET && betAmount <= currentBalance
 
   return (
-    <div className="px-4 py-4 space-y-6">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600 to-red-600 p-6 shadow-lg shadow-orange-900/20">
+    <section className="weave-operating-environment overflow-hidden border-y border-orange-300/15 bg-[#0c0808]/78 sm:rounded-[2rem] sm:border" data-pattern-ground>
+      <header className="relative overflow-hidden border-b border-orange-300/20 bg-gradient-to-br from-orange-600/80 to-red-600/75 p-6 shadow-lg shadow-orange-900/20">
         <div className="relative z-10">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <Trophy className="h-7 w-7" />
@@ -192,17 +192,17 @@ export default function Casino({ user: propUser }: { user?: any }) {
         <div className="absolute top-0 right-0 p-4 opacity-20">
           <Sparkles className="h-24 w-24 text-white" />
         </div>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 divide-x divide-slate-800 border-b border-slate-800">
         {CASINO_GAMES.map((game) => (
           <button
             key={game.id}
             onClick={() => setActiveGame(game.id)}
-            className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+            className={`flex items-center gap-3 border-b border-slate-800/60 p-3 transition-all ${
               activeGame === game.id
-                ? 'bg-slate-800 border-orange-500/50 ring-1 ring-orange-500/30 shadow-lg'
-                : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
+                ? 'bg-orange-500/[0.08] text-white'
+                : 'bg-slate-900/20 text-slate-400 hover:bg-slate-800/30'
             }`}
           >
             <div className={`p-2 rounded-lg ${game.bg}`}>
@@ -215,7 +215,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
         ))}
       </div>
 
-      <div className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-4 animate-in fade-in duration-700">
+      <div className="border-b border-slate-800/60 bg-slate-900/20 p-4 animate-in fade-in duration-700">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Echo Reflection</span>
@@ -227,7 +227,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
 
       {activeGame === 'dice' ? (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-inner">
+          <div className="border-b border-slate-800 bg-slate-900/40 p-6 shadow-inner" data-pattern-stage="dice">
             <div className="flex justify-center gap-8 my-8">
               {diceResult.map((die, idx) => {
                 const DiceIcon = DiceIcons[die - 1]
@@ -329,7 +329,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
             </div>
           )}
 
-          <div className="bg-slate-900/40 rounded-2xl p-4 border border-slate-800/50">
+          <div className="border-y border-slate-800/50 bg-slate-900/20 p-4">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Recent Sessions</h3>
             <div className="space-y-2">
               {casinoHistory.slice().reverse().map((h, i) => (
@@ -359,7 +359,7 @@ export default function Casino({ user: propUser }: { user?: any }) {
         </div>
       )}
 
-      <div className="flex items-center justify-between p-4 bg-slate-900 rounded-2xl border border-slate-800">
+      <div className="flex items-center justify-between border-t border-slate-800 bg-slate-900/30 p-4">
         <div>
           <p className="text-sm font-bold text-white">{demoMode ? 'Practice Mode' : 'Authentic Play'}</p>
           <p className="text-[10px] text-slate-500">{demoMode ? 'Virtual credits only' : 'Using actual Flame Coin resources'}</p>
@@ -373,6 +373,6 @@ export default function Casino({ user: propUser }: { user?: any }) {
           {demoMode ? 'SWITCH TO Flame Coin' : 'TRY PRACTICE'}
         </button>
       </div>
-    </div>
+    </section>
   )
 }

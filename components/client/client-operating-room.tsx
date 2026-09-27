@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
+import { WeaveRouteNetwork, type WeaveRouteTone } from '@/components/world/weave-route-network'
 
 type Item = {
   label: string
@@ -71,19 +72,20 @@ const commands: Item[] = [
   { label: 'Event Ground', detail: 'Enter the current Client event position.', href: '/client/event', icon: Headphones, district: 'Shared WEAVE', tone: 'emerald' },
 ]
 
-const tone = {
-  sky: 'border-sky-300/20 bg-sky-400/[0.055] hover:bg-sky-400/[0.09]',
-  emerald: 'border-emerald-300/20 bg-emerald-400/[0.055] hover:bg-emerald-400/[0.09]',
-  violet: 'border-violet-300/20 bg-violet-400/[0.055] hover:bg-violet-400/[0.09]',
-  amber: 'border-amber-300/20 bg-amber-400/[0.055] hover:bg-amber-400/[0.09]',
+const ROUTE_TONE:Record<Item['tone'],WeaveRouteTone>={
+  sky:'sky',
+  emerald:'emerald',
+  violet:'violet',
+  amber:'amber',
 }
 
 export function ClientOperatingRoom() {
   const { user } = useAuth()
+  const stations=commands.map(item=>({...item,tone:ROUTE_TONE[item.tone]}))
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] p-3 md:p-6">
-      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/82 backdrop-blur-xl">
+    <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-6">
+      <section className="weave-system-depth weave-operating-environment overflow-hidden border-y border-sky-300/15 bg-[#030a15]/82 backdrop-blur-xl sm:rounded-[2rem] sm:border">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(56,189,248,.15),transparent_35%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.09),transparent_30%)] p-5 md:p-7">
           <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Client Operating Room</p>
           <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">The Client is the player. The File Folder is the working world.</h1>
@@ -92,74 +94,67 @@ export function ClientOperatingRoom() {
           </p>
         </header>
 
-        <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[220px_minmax(0,1fr)_240px]">
-          <aside className="rounded-3xl border border-white/10 bg-black/20 p-4">
-            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Client map</p>
-            <div className="mt-4 space-y-3">
-              {districts.map((district,index)=>(
-                <div key={district.title} className="rounded-2xl border border-white/8 bg-white/[0.025] p-3">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-sky-300/20 bg-sky-400/[0.06] text-[9px] font-black text-sky-200">{index+1}</span>
-                    <p className="text-xs font-black text-white">{district.title}</p>
+        <div className="grid min-h-[620px] xl:grid-cols-[190px_minmax(0,1fr)_230px]">
+          <aside className="border-b border-white/[0.07] bg-black/10 p-4 xl:border-b-0 xl:border-r">
+            <div className="sticky top-20">
+              <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Client map</p>
+              <div className="mt-5 border-l border-sky-300/15">
+                {districts.map((district,index)=>(
+                  <div key={district.title} className="relative border-b border-white/[0.055] px-4 py-3 last:border-b-0">
+                    <span className="absolute -left-[5px] top-4 h-2.5 w-2.5 rounded-full border border-sky-200/40 bg-sky-300 shadow-[0_0_12px_rgba(125,211,252,.35)]"/>
+                    <p className="text-[8px] font-black uppercase tracking-[0.12em] text-slate-600">District {String(index+1).padStart(2,'0')}</p>
+                    <p className="mt-1 text-xs font-black text-white">{district.title}</p>
+                    <p className="mt-1 text-[10px] leading-4 text-slate-500">{district.detail}</p>
                   </div>
-                  <p className="mt-2 text-[11px] leading-5 text-slate-400">{district.detail}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </aside>
 
-          <section className="weave-reading-surface min-w-0 rounded-[1.75rem] p-4 md:p-5">
-            <div className="rounded-3xl border border-sky-300/25 bg-[linear-gradient(135deg,rgba(14,165,233,.13),rgba(139,92,246,.07))] p-5 md:p-6">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-sky-300/20 bg-sky-400/10"><FolderOpen className="h-6 w-6 text-sky-200"/></div>
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Primary Client environment</p>
-                    <h2 className="mt-1 text-xl font-black text-white md:text-2xl">Main File Folder</h2>
-                    <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Recognize → Preview → Build → Activate → Operate. This is where the Client's systems live after construction.</p>
-                  </div>
+          <section className="min-w-0 p-4 md:p-6">
+            <div className="grid gap-4 border-b border-sky-300/15 pb-5 md:grid-cols-[minmax(0,1fr)_190px] md:items-center">
+              <div className="flex items-start gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-sky-300/20 bg-sky-400/[0.06]"><FolderOpen className="h-5 w-5 text-sky-200"/></div>
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Primary Client environment</p>
+                  <h2 className="mt-1 text-xl font-black text-white md:text-2xl">Main File Folder</h2>
+                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Recognize → Preview → Build → Activate → Operate. The File Folder is the Client-owned world; the routes below remain connected to it.</p>
                 </div>
-                <Link href="/client/system-switch" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-sky-300 px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950">
-                  Enter File Folder <ArrowRight className="h-4 w-4"/>
-                </Link>
               </div>
+              <Link href="/client/system-switch" className="group flex min-h-14 items-center justify-between border-l-2 border-sky-300/35 bg-sky-300/[0.045] px-4 py-3 text-[10px] font-black uppercase tracking-[0.12em] text-sky-100 transition hover:bg-sky-300/[0.08]">
+                Enter world <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1"/>
+              </Link>
             </div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {commands.map(item=>{
-                const Icon=item.icon
-                return (
-                  <Link key={item.label+item.href} href={item.href} className={`group min-h-[120px] rounded-2xl border p-3.5 transition hover:-translate-y-0.5 ${tone[item.tone]}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/25"><Icon className="h-4 w-4 text-white"/></div>
-                      <span className="max-w-[52%] text-right text-[8px] font-black uppercase tracking-[0.11em] text-slate-400">{item.district}</span>
-                    </div>
-                    <p className="mt-3 text-sm font-black leading-5 text-white">{item.label}</p>
-                    <p className="mt-1 text-[11px] leading-5 text-slate-300">{item.detail}</p>
-                  </Link>
-                )
-              })}
+            <div className="mt-5">
+              <WeaveRouteNetwork
+                stations={stations}
+                title="Client route network"
+                detail="Money, support, participation and enterprise are lanes around the same Client position. They are stations in one world rather than a grid of separate destinations."
+              />
             </div>
           </section>
 
-          <aside className="space-y-4">
-            <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Client movement</p>
-              <div className="mt-3 space-y-2 text-xs font-semibold text-slate-300">
-                <p>1. Enter File Folder.</p>
-                <p>2. Build what you need.</p>
-                <p>3. Use the finished system.</p>
-                <p>4. Record real activity.</p>
-                <p>5. Grow into business or enterprise.</p>
-              </div>
-            </section>
-            <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[0.04] p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Support rule</p>
-              <p className="mt-3 text-xs leading-5 text-slate-300">Bridgers and company positions support the Client's movement. They do not replace the Client as the player.</p>
-            </section>
-            <Link href="/client/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.025] px-4 py-3 text-xs font-black text-white">
-              Client World <ArrowRight className="h-4 w-4 text-sky-300"/>
-            </Link>
+          <aside className="border-t border-white/[0.07] bg-black/10 p-4 xl:border-l xl:border-t-0">
+            <div className="sticky top-20 space-y-6">
+              <section className="border-l border-emerald-300/20 pl-4">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Client movement</p>
+                <div className="mt-3 space-y-2 text-xs font-semibold text-slate-300">
+                  <p>1. Enter File Folder.</p>
+                  <p>2. Build what you need.</p>
+                  <p>3. Activate the finished system.</p>
+                  <p>4. Record real activity.</p>
+                  <p>5. Grow into business or enterprise.</p>
+                </div>
+              </section>
+              <section className="border-l border-violet-300/20 pl-4">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Support rule</p>
+                <p className="mt-3 text-xs leading-5 text-slate-300">Bridgers and company positions support the Client's movement. They do not replace the Client as the player.</p>
+              </section>
+              <Link href="/client/dashboard" className="group flex items-center justify-between border-y border-white/10 py-3 text-xs font-black text-white">
+                Client World <ArrowRight className="h-4 w-4 text-sky-300 transition group-hover:translate-x-1"/>
+              </Link>
+            </div>
           </aside>
         </div>
       </section>

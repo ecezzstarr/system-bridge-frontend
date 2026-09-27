@@ -29,6 +29,7 @@ import {
 import { WeaveLogo } from '@/components/weave-logo'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
+import { WeaveRouteNetwork, type WeaveRouteTone } from '@/components/world/weave-route-network'
 
 export type WorldRole = 'client' | 'bridger' | 'agent' | 'admin'
 
@@ -38,13 +39,6 @@ type WorldLink = {
   href: string
   icon: ComponentType<{ className?: string }>
   tone: 'sky' | 'gold' | 'violet' | 'emerald'
-}
-
-const toneClass = {
-  sky: 'border-sky-300/18 bg-[linear-gradient(160deg,rgba(57,46,35,.66),rgba(14,12,10,.82))] text-sky-200',
-  gold: 'border-amber-300/20 bg-[linear-gradient(160deg,rgba(72,47,24,.7),rgba(14,11,8,.84))] text-amber-200',
-  violet: 'border-violet-300/18 bg-[linear-gradient(160deg,rgba(52,39,45,.64),rgba(14,11,10,.84))] text-violet-200',
-  emerald: 'border-emerald-300/18 bg-[linear-gradient(160deg,rgba(35,55,44,.58),rgba(13,12,10,.84))] text-emerald-200',
 }
 
 const ROLE: Record<WorldRole, {
@@ -127,6 +121,45 @@ const ROLE: Record<WorldRole, {
   },
 }
 
+const ROUTE_TONE:Record<WorldLink['tone'],WeaveRouteTone>={
+  sky:'sky',
+  gold:'amber',
+  violet:'violet',
+  emerald:'emerald',
+}
+
+function districtFor(role:WorldRole,href:string){
+  if(role==='client'){
+    if(href.startsWith('/client/system-switch'))return 'File Folder'
+    if(href.startsWith('/client/chat'))return 'Human support'
+    if(href.includes('wallet')||href.includes('deposit')||href.includes('withdraw'))return 'Value'
+    if(href.startsWith('/marketplace'))return 'Enterprise'
+    if(href.includes('loops')||href.includes('arena')||href.includes('casino'))return 'Participation'
+    return 'Bridge + shared WEAVE'
+  }
+  if(role==='bridger'){
+    if(href.includes('bridge-ai')||href.includes('prospects'))return 'Crossing'
+    if(href.includes('/clients'))return 'Client continuity'
+    if(href.includes('ledger')||href.includes('company-chat'))return 'Company continuity'
+    if(href.startsWith('/marketplace'))return 'Enterprise'
+    if(href.includes('arena'))return 'Participation'
+    return 'Shared WEAVE'
+  }
+  if(role==='agent'){
+    if(href.includes('/agent/bridgers'))return 'Bridger support'
+    if(href.includes('/agent/channels'))return 'Company work'
+    if(href.includes('/agent/commissions'))return 'Livelihood'
+    if(href.includes('agility'))return 'Delivery'
+    if(href.startsWith('/marketplace'))return 'Enterprise'
+    return 'Shared WEAVE'
+  }
+  if(href.includes('file-number')||href.includes('prospect')||href.includes('/hub'))return 'People + recognition'
+  if(href.includes('visual')||href.includes('environment')||href.includes('dj')||href.includes('ad-workshop'))return 'World systems'
+  if(href.includes('authority'))return 'Institution'
+  if(href.includes('loops'))return 'Company movement'
+  return 'Bridge + shared WEAVE'
+}
+
 export function WeaveDashboardWorld({
   role,
   userName,
@@ -137,9 +170,17 @@ export function WeaveDashboardWorld({
   const copy = ROLE[role]
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const visibleLinks = copy.links.filter(item=>isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
+  const stations=visibleLinks.map(item=>({
+    label:item.label,
+    detail:item.detail,
+    href:item.href,
+    icon:item.icon,
+    district:districtFor(role,item.href),
+    tone:ROUTE_TONE[item.tone],
+  }))
 
   return (
-    <div className="weave-dashboard-world relative mx-auto w-full max-w-6xl overflow-visible rounded-[1.6rem] border border-amber-200/10 bg-[#120c08]/70 shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-md">
+    <div className="weave-dashboard-world weave-operating-environment relative mx-auto w-full max-w-6xl overflow-hidden border-y border-amber-200/10 bg-[#0c0907]/76 shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-md sm:rounded-[1.6rem] sm:border">
       <div className="relative p-3.5 sm:p-5 md:p-7">
         <div className="pointer-events-none absolute inset-x-[4%] top-[8%] h-[58%] rounded-[50%] bg-[radial-gradient(circle_at_50%_50%,rgba(251,146,60,.09),transparent_68%)] blur-2xl" />
 
@@ -156,27 +197,31 @@ export function WeaveDashboardWorld({
           <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{copy.title}</h1>
           <p className="mt-1.5 text-xs leading-5 text-slate-400 sm:text-sm">{copy.subtitle}</p>
 
-          <div className="weave-dashboard-position mt-4 max-w-2xl rounded-2xl border border-amber-300/15 bg-[linear-gradient(180deg,rgba(69,45,24,.36),rgba(16,12,9,.72))] p-3.5 shadow-[0_18px_60px_rgba(0,0,0,.26)] backdrop-blur-sm">
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300">Your position</p>
-            <p className="mt-1 text-base font-bold text-white">{userName || copy.eyebrow}</p>
-            <p className="mt-1.5 text-[10px] leading-4 text-slate-400">{copy.purpose}</p>
+          <div className="weave-dashboard-position mt-5 grid gap-4 border-y border-amber-300/15 py-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-center">
+            <div>
+              <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300">Present position</p>
+              <p className="mt-1 text-lg font-black text-white">{userName || copy.eyebrow}</p>
+              <p className="mt-1.5 max-w-3xl text-[10px] leading-5 text-slate-400">{copy.purpose}</p>
+            </div>
+            <Link
+              href={copy.functionsHref}
+              className="group flex min-h-14 items-center justify-between border-l-2 border-amber-300/30 bg-amber-300/[0.035] px-4 py-3 text-amber-50 transition hover:bg-amber-300/[0.07]"
+            >
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Control station</p>
+                <p className="mt-0.5 text-sm font-black">Operating Room</p>
+              </div>
+              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+            </Link>
           </div>
 
-          <Link
-            href={copy.functionsHref}
-            className="mt-3 flex w-full max-w-2xl items-center justify-between rounded-2xl border border-amber-300/22 bg-[linear-gradient(90deg,rgba(78,49,25,.62),rgba(29,20,14,.72))] px-4 py-3.5 text-amber-50 shadow-[0_14px_40px_rgba(0,0,0,.24)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-orange-200/30 active:scale-[.99]"
-          >
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Operating room</p>
-              <p className="mt-0.5 text-sm font-black">Open My Functions</p>
-            </div>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-
-          <div className="mt-5 flex items-center gap-3 text-[7px] font-black uppercase tracking-[0.18em] text-white/35"><span className="h-px flex-1 bg-gradient-to-r from-transparent via-sky-200/15 to-transparent" /><span>District entrances</span><span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-200/15 to-transparent" /></div>
-          <section className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {visibleLinks.map(item => <WorldLinkCard key={item.label} item={item} />)}
-          </section>
+          <div className="mt-6">
+            <WeaveRouteNetwork
+              stations={stations}
+              title="World movement"
+              detail="Districts remain connected to the same role position. Functions are stations on the route, not separate card destinations."
+            />
+          </div>
 
           <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3 text-[7px] font-semibold uppercase tracking-[0.16em] text-slate-600">
             <span>One world · separate functions</span>
@@ -188,18 +233,3 @@ export function WeaveDashboardWorld({
   )
 }
 
-function WorldLinkCard({ item }: { item: WorldLink }) {
-  const Icon = item.icon
-  return (
-    <Link
-      href={item.href}
-      className={`weave-dashboard-link group min-w-0 rounded-2xl border p-3 shadow-[inset_0_1px_rgba(255,236,214,.02),0_12px_32px_rgba(0,0,0,.22)] backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-amber-200/25 hover:shadow-[0_20px_45px_rgba(0,0,0,.3)] active:scale-[.98] ${toneClass[item.tone]}`}
-    >
-      <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-black/30">
-        <Icon className="h-3.5 w-3.5" />
-      </div>
-      <p className="mt-2 truncate text-[9px] font-black uppercase tracking-[0.08em] text-white">{item.label}</p>
-      <p className="mt-0.5 line-clamp-2 text-[7px] uppercase leading-3 tracking-[0.04em] text-slate-500">{item.detail}</p>
-    </Link>
-  )
-}

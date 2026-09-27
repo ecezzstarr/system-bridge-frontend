@@ -117,7 +117,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
   }
 
   return (
-    <div className="px-4 py-4 space-y-6">
+    <section className="weave-operating-environment overflow-hidden border-y border-yellow-300/15 bg-[#080b12]/72 sm:rounded-[2rem] sm:border" data-arena-environment>
       {/* Dynamic Header */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
@@ -143,10 +143,10 @@ export default function Arena({ user: propUser }: { user?: any }) {
         </div>
 
         {/* View Tabs */}
-        <div className="flex gap-2 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+        <div className="flex gap-0 border-y border-slate-800 bg-slate-950/40">
           <button
             onClick={() => setActiveTab('all')}
-            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+            className={`flex-1 border-r border-slate-800 py-3 text-[10px] font-black uppercase tracking-widest transition-all last:border-r-0 ${
               activeTab === 'all' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
             }`}
           >
@@ -154,7 +154,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
           </button>
           <button
             onClick={() => setActiveTab('curated')}
-            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+            className={`flex-1 border-r border-slate-800 py-3 text-[10px] font-black uppercase tracking-widest transition-all last:border-r-0 ${
               activeTab === 'curated' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
             }`}
           >
@@ -163,7 +163,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
           {user?.role === 'admin' && (
             <button
               onClick={() => setActiveTab('admin')}
-              className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+              className={`flex-1 border-r border-slate-800 py-3 text-[10px] font-black uppercase tracking-widest transition-all last:border-r-0 ${
                 activeTab === 'admin' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
@@ -179,10 +179,10 @@ export default function Arena({ user: propUser }: { user?: any }) {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-xs font-bold transition-all border ${
+                className={`flex items-center gap-2 border-b px-4 py-2 whitespace-nowrap text-xs font-bold transition-all ${
                   activeCategory === cat.id
-                    ? 'bg-yellow-500 border-yellow-400 text-slate-950'
-                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                    ? 'border-yellow-400 bg-yellow-500/[0.12] text-yellow-200'
+                    : 'border-slate-800 text-slate-400 hover:border-slate-600'
                 }`}
               >
                 <cat.icon className="h-3 w-3" />
@@ -203,7 +203,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
         ) : (
           <>
             {filteredMatches.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-900/20 border border-dashed border-slate-800 rounded-3xl">
+              <div className="flex flex-col items-center justify-center border-y border-dashed border-slate-800 bg-slate-900/10 py-20 text-center">
                 <Target className="h-12 w-12 text-slate-800 mb-4" />
                 <h3 className="text-slate-400 font-bold">No Matches Found</h3>
                 <p className="text-slate-600 text-xs mt-2 max-w-[200px]">Create a match or check back later.</p>
@@ -218,8 +218,9 @@ export default function Arena({ user: propUser }: { user?: any }) {
                   return (
                     <div
                       key={match.id}
-                      className={`relative overflow-hidden group bg-slate-900/60 border rounded-2xl p-5 transition-all hover:border-yellow-500/30 ${
-                        isLive ? 'border-yellow-500/20 ring-1 ring-yellow-500/10' : 'border-slate-800'
+                      data-arena-lane={match.id}
+                      className={`relative overflow-hidden border-b bg-slate-900/20 px-1 py-5 transition-all hover:bg-yellow-500/[0.025] sm:px-4 ${
+                        isLive ? 'border-yellow-500/25' : 'border-slate-800/80'
                       }`}
                     >
                       {/* Live Indicator */}
@@ -308,15 +309,15 @@ export default function Arena({ user: propUser }: { user?: any }) {
 
                         {/* Prediction Stats */}
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/50 text-center">
+                          <div className="bg-slate-950/20 p-2 text-center">
                             <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Pool</p>
                             <p className="text-sm font-black text-white">{match.prizePool || 0} Flame Coin</p>
                           </div>
-                          <div className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/50 text-center">
+                          <div className="bg-slate-950/20 p-2 text-center">
                             <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Entry</p>
                             <p className="text-sm font-black text-yellow-500">{match.entryFee || 0} Flame Coin</p>
                           </div>
-                          <div className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/50 text-center">
+                          <div className="bg-slate-950/20 p-2 text-center">
                             <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Players</p>
                             <p className="text-sm font-black text-cyan-500">{match.participantCount || 0}</p>
                           </div>
@@ -353,7 +354,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
                         )}
 
                         {match.status === 'completed' && (
-                           <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 flex items-center justify-between">
+                           <div className="flex items-center justify-between border-y border-slate-700/50 bg-slate-800/20 p-3">
                              <div className="flex items-center gap-2">
                                <Trophy className="h-4 w-4 text-yellow-500" />
                                <span className="text-xs font-bold text-slate-300">Ended</span>
@@ -446,6 +447,6 @@ export default function Arena({ user: propUser }: { user?: any }) {
           </div>
         </div>
       )}
-    </div>
+    </section>
   )
 }
