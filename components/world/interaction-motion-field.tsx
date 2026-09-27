@@ -91,7 +91,7 @@ export function InteractionMotionField({
   const mode=forceEvent?'flame-event':world.mode
 
   const flameIntensity=world.flameEnabled
-    ? world.flameIntensity*(forceEvent?1.45:mode==='flame-event'?1.25:mode==='ceremony'?1.08:mode==='quiet-river'?.35:mode==='night-operations'?.65:.72)
+    ? world.flameIntensity*(forceEvent?1.45:mode==='flame-event'?1.25:mode==='ceremony'?1.08:mode==='quiet-river' ? .35:mode==='night-operations' ? .65:.72)
     : 0
   const riverIntensity=world.riverEnabled
     ? world.riverIntensity*(forceEvent?1.2:mode==='quiet-river'?1.32:mode==='flame-event'?1.1:1)
@@ -126,7 +126,7 @@ export function InteractionMotionField({
     const drawRiver=(t:number)=>{
       if(riverIntensity<=0)return
       const baseY=height*.72
-      const speed=world.riverSpeed*(reduceMotion?.12:1)
+      const speed=world.riverSpeed*(reduceMotion ? .12:1)
 
       ctx.save()
       ctx.globalCompositeOperation='lighter'
@@ -177,7 +177,7 @@ export function InteractionMotionField({
     const drawFlames=(t:number)=>{
       if(flameIntensity<=0)return
       const base=height*.96
-      const flow=world.flameFlow*(reduceMotion?.08:1)
+      const flow=world.flameFlow*(reduceMotion ? .08:1)
 
       ctx.save()
       ctx.globalCompositeOperation='lighter'
