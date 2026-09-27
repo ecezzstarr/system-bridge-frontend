@@ -29,9 +29,10 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
       resolve()
     }
     const pending=new Set<object>()
+    const hasPendingSurface=()=>Boolean(document.querySelector?.('[data-environment-pending="true"]'))
     const check=()=>{
       clearTimeout(quietTimer)
-      if(!pending.size)quietTimer=setTimeout(finish,Math.max(0,minimum-(performance.now()-started),loading.settleQuietMs))
+      if(!pending.size&&!hasPendingSurface())quietTimer=setTimeout(finish,Math.max(0,minimum-(performance.now()-started),loading.settleQuietMs))
     }
     signal.addEventListener('abort',finish,{once:true})
     cleanup.push(()=>signal.removeEventListener('abort',finish))
@@ -60,7 +61,7 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
         return !target?.closest('[data-environment-readiness-gate]')
       }))check()
     })
-    if(document.body)observer.observe(document.body,{childList:true,subtree:true})
+    if(document.body)observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-environment-pending']})
     cleanup.push(()=>observer.disconnect())
     hardTimer=setTimeout(finish,maximum)
     check()
@@ -103,12 +104,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   configRef.current=config
   const [booting,setBooting]=useState(true)
   const [transiting,setTransiting]=useState(false)
+  const [readyPath,setReadyPath]=useState<string|null>(null)
   const [briefIndex,setBriefIndex]=useState(0)
   const first=useRef(true)
+  const covered=booting||transiting||readyPath!==pathname
   useEffect(()=>{
-    setRuntimeCovered(booting||transiting)
+    setRuntimeCovered(covered)
     return ()=>setRuntimeCovered(false)
-  },[booting,transiting])
+  },[covered])
   useEffect(()=>{
     const controller=new AbortController()
     const mode=first.current?'boot':'transit'
@@ -117,6 +120,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     void waitForEnvironmentReadiness(mode,configRef.current,controller.signal).then(()=>{
       if(controller.signal.aborted)return
       first.current=false
+      setReadyPath(pathname)
       setBooting(false);setTransiting(false)
     })
     return ()=>controller.abort()
@@ -159,8 +163,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     : 'Holding the world while the destination becomes ready'
 
   return <>
-    {children}
-    {(booting||transiting)&&<div
+    <div
+      className={covered?'invisible pointer-events-none select-none':'visible'}
+      aria-hidden={covered || undefined}
+      data-environment-content-state={covered?'forming':'ready'}
+    >
+      {children}
+    </div>
+    {covered&&<div
       className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#090807]/98 px-5 text-white backdrop-blur-2xl"
       role="status"
       aria-live="polite"
