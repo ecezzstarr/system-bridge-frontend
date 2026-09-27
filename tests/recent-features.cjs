@@ -760,7 +760,7 @@ assert.ok(fileFolderPurchaseSource.includes('/api/bridge/file-folder/purchase'),
 assert.ok(fileFolderPurchaseSource.includes('data-file-folder-purchase-environment="prospect-crossing"'),'File Folder purchase is a crossing environment rather than a generic purchase card')
 assert.ok(fileFolderPurchaseSource.includes('buyerName: name.trim()')&&fileFolderPurchaseSource.includes('buyerPhone: phone.trim()'),'Prospect identity moves with the File Folder purchase')
 assert.ok(fileFolderPurchaseSource.includes('pending_admin_confirmation')&&fileFolderPurchaseSource.includes('registerUrl'),'Prospect purchase environment waits for verification and exposes the Client crossing')
-assert.ok(fileFolderPurchaseSource.includes('Cross as Client'),'Verified prospect gets a visible Client registration crossing')
+assert.ok(fileFolderPurchaseSource.includes('WEAVE_WRITING.fileFolderCrossing.clientAction'),'Verified prospect gets a visible Client-position crossing action')
 assert.ok(fileFolderPurchaseApiSource.includes('export async function GET(request: NextRequest)'),'Bridge purchase exposes verification status to its owning crossing')
 assert.ok(fileFolderPurchaseApiSource.includes('Prospect name and phone are required'),'Unauthenticated File Folder purchase carries enough identity for File Number issuance')
 assert.ok(fileFolderPurchaseApiSource.includes("user && user.role !== 'client'"),'Authenticated support positions cannot purchase a File Folder for themselves')
