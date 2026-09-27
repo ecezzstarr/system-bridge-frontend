@@ -36,30 +36,51 @@ export default function BridgerNumbersPage(){
  const [now,setNow]=useState(()=>Date.now())
  const orderStateRef=useRef<Map<string,string>>(new Map())
 
+ const readBayJson=async(url:string,fallback:string)=>{
+  const response=await fetch(url,{headers:getAuthHeaders(),cache:'no-store'})
+  const data=await response.json().catch(()=>({}))
+  if(!response.ok)throw new Error(data.error||fallback)
+  return data
+ }
+
+ const applyNumberBayState=(x:any)=>{
+  setOffers(x.offers||[])
+  setMine(x.mine||[])
+  const nextOrders=x.orders||[]
+  for(const order of nextOrders){
+   const id=String(order.id||'')
+   const status=String(order.status||'')
+   const previous=orderStateRef.current.get(id)
+   if(previous&&previous!==status&&status==='delivered'){
+    emitWeaveMotion({kind:'confirmation',label:`${order.country||'Number'} delivered into Number Bay ownership`,intensity:1.25,confirmed:true,source:'number-bay-delivery'})
+   }
+  }
+  orderStateRef.current=new Map(nextOrders.map((order:any)=>[String(order.id||''),String(order.status||'')]))
+  setOrders(nextOrders)
+ }
+
  const load=async()=>{
   setLoading(true)
   try{
-   const [a,b]=await Promise.all([
-    fetch('/api/bridger/numbers',{headers:getAuthHeaders(),cache:'no-store'}),
-    fetch('/api/bridger/number-verifications',{headers:getAuthHeaders(),cache:'no-store'}),
+   const [bayResult,verificationResult]=await Promise.allSettled([
+    readBayJson('/api/bridger/numbers','Unable to load Number Bay'),
+    readBayJson('/api/bridger/number-verifications','Unable to load verification movement'),
    ])
-   const x=await a.json(),y=await b.json()
-   if(!a.ok)throw new Error(x.error||'Unable to load Number Bay')
-   if(!b.ok)throw new Error(y.error||'Unable to load verification movement')
-   setOffers(x.offers||[])
-   setMine(x.mine||[])
-   const nextOrders=x.orders||[]
-   for(const order of nextOrders){
-    const id=String(order.id||'')
-    const status=String(order.status||'')
-    const previous=orderStateRef.current.get(id)
-    if(previous&&previous!==status&&status==='delivered'){
-     emitWeaveMotion({kind:'confirmation',label:`${order.country||'Number'} delivered into Number Bay ownership`,intensity:1.25,confirmed:true,source:'number-bay-delivery'})
-    }
+
+   if(bayResult.status==='fulfilled'){
+    applyNumberBayState(bayResult.value)
+   }else{
+    throw bayResult.reason
    }
-   orderStateRef.current=new Map(nextOrders.map((order:any)=>[String(order.id||''),String(order.status||'')]))
-   setOrders(nextOrders)
-   setRequests(y.requests||[])
+
+   if(verificationResult.status==='fulfilled'){
+    setRequests(verificationResult.value.requests||[])
+   }else{
+    // Verification is secondary to purchasing. A temporary verification fault
+    // must never hide current stock, completed ownership or active country orders.
+    setRequests([])
+    console.error('[Number Bay verification rail]',verificationResult.reason)
+   }
   }catch(e:any){
    toast.error(e.message||'Unable to load Number Bay')
   }finally{
@@ -82,6 +103,14 @@ export default function BridgerNumbersPage(){
    if(!r.ok){
     if(['stock_changed','out_of_stock','stock_available'].includes(String(d.gate||'')))await load()
     throw new Error(d.error||'Purchase failed')
+   }
+   if(d.number){
+    setMine(prev=>[d.number,...prev.filter(item=>String(item.id)!==String(d.number.id))])
+    setOffers(prev=>prev.map(offer=>
+     String(offer.country).toLowerCase()===country.toLowerCase()
+      ? {...offer,stock_count:Math.max(0,(Number(offer.stock_count)||0)-1)}
+      : offer
+    ))
    }
    emitWeaveMotion({kind:'value',label:`${country} current-stock number purchased and assigned`,intensity:1.25,confirmed:true,source:'number-bay'})
    toast.success(`${country} number assigned to your Bridger account`)
