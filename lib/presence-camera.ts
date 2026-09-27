@@ -57,6 +57,10 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
     scene: { key:'visual-systems', label:'Visual Systems Workshop', district:'Institution', level:'system', camera:{x:27,y:8,yaw:4.2,pitch:2,zoom:1.028,depth:39} },
   },
   {
+    match: path => path === '/admin/environment-organizer',
+    scene: { key:'environment-organizer', label:'Environment Organizer', district:'Institution', level:'system', camera:{x:31,y:5,yaw:4.8,pitch:1.2,zoom:1.03,depth:42} },
+  },
+  {
     match: path => path === '/admin/dj-workshop',
     scene: { key:'dj-workshop', label:'DJ Workshop', district:'Institution', level:'system', camera:{x:9,y:8,yaw:1.5,pitch:2,zoom:1.025,depth:35} },
   },
@@ -69,8 +73,32 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
     scene: { key:'enterprise-dream-authority', label:'Enterprise Dream Authority', district:'Institution', level:'system', camera:{x:44,y:-1,yaw:7,pitch:0,zoom:1.032,depth:45} },
   },
   {
+    match: path => path === '/market',
+    scene: { key:'client-market', label:'WEAVE Client Market', district:'Enterprise', level:'world', camera:{x:42,y:-4,yaw:6.5,pitch:-0.4,zoom:1.038,depth:53} },
+  },
+  {
+    match: path => path.startsWith('/market/'),
+    scene: { key:'client-market-store', label:'Client Store Environment', district:'Enterprise', level:'interaction', camera:{x:46,y:-2,yaw:7,pitch:-0.5,zoom:1.042,depth:56} },
+  },
+  {
     match: path => path.startsWith('/store/'),
     scene: { key:'customer-door', label:'Customer Door', district:'Enterprise', level:'interaction', camera:{x:46,y:-2,yaw:7,pitch:-0.5,zoom:1.042,depth:56} },
+  },
+  {
+    match: path => path === '/stream',
+    scene: { key:'stream-network', label:'WEAVE Stream Network', district:'Enterprise', level:'world', camera:{x:47,y:5,yaw:7.5,pitch:1.2,zoom:1.034,depth:46} },
+  },
+  {
+    match: path => path.startsWith('/stream/'),
+    scene: { key:'streaming-gate', label:'Client Streaming Gate', district:'Enterprise', level:'interaction', camera:{x:51,y:-3,yaw:8,pitch:-0.8,zoom:1.044,depth:58} },
+  },
+  {
+    match: path => path === '/enterprise',
+    scene: { key:'enterprise-territory', label:'WEAVE Enterprise Territory', district:'Enterprise', level:'world', camera:{x:54,y:2,yaw:8.4,pitch:0.5,zoom:1.036,depth:49} },
+  },
+  {
+    match: path => path.startsWith('/enterprise/'),
+    scene: { key:'enterprise-door', label:'Client Enterprise Door', district:'Enterprise', level:'interaction', camera:{x:58,y:-2,yaw:9,pitch:-0.5,zoom:1.046,depth:60} },
   },
   {
     match: path => path.startsWith('/river/'),

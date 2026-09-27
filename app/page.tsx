@@ -7,11 +7,14 @@ import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
   BriefcaseBusiness,
+  Crown,
   DoorOpen,
   Gamepad2,
   Network,
   Orbit,
   Sparkles,
+  Store,
+  Radio,
   Workflow,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -60,6 +63,14 @@ export default function Home() {
             <WeaveLogo size="sm" />
 
             <div className="flex items-center gap-1.5">
+              <Link href="/market">
+                <Button
+                  variant="ghost"
+                  className="h-9 px-3 text-[9px] font-black uppercase tracking-[0.10em] text-slate-300 hover:bg-white/[0.04] hover:text-white"
+                >
+                  Client Market
+                </Button>
+              </Link>
               <Link href="/client/login">
                 <Button
                   variant="outline"
@@ -120,6 +131,33 @@ export default function Home() {
                     >
                       <DoorOpen className="mr-2 h-4 w-4" />
                       Access Client Portal
+                    </Button>
+                  </Link>
+                  <Link href="/market" className="w-full sm:w-auto">
+                    <Button
+                      variant="ghost"
+                      className="h-11 w-full border border-white/10 bg-white/[0.025] px-5 text-xs font-black text-slate-200 hover:bg-white/[0.05] sm:w-auto"
+                    >
+                      <Store className="mr-2 h-4 w-4" />
+                      Visit Client Market
+                    </Button>
+                  </Link>
+                  <Link href="/stream" className="w-full sm:w-auto">
+                    <Button
+                      variant="ghost"
+                      className="h-11 w-full border border-white/10 bg-white/[0.025] px-5 text-xs font-black text-slate-200 hover:bg-white/[0.05] sm:w-auto"
+                    >
+                      <Radio className="mr-2 h-4 w-4" />
+                      Stream Network
+                    </Button>
+                  </Link>
+                  <Link href="/enterprise" className="w-full sm:w-auto">
+                    <Button
+                      variant="ghost"
+                      className="h-11 w-full border border-white/10 bg-white/[0.025] px-5 text-xs font-black text-slate-200 hover:bg-white/[0.05] sm:w-auto"
+                    >
+                      <Crown className="mr-2 h-4 w-4" />
+                      Enterprise Territory
                     </Button>
                   </Link>
                 </div>

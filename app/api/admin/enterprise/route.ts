@@ -140,7 +140,7 @@ export async function PATCH(request: NextRequest) {
     await notifyUser(application.client_id, {
       type: 'enterprise_plan_approved',
       title: `${application.requested_position === 'lady' ? 'Lady' : 'Lord'} elevation approved`,
-      content: `Administration approved ${application.enterprise_name}. Your File Folder is now an Enterprise Dream Workshop and Legion participation is open.`,
+      content: `Administration approved ${application.enterprise_name}. Your File Folder is now an Enterprise Dream Workshop. Enterprise construction is unlocked; build Legion Quarters to open Legion participation.`,
       link: '/client/system-switch',
       fromUserId: auth.session.user.id,
       fromUserName: 'WEAVE Administration',

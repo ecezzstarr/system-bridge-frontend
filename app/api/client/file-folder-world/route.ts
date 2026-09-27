@@ -226,6 +226,106 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      const constructionRequirements:Record<string,{
+        systems:Array<{systemType:string;label:string}>
+        enterpriseApproval?:boolean
+      }> = {
+        commerce_storefront:{systems:[{systemType:'customer_door',label:'Customer Door'}]},
+        marketplace_network:{systems:[{systemType:'commerce_storefront',label:'Commerce Storefront'}]},
+        route_station:{systems:[{systemType:'customer_door',label:'Customer Door'}]},
+        creator_booth:{systems:[{systemType:'customer_door',label:'Customer Door'}]},
+        broadcast_studio:{systems:[{systemType:'creator_booth',label:'Creator Booth'}]},
+        streaming_gate:{systems:[{systemType:'broadcast_studio',label:'Broadcast Studio'}]},
+        media_network:{systems:[{systemType:'streaming_gate',label:'Streaming Open Gate'}]},
+        enterprise_door:{
+          systems:[{systemType:'marketplace_network',label:'Marketplace Network'}],
+          enterpriseApproval:true,
+        },
+        enterprise_hall:{systems:[{systemType:'enterprise_door',label:'Enterprise Door'}],enterpriseApproval:true},
+        legion_quarters:{systems:[{systemType:'enterprise_door',label:'Enterprise Door'}],enterpriseApproval:true},
+        operations_command:{systems:[{systemType:'enterprise_hall',label:'Enterprise Hall'}],enterpriseApproval:true},
+        enterprise_treasury:{systems:[{systemType:'enterprise_hall',label:'Enterprise Hall'}],enterpriseApproval:true},
+        distribution_network:{
+          systems:[
+            {systemType:'operations_command',label:'Operations Command'},
+            {systemType:'route_station',label:'Business Route Station'},
+          ],
+          enterpriseApproval:true,
+        },
+        enterprise_operating_system:{
+          systems:[
+            {systemType:'enterprise_hall',label:'Enterprise Hall'},
+            {systemType:'operations_command',label:'Operations Command'},
+            {systemType:'enterprise_treasury',label:'Enterprise Treasury'},
+            {systemType:'distribution_network',label:'Distribution Network'},
+          ],
+          enterpriseApproval:true,
+        },
+      }
+      const requirement=constructionRequirements[String(blueprint.blueprint_key)]
+      if(requirement?.enterpriseApproval){
+        const [application]=await ctx.sql`
+          SELECT status
+          FROM enterprise_applications
+          WHERE client_id=${ctx.client.id}::uuid
+          LIMIT 1
+        `
+        if(application?.status!=='approved'){
+          return NextResponse.json({
+            error:`Administration must approve Lord/Lady enterprise elevation before ${blueprint.name} can begin.`,
+            gate:'enterprise_approval',
+          },{status:409})
+        }
+      }
+      for(const dependency of requirement?.systems||[]){
+        const [requiredStructure]=await ctx.sql`
+          SELECT id
+          FROM client_built_systems
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND system_type=${dependency.systemType}
+            AND status='active'
+          LIMIT 1
+        `
+        if(!requiredStructure){
+          return NextResponse.json({
+            error:`${dependency.label} must finish construction before ${blueprint.name} can begin.`,
+            gate:'construction_dependency',
+            requiredSystem:dependency.systemType,
+          },{status:409})
+        }
+      }
+
+      const singleInstanceBlueprints=new Set([
+        'commerce_storefront','marketplace_network','route_station',
+        'creator_booth','broadcast_studio','streaming_gate','media_network',
+        'enterprise_door','enterprise_hall','legion_quarters','operations_command',
+        'enterprise_treasury','distribution_network',
+      ])
+      if(singleInstanceBlueprints.has(String(blueprint.blueprint_key))){
+        const [existingStructure]=await ctx.sql`
+          SELECT id,status
+          FROM client_file_folder_builds
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND blueprint_key=${blueprint.blueprint_key}
+          ORDER BY created_at DESC
+          LIMIT 1
+        `
+        const [liveStructure]=await ctx.sql`
+          SELECT id
+          FROM client_built_systems
+          WHERE client_id=${ctx.client.id}::uuid
+            AND file_number=${ctx.client.file_number}
+            AND system_type=${blueprint.system_type}
+            AND status='active'
+          LIMIT 1
+        `
+        if(existingStructure||liveStructure){
+          return NextResponse.json({error:`${blueprint.name} is already forming or active in this File Folder.`},{status:409})
+        }
+      }
+
       const title = customTitle || blueprint.name
       const requiredQty = Number(blueprint.required_item_quantity || 0)
       const requiredItemKey = blueprint.required_item_key || null
@@ -271,7 +371,7 @@ export async function POST(request: NextRequest) {
 
         if (!started[0]?.id) {
           return NextResponse.json({
-            error: `This blueprint requires ${requiredQty} × ${blueprint.required_item_key}. Acquire it in the Materials Market first.`,
+            error: `This blueprint requires ${requiredQty} × ${blueprint.required_item_key}. Acquire it in the Materials Depot first.`,
           }, { status: 409 })
         }
       } else {
@@ -314,7 +414,7 @@ export async function POST(request: NextRequest) {
       if (!item) return NextResponse.json({ error: 'Build item not found' }, { status: 404 })
 
       const [activeBuild] = await ctx.sql`
-        SELECT id,title,status
+        SELECT id,title,status,system_type
         FROM client_file_folder_builds
         WHERE id=${buildId}::uuid
           AND client_id=${ctx.client.id}::uuid
@@ -327,6 +427,24 @@ export async function POST(request: NextRequest) {
       }
 
       const effectType = String(item.build_effect || 'component')
+      const capabilityCompatibility:Record<string,string[]> = {
+        route_capacity:['route_station','integration_network','distribution_network','enterprise_operating_system'],
+        legion_capacity:['legion_quarters','enterprise_hall','enterprise_operating_system'],
+        stream_capacity:['broadcast_studio','streaming_gate','media_network'],
+        audience_capacity:['streaming_gate','media_network'],
+        ai_node:['ai_service_desk','intelligence_lab','operations_command','media_network','enterprise_operating_system'],
+        automation:['service_workflow','operations_suite','operations_command','distribution_network','enterprise_operating_system'],
+        verification:['payments_gateway','crypto_exchange_workshop','operations_command','enterprise_treasury','enterprise_operating_system'],
+      }
+      const compatibleSystems=capabilityCompatibility[effectType]
+      if(compatibleSystems && !compatibleSystems.includes(String(activeBuild.system_type))){
+        return NextResponse.json({
+          error:`${item.name} is not compatible with ${activeBuild.title}. Install it during a compatible ${effectType.replaceAll('_',' ')} build.`,
+          gate:'module_compatibility',
+          effectType,
+          compatibleSystems,
+        },{status:409})
+      }
       const effectFactor = effectType === 'speed_boost'
         ? Math.max(1, Number(item.effect_value) || 1)
         : 1
@@ -380,7 +498,7 @@ export async function POST(request: NextRequest) {
 
       if (!applied[0]?.part_id) {
         return NextResponse.json({
-          error: `Purchase ${item.name} in the Materials Market or Boost Bay before attaching it to this build.`,
+          error: `Purchase ${item.name} in the Materials Depot or Acceleration Bay before attaching it to this build.`,
         }, { status: 409 })
       }
     } else if (action === 'library_start' || action === 'library_complete') {

@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Cloud, GitBranch, Megaphone, Palette, Radio, Sparkles } from 'lucide-react'
+import { Cloud, GitBranch, LayoutTemplate, Megaphone, Palette, Radio, Sparkles } from 'lucide-react'
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const workshops = [
   {
@@ -24,6 +25,12 @@ const workshops = [
     title: 'Visual Systems Workshop',
     description: 'Draft, publish, hide and roll back registered WEAVE visual artifacts live without a Cloud Run deployment.',
     icon: Palette,
+  },
+  {
+    href: '/admin/environment-organizer',
+    title: 'Environment Organizer',
+    description: 'Withdraw, restore and reorder registered WEAVE pages and cards without deleting their source or rebuilding Cloud Run.',
+    icon: LayoutTemplate,
   },
   {
     href: '/admin/loop-workshop',
@@ -48,6 +55,8 @@ const workshops = [
 export default function AdminWorkshop() {
   const { user } = useAuth()
   const router = useRouter()
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
+  const visibleWorkshops = workshops.filter(item=>isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
 
   useEffect(() => {
     if (user && user.role !== 'admin') router.replace('/dashboard')
@@ -64,7 +73,7 @@ export default function AdminWorkshop() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {workshops.map(({ href, title, description, icon: Icon }) => (
+        {visibleWorkshops.map(({ href, title, description, icon: Icon }) => (
           <Link key={href} href={href} className="group rounded-2xl border border-slate-800 bg-slate-900/55 p-6 transition hover:border-cyan-500/40 hover:bg-slate-900">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">

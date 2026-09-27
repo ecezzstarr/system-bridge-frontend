@@ -19,6 +19,7 @@ import {
   Globe,
   Headphones,
   Landmark,
+  LayoutTemplate,
   MessageSquare,
   Network,
   Palette,
@@ -39,6 +40,7 @@ import {
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { ClientBuildPull } from '@/components/world/client-build-pull'
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 type Role = 'agent' | 'admin'
 
@@ -50,28 +52,24 @@ type FunctionItem = {
   district: string
 }
 
-type FunctionGroup = {
-  title: string
-  detail: string
-}
-
-const AGENT_GROUPS: FunctionGroup[] = [
-  { title: 'Shared WEAVE', detail: 'The common WEAVE world remains available from the Agent position.' },
-  { title: 'Bridger support', detail: 'Develop and support Bridger movement.' },
-  { title: 'Work + livelihood', detail: 'Company work, earnings and practical participation.' },
-  { title: 'Client + company support', detail: 'Serve approved Client and company functions.' },
-  { title: 'Record + value', detail: 'Holding, records and enterprise access.' },
-]
-
-const ADMIN_GROUPS: FunctionGroup[] = [
-  { title: 'Shared WEAVE', detail: 'The common WEAVE components Administration keeps because Administration is also present inside the same system as every other user.' },
-  { title: 'Operations center', detail: 'The dense Administration center preserved from the existing codebase: wallet, workshops, user operations, deposits, withdrawals, announcements and EIGHT.' },
-  { title: 'People + recognition', detail: 'Users, Clients, Bridgers, departments and verification.' },
-  { title: 'Client system', detail: 'Client money, builds, File Folders and enterprise elevation.' },
-  { title: 'Bridge system', detail: 'Prospects, crossing intelligence and Agent/Bridger support.' },
-  { title: 'Institution + infrastructure', detail: 'Authority, runtime, systems and deployment control.' },
-  { title: 'Atmosphere + communication', detail: 'Loops, sound, ads, campaigns and events.' },
-]
+const OPERATING_SEQUENCE = {
+  agent: [
+    { title: 'Shared WEAVE' },
+    { title: 'Bridger support' },
+    { title: 'Work + livelihood' },
+    { title: 'Client + company support' },
+    { title: 'Record + value' },
+  ],
+  admin: [
+    { title: 'Shared WEAVE' },
+    { title: 'Operations center' },
+    { title: 'People + recognition' },
+    { title: 'Client system' },
+    { title: 'Bridge system' },
+    { title: 'Institution + infrastructure' },
+    { title: 'Atmosphere + communication' },
+  ],
+} as const
 
 const AGENT_COMMANDS: FunctionItem[] = [
   { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: GitBranch, district: 'Shared WEAVE' },
@@ -162,6 +160,7 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Enterprise Systems Workshop', detail: 'Million-scale software, hardware and infrastructure systems.', href: '/admin/enterprise-systems', icon: Cloud, district: 'Institution + infrastructure' },
   { label: 'Infrastructure', detail: 'Cloud Run, runtime and maintenance control.', href: '/admin/infrastructure', icon: Cloud, district: 'Institution + infrastructure' },
   { label: 'Visual Systems Workshop', detail: 'Publish registered visual artifact changes live with version history and rollback.', href: '/admin/visual-systems', icon: Palette, district: 'Institution + infrastructure' },
+  { label: 'Environment Organizer', detail: 'Withdraw, restore and reorder registered cards and pages without deleting source.', href: '/admin/environment-organizer', icon: LayoutTemplate, district: 'Institution + infrastructure' },
   { label: 'Loop Workshop', detail: 'Create and publish company loops.', href: '/admin/loop-workshop', icon: Network, district: 'Atmosphere + communication' },
   { label: 'DJ Workshop', detail: 'System sound and live atmosphere.', href: '/admin/dj-workshop', icon: Radio, district: 'Atmosphere + communication' },
   { label: 'Ad Workshop', detail: 'Role-targeted communication without deployment.', href: '/admin/ad-workshop', icon: MessageSquare, district: 'Atmosphere + communication' },
@@ -188,7 +187,6 @@ const ROLE_COPY = {
     eyebrow: 'Agent Operating Room',
     title: 'Company support in working order.',
     detail: 'The Agent is a WEAVE employee. The Operating Room keeps the shared WEAVE world, Bridger support, company work, Client service, livelihood and records visible together.',
-    groups: AGENT_GROUPS,
     commands: AGENT_COMMANDS,
     panelTitle: 'Agent Working Panel',
     panelDetail: 'The middle panel keeps the Agent’s real working components together. Open a function without leaving the operating system.',
@@ -197,7 +195,6 @@ const ROLE_COPY = {
     eyebrow: 'Administration Operating Room',
     title: 'The institution operating as one system.',
     detail: 'Administration remains inside the same WEAVE used by every participant. Its Operating Room begins with shared WEAVE, preserves the dense Administration control center already present in the codebase, then adds the newer institutional control surfaces.',
-    groups: ADMIN_GROUPS,
     commands: ADMIN_COMMANDS,
     panelTitle: 'Administration Control Panel',
     panelDetail: 'The middle panel is the Administration working center: shared WEAVE first, the preserved live control-center components next, then the newer Administration instruments for Clients, Bridge movement, infrastructure, workshops, finance, communication and events.',
@@ -207,6 +204,13 @@ const ROLE_COPY = {
 export function RoleOperatingRoom({ role }: { role: Role }) {
   const copy = ROLE_COPY[role]
   const { scene, moving } = usePresenceCamera()
+  const { isVisible, orderFor } = useEnvironmentOrganizer()
+  const sequence = OPERATING_SEQUENCE[role]
+  const districtRank = new Map(sequence.map((item,index)=>[item.title,index]))
+  const visibleCommands = copy.commands.filter(item => isVisible(item.href)).sort((a,b)=>{
+    const districtDelta=(districtRank.get(a.district as any)??999)-(districtRank.get(b.district as any)??999)
+    return districtDelta || (orderFor(a.href)-orderFor(b.href))
+  })
 
   return (
     <main className="relative mx-auto w-full max-w-[1500px] p-3 md:p-6">
@@ -218,24 +222,7 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">{copy.detail}</p>
         </header>
 
-        <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[220px_minmax(0,1fr)_230px]">
-          <aside className="rounded-3xl border border-white/10 bg-black/20 p-4">
-            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Position map</p>
-            <div className="mt-4 space-y-3">
-              {copy.groups.map((group, index) => (
-                <div key={group.title} className="rounded-2xl border border-white/8 bg-white/[0.025] p-3">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-sky-300/20 bg-sky-400/[0.06] text-[9px] font-black text-sky-200">
-                      {index + 1}
-                    </span>
-                    <p className="text-xs font-black text-white">{group.title}</p>
-                  </div>
-                  <p className="mt-2 text-[11px] leading-5 text-slate-400">{group.detail}</p>
-                </div>
-              ))}
-            </div>
-          </aside>
-
+        <div className="grid gap-4 p-4 md:p-6 xl:grid-cols-[minmax(0,1fr)_250px]">
           <section className="min-w-0 rounded-[1.75rem] border border-sky-300/20 bg-[linear-gradient(180deg,rgba(14,165,233,.055),rgba(2,6,23,.72))] p-4 shadow-[0_24px_70px_rgba(2,8,23,.38)] md:p-5">
             <div className="flex flex-col gap-2 border-b border-white/10 pb-4 md:flex-row md:items-end md:justify-between">
               <div>
@@ -245,12 +232,12 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
               </div>
               <div className="shrink-0 rounded-xl border border-emerald-300/15 bg-emerald-400/[0.045] px-3 py-2 text-right">
                 <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">Functions present</p>
-                <p className="mt-0.5 text-xl font-black text-white">{copy.commands.length}</p>
+                <p className="mt-0.5 text-xl font-black text-white">{visibleCommands.length}</p>
               </div>
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {copy.commands.map(item => {
+              {visibleCommands.map(item => {
                 const Icon = item.icon
                 const tone = DISTRICT_TONE[item.district] || DISTRICT_TONE['Shared WEAVE']
                 return (

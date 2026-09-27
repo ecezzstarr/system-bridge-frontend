@@ -192,9 +192,41 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'Draft → preview → publish → observe → roll back when needed',
     layer: 'system',
   },
+  '/admin/environment-organizer': {
+    key: 'administration-environment-organizer',
+    title: 'Environment Organizer',
+    district: 'Institution',
+    purpose: 'Administration control for withdrawing, restoring and ordering registered pages and cards while preserving source and records.',
+    movement: 'Inspect → withdraw or restore → reorder → observe',
+    layer: 'system',
+  },
 }
 
 const prefix: Array<[string, WeaveEnvironmentCopy]> = [
+  ['/stream', {
+    key: 'public-stream-network',
+    title: 'WEAVE Stream Network',
+    district: 'Enterprise',
+    purpose: 'The public broadcast world where completed Client Streaming Open Gates become channels anyone can visit.',
+    movement: 'Enter network → choose channel → watch live or replay → continue into connected Client worlds',
+    layer: 'world',
+  }],
+  ['/enterprise', {
+    key: 'public-enterprise-territory',
+    title: 'WEAVE Enterprise Territory',
+    district: 'Enterprise',
+    purpose: 'The public territory for Administration-approved Lord/Lady enterprises that have completed Enterprise Door construction.',
+    movement: 'Enter territory → inspect enterprise → enter systems, market or stream → participate',
+    layer: 'world',
+  }],
+  ['/market', {
+    key: 'public-client-market',
+    title: 'WEAVE Client Market',
+    district: 'Enterprise',
+    purpose: 'The public district where constructed Client Customer Doors, storefronts and Market Halls can be visited without a WEAVE account.',
+    movement: 'Enter market → visit store → inspect offer → purchase or request',
+    layer: 'world',
+  }],
   ['/client/system-switch', {
     key: 'client-file-folder',
     title: 'Main File Folder · 4D Operating World',
