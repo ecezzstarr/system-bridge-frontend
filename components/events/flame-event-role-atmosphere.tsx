@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import { Flame, Waves } from 'lucide-react'
 
 export function FlameEventRoleAtmosphere({
@@ -12,8 +13,9 @@ export function FlameEventRoleAtmosphere({
   children: ReactNode
   userRole?: string | null
   userName?: string | null
-  pathname: string
+  pathname?: string
 }) {
+  const currentPath = pathname || usePathname() || '/'
   const roleLabel = userRole === 'admin'
     ? 'ADMINISTRATION'
     : userRole === 'agent'
@@ -28,7 +30,7 @@ export function FlameEventRoleAtmosphere({
     <div
       className="flame-event-role-atmosphere relative min-w-0"
       data-flame-event-role={roleLabel.toLowerCase()}
-      data-flame-event-path={pathname}
+      data-flame-event-path={currentPath}
     >
       <div className="flame-event-role-signal pointer-events-none fixed inset-0 z-[2] overflow-hidden" aria-hidden="true">
         <div className="flame-event-burning-river absolute inset-x-[5%] bottom-[7%] h-28 -rotate-[1.5deg] rounded-[50%] blur-2xl" />
