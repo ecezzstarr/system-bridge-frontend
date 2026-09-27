@@ -383,15 +383,15 @@ export function BridgePlazaMap({
     }
 
     if(supportAvailable){
-      base.push({id:'client-support',name:'Client Support Station',subtitle:'FILES · CLIENTS · PARTICIPATION',action:'support',accent:'#67e8f9',position:[-6.45,.05,2.8],rotation:2.05,unlocked:true,system:'Client support'})
+      base.push({id:'client-support',name:'System Switch · File Folders',subtitle:'CLIENT WORLDS · FILE FOLDERS · SUPPORT',action:'support',accent:'#67e8f9',position:[-6.45,.05,2.8],rotation:2.05,unlocked:true,system:'System Switch'})
     }
 
     if(userRole==='client'&&fileNumber){
       base.push({
         id:'file-folder',
-        name:'My File Folder',
+        name:'System Switch · My File Folder',
         subtitle:'BUILD · OPERATE · GROW',
-        href:`/weave/file-folder/${encodeURIComponent(fileNumber)}`,
+        href:'/client/system-switch',
         action:'route',
         accent:'#a78bfa',
         position:[6.35,.05,2.9],
