@@ -18,18 +18,21 @@ export default function ClientSystemSwitchPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const controller=new AbortController()
+    const timeout=window.setTimeout(()=>controller.abort(),12000)
     const localClient = getClientUser()
     const token = getClientToken()
     if (!localClient || !token) {
+      window.clearTimeout(timeout)
       router.replace('/client/login')
-      return
+      return () => controller.abort()
     }
 
     const headers = { Authorization: `Bearer ${token}` }
 
     const load = async () => {
       try {
-        const entryResponse = await fetch('/api/client/file-folder-entry', { headers, cache: 'no-store' })
+        const entryResponse = await fetch('/api/client/file-folder-entry', { headers, cache: 'no-store', signal:controller.signal })
         const entryBody = await entryResponse.json()
         if (!entryResponse.ok) throw new Error(entryBody.error || 'Unable to resolve File Folder entry')
 
@@ -37,7 +40,7 @@ export default function ClientSystemSwitchPage() {
 
         if (!entryBody.active) return
 
-        const response = await fetch('/api/client/system-switch', { headers, cache: 'no-store' })
+        const response = await fetch('/api/client/system-switch', { headers, cache: 'no-store', signal:controller.signal })
         const body = await response.json()
         if (!response.ok) {
           if (body.gate) {
@@ -56,13 +59,22 @@ export default function ClientSystemSwitchPage() {
         }
         setData(body)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unable to open System Switch')
+        if(controller.signal.aborted){
+          setError('The File Folder took too long to form. Refresh or return to the Client World and enter again.')
+        }else{
+          setError(err instanceof Error ? err.message : 'Unable to open System Switch')
+        }
       } finally {
+        window.clearTimeout(timeout)
         setLoading(false)
       }
     }
 
     void load()
+    return()=>{
+      window.clearTimeout(timeout)
+      controller.abort()
+    }
   }, [router])
 
   if (loading) return <FileFolderEnvironmentLoader />
