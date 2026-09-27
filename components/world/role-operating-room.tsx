@@ -223,7 +223,7 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
       <section className="weave-system-depth weave-operating-environment relative overflow-hidden border-y border-sky-300/15 bg-[#030a15]/74 shadow-[0_32px_100px_rgba(2,8,23,.38)] backdrop-blur-xl sm:rounded-[2rem] sm:border">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(56,189,248,.13),transparent_36%),radial-gradient(circle_at_88%_0%,rgba(245,158,11,.06),transparent_28%)] p-5 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-2"><p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">{copy.eyebrow}</p><p className="text-[8px] font-black uppercase tracking-[0.16em] text-white/35">{scene.district} · {scene.level}{moving ? " · moving" : " · present"}</p></div>
-          <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">{copy.title}</h1>
+          <h1 data-weave-live-word="title" className="mt-2 text-2xl font-black text-white md:text-3xl">{copy.title}</h1>
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">{copy.detail}</p>
         </header>
 
@@ -232,7 +232,7 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
             <div className="mb-5 flex flex-col gap-3 border-b border-white/10 pb-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Operating routes</p>
-                <h2 className="mt-1 text-xl font-black text-white md:text-2xl">{copy.panelTitle}</h2>
+                <h2 data-weave-live-word="title" className="mt-1 text-xl font-black text-white md:text-2xl">{copy.panelTitle}</h2>
                 <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-300">{copy.panelDetail}</p>
               </div>
               <div className="border-l border-emerald-300/20 pl-3">
@@ -255,7 +255,7 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
                   <Activity className="h-4 w-4 text-emerald-300" />
                   <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">System pulse</p>
                 </div>
-                <p className="mt-3 text-sm font-black text-white">Operating Room active</p>
+                <p data-weave-live-word="station" className="mt-3 text-sm font-black text-white">Operating Room active</p>
                 <p className="mt-2 text-xs leading-5 text-slate-400">
                   The role stays present while functions open as stations inside the same operational route.
                 </p>
