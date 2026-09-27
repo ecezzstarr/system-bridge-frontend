@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { visiblePoll } from '@/lib/visible-poll'
 import { Send, ArrowLeft } from 'lucide-react'
 
 interface Message {
@@ -47,8 +48,8 @@ export default function AgentChatPage() {
       return
     }
     fetchMessages(true)
-    const interval = setInterval(() => fetchMessages(false), 3000)
-    return () => clearInterval(interval)
+    const stop = visiblePoll(() => fetchMessages(false), 3000, false)
+    return stop
   }, [user, router, clientId, position])
 
   useEffect(() => {
