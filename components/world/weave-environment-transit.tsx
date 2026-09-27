@@ -2,7 +2,6 @@
 
 import { useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
-import { visiblePoll } from '@/lib/visible-poll'
 import { setRuntimeCovered } from './use-adaptive-runtime'
 import { ArrowRight,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
@@ -87,6 +86,8 @@ type LoadingBrief={
   movement?:string
 }
 
+const LOADING_CARD_HOLD_MS=1800
+
 const PLATFORM_BRIEFS:LoadingBrief[]=[
   {
     eyebrow:'WEAVE of Presence',
@@ -108,6 +109,18 @@ const PLATFORM_BRIEFS:LoadingBrief[]=[
   },
 ]
 
+const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS
+
+function waitForBriefingSequence(startedAt:number,signal:AbortSignal){
+  return new Promise<void>(resolve=>{
+    const remaining=Math.max(0,LOADING_SEQUENCE_MS-(performance.now()-startedAt))
+    if(remaining===0||signal.aborted){resolve();return}
+    const timer=window.setTimeout(resolve,remaining)
+    const abort=()=>{window.clearTimeout(timer);resolve()}
+    signal.addEventListener('abort',abort,{once:true})
+  })
+}
+
 export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const pathname=usePathname()||'/'
   const environment=useMemo(()=>resolveWeaveEnvironment(pathname),[pathname])
@@ -118,7 +131,11 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const [transiting,setTransiting]=useState(false)
   const [readyPath,setReadyPath]=useState<string|null>(null)
   const [briefIndex,setBriefIndex]=useState(0)
+  const [sequenceId,setSequenceId]=useState(0)
+  const [requestedPath,setRequestedPath]=useState<string|null>(null)
   const first=useRef(true)
+  const transitionStartedAtRef=useRef<number|null>(null)
+  const queryTransitionControllerRef=useRef<AbortController|null>(null)
   const covered=booting||transiting||readyPath!==pathname
   useEffect(()=>{
     setRuntimeCovered(covered)
@@ -127,52 +144,103 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   useEffect(()=>{
     const controller=new AbortController()
     const mode=first.current?'boot':'transit'
-    setBriefIndex(0)
-    if(mode==='transit')setTransiting(true)
-    void waitForEnvironmentReadiness(mode,configRef.current,controller.signal).then(()=>{
+    const alreadyPrimed=mode==='transit'&&transitionStartedAtRef.current!==null
+    const startedAt=alreadyPrimed
+      ? transitionStartedAtRef.current!
+      : performance.now()
+
+    if(!alreadyPrimed){
+      transitionStartedAtRef.current=startedAt
+      setBriefIndex(0)
+      setSequenceId(value=>value+1)
+    }
+    if(mode==='transit'){
+      setReadyPath(null)
+      setTransiting(true)
+    }
+
+    void Promise.all([
+      waitForEnvironmentReadiness(mode,configRef.current,controller.signal),
+      waitForBriefingSequence(startedAt,controller.signal),
+    ]).then(()=>{
       if(controller.signal.aborted)return
       first.current=false
+      transitionStartedAtRef.current=null
+      setRequestedPath(null)
       setReadyPath(pathname)
-      setBooting(false);setTransiting(false)
+      setBooting(false)
+      setTransiting(false)
     })
     return ()=>controller.abort()
   },[pathname])
-  const destinationBrief=useMemo<LoadingBrief>(()=>({
-    eyebrow:(booting?'Entering':'Next environment')+' · '+environment.layer,
-    title:environment.title,
-    body:environment.purpose,
-    movement:environment.movement,
-  }),[booting,environment])
-
-  const briefs=useMemo(
-    ()=>booting?[...PLATFORM_BRIEFS,destinationBrief]:[
-      destinationBrief,
-      {
-        eyebrow:environment.district+' movement',
-        title:'What happens here',
-        body:environment.purpose,
-        movement:environment.movement,
-      },
-    ],
-    [booting,destinationBrief,environment],
-  )
 
   useEffect(()=>{
-    if(!booting&&!transiting)return
-    setBriefIndex(0)
-    if(briefs.length<2)return
-    const interval=visiblePoll(
-      ()=>setBriefIndex(index=>(index+1)%briefs.length),
-      booting?1250:1100,false,
-    )
-    return ()=>interval()
-  },[booting,transiting,pathname,briefs.length])
+    const handleInternalNavigation=(event:MouseEvent)=>{
+      if(first.current||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return
+      const element=event.target instanceof Element?event.target.closest('a[href]'):null
+      if(!(element instanceof HTMLAnchorElement)||element.hasAttribute('download'))return
+      if(element.target&&element.target!=='_self')return
 
-  const briefing=briefs[briefIndex%briefs.length]||destinationBrief
-  const openingLabel=booting?'Forming the living environment':'Opening the next environment'
+      let target:URL
+      try{target=new URL(element.href,window.location.href)}catch{return}
+      if(target.origin!==window.location.origin)return
+
+      const current=new URL(window.location.href)
+      if(target.pathname===current.pathname&&target.search===current.search)return
+
+      const startedAt=performance.now()
+      transitionStartedAtRef.current=startedAt
+      setRequestedPath(target.pathname+target.search)
+      setBriefIndex(0)
+      setSequenceId(value=>value+1)
+      setReadyPath(null)
+      setTransiting(true)
+
+      // Query-only sidebar stations do not change usePathname(). They still get
+      // the same three-card environmental handoff and then uncover safely.
+      if(target.pathname===current.pathname){
+        queryTransitionControllerRef.current?.abort()
+        const controller=new AbortController()
+        queryTransitionControllerRef.current=controller
+        void Promise.all([
+          waitForEnvironmentReadiness('transit',configRef.current,controller.signal),
+          waitForBriefingSequence(startedAt,controller.signal),
+        ]).then(()=>{
+          if(controller.signal.aborted)return
+          transitionStartedAtRef.current=null
+          setRequestedPath(null)
+          setReadyPath(target.pathname)
+          setTransiting(false)
+        })
+      }
+    }
+
+    document.addEventListener('click',handleInternalNavigation,true)
+    return ()=>{
+      document.removeEventListener('click',handleInternalNavigation,true)
+      queryTransitionControllerRef.current?.abort()
+    }
+  },[])
+
+  useEffect(()=>{
+    if(!covered)return
+    setBriefIndex(0)
+    const timers=PLATFORM_BRIEFS.slice(1).map((_,index)=>
+      window.setTimeout(()=>setBriefIndex(index+1),(index+1)*LOADING_CARD_HOLD_MS)
+    )
+    return ()=>timers.forEach(timer=>window.clearTimeout(timer))
+  },[covered,sequenceId])
+
+  const requestedEnvironment=useMemo(
+    ()=>requestedPath?resolveWeaveEnvironment(requestedPath.split('?')[0]):null,
+    [requestedPath],
+  )
+  const destinationEnvironment=requestedEnvironment||environment
+  const briefing=PLATFORM_BRIEFS[Math.min(briefIndex,PLATFORM_BRIEFS.length-1)]||PLATFORM_BRIEFS[0]
+  const openingLabel=booting?'Forming the living environment':`Opening ${destinationEnvironment.title}`
   const statusLabel=booting
     ? 'Preparing WEAVE world · preserving continuity'
-    : 'Holding the world while the destination becomes ready'
+    : `Moving through ${destinationEnvironment.district} · keeping your position intact`
 
   return <>
     <div
@@ -210,13 +278,13 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
 
         <section
           key={briefing.eyebrow+'-'+briefing.title}
-          aria-hidden="true"
+          data-loading-brief={briefIndex+1}
           className="mx-auto mt-6 overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_30px_90px_rgba(0,0,0,.42)] backdrop-blur-xl sm:p-5"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
             <span className="rounded-full border border-white/10 bg-white/[.035] px-2.5 py-1 text-[7px] font-black uppercase tracking-[.16em] text-stone-400">
-              {environment.district}
+              {destinationEnvironment.district}
             </span>
           </div>
           <h2 className="mt-2 text-lg font-black text-white sm:text-xl">{briefing.title}</h2>
@@ -228,9 +296,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         </section>
 
         <div className="mx-auto mt-5 flex max-w-sm items-center gap-2" aria-hidden="true">
-          {briefs.map((_,index)=><span
+          {PLATFORM_BRIEFS.map((_,index)=><span
             key={index}
-            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===briefIndex%briefs.length?'bg-amber-200/80':'bg-white/10')}
+            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,PLATFORM_BRIEFS.length-1)?'bg-amber-200/80':'bg-white/10')}
           />)}
         </div>
 
