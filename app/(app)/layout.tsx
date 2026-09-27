@@ -116,19 +116,19 @@ export default function AppLayout({
         <main className="relative min-w-0 flex-1 overflow-x-clip p-3 sm:p-4 md:p-6 lg:p-8">
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
-              <NormalWeaveRoleAtmosphere
+              <FlameEventRoleAtmosphere
                 userRole={user?.role}
                 userName={user?.name}
                 pathname={pathname}
               >
-                <FlameEventRoleAtmosphere
+                <NormalWeaveRoleAtmosphere
                   userRole={user?.role}
                   userName={user?.name}
                   pathname={pathname}
                 >
                   <EnvironmentPageGuard>{children}</EnvironmentPageGuard>
-                </FlameEventRoleAtmosphere>
-              </NormalWeaveRoleAtmosphere>
+                </NormalWeaveRoleAtmosphere>
+              </FlameEventRoleAtmosphere>
             </WeaveEnvironmentSurface>
           </PresenceCameraViewport>
         </main>
