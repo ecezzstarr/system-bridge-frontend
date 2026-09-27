@@ -22,7 +22,7 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
   const pointer=useRef({x:.5,y:.72})
 
   const baseEnergy=useMemo(
-    ()=>flameLive?1:clamp(.42+Math.abs(scene.camera.yaw)*.002+Math.abs(scene.camera.pitch)*.0015,0.38,.72),
+    ()=>flameLive ? 1 : clamp(.42+Math.abs(scene.camera.yaw)*.002+Math.abs(scene.camera.pitch)*.0015,0.38,.72),
     [flameLive,scene.camera.pitch,scene.camera.yaw],
   )
 
@@ -144,7 +144,7 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
     <InteractionMotionField
       forceEvent={flameLive}
       className="weave-live-flame-canvas z-[1]"
-      opacity={flameLive?.98:.82}
+      opacity={flameLive ? 0.98 : 0.82}
     />
     <div className="weave-live-flame-current weave-live-flame-current-a"/>
     <div className="weave-live-flame-current weave-live-flame-current-b"/>
