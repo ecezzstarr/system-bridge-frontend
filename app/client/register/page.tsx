@@ -108,7 +108,7 @@ function ClientRegisterContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-transparent p-4 relative overflow-hidden">
+    <div className="min-h-dvh flex flex-col items-center justify-start sm:justify-center bg-transparent px-4 py-8 relative overflow-x-hidden overflow-y-auto">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-900 rounded-full blur-[120px]" />
@@ -264,7 +264,7 @@ function ClientRegisterContent() {
 export default function ClientRegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-transparent">
+      <div className="min-h-dvh flex items-center justify-center bg-transparent">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     }>
