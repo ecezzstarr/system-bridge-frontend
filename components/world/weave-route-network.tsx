@@ -50,7 +50,7 @@ export function WeaveRouteNetwork({
       <div>
         <div className="flex items-center gap-2">
           <Route className="h-4 w-4 text-amber-300"/>
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">{title}</p>
+          <p data-weave-live-word="station" className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">{title}</p>
         </div>
         <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-400">{detail}</p>
       </div>
@@ -68,7 +68,7 @@ export function WeaveRouteNetwork({
           <div className="relative flex items-start gap-3 px-2 py-3 md:block md:border-r md:border-white/[0.07] md:px-3">
             <span className={'mt-1.5 block h-2.5 w-2.5 shrink-0 rounded-full border shadow-[0_0_18px_currentColor] '+tone.dot}/>
             <div className="md:mt-2">
-              <p className={'text-[8px] font-black uppercase tracking-[0.16em] '+tone.label}>{district}</p>
+              <p data-weave-live-word="station" className={'text-[8px] font-black uppercase tracking-[0.16em] '+tone.label}>{district}</p>
               <p className="mt-1 text-[9px] text-slate-600">Route {String(districtIndex+1).padStart(2,'0')}</p>
             </div>
             <span className={'absolute bottom-0 left-[16px] top-9 hidden w-px md:block '+tone.line}/>
@@ -90,7 +90,7 @@ export function WeaveRouteNetwork({
                 </span>
                 <span className="min-w-0">
                   <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="text-sm font-black text-white">{station.label}</span>
+                    <span data-weave-live-word="station" className="text-sm font-black text-white">{station.label}</span>
                     <span className="text-[8px] font-black uppercase tracking-[0.12em] text-slate-600">Station {String(index+1).padStart(2,'0')}</span>
                   </span>
                   <span className="mt-1 block text-[10px] leading-4 text-slate-400">{station.detail}</span>
