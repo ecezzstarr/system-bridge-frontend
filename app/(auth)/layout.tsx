@@ -30,7 +30,7 @@ export default function AuthLayout({
   }
 
   return (
-    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-transparent px-4">
+    <div className="relative flex min-h-dvh items-start justify-center overflow-x-hidden overflow-y-auto bg-transparent px-4 py-8 sm:items-center">
       <div className="w-full max-w-md relative z-10">
         <WeaveEnvironmentSurface compact>{children}</WeaveEnvironmentSurface>
       </div>
