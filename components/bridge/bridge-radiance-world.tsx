@@ -5,11 +5,12 @@ import { OrbitControls, Float, Html } from '@react-three/drei'
 import { useState } from 'react'
 import { FlameEventArtifact3D } from '@/components/events/flame-event-artifact'
 import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 const positions = [
   { id: 'mandate', name: 'MANDATE', color: '#f59e0b', x: -4 },
   { id: 'attorney', name: 'ATTORNEY', color: '#38bdf8', x: 4 },
-  { id: 'forensic', name: 'FORENSIC', color: '#a78bfa', x: -4 },
+  { id: 'forensic', name: 'FORENSICS', color: '#a78bfa', x: -4 },
   { id: 'administration', name: 'ADMINISTRATION', color: '#f472b6', x: 4 },
 ]
 
@@ -80,34 +81,34 @@ export default function BridgeRadianceWorld({ fileNumber, onCrossingRequest, ini
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-4 p-6">
         <div>
           <div className="flex flex-wrap items-center gap-2 text-[9px] font-black uppercase tracking-[0.24em] text-orange-200">
-            <span>FLAME EVENT</span><span className="text-white/20">·</span><span>BURNING RIVER</span>
+            <span>{WEAVE_WRITING.bridgeRadiance.event}</span>
           </div>
-          <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.18em] text-rose-100/50">The River that Burns · {flameLive ? 'LIVE' : flameStatus === 'planned' ? 'PREPARING' : 'CLOSED'}</p>
-          <p className="mt-3 text-[10px] uppercase tracking-[0.35em] text-sky-300/80">The Weave of Presence</p>
-          <h1 data-weave-live-word="title" className="mt-2 text-3xl font-black">BRIDGE RADIANCE</h1>
-          <p className="mt-1 text-sm text-slate-400">Bridge · Prospect → File Folder → Client → System Switch</p>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-white/45">Topic · {topic || 'Interaction in Motion'}</p>
+          <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.18em] text-rose-100/50">{WEAVE_WRITING.bridgeRadiance.eventName} · {flameLive ? 'LIVE' : flameStatus === 'planned' ? 'PREPARING' : 'CLOSED'}</p>
+          <p className="mt-3 text-[10px] font-black uppercase tracking-[0.22em] text-sky-300/80">{WEAVE_WRITING.identity.institution}</p>
+          <h1 data-weave-live-word="title" className="mt-2 text-3xl font-black">{WEAVE_WRITING.bridgeRadiance.eyebrow}</h1>
+          <p className="mt-1 max-w-xl text-sm font-semibold text-slate-300">{WEAVE_WRITING.bridgeRadiance.title}</p>
+          <p className="mt-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/45">{WEAVE_WRITING.bridgeRadiance.position} · {WEAVE_WRITING.bridgeRadiance.topic}: {topic || WEAVE_WRITING.identity.movement}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-right backdrop-blur">
           <p className="text-[9px] uppercase tracking-[0.25em] text-slate-500">File Number</p>
-          <p className="mt-1 font-mono text-sm">{fileNumber || 'Awaiting recognition'}</p>
+          <p className="mt-1 font-mono text-sm">{fileNumber || WEAVE_WRITING.bridgeRadiance.fileNumberPending}</p>
         </div>
       </div>
       <div className="absolute inset-0"><Scene active={active} onSelect={select} /></div>
       <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/80 to-transparent px-6 pb-6 pt-28">
         {initialMovement ? (
           <div className="mb-4 max-w-2xl rounded-2xl border border-sky-400/20 bg-sky-400/5 p-4 backdrop-blur">
-            <p className="text-[9px] uppercase tracking-[0.25em] text-sky-300">Bridge arrived · Prospect + {flameName || 'Flame'}</p>
+            <p className="text-[9px] uppercase tracking-[0.25em] text-sky-300">{WEAVE_WRITING.bridgeRadiance.arrival} · Prospect + {flameName || 'Flame'}</p>
             <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-300">{initialMovement}</p>
           </div>
         ) : null}
-        <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">Test Movement · {movements}</p>
+        <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500">{WEAVE_WRITING.bridgeRadiance.movementCount} · {movements}</p>
         <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-xl font-black">Your movement is forming a Client path through the Burning River.</h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Bridge Radiance carries the Prospect toward recognition. Form the File Folder, let Administration verify the movement and issue the File Number, then cross as Client into System Switch.</p>
+            <h2 data-weave-live-word="title" className="text-xl font-black">{WEAVE_WRITING.bridgeRadiance.title}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{WEAVE_WRITING.bridgeRadiance.detail}</p>
           </div>
-          <button type="button" disabled={!active} onClick={onCrossingRequest} className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] disabled:opacity-30">Approach File Folder</button>
+          <button type="button" disabled={!active} onClick={onCrossingRequest} className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] disabled:opacity-30">{WEAVE_WRITING.bridgeRadiance.action}</button>
         </div>
       </div>
     </section>
