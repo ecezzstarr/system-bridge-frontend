@@ -40,7 +40,7 @@ export function AppHeader({ user }: AppHeaderProps) {
     <>
       <header className="weave-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sky-300/10 bg-[#03101d]/88 px-4 shadow-[0_12px_40px_rgba(2,8,23,.28)] backdrop-blur-2xl md:px-6">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="weave-flame-live-indicator items-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-400/[0.07] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-orange-100">
+          <div data-weave-live-word="station" className="weave-flame-live-indicator items-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-400/[0.07] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-orange-100">
             <span className="h-1.5 w-1.5 rounded-full bg-orange-300 shadow-[0_0_12px_rgba(251,146,60,.8)]" />
             Flame Live
           </div>
@@ -69,7 +69,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           {/* Wallet Quick View - Icon only on mobile */}
           <Button variant="outline" size="sm" className="gap-2 bg-[#061426]/72 border-amber-300/12 h-9 px-2 md:px-3 shadow-inner">
             <Wallet className="h-4 w-4 text-cyan-400" />
-            <span className="font-mono text-[10px] md:text-xs hidden sm:inline">{flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString()} Flame Coin` : '—'}</span>
+            <span data-weave-live-word="station" className="font-mono text-[10px] md:text-xs hidden sm:inline">{flameCoinBalance !== null ? `${flameCoinBalance.toLocaleString()} Flame Coin` : '—'}</span>
           </Button>
 
           {/* User Avatar */}
