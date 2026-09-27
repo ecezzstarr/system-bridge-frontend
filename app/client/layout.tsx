@@ -3,6 +3,7 @@ import { ClientNavigation } from '@/components/client-navigation'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { ClientRouteGuard } from '@/components/client/client-route-guard'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
+import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
@@ -39,7 +40,13 @@ export default function ClientLayout({
           <ClientNavigation />
           <FlameEventAd />
           <LiveAdSurface />
-          <PresenceCameraViewport><WeaveEnvironmentSurface role="client"><EnvironmentPageGuard>{children}</EnvironmentPageGuard></WeaveEnvironmentSurface></PresenceCameraViewport>
+          <PresenceCameraViewport>
+            <WeaveEnvironmentSurface role="client">
+              <FlameEventRoleAtmosphere userRole="client">
+                <EnvironmentPageGuard>{children}</EnvironmentPageGuard>
+              </FlameEventRoleAtmosphere>
+            </WeaveEnvironmentSurface>
+          </PresenceCameraViewport>
           <PresenceCameraSignal />
         </div>
       </ClientRouteGuard>
