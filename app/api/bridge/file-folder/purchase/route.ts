@@ -27,6 +27,57 @@ async function ensurePurchaseSchema() {
   await sql`CREATE INDEX IF NOT EXISTS idx_file_folder_purchases_file_number ON file_folder_purchases(file_number)`
 }
 
+export async function GET(request: NextRequest) {
+  try {
+    await ensureClientFileFolderSchema(sql); await ensurePurchaseSchema()
+    const { searchParams } = new URL(request.url)
+    const purchaseId = searchParams.get('purchaseId')?.trim() || ''
+    const bridgeCode = searchParams.get('bridgeCode')?.trim() || ''
+
+    if (!purchaseId) return NextResponse.json({ error: 'purchaseId is required' }, { status: 400 })
+
+    const [purchase] = await sql`
+      SELECT id,file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,status,bridge_code,created_at,confirmed_at
+      FROM file_folder_purchases
+      WHERE id=${purchaseId}::uuid
+      LIMIT 1
+    `
+    if (!purchase) return NextResponse.json({ error: 'File Folder purchase not found' }, { status: 404 })
+
+    if (bridgeCode) {
+      if (!purchase.bridge_code || purchase.bridge_code !== bridgeCode) {
+        return NextResponse.json({ error: 'Purchase does not belong to this Bridge crossing' }, { status: 403 })
+      }
+    } else {
+      const user = await requireApiUser(request)
+      if (!user || !purchase.client_id || String(purchase.client_id) !== String(user.id)) {
+        return NextResponse.json({ error: 'Purchase access denied' }, { status: 403 })
+      }
+    }
+
+    const confirmed = purchase.status === 'confirmed' && Boolean(purchase.file_number)
+    return NextResponse.json({
+      success: true,
+      purchase: {
+        id: purchase.id,
+        status: purchase.status,
+        fileNumber: purchase.file_number || null,
+        amountFlameCoin: Number(purchase.amount_trx || 0),
+        confirmedAt: purchase.confirmed_at || null,
+      },
+      crossing: confirmed ? {
+        ready: true,
+        registerUrl: `/client/register?fileNumber=${encodeURIComponent(purchase.file_number)}`,
+        systemSwitchUrl: '/client/system-switch',
+      } : {
+        ready: false,
+      },
+    })
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Unable to read File Folder purchase' }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     await ensureClientFileFolderSchema(sql); await ensurePurchaseSchema()
@@ -47,6 +98,11 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
     const clientId = user?.role === 'client' ? user.id : null
+    if (!clientId && (!buyerName || !buyerPhone)) {
+      return NextResponse.json({
+        error: 'Prospect name and phone are required so Administration can issue the File Number after payment verification.',
+      }, { status: 400 })
+    }
     const bridgeCode = typeof body.bridgeCode === 'string' ? body.bridgeCode.trim().slice(0,32) : null
     let providerKey: string | null = null
     let providerName: string | null = null
@@ -72,7 +128,20 @@ export async function POST(request: NextRequest) {
     const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) RETURNING *`
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
     const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
-    return NextResponse.json({ success: true, purchase: { ...record, fileFolderTier }, receipt, fileFolderTier, message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration must confirm the payment before the File Folder is activated.` }, { status: 201 })
+    return NextResponse.json({
+      success: true,
+      purchase: {
+        id: record.id,
+        status: record.status,
+        fileNumber: record.file_number || null,
+        amountFlameCoin: Number(record.amount_trx || amountFlameCoin),
+        fileFolderTier,
+      },
+      receipt,
+      fileFolderTier,
+      crossing: { ready: false },
+      message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration will verify the payment, issue the File Number, and open the Client registration crossing.`,
+    }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
 
