@@ -88,7 +88,7 @@ export function ClientOperatingRoom() {
       <section className="weave-system-depth weave-operating-environment overflow-hidden border-y border-sky-300/15 bg-[#030a15]/82 backdrop-blur-xl sm:rounded-[2rem] sm:border">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(56,189,248,.15),transparent_35%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.09),transparent_30%)] p-5 md:p-7">
           <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Client Operating Room</p>
-          <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">The Client is the player. The File Folder is the working world.</h1>
+          <h1 data-weave-live-word="title" className="mt-2 text-2xl font-black text-white md:text-3xl">The Client is the player. The File Folder is the working world.</h1>
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">
             {user?.name ? `${user.name}, ` : ''}your movement begins in the Main File Folder. Builds become live systems there; money, support and shared WEAVE spaces remain connected around that same Client position.
           </p>
@@ -103,7 +103,7 @@ export function ClientOperatingRoom() {
                   <div key={district.title} className="relative border-b border-white/[0.055] px-4 py-3 last:border-b-0">
                     <span className="absolute -left-[5px] top-4 h-2.5 w-2.5 rounded-full border border-sky-200/40 bg-sky-300 shadow-[0_0_12px_rgba(125,211,252,.35)]"/>
                     <p className="text-[8px] font-black uppercase tracking-[0.12em] text-slate-600">District {String(index+1).padStart(2,'0')}</p>
-                    <p className="mt-1 text-xs font-black text-white">{district.title}</p>
+                    <p data-weave-live-word="station" className="mt-1 text-xs font-black text-white">{district.title}</p>
                     <p className="mt-1 text-[10px] leading-4 text-slate-500">{district.detail}</p>
                   </div>
                 ))}
@@ -117,7 +117,7 @@ export function ClientOperatingRoom() {
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-sky-300/20 bg-sky-400/[0.06]"><FolderOpen className="h-5 w-5 text-sky-200"/></div>
                 <div>
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Primary Client environment</p>
-                  <h2 className="mt-1 text-xl font-black text-white md:text-2xl">Main File Folder</h2>
+                  <h2 data-weave-live-word="title" className="mt-1 text-xl font-black text-white md:text-2xl">Main File Folder</h2>
                   <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Recognize → Preview → Build → Activate → Operate. The File Folder is the Client-owned world; the routes below remain connected to it.</p>
                 </div>
               </div>
