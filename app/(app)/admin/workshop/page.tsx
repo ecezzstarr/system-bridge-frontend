@@ -29,7 +29,7 @@ const workshops = [
   {
     href: '/admin/environment-organizer',
     title: 'Environment Organizer',
-    description: 'Withdraw, restore and reorder registered WEAVE pages and cards without deleting their source or rebuilding Cloud Run.',
+    description: 'Control environment loading/settling, presence ambience, and withdraw, restore or reorder WEAVE pages/cards live without rebuilding Cloud Run.',
     icon: LayoutTemplate,
   },
   {
