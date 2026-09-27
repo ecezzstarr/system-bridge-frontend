@@ -202,10 +202,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         queryTransitionControllerRef.current?.abort()
         const controller=new AbortController()
         queryTransitionControllerRef.current=controller
-        void Promise.all([
-          waitForEnvironmentReadiness('transit',configRef.current,controller.signal),
-          waitForBriefingSequence(startedAt,controller.signal),
-        ]).then(()=>{
+        void waitForBriefingSequence(startedAt,controller.signal)
+          .then(()=>waitForEnvironmentReadiness('transit',configRef.current,controller.signal))
+          .then(()=>{
           if(controller.signal.aborted)return
           transitionStartedAtRef.current=null
           setRequestedPath(null)
@@ -279,7 +278,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         <section
           key={briefing.eyebrow+'-'+briefing.title}
           data-loading-brief={briefIndex+1}
-          className="mx-auto mt-6 overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_30px_90px_rgba(0,0,0,.42)] backdrop-blur-xl sm:p-5"
+          className="weave-loading-brief mx-auto mt-6 overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_30px_90px_rgba(0,0,0,.42)] backdrop-blur-xl sm:p-5"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
