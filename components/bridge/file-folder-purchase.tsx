@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
 import { WORLD_RULES } from '@/lib/world/constants'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 const {
   premiumFlameCoin: PREMIUM_PRICE,
@@ -197,23 +198,23 @@ export default function FileFolderPurchase({
             </div>
             <p className="mt-1 text-[8px] font-bold uppercase tracking-[.2em] text-rose-100/45">The River that Burns</p>
             <h2 data-weave-live-word="title" className="mt-4 max-w-4xl text-3xl font-black tracking-[-.04em] sm:text-4xl">
-              Form the File Folder. Cross as Client.
+              {WEAVE_WRITING.fileFolderCrossing.title}
             </h2>
             <p className="mt-3 max-w-3xl text-xs leading-6 text-stone-400">
-              This is the recognition ground between Bridge Radiance and System Switch. Your payment movement is recorded here, Administration verifies it, a File Number is issued, and Client registration opens the crossing.
+              {WEAVE_WRITING.fileFolderCrossing.detail}
             </p>
           </div>
 
           <div className="border-l border-white/10 pl-4">
-            <p className="text-[8px] font-black uppercase tracking-[.18em] text-white/30">Current state</p>
+            <p className="text-[8px] font-black uppercase tracking-[.18em] text-white/30">{WEAVE_WRITING.fileFolderCrossing.state}</p>
             <p className="mt-1 text-sm font-black text-white">
               {purchase?.status === 'confirmed'
-                ? 'File Number issued'
+                ? WEAVE_WRITING.fileFolderCrossing.confirmedTitle
                 : purchase?.status === 'rejected'
-                  ? 'Verification stopped'
+                  ? WEAVE_WRITING.fileFolderCrossing.rejectedTitle
                   : purchase
-                    ? 'Administration verification'
-                    : 'Prospect recognition'}
+                    ? WEAVE_WRITING.fileFolderCrossing.administration
+                    : WEAVE_WRITING.fileFolderCrossing.recognition}
             </p>
             {purchase?.status === 'pending_admin_confirmation' && (
               <p className="mt-1 inline-flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[.14em] text-amber-200">
@@ -224,13 +225,8 @@ export default function FileFolderPurchase({
         </header>
 
         <div className="grid border-b border-white/8 sm:grid-cols-5">
-          {[
-            ['01', 'Recognize'],
-            ['02', 'Choose value'],
-            ['03', 'Move TRX'],
-            ['04', 'Verify'],
-            ['05', 'Cross'],
-          ].map(([step, label], index) => {
+          {WEAVE_WRITING.fileFolderCrossing.stages.map((label, index) => {
+            const step = String(index + 1).padStart(2, '0')
             const reached = crossingStage >= index + 1
             return (
               <div key={step} className="flex items-center gap-3 border-b border-white/6 px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
@@ -243,7 +239,7 @@ export default function FileFolderPurchase({
 
         <section className="grid border-b border-white/8 lg:grid-cols-[.82fr_1.18fr]">
           <div className="border-b border-white/8 px-4 py-6 sm:px-6 lg:border-b-0 lg:border-r lg:px-8">
-            <p className="text-[8px] font-black uppercase tracking-[.22em] text-sky-200">Recognition station</p>
+            <p className="text-[8px] font-black uppercase tracking-[.22em] text-sky-200">{WEAVE_WRITING.fileFolderCrossing.recognition}</p>
             <div className="mt-4 space-y-4">
               <label className="block">
                 <span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Prospect name</span>
@@ -283,7 +279,7 @@ export default function FileFolderPurchase({
           </div>
 
           <div className="px-4 py-6 sm:px-6 lg:px-8">
-            <p className="text-[8px] font-black uppercase tracking-[.22em] text-orange-200">File Folder value station</p>
+            <p className="text-[8px] font-black uppercase tracking-[.22em] text-orange-200">{WEAVE_WRITING.fileFolderCrossing.value}</p>
             <div className="mt-4 grid border-y border-white/8 sm:grid-cols-2">
               <button
                 type="button"
@@ -338,7 +334,7 @@ export default function FileFolderPurchase({
           <div className="border-b border-white/8 px-4 py-6 sm:px-6 lg:border-b-0 lg:border-r lg:px-8">
             <div className="flex items-center gap-2">
               <Wallet className="h-4 w-4 text-sky-200" />
-              <p className="text-[8px] font-black uppercase tracking-[.22em] text-sky-200">TRX movement station</p>
+              <p className="text-[8px] font-black uppercase tracking-[.22em] text-sky-200">{WEAVE_WRITING.fileFolderCrossing.trx}</p>
             </div>
             <p className="mt-4 text-[8px] font-bold uppercase tracking-[.15em] text-white/30">Company TRX wallet</p>
             <p className="mt-2 break-all font-mono text-xs text-stone-200">
@@ -375,7 +371,7 @@ export default function FileFolderPurchase({
           </div>
 
           <div className="px-4 py-6 sm:px-6 lg:px-8">
-            <p className="text-[8px] font-black uppercase tracking-[.22em] text-orange-200">Recognition → Crossing</p>
+            <p className="text-[8px] font-black uppercase tracking-[.22em] text-orange-200">{WEAVE_WRITING.fileFolderCrossing.administration}</p>
 
             {!purchase && (
               <>
@@ -388,7 +384,7 @@ export default function FileFolderPurchase({
                   onClick={recordTrxPayment}
                   className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-orange-200/25 bg-orange-300/10 px-5 py-3 text-[10px] font-black uppercase tracking-[.16em] text-orange-50 transition hover:bg-orange-300/15 disabled:opacity-30"
                 >
-                  {busy ? 'Recording movement…' : 'Record File Folder movement'} <ArrowRight className="h-3.5 w-3.5" />
+                  {busy ? 'Recording movement…' : '{WEAVE_WRITING.fileFolderCrossing.paymentAction}'} <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </>
             )}
@@ -398,8 +394,8 @@ export default function FileFolderPurchase({
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-amber-200/25 bg-amber-300/[.06]">
                   <ShieldCheck className="h-6 w-6 text-amber-200" />
                 </div>
-                <h3 className="mt-4 text-xl font-black text-white">Administration verification is open.</h3>
-                <p className="mt-2 text-xs leading-6 text-stone-400">Keep this Bridge crossing available. WEAVE is checking for the verified File Number without requiring you to repeat the purchase.</p>
+                <h3 className="mt-4 text-xl font-black text-white">{WEAVE_WRITING.fileFolderCrossing.pendingTitle}</h3>
+                <p className="mt-2 text-xs leading-6 text-stone-400">{WEAVE_WRITING.fileFolderCrossing.pendingDetail}</p>
                 <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{checking ? 'Reading verification state…' : 'Awaiting verified movement'}</p>
               </div>
             )}
@@ -409,22 +405,22 @@ export default function FileFolderPurchase({
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-emerald-200/25 bg-emerald-300/[.06]">
                   <CheckCircle2 className="h-6 w-6 text-emerald-200" />
                 </div>
-                <p className="mt-4 text-[8px] font-black uppercase tracking-[.2em] text-emerald-200">File Number issued</p>
+                <p className="mt-4 text-[8px] font-black uppercase tracking-[.2em] text-emerald-200">{WEAVE_WRITING.fileFolderCrossing.confirmedTitle}</p>
                 <p className="mt-2 break-all font-mono text-lg font-black text-white">{purchase.fileNumber}</p>
-                <p className="mt-3 text-xs leading-6 text-stone-400">The Prospect movement has been recognized. Register this File Number as the Client identity; System Switch opens from that Client position.</p>
+                <p className="mt-3 text-xs leading-6 text-stone-400">{WEAVE_WRITING.fileFolderCrossing.confirmedDetail}</p>
                 <Link
                   href={registerUrl || `/client/register?fileNumber=${encodeURIComponent(purchase.fileNumber)}`}
                   className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-300 px-5 py-3 text-[10px] font-black uppercase tracking-[.16em] text-[#03100a]"
                 >
-                  <FileKey2 className="h-4 w-4" /> Cross as Client <ArrowRight className="h-3.5 w-3.5" />
+                  <FileKey2 className="h-4 w-4" /> {WEAVE_WRITING.fileFolderCrossing.clientAction} <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             )}
 
             {purchase?.status === 'rejected' && (
               <div className="mt-4 border-l-2 border-red-300/40 pl-4">
-                <p className="text-sm font-black text-red-100">Verification stopped.</p>
-                <p className="mt-2 text-xs leading-5 text-stone-400">Administration did not verify this TRX movement. Confirm the transaction details before beginning another File Folder movement.</p>
+                <p className="text-sm font-black text-red-100">{WEAVE_WRITING.fileFolderCrossing.rejectedTitle}</p>
+                <p className="mt-2 text-xs leading-5 text-stone-400">{WEAVE_WRITING.fileFolderCrossing.rejectedDetail}</p>
               </div>
             )}
           </div>
