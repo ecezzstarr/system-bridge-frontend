@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   BookOpen,
   Boxes,
@@ -20,6 +20,7 @@ import Link from 'next/link'
 import { getClientToken } from '@/lib/client-auth'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
+import { emitWeaveMotion,fileFolderMotion } from '@/lib/weave-interaction-motion'
 
 type Props = {
   clientName: string
@@ -102,11 +103,33 @@ export default function FileFolderOpenWorld({
   const [now, setNow] = useState(Date.now())
   const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})
   const { recordOutput } = usePresenceCamera()
+  const buildStateRef=useRef<Map<string,string>>(new Map())
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(id)
   }, [])
+
+  useEffect(()=>{
+    const next=new Map<string,string>()
+    for(const build of world?.builds||[]){
+      const id=String(build.id||build.blueprint_key||'')
+      if(!id)continue
+      const status=String(build.status||'')
+      const previous=buildStateRef.current.get(id)
+      if(previous&&previous!=='complete'&&status==='complete'){
+        emitWeaveMotion({
+          kind:'emergence',
+          label:`${build.title||build.blueprint_name||'System'} commissioned and live`,
+          intensity:1.8,
+          confirmed:true,
+          source:'file-folder-build-completion',
+        })
+      }
+      next.set(id,status)
+    }
+    buildStateRef.current=next
+  },[world?.builds])
 
   useEffect(() => {
     const url = refreshUrl || (!readOnly ? '/api/client/file-folder-world' : null)
@@ -166,9 +189,12 @@ export default function FileFolderOpenWorld({
       if (!response.ok) throw new Error(body.error || 'Movement failed')
       setWorld(body.world)
       onWorldChange?.(body.world)
+      emitWeaveMotion(fileFolderMotion(String(payload?.action||'')))
       setMessage('Movement recorded in the Main File Folder.')
     } catch (error: any) {
-      setMessage(error?.message || 'Movement failed')
+      const label=error?.message||'Movement failed'
+      emitWeaveMotion({kind:'interruption',label,intensity:.65,confirmed:true,source:'file-folder'})
+      setMessage(label)
     } finally {
       setBusy('')
     }
