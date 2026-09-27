@@ -8,6 +8,7 @@ import { ArrowLeft, MessageCircle, Phone, Users, Send, CheckCheck } from 'lucide
 import Link from 'next/link'
 import { openWhatsAppWithNumber } from '@/components/external-apps-nav'
 import { ClientBuildPull } from '@/components/world/client-build-pull'
+import { visiblePoll } from '@/lib/visible-poll'
 
 interface Client {
   id: string
@@ -84,13 +85,8 @@ function BridgerClientsContent() {
   useEffect(() => {
     if (selectedClient) {
       fetchMessages(selectedClient.id, activePosition)
-      
-      // Poll for new messages every 4 seconds
-      const interval = setInterval(() => {
-        fetchMessages(selectedClient.id, activePosition, true)
-      }, 4000)
-      
-      return () => clearInterval(interval)
+      const stop = visiblePoll(() => fetchMessages(selectedClient.id, activePosition, true), 4000, false)
+      return stop
     }
   }, [selectedClient, activePosition])
 
