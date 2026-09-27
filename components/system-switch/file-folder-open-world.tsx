@@ -249,7 +249,7 @@ export default function FileFolderOpenWorld({
       </header>
 
       <div className="min-h-[650px]">
-        <nav className={`sticky z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl ${readOnly?'top-11 md:top-0':'top-0'}`} data-build-site-awareness="compact-sticky-rail">
+        <nav aria-label="Walk the build site" className={`sticky z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl ${readOnly?'top-11 md:top-0':'top-0'}`} data-build-site-awareness="compact-sticky-rail">
           <div className="flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
             <div className="min-w-0 shrink-0 border-r border-amber-100/10 pr-3">
               <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">Build site</p>
