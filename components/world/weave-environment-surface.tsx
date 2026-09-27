@@ -21,11 +21,11 @@ export function WeaveEnvironmentSurface({
 
   return (
     <section
-      className="relative mx-auto w-full max-w-[1600px]"
+      className="weave-environment-surface relative mx-auto w-full max-w-[1600px]"
       data-weave-environment={environment.key}
       data-weave-layer={environment.layer}
     >
-      <div className={`mb-3 overflow-hidden rounded-2xl border border-amber-200/10 bg-[#130d09]/62 shadow-[0_18px_70px_rgba(0,0,0,.24)] backdrop-blur-xl ${compact ? 'p-2.5' : 'p-3 sm:p-4'}`}>
+      <div className={`weave-environment-panel mb-3 overflow-hidden rounded-2xl border border-amber-200/10 bg-[#130d09]/72 shadow-[0_18px_70px_rgba(0,0,0,.24)] backdrop-blur-xl ${compact ? 'p-2.5' : 'p-3 sm:p-4'}`}>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-[7px] font-black uppercase tracking-[0.18em]">

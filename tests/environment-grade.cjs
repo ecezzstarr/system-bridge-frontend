@@ -57,7 +57,7 @@ assert.ok(normalBackdrop.includes('FlameBrazier'),'Persistent normal world uses 
 assert.ok(bridgePlazaPage.includes('data-bridge-plaza-theme="continuous-moving-system"'),'Bridge Plaza page is one continuous moving system rather than a card layout')
 assert.ok(!bridgePlazaPage.includes('grid gap-3 sm:grid-cols-2 xl:grid-cols-4'),'Bridge Plaza removes the four architecture-card row')
 assert.ok(bridgePlazaPage.includes('data-bridge-plaza-station="client-support"'),'Client support is an entered Plaza station instead of a permanent side card')
-assert.ok(bridgePlazaPage.includes('File Folders are shown as a live ledger, not a stack of cards.'),'Support station explicitly preserves ledger movement instead of card rendering')
+assert.ok(bridgePlazaPage.includes('Bridge Plaza · System Switch')&&bridgePlazaPage.includes('File Folder View'),'Bridge Plaza exposes System Switch File Folder View as an entered station')
 
 const artifact=read('components/events/flame-event-artifact.tsx')
 const bridgePlaza=read('components/world/bridge-plaza-map.tsx')
@@ -139,7 +139,8 @@ assert.ok(visualProfile.includes('flameIntensity')&&visualProfile.includes('rive
 assert.ok(interactionMotionField.includes('drawFlames')&&interactionMotionField.includes('drawRiver')&&interactionMotionField.includes('drawEmbers'),'Interaction Motion Field procedurally renders flame, river and ember motion')
 assert.ok(interactionMotionField.includes('requestAnimationFrame'),'Interaction Motion Field is a live animation runtime rather than a static background')
 assert.ok(interactionMotionField.includes('budget.reducedMotion'),'Interaction Motion Field respects reduced-motion accessibility')
-assert.ok(flameEventWorld.includes('<InteractionMotionField forceEvent'),'Flame Event uses the live Flame + Burning River field as its atmosphere')
+assert.ok(flameEventWorld.includes('<InteractionMotionField forceEvent'),'Legacy Flame Event world decoration remains available as an isolated visual component')
+assert.ok(!read('components/world/weave-world-environment.tsx').includes('FlameEventWorldDecorations'),'Persistent world no longer mounts Flame Event as a wallpaper layer')
 assert.ok(normalBackdrop.includes('<InteractionMotionField'),'Normal WEAVE world carries a lower-intensity Interaction Motion field')
 assert.ok(bridgePlaza.includes('useVisualRuntime')&&bridgePlaza.includes('routeCurrent'),'Bridge Plaza movement current is driven by the published Visual Runtime')
 assert.ok(visualWorkshop.includes('World motion authority'),'Administration Visual Systems Workshop exposes world-motion authority')
@@ -245,3 +246,33 @@ assert.ok(fs.existsSync(path.join(root,'db/migrations/20260926_environment_organ
 assert.ok(fs.existsSync(path.join(root,'db/migrations/20260927_environment_runtime_controls.sql')),'Environment runtime-control migration exists')
 
 console.log('environment-grade regression checks passed')
+
+
+/* Clean environment reveal + live-theme regression coverage. */
+const cleanRevealTransit2026=read('components/world/weave-environment-transit.tsx')
+const cleanRevealWorld2026=read('components/world/weave-world-environment.tsx')
+const cleanRevealAppLayout2026=read('app/(app)/layout.tsx')
+const cleanRevealClientLayout2026=read('app/client/layout.tsx')
+const cleanRevealSidebar2026=read('components/app-sidebar.tsx')
+const cleanRevealHeader2026=read('components/app-header.tsx')
+const cleanRevealCss2026=read('app/globals.css')
+const cleanRevealBridgeMap2026=read('components/world/bridge-plaza-map.tsx')
+const cleanRevealFileLoader2026=read('components/system-switch/file-folder-environment-loader.tsx')
+
+assert.ok(cleanRevealTransit2026.includes('[data-environment-pending="true"]')&&cleanRevealTransit2026.includes("readyPath!==pathname"),'Environment cover remains until destination-level pending work clears')
+assert.ok(cleanRevealTransit2026.includes("data-environment-content-state={covered?'forming':'ready'}"),'Incomplete destination content stays hidden until the clean reveal')
+assert.ok(cleanRevealAppLayout2026.includes('data-environment-pending="true"'),'Authenticated shell keeps the global cover while auth state resolves')
+assert.ok(cleanRevealFileLoader2026.includes('data-environment-pending="true"'),'File Folder boot participates in the global readiness gate')
+assert.ok(cleanRevealClientLayout2026.includes('overflow-x-clip')&&!cleanRevealClientLayout2026.includes('min-h-screen overflow-hidden'),'Client environments are not vertically clipped by their shell')
+assert.ok(cleanRevealSidebar2026.includes('weave-sidebar')&&cleanRevealSidebar2026.includes('weave-nav-group')&&cleanRevealSidebar2026.includes('weave-nav-item'),'Sidebar is organized as a dedicated operating panel')
+assert.ok(cleanRevealHeader2026.includes('weave-header'),'Header belongs to the shared operating chrome')
+assert.ok(cleanRevealWorld2026.includes("root.dataset.weaveEvent=active?'flame-live':'normal'"),'Flame event publishes a live interface theme state')
+assert.ok(!cleanRevealWorld2026.includes('FlameEventWorldDecorations'),'Flame Live is not mounted as a full-world wallpaper decoration')
+assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-sidebar')&&cleanRevealCss2026.includes('.weave-flame-live-indicator'),'Flame Live changes operating chrome and exposes a live state indicator')
+assert.ok(cleanRevealBridgeMap2026.includes("name:'System Switch · File Folders'")&&cleanRevealBridgeMap2026.includes("href:'/client/system-switch'"),'Bridge Plaza exposes both support File Folder view and the Client System Switch route')
+
+const cleanRevealDashboard2026=read('components/world/weave-dashboard-world.tsx')
+assert.ok(bridgePlazaPage.includes('System Switch · File Folder View')&&bridgePlazaPage.includes('setSupportOpen(true)'),'Bridge Plaza HUD exposes System Switch File Folder View without requiring discovery of a hidden panel')
+assert.ok(cleanRevealDashboard2026.includes('weave-dashboard-world')&&cleanRevealDashboard2026.includes('weave-dashboard-link'),'Dashboard surfaces expose live-theme hooks')
+assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-dashboard-world'),'Flame Live themes dashboard surfaces rather than adding a wallpaper')
+assert.ok(cleanRevealTransit2026.includes('if(hasPendingSurface())'),'Hard resource timeout cannot uncover an explicitly pending application environment')

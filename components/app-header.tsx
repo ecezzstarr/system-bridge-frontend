@@ -38,8 +38,12 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sky-300/10 bg-[#03101d]/78 px-4 md:px-6 backdrop-blur-2xl shadow-[0_12px_40px_rgba(2,8,23,.28)]">
-        <div className="flex items-center gap-3">
+      <header className="weave-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sky-300/10 bg-[#03101d]/88 px-4 shadow-[0_12px_40px_rgba(2,8,23,.28)] backdrop-blur-2xl md:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="weave-flame-live-indicator items-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-400/[0.07] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-orange-100">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-300 shadow-[0_0_12px_rgba(251,146,60,.8)]" />
+            Flame Live
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -102,8 +106,8 @@ export function AppHeader({ user }: AppHeaderProps) {
             className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-[86vw] max-w-72 bg-slate-950 border-r border-white/10 shadow-2xl animate-in slide-in-from-left duration-300">
-            <div className="flex justify-end p-4">
+          <div className="absolute inset-y-0 left-0 w-72 max-w-[88vw] animate-in slide-in-from-left duration-300">
+            <div className="absolute right-2 top-2 z-[60]">
               <Button
                 variant="ghost"
                 size="icon"
@@ -113,9 +117,7 @@ export function AppHeader({ user }: AppHeaderProps) {
                 <X className="h-6 w-6" />
               </Button>
             </div>
-            <div className="px-2 pb-8">
-              <AppSidebar user={authUser || undefined} />
-            </div>
+            <AppSidebar user={authUser || undefined} />
           </div>
         </div>
       )}
