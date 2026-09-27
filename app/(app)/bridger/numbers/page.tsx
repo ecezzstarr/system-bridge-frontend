@@ -166,7 +166,9 @@ export default function BridgerNumbersPage(){
       String(number.status||'')==='available'
      )
      const stock=Number(offer.stock_count)||0
-     const price=stockedNumber?Number(stockedNumber.price_flame_coin)||0:Number(offer.price_flame_coin)||0
+     const stockedPrice=Number(stockedNumber?.price_flame_coin)||0
+     const offerPrice=Number(offer.price_flame_coin)||0
+     const price=stockedPrice>0?stockedPrice:offerPrice
      return <article key={offer.country} className={`rounded-2xl border p-4 ${stock>0?'border-cyan-300/10 bg-cyan-400/[.025]':'border-amber-300/10 bg-amber-400/[.025]'}`}>
       <div className="flex items-start justify-between gap-3">
        <div>
