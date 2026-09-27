@@ -252,8 +252,6 @@ export default function MarketplacePage() {
         })}
       </section>
 
-      </section>
-
       {visible.length === 0 && (
         <div className="border-b border-dashed border-white/10 p-10 text-center text-base text-slate-400">
           No enterprise system matches this search.
