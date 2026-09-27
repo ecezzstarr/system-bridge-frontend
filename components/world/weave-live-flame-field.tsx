@@ -28,6 +28,27 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
 
   useEffect(()=>{
     const root=document.documentElement
+    root.dataset.weaveLiveSystem='flame'
+    root.style.setProperty('--weave-flame-x','50%')
+    root.style.setProperty('--weave-flame-y','72%')
+
+    const clearPulse=()=>{
+      if(decay.current)window.clearTimeout(decay.current)
+      decay.current=window.setTimeout(()=>{
+        delete root.dataset.weavePulse
+        setEnergy(0)
+      },1050)
+    }
+
+    const pulse=(kind:string,power:number,next:number)=>{
+      setMotionKind(kind)
+      setEnergy(clamp(next*power,0,1.35))
+      // Re-arm the attribute so repeated movement of the same kind restarts
+      // the word flare instead of looking static.
+      delete root.dataset.weavePulse
+      requestAnimationFrame(()=>{root.dataset.weavePulse=kind})
+      clearPulse()
+    }
 
     const writePointer=(x:number,y:number)=>{
       pointer.current={x:clamp(x/window.innerWidth,0,1),y:clamp(y/window.innerHeight,0,1)}
@@ -39,9 +60,20 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
       })
     }
 
-    const onPointer=(event:PointerEvent)=>{
+    const onPointerMove=(event:PointerEvent)=>{
       if(reduceMotion)return
       writePointer(event.clientX,event.clientY)
+    }
+
+    const onPointerDown=(event:PointerEvent)=>{
+      writePointer(event.clientX,event.clientY)
+      pulse('presence',.72,.42)
+    }
+
+    const onPresence=(event:Event)=>{
+      const detail=(event as CustomEvent<any>).detail||{}
+      const kind=detail.type==='arrival'||detail.type==='navigation'?'route':'presence'
+      pulse(kind,.82,kind==='route'?.62:.38)
     }
 
     const onMotion=(event:Event)=>{
@@ -61,31 +93,18 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
                 :detail.kind==='interruption'
                   ?.24
                   :.46
-      setMotionKind(detail.kind)
-      setEnergy(clamp(next*power,0,1.35))
-      root.dataset.weavePulse=detail.kind
-      root.style.setProperty('--weave-flame-energy',String(clamp(baseEnergy+next*power*.55,.25,1.6)))
-      if(decay.current)window.clearTimeout(decay.current)
-      decay.current=window.setTimeout(()=>{
-        delete root.dataset.weavePulse
-        setEnergy(0)
-        root.style.setProperty('--weave-flame-energy',String(baseEnergy))
-      },1100)
+      pulse(detail.kind,power,next)
     }
 
-    root.style.setProperty('--weave-flame-x','50%')
-    root.style.setProperty('--weave-flame-y','72%')
-    root.style.setProperty('--weave-flame-energy',String(baseEnergy))
-    root.style.setProperty('--weave-flame-camera-x',String(scene.camera.x))
-    root.style.setProperty('--weave-flame-camera-y',String(scene.camera.y))
-    root.style.setProperty('--weave-flame-camera-depth',String(scene.camera.depth))
-    root.dataset.weaveLiveSystem='flame'
-
-    window.addEventListener('pointermove',onPointer,{passive:true})
+    window.addEventListener('pointermove',onPointerMove,{passive:true})
+    window.addEventListener('pointerdown',onPointerDown,{passive:true})
+    window.addEventListener('weave:presence-output',onPresence as EventListener)
     window.addEventListener('weave:system-motion',onMotion as EventListener)
 
     return()=>{
-      window.removeEventListener('pointermove',onPointer)
+      window.removeEventListener('pointermove',onPointerMove)
+      window.removeEventListener('pointerdown',onPointerDown)
+      window.removeEventListener('weave:presence-output',onPresence as EventListener)
       window.removeEventListener('weave:system-motion',onMotion as EventListener)
       if(frame.current!=null)cancelAnimationFrame(frame.current)
       if(decay.current)window.clearTimeout(decay.current)
@@ -98,7 +117,14 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
       root.style.removeProperty('--weave-flame-camera-y')
       root.style.removeProperty('--weave-flame-camera-depth')
     }
-  },[baseEnergy,reduceMotion,scene.camera.depth,scene.camera.x,scene.camera.y])
+  },[reduceMotion])
+
+  useEffect(()=>{
+    const root=document.documentElement
+    root.style.setProperty('--weave-flame-camera-x',String(scene.camera.x))
+    root.style.setProperty('--weave-flame-camera-y',String(scene.camera.y))
+    root.style.setProperty('--weave-flame-camera-depth',String(scene.camera.depth))
+  },[scene.camera.depth,scene.camera.x,scene.camera.y])
 
   useEffect(()=>{
     document.documentElement.style.setProperty('--weave-flame-energy',String(clamp(baseEnergy+energy*.5,.25,1.6)))
