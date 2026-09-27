@@ -549,3 +549,83 @@ html[data-weave-hidden="true"] *, html[data-weave-hidden="true"] *::before, html
   animation-play-state: paused !important;
 }
 html[data-weave-quality="0"] [data-interaction-motion-field] { contain: paint; }
+
+
+/* Operating chrome: navigation is an instrument panel, not a second page. */
+.weave-sidebar {
+  background: rgba(2, 11, 23, 0.96);
+  border-color: rgba(125, 211, 252, 0.10);
+}
+.weave-nav-group {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.weave-nav-item {
+  position: relative;
+  overflow: hidden;
+}
+.weave-nav-item[data-active="true"]::before {
+  content: '';
+  position: absolute;
+  inset: 22% auto 22% 0;
+  width: 2px;
+  border-radius: 999px;
+  background: rgb(125 211 252 / .9);
+  box-shadow: 0 0 14px rgb(56 189 248 / .55);
+}
+.weave-flame-live-indicator {
+  display: none;
+}
+
+/* Flame Live is a live interface theme. It changes the operating chrome,
+   controls and active-system accents; it does not replace the world with a wallpaper. */
+html[data-weave-event="flame-live"] {
+  --primary: #fb923c;
+  --ring: #fb923c;
+  --sidebar-primary: #fb923c;
+  --sidebar-ring: #fb923c;
+  --presence-glow: #fb923c;
+  --field-border: rgba(251, 146, 60, 0.22);
+  --field-active: rgba(239, 68, 68, 0.24);
+}
+html[data-weave-event="flame-live"] .weave-flame-live-indicator {
+  display: inline-flex;
+}
+html[data-weave-event="flame-live"] .weave-sidebar {
+  background: linear-gradient(180deg, rgba(22,8,7,.985), rgba(8,7,10,.985));
+  border-color: rgba(251,146,60,.22);
+  box-shadow: 24px 0 72px rgba(69,10,10,.22);
+}
+html[data-weave-event="flame-live"] .weave-nav-group {
+  border-color: rgba(251,146,60,.10);
+  background: rgba(69,10,10,.055);
+}
+html[data-weave-event="flame-live"] .weave-nav-item[data-active="true"] {
+  border-color: rgba(251,146,60,.28) !important;
+  background: linear-gradient(90deg, rgba(239,68,68,.10), rgba(251,146,60,.075)) !important;
+  color: rgb(255 247 237) !important;
+  box-shadow: 0 0 24px rgba(249,115,22,.08) !important;
+}
+html[data-weave-event="flame-live"] .weave-nav-item[data-active="true"]::before {
+  background: rgb(251 146 60 / .95);
+  box-shadow: 0 0 16px rgb(249 115 22 / .62);
+}
+html[data-weave-event="flame-live"] .weave-header,
+html[data-weave-event="flame-live"] .weave-client-nav {
+  background: rgba(20,8,8,.94);
+  border-color: rgba(251,146,60,.18);
+  box-shadow: 0 14px 42px rgba(69,10,10,.16);
+}
+html[data-weave-event="flame-live"] .weave-client-nav-item[data-active="true"] {
+  border-color: rgba(251,146,60,.26) !important;
+  background: rgba(249,115,22,.10) !important;
+  color: rgb(255 247 237) !important;
+}
+html[data-weave-event="flame-live"] .weave-environment-panel {
+  border-color: rgba(251,146,60,.20);
+  background: linear-gradient(105deg, rgba(28,10,9,.90), rgba(15,10,10,.88));
+  box-shadow: 0 18px 72px rgba(69,10,10,.18), inset 0 1px 0 rgba(254,215,170,.05);
+}
+html[data-weave-event="flame-live"] :where(.weave-header,.weave-sidebar,.weave-client-nav,.weave-environment-panel) .text-cyan-300,
+html[data-weave-event="flame-live"] :where(.weave-header,.weave-sidebar,.weave-client-nav,.weave-environment-panel) .text-sky-300 {
+  color: rgb(253 186 116) !important;
+}
