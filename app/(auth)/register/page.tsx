@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, Lock, Mail, User, Briefcase, Handshake, Gift, ShieldCheck, ScrollText, Target, ArrowLeft, CheckCircle2, MessageCircle, ShieldAlert, Key, Loader2 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
 import { DepartmentEntryTicketGate } from '@/components/department-entry-ticket-gate'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
+import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 
 type Step = 'role' | 'dept-gate' | 'notice' | 'terms' | 'guide' | 'details'
 
@@ -138,8 +140,8 @@ function RegisterContent() {
       <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
         <CardHeader className="text-center flex flex-col items-center">
           <WeaveLogo size="md" className="mb-2" />
-          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">System Entry</CardTitle>
-          <CardDescription>Select your intended department</CardDescription>
+          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{WEAVE_WRITING.positionAccess.chooseTitle}</CardTitle>
+          <CardDescription>{WEAVE_WRITING.positionAccess.chooseDetail}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -149,7 +151,7 @@ function RegisterContent() {
             >
               <Briefcase className="h-8 w-8 text-blue-400 mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="font-bold text-white mb-2 uppercase tracking-wide">Agent</h3>
-              <p className="text-xs text-slate-400 mb-3">Institutional representative and ecosystem operator.</p>
+              <p className="text-xs text-slate-400 mb-3">{WEAVE_SYSTEM_MAP.positions.agent.description}</p>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-md p-2">
                 <p className="text-[10px] text-blue-300 font-black uppercase">Fixed Compensation</p>
               </div>
@@ -160,15 +162,15 @@ function RegisterContent() {
             >
               <Handshake className="h-8 w-8 text-green-400 mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="font-bold text-white mb-2 uppercase tracking-wide">Bridger</h3>
-              <p className="text-xs text-slate-400 mb-3">Independent partner and client bridge architect.</p>
+              <p className="text-xs text-slate-400 mb-3">{WEAVE_SYSTEM_MAP.positions.bridger.description}</p>
               <div className="bg-green-500/10 border border-green-500/30 rounded-md p-2">
                 <p className="text-[10px] text-green-300 font-black uppercase">Performance Share</p>
               </div>
             </button>
           </div>
           <div className="text-center text-sm pt-2">
-            <span className="text-slate-500">Already registered? </span>
-            <Link href="/login" className="text-cyan-400 hover:text-cyan-300 font-bold uppercase text-xs tracking-widest">Enter System</Link>
+            <span className="text-slate-500">{WEAVE_WRITING.positionAccess.existing} </span>
+            <Link href="/login" className="text-cyan-400 hover:text-cyan-300 font-bold uppercase text-xs tracking-widest">{WEAVE_WRITING.positionAccess.signIn}</Link>
           </div>
         </CardContent>
       </Card>
@@ -243,8 +245,8 @@ function RegisterContent() {
       <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
         <CardHeader className="text-center flex flex-col items-center">
           <ScrollText className="h-8 w-8 text-cyan-400 mb-2" />
-          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Terms of Presence</CardTitle>
-          <CardDescription>Review ecosystem protocols</CardDescription>
+          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{WEAVE_WRITING.positionAccess.termsTitle}</CardTitle>
+          <CardDescription>{WEAVE_WRITING.positionAccess.termsDetail}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div
@@ -261,14 +263,14 @@ function RegisterContent() {
             <p className="text-slate-500 italic pt-2 text-center">— End of Terms —</p>
           </div>
           {!termsScrolledToEnd && (
-            <p className="text-[10px] text-amber-500 text-center font-bold uppercase tracking-widest">Scroll to end of protocol to continue</p>
+            <p className="text-[10px] text-amber-500 text-center font-bold uppercase tracking-widest">Review the complete terms to continue</p>
           )}
           <Button
             onClick={() => setStep('guide')}
             disabled={!termsScrolledToEnd}
             className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:opacity-40 font-bold uppercase tracking-widest h-11"
           >
-            Protocol Accepted, Continue
+            {WEAVE_WRITING.positionAccess.acceptTerms}
           </Button>
           <Button type="button" variant="ghost" onClick={() => setStep('notice')} className="w-full text-slate-400">
             <ArrowLeft className="h-3 w-3 mr-2" /> Back
@@ -284,8 +286,8 @@ function RegisterContent() {
       <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
         <CardHeader className="text-center flex flex-col items-center">
           <Target className="h-8 w-8 text-green-400 mb-2" />
-          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Operational Guidance</CardTitle>
-          <CardDescription>Ecosystem participation brief</CardDescription>
+          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{WEAVE_WRITING.positionAccess.guidanceTitle}</CardTitle>
+          <CardDescription>{WEAVE_WRITING.positionAccess.guidanceDetail}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-3 text-sm text-slate-300">
@@ -321,7 +323,7 @@ function RegisterContent() {
   return (
     <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-md mx-4 sm:mx-0">
       <CardHeader className="text-center">
-        <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Create Identity</CardTitle>
+        <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{WEAVE_WRITING.positionAccess.identityTitle}</CardTitle>
         <CardDescription className="flex items-center justify-center gap-2">
           {formData.role === 'agent' ? (
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-wider">
@@ -425,7 +427,7 @@ function RegisterContent() {
 
           <div className="border-t border-slate-800 pt-4 space-y-2">
             <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest ml-1">
-              Type full name to confirm Protocol
+              Type full name to confirm the Terms
             </label>
             <Input
               type="text"
