@@ -647,3 +647,61 @@ html[data-weave-event="flame-live"] .weave-dashboard-link:hover {
   border-color: rgba(253,186,116,.32);
   box-shadow: 0 20px 46px rgba(124,45,18,.18);
 }
+
+
+/* WEAVE operating-environment grammar.
+   Cards may exist as instruments or records, but the enclosing surface is one
+   continuous environment with routes, rails and an active stage. */
+.weave-operating-environment {
+  isolation: isolate;
+  position: relative;
+}
+.weave-operating-environment::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, transparent 0 49.9%, rgba(255,255,255,.018) 50%, transparent 50.1%),
+    radial-gradient(circle at 50% 0%, rgba(125,211,252,.025), transparent 34%);
+}
+[data-weave-route-network] {
+  position: relative;
+}
+[data-weave-route-lane] {
+  scroll-margin-top: 5rem;
+}
+[data-weave-route-station] {
+  position: relative;
+}
+[data-weave-route-station]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: .25;
+  transition: width .28s ease;
+}
+[data-weave-route-station]:hover::after,
+[data-weave-route-station]:focus-visible::after {
+  width: 100%;
+}
+[data-weave-room-stage],
+[data-enterprise-exchange-floor],
+[data-arena-environment],
+[data-pattern-ground],
+[data-lounge-environment],
+[data-echo-board] {
+  contain: layout paint;
+}
+html[data-weave-event="flame-live"] .weave-operating-environment {
+  border-color: rgba(251,146,60,.20);
+  box-shadow: 0 26px 86px rgba(69,10,10,.16), inset 0 1px 0 rgba(254,215,170,.035);
+}
+html[data-weave-event="flame-live"] [data-weave-route-station]:hover {
+  background: rgba(249,115,22,.045);
+}
