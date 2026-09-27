@@ -276,7 +276,7 @@ const cleanRevealDashboard2026=read('components/world/weave-dashboard-world.tsx'
 assert.ok(bridgePlazaPage.includes('System Switch · File Folder View')&&bridgePlazaPage.includes('setSupportOpen(true)'),'Bridge Plaza HUD exposes System Switch File Folder View without requiring discovery of a hidden panel')
 assert.ok(cleanRevealDashboard2026.includes('weave-dashboard-world')&&cleanRevealDashboard2026.includes('<WeaveRouteNetwork'),'Dashboard world exposes live-theme shell and route-network movement')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-dashboard-world'),'Flame Live themes dashboard surfaces rather than adding a wallpaper')
-assert.ok(cleanRevealTransit2026.includes('if(hasPendingSurface())'),'Hard resource timeout cannot uncover an explicitly pending application environment')
+assert.ok(cleanRevealTransit2026.includes('hasPendingSurface()&&elapsed<absoluteMaximum'),'Pending application state holds the clean reveal only until the absolute recovery ceiling')
 
 
 /* Environment grammar: major operating surfaces may contain instruments,
