@@ -3,8 +3,9 @@
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '@/lib/auth-provider'
-import { ArrowRight, Loader2, Users, FileText, ChevronRight, Search, ShieldCheck, Orbit } from 'lucide-react'
+import { Loader2, Users, FileText, Search, ShieldCheck, Orbit, X, MoveRight } from 'lucide-react'
 import { WEAVE_ARCHITECTURE } from '@/lib/weave-architecture'
 
 const BridgePlazaMap = dynamic(
@@ -55,6 +56,7 @@ export default function WeavePage() {
   const [folders, setFolders] = useState<FileFolder[]>([])
   const [loadingFolders, setLoadingFolders] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [supportOpen, setSupportOpen] = useState(false)
 
   const isSupport = user?.role === 'admin' || user?.role === 'agent' || user?.role === 'bridger'
 
@@ -161,123 +163,149 @@ export default function WeavePage() {
     (f.identity_data?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  return (
-    <main className="mx-auto w-full max-w-7xl space-y-6 p-3 md:p-6" data-bridge-plaza-theme="realistic-flame-world">
-      <header className="weave-system-depth relative overflow-hidden rounded-[2rem] border border-amber-200/15 bg-[#160e09]/82 p-5 shadow-[0_30px_90px_rgba(0,0,0,.35)] md:p-7">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.12),transparent_28%),radial-gradient(circle_at_82%_0%,rgba(251,191,36,.08),transparent_25%),repeating-linear-gradient(0deg,rgba(255,255,255,.015)_0_1px,transparent_1px_6px)]"/>
-        <p className="relative weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-amber-200">Bridge Plaza · Living World Hub</p>
-        <h1 className="relative mt-2 text-3xl font-black text-white md:text-5xl">A real plaza for movement between WEAVE districts.</h1>
-        <p className="relative mt-3 max-w-4xl text-sm leading-7 text-stone-300">
-          Interaction in motion. The subject remains WEAVE while Client movement, workshops, problems, builds, discovery and participation become functional topics inside the same world.
-        </p>
-      </header>
+  const architectureFlow = [
+    { label:'School', value:WEAVE_ARCHITECTURE.school.name },
+    { label:'Board', value:WEAVE_ARCHITECTURE.board.name },
+    { label:'Subject', value:WEAVE_ARCHITECTURE.subject.name },
+    { label:'Topics', value:'What we build and do' },
+  ]
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-amber-100/10 bg-[#120d09]/78 p-4">
-          <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">School</p>
-          <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.school.name}</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">Earth and beyond: the field in which learning and participation continue.</p>
-        </div>
-        <div className="rounded-2xl border border-amber-100/10 bg-[#120d09]/78 p-4">
-          <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">Board</p>
-          <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.board.name}</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">The responsive surface that can turn writing into organized movement.</p>
-        </div>
-        <div className="rounded-2xl border border-amber-300/20 bg-amber-400/[.045] p-4">
-          <p className="text-[9px] uppercase tracking-[0.24em] text-amber-200">Subject</p>
-          <p className="mt-2 text-sm font-semibold">{WEAVE_ARCHITECTURE.subject.name}</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">The institutional frame remains constant.</p>
-        </div>
-        <div className="rounded-2xl border border-amber-100/10 bg-[#120d09]/78 p-4">
-          <p className="text-[9px] uppercase tracking-[0.24em] text-slate-500">Topics</p>
-          <p className="mt-2 text-sm font-semibold">What we build and do</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">Each current interaction becomes a topic that can be made functional through Weave.</p>
+  return (
+    <main
+      className="relative min-h-[720px] h-[calc(100dvh-1rem)] overflow-hidden bg-[#0e0906]"
+      data-bridge-plaza-theme="continuous-moving-system"
+    >
+      <BridgePlazaMap
+        currentPass={state.crossing.currentPass}
+        worldRoles={state.worldRoles}
+        userRole={user.role}
+        fileNumber={state.crossing.fileNumber}
+        supportAvailable={isSupport}
+        onTravel={(href) => {
+          setSupportOpen(false)
+          router.push(href)
+        }}
+        onOpenSupport={() => setSupportOpen(true)}
+      />
+
+      <div className="pointer-events-none absolute left-3 top-20 z-20 hidden w-[210px] sm:block">
+        <div className="relative pl-5">
+          <div className="absolute bottom-2 left-[5px] top-2 w-px bg-gradient-to-b from-amber-200/5 via-amber-200/35 to-amber-200/5" />
+          {architectureFlow.map((item,index)=>(
+            <motion.div
+              key={item.label}
+              initial={{opacity:0,x:-8}}
+              animate={{opacity:1,x:0}}
+              transition={{delay:index*.09,duration:.45}}
+              className="relative mb-4"
+            >
+              <span className="absolute -left-5 top-1.5 h-2.5 w-2.5 rounded-full border border-amber-200/35 bg-[#1b120c] shadow-[0_0_16px_rgba(251,191,36,.18)]" />
+              <p className="text-[7px] font-black uppercase tracking-[.2em] text-amber-200/60">{item.label}</p>
+              <p className="mt-1 text-[9px] font-semibold leading-4 text-stone-400">{item.value}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
-        {/* Map View */}
-        <div className="space-y-6">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 via-amber-400/10 to-stone-400/10 rounded-[40px] blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-[#100b08] border border-amber-100/10 rounded-[38px] overflow-hidden shadow-2xl">
-              <BridgePlazaMap
-                currentPass={state.crossing.currentPass}
-                worldRoles={state.worldRoles}
-                onTravel={(href) => router.push(href)}
-              />
-            </div>
-          </div>
-          <p className="text-center text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Select an active district portal to create navigation movement.</p>
+      <div className="pointer-events-none absolute inset-x-0 top-12 z-20 flex justify-center px-4 sm:hidden">
+        <div className="flex max-w-full items-center gap-2 overflow-hidden text-[7px] font-black uppercase tracking-[.15em] text-stone-500">
+          {architectureFlow.map((item,index)=>(
+            <span key={item.label} className="flex shrink-0 items-center gap-2">
+              {index>0&&<span className="text-amber-300/35">→</span>}
+              <span className={item.label==='Subject'?'text-amber-200':'text-stone-500'}>{item.label}</span>
+            </span>
+          ))}
         </div>
+      </div>
 
-        {/* Support: File Folder Selection */}
-        {isSupport && (
-          <div className="flex flex-col gap-6">
-            <div className="bg-[#140f0b]/82 border border-amber-100/10 rounded-3xl p-6 flex flex-col h-[560px]">
-              <div className="flex items-center gap-2 mb-6">
-                <FileText className="w-5 h-5 text-amber-300" />
-                <h2 className="text-lg font-bold">Client Player Support</h2>
+      {isSupport && !supportOpen && (
+        <button
+          onClick={()=>setSupportOpen(true)}
+          className="absolute bottom-24 right-4 z-30 inline-flex items-center gap-2 border-b border-cyan-200/30 bg-[#100b07]/60 px-2 py-2 text-[8px] font-black uppercase tracking-[.14em] text-cyan-100 backdrop-blur-md transition hover:border-cyan-200/60"
+        >
+          <FileText className="h-3.5 w-3.5"/>
+          Client Support Station
+          <MoveRight className="h-3.5 w-3.5"/>
+        </button>
+      )}
+
+      <AnimatePresence>
+        {isSupport && supportOpen && (
+          <motion.aside
+            initial={{x:'100%',opacity:0}}
+            animate={{x:0,opacity:1}}
+            exit={{x:'100%',opacity:0}}
+            transition={{duration:.42,ease:[.22,1,.36,1]}}
+            className="absolute inset-y-0 right-0 z-40 flex w-full max-w-[460px] flex-col border-l border-cyan-100/10 bg-[#0d0906]/95 shadow-[-28px_0_90px_rgba(0,0,0,.42)] backdrop-blur-2xl"
+            data-bridge-plaza-station="client-support"
+          >
+            <header className="border-b border-cyan-100/10 px-5 pb-4 pt-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[8px] font-black uppercase tracking-[.23em] text-cyan-200">Bridge Plaza · Client Support Station</p>
+                  <h2 className="mt-2 text-xl font-black text-white">Enter a Client File Folder movement.</h2>
+                  <p className="mt-2 text-[10px] leading-5 text-stone-400">This station is part of the Plaza. It stays closed until support enters it; File Folders are shown as a live ledger, not a stack of cards.</p>
+                </div>
+                <button onClick={()=>setSupportOpen(false)} className="mt-0.5 p-2 text-stone-500 transition hover:text-white" aria-label="Close Client Support Station">
+                  <X className="h-4 w-4"/>
+                </button>
               </div>
 
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <div className="relative mt-5 border-y border-cyan-100/10">
+                <Search className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-600"/>
                 <input
                   type="text"
-                  placeholder="Search file or client..."
+                  placeholder="Search File Number or Client"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950 border border-amber-100/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:border-amber-300/50 outline-none transition-colors"
+                  onChange={(event)=>setSearchQuery(event.target.value)}
+                  className="w-full bg-transparent py-3 pl-6 pr-2 text-xs text-white outline-none placeholder:text-stone-700"
                 />
               </div>
+            </header>
 
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
-                {loadingFolders ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-slate-500 gap-3">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    <p className="text-xs uppercase tracking-widest">Scanning folders...</p>
-                  </div>
-                ) : filteredFolders.length === 0 ? (
-                  <div className="text-center py-12 border border-dashed border-amber-100/10 rounded-2xl">
-                    <p className="text-sm text-slate-500">No active movements found.</p>
-                  </div>
-                ) : (
-                  filteredFolders.map((folder) => (
-                    <button
-                      key={folder.id}
-                      onClick={() => router.push(`/weave/file-folder/${encodeURIComponent(folder.file_number)}`)}
-                      className="w-full text-left bg-[#0d0a08] hover:bg-[#1b120c] border border-amber-100/10 hover:border-amber-300/30 p-4 rounded-2xl transition-all group"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-mono text-orange-300 uppercase tracking-widest">
-                          File {folder.file_number}
-                        </span>
-                        <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-orange-300 transition-colors" />
-                      </div>
-                      <p className="text-sm font-bold text-white mb-0.5 truncate">
-                        {folder.client_name || folder.identity_data?.name || 'Unnamed Client'}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Users className="w-3 h-3 text-slate-500" />
-                        <span className="text-[10px] text-slate-500 truncate">
-                          {folder.bridger_name || 'Assigned Bridger'}
-                        </span>
-                      </div>
-                    </button>
-                  ))
-                )}
+            <div className="flex items-center justify-between border-b border-white/5 px-5 py-3">
+              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[.14em] text-stone-600">
+                <Users className="h-3.5 w-3.5"/>
+                Client movements
               </div>
-
-              <div className="mt-6 pt-6 border-t border-amber-100/10">
-                <p className="text-[10px] text-slate-500 leading-relaxed italic">
-                  Select a Client Player&apos;s File Folder to travel into the same persistent Main File Folder world through Bridge Plaza. The Client remains the player position.
-                </p>
-              </div>
+              <span className="font-mono text-[9px] text-cyan-200/75">{filteredFolders.length}</span>
             </div>
-          </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {loadingFolders ? (
+                <div className="flex h-full min-h-60 flex-col items-center justify-center gap-3 text-stone-600">
+                  <Loader2 className="h-5 w-5 animate-spin"/>
+                  <p className="text-[8px] font-black uppercase tracking-[.18em]">Reading Client movements</p>
+                </div>
+              ) : filteredFolders.length===0 ? (
+                <div className="flex h-full min-h-60 items-center justify-center px-6 text-center text-[10px] leading-5 text-stone-600">
+                  No Client File Folder movement matches this station search.
+                </div>
+              ) : (
+                filteredFolders.map((folder,index)=>(
+                  <button
+                    key={folder.id}
+                    onClick={()=>router.push(`/weave/file-folder/${encodeURIComponent(folder.file_number)}`)}
+                    className="group grid w-full grid-cols-[34px_minmax(0,1fr)_18px] items-center gap-3 border-b border-white/[.055] px-5 py-4 text-left transition hover:bg-cyan-200/[.035]"
+                  >
+                    <span className="font-mono text-[8px] text-stone-700">{String(index+1).padStart(2,'0')}</span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-mono text-[9px] font-black uppercase tracking-[.09em] text-cyan-200/75">{folder.file_number}</span>
+                      <span className="mt-1 block truncate text-xs font-black text-white">{folder.client_name||folder.identity_data?.name||'Unnamed Client'}</span>
+                      <span className="mt-1 block truncate text-[8px] uppercase tracking-[.08em] text-stone-600">{folder.bridger_name||'Assigned Bridger'} · {folder.status}</span>
+                    </span>
+                    <MoveRight className="h-3.5 w-3.5 text-stone-700 transition group-hover:translate-x-1 group-hover:text-cyan-200"/>
+                  </button>
+                ))
+              )}
+            </div>
+
+            <footer className="border-t border-cyan-100/10 px-5 py-4">
+              <p className="text-[8px] leading-4 text-stone-600">Support enters the same persistent Client world. Ownership remains with the Client player.</p>
+            </footer>
+          </motion.aside>
         )}
-      </div>
+      </AnimatePresence>
     </main>
   )
 }
-
