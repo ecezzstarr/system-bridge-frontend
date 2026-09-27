@@ -139,15 +139,29 @@ function MarketDistrict({level,buildProgress,active}:{level:number;buildProgress
   </group>
 }
 
-function EnterpriseKeep({level,active}:{level:number;active:boolean}){
-  const height=level>=4?3.4:level>=3?2.8:level>=2?2.1:level>=1?1.4:.35
+function EnterpriseKeep({
+  level,active,position,approved,enterpriseName,
+}:{
+  level:number
+  active:boolean
+  position?:'client'|'lord'|'lady'|string
+  approved?:boolean
+  enterpriseName?:string|null
+}){
+  const effectiveLevel=approved?Math.max(1,level):level
+  const height=effectiveLevel>=4?3.4:effectiveLevel>=3?2.8:effectiveLevel>=2?2.1:effectiveLevel>=1?1.4:.35
   return <group>
     <mesh position={[0,.13,0]} receiveShadow><cylinderGeometry args={[1.7,1.9,.26,8]}/><meshStandardMaterial color="#32261d" roughness={.82}/></mesh>
-    {level===0?<Text position={[0,.38,.82]} fontSize={.12} color="#aa9379">ENTERPRISE GROUND</Text>:<>
+    {effectiveLevel===0?<Text position={[0,.38,.82]} fontSize={.12} color="#aa9379">ENTERPRISE GROUND</Text>:<>
       <mesh position={[0,height/2+.18,0]} castShadow><cylinderGeometry args={[.82,1.18,height,8]}/><meshStandardMaterial color="#4d3927" roughness={.62} metalness={.16}/></mesh>
-      {level>=2&&[-1.12,1.12].map(x=><mesh key={x} position={[x,.8,0]} castShadow><cylinderGeometry args={[.28,.38,1.4,8]}/><meshStandardMaterial color="#59402b" roughness={.62}/></mesh>)}
-      {level>=3&&<mesh position={[0,height+.52,0]}><coneGeometry args={[.82,.95,8]}/><meshStandardMaterial color="#7a522e" metalness={.35} roughness={.44}/></mesh>}
-      <Text position={[0,.66,1.05]} fontSize={.12} color="#f6e4c6">ENTERPRISE</Text>
+      {effectiveLevel>=2&&[-1.12,1.12].map(x=><mesh key={x} position={[x,.8,0]} castShadow><cylinderGeometry args={[.28,.38,1.4,8]}/><meshStandardMaterial color="#59402b" roughness={.62}/></mesh>)}
+      {effectiveLevel>=3&&<mesh position={[0,height+.52,0]}><coneGeometry args={[.82,.95,8]}/><meshStandardMaterial color="#7a522e" metalness={.35} roughness={.44}/></mesh>}
+      <Text position={[0,.66,1.05]} fontSize={.12} color="#f6e4c6">{approved ? String(position||'enterprise').toUpperCase() : 'ENTERPRISE'}</Text>
+      {approved&&<>
+        <mesh position={[-.82,height+.08,.05]} castShadow><boxGeometry args={[.05,1.55,.05]}/><meshStandardMaterial color="#9a7448" metalness={.48} roughness={.42}/></mesh>
+        <mesh position={[-.46,height+.55,.05]}><planeGeometry args={[.7,.45]}/><meshStandardMaterial color="#7c2d12" emissive="#f97316" emissiveIntensity={active?.18:.08} side={THREE.DoubleSide}/></mesh>
+        <Text position={[0,height+1.16,.05]} fontSize={.11} color="#fde68a" anchorX="center">{enterpriseName ? enterpriseName.toUpperCase().slice(0,24) : 'ENTERPRISE DREAM'}</Text>
+      </>}
       <pointLight position={[0,height+.4,.8]} intensity={active?4:1.5} distance={4} color="#fbbf24"/>
     </>}
   </group>
@@ -329,6 +343,9 @@ function DistrictPlot({
   marketLevel:number
   marketBuildProgress:number
   enterpriseLevel:number
+  enterprisePosition?:string
+  enterpriseApproved?:boolean
+  enterpriseName?:string|null
   activeBuilds:ActiveBuild[]
   emergence:number
 }){
@@ -384,7 +401,7 @@ function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,routeCount,vitalityScore,emergence,routeCurrent,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,emergence,routeCurrent,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -395,6 +412,9 @@ function Scene({
   marketBuildProgress:number
   streamLevel:number
   enterpriseLevel:number
+  enterprisePosition?:string
+  enterpriseApproved?:boolean
+  enterpriseName?:string|null
   routeCount:number
   vitalityScore:number
   emergence:number
@@ -422,6 +442,9 @@ function Scene({
       marketLevel={marketLevel}
       marketBuildProgress={marketBuildProgress}
       enterpriseLevel={enterpriseLevel}
+      enterprisePosition={enterprisePosition}
+      enterpriseApproved={enterpriseApproved}
+      enterpriseName={enterpriseName}
       activeBuilds={activeBuilds}
       emergence={emergence}
     />)}
@@ -442,7 +465,7 @@ function Scene({
 
 export function ClientFileFolder3D({
   activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,
-  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,routeCount=0,vitalityScore=0,territoryMode=false,
+  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,territoryMode=false,
 }:{
   activeSurface:DistrictKey
   onSurfaceChange:(key:DistrictKey)=>void
@@ -454,6 +477,9 @@ export function ClientFileFolder3D({
   marketBuildProgress?:number
   streamLevel?:number
   enterpriseLevel?:number
+  enterprisePosition?:string
+  enterpriseApproved?:boolean
+  enterpriseName?:string|null
   routeCount?:number
   vitalityScore?:number
   territoryMode?:boolean
@@ -507,6 +533,9 @@ export function ClientFileFolder3D({
           marketBuildProgress={marketBuildProgress}
           streamLevel={streamLevel}
           enterpriseLevel={enterpriseLevel}
+          enterprisePosition={enterprisePosition}
+          enterpriseApproved={enterpriseApproved}
+          enterpriseName={enterpriseName}
           routeCount={routeCount}
           vitalityScore={vitalityScore}
           emergence={emergence}
