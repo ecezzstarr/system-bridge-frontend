@@ -249,7 +249,7 @@ export default function FileFolderOpenWorld({
       </header>
 
       <div className="min-h-[650px]">
-        <nav className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
+        <nav className={`sticky z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl ${readOnly?'top-11 md:top-0':'top-0'}`} data-build-site-awareness="compact-sticky-rail">
           <div className="flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
             <div className="min-w-0 shrink-0 border-r border-amber-100/10 pr-3">
               <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">Build site</p>
@@ -281,7 +281,7 @@ export default function FileFolderOpenWorld({
           </div>
         </nav>
 
-        <div className="p-4 md:p-6">
+        <div className="p-3 sm:p-4 md:p-6">
           {message && <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-300">{message}</div>}
 
           {district==='workshop_core'&&(
@@ -291,13 +291,13 @@ export default function FileFolderOpenWorld({
                 <h3 className="mt-2 text-2xl font-black text-white">{workshopTitle}</h3>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-400">{workshopPurpose||'This workshop remains the Client command point while real systems rise around it.'}</p>
               </div>
-              <div className="grid gap-0 overflow-hidden border-y border-amber-100/10 md:grid-cols-4">
+              <div className="grid grid-cols-2 gap-0 overflow-hidden border-y border-amber-100/10 md:grid-cols-4">
                 {[
                   ['Blueprints ready',world?.blueprints?.length||0,'DESIGN'],
                   ['Finished builds',completedBuilds.length,'STRUCTURES'],
                   ['Build intelligence',(world?.library||[]).filter((x:any)=>x.status==='complete').length+'/'+(world?.library?.length||0),'KNOWLEDGE'],
                   ['Outside customers',world?.customerDoor?.order_count||0,'MARKET'],
-                ].map(([label,value,state],index)=><div key={String(label)} className={`relative px-4 py-5 ${index>0?'border-t border-amber-100/10 md:border-l md:border-t-0':''}`}>
+                ].map(([label,value,state],index)=><div key={String(label)} className={`relative px-3 py-4 md:px-4 md:py-5 ${index>0?'border-amber-100/10':''} ${index%2===1?'border-l':''} ${index>1?'border-t':''} md:border-t-0 md:[&:not(:first-child)]:border-l`}>
                   <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">{state}</p>
                   <p className="mt-2 text-2xl font-black text-white">{String(value)}</p>
                   <p className="mt-1 text-[8px] uppercase tracking-wider text-stone-500">{label}</p>
