@@ -165,18 +165,26 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
   }
 
   return (
-    <aside className="relative flex h-screen w-64 flex-col overflow-hidden border-r border-sky-300/10 bg-[#020b17]/92 shadow-[22px_0_70px_rgba(2,8,23,.38)] backdrop-blur-2xl">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_28%_10%,rgba(56,189,248,.09),transparent_25%),radial-gradient(circle_at_72%_82%,rgba(245,158,11,.055),transparent_28%)]" />
+    <aside className="weave-sidebar relative flex h-dvh w-72 max-w-[88vw] flex-col overflow-hidden border-r border-sky-300/10 bg-[#020b17]/96 shadow-[22px_0_70px_rgba(2,8,23,.38)] backdrop-blur-2xl">
       {/* Logo and System Status */}
-      <div className="relative flex flex-col items-center justify-center border-b border-sky-300/10 p-6">
-        <WeaveLogo size="md" className="mb-1" />
-        <span className="text-[9px] text-slate-500 uppercase tracking-[0.22em] font-bold">System Switch · Bridge Radiance</span>
+      <div className="relative border-b border-sky-300/10 p-4">
+        <div className="flex items-center gap-3">
+          <WeaveLogo size="md" className="shrink-0" />
+          <div className="min-w-0">
+            <p className="truncate text-xs font-black uppercase tracking-[0.14em] text-white">WEAVE of Presence</p>
+            <span className="mt-1 block truncate text-[8px] font-bold uppercase tracking-[0.16em] text-slate-500">System Switch · Bridge Radiance</span>
+          </div>
+        </div>
+        <div className="weave-flame-live-indicator mt-3 items-center gap-2 rounded-full border border-orange-300/25 bg-orange-400/[0.08] px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.16em] text-orange-100">
+          <Flame className="h-3.5 w-3.5" />
+          Flame Live · Company Loop 1
+        </div>
 
         {/* PWA Download Button */}
         <Button
           variant="outline"
           size="sm"
-          className="mt-4 w-full h-8 text-[10px] border-cyan-500/30 bg-cyan-500/5 text-cyan-400 hover:bg-cyan-500/10 gap-2"
+          className="mt-3 w-full h-9 text-[9px] border-cyan-500/25 bg-cyan-500/[0.045] text-cyan-300 hover:bg-cyan-500/10 gap-2"
           onClick={() => {
             const prompt = (window as any).deferredPrompt;
             if (prompt) {
@@ -198,7 +206,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
 
       {/* User Profile */}
       {user && (
-        <div className="relative flex items-center gap-3 border-b border-sky-300/10 p-4">
+        <div className="relative flex items-center gap-3 border-b border-sky-300/10 px-4 py-3">
           <div className="relative">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary">
               {user.avatar ? (
@@ -232,8 +240,8 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="relative flex-1 overflow-y-auto p-3 scrollbar-hide">
-        <div className="space-y-6">
+      <nav className="relative min-h-0 flex-1 overflow-y-auto p-2.5 scrollbar-hide">
+        <div className="space-y-2.5">
           {navigation.map((group) => {
             const visibleItems = group.items.filter((item: any) => {
               if (item.adminOnly && user?.role !== "admin") return false
@@ -247,11 +255,14 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
             if (visibleItems.length === 0) return null
 
             return (
-              <div key={group.group}>
-                <h3 className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500/70">
-                  {group.group} District
-                </h3>
-                <ul className="space-y-0.5">
+              <section key={group.group} className="weave-nav-group rounded-2xl border border-white/[0.055] bg-white/[0.018] p-2">
+                <div className="mb-1.5 flex items-center justify-between px-2 py-1">
+                  <h3 className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">
+                    {group.group} District
+                  </h3>
+                  <span className="font-mono text-[8px] text-slate-600">{String(visibleItems.length).padStart(2,'0')}</span>
+                </div>
+                <ul className="space-y-1">
                   {visibleItems.map((item) => {
                     const homeHref =
                       user?.role === 'admin' ? '/admin/dashboard'
@@ -267,16 +278,19 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                       <li key={item.name}>
                         <Link
                           href={href}
+                          data-active={isActive ? 'true' : 'false'}
                           className={cn(
-                            "flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-all",
+                            "weave-nav-item flex min-h-11 items-center justify-between rounded-xl border px-3 py-2.5 text-[11px] font-semibold transition-all",
                             isActive
                               ? "border-sky-300/25 bg-sky-400/10 text-sky-100 shadow-[0_0_20px_rgba(56,189,248,.07)]"
                               : "border-transparent text-sidebar-foreground hover:border-white/10 hover:bg-white/[0.04] hover:text-white"
                           )}
                         >
-                          <div className="flex items-center gap-3">
-                            <item.icon className="h-4 w-4" />
-                            {item.name}
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/[0.055] bg-black/15">
+                              <item.icon className="h-3.5 w-3.5" />
+                            </span>
+                            <span className="min-w-0 truncate">{item.name}</span>
                           </div>
                           {isSubItem && subscription && (
                             <span className={cn(
@@ -295,7 +309,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
                     )
                   })}
                 </ul>
-              </div>
+              </section>
             )
           })}
         </div>
@@ -303,7 +317,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
       </nav>
 
       {/* Bottom Actions */}
-      <div className="relative border-t border-sky-300/10 bg-black/10 p-3">
+      <div className="relative border-t border-sky-300/10 bg-black/20 p-2.5">
         <div className="space-y-1">
           <Link
             href="/roles"
