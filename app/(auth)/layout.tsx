@@ -1,6 +1,5 @@
 'use client'
 
-import { FlameEventWorldGate } from '@/components/events/flame-event-world-gate'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -24,15 +23,14 @@ export default function AuthLayout({
 
   if (isLoading) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="relative flex min-h-dvh items-center justify-center bg-transparent">
         <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4">
-      <FlameEventWorldGate intensity="soft" />
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-transparent px-4">
       <div className="w-full max-w-md relative z-10">
         <WeaveEnvironmentSurface compact>{children}</WeaveEnvironmentSurface>
       </div>
