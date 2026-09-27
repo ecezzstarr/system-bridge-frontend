@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { visiblePoll } from '@/lib/visible-poll'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -205,8 +206,8 @@ export function DepartmentEntryTicketGate({
     if (!entered || !accessToken || !ticket) return
     if (!['PAYMENT_PENDING', 'VERIFYING'].includes(ticket.status)) return
 
-    const timer = window.setInterval(refreshTicket, 5000)
-    return () => window.clearInterval(timer)
+    const stop = visiblePoll(() => refreshTicket(), 5000)
+    return stop
   }, [entered, accessToken, ticket?.status])
 
   const submitPayment = async () => {
