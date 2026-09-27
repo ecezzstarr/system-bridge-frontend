@@ -211,7 +211,7 @@ function ClientRegisterContent() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     type="password"
-                    placeholder="Create Secure Password"
+                    placeholder="Create Password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="pl-10 bg-slate-800/50 border-slate-700 text-white text-sm h-11"
