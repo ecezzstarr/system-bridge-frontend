@@ -37,12 +37,12 @@ export default async function PublicClientMarket(){
     LIMIT 120
   `
 
-  return <main className="min-h-screen overflow-hidden bg-[#02050b] text-white">
+  return <main className="min-h-screen overflow-hidden bg-transparent text-white" data-public-market-world>
     <section className="relative border-b border-white/10 bg-[radial-gradient(circle_at_15%_0%,rgba(56,189,248,.18),transparent_34%),radial-gradient(circle_at_82%_14%,rgba(168,85,247,.14),transparent_30%),linear-gradient(180deg,#07111f,#040710)] px-5 py-10 md:px-8 md:py-16">
       <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.045)_1px,transparent_1px)] [background-size:54px_54px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"/>
       <div className="relative mx-auto max-w-7xl">
         <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-sky-300"><Landmark className="h-4 w-4"/>WEAVE Client Market</p>
-        <h1 className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">A public market made from Client-built businesses.</h1>
+        <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">A public market made from Client-built businesses.</h1>
         <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Clients construct Customer Doors, storefronts and larger market systems inside their File Folders. When a business opens, anyone can enter here, inspect the store and purchase without becoming a WEAVE user.</p>
         <div className="mt-7 flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-wider text-slate-400">
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Public access</span>
@@ -55,7 +55,7 @@ export default async function PublicClientMarket(){
 
     <section className="mx-auto max-w-7xl px-5 py-10 md:px-8">
       <div className="mb-6 flex items-end justify-between gap-3">
-        <div><p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Market district</p><h2 className="mt-2 text-3xl font-black">Constructed businesses</h2></div>
+        <div><p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Market district</p><h2 data-weave-live-word="title" className="mt-2 text-3xl font-black">Constructed businesses</h2></div>
         <p className="text-xs text-slate-500">{stores.length} open {stores.length===1?'store':'stores'}</p>
       </div>
 
