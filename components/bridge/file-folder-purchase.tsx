@@ -384,7 +384,7 @@ export default function FileFolderPurchase({
                   onClick={recordTrxPayment}
                   className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-orange-200/25 bg-orange-300/10 px-5 py-3 text-[10px] font-black uppercase tracking-[.16em] text-orange-50 transition hover:bg-orange-300/15 disabled:opacity-30"
                 >
-                  {busy ? 'Recording movement…' : '{WEAVE_WRITING.fileFolderCrossing.paymentAction}'} <ArrowRight className="h-3.5 w-3.5" />
+                  {busy ? 'Recording movement…' : WEAVE_WRITING.fileFolderCrossing.paymentAction} <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </>
             )}
