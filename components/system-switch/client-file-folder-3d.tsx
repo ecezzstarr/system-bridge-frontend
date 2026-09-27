@@ -213,8 +213,12 @@ function ConstructionSite({build,position}:{build:ActiveBuild;position:[number,n
     {progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#8b6945" metalness={.35} roughness={.5}/></mesh>))}
     {walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#4b3a2c" transparent opacity={.68} roughness={.66}/></mesh>}
     {roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#765234" roughness={.5} metalness={.16}/></mesh>}
-    {progress<96&&<ScaffoldEnvelope width={1.22} depth=.94 height={Math.max(.55,height+.28)} progress={progress}/>}
-    {progress<78&&<Crane height={2.2}/>}
+    {progress < 96 && (
+      <ScaffoldEnvelope width={1.22} depth={.94} height={Math.max(.55,height+.28)} progress={progress}/>
+    )}
+    {progress < 78 && (
+      <Crane height={2.2}/>
+    )}
     <Text position={[0,Math.max(1.1,height+.45),.48]} fontSize={.075} color="#f5d49d" anchorX="center">{phase}</Text>
   </group>
 }
