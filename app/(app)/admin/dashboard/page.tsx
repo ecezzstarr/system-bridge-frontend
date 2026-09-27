@@ -161,7 +161,7 @@ export default function AdminTerminal() {
           <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400 mb-1">
             The Keeping
           </h1>
-          <p className="text-slate-400 text-sm">Ecosystem Authority: {user.name}</p>
+          <p className="text-slate-400 text-sm">Administration · {user.name}</p>
         </div>
       </div>
 
@@ -318,7 +318,7 @@ function AdminWorkshopsSection() {
   const workshops = [
     {
       title: 'Developer Workshop',
-      desc: 'System refinement layer for ecosystem operators. Build and refine origin systems.',
+      desc: 'System refinement layer for Administration. Build and refine origin systems.',
       icon: <Code className="h-10 w-10 text-purple-400" />,
       link: '/admin/workshop',
       tags: ['NEXT.JS 16', 'POSTGRES', 'GCLOUD'],
@@ -326,10 +326,10 @@ function AdminWorkshopsSection() {
     },
     {
       title: 'Authority Workshops',
-      desc: 'Define and govern the core protocols and permissions of the WEAVE ecosystem.',
+      desc: 'Define and govern the core rules, permissions and authority of WEAVE.',
       icon: <Database className="h-10 w-10 text-emerald-400" />,
       link: '/admin/workshop',
-      tags: ['PROTOCOL', 'GOVERNANCE', 'KEYS'],
+      tags: ['AUTHORITY', 'GOVERNANCE', 'KEYS'],
       color: 'from-emerald-500 to-teal-500'
     },
     {
@@ -370,7 +370,7 @@ function AdminWorkshopsSection() {
   return (
     <div className="space-y-6">
       <div className="p-4 bg-slate-900/60 rounded-xl border border-purple-900/30 backdrop-blur-sm">
-        <p className="text-xs text-purple-400 mb-3 font-bold uppercase tracking-wider">Navigate Ecosystem</p>
+        <p className="text-xs text-purple-400 mb-3 font-bold uppercase tracking-wider">Navigate WEAVE</p>
         <EcosystemNav currentSystem="dashboard" />
       </div>
 
@@ -1758,7 +1758,7 @@ function ClientMessagesPreview() {
         <p className="text-xs text-slate-500 mt-1">Manage support tickets and direct messages from platform clients.</p>
       </div>
       <Link href="/admin/client-messages">
-        <Button className="bg-cyan-600 hover:bg-cyan-700 text-xs">Open Messages Terminal</Button>
+        <Button className="bg-cyan-600 hover:bg-cyan-700 text-xs">Open Message Hub</Button>
       </Link>
     </div>
   )
