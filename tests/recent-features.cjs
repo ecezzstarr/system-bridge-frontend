@@ -1280,9 +1280,12 @@ const clientEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/client/l
 const authEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/(auth)/layout.tsx'),'utf8')
 const clientEnvironmentNavigationSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
 
-assert.ok(weaveEnvironmentTransitSource.includes('INITIAL_BOOT_MS = 2400'),'WEAVE cold entry opens through a deliberate environment boot')
-assert.ok(weaveEnvironmentTransitSource.includes('TRANSIT_MS = 620'),'Internal route movement uses a shorter environment transit')
-assert.ok(weaveEnvironmentTransitSource.includes('Opening the living environment'),'Boot language presents WEAVE as an environment instead of page loading')
+assert.ok(weaveEnvironmentTransitSource.includes("waitForEnvironmentReadiness('boot'"),'WEAVE cold entry opens only after a real environment readiness gate')
+assert.ok(weaveEnvironmentTransitSource.includes("waitForEnvironmentReadiness('transit'"),'Internal route movement waits for destination readiness instead of a fixed timeout')
+assert.ok(weaveEnvironmentTransitSource.includes('document.fonts.ready'),'Environment readiness waits for typography before reveal')
+assert.ok(weaveEnvironmentTransitSource.includes('document.images'),'Environment readiness can wait for current media before reveal')
+assert.ok(weaveEnvironmentTransitSource.includes('MutationObserver'),'Environment readiness waits for DOM component formation to become quiet')
+assert.ok(weaveEnvironmentTransitSource.includes('Forming the living environment'),'Boot language presents WEAVE as an environment instead of page loading')
 assert.ok(rootEnvironmentLayoutSource.includes('<WeaveEnvironmentTransit>'),'Root layout applies environment boot to the whole app')
 assert.ok(appEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface role={user?.role}'),'Authenticated staff/partner surfaces inherit environment framing')
 assert.ok(clientEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface role="client">'),'Client surfaces inherit one Client world framing')
@@ -1296,6 +1299,10 @@ assert.ok(clientEnvironmentNavigationSource.includes("'Home World'"),'Client nav
 assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
 
 for(const file of [
+  'lib/weave-environment-runtime-profile.ts',
+  'components/world/use-environment-runtime-config.ts',
+  'components/admin/environment-runtime-controls.tsx',
+  'components/world/weave-presence-ambience.tsx',
   'components/world/weave-environment-transit.tsx',
   'components/world/weave-environment-surface.tsx',
   'lib/weave-environments.ts',
