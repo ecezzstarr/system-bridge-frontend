@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Activity, Send, Users, UserCircle, GitBranch, Briefcase, ShieldCheck } from 'lucide-react'
+import { visiblePoll } from '@/lib/visible-poll'
 
 type TabId = 'prospects' | 'clients' | 'bridgers' | 'agents'
 
@@ -59,15 +60,15 @@ export default function AdminHubPage() {
     setSelected(null)
     setMessages([])
     loadList()
-    const interval = setInterval(loadList, 6000)
-    return () => clearInterval(interval)
+    const stop = visiblePoll(() => loadList(), 6000, false)
+    return stop
   }, [tab, user?.id])
 
   useEffect(() => {
     if (!selected) return
     loadMessages()
-    const interval = setInterval(loadMessages, 3000)
-    return () => clearInterval(interval)
+    const stop = visiblePoll(() => loadMessages(), 3000, false)
+    return stop
   }, [selected, position])
 
   useEffect(() => {
