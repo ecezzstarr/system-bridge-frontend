@@ -1,5 +1,5 @@
 'use client'
-import { useEffect,useState } from 'react'
+import { useEffect,useRef,useState } from 'react'
 import Link from 'next/link'
 import {
   BatteryCharging,
@@ -16,6 +16,7 @@ import {
 import { getAuthHeaders } from '@/lib/auth-client'
 import { toast } from 'sonner'
 import { WeaveSystemRoom } from '@/components/world/weave-system-room'
+import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 
 function deadlineLabel(deadline:string,now:number){
  const ms=new Date(deadline).getTime()-now
@@ -34,6 +35,7 @@ export default function BridgerNumbersPage(){
  const [ordering,setOrdering]=useState<string|null>(null)
  const [loading,setLoading]=useState(true)
  const [now,setNow]=useState(()=>Date.now())
+ const orderStateRef=useRef<Map<string,string>>(new Map())
 
  const load=async()=>{
   setLoading(true)
@@ -48,7 +50,17 @@ export default function BridgerNumbersPage(){
    setAvailable(x.available||[])
    setOffers(x.offers||[])
    setMine(x.mine||[])
-   setOrders(x.orders||[])
+   const nextOrders=x.orders||[]
+   for(const order of nextOrders){
+    const id=String(order.id||'')
+    const status=String(order.status||'')
+    const previous=orderStateRef.current.get(id)
+    if(previous&&previous!==status&&status==='delivered'){
+     emitWeaveMotion({kind:'confirmation',label:`${order.country||'Number'} delivered into Number Bay ownership`,intensity:1.25,confirmed:true,source:'number-bay-delivery'})
+    }
+   }
+   orderStateRef.current=new Map(nextOrders.map((order:any)=>[String(order.id||''),String(order.status||'')]))
+   setOrders(nextOrders)
    setRequests(y.requests||[])
   }catch(e:any){
    toast.error(e.message||'Unable to load Number Bay')
@@ -73,9 +85,11 @@ export default function BridgerNumbersPage(){
     if(d.gate==='stock_changed'||d.gate==='out_of_stock')await load()
     throw new Error(d.error||'Purchase failed')
    }
+   emitWeaveMotion({kind:'value',label:`${country} number purchased and assigned`,intensity:1.25,confirmed:true,source:'number-bay'})
    toast.success(`${country} number assigned to your Bridger account`)
    await load()
   }catch(e:any){
+   emitWeaveMotion({kind:'interruption',label:e?.message||'Number purchase failed',intensity:.65,confirmed:true,source:'number-bay'})
    toast.error(e.message)
   }finally{
    setBuying(null)
@@ -92,9 +106,11 @@ export default function BridgerNumbersPage(){
    })
    const d=await r.json()
    if(!r.ok)throw new Error(d.error||'Order failed')
+   emitWeaveMotion({kind:'value',label:`${country} Number Bay order opened`,intensity:1,confirmed:true,source:'number-bay'})
    toast.success(`${country} number ordered · Administration delivery target is 30 minutes`)
    await load()
   }catch(e:any){
+   emitWeaveMotion({kind:'interruption',label:e?.message||'Number order failed',intensity:.6,confirmed:true,source:'number-bay'})
    toast.error(e.message)
   }finally{
    setOrdering(null)
@@ -109,6 +125,7 @@ export default function BridgerNumbersPage(){
   })
   const d=await r.json()
   if(!r.ok)return toast.error(d.error||'Could not request code')
+  emitWeaveMotion({kind:'route',label:method==='sms'?'Verification SMS movement requested':'Verification call movement requested',intensity:.8,confirmed:true,source:'number-bay'})
   toast.success(method==='sms'?'SMS verification requested':'Call verification requested')
   void load()
  }
@@ -121,6 +138,7 @@ export default function BridgerNumbersPage(){
   })
   const d=await r.json()
   if(!r.ok)return toast.error(d.error||'Could not complete verification')
+  emitWeaveMotion({kind:'confirmation',label:'Number verification completed',intensity:1.15,confirmed:true,source:'number-bay'})
   toast.success('Number verification completed')
   void load()
  }
