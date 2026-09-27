@@ -316,6 +316,26 @@ export function WeavePresenceAmbience(){
   useEffect(()=>()=>stopRuntime(),[stopRuntime])
 
   useEffect(()=>{
+    const onPreview=(event:Event)=>{
+      const runtime=runtimeRef.current
+      if(!runtime)return
+      const kind=String((event as CustomEvent<{kind?:string}>).detail?.kind||'')
+      if(kind==='bell'){
+        playBell(runtime)
+      }else if(kind==='movement'){
+        playDistantMovement(runtime)
+      }else if(kind==='footsteps'){
+        const pan=(Math.random()*1.2)-.6
+        playFootstep(runtime,0,pan)
+        playFootstep(runtime,.36,pan+.05)
+        playFootstep(runtime,.73,pan+.09)
+      }
+    }
+    window.addEventListener('weave:ambience-preview',onPreview as EventListener)
+    return()=>window.removeEventListener('weave:ambience-preview',onPreview as EventListener)
+  },[playBell,playDistantMovement,playFootstep])
+
+  useEffect(()=>{
     const onDj=(event:Event)=>{
       const detail=(event as CustomEvent<DjAudioState>).detail||{}
       djPlayingRef.current=Boolean(detail.playing)
