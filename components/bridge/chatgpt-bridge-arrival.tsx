@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { useRef } from 'react'
 import FileFolderPurchase from '@/components/bridge/file-folder-purchase'
 import { normalizeWeaveTopic } from '@/lib/weave-architecture'
 
@@ -27,19 +28,24 @@ export default function ChatGptBridgeArrival({
   code: string
   crossing: Crossing
 }) {
+  const purchaseRef = useRef<HTMLElement | null>(null)
+
   return (
     <main className="min-h-screen bg-black p-3 md:p-6">
       <BridgeRadianceWorld
         initialMovement={crossing.message || null}
         flameName={crossing.flame_name || null}
         topic={normalizeWeaveTopic(crossing.topic)}
+        onCrossingRequest={() => purchaseRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
       />
+      <section ref={purchaseRef}>
       <FileFolderPurchase
         bridgeCode={code}
         providerKey={crossing.provider_key || undefined}
         providerName={crossing.provider_name || undefined}
         flameName={crossing.flame_name || undefined}
       />
+      </section>
     </main>
   )
 }
