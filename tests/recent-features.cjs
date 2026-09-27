@@ -1125,7 +1125,8 @@ assert.ok(valueMovementSource.includes('Value Movement Engine'),'Wallet is a rec
 assert.ok(!valueMovementSource.includes('Your Referral Link'),'Wallet no longer mixes referral UI with financial movement')
 assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a coherent Reserve Engine')
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
-assert.ok(bridgePlazaMatureSource.includes('Bridge Plaza · Living World Hub'),'Bridge Plaza exposes world-routing causality through the realistic physical hub')
+assert.ok(bridgePlazaMatureSource.includes('data-bridge-plaza-theme="continuous-moving-system"'),'Bridge Plaza is a continuous moving world rather than a card-rendering page')
+assert.ok(bridgePlazaMatureSource.includes('data-bridge-plaza-station="client-support"'),'Bridge Plaza Client support is entered as an in-world station')
 assert.ok(bridgePlazaMatureSource.includes('The Crossing is a recorded transition'),'Client crossing exposes recorded state')
 assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
 assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
@@ -1143,6 +1144,7 @@ for(const file of [
  'app/(app)/wallet/deposit-withdraw/page.tsx',
  'app/(app)/fund-wall/page.tsx',
  'app/(app)/weave/page.tsx',
+ 'components/world/bridge-plaza-map.tsx',
  'app/(app)/search/page.tsx',
 ]){
  const source=fs.readFileSync(path.join(root,file),'utf8')
