@@ -328,3 +328,58 @@ assert.ok(liveWordSurface.includes('data-weave-live-word="title"'),'Environment 
 assert.ok(liveWordRoutes.includes('data-weave-live-word="station"'),'Route and station words carry live flame state')
 assert.ok(liveWordSidebar.includes('data-weave-live-word="station"'),'Sidebar words participate in the live system')
 assert.ok(!read('app/(auth)/layout.tsx').includes('FlameEventWorldGate'),'Authentication no longer mounts a second event wallpaper')
+
+
+/* Platform load stability: no route may permanently cover, crop or poll itself into a freeze. */
+const loadStabilityFetch=read('lib/fetch-with-timeout.ts')
+const loadStabilityAuth=read('lib/auth-provider.tsx')
+const loadStabilityAuthLayout=read('app/(auth)/layout.tsx')
+const loadStabilityClientLogin=read('app/client/login/page.tsx')
+const loadStabilityClientRegister=read('app/client/register/page.tsx')
+const loadStabilityClientFolder=read('app/client/system-switch/page.tsx')
+const loadStabilitySupportFolder=read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
+const loadStabilityAdaptive=read('components/world/use-adaptive-runtime.ts')
+const loadStabilityFlame=read('components/world/weave-live-flame-field.tsx')
+const loadStabilityRegistrationChat=read('components/registration-chat.tsx')
+const loadStabilityClientChat=read('app/client/chat/[position]/page.tsx')
+const loadStabilityBridgerClients=read('app/(app)/bridger/clients/page.tsx')
+const loadStabilityAgentChat=read('app/(app)/agent-chat/[clientId]/[position]/page.tsx')
+const loadStabilityAdminHub=read('app/(app)/admin/hub/page.tsx')
+const loadStabilityAdminMessages=read('app/(app)/admin/client-messages/page.tsx')
+const loadStabilityDeptRegistration=read('app/(app)/admin/departmental-registration/page.tsx')
+const loadStabilityTicketPanel=read('components/admin/department-entry-tickets-panel.tsx')
+const loadStabilityTicketGate=read('components/department-entry-ticket-gate.tsx')
+const loadStabilityDjPlayer=read('components/dj-broadcast-player.tsx')
+const loadStabilityDjWorkshop=read('app/(app)/admin/dj-workshop/page.tsx')
+
+assert.ok(cleanRevealTransit2026.includes('absoluteMaximum')&&cleanRevealTransit2026.includes('elapsed<absoluteMaximum'),'Global environment cover has an absolute ceiling even when a destination leaves a pending marker mounted')
+assert.ok(loadStabilityClientFolder.includes('new AbortController()')&&loadStabilityClientFolder.includes('12000')&&loadStabilityClientFolder.includes('signal:controller.signal'),'Client File Folder boot has a bounded network wait')
+assert.ok(loadStabilitySupportFolder.includes('new AbortController()')&&loadStabilitySupportFolder.includes('12000')&&loadStabilitySupportFolder.includes('signal:controller.signal'),'Support File Folder entry has a bounded network wait')
+assert.ok(loadStabilityFetch.includes('Request timed out. Check the connection and try again.'),'Blocking user actions have one reusable timeout failure mode')
+assert.ok(loadStabilityAuth.includes("fetchWithTimeout('/api/auth/register'")&&loadStabilityAuth.includes("fetchWithTimeout('/api/auth/login'"),'Staff/Bridger/Agent authentication cannot spin forever on a stalled request')
+assert.ok(loadStabilityClientLogin.includes("fetchWithTimeout('/api/client/weave-login'"),'Client login cannot spin forever on a stalled request')
+assert.ok(loadStabilityClientRegister.includes('fetchWithTimeout')&&loadStabilityClientRegister.includes('/api/client/weave-validate'),'Client registration validation is bounded')
+assert.ok(loadStabilityAuthLayout.includes('overflow-y-auto')&&!loadStabilityAuthLayout.includes('justify-center overflow-hidden'),'Shared auth shell does not crop tall registration states')
+assert.ok(loadStabilityClientLogin.includes('overflow-y-auto')&&!loadStabilityClientLogin.includes('justify-center bg-transparent p-4 relative overflow-hidden'),'Client login can scroll on short screens')
+assert.ok(loadStabilityClientRegister.includes('overflow-y-auto')&&!loadStabilityClientRegister.includes('justify-center bg-transparent p-4 relative overflow-hidden'),'Client registration can scroll on short screens')
+assert.ok(loadStabilityAdaptive.includes('level===1?20:12')&&loadStabilityAdaptive.includes("level===1?.85:.7"),'Adaptive runtime lowers medium/mobile FPS and DPR instead of overdriving phones')
+assert.ok(loadStabilityAdaptive.includes('dataset.weaveCovered'),'Environment cover state is published so decorative animation can pause during loading')
+assert.ok(loadStabilityFlame.includes('1000/Math.max(12,runtime.fps)'),'Pointer-driven Flame updates respect the adaptive frame budget')
+assert.ok(cleanRevealCss2026.includes('html[data-weave-covered="true"] .weave-live-flame-current')&&cleanRevealCss2026.includes('html[data-weave-quality="1"] .weave-live-flame-current-b'),'Covered/mobile Flame layers reduce compositor work')
+for(const [source,label] of [
+ [loadStabilityRegistrationChat,'registration chat'],
+ [loadStabilityClientChat,'Client chat'],
+ [loadStabilityBridgerClients,'Bridger Client chat'],
+ [loadStabilityAgentChat,'Agent chat'],
+ [loadStabilityAdminHub,'Administration hub'],
+ [loadStabilityAdminMessages,'Administration Client messages'],
+ [loadStabilityDeptRegistration,'departmental registration chat'],
+ [loadStabilityTicketPanel,'entry ticket panel'],
+ [loadStabilityTicketGate,'entry ticket gate'],
+ [loadStabilityDjPlayer,'live DJ player'],
+ [loadStabilityDjWorkshop,'DJ Workshop'],
+]){
+ assert.ok(source.includes('visiblePoll'),label+' uses serial visible polling')
+}
+assert.ok(!loadStabilityDjPlayer.includes('setInterval(() => void syncBroadcast()'),'DJ player no longer launches overlapping hidden-tab network intervals')
+assert.ok(!loadStabilityAdminHub.includes('setInterval(loadMessages'),'Administration hub no longer stacks message requests')
