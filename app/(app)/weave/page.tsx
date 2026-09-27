@@ -13,7 +13,7 @@ const BridgePlazaMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[720px] h-[calc(100dvh-1rem)] items-center justify-center bg-[#0e0906]">
+      <div className="flex min-h-[720px] h-[calc(100dvh-1rem)] items-center justify-center bg-transparent">
         <div className="text-center">
           <div className="mx-auto h-14 w-14 animate-[spin_3s_linear_infinite] rounded-full border border-amber-200/10 border-t-amber-200/60"/>
           <p className="mt-4 text-[8px] font-black uppercase tracking-[.24em] text-amber-200">Forming Bridge Plaza</p>
@@ -177,7 +177,7 @@ export default function WeavePage() {
 
   return (
     <main
-      className="relative min-h-[720px] h-[calc(100dvh-1rem)] overflow-hidden bg-[#0e0906]"
+      className="relative min-h-[720px] h-[calc(100dvh-1rem)] overflow-hidden bg-transparent"
       data-bridge-plaza-theme="continuous-moving-system"
     >
       <BridgePlazaMap
@@ -204,7 +204,7 @@ export default function WeavePage() {
               transition={{delay:index*.09,duration:.45}}
               className="relative mb-4"
             >
-              <span className="absolute -left-5 top-1.5 h-2.5 w-2.5 rounded-full border border-amber-200/35 bg-[#1b120c] shadow-[0_0_16px_rgba(251,191,36,.18)]" />
+              <span className="absolute -left-5 top-1.5 h-2.5 w-2.5 rounded-full border border-amber-200/35 bg-[#0a0c10] shadow-[0_0_16px_rgba(251,191,36,.18)]" />
               <p className="text-[7px] font-black uppercase tracking-[.2em] text-amber-200/60">{item.label}</p>
               <p className="mt-1 text-[9px] font-semibold leading-4 text-stone-400">{item.value}</p>
             </motion.div>
@@ -217,7 +217,7 @@ export default function WeavePage() {
           <button
             type="button"
             onClick={()=>setSupportOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-[#07131b]/90 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-[0_14px_40px_rgba(0,0,0,.3)] backdrop-blur-xl transition hover:border-cyan-200/35 hover:bg-cyan-300/[.08]"
+            className="inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-[#071016]/88 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-[0_14px_40px_rgba(0,0,0,.3)] backdrop-blur-xl transition hover:border-cyan-200/35 hover:bg-cyan-300/[.08]"
           >
             <Orbit className="h-3.5 w-3.5" />
             System Switch · File Folder View
@@ -227,7 +227,7 @@ export default function WeavePage() {
           <button
             type="button"
             onClick={()=>router.push('/client/system-switch')}
-            className="inline-flex items-center gap-2 rounded-full border border-violet-200/20 bg-[#120b19]/90 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-violet-100 shadow-[0_14px_40px_rgba(0,0,0,.3)] backdrop-blur-xl transition hover:border-violet-200/35 hover:bg-violet-300/[.08]"
+            className="inline-flex items-center gap-2 rounded-full border border-violet-200/20 bg-[#100b17]/88 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-violet-100 shadow-[0_14px_40px_rgba(0,0,0,.3)] backdrop-blur-xl transition hover:border-violet-200/35 hover:bg-violet-300/[.08]"
           >
             <Orbit className="h-3.5 w-3.5" />
             System Switch · My File Folder
@@ -253,7 +253,7 @@ export default function WeavePage() {
             animate={{x:0,opacity:1}}
             exit={{x:'100%',opacity:0}}
             transition={{duration:.42,ease:[.22,1,.36,1]}}
-            className="absolute inset-y-0 right-0 z-40 flex w-full max-w-[460px] flex-col border-l border-cyan-100/10 bg-[#0d0906]/95 shadow-[-28px_0_90px_rgba(0,0,0,.42)] backdrop-blur-2xl"
+            className="absolute inset-y-0 right-0 z-40 flex w-full max-w-[460px] flex-col border-l border-cyan-100/10 bg-[#08090d]/95 shadow-[-28px_0_90px_rgba(0,0,0,.42)] backdrop-blur-2xl"
             data-bridge-plaza-station="client-support"
           >
             <header className="border-b border-cyan-100/10 px-5 pb-4 pt-5">
@@ -307,9 +307,9 @@ export default function WeavePage() {
                   >
                     <span className="font-mono text-[8px] text-stone-700">{String(index+1).padStart(2,'0')}</span>
                     <span className="min-w-0">
-                      <span className="block truncate font-mono text-[9px] font-black uppercase tracking-[.09em] text-cyan-200/75">{folder.file_number}</span>
-                      <span className="mt-1 block truncate text-xs font-black text-white">{folder.client_name||folder.identity_data?.name||'Unnamed Client'}</span>
-                      <span className="mt-1 block truncate text-[8px] uppercase tracking-[.08em] text-stone-600">{folder.bridger_name||'Assigned Bridger'} · {folder.status}</span>
+                      <span className="block break-words font-mono text-[9px] font-black uppercase tracking-[.09em] text-cyan-200/75">{folder.file_number}</span>
+                      <span className="mt-1 block break-words text-xs font-black text-white">{folder.client_name||folder.identity_data?.name||'Unnamed Client'}</span>
+                      <span className="mt-1 block break-words text-[8px] uppercase tracking-[.08em] text-stone-600">{folder.bridger_name||'Assigned Bridger'} · {folder.status}</span>
                     </span>
                     <MoveRight className="h-3.5 w-3.5 text-stone-700 transition group-hover:translate-x-1 group-hover:text-cyan-200"/>
                   </button>

@@ -28,11 +28,11 @@ function StoneFloor(){
   return <group>
     <mesh position={[0,-1.45,0]} receiveShadow>
       <cylinderGeometry args={[10.5,10.95,.38,88]}/>
-      <meshStandardMaterial color="#15110e" roughness={.86} metalness={.06}/>
+      <meshStandardMaterial color="#07090c" roughness={.86} metalness={.06}/>
     </mesh>
     <mesh position={[0,-1.24,0]} receiveShadow>
       <cylinderGeometry args={[9.35,10.1,.1,88]}/>
-      <meshStandardMaterial color="#30251d" roughness={.78} metalness={.1}/>
+      <meshStandardMaterial color="#0d1117" roughness={.78} metalness={.1}/>
     </mesh>
     <mesh position={[0,-1.17,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[2.68,5.05,96]}/>
@@ -44,7 +44,7 @@ function StoneFloor(){
     </mesh>
     <mesh position={[0,-1.12,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[7.95,8.09,96]}/>
-      <meshStandardMaterial color="#9c6c3b" emissive="#f59e0b" emissiveIntensity={.055} metalness={.48} roughness={.45}/>
+      <meshStandardMaterial color="#7c2d12" emissive="#f59e0b" emissiveIntensity={.055} metalness={.48} roughness={.45}/>
     </mesh>
   </group>
 }
@@ -60,7 +60,7 @@ function FlameBowl({position,scale=1}:{position:[number,number,number];scale?:nu
   return <group position={position} scale={scale}>
     <mesh position={[0,-.05,0]} castShadow>
       <cylinderGeometry args={[.26,.36,.24,20]}/>
-      <meshStandardMaterial color="#5b3a21" metalness={.68} roughness={.3}/>
+      <meshStandardMaterial color="#16191f" metalness={.68} roughness={.3}/>
     </mesh>
     <group ref={flame} position={[0,.52,0]}>
       <mesh><coneGeometry args={[.18,.76,7]}/><meshBasicMaterial color="#f97316"/></mesh>
@@ -85,11 +85,11 @@ function FlameFountain(){
   return <group position={[0,-.95,0]}>
     <mesh position={[0,.08,0]} receiveShadow>
       <cylinderGeometry args={[2.28,2.58,.34,64]}/>
-      <meshStandardMaterial color="#32251c" roughness={.68} metalness={.15}/>
+      <meshStandardMaterial color="#0b0d11" roughness={.68} metalness={.15}/>
     </mesh>
     <mesh position={[0,.24,0]}>
       <cylinderGeometry args={[2.0,2.24,.2,64]}/>
-      <meshStandardMaterial color="#8a5a2c" metalness={.72} roughness={.28}/>
+      <meshStandardMaterial color="#1f2937" metalness={.72} roughness={.28}/>
     </mesh>
     <mesh position={[0,.38,0]}>
       <cylinderGeometry args={[1.78,1.96,.12,64]}/>
@@ -97,7 +97,7 @@ function FlameFountain(){
     </mesh>
     <mesh position={[0,.49,0]}>
       <cylinderGeometry args={[.62,.78,.28,36]}/>
-      <meshStandardMaterial color="#3b2a20" metalness={.56} roughness={.38}/>
+      <meshStandardMaterial color="#111827" metalness={.56} roughness={.38}/>
     </mesh>
 
     <group ref={bronze} position={[0,2.15,0]}>
@@ -108,16 +108,28 @@ function FlameFountain(){
     </group>
 
     <group ref={fire} position={[0,2.15,0]}>
-      <mesh position={[0,.28,0]}>
-        <coneGeometry args={[.52,3.25,8,1]}/>
-        <meshStandardMaterial color="#f97316" emissive="#f97316" emissiveIntensity={2.35} toneMapped={false} transparent opacity={.76}/>
+      <mesh position={[0,.3,0]} scale={[.72,2.05,.72]}>
+        <sphereGeometry args={[.72,28,36]}/>
+        <meshBasicMaterial color="#ef4444" transparent opacity={.17} blending={THREE.AdditiveBlending} depthWrite={false}/>
       </mesh>
-      <mesh position={[0,.15,.06]} scale={.67}>
-        <coneGeometry args={[.48,3,8,1]}/>
-        <meshStandardMaterial color="#fef3c7" emissive="#fbbf24" emissiveIntensity={1.65} toneMapped={false} transparent opacity={.84}/>
+      <mesh position={[-.14,.48,.03]} rotation={[0,0,-.08]} scale={[.5,1.9,.5]}>
+        <sphereGeometry args={[.58,24,32]}/>
+        <meshBasicMaterial color="#f97316" transparent opacity={.34} blending={THREE.AdditiveBlending} depthWrite={false}/>
       </mesh>
-      <pointLight position={[0,.8,0]} intensity={30} distance={7.5} color="#fb923c"/>
-      <pointLight position={[0,2.1,0]} intensity={15} distance={5.2} color="#fbbf24"/>
+      <mesh position={[.12,.72,.02]} rotation={[0,0,.07]} scale={[.34,1.55,.34]}>
+        <sphereGeometry args={[.5,24,32]}/>
+        <meshBasicMaterial color="#fbbf24" transparent opacity={.52} blending={THREE.AdditiveBlending} depthWrite={false}/>
+      </mesh>
+      <mesh position={[0,.38,.12]} scale={[.2,1.2,.2]}>
+        <sphereGeometry args={[.46,20,28]}/>
+        <meshBasicMaterial color="#fff7ed" transparent opacity={.76} blending={THREE.AdditiveBlending} depthWrite={false}/>
+      </mesh>
+      <mesh position={[.24,1.25,-.06]} rotation={[0,0,.22]} scale={[.16,.82,.16]}>
+        <sphereGeometry args={[.42,18,24]}/>
+        <meshBasicMaterial color="#fb923c" transparent opacity={.36} blending={THREE.AdditiveBlending} depthWrite={false}/>
+      </mesh>
+      <pointLight position={[0,.7,0]} intensity={34} distance={8.5} color="#f97316"/>
+      <pointLight position={[0,2.15,0]} intensity={18} distance={5.8} color="#fbbf24"/>
     </group>
 
     <Text position={[0,.15,2.15]} fontSize={.28} color="#fef3c7" anchorX="center">WEAVE</Text>
@@ -132,31 +144,31 @@ function GrandHall(){
   return <group position={[0,-.86,-8.45]}>
     <mesh position={[0,.35,0]} receiveShadow castShadow>
       <boxGeometry args={[10.2,1.25,2.35]}/>
-      <meshStandardMaterial color="#1d1611" roughness={.82}/>
+      <meshStandardMaterial color="#07090d" roughness={.82}/>
     </mesh>
     <mesh position={[0,1.72,.08]} castShadow>
       <boxGeometry args={[9.4,1.8,1.65]}/>
-      <meshStandardMaterial color="#2b2018" roughness={.72} metalness={.1}/>
+      <meshStandardMaterial color="#0d1117" roughness={.72} metalness={.1}/>
     </mesh>
     <mesh position={[0,2.83,.08]} castShadow>
       <boxGeometry args={[10.0,.3,1.92]}/>
-      <meshStandardMaterial color="#82552e" metalness={.55} roughness={.36}/>
+      <meshStandardMaterial color="#292524" metalness={.55} roughness={.36}/>
     </mesh>
     {[-4,-2.7,-1.35,1.35,2.7,4].map(x=><group key={x} position={[x,.92,.98]}>
-      <mesh position={[0,.45,0]}><cylinderGeometry args={[.17,.22,2.35,16]}/><meshStandardMaterial color="#7a593b" roughness={.56}/></mesh>
+      <mesh position={[0,.45,0]}><cylinderGeometry args={[.17,.22,2.35,16]}/><meshStandardMaterial color="#18181b" roughness={.56}/></mesh>
       <mesh position={[0,1.67,0]}><boxGeometry args={[.42,.16,.42]}/><meshStandardMaterial color="#d6a45f" metalness={.7} roughness={.28}/></mesh>
     </group>)}
     <mesh position={[0,1.38,1.18]}>
       <boxGeometry args={[1.86,2.66,.15]}/>
-      <meshStandardMaterial color="#0c0a08" emissive="#f59e0b" emissiveIntensity={.1}/>
+      <meshStandardMaterial color="#050607" emissive="#f59e0b" emissiveIntensity={.1}/>
     </mesh>
     <Text position={[0,2.2,1.28]} fontSize={.31} color="#fef3c7" anchorX="center">WEAVE HALL</Text>
-    <Text position={[0,1.78,1.28]} fontSize={.105} color="#bda78d" anchorX="center">ORDER · CONTINUITY · MOVEMENT</Text>
+    <Text position={[0,1.78,1.28]} fontSize={.105} color="#a8a29e" anchorX="center">ORDER · CONTINUITY · MOVEMENT</Text>
     <group ref={bell} position={[0,4.28,.04]}>
       <mesh position={[0,.15,0]}><cylinderGeometry args={[.46,.7,.62,24]}/><meshStandardMaterial color="#a36a35" metalness={.9} roughness={.22}/></mesh>
       <mesh position={[0,-.2,0]}><torusGeometry args={[.62,.07,10,28]}/><meshStandardMaterial color="#d6a45f" metalness={.92} roughness={.2}/></mesh>
     </group>
-    <mesh position={[0,5.02,.02]}><coneGeometry args={[1.58,1.18,8]}/><meshStandardMaterial color="#50331f" metalness={.4} roughness={.44}/></mesh>
+    <mesh position={[0,5.02,.02]}><coneGeometry args={[1.58,1.18,8]}/><meshStandardMaterial color="#111827" metalness={.4} roughness={.44}/></mesh>
     <FlameBowl position={[-4.2,-.6,1.7]} scale={.6}/>
     <FlameBowl position={[4.2,-.6,1.7]} scale={.6}/>
   </group>
@@ -167,14 +179,14 @@ function TerraceWing({side}:{side:-1|1}){
   return <group position={[x,-.48,-.15]}>
     <mesh position={[0,.6,0]} castShadow receiveShadow>
       <boxGeometry args={[2.65,1.95,6.3]}/>
-      <meshStandardMaterial color="#241a14" roughness={.72} metalness={.1}/>
+      <meshStandardMaterial color="#0b0d11" roughness={.72} metalness={.1}/>
     </mesh>
     <mesh position={[-side*.18,1.63,0]} castShadow>
       <boxGeometry args={[2.94,.18,6.52]}/>
-      <meshStandardMaterial color="#72502f" metalness={.56} roughness={.34}/>
+      <meshStandardMaterial color="#1c1917" metalness={.56} roughness={.34}/>
     </mesh>
     {[-2,0,2].map(z=><group key={z} position={[-side*1.34,.12,z]}>
-      <mesh position={[0,.58,0]}><cylinderGeometry args={[.15,.19,1.68,12]}/><meshStandardMaterial color="#7c5a38" roughness={.55}/></mesh>
+      <mesh position={[0,.58,0]}><cylinderGeometry args={[.15,.19,1.68,12]}/><meshStandardMaterial color="#171717" roughness={.55}/></mesh>
       <mesh position={[0,1.45,0]}><boxGeometry args={[.34,.13,.36]}/><meshStandardMaterial color="#d6a45f" metalness={.68} roughness={.28}/></mesh>
     </group>)}
   </group>
@@ -185,10 +197,10 @@ function Arcade({side}:{side:-1|1}){
   return <group position={[x,-.72,-3.5]} rotation={[0,side<0?-.08:.08,0]}>
     <mesh position={[0,1.65,0]} castShadow>
       <boxGeometry args={[1.18,4.85,7.4]}/>
-      <meshStandardMaterial color="#1b1511" roughness={.82}/>
+      <meshStandardMaterial color="#080a0e" roughness={.82}/>
     </mesh>
     {[-2.55,0,2.55].map(z=><group key={z} position={[-side*.63,.86,z]}>
-      <mesh position={[0,.45,0]}><cylinderGeometry args={[.13,.17,2.2,12]}/><meshStandardMaterial color="#69513c" roughness={.64}/></mesh>
+      <mesh position={[0,.45,0]}><cylinderGeometry args={[.13,.17,2.2,12]}/><meshStandardMaterial color="#171717" roughness={.64}/></mesh>
       <FlameBowl position={[-side*.08,-.72,.52]} scale={.48}/>
     </group>)}
   </group>
@@ -250,23 +262,23 @@ function DistrictEntrance({
   >
     <mesh position={[0,.18,0]} castShadow receiveShadow>
       <boxGeometry args={[2.65,1.82,.96]}/>
-      <meshStandardMaterial color={portal.unlocked?'#251a13':'#171717'} roughness={.68} metalness={.16}/>
+      <meshStandardMaterial color={portal.unlocked?'#0b0d11':'#171717'} roughness={.68} metalness={.16}/>
     </mesh>
     <mesh position={[0,1.12,.02]} castShadow>
       <boxGeometry args={[2.9,.25,1.08]}/>
-      <meshStandardMaterial color={portal.unlocked?'#7a522f':'#373737'} metalness={.62} roughness={.34}/>
+      <meshStandardMaterial color={portal.unlocked?'#292524':'#27272a'} metalness={.62} roughness={.34}/>
     </mesh>
     {[-1.08,1.08].map(x=><mesh key={x} position={[x,.06,.6]} castShadow>
       <cylinderGeometry args={[.12,.16,1.75,12]}/>
-      <meshStandardMaterial color={portal.unlocked?'#8b6544':'#313131'} roughness={.52}/>
+      <meshStandardMaterial color={portal.unlocked?'#27272a':'#18181b'} roughness={.52}/>
     </mesh>)}
     <mesh position={[0,.2,.57]}>
       <boxGeometry args={[1.72,1.16,.08]}/>
       <meshStandardMaterial color="#0b0a09" emissive={portal.unlocked?portal.accent:'#111'} emissiveIntensity={portal.unlocked?(selected ? .48:hovered ? .28:.11):0}/>
     </mesh>
     <Text position={[0,.5,.63]} fontSize={.21} maxWidth={2.1} color={portal.unlocked?'#fff4d7':'#737373'} anchorX="center">{portal.unlocked?portal.name:portal.name+' · LOCKED'}</Text>
-    <Text position={[0,.13,.64]} fontSize={.095} maxWidth={2.05} color={portal.unlocked?'#c7b8a5':'#525252'} anchorX="center">{portal.subtitle}</Text>
-    <Text position={[0,-.12,.64]} fontSize={.065} maxWidth={2.0} color={selected?portal.accent:'#776b5e'} anchorX="center">{selected?'MOVEMENT LOCKED':'ENTER'}</Text>
+    <Text position={[0,.13,.64]} fontSize={.095} maxWidth={2.05} color={portal.unlocked?'#cbd5e1':'#525252'} anchorX="center">{portal.subtitle}</Text>
+    <Text position={[0,-.12,.64]} fontSize={.065} maxWidth={2.0} color={selected?portal.accent:'#71717a'} anchorX="center">{selected?'MOVEMENT LOCKED':'ENTER'}</Text>
     {portal.unlocked&&<pointLight position={[0,.45,.96]} intensity={selected?7:hovered?4.5:2.2} distance={3.3} color={portal.accent}/>}
   </group>
 }
@@ -439,11 +451,10 @@ export function BridgePlazaMap({
     }
   },[onOpenSupport,onTravel])
 
-  return <div className="relative h-full min-h-[440px] sm:min-h-[690px] w-full overflow-hidden bg-[#0e0906]" data-bridge-plaza-system="continuous-moving-world">
+  return <div className="relative h-full min-h-[440px] sm:min-h-[690px] w-full overflow-hidden bg-transparent" data-bridge-plaza-system="continuous-moving-world" data-bridge-plaza-atmosphere="live-flame">
     <InteractionMotionField className="z-[2] mix-blend-screen" opacity={0.58}/>
     <AdaptiveCanvas shadows camera={{position:[0,8.3,14.1],fov:45}} dpr={[1,1.5]}>
-      <color attach="background" args={['#130b07']}/>
-      <fog attach="fog" args={['#160d08',12,28]}/>
+      <fog attach="fog" args={['#080507',13,31]}/>
       <ambientLight intensity={.48} color="#ffd8a8"/>
       <directionalLight position={[3,10,5]} intensity={3.2} color="#ffe0b2" castShadow/>
       <pointLight position={[-6,3,1]} intensity={8} color="#fb923c" distance={10}/>
@@ -469,7 +480,7 @@ export function BridgePlazaMap({
 
       <Text position={[0,5.75,-1.2]} fontSize={.6} color="#fef3c7" anchorX="center">BRIDGE PLAZA</Text>
       <Text position={[0,5.18,-1.2]} fontSize={.135} color="#d6a45f" anchorX="center">CONNECTION BECOMES MOVEMENT</Text>
-      <Text position={[0,4.82,-1.2]} fontSize={.095} color="#9f8a74" anchorX="center">PASS {Math.max(0,currentPass)} · INTERACTION IN MOTION</Text>
+      <Text position={[0,4.82,-1.2]} fontSize={.095} color="#78716c" anchorX="center">PASS {Math.max(0,currentPass)} · INTERACTION IN MOTION</Text>
 
       <ContactShadows frames={1} resolution={256} position={[0,-1.06,0]} opacity={.46} scale={22} blur={2.7} far={8}/>
       <WorldCamera focus={focus} onArrival={handleArrival}/>
@@ -489,8 +500,8 @@ export function BridgePlazaMap({
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex min-h-24 items-end justify-between gap-4 bg-gradient-to-t from-[#090604]/92 via-[#090604]/58 to-transparent px-4 pb-4 pt-12 sm:px-6">
       <div className="min-w-0">
         <p className="text-[7px] font-black uppercase tracking-[.18em] text-stone-500">{focus?.system||'Central WEAVE'}</p>
-        <p className="mt-1 truncate text-sm font-black text-white">{focus?.name||'Select a district entrance'}</p>
-        <p className="mt-1 truncate text-[9px] uppercase tracking-[.1em] text-stone-400">{focus?.subtitle||'Movement begins from the plaza itself.'}</p>
+        <p className="mt-1 break-words text-sm font-black leading-5 text-white">{focus?.name||'Select a district entrance'}</p>
+        <p className="mt-1 break-words text-[9px] uppercase leading-4 tracking-[.1em] text-stone-400">{focus?.subtitle||'Movement begins from the plaza itself.'}</p>
       </div>
       {focus&&<p className="shrink-0 text-[8px] font-black uppercase tracking-[.18em]" style={{color:focus.accent}}>{movement==='moving'?'moving →':movement==='station'?'station open':'enter'}</p>}
     </div>

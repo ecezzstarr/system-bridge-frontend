@@ -1294,6 +1294,10 @@ assert.ok(numberAdminPage.includes('Deliver newly acquired number'),'Administrat
 assert.ok(numberBridgerPage.includes('Choose country')&&numberBridgerPage.includes('Country'),'Bridger sees the country before purchase')
 assert.ok(numberBridgerPage.includes('const stockedCount=offers.reduce'),'Number Bay stock count comes from the same country-offer inventory source that drives purchase availability')
 assert.ok(numberBridgerPage.includes('Order · ')&&numberBridgerPage.includes('min delivery'),'Out-of-stock countries expose the timed delivery order action')
+assert.ok(numberBridgerPage.includes('Promise.allSettled'),'Number Bay core inventory is isolated from verification-service faults')
+assert.ok(numberBridgerPage.includes('applyNumberBayState'),'Number Bay ownership state has an independent application path')
+assert.ok(numberBridgerPage.includes('setMine(prev=>[d.number'),'Successful purchase is reflected immediately before background reload')
+assert.ok(numberBridgerSource.includes('[Bridger Number order receipt after completed order]'),'Committed Number Bay orders cannot become false failures when receipt persistence is unavailable')
 assert.ok(numberOrderMigrationSource.includes('bridger_number_country_offers')&&numberOrderMigrationSource.includes('bridger_number_orders'),'Production migration persists country offers and number orders')
 
 
@@ -1332,6 +1336,16 @@ for(const file of [
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
  assert.equal(syntaxErrors.length,0,file+' Number Bay purchase/order syntax/transpile check')
 }
+
+const bridgePlazaRepairSource=fs.readFileSync(path.join(root,'components/world/bridge-plaza-map.tsx'),'utf8')
+const bridgePlazaPageRepairSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
+const weaveReadabilityRepairSource=fs.readFileSync(path.join(root,'app/weave-readability.css'),'utf8')
+assert.ok(bridgePlazaRepairSource.includes('data-bridge-plaza-atmosphere="live-flame"'),'Bridge Plaza declares the live-flame atmosphere')
+assert.ok(!bridgePlazaRepairSource.includes('<color attach="background"'),'Bridge Plaza canvas no longer paints an opaque wallpaper over the live flame field')
+assert.ok(bridgePlazaRepairSource.includes('THREE.AdditiveBlending'),'Bridge Plaza central flame uses additive live light layers')
+assert.ok(bridgePlazaPageRepairSource.includes('data-bridge-plaza-theme="continuous-moving-system"')&&bridgePlazaPageRepairSource.includes('bg-transparent'),'Bridge Plaza page leaves the world flame field visible')
+assert.ok(weaveReadabilityRepairSource.includes('.truncate:not([data-allow-truncate="true"])'),'WEAVE has a default no-clipping guardrail for operational copy')
+assert.ok(weaveReadabilityRepairSource.includes('[class*="line-clamp-"]'),'WEAVE prevents accidental line-clamp text loss by default')
 
 const weaveEnvironmentTransitSource=fs.readFileSync(path.join(root,'components/world/weave-environment-transit.tsx'),'utf8')
 const weaveEnvironmentSurfaceSource=fs.readFileSync(path.join(root,'components/world/weave-environment-surface.tsx'),'utf8')
