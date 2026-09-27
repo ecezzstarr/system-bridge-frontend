@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import {
   DEFAULT_PRESENCE_SCENE,
@@ -209,9 +209,8 @@ export function PresenceCameraViewport({ children, className='' }: { children: R
 
   return (
     <div className={`relative ${className}`}>
-      <AnimatePresence mode="popLayout" initial={false}>
+      <>
         <motion.div
-          key={pathname}
           data-presence-scene={scene.key}
           data-presence-level={scene.level}
           initial={reduceMotion ? false : {
@@ -240,7 +239,7 @@ export function PresenceCameraViewport({ children, className='' }: { children: R
         >
           {children}
         </motion.div>
-      </AnimatePresence>
+      </>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 'use client'
+import { visiblePoll } from '@/lib/visible-poll'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePathname } from 'next/navigation'
@@ -75,16 +76,16 @@ export function LiveAdSurface() {
   const [ads, setAds] = useState<LiveAd[]>([])
   const [dismissed, setDismissed] = useState<string[]>([])
 
-  const loadAds = useCallback(async () => {
+  const loadAds = useCallback(async (signal:AbortSignal) => {
     try {
       const token = localStorage.getItem('ssb_auth_token')
       const response = await fetch(`/api/ads?placement=${encodeURIComponent(placement)}`, {
-        cache: 'no-store',
+        cache: 'no-store',signal,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
       if (!response.ok) return
       const data = await response.json()
-      if (data?.success && Array.isArray(data.ads)) setAds(data.ads)
+      if (!signal.aborted && data?.success && Array.isArray(data.ads)) setAds(current=>JSON.stringify(current)===JSON.stringify(data.ads)?current:data.ads)
     } catch {
       // Ads should never block the participant's movement.
     }
@@ -92,13 +93,9 @@ export function LiveAdSurface() {
 
   useEffect(() => {
     setDismissed([])
-    loadAds()
-    const refresh = window.setInterval(loadAds, 20000)
-    const onFocus = () => loadAds()
-    window.addEventListener('focus', onFocus)
+    const refresh = visiblePoll(loadAds, 20000)
     return () => {
-      window.clearInterval(refresh)
-      window.removeEventListener('focus', onFocus)
+      refresh()
     }
   }, [loadAds])
 

@@ -1,8 +1,9 @@
 'use client'
+import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
-import { Canvas,useFrame,useThree } from '@react-three/fiber'
+import { useFrame,useThree } from '@react-three/fiber'
 import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
-import { useCallback,useMemo,useRef,useState } from 'react'
+import { useCallback,useEffect,useMemo,useRef,useState } from 'react'
 import * as THREE from 'three'
 import { InteractionMotionField } from '@/components/world/interaction-motion-field'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
@@ -281,7 +282,10 @@ function WorldCamera({
   const {camera}=useThree()
   const arrived=useRef<string|null>(null)
 
-  useFrame(()=>{
+  const direction=useMemo(()=>new THREE.Vector3(),[])
+  const desiredPosition=useMemo(()=>new THREE.Vector3(),[])
+  const desiredTarget=useMemo(()=>new THREE.Vector3(),[])
+  useFrame((_,delta)=>{
     const ctl=controls.current
     if(!ctl)return
     if(!focus){
@@ -292,16 +296,16 @@ function WorldCamera({
 
     const px=focus.position[0]
     const pz=focus.position[2]
-    const direction=new THREE.Vector3(px,0,pz).normalize()
-    const desiredPosition=new THREE.Vector3(
+    direction.set(px,0,pz).normalize()
+    desiredPosition.set(
       px-direction.x*4.1,
       3.2,
       pz-direction.z*4.1,
     )
-    const desiredTarget=new THREE.Vector3(px,.45,pz)
+    desiredTarget.set(px,.45,pz)
 
-    camera.position.lerp(desiredPosition,.065)
-    ctl.target.lerp(desiredTarget,.09)
+    camera.position.lerp(desiredPosition,1-Math.pow(.935,Math.min(delta,.05)*60))
+    ctl.target.lerp(desiredTarget,1-Math.pow(.91,Math.min(delta,.05)*60))
     ctl.update()
 
     if(camera.position.distanceTo(desiredPosition)<.24&&ctl.target.distanceTo(desiredTarget)<.18&&arrived.current!==focus.id){
@@ -400,7 +404,10 @@ export function BridgePlazaMap({
     return base
   },[fileNumber,supportAvailable,userRole,worldRoles])
 
+  const travelTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined)
+  useEffect(()=>()=>{clearTimeout(travelTimer.current);document.body.style.cursor='auto'},[])
   const handleSelect=useCallback((portal:BridgePlazaPortal)=>{
+    clearTimeout(travelTimer.current)
     setFocus(portal)
     setMovement('moving')
     emitWeaveMotion({
@@ -427,13 +434,14 @@ export function BridgePlazaMap({
     }
     if(portal.href){
       setMovement('moving')
-      window.setTimeout(()=>onTravel(portal.href!),220)
+      clearTimeout(travelTimer.current)
+      travelTimer.current=setTimeout(()=>onTravel(portal.href!),220)
     }
   },[onOpenSupport,onTravel])
 
-  return <div className="relative h-full min-h-[690px] w-full overflow-hidden bg-[#0e0906]" data-bridge-plaza-system="continuous-moving-world">
+  return <div className="relative h-full min-h-[440px] sm:min-h-[690px] w-full overflow-hidden bg-[#0e0906]" data-bridge-plaza-system="continuous-moving-world">
     <InteractionMotionField className="z-[2] mix-blend-screen" opacity={0.58}/>
-    <Canvas shadows camera={{position:[0,8.3,14.1],fov:45}} dpr={[1,1.5]}>
+    <AdaptiveCanvas shadows camera={{position:[0,8.3,14.1],fov:45}} dpr={[1,1.5]}>
       <color attach="background" args={['#130b07']}/>
       <fog attach="fog" args={['#160d08',12,28]}/>
       <ambientLight intensity={.48} color="#ffd8a8"/>
@@ -463,9 +471,9 @@ export function BridgePlazaMap({
       <Text position={[0,5.18,-1.2]} fontSize={.135} color="#d6a45f" anchorX="center">CONNECTION BECOMES MOVEMENT</Text>
       <Text position={[0,4.82,-1.2]} fontSize={.095} color="#9f8a74" anchorX="center">PASS {Math.max(0,currentPass)} · INTERACTION IN MOTION</Text>
 
-      <ContactShadows position={[0,-1.06,0]} opacity={.46} scale={22} blur={2.7} far={8}/>
+      <ContactShadows frames={1} resolution={256} position={[0,-1.06,0]} opacity={.46} scale={22} blur={2.7} far={8}/>
       <WorldCamera focus={focus} onArrival={handleArrival}/>
-    </Canvas>
+    </AdaptiveCanvas>
 
     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-4 sm:p-5">
       <div className="max-w-[72%]">

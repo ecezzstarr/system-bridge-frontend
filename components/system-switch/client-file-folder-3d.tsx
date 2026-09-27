@@ -1,7 +1,8 @@
 'use client'
+import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
 import { useMemo,useRef } from 'react'
-import { Canvas,useFrame } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
@@ -362,9 +363,9 @@ function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
     return new THREE.Vector3(x*.58,.58,z*.58)
   },[activeSurface])
 
-  useFrame(()=>{
+  useFrame((_,delta)=>{
     if(!controls.current)return
-    controls.current.target.lerp(target,.075)
+    controls.current.target.lerp(target,1-Math.pow(.925,Math.min(delta,.05)*60))
     controls.current.update()
   })
 
@@ -434,7 +435,7 @@ function Scene({
     <FlameBeacon position={[-7.7,.02,5.9]} scale={.55}/>
     <FlameBeacon position={[7.7,.02,5.9]} scale={.55}/>
 
-    <ContactShadows position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
+    <ContactShadows frames={1} resolution={256} position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
     <FileFolderCamera activeSurface={activeSurface}/>
   </>
 }
@@ -485,7 +486,7 @@ export function ClientFileFolder3D({
     </div>
 
     <div className="h-[390px] sm:h-[500px] lg:h-[590px]">
-      <Canvas shadows camera={{position:[0,10.5,14.6],fov:46}} dpr={[1,1.5]}>
+      <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:46}} dpr={[1,1.5]}>
         <Scene
           districts={districts}
           activeSurface={activeSurface}
@@ -501,7 +502,7 @@ export function ClientFileFolder3D({
           emergence={emergence}
           routeCurrent={routeCurrent}
         />
-      </Canvas>
+      </AdaptiveCanvas>
     </div>
 
     <div className="absolute inset-x-2 bottom-2 z-10 flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2">

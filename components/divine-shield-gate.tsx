@@ -1,4 +1,5 @@
 'use client'
+import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
@@ -28,7 +29,6 @@ export function DivineShieldGate({children}:{children:ReactNode}){
   const pathname=usePathname() || '/'
   const [state,setState]=useState<ShieldState>(DEFAULT_STATE)
   const [adminEntrance,setAdminEntrance]=useState(false)
-  const timerRef=useRef<number|null>(null)
   const evacuatedTokenRef=useRef<string|null>(null)
 
   useEffect(()=>{
@@ -41,14 +41,14 @@ export function DivineShieldGate({children}:{children:ReactNode}){
     if(!isInitialized) return
     let alive=true
 
-    const load=async()=>{
+    const load=async(signal:AbortSignal)=>{
       try{
         const response=await fetch('/api/divine-shield/status',{
-          cache:'no-store',
+          cache:'no-store',signal,
           headers:token?{Authorization:`Bearer ${token}`}:{},
         })
         const body=await response.json()
-        if(!alive) return
+        if(!alive||signal.aborted) return
 
         const active=Boolean(body?.active)
         const administrationBypass=Boolean(body?.administrationBypass)
@@ -80,15 +80,14 @@ export function DivineShieldGate({children}:{children:ReactNode}){
           message:body?.message || DEFAULT_STATE.message,
         })
       }catch{
-        if(alive) setState(prev=>({...prev,checked:true,active:false}))
+        if(alive&&!document.hidden) setState(prev=>({...prev,checked:true}))
       }
     }
 
-    void load()
-    timerRef.current=window.setInterval(load,5000)
+    const stop=visiblePoll(load,5000)
     return()=>{
       alive=false
-      if(timerRef.current) window.clearInterval(timerRef.current)
+      stop()
     }
   },[isInitialized,token,logout])
 

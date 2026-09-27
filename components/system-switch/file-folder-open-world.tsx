@@ -1,4 +1,5 @@
 'use client'
+import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -106,8 +107,8 @@ export default function FileFolderOpenWorld({
   const buildStateRef=useRef<Map<string,string>>(new Map())
 
   useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(id)
+    const id = visiblePoll(() => setNow(Date.now()), 5000)
+    return () => id()
   }, [])
 
   useEffect(()=>{
@@ -135,15 +136,15 @@ export default function FileFolderOpenWorld({
     const url = refreshUrl || (!readOnly ? '/api/client/file-folder-world' : null)
     if (!url) return
 
-    const refresh = async () => {
+    const refresh = async (signal:AbortSignal) => {
       try {
         const token = refreshToken ?? (!readOnly ? getClientToken() : null)
         const response = await fetch(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
-          cache: 'no-store',
+          cache: 'no-store',signal,
         })
         const body = await response.json()
-        if (response.ok && body.world) {
+        if (!signal.aborted && response.ok && body.world) {
           setWorld(body.world)
           onWorldChange?.(body.world)
         }
@@ -152,8 +153,8 @@ export default function FileFolderOpenWorld({
       }
     }
 
-    const id = window.setInterval(refresh, 20000)
-    return () => window.clearInterval(id)
+    const id = visiblePoll(refresh, 20000, false)
+    return () => id()
   }, [onWorldChange, readOnly, refreshToken, refreshUrl])
 
   const inventory = useMemo(

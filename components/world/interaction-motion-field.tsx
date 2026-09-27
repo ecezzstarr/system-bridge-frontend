@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
-import { useReducedMotion } from 'framer-motion'
+import { reportRuntimeFrame,useAdaptiveRuntime,useOnscreen } from './use-adaptive-runtime'
 import {
   DEFAULT_FLAME_ARTIFACT_CONFIG,
   normalizeFlameArtifactConfig,
@@ -87,15 +87,21 @@ export function InteractionMotionField({
     [configOverride,runtime],
   )
   const canvasRef=useRef<HTMLCanvasElement>(null)
-  const reduceMotion=useReducedMotion()
+  const budget=useAdaptiveRuntime()
+  const onscreen=useOnscreen(canvasRef,config.world.enabled)
+  const reduceMotion=budget.reducedMotion
   const [impulse,setImpulse]=useState({flame:0,river:0,heat:0})
   const impulseTimer=useRef<number|null>(null)
   const world=config.world
 
   useEffect(()=>{
+    let lastMotion=0
     const onMotion=(event:Event)=>{
       const detail=(event as CustomEvent<WeaveMotionDetail>).detail
-      if(!detail?.kind)return
+      if(!detail?.kind||document.hidden)return
+      const now=performance.now()
+      if(now-lastMotion<100)return
+      lastMotion=now
       const power=Math.max(.15,Math.min(2.5,Number(detail.intensity||1)))
       const next=detail.kind==='route'||detail.kind==='river'||detail.kind==='arrival'
         ?{flame:.08*power,river:.48*power,heat:.05*power}
@@ -131,7 +137,7 @@ export function InteractionMotionField({
 
   useEffect(()=>{
     const canvas=canvasRef.current
-    if(!canvas||!world.enabled)return
+    if(!canvas||!world.enabled||budget.hidden||budget.covered||!onscreen)return
 
     const ctx=canvas.getContext('2d',{alpha:true})
     if(!ctx)return
@@ -141,12 +147,12 @@ export function InteractionMotionField({
     let height=1
     let dpr=1
 
-    const embers=buildEmbers(90)
-    const flames=buildFlames(24)
+    const embers=buildEmbers(budget.level===2?60:budget.level===1?28:10)
+    const flames=buildFlames(budget.level===2?18:budget.level===1?10:5)
 
     const resize=()=>{
       const rect=canvas.getBoundingClientRect()
-      dpr=Math.min(window.devicePixelRatio||1,1.5)
+      dpr=Math.min(window.devicePixelRatio||1,budget.dpr,Math.sqrt(1600000/Math.max(1,rect.width*rect.height)))
       width=Math.max(1,Math.floor(rect.width*dpr))
       height=Math.max(1,Math.floor(rect.height*dpr))
       if(canvas.width!==width||canvas.height!==height){
@@ -164,7 +170,7 @@ export function InteractionMotionField({
       ctx.globalCompositeOperation='lighter'
       ctx.lineCap='round'
 
-      const bands=7
+      const bands=budget.level===2?7:3
       for(let band=0;band<bands;band++){
         const p=band/(bands-1)
         const y=baseY+p*height*.22
@@ -290,7 +296,7 @@ export function InteractionMotionField({
     }
 
     const drawHeat=(t:number)=>{
-      if(world.heatDistortion<=0||reduceMotion)return
+      if(world.heatDistortion<=0||reduceMotion||budget.level<2)return
       const strength=(world.heatDistortion+impulse.heat)*flameIntensity
       if(strength<=.01)return
 
@@ -306,24 +312,24 @@ export function InteractionMotionField({
       ctx.restore()
     }
 
-    const render=(time:number)=>{
-      resize()
+    let last=0
+    const paint=(time:number)=>{
       ctx.clearRect(0,0,width,height)
-      drawRiver(time)
-      drawFlames(time)
-      drawEmbers(time)
-      drawHeat(time)
-
-      if(reduceMotion){
-        frame=window.setTimeout(()=>render(time+80),80) as unknown as number
-      }else{
-        frame=requestAnimationFrame(render)
-      }
+      drawRiver(time);drawFlames(time);drawEmbers(time);drawHeat(time)
     }
-
+    const render=(time:number)=>{
+      if(document.hidden)return
+      const delta=time-last
+      if(!last||delta>=1000/budget.fps){
+        if(last)reportRuntimeFrame(delta,1000/budget.fps)
+        paint(time)
+        last=time
+      }
+      if(!reduceMotion)frame=requestAnimationFrame(render)
+    }
     resize()
     frame=requestAnimationFrame(render)
-    const observer=new ResizeObserver(resize)
+    const observer=new ResizeObserver(()=>{resize();if(reduceMotion)paint(0)})
     observer.observe(canvas)
 
     return()=>{
@@ -332,6 +338,8 @@ export function InteractionMotionField({
       window.clearTimeout(frame)
     }
   },[
+    budget,
+    onscreen,
     config.palette.ember,
     config.palette.sky,
     flameIntensity,

@@ -1,22 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { createContext,useCallback,useContext,useEffect,useMemo,useState } from 'react'
+import { createContext,useContext,useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import { EyeOff,Home } from 'lucide-react'
 import { normalizeEnvironmentPageRoute } from '@/lib/weave-environment-registry'
 
-type RuntimeSurface={
-  surface_key:string
-  label:string
-  surface_kind:'page'|'card'
-  route:string
-  area:string
-  scope:string
-  is_visible:boolean
-  sort_order:number
-  is_protected:boolean
-}
+import { useEnvironmentRuntimeConfig,type RuntimeSurface } from './use-environment-runtime-config'
 
 type OrganizerContextValue={
   items:RuntimeSurface[]
@@ -35,34 +25,7 @@ const OrganizerContext=createContext<OrganizerContextValue>({
 })
 
 export function EnvironmentOrganizerProvider({children}:{children:React.ReactNode}){
-  const [items,setItems]=useState<RuntimeSurface[]>([])
-  const [ready,setReady]=useState(false)
-
-  const refresh=useCallback(async()=>{
-    try{
-      const response=await fetch('/api/environment-organizer',{cache:'no-store'})
-      const body=await response.json()
-      if(response.ok&&body.success&&Array.isArray(body.items))setItems(body.items)
-    }catch{
-      // A runtime registry failure must not make WEAVE navigation disappear.
-    }finally{
-      setReady(true)
-    }
-  },[])
-
-  useEffect(()=>{
-    void refresh()
-    const interval=window.setInterval(()=>void refresh(),30000)
-    const focus=()=>void refresh()
-    const requested=()=>void refresh()
-    window.addEventListener('focus',focus)
-    window.addEventListener('weave-environment-refresh',requested)
-    return()=>{
-      window.clearInterval(interval)
-      window.removeEventListener('focus',focus)
-      window.removeEventListener('weave-environment-refresh',requested)
-    }
-  },[refresh])
+  const {items,ready,refresh}=useEnvironmentRuntimeConfig()
 
   const value=useMemo<OrganizerContextValue>(()=>{
     const exact=new Map(items.map(item=>[item.route,item]))

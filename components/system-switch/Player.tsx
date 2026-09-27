@@ -21,16 +21,27 @@ export function Player({ onMove, externalDir }: PlayerProps) {
   const velocity = useRef(new THREE.Vector3())
   const direction = useRef(new THREE.Vector3())
   
+  const targetCamPos=useRef(new THREE.Vector3())
+  const lastReported=useRef(new THREE.Vector3(Infinity,Infinity,Infinity))
+  const lastReportTime=useRef(0)
   const speed = 0.12
   const friction = 0.85
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => { keys.current[e.code] = true }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if(e.target instanceof Element&&e.target.closest('input,textarea,select,[contenteditable="true"]'))return
+      keys.current[e.code] = true
+    }
     const handleKeyUp = (e: KeyboardEvent) => { keys.current[e.code] = false }
     
+    const reset=()=>{keys.current={};velocity.current.set(0,0,0)}
+    window.addEventListener('blur',reset)
+    document.addEventListener('visibilitychange',reset)
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
     return () => {
+      window.removeEventListener('blur',reset)
+      document.removeEventListener('visibilitychange',reset)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
@@ -38,6 +49,7 @@ export function Player({ onMove, externalDir }: PlayerProps) {
 
   useFrame((state, delta) => {
     if (!meshRef.current) return
+    const step=Math.min(delta,.05)*60
 
     // Calculate movement direction
     direction.current.set(0, 0, 0)
@@ -56,28 +68,32 @@ export function Player({ onMove, externalDir }: PlayerProps) {
 
     if (direction.current.lengthSq() > 0) {
       direction.current.normalize()
-      velocity.current.add(direction.current.multiplyScalar(speed))
+      velocity.current.add(direction.current.multiplyScalar(speed*step))
     }
 
     // Apply friction/damping
-    velocity.current.multiplyScalar(friction)
+    velocity.current.multiplyScalar(Math.pow(friction,step))
 
     // Update position
-    meshRef.current.position.add(velocity.current)
+    meshRef.current.position.addScaledVector(velocity.current,step)
     
     // Constraints (keep in corridor)
     meshRef.current.position.x = Math.max(-6, Math.min(6, meshRef.current.position.x))
     // We'll allow forward movement along the corridor (Z)
     
-    if (onMove) onMove(meshRef.current.position)
+    if(onMove&&state.clock.elapsedTime-lastReportTime.current>=.1&&lastReported.current.distanceToSquared(meshRef.current.position)>.0001){
+      lastReported.current.copy(meshRef.current.position)
+      lastReportTime.current=state.clock.elapsedTime
+      onMove(meshRef.current.position)
+    }
 
     // Camera follow (Third Person)
-    const targetCamPos = new THREE.Vector3(
+    targetCamPos.current.set(
       meshRef.current.position.x * 0.5,
       meshRef.current.position.y + 1.8,
       meshRef.current.position.z + 5
     )
-    camera.position.lerp(targetCamPos, 0.1)
+    camera.position.lerp(targetCamPos.current, 1-Math.pow(.9,step))
     camera.lookAt(
       meshRef.current.position.x,
       meshRef.current.position.y + 0.5,
