@@ -86,7 +86,7 @@ type LoadingBrief={
   movement?:string
 }
 
-const LOADING_CARD_HOLD_MS=1800
+const LOADING_CARD_HOLD_MS=2000
 
 const PLATFORM_BRIEFS:LoadingBrief[]=[
   {
