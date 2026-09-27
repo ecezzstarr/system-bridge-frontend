@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '@/lib/auth-provider'
-import { Loader2, Users, FileText, Search, ShieldCheck, Orbit, X, MoveRight } from 'lucide-react'
+import { Loader2, Users, Search, ShieldCheck, Orbit, X, MoveRight } from 'lucide-react'
 import { WEAVE_ARCHITECTURE } from '@/lib/weave-architecture'
 
 const BridgePlazaMap = dynamic(
@@ -222,17 +222,6 @@ export default function WeavePage() {
           ))}
         </div>
       </div>
-
-      {isSupport && !supportOpen && (
-        <button
-          onClick={()=>setSupportOpen(true)}
-          className="absolute bottom-24 right-4 z-30 inline-flex items-center gap-2 border-b border-cyan-200/30 bg-[#100b07]/60 px-2 py-2 text-[8px] font-black uppercase tracking-[.14em] text-cyan-100 backdrop-blur-md transition hover:border-cyan-200/60"
-        >
-          <FileText className="h-3.5 w-3.5"/>
-          Client Support Station
-          <MoveRight className="h-3.5 w-3.5"/>
-        </button>
-      )}
 
       <AnimatePresence>
         {isSupport && supportOpen && (
