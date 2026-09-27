@@ -648,6 +648,7 @@ assert.ok(!fileFolder3dSource.includes('<Stars'),'File Folder is no longer a sta
 assert.ok(!fileFolder3dSource.includes('<gridHelper'),'File Folder is no longer a sci-fi grid scene')
 assert.ok(fileFolder3dSource.includes('PavedRoad')&&fileFolder3dSource.includes('WaterChannel'),'File Folder world has grounded infrastructure')
 assert.ok(fileFolder3dSource.includes('FileFolderCamera'),'District selection changes camera focus inside the File Folder territory')
+assert.ok(fileFolder3dSource.includes('cameraDestination')&&fileFolder3dSource.includes('useThree'),'District selection moves the camera through the persistent File Folder territory instead of only retargeting a static view')
 assert.ok(fileFolder3dSource.includes('liveSystems'),'3D File Folder reflects completed live systems')
 assert.ok(clientSystemSwitchSource.includes('bg-transparent'),'System Switch does not cover the moving WEAVE world with an opaque page')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Main File Folder · {territoryPosition} · {territoryName}'),'File Folder keeps one canonical territory identity that changes with Client or Lord/Lady state')
