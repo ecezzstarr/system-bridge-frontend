@@ -8,6 +8,7 @@ import {
 } from '@/lib/client-growth-world'
 import { ensureFileFolderWorldSchema } from '@/lib/client-file-folder-world'
 import { recordSystemEvent } from '@/lib/system-events'
+import { growthMotion } from '@/lib/weave-interaction-motion'
 
 function clean(value:unknown,max=4000){
   return typeof value==='string'?value.trim().slice(0,max):''
@@ -70,7 +71,7 @@ export async function GET(request:NextRequest){
       String(ctx.client.file_number),
       String(ctx.client.business_name||ctx.client.name||'Client'),
     )
-    return NextResponse.json({success:true,growth},{headers:{'Cache-Control':'private, no-store'}})
+    return NextResponse.json({success:true,growth,motion:growthMotion(action)},{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){
     console.error('[client/growth-world GET]',error)
     return NextResponse.json({error:'Unable to load Client growth world'},{status:500})
