@@ -57,12 +57,14 @@ export function normalizeEnvironmentRuntimeConfig(input:unknown):EnvironmentRunt
   const bootMinMs=Math.round(clamp(loading.bootMinMs,1800,10000,DEFAULT_ENVIRONMENT_RUNTIME_CONFIG.loading.bootMinMs))
   const transitMinMs=Math.round(clamp(loading.transitMinMs,350,5000,DEFAULT_ENVIRONMENT_RUNTIME_CONFIG.loading.transitMinMs))
   const settleQuietMs=Math.round(clamp(loading.settleQuietMs,120,2000,DEFAULT_ENVIRONMENT_RUNTIME_CONFIG.loading.settleQuietMs))
-  const maxWaitMs=Math.round(clamp(
+  const maxWaitFloor=Math.max(bootMinMs,transitMinMs)+500
+  const requestedMaxWait=Math.round(clamp(
     loading.maxWaitMs,
-    Math.max(bootMinMs,transitMinMs)+500,
+    2500,
     15000,
     DEFAULT_ENVIRONMENT_RUNTIME_CONFIG.loading.maxWaitMs,
   ))
+  const maxWaitMs=Math.min(15000,Math.max(maxWaitFloor,requestedMaxWait))
 
   let footstepMinMs=Math.round(clamp(ambience.footstepMinMs,1800,30000,DEFAULT_ENVIRONMENT_RUNTIME_CONFIG.ambience.footstepMinMs))
   let footstepMaxMs=Math.round(clamp(ambience.footstepMaxMs,footstepMinMs+500,45000,DEFAULT_ENVIRONMENT_RUNTIME_CONFIG.ambience.footstepMaxMs))
