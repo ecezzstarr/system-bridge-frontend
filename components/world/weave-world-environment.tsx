@@ -3,7 +3,7 @@ import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useMemo, useState } from 'react'
 import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
-import { WeaveNormalWorldBackdrop } from '@/components/world/weave-normal-world-backdrop'
+import { WeaveLiveFlameField } from '@/components/world/weave-live-flame-field'
 
 export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
   void soft
@@ -42,5 +42,5 @@ export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
     }
   }, [active])
 
-  return <WeaveNormalWorldBackdrop />
+  return <WeaveLiveFlameField flameLive={active} />
 }
