@@ -1470,7 +1470,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
     }
   }
 
-  const verifyDeposit = async (depositId: string, status: 'approved' | 'rejected') => {
+  const verifyDeposit = async (depositId: string, status: 'approved' | 'rejected', source?: string) => {
     setProcessingId(depositId)
     try {
       const token = localStorage.getItem('ssb_auth_token')
@@ -1480,7 +1480,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ depositId, status }),
+        body: JSON.stringify({ depositId, status, source }),
       })
       const data = await response.json()
       if (data.success) {
@@ -1499,7 +1499,8 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
 
   return (
     <div className="p-4">
-      <h3 className="font-bold text-white mb-4">Pending Bridge AI Deposits</h3>
+      <h3 className="font-bold text-white mb-1">Pending File Folder Crossings</h3>
+      <p className="mb-4 text-[10px] leading-5 text-slate-500">One Administration verification point for Bridger Bridge deposits and direct Bridge Radiance prospect purchases.</p>
 
       {loading ? (
         <p className="text-slate-500 text-center py-8 text-xs">Loading deposits...</p>
@@ -1513,13 +1514,15 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
                 <div className="flex-1">
                   <p className="font-semibold text-white text-sm">{deposit.prospect_name} <span className="text-slate-500 font-normal">({deposit.prospect_phone})</span></p>
                   <p className="text-[10px] text-slate-400 mt-1">
-                    {Number(deposit.tier_trx).toLocaleString()} TRX · via {deposit.bridger_name}'s Bridge AI (/bridge/{deposit.bridge_code})
+                    {Number(deposit.tier_trx).toLocaleString()} TRX · {deposit.source === 'file_folder_purchase'
+                      ? `Bridge Radiance purchase${deposit.bridge_code ? ` · /bridge/${deposit.bridge_code}` : ''}`
+                      : `via ${deposit.bridger_name || 'Bridger'}'s Bridge AI${deposit.bridge_code ? ` · /bridge/${deposit.bridge_code}` : ''}`}
                   </p>
                   <p className="text-[10px] text-slate-500 mt-1">
                     {new Date(deposit.created_at).toLocaleString()}
                   </p>
                 </div>
-                <span className="text-[10px] font-semibold text-yellow-400 uppercase">{deposit.status}</span>
+                <span className="text-[10px] font-semibold text-yellow-400 uppercase">{deposit.status === 'pending_admin_confirmation' ? 'awaiting verification' : deposit.status}</span>
               </div>
               {deposit.tx_hash && (
                 <div className="mt-2 p-2 bg-slate-900/50 rounded border border-slate-700">
@@ -1531,7 +1534,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
                 <Button
                   size="sm"
                   disabled={processingId === deposit.id}
-                  onClick={() => verifyDeposit(deposit.id, 'approved')}
+                  onClick={() => verifyDeposit(deposit.id, 'approved', deposit.source)}
                   className="bg-green-600 hover:bg-green-700 h-8 text-xs"
                 >
                   {processingId === deposit.id ? 'Processing...' : 'Approve & Issue File Number'}
@@ -1539,7 +1542,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
                 <Button
                   size="sm"
                   disabled={processingId === deposit.id}
-                  onClick={() => verifyDeposit(deposit.id, 'rejected')}
+                  onClick={() => verifyDeposit(deposit.id, 'rejected', deposit.source)}
                   className="bg-red-600 hover:bg-red-700 h-8 text-xs"
                 >
                   Reject
