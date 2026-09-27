@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
@@ -152,8 +151,8 @@ export default function BridgerWorkshopPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <main className="weave-operating-environment overflow-hidden border-y border-cyan-300/15 bg-[#040a10]/78 sm:rounded-[2rem] sm:border" data-bridge-ai-environment>
+      <header className="flex items-center justify-between gap-4 border-b border-cyan-300/15 px-5 py-6 md:px-7">
         <div>
           <h1 className="text-2xl font-black" style={{ color: 'var(--foreground)' }}>Bridge AI Paths</h1>
           <p className="weave-word-presence text-sm" style={{ color: 'var(--muted-foreground)' }}>
@@ -203,10 +202,10 @@ export default function BridgerWorkshopPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      </header>
 
-      <Card className="border-slate-800 bg-slate-900/50">
-        <CardContent className="pt-6 space-y-3">
+      <section className="space-y-3 border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-bridge-ai-station="subscription">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Bridge AI subscription</span>
             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
@@ -227,14 +226,13 @@ export default function BridgerWorkshopPage() {
               <span style={{ color: 'var(--foreground)' }}>{new Date(subscription.last_paid_at).toLocaleDateString()}</span>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {subError && <div className="text-sm text-red-400">{subError}</div>}
 
       {!isSubscribed && (
-        <Card className="border-slate-800 bg-slate-900/50">
-          <CardContent className="pt-6 space-y-4">
+        <section className="space-y-4 border-b border-slate-800 bg-slate-900/20 px-5 py-6 md:px-7" data-bridge-ai-station="continuance">
             <h2 className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>
               Subscribe — {BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin / month
             </h2>
@@ -244,72 +242,61 @@ export default function BridgerWorkshopPage() {
             <Button onClick={handleSubscribe} disabled={subscribing} className="w-full">
               {subscribing ? 'Activating...' : `Subscribe for ${BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin`}
             </Button>
-          </CardContent>
-        </Card>
+        </section>
       )}
 
       {isSubscribed && templates.length === 0 && (
-        <Card>
-          <CardContent className="py-6 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            No published templates yet. Ask an admin to publish one in the Admin Workshop before you can create a Bridge AI.
-          </CardContent>
-        </Card>
+        <div className="border-b border-slate-800 px-5 py-6 text-sm md:px-7" style={{ color: 'var(--muted-foreground)' }}>
+          No published templates yet. Ask an admin to publish one in the Admin Workshop before you can create a Bridge AI.
+        </div>
       )}
 
       {isSubscribed && bridges.length === 0 && templates.length > 0 && (
-        <Card>
-          <CardContent className="py-6 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            You have not opened a Bridge AI path yet. Create one to begin a crossing that can continue as Client AI support after entry.
-          </CardContent>
-        </Card>
+        <div className="border-b border-slate-800 px-5 py-6 text-sm md:px-7" style={{ color: 'var(--muted-foreground)' }}>
+          You have not opened a Bridge AI path yet. Create one to begin a crossing that can continue as Client AI support after entry.
+        </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {bridges.map(bridge => {
-          const c = colorFor(bridge.template_name)
+      <section className="divide-y divide-white/[0.075]" data-bridge-ai-paths>
+        {bridges.map((bridge,index) => {
+          const tone = colorFor(bridge.template_name)
           return (
-            <Card
+            <article
               key={bridge.id}
-              className="overflow-hidden border-slate-700 bg-slate-800/40 transition-shadow hover:shadow-lg"
-              style={{ boxShadow: `0 0 0 1px rgba(255,255,255,0.02), 0 8px 24px -12px ${c.glow}` }}
+              className="group relative grid gap-4 px-5 py-5 transition hover:bg-cyan-300/[0.025] md:grid-cols-[42px_minmax(0,1fr)_auto] md:items-center md:px-7"
+              data-bridge-ai-path={bridge.bridge_code}
             >
-              <div className="h-1" style={{ background: `linear-gradient(90deg, ${c.from}, ${c.to})` }} />
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                      style={{ background: `linear-gradient(135deg, ${c.from}, ${c.to})` }}
-                    >
-                      <Sparkles className="h-4 w-4 text-white" />
-                    </div>
-                    <CardTitle className="text-base truncate">{bridge.template_name}</CardTitle>
-                  </div>
-                  <Badge variant={bridge.status === 'active' ? 'default' : 'secondary'} className="shrink-0">{bridge.status}</Badge>
+              <div className="relative flex h-10 w-10 items-center justify-center">
+                <span className="absolute h-3 w-3 rounded-full" style={{ background: tone.from, boxShadow:`0 0 20px ${tone.glow}` }} />
+                <Sparkles className="relative h-4 w-4 translate-x-5 text-white opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100"/>
+                <span className="absolute -bottom-4 text-[7px] font-black uppercase tracking-wider text-slate-700">{String(index+1).padStart(2,'0')}</span>
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-black text-white">{bridge.template_name}</p>
+                  <Badge variant={bridge.status === 'active' ? 'default' : 'secondary'}>{bridge.status}</Badge>
                 </div>
-                <CardDescription className="truncate font-mono text-xs pl-12">
-                  /bridge/{bridge.bridge_code}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                  <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> {bridge.views}</span>
-                  <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> {bridge.conversations}</span>
-                  <span className="flex items-center gap-1"><UserPlus className="h-3.5 w-3.5" /> {bridge.registrations}</span>
+                <p className="mt-1 truncate font-mono text-[10px] text-slate-500">/bridge/{bridge.bridge_code}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-4 text-[10px] text-slate-500">
+                  <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> {bridge.views} views</span>
+                  <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> {bridge.conversations} conversations</span>
+                  <span className="flex items-center gap-1"><UserPlus className="h-3.5 w-3.5" /> {bridge.registrations} registrations</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleCopy(bridge)}>
-                    <Copy className="h-3.5 w-3.5 mr-1.5" /> {copiedId === bridge.id ? 'Copied' : 'Copy link'}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setQrBridge(bridge)}>
-                    <QrCode className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              <div className="flex items-center gap-2 md:border-l md:border-white/10 md:pl-4">
+                <Button size="sm" variant="outline" onClick={() => handleCopy(bridge)}>
+                  <Copy className="h-3.5 w-3.5 mr-1.5" /> {copiedId === bridge.id ? 'Copied' : 'Copy link'}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setQrBridge(bridge)}>
+                  <QrCode className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </article>
           )
         })}
-      </div>
+      </section>
 
       <Dialog open={!!qrBridge} onOpenChange={(open) => !open && setQrBridge(null)}>
         <DialogContent>
@@ -335,7 +322,7 @@ export default function BridgerWorkshopPage() {
         </DialogContent>
       </Dialog>
 
-      <RiverChat />
-    </div>
+      <div className="border-t border-slate-800"><RiverChat /></div>
+    </main>
   )
 }
