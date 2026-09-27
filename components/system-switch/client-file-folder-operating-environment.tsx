@@ -18,6 +18,7 @@ import {
   Plus,
   Store,
   Wallet,
+  X,
 } from 'lucide-react'
 import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-world'
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
@@ -337,6 +338,7 @@ function HostedSystem({
 export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [surface, setSurface] = useState<Surface>('command')
+  const [panelOpen, setPanelOpen] = useState(false)
   const [world, setWorld] = useState(data.file_folder_world)
   const [formationOpen, setFormationOpen] = useState(false)
   const [formationDistrict, setFormationDistrict] = useState('workshop_core')
@@ -374,6 +376,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const openFormation = (district: string) => {
     setFormationDistrict(district)
     setFormationOpen(true)
+    setPanelOpen(true)
   }
 
   const travelToStudio = (district: string) => {
@@ -381,6 +384,14 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     setSelectedSystemId('')
     setFormationDistrict(district)
     setFormationOpen(true)
+    setPanelOpen(true)
+  }
+
+  const enterSurface = (next: Surface) => {
+    setSurface(next)
+    setSelectedSystemId('')
+    if (next === 'builds') setFormationDistrict('workshop_core')
+    setPanelOpen(true)
   }
 
   const blueprints = Array.isArray(world?.blueprints) ? world.blueprints : []
@@ -460,8 +471,12 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }
 
   return (
-    <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-amber-200/10 bg-[#120c08]/88 shadow-[0_34px_110px_rgba(0,0,0,.42)] backdrop-blur-xl" data-file-folder-world="progressive-construction-territory">
-      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_14%_0%,rgba(249,115,22,.12),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(18,12,8,.04))] px-4 py-4 md:p-7">
+    <section
+      className="weave-system-depth relative h-[calc(100dvh-5.5rem)] min-h-[720px] overflow-hidden border-y border-amber-200/10 bg-[#120c08] shadow-[0_34px_110px_rgba(0,0,0,.42)]"
+      data-file-folder-world="persistent-territory-interface"
+      data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
+    >
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-amber-100/10 bg-[linear-gradient(180deg,rgba(12,8,5,.96),rgba(12,8,5,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
         <div className="flex items-start gap-3 md:gap-4">
           <div className="hidden rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3 sm:block">
             <FolderOpen className="h-6 w-6 text-sky-300" />
@@ -472,21 +487,17 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             <p className="mt-1 truncate text-[10px] text-slate-400 md:mt-2 md:text-xs">{data.client.name} · {data.client.file_number}</p>
           </div>
         </div>
-        <div className="mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2 text-[8px] uppercase tracking-wider text-stone-500 md:mt-5 md:grid md:grid-cols-3 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[9px]">
+        <div className="pointer-events-auto mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2 text-[8px] uppercase tracking-wider text-stone-500 md:mt-3 md:max-w-xl md:grid-cols-3 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[9px]">
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3"><b className="text-base text-amber-100 md:mt-1 md:block md:text-xl">{activeBuilds.length}</b><span className="text-amber-300">Building</span></div>
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-emerald-300/15 md:bg-emerald-400/5 md:px-4 md:py-3"><b className="text-base text-emerald-100 md:mt-1 md:block md:text-xl">{systems.length}</b><span className="text-emerald-300">Live</span></div>
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-violet-300/15 md:bg-violet-400/5 md:px-4 md:py-3"><b className="text-base text-violet-100 md:mt-1 md:block md:text-xl">×{Number(world?.buildFunding?.buildSpeedMultiplier || data.build_funding?.buildSpeedMultiplier || 1).toFixed(2)}</b><span className="text-violet-300">Build power</span></div>
         </div>
       </header>
 
-      <div className="p-2 pb-0 sm:p-4 sm:pb-0 md:p-6 md:pb-0">
+      <div className="absolute inset-0">
         <ClientFileFolder3D
           activeSurface={current.key}
-          onSurfaceChange={(next) => {
-            setSurface(next)
-            setSelectedSystemId('')
-            if(next==='builds')setFormationDistrict('workshop_core')
-          }}
+          onSurfaceChange={(next) => enterSurface(next)}
           activeBuilds={activeBuilds.map((build:any)=>({
             id:build.id,
             title:build.title,
@@ -507,11 +518,37 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           enterpriseLevel={enterpriseLevel}
           routeCount={routeCount}
           vitalityScore={vitalityScore}
+          territoryMode
         />
       </div>
 
-      <div className="p-4 md:p-6">
-        <section aria-label="Construction sequence" className="mt-3 border-y border-amber-100/10 bg-[#18110c]/55 px-2 py-2.5 md:mt-4 md:px-4 md:py-4" data-file-folder-awareness="compact-build-sequence">
+      <div
+        className={`absolute z-40 transition-all duration-500 ease-out
+          inset-x-2 bottom-[4.75rem] max-h-[56dvh]
+          md:inset-y-[7.75rem] md:left-auto md:right-4 md:bottom-auto md:w-[min(48rem,54vw)] md:max-h-none
+          ${panelOpen ? 'translate-y-0 opacity-100 md:translate-x-0' : 'pointer-events-none translate-y-[115%] opacity-0 md:translate-y-0 md:translate-x-[110%]'}`}
+        aria-hidden={!panelOpen}
+      >
+        <div className="flex h-full max-h-[56dvh] flex-col overflow-hidden rounded-[1.4rem] border border-amber-100/15 bg-[#0d0907]/96 shadow-[0_30px_100px_rgba(0,0,0,.62)] backdrop-blur-2xl md:max-h-[calc(100dvh-9rem)] md:rounded-[1.8rem]">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-amber-100/10 bg-[#17100b]/92 px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-[7px] font-black uppercase tracking-[.18em] text-amber-200">Inside the territory</p>
+              <div className="mt-1 flex items-center gap-2">
+                <CurrentIcon className={`h-3.5 w-3.5 ${surfaceTone[current.tone]?.icon || 'text-sky-300'}`} />
+                <p className="truncate text-[10px] font-black uppercase tracking-[.12em] text-white">{current.label}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPanelOpen(false)}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/25 text-stone-300 transition hover:border-amber-200/30 hover:text-amber-100"
+              aria-label="Return to File Folder territory"
+            >
+              <X className="h-4 w-4"/>
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-5">
+        <section aria-label="Construction sequence" className="border-y border-amber-100/10 bg-[#18110c]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
           <div className="flex items-center gap-3">
             <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-amber-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">
               <Hammer className="h-3.5 w-3.5"/>Build
@@ -528,10 +565,6 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         </section>
 
         <div className="mt-3 min-w-0 md:mt-4">
-          <div className="mb-3 flex h-9 items-center gap-2 border-b border-white/10 px-1 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400 md:mb-4 md:h-auto md:rounded-2xl md:border md:bg-black/20 md:px-4 md:py-3 md:text-[9px] md:tracking-[0.2em] md:text-slate-300">
-            <CurrentIcon className={`h-3.5 w-3.5 ${surfaceTone[current.tone]?.icon || 'text-sky-300'}`} />
-            Main File Folder <span className="text-white/25">/</span> <span className="text-white">{current.label}</span>
-          </div>
 
         {surface === 'command' && (
           <div className="space-y-5">
@@ -697,9 +730,17 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           <ClientPremiumDJ fileNumber={data.client.file_number} />
         )}
         </div>
-
-
+          </div>
+        </div>
       </div>
+
+      {!panelOpen && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-[4.7rem] z-30 flex justify-center px-4">
+          <div className="rounded-full border border-amber-100/10 bg-[#120c08]/72 px-4 py-2 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300 backdrop-blur-xl">
+            Move through the territory · select a structure to enter its function
+          </div>
+        </div>
+      )}
     </section>
   )
 }
