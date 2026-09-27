@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-provider'
 import { getAuthHeaders } from '@/lib/auth-client'
 import { WeaveSystemRoom } from '@/components/world/weave-system-room'
+import { EnvironmentRuntimeControls } from '@/components/admin/environment-runtime-controls'
 
 type Surface={
   surface_key:string
@@ -132,7 +133,9 @@ export default function EnvironmentOrganizerWorkshop(){
       </label>
     </div>
 
-    <div className="mt-4 space-y-5">
+    <EnvironmentRuntimeControls />
+
+    <div className="mt-5 space-y-5">
       {grouped.map(([area,surfaces])=><section key={area} className="overflow-hidden rounded-3xl border border-white/10 bg-[#030914]/70">
         <header className="flex items-center justify-between border-b border-white/10 px-4 py-3">
           <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-sky-300">{area}</p><p className="mt-1 text-[10px] text-slate-500">{surfaces.length} registered surfaces</p></div>
@@ -179,7 +182,7 @@ export default function EnvironmentOrganizerWorkshop(){
     roomKey="administration-environment-organizer"
     eyebrow="Administration · Environment Authority"
     title="Environment Organizer"
-    detail="Control which registered pages and cards remain in the active WEAVE environment, and correct their operating order without deleting source code."
+    detail="Control environment formation, live presence ambience, registered pages and cards from one runtime authority. Correct loading, sound, visibility and operating order without rebuilding Cloud Run."
     tone="sky"
     left={left}
     center={center}
