@@ -105,19 +105,29 @@
 /* Environment briefing cards: each message arrives, stays readable, then yields
    to the next briefing before the destination is revealed. */
 .weave-loading-brief {
-  animation: weave-loading-brief-enter .42s cubic-bezier(.16,1,.3,1) both;
+  animation: weave-loading-brief-cycle 2s cubic-bezier(.16,1,.3,1) both;
 }
 
-@keyframes weave-loading-brief-enter {
-  from {
+@keyframes weave-loading-brief-cycle {
+  0% {
     opacity: 0;
     transform: translate3d(0,14px,0) scale(.985);
     filter: blur(3px);
   }
-  to {
+  16% {
     opacity: 1;
     transform: translate3d(0,0,0) scale(1);
     filter: blur(0);
+  }
+  84% {
+    opacity: 1;
+    transform: translate3d(0,0,0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0,-8px,0) scale(.992);
+    filter: blur(1.5px);
   }
 }
 
