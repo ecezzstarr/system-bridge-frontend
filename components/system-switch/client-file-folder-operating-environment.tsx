@@ -1,7 +1,7 @@
 'use client'
 import { visiblePoll } from '@/lib/visible-poll'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Activity,
   ArrowRight,
@@ -339,6 +339,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [surface, setSurface] = useState<Surface>('command')
   const [panelOpen, setPanelOpen] = useState(false)
+  const [travelingTo, setTravelingTo] = useState<Surface | null>(null)
+  const travelTimer = useRef<number | null>(null)
   const [world, setWorld] = useState(data.file_folder_world)
   const [formationOpen, setFormationOpen] = useState(false)
   const [formationDistrict, setFormationDistrict] = useState('workshop_core')
@@ -388,11 +390,22 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }
 
   const enterSurface = (next: Surface) => {
+    if (travelTimer.current) window.clearTimeout(travelTimer.current)
     setSurface(next)
     setSelectedSystemId('')
     if (next === 'builds') setFormationDistrict('workshop_core')
-    setPanelOpen(true)
+    setPanelOpen(false)
+    setTravelingTo(next)
+    travelTimer.current = window.setTimeout(() => {
+      setTravelingTo(null)
+      setPanelOpen(true)
+      travelTimer.current = null
+    }, 520)
   }
+
+  useEffect(() => () => {
+    if (travelTimer.current) window.clearTimeout(travelTimer.current)
+  }, [])
 
   const blueprints = Array.isArray(world?.blueprints) ? world.blueprints : []
   const builds = Array.isArray(world?.builds) ? world.builds : []
@@ -745,7 +758,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       {!panelOpen && (
         <div className="pointer-events-none absolute inset-x-0 bottom-[4.7rem] z-30 flex justify-center px-4">
           <div className="rounded-full border border-amber-100/10 bg-[#120c08]/72 px-4 py-2 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300 backdrop-blur-xl">
-            Move through the territory · select a structure to enter its function
+            {travelingTo
+              ? `Moving to ${surfaces.find(item=>item.key===travelingTo)?.label || 'structure'}`
+              : 'Move through the territory · select a structure to enter its function'}
           </div>
         </div>
       )}
