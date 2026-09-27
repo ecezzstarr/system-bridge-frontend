@@ -704,6 +704,8 @@ html[data-weave-event="flame-live"] [data-weave-route-station]:hover {
   --weave-flame-camera-x: 0;
   --weave-flame-camera-y: 0;
   --weave-flame-camera-depth: 0;
+  --weave-flame-shift-x: 0px;
+  --weave-flame-shift-y: 0px;
 }
 
 body {
@@ -713,15 +715,11 @@ body {
 .weave-live-flame-field {
   background:
     radial-gradient(circle at var(--weave-flame-x) var(--weave-flame-y),
-      rgb(124 45 18 / calc(.12 * var(--weave-flame-energy))) 0,
-      rgb(69 10 10 / calc(.045 * var(--weave-flame-energy))) 24%,
+      rgb(124 45 18 / .12) 0,
+      rgb(69 10 10 / .045) 24%,
       transparent 54%),
     #050607;
-  transform: translate3d(
-    calc(var(--weave-flame-camera-x) * -0.035px),
-    calc(var(--weave-flame-camera-y) * -0.025px),
-    0
-  );
+  transform: translate3d(var(--weave-flame-shift-x),var(--weave-flame-shift-y),0);
   transition: background-color .35s ease;
   will-change: transform;
 }
@@ -729,7 +727,7 @@ body {
 .weave-live-flame-current {
   position: absolute;
   inset: -38%;
-  opacity: calc(.18 + .17 * var(--weave-flame-energy));
+  opacity: var(--weave-flame-energy);
   mix-blend-mode: screen;
   transform-origin: var(--weave-flame-x) var(--weave-flame-y);
   will-change: transform, opacity;
@@ -764,16 +762,16 @@ body {
   position: absolute;
   left: var(--weave-flame-x);
   top: var(--weave-flame-y);
-  width: calc(150px + 120px * var(--weave-flame-energy));
-  height: calc(210px + 150px * var(--weave-flame-energy));
+  width: 270px;
+  height: 360px;
   transform: translate(-50%,-76%);
   border-radius: 52% 48% 58% 42% / 72% 68% 32% 28%;
   background:
     radial-gradient(ellipse at 50% 86%,
-      rgb(255 247 237 / calc(.13 * var(--weave-flame-energy))) 0 7%,
-      rgb(251 191 36 / calc(.11 * var(--weave-flame-energy))) 18%,
-      rgb(249 115 22 / calc(.09 * var(--weave-flame-energy))) 36%,
-      rgb(239 68 68 / calc(.045 * var(--weave-flame-energy))) 53%,
+      rgb(255 247 237 / .13) 0 7%,
+      rgb(251 191 36 / .11) 18%,
+      rgb(249 115 22 / .09) 36%,
+      rgb(239 68 68 / .045) 53%,
       transparent 72%);
   filter: blur(13px);
   mix-blend-mode: screen;
@@ -788,11 +786,11 @@ body {
     repeating-linear-gradient(
       91deg,
       transparent 0 42px,
-      rgb(251 146 60 / calc(.008 * var(--weave-flame-energy))) 44px,
+      rgb(251 146 60 / .008) 44px,
       transparent 48px 96px
     );
   filter: blur(16px);
-  opacity: calc(.18 + .18 * var(--weave-flame-energy));
+  opacity: .28;
   animation: weave-live-heat 4.8s linear infinite;
   mix-blend-mode: screen;
 }
@@ -808,14 +806,14 @@ body {
 html[data-weave-event="flame-live"] .weave-live-flame-field {
   background:
     radial-gradient(circle at var(--weave-flame-x) var(--weave-flame-y),
-      rgb(249 115 22 / calc(.18 * var(--weave-flame-energy))) 0,
-      rgb(127 29 29 / calc(.075 * var(--weave-flame-energy))) 27%,
+      rgb(249 115 22 / .18) 0,
+      rgb(127 29 29 / .075) 27%,
       transparent 58%),
     #070505;
 }
 
 html[data-weave-event="flame-live"] .weave-live-flame-current {
-  opacity: calc(.28 + .24 * var(--weave-flame-energy));
+  opacity: .52;
 }
 
 html[data-weave-pulse="ignition"] .weave-live-flame-core,
@@ -833,7 +831,7 @@ html[data-weave-pulse="value"] .weave-live-flame-core {
   position: relative;
   text-shadow:
     0 1px 1px rgb(0 0 0 / .82),
-    0 0 calc(5px + 5px * var(--weave-flame-energy)) rgb(251 146 60 / calc(.035 * var(--weave-flame-energy)));
+    0 0 10px rgb(251 146 60 / .055);
   transition: text-shadow .28s ease, filter .28s ease;
 }
 
