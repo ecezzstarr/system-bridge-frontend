@@ -33,7 +33,7 @@ export default function ClientLayout({
   // Client routes share the root AuthProvider.
   return (
     <EnvironmentOrganizerProvider>
-    <div className="relative min-h-screen overflow-hidden bg-transparent">
+    <div className="weave-client-shell relative min-h-dvh overflow-x-clip bg-transparent">
       <ClientRouteGuard>
         <div className="relative z-10 min-h-screen">
           <ClientNavigation />
