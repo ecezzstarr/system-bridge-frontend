@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card'
 const authoritySystems = [
   {
     title: 'Developer Workshop',
-    description: 'System refinement layer for ecosystem operators. Build and refine origin systems.',
+    description: 'System refinement layer for Administration. Build and refine origin systems.',
     tags: ['NEXT.JS 16', 'POSTGRES', 'GCLOUD'],
     href: '/admin/origin-systems',
     icon: Code,
@@ -19,15 +19,15 @@ const authoritySystems = [
   },
   {
     title: 'Authority Workshops',
-    description: 'Define and govern the core protocols and permissions of the WEAVE ecosystem.',
-    tags: ['PROTOCOL', 'GOVERNANCE', 'KEYS'],
+    description: 'Define and govern the core rules, permissions and authority of WEAVE.',
+    tags: ['AUTHORITY', 'GOVERNANCE', 'KEYS'],
     href: '/authority/workshops',
     icon: Database,
     iconClass: 'text-emerald-400',
   },
   {
     title: 'AI Registry',
-    description: 'EIGHT, RIVER and ECHO — the intelligence layer connected to Ecosystem Authority.',
+    description: 'EIGHT, RIVER and ECHO — the intelligence layer connected to WEAVE Authority.',
     tags: ['EIGHT', 'RIVER', 'ECHO'],
     href: '/authority/workshops?tab=ai-foundry',
     icon: Brain,
@@ -43,7 +43,7 @@ export default function EcosystemAuthority() {
     if (isInitialized && !isLoading && (!user || user.role !== 'admin')) router.replace('/dashboard')
   }, [user, router, isInitialized, isLoading])
 
-  if (!isInitialized || isLoading || !user || user.role !== 'admin') return <main className="p-8 text-slate-300">Opening Ecosystem Authority...</main>
+  if (!isInitialized || isLoading || !user || user.role !== 'admin') return <main className="p-8 text-slate-300">Opening WEAVE Authority...</main>
 
   return (
     <div className="min-h-screen bg-[#05050f] text-slate-200">
@@ -52,7 +52,7 @@ export default function EcosystemAuthority() {
           <header className="mb-8 flex items-center justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-purple-400">Weave of Presence</p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Ecosystem Authority</h1>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">WEAVE Authority</h1>
               <p className="mt-2 text-sm text-slate-400">Authority Space · Registry, Workshops & Intelligence</p>
             </div>
             <Button variant="ghost" onClick={() => router.push('/dashboard')} className="text-slate-400 hover:text-white">Exit</Button>
