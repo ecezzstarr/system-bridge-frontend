@@ -111,7 +111,7 @@ function CommandHall({active}:{active:boolean}){
     </mesh>
     <mesh position={[0,.62,1.38]}>
       <boxGeometry args={[.64,.95,.14]}/>
-      <meshStandardMaterial color="#110d0a" emissive="#f59e0b" emissiveIntensity={active?.16:.06}/>
+      <meshStandardMaterial color="#110d0a" emissive="#f59e0b" emissiveIntensity={active ? .16:.06}/>
     </mesh>
     <Text position={[0,.8,1.48]} fontSize={.16} color="#fef3c7" anchorX="center">COMMAND</Text>
     <FlameBeacon position={[-1.4,.02,.95]} scale={.55}/>
@@ -130,7 +130,7 @@ function MarketDistrict({level,buildProgress,active}:{level:number;buildProgress
       <mesh position={[0,.56,0]} castShadow><boxGeometry args={[2.3,.9,1.65]}/><meshStandardMaterial color="#4a3828" roughness={.68}/></mesh>
       {floors>=2&&<mesh position={[0,1.23,0]} castShadow><boxGeometry args={[1.95,.48,1.42]}/><meshStandardMaterial color="#60452f" roughness={.62}/></mesh>}
       {floors>=3&&<mesh position={[0,1.76,0]} castShadow><boxGeometry args={[1.5,.55,1.15]}/><meshStandardMaterial color="#765331" metalness={.15} roughness={.58}/></mesh>}
-      {[-.72,0,.72].map(x=><mesh key={x} position={[x,.6,.84]}><boxGeometry args={[.32,.48,.09]}/><meshStandardMaterial color="#18241d" emissive="#34d399" emissiveIntensity={active?.24:.1}/></mesh>)}
+      {[-.72,0,.72].map(x=><mesh key={x} position={[x,.6,.84]}><boxGeometry args={[.32,.48,.09]}/><meshStandardMaterial color="#18241d" emissive="#34d399" emissiveIntensity={active ? .24:.1}/></mesh>)}
       <Text position={[0,.34,.9]} fontSize={.12} color="#d6f5e4">CUSTOMER MARKET</Text>
     </>}
     {buildProgress>0&&buildProgress<100&&<ScaffoldEnvelope width={2.8} depth={2.1} height={1.1+buildProgress/100*1.4} progress={buildProgress}/>}
@@ -156,7 +156,7 @@ function SoundPavilion({active}:{active:boolean}){
     <mesh position={[0,.1,0]} receiveShadow><cylinderGeometry args={[1.4,1.55,.2,24]}/><meshStandardMaterial color="#31251e" roughness={.72}/></mesh>
     {[0,Math.PI/2,Math.PI,Math.PI*1.5].map((angle,index)=><mesh key={index} position={[Math.cos(angle)*.95,.78,Math.sin(angle)*.95]} castShadow><cylinderGeometry args={[.1,.13,1.55,12]}/><meshStandardMaterial color="#8c6646" metalness={.38} roughness={.45}/></mesh>)}
     <mesh position={[0,1.55,0]} castShadow><coneGeometry args={[1.5,.72,24]}/><meshStandardMaterial color="#513725" roughness={.54}/></mesh>
-    <mesh position={[0,.9,0]}><sphereGeometry args={[.38,20,20]}/><meshStandardMaterial color="#2c1f22" emissive="#fb7185" emissiveIntensity={active?.32:.12}/></mesh>
+    <mesh position={[0,.9,0]}><sphereGeometry args={[.38,20,20]}/><meshStandardMaterial color="#2c1f22" emissive="#fb7185" emissiveIntensity={active ? .32:.12}/></mesh>
   </group>
 }
 
@@ -285,7 +285,7 @@ function DistrictPlot({
     onPointerOut={()=>{document.body.style.cursor=''}}
   >
     <cylinderGeometry args={[1.9,2.0,.08,24]}/>
-    <meshStandardMaterial color={active?'#473323':'#2a211a'} emissive={color} emissiveIntensity={active?.08:.015} roughness={.86}/>
+    <meshStandardMaterial color={active?'#473323':'#2a211a'} emissive={color} emissiveIntensity={active ? .08:.015} roughness={.86}/>
   </mesh>
 
   return <group position={position}>
@@ -298,6 +298,32 @@ function DistrictPlot({
     <Text position={[0,.18,1.92]} fontSize={.11} color={active?'#fff3dc':'#ad9b87'} anchorX="center">{district.label.toUpperCase()}</Text>
     {active&&<mesh position={[0,.065,0]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[1.77,1.86,48]}/><meshBasicMaterial color={color} transparent opacity={.32}/></mesh>}
   </group>
+}
+
+function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
+  const controls=useRef<any>(null)
+  const target=useMemo(()=>{
+    const [x,,z]=POSITIONS[activeSurface]
+    return new THREE.Vector3(x*.58,.58,z*.58)
+  },[activeSurface])
+
+  useFrame(()=>{
+    if(!controls.current)return
+    controls.current.target.lerp(target,.075)
+    controls.current.update()
+  })
+
+  return <OrbitControls
+    ref={controls}
+    enablePan={false}
+    minDistance={10}
+    maxDistance={19}
+    minPolarAngle={.58}
+    maxPolarAngle={1.31}
+    target={[0,.45,0]}
+    dampingFactor={.08}
+    enableDamping
+  />
 }
 
 function Scene({
@@ -351,14 +377,7 @@ function Scene({
     <FlameBeacon position={[7.7,.02,5.9]} scale={.55}/>
 
     <ContactShadows position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
-    <OrbitControls
-      enablePan={false}
-      minDistance={10}
-      maxDistance={19}
-      minPolarAngle={.58}
-      maxPolarAngle={1.31}
-      target={[0,.45,0]}
-    />
+    <FileFolderCamera activeSurface={activeSurface}/>
   </>
 }
 
