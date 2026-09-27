@@ -223,21 +223,28 @@ export async function POST(request:NextRequest){
         fromUserName:user.name||'Bridger',
       })
 
-      const receipt=await issueWeaveReceipt({
-        userId:user.id,
-        kind:'purchase',
-        source:'bridger_whatsapp_number_order',
-        sourceId:String(order.id),
-        amount:price,
-        currency:'Flame Coin',
-        status:'pending',
-        description:`WEAVE Worldwide WhatsApp Number order · ${offer.country}`,
-        metadata:{
-          country:offer.country,
-          deliveryDeadline:order.deadline_at,
-          balanceAfter:after,
-        },
-      })
+      let receipt:any=null
+      try{
+        receipt=await issueWeaveReceipt({
+          userId:user.id,
+          kind:'purchase',
+          source:'bridger_whatsapp_number_order',
+          sourceId:String(order.id),
+          amount:price,
+          currency:'Flame Coin',
+          status:'pending',
+          description:`WEAVE Worldwide WhatsApp Number order · ${offer.country}`,
+          metadata:{
+            country:offer.country,
+            deliveryDeadline:order.deadline_at,
+            balanceAfter:after,
+          },
+        })
+      }catch(receiptError){
+        // The order and wallet movement are already committed. Receipt persistence
+        // is secondary and must never report a completed charge as a failed order.
+        console.error('[Bridger Number order receipt after completed order]',receiptError)
+      }
 
       return NextResponse.json({
         success:true,
@@ -265,6 +272,7 @@ export async function POST(request:NextRequest){
         FROM bridger_number_country_offers
         WHERE LOWER(TRIM(country))=LOWER(TRIM($1)) AND enabled=true
         LIMIT 1
+        FOR SHARE
       `,[country])).rows[0]
       if(!offer){
         await client.query('ROLLBACK')
