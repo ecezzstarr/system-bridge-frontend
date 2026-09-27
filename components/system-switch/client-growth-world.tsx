@@ -19,6 +19,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { getClientToken } from '@/lib/client-auth'
+import { emitWeaveMotion,growthMotion } from '@/lib/weave-interaction-motion'
 
 type Props={
   initialGrowth:any
@@ -89,10 +90,13 @@ export default function ClientGrowthWorld({
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Expansion movement failed')
       setGrowth(body.growth)
+      emitWeaveMotion(growthMotion(String(payload?.action||'')))
       setMessage('Growth movement recorded in the Client File Folder.')
       return true
     }catch(error:any){
-      setMessage(error?.message||'Expansion movement failed')
+      const label=error?.message||'Expansion movement failed'
+      emitWeaveMotion({kind:'interruption',label,intensity:.65,confirmed:true,source:'growth-world'})
+      setMessage(label)
       return false
     }finally{setBusy('')}
   }
