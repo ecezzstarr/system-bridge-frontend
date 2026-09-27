@@ -189,7 +189,7 @@ export default function FileFolderOpenWorld({
       if (!response.ok) throw new Error(body.error || 'Movement failed')
       setWorld(body.world)
       onWorldChange?.(body.world)
-      emitWeaveMotion(fileFolderMotion(String(payload?.action||'')))
+      emitWeaveMotion(body.motion||fileFolderMotion(String(payload?.action||'')))
       setMessage('Movement recorded in the Main File Folder.')
     } catch (error: any) {
       const label=error?.message||'Movement failed'
