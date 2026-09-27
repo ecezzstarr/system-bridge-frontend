@@ -28,8 +28,8 @@ const workshops = [
   },
   {
     href: '/admin/visual-systems',
-    title: 'Visual Systems Workshop',
-    description: 'Draft, publish, hide and roll back registered WEAVE visual artifacts live without a Cloud Run deployment.',
+    title: 'Visual Systems · Interaction in Motion',
+    description: 'Operate WEAVE world motion live: Flame Field, Burning River, route current, system emergence, visual artifacts and rollback without a Cloud Run deployment.',
     icon: Palette,
   },
   {
