@@ -645,7 +645,7 @@ assert.ok(!fileFolderOperatingEnvironmentSource.includes('Simple meaning'),'File
 assert.ok(!fileFolderOperatingEnvironmentSource.includes('Folder status'),'File Folder removes the duplicate status rail')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Construction + Systems'"),'Construction and live system operation are visibly one File Folder district')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Market + Customers'"),'Market and Customer Door are visibly one File Folder district')
-assert.ok(supportFileFolderSource.includes('You are viewing one Client operating environment.'),'Bridge Plaza support view explains the File Folder to visitors')
+assert.ok(supportFileFolderSource.includes('Support · Read only')&&supportFileFolderSource.includes('Ownership and build controls remain with the Client.'),'Bridge Plaza support view preserves clear read-only ownership awareness without a large intro card')
 assert.ok(clientFunctionsPageSource.includes('<ClientOperatingRoom'),'Client Functions now opens the organized Client Operating Room')
 assert.ok(!clientFunctionsPageSource.includes('LegacyClientDashboard'),'Client Functions no longer uses the old stacked legacy dashboard as its primary surface')
 for(const route of ['/client/system-switch','/client/loops','/client/deposit','/client/withdraw','/client/chat/bridger','/marketplace','/weave','/lounge','/echo','/video-feed','/weave/standing','/client/arena','/client/casino']){
