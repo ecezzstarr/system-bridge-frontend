@@ -26,7 +26,7 @@ const panels = {
     eyebrow: 'Authority Workshop',
     title: 'Company Loops & Client workshops',
     description:
-      'Publish company loops, shape participant positions, and manage the workshop surfaces already exposed through Ecosystem Authority.',
+      'Publish company loops, shape participant positions, and manage the workshop surfaces already exposed through WEAVE Authority.',
     cards: [
       { title: 'WEAVE Infrastructure Workshop', description: 'Operate the persistent Origin registry, Cloud Run runtime, deployment controls, EIGHT web access and Divine Shield.', href: '/admin/infrastructure', icon: Cloud, tags: ['CLOUD RUN', 'ORIGIN', 'DIVINE SHIELD'] },
       { title: 'Visual Systems Workshop', description: 'Control registered WEAVE artifacts live with draft, publish and rollback instead of rebuilding Cloud Run for every visual correction.', href: '/admin/visual-systems', icon: Palette, tags: ['RUNTIME', 'VISUALS', 'ROLLBACK'] },
@@ -55,7 +55,7 @@ const panels = {
     eyebrow: 'Authority Workshop',
     title: 'AI registry & interaction intelligence',
     description:
-      'Open the Bridge AI reporting and registry surfaces connected to the current Ecosystem Authority flow.',
+      'Open the Bridge AI reporting and registry surfaces connected to the current WEAVE Authority flow.',
     cards: [
       {
         title: 'Bridge AI Reports',
@@ -68,7 +68,7 @@ const panels = {
       {
         title: 'Origin Systems Network',
         description:
-          'Inspect the current origin systems network and ecosystem authority inventory from the same administration surface.',
+          'Inspect the current origin systems network and WEAVE authority inventory from the same administration surface.',
         href: '/admin/origin-systems',
         icon: Globe,
         tags: ['ORIGIN', 'SYSTEMS', 'AUTHORITY'],
@@ -119,14 +119,14 @@ export default function AuthorityWorkshopsPage() {
                   Authority Workshop
                 </h1>
                 <p className="mt-2 text-sm text-slate-400">
-                  Ecosystem Authority surface for Company Loops, Client workshops, and AI
+                  WEAVE Authority surface for Company Loops, Client workshops, and AI
                   registry work.
                 </p>
               </div>
               <div className="flex gap-2">
                 <Link href="/authority">
                   <Button variant="outline" className="border-slate-700 bg-transparent text-slate-300">
-                    Ecosystem Authority
+                    WEAVE Authority
                   </Button>
                 </Link>
                 <Link href="/dashboard">
@@ -205,7 +205,7 @@ export default function AuthorityWorkshopsPage() {
                 <div>
                   <p className="text-sm font-semibold text-white">Current authority path</p>
                   <p className="mt-2 text-sm leading-6 text-slate-400">
-                    Authority work is now reached through <span className="text-white">Ecosystem Authority</span>{' '}
+                    Authority work is now reached through <span className="text-white">WEAVE Authority</span>{' '}
                     and this <span className="text-white">/authority/workshops</span> route, rather than an
                     obsolete standalone admin workshop page.
                   </p>
@@ -218,7 +218,7 @@ export default function AuthorityWorkshopsPage() {
             <SummaryCard
               icon={Code}
               title="Origin refinement"
-              description="Use the Developer Workshop and Origin Systems Network to refine the ecosystem base."
+              description="Use the Developer Workshop and Origin Systems Network to refine the institutional base."
             />
             <SummaryCard
               icon={Database}
