@@ -453,10 +453,10 @@ export function ClientFileFolder3D({
   const average=activeBuilds.length?Math.round(activeBuilds.reduce((sum,b)=>sum+b.progress,0)/activeBuilds.length):0
 
   return <section className="relative overflow-hidden rounded-[2rem] border border-amber-200/10 bg-[#120c08] shadow-[0_32px_100px_rgba(0,0,0,.48)]">
-    <div className="absolute left-4 top-4 z-10 max-w-[76%] rounded-2xl border border-amber-100/10 bg-[#130d09]/78 px-4 py-3 backdrop-blur-xl">
+    <div className="absolute left-3 top-3 z-10 max-w-[72%] border-l border-amber-200/20 bg-[#130d09]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-amber-100/10 sm:bg-[#130d09]/78 sm:px-4 sm:py-3">
       <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Persistent construction territory</p>
       <p className="mt-1 text-xs font-black text-white">The File Folder physically changes as the Client builds.</p>
-      <p className="mt-1 text-[9px] leading-4 text-stone-400">Foundation → frame → structure → integration → commissioning → live building.</p>
+      <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">Foundation → frame → structure → integration → commissioning → live building.</p>
     </div>
 
     <div className="absolute right-4 top-4 z-10 hidden gap-2 sm:flex">
@@ -465,7 +465,7 @@ export function ClientFileFolder3D({
       <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Build formation</p><p className="text-sm font-black text-white">{average}%</p></div>
     </div>
 
-    <div className="h-[500px] sm:h-[590px]">
+    <div className="h-[390px] sm:h-[500px] lg:h-[590px]">
       <Canvas shadows camera={{position:[0,10.5,14.6],fov:46}} dpr={[1,1.5]}>
         <Scene
           districts={districts}
@@ -483,14 +483,14 @@ export function ClientFileFolder3D({
       </Canvas>
     </div>
 
-    <div className="absolute inset-x-3 bottom-3 z-10 flex gap-2 overflow-x-auto pb-1">
+    <div className="absolute inset-x-2 bottom-2 z-10 flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2">
       {districts.map(d=>{
         const active=d.key===activeSurface
         const color=COLORS[d.tone]
         return <button
           key={d.key}
           onClick={()=>onSurfaceChange(d.key)}
-          className="min-w-[135px] rounded-xl border bg-[#140f0b]/88 px-3 py-2 text-left backdrop-blur-md"
+          className="min-w-[104px] rounded-lg border bg-[#140f0b]/88 px-2.5 py-2 text-left backdrop-blur-md sm:min-w-[135px] sm:rounded-xl sm:px-3"
           style={{borderColor:active?color:'rgba(255,255,255,.09)'}}
         >
           <span className="block text-[8px] font-black uppercase tracking-[.08em]" style={{color}}>{d.label}</span>
