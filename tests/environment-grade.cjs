@@ -287,7 +287,7 @@ assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weav
 assert.ok(cleanRevealTransit2026.includes('hasPendingSurface()&&elapsed<absoluteMaximum'),'Pending application state holds the clean reveal only until the absolute recovery ceiling')
 assert.ok(cleanRevealTransit2026.includes('const LOADING_CARD_HOLD_MS=2000'),'Loading briefs remain visible long enough to read')
 assert.ok(cleanRevealTransit2026.includes('const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS'),'Environment reveal waits for the complete three-card briefing sequence')
-assert.ok(cleanRevealTransit2026.includes('PLATFORM_BRIEFS.map((_,index)'),'Loading progress exposes exactly the platform briefing sequence')
+assert.ok(cleanRevealTransit2026.includes('activeBriefs.map((_,index)'),'Loading progress follows whichever three-card briefing is active without removing the normal platform sequence')
 assert.ok(cleanRevealTransit2026.includes("document.addEventListener('click',handleInternalNavigation,true)"),'Internal navigation primes the environment cover at click time, including sidebar links')
 assert.ok(cleanRevealTransit2026.includes('setReadyPath(null)')&&cleanRevealTransit2026.includes('setTransiting(true)'),'Sidebar movement hides the old environment immediately while preserving destination formation')
 assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence(startedAt,controller.signal)\n          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations finish the readable briefing before the final readiness check')
