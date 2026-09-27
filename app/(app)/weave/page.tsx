@@ -212,6 +212,29 @@ export default function WeavePage() {
         </div>
       </div>
 
+      <div className="absolute right-3 top-20 z-30 flex flex-col items-end gap-2 sm:right-4">
+        {isSupport && (
+          <button
+            type="button"
+            onClick={()=>setSupportOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-[#07131b]/90 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-[0_14px_40px_rgba(0,0,0,.3)] backdrop-blur-xl transition hover:border-cyan-200/35 hover:bg-cyan-300/[.08]"
+          >
+            <Orbit className="h-3.5 w-3.5" />
+            System Switch · File Folder View
+          </button>
+        )}
+        {user.role==='client' && state.crossing.fileNumber && (
+          <button
+            type="button"
+            onClick={()=>router.push('/client/system-switch')}
+            className="inline-flex items-center gap-2 rounded-full border border-violet-200/20 bg-[#120b19]/90 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-violet-100 shadow-[0_14px_40px_rgba(0,0,0,.3)] backdrop-blur-xl transition hover:border-violet-200/35 hover:bg-violet-300/[.08]"
+          >
+            <Orbit className="h-3.5 w-3.5" />
+            System Switch · My File Folder
+          </button>
+        )}
+      </div>
+
       <div className="pointer-events-none absolute inset-x-0 top-12 z-20 flex justify-center px-4 sm:hidden">
         <div className="flex max-w-full items-center gap-2 overflow-hidden text-[7px] font-black uppercase tracking-[.15em] text-stone-500">
           {architectureFlow.map((item,index)=>(
