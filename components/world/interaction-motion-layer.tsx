@@ -66,7 +66,7 @@ function PulseVisual({
       initial={{opacity:0,scaleX:.08,x:-120}}
       animate={reduceMotion?{opacity:.24}:{opacity:[0,.55*strength,.18,0],scaleX:[.08,.65,1.06],x:[-120,0,90]}}
       exit={{opacity:0}}
-      transition={{duration:reduceMotion?.25:1.55,ease:[.22,1,.36,1]}}
+      transition={{duration:reduceMotion ? .25:1.55,ease:[.22,1,.36,1]}}
     />
   }
 
@@ -77,8 +77,8 @@ function PulseVisual({
       viewBox="0 0 1000 1000"
       preserveAspectRatio="none"
       initial={{opacity:0}}
-      animate={{opacity:reduceMotion?.25:[0,.78*strength,.18,0]}}
-      transition={{duration:reduceMotion?.25:1.6}}
+      animate={{opacity:reduceMotion ? .25:[0,.78*strength,.18,0]}}
+      transition={{duration:reduceMotion ? .25:1.6}}
     >
       <motion.path
         d={`M ${(x/window.innerWidth)*1000} ${(y/window.innerHeight)*1000} Q 500 410 500 70`}
@@ -88,7 +88,7 @@ function PulseVisual({
         strokeLinecap="round"
         initial={{pathLength:0}}
         animate={{pathLength:1}}
-        transition={{duration:reduceMotion?.2:.85,ease:[.22,1,.36,1]}}
+        transition={{duration:reduceMotion ? .2:.85,ease:[.22,1,.36,1]}}
       />
       <motion.path
         d={`M ${(x/window.innerWidth)*1000} ${(y/window.innerHeight)*1000} Q 500 410 500 70`}
@@ -98,7 +98,7 @@ function PulseVisual({
         strokeLinecap="round"
         initial={{pathLength:0,opacity:0}}
         animate={{pathLength:1,opacity:[0,.5,0]}}
-        transition={{duration:reduceMotion?.2:1.25,ease:[.22,1,.36,1]}}
+        transition={{duration:reduceMotion ? .2:1.25,ease:[.22,1,.36,1]}}
       />
     </motion.svg>
   }
@@ -111,7 +111,7 @@ function PulseVisual({
         style={{background:'radial-gradient(circle,rgba(251,146,60,.24),rgba(239,68,68,.08) 42%,transparent 72%)'}}
         initial={{opacity:0,scale:.2}}
         animate={reduceMotion?{opacity:.32,scale:.75}:{opacity:[0,.75*strength,.28,0],scale:[.2,.82,1.7]}}
-        transition={{duration:reduceMotion?.2:1.55,ease:[.22,1,.36,1]}}
+        transition={{duration:reduceMotion ? .2:1.55,ease:[.22,1,.36,1]}}
       />
       {[0,1,2].map(index=><motion.span
         key={index}
@@ -124,7 +124,7 @@ function PulseVisual({
         }}
         initial={{opacity:0,scaleY:.1,y:5}}
         animate={reduceMotion?{opacity:.3,scaleY:.7}:{opacity:[0,.75*strength,.35,0],scaleY:[.1,1.3,.72],y:[8,-14-index*6,-34-index*8]}}
-        transition={{duration:reduceMotion?.2:1.35+index*.14,delay:index*.04,ease:'easeOut'}}
+        transition={{duration:reduceMotion ? .2:1.35+index*.14,delay:index*.04,ease:'easeOut'}}
       />)}
     </div>
   }
@@ -137,7 +137,7 @@ function PulseVisual({
         style={{height:120,background:'linear-gradient(to top,rgba(251,191,36,.7),rgba(167,139,250,.22),transparent)'}}
         initial={{opacity:0,scaleY:.05}}
         animate={reduceMotion?{opacity:.28,scaleY:.55}:{opacity:[0,.7*strength,.28,0],scaleY:[.05,1,1.35],y:[0,-18,-36]}}
-        transition={{duration:reduceMotion?.25:1.75,ease:[.22,1,.36,1]}}
+        transition={{duration:reduceMotion ? .25:1.75,ease:[.22,1,.36,1]}}
       />
       {[0,1,2].map(index=><motion.span
         key={index}
@@ -145,7 +145,7 @@ function PulseVisual({
         style={{left:0,top:0,width:18,height:18}}
         initial={{x:'-50%',y:'-50%',opacity:0,scale:.2}}
         animate={reduceMotion?{opacity:.2,scale:.8}:{opacity:[0,.55*strength,.16,0],scale:[.2,1.6+index*.9,3+index*1.2]}}
-        transition={{duration:reduceMotion?.2:1.55+index*.18,delay:index*.08,ease:'easeOut'}}
+        transition={{duration:reduceMotion ? .2:1.55+index*.18,delay:index*.08,ease:'easeOut'}}
       />)}
     </div>
   }
@@ -158,14 +158,14 @@ function PulseVisual({
         style={{boxShadow:'0 0 28px rgba(251,191,36,.16),inset 0 0 20px rgba(251,146,60,.08)'}}
         initial={{opacity:0,scale:.2}}
         animate={reduceMotion?{opacity:.25,scale:.7}:{opacity:[0,.85*strength,.3,0],scale:[.2,.85,1.8]}}
-        transition={{duration:reduceMotion?.2:1.35,ease:[.22,1,.36,1]}}
+        transition={{duration:reduceMotion ? .2:1.35,ease:[.22,1,.36,1]}}
       />
       {[0,1,2,3].map(index=><motion.span
         key={index}
         className="absolute h-1.5 w-1.5 rounded-full bg-amber-200/75"
         initial={{x:-3,y:-3,opacity:0}}
         animate={reduceMotion?{opacity:.2}:{x:[-3,(index-1.5)*18],y:[-3,-18-Math.abs(index-1.5)*8],opacity:[0,.8,0]}}
-        transition={{duration:reduceMotion?.2:1.05,delay:index*.05,ease:'easeOut'}}
+        transition={{duration:reduceMotion ? .2:1.05,delay:index*.05,ease:'easeOut'}}
       />)}
     </div>
   }
@@ -176,13 +176,13 @@ function PulseVisual({
         className="absolute h-16 w-32 -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-sky-200/25"
         initial={{opacity:0,scale:.4}}
         animate={reduceMotion?{opacity:.2,scale:.8}:{opacity:[0,.5,.18,0],scale:[.4,1.15,2.1]}}
-        transition={{duration:reduceMotion?.2:1.25,ease:[.22,1,.36,1]}}
+        transition={{duration:reduceMotion ? .2:1.25,ease:[.22,1,.36,1]}}
       />
       <motion.div
         className="absolute -left-px top-0 h-20 w-px bg-gradient-to-b from-sky-100/45 to-transparent"
         initial={{opacity:0,scaleY:.1}}
         animate={reduceMotion?{opacity:.2}:{opacity:[0,.6,0],scaleY:[.1,1.2],y:[0,-34]}}
-        transition={{duration:reduceMotion?.2:1.2}}
+        transition={{duration:reduceMotion ? .2:1.2}}
       />
     </div>
   }
@@ -193,7 +193,7 @@ function PulseVisual({
       style={{left:x,top:y,boxShadow:'0 0 22px rgba(110,231,183,.14)'}}
       initial={{opacity:0,scale:.3}}
       animate={reduceMotion?{opacity:.24,scale:.75}:{opacity:[0,.72,.22,0],scale:[.3,1,1.65]}}
-      transition={{duration:reduceMotion?.2:1.1,ease:[.22,1,.36,1]}}
+      transition={{duration:reduceMotion ? .2:1.1,ease:[.22,1,.36,1]}}
     />
   }
 
@@ -203,7 +203,7 @@ function PulseVisual({
       style={{left:x,top:y}}
       initial={{opacity:0,scale:.7}}
       animate={reduceMotion?{opacity:.18}:{opacity:[0,.5,.15,0],scale:[.7,1.08,.88],x:[0,-2,2,0]}}
-      transition={{duration:reduceMotion?.2:.85}}
+      transition={{duration:reduceMotion ? .2:.85}}
     />
   }
 
@@ -212,7 +212,7 @@ function PulseVisual({
     style={{left:x,top:y}}
     initial={{opacity:0,scale:.25}}
     animate={reduceMotion?{opacity:.18,scale:.7}:{opacity:[0,.48,.12,0],scale:[.25,1,1.7]}}
-    transition={{duration:reduceMotion?.2:.8,ease:'easeOut'}}
+    transition={{duration:reduceMotion ? .2:.8,ease:'easeOut'}}
   >
     <span className="weave-interaction-core absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-200/65"/>
   </motion.div>
@@ -277,7 +277,7 @@ export function InteractionMotionLayer(){
       add({
         kind,
         label,
-        intensity:isArrival?.62:.5,
+        intensity:isArrival ? .62:.5,
         confirmed:false,
         source:'presence-camera',
       },isArrival?{x:window.innerWidth/2,y:window.innerHeight*.56}:lastPointer.current)
