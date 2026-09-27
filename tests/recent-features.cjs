@@ -1357,6 +1357,12 @@ assert.ok(clientEnvironmentNavigationSource.includes("'Home World'"),'Client nav
 assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
 
 for(const file of [
+  'lib/weave-visual-profile.ts',
+  'components/world/use-visual-runtime.ts',
+  'components/world/interaction-motion-field.tsx',
+  'app/(app)/admin/visual-systems/page.tsx',
+  'components/events/flame-event-world-decorations.tsx',
+  'components/events/flame-event-artifact.tsx',
   'lib/weave-environment-runtime-profile.ts',
   'components/world/use-environment-runtime-config.ts',
   'components/admin/environment-runtime-controls.tsx',
