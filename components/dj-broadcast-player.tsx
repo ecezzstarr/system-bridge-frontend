@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
 import { Music2, Play, Pause, GripVertical, Volume2 } from 'lucide-react'
+import { visiblePoll } from '@/lib/visible-poll'
 
 const POSITION_KEY = 'ssb_dj_player_pos'
 const LIVE_SOUND_KEY = 'weave_live_sound_joined'
@@ -385,19 +386,12 @@ export function DJBroadcastPlayer() {
 
   useEffect(() => {
     if (!eligibleRole) return
-    void syncBroadcast()
-    const interval = window.setInterval(() => void syncBroadcast(), 4000)
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') void syncBroadcast()
-    }
+    const stop = visiblePoll(() => syncBroadcast(), 4000)
     const onOnline = () => void syncBroadcast()
-
-    document.addEventListener('visibilitychange', onVisible)
     window.addEventListener('online', onOnline)
 
     return () => {
-      window.clearInterval(interval)
-      document.removeEventListener('visibilitychange', onVisible)
+      stop()
       window.removeEventListener('online', onOnline)
     }
   }, [eligibleRole, syncBroadcast])
