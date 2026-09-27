@@ -90,7 +90,7 @@ export default function ClientGrowthWorld({
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Expansion movement failed')
       setGrowth(body.growth)
-      emitWeaveMotion(growthMotion(String(payload?.action||'')))
+      emitWeaveMotion(body.motion||growthMotion(String(payload?.action||'')))
       setMessage('Growth movement recorded in the Client File Folder.')
       return true
     }catch(error:any){
