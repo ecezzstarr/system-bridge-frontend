@@ -72,25 +72,25 @@ export default function BridgerNumbersPage(){
  useEffect(()=>{void load()},[])
  useEffect(()=>{const timer=window.setInterval(()=>setNow(Date.now()),15000);return()=>window.clearInterval(timer)},[])
 
- const buyNumber=async(numberId:string,country:string)=>{
-  setBuying(numberId)
+ const buyCountry=async(country:string)=>{
+  setBuying(country)
   try{
    const r=await fetch('/api/bridger/numbers',{
     method:'POST',
     headers:getAuthHeaders(),
-    body:JSON.stringify({action:'purchase_number',numberId}),
+    body:JSON.stringify({action:'purchase_country',country}),
    })
    const d=await r.json()
    if(!r.ok){
-    if(d.gate==='stock_changed'||d.gate==='out_of_stock')await load()
+    if(['stock_changed','out_of_stock','stock_available'].includes(String(d.gate||'')))await load()
     throw new Error(d.error||'Purchase failed')
    }
-   emitWeaveMotion({kind:'value',label:`${country} number purchased and assigned`,intensity:1.25,confirmed:true,source:'number-bay'})
+   emitWeaveMotion({kind:'value',label:`${country} current-stock number purchased and assigned`,intensity:1.25,confirmed:true,source:'number-bay'})
    toast.success(`${country} number assigned to your Bridger account`)
    await load()
   }catch(e:any){
    emitWeaveMotion({kind:'interruption',label:e?.message||'Number purchase failed',intensity:.65,confirmed:true,source:'number-bay'})
-   toast.error(e.message)
+   toast.error(e?.message||'Number purchase failed')
   }finally{
    setBuying(null)
   }
@@ -147,6 +147,7 @@ export default function BridgerNumbersPage(){
  const activeOrders=orders.filter(o=>['requested','fulfilling'].includes(o.status))
  const availableCountries=offers.filter(o=>Number(o.stock_count)>0).length
  const orderCountries=offers.filter(o=>Number(o.stock_count)===0).length
+ const stockedCount=offers.reduce((total,o)=>total+(Number(o.stock_count)||0),0)
 
  const left=<>
   <section className="rounded-3xl border border-cyan-300/15 bg-cyan-400/[.035] p-4">
@@ -157,7 +158,7 @@ export default function BridgerNumbersPage(){
   <section className="rounded-3xl border border-white/10 bg-black/20 p-4">
    <p className="text-[9px] font-black uppercase text-slate-500">Bay state</p>
    <div className="mt-3 grid grid-cols-2 gap-2 text-center">
-    <div className="rounded-xl border border-white/10 bg-white/[.025] p-3"><p className="text-xl font-black text-cyan-200">{available.length}</p><p className="text-[8px] uppercase text-slate-500">Stocked numbers</p></div>
+    <div className="rounded-xl border border-white/10 bg-white/[.025] p-3"><p className="text-xl font-black text-cyan-200">{stockedCount}</p><p className="text-[8px] uppercase text-slate-500">Stocked numbers</p></div>
     <div className="rounded-xl border border-white/10 bg-white/[.025] p-3"><p className="text-xl font-black text-emerald-200">{mine.length}</p><p className="text-[8px] uppercase text-slate-500">Owned</p></div>
     <div className="rounded-xl border border-white/10 bg-white/[.025] p-3"><p className="text-xl font-black text-sky-200">{availableCountries}</p><p className="text-[8px] uppercase text-slate-500">Countries in stock</p></div>
     <div className="rounded-xl border border-white/10 bg-white/[.025] p-3"><p className="text-xl font-black text-amber-200">{orderCountries}</p><p className="text-[8px] uppercase text-slate-500">Orderable</p></div>
@@ -179,14 +180,8 @@ export default function BridgerNumbersPage(){
    {offers.length===0?
     <p className="rounded-2xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No countries are published in the Number Bay yet.</p>
     :offers.map(offer=>{
-     const stockedNumber=available.find(number=>
-      String(number.country||'').trim().toLowerCase()===String(offer.country||'').trim().toLowerCase() &&
-      String(number.status||'')==='available'
-     )
      const stock=Number(offer.stock_count)||0
-     const stockedPrice=Number(stockedNumber?.price_flame_coin)||0
-     const offerPrice=Number(offer.price_flame_coin)||0
-     const price=stockedPrice>0?stockedPrice:offerPrice
+     const price=Number(offer.price_flame_coin)||0
      return <article key={offer.country} className={`rounded-2xl border p-4 ${stock>0?'border-cyan-300/10 bg-cyan-400/[.025]':'border-amber-300/10 bg-amber-400/[.025]'}`}>
       <div className="flex items-start justify-between gap-3">
        <div>
@@ -202,10 +197,10 @@ export default function BridgerNumbersPage(){
       {stock>0?
        <button
         data-presence-output={`Buy ${offer.country} WEAVE number for ${price.toLocaleString()} Flame Coin`}
-        onClick={()=>stockedNumber&&void buyNumber(stockedNumber.id,offer.country)}
-        disabled={!stockedNumber||buying===stockedNumber?.id}
+        onClick={()=>void buyCountry(offer.country)}
+        disabled={buying===offer.country}
         className="mt-4 w-full rounded-xl bg-cyan-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"
-       ><ShoppingCart className="mr-2 inline h-4 w-4"/>{buying===stockedNumber?.id?'Assigning…':stockedNumber?'Buy '+offer.country+' number':'Refresh stock'}</button>
+       ><ShoppingCart className="mr-2 inline h-4 w-4"/>{buying===offer.country?'Assigning…':'Buy '+offer.country+' number'}</button>
        :<button data-presence-output={`Order ${offer.country} WEAVE number for Administration delivery`} onClick={()=>void orderCountry(offer.country)} disabled={ordering===offer.country||activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())} className="mt-4 w-full rounded-xl bg-amber-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"><Timer className="mr-2 inline h-4 w-4"/>{ordering===offer.country?'Ordering…':activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())?'Order active':'Order · '+(Number(offer.delivery_minutes)||30)+' min delivery'}</button>}
      </article>
     })
