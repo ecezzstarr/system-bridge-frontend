@@ -4,6 +4,8 @@ import { logAudit } from '@/lib/db'
 import {
   getEnvironmentOrganizerState,
   restoreEnvironmentDefaults,
+  restoreEnvironmentRuntimeDefaults,
+  setEnvironmentRuntimeConfig,
   setEnvironmentSurfaceOrder,
   setEnvironmentSurfaceVisibility,
 } from '@/lib/weave-environment-organizer'
@@ -46,6 +48,12 @@ export async function PATCH(request:NextRequest){
       if(!Number.isFinite(sortOrder))return NextResponse.json({success:false,error:'Valid sort order required'},{status:400})
       state=await setEnvironmentSurfaceOrder(surfaceKey,sortOrder,auth.user.id)
       await logAudit(auth.user.id,'environment_organizer.order',{surfaceKey,sortOrder})
+    }else if(action==='set_runtime'){
+      state=await setEnvironmentRuntimeConfig(input.config,auth.user.id)
+      await logAudit(auth.user.id,'environment_organizer.runtime',{config:state.runtime.config,version:state.runtime.version})
+    }else if(action==='restore_runtime_defaults'){
+      state=await restoreEnvironmentRuntimeDefaults(auth.user.id)
+      await logAudit(auth.user.id,'environment_organizer.runtime_defaults',{version:state.runtime.version})
     }else if(action==='restore_defaults'){
       state=await restoreEnvironmentDefaults(auth.user.id)
       await logAudit(auth.user.id,'environment_organizer.restore_defaults',{})
