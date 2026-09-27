@@ -428,6 +428,11 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           : 0
   const routeCount=Number(world?.growth?.routes?.length||0)
   const vitalityScore=Number(world?.growth?.vitality?.score||0)
+  const enterpriseApproved=Boolean(data.enterprise?.enterprise_status==='approved' && ['lord','lady'].includes(String(data.enterprise?.position||'').toLowerCase()))
+  const territoryPosition=enterpriseApproved ? String(data.enterprise.position).toUpperCase() : 'CLIENT'
+  const territoryName=enterpriseApproved
+    ? (data.enterprise?.enterprise_name || 'Enterprise Dream Territory')
+    : 'Client Construction Territory'
   const selectedSystem = systems.find((system:any)=>system.id===selectedSystemId) || null
   const selectedBlueprint = useMemo(
     () => blueprints.find((blueprint: any) => blueprint.blueprint_key === selectedBlueprintKey) || blueprints[0] || null,
@@ -482,7 +487,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             <FolderOpen className="h-6 w-6 text-sky-300" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Client Construction Territory</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · {territoryPosition} · {territoryName}</p>
             <h1 className="mt-1 truncate text-xl font-black text-white md:mt-2 md:text-3xl">{data.workshop.title}</h1>
             <p className="mt-1 truncate text-[10px] text-slate-400 md:mt-2 md:text-xs">{data.client.name} · {data.client.file_number}</p>
           </div>
@@ -516,6 +521,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           marketBuildProgress={marketBuildProgress}
           streamLevel={streamLevel}
           enterpriseLevel={enterpriseLevel}
+          enterprisePosition={data.enterprise?.position || 'client'}
+          enterpriseApproved={enterpriseApproved}
+          enterpriseName={data.enterprise?.enterprise_name || null}
           routeCount={routeCount}
           vitalityScore={vitalityScore}
           territoryMode
