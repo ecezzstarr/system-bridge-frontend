@@ -11,6 +11,7 @@ import { Eye, EyeOff, Lock, Mail, KeyRound, Loader2 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
 import { AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
 import { LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
+import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -62,7 +63,7 @@ export default function LoginPage() {
       <CardHeader className="text-center flex flex-col items-center">
         <WeaveLogo size="md" className="mb-2" />
         <CardDescription className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-          {administrationPortal ? 'Administration Workshop · Secure Access' : 'System Switch · Bridge Radiance · Secure Access'}
+          {administrationPortal ? WEAVE_WRITING.positionAccess.administrationAccess : WEAVE_WRITING.positionAccess.access}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -133,7 +134,7 @@ export default function LoginPage() {
                 <span className="w-full border-t border-slate-700" />
               </div>
               <div className="relative flex justify-center text-[10px] uppercase">
-                <span className="bg-slate-900 px-2 text-slate-500 font-black tracking-[0.2em]">WEAVE Protocol</span>
+                <span className="bg-slate-900 px-2 text-slate-500 font-black tracking-[0.2em]">{WEAVE_WRITING.positionAccess.divider}</span>
               </div>
             </div>
 
@@ -144,7 +145,7 @@ export default function LoginPage() {
             >
               <Link href="/client-login">
                 <KeyRound className="mr-2 h-4 w-4" />
-                Client Access Terminal
+                {WEAVE_WRITING.positionAccess.clientAccess}
               </Link>
             </Button>
           </div>
