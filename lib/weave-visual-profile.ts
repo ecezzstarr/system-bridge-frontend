@@ -12,6 +12,8 @@ export const FLAME_ARTIFACT_SURFACES=[
 
 export type FlameArtifactSurface=typeof FLAME_ARTIFACT_SURFACES[number]
 
+export type VisualWorldMode='normal'|'flame-event'|'quiet-river'|'ceremony'|'night-operations'
+
 export type FlameArtifactVisualConfig={
   profileKey:typeof FLAME_ARTIFACT_PROFILE_KEY
   name:string
@@ -34,6 +36,21 @@ export type FlameArtifactVisualConfig={
     glow:number
     orbitOpacity:number
     wireframeOpacity:number
+  }
+  world:{
+    enabled:boolean
+    mode:VisualWorldMode
+    flameEnabled:boolean
+    riverEnabled:boolean
+    flameIntensity:number
+    flameFlow:number
+    riverIntensity:number
+    riverSpeed:number
+    emberDensity:number
+    heatDistortion:number
+    routeCurrent:number
+    emergence:number
+    reflection:number
   }
   surfaces:Record<FlameArtifactSurface,boolean>
 }
@@ -61,6 +78,21 @@ export const DEFAULT_FLAME_ARTIFACT_CONFIG:FlameArtifactVisualConfig={
     orbitOpacity:1,
     wireframeOpacity:1,
   },
+  world:{
+    enabled:true,
+    mode:'normal',
+    flameEnabled:true,
+    riverEnabled:true,
+    flameIntensity:0.28,
+    flameFlow:0.72,
+    riverIntensity:0.38,
+    riverSpeed:0.56,
+    emberDensity:0.3,
+    heatDistortion:0.12,
+    routeCurrent:0.7,
+    emergence:0.9,
+    reflection:0.36,
+  },
   surfaces:{
     'bridge-plaza-core':true,
     'bridge-plaza-portals':true,
@@ -84,7 +116,12 @@ export function normalizeFlameArtifactConfig(input:unknown):FlameArtifactVisualC
   const palette=value.palette&&typeof value.palette==='object'?value.palette:{}
   const motion=value.motion&&typeof value.motion==='object'?value.motion:{}
   const appearance=value.appearance&&typeof value.appearance==='object'?value.appearance:{}
+  const world=value.world&&typeof value.world==='object'?value.world:{}
   const surfaces=value.surfaces&&typeof value.surfaces==='object'?value.surfaces:{}
+  const modes:VisualWorldMode[]=['normal','flame-event','quiet-river','ceremony','night-operations']
+  const mode=modes.includes(world.mode as VisualWorldMode)
+    ? world.mode as VisualWorldMode
+    : DEFAULT_FLAME_ARTIFACT_CONFIG.world.mode
 
   return {
     profileKey:FLAME_ARTIFACT_PROFILE_KEY,
@@ -108,6 +145,21 @@ export function normalizeFlameArtifactConfig(input:unknown):FlameArtifactVisualC
       glow:clamp(appearance.glow,0,2,DEFAULT_FLAME_ARTIFACT_CONFIG.appearance.glow),
       orbitOpacity:clamp(appearance.orbitOpacity,0,1.4,DEFAULT_FLAME_ARTIFACT_CONFIG.appearance.orbitOpacity),
       wireframeOpacity:clamp(appearance.wireframeOpacity,0,1.4,DEFAULT_FLAME_ARTIFACT_CONFIG.appearance.wireframeOpacity),
+    },
+    world:{
+      enabled:world.enabled===undefined?DEFAULT_FLAME_ARTIFACT_CONFIG.world.enabled:Boolean(world.enabled),
+      mode,
+      flameEnabled:world.flameEnabled===undefined?DEFAULT_FLAME_ARTIFACT_CONFIG.world.flameEnabled:Boolean(world.flameEnabled),
+      riverEnabled:world.riverEnabled===undefined?DEFAULT_FLAME_ARTIFACT_CONFIG.world.riverEnabled:Boolean(world.riverEnabled),
+      flameIntensity:clamp(world.flameIntensity,0,2,DEFAULT_FLAME_ARTIFACT_CONFIG.world.flameIntensity),
+      flameFlow:clamp(world.flameFlow,0.1,2.5,DEFAULT_FLAME_ARTIFACT_CONFIG.world.flameFlow),
+      riverIntensity:clamp(world.riverIntensity,0,2,DEFAULT_FLAME_ARTIFACT_CONFIG.world.riverIntensity),
+      riverSpeed:clamp(world.riverSpeed,0.1,2.5,DEFAULT_FLAME_ARTIFACT_CONFIG.world.riverSpeed),
+      emberDensity:clamp(world.emberDensity,0,1.5,DEFAULT_FLAME_ARTIFACT_CONFIG.world.emberDensity),
+      heatDistortion:clamp(world.heatDistortion,0,1,DEFAULT_FLAME_ARTIFACT_CONFIG.world.heatDistortion),
+      routeCurrent:clamp(world.routeCurrent,0,2,DEFAULT_FLAME_ARTIFACT_CONFIG.world.routeCurrent),
+      emergence:clamp(world.emergence,0,2,DEFAULT_FLAME_ARTIFACT_CONFIG.world.emergence),
+      reflection:clamp(world.reflection,0,1.5,DEFAULT_FLAME_ARTIFACT_CONFIG.world.reflection),
     },
     surfaces:Object.fromEntries(
       FLAME_ARTIFACT_SURFACES.map(key=>[
