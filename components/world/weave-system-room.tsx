@@ -41,7 +41,6 @@ export function WeaveSystemRoom({
   return (
     <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-5" data-weave-room={roomKey}>
       <section className={`weave-system-depth weave-operating-environment relative overflow-hidden border-y ${t.border} bg-[#0d0a08]/86 shadow-[0_28px_90px_rgba(0,0,0,.38)] backdrop-blur-xl sm:rounded-[2rem] sm:border`}>
-        <div className="pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(115deg,rgba(214,164,95,.05),transparent_20%,transparent_76%,rgba(249,115,22,.035)),repeating-linear-gradient(0deg,rgba(255,255,255,.018)_0_1px,transparent_1px_5px)]" />
         <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${t.wash} via-transparent to-transparent`} />
         <header className="relative border-b border-amber-100/10 bg-[linear-gradient(180deg,rgba(92,55,28,.12),rgba(18,12,8,.02))] p-5 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -50,7 +49,7 @@ export function WeaveSystemRoom({
               {scene.district} · {scene.level}{moving?' · moving':' · present'}
             </p>
           </div>
-          <h1 className="mt-2 text-2xl font-black tracking-tight text-white md:text-3xl">{title}</h1>
+          <h1 data-weave-live-word="title" className="mt-2 text-2xl font-black tracking-tight text-white md:text-3xl">{title}</h1>
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">{detail}</p>
         </header>
 
@@ -74,7 +73,7 @@ export function WeaveSystemRoom({
             <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/[0.07] pb-3">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-600">Active stage</p>
-                <p className="mt-1 text-xs font-black text-white">{title}</p>
+                <p data-weave-live-word="station" className="mt-1 text-xs font-black text-white">{title}</p>
               </div>
               <span className={`text-[8px] font-black uppercase tracking-[0.14em] ${t.accent}`}>{moving?'movement detected':'position held'}</span>
             </div>
@@ -88,7 +87,7 @@ export function WeaveSystemRoom({
                   <Activity className={`h-4 w-4 ${t.accent}`} />
                   <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${t.accent}`}>System pulse</p>
                 </div>
-                <p className="mt-3 text-sm font-black text-white">{pulse}</p>
+                <p data-weave-live-word="station" className="mt-3 text-sm font-black text-white">{pulse}</p>
                 <p className="mt-2 text-[10px] leading-5 text-slate-400">
                   Actions alter live WEAVE state. This rail reports the room while the center remains the working stage.
                 </p>
