@@ -742,12 +742,6 @@ for(const file of [
  const source=fs.readFileSync(path.join(root,file),'utf8')
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
- if(syntaxErrors.length){
-   console.error('TRANSPILE DIAGNOSTICS',file,syntaxErrors.map(d=>{
-     const start=typeof d.start==='number'?ts.getLineAndCharacterOfPosition(ts.createSourceFile(file,source,ts.ScriptTarget.ES2022,true,ts.ScriptKind.TSX),d.start):null
-     return {line:start?start.line+1:null,column:start?start.character+1:null,message:ts.flattenDiagnosticMessageText(d.messageText,' ')}
-   }))
- }
  assert.equal(syntaxErrors.length,0,file+' system-coherence syntax/transpile check')
 }
 
