@@ -650,7 +650,7 @@ assert.ok(fileFolder3dSource.includes('PavedRoad')&&fileFolder3dSource.includes(
 assert.ok(fileFolder3dSource.includes('FileFolderCamera'),'District selection changes camera focus inside the File Folder territory')
 assert.ok(fileFolder3dSource.includes('liveSystems'),'3D File Folder reflects completed live systems')
 assert.ok(clientSystemSwitchSource.includes('bg-transparent'),'System Switch does not cover the moving WEAVE world with an opaque page')
-assert.ok(fileFolderOperatingEnvironmentSource.includes('Main File Folder · Client Construction Territory'),'File Folder keeps one canonical construction-territory identity')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('Main File Folder · {territoryPosition} · {territoryName}'),'File Folder keeps one canonical territory identity that changes with Client or Lord/Lady state')
 assert.ok(!fileFolderOperatingEnvironmentSource.includes('Simple meaning'),'File Folder removes explanation-only cards from the operating workspace')
 assert.ok(!fileFolderOperatingEnvironmentSource.includes('Folder status'),'File Folder removes the duplicate status rail')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Construction + Systems'"),'Construction and live system operation are visibly one File Folder district')
