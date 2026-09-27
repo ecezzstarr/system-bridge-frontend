@@ -4,6 +4,7 @@ import { useCallback,useEffect,useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
 import { usePresenceCamera } from '@/components/world/presence-camera'
+import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-runtime-config'
 
 type DjAudioState={
   playing?:boolean
@@ -67,6 +68,9 @@ export function WeavePresenceAmbience(){
   const {user}=useAuth()
   const pathname=usePathname()||'/'
   const {scene}=usePresenceCamera()
+  const {config}=useEnvironmentRuntimeConfig()
+  const configRef=useRef(config)
+  configRef.current=config
   const runtimeRef=useRef<Runtime|null>(null)
   const djPlayingRef=useRef(false)
   const djTypeRef=useRef<'music'|'voice'|'announcement'>('music')
@@ -74,19 +78,18 @@ export function WeavePresenceAmbience(){
   const sceneRef=useRef(scene)
   sceneRef.current=scene
 
-  const enabled=Boolean(user)&&pathname!=='/'&&!pathname.startsWith('/login')&&!pathname.startsWith('/register')&&!pathname.startsWith('/bridge/')
+  const enabled=Boolean(user)&&config.ambience.enabled&&pathname!=='/'&&!pathname.startsWith('/login')&&!pathname.startsWith('/register')&&!pathname.startsWith('/bridge/')
 
   const targetMaster=useCallback(()=>{
-    if(personalDjRef.current)return .009
+    const ambience=configRef.current.ambience
+    if(personalDjRef.current)return ambience.musicGain*.8
     if(djPlayingRef.current){
-      if(djTypeRef.current==='voice'||djTypeRef.current==='announcement')return .006
-      return .011
+      if(djTypeRef.current==='voice'||djTypeRef.current==='announcement')return ambience.voiceGain
+      return ambience.musicGain
     }
     const district=sceneRef.current.district
-    if(district==='Bridge'||district==='Institution')return .029
-    if(district==='Enterprise')return .024
-    if(district==='System Switch')return .018
-    return .021
+    const multiplier=district==='Bridge'||district==='Institution'?1.2:district==='System Switch'?.8:district==='Enterprise'?1:.9
+    return Math.min(.08,ambience.idleGain*multiplier)
   },[])
 
   const applyMix=useCallback(()=>{
@@ -198,7 +201,8 @@ export function WeavePresenceAmbience(){
 
   const scheduleFootsteps=useCallback((runtime:Runtime)=>{
     if(!runtime.active)return
-    const delay=3600+Math.random()*6200
+    const ambience=configRef.current.ambience
+    const delay=ambience.footstepMinMs+Math.random()*Math.max(250,ambience.footstepMaxMs-ambience.footstepMinMs)
     runtime.footstepTimer=window.setTimeout(()=>{
       if(!runtime.active)return
       const pan=(Math.random()*1.6)-.8
@@ -210,9 +214,12 @@ export function WeavePresenceAmbience(){
 
   const scheduleBell=useCallback((runtime:Runtime)=>{
     if(!runtime.active)return
+    const ambience=configRef.current.ambience
     const district=sceneRef.current.district
-    const base=district==='Bridge'||district==='Institution'?22000:34000
-    const delay=base+Math.random()*26000
+    const hallFactor=district==='Bridge'||district==='Institution'?.82:1
+    const min=ambience.bellMinMs*hallFactor
+    const max=ambience.bellMaxMs*hallFactor
+    const delay=min+Math.random()*Math.max(1000,max-min)
     runtime.bellTimer=window.setTimeout(()=>{
       if(!runtime.active)return
       playBell(runtime)
@@ -222,7 +229,8 @@ export function WeavePresenceAmbience(){
 
   const scheduleMovement=useCallback((runtime:Runtime)=>{
     if(!runtime.active)return
-    const delay=8000+Math.random()*13000
+    const ambience=configRef.current.ambience
+    const delay=ambience.movementMinMs+Math.random()*Math.max(500,ambience.movementMaxMs-ambience.movementMinMs)
     runtime.movementTimer=window.setTimeout(()=>{
       if(!runtime.active)return
       playDistantMovement(runtime)
@@ -326,7 +334,7 @@ export function WeavePresenceAmbience(){
     }
   },[applyMix])
 
-  useEffect(()=>{applyMix()},[scene.key,applyMix])
+  useEffect(()=>{applyMix()},[scene.key,config,applyMix])
 
   return null
 }
