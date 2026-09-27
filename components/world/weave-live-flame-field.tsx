@@ -73,7 +73,7 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
     const onPresence=(event:Event)=>{
       const detail=(event as CustomEvent<any>).detail||{}
       const kind=detail.type==='arrival'||detail.type==='navigation'?'route':'presence'
-      pulse(kind,.82,kind==='route'?.62:.38)
+      pulse(kind,.82,kind==='route' ? 0.62 : 0.38)
     }
 
     const onMotion=(event:Event)=>{
