@@ -459,15 +459,15 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }
 
   return (
-    <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711]/82 backdrop-blur-xl">
-      <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(14,165,233,.18),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(139,92,246,.12),transparent_28%)] p-5 md:p-7">
+    <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-amber-200/10 bg-[#120c08]/88 shadow-[0_34px_110px_rgba(0,0,0,.42)] backdrop-blur-xl" data-file-folder-world="progressive-construction-territory">
+      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_14%_0%,rgba(249,115,22,.12),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(18,12,8,.04))] p-5 md:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="flex items-start gap-4">
             <div className="rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3">
               <FolderOpen className="h-6 w-6 text-sky-300" />
             </div>
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-sky-300">Main File Folder · Operating Environment</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-amber-200">Main File Folder · Client Construction Territory</p>
               <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">{data.workshop.title}</h1>
               <p className="mt-2 text-xs text-slate-400">{data.client.name} · {data.client.file_number}</p>
             </div>
@@ -496,10 +496,20 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           onSurfaceChange={(next) => {
             setSurface(next)
             setSelectedSystemId('')
-            setFormationOpen(false)
+            if(next==='builds')setFormationDistrict('workshop_core')
           }}
-          activeBuilds={activeBuilds.map((build:any)=>({ progress: buildProgress(build, now) }))}
-          liveSystems={systems.length}
+          activeBuilds={activeBuilds.map((build:any)=>({
+            id:build.id,
+            title:build.title,
+            systemType:build.system_type,
+            progress:buildProgress(build,now),
+          }))}
+          liveSystems={systems.map((system:any)=>({
+            id:system.id,
+            title:system.title,
+            systemType:system.system_type,
+            activity:Array.isArray(system.entries)?system.entries.length:0,
+          }))}
           premiumSound={Boolean(data.premium_dj_enabled)}
           visibleSurfaceKeys={surfaces.map(item=>item.key)}
           marketLevel={marketLevel}
@@ -512,27 +522,23 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       </div>
 
       <div className="p-4 md:p-6">
-        <section className="mt-4 rounded-3xl border border-violet-300/10 bg-[linear-gradient(135deg,rgba(139,92,246,.055),rgba(14,165,233,.03),rgba(2,6,23,.3))] p-4 md:p-5">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <section className="mt-4 border-y border-amber-100/10 bg-[#18110c]/55 px-2 py-4 md:px-4">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">System-building campaign</p>
-              <h2 className="mt-1 text-lg font-black text-white">Build capability, put it into the world, then expand through real business movement.</h2>
-              <p className="mt-2 max-w-4xl text-[11px] leading-5 text-slate-400">The File Folder behaves like a persistent operating base: construction continues through time, materials have function, completed structures become usable systems, and customers or enterprise movement are the expansion layer.</p>
+              <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">Construction sequence</p>
+              <p className="mt-1 text-[11px] font-bold text-stone-300">Every system has one physical progression. The world changes as each stage becomes real.</p>
             </div>
-            <button onClick={()=>setSurface('builds')} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/10 px-4 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-violet-100"><Hammer className="h-3.5 w-3.5"/>Enter construction</button>
+            <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center justify-center gap-2 border-b border-amber-200/40 px-1 py-2 text-[9px] font-black uppercase tracking-[.14em] text-amber-100"><Hammer className="h-3.5 w-3.5"/>Enter Construction Yard</button>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
-            {BUILD_LADDER.map((stage,index)=><div key={stage.label} className="rounded-2xl border border-white/8 bg-black/20 p-3">
-              <div className="flex items-center justify-between gap-2"><span className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-500">Stage {index+1}</span><span className="h-1.5 w-1.5 rounded-full bg-violet-300"/></div>
-              <p className="mt-2 text-[10px] font-black text-white">{stage.label}</p>
-              <p className="mt-1 text-[9px] leading-4 text-slate-500">{stage.detail}</p>
+          <div className="mt-4 flex min-w-max gap-0 overflow-x-auto pb-1">
+            {BUILD_LADDER.map((stage,index)=><div key={stage.label} className="relative flex min-w-[145px] flex-1 items-start gap-2 pr-5">
+              <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-amber-200/20 bg-[#21150d] text-[8px] font-black text-amber-100">{index+1}</div>
+              {index<BUILD_LADDER.length-1&&<span className="absolute left-7 top-3.5 h-px w-full bg-gradient-to-r from-amber-200/25 to-amber-200/5"/>}
+              <div className="relative z-10 bg-[#18110c]/80 pr-2"><p className="text-[9px] font-black uppercase text-white">{stage.label}</p><p className="mt-1 text-[8px] leading-3 text-stone-500">{stage.detail}</p></div>
             </div>)}
           </div>
-          {surface==='builds'&&<div className="mt-4 border-t border-white/8 pt-4">
-            <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">Build support chain</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {studioDistricts.map((item,index)=><button key={item.district} onClick={()=>travelToStudio(item.district)} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.025] px-3 py-2 text-[9px] font-black text-slate-300 transition hover:border-sky-300/25 hover:text-sky-100"><span className="text-sky-300">{String(index+1).padStart(2,'0')}</span>{item.label}<span className="text-[7px] uppercase tracking-wider text-slate-600">{item.phase}</span></button>)}
-            </div>
+          {surface==='builds'&&<div className="mt-4 flex gap-2 overflow-x-auto border-t border-amber-100/10 pt-3">
+            {studioDistricts.map((item,index)=><button key={item.district} onClick={()=>travelToStudio(item.district)} className="shrink-0 border-b border-stone-700 px-2 py-2 text-left transition hover:border-amber-300"><span className="mr-2 text-[8px] font-black text-amber-300">{String(index+1).padStart(2,'0')}</span><span className="text-[9px] font-black uppercase text-stone-200">{item.label}</span><span className="ml-2 text-[7px] uppercase text-stone-600">{item.phase}</span></button>)}
           </div>}
         </section>
 
@@ -550,7 +556,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <h2 className="mt-2 text-2xl font-black text-white">{data.workshop.title}</h2>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">{data.workshop.purpose}</p>
                 <button
-                  onClick={() => setSurface('builds')}
+                  onClick={() => travelToStudio('workshop_core')}
                   className="mt-5 inline-flex items-center gap-2 rounded-full bg-sky-400 px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950"
                 >
                   Enter construction + systems <ArrowRight className="h-3.5 w-3.5" />
@@ -645,122 +651,32 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         )}
 
         {surface === 'builds' && (
-          <div className="space-y-5">
-            {selectedSystem && !formationOpen && (
+          <div className="space-y-4">
+            {selectedSystem ? (
               <HostedSystem system={selectedSystem} onClose={()=>setSelectedSystemId('')} onWorldChange={setWorld} />
-            )}
-
-            {!selectedSystem && <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Construction Command</p>
-                <p className="mt-1 text-xs text-slate-500">Inspect the blueprint first. Construction, materials, acceleration, commissioning and live operation stay inside one build chain.</p>
-              </div>
-              <button
-                onClick={() => formationOpen ? setFormationOpen(false) : openFormation('workshop_core')}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-sky-300/20 bg-sky-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-sky-200"
-              >
-                <Layers3 className="h-3.5 w-3.5" />
-                {formationOpen ? 'Close formation workspace' : 'Open formation workspace'}
-              </button>
-            </div>}
-
-            {!selectedSystem && !formationOpen && (
+            ) : (
               <>
-                <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
-                  <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                    <p className="px-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Blueprint catalog</p>
-                    <div className="mt-3 max-h-[560px] space-y-2 overflow-auto pr-1">
-                      {blueprints.map((blueprint: any) => {
-                        const selected = selectedBlueprint?.blueprint_key === blueprint.blueprint_key
-                        return (
-                          <button
-                            key={blueprint.blueprint_key}
-                            onClick={() => setSelectedBlueprintKey(blueprint.blueprint_key)}
-                            className={
-                              'w-full rounded-2xl border p-4 text-left transition ' +
-                              (selected
-                                ? 'border-violet-300/25 bg-violet-400/10'
-                                : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04]')
-                            }
-                          >
-                            <div className="flex items-start gap-3">
-                              <Eye className={'mt-0.5 h-4 w-4 ' + (selected ? 'text-violet-300' : 'text-slate-600')} />
-                              <div>
-                                <p className="text-sm font-bold text-white">{blueprint.name}</p>
-                                <p className="mt-1 text-[10px] leading-4 text-slate-500">{blueprint.description}</p>
-                              </div>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
+                <div className="flex flex-col gap-3 border-y border-amber-100/10 bg-[#17100b]/62 px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">Construction territory active</p>
+                    <p className="mt-1 text-[11px] leading-5 text-stone-400">Blueprint Foundry, Materials Depot, Construction Yard, Acceleration and Live Systems are one continuous site. Move through the site instead of opening separate dashboard pages.</p>
                   </div>
-
-                  <PreviewFrame blueprint={selectedBlueprint} onBuild={() => openFormation('blueprint_foundry')} />
-                </div>
-
-                <div className="grid gap-4 xl:grid-cols-2">
-                  <div className="rounded-3xl border border-amber-300/10 bg-amber-400/[0.025] p-5">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">Under construction</p><h3 className="mt-1 text-lg font-black text-white">Target systems in formation</h3></div>
-                      <button onClick={() => openFormation('formation_yard')} className="rounded-full border border-amber-300/15 bg-amber-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">Open live build</button>
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      {activeBuilds.length === 0 && <p className="text-xs text-slate-500">No build is currently running.</p>}
-                      {activeBuilds.map((build: any) => {
-                        const progress=buildProgress(build,now)
-                        const depth=buildDepth(progress)
-                        return <div key={build.id} className="rounded-2xl border border-white/10 bg-black/20 p-4" style={{boxShadow:`0 ${10+depth.layer*5}px ${24+depth.layer*9}px rgba(2,8,23,.48)`}}>
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <p className="text-sm font-bold text-white">{build.title}</p>
-                              <p className="mt-1 text-[10px] text-slate-500">{build.purpose}</p>
-                            </div>
-                            <span className="rounded-full bg-amber-400/10 px-3 py-1 text-[9px] font-black text-amber-200">
-                              {Math.round(progress)}%
-                            </span>
-                          </div>
-                          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-amber-300/10 bg-amber-400/[0.025] px-3 py-2">
-                            <div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-amber-300">{depth.label} · depth layer {depth.layer}/5</p><p className="mt-1 text-[9px] text-slate-400">{depth.detail}</p></div>
-                            <span className="text-[9px] font-black text-amber-200">×{Number(build.speed_multiplier||1).toFixed(2)} speed</span>
-                          </div>
-                          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                            {systemModules(build.system_type).map((module,index) => {
-                              const ready = progress >= ((index+1)/systemModules(build.system_type).length)*70
-                              return <div key={module} className={`rounded-lg border px-3 py-2 text-[9px] ${ready?'border-emerald-300/10 bg-emerald-400/[0.035] text-emerald-100':'border-white/5 bg-white/[0.02] text-slate-400'}`}>
-                                {module}
-                              </div>
-                            })}
-                          </div>
-                        </div>
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="rounded-3xl border border-emerald-300/10 bg-emerald-400/[0.025] p-5">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">After build</p><h3 className="mt-1 text-lg font-black text-white">Operational systems and recorded movement</h3></div>
-                      <button onClick={() => openFormation('active_systems')} className="rounded-full border border-emerald-300/15 bg-emerald-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-200">Operate systems</button>
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      {systems.length === 0 && <p className="text-xs text-slate-500">Finished systems will appear here with their real recorded activity.</p>}
-                      {systems.map((system: any) => <LiveSystemCard key={system.id} system={system} onEnter={()=>setSelectedSystemId(system.id)} />)}
-                    </div>
+                  <div className="flex shrink-0 gap-4 text-right text-[8px] uppercase tracking-wider text-stone-500">
+                    <span><b className="block text-base text-amber-100">{activeBuilds.length}</b>building</span>
+                    <span><b className="block text-base text-emerald-100">{systems.length}</b>live</span>
                   </div>
                 </div>
+                <FileFolderOpenWorld
+                  key={formationDistrict}
+                  clientName={data.client.name}
+                  fileNumber={data.client.file_number}
+                  workshopTitle={data.workshop.title}
+                  workshopPurpose={data.workshop.purpose}
+                  initialWorld={world}
+                  onWorldChange={setWorld}
+                  initialDistrict={formationDistrict || 'workshop_core'}
+                />
               </>
-            )}
-
-            {!selectedSystem && formationOpen && (
-              <FileFolderOpenWorld
-                clientName={data.client.name}
-                fileNumber={data.client.file_number}
-                workshopTitle={data.workshop.title}
-                workshopPurpose={data.workshop.purpose}
-                initialWorld={world}
-                onWorldChange={setWorld}
-                initialDistrict={formationDistrict}
-              />
             )}
           </div>
         )}

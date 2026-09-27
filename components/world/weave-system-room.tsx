@@ -40,9 +40,10 @@ export function WeaveSystemRoom({
 
   return (
     <main className="mx-auto w-full max-w-[1500px] p-2 sm:p-3 md:p-5" data-weave-room={roomKey}>
-      <section className={`weave-system-depth relative overflow-hidden rounded-[2rem] border ${t.border} bg-[#030914]/76 backdrop-blur-xl`}>
+      <section className={`weave-system-depth relative overflow-hidden rounded-[2rem] border ${t.border} bg-[#120c08]/82 shadow-[0_28px_90px_rgba(0,0,0,.38)] backdrop-blur-xl`}>
+        <div className="pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(115deg,rgba(214,164,95,.05),transparent_20%,transparent_76%,rgba(249,115,22,.035)),repeating-linear-gradient(0deg,rgba(255,255,255,.018)_0_1px,transparent_1px_5px)]" />
         <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${t.wash} via-transparent to-transparent`} />
-        <header className="relative border-b border-white/10 p-5 md:p-7">
+        <header className="relative border-b border-amber-100/10 bg-[linear-gradient(180deg,rgba(92,55,28,.12),rgba(18,12,8,.02))] p-5 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className={`weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] ${t.accent}`}>{eyebrow}</p>
             <p className="text-[8px] font-black uppercase tracking-[0.16em] text-white/35">
@@ -63,7 +64,7 @@ export function WeaveSystemRoom({
             )}
           </aside>
 
-          <section className="min-w-0 rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,.66),rgba(2,6,23,.82))] p-4 shadow-[0_24px_70px_rgba(2,8,23,.38)] md:p-5">
+          <section className="min-w-0 rounded-[1.75rem] border border-amber-100/10 bg-[linear-gradient(180deg,rgba(42,29,20,.82),rgba(10,9,8,.9))] p-4 shadow-[inset_0_1px_rgba(255,229,190,.025),0_24px_70px_rgba(0,0,0,.32)] md:p-5">
             {center}
           </section>
 

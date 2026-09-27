@@ -253,8 +253,8 @@ assert.ok(djPlayerSource.includes('onPlaying'),'Unexpected media restart is guar
 assert.ok(djPlayerSource.includes('applyPersonalPause'),'Pause enforcement is centralized and reused')
 const weaveBackdropSource=fs.readFileSync(path.join(root,'components/world/weave-normal-world-backdrop.tsx'),'utf8')
 const weaveDashboardWorldSource=fs.readFileSync(path.join(root,'components/world/weave-dashboard-world.tsx'),'utf8')
-assert.ok(weaveBackdropSource.includes('perspective(900px) rotateX(68deg)'),'WEAVE background includes a perspective floor layer')
-assert.ok(weaveBackdropSource.includes('[perspective:1200px]'),'WEAVE background establishes 3D scene depth')
+assert.ok(weaveBackdropSource.includes('perspective(1000px) rotateX(71deg)'),'WEAVE background includes a realistic perspective stone-floor layer')
+assert.ok(weaveBackdropSource.includes('[perspective:1500px]'),'WEAVE background establishes deeper architectural scene depth')
 assert.ok(weaveDashboardWorldSource.includes('backdrop-blur-md'),'Compact dashboard Home keeps a glass operating surface over the moving world')
 assert.ok(djWorkshopSource.includes('setInterval(refreshBroadcast, 4000)'),'DJ Workshop live status refreshes automatically')
 assert.ok(djWorkshopSource.includes('Duration unknown · manual skip'),'DJ Workshop warns about unschedulable tracks')
@@ -579,22 +579,31 @@ assert.ok(fileFolderOperatingEnvironmentSource.includes('Design preview'),'Clien
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Operation shown here is based on recorded File Folder entries'),'Post-build view distinguishes recorded operation from simulation')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'"),'File Folder is organized as one operating environment with contained surfaces')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('visibleSurfaceKeys={surfaces.map(item=>item.key)}'),'File Folder uses its 3D world as the primary runtime-organized district navigator')
-assert.ok(fileFolderOperatingEnvironmentSource.includes('Build support chain'),'File Folder exposes one ordered build-support chain instead of a duplicate transit rail')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('Construction sequence'),'File Folder exposes one physical construction sequence instead of a card campaign rail')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("district:'build_market'") && fileFolderOperatingEnvironmentSource.includes("label:'Materials Depot'"),'Build support chain opens the Materials Depot directly')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("district:'boost_bay'") && fileFolderOperatingEnvironmentSource.includes("label:'Acceleration Bay'"),'Build support chain opens Acceleration Bay directly')
 assert.ok(fileFolderOpenWorldSource.includes("key: 'boost_bay'"),'File Folder contains a dedicated acceleration district')
 assert.ok(fileFolderOpenWorldSource.includes('Materials Depot') && fileFolderOpenWorldSource.includes('Acceleration Bay'),'Build materials are separated from live acceleration instruments')
-assert.ok(fileFolder3dSource.includes('4D File Folder · Persistent Business World'),'File Folder presents construction time, systems and business movement as one persistent operating world')
+assert.ok(fileFolderOpenWorldSource.includes('data-construction-workspace="progressive-site"'),'Construction functions remain inside one progressive site')
+assert.ok(fileFolderOpenWorldSource.includes('Walk the build site'),'Construction movement uses site travel rather than a page sidebar')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('one continuous site'),'Construction + Systems opens directly into the persistent site')
+assert.ok(fileFolder3dSource.includes('Persistent construction territory'),'File Folder presents construction time, systems and business movement as a persistent physical territory')
 assert.ok(fileFolderEnvironmentLoaderSource.includes('Loading your whole operating environment'),'Client sees a world-loading boot sequence before entry')
 assert.ok(fileFolderEnvironmentLoaderSource.includes('animate-spin'),'File Folder boot sequence visibly spins while environment data loads')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientFileFolder3D'),'Client can see the File Folder as a 3D operating environment')
 assert.ok(fileFolder3dSource.includes("from '@react-three/fiber'"),'3D File Folder uses the real Three.js React renderer')
 assert.ok(fileFolder3dSource.includes('<OrbitControls'),'Client can rotate and inspect the 3D File Folder')
-assert.ok(fileFolder3dSource.includes('onClick={(event)'),'3D districts are interactive rather than decorative')
+assert.ok(fileFolder3dSource.includes('onClick={event=>')&&fileFolder3dSource.includes('onSelect()'),'3D districts are interactive rather than decorative')
 assert.ok(fileFolder3dSource.includes('activeBuilds'),'3D File Folder reflects active construction')
+assert.ok(fileFolder3dSource.includes('ConstructionSite')&&fileFolder3dSource.includes('FOUNDATION')&&fileFolder3dSource.includes('COMMISSIONING'),'Active builds visibly rise through real construction stages')
+assert.ok(fileFolder3dSource.includes('ScaffoldEnvelope')&&fileFolder3dSource.includes('Crane'),'Active builds visibly carry construction equipment and scaffolding')
+assert.ok(!fileFolder3dSource.includes('<Stars'),'File Folder is no longer a star-field scene')
+assert.ok(!fileFolder3dSource.includes('<gridHelper'),'File Folder is no longer a sci-fi grid scene')
+assert.ok(fileFolder3dSource.includes('PavedRoad')&&fileFolder3dSource.includes('WaterChannel'),'File Folder world has grounded infrastructure')
+assert.ok(fileFolder3dSource.includes('FileFolderCamera'),'District selection changes camera focus inside the File Folder territory')
 assert.ok(fileFolder3dSource.includes('liveSystems'),'3D File Folder reflects completed live systems')
 assert.ok(clientSystemSwitchSource.includes('bg-transparent'),'System Switch does not cover the moving WEAVE world with an opaque page')
-assert.ok(fileFolderOperatingEnvironmentSource.includes('Main File Folder · Operating Environment'),'File Folder keeps one canonical operating-environment identity')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('Main File Folder · Client Construction Territory'),'File Folder keeps one canonical construction-territory identity')
 assert.ok(!fileFolderOperatingEnvironmentSource.includes('Simple meaning'),'File Folder removes explanation-only cards from the operating workspace')
 assert.ok(!fileFolderOperatingEnvironmentSource.includes('Folder status'),'File Folder removes the duplicate status rail')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Construction + Systems'"),'Construction and live system operation are visibly one File Folder district')
@@ -1116,7 +1125,7 @@ assert.ok(valueMovementSource.includes('Value Movement Engine'),'Wallet is a rec
 assert.ok(!valueMovementSource.includes('Your Referral Link'),'Wallet no longer mixes referral UI with financial movement')
 assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a coherent Reserve Engine')
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
-assert.ok(bridgePlazaMatureSource.includes('Bridge Plaza · World Router'),'Bridge Plaza exposes world-routing causality')
+assert.ok(bridgePlazaMatureSource.includes('Bridge Plaza · Living World Hub'),'Bridge Plaza exposes world-routing causality through the realistic physical hub')
 assert.ok(bridgePlazaMatureSource.includes('The Crossing is a recorded transition'),'Client crossing exposes recorded state')
 assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
 assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
@@ -1200,6 +1209,7 @@ const numberAdminSource=fs.readFileSync(path.join(root,'app/api/admin/bridger-nu
 const numberBridgerSource=fs.readFileSync(path.join(root,'app/api/bridger/numbers/route.ts'),'utf8')
 const numberAdminPage=fs.readFileSync(path.join(root,'app/(app)/admin/bridger-numbers/page.tsx'),'utf8')
 const numberBridgerPage=fs.readFileSync(path.join(root,'app/(app)/bridger/numbers/page.tsx'),'utf8')
+const numberOrderMigrationSource=fs.readFileSync(path.join(root,'migrations/20260927_bridger_number_country_orders.sql'),'utf8')
 assert.ok(numberEngineSource.includes('phone_e164 varchar(32) NOT NULL UNIQUE'),'Number Engine prevents duplicate provisioned numbers')
 assert.ok(numberEngineSource.includes('assigned_to uuid REFERENCES users(id)'),'Number Engine preserves Bridger ownership')
 assert.ok(numberAdminSource.includes("user.role!=='admin'"),'Only Administration can manage Number Engine inventory')
@@ -1208,10 +1218,30 @@ assert.ok(numberBridgerSource.includes("FOR UPDATE"),'Number purchase locks scar
 assert.ok(numberBridgerSource.includes("status='assigned'"),'Successful purchase permanently assigns the number')
 assert.ok(numberBridgerSource.includes("issueWeaveReceipt"),'Number purchases issue canonical WEAVE receipts')
 assert.ok(!numberAdminPage.toLowerCase().includes('password'),'Administration Number Engine never collects WhatsApp passwords')
-assert.ok(numberBridgerPage.includes('Identity revealed only after successful assignment.'),'Available inventory does not expose numbers before purchase')
+assert.ok(numberBridgerPage.includes('exact phone number is revealed only after assignment'),'Available inventory does not expose numbers before purchase or delivery')
 assert.ok(!numberBridgerSource.includes('acquisition_cost'),'Bridger Number Engine API keeps Administration acquisition cost private')
 assert.ok(!numberBridgerPage.includes('n.acquisition_cost'),'Bridger Number Engine never renders Administration acquisition cost')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260926_bridger_whatsapp_number_engine.sql')),'Number Engine migration exists')
+assert.ok(numberEngineSource.includes('bridger_number_country_offers'),'Number Engine persists country offers independently from physical stock')
+assert.ok(numberEngineSource.includes('bridger_number_orders'),'Number Engine persists out-of-stock Bridger orders')
+assert.ok(numberEngineSource.includes("interval '30 minutes'"),'Number orders carry a 30-minute Administration delivery deadline')
+assert.ok(numberEngineSource.includes('delivery_minutes BETWEEN 5 AND 30'),'Runtime country-offer schema cannot promise beyond the 30-minute delivery SLA')
+assert.ok(numberAdminSource.includes('const deliveryMinutes=BRIDGER_NUMBER_ORDER_DELIVERY_MINUTES'),'Administration cannot publish a longer country-order SLA')
+assert.ok(numberAdminPage.includes('Delivery SLA · fixed 30 minutes'),'Administration UI makes the fixed delivery SLA explicit')
+assert.ok(numberEngineSource.includes('ensureBridgerNumberPosition'),'Number purchase repairs missing legacy Bridger profiles at the engine boundary')
+assert.ok(numberEngineSource.includes('ensurePrimaryWallet'),'Number purchase repairs a missing primary Bridger wallet instead of failing generically')
+assert.ok(numberBridgerSource.includes("action==='order_country'"),'Bridgers can place an out-of-stock country order')
+assert.ok(numberBridgerSource.includes("gate:'stock_available'"),'Country ordering redirects Bridgers to instant purchase when stock is present')
+assert.ok(numberBridgerSource.includes("entry_type,'whatsapp_number_order'")||numberBridgerSource.includes("'whatsapp_number_order'"),'Country orders debit Flame Coin through the ledger')
+assert.ok(numberBridgerSource.includes("type:'bridger_number_order'"),'Country orders notify Administration for fulfillment')
+assert.ok(numberAdminSource.includes("'deliver_order'")&&numberAdminSource.includes("status='delivered'")&&numberAdminSource.includes('number_id=$2::uuid'),'Administration can deliver a timed number order through the engine')
+assert.ok(numberAdminSource.includes("action==='cancel_order'"),'Administration can cancel an unfulfilled number order')
+assert.ok(numberAdminSource.includes("'whatsapp_number_order_refund'"),'Cancelled number orders return Flame Coin through the ledger')
+assert.ok(numberAdminPage.includes('30-minute delivery dock'),'Administration has a dedicated timed number-order fulfillment dock')
+assert.ok(numberAdminPage.includes('Deliver newly acquired number'),'Administration can fulfill an order even when the bay was initially out of stock')
+assert.ok(numberBridgerPage.includes('Choose country')&&numberBridgerPage.includes('Country'),'Bridger sees the country before purchase')
+assert.ok(numberBridgerPage.includes('Order · ')&&numberBridgerPage.includes('min delivery'),'Out-of-stock countries expose the timed delivery order action')
+assert.ok(numberOrderMigrationSource.includes('bridger_number_country_offers')&&numberOrderMigrationSource.includes('bridger_number_orders'),'Production migration persists country offers and number orders')
 
 
 const numberVerificationSource=fs.readFileSync(path.join(root,'app/api/bridger/number-verifications/route.ts'),'utf8')
@@ -1233,9 +1263,22 @@ assert.ok(numberBridgerApiBoundary.includes('number:publicNumber'),'Purchase res
 assert.ok(!numberEngineSource.includes('bridger_number_inbox'),'Number Engine schema has no obsolete automatic provider inbox')
 assert.ok(numberBridgerApiBoundary.includes("product:'WEAVE Worldwide WhatsApp Number'"),'Receipt identifies the WEAVE product rather than its supplier')
 assert.ok(!numberBridgerPage.includes('Aphone'),'Bridger Number Engine never exposes the Administration supply source')
-assert.ok(numberBridgerPage.includes('WEAVE Worldwide'),'Bridger sees the WEAVE worldwide product identity')
+assert.ok(numberBridgerPage.includes('Worldwide Number Bay'),'Bridger sees the WEAVE worldwide product identity')
 assert.ok(!numberVerificationBoundary.includes('received from Aphone'),'Verification API language remains supplier-neutral')
 
+
+for(const file of [
+ 'lib/bridger-number-engine.ts',
+ 'app/api/bridger/numbers/route.ts',
+ 'app/api/admin/bridger-numbers/route.ts',
+ 'app/(app)/bridger/numbers/page.tsx',
+ 'app/(app)/admin/bridger-numbers/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Number Bay purchase/order syntax/transpile check')
+}
 
 const weaveEnvironmentTransitSource=fs.readFileSync(path.join(root,'components/world/weave-environment-transit.tsx'),'utf8')
 const weaveEnvironmentSurfaceSource=fs.readFileSync(path.join(root,'components/world/weave-environment-surface.tsx'),'utf8')
@@ -1246,9 +1289,12 @@ const clientEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/client/l
 const authEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/(auth)/layout.tsx'),'utf8')
 const clientEnvironmentNavigationSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
 
-assert.ok(weaveEnvironmentTransitSource.includes('INITIAL_BOOT_MS = 2400'),'WEAVE cold entry opens through a deliberate environment boot')
-assert.ok(weaveEnvironmentTransitSource.includes('TRANSIT_MS = 620'),'Internal route movement uses a shorter environment transit')
-assert.ok(weaveEnvironmentTransitSource.includes('Opening the living environment'),'Boot language presents WEAVE as an environment instead of page loading')
+assert.ok(weaveEnvironmentTransitSource.includes("waitForEnvironmentReadiness('boot'"),'WEAVE cold entry opens only after a real environment readiness gate')
+assert.ok(weaveEnvironmentTransitSource.includes("waitForEnvironmentReadiness('transit'"),'Internal route movement waits for destination readiness instead of a fixed timeout')
+assert.ok(weaveEnvironmentTransitSource.includes('document.fonts.ready'),'Environment readiness waits for typography before reveal')
+assert.ok(weaveEnvironmentTransitSource.includes('document.images'),'Environment readiness can wait for current media before reveal')
+assert.ok(weaveEnvironmentTransitSource.includes('MutationObserver'),'Environment readiness waits for DOM component formation to become quiet')
+assert.ok(weaveEnvironmentTransitSource.includes('Forming the living environment'),'Boot language presents WEAVE as an environment instead of page loading')
 assert.ok(rootEnvironmentLayoutSource.includes('<WeaveEnvironmentTransit>'),'Root layout applies environment boot to the whole app')
 assert.ok(appEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface role={user?.role}'),'Authenticated staff/partner surfaces inherit environment framing')
 assert.ok(clientEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface role="client">'),'Client surfaces inherit one Client world framing')
@@ -1262,6 +1308,10 @@ assert.ok(clientEnvironmentNavigationSource.includes("'Home World'"),'Client nav
 assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
 
 for(const file of [
+  'lib/weave-environment-runtime-profile.ts',
+  'components/world/use-environment-runtime-config.ts',
+  'components/admin/environment-runtime-controls.tsx',
+  'components/world/weave-presence-ambience.tsx',
   'components/world/weave-environment-transit.tsx',
   'components/world/weave-environment-surface.tsx',
   'lib/weave-environments.ts',

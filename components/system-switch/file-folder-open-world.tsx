@@ -194,9 +194,9 @@ export default function FileFolderOpenWorld({
   const boostItems = (world?.items || []).filter((item: any) => item.build_effect === 'speed_boost')
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-sky-300/10 bg-[#020711] shadow-2xl">
-      <header className="border-b border-white/10 bg-[radial-gradient(circle_at_20%_0%,rgba(14,165,233,.18),transparent_34%),radial-gradient(circle_at_85%_15%,rgba(139,92,246,.13),transparent_30%)] p-5 md:p-8">
-        <p className="text-[9px] font-black uppercase tracking-[0.28em] text-sky-300">Main File Folder · Persistent Open World</p>
+    <section className="overflow-hidden rounded-[2rem] border border-amber-200/10 bg-[#120c08] shadow-[0_30px_100px_rgba(0,0,0,.42)]" data-construction-workspace="progressive-site">
+      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(18,12,8,.02))] p-5 md:p-8">
+        <p className="text-[9px] font-black uppercase tracking-[0.28em] text-amber-200">Main File Folder · Active Construction Site</p>
         <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-2xl font-black text-white md:text-4xl">{workshopTitle}</h2>
@@ -249,52 +249,55 @@ export default function FileFolderOpenWorld({
         )}
       </header>
 
-      <div className="grid min-h-[650px] lg:grid-cols-[250px_1fr]">
-        <aside className="border-b border-white/10 bg-black/20 p-3 lg:border-b-0 lg:border-r">
-          <p className="px-2 pb-2 text-[8px] font-black uppercase tracking-[0.2em] text-slate-600">District travel</p>
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
-            {visibleDistricts.map((item) => {
-              const Icon = item.icon
-              const selected = district === item.key
-              return (
-                <button
-                  key={item.key}
-                  onClick={() => {
-                    setDistrict(item.key)
-                    recordOutput({ type:'action', label:`File Folder district: ${item.label}`, toScene:'file-folder' })
-                  }}
-                  className={`rounded-xl border p-3 text-left transition ${selected ? 'border-sky-300/25 bg-sky-400/10' : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04]'}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className={`h-4 w-4 ${selected ? 'text-sky-300' : 'text-slate-500'}`} />
-                    <span className="text-[10px] font-black uppercase tracking-[0.08em] text-white">{item.label}</span>
-                  </div>
-                  <p className="mt-1 hidden text-[9px] leading-4 text-slate-500 lg:block">{item.detail}</p>
-                </button>
-              )
+      <div className="min-h-[650px]">
+        <nav className="border-b border-amber-100/10 bg-[#17100b]/88 px-3 py-3">
+          <p className="px-1 pb-2 text-[8px] font-black uppercase tracking-[0.2em] text-stone-600">Walk the build site</p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {visibleDistricts.map((item,index) => {
+              const Icon=item.icon
+              const selected=district===item.key
+              return <button
+                key={item.key}
+                onClick={()=>{
+                  setDistrict(item.key)
+                  recordOutput({type:'action',label:`File Folder district: ${item.label}`,toScene:'file-folder'})
+                }}
+                className={`group min-w-[150px] shrink-0 border-b px-2 py-2 text-left transition ${selected?'border-amber-300 text-amber-100':'border-stone-800 text-stone-500 hover:border-stone-600 hover:text-stone-300'}`}
+              >
+                <div className="flex items-center gap-2"><span className="text-[8px] font-black text-amber-300/70">{String(index+1).padStart(2,'0')}</span><Icon className="h-3.5 w-3.5"/><span className="text-[9px] font-black uppercase tracking-[.08em]">{item.label}</span></div>
+                <p className="mt-1 hidden text-[8px] leading-3 text-stone-600 md:block">{item.detail}</p>
+              </button>
             })}
           </div>
-          {readOnly && (
-            <div className="mt-3 rounded-xl border border-violet-300/15 bg-violet-400/5 p-3 text-[9px] leading-4 text-violet-200">
-              Support view through Bridge Plaza. Observe the Client world and participate through WEAVE internal functions.
-            </div>
-          )}
-        </aside>
+          {readOnly&&<p className="mt-2 text-[8px] leading-4 text-violet-200/70">Support view through Bridge Plaza · observe the Client construction territory without ownership controls.</p>}
+        </nav>
 
         <div className="p-4 md:p-6">
           {message && <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-300">{message}</div>}
 
-          {district === 'workshop_core' && (
-            <div className="space-y-4">
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Command Core</p>
+          {district==='workshop_core'&&(
+            <div className="space-y-5">
+              <div className="border-l-2 border-amber-300/30 pl-4">
+                <p className="text-[9px] font-black uppercase tracking-[.22em] text-amber-200">Command Core</p>
                 <h3 className="mt-2 text-2xl font-black text-white">{workshopTitle}</h3>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">{workshopPurpose || 'This workshop is personalized to the Client. Blueprints and systems form around the Client’s actual movement rather than replacing it.'}</p>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-400">{workshopPurpose||'This workshop remains the Client command point while real systems rise around it.'}</p>
               </div>
-              <div className="grid gap-3 md:grid-cols-4">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><p className="text-[9px] uppercase tracking-wider text-slate-500">Blueprints ready</p><p className="mt-2 text-3xl font-black">{world?.blueprints?.length || 0}</p></div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><p className="text-[9px] uppercase tracking-wider text-slate-500">Finished builds</p><p className="mt-2 text-3xl font-black">{completedBuilds.length}</p></div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5"><p className="text-[9px] uppercase tracking-wider text-slate-500">Library movements</p><p className="mt-2 text-3xl font-black">{(world?.library || []).filter((x:any)=>x.status==='complete').length}/{world?.library?.length || 0}</p></div><div className="rounded-2xl border border-violet-300/15 bg-violet-400/[0.035] p-5"><p className="text-[9px] uppercase tracking-wider text-violet-300">Outside customers</p><p className="mt-2 text-3xl font-black">{world?.customerDoor?.order_count || 0}</p>{world?.customerDoor?.public_slug&&<a href={`/store/${world.customerDoor.public_slug}`} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-[9px] font-black uppercase tracking-wider text-violet-200">Open Customer Door →</a>}</div>
+              <div className="grid gap-0 overflow-hidden border-y border-amber-100/10 md:grid-cols-4">
+                {[
+                  ['Blueprints ready',world?.blueprints?.length||0,'DESIGN'],
+                  ['Finished builds',completedBuilds.length,'STRUCTURES'],
+                  ['Build intelligence',(world?.library||[]).filter((x:any)=>x.status==='complete').length+'/'+(world?.library?.length||0),'KNOWLEDGE'],
+                  ['Outside customers',world?.customerDoor?.order_count||0,'MARKET'],
+                ].map(([label,value,state],index)=><div key={String(label)} className={`relative px-4 py-5 ${index>0?'border-t border-amber-100/10 md:border-l md:border-t-0':''}`}>
+                  <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">{state}</p>
+                  <p className="mt-2 text-2xl font-black text-white">{String(value)}</p>
+                  <p className="mt-1 text-[8px] uppercase tracking-wider text-stone-500">{label}</p>
+                </div>)}
+              </div>
+              <div className="flex flex-wrap gap-3 text-[9px] font-black uppercase tracking-[.12em]">
+                <button onClick={()=>setDistrict('blueprint_foundry')} className="border-b border-violet-300/40 px-1 py-2 text-violet-200">Choose next blueprint →</button>
+                <button onClick={()=>setDistrict('formation_yard')} className="border-b border-amber-300/40 px-1 py-2 text-amber-200">Walk to construction →</button>
+                {world?.customerDoor?.public_slug&&<a href={`/store/${world.customerDoor.public_slug}`} target="_blank" rel="noreferrer" className="border-b border-emerald-300/40 px-1 py-2 text-emerald-200">Open Customer Door →</a>}
               </div>
             </div>
           )}
