@@ -94,7 +94,7 @@ export default function WeavePage() {
   }, [token, isSupport])
 
   if (loading) {
-    return <div className="p-8 text-muted-foreground">Entering Weave…</div>
+    return <div className="min-h-[70vh]" data-environment-pending="true" aria-hidden="true" />
   }
 
   if (!user || !state) {
@@ -236,9 +236,9 @@ export default function WeavePage() {
             <header className="border-b border-cyan-100/10 px-5 pb-4 pt-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[8px] font-black uppercase tracking-[.23em] text-cyan-200">Bridge Plaza · Client Support Station</p>
-                  <h2 className="mt-2 text-xl font-black text-white">Enter a Client File Folder movement.</h2>
-                  <p className="mt-2 text-[10px] leading-5 text-stone-400">This station is part of the Plaza. It stays closed until support enters it; File Folders are shown as a live ledger, not a stack of cards.</p>
+                  <p className="text-[8px] font-black uppercase tracking-[.23em] text-cyan-200">Bridge Plaza · System Switch</p>
+                  <h2 className="mt-2 text-xl font-black text-white">File Folder View</h2>
+                  <p className="mt-2 text-[10px] leading-5 text-stone-400">System Switch opens the Client File Folder world from Bridge Plaza. Support enters the same live environment in read-only mode; ownership and Client controls stay with the Client.</p>
                 </div>
                 <button onClick={()=>setSupportOpen(false)} className="mt-0.5 p-2 text-stone-500 transition hover:text-white" aria-label="Close Client Support Station">
                   <X className="h-4 w-4"/>
@@ -260,7 +260,7 @@ export default function WeavePage() {
             <div className="flex items-center justify-between border-b border-white/5 px-5 py-3">
               <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[.14em] text-stone-600">
                 <Users className="h-3.5 w-3.5"/>
-                Client movements
+                System Switch · File Folders
               </div>
               <span className="font-mono text-[9px] text-cyan-200/75">{filteredFolders.length}</span>
             </div>
