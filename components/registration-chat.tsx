@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Send, Loader2, MessageCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { visiblePoll } from '@/lib/visible-poll'
 
 interface Message {
   id: string
@@ -32,12 +33,10 @@ export function RegistrationChat({ department, onCodeReceived }: { department: s
     }
     setClientId(id)
 
-    // Initial load
+    // Initial load, then serial visible-tab polling with no overlap.
     fetchMessages(id)
-
-    // Poll for new messages
-    const interval = setInterval(() => fetchMessages(id, true), 3000)
-    return () => clearInterval(interval)
+    const stop = visiblePoll(() => fetchMessages(id, true), 3000, false)
+    return stop
   }, [])
 
   useEffect(() => {
