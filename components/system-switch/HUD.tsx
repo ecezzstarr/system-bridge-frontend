@@ -88,7 +88,7 @@ const STATION_CONTENT: Record<string, {
   },
   enterprises: {
     title: 'Enterprises',
-    description: 'Build lasting organizations within the Weave ecosystem.',
+    description: 'Build lasting organizations inside WEAVE.',
     icon: Scale,
   },
   roles: {
