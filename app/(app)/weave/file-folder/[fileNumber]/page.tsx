@@ -44,7 +44,7 @@ export default function SupportFileFolderPage() {
 
   return <main className="min-h-screen bg-[#020711] p-2 text-white sm:p-3 md:p-6">
     <div className="mx-auto max-w-[1500px]">
-      <div className="sticky top-0 z-40 mb-2 flex h-11 items-center gap-3 border-b border-violet-300/15 bg-[#020711]/94 px-1 backdrop-blur-xl md:mb-4 md:h-auto md:rounded-2xl md:border md:bg-[linear-gradient(135deg,rgba(139,92,246,.08),rgba(14,165,233,.05))] md:px-4 md:py-3">
+      <div className="sticky top-0 z-40 mb-2 flex h-11 items-center gap-3 border-b border-violet-300/15 bg-[#020711]/94 px-1 backdrop-blur-xl md:static md:mb-4 md:h-auto md:rounded-2xl md:border md:bg-[linear-gradient(135deg,rgba(139,92,246,.08),rgba(14,165,233,.05))] md:px-4 md:py-3">
         <Link href="/weave" className="inline-flex shrink-0 items-center gap-1.5 border-r border-white/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-violet-200 md:rounded-full md:border md:border-white/10 md:bg-black/20 md:px-3 md:py-2"><ArrowLeft className="h-3.5 w-3.5"/><span className="hidden sm:inline">Bridge Plaza</span></Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
