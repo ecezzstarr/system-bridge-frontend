@@ -3,7 +3,6 @@
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
 
 import { AppSidebar } from '@/components/app-sidebar'
 import { AppHeader } from '@/components/app-header'
@@ -94,16 +93,10 @@ export default function AppLayout({
     }
   }, [isAuthenticated, user?.id, user?.role])
 
-  // Show loading state while checking auth or redirecting
+  // The global environment transit owns the visible loading experience.
+  // This marker keeps the destination covered until auth has resolved.
   if (!isInitialized || isLoading || (isRedirecting && !isAuthenticated)) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-[#020815]/88 backdrop-blur-xl">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] animate-pulse">Synchronizing your WEAVE position...</p>
-        </div>
-      </div>
-    )
+    return <div className="min-h-dvh" data-environment-pending="true" aria-hidden="true" />
   }
 
   // Only render children if authenticated
@@ -113,14 +106,14 @@ export default function AppLayout({
 
   return (
     <EnvironmentOrganizerProvider>
-    <div className="relative flex min-h-screen overflow-hidden bg-transparent">
-      <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-40">
+    <div className="weave-app-shell relative flex min-h-dvh bg-transparent">
+      <div className="fixed inset-y-0 left-0 z-40 hidden lg:block">
         <AppSidebar user={user as any} />
       </div>
-      <div className="relative z-10 flex-1 flex flex-col lg:pl-64">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col lg:pl-72">
         <AppHeader user={user as any} />
         <FlameEventAd />
-        <main className="relative flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8 max-w-[100vw]">
+        <main className="relative min-w-0 flex-1 overflow-x-clip p-3 sm:p-4 md:p-6 lg:p-8">
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
               <NormalWeaveRoleAtmosphere
