@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Send, ArrowLeft, MessageCircle, Users, RefreshCw, ClipboardList, Scale, Search, UserCog } from 'lucide-react'
 import { EcosystemNav } from '@/components/ecosystem-nav'
+import { visiblePoll } from '@/lib/visible-poll'
 
 interface Message {
   id: string
@@ -61,16 +62,16 @@ export default function AdminClientMessagesPage() {
 
   useEffect(() => {
     fetchSummaries()
-    const interval = setInterval(fetchSummaries, 5000)
-    return () => clearInterval(interval)
+    const stop = visiblePoll(() => fetchSummaries(), 5000, false)
+    return stop
   }, [])
 
   useEffect(() => {
     if (selectedChat) {
       fetchMessages()
       setReplyAsPosition(selectedChat.position)
-      const interval = setInterval(fetchMessages, 3000)
-      return () => clearInterval(interval)
+      const stop = visiblePoll(() => fetchMessages(), 3000, false)
+      return stop
     }
   }, [selectedChat])
 
