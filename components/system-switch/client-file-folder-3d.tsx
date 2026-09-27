@@ -159,7 +159,7 @@ function EnterpriseKeep({
       <Text position={[0,.66,1.05]} fontSize={.12} color="#f6e4c6">{approved ? String(position||'enterprise').toUpperCase() : 'ENTERPRISE'}</Text>
       {approved&&<>
         <mesh position={[-.82,height+.08,.05]} castShadow><boxGeometry args={[.05,1.55,.05]}/><meshStandardMaterial color="#9a7448" metalness={.48} roughness={.42}/></mesh>
-        <mesh position={[-.46,height+.55,.05]}><planeGeometry args={[.7,.45]}/><meshStandardMaterial color="#7c2d12" emissive="#f97316" emissiveIntensity={active?.18:.08} side={THREE.DoubleSide}/></mesh>
+        <mesh position={[-.46,height+.55,.05]}><planeGeometry args={[.7,.45]}/><meshStandardMaterial color="#7c2d12" emissive="#f97316" emissiveIntensity={active ? .18 : .08} side={THREE.DoubleSide}/></mesh>
         <Text position={[0,height+1.16,.05]} fontSize={.11} color="#fde68a" anchorX="center">{enterpriseName ? enterpriseName.toUpperCase().slice(0,24) : 'ENTERPRISE DREAM'}</Text>
       </>}
       <pointLight position={[0,height+.4,.8]} intensity={active?4:1.5} distance={4} color="#fbbf24"/>
