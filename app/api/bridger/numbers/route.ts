@@ -36,7 +36,10 @@ export async function GET(request:NextRequest){
     const offers=(await client.query(`
       SELECT
         o.country,
-        COALESCE(stock.next_price,o.price_flame_coin) AS price_flame_coin,
+        CASE
+          WHEN COALESCE(stock.next_price,0)>0 THEN stock.next_price
+          ELSE o.price_flame_coin
+        END AS price_flame_coin,
         o.delivery_minutes,
         o.enabled,
         COALESCE(stock.stock_count,0)::int AS stock_count
@@ -44,7 +47,8 @@ export async function GET(request:NextRequest){
       LEFT JOIN LATERAL (
         SELECT
           COUNT(*)::int AS stock_count,
-          (ARRAY_AGG(n.price_flame_coin ORDER BY n.created_at ASC))[1] AS next_price
+          (ARRAY_AGG(n.price_flame_coin ORDER BY n.created_at ASC)
+             FILTER (WHERE n.price_flame_coin>0))[1] AS next_price
         FROM bridger_whatsapp_numbers n
         WHERE LOWER(TRIM(n.country))=LOWER(TRIM(o.country))
           AND n.status='available'
