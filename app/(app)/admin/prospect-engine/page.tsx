@@ -4,7 +4,6 @@ import { getAuthHeaders } from '@/lib/auth-client'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   Table, 
   TableBody, 
@@ -16,6 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Zap, Users, Package, PhoneCall, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { WeaveSystemRoom } from '@/components/world/weave-system-room'
 
 interface Contact {
   id: string
@@ -109,153 +109,120 @@ export default function ProspectEnginePage() {
   }
 
   return (
-    <div className="container mx-auto py-10 space-y-8">
-      <div className="flex items-center gap-4">
-        <div className="bg-orange-600 p-3 rounded-xl shadow-lg shadow-orange-900/20">
-          <Zap className="h-8 w-8 text-white" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-black tracking-tighter text-white uppercase">Prospect Engine</h1>
-          <p className="text-slate-400 font-medium">WEAVE Ecosystem · Prospect Discovery Authority</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="space-y-8">
-          {/* Number Series Generator */}
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <PhoneCall className="h-5 w-5 text-orange-400" />
-                Number Series Engine
-              </CardTitle>
-              <CardDescription className="text-xs">Generate prospects from a source number series.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleGenerate} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Source Number</label>
-                  <Input 
-                    value={sourceNumber}
-                    onChange={(e) => setSourceNumber(e.target.value)}
-                    className="bg-slate-800/50 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Count to Generate</label>
-                  <Input 
-                    type="number"
-                    value={count}
-                    onChange={(e) => setCount(e.target.value)}
-                    className="bg-slate-800/50 border-slate-700 text-white"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-orange-600 hover:bg-orange-700 font-bold uppercase tracking-tighter"
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
-                  Run Reachability Agent
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Statistics */}
-          <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-400" />
-                Inventory
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg">
-                <span className="text-xs text-slate-400 font-bold uppercase">Available Prospects</span>
-                <span className="text-xl font-black text-white">{availableContacts.length}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg border border-blue-500/20">
-                <span className="text-xs text-blue-400 font-bold uppercase">Selected for Package</span>
-                <span className="text-xl font-black text-blue-400">{selectedContacts.length}</span>
-              </div>
-              <Button 
-                onClick={handlePackage}
-                disabled={selectedContacts.length === 0 || isPackaging}
-                className="w-full bg-blue-600 hover:bg-blue-700 font-bold uppercase tracking-tighter"
-              >
-                {isPackaging ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Package className="h-4 w-4 mr-2" />}
-                Create Prospect Package
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Available Prospects Table */}
-        <Card className="lg:col-span-2 border-slate-700 bg-slate-900/50 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-bold">Qualified Prospect Pool</CardTitle>
-              <CardDescription className="text-xs">Numbers verified by Reachability Agent.</CardDescription>
+    <WeaveSystemRoom
+      roomKey="administration-prospect-engine"
+      eyebrow="Administration · Prospect Engine"
+      title="Prospect discovery authority"
+      detail="Generate, qualify and package Prospect movement inside one Administration system. The number engine, inventory and qualified pool remain visible together."
+      tone="amber"
+      pulse={isGenerating?'Reachability Agent running':isPackaging?'Packaging selected prospects':'Prospect Engine ready'}
+      left={
+        <div className="space-y-6">
+          <section className="border-l border-orange-300/25 pl-4">
+            <div className="flex items-center gap-2">
+              <PhoneCall className="h-4 w-4 text-orange-300"/>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-orange-300">Number series</p>
             </div>
-            <Button variant="outline" size="sm" onClick={fetchAvailable} className="border-slate-700 text-slate-400">
-              Refresh
+            <form onSubmit={handleGenerate} className="mt-4 space-y-4">
+              <label className="block space-y-2">
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">Source number</span>
+                <Input value={sourceNumber} onChange={(e) => setSourceNumber(e.target.value)} className="border-white/10 bg-black/20 font-mono text-white"/>
+              </label>
+              <label className="block space-y-2">
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">Count</span>
+                <Input type="number" value={count} onChange={(e) => setCount(e.target.value)} className="border-white/10 bg-black/20 text-white"/>
+              </label>
+              <Button type="submit" className="w-full bg-orange-600 font-black uppercase" disabled={isGenerating}>
+                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Zap className="mr-2 h-4 w-4"/>}
+                Run agent
+              </Button>
+            </form>
+          </section>
+
+          <section className="border-l border-blue-300/20 pl-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-blue-300"/>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-300">Inventory</p>
+            </div>
+            <div className="mt-4 divide-y divide-white/10 border-y border-white/10">
+              <div className="flex items-center justify-between py-3">
+                <span className="text-[10px] font-bold uppercase text-slate-500">Available</span>
+                <span className="text-lg font-black text-white">{availableContacts.length}</span>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <span className="text-[10px] font-bold uppercase text-blue-300">Selected</span>
+                <span className="text-lg font-black text-blue-300">{selectedContacts.length}</span>
+              </div>
+            </div>
+            <Button onClick={handlePackage} disabled={selectedContacts.length===0||isPackaging} className="mt-4 w-full bg-blue-600 font-black uppercase">
+              {isPackaging ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Package className="mr-2 h-4 w-4"/>}
+              Create package
             </Button>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-slate-700" />
-              </div>
-            ) : (
-              <div className="rounded-md border border-slate-800 overflow-hidden">
-                <Table>
-                  <TableHeader className="bg-slate-800/50">
-                    <TableRow className="border-slate-800">
-                      <TableHead className="w-12"></TableHead>
-                      <TableHead className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Phone Number</TableHead>
-                      <TableHead className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Source</TableHead>
-                      <TableHead className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Verified At</TableHead>
-                      <TableHead className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</TableHead>
+          </section>
+        </div>
+      }
+      center={
+        <section data-prospect-pool>
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Qualified Prospect Pool</p>
+              <h2 className="mt-1 text-xl font-black text-white">Reachability-confirmed inventory</h2>
+              <p className="mt-1 text-[10px] text-slate-500">Select rows to form a Prospect package.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={fetchAvailable} className="border-white/10 text-slate-300">Refresh</Button>
+          </div>
+
+          {isLoading ? (
+            <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-slate-700"/></div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-white/[0.02]">
+                  <TableRow className="border-white/10">
+                    <TableHead className="w-12"></TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Phone</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Source</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Verified</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {availableContacts.length===0 ? (
+                    <TableRow><TableCell colSpan={5} className="py-20 text-center text-xs text-slate-500">No available Prospects. Run the number series agent.</TableCell></TableRow>
+                  ) : availableContacts.map((contact)=>(
+                    <TableRow
+                      key={contact.id}
+                      className={`cursor-pointer border-white/[0.07] transition hover:bg-amber-300/[0.025] ${selectedContacts.includes(contact.id)?'bg-blue-500/[0.06]':''}`}
+                      onClick={()=>toggleContact(contact.id)}
+                    >
+                      <TableCell>
+                        <div className={`flex h-4 w-4 items-center justify-center border border-slate-600 ${selectedContacts.includes(contact.id)?'border-blue-500 bg-blue-500':''}`}>
+                          {selectedContacts.includes(contact.id)&&<CheckCircle2 className="h-3 w-3 text-white"/>}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-white">{contact.phone || (contact as any).whatsapp_number}</TableCell>
+                      <TableCell className="text-[9px] font-black uppercase tracking-wider text-slate-500">Engine</TableCell>
+                      <TableCell className="font-mono text-[9px] text-slate-500">{new Date(contact.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell><Badge variant="outline" className="border-green-500/20 bg-green-500/5 text-[8px] uppercase text-green-500">Qualified</Badge></TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {availableContacts.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-20 text-slate-500 text-xs">
-                          No available prospects. Generate some above.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      availableContacts.map((c) => (
-                        <TableRow 
-                          key={c.id} 
-                          className={`border-slate-800 hover:bg-slate-800/30 transition-colors cursor-pointer ${selectedContacts.includes(c.id) ? 'bg-blue-500/10' : ''}`}
-                          onClick={() => toggleContact(c.id)}
-                        >
-                          <TableCell>
-                            <div className={`w-4 h-4 rounded border border-slate-600 flex items-center justify-center ${selectedContacts.includes(c.id) ? 'bg-blue-500 border-blue-500' : ''}`}>
-                              {selectedContacts.includes(c.id) && <CheckCircle2 className="h-3 w-3 text-white" />}
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-mono text-xs text-white">{c.phone || c.whatsapp_number}</TableCell>
-                          <TableCell className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Engine</TableCell>
-                          <TableCell className="text-[10px] text-slate-500 font-mono">{new Date(c.created_at).toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-[8px] uppercase border-green-500/20 text-green-500 bg-green-500/5">
-                              Qualified
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+      }
+      right={
+        <section className="border-l border-emerald-300/20 pl-4">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Movement</p>
+          <div className="mt-3 space-y-2 text-[10px] leading-5 text-slate-400">
+            <p>Generate from a source series.</p>
+            <p>Reachability qualifies contacts.</p>
+            <p>Select real Prospect records.</p>
+            <p>Package only the selected movement.</p>
+          </div>
+        </section>
+      }
+    />
   )
 }
