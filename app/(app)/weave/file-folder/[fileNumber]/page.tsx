@@ -25,15 +25,26 @@ export default function SupportFileFolderPage() {
       router.replace('/weave')
       return
     }
+    const controller=new AbortController()
+    const timeout=window.setTimeout(()=>controller.abort(),12000)
     const fileNumber=Array.isArray(params.fileNumber)?params.fileNumber[0]:params.fileNumber
     fetch(`/api/world/file-folders/${encodeURIComponent(fileNumber || '')}`,{
       headers:{Authorization:`Bearer ${token}`},
       cache:'no-store',
+      signal:controller.signal,
     }).then(async response=>{
       const body=await response.json()
       if(!response.ok) throw new Error(body.error || 'Unable to enter File Folder')
       return body
-    }).then(setData).catch(err=>setError(err instanceof Error?err.message:'Unable to enter File Folder'))
+    }).then(setData).catch(err=>{
+      setError(controller.signal.aborted
+        ?'The Client File Folder took too long to load. Return to Bridge Plaza and enter again.'
+        :err instanceof Error?err.message:'Unable to enter File Folder')
+    }).finally(()=>window.clearTimeout(timeout))
+    return()=>{
+      window.clearTimeout(timeout)
+      controller.abort()
+    }
   },[isLoading,user,token,params.fileNumber,router])
 
   if(isLoading || (!data && !error)) return <FileFolderEnvironmentLoader support />
