@@ -1200,6 +1200,7 @@ const numberAdminSource=fs.readFileSync(path.join(root,'app/api/admin/bridger-nu
 const numberBridgerSource=fs.readFileSync(path.join(root,'app/api/bridger/numbers/route.ts'),'utf8')
 const numberAdminPage=fs.readFileSync(path.join(root,'app/(app)/admin/bridger-numbers/page.tsx'),'utf8')
 const numberBridgerPage=fs.readFileSync(path.join(root,'app/(app)/bridger/numbers/page.tsx'),'utf8')
+const numberOrderMigrationSource=fs.readFileSync(path.join(root,'migrations/20260927_bridger_number_country_orders.sql'),'utf8')
 assert.ok(numberEngineSource.includes('phone_e164 varchar(32) NOT NULL UNIQUE'),'Number Engine prevents duplicate provisioned numbers')
 assert.ok(numberEngineSource.includes('assigned_to uuid REFERENCES users(id)'),'Number Engine preserves Bridger ownership')
 assert.ok(numberAdminSource.includes("user.role!=='admin'"),'Only Administration can manage Number Engine inventory')
@@ -1208,10 +1209,27 @@ assert.ok(numberBridgerSource.includes("FOR UPDATE"),'Number purchase locks scar
 assert.ok(numberBridgerSource.includes("status='assigned'"),'Successful purchase permanently assigns the number')
 assert.ok(numberBridgerSource.includes("issueWeaveReceipt"),'Number purchases issue canonical WEAVE receipts')
 assert.ok(!numberAdminPage.toLowerCase().includes('password'),'Administration Number Engine never collects WhatsApp passwords')
-assert.ok(numberBridgerPage.includes('Identity revealed only after successful assignment.'),'Available inventory does not expose numbers before purchase')
+assert.ok(numberBridgerPage.includes('exact phone number is revealed only after assignment'),'Available inventory does not expose numbers before purchase or delivery')
 assert.ok(!numberBridgerSource.includes('acquisition_cost'),'Bridger Number Engine API keeps Administration acquisition cost private')
 assert.ok(!numberBridgerPage.includes('n.acquisition_cost'),'Bridger Number Engine never renders Administration acquisition cost')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260926_bridger_whatsapp_number_engine.sql')),'Number Engine migration exists')
+assert.ok(numberEngineSource.includes('bridger_number_country_offers'),'Number Engine persists country offers independently from physical stock')
+assert.ok(numberEngineSource.includes('bridger_number_orders'),'Number Engine persists out-of-stock Bridger orders')
+assert.ok(numberEngineSource.includes("interval '30 minutes'"),'Number orders carry a 30-minute Administration delivery deadline')
+assert.ok(numberEngineSource.includes('ensureBridgerNumberPosition'),'Number purchase repairs missing legacy Bridger profiles at the engine boundary')
+assert.ok(numberEngineSource.includes('ensurePrimaryWallet'),'Number purchase repairs a missing primary Bridger wallet instead of failing generically')
+assert.ok(numberBridgerSource.includes("action==='order_country'"),'Bridgers can place an out-of-stock country order')
+assert.ok(numberBridgerSource.includes("gate:'stock_available'"),'Country ordering redirects Bridgers to instant purchase when stock is present')
+assert.ok(numberBridgerSource.includes("entry_type,'whatsapp_number_order'")||numberBridgerSource.includes("'whatsapp_number_order'"),'Country orders debit Flame Coin through the ledger')
+assert.ok(numberBridgerSource.includes("type:'bridger_number_order'"),'Country orders notify Administration for fulfillment')
+assert.ok(numberAdminSource.includes("action==='deliver_order'"),'Administration can deliver a timed number order through the engine')
+assert.ok(numberAdminSource.includes("action==='cancel_order'"),'Administration can cancel an unfulfilled number order')
+assert.ok(numberAdminSource.includes("'whatsapp_number_order_refund'"),'Cancelled number orders return Flame Coin through the ledger')
+assert.ok(numberAdminPage.includes('30-minute delivery dock'),'Administration has a dedicated timed number-order fulfillment dock')
+assert.ok(numberAdminPage.includes('Deliver newly acquired number'),'Administration can fulfill an order even when the bay was initially out of stock')
+assert.ok(numberBridgerPage.includes('Choose country')&&numberBridgerPage.includes('Country'),'Bridger sees the country before purchase')
+assert.ok(numberBridgerPage.includes('Order · ')&&numberBridgerPage.includes('min delivery'),'Out-of-stock countries expose the timed delivery order action')
+assert.ok(numberOrderMigrationSource.includes('bridger_number_country_offers')&&numberOrderMigrationSource.includes('bridger_number_orders'),'Production migration persists country offers and number orders')
 
 
 const numberVerificationSource=fs.readFileSync(path.join(root,'app/api/bridger/number-verifications/route.ts'),'utf8')
@@ -1233,9 +1251,22 @@ assert.ok(numberBridgerApiBoundary.includes('number:publicNumber'),'Purchase res
 assert.ok(!numberEngineSource.includes('bridger_number_inbox'),'Number Engine schema has no obsolete automatic provider inbox')
 assert.ok(numberBridgerApiBoundary.includes("product:'WEAVE Worldwide WhatsApp Number'"),'Receipt identifies the WEAVE product rather than its supplier')
 assert.ok(!numberBridgerPage.includes('Aphone'),'Bridger Number Engine never exposes the Administration supply source')
-assert.ok(numberBridgerPage.includes('WEAVE Worldwide'),'Bridger sees the WEAVE worldwide product identity')
+assert.ok(numberBridgerPage.includes('Worldwide Number Bay'),'Bridger sees the WEAVE worldwide product identity')
 assert.ok(!numberVerificationBoundary.includes('received from Aphone'),'Verification API language remains supplier-neutral')
 
+
+for(const file of [
+ 'lib/bridger-number-engine.ts',
+ 'app/api/bridger/numbers/route.ts',
+ 'app/api/admin/bridger-numbers/route.ts',
+ 'app/(app)/bridger/numbers/page.tsx',
+ 'app/(app)/admin/bridger-numbers/page.tsx',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Number Bay purchase/order syntax/transpile check')
+}
 
 const weaveEnvironmentTransitSource=fs.readFileSync(path.join(root,'components/world/weave-environment-transit.tsx'),'utf8')
 const weaveEnvironmentSurfaceSource=fs.readFileSync(path.join(root,'components/world/weave-environment-surface.tsx'),'utf8')
