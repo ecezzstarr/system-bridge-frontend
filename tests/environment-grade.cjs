@@ -277,6 +277,14 @@ assert.ok(bridgePlazaPage.includes('System Switch · File Folder View')&&bridgeP
 assert.ok(cleanRevealDashboard2026.includes('weave-dashboard-world')&&cleanRevealDashboard2026.includes('<WeaveRouteNetwork'),'Dashboard world exposes live-theme shell and route-network movement')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-dashboard-world'),'Flame Live themes dashboard surfaces rather than adding a wallpaper')
 assert.ok(cleanRevealTransit2026.includes('hasPendingSurface()&&elapsed<absoluteMaximum'),'Pending application state holds the clean reveal only until the absolute recovery ceiling')
+assert.ok(cleanRevealTransit2026.includes('const LOADING_CARD_HOLD_MS=1800'),'Loading briefs remain visible long enough to read')
+assert.ok(cleanRevealTransit2026.includes('const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS'),'Environment reveal waits for the complete three-card briefing sequence')
+assert.ok(cleanRevealTransit2026.includes('PLATFORM_BRIEFS.map((_,index)'),'Loading progress exposes exactly the platform briefing sequence')
+assert.ok(cleanRevealTransit2026.includes("document.addEventListener('click',handleInternalNavigation,true)"),'Internal navigation primes the environment cover at click time, including sidebar links')
+assert.ok(cleanRevealTransit2026.includes('setReadyPath(null)')&&cleanRevealTransit2026.includes('setTransiting(true)'),'Sidebar movement hides the old environment immediately while preserving destination formation')
+assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence(startedAt,controller.signal)\n          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations finish the readable briefing before the final readiness check')
+const loadingBriefCss2026=read('app/weave-readability.css')
+assert.ok(loadingBriefCss2026.includes('@keyframes weave-loading-brief-enter')&&loadingBriefCss2026.includes('.weave-loading-brief'),'Loading cards enter as discrete readable briefing surfaces')
 
 
 /* Environment grammar: major operating surfaces may contain instruments,
