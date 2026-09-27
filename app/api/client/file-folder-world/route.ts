@@ -8,6 +8,8 @@ import {
   getFileFolderWorldSnapshot,
 } from '@/lib/client-file-folder-world'
 import { CLIENT_BUILD_SPEED_MAX, effectiveBuildMinutes, getClientBuildEconomy } from '@/lib/client-build-economy'
+import { fileFolderMotion } from '@/lib/weave-interaction-motion'
+import { recordSystemEvent } from '@/lib/system-events'
 
 function clean(value: unknown, max = 4000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -59,6 +61,16 @@ export async function GET(request: NextRequest) {
     const ctx = await resolveClientWorld(request)
     if (ctx.error) return ctx.error
 
+    await recordSystemEvent({
+      eventType:`client_file_folder_${action}`,
+      actorId:String(ctx.client.id),
+      actorRole:'client',
+      subjectType:'client_file_folder',
+      subjectId:String(ctx.client.file_number),
+      source:'client-file-folder-world',
+      payload:{action},
+    })
+
     const world = await getFileFolderWorldSnapshot(
       ctx.sql,
       String(ctx.client.id),
@@ -68,6 +80,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       world,
+      motion:fileFolderMotion(action),
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('[client/file-folder-world GET]', error)

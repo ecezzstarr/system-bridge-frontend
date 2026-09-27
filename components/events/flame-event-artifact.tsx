@@ -1,7 +1,7 @@
 'use client'
 
 import { useFrame } from '@react-three/fiber'
-import { useEffect,useRef,useState } from 'react'
+import { useRef } from 'react'
 import * as THREE from 'three'
 import {
   DEFAULT_FLAME_ARTIFACT_CONFIG,
@@ -9,50 +9,9 @@ import {
   type FlameArtifactSurface,
   type FlameArtifactVisualConfig,
 } from '@/lib/weave-visual-profile'
+import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 
 export const FLAME_EVENT_ARTIFACT_COLORS=DEFAULT_FLAME_ARTIFACT_CONFIG.palette
-
-let cachedRuntime=DEFAULT_FLAME_ARTIFACT_CONFIG
-let cachedAt=0
-let pending:Promise<void>|null=null
-
-async function refreshRuntimeProfile(){
-  const now=Date.now()
-  if(now-cachedAt<10000)return
-  if(pending)return pending
-  cachedAt=now
-  pending=fetch('/api/visual-runtime',{cache:'no-store'})
-    .then(async response=>{
-      if(!response.ok)throw new Error('Visual runtime unavailable')
-      const body=await response.json()
-      if(body?.success&&body.config)cachedRuntime=normalizeFlameArtifactConfig(body.config)
-    })
-    .catch(()=>{})
-    .finally(()=>{pending=null})
-  return pending
-}
-
-function useFlameArtifactRuntime(){
-  const [config,setConfig]=useState<FlameArtifactVisualConfig>(cachedRuntime)
-
-  useEffect(()=>{
-    let mounted=true
-    const pull=async()=>{
-      await refreshRuntimeProfile()
-      if(mounted)setConfig(cachedRuntime)
-    }
-    void pull()
-    const interval=window.setInterval(()=>void pull(),15000)
-    window.addEventListener('focus',pull)
-    return ()=>{
-      mounted=false
-      window.clearInterval(interval)
-      window.removeEventListener('focus',pull)
-    }
-  },[])
-
-  return config
-}
 
 type ArtifactVariant='core'|'portal'|'hero'
 
@@ -71,7 +30,7 @@ export function FlameEventArtifact3D({
   surface?:FlameArtifactSurface
   configOverride?:FlameArtifactVisualConfig
 }) {
-  const runtime=useFlameArtifactRuntime()
+  const {config:runtime}=useVisualRuntime()
   const config=configOverride?normalizeFlameArtifactConfig(configOverride):runtime
   const root=useRef<THREE.Group>(null)
   const core=useRef<THREE.Group>(null)
@@ -198,7 +157,7 @@ export function FlameEventArtifactMark({
   surface?:FlameArtifactSurface
   configOverride?:FlameArtifactVisualConfig
 }) {
-  const runtime=useFlameArtifactRuntime()
+  const {config:runtime}=useVisualRuntime()
   const config=configOverride?normalizeFlameArtifactConfig(configOverride):runtime
   if(!config.enabled||(surface&&!config.surfaces[surface]))return null
 

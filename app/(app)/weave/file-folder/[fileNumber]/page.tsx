@@ -42,26 +42,18 @@ export default function SupportFileFolderPage() {
     return <main className="min-h-screen bg-[#020711] p-6 text-white"><div className="mx-auto max-w-lg rounded-3xl border border-white/10 bg-slate-950 p-8 text-center"><ShieldCheck className="mx-auto h-9 w-9 text-violet-300"/><h1 className="mt-4 text-xl font-bold">Bridge Plaza Access</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error}</p><Link href="/weave" className="mt-5 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs">Return to Bridge Plaza</Link></div></main>
   }
 
-  return <main className="min-h-screen bg-[#020711] p-3 text-white md:p-6">
+  return <main className="min-h-screen bg-[#020711] p-2 text-white sm:p-3 md:p-6">
     <div className="mx-auto max-w-[1500px]">
-      <div className="mb-4 rounded-3xl border border-violet-300/15 bg-[linear-gradient(135deg,rgba(139,92,246,.08),rgba(14,165,233,.05))] p-4 md:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Bridge Plaza → Client File Folder</p>
-            <h1 className="mt-1 text-lg font-black text-white">You are viewing one Client operating environment.</h1>
-            <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-300">Support enters the Client’s existing world without ownership rights. Blueprints become builds, builds become live systems, and real activity stays attached to the Client File Folder. The Client remains the player and owner of the environment.</p>
+      <div className="sticky top-0 z-40 mb-2 flex h-11 items-center gap-3 border-b border-violet-300/15 bg-[#020711]/94 px-1 backdrop-blur-xl md:static md:mb-4 md:h-auto md:rounded-2xl md:border md:bg-[linear-gradient(135deg,rgba(139,92,246,.08),rgba(14,165,233,.05))] md:px-4 md:py-3">
+        <Link href="/weave" className="inline-flex shrink-0 items-center gap-1.5 border-r border-white/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-violet-200 md:rounded-full md:border md:border-white/10 md:bg-black/20 md:px-3 md:py-2"><ArrowLeft className="h-3.5 w-3.5"/><span className="hidden sm:inline">Bridge Plaza</span></Link>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-violet-300"/>
+            <p className="truncate text-[8px] font-black uppercase tracking-[.14em] text-violet-200">Support · Read only · {data.client.name}</p>
           </div>
-          <Link href="/weave" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs text-slate-200"><ArrowLeft className="h-3.5 w-3.5"/>Bridge Plaza</Link>
+          <p className="mt-0.5 hidden truncate text-[9px] text-slate-500 sm:block">Observe the Client’s existing construction world. Ownership and build controls remain with the Client.</p>
         </div>
-        <div className="mt-4 grid grid-cols-5 gap-2 text-center">
-          {[
-            ['Recognize','text-sky-300 bg-sky-400/[0.05] border-sky-300/15'],
-            ['Preview','text-violet-300 bg-violet-400/[0.05] border-violet-300/15'],
-            ['Build','text-amber-300 bg-amber-400/[0.05] border-amber-300/15'],
-            ['Activate','text-emerald-300 bg-emerald-400/[0.05] border-emerald-300/15'],
-            ['Operate','text-cyan-300 bg-cyan-400/[0.05] border-cyan-300/15'],
-          ].map(([label,tone])=><div key={label} className={`rounded-xl border px-2 py-2 text-[8px] font-black uppercase tracking-[0.08em] ${tone}`}>{label}</div>)}
-        </div>
+        <span className="shrink-0 font-mono text-[7px] text-slate-600 md:text-[8px]">{data.client.file_number}</span>
       </div>
       <FileFolderOpenWorld
         clientName={data.client.name}

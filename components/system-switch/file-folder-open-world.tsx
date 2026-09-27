@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   BookOpen,
   Boxes,
@@ -20,6 +20,7 @@ import Link from 'next/link'
 import { getClientToken } from '@/lib/client-auth'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
+import { emitWeaveMotion,fileFolderMotion } from '@/lib/weave-interaction-motion'
 
 type Props = {
   clientName: string
@@ -102,11 +103,33 @@ export default function FileFolderOpenWorld({
   const [now, setNow] = useState(Date.now())
   const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})
   const { recordOutput } = usePresenceCamera()
+  const buildStateRef=useRef<Map<string,string>>(new Map())
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(id)
   }, [])
+
+  useEffect(()=>{
+    const next=new Map<string,string>()
+    for(const build of world?.builds||[]){
+      const id=String(build.id||build.blueprint_key||'')
+      if(!id)continue
+      const status=String(build.status||'')
+      const previous=buildStateRef.current.get(id)
+      if(previous&&previous!=='complete'&&status==='complete'){
+        emitWeaveMotion({
+          kind:'emergence',
+          label:`${build.title||build.blueprint_name||'System'} commissioned and live`,
+          intensity:1.8,
+          confirmed:true,
+          source:'file-folder-build-completion',
+        })
+      }
+      next.set(id,status)
+    }
+    buildStateRef.current=next
+  },[world?.builds])
 
   useEffect(() => {
     const url = refreshUrl || (!readOnly ? '/api/client/file-folder-world' : null)
@@ -166,9 +189,12 @@ export default function FileFolderOpenWorld({
       if (!response.ok) throw new Error(body.error || 'Movement failed')
       setWorld(body.world)
       onWorldChange?.(body.world)
+      emitWeaveMotion(body.motion||fileFolderMotion(String(payload?.action||'')))
       setMessage('Movement recorded in the Main File Folder.')
     } catch (error: any) {
-      setMessage(error?.message || 'Movement failed')
+      const label=error?.message||'Movement failed'
+      emitWeaveMotion({kind:'interruption',label,intensity:.65,confirmed:true,source:'file-folder'})
+      setMessage(label)
     } finally {
       setBusy('')
     }
@@ -194,85 +220,94 @@ export default function FileFolderOpenWorld({
   const boostItems = (world?.items || []).filter((item: any) => item.build_effect === 'speed_boost')
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-amber-200/10 bg-[#120c08] shadow-[0_30px_100px_rgba(0,0,0,.42)]" data-construction-workspace="progressive-site">
-      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(18,12,8,.02))] p-5 md:p-8">
-        <p className="text-[9px] font-black uppercase tracking-[0.28em] text-amber-200">Main File Folder · Active Construction Site</p>
-        <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h2 className="text-2xl font-black text-white md:text-4xl">{workshopTitle}</h2>
-            <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
-            <p className="mt-2 text-[10px] font-mono text-slate-500">{clientName} · {fileNumber}</p>
+    <section className="overflow-clip rounded-[1.35rem] border border-amber-200/10 bg-[#120c08] shadow-[0_30px_100px_rgba(0,0,0,.42)] md:rounded-[2rem]" data-construction-workspace="progressive-site">
+      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(18,12,8,.02))] px-4 py-4 md:p-8">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Active Construction Site</p>
+            <h2 className="mt-1 truncate text-lg font-black text-white md:mt-2 md:text-4xl">{workshopTitle}</h2>
+            <p className="mt-1 truncate text-[9px] font-mono text-slate-500 md:mt-2 md:text-[10px]">{clientName} · {fileNumber}</p>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-center text-[10px] md:grid-cols-4">
-            <div className="rounded-xl border border-amber-300/15 bg-amber-400/5 px-4 py-3">
-              <p className="uppercase tracking-wider text-amber-300">Building now</p>
-              <p className="mt-1 text-xl font-black text-white">{activeBuilds.length}</p>
-            </div>
-            <div className="rounded-xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-3">
-              <p className="uppercase tracking-wider text-emerald-300">Active systems</p>
-              <p className="mt-1 text-xl font-black text-white">{world?.systems?.length || 0}</p>
-            </div>
-            <div className="rounded-xl border border-violet-300/15 bg-violet-400/5 px-4 py-3">
-              <p className="uppercase tracking-wider text-violet-300">Customer Door</p>
-              <p className="mt-1 text-xs font-black uppercase text-white">{world?.customerDoor?.formation_status || 'forming'}</p>
-              <p className="mt-1 text-[8px] text-slate-500">{world?.customerDoor?.active_offer_count || 0} public offers</p>
-            </div>
-            <div className="rounded-xl border border-cyan-300/15 bg-cyan-400/5 px-4 py-3">
-              <p className="uppercase tracking-wider text-cyan-300">Build Power</p>
-              <p className="mt-1 text-xl font-black text-white">×{Number(buildFunding?.buildSpeedMultiplier || 1).toFixed(2)}</p>
-              <p className="mt-1 text-[8px] text-slate-500">{Number(buildFunding?.totalParticipationFlameCoin || 0).toLocaleString()} Flame Coin</p>
-            </div>
+          <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] ${readOnly?'border-violet-300/20 bg-violet-400/5 text-violet-200':'border-emerald-300/20 bg-emerald-400/5 text-emerald-200'}`}>
+            {readOnly?'Support view':'Client control'}
+          </span>
+        </div>
+
+        <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
+
+        <div className="mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2.5 text-[8px] uppercase tracking-wider text-stone-500 md:mt-5 md:grid md:grid-cols-4 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[10px]">
+          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3">
+            <span className="text-base font-black text-amber-100 md:mt-1 md:block md:text-xl">{activeBuilds.length}</span><span className="text-amber-300">Building</span>
+          </div>
+          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-emerald-300/15 md:bg-emerald-400/5 md:px-4 md:py-3">
+            <span className="text-base font-black text-emerald-100 md:mt-1 md:block md:text-xl">{world?.systems?.length || 0}</span><span className="text-emerald-300">Live</span>
+          </div>
+          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-violet-300/15 md:bg-violet-400/5 md:px-4 md:py-3">
+            <span className="text-[10px] font-black uppercase text-white md:mt-1 md:block md:text-xs">{world?.customerDoor?.formation_status || 'forming'}</span><span className="text-violet-300">Door</span>
+          </div>
+          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-cyan-300/15 md:bg-cyan-400/5 md:px-4 md:py-3">
+            <span className="text-base font-black text-cyan-100 md:mt-1 md:block md:text-xl">×{Number(buildFunding?.buildSpeedMultiplier || 1).toFixed(2)}</span><span className="text-cyan-300">Power</span>
           </div>
         </div>
-        <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-[10px] leading-5 text-slate-400">
+
+        <div className="mt-3 hidden rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-[10px] leading-5 text-slate-400 md:block">
           {world?.guarantee?.hasActiveBuild
             ? 'Formation guarantee: at least one real build is currently moving through time.'
             : world?.guarantee?.hasReadyBlueprint
               ? 'Formation guarantee: no build is running yet, but buildable blueprints are available now.'
               : 'No buildable blueprint is currently published.'}
         </div>
+
         {buildFunding && !buildFunding.grandfathered && (
-          <div className={`mt-3 rounded-xl border px-4 py-3 text-[10px] leading-5 ${buildFunding.publicDoorUnlocked ? 'border-emerald-300/15 bg-emerald-400/5 text-emerald-200' : 'border-amber-300/20 bg-amber-400/5 text-amber-100'}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <span className="font-black uppercase tracking-wider">File Folder funding · </span>
-                {Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} Flame Coin for the first public door.
-                {!buildFunding.publicDoorUnlocked && <> Add {Number(buildFunding.requiredToOpenPublicDoorFlameCoin || 0).toLocaleString()} more Flame Coin before the Customer Door can open and new construction can continue after that gate.</>}
-              </div>
-              {!readOnly && !buildFunding.publicDoorUnlocked && (
-                <Link href="/client/deposit" className="inline-flex items-center gap-1.5 rounded-full bg-amber-300 px-3 py-1.5 font-black uppercase tracking-wider text-slate-950">
-                  <Zap className="h-3 w-3"/> Add Flame Credits
-                </Link>
-              )}
+          <div className={`mt-3 flex items-center justify-between gap-3 border-l-2 px-3 py-2 text-[9px] leading-4 md:rounded-xl md:border md:px-4 md:py-3 md:text-[10px] md:leading-5 ${buildFunding.publicDoorUnlocked ? 'border-emerald-300/25 bg-emerald-400/[.035] text-emerald-200' : 'border-amber-300/30 bg-amber-400/[.035] text-amber-100'}`}>
+            <div className="min-w-0">
+              <span className="font-black uppercase tracking-wider">Funding · </span>
+              <span className="md:hidden">{Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} FC</span>
+              <span className="hidden md:inline">{Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} Flame Coin for the first public door.{!buildFunding.publicDoorUnlocked && <> Add {Number(buildFunding.requiredToOpenPublicDoorFlameCoin || 0).toLocaleString()} more Flame Coin before the Customer Door can open and new construction can continue after that gate.</>}</span>
             </div>
+            {!readOnly && !buildFunding.publicDoorUnlocked && (
+              <Link href="/client/deposit" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-300 px-2.5 py-1.5 font-black uppercase tracking-wider text-slate-950 md:px-3">
+                <Zap className="h-3 w-3"/><span className="hidden sm:inline">Add Flame Credits</span><span className="sm:hidden">Add</span>
+              </Link>
+            )}
           </div>
         )}
       </header>
 
       <div className="min-h-[650px]">
-        <nav className="border-b border-amber-100/10 bg-[#17100b]/88 px-3 py-3">
-          <p className="px-1 pb-2 text-[8px] font-black uppercase tracking-[0.2em] text-stone-600">Walk the build site</p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {visibleDistricts.map((item,index) => {
-              const Icon=item.icon
-              const selected=district===item.key
-              return <button
-                key={item.key}
-                onClick={()=>{
-                  setDistrict(item.key)
-                  recordOutput({type:'action',label:`File Folder district: ${item.label}`,toScene:'file-folder'})
-                }}
-                className={`group min-w-[150px] shrink-0 border-b px-2 py-2 text-left transition ${selected?'border-amber-300 text-amber-100':'border-stone-800 text-stone-500 hover:border-stone-600 hover:text-stone-300'}`}
-              >
-                <div className="flex items-center gap-2"><span className="text-[8px] font-black text-amber-300/70">{String(index+1).padStart(2,'0')}</span><Icon className="h-3.5 w-3.5"/><span className="text-[9px] font-black uppercase tracking-[.08em]">{item.label}</span></div>
-                <p className="mt-1 hidden text-[8px] leading-3 text-stone-600 md:block">{item.detail}</p>
-              </button>
-            })}
+        <nav aria-label="Walk the build site" className={`sticky z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl ${readOnly?'top-11 md:top-0':'top-0'}`} data-build-site-awareness="compact-sticky-rail">
+          <div className="flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
+            <div className="min-w-0 shrink-0 border-r border-amber-100/10 pr-3">
+              <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">Build site</p>
+              <p className="mt-0.5 max-w-[112px] truncate text-[9px] font-black uppercase tracking-[.08em] text-amber-100">
+                {visibleDistricts.find(item=>item.key===district)?.label || 'Command Core'}
+              </p>
+            </div>
+            <div className="flex min-w-0 flex-1 snap-x snap-mandatory gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {visibleDistricts.map((item,index) => {
+                const Icon=item.icon
+                const selected=district===item.key
+                return <button
+                  key={item.key}
+                  aria-current={selected?'location':undefined}
+                  onClick={()=>{
+                    setDistrict(item.key)
+                    recordOutput({type:'action',label:`File Folder district: ${item.label}`,toScene:'file-folder'})
+                  }}
+                  className={`group flex h-8 shrink-0 snap-start items-center gap-1.5 rounded-full border px-2.5 transition md:h-auto md:min-w-[138px] md:rounded-xl md:px-3 md:py-2 md:text-left ${selected?'border-amber-300/35 bg-amber-300/[.08] text-amber-100':'border-white/[.06] bg-white/[.02] text-stone-500 hover:border-stone-600 hover:text-stone-300'}`}
+                >
+                  <span className="text-[7px] font-black text-amber-300/60">{String(index+1).padStart(2,'0')}</span>
+                  <Icon className="h-3.5 w-3.5 shrink-0"/>
+                  <span className="whitespace-nowrap text-[8px] font-black uppercase tracking-[.06em] md:text-[9px]">{item.label}</span>
+                  <span className="hidden text-[7px] leading-3 text-stone-600 md:block">{item.detail}</span>
+                </button>
+              })}
+            </div>
+            {readOnly&&<span className="hidden shrink-0 rounded-full border border-violet-300/15 px-2 py-1 text-[7px] font-black uppercase tracking-[.1em] text-violet-200 sm:inline">Observe</span>}
           </div>
-          {readOnly&&<p className="mt-2 text-[8px] leading-4 text-violet-200/70">Support view through Bridge Plaza · observe the Client construction territory without ownership controls.</p>}
         </nav>
 
-        <div className="p-4 md:p-6">
+        <div className="p-3 sm:p-4 md:p-6">
           {message && <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-300">{message}</div>}
 
           {district==='workshop_core'&&(
@@ -282,13 +317,13 @@ export default function FileFolderOpenWorld({
                 <h3 className="mt-2 text-2xl font-black text-white">{workshopTitle}</h3>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-400">{workshopPurpose||'This workshop remains the Client command point while real systems rise around it.'}</p>
               </div>
-              <div className="grid gap-0 overflow-hidden border-y border-amber-100/10 md:grid-cols-4">
+              <div className="grid grid-cols-2 gap-0 overflow-hidden border-y border-amber-100/10 md:grid-cols-4">
                 {[
                   ['Blueprints ready',world?.blueprints?.length||0,'DESIGN'],
                   ['Finished builds',completedBuilds.length,'STRUCTURES'],
                   ['Build intelligence',(world?.library||[]).filter((x:any)=>x.status==='complete').length+'/'+(world?.library?.length||0),'KNOWLEDGE'],
                   ['Outside customers',world?.customerDoor?.order_count||0,'MARKET'],
-                ].map(([label,value,state],index)=><div key={String(label)} className={`relative px-4 py-5 ${index>0?'border-t border-amber-100/10 md:border-l md:border-t-0':''}`}>
+                ].map(([label,value,state],index)=><div key={String(label)} className={`relative px-3 py-4 md:px-4 md:py-5 ${index>0?'border-amber-100/10':''} ${index%2===1?'border-l':''} ${index>1?'border-t':''} md:border-t-0 md:[&:not(:first-child)]:border-l`}>
                   <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">{state}</p>
                   <p className="mt-2 text-2xl font-black text-white">{String(value)}</p>
                   <p className="mt-1 text-[8px] uppercase tracking-wider text-stone-500">{label}</p>

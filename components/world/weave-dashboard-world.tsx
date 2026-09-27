@@ -119,7 +119,7 @@ const ROLE: Record<WorldRole, {
       { label: 'Prospect Engine', detail: 'Opportunity', href: '/admin/prospect-engine', icon: Zap, tone: 'gold' },
       { label: 'Authority', detail: 'Operating structures', href: '/authority/workshops', icon: BriefcaseBusiness, tone: 'violet' },
       { label: 'Ad Workshop', detail: 'Communication control', href: '/admin/ad-workshop', icon: Radio, tone: 'sky' },
-      { label: 'Visual Systems', detail: 'Live artifact control', href: '/admin/visual-systems', icon: Palette, tone: 'violet' },
+      { label: 'Visual Systems', detail: 'World motion authority', href: '/admin/visual-systems', icon: Palette, tone: 'violet' },
       { label: 'Environment Organizer', detail: 'Pages + cards', href: '/admin/environment-organizer', icon: LayoutTemplate, tone: 'sky' },
       { label: 'DJ Workshop', detail: 'Sound and atmosphere', href: '/admin/dj-workshop', icon: Waves, tone: 'violet' },
       { label: 'Bridge Plaza', detail: 'Institution world', href: '/weave', icon: Landmark, tone: 'sky' },

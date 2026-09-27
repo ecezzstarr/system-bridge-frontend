@@ -288,6 +288,12 @@ assert.ok(walletBalanceSource.includes('getAuthUser'),'Wallet balance derives id
 assert.ok(clientBridgerSource.includes('getAuthUser'),'Client Bridger lookup derives identity from authenticated session')
 assert.ok(clientRegisterSource2.includes('WEAVE-583104927361'),'Client registration shows random File Number format')
 const dailyProspectRouteSource=fs.readFileSync(path.join(root,'app/api/bridger/daily-prospect/route.ts'),'utf8')
+const dailyProspectEngineSource=fs.readFileSync(path.join(root,'lib/bridger-daily-prospect-engine.ts'),'utf8')
+const fulfillmentAgentSource=fs.readFileSync(path.join(root,'lib/fulfillment-agent.ts'),'utf8')
+const integrityEngineSource=fs.readFileSync(path.join(root,'lib/weave-integrity-engine.ts'),'utf8')
+const integrityApiSource=fs.readFileSync(path.join(root,'app/api/admin/integrity-engine/route.ts'),'utf8')
+const devWorkshopSource=fs.readFileSync(path.join(root,'app/(app)/admin/dev-workshop/page.tsx'),'utf8')
+const adminWorkshopSource=fs.readFileSync(path.join(root,'app/(app)/admin/workshop/page.tsx'),'utf8')
 const dailyProspectUiSource=fs.readFileSync(path.join(root,'components/bridger/daily-prospect-claim.tsx'),'utf8')
 const bridgerDashboardSource=fs.readFileSync(path.join(root,'app/(app)/bridger/dashboard/page.tsx'),'utf8')
 const bridgerOperatingRoomSource=fs.readFileSync(path.join(root,'components/bridger/bridger-operating-environment.tsx'),'utf8')
@@ -296,6 +302,24 @@ assert.ok(dailyProspectRouteSource.includes('market_prospect_outreach'),'Daily c
 assert.ok(dailyProspectRouteSource.includes('FOR UPDATE SKIP LOCKED'),'Daily claim prevents two Bridgers from receiving the same Prospect')
 assert.ok(dailyProspectRouteSource.includes("status = 'contacted'"),'Claimed Prospect is removed from free marketplace inventory')
 assert.ok(dailyProspectRouteSource.includes("'daily_free_claim'"),'Daily free claims are audited')
+assert.ok(dailyProspectRouteSource.includes('repairDailyProspectState'),'Daily claim repairs provably inconsistent inventory before failing')
+assert.ok(dailyProspectRouteSource.includes('reserveTarget:1'),'Daily claim restores one claimable Prospect only when a new claim is needed')
+assert.ok(dailyProspectRouteSource.includes("gate:'daily_pool_empty'"),'Daily claim returns a specific reserve diagnostic instead of a generic broken-button failure')
+assert.ok(dailyProspectEngineSource.includes('DAILY_PROSPECT_RESERVE = 3'),'Daily Prospect Engine maintains a dedicated free reserve')
+assert.ok(dailyProspectEngineSource.includes("p.status='published'")&&dailyProspectEngineSource.includes('p.purchased_by IS NULL'),'Reserve repair may rebalance only unsold published Prospect packages')
+assert.ok(dailyProspectEngineSource.includes('FOR UPDATE SKIP LOCKED'),'Reserve repair locks package/contact inventory against purchase races')
+assert.ok(dailyProspectEngineSource.includes('adjustedPrice'),'Rebalancing a free Prospect proportionally corrects the remaining unsold package price')
+assert.ok(fulfillmentAgentSource.includes('DAILY_PROSPECT_RESERVE'),'Marketplace fulfillment knows about the free Daily Prospect reserve')
+assert.ok(fulfillmentAgentSource.includes('availableCount < limit + DAILY_PROSPECT_RESERVE'),'Marketplace packaging cannot consume the protected daily reserve')
+assert.ok(integrityEngineSource.includes('runWeaveIntegrityEngine'),'WEAVE has a reusable business-state Integrity Engine')
+assert.ok(integrityEngineSource.includes('daily_prospect_reserve')&&integrityEngineSource.includes('number_prices')&&integrityEngineSource.includes('bridger_wallets'),'Integrity Engine covers Prospect, Number Bay and Bridger prerequisites')
+assert.ok(integrityEngineSource.includes('repairDailyProspectState'),'Integrity safe repair reuses the canonical Daily Prospect repair engine')
+assert.ok(integrityApiSource.includes("user.role!=='admin'"),'Only Administration can run WEAVE Integrity repairs')
+assert.ok(integrityApiSource.includes("action==='scan'?'scan':'repair'"),'Integrity API separates scan from safe mutation')
+assert.ok(devWorkshopSource.includes('/api/admin/integrity-engine'),'EIGHT Workshop uses the real business-state Integrity Engine')
+assert.ok(devWorkshopSource.includes('Integrity Scan')&&devWorkshopSource.includes('Safe Repair'),'EIGHT Workshop exposes scan and bounded repair controls')
+assert.ok(!devWorkshopSource.includes('Fixing path alignment...'),'Old fake EIGHT repair output is removed')
+assert.ok(adminWorkshopSource.includes('WEAVE Integrity Engine'),'Main Admin Workshop exposes Integrity Engine directly')
 assert.ok(!dailyProspectRouteSource.includes('FROM prospects p'),'Daily claim must not use the legacy prospects table')
 assert.ok(dailyProspectUiSource.includes('Daily Prospect Claim'),'Daily claim UI uses Prospect wording')
 assert.ok(dailyProspectUiSource.includes('next free prospect'),'Daily reset wording uses Prospect')
@@ -305,6 +329,16 @@ assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]
 assert.ok(!bridgerDashboardSource.includes('DailyProspectClaim'),'Bridger Home stays a compact world instead of duplicating Prospect intake')
 assert.ok(bridgerOperatingRoomSource.includes('Prospect intake · one place'),'Daily Prospect movement is visibly organized in one place')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260925_bridger_daily_prospect_claim.sql')),'Daily Prospect claim migration exists')
+for(const file of [
+ 'lib/bridger-daily-prospect-engine.ts',
+ 'lib/weave-integrity-engine.ts',
+ 'app/api/admin/integrity-engine/route.ts',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Integrity Engine syntax/transpile check')
+}
 const loop1AgentAdSource=fs.readFileSync(path.join(root,'components/agent/loop1-agent-login-ad.tsx'),'utf8')
 const agentContinuanceSource=fs.readFileSync(path.join(root,'app/(app)/agent/commissions/page.tsx'),'utf8')
 const agentCommissionsApiSource=fs.readFileSync(path.join(root,'app/api/agent/commissions/route.ts'),'utf8')
@@ -586,6 +620,9 @@ assert.ok(fileFolderOpenWorldSource.includes("key: 'boost_bay'"),'File Folder co
 assert.ok(fileFolderOpenWorldSource.includes('Materials Depot') && fileFolderOpenWorldSource.includes('Acceleration Bay'),'Build materials are separated from live acceleration instruments')
 assert.ok(fileFolderOpenWorldSource.includes('data-construction-workspace="progressive-site"'),'Construction functions remain inside one progressive site')
 assert.ok(fileFolderOpenWorldSource.includes('Walk the build site'),'Construction movement uses site travel rather than a page sidebar')
+assert.ok(fileFolderOpenWorldSource.includes('compact-sticky-rail'),'Walk the build site remains a compact sticky awareness rail on phones')
+assert.ok(fileFolderOperatingEnvironmentSource.includes('compact-build-sequence'),'Client construction sequence is a compact awareness strip')
+assert.ok(fileFolder3dSource.includes('h-[390px] sm:h-[500px] lg:h-[590px]'),'3D File Folder no longer consumes excessive phone height')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('one continuous site'),'Construction + Systems opens directly into the persistent site')
 assert.ok(fileFolder3dSource.includes('Persistent construction territory'),'File Folder presents construction time, systems and business movement as a persistent physical territory')
 assert.ok(fileFolderEnvironmentLoaderSource.includes('Loading your whole operating environment'),'Client sees a world-loading boot sequence before entry')
@@ -608,7 +645,7 @@ assert.ok(!fileFolderOperatingEnvironmentSource.includes('Simple meaning'),'File
 assert.ok(!fileFolderOperatingEnvironmentSource.includes('Folder status'),'File Folder removes the duplicate status rail')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Construction + Systems'"),'Construction and live system operation are visibly one File Folder district')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Market + Customers'"),'Market and Customer Door are visibly one File Folder district')
-assert.ok(supportFileFolderSource.includes('You are viewing one Client operating environment.'),'Bridge Plaza support view explains the File Folder to visitors')
+assert.ok(supportFileFolderSource.includes('Support · Read only')&&supportFileFolderSource.includes('Ownership and build controls remain with the Client.'),'Bridge Plaza support view preserves clear read-only ownership awareness without a large intro card')
 assert.ok(clientFunctionsPageSource.includes('<ClientOperatingRoom'),'Client Functions now opens the organized Client Operating Room')
 assert.ok(!clientFunctionsPageSource.includes('LegacyClientDashboard'),'Client Functions no longer uses the old stacked legacy dashboard as its primary surface')
 for(const route of ['/client/system-switch','/client/loops','/client/deposit','/client/withdraw','/client/chat/bridger','/marketplace','/weave','/lounge','/echo','/video-feed','/weave/standing','/client/arena','/client/casino']){
@@ -1125,7 +1162,8 @@ assert.ok(valueMovementSource.includes('Value Movement Engine'),'Wallet is a rec
 assert.ok(!valueMovementSource.includes('Your Referral Link'),'Wallet no longer mixes referral UI with financial movement')
 assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a coherent Reserve Engine')
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
-assert.ok(bridgePlazaMatureSource.includes('Bridge Plaza · Living World Hub'),'Bridge Plaza exposes world-routing causality through the realistic physical hub')
+assert.ok(bridgePlazaMatureSource.includes('data-bridge-plaza-theme="continuous-moving-system"'),'Bridge Plaza is a continuous moving world rather than a card-rendering page')
+assert.ok(bridgePlazaMatureSource.includes('data-bridge-plaza-station="client-support"'),'Bridge Plaza Client support is entered as an in-world station')
 assert.ok(bridgePlazaMatureSource.includes('The Crossing is a recorded transition'),'Client crossing exposes recorded state')
 assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
 assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
@@ -1143,6 +1181,7 @@ for(const file of [
  'app/(app)/wallet/deposit-withdraw/page.tsx',
  'app/(app)/fund-wall/page.tsx',
  'app/(app)/weave/page.tsx',
+ 'components/world/bridge-plaza-map.tsx',
  'app/(app)/search/page.tsx',
 ]){
  const source=fs.readFileSync(path.join(root,file),'utf8')
@@ -1230,6 +1269,16 @@ assert.ok(numberAdminSource.includes('const deliveryMinutes=BRIDGER_NUMBER_ORDER
 assert.ok(numberAdminPage.includes('Delivery SLA · fixed 30 minutes'),'Administration UI makes the fixed delivery SLA explicit')
 assert.ok(numberEngineSource.includes('ensureBridgerNumberPosition'),'Number purchase repairs missing legacy Bridger profiles at the engine boundary')
 assert.ok(numberEngineSource.includes('ensurePrimaryWallet'),'Number purchase repairs a missing primary Bridger wallet instead of failing generically')
+assert.ok(numberEngineSource.includes("CASE WHEN status='active' THEN 0"),'Number purchase prefers an active Bridger profile when legacy duplicate profile rows exist')
+assert.ok(numberEngineSource.includes("profile.status==='active'")||numberEngineSource.includes("profiles.some(profile=>profile.status==='active')"),'An active Bridger profile is sufficient for Number Bay purchase')
+assert.ok(numberBridgerSource.includes("action:'purchase_number'")||numberBridgerPage.includes("action:'purchase_number'"),'Stocked Number Bay purchase targets the exact inventory record')
+assert.ok(numberBridgerPage.includes('stockedNumber.id'),'Bridger live-stock purchase sends the current stocked number id instead of re-searching by country')
+assert.ok(numberBridgerSource.includes('balance_trx=balance_trx-$1'),'Number purchase debits Flame Coin atomically')
+assert.ok(numberBridgerSource.includes('AND balance_trx >= $1'),'Number purchase cannot overdraw the Bridger wallet during concurrent movement')
+assert.ok(numberBridgerSource.includes("gate:'stock_changed'"),'Number purchase safely rejects a stock race without charging the Bridger')
+assert.ok(numberBridgerSource.includes('fallbackOffer'),'Legacy zero-price stock is repaired from the published country price')
+assert.ok(numberBridgerSource.includes('FILTER (WHERE n.price_flame_coin>0)'),'Number Bay display ignores invalid legacy zero-price stock when choosing the visible price')
+assert.ok(numberBridgerSource.includes('[Bridger Number receipt after completed purchase]'),'Receipt failure after commit cannot report a completed number assignment as a failed purchase')
 assert.ok(numberBridgerSource.includes("action==='order_country'"),'Bridgers can place an out-of-stock country order')
 assert.ok(numberBridgerSource.includes("gate:'stock_available'"),'Country ordering redirects Bridgers to instant purchase when stock is present')
 assert.ok(numberBridgerSource.includes("entry_type,'whatsapp_number_order'")||numberBridgerSource.includes("'whatsapp_number_order'"),'Country orders debit Flame Coin through the ledger')
@@ -1308,6 +1357,13 @@ assert.ok(clientEnvironmentNavigationSource.includes("'Home World'"),'Client nav
 assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
 
 for(const file of [
+  'lib/weave-interaction-motion.ts',
+  'lib/weave-visual-profile.ts',
+  'components/world/use-visual-runtime.ts',
+  'components/world/interaction-motion-field.tsx',
+  'app/(app)/admin/visual-systems/page.tsx',
+  'components/events/flame-event-world-decorations.tsx',
+  'components/events/flame-event-artifact.tsx',
   'lib/weave-environment-runtime-profile.ts',
   'components/world/use-environment-runtime-config.ts',
   'components/admin/environment-runtime-controls.tsx',

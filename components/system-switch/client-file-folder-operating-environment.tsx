@@ -460,37 +460,25 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
   return (
     <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-amber-200/10 bg-[#120c08]/88 shadow-[0_34px_110px_rgba(0,0,0,.42)] backdrop-blur-xl" data-file-folder-world="progressive-construction-territory">
-      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_14%_0%,rgba(249,115,22,.12),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(18,12,8,.04))] p-5 md:p-7">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3">
-              <FolderOpen className="h-6 w-6 text-sky-300" />
-            </div>
-            <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.28em] text-amber-200">Main File Folder · Client Construction Territory</p>
-              <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">{data.workshop.title}</h1>
-              <p className="mt-2 text-xs text-slate-400">{data.client.name} · {data.client.file_number}</p>
-            </div>
+      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_14%_0%,rgba(249,115,22,.12),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(18,12,8,.04))] px-4 py-4 md:p-7">
+        <div className="flex items-start gap-3 md:gap-4">
+          <div className="hidden rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3 sm:block">
+            <FolderOpen className="h-6 w-6 text-sky-300" />
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-[9px]">
-            <div className="rounded-xl border border-amber-300/15 bg-amber-400/5 px-4 py-3">
-              <p className="uppercase tracking-wider text-amber-300">Building</p>
-              <p className="mt-1 text-xl font-black text-white">{activeBuilds.length}</p>
-            </div>
-            <div className="rounded-xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-3">
-              <p className="uppercase tracking-wider text-emerald-300">Live</p>
-              <p className="mt-1 text-xl font-black text-white">{systems.length}</p>
-            </div>
-            <div className="rounded-xl border border-violet-300/15 bg-violet-400/5 px-4 py-3">
-              <p className="uppercase tracking-wider text-violet-300">Build Power</p>
-              <p className="mt-1 text-xl font-black text-white">×{Number(world?.buildFunding?.buildSpeedMultiplier || data.build_funding?.buildSpeedMultiplier || 1).toFixed(2)}</p>
-            </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Client Construction Territory</p>
+            <h1 className="mt-1 truncate text-xl font-black text-white md:mt-2 md:text-3xl">{data.workshop.title}</h1>
+            <p className="mt-1 truncate text-[10px] text-slate-400 md:mt-2 md:text-xs">{data.client.name} · {data.client.file_number}</p>
           </div>
         </div>
-
+        <div className="mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2 text-[8px] uppercase tracking-wider text-stone-500 md:mt-5 md:grid md:grid-cols-3 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[9px]">
+          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3"><b className="text-base text-amber-100 md:mt-1 md:block md:text-xl">{activeBuilds.length}</b><span className="text-amber-300">Building</span></div>
+          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-emerald-300/15 md:bg-emerald-400/5 md:px-4 md:py-3"><b className="text-base text-emerald-100 md:mt-1 md:block md:text-xl">{systems.length}</b><span className="text-emerald-300">Live</span></div>
+          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-violet-300/15 md:bg-violet-400/5 md:px-4 md:py-3"><b className="text-base text-violet-100 md:mt-1 md:block md:text-xl">×{Number(world?.buildFunding?.buildSpeedMultiplier || data.build_funding?.buildSpeedMultiplier || 1).toFixed(2)}</b><span className="text-violet-300">Build power</span></div>
+        </div>
       </header>
 
-      <div className="p-4 pb-0 md:p-6 md:pb-0">
+      <div className="p-2 pb-0 sm:p-4 sm:pb-0 md:p-6 md:pb-0">
         <ClientFileFolder3D
           activeSurface={current.key}
           onSurfaceChange={(next) => {
@@ -522,28 +510,24 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       </div>
 
       <div className="p-4 md:p-6">
-        <section className="mt-4 border-y border-amber-100/10 bg-[#18110c]/55 px-2 py-4 md:px-4">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">Construction sequence</p>
-              <p className="mt-1 text-[11px] font-bold text-stone-300">Every system has one physical progression. The world changes as each stage becomes real.</p>
+        <section aria-label="Construction sequence" className="mt-3 border-y border-amber-100/10 bg-[#18110c]/55 px-2 py-2.5 md:mt-4 md:px-4 md:py-4" data-file-folder-awareness="compact-build-sequence">
+          <div className="flex items-center gap-3">
+            <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-amber-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">
+              <Hammer className="h-3.5 w-3.5"/>Build
+            </button>
+            <div className="flex min-w-0 flex-1 snap-x snap-mandatory gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {BUILD_LADDER.map((stage,index)=><div key={stage.label} className="flex shrink-0 snap-start items-center gap-1.5 px-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full border border-amber-200/20 bg-[#21150d] text-[7px] font-black text-amber-100">{index+1}</span>
+                <span className="whitespace-nowrap text-[7px] font-black uppercase tracking-[.05em] text-stone-400 md:text-[8px] md:text-stone-300">{stage.label}</span>
+                {index<BUILD_LADDER.length-1&&<span className="h-px w-3 bg-amber-200/15 md:w-5"/>}
+              </div>)}
             </div>
-            <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center justify-center gap-2 border-b border-amber-200/40 px-1 py-2 text-[9px] font-black uppercase tracking-[.14em] text-amber-100"><Hammer className="h-3.5 w-3.5"/>Enter Construction Yard</button>
+            <p className="hidden max-w-xs text-[9px] leading-4 text-stone-500 lg:block">Blueprint → physical formation → live operation. The active construction world below carries the detailed location.</p>
           </div>
-          <div className="mt-4 flex min-w-max gap-0 overflow-x-auto pb-1">
-            {BUILD_LADDER.map((stage,index)=><div key={stage.label} className="relative flex min-w-[145px] flex-1 items-start gap-2 pr-5">
-              <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-amber-200/20 bg-[#21150d] text-[8px] font-black text-amber-100">{index+1}</div>
-              {index<BUILD_LADDER.length-1&&<span className="absolute left-7 top-3.5 h-px w-full bg-gradient-to-r from-amber-200/25 to-amber-200/5"/>}
-              <div className="relative z-10 bg-[#18110c]/80 pr-2"><p className="text-[9px] font-black uppercase text-white">{stage.label}</p><p className="mt-1 text-[8px] leading-3 text-stone-500">{stage.detail}</p></div>
-            </div>)}
-          </div>
-          {surface==='builds'&&<div className="mt-4 flex gap-2 overflow-x-auto border-t border-amber-100/10 pt-3">
-            {studioDistricts.map((item,index)=><button key={item.district} onClick={()=>travelToStudio(item.district)} className="shrink-0 border-b border-stone-700 px-2 py-2 text-left transition hover:border-amber-300"><span className="mr-2 text-[8px] font-black text-amber-300">{String(index+1).padStart(2,'0')}</span><span className="text-[9px] font-black uppercase text-stone-200">{item.label}</span><span className="ml-2 text-[7px] uppercase text-stone-600">{item.phase}</span></button>)}
-          </div>}
         </section>
 
-        <div className="mt-4 min-w-0">
-          <div className="mb-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300">
+        <div className="mt-3 min-w-0 md:mt-4">
+          <div className="mb-3 flex h-9 items-center gap-2 border-b border-white/10 px-1 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400 md:mb-4 md:h-auto md:rounded-2xl md:border md:bg-black/20 md:px-4 md:py-3 md:text-[9px] md:tracking-[0.2em] md:text-slate-300">
             <CurrentIcon className={`h-3.5 w-3.5 ${surfaceTone[current.tone]?.icon || 'text-sky-300'}`} />
             Main File Folder <span className="text-white/25">/</span> <span className="text-white">{current.label}</span>
           </div>

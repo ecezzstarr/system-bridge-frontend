@@ -21,12 +21,15 @@ import { useAuth } from '@/lib/auth-provider'
 import { getAuthHeaders } from '@/lib/auth-client'
 import { WeaveSystemRoom } from '@/components/world/weave-system-room'
 import { FlameEventArtifact3D,FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
+import { InteractionMotionField } from '@/components/world/interaction-motion-field'
+import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 import {
   DEFAULT_FLAME_ARTIFACT_CONFIG,
   FLAME_ARTIFACT_SURFACES,
   FLAME_ARTIFACT_SURFACE_LABELS,
   normalizeFlameArtifactConfig,
   type FlameArtifactVisualConfig,
+  type VisualWorldMode,
 } from '@/lib/weave-visual-profile'
 
 type Revision={
@@ -51,6 +54,13 @@ type WorkshopPayload={
 }
 
 const paletteKeys=['sky','blue','white','red','ember','dark'] as const
+const worldModes:{key:VisualWorldMode;label:string;detail:string}[]=[
+  {key:'normal',label:'Normal WEAVE',detail:'Subtle living current across daily operation.'},
+  {key:'flame-event',label:'Flame Event',detail:'Fire and Burning River become the dominant field.'},
+  {key:'quiet-river',label:'Quiet River',detail:'Continuity and current lead; flame becomes restrained.'},
+  {key:'ceremony',label:'Ceremony',detail:'Balanced fire, light and current for public moments.'},
+  {key:'night-operations',label:'Night Operations',detail:'Lower flame with stronger route/current readability.'},
+]
 
 function Slider({
   label,
@@ -135,6 +145,16 @@ export default function VisualSystemsWorkshop(){
         reset_draft:'Default artifact restored to draft.',
         rollback:'Published revision restored live.',
       }
+      if(action==='publish'||action==='rollback'){
+        window.dispatchEvent(new Event('weave:visual-runtime-published'))
+        emitWeaveMotion({
+          kind:action==='publish'?'ignition':'river',
+          label:action==='publish'?'Visual Runtime published live':'Visual Runtime rolled back',
+          intensity:1.35,
+          confirmed:true,
+          source:'visual-systems',
+        })
+      }
       toast.success(labels[action]||'Visual system updated.')
     }catch(error:any){
       toast.error(error.message||'Visual update failed')
@@ -174,7 +194,7 @@ export default function VisualSystemsWorkshop(){
     </section>
     <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[.035] p-4">
       <p className="text-[9px] font-black uppercase tracking-wider text-sky-300">Fixable live</p>
-      <p className="mt-3 text-xs leading-5 text-slate-300">Artifact palette · visibility · motion · scale · glow · orbit strength · registered surface placement.</p>
+      <p className="mt-3 text-xs leading-5 text-slate-300">World mode · live Flame Field · Burning River · route current · system emergence · artifact palette · surface placement.</p>
     </section>
   </>
 
@@ -185,13 +205,18 @@ export default function VisualSystemsWorkshop(){
           <p className="text-[9px] font-black uppercase tracking-[.18em] text-violet-300">Draft preview</p>
           <p className="mt-1 text-xs text-slate-400">This is the draft. Users still see v{version} until Publish Live.</p>
         </div>
-        <div className="relative h-[360px]">
-          {draft.enabled?<Canvas camera={{position:[0,0.15,4.8],fov:44}} dpr={[1,1.5]}>
-            <ambientLight intensity={0.46}/>
-            <pointLight position={[3,4,4]} intensity={18} color="#ffffff"/>
+        <div className="relative h-[360px] overflow-hidden bg-[#0c0806]" data-visual-preview="interaction-motion">
+          <InteractionMotionField configOverride={draft} forceEvent={draft.world.mode==='flame-event'} className="z-0" opacity={0.95}/>
+          {draft.enabled?<div className="relative z-10 h-full"><Canvas camera={{position:[0,0.15,4.8],fov:44}} dpr={[1,1.5]}>
+            <ambientLight intensity={0.42}/>
+            <pointLight position={[3,4,4]} intensity={16} color="#fff4dc"/>
             <FlameEventArtifact3D variant="hero" progress={4} active configOverride={draft}/>
             <OrbitControls enablePan={false} enableZoom={false}/>
-          </Canvas>:<div className="flex h-full items-center justify-center p-8 text-center"><div><Eye className="mx-auto h-7 w-7 text-slate-600"/><p className="mt-3 text-sm font-black text-slate-400">Artifact globally disabled in this draft</p></div></div>}
+          </Canvas></div>:<div className="relative z-10 flex h-full items-center justify-center p-8 text-center"><div><Eye className="mx-auto h-7 w-7 text-slate-600"/><p className="mt-3 text-sm font-black text-slate-400">Artifact disabled · world motion can remain active</p></div></div>}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/70 to-transparent px-4 pb-3 pt-10">
+            <p className="text-[8px] font-black uppercase tracking-[.18em] text-amber-200">World motion · {draft.world.mode}</p>
+            <p className="mt-1 text-[9px] text-stone-400">Flame {draft.world.flameIntensity.toFixed(2)} · River {draft.world.riverIntensity.toFixed(2)} · Emergence {draft.world.emergence.toFixed(2)}</p>
+          </div>
         </div>
         <div className="flex items-center justify-center border-t border-white/10 p-4">
           <FlameEventArtifactMark size="sm" configOverride={draft}/>
@@ -200,6 +225,80 @@ export default function VisualSystemsWorkshop(){
       </section>
 
       <section className="space-y-4">
+        <section className="rounded-3xl border border-orange-300/15 bg-[linear-gradient(180deg,rgba(124,45,18,.08),rgba(2,6,23,.12))] p-4" data-admin-visual-system="world-motion">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[.18em] text-orange-200">Interaction in Motion</p>
+              <h2 className="mt-1 text-lg font-black text-white">World motion authority</h2>
+              <p className="mt-2 max-w-2xl text-[10px] leading-5 text-stone-400">WEAVE does not wear a theme. Flame, river, routes and system emergence are one live motion runtime.</p>
+            </div>
+            <button onClick={()=>setDraft(v=>({...v,world:{...v.world,enabled:!v.world.enabled}}))} className={`rounded-xl border px-3 py-2 text-[8px] font-black uppercase ${draft.world.enabled?'border-emerald-300/20 text-emerald-200':'border-white/10 text-stone-500'}`}>{draft.world.enabled?'World motion live':'World motion paused'}</button>
+          </div>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+            {worldModes.map(mode=><button
+              key={mode.key}
+              onClick={()=>setDraft(v=>({...v,world:{...v.world,mode:mode.key}}))}
+              className={`rounded-xl border p-3 text-left transition ${draft.world.mode===mode.key?'border-orange-200/30 bg-orange-300/[.07]':'border-white/10 bg-black/20 hover:border-white/20'}`}
+            >
+              <span className={`block text-[9px] font-black uppercase ${draft.world.mode===mode.key?'text-orange-100':'text-stone-300'}`}>{mode.label}</span>
+              <span className="mt-1 block text-[8px] leading-3 text-stone-600">{mode.detail}</span>
+            </button>)}
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <section className="rounded-2xl border border-orange-300/10 bg-black/20 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[8px] font-black uppercase tracking-[.16em] text-orange-200">Flame Field</p>
+                <button onClick={()=>setDraft(v=>({...v,world:{...v.world,flameEnabled:!v.world.flameEnabled}}))} className={`text-[8px] font-black uppercase ${draft.world.flameEnabled?'text-emerald-300':'text-stone-600'}`}>{draft.world.flameEnabled?'FLOWING':'OFF'}</button>
+              </div>
+              <div className="mt-3 space-y-2">
+                <Slider label="Flame intensity" value={draft.world.flameIntensity} min={0} max={2} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,flameIntensity:value}}))}/>
+                <Slider label="Flame flow" value={draft.world.flameFlow} min={0.1} max={2.5} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,flameFlow:value}}))}/>
+                <Slider label="Ember density" value={draft.world.emberDensity} min={0} max={1.5} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,emberDensity:value}}))}/>
+                <Slider label="Heat presence" value={draft.world.heatDistortion} min={0} max={1} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,heatDistortion:value}}))}/>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-sky-300/10 bg-black/20 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[8px] font-black uppercase tracking-[.16em] text-sky-200">Burning River</p>
+                <button onClick={()=>setDraft(v=>({...v,world:{...v.world,riverEnabled:!v.world.riverEnabled}}))} className={`text-[8px] font-black uppercase ${draft.world.riverEnabled?'text-emerald-300':'text-stone-600'}`}>{draft.world.riverEnabled?'FLOWING':'OFF'}</button>
+              </div>
+              <div className="mt-3 space-y-2">
+                <Slider label="River presence" value={draft.world.riverIntensity} min={0} max={2} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,riverIntensity:value}}))}/>
+                <Slider label="River speed" value={draft.world.riverSpeed} min={0.1} max={2.5} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,riverSpeed:value}}))}/>
+                <Slider label="Reflection" value={draft.world.reflection} min={0} max={1.5} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,reflection:value}}))}/>
+                <Slider label="Route current" value={draft.world.routeCurrent} min={0} max={2} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,routeCurrent:value}}))}/>
+              </div>
+            </section>
+          </div>
+
+          <div className="mt-3">
+            <Slider label="Live system emergence" value={draft.world.emergence} min={0} max={2} step={0.05} onChange={value=>setDraft(v=>({...v,world:{...v.world,emergence:value}}))}/>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-black/20 p-4" data-admin-motion-tests="true">
+          <p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-200">Motion response test</p>
+          <p className="mt-2 text-[10px] leading-5 text-stone-500">Test the live interaction language without creating a business record. These pulses are visual/audio diagnostics only.</p>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+            {[
+              ['ignition','Ignition'],
+              ['river','River'],
+              ['route','Route'],
+              ['emergence','Emergence'],
+              ['value','Value'],
+              ['arrival','Arrival'],
+              ['confirmation','Confirm'],
+            ].map(([kind,label])=><button
+              key={kind}
+              onClick={()=>emitWeaveMotion({kind:kind as any,label:`Admin motion test · ${label}`,intensity:1.15,confirmed:true,source:'visual-systems-test'})}
+              className="rounded-xl border border-white/10 bg-white/[.025] px-3 py-2 text-[8px] font-black uppercase tracking-[.08em] text-stone-300 transition hover:border-amber-200/25 hover:text-amber-100"
+            >{label}</button>)}
+          </div>
+        </section>
+
         <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
           <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.18em] text-sky-300">Identity</p><h2 className="mt-1 text-lg font-black text-white">Artifact profile</h2></div><button onClick={()=>setDraft(v=>({...v,enabled:!v.enabled}))} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${draft.enabled?'border-emerald-300/20 bg-emerald-400/[.06] text-emerald-300':'border-red-300/20 bg-red-400/[.06] text-red-300'}`}>{draft.enabled?'Enabled':'Disabled'}</button></div>
           <label className="mt-4 block"><span className="text-[9px] font-black uppercase text-slate-500">Name</span><input value={draft.name} onChange={e=>setDraft(v=>({...v,name:e.target.value}))} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white"/></label>
@@ -258,8 +357,8 @@ export default function VisualSystemsWorkshop(){
   return <WeaveSystemRoom
     roomKey="administration-visual-systems"
     eyebrow="Administration · Runtime Design Authority"
-    title="Visual Systems Workshop"
-    detail="Control registered WEAVE visual artifacts as live runtime systems. Draft safely, preview locally, publish without Cloud Run deployment, hide a faulty placement instantly, and roll back any published revision."
+    title="Visual Systems Workshop · Interaction in Motion"
+    detail="Operate WEAVE as motion itself. Control live Flame Field, Burning River, route current, system emergence and registered artifacts from one runtime authority; preview, publish and roll back without a Cloud Run deployment."
     tone="violet"
     left={left}
     center={center}

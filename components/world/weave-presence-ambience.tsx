@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-runtime-config'
+import type { WeaveMotionDetail } from '@/lib/weave-interaction-motion'
 
 type DjAudioState={
   playing?:boolean
@@ -333,6 +334,29 @@ export function WeavePresenceAmbience(){
     }
     window.addEventListener('weave:ambience-preview',onPreview as EventListener)
     return()=>window.removeEventListener('weave:ambience-preview',onPreview as EventListener)
+  },[playBell,playDistantMovement,playFootstep])
+
+  useEffect(()=>{
+    const onSystemMotion=(event:Event)=>{
+      const runtime=runtimeRef.current
+      if(!runtime)return
+      const detail=(event as CustomEvent<WeaveMotionDetail>).detail
+      if(!detail?.kind||detail.confirmed===false)return
+
+      if(detail.kind==='arrival'){
+        const pan=(Math.random()*1.0)-.5
+        playFootstep(runtime,0,pan)
+        playFootstep(runtime,.32,pan+.04)
+      }else if(detail.kind==='route'||detail.kind==='river'){
+        playDistantMovement(runtime)
+      }else if(detail.kind==='confirmation'||detail.kind==='emergence'||detail.kind==='ignition'){
+        playBell(runtime)
+      }else if(detail.kind==='value'){
+        playDistantMovement(runtime)
+      }
+    }
+    window.addEventListener('weave:system-motion',onSystemMotion as EventListener)
+    return()=>window.removeEventListener('weave:system-motion',onSystemMotion as EventListener)
   },[playBell,playDistantMovement,playFootstep])
 
   useEffect(()=>{

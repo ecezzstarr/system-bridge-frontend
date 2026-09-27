@@ -159,7 +159,7 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Origin Systems', detail: 'Inspect origin runtime and system foundations.', href: '/admin/origin-systems', icon: Cloud, district: 'Institution + infrastructure' },
   { label: 'Enterprise Systems Workshop', detail: 'Million-scale software, hardware and infrastructure systems.', href: '/admin/enterprise-systems', icon: Cloud, district: 'Institution + infrastructure' },
   { label: 'Infrastructure', detail: 'Cloud Run, runtime and maintenance control.', href: '/admin/infrastructure', icon: Cloud, district: 'Institution + infrastructure' },
-  { label: 'Visual Systems Workshop', detail: 'Publish registered visual artifact changes live with version history and rollback.', href: '/admin/visual-systems', icon: Palette, district: 'Institution + infrastructure' },
+  { label: 'Visual Systems · Interaction in Motion', detail: 'Govern live Flame, River, route current, emergence and visual runtime with history and rollback.', href: '/admin/visual-systems', icon: Palette, district: 'Institution + infrastructure' },
   { label: 'Environment Organizer', detail: 'Withdraw, restore and reorder registered cards and pages without deleting source.', href: '/admin/environment-organizer', icon: LayoutTemplate, district: 'Institution + infrastructure' },
   { label: 'Loop Workshop', detail: 'Create and publish company loops.', href: '/admin/loop-workshop', icon: Network, district: 'Atmosphere + communication' },
   { label: 'DJ Workshop', detail: 'System sound and live atmosphere.', href: '/admin/dj-workshop', icon: Radio, district: 'Atmosphere + communication' },

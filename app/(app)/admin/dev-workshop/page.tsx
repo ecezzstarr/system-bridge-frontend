@@ -258,26 +258,64 @@ export default function DevWorkshop() {
     }
   }
 
-  // Self-Repair Function
+  const formatIntegrityReport=(report:any)=>{
+    const lines:string[]=[
+      `Mode: ${String(report?.mode||'scan').toUpperCase()}`,
+      `Healthy: ${Number(report?.summary?.healthy||0)} · Warning: ${Number(report?.summary?.warning||0)} · Repaired: ${Number(report?.summary?.repaired||0)}`,
+    ]
+    for(const check of report?.checks||[]){
+      const mark=check.status==='healthy'?'OK':check.status==='repaired'?'FIX':'WARN'
+      lines.push(`[${mark}] ${check.label}: ${check.detail}`)
+    }
+    if(Array.isArray(report?.repairs)&&report.repairs.length){
+      lines.push('',...report.repairs.map((repair:string)=>`REPAIR · ${repair}`))
+    }
+    return lines
+  }
+
+  const runIntegrityScan=async()=>{
+    setIsRepairing(true)
+    setTerminalHistory(prev=>[...prev,'$ WEAVE Integrity Engine · scan',''])
+    try{
+      const response=await fetch('/api/admin/integrity-engine',{
+        headers:getAuthHeaders(),
+        cache:'no-store',
+      })
+      const report=await response.json()
+      if(!response.ok||!report.success)throw new Error(report.error||'Integrity scan failed')
+      setTerminalHistory(prev=>[...prev,...formatIntegrityReport(report),''])
+      if(report.summary?.warning)toast.warning(`${report.summary.warning} integrity warning(s) found`)
+      else toast.success('WEAVE business-state integrity is healthy')
+    }catch(error:any){
+      setTerminalHistory(prev=>[...prev,`ERROR: ${error?.message||'Integrity scan failed'}`,''])
+      toast.error(error?.message||'Integrity scan failed')
+    }finally{
+      setIsRepairing(false)
+    }
+  }
+
+  // Safe business-state repair. This never invents balances, prospects or
+  // numbers; it only repairs inconsistencies proven by existing records.
   const runSelfRepair = async () => {
     setIsRepairing(true)
-    setTerminalHistory(prev => [...prev, '$ Running system self-repair...', 'Checking git status and dependencies...', ''])
+    setTerminalHistory(prev => [...prev, '$ WEAVE Integrity Engine · safe repair', 'Scanning Prospect, Number Bay, Bridger profile and wallet state...', ''])
     try {
-      const gitRes = await fetch('/api/eight/execute', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ action: 'git_status', payload: {} })
+      const response=await fetch('/api/admin/integrity-engine',{
+        method:'POST',
+        headers:getAuthHeaders(),
+        body:JSON.stringify({action:'repair_safe'}),
       })
-      const gitData = await gitRes.json()
-      
-      if (gitData.success && gitData.hasChanges) {
-        setTerminalHistory(prev => [...prev, `Detected ${gitData.changes.length} uncommitted changes.`, ''])
+      const report=await response.json()
+      if(!response.ok||!report.success)throw new Error(report.error||'Integrity repair failed')
+      setTerminalHistory(prev=>[...prev,...formatIntegrityReport(report),'','REPAIR COMPLETE.',''])
+      if(report.summary?.warning){
+        toast.warning(`Safe repair completed; ${report.summary.warning} item(s) still need Administration`)
+      }else{
+        toast.success('WEAVE business-state repair completed')
       }
-
-      setTerminalHistory(prev => [...prev, 'Fixing path alignment...', 'Checking GCP credentials...', 'REPAIR COMPLETE.', ''])
-      toast.success('Steadied. You may try again.')
-    } catch (error) {
-      toast.error("That didn't steady")
+    } catch (error:any) {
+      setTerminalHistory(prev=>[...prev,`ERROR: ${error?.message||'Integrity repair failed'}`,''])
+      toast.error(error?.message||"That didn't steady")
     } finally {
       setIsRepairing(false)
     }
@@ -820,7 +858,8 @@ export default function DevWorkshop() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold flex items-center gap-2"><Rocket className="h-6 w-6 text-cyan-400" /> Deploy Center</h2>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={runSelfRepair} disabled={isRepairing}><Wrench className="h-4 w-4 mr-2" /> Repair</Button>
+                <Button variant="outline" onClick={runIntegrityScan} disabled={isRepairing}><Activity className="h-4 w-4 mr-2" /> Integrity Scan</Button>
+                <Button variant="outline" onClick={runSelfRepair} disabled={isRepairing}><Wrench className="h-4 w-4 mr-2" /> Safe Repair</Button>
                 <Button variant="outline" disabled className="border-purple-600/30 text-purple-300/60">
                   <GitBranch className="h-4 w-4 mr-2" /> Source Controlled
                 </Button>

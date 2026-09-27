@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import type { WeaveEvent } from '@/lib/weave-event'
 import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
+import { InteractionMotionField } from '@/components/world/interaction-motion-field'
 
 export function FlameEventWorldDecorations({
   event,
@@ -41,7 +42,8 @@ export function FlameEventWorldDecorations({
       data-flame-event-world="active"
       data-flame-event-loop={event.loopNumber}
     >
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-red-500/[0.07] via-sky-400/[0.025] to-transparent" />
+      <InteractionMotionField forceEvent className="z-0" opacity={soft ? 0.66 : 0.96}/>
+      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-red-500/[0.055] via-amber-400/[0.02] to-transparent" />
 
       <div className="absolute left-1/2 top-3 -translate-x-1/2 [transform:translateZ(34px)]">
         <div className="relative min-w-[250px] overflow-hidden rounded-b-2xl border-x border-b border-red-200/15 bg-[#17080b]/70 px-5 py-2.5 text-center shadow-[0_18px_60px_rgba(239,68,68,.12)] backdrop-blur-md sm:min-w-[360px]">
@@ -55,7 +57,7 @@ export function FlameEventWorldDecorations({
         </div>
       </div>
 
-      <div className="absolute left-[3%] top-[14%] hidden h-[52%] w-24 md:block [transform:translateZ(-18px)_rotateY(10deg)]">
+      <div className="absolute left-[3%] top-[18%] hidden h-[42%] w-16 lg:block opacity-45 [transform:translateZ(-18px)_rotateY(8deg)]">
         <div className="absolute left-1/2 top-0 h-full w-px bg-gradient-to-b from-sky-100/45 via-sky-300/18 to-transparent" />
         {['FLAME', 'LOOP 1', 'PRESENCE'].map((label, index) => (
           <motion.div
@@ -71,7 +73,7 @@ export function FlameEventWorldDecorations({
         ))}
       </div>
 
-      <div className="absolute right-[3%] top-[16%] hidden h-[50%] w-24 md:block [transform:translateZ(-12px)_rotateY(-10deg)]">
+      <div className="absolute right-[3%] top-[18%] hidden h-[42%] w-16 lg:block opacity-45 [transform:translateZ(-12px)_rotateY(-8deg)]">
         <div className="absolute left-1/2 top-0 h-full w-px bg-gradient-to-b from-amber-100/45 via-red-300/16 to-transparent" />
         {['OPENING', 'WEAVE', 'WORLD'].map((label, index) => (
           <motion.div

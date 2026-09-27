@@ -1,5 +1,6 @@
 import { sql } from './db'
 import { generateNumberSeries, createProspectPackage } from './market'
+import { DAILY_PROSPECT_RESERVE } from './bridger-daily-prospect-engine'
 
 export class FulfillmentAgent {
   private adminId: string
@@ -24,18 +25,35 @@ export class FulfillmentAgent {
    * 2. PACKAGE & PUBLISH: Bundle available prospects into marketplace packages
    */
   async packageAvailable(limit: number = 3, priceTrx: number = 5) {
-    // Find available contacts that aren't packaged yet
+    // Paid marketplace packaging must never consume the entire free Daily
+    // Prospect reserve. The reserve remains unowned/unpackaged for Bridgers.
+    const reserveCount = await sql`
+      SELECT COUNT(*)::int AS count
+      FROM market_prospect_contacts m
+      WHERE m.status='available'
+        AND m.package_id IS NULL
+        AND COALESCE(NULLIF(TRIM(m.whatsapp_number),''),NULLIF(TRIM(m.phone),'')) IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM market_prospect_outreach o WHERE o.contact_id=m.id)
+    `
+    const availableCount=Number((reserveCount as any[])[0]?.count||0)
+
+    if (availableCount < limit + DAILY_PROSPECT_RESERVE) {
+      console.log(`[FulfillmentAgent] Preserving Daily Prospect reserve (${availableCount} available; need ${limit} package + ${DAILY_PROSPECT_RESERVE} reserve)`)
+      return null
+    }
+
     const available = await sql`
-      SELECT id FROM market_prospect_contacts
-      WHERE status = 'available'
-      ORDER BY created_at ASC
+      SELECT m.id
+      FROM market_prospect_contacts m
+      WHERE m.status='available'
+        AND m.package_id IS NULL
+        AND COALESCE(NULLIF(TRIM(m.whatsapp_number),''),NULLIF(TRIM(m.phone),'')) IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM market_prospect_outreach o WHERE o.contact_id=m.id)
+      ORDER BY m.created_at ASC
       LIMIT ${limit}
     `
     
-    if (available.length < limit) {
-      console.log(`[FulfillmentAgent] Not enough available contacts to package (${available.length}/${limit})`)
-      return null
-    }
+    if (available.length < limit) return null
     
     const contactIds = available.map(c => c.id)
     const pkg = await createProspectPackage(this.adminId, contactIds, priceTrx)

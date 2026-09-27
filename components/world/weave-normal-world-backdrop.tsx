@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import { usePresenceCamera } from '@/components/world/presence-camera'
+import { InteractionMotionField } from '@/components/world/interaction-motion-field'
 
 const DISTRICTS=[
   ['Bridge','Bridge'],
@@ -49,6 +50,7 @@ export function WeaveNormalWorldBackdrop() {
       data-camera-level={scene.level}
       data-weave-world-material="stone-bronze-fire-water"
     >
+      <InteractionMotionField className="z-[1]" opacity={0.72}/>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_52%_5%,rgba(255,204,128,.24),transparent_24%),radial-gradient(circle_at_18%_36%,rgba(249,115,22,.10),transparent_23%),radial-gradient(circle_at_82%_34%,rgba(251,191,36,.08),transparent_25%),linear-gradient(180deg,#3a1d0f_0%,#17100b_28%,#0a0d0e_62%,#060707_100%)]"/>
 
       <div className="absolute inset-x-0 top-0 h-[42%] opacity-60 [background-image:linear-gradient(100deg,transparent_0_16%,rgba(255,224,178,.04)_18%,transparent_20%_47%,rgba(255,224,178,.035)_50%,transparent_53%_80%,rgba(255,224,178,.04)_82%,transparent_84%)]"/>

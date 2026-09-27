@@ -6,6 +6,7 @@ import { Gift, MessageCircle, Phone, CheckCircle2, RefreshCw, Users } from 'luci
 import { Button } from '@/components/ui/button'
 import { getAuthHeaders } from '@/lib/auth-client'
 import { openWhatsAppWithNumber } from '@/components/external-apps-nav'
+import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 
 export function DailyProspectClaim() {
   const [loading, setLoading] = useState(true)
@@ -47,8 +48,11 @@ export function DailyProspectClaim() {
       if (!response.ok) throw new Error(data.error || 'No free prospect is available')
       setClaimed(true)
       setClaim(data.claim || null)
+      emitWeaveMotion({kind:'route',label:'Daily Prospect entered Bridger outreach',intensity:1.15,confirmed:true,source:'daily-prospect'})
     } catch (err: any) {
-      setError(err?.message || 'Unable to claim daily prospect')
+      const label=err?.message||'Unable to claim daily prospect'
+      emitWeaveMotion({kind:'interruption',label,intensity:.6,confirmed:true,source:'daily-prospect'})
+      setError(label)
     } finally {
       setClaiming(false)
     }
@@ -84,6 +88,7 @@ export function DailyProspectClaim() {
 
           {!claimed && !loading && (
             <Button
+              data-presence-output="Claim Daily Prospect into Bridger outreach"
               onClick={claimToday}
               disabled={claiming}
               className="bg-emerald-600 hover:bg-emerald-700"

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Cloud, GitBranch, LayoutTemplate, Megaphone, Palette, Radio, Sparkles } from 'lucide-react'
+import { Cloud, GitBranch, LayoutTemplate, Megaphone, Palette, Radio, Sparkles, Wrench } from 'lucide-react'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const workshops = [
@@ -15,6 +15,12 @@ const workshops = [
     icon: Cloud,
   },
   {
+    href: '/admin/dev-workshop?tab=terminal',
+    title: 'WEAVE Integrity Engine',
+    description: 'Scan and safely repair Prospect reserve, Number Bay inventory, Bridger position and wallet state without a code deployment.',
+    icon: Wrench,
+  },
+  {
     href: '/admin/ad-workshop',
     title: 'Ad Workshop',
     description: 'Create live advertisements, target participant roles, choose placement and publish without redeploying the app.',
@@ -22,8 +28,8 @@ const workshops = [
   },
   {
     href: '/admin/visual-systems',
-    title: 'Visual Systems Workshop',
-    description: 'Draft, publish, hide and roll back registered WEAVE visual artifacts live without a Cloud Run deployment.',
+    title: 'Visual Systems · Interaction in Motion',
+    description: 'Operate WEAVE world motion live: Flame Field, Burning River, route current, system emergence, visual artifacts and rollback without a Cloud Run deployment.',
     icon: Palette,
   },
   {
