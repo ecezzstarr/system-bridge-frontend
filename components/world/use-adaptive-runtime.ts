@@ -3,7 +3,7 @@
 import { useEffect,useState,useSyncExternalStore,type RefObject } from 'react'
 
 type Budget={level:0|1|2;hidden:boolean;covered:boolean;reducedMotion:boolean;fps:number;dpr:number;shadows:boolean}
-const initial:Budget={level:1,hidden:false,covered:false,reducedMotion:false,fps:30,dpr:1,shadows:false}
+const initial:Budget={level:1,hidden:false,covered:false,reducedMotion:false,fps:20,dpr:.85,shadows:false}
 let snapshot=initial
 const listeners=new Set<()=>void>()
 let stop:(()=>void)|undefined
@@ -13,7 +13,7 @@ let sampleStart=0
 let lastDowngrade=0
 let initialized=false
 function publish(level:0|1|2,hidden=snapshot.hidden,reducedMotion=snapshot.reducedMotion){
-  const next={level,hidden,covered:snapshot.covered,reducedMotion,fps:level===2?30:level===1?24:15,dpr:level===2?1.5:level===1?1:.75,shadows:level===2}
+  const next={level,hidden,covered:snapshot.covered,reducedMotion,fps:level===2?30:level===1?20:12,dpr:level===2?1.35:level===1?.85:.7,shadows:level===2}
   if(JSON.stringify(next)===JSON.stringify(snapshot))return
   snapshot=next
   document.documentElement.dataset.weaveQuality=String(level)
@@ -23,6 +23,7 @@ function publish(level:0|1|2,hidden=snapshot.hidden,reducedMotion=snapshot.reduc
 export function setRuntimeCovered(covered:boolean){
   if(snapshot.covered===covered)return
   snapshot={...snapshot,covered}
+  document.documentElement.dataset.weaveCovered=covered?'true':'false'
   listeners.forEach(listener=>listener())
 }
 // Called by existing render loops; the monitor creates no animation loop itself.

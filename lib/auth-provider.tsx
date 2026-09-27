@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 // Local storage keys
 const TOKEN_KEY = 'ssb_auth_token'
@@ -130,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetchWithTimeout('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -170,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetchWithTimeout('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

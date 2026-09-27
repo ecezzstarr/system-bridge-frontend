@@ -15,6 +15,10 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
   return new Promise<void>(resolve=>{
     const loading=config.loading
     const maximum=Math.min(loading.maxWaitMs,mode==='boot'?8000:3000)
+    // A destination may explicitly hold the clean reveal while it resolves its
+    // own state, but no route is allowed to keep the whole application covered
+    // forever. After this ceiling the route's own loader/error surface is shown.
+    const absoluteMaximum=maximum+(mode==='boot'?7000:4000)
     const minimum=Math.min(mode==='boot'?loading.bootMinMs:loading.transitMinMs,maximum)
     const started=performance.now()
     const cleanup:Array<()=>void>=[]
@@ -64,9 +68,8 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
     if(document.body)observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-environment-pending']})
     cleanup.push(()=>observer.disconnect())
     const hardFinish=()=>{
-      // The hard bound releases stalled browser resources, never an application
-      // surface that explicitly reports that its environment is still forming.
-      if(hasPendingSurface()){
+      const elapsed=performance.now()-started
+      if(hasPendingSurface()&&elapsed<absoluteMaximum){
         hardTimer=setTimeout(hardFinish,1000)
         return
       }

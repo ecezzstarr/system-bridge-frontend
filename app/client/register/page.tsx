@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-provider'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 function ClientRegisterContent() {
   const router = useRouter()
@@ -40,7 +41,7 @@ function ClientRegisterContent() {
     if (!fn) return
     setIsLoading(true)
     try {
-      const valRes = await fetch(`/api/client/weave-validate?fileNumber=${fn}`)
+      const valRes = await fetchWithTimeout(`/api/client/weave-validate?fileNumber=${fn}`)
       const result = await valRes.json()
 
       if (result.success) {
@@ -81,7 +82,7 @@ function ClientRegisterContent() {
 
     setIsLoading(true)
     try {
-      const res = await fetch('/api/client/weave-register', {
+      const res = await fetchWithTimeout('/api/client/weave-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -108,7 +109,7 @@ function ClientRegisterContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-transparent p-4 relative overflow-hidden">
+    <div className="min-h-dvh flex flex-col items-center justify-start sm:justify-center bg-transparent px-4 py-8 relative overflow-x-hidden overflow-y-auto">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-900 rounded-full blur-[120px]" />
@@ -264,7 +265,7 @@ function ClientRegisterContent() {
 export default function ClientRegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-transparent">
+      <div className="min-h-dvh flex items-center justify-center bg-transparent">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     }>

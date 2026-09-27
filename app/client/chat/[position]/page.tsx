@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Send, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
+import { visiblePoll } from '@/lib/visible-poll'
 
 interface Message {
   id: string
@@ -59,13 +60,8 @@ export default function ClientChatPage() {
     }
 
     fetchMessages(client.id)
-
-    // Poll for new messages every 3 seconds
-    const interval = setInterval(() => {
-      fetchMessages(client.id, true)
-    }, 3000)
-
-    return () => clearInterval(interval)
+    const stop = visiblePoll(() => fetchMessages(client.id, true), 3000, false)
+    return stop
   }, [router, position, client?.id])
 
   const fetchMessages = async (clientId: string, silent = false) => {

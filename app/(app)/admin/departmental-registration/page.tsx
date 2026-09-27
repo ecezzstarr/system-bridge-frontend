@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
+import { visiblePoll } from '@/lib/visible-poll'
 import { 
   Shield, 
   Key, 
@@ -94,15 +95,15 @@ export default function DepartmentalRegistrationAdmin() {
     fetchCodes()
     fetchChatSummaries()
 
-    const interval = setInterval(fetchChatSummaries, 10000)
-    return () => clearInterval(interval)
+    const stop = visiblePoll(() => fetchChatSummaries(), 10000, false)
+    return stop
   }, [user, router])
 
   useEffect(() => {
     if (selectedClientId) {
       fetchChatMessages(selectedClientId)
-      const interval = setInterval(() => fetchChatMessages(selectedClientId, true), 3000)
-      return () => clearInterval(interval)
+      const stop = visiblePoll(() => fetchChatMessages(selectedClientId, true), 3000, false)
+      return stop
     }
   }, [selectedClientId])
 

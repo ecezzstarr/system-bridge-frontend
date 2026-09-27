@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { CheckCircle2, Clock, Copy, Loader2, RefreshCw, Ticket, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { visiblePoll } from '@/lib/visible-poll'
 
 type EntryTicket = {
   id: string
@@ -47,8 +48,8 @@ export function DepartmentEntryTicketsPanel() {
 
   useEffect(() => {
     load()
-    const timer = window.setInterval(() => load(true), 8000)
-    return () => window.clearInterval(timer)
+    const stop = visiblePoll(() => load(true), 8000, false)
+    return stop
   }, [])
 
   const verify = async (ticketId: string, action: 'approve' | 'reject') => {
