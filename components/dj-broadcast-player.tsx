@@ -49,6 +49,13 @@ export function DJBroadcastPlayer() {
 
   const dragState = useRef({ dragging: false, offsetX: 0, offsetY: 0 })
 
+  const emitDjAudioState = useCallback((playing:boolean) => {
+    if (typeof window === 'undefined') return
+    window.dispatchEvent(new CustomEvent('weave:dj-audio-state', {
+      detail: { playing, trackType: trackTypeRef.current },
+    }))
+  }, [])
+
   useEffect(() => {
     let initial = getDefaultPosition()
     try {
@@ -201,6 +208,7 @@ export function DJBroadcastPlayer() {
     if (!audio) return
     audio.pause()
     audio.muted = true
+    emitDjAudioState(false)
     stopHarmonyAudience()
   }, [stopHarmonyAudience])
 
@@ -218,6 +226,7 @@ export function DJBroadcastPlayer() {
     try {
       audio.muted = false
       await audio.play()
+      emitDjAudioState(true)
       if (trackTypeRef.current === 'music') {
         await startHarmonyAudience()
       } else {
@@ -235,9 +244,12 @@ export function DJBroadcastPlayer() {
       setJoined(false)
       return false
     }
-  }, [startHarmonyAudience, stopHarmonyAudience])
+  }, [emitDjAudioState, startHarmonyAudience, stopHarmonyAudience])
 
-  useEffect(() => () => stopHarmonyAudience(true), [stopHarmonyAudience])
+  useEffect(() => () => {
+    emitDjAudioState(false)
+    stopHarmonyAudience(true)
+  }, [emitDjAudioState, stopHarmonyAudience])
 
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
@@ -279,6 +291,7 @@ export function DJBroadcastPlayer() {
         setTrackArtist(null)
         setAnnouncement(null)
         if (audio && !audio.paused) audio.pause()
+        emitDjAudioState(false)
         stopHarmonyAudience()
         return
       }
@@ -288,6 +301,7 @@ export function DJBroadcastPlayer() {
       setTrackArtist(data.track.artist || null)
       setAnnouncement(data.announcementText || null)
       trackTypeRef.current = data.track.type || 'music'
+      if (audio && !audio.paused) emitDjAudioState(true)
       if (trackTypeRef.current !== 'music') stopHarmonyAudience()
 
       if (!audio) return
@@ -348,7 +362,7 @@ export function DJBroadcastPlayer() {
     } finally {
       syncInFlightRef.current = false
     }
-  }, [user?.id, joined, beginPlayback, applyPersonalPause, stopHarmonyAudience])
+  }, [user?.id, joined, beginPlayback, applyPersonalPause, emitDjAudioState, stopHarmonyAudience])
 
   useEffect(() => {
     const onPersonalDj = (event: Event) => {
@@ -455,7 +469,9 @@ export function DJBroadcastPlayer() {
       <audio
         ref={audioRef}
         preload="auto"
+        data-weave-dj-broadcast="true"
         onPlay={() => {
+          emitDjAudioState(true)
           if (userPausedRef.current) {
             applyPersonalPause()
           } else if (trackTypeRef.current === 'music') {
@@ -463,18 +479,24 @@ export function DJBroadcastPlayer() {
           }
         }}
         onPlaying={() => {
+          emitDjAudioState(true)
           if (userPausedRef.current) {
             applyPersonalPause()
           } else if (trackTypeRef.current === 'music') {
             void startHarmonyAudience()
           }
         }}
-        onPause={() => stopHarmonyAudience()}
+        onPause={() => {
+          emitDjAudioState(false)
+          stopHarmonyAudience()
+        }}
         onEnded={() => {
+          emitDjAudioState(false)
           stopHarmonyAudience()
           void syncBroadcast()
         }}
         onError={() => {
+          emitDjAudioState(false)
           stopHarmonyAudience()
           void syncBroadcast()
         }}
