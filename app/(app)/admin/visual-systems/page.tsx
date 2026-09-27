@@ -279,6 +279,26 @@ export default function VisualSystemsWorkshop(){
           </div>
         </section>
 
+        <section className="rounded-3xl border border-white/10 bg-black/20 p-4" data-admin-motion-tests="true">
+          <p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-200">Motion response test</p>
+          <p className="mt-2 text-[10px] leading-5 text-stone-500">Test the live interaction language without creating a business record. These pulses are visual/audio diagnostics only.</p>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+            {[
+              ['ignition','Ignition'],
+              ['river','River'],
+              ['route','Route'],
+              ['emergence','Emergence'],
+              ['value','Value'],
+              ['arrival','Arrival'],
+              ['confirmation','Confirm'],
+            ].map(([kind,label])=><button
+              key={kind}
+              onClick={()=>emitWeaveMotion({kind:kind as any,label:`Admin motion test · ${label}`,intensity:1.15,confirmed:true,source:'visual-systems-test'})}
+              className="rounded-xl border border-white/10 bg-white/[.025] px-3 py-2 text-[8px] font-black uppercase tracking-[.08em] text-stone-300 transition hover:border-amber-200/25 hover:text-amber-100"
+            >{label}</button>)}
+          </div>
+        </section>
+
         <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
           <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.18em] text-sky-300">Identity</p><h2 className="mt-1 text-lg font-black text-white">Artifact profile</h2></div><button onClick={()=>setDraft(v=>({...v,enabled:!v.enabled}))} className={`rounded-xl border px-3 py-2 text-[9px] font-black uppercase ${draft.enabled?'border-emerald-300/20 bg-emerald-400/[.06] text-emerald-300':'border-red-300/20 bg-red-400/[.06] text-red-300'}`}>{draft.enabled?'Enabled':'Disabled'}</button></div>
           <label className="mt-4 block"><span className="text-[9px] font-black uppercase text-slate-500">Name</span><input value={draft.name} onChange={e=>setDraft(v=>({...v,name:e.target.value}))} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white"/></label>
