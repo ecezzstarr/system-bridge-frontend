@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Cloud, GitBranch, LayoutTemplate, Megaphone, Palette, Radio, Sparkles } from 'lucide-react'
+import { Cloud, GitBranch, LayoutTemplate, Megaphone, Palette, Radio, Sparkles, Wrench } from 'lucide-react'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const workshops = [
@@ -13,6 +13,12 @@ const workshops = [
     title: 'Infrastructure Workshop',
     description: 'Operate Origin systems, Cloud Run health, EIGHT web access, deployment authority and Divine Shield.',
     icon: Cloud,
+  },
+  {
+    href: '/admin/dev-workshop?tab=terminal',
+    title: 'WEAVE Integrity Engine',
+    description: 'Scan and safely repair Prospect reserve, Number Bay inventory, Bridger position and wallet state without a code deployment.',
+    icon: Wrench,
   },
   {
     href: '/admin/ad-workshop',
