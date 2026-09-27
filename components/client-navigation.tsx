@@ -28,7 +28,7 @@ export function ClientNavigation() {
   if (isClientEntry) return null
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-sky-300/10 bg-[#03101d]/90 px-1.5 py-1.5 backdrop-blur-2xl">
+    <nav className="weave-client-nav sticky top-0 z-40 border-b border-sky-300/10 bg-[#03101d]/92 px-1.5 py-1.5 backdrop-blur-2xl">
       <div className="mx-auto grid max-w-3xl gap-1" style={{gridTemplateColumns:`repeat(${Math.max(1,visibleItems.length)},minmax(0,1fr))`}}>
         {visibleItems.map(({ label, href, icon: Icon }) => {
           const active = pathname === href || (href !== '/client/dashboard' && pathname.startsWith(href + '/'))
@@ -36,7 +36,8 @@ export function ClientNavigation() {
             <Link
               key={href}
               href={href}
-              className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[7px] font-black uppercase tracking-[0.06em] transition ${
+              data-active={active ? 'true' : 'false'}
+              className={`weave-client-nav-item flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[7px] font-black uppercase tracking-[0.06em] transition ${
                 active
                   ? 'border border-sky-300/20 bg-sky-400/[0.08] text-white'
                   : 'border border-transparent text-slate-500'
