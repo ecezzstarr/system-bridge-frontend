@@ -2,15 +2,11 @@
 import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useMemo, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
 import { WeaveNormalWorldBackdrop } from '@/components/world/weave-normal-world-backdrop'
-import { FlameEventWorldDecorations } from '@/components/events/flame-event-world-decorations'
 
 export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
-  const pathname=usePathname() || '/'
-  const autoSoft = pathname === '/' || pathname === '/login' || pathname === '/register' || pathname.startsWith('/bridge/') || pathname.startsWith('/store/') || pathname === '/system-switch'
-  const effectiveSoft = soft ?? autoSoft
+  void soft
   const [event, setEvent] = useState<WeaveEvent>(FLAME_EVENT)
   const [now, setNow] = useState(() => new Date())
 
@@ -38,18 +34,13 @@ export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
     [event, now]
   )
 
-  return (
-    <>
-      <WeaveNormalWorldBackdrop />
-      {active && (
-        <>
-          <div
-            aria-hidden="true"
-            className={`pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_82%_20%,rgba(239,68,68,.055),transparent_30%),radial-gradient(circle_at_50%_58%,rgba(56,189,248,.045),transparent_34%)] ${effectiveSoft ? 'opacity-45' : 'opacity-80'}`}
-          />
-          <FlameEventWorldDecorations event={event} soft={effectiveSoft} />
-        </>
-      )}
-    </>
-  )
+  useEffect(() => {
+    const root=document.documentElement
+    root.dataset.weaveEvent=active?'flame-live':'normal'
+    return () => {
+      delete root.dataset.weaveEvent
+    }
+  }, [active])
+
+  return <WeaveNormalWorldBackdrop />
 }
