@@ -60,16 +60,19 @@ export default function BridgerNumbersPage(){
  useEffect(()=>{void load()},[])
  useEffect(()=>{const timer=window.setInterval(()=>setNow(Date.now()),15000);return()=>window.clearInterval(timer)},[])
 
- const buyCountry=async(country:string)=>{
-  setBuying(country)
+ const buyNumber=async(numberId:string,country:string)=>{
+  setBuying(numberId)
   try{
    const r=await fetch('/api/bridger/numbers',{
     method:'POST',
     headers:getAuthHeaders(),
-    body:JSON.stringify({action:'purchase_country',country}),
+    body:JSON.stringify({action:'purchase_number',numberId}),
    })
    const d=await r.json()
-   if(!r.ok)throw new Error(d.error||'Purchase failed')
+   if(!r.ok){
+    if(d.gate==='stock_changed'||d.gate==='out_of_stock')await load()
+    throw new Error(d.error||'Purchase failed')
+   }
    toast.success(`${country} number assigned to your Bridger account`)
    await load()
   }catch(e:any){
@@ -158,8 +161,12 @@ export default function BridgerNumbersPage(){
    {offers.length===0?
     <p className="rounded-2xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No countries are published in the Number Bay yet.</p>
     :offers.map(offer=>{
+     const stockedNumber=available.find(number=>
+      String(number.country||'').trim().toLowerCase()===String(offer.country||'').trim().toLowerCase() &&
+      String(number.status||'')==='available'
+     )
      const stock=Number(offer.stock_count)||0
-     const price=Number(offer.price_flame_coin)||0
+     const price=stockedNumber?Number(stockedNumber.price_flame_coin)||0:Number(offer.price_flame_coin)||0
      return <article key={offer.country} className={`rounded-2xl border p-4 ${stock>0?'border-cyan-300/10 bg-cyan-400/[.025]':'border-amber-300/10 bg-amber-400/[.025]'}`}>
       <div className="flex items-start justify-between gap-3">
        <div>
@@ -173,7 +180,12 @@ export default function BridgerNumbersPage(){
        <p className="mt-2 text-[10px] leading-5 text-slate-500">{stock} in WEAVE stock · immediate assignment after successful purchase.</p>
        :<p className="mt-2 text-[10px] leading-5 text-slate-400">Out of stock · Administration can acquire and deliver this country through WEAVE within the {Number(offer.delivery_minutes)||30}-minute target.</p>}
       {stock>0?
-       <button data-presence-output={`Buy ${offer.country} WEAVE number for ${price.toLocaleString()} Flame Coin`} onClick={()=>void buyCountry(offer.country)} disabled={buying===offer.country} className="mt-4 w-full rounded-xl bg-cyan-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"><ShoppingCart className="mr-2 inline h-4 w-4"/>{buying===offer.country?'Assigning…':'Buy '+offer.country+' number'}</button>
+       <button
+        data-presence-output={`Buy ${offer.country} WEAVE number for ${price.toLocaleString()} Flame Coin`}
+        onClick={()=>stockedNumber&&void buyNumber(stockedNumber.id,offer.country)}
+        disabled={!stockedNumber||buying===stockedNumber?.id}
+        className="mt-4 w-full rounded-xl bg-cyan-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"
+       ><ShoppingCart className="mr-2 inline h-4 w-4"/>{buying===stockedNumber?.id?'Assigning…':stockedNumber?'Buy '+offer.country+' number':'Refresh stock'}</button>
        :<button data-presence-output={`Order ${offer.country} WEAVE number for Administration delivery`} onClick={()=>void orderCountry(offer.country)} disabled={ordering===offer.country||activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())} className="mt-4 w-full rounded-xl bg-amber-300 p-2.5 text-xs font-black text-slate-950 disabled:opacity-40"><Timer className="mr-2 inline h-4 w-4"/>{ordering===offer.country?'Ordering…':activeOrders.some(o=>String(o.country).toLowerCase()===String(offer.country).toLowerCase())?'Order active':'Order · '+(Number(offer.delivery_minutes)||30)+' min delivery'}</button>}
      </article>
     })
