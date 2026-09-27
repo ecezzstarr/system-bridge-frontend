@@ -108,7 +108,7 @@ function ClientRegisterContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-transparent p-4 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-900 rounded-full blur-[120px]" />
@@ -119,7 +119,7 @@ function ClientRegisterContent() {
           <ShieldCheck className="h-3 w-3" />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Secure Registration Protocol</span>
         </div>
-        <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">WEAVE Identity</h1>
+        <h1 data-weave-live-word="title" className="text-4xl font-black text-white tracking-tighter uppercase italic">WEAVE Identity</h1>
       </div>
 
       <Card className="w-full max-w-md border-slate-700 bg-slate-900/50 backdrop-blur-xl relative z-10 shadow-2xl">
@@ -264,7 +264,7 @@ function ClientRegisterContent() {
 export default function ClientRegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     }>
