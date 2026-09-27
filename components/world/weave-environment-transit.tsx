@@ -63,7 +63,16 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
     })
     if(document.body)observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-environment-pending']})
     cleanup.push(()=>observer.disconnect())
-    hardTimer=setTimeout(finish,maximum)
+    const hardFinish=()=>{
+      // The hard bound releases stalled browser resources, never an application
+      // surface that explicitly reports that its environment is still forming.
+      if(hasPendingSurface()){
+        hardTimer=setTimeout(hardFinish,1000)
+        return
+      }
+      finish()
+    }
+    hardTimer=setTimeout(hardFinish,maximum)
     check()
   })
 }
