@@ -15,7 +15,8 @@ export function FlameEventRoleAtmosphere({
   userName?: string | null
   pathname?: string
 }) {
-  const currentPath = pathname || usePathname() || '/'
+  const routePath = usePathname()
+  const currentPath = pathname || routePath || '/'
   const roleLabel = userRole === 'admin'
     ? 'ADMINISTRATION'
     : userRole === 'agent'
