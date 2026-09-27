@@ -201,7 +201,7 @@ function SystemRoute({portal,active,index}:{portal:BridgePlazaPortal;active:bool
 
   useFrame(({clock})=>{
     if(!signal.current)return
-    const speed=active?.22:.095
+    const speed=active ? .22:.095
     const t=(clock.getElapsedTime()*speed+index*.17)%1
     signal.current.position.lerpVectors(start,end,t)
     const pulse=.7+Math.sin(clock.getElapsedTime()*4+index)*.22
@@ -210,12 +210,12 @@ function SystemRoute({portal,active,index}:{portal:BridgePlazaPortal;active:bool
 
   return <group>
     <mesh position={[midpoint.x,-.94,midpoint.z]} rotation={[0,angle,0]}>
-      <boxGeometry args={[active?.18:.11,.035,length]}/>
-      <meshStandardMaterial color={portal.accent} emissive={portal.accent} emissiveIntensity={active?.26:.055} transparent opacity={active?.62:.24}/>
+      <boxGeometry args={[active ? .18:.11,.035,length]}/>
+      <meshStandardMaterial color={portal.accent} emissive={portal.accent} emissiveIntensity={active ? .26:.055} transparent opacity={active ? .62:.24}/>
     </mesh>
     <mesh ref={signal} position={[0,-.84,0]}>
-      <sphereGeometry args={[active?.085:.055,10,10]}/>
-      <meshBasicMaterial color={portal.accent} transparent opacity={active?.9:.46}/>
+      <sphereGeometry args={[active ? .085:.055,10,10]}/>
+      <meshBasicMaterial color={portal.accent} transparent opacity={active ? .9:.46}/>
     </mesh>
   </group>
 }
@@ -258,7 +258,7 @@ function DistrictEntrance({
     </mesh>)}
     <mesh position={[0,.2,.57]}>
       <boxGeometry args={[1.72,1.16,.08]}/>
-      <meshStandardMaterial color="#0b0a09" emissive={portal.unlocked?portal.accent:'#111'} emissiveIntensity={portal.unlocked?(selected?.48:hovered?.28:.11):0}/>
+      <meshStandardMaterial color="#0b0a09" emissive={portal.unlocked?portal.accent:'#111'} emissiveIntensity={portal.unlocked?(selected ? .48:hovered ? .28:.11):0}/>
     </mesh>
     <Text position={[0,.5,.63]} fontSize={.21} maxWidth={2.1} color={portal.unlocked?'#fff4d7':'#737373'} anchorX="center">{portal.unlocked?portal.name:portal.name+' · LOCKED'}</Text>
     <Text position={[0,.13,.64]} fontSize={.095} maxWidth={2.05} color={portal.unlocked?'#c7b8a5':'#525252'} anchorX="center">{portal.subtitle}</Text>
