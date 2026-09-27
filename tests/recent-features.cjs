@@ -1063,6 +1063,11 @@ const publicSystemSwitchSource=fs.readFileSync(path.join(root,'app/system-switch
 const bridgeEntryPageSource=fs.readFileSync(path.join(root,'app/bridge/[code]/page.tsx'),'utf8')
 const bridgeArrivalSource=fs.readFileSync(path.join(root,'components/bridge/chatgpt-bridge-arrival.tsx'),'utf8')
 const bridgeRadianceWorldSource=fs.readFileSync(path.join(root,'components/bridge/bridge-radiance-world.tsx'),'utf8')
+const weaveWritingSource=fs.readFileSync(path.join(root,'lib/weave-writing.ts'),'utf8')
+const clientRegisterWritingSource=fs.readFileSync(path.join(root,'app/client/register/page.tsx'),'utf8')
+const clientLoginWritingSource=fs.readFileSync(path.join(root,'app/client/login/page.tsx'),'utf8')
+const staffLoginWritingSource=fs.readFileSync(path.join(root,'app/(auth)/login/page.tsx'),'utf8')
+const staffRegisterWritingSource=fs.readFileSync(path.join(root,'app/(auth)/register/page.tsx'),'utf8')
 const oldSystemSwitchStateSource=fs.readFileSync(path.join(root,'app/api/system-switch/state/route.ts'),'utf8')
 const oldSystemSwitchActionSource=fs.readFileSync(path.join(root,'app/api/system-switch/action/route.ts'),'utf8')
 const oldSystemSwitchBridgeSource=fs.readFileSync(path.join(root,'app/api/system-switch/bridge/route.ts'),'utf8')
@@ -1073,6 +1078,22 @@ assert.ok(bridgeEntryPageSource.includes('ChatGptBridgeArrival'),'ChatGPT Prospe
 assert.ok(!bridgeEntryPageSource.includes('/system-switch?bridge='),'Bridge no longer redirects a Prospect into System Switch')
 assert.ok(bridgeArrivalSource.includes('BridgeRadianceWorld'),'Bridge arrival has its own Bridge Radiance world')
 assert.ok(bridgeRadianceWorldSource.includes('BRIDGE RADIANCE'),'Prospect arrival is visibly Bridge Radiance, not System Switch')
+assert.ok(weaveWritingSource.includes("cadence: ['Place', 'Movement', 'State', 'Action', 'Continuation']"),'WEAVE has one explicit institutional writing cadence')
+assert.ok(weaveWritingSource.includes("'Forensics'"),'Canonical company language preserves the Forensics department name')
+assert.ok(bridgeRadianceWorldSource.includes('WEAVE_WRITING.bridgeRadiance'),'Bridge Radiance uses the shared WEAVE writing system')
+assert.ok(!bridgeRadianceWorldSource.includes('Test Movement'),'Prospect Bridge Radiance does not misuse the Client Test Movement stage')
+assert.ok(fileFolderPurchaseSource.includes('WEAVE_WRITING.fileFolderCrossing'),'File Folder crossing uses the shared WEAVE writing system')
+assert.ok(clientRegisterWritingSource.includes('WEAVE_WRITING.clientAccess'),'Client registration uses the shared WEAVE writing system')
+assert.ok(clientLoginWritingSource.includes('WEAVE_WRITING.clientAccess'),'Client login uses the shared WEAVE writing system')
+assert.ok(staffLoginWritingSource.includes('WEAVE_WRITING.positionAccess'),'Staff sign-in uses the shared WEAVE writing system')
+assert.ok(staffRegisterWritingSource.includes('WEAVE_WRITING.positionAccess'),'Agent and Bridger entry uses the shared WEAVE writing system')
+for(const [source,label] of [
+  [clientRegisterWritingSource,'Client registration'],
+  [clientLoginWritingSource,'Client login'],
+  [staffLoginWritingSource,'Staff login'],
+]){
+  assert.ok(!/\b(?:protocol|terminal|ecosystem)\b/i.test(source),label+' avoids generic protocol/terminal/ecosystem presentation language')
+}
 assert.ok(bridgeRadianceWorldSource.includes('BURNING RIVER')&&bridgeRadianceWorldSource.includes('The River that Burns'),'Bridge Radiance visibly carries the Flame Event')
 assert.ok(bridgeArrivalSource.includes('scrollIntoView')&&bridgeArrivalSource.includes('onCrossingRequest'),'Bridge recognition moves the prospect to the File Folder crossing environment')
 assert.ok(clientSystemSwitchPageSource.includes('data-system-switch-flame-event="burning-river"'),'Client System Switch visibly carries the Flame Event crossing state')
