@@ -1116,7 +1116,7 @@ assert.ok(valueMovementSource.includes('Value Movement Engine'),'Wallet is a rec
 assert.ok(!valueMovementSource.includes('Your Referral Link'),'Wallet no longer mixes referral UI with financial movement')
 assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a coherent Reserve Engine')
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
-assert.ok(bridgePlazaMatureSource.includes('Bridge Plaza · World Router'),'Bridge Plaza exposes world-routing causality')
+assert.ok(bridgePlazaMatureSource.includes('Bridge Plaza · Living World Hub'),'Bridge Plaza exposes world-routing causality through the realistic physical hub')
 assert.ok(bridgePlazaMatureSource.includes('The Crossing is a recorded transition'),'Client crossing exposes recorded state')
 assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
 assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
