@@ -29,7 +29,7 @@ export async function ensureBridgerNumberEngineSchema(sql = getSql()) {
       country varchar(100) PRIMARY KEY,
       price_flame_coin numeric(30,8) NOT NULL CHECK (price_flame_coin > 0),
       enabled boolean NOT NULL DEFAULT true,
-      delivery_minutes integer NOT NULL DEFAULT 30 CHECK (delivery_minutes BETWEEN 5 AND 120),
+      delivery_minutes integer NOT NULL DEFAULT 30 CHECK (delivery_minutes BETWEEN 5 AND 30),
       updated_by uuid REFERENCES users(id),
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW()
