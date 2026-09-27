@@ -6,6 +6,7 @@ import { useCallback,useMemo,useRef,useState } from 'react'
 import * as THREE from 'three'
 import { InteractionMotionField } from '@/components/world/interaction-motion-field'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
+import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 
 type PortalAction='route'|'support'
 
@@ -402,9 +403,23 @@ export function BridgePlazaMap({
   const handleSelect=useCallback((portal:BridgePlazaPortal)=>{
     setFocus(portal)
     setMovement('moving')
+    emitWeaveMotion({
+      kind:'route',
+      label:`Movement toward ${portal.name}`,
+      intensity:.9,
+      confirmed:false,
+      source:'bridge-plaza',
+    })
   },[])
 
   const handleArrival=useCallback((portal:BridgePlazaPortal)=>{
+    emitWeaveMotion({
+      kind:'arrival',
+      label:`Entered ${portal.name}`,
+      intensity:1.05,
+      confirmed:true,
+      source:'bridge-plaza',
+    })
     if(portal.action==='support'){
       setMovement('station')
       onOpenSupport?.()
