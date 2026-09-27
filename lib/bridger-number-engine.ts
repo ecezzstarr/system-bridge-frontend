@@ -98,8 +98,7 @@ export async function ensureBridgerNumberPosition(client: { query: (query:string
   if(!profile){
     await client.query(
       `INSERT INTO bridger_profiles (user_id,commission_rate,status)
-       VALUES ($1::uuid,0.50,'active')
-       ON CONFLICT (user_id) DO NOTHING`,
+       VALUES ($1::uuid,0.50,'active')`,
       [userId],
     )
     profile=(await client.query(
