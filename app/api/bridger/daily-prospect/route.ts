@@ -4,34 +4,11 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { ensureMarketTables } from '@/lib/market'
 import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
-
-async function ensureDailyClaimSchema(client?: any) {
-  const run = async (query: string) => client ? client.query(query) : null
-
-  if (client) {
-    await run(`
-      CREATE TABLE IF NOT EXISTS bridger_daily_prospect_claims (
-        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        bridger_id uuid NOT NULL,
-        prospect_id uuid NOT NULL,
-        outreach_id uuid,
-        claim_date date NOT NULL DEFAULT CURRENT_DATE,
-        claim_type varchar(32) NOT NULL DEFAULT 'daily_bonus',
-        claimed_at timestamptz NOT NULL DEFAULT NOW(),
-        UNIQUE (bridger_id, claim_date),
-        UNIQUE (prospect_id)
-      )
-    `)
-    await run(`
-      ALTER TABLE bridger_daily_prospect_claims
-      ADD COLUMN IF NOT EXISTS outreach_id uuid
-    `)
-    await run(`
-      CREATE INDEX IF NOT EXISTS idx_daily_prospect_claims_bridger_date
-      ON bridger_daily_prospect_claims(bridger_id, claim_date)
-    `)
-  }
-}
+import {
+  countDailyProspectReserve,
+  ensureDailyProspectClaimSchema,
+  repairDailyProspectState,
+} from '@/lib/bridger-daily-prospect-engine'
 
 function normalizeClaim(row: any) {
   if (!row) return null
@@ -55,7 +32,7 @@ export async function GET(request: NextRequest) {
   const client = await pool.connect()
 
   try {
-    await ensureDailyClaimSchema(client)
+    await ensureDailyProspectClaimSchema(client)
 
     // Remove only broken same-day legacy claims that no longer point into the
     // active Prospect Engine. This lets the Bridger claim normally instead of
@@ -123,7 +100,15 @@ export async function POST(request: NextRequest) {
 
   try {
     await client.query('BEGIN')
-    await ensureDailyClaimSchema(client)
+    await ensureDailyProspectClaimSchema(client)
+
+    // Repair only provably unowned Prospect state, then guarantee one free
+    // candidate is available. If old fulfillment behavior packaged the entire
+    // pool, the reserve engine can reclaim from an unsold locked package.
+    const repair=await repairDailyProspectState(client,{
+      reserveTarget:1,
+      rebalancePackages:true,
+    })
 
     const existing = await client.query(
       `SELECT
@@ -184,10 +169,14 @@ export async function POST(request: NextRequest) {
     const prospect = prospectResult.rows[0]
     if (!prospect) {
       await client.query('ROLLBACK')
+      const reserve=await countDailyProspectReserve(client)
       return NextResponse.json({
-        success: false,
-        error: 'No free prospect is available today. Check again later.',
-      }, { status: 404 })
+        success:false,
+        error:'No unused Prospect inventory is available for the daily claim. Administration has been given a clear reserve-state diagnostic.',
+        gate:'daily_pool_empty',
+        reserve,
+        repaired:repair,
+      },{status:409})
     }
 
     const bridgeResult = await client.query(
@@ -254,6 +243,7 @@ export async function POST(request: NextRequest) {
         message_sent: message,
       }),
       message: "Daily free prospect claimed. It is now in My Prospects and ready for outreach.",
+      reserveAfter:Math.max(0,repair.reserve-1),
     })
   } catch (error: any) {
     await client.query('ROLLBACK')
