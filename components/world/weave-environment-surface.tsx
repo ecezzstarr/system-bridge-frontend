@@ -29,7 +29,7 @@ export function WeaveEnvironmentSurface({
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-[7px] font-black uppercase tracking-[0.18em]">
-              <span className="inline-flex items-center gap-1.5 text-amber-200">
+              <span data-weave-live-word="station" className="inline-flex items-center gap-1.5 text-amber-200">
                 <Layers3 className="h-3 w-3" />
                 {environment.district} District
               </span>
@@ -42,7 +42,7 @@ export function WeaveEnvironmentSurface({
                 </>
               )}
             </div>
-            <h2 className="mt-1.5 truncate text-base font-black tracking-tight text-white sm:text-lg">
+            <h2 data-weave-live-word="title" className="mt-1.5 truncate text-base font-black tracking-tight text-white sm:text-lg">
               {environment.title}
             </h2>
             {!compact && (
@@ -58,7 +58,7 @@ export function WeaveEnvironmentSurface({
             </p>
             <div className="mt-1 flex items-center gap-2 text-[9px] font-bold text-slate-300">
               <MoveRight className="h-3 w-3 text-orange-300" />
-              <span>{environment.movement}</span>
+              <span data-weave-live-word="station">{environment.movement}</span>
             </div>
           </div>
         </div>
