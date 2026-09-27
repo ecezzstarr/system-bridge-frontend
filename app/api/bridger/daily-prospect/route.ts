@@ -102,14 +102,6 @@ export async function POST(request: NextRequest) {
     await client.query('BEGIN')
     await ensureDailyProspectClaimSchema(client)
 
-    // Repair only provably unowned Prospect state, then guarantee one free
-    // candidate is available. If old fulfillment behavior packaged the entire
-    // pool, the reserve engine can reclaim from an unsold locked package.
-    const repair=await repairDailyProspectState(client,{
-      reserveTarget:1,
-      rebalancePackages:true,
-    })
-
     const existing = await client.query(
       `SELECT
          c.id,
@@ -148,6 +140,13 @@ export async function POST(request: NextRequest) {
         [existing.rows[0].id]
       )
     }
+
+    // A new claim is actually needed. Repair only provably unowned Prospect
+    // state and restore one free candidate before selecting/locking it.
+    const repair=await repairDailyProspectState(client,{
+      reserveTarget:1,
+      rebalancePackages:true,
+    })
 
     const prospectResult = await client.query(
       `SELECT m.*
