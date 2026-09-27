@@ -510,7 +510,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       </div>
 
       <div className="p-4 md:p-6">
-        <section className="mt-3 border-y border-amber-100/10 bg-[#18110c]/55 px-2 py-2.5 md:mt-4 md:px-4 md:py-4" data-file-folder-awareness="compact-build-sequence">
+        <section aria-label="Construction sequence" className="mt-3 border-y border-amber-100/10 bg-[#18110c]/55 px-2 py-2.5 md:mt-4 md:px-4 md:py-4" data-file-folder-awareness="compact-build-sequence">
           <div className="flex items-center gap-3">
             <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-amber-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">
               <Hammer className="h-3.5 w-3.5"/>Build
