@@ -20,6 +20,7 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
   const frame=useRef<number|null>(null)
   const decay=useRef<number|null>(null)
   const pointer=useRef({x:.5,y:.72})
+  const pointerWriteAt=useRef(0)
 
   const baseEnergy=useMemo(
     ()=>flameLive ? 1 : clamp(.42+Math.abs(scene.camera.yaw)*.002+Math.abs(scene.camera.pitch)*.0015,0.38,.72),
@@ -62,6 +63,9 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
 
     const onPointerMove=(event:PointerEvent)=>{
       if(reduceMotion)return
+      const now=performance.now()
+      if(now-pointerWriteAt.current<1000/Math.max(12,runtime.fps))return
+      pointerWriteAt.current=now
       writePointer(event.clientX,event.clientY)
     }
 
@@ -119,7 +123,7 @@ export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
       root.style.removeProperty('--weave-flame-shift-x')
       root.style.removeProperty('--weave-flame-shift-y')
     }
-  },[reduceMotion])
+  },[reduceMotion,runtime.fps])
 
   useEffect(()=>{
     const root=document.documentElement
