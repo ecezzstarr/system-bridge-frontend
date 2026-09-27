@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { Radio, Upload, Play, Square, SkipForward, Loader2, Music, Mic, Megaphone } from 'lucide-react'
+import { visiblePoll } from '@/lib/visible-poll'
 
 type Track = {
   id: string
@@ -94,8 +95,8 @@ export default function DJWorkshopPage() {
       } catch {}
     }
 
-    const interval = window.setInterval(refreshBroadcast, 4000)
-    return () => window.clearInterval(interval)
+    const stop = visiblePoll(() => refreshBroadcast(), 4000)
+    return stop
   }, [user?.id])
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
