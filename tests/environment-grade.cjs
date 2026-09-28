@@ -300,7 +300,8 @@ assert.ok(cleanRevealTransit2026.includes('const LOADING_SEQUENCE_MS=PLATFORM_BR
 assert.ok(cleanRevealTransit2026.includes('activeBriefs.map((_,index)'),'Loading progress follows whichever three-card briefing is active without removing the normal platform sequence')
 assert.ok(cleanRevealTransit2026.includes("document.addEventListener('click',handleInternalNavigation,true)"),'Internal navigation primes the environment cover at click time, including sidebar links')
 assert.ok(cleanRevealTransit2026.includes('setReadyPath(null)')&&cleanRevealTransit2026.includes('setTransiting(true)'),'Sidebar movement hides the old environment immediately while preserving destination formation')
-assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence('transit',startedAt,controller.signal)\n          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations use the short travel handoff before the final readiness check')
+assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence('transit',startedAt,controller.signal)
+          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations use the short travel handoff before the final readiness check')
 const loadingBriefCss2026=read('app/weave-readability.css')
 assert.ok(loadingBriefCss2026.includes('@keyframes weave-loading-brief-cycle')&&loadingBriefCss2026.includes('.weave-loading-brief'),'Loading cards enter as discrete readable briefing surfaces')
 
@@ -603,7 +604,9 @@ assert.ok(!environmentTransitSource.includes('FLAME_REENTRY_AFTER_MS'),'Flame Ev
 const multiplayerFileFolderSource=read('lib/file-folder-multiplayer-world.ts')
 assert.ok(multiplayerFileFolderSource.includes("'human_client'|'flame_ai'|'echo_ai'"),'File Folder world distinguishes human Clients, Flame AI and Echo AI operators')
 assert.ok(multiplayerFileFolderSource.includes('WEAVE_AI_FILE_FOLDERS'),'Singular Flame/Echo AI identities populate the multiplayer File Folder world')
-assert.ok(multiplayerFileFolderSource.includes("department:'flame_ai'|'echo'"),'AI File Folders originate from the Flame AI or Echo department')\nassert.ok(multiplayerFileFolderSource.includes('chosenName:string')&&multiplayerFileFolderSource.includes('chosenLogo:string|null'),'Each AI chooses an individual public name and logo')\nassert.ok(multiplayerFileFolderSource.includes('products:string[]')&&multiplayerFileFolderSource.includes('generatedSalesFlameCoin:number'),'AI File Folders expose products and attributable sales generated for WEAVE')
+assert.ok(multiplayerFileFolderSource.includes("department:'flame_ai'|'echo'"),'AI File Folders originate from the Flame AI or Echo department')
+assert.ok(multiplayerFileFolderSource.includes('chosenName:string')&&multiplayerFileFolderSource.includes('chosenLogo:string|null'),'Each AI chooses an individual public name and logo')
+assert.ok(multiplayerFileFolderSource.includes('products:string[]')&&multiplayerFileFolderSource.includes('generatedSalesFlameCoin:number'),'AI File Folders expose products and attributable sales generated for WEAVE')
 assert.ok(multiplayerFileFolderSource.includes("privateAuthority:'ai_within_weave_mandate'"),'AI operation remains bounded by WEAVE institutional authority')
 assert.ok(fileFolderOpenWorldSource.includes('data-file-folder-multiplayer-world="human-and-weave-ai"'),'Client File Folder renders the shared multiplayer territory layer')
 
@@ -621,5 +624,7 @@ for(const table of ['weave_ai_file_folders','weave_ai_file_folder_inventory','we
  assert.ok(aiFileFolderStoreSource.includes(table),`AI File Folder persistence includes ${table}`)
 }
 assert.ok(aiFileFolderStoreSource.includes("status='active'")&&aiFileFolderStoreSource.includes('before publishing its product'),'AI product publication requires a completed active AI-built system')
-assert.ok(aiFileFolderStoreSource.includes('generated_sales_flame_coin=generated_sales_flame_coin+')&&aiFileFolderStoreSource.includes("'weave_customer_sale'")&&aiFileFolderStoreSource.includes("'weave'"),'AI Customer Door sales settle to WEAVE and remain attributable to the field AI')\nassert.ok(!aiFileFolderStoreSource.includes('wallet_flame_coin=wallet_flame_coin+${total}'),'Customer sales never auto-credit the AI operating wallet')\nassert.ok(aiFileFolderStoreSource.includes('adminCreditAiOperatingFlameCoin')&&aiFileFolderStoreSource.includes("'admin_operating_credit'"),'Administration separately credits AI operating Flame Coin')
+assert.ok(aiFileFolderStoreSource.includes('generated_sales_flame_coin=generated_sales_flame_coin+')&&aiFileFolderStoreSource.includes("'weave_customer_sale'")&&aiFileFolderStoreSource.includes("'weave'"),'AI Customer Door sales settle to WEAVE and remain attributable to the field AI')
+assert.ok(!aiFileFolderStoreSource.includes('wallet_flame_coin=wallet_flame_coin+${total}'),'Customer sales never auto-credit the AI operating wallet')
+assert.ok(aiFileFolderStoreSource.includes('adminCreditAiOperatingFlameCoin')&&aiFileFolderStoreSource.includes("'admin_operating_credit'"),'Administration separately credits AI operating Flame Coin')
 assert.ok(aiFileFolderStoreSource.includes('source_id')&&aiFileFolderStoreSource.includes('product_id'),'AI earnings retain sale/product provenance')
