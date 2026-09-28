@@ -55,10 +55,12 @@ const COMPOSITION_RULES=[
 function recognizeCompositions(systemTypes:Set<string>,routes:any[]){
   return COMPOSITION_RULES.map(rule=>{
     const presentSystems=rule.systems.filter(type=>systemTypes.has(type))
+    const missingSystems=rule.systems.filter(type=>!systemTypes.has(type))
     const required=new Set(rule.systems)
     const connectionPresent=routes.some(route=>required.has(String(route.source_type) as any)&&required.has(String(route.target_type) as any)&&route.authority_state==='client_authorized')
     const complete=presentSystems.length===rule.systems.length&&(!rule.requiresConnection||connectionPresent)
-    return {...rule,requiredSystems:[...rule.systems],presentSystems,requiredConnection:rule.requiresConnection,connectionPresent,state:complete?'recognized' as const:'forming' as const}
+    const nextMovement=complete?'operate':missingSystems.length?'build':rule.requiresConnection&&!connectionPresent?'connect':'operate'
+    return {...rule,requiredSystems:[...rule.systems],presentSystems,missingSystems,requiredConnection:rule.requiresConnection,connectionPresent,nextMovement,state:complete?'recognized' as const:'forming' as const}
   }).filter(item=>item.presentSystems.length>0)
 }
 
@@ -363,6 +365,7 @@ export async function getClientGrowthSnapshot(
       fieldEvidence:{customerOrders:orders30d,completedOperations:completedOperations30d,routeMovements:routeMovements30d,streamPrograms:streamPrograms30d,activeLegions,demonstrated:(orders30d+completedOperations30d+routeMovements30d+streamPrograms30d+activeLegions)>0},
     },
     capabilities,
+    compositions,
     streaming:{
       channel,
       programs,
