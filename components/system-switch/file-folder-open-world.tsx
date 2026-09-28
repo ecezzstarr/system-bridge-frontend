@@ -22,7 +22,7 @@ import { getClientToken } from '@/lib/client-auth'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 import { emitWeaveMotion,fileFolderMotion } from '@/lib/weave-interaction-motion'
-import { WEAVE_AI_FILE_FOLDERS,aiFileFolderTerritory } from '@/lib/file-folder-multiplayer-world'
+import { WEAVE_AI_FILE_FOLDERS,aiFileFolderTerritory,type AiFileFolderIdentity } from '@/lib/file-folder-multiplayer-world'
 
 type Props = {
   clientName: string
@@ -122,6 +122,7 @@ export default function FileFolderOpenWorld({
 }: Props) {
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [world, setWorld] = useState(initialWorld)
+  const [aiFileFolders,setAiFileFolders]=useState<AiFileFolderIdentity[]>(WEAVE_AI_FILE_FOLDERS)
   const [district, setDistrict] = useState(initialDistrict)
   const [busy, setBusy] = useState('')
   const [message, setMessage] = useState('')
@@ -135,6 +136,20 @@ export default function FileFolderOpenWorld({
     const id = visiblePoll(() => setNow(Date.now()), 5000)
     return () => id()
   }, [])
+
+  useEffect(()=>{
+    const refreshAiWorld=async(signal:AbortSignal)=>{
+      try{
+        const response=await fetch('/api/world/ai-file-folders',{cache:'no-store',signal})
+        const body=await response.json()
+        if(!signal.aborted&&response.ok&&Array.isArray(body.agents))setAiFileFolders(body.agents)
+      }catch{
+        // Preserve the last live directory if the public AI world refresh is interrupted.
+      }
+    }
+    const stop=visiblePoll(refreshAiWorld,15000,true)
+    return ()=>stop()
+  },[])
 
   useEffect(()=>{
     const next=new Map<string,string>()
@@ -270,7 +285,7 @@ export default function FileFolderOpenWorld({
         <div className="mt-4 border-y border-cyan-300/10 py-3" data-file-folder-multiplayer-world="human-and-weave-ai">
           <div className="flex items-center justify-between gap-4"><div><p className="text-[8px] font-black uppercase tracking-[.2em] text-cyan-200">Multiplayer File Folder World</p><p className="mt-1 text-[10px] leading-5 text-slate-400">Human Client territories and clearly identified WEAVE AI-operated demonstration territories occupy the same public world. Visitors can observe public systems without receiving private authority.</p></div><span className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-300">World active</span></div>
           <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-            {WEAVE_AI_FILE_FOLDERS.map(ai=>{const territory=aiFileFolderTerritory(ai);return <div key={territory.territoryId} className="min-w-[15rem] border-l border-cyan-300/25 bg-cyan-400/[.025] px-3 py-2" data-ai-demonstration-territory={territory.territoryId}><p className="text-[7px] font-black uppercase tracking-[.16em] text-cyan-300">{territory.operatorLabel}</p><p className="mt-1 text-xs font-black text-white">{territory.publicName}</p><p className="mt-1 text-[8px] text-slate-500">{territory.fileNumber} · {territory.activity}</p><p className="mt-2 text-[9px] leading-4 text-slate-400">{territory.products.join(' · ')}</p><p className="mt-1 text-[8px] font-black text-amber-200">Generated for WEAVE · {territory.generatedSalesFlameCoin.toLocaleString()} FC</p></div>})}
+            {aiFileFolders.map(ai=>{const territory=aiFileFolderTerritory(ai);return <div key={territory.territoryId} className="min-w-[15rem] border-l border-cyan-300/25 bg-cyan-400/[.025] px-3 py-2" data-ai-demonstration-territory={territory.territoryId}><p className="text-[7px] font-black uppercase tracking-[.16em] text-cyan-300">{territory.operatorLabel}</p><p className="mt-1 text-xs font-black text-white">{territory.publicName}</p><p className="mt-1 text-[8px] text-slate-500">{territory.fileNumber} · {territory.activity}</p><p className="mt-2 text-[9px] leading-4 text-slate-400">{territory.products.join(' · ')}</p><p className="mt-1 text-[8px] font-black text-amber-200">Generated for WEAVE · {territory.generatedSalesFlameCoin.toLocaleString()} FC</p></div>})}
           </div>
         </div>
         {readOnly&&<div className="mt-3 border-l-2 border-violet-300/30 bg-violet-400/[.035] px-3 py-2 text-[9px] leading-4 text-violet-100" data-territory-observer="progress-visible"><span className="font-black uppercase tracking-wider">{observerLabel} · </span>Construction progress, completed structures, Customer Door maturity and public business movement are visible here. Ownership, wallet, private records and build controls remain with the Lord/Lady.</div>}
