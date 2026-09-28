@@ -325,7 +325,8 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       aria-live="polite"
       aria-label={booting?'Loading WEAVE environment':'Moving to '+environment.title}
       data-environment-readiness-gate={booting?'boot':'transit'}
-      data-flame-event-loader={showFlameBriefing?'burning-river':undefined}\n      data-flame={showFlameBriefing?'true':'false'}
+      data-flame-event-loader={showFlameBriefing?'burning-river':undefined}
+      data-flame={showFlameBriefing?'true':'false'}
     >
       <div className={showFlameBriefing
         ? "pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(14,165,233,.28),transparent_32%),radial-gradient(ellipse_at_42%_78%,rgba(249,115,22,.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(239,68,68,.16),transparent_24%),linear-gradient(180deg,#02050a_0%,#05070b_52%,#020914_100%)]"
