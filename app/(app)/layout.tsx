@@ -4,7 +4,6 @@ import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-import { AppSidebar } from '@/components/app-sidebar'
 import { AppHeader } from '@/components/app-header'
 import { toast } from 'sonner'
 import { usePathname } from 'next/navigation'
@@ -106,14 +105,11 @@ export default function AppLayout({
 
   return (
     <EnvironmentOrganizerProvider>
-    <div className="weave-app-shell relative flex min-h-dvh bg-transparent">
-      <div className="fixed inset-y-0 left-0 z-40 hidden lg:block">
-        <AppSidebar user={user as any} />
-      </div>
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col lg:pl-72">
+    <div className="weave-app-shell relative min-h-dvh overflow-hidden bg-transparent" data-weave-world-runtime="persistent">
+      <div className="relative z-10 flex min-h-dvh min-w-0 flex-col">
         <AppHeader user={user as any} />
         <FlameEventAd />
-        <main className="relative min-w-0 flex-1 overflow-x-clip p-3 sm:p-4 md:p-6 lg:p-8">
+        <main className="relative min-w-0 flex-1 overflow-x-clip" data-weave-world-interior="route">
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
               <FlameEventRoleAtmosphere
