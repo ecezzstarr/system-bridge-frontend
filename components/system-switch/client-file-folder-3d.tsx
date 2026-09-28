@@ -366,7 +366,7 @@ function DistrictPlot({
     {district.key==='command'&&<CommandHall active={active}/>}
     {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence}/>} 
     {district.key==='business'&&<MarketDistrict level={marketLevel} buildProgress={marketBuildProgress} active={active}/>}
-    {district.key==='enterprise'&&<EnterpriseKeep level={enterpriseLevel} active={active}/>}
+    {district.key==='enterprise'&&<EnterpriseKeep level={enterpriseLevel} active={active} position={enterprisePosition} approved={enterpriseApproved} enterpriseName={enterpriseName}/>}
     {district.key==='sound'&&<SoundPavilion active={active}/>}
     <Text position={[0,.18,1.92]} fontSize={.11} color={active?'#fff3dc':'#ad9b87'} anchorX="center">{district.label.toUpperCase()}</Text>
     {active&&<mesh position={[0,.065,0]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[1.77,1.86,48]}/><meshBasicMaterial color={color} transparent opacity={.32}/></mesh>}
