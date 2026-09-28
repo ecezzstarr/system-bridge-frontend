@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BalanceSummary } from '@/components/balance-summary'
 import { EscrowList } from '@/components/escrow-list'
 import { TransactionItem } from '@/components/transaction-item'
+import { WeaveStationFrame } from '@/components/world/weave-station-frame'
 
 interface LedgerData {
   ledger: any[]
@@ -73,7 +73,7 @@ export default function LedgerPage() {
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <WeaveStationFrame station="Movement Record" movement="Value movement → confirmation → preserved record → continuity"><div className="space-y-8 p-4 sm:p-6">
       <div>
         <p className="text-[10px] font-black uppercase tracking-[0.22em] text-sky-300">WEAVE Record</p>
         <h1 className="mt-2 text-3xl font-black text-white">Record</h1>
@@ -98,12 +98,8 @@ export default function LedgerPage() {
       )}
 
       {/* Transaction History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
-          <CardDescription>All ledger entries and balance changes</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <section className="border-y border-white/10 bg-black/15 py-4" data-record-rail="transactions">
+        <div className="mb-4 border-l border-sky-300/25 pl-3"><h2 className="text-sm font-black text-white">Transaction movement</h2><p className="mt-1 text-[10px] text-slate-500">Ledger entries and balance changes preserved in sequence.</p></div>
           <div className="space-y-2">
             {data?.ledger && data.ledger.length > 0 ? (
               data.ledger.slice(0, 20).map((entry) => (
@@ -123,8 +119,7 @@ export default function LedgerPage() {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+      </section>
+    </div></WeaveStationFrame>
   )
 }

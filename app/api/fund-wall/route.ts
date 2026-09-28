@@ -9,18 +9,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is creator (only creator can access company wallet)
+    // Company reserve authority belongs to Administration.
     const userResult = await sql`SELECT role FROM users WHERE id = ${identity.id}::uuid`
     const user = userResult[0]
-    if (user?.role !== 'creator') {
-      return NextResponse.json({ error: 'Forbidden - Creator access required' }, { status: 403 })
+    if (user?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden - Administration access required' }, { status: 403 })
     }
 
-    // Get creator's personal wallet (company wallet)
     const companyWalletResult = await sql`
       SELECT w.* FROM wallets w
       JOIN users u ON w.user_id = u.id
-      WHERE u.role = 'creator'
+      WHERE u.role = 'admin'
+      ORDER BY w.created_at ASC
       LIMIT 1
     `
 

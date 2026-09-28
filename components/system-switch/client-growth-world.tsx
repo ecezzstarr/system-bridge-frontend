@@ -64,6 +64,9 @@ export default function ClientGrowthWorld({
     source_system_id:'',
     target_system_id:'',
     route_type:'commerce',
+    source_output:'movement',
+    target_input:'movement',
+    integration_type:'direct',
   })
   const [movement,setMovement]=useState<Record<string,{title:string;value:string;unit:string;note:string}>>({})
 
@@ -140,7 +143,7 @@ export default function ClientGrowthWorld({
   }
   const createRoute=async()=>{
     const ok=await act({action:'create_business_route',...route},'route')
-    if(ok)setRoute({name:'',source_system_id:'',target_system_id:'',route_type:'commerce'})
+    if(ok)setRoute({name:'',source_system_id:'',target_system_id:'',route_type:'commerce',source_output:'movement',target_input:'movement',integration_type:'direct'})
   }
   const recordMovement=async(routeId:string)=>{
     const draft=movement[routeId]||{title:'',value:'',unit:'',note:''}
@@ -256,16 +259,22 @@ export default function ClientGrowthWorld({
           <input value={route.name} onChange={e=>setRoute({...route,name:e.target.value})} placeholder="Route name" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/>
           <select value={route.source_system_id} onChange={e=>setRoute({...route,source_system_id:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="">Source system</option>{liveSystems.map(system=><option key={system.id} value={system.id}>{system.title} · {systemName(system.system_type)}</option>)}</select>
           <select value={route.target_system_id} onChange={e=>setRoute({...route,target_system_id:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="">Target system</option>{liveSystems.map(system=><option key={system.id} value={system.id}>{system.title} · {systemName(system.system_type)}</option>)}</select>
-          <select value={route.route_type} onChange={e=>setRoute({...route,route_type:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="commerce">Commerce</option><option value="distribution">Distribution</option><option value="campaign">Campaign</option><option value="media">Media</option><option value="operations">Operations</option><option value="service">Service</option></select>
+          <select value={route.route_type} onChange={e=>setRoute({...route,route_type:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="commerce">Commerce</option><option value="distribution">Distribution</option><option value="media">Media</option><option value="operations">Operations</option><option value="service">Service</option><option value="data">Data</option><option value="automation">Automation</option><option value="intelligence">Intelligence</option></select>
         </div>
-        <button onClick={createRoute} disabled={busy==='route'||!routeStationOpen||!route.name.trim()||!route.source_system_id||!route.target_system_id} className="mt-3 inline-flex items-center gap-2 rounded-full bg-cyan-400 px-4 py-2.5 text-[10px] font-black uppercase text-slate-950 disabled:opacity-35"><Network className="h-4 w-4"/>Open route</button>
+        <div className="mt-2 grid gap-2 md:grid-cols-3">
+          <input value={route.source_output} onChange={e=>setRoute({...route,source_output:e.target.value})} placeholder="Source output · e.g. verified order" className="rounded-xl border border-cyan-300/10 bg-black/30 p-3 text-sm text-white"/>
+          <input value={route.target_input} onChange={e=>setRoute({...route,target_input:e.target.value})} placeholder="Target input · e.g. fulfilment request" className="rounded-xl border border-cyan-300/10 bg-black/30 p-3 text-sm text-white"/>
+          <select value={route.integration_type} onChange={e=>setRoute({...route,integration_type:e.target.value})} className="rounded-xl border border-cyan-300/10 bg-black/30 p-3 text-sm text-white"><option value="direct">Direct weave</option><option value="verified">Verified weave</option><option value="automated">Automated weave</option><option value="ai_assisted">AI-assisted weave</option></select>
+        </div>
+        <p className="mt-2 text-[9px] leading-4 text-slate-500">A weave defines what leaves the source, what the target accepts and how the connection participates. The Client authorizes the connection; AI may assist configuration but cannot authorize it.</p>
+        <button onClick={createRoute} disabled={busy==='route'||!routeStationOpen||!route.name.trim()||!route.source_system_id||!route.target_system_id} className="mt-3 inline-flex items-center gap-2 rounded-full bg-cyan-400 px-4 py-2.5 text-[10px] font-black uppercase text-slate-950 disabled:opacity-35"><Network className="h-4 w-4"/>Authorize weave</button>
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
         {(growth?.routes||[]).map((item:any)=>{
           const draft=movement[item.id]||{title:'',value:'',unit:'',note:''}
           return <article key={item.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-            <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black text-white">{item.name}</p><p className="mt-1 text-[9px] text-slate-500">{item.source_title} → {item.target_title}</p></div><span className="text-[9px] font-black uppercase text-cyan-300">{item.movement_count} movements</span></div>
+            <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black text-white">{item.name}</p><p className="mt-1 text-[9px] text-slate-500">{item.source_title} · {item.source_output||'movement'} → {item.target_title} · {item.target_input||'movement'}</p><p className="mt-1 text-[8px] font-black uppercase tracking-wider text-cyan-300/70">{String(item.integration_type||'direct').replaceAll('_',' ')} · {String(item.authority_state||'client_authorized').replaceAll('_',' ')}</p></div><span className="text-[9px] font-black uppercase text-cyan-300">{item.movement_count} movements</span></div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <input value={draft.title} onChange={e=>setMovement({...movement,[item.id]:{...draft,title:e.target.value}})} placeholder="What moved?" className="rounded-xl border border-white/10 bg-black/30 p-2.5 text-xs text-white sm:col-span-2"/>
               <input type="number" min="0" value={draft.value} onChange={e=>setMovement({...movement,[item.id]:{...draft,value:e.target.value}})} placeholder="Value / quantity" className="rounded-xl border border-white/10 bg-black/30 p-2.5 text-xs text-white"/>

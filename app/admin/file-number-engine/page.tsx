@@ -72,7 +72,7 @@ export default function FileNumberEnginePage() {
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+      const headers: Record<string,string> = token ? { Authorization: `Bearer ${token}` } : {}
       const [bridgersRes, foldersRes] = await Promise.all([
         fetch('/api/users', { headers }),
         fetch('/api/admin/fne/list', { headers })

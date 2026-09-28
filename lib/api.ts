@@ -16,6 +16,22 @@ export interface ApiResponse<T> {
   error?: string
 }
 
+export interface VideoRecord {
+  id:string
+  title:string
+  thumbnailUrl?:string|null
+  duration:number
+  isLive:boolean
+  views:number
+  likes:number
+  tips:number
+  user:{
+    avatar?:string
+    displayName:string
+    presence?:string
+  }
+}
+
 class ApiClient {
   private getToken(): string | null {
     if (typeof window === 'undefined') return null
@@ -219,7 +235,7 @@ class ApiClient {
   }
 
   // Videos
-  async getVideos(params?: { category?: string; isLive?: boolean; creatorId?: string }): Promise<ApiResponse<{ videos: unknown[] }>> {
+  async getVideos(params?: { category?: string; isLive?: boolean; creatorId?: string }): Promise<ApiResponse<{ videos: VideoRecord[] }>> {
     const searchParams = new URLSearchParams()
     if (params?.category) searchParams.set('category', params.category)
     if (params?.isLive !== undefined) searchParams.set('isLive', params.isLive.toString())

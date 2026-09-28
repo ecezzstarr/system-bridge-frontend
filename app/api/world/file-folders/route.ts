@@ -46,7 +46,6 @@ export async function GET(request: NextRequest) {
         FROM file_folders ff
         INNER JOIN client_file_folders cff ON cff.file_number = ff.file_number AND cff.status = 'active' AND cff.client_id = ${user.id}::uuid
         LEFT JOIN users u ON ff.bridger_id = u.id
-        WHERE ff.file_number = ${user.file_number}
         ORDER BY cff.updated_at DESC
       `
     }

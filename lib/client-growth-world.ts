@@ -12,6 +12,14 @@ export type ClientGrowthSnapshot={
     streamPrograms30d:number
     activeLegions:number
     explanation:string
+    fieldEvidence:{
+      customerOrders:number
+      completedOperations:number
+      routeMovements:number
+      streamPrograms:number
+      activeLegions:number
+      demonstrated:boolean
+    }
   }
   capabilities:{
     routeCapacity:number
@@ -42,6 +50,27 @@ export type ClientGrowthSnapshot={
     application:any|null
   }
   routes:any[]
+  compositions:ReturnType<typeof recognizeCompositions>
+}
+
+const COMPOSITION_RULES=[
+  {key:'customer_service_infrastructure',name:'Customer Service Infrastructure',description:'A public customer entrance woven to payment, operations and assisted service.',systems:['customer_door','payments_gateway','operations_suite','ai_service_desk'],requiresConnection:true},
+  {key:'automated_commerce_infrastructure',name:'Automated Commerce Infrastructure',description:'Commerce, payment and marketplace movement connected into one operating capability.',systems:['commerce_storefront','payments_gateway','marketplace_network','route_station'],requiresConnection:true},
+  {key:'intelligence_operating_network',name:'Intelligence Operating Network',description:'Structured records and intelligence capability connected for reusable analysis and decision support.',systems:['data_room','intelligence_lab','integration_network'],requiresConnection:true},
+  {key:'client_media_network',name:'Client Media Network',description:'Creation, production, streaming and distribution operating as one media capability.',systems:['creator_booth','broadcast_studio','streaming_gate','media_network'],requiresConnection:true},
+  {key:'enterprise_operating_infrastructure',name:'Enterprise Operating Infrastructure',description:'Enterprise command, treasury and distribution connected into a persistent operating institution.',systems:['enterprise_hall','operations_command','enterprise_treasury','distribution_network'],requiresConnection:true},
+] as const
+
+function recognizeCompositions(systemTypes:Set<string>,routes:any[]){
+  return COMPOSITION_RULES.map(rule=>{
+    const presentSystems=rule.systems.filter(type=>systemTypes.has(type))
+    const missingSystems=rule.systems.filter(type=>!systemTypes.has(type))
+    const required=new Set(rule.systems)
+    const connectionPresent=routes.some(route=>required.has(String(route.source_type) as any)&&required.has(String(route.target_type) as any)&&route.authority_state==='client_authorized')
+    const complete=presentSystems.length===rule.systems.length&&(!rule.requiresConnection||connectionPresent)
+    const nextMovement=complete?'operate':missingSystems.length?'build':rule.requiresConnection&&!connectionPresent?'connect':'operate'
+    return {...rule,requiredSystems:[...rule.systems],presentSystems,missingSystems,requiredConnection:rule.requiresConnection,connectionPresent,nextMovement,state:complete?'recognized' as const:'forming' as const}
+  }).filter(item=>item.presentSystems.length>0)
 }
 
 export function publicGrowthSlug(fileNumber:string){
@@ -102,6 +131,11 @@ export async function ensureClientGrowthWorldSchema(sql:any=getClientGrowthDb())
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_client_business_routes_client ON client_business_routes(client_id,status,created_at DESC)`
+  await sql`ALTER TABLE client_business_routes ADD COLUMN IF NOT EXISTS source_output varchar(120) NOT NULL DEFAULT 'movement'`
+  await sql`ALTER TABLE client_business_routes ADD COLUMN IF NOT EXISTS target_input varchar(120) NOT NULL DEFAULT 'movement'`
+  await sql`ALTER TABLE client_business_routes ADD COLUMN IF NOT EXISTS integration_type varchar(40) NOT NULL DEFAULT 'direct'`
+  await sql`ALTER TABLE client_business_routes ADD COLUMN IF NOT EXISTS authority_state varchar(40) NOT NULL DEFAULT 'client_authorized'`
+
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_client_business_routes_unique_pair
     ON client_business_routes(client_id,source_system_id,target_system_id)
@@ -247,7 +281,7 @@ export async function getClientGrowthSnapshot(
 
   const routes=await sql`
     SELECT
-      r.id,r.name,r.route_type,r.status,r.created_at,
+      r.id,r.name,r.route_type,r.source_output,r.target_input,r.integration_type,r.authority_state,r.status,r.created_at,
       source.id AS source_system_id,source.title AS source_title,source.system_type AS source_type,
       target.id AS target_system_id,target.title AS target_title,target.system_type AS target_type,
       COALESCE(m.movement_count,0)::int AS movement_count,
@@ -264,6 +298,12 @@ export async function getClientGrowthSnapshot(
       AND r.status='active'
     ORDER BY r.created_at DESC
   `
+
+  const activeSystemTypes=new Set<string>()
+  for(const route of routes){ activeSystemTypes.add(String(route.source_type)); activeSystemTypes.add(String(route.target_type)) }
+  const allActiveTypes=await sql`SELECT system_type FROM client_built_systems WHERE client_id=${clientId}::uuid AND status='active'`
+  for(const system of allActiveTypes)activeSystemTypes.add(String(system.system_type))
+  const compositions=recognizeCompositions(activeSystemTypes,routes)
 
   const [enterpriseApplication]=await sql`
     SELECT id,requested_position,enterprise_name,sector,status,public_slug
@@ -288,7 +328,8 @@ export async function getClientGrowthSnapshot(
         SELECT COUNT(*) FROM client_built_system_entries e
         WHERE e.client_id=${clientId}::uuid
           AND e.status='done'
-          AND e.updated_at>=NOW()-INTERVAL '30 days'
+          AND e.evidence_type<>'internal'
+          AND COALESCE(e.completed_at,e.updated_at)>=NOW()-INTERVAL '30 days'
       ),0)::int AS completed_operations_30d,
       COALESCE((
         SELECT COUNT(*) FROM client_business_route_movements m
@@ -329,9 +370,11 @@ export async function getClientGrowthSnapshot(
       routeMovements30d,
       streamPrograms30d,
       activeLegions,
-      explanation:'30-day operational index: customer orders ×8, completed system movements ×2, business-route movements ×3, stream programs ×4 and active Legion participation ×2. Flame Coin purchases do not directly increase this score.',
+      explanation:'30-day field evidence: customer orders, completed operations, authorized route movement, public programming and active participation. Flame Coin purchases do not directly increase this score. Capital can expand construction but does not count as demonstrated use.',
+      fieldEvidence:{customerOrders:orders30d,completedOperations:completedOperations30d,routeMovements:routeMovements30d,streamPrograms:streamPrograms30d,activeLegions,demonstrated:(orders30d+completedOperations30d+routeMovements30d+streamPrograms30d+activeLegions)>0},
     },
     capabilities,
+    compositions,
     streaming:{
       channel,
       programs,

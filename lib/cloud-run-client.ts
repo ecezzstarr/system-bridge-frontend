@@ -21,7 +21,7 @@ interface ApiResponse<T = unknown> {
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  body?: Record<string, unknown>
+  body?: unknown
   token?: string
 }
 

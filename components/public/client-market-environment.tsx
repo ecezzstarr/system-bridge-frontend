@@ -124,7 +124,8 @@ export function ClientMarketEnvironment({
   enterpriseUrl?:string|null
 }){
   const style=presetClass[config.preset]||presetClass.radiant_arcade
-  const levelLabel=level==='market_hall'?'Market Hall':level==='storefront'?'Constructed Storefront':'Customer Door'
+  const doorName=config.platformName || store.name || 'Customer Door'
+  const levelLabel=level==='market_hall'?'Market Hall':level==='storefront'?'Constructed Storefront':doorName
   return <main className="min-h-screen bg-transparent text-white" data-client-market-world>
     <section className={`relative isolate overflow-hidden border-b border-white/10 bg-gradient-to-b ${style.sky}`}>
       <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.04)_1px,transparent_1px)] [background-size:42px_42px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]"/>
@@ -132,17 +133,17 @@ export function ClientMarketEnvironment({
       <div className="absolute -right-20 top-0 h-96 w-96 rounded-full bg-violet-400/10 blur-3xl"/>
       <div className="relative mx-auto max-w-7xl px-5 pb-8 pt-5 md:px-8 md:pt-8">
         <nav className="flex flex-wrap items-center justify-between gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-white/55">
-          <Link href="/market" className="inline-flex items-center gap-2 hover:text-white"><Landmark className="h-4 w-4"/>WEAVE Client Market</Link>
+          <div className="flex items-center gap-3">{config.logoUrl?<img src={config.logoUrl} alt={`${config.platformName} logo`} className="h-10 w-10 rounded-xl border border-white/15 bg-white/5 object-contain p-1"/>:<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5"><Crown className="h-5 w-5 text-amber-200"/></div>}<div><p className="text-[10px] font-black text-white">{config.platformName}</p><Link href="/market" className="mt-0.5 inline-flex items-center gap-1 text-[7px] text-white/45 hover:text-white"><Landmark className="h-3 w-3"/>Built on WEAVE</Link></div></div>
           <span>{config.marketSection} · {levelLabel}</span>
         </nav>
         <div className="mt-8 grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(520px,1.1fr)]">
           <div>
-            <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${style.accent}`}>{config.sign}</p>
+            <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${style.accent}`}>Lord/Lady Territory · {config.sign}</p>
             <h1 data-weave-live-word="title" className="mt-3 max-w-3xl text-4xl font-black leading-[0.96] tracking-[-0.04em] sm:text-6xl lg:text-7xl">{store.name}</h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">{config.tagline}</p>
             {store.description&&<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">{store.description}</p>}
             <div className="mt-6 flex flex-wrap gap-2">
-              <a href="#offers" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-black text-slate-950">Enter store <ArrowRight className="h-4 w-4"/></a>
+              <a href="#offers" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-black text-slate-950">{level==='door'?`Enter ${doorName}`:'Enter store'} <ArrowRight className="h-4 w-4"/></a>
               <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><ShoppingBag className="h-4 w-4"/>No WEAVE account required</span>
               {streamUrl&&<Link href={streamUrl} className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><Radio className="h-4 w-4"/>Streaming Gate</Link>}
               {enterpriseUrl&&<Link href={enterpriseUrl} className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><Crown className="h-4 w-4"/>Enterprise Door</Link>}
@@ -220,7 +221,7 @@ export function ClientMarketEnvironment({
       </div>
 
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">
-        <span className="inline-flex items-center gap-2"><Sparkles className="h-3.5 w-3.5"/>Constructed in a Client File Folder</span>
+        <span className="inline-flex items-center gap-2"><Sparkles className="h-3.5 w-3.5"/>Public business territory · constructed in a Client File Folder</span>
         <Link href="/market" className="inline-flex items-center gap-2 text-slate-400 hover:text-white"><Store className="h-3.5 w-3.5"/>Return to Client Market</Link>
       </footer>
     </section>

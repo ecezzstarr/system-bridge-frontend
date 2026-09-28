@@ -12,6 +12,7 @@ interface User {
   email: string
   username: string
   name: string
+  avatar?: string
   role?: 'agent' | 'bridger' | 'admin' | 'client'
   wallet_balance?: number
   wallet_address?: string

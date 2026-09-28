@@ -112,7 +112,6 @@ const PLATFORM_BRIEFS:LoadingBrief[]=[
 
 const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS
 
-const FLAME_REENTRY_AFTER_MS=30*60*1000
 const FLAME_REENTRY_LAST_ACTIVE_KEY='weave:flame-event:last-active-at'
 
 const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
@@ -162,7 +161,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const [briefIndex,setBriefIndex]=useState(0)
   const [sequenceId,setSequenceId]=useState(0)
   const [requestedPath,setRequestedPath]=useState<string|null>(null)
-  const [flameReentry,setFlameReentry]=useState(false)
+  const [flameEventActive,setFlameEventActive]=useState(()=>resolveEventStatus(FLAME_EVENT,new Date())==='active')
   const first=useRef(true)
   const transitionStartedAtRef=useRef<number|null>(null)
   const queryTransitionControllerRef=useRef<AbortController|null>(null)
@@ -175,12 +174,11 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   useEffect(()=>{
     const now=Date.now()
     try{
-      const previous=Number(window.localStorage.getItem(FLAME_REENTRY_LAST_ACTIVE_KEY)||0)
       const eventIsLive=resolveEventStatus(FLAME_EVENT,new Date(now))==='active'
-      setFlameReentry(eventIsLive&&Number.isFinite(previous)&&previous>0&&now-previous>=FLAME_REENTRY_AFTER_MS)
+      setFlameEventActive(eventIsLive)
       window.localStorage.setItem(FLAME_REENTRY_LAST_ACTIVE_KEY,String(now))
     }catch{
-      setFlameReentry(false)
+      setFlameEventActive(resolveEventStatus(FLAME_EVENT,new Date())==='active')
     }
 
     const markPresence=()=>{
@@ -281,7 +279,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     }
   },[])
 
-  const showFlameBriefing=booting&&flameReentry
+  const showFlameBriefing=booting&&flameEventActive
 
   useEffect(()=>{
     if(!covered)return
@@ -320,16 +318,18 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       {children}
     </div>
     {covered&&<div
-      className={'fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden px-5 text-white backdrop-blur-2xl '+(showFlameBriefing?'bg-[#120603]/98':'bg-[#090807]/98')}
+      className={'fixed inset-0 z-[9999] flex min-h-[100dvh] items-stretch justify-center overflow-hidden bg-[#02050a] px-4 text-white sm:px-6 '+(showFlameBriefing?'data-[flame=true]:bg-[#02050a]':'')}
       role="status"
       aria-live="polite"
       aria-label={booting?'Loading WEAVE environment':'Moving to '+environment.title}
       data-environment-readiness-gate={booting?'boot':'transit'}
-      data-flame-event-reentry={showFlameBriefing?'true':undefined}
+      data-environment-reveal-shell="continuous"
+      data-flame-event-loader={showFlameBriefing?'burning-river':undefined}
+      data-flame={showFlameBriefing?'true':'false'}
     >
       <div className={showFlameBriefing
-        ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(251,113,133,.24),transparent_22%),radial-gradient(circle_at_18%_78%,rgba(249,115,22,.20),transparent_26%),radial-gradient(circle_at_82%_70%,rgba(125,211,252,.13),transparent_24%),linear-gradient(180deg,rgba(47,12,6,.82),rgba(3,6,10,.96))]"
-        : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(249,115,22,.18),transparent_24%),radial-gradient(circle_at_18%_78%,rgba(214,164,95,.10),transparent_26%),radial-gradient(circle_at_84%_72%,rgba(125,211,252,.06),transparent_23%),linear-gradient(180deg,rgba(31,17,9,.68),rgba(4,5,7,.94))]"
+        ? "pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(14,165,233,.28),transparent_32%),radial-gradient(ellipse_at_42%_78%,rgba(249,115,22,.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(239,68,68,.16),transparent_24%),linear-gradient(180deg,#02050a_0%,#05070b_52%,#020914_100%)]"
+        : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,rgba(56,189,248,.12),transparent_24%),radial-gradient(circle_at_24%_78%,rgba(249,115,22,.16),transparent_26%),linear-gradient(180deg,#02050a_0%,#060910_58%,#02050a_100%)]"
       }/>
       {showFlameBriefing&&<>
         <div className="pointer-events-none absolute inset-x-[-8%] bottom-[-8%] h-[34%] rotate-[-2deg] bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,.30),rgba(251,113,133,.12)_38%,rgba(56,189,248,.08)_58%,transparent_72%)] blur-2xl"/>
@@ -339,7 +339,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       <div className="pointer-events-none absolute left-1/2 top-[34%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-200/[.045]"/>
       <div className="pointer-events-none absolute inset-x-[7%] bottom-[13%] h-px bg-gradient-to-r from-transparent via-amber-200/15 to-transparent"/>
 
-      <div className="relative w-full max-w-xl">
+      <div className="relative flex min-h-[100dvh] w-full max-w-3xl flex-col justify-center py-6 sm:py-10">
         <div className="flex flex-col items-center text-center">
           <div className="relative flex h-24 w-24 items-center justify-center sm:h-28 sm:w-28">
             <div className="absolute inset-0 animate-[spin_5.4s_linear_infinite] rounded-full border border-amber-200/15 border-t-orange-300/70 motion-reduce:animate-none"/>
@@ -363,7 +363,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         <section
           key={briefing.eyebrow+'-'+briefing.title}
           data-loading-brief={briefIndex+1}
-          className="weave-loading-brief mx-auto mt-6 overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_30px_90px_rgba(0,0,0,.42)] backdrop-blur-xl sm:p-5"
+          className="weave-loading-brief mx-auto mt-6 w-full min-h-[15rem] overflow-hidden rounded-3xl border border-white/10 bg-black/45 p-5 shadow-[0_30px_90px_rgba(0,0,0,.42)] backdrop-blur-xl sm:p-5"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
