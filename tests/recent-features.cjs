@@ -1425,6 +1425,9 @@ assert.ok(clientEnvironmentNavigationSource.includes("'Home World'"),'Client nav
 assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
 
 for(const file of [
+  'lib/weave-development-agents.ts',
+  'app/api/admin/development-agents/route.ts',
+  'app/(app)/admin/development-agents/page.tsx',
   'lib/weave-interaction-motion.ts',
   'lib/weave-visual-profile.ts',
   'components/world/use-visual-runtime.ts',
