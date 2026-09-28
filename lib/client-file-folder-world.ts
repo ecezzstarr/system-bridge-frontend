@@ -263,7 +263,7 @@ async function seedFileFolderWorld(sql: any) {
     await sql`
       INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,build_effect,effect_value,published)
       VALUES(${part[0]},${part[1]},${part[2]},${part[3]},${part[4]},${part[5]},${part[6]},true)
-      ON CONFLICT(item_key) DO UPDATE SET name=EXCLUDED.name,category=EXCLUDED.category,description=EXCLUDED.description,price_flame_coin=EXCLUDED.price_flame_coin,build_effect=EXCLUDED.build_effect,effect_value=EXCLUDED.effect_value,updated_at=NOW()
+      ON CONFLICT(item_key) DO UPDATE SET name=EXCLUDED.name,category=EXCLUDED.category,description=EXCLUDED.description,build_effect=EXCLUDED.build_effect,effect_value=EXCLUDED.effect_value,updated_at=NOW()
     `
   }
 
@@ -314,7 +314,7 @@ async function seedFileFolderWorld(sql: any) {
     await sql`
       INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,build_effect,effect_value,published)
       VALUES(${part[0]},${part[1]},${part[2]},${part[3]},${part[4]},${part[5]},${part[6]},true)
-      ON CONFLICT(item_key) DO UPDATE SET name=EXCLUDED.name,description=EXCLUDED.description,price_flame_coin=EXCLUDED.price_flame_coin,build_effect=EXCLUDED.build_effect,effect_value=EXCLUDED.effect_value,updated_at=NOW()
+      ON CONFLICT(item_key) DO UPDATE SET name=EXCLUDED.name,description=EXCLUDED.description,build_effect=EXCLUDED.build_effect,effect_value=EXCLUDED.effect_value,updated_at=NOW()
     `
   }
 
