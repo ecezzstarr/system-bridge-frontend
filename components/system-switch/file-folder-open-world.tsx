@@ -70,6 +70,19 @@ function branchLabel(district: string) {
   return labels[district] || 'System'
 }
 
+const CUSTOMER_DOOR_FORMATION=[
+  {at:0,label:'Foundation Frame',detail:'Public entrance structure anchored to the Client territory.'},
+  {at:15,label:'Client Identity Facade',detail:'Company/platform identity takes its public position.'},
+  {at:32,label:'Customer Intake Interface',detail:'Visitor requests and order intent gain an entry path.'},
+  {at:50,label:'Service Interface',detail:'Customer movement connects to the Client operation behind the Door.'},
+  {at:68,label:'Fulfilment Interface',detail:'Delivery and fulfilment movement gains a recorded path.'},
+  {at:88,label:'Public Commissioning',detail:'Door is verified for open-internet visitors.'},
+] as const
+
+function customerDoorFormation(progress:number){
+  return CUSTOMER_DOOR_FORMATION.map((part,index)=>({...part,state:progress>=part.at?'formed':index===0||progress>=CUSTOMER_DOOR_FORMATION[index-1].at?'forming':'waiting'}))
+}
+
 function operatingEffect(item: any) {
   const value = Number(item.effect_value || 0)
   const effects: Record<string,string> = {
@@ -365,6 +378,10 @@ export default function FileFolderOpenWorld({
                     </div>}
                     {!readOnly && <div className="mt-4 rounded-xl border border-sky-300/10 bg-sky-400/[0.025] p-3">
                       <div className="flex items-center justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Continue building live</p><p className="mt-1 text-[9px] text-slate-500">Attach purchased parts to this active build. Speed boosts immediately change its live formation time.</p></div><Zap className="h-4 w-4 text-sky-300"/></div>
+                      {build.system_type==='customer_door'&&<div className="mt-4 border-y border-emerald-300/10 py-3" data-customer-door-formation="72-hour-cycle">
+                        <p className="text-[8px] font-black uppercase tracking-[.16em] text-emerald-300">Standard formation · 72 real hours · acceleration optional</p>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">{customerDoorFormation(buildProgress(build,now)).map(part=><div key={part.label} className="border-l border-emerald-300/15 pl-3"><p className={`text-[9px] font-black ${part.state==='formed'?'text-emerald-200':part.state==='forming'?'text-amber-200':'text-slate-600'}`}>{part.label} · {part.state}</p><p className="mt-1 text-[8px] leading-4 text-slate-500">{part.detail}</p></div>)}</div>
+                      </div>}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {availableBuildItems.length === 0 && <span className="text-[9px] text-slate-600">No purchased build items are waiting in inventory.</span>}
                         {availableBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
@@ -425,7 +442,7 @@ export default function FileFolderOpenWorld({
             <div data-client-parts-workshop="capability">
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Parts Workshop</p>
               <h3 className="mt-2 text-2xl font-black">Parts change what a structure can do.</h3>
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Modules are not construction kits. Acquire a capability here, then install it into a compatible active structure in Construction Yard. The installed part remains in that system's build record.</p>
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Modules are not construction kits. Acquire a capability here, then install it into a compatible active structure in Formation Yard. The installed part remains in that system's build record.</p>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {buildPartItems.map((item:any)=><div key={item.item_key} className="border-l border-sky-300/20 bg-sky-400/[0.025] p-5">
                   <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[.15em] text-sky-300">{String(item.category||'build part').replaceAll('_',' ')}</p><h4 className="mt-1 font-bold text-white">{item.name}</h4></div><p className="text-sm font-black text-amber-200">{Number(item.price_flame_coin).toLocaleString()} FC</p></div>
