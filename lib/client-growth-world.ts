@@ -12,6 +12,14 @@ export type ClientGrowthSnapshot={
     streamPrograms30d:number
     activeLegions:number
     explanation:string
+    fieldEvidence:{
+      customerOrders:number
+      completedOperations:number
+      routeMovements:number
+      streamPrograms:number
+      activeLegions:number
+      demonstrated:boolean
+    }
   }
   capabilities:{
     routeCapacity:number
