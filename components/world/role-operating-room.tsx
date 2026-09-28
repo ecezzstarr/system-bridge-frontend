@@ -56,8 +56,8 @@ type FunctionItem = {
 const OPERATING_SEQUENCE = {
   agent: [
     { title: 'Shared WEAVE' },
-    { title: 'Bridger support' },
-    { title: 'Work + livelihood' },
+    { title: 'Bridger participation' },
+    { title: 'Stability movement' },
     { title: 'Client + company support' },
     { title: 'Record + value' },
   ],
@@ -83,12 +83,14 @@ const AGENT_COMMANDS: FunctionItem[] = [
   { label: 'Pattern', detail: 'Shared system pattern play.', href: '/casino', icon: Trophy, district: 'Shared WEAVE' },
   { label: 'Stream', detail: 'Shared WEAVE media stream.', href: '/video-feed', icon: Video, district: 'Shared WEAVE' },
   { label: 'Standing', detail: 'Shared WEAVE standing and position.', href: '/weave/standing', icon: Globe, district: 'Shared WEAVE' },
-  { label: 'My Bridgers', detail: 'Assigned Bridgers and team movement.', href: '/agent/bridgers', icon: Users, district: 'Bridger support' },
-  { label: 'Agent Channels', detail: 'Approved company channels and responsibilities.', href: '/agent/channels', icon: Network, district: 'Bridger support' },
-  { label: 'Agent Continuance', detail: 'Commission records, performance and rewards.', href: '/agent/commissions', icon: Gauge, district: 'Work + livelihood' },
-  { label: 'Agility Agent Store', detail: 'Acquire and move Agility stock.', href: '/agility', icon: ShoppingBag, district: 'Work + livelihood' },
-  { label: 'Company Activities', detail: 'Company loops and current movement.', href: '/company/loops', icon: Activity, district: 'Work + livelihood' },
-  { label: 'Event Tasks', detail: 'Current WEAVE event participation.', href: '/event', icon: Flame, district: 'Work + livelihood' },
+  { label: 'My Bridgers', detail: 'Assigned Bridgers and team movement.', href: '/agent/bridgers', icon: Users, district: 'Bridger participation' },
+  { label: 'Agent Channels', detail: 'Approved company channels and responsibilities.', href: '/agent/channels', icon: Network, district: 'Bridger participation' },
+  { label: 'Prospect Campaigns', detail: 'Prospect campaigns available for Bridgers to purchase into and move forward.', href: '/weave/market/prospects', icon: Zap, district: 'Bridger participation' },
+  { label: 'Number Supply', detail: 'Worldwide number supply that supports Bridger outreach participation.', href: '/bridger/numbers', icon: Radio, district: 'Bridger participation' },
+  { label: 'Agent Continuance', detail: 'Commission records, performance and rewards.', href: '/agent/commissions', icon: Gauge, district: 'Stability movement' },
+  { label: 'Agility Agent Store', detail: 'Acquire and move Agility stock.', href: '/agility', icon: ShoppingBag, district: 'Stability movement' },
+  { label: 'Company Activities', detail: 'Company loops and current movement.', href: '/company/loops', icon: Activity, district: 'Stability movement' },
+  { label: 'Event Tasks', detail: 'Current WEAVE event participation.', href: '/event', icon: Flame, district: 'Stability movement' },
   { label: 'Client Interactions', detail: 'Approved Client service channels.', href: '/client-interactions', icon: MessageSquare, district: 'Client + company support' },
   { label: 'Clients', detail: 'Client directory and company-side Client continuity.', href: '/clients', icon: Users, district: 'Client + company support' },
   { label: 'Bridge Plaza', detail: 'Shared Client worlds and support entrance.', href: '/weave', icon: Landmark, district: 'Client + company support' },
@@ -171,8 +173,8 @@ const ADMIN_COMMANDS: FunctionItem[] = [
 
 const DISTRICT_ROUTE_TONE:Record<string,WeaveRouteTone>={
   'Shared WEAVE':'sky',
-  'Bridger support':'emerald',
-  'Work + livelihood':'amber',
+  'Bridger participation':'emerald',
+  'Stability movement':'amber',
   'Client + company support':'cyan',
   'Record + value':'violet',
   'Operations center':'violet',
@@ -185,15 +187,15 @@ const DISTRICT_ROUTE_TONE:Record<string,WeaveRouteTone>={
 
 const ROLE_COPY = {
   agent: {
-    eyebrow: 'Agent Operating Room',
-    title: 'Company support in working order.',
-    detail: 'The Agent is a WEAVE employee. The Operating Room keeps the shared WEAVE world, Bridger support, company work, Client service, livelihood and records visible together.',
+    eyebrow: 'Stability · Agent Department',
+    title: 'Keep Bridger participation stable and moving.',
+    detail: 'Stability is the Agent department. Agents keep Bridgers participating through Prospect campaigns, Number supply, Agility, company work and continuance while Bridgers carry Hope forward into Client connection.',
     commands: AGENT_COMMANDS,
     panelTitle: 'Agent Working Panel',
     panelDetail: 'The middle panel keeps the Agent’s real working components together. Open a function without leaving the operating system.',
   },
   admin: {
-    eyebrow: 'Administration Operating Room',
+    eyebrow: 'A Cat · Administration Department',
     title: 'The institution operating as one system.',
     detail: 'Administration remains inside the same WEAVE used by every participant. Its Operating Room begins with shared WEAVE, preserves the dense Administration control center already present in the codebase, then adds the newer institutional control surfaces.',
     commands: ADMIN_COMMANDS,
