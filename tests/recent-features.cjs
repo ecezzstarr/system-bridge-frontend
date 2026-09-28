@@ -12,20 +12,19 @@ Module._load=function(id,parent,isMain){
  return originalLoad.call(this,id,parent,isMain)
 }
 for(const ext of ['.ts','.tsx'])require.extensions[ext]=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}}).outputText,file)
-const {AppSidebar}=require('../components/app-sidebar.tsx')
 const initialAuth=auth
-for(const role of ['admin','agent','bridger','client','creator','user',null]){
- auth={...initialAuth,user:role?{id:'sidebar-test',name:'Sidebar Test',role}:null}
- const sidebar=renderToStaticMarkup(React.createElement(AppSidebar))
- assert.doesNotMatch(sidebar,/Lounge Media Hub|Public Lounge|DM:|Send Photo|Send Video|Send Screenshot|type="file"|<select/)
- assert.ok(sidebar.includes('href="/lounge"'),'Lounge navigation remains for '+role)
- assert.ok(sidebar.includes('href="/lounge?view=private"'),'Private Lounge navigation remains for '+role)
- assert.equal(sidebar.includes('href="/bridger/numbers"'),role==='bridger')
- assert.equal(sidebar.includes('href="/admin/bridger-numbers"'),role==='admin')
-}
-auth=initialAuth
-const sidebarCleanupSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
-assert.doesNotMatch(sidebarCleanupSource,/fetchUsers|\/api\/users|\/api\/lounge\/messages|FileReader|getDisplayMedia|sendToLounge|handleFileUpload|handleCaptureScreenshot|fileInputRef|targetRoom|uploadType|isUploading/)
+const placeMapSource=fs.readFileSync(path.join(root,'lib/weave-place-map.ts'),'utf8')
+const placeRegistrySource=fs.readFileSync(path.join(root,'lib/weave-environment-registry.ts'),'utf8')
+const bridgePlazaSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
+const appHeaderSource=fs.readFileSync(path.join(root,'components/app-header.tsx'),'utf8')
+assert.ok(placeRegistrySource.includes("kind:'place'"),'Page routes are registered as places')
+assert.ok(placeRegistrySource.includes("route:'/bridger/numbers'"),'Bridger Number Bay remains a registered place')
+assert.ok(placeRegistrySource.includes("route:'/admin/bridger-numbers'"),'Administration Number Engine remains a registered place')
+assert.ok(placeRegistrySource.includes("route:'/lounge'"),'Lounge remains a registered place')
+assert.ok(placeMapSource.includes('buildBridgePlazaDistricts'),'Bridge Plaza groups registered places into districts')
+assert.ok(bridgePlazaSource.includes('data-district-place-line="true"'),'Bridge Plaza reveals places after district entry')
+assert.ok(appHeaderSource.includes('data-bridge-plaza-return="true"')&&!appHeaderSource.includes('AppSidebar'),'Global navigation returns to Bridge Plaza instead of opening a sidebar')
+
 const Workshop=require('../app/(app)/authority/workshops/page.tsx').default
 auth={...auth,isInitialized:false};assert.match(renderToStaticMarkup(React.createElement(Workshop)),/Loading Authority Workshop/)
 auth={...auth,isInitialized:true};const html=renderToStaticMarkup(React.createElement(Workshop))
