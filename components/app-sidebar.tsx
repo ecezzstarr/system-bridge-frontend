@@ -60,7 +60,7 @@ const navigation = [
     { name: "Presences", href: "/profiles", icon: UserCircle },
     { name: WEAVE_SYSTEM_MAP.language.wallet, href: "/wallet", icon: Wallet },
     { name: WEAVE_SYSTEM_MAP.language.ledger, href: "/ledger", icon: BookOpen },
-    { name: "Reserve", href: "/fund-wall", icon: DollarSign, creatorOnly: true },
+    { name: "Reserve", href: "/fund-wall", icon: DollarSign, adminOnly: true },
   ]},
 
   // 2. POSITION — the operating room for the current role.
@@ -130,9 +130,9 @@ const navigation = [
 
 interface AppSidebarProps {
   user?: {
-    id: string
+    id?: string
     name: string
-    role: string
+    role?: string
     avatar?: string
   }
 }
@@ -245,7 +245,6 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
           {navigation.map((group) => {
             const visibleItems = group.items.filter((item: any) => {
               if (item.adminOnly && user?.role !== "admin") return false
-              if (item.creatorOnly && user?.role !== "creator") return false
               if (item.bridgerOnly && user?.role !== "bridger") return false
               if (item.agentOnly && user?.role !== "agent") return false
               if (item.staffOnly && user?.role !== "admin" && user?.role !== "agent") return false
