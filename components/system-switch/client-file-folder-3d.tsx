@@ -483,6 +483,7 @@ function Scene({
   enterpriseName?:string|null
   routeCount:number
   vitalityScore:number
+  systemWeaves:SystemWeave[]
   emergence:number
   routeCurrent:number
 }){
@@ -551,6 +552,7 @@ export function ClientFileFolder3D({
   enterpriseName?:string|null
   routeCount?:number
   vitalityScore?:number
+  systemWeaves?:SystemWeave[]
   territoryMode?:boolean
 }){
   const {config:visualRuntime}=useVisualRuntime()
@@ -607,6 +609,7 @@ export function ClientFileFolder3D({
           enterpriseName={enterpriseName}
           routeCount={routeCount}
           vitalityScore={vitalityScore}
+          systemWeaves={systemWeaves}
           emergence={emergence}
           routeCurrent={routeCurrent}
         />
