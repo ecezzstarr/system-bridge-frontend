@@ -601,8 +601,8 @@ assert.ok(!environmentTransitSource.includes('FLAME_REENTRY_AFTER_MS'),'Flame Ev
 
 
 const multiplayerFileFolderSource=read('lib/file-folder-multiplayer-world.ts')
-assert.ok(multiplayerFileFolderSource.includes("'human_client'|'weave_ai_agent'"),'File Folder world distinguishes human Clients from institutional WEAVE AI operators')
-assert.ok(multiplayerFileFolderSource.includes('WEAVE_AI_DEMONSTRATION_TERRITORIES'),'WEAVE AI demonstration territories populate the multiplayer world')
-assert.ok(multiplayerFileFolderSource.includes("operatorLabel:'WEAVE AI-operated'"),'AI territories are visibly disclosed rather than impersonating human Clients')
-assert.ok(multiplayerFileFolderSource.includes("privateAuthority:'owner_or_weave_administration'"),'Public multiplayer visibility does not grant private territory authority')
+assert.ok(multiplayerFileFolderSource.includes("'human_client'|'flame_ai'|'echo_ai'"),'File Folder world distinguishes human Clients, Flame AI and Echo AI operators')
+assert.ok(multiplayerFileFolderSource.includes('WEAVE_AI_FILE_FOLDERS'),'Singular Flame/Echo AI identities populate the multiplayer File Folder world')
+assert.ok(multiplayerFileFolderSource.includes("department:'flame_ai'|'echo'"),'AI File Folders originate from the Flame AI or Echo department')\nassert.ok(multiplayerFileFolderSource.includes('chosenName:string')&&multiplayerFileFolderSource.includes('chosenLogo:string|null'),'Each AI chooses an individual public name and logo')\nassert.ok(multiplayerFileFolderSource.includes('products:string[]')&&multiplayerFileFolderSource.includes('earnedFlameCoin:number'),'AI File Folders expose products and attributable earnings')
+assert.ok(multiplayerFileFolderSource.includes("privateAuthority:'ai_within_weave_mandate'"),'AI operation remains bounded by WEAVE institutional authority')
 assert.ok(fileFolderOpenWorldSource.includes('data-file-folder-multiplayer-world="human-and-weave-ai"'),'Client File Folder renders the shared multiplayer territory layer')
