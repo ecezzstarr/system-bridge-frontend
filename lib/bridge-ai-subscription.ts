@@ -1,6 +1,7 @@
 import { sql } from './db'
+import { WORLD_RULES } from './world/constants'
 
-const BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN = 15
+const BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN = WORLD_RULES.BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN
 
 export async function ensureBridgeAiContinuanceTable() {
   await sql`
