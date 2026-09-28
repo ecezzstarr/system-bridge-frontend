@@ -27,6 +27,7 @@ import {
   Waves,
   Zap,
   Bot,
+  Cpu,
 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
@@ -114,6 +115,7 @@ const ROLE: Record<WorldRole, {
     functionsHref: '/admin/functions',
     links: [
       { label: 'Control Center', detail: 'Deposits, people, wallets and institutional operations', href: '/admin/control-center', icon: LayoutTemplate, tone: 'emerald' },
+      { label: 'Development Foundry', detail: 'Eight + live coding agents', href: '/admin/development-agents', icon: Cpu, tone: 'violet' },
       { label: 'Company Loops', detail: 'Shared movement', href: '/company/loops', icon: GitBranch, tone: 'gold' },
       { label: 'File Number Engine', detail: 'Client identity', href: '/admin/file-number-engine', icon: FileBox, tone: 'sky' },
       { label: 'Message Hub', detail: 'People and staff', href: '/admin/hub', icon: MessageSquare, tone: 'emerald' },
@@ -121,7 +123,7 @@ const ROLE: Record<WorldRole, {
       { label: 'Authority', detail: 'Operating structures', href: '/authority/workshops', icon: BriefcaseBusiness, tone: 'violet' },
       { label: 'Ad Workshop', detail: 'Communication control', href: '/admin/ad-workshop', icon: Radio, tone: 'sky' },
       { label: 'Visual Systems', detail: 'World motion authority', href: '/admin/visual-systems', icon: Palette, tone: 'violet' },
-      { label: 'Environment Organizer', detail: 'World districts + HUD stations', href: '/admin/environment-organizer', icon: LayoutTemplate, tone: 'sky' },
+      { label: 'Environment Organizer', detail: 'World districts + operating stations', href: '/admin/environment-organizer', icon: LayoutTemplate, tone: 'sky' },
       { label: 'DJ Workshop', detail: 'Sound and atmosphere', href: '/admin/dj-workshop', icon: Waves, tone: 'violet' },
       { label: 'Bridge Plaza', detail: 'Institution world', href: '/weave', icon: Landmark, tone: 'sky' },
     ],
@@ -198,12 +200,12 @@ export function WeaveDashboardWorld({
 
   if (role !== 'client') {
     const positions=['left-[50%] top-[25%] -translate-x-1/2','left-[16%] top-[39%]','right-[12%] top-[39%]','left-[22%] top-[61%]','right-[18%] top-[61%]','left-[37%] top-[77%]','right-[30%] top-[77%]','left-[50%] top-[51%] -translate-x-1/2','left-[8%] top-[73%]','right-[7%] top-[72%]']
-    return <section className="weave-dashboard-world relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-role-world-hud={role}>
+    return <section className="weave-dashboard-world relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-role-world={role}>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_48%,rgba(14,116,144,.15),transparent_27%),radial-gradient(ellipse_at_50%_70%,rgba(245,158,11,.05),transparent_38%),linear-gradient(180deg,#02070d_0%,#07111a_50%,#02070b_100%)]"/>
       <div className="absolute inset-x-[-12%] bottom-[-22%] h-[78%] [transform:perspective(520px)_rotateX(58deg)] bg-[linear-gradient(rgba(56,189,248,.065)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,.065)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_top,black,transparent_92%)]"/>
       <div className="absolute left-1/2 top-[53%] h-[54%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-cyan-200/10 shadow-[0_0_90px_rgba(34,211,238,.07)]"/>
       <header className="pointer-events-none absolute inset-x-0 top-14 z-20 flex items-start justify-between p-4 sm:p-6">
-        <div><WeaveLogo size="sm"/><p className="mt-2 text-[8px] font-black uppercase tracking-[.22em] text-sky-300">{copy.eyebrow} · HUD</p><h1 className="mt-1 text-lg font-black text-white sm:text-2xl">{userName || copy.title}</h1><p className="mt-1 hidden max-w-md text-[9px] text-slate-500 sm:block">{copy.subtitle}</p></div>
+        <div><WeaveLogo size="sm"/><p className="mt-2 text-[8px] font-black uppercase tracking-[.22em] text-sky-300">{copy.eyebrow} · Live World</p><h1 className="mt-1 text-lg font-black text-white sm:text-2xl">{userName || copy.title}</h1><p className="mt-1 hidden max-w-md text-[9px] text-slate-500 sm:block">{copy.subtitle}</p></div>
         <div className="border-r-2 border-emerald-300/40 pr-3 text-right"><p className="text-[7px] font-black uppercase tracking-[.16em] text-emerald-300">World state</p><p className="mt-1 text-[10px] font-black text-white">CONNECTED</p></div>
       </header>
       <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M50 28 L50 51 M50 51 L18 42 M50 51 L86 42 M50 51 L22 65 M50 51 L82 64 M50 51 L38 79 M50 51 L72 79" fill="none" stroke="rgba(103,232,249,.42)" strokeWidth=".18" strokeDasharray="1.2 1.4"/><circle cx="50" cy="51" r="1.1" fill="rgba(103,232,249,.75)"/></svg>
@@ -235,7 +237,7 @@ export function WeaveDashboardWorld({
   ] as const
   const positionFor=(label:string)=>positions.find(([key])=>key===label)?.[1] || 'left-[50%] top-[50%]'
 
-  return <section className="weave-dashboard-world relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-client-world-hud="true">
+  return <section className="weave-dashboard-world relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-client-world="open-territory">
     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_48%,rgba(14,116,144,.16),transparent_28%),radial-gradient(ellipse_at_50%_68%,rgba(16,185,129,.07),transparent_40%),linear-gradient(180deg,#02070d_0%,#061019_48%,#02070b_100%)]"/>
     <div className="absolute inset-x-[-12%] bottom-[-22%] h-[78%] [transform:perspective(520px)_rotateX(58deg)] bg-[linear-gradient(rgba(56,189,248,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,.07)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_top,black,transparent_92%)]"/>
     <div className="absolute left-1/2 top-[53%] h-[54%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-cyan-200/10 shadow-[0_0_90px_rgba(34,211,238,.08),inset_0_0_80px_rgba(14,116,144,.05)]"/>
@@ -244,7 +246,7 @@ export function WeaveDashboardWorld({
     <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between p-4 sm:p-6">
       <div>
         <WeaveLogo size="sm"/>
-        <p className="mt-2 text-[8px] font-black uppercase tracking-[.22em] text-sky-300">Client World · HUD</p>
+        <p className="mt-2 text-[8px] font-black uppercase tracking-[.22em] text-sky-300">Client World · Open Territory</p>
         <h1 className="mt-1 text-lg font-black text-white sm:text-2xl">{userName || 'Client'}</h1>
       </div>
       <div className="border-r-2 border-emerald-300/40 pr-3 text-right">

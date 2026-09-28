@@ -1,0 +1,29 @@
+name: WEAVE Development Foundry Pulse
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+    env:
+      DEVELOPMENT_AGENT_SECRET: ${{ secrets.CRON_SECRET || secrets.WEAVE_DEVELOPMENT_AGENT_SECRET }}
+      DEVELOPMENT_AGENT_URL: ${{ vars.WEAVE_DEVELOPMENT_AGENT_URL || 'https://weavingsystem.online/api/cron/development-foundry' }}
+    steps:
+      - name: Pulse one due WEAVE development agent
+        if: ${{ env.DEVELOPMENT_AGENT_SECRET != '' }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            --request GET \
+            --header "x-cron-secret: ${DEVELOPMENT_AGENT_SECRET}" \
+            "${DEVELOPMENT_AGENT_URL}"
+
+      - name: Report unarmed scheduler
+        if: ${{ env.DEVELOPMENT_AGENT_SECRET == '' }}
+        run: echo "WEAVE Development Foundry scheduler is installed but not armed. Set CRON_SECRET (preferred) or WEAVE_DEVELOPMENT_AGENT_SECRET in GitHub Actions; Cloud Run may reuse its existing CRON_SECRET."

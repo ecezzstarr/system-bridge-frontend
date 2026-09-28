@@ -38,7 +38,7 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   return (
     <>
-      <header className="weave-header fixed left-3 right-3 top-3 z-40 flex h-12 items-center justify-between rounded-full border border-sky-200/10 bg-[#020914]/72 px-3 shadow-[0_12px_40px_rgba(2,8,23,.22)] backdrop-blur-xl md:left-5 md:right-5 md:px-4" data-weave-world-hud="top">
+      <header className="weave-header fixed left-3 right-3 top-3 z-40 flex h-12 items-center justify-between rounded-full border border-sky-200/10 bg-[#020914]/72 px-3 shadow-[0_12px_40px_rgba(2,8,23,.22)] backdrop-blur-xl md:left-5 md:right-5 md:px-4" data-weave-world-header="top">
         <div className="flex min-w-0 items-center gap-3">
           <div data-weave-live-word="station" className="weave-flame-live-indicator items-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-400/[0.07] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-orange-100">
             <span className="h-1.5 w-1.5 rounded-full bg-orange-300 shadow-[0_0_12px_rgba(251,146,60,.8)]" />

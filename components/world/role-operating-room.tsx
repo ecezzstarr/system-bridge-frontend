@@ -158,6 +158,7 @@ const ADMIN_COMMANDS: FunctionItem[] = [
   { label: 'Agility Fulfillment', detail: 'Administer Agility orders and fulfillment.', href: '/admin/agility', icon: ShoppingBag, district: 'Bridge system' },
 
   { label: 'Authority Workshop', detail: 'Institutional structures and authority.', href: '/authority/workshops', icon: Shield, district: 'Institution + infrastructure' },
+  { label: 'Development Foundry', detail: 'Eight and persistent coding agents developing WEAVE against the real source.', href: '/admin/development-agents', icon: Rocket, district: 'Institution + infrastructure' },
   { label: 'Developer Workshop', detail: 'Develop and refine WEAVE systems.', href: '/admin/dev-workshop', icon: Rocket, district: 'Institution + infrastructure' },
   { label: 'Origin Systems', detail: 'Inspect origin runtime and system foundations.', href: '/admin/origin-systems', icon: Cloud, district: 'Institution + infrastructure' },
   { label: 'Enterprise Systems Workshop', detail: 'Million-scale software, hardware and infrastructure systems.', href: '/admin/enterprise-systems', icon: Cloud, district: 'Institution + infrastructure' },

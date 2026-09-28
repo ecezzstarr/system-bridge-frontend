@@ -79,6 +79,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-loop-workshop', label:'Loop Workshop', kind:'district', route:'/admin/loop-workshop', area:'Administration', scope:'admin', defaultOrder:180 },
   { key:'admin-authority-workshop', label:'Authority Workshop', kind:'district', route:'/authority/workshops', area:'Administration', scope:'admin', defaultOrder:190 },
   { key:'admin-infrastructure', label:'Infrastructure', kind:'district', route:'/admin/infrastructure', area:'Administration', scope:'admin', defaultOrder:200 },
+  { key:'admin-development-foundry', label:'Development Foundry', kind:'district', route:'/admin/development-agents', area:'Administration', scope:'admin', protected:true, defaultOrder:202 },
   { key:'admin-integrity-engine', label:'WEAVE Integrity Engine', kind:'district', route:'/admin/dev-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:205 },
   { key:'admin-dj-workshop', label:'DJ Workshop', kind:'district', route:'/admin/dj-workshop', area:'Administration', scope:'admin', defaultOrder:210 },
   { key:'admin-ad-workshop', label:'Ad Workshop', kind:'district', route:'/admin/ad-workshop', area:'Administration', scope:'admin', defaultOrder:220 },

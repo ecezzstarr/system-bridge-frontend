@@ -465,7 +465,7 @@ assert.ok(positionEventSource.includes('data-weave-route-station'),'Loop 1 expos
 assert.ok(positionEventSource.includes('data-flame-event-crossing-route="system-switch"')&&positionEventSource.includes('data-weave-world-gate="system-switch"'),'Client Flame Event Hall exposes physical travel into System Switch crossing')
 assert.ok(!positionEventSource.includes('ROLE_ORDER'),'Event page does not explain other user roles')
 assert.ok(!positionEventSource.includes('FLAME_EVENT_FEATURES'),'Event page removes generic event feature clutter')
-assert.ok(compactWorldSource.includes('data-client-world-hud="true"')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home is a spatial HUD territory with physical movement beacons')
+assert.ok(compactWorldSource.includes('data-client-world="open-territory"')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home is a spatial open territory with physical movement beacons')
 assert.ok(bridgerOperatingRoomSource.includes('Crossing') && bridgerOperatingRoomSource.includes('Client continuity'),'Bridger functions are organized by responsibility instead of one stacked terminal')
 assert.ok(roleOperatingRoomSource.includes("title: 'Bridger participation'"),'Agent Operating Room organizes Bridger participation as a Stability function')
 assert.ok(roleOperatingRoomSource.includes("title: 'Client system'"),'Administration Operating Room organizes Client authority as a system function')
@@ -1425,6 +1425,9 @@ assert.ok(clientEnvironmentNavigationSource.includes("'Home World'"),'Client nav
 assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
 
 for(const file of [
+  'lib/weave-development-agents.ts',
+  'app/api/admin/development-agents/route.ts',
+  'app/(app)/admin/development-agents/page.tsx',
   'lib/weave-interaction-motion.ts',
   'lib/weave-visual-profile.ts',
   'components/world/use-visual-runtime.ts',
