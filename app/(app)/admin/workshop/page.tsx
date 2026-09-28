@@ -4,10 +4,16 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Cloud, GitBranch, LayoutTemplate, Megaphone, Palette, Radio, Sparkles, Wrench } from 'lucide-react'
+import { Cloud, Cpu, GitBranch, LayoutTemplate, Megaphone, Palette, Radio, Sparkles, Wrench } from 'lucide-react'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const workshops = [
+  {
+    href: '/admin/development-agents',
+    title: 'Development Foundry · AI Engineers',
+    description: 'Eight leads persistent coding agents that own real parts of WEAVE, read the source, develop bounded work, verify it and return proposals to Administration.',
+    icon: Cpu,
+  },
   {
     href: '/admin/infrastructure',
     title: 'Infrastructure Workshop',
