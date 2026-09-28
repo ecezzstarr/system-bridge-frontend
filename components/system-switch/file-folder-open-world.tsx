@@ -30,6 +30,7 @@ type Props = {
   workshopPurpose?: string | null
   initialWorld: any
   readOnly?: boolean
+  observerLabel?: string
   refreshUrl?: string
   refreshToken?: string | null
   onWorldChange?: (world: any) => void
@@ -91,6 +92,7 @@ export default function FileFolderOpenWorld({
   workshopPurpose,
   initialWorld,
   readOnly = false,
+  observerLabel = 'Staff / Visitor observation',
   refreshUrl,
   refreshToken,
   onWorldChange,
@@ -230,11 +232,12 @@ export default function FileFolderOpenWorld({
             <p className="mt-1 truncate text-[9px] font-mono text-slate-500 md:mt-2 md:text-[10px]">{clientName} · {fileNumber}</p>
           </div>
           <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] ${readOnly?'border-violet-300/20 bg-violet-400/5 text-violet-200':'border-emerald-300/20 bg-emerald-400/5 text-emerald-200'}`}>
-            {readOnly?'Support view':'Client control'}
+            {readOnly?'Observable territory':'Client control'}
           </span>
         </div>
 
         <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
+        {readOnly&&<div className="mt-3 border-l-2 border-violet-300/30 bg-violet-400/[.035] px-3 py-2 text-[9px] leading-4 text-violet-100" data-territory-observer="progress-visible"><span className="font-black uppercase tracking-wider">{observerLabel} · </span>Construction progress, completed structures, Customer Door maturity and public business movement are visible here. Ownership, wallet, private records and build controls remain with the Lord/Lady.</div>}
 
         <div className="mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2.5 text-[8px] uppercase tracking-wider text-stone-500 md:mt-5 md:grid md:grid-cols-4 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[10px]">
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3">
