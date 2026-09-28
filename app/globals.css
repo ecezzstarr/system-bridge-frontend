@@ -936,9 +936,14 @@ html[data-weave-pulse][data-weave-event="flame-live"] [data-weave-live-word="sta
 }
 
 html[data-weave-quality="0"] .weave-live-flame-current,
-html[data-weave-quality="0"] .weave-live-flame-core,
 html[data-weave-quality="0"] .weave-live-flame-heat {
+  display: none;
+}
+html[data-weave-quality="0"] .weave-live-flame-core {
   animation: none !important;
+  filter: blur(4px);
+  mix-blend-mode: normal;
+  opacity: .58;
 }
 html[data-weave-covered="true"] .weave-live-flame-current,
 html[data-weave-covered="true"] .weave-live-flame-core,
@@ -951,12 +956,15 @@ html[data-weave-quality="1"] .weave-live-flame-heat {
   display: none;
 }
 html[data-weave-quality="1"] .weave-live-flame-current-a {
-  filter: blur(48px);
-  animation-duration: 12s;
+  inset: -18%;
+  filter: blur(26px);
+  mix-blend-mode: normal;
+  animation-duration: 14s;
 }
 html[data-weave-quality="1"] .weave-live-flame-core {
-  filter: blur(10px);
-  animation-duration: 3.4s;
+  filter: blur(6px);
+  mix-blend-mode: normal;
+  animation-duration: 4.2s;
 }
 
 
