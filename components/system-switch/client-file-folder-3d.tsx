@@ -1,8 +1,8 @@
 'use client'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
-import { useMemo,useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useEffect,useMemo,useRef } from 'react'
+import { useFrame,useThree } from '@react-three/fiber'
 import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
@@ -32,19 +32,19 @@ function StoneGround(){
   return <group>
     <mesh position={[0,-.52,0]} receiveShadow>
       <cylinderGeometry args={[10.4,10.8,.42,80]}/>
-      <meshStandardMaterial color="#17130f" roughness={.88} metalness={.04}/>
+      <meshStandardMaterial color="#090d12" roughness={.88} metalness={.04}/>
     </mesh>
     <mesh position={[0,-.28,0]} receiveShadow>
       <cylinderGeometry args={[9.65,10.05,.08,80]}/>
-      <meshStandardMaterial color="#30261d" roughness={.82} metalness={.06}/>
+      <meshStandardMaterial color="#111923" roughness={.82} metalness={.06}/>
     </mesh>
     <mesh position={[0,-.235,0]} rotation={[-Math.PI/2,0,0]} receiveShadow>
       <ringGeometry args={[3.25,8.9,96]}/>
-      <meshStandardMaterial color="#1f1b16" roughness={.9}/>
+      <meshStandardMaterial color="#0d141d" roughness={.9}/>
     </mesh>
     <mesh position={[0,-.21,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[7.95,8.08,96]}/>
-      <meshStandardMaterial color="#8d673f" emissive="#f59e0b" emissiveIntensity={.04} metalness={.34} roughness={.55}/>
+      <meshStandardMaterial color="#466170" emissive="#f59e0b" emissiveIntensity={.04} metalness={.34} roughness={.55}/>
     </mesh>
   </group>
 }
@@ -57,15 +57,15 @@ function PavedRoad({from,to,width=.72}:{from:[number,number,number];to:[number,n
   return <group position={[(from[0]+to[0])/2,-.16,(from[2]+to[2])/2]} rotation={[0,angle,0]}>
     <mesh receiveShadow>
       <boxGeometry args={[width,.08,length]}/>
-      <meshStandardMaterial color="#29221b" roughness={.94}/>
+      <meshStandardMaterial color="#111820" roughness={.94}/>
     </mesh>
     <mesh position={[-width*.41,.055,0]}>
       <boxGeometry args={[.035,.025,length]}/>
-      <meshStandardMaterial color="#9b7449" metalness={.35} roughness={.55}/>
+      <meshStandardMaterial color="#5f7884" metalness={.35} roughness={.55}/>
     </mesh>
     <mesh position={[width*.41,.055,0]}>
       <boxGeometry args={[.035,.025,length]}/>
-      <meshStandardMaterial color="#9b7449" metalness={.35} roughness={.55}/>
+      <meshStandardMaterial color="#5f7884" metalness={.35} roughness={.55}/>
     </mesh>
   </group>
 }
@@ -92,7 +92,7 @@ function FlameBeacon({position,scale=.75}:{position:[number,number,number];scale
     fire.current.rotation.z=Math.sin(t*1.7+position[2])*.045
   })
   return <group position={position} scale={scale}>
-    <mesh position={[0,.12,0]} castShadow><cylinderGeometry args={[.25,.34,.3,18]}/><meshStandardMaterial color="#72502e" metalness={.62} roughness={.34}/></mesh>
+    <mesh position={[0,.12,0]} castShadow><cylinderGeometry args={[.25,.34,.3,18]}/><meshStandardMaterial color="#263843" metalness={.62} roughness={.34}/></mesh>
     <group ref={fire} position={[0,.66,0]}>
       <mesh><coneGeometry args={[.17,.76,7]}/><meshStandardMaterial color="#f97316" emissive="#f97316" emissiveIntensity={1.8} toneMapped={false}/></mesh>
       <mesh position={[0,-.05,.03]} scale={.58}><coneGeometry args={[.16,.67,7]}/><meshBasicMaterial color="#fef3c7"/></mesh>
@@ -105,15 +105,15 @@ function CommandHall({active}:{active:boolean}){
   return <group>
     <mesh position={[0,.55,0]} castShadow receiveShadow>
       <cylinderGeometry args={[1.34,1.65,1.1,8]}/>
-      <meshStandardMaterial color="#3a2b20" roughness={.68} metalness={.16}/>
+      <meshStandardMaterial color="#17232d" roughness={.68} metalness={.16}/>
     </mesh>
     <mesh position={[0,1.42,0]} castShadow>
       <coneGeometry args={[1.42,.9,8]}/>
-      <meshStandardMaterial color="#6f4a2a" metalness={.34} roughness={.5}/>
+      <meshStandardMaterial color="#334b59" metalness={.34} roughness={.5}/>
     </mesh>
     <mesh position={[0,.62,1.38]}>
       <boxGeometry args={[.64,.95,.14]}/>
-      <meshStandardMaterial color="#110d0a" emissive="#f59e0b" emissiveIntensity={active ? .16:.06}/>
+      <meshStandardMaterial color="#071016" emissive="#f59e0b" emissiveIntensity={active ? .16:.06}/>
     </mesh>
     <Text position={[0,.8,1.48]} fontSize={.16} color="#fef3c7" anchorX="center">COMMAND</Text>
     <FlameBeacon position={[-1.4,.02,.95]} scale={.55}/>
@@ -124,14 +124,14 @@ function CommandHall({active}:{active:boolean}){
 function MarketDistrict({level,buildProgress,active}:{level:number;buildProgress:number;active:boolean}){
   const floors=level>=3?3:level>=2?2:level>=1?1:0
   return <group>
-    <mesh position={[0,.12,0]} receiveShadow><boxGeometry args={[3.0,.24,2.3]}/><meshStandardMaterial color="#31271e" roughness={.82}/></mesh>
+    <mesh position={[0,.12,0]} receiveShadow><boxGeometry args={[3.0,.24,2.3]}/><meshStandardMaterial color="#111b23" roughness={.82}/></mesh>
     {floors===0?<>
-      <mesh position={[0,.18,0]} receiveShadow><boxGeometry args={[2.0,.12,1.5]}/><meshStandardMaterial color="#4a3828" roughness={.85}/></mesh>
+      <mesh position={[0,.18,0]} receiveShadow><boxGeometry args={[2.0,.12,1.5]}/><meshStandardMaterial color="#1b2b35" roughness={.85}/></mesh>
       <Text position={[0,.42,.82]} fontSize={.12} color="#a79075">MARKET PLOT</Text>
     </>:<>
-      <mesh position={[0,.56,0]} castShadow><boxGeometry args={[2.3,.9,1.65]}/><meshStandardMaterial color="#4a3828" roughness={.68}/></mesh>
-      {floors>=2&&<mesh position={[0,1.23,0]} castShadow><boxGeometry args={[1.95,.48,1.42]}/><meshStandardMaterial color="#60452f" roughness={.62}/></mesh>}
-      {floors>=3&&<mesh position={[0,1.76,0]} castShadow><boxGeometry args={[1.5,.55,1.15]}/><meshStandardMaterial color="#765331" metalness={.15} roughness={.58}/></mesh>}
+      <mesh position={[0,.56,0]} castShadow><boxGeometry args={[2.3,.9,1.65]}/><meshStandardMaterial color="#1b2b35" roughness={.68}/></mesh>
+      {floors>=2&&<mesh position={[0,1.23,0]} castShadow><boxGeometry args={[1.95,.48,1.42]}/><meshStandardMaterial color="#243b47" roughness={.62}/></mesh>}
+      {floors>=3&&<mesh position={[0,1.76,0]} castShadow><boxGeometry args={[1.5,.55,1.15]}/><meshStandardMaterial color="#315160" metalness={.15} roughness={.58}/></mesh>}
       {[-.72,0,.72].map(x=><mesh key={x} position={[x,.6,.84]}><boxGeometry args={[.32,.48,.09]}/><meshStandardMaterial color="#18241d" emissive="#34d399" emissiveIntensity={active ? .24:.1}/></mesh>)}
       <Text position={[0,.34,.9]} fontSize={.12} color="#d6f5e4">CUSTOMER MARKET</Text>
     </>}
@@ -139,15 +139,29 @@ function MarketDistrict({level,buildProgress,active}:{level:number;buildProgress
   </group>
 }
 
-function EnterpriseKeep({level,active}:{level:number;active:boolean}){
-  const height=level>=4?3.4:level>=3?2.8:level>=2?2.1:level>=1?1.4:.35
+function EnterpriseKeep({
+  level,active,position,approved,enterpriseName,
+}:{
+  level:number
+  active:boolean
+  position?:'client'|'lord'|'lady'|string
+  approved?:boolean
+  enterpriseName?:string|null
+}){
+  const effectiveLevel=approved?Math.max(1,level):level
+  const height=effectiveLevel>=4?3.4:effectiveLevel>=3?2.8:effectiveLevel>=2?2.1:effectiveLevel>=1?1.4:.35
   return <group>
-    <mesh position={[0,.13,0]} receiveShadow><cylinderGeometry args={[1.7,1.9,.26,8]}/><meshStandardMaterial color="#32261d" roughness={.82}/></mesh>
-    {level===0?<Text position={[0,.38,.82]} fontSize={.12} color="#aa9379">ENTERPRISE GROUND</Text>:<>
-      <mesh position={[0,height/2+.18,0]} castShadow><cylinderGeometry args={[.82,1.18,height,8]}/><meshStandardMaterial color="#4d3927" roughness={.62} metalness={.16}/></mesh>
-      {level>=2&&[-1.12,1.12].map(x=><mesh key={x} position={[x,.8,0]} castShadow><cylinderGeometry args={[.28,.38,1.4,8]}/><meshStandardMaterial color="#59402b" roughness={.62}/></mesh>)}
-      {level>=3&&<mesh position={[0,height+.52,0]}><coneGeometry args={[.82,.95,8]}/><meshStandardMaterial color="#7a522e" metalness={.35} roughness={.44}/></mesh>}
-      <Text position={[0,.66,1.05]} fontSize={.12} color="#f6e4c6">ENTERPRISE</Text>
+    <mesh position={[0,.13,0]} receiveShadow><cylinderGeometry args={[1.7,1.9,.26,8]}/><meshStandardMaterial color="#121d26" roughness={.82}/></mesh>
+    {effectiveLevel===0?<Text position={[0,.38,.82]} fontSize={.12} color="#aa9379">ENTERPRISE GROUND</Text>:<>
+      <mesh position={[0,height/2+.18,0]} castShadow><cylinderGeometry args={[.82,1.18,height,8]}/><meshStandardMaterial color="#1b2c37" roughness={.62} metalness={.16}/></mesh>
+      {effectiveLevel>=2&&[-1.12,1.12].map(x=><mesh key={x} position={[x,.8,0]} castShadow><cylinderGeometry args={[.28,.38,1.4,8]}/><meshStandardMaterial color="#253b47" roughness={.62}/></mesh>)}
+      {effectiveLevel>=3&&<mesh position={[0,height+.52,0]}><coneGeometry args={[.82,.95,8]}/><meshStandardMaterial color="#355564" metalness={.35} roughness={.44}/></mesh>}
+      <Text position={[0,.66,1.05]} fontSize={.12} color="#f6e4c6">{approved ? String(position||'enterprise').toUpperCase() : 'ENTERPRISE'}</Text>
+      {approved&&<>
+        <mesh position={[-.82,height+.08,.05]} castShadow><boxGeometry args={[.05,1.55,.05]}/><meshStandardMaterial color="#9a7448" metalness={.48} roughness={.42}/></mesh>
+        <mesh position={[-.46,height+.55,.05]}><planeGeometry args={[.7,.45]}/><meshStandardMaterial color="#7c2d12" emissive="#f97316" emissiveIntensity={active ? .18 : .08} side={THREE.DoubleSide}/></mesh>
+        <Text position={[0,height+1.16,.05]} fontSize={.11} color="#fde68a" anchorX="center">{enterpriseName ? enterpriseName.toUpperCase().slice(0,24) : 'ENTERPRISE DREAM'}</Text>
+      </>}
       <pointLight position={[0,height+.4,.8]} intensity={active?4:1.5} distance={4} color="#fbbf24"/>
     </>}
   </group>
@@ -155,9 +169,9 @@ function EnterpriseKeep({level,active}:{level:number;active:boolean}){
 
 function SoundPavilion({active}:{active:boolean}){
   return <group>
-    <mesh position={[0,.1,0]} receiveShadow><cylinderGeometry args={[1.4,1.55,.2,24]}/><meshStandardMaterial color="#31251e" roughness={.72}/></mesh>
-    {[0,Math.PI/2,Math.PI,Math.PI*1.5].map((angle,index)=><mesh key={index} position={[Math.cos(angle)*.95,.78,Math.sin(angle)*.95]} castShadow><cylinderGeometry args={[.1,.13,1.55,12]}/><meshStandardMaterial color="#8c6646" metalness={.38} roughness={.45}/></mesh>)}
-    <mesh position={[0,1.55,0]} castShadow><coneGeometry args={[1.5,.72,24]}/><meshStandardMaterial color="#513725" roughness={.54}/></mesh>
+    <mesh position={[0,.1,0]} receiveShadow><cylinderGeometry args={[1.4,1.55,.2,24]}/><meshStandardMaterial color="#111c25" roughness={.72}/></mesh>
+    {[0,Math.PI/2,Math.PI,Math.PI*1.5].map((angle,index)=><mesh key={index} position={[Math.cos(angle)*.95,.78,Math.sin(angle)*.95]} castShadow><cylinderGeometry args={[.1,.13,1.55,12]}/><meshStandardMaterial color="#55717e" metalness={.38} roughness={.45}/></mesh>)}
+    <mesh position={[0,1.55,0]} castShadow><coneGeometry args={[1.5,.72,24]}/><meshStandardMaterial color="#233945" roughness={.54}/></mesh>
     <mesh position={[0,.9,0]}><sphereGeometry args={[.38,20,20]}/><meshStandardMaterial color="#2c1f22" emissive="#fb7185" emissiveIntensity={active ? .32:.12}/></mesh>
   </group>
 }
@@ -165,11 +179,11 @@ function SoundPavilion({active}:{active:boolean}){
 function ConstructionYard({activeBuilds,emergence}:{activeBuilds:ActiveBuild[];emergence:number}){
   const shown=activeBuilds.slice(0,4)
   return <group>
-    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[3.5,.16,2.85]}/><meshStandardMaterial color="#2b241d" roughness={.92}/></mesh>
-    <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#9b7449" metalness={.45} roughness={.45}/></mesh>
+    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[3.5,.16,2.85]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
+    <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#5f7884" metalness={.45} roughness={.45}/></mesh>
     <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">CONSTRUCTION YARD</Text>
     {shown.length===0?<>
-      <mesh position={[0,.22,-.1]} receiveShadow><boxGeometry args={[1.5,.15,1.0]}/><meshStandardMaterial color="#4c3b2c" roughness={.85}/></mesh>
+      <mesh position={[0,.22,-.1]} receiveShadow><boxGeometry args={[1.5,.15,1.0]}/><meshStandardMaterial color="#1b2a34" roughness={.85}/></mesh>
       <Text position={[0,.48,.35]} fontSize={.1} color="#8f7c66" anchorX="center">WAITING FOR BLUEPRINT</Text>
     </>:shown.map((build,index)=>{
       const col=index%2
@@ -217,10 +231,10 @@ function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position
     pulse.current.opacity=Math.max(.04,wave*Math.min(1.4,emergence)*(.35+progress/160))
   })
   return <group position={position}>
-    <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#514032" roughness={.86}/></mesh>
-    {progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#8b6945" metalness={.35} roughness={.5}/></mesh>))}
-    {walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#4b3a2c" transparent opacity={.68} roughness={.66}/></mesh>}
-    {roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#765234" roughness={.5} metalness={.16}/></mesh>}
+    <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#1c2c37" roughness={.86}/></mesh>
+    {progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
+    {walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
+    {roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#315160" roughness={.5} metalness={.16}/></mesh>}
     <mesh position={[0,.09,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[.58,.72,32]}/>
       <meshBasicMaterial ref={pulse} color="#f59e0b" transparent opacity={.12}/>
@@ -249,24 +263,24 @@ function LiveBuilding({system,index,total,emergence}:{system:LiveSystem;index:nu
   const isNetwork=/route|integration|network/.test(type)
 
   return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]}>
-    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial color="#32261d" roughness={.86}/></mesh>
+    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial color="#121d26" roughness={.86}/></mesh>
 
     {isMarket&&<group>
-      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.0,1.25,.72]}/><meshStandardMaterial color="#4d3b2d" roughness={.62}/></mesh>
-      <mesh position={[0,1.42,0]} castShadow><boxGeometry args={[1.12,.16,.82]}/><meshStandardMaterial color="#765234" metalness={.18} roughness={.48}/></mesh>
+      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.0,1.25,.72]}/><meshStandardMaterial color="#1c303b" roughness={.62}/></mesh>
+      <mesh position={[0,1.42,0]} castShadow><boxGeometry args={[1.12,.16,.82]}/><meshStandardMaterial color="#315160" metalness={.18} roughness={.48}/></mesh>
       {[-.3,.3].map(v=><mesh key={v} position={[v,.68,.38]}><boxGeometry args={[.22,.42,.05]}/><meshStandardMaterial color="#14241b" emissive="#34d399" emissiveIntensity={activity}/></mesh>)}
     </group>}
 
     {isMedia&&<group>
-      <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.32,.5,1.9,10]}/><meshStandardMaterial color="#4a352d" roughness={.54} metalness={.2}/></mesh>
+      <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.32,.5,1.9,10]}/><meshStandardMaterial color="#1c2b37" roughness={.54} metalness={.2}/></mesh>
       <mesh position={[0,2.12,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[.46,.045,10,40]}/><meshStandardMaterial color="#916b61" emissive="#fb7185" emissiveIntensity={activity}/></mesh>
       <mesh position={[0,2.58,0]}><sphereGeometry args={[.12,14,14]}/><meshBasicMaterial color="#fda4af"/></mesh>
     </group>}
 
     {isEnterprise&&<group>
-      <mesh position={[0,1.15,0]} castShadow><cylinderGeometry args={[.48,.68,2.05,8]}/><meshStandardMaterial color="#533c28" roughness={.56} metalness={.18}/></mesh>
-      {[-.62,.62].map(v=><mesh key={v} position={[v,.7,0]} castShadow><cylinderGeometry args={[.14,.2,1.18,8]}/><meshStandardMaterial color="#65482d" roughness={.58}/></mesh>)}
-      <mesh position={[0,2.48,0]}><coneGeometry args={[.46,.76,8]}/><meshStandardMaterial color="#7a522e" metalness={.3} roughness={.45}/></mesh>
+      <mesh position={[0,1.15,0]} castShadow><cylinderGeometry args={[.48,.68,2.05,8]}/><meshStandardMaterial color="#203542" roughness={.56} metalness={.18}/></mesh>
+      {[-.62,.62].map(v=><mesh key={v} position={[v,.7,0]} castShadow><cylinderGeometry args={[.14,.2,1.18,8]}/><meshStandardMaterial color="#2a4653" roughness={.58}/></mesh>)}
+      <mesh position={[0,2.48,0]}><coneGeometry args={[.46,.76,8]}/><meshStandardMaterial color="#355564" metalness={.3} roughness={.45}/></mesh>
       <pointLight position={[0,2.0,.45]} intensity={2.5} distance={2.4} color="#fbbf24"/>
     </group>}
 
@@ -283,7 +297,7 @@ function LiveBuilding({system,index,total,emergence}:{system:LiveSystem;index:nu
     </group>}
 
     {!isMarket&&!isMedia&&!isEnterprise&&!isIntelligence&&!isNetwork&&<group>
-      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[.78,1.2,.64]}/><meshStandardMaterial color="#4d3b2d" roughness={.62} metalness={.12}/></mesh>
+      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[.78,1.2,.64]}/><meshStandardMaterial color="#1c303b" roughness={.62} metalness={.12}/></mesh>
       <mesh position={[0,.72,.34]}><boxGeometry args={[.4,.42,.04]}/><meshStandardMaterial color="#12221b" emissive="#34d399" emissiveIntensity={activity}/></mesh>
       <mesh position={[0,1.55,0]}><coneGeometry args={[.3,.54,6]}/><meshStandardMaterial color="#6e4a2b" metalness={.28} roughness={.5}/></mesh>
     </group>}
@@ -294,8 +308,8 @@ function StreamingTower({level}:{level:number}){
   if(level<=0)return null
   const height=level>=4?3:level>=3?2.4:level>=2?1.8:1.15
   return <group position={[6.25,0,3.4]}>
-    <mesh position={[0,.08,0]} receiveShadow><cylinderGeometry args={[.8,.9,.16,16]}/><meshStandardMaterial color="#32261d" roughness={.8}/></mesh>
-    <mesh position={[0,height/2+.12,0]} castShadow><cylinderGeometry args={[.24,.42,height,12]}/><meshStandardMaterial color="#4e392c" roughness={.58} metalness={.22}/></mesh>
+    <mesh position={[0,.08,0]} receiveShadow><cylinderGeometry args={[.8,.9,.16,16]}/><meshStandardMaterial color="#121d26" roughness={.8}/></mesh>
+    <mesh position={[0,height/2+.12,0]} castShadow><cylinderGeometry args={[.24,.42,height,12]}/><meshStandardMaterial color="#1c303b" roughness={.58} metalness={.22}/></mesh>
     {level>=2&&<mesh position={[0,height+.22,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[.62,.045,12,48]}/><meshStandardMaterial color="#9a695d" emissive="#fb7185" emissiveIntensity={.18}/></mesh>}
     {level>=3&&<mesh position={[0,height+.68,0]}><sphereGeometry args={[.15,16,16]}/><meshBasicMaterial color="#fda4af"/></mesh>}
   </group>
@@ -329,6 +343,9 @@ function DistrictPlot({
   marketLevel:number
   marketBuildProgress:number
   enterpriseLevel:number
+  enterprisePosition?:string
+  enterpriseApproved?:boolean
+  enterpriseName?:string|null
   activeBuilds:ActiveBuild[]
   emergence:number
 }){
@@ -341,7 +358,7 @@ function DistrictPlot({
     onPointerOut={()=>{document.body.style.cursor=''}}
   >
     <cylinderGeometry args={[1.9,2.0,.08,24]}/>
-    <meshStandardMaterial color={active?'#473323':'#2a211a'} emissive={color} emissiveIntensity={active ? .08:.015} roughness={.86}/>
+    <meshStandardMaterial color={active?'#19313b':'#101a22'} emissive={color} emissiveIntensity={active ? .08:.015} roughness={.86}/>
   </mesh>
 
   return <group position={position}>
@@ -349,7 +366,7 @@ function DistrictPlot({
     {district.key==='command'&&<CommandHall active={active}/>}
     {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence}/>} 
     {district.key==='business'&&<MarketDistrict level={marketLevel} buildProgress={marketBuildProgress} active={active}/>}
-    {district.key==='enterprise'&&<EnterpriseKeep level={enterpriseLevel} active={active}/>}
+    {district.key==='enterprise'&&<EnterpriseKeep level={enterpriseLevel} active={active} position={enterprisePosition} approved={enterpriseApproved} enterpriseName={enterpriseName}/>}
     {district.key==='sound'&&<SoundPavilion active={active}/>}
     <Text position={[0,.18,1.92]} fontSize={.11} color={active?'#fff3dc':'#ad9b87'} anchorX="center">{district.label.toUpperCase()}</Text>
     {active&&<mesh position={[0,.065,0]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[1.77,1.86,48]}/><meshBasicMaterial color={color} transparent opacity={.32}/></mesh>}
@@ -358,21 +375,40 @@ function DistrictPlot({
 
 function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
   const controls=useRef<any>(null)
+  const {camera}=useThree()
+  const travel=useRef(1)
   const target=useMemo(()=>{
     const [x,,z]=POSITIONS[activeSurface]
-    return new THREE.Vector3(x*.58,.58,z*.58)
+    return new THREE.Vector3(x*.78,.72,z*.78)
   },[activeSurface])
+  const cameraDestination=useMemo(()=>{
+    if(activeSurface==='command')return new THREE.Vector3(0,10.5,14.6)
+    const [x,,z]=POSITIONS[activeSurface]
+    const outward=new THREE.Vector3(x,0,z).normalize()
+    return new THREE.Vector3(
+      x+outward.x*5.6,
+      6.8,
+      z+outward.z*5.6,
+    )
+  },[activeSurface])
+
+  useEffect(()=>{travel.current=1},[activeSurface])
 
   useFrame((_,delta)=>{
     if(!controls.current)return
-    controls.current.target.lerp(target,1-Math.pow(.925,Math.min(delta,.05)*60))
+    const step=1-Math.pow(.91,Math.min(delta,.05)*60)
+    controls.current.target.lerp(target,step)
+    if(travel.current>.01){
+      camera.position.lerp(cameraDestination,1-Math.pow(.88,Math.min(delta,.05)*60))
+      travel.current*=Math.pow(.82,Math.min(delta,.05)*60)
+    }
     controls.current.update()
   })
 
   return <OrbitControls
     ref={controls}
     enablePan={false}
-    minDistance={10}
+    minDistance={6.8}
     maxDistance={19}
     minPolarAngle={.58}
     maxPolarAngle={1.31}
@@ -384,7 +420,7 @@ function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,routeCount,vitalityScore,emergence,routeCurrent,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,emergence,routeCurrent,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -395,16 +431,19 @@ function Scene({
   marketBuildProgress:number
   streamLevel:number
   enterpriseLevel:number
+  enterprisePosition?:string
+  enterpriseApproved?:boolean
+  enterpriseName?:string|null
   routeCount:number
   vitalityScore:number
   emergence:number
   routeCurrent:number
 }){
   return <>
-    <color attach="background" args={['#17100b']}/>
-    <fog attach="fog" args={['#17100b',14,29]}/>
-    <ambientLight intensity={.52} color="#ffd9ad"/>
-    <directionalLight position={[5,11,6]} intensity={3.2} color="#ffe5bd" castShadow/>
+    <color attach="background" args={['#070b10']}/>
+    <fog attach="fog" args={['#070b10',14,29]}/>
+    <ambientLight intensity={.52} color="#ccecff"/>
+    <directionalLight position={[5,11,6]} intensity={3.2} color="#e0f2fe" castShadow/>
     <pointLight position={[-6,4,-4]} intensity={7} color="#fb923c" distance={12}/>
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
@@ -422,6 +461,9 @@ function Scene({
       marketLevel={marketLevel}
       marketBuildProgress={marketBuildProgress}
       enterpriseLevel={enterpriseLevel}
+      enterprisePosition={enterprisePosition}
+      enterpriseApproved={enterpriseApproved}
+      enterpriseName={enterpriseName}
       activeBuilds={activeBuilds}
       emergence={emergence}
     />)}
@@ -442,7 +484,7 @@ function Scene({
 
 export function ClientFileFolder3D({
   activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,
-  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,routeCount=0,vitalityScore=0,
+  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,territoryMode=false,
 }:{
   activeSurface:DistrictKey
   onSurfaceChange:(key:DistrictKey)=>void
@@ -454,8 +496,12 @@ export function ClientFileFolder3D({
   marketBuildProgress?:number
   streamLevel?:number
   enterpriseLevel?:number
+  enterprisePosition?:string
+  enterpriseApproved?:boolean
+  enterpriseName?:string|null
   routeCount?:number
   vitalityScore?:number
+  territoryMode?:boolean
 }){
   const {config:visualRuntime}=useVisualRuntime()
   const emergence=Math.max(0,Math.min(2,visualRuntime.world.emergence))
@@ -472,20 +518,29 @@ export function ClientFileFolder3D({
   const completed=liveSystems.length
   const average=activeBuilds.length?Math.round(activeBuilds.reduce((sum,b)=>sum+b.progress,0)/activeBuilds.length):0
 
-  return <section className="relative overflow-hidden rounded-[2rem] border border-amber-200/10 bg-[#120c08] shadow-[0_32px_100px_rgba(0,0,0,.48)]">
-    <div className="absolute left-3 top-3 z-10 max-w-[72%] border-l border-amber-200/20 bg-[#130d09]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-amber-100/10 sm:bg-[#130d09]/78 sm:px-4 sm:py-3">
+  return <section
+    className={territoryMode
+      ? "relative h-full min-h-[680px] overflow-hidden bg-[#070b10]"
+      : "relative overflow-hidden rounded-[2rem] border border-cyan-200/10 bg-[#070b10] shadow-[0_32px_100px_rgba(0,0,0,.48)]"
+    }
+    data-file-folder-territory={territoryMode?'persistent-world':'embedded-world'}
+  >
+    <div className={territoryMode
+      ? "absolute left-3 top-[7.5rem] z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-5 sm:top-[8.5rem] sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
+      : "absolute left-3 top-3 z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
+    }>
       <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Persistent construction territory</p>
       <p className="mt-1 text-xs font-black text-white">The File Folder physically changes as the Client builds.</p>
       <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">Foundation → frame → structure → integration → commissioning → live building.</p>
     </div>
 
-    <div className="absolute right-4 top-4 z-10 hidden gap-2 sm:flex">
-      <div className="rounded-xl border border-amber-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Constructing</p><p className="text-sm font-black text-amber-100">{activeBuilds.length}</p></div>
+    <div className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>
+      <div className="rounded-xl border border-cyan-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Constructing</p><p className="text-sm font-black text-amber-100">{activeBuilds.length}</p></div>
       <div className="rounded-xl border border-emerald-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Live structures</p><p className="text-sm font-black text-emerald-100">{completed}</p></div>
       <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Build formation</p><p className="text-sm font-black text-white">{average}%</p></div>
     </div>
 
-    <div className="h-[390px] sm:h-[500px] lg:h-[590px]">
+    <div className={territoryMode ? "h-full min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"}>
       <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:46}} dpr={[1,1.5]}>
         <Scene
           districts={districts}
@@ -497,6 +552,9 @@ export function ClientFileFolder3D({
           marketBuildProgress={marketBuildProgress}
           streamLevel={streamLevel}
           enterpriseLevel={enterpriseLevel}
+          enterprisePosition={enterprisePosition}
+          enterpriseApproved={enterpriseApproved}
+          enterpriseName={enterpriseName}
           routeCount={routeCount}
           vitalityScore={vitalityScore}
           emergence={emergence}
@@ -505,14 +563,17 @@ export function ClientFileFolder3D({
       </AdaptiveCanvas>
     </div>
 
-    <div className="absolute inset-x-2 bottom-2 z-10 flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2">
+    <div className={territoryMode
+      ? "absolute inset-x-2 bottom-3 z-20 flex justify-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:gap-2"
+      : "absolute inset-x-2 bottom-2 z-10 flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2"
+    }>
       {districts.map(d=>{
         const active=d.key===activeSurface
         const color=COLORS[d.tone]
         return <button
           key={d.key}
           onClick={()=>onSurfaceChange(d.key)}
-          className="min-w-[104px] rounded-lg border bg-[#140f0b]/88 px-2.5 py-2 text-left backdrop-blur-md sm:min-w-[135px] sm:rounded-xl sm:px-3"
+          className="min-w-[104px] rounded-lg border bg-[#080d13]/88 px-2.5 py-2 text-left backdrop-blur-md sm:min-w-[135px] sm:rounded-xl sm:px-3"
           style={{borderColor:active?color:'rgba(255,255,255,.09)'}}
         >
           <span className="block text-[8px] font-black uppercase tracking-[.08em]" style={{color}}>{d.label}</span>

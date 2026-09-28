@@ -136,9 +136,13 @@ const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
   },
 ]
 
-function waitForBriefingSequence(startedAt:number,signal:AbortSignal){
+function waitForBriefingSequence(mode:'boot'|'transit',startedAt:number,signal:AbortSignal){
   return new Promise<void>(resolve=>{
-    const remaining=Math.max(0,LOADING_SEQUENCE_MS-(performance.now()-startedAt))
+    // Keep the complete three-card introduction for a cold entrance. Internal
+    // movement must never feel frozen behind presentation after the destination
+    // itself is ready.
+    const presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:650
+    const remaining=Math.max(0,presentationWindow-(performance.now()-startedAt))
     if(remaining===0||signal.aborted){resolve();return}
     const timer=window.setTimeout(resolve,remaining)
     const abort=()=>{window.clearTimeout(timer);resolve()}
@@ -217,7 +221,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
 
     void Promise.all([
       waitForEnvironmentReadiness(mode,configRef.current,controller.signal),
-      waitForBriefingSequence(startedAt,controller.signal),
+      waitForBriefingSequence(mode,startedAt,controller.signal),
     ]).then(()=>{
       if(controller.signal.aborted)return
       first.current=false
@@ -252,13 +256,13 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setReadyPath(null)
       setTransiting(true)
 
-      // Query-only sidebar stations do not change usePathname(). They still get
-      // the same three-card environmental handoff and then uncover safely.
+      // Query-only sidebar stations do not change usePathname(). Keep a brief
+      // handoff, then uncover as soon as the destination is actually ready.
       if(target.pathname===current.pathname){
         queryTransitionControllerRef.current?.abort()
         const controller=new AbortController()
         queryTransitionControllerRef.current=controller
-        void waitForBriefingSequence(startedAt,controller.signal)
+        void waitForBriefingSequence('transit',startedAt,controller.signal)
           .then(()=>waitForEnvironmentReadiness('transit',configRef.current,controller.signal))
           .then(()=>{
           if(controller.signal.aborted)return
