@@ -246,11 +246,17 @@ function DistrictEntrance({
   onSelect:(portal:BridgePlazaPortal)=>void
 }){
   const group=useRef<THREE.Group>(null)
+  const ring=useRef<THREE.Mesh>(null)
   const [hovered,setHovered]=useState(false)
-  useFrame(({clock})=>{
+
+  useFrame(({clock},delta)=>{
     if(!group.current)return
-    group.current.position.y=portal.position[1]+((hovered||selected)?Math.sin(clock.getElapsedTime()*2.2)*.025:0)
+    const active=hovered||selected
+    group.current.position.y=portal.position[1]+(active?Math.sin(clock.getElapsedTime()*1.8)*.035:0)
+    if(ring.current)ring.current.rotation.z+=delta*(selected?.24:hovered?.16:.055)
   })
+
+  const signal=selected?1:hovered?.7:.32
 
   return <group
     ref={group}
@@ -260,26 +266,50 @@ function DistrictEntrance({
     onPointerOver={event=>{event.stopPropagation();setHovered(true);if(portal.unlocked)document.body.style.cursor='pointer'}}
     onPointerOut={()=>{setHovered(false);document.body.style.cursor='auto'}}
   >
-    <mesh position={[0,.18,0]} castShadow receiveShadow>
-      <boxGeometry args={[2.65,1.82,.96]}/>
-      <meshStandardMaterial color={portal.unlocked?'#0b0d11':'#171717'} roughness={.68} metalness={.16}/>
+    <mesh position={[0,-.58,0]} rotation={[-Math.PI/2,0,0]}>
+      <ringGeometry args={[.88,1.14,64]}/>
+      <meshBasicMaterial color={portal.unlocked?portal.accent:'#3f3f46'} transparent opacity={portal.unlocked?.2+.28*signal:.12}/>
     </mesh>
-    <mesh position={[0,1.12,.02]} castShadow>
-      <boxGeometry args={[2.9,.25,1.08]}/>
-      <meshStandardMaterial color={portal.unlocked?'#292524':'#27272a'} metalness={.62} roughness={.34}/>
+
+    <mesh ref={ring} position={[0,.55,0]}>
+      <torusGeometry args={[1.08,.055,12,72]}/>
+      <meshStandardMaterial
+        color={portal.unlocked?portal.accent:'#3f3f46'}
+        emissive={portal.unlocked?portal.accent:'#111827'}
+        emissiveIntensity={portal.unlocked?.16+.52*signal:0}
+        transparent
+        opacity={portal.unlocked?.46+.36*signal:.22}
+        metalness={.56}
+        roughness={.22}
+      />
     </mesh>
-    {[-1.08,1.08].map(x=><mesh key={x} position={[x,.06,.6]} castShadow>
-      <cylinderGeometry args={[.12,.16,1.75,12]}/>
-      <meshStandardMaterial color={portal.unlocked?'#27272a':'#18181b'} roughness={.52}/>
-    </mesh>)}
-    <mesh position={[0,.2,.57]}>
-      <boxGeometry args={[1.72,1.16,.08]}/>
-      <meshStandardMaterial color="#0b0a09" emissive={portal.unlocked?portal.accent:'#111'} emissiveIntensity={portal.unlocked?(selected ? .48:hovered ? .28:.11):0}/>
+
+    <mesh position={[0,.55,0]}>
+      <circleGeometry args={[.84,48]}/>
+      <meshBasicMaterial color="#050607" transparent opacity={.76}/>
     </mesh>
-    <Text position={[0,.5,.63]} fontSize={.21} maxWidth={2.1} color={portal.unlocked?'#fff4d7':'#737373'} anchorX="center">{portal.unlocked?portal.name:portal.name+' · LOCKED'}</Text>
-    <Text position={[0,.13,.64]} fontSize={.095} maxWidth={2.05} color={portal.unlocked?'#cbd5e1':'#525252'} anchorX="center">{portal.subtitle}</Text>
-    <Text position={[0,-.12,.64]} fontSize={.065} maxWidth={2.0} color={selected?portal.accent:'#71717a'} anchorX="center">{selected?'MOVEMENT LOCKED':'ENTER'}</Text>
-    {portal.unlocked&&<pointLight position={[0,.45,.96]} intensity={selected?7:hovered?4.5:2.2} distance={3.3} color={portal.accent}/>}
+
+    <mesh position={[0,.55,.018]}>
+      <circleGeometry args={[.72,48]}/>
+      <meshBasicMaterial color={portal.unlocked?portal.accent:'#18181b'} transparent opacity={portal.unlocked?.035+.055*signal:.025}/>
+    </mesh>
+
+    <mesh position={[0,.55,.045]}>
+      <ringGeometry args={[.18,.22,48]}/>
+      <meshBasicMaterial color={portal.unlocked?portal.accent:'#52525b'} transparent opacity={portal.unlocked?.62+.28*signal:.28}/>
+    </mesh>
+
+    <Text position={[0,.76,.07]} fontSize={.18} maxWidth={1.72} color={portal.unlocked?'#fff7ed':'#737373'} anchorX="center">
+      {portal.unlocked?portal.name:portal.name+' · LOCKED'}
+    </Text>
+    <Text position={[0,.43,.07]} fontSize={.075} maxWidth={1.7} color={portal.unlocked?'#cbd5e1':'#525252'} anchorX="center">
+      {portal.subtitle}
+    </Text>
+    <Text position={[0,.18,.07]} fontSize={.06} maxWidth={1.6} color={selected?portal.accent:'#71717a'} anchorX="center">
+      {selected?'MOVING':'ENTER DISTRICT'}
+    </Text>
+
+    {portal.unlocked&&<pointLight position={[0,.55,.62]} intensity={2.2+signal*4.6} distance={3.1} color={portal.accent}/>}
   </group>
 }
 
@@ -391,7 +421,7 @@ export function BridgePlazaMap({
     ]
 
     if(worldRoles.includes('admin')||worldRoles.includes('administration')){
-      base.push({id:'administration',name:'Administration Hall',subtitle:'AUTHORITY · CONTROL · CONTINUITY',href:'/admin',action:'route',accent:'#f97316',position:[6.45,.05,2.8],rotation:-2.05,unlocked:true,system:'Administration'})
+      base.push({id:'administration',name:'Administration District',subtitle:'AUTHORITY · CONTROL · CONTINUITY',href:'/admin',action:'route',accent:'#f97316',position:[6.45,.05,2.8],rotation:-2.05,unlocked:true,system:'Administration'})
     }
 
     if(supportAvailable){
@@ -461,22 +491,11 @@ export function BridgePlazaMap({
       <pointLight position={[6,3,-1]} intensity={7} color="#fbbf24" distance={10}/>
 
       <StoneFloor/>
-      <GrandHall/>
-      <TerraceWing side={-1}/>
-      <TerraceWing side={1}/>
-      <Arcade side={-1}/>
-      <Arcade side={1}/>
-
       <FlameFountain/>
       <WorldInscriptions/>
 
       {portals.map((portal,index)=><SystemRoute key={'route-'+portal.id} portal={portal} active={focus?.id===portal.id} index={index} currentStrength={routeCurrent}/>)}
       {portals.map(portal=><DistrictEntrance key={portal.id} portal={portal} selected={focus?.id===portal.id} onSelect={handleSelect}/>)}
-
-      <FlameBowl position={[-3.2,-.9,2.55]} scale={.8}/>
-      <FlameBowl position={[3.2,-.9,2.55]} scale={.8}/>
-      <FlameBowl position={[-3.2,-.9,-2.45]} scale={.8}/>
-      <FlameBowl position={[3.2,-.9,-2.45]} scale={.8}/>
 
       <Text position={[0,5.75,-1.2]} fontSize={.6} color="#fef3c7" anchorX="center">BRIDGE PLAZA</Text>
       <Text position={[0,5.18,-1.2]} fontSize={.135} color="#d6a45f" anchorX="center">CONNECTION BECOMES MOVEMENT</Text>
@@ -489,7 +508,7 @@ export function BridgePlazaMap({
     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-4 sm:p-5">
       <div className="max-w-[72%]">
         <p className="text-[8px] font-black uppercase tracking-[.26em] text-amber-200/90">WEAVE · Bridge Plaza</p>
-        <p className="mt-1 text-xs font-semibold text-stone-300">One world surface. Enter a structure to move.</p>
+        <p className="mt-1 text-xs font-semibold text-stone-300">One world surface. Enter a district to move.</p>
       </div>
       <div className="text-right">
         <p className="text-[7px] font-black uppercase tracking-[.2em] text-stone-500">System state</p>
