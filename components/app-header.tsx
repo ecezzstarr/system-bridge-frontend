@@ -47,7 +47,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden h-9 w-9 text-slate-400 hover:text-white"
+            className="h-9 w-9 text-slate-400 hover:text-white"
             onClick={() => setIsMobileMenuOpen(true)}
           >
             <Menu className="h-5 w-5" />
@@ -99,9 +99,9 @@ export function AppHeader({ user }: AppHeaderProps) {
         </div>
       </header>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* World navigator: the same role-aware radar is available on phone and desktop. */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50" data-weave-world-navigator="role-radar">
           <div
             className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
             onClick={() => setIsMobileMenuOpen(false)}
