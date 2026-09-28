@@ -71,7 +71,7 @@ export async function GET(request:NextRequest){
       String(ctx.client.file_number),
       String(ctx.client.business_name||ctx.client.name||'Client'),
     )
-    return NextResponse.json({success:true,growth,motion:growthMotion(action)},{headers:{'Cache-Control':'private, no-store'}})
+    return NextResponse.json({success:true,growth},{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){
     console.error('[client/growth-world GET]',error)
     return NextResponse.json({error:'Unable to load Client growth world'},{status:500})
@@ -238,10 +238,15 @@ export async function POST(request:NextRequest){
       const name=clean(body.name,255)
       const sourceSystemId=clean(body.source_system_id,80)
       const targetSystemId=clean(body.target_system_id,80)
-      const routeType=['commerce','distribution','campaign','media','operations','service'].includes(String(body.route_type))
+      const routeType=['commerce','distribution','campaign','media','operations','service','data','automation','intelligence'].includes(String(body.route_type))
         ? String(body.route_type)
         : 'commerce'
-      if(!name||sourceSystemId===targetSystemId)return NextResponse.json({error:'Route name and two different systems are required'},{status:400})
+      const sourceOutput=clean(body.source_output,120)||'movement'
+      const targetInput=clean(body.target_input,120)||'movement'
+      const integrationType=['direct','verified','automated','ai_assisted'].includes(String(body.integration_type))
+        ? String(body.integration_type)
+        : 'direct'
+      if(!name||sourceSystemId===targetSystemId)return NextResponse.json({error:'Weave name and two different live systems are required'},{status:400})
       const source=await ownsActiveSystem(ctx.sql,String(ctx.client.id),sourceSystemId)
       const target=await ownsActiveSystem(ctx.sql,String(ctx.client.id),targetSystemId)
       if(!source||!target)return NextResponse.json({error:'Both route endpoints must be live systems in this Client File Folder.'},{status:409})
@@ -263,11 +268,13 @@ export async function POST(request:NextRequest){
       try{
         await ctx.sql`
           INSERT INTO client_business_routes (
-            client_id,file_number,name,source_system_id,target_system_id,route_type,status
+            client_id,file_number,name,source_system_id,target_system_id,route_type,
+            source_output,target_input,integration_type,authority_state,status
           )
           VALUES (
             ${ctx.client.id}::uuid,${ctx.client.file_number},${name},
-            ${source.id}::uuid,${target.id}::uuid,${routeType},'active'
+            ${source.id}::uuid,${target.id}::uuid,${routeType},
+            ${sourceOutput},${targetInput},${integrationType},'client_authorized','active'
           )
         `
       }catch{
@@ -280,7 +287,7 @@ export async function POST(request:NextRequest){
         subjectType:'client_file_folder',
         subjectId:String(ctx.client.file_number),
         source:'client-growth-world',
-        payload:{name,routeType,source:source.system_type,target:target.system_type},
+        payload:{name,routeType,source:source.system_type,target:target.system_type,sourceOutput,targetInput,integrationType,authority:'client_authorized'},
       })
     }else if(action==='record_route_movement'){
       const routeId=clean(body.route_id,80)
