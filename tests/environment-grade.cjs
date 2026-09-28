@@ -567,3 +567,10 @@ assert.ok(fileFolderApiSource.includes("'customer_use'")&&fileFolderApiSource.in
 assert.ok(fileFolderApiSource.includes("completed_at=CASE WHEN")&&fileFolderApiSource.includes("'done'"),'Completing an operation records when the work became evidence')
 assert.ok(fileFolderOpenWorldSource.includes('Systems in Motion')&&fileFolderOpenWorldSource.includes('Record the next real operation'),'Systems in Motion treats completed technology as an operating system rather than a static build')
 assert.ok(fileFolderOpenWorldSource.includes('Field evidence ·'),'System operation records expose field-evidence meaning to the Client')
+
+
+assert.ok(fileFolderWorldSource.includes("'customer_door'")&&fileFolderWorldSource.includes("72, null, 0"),'Standard Customer Door uses a 72-hour real-time base formation')
+assert.ok(fileFolderWorldSource.includes("'door_foundation_frame'")&&fileFolderWorldSource.includes("'door_customer_intake'")&&fileFolderWorldSource.includes("'door_fulfilment_interface'")&&fileFolderWorldSource.includes("'door_public_commissioning'"),'Customer Door formation contains deeper functional parts')
+assert.ok(fileFolderOpenWorldSource.includes('CUSTOMER_DOOR_FORMATION')&&fileFolderOpenWorldSource.includes('data-customer-door-formation="72-hour-cycle"'),'Formation Yard exposes the three-day Customer Door construction cycle')
+assert.ok(fileFolderOpenWorldSource.includes('72 real hours · acceleration optional'),'Standard Client can understand that acceleration is optional rather than required')
+assert.ok(fileFolderOpenWorldSource.includes('compatible active structure in Formation Yard'),'Parts Workshop uses mature Formation Yard terminology')
