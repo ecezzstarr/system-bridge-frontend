@@ -1088,3 +1088,36 @@ html[data-weave-event="flame-live"] :where(
 ) {
   border-color: rgb(255 255 255 / .10) !important;
 }
+
+
+/* PLACE SURFACE CONTRACT
+   Every route is a place inside the persistent world. A place may render
+   instruments and functional depth, but it may not repaint the viewport or
+   introduce a second structural theme. */
+[data-weave-environment] [data-environment-interior="place"] > :is(main,div).min-h-screen {
+  min-height: auto !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+[data-environment-location="world-position"] {
+  background: var(--weave-one-field) !important;
+  background-image: none !important;
+}
+
+:where(
+  [data-public-market-world],
+  [data-public-stream-world],
+  [data-public-enterprise-world]
+) > :is(header,section,footer) {
+  background-color: var(--weave-one-field) !important;
+  background-image: none !important;
+}
+
+:where(
+  [data-public-market-world],
+  [data-public-stream-world],
+  [data-public-enterprise-world]
+) a {
+  background-image: none !important;
+}
