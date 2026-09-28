@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FolderOpen, Orbit } from 'lucide-react'
+import { ArrowLeft, FolderOpen } from 'lucide-react'
 import ClientFileFolderGate from '@/components/system-switch/client-file-folder-gate'
 import ClientFileFolderOperatingEnvironment from '@/components/system-switch/client-file-folder-operating-environment'
 import { FileFolderEnvironmentLoader } from '@/components/system-switch/file-folder-environment-loader'
@@ -86,10 +86,6 @@ export default function ClientSystemSwitchPage() {
 
   return (
     <main className="min-h-dvh bg-transparent text-white" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-flame-event="burning-river">
-      <div className="pointer-events-none fixed left-1/2 top-20 z-40 -translate-x-1/2 text-center">
-        <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-cyan-200/20 bg-[#020914]/72 backdrop-blur-md"><Orbit className="h-4 w-4 text-cyan-200" /></div>
-        <p className="mt-2 text-[7px] font-black uppercase tracking-[.2em] text-cyan-200/70">Crossing complete · File Folder open world</p>
-      </div>
       <ClientFileFolderOperatingEnvironment data={data} />
       <Link
         href="/client/dashboard"
