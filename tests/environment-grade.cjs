@@ -614,3 +614,12 @@ assert.ok(aiFileFolderEconomySource.includes('usesSharedItemCatalog:true')&&aiFi
 assert.ok(aiFileFolderEconomySource.includes('usesSharedFormationClock:true')&&aiFileFolderEconomySource.includes('effectiveBuildMinutes'),'AI construction uses the same real-time formation engine as Clients')
 assert.ok(aiFileFolderEconomySource.includes('usesSharedBoostRules:true')&&aiFileFolderEconomySource.includes('freeBoosts:false'),'AI Agents purchase boosts under the same rules rather than receiving free acceleration')
 assert.ok(multiplayerFileFolderSource.includes("fileFolderTier:'none'")&&multiplayerFileFolderSource.includes('systems:[]')&&multiplayerFileFolderSource.includes('products:[]'),'New AI File Folders begin without free systems or products')
+
+
+const aiFileFolderStoreSource=read('lib/ai-file-folder-store.ts')
+for(const table of ['weave_ai_file_folders','weave_ai_file_folder_inventory','weave_ai_file_folder_builds','weave_ai_file_folder_build_parts','weave_ai_built_systems','weave_ai_products','weave_ai_product_orders','weave_ai_earnings_ledger']){
+ assert.ok(aiFileFolderStoreSource.includes(table),`AI File Folder persistence includes ${table}`)
+}
+assert.ok(aiFileFolderStoreSource.includes("status='active'")&&aiFileFolderStoreSource.includes('before publishing its product'),'AI product publication requires a completed active AI-built system')
+assert.ok(aiFileFolderStoreSource.includes('earned_flame_coin=earned_flame_coin+')&&aiFileFolderStoreSource.includes("'product_sale'"),'AI customer sales credit the individual AI wallet and earnings ledger')
+assert.ok(aiFileFolderStoreSource.includes('source_id')&&aiFileFolderStoreSource.includes('product_id'),'AI earnings retain sale/product provenance')
