@@ -417,3 +417,7 @@ assert.ok(worldRuntimeLayout.includes('data-weave-world-runtime="persistent"'),'
 assert.ok(worldRuntimeLayout.includes('data-weave-world-interior="route"'),'Authenticated route content mounts as a world interior')
 assert.ok(!worldRuntimeLayout.includes('lg:pl-72'),'World runtime is not permanently displaced by a website sidebar')
 assert.ok(worldRuntimeHeader.includes('data-weave-world-hud="top"'),'Authenticated status and navigation controls render as a floating HUD')
+
+const roleWorldSource = read('components/world/weave-dashboard-world.tsx')
+assert.ok(roleWorldSource.includes('data-role-world-hud={role}'),'Agent Bridger and Administration homes render as spatial HUD territories')
+assert.ok(roleWorldSource.includes('data-role-world-beacon={item.label}'),'Role worlds expose physical destination beacons instead of route cards')
