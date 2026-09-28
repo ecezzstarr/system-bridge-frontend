@@ -1,302 +1,182 @@
 'use client'
-import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
+import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { useFrame,useThree } from '@react-three/fiber'
-import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
+import { OrbitControls,Text } from '@react-three/drei'
 import { useCallback,useEffect,useMemo,useRef,useState } from 'react'
 import * as THREE from 'three'
 import { InteractionMotionField } from '@/components/world/interaction-motion-field'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 
-type PortalAction='route'|'support'
-
-export type BridgePlazaPortal={
+export type BridgePlazaDistrictPortal={
   id:string
   name:string
   subtitle:string
-  href?:string
-  action:PortalAction
-  accent:string
+  placeCount:number
   position:[number,number,number]
   rotation:number
-  unlocked:boolean
-  system:string
 }
 
-function StoneFloor(){
-  return <group>
-    <mesh position={[0,-1.45,0]} receiveShadow>
-      <cylinderGeometry args={[10.5,10.95,.38,88]}/>
-      <meshStandardMaterial color="#07090c" roughness={.86} metalness={.06}/>
-    </mesh>
-    <mesh position={[0,-1.24,0]} receiveShadow>
-      <cylinderGeometry args={[9.35,10.1,.1,88]}/>
-      <meshStandardMaterial color="#0d1117" roughness={.78} metalness={.1}/>
-    </mesh>
-    <mesh position={[0,-1.17,0]} rotation={[-Math.PI/2,0,0]}>
-      <ringGeometry args={[2.68,5.05,96]}/>
-      <meshStandardMaterial color="#193135" transparent opacity={.8} roughness={.16}/>
-    </mesh>
-    <mesh position={[0,-1.14,0]} rotation={[-Math.PI/2,0,0]}>
-      <ringGeometry args={[2.84,3.02,96]}/>
-      <meshBasicMaterial color="#7dd3fc" transparent opacity={.13}/>
-    </mesh>
-    <mesh position={[0,-1.12,0]} rotation={[-Math.PI/2,0,0]}>
-      <ringGeometry args={[7.95,8.09,96]}/>
-      <meshStandardMaterial color="#7c2d12" emissive="#f59e0b" emissiveIntensity={.055} metalness={.48} roughness={.45}/>
-    </mesh>
-  </group>
-}
+function PresenceCore(){
+  const core=useRef<THREE.Group>(null)
+  const particles=useMemo(()=>Array.from({length:18},(_,index)=>({
+    angle:(index/18)*Math.PI*2,
+    radius:1.1+(index%4)*.17,
+    lift:(index%6)*.32,
+    speed:.22+(index%5)*.035,
+  })),[])
 
-function FlameBowl({position,scale=1}:{position:[number,number,number];scale?:number}){
-  const flame=useRef<THREE.Group>(null)
-  useFrame(({clock})=>{
-    if(!flame.current)return
-    const t=clock.getElapsedTime()
-    flame.current.scale.y=1+Math.sin(t*2.6+position[0])*.07
-    flame.current.rotation.z=Math.sin(t*1.55+position[2])*.045
-  })
-  return <group position={position} scale={scale}>
-    <mesh position={[0,-.05,0]} castShadow>
-      <cylinderGeometry args={[.26,.36,.24,20]}/>
-      <meshStandardMaterial color="#16191f" metalness={.68} roughness={.3}/>
-    </mesh>
-    <group ref={flame} position={[0,.52,0]}>
-      <mesh><coneGeometry args={[.18,.76,7]}/><meshBasicMaterial color="#f97316"/></mesh>
-      <mesh position={[0,-.05,.04]} scale={.6}><coneGeometry args={[.16,.68,7]}/><meshBasicMaterial color="#fef3c7"/></mesh>
-      <pointLight intensity={5} distance={2.8} color="#fb923c"/>
-    </group>
-  </group>
-}
-
-function FlameFountain(){
-  const fire=useRef<THREE.Group>(null)
-  const bronze=useRef<THREE.Group>(null)
   useFrame(({clock},delta)=>{
+    if(!core.current)return
+    core.current.rotation.y+=delta*.075
     const t=clock.getElapsedTime()
-    if(fire.current){
-      fire.current.rotation.y+=delta*.2
-      fire.current.scale.y=1+Math.sin(t*1.9)*.04
-    }
-    if(bronze.current)bronze.current.rotation.y-=delta*.042
+    core.current.scale.y=.98+Math.sin(t*1.55)*.025
   })
 
-  return <group position={[0,-.95,0]}>
-    <mesh position={[0,.08,0]} receiveShadow>
-      <cylinderGeometry args={[2.28,2.58,.34,64]}/>
-      <meshStandardMaterial color="#0b0d11" roughness={.68} metalness={.15}/>
+  return <group ref={core} position={[0,-.35,0]}>
+    <mesh position={[0,.85,0]}>
+      <cylinderGeometry args={[.18,.42,3.8,10]}/>
+      <meshBasicMaterial color="#fff7ed" transparent opacity={.48} blending={THREE.AdditiveBlending} depthWrite={false}/>
     </mesh>
-    <mesh position={[0,.24,0]}>
-      <cylinderGeometry args={[2.0,2.24,.2,64]}/>
-      <meshStandardMaterial color="#1f2937" metalness={.72} roughness={.28}/>
+    <mesh position={[0,1.25,0]} scale={[1.2,2.8,1.2]}>
+      <sphereGeometry args={[.52,22,28]}/>
+      <meshBasicMaterial color="#f97316" transparent opacity={.12} blending={THREE.AdditiveBlending} depthWrite={false}/>
     </mesh>
-    <mesh position={[0,.38,0]}>
-      <cylinderGeometry args={[1.78,1.96,.12,64]}/>
-      <meshStandardMaterial color="#17363b" transparent opacity={.82} roughness={.12}/>
-    </mesh>
-    <mesh position={[0,.49,0]}>
-      <cylinderGeometry args={[.62,.78,.28,36]}/>
-      <meshStandardMaterial color="#111827" metalness={.56} roughness={.38}/>
-    </mesh>
-
-    <group ref={bronze} position={[0,2.15,0]}>
-      {[0,1,2].map(index=><mesh key={index} rotation={[Math.PI/2.65,index*Math.PI/3,.22+index*.32]}>
-        <torusGeometry args={[1.15+index*.12,.075,10,72,Math.PI*1.48]}/>
-        <meshStandardMaterial color={index===1?'#d6a45f':'#8f5c2e'} metalness={.9} roughness={.22}/>
-      </mesh>)}
-    </group>
-
-    <group ref={fire} position={[0,2.15,0]}>
-      <mesh position={[0,.3,0]} scale={[.72,2.05,.72]}>
-        <sphereGeometry args={[.72,28,36]}/>
-        <meshBasicMaterial color="#ef4444" transparent opacity={.17} blending={THREE.AdditiveBlending} depthWrite={false}/>
-      </mesh>
-      <mesh position={[-.14,.48,.03]} rotation={[0,0,-.08]} scale={[.5,1.9,.5]}>
-        <sphereGeometry args={[.58,24,32]}/>
-        <meshBasicMaterial color="#f97316" transparent opacity={.34} blending={THREE.AdditiveBlending} depthWrite={false}/>
-      </mesh>
-      <mesh position={[.12,.72,.02]} rotation={[0,0,.07]} scale={[.34,1.55,.34]}>
-        <sphereGeometry args={[.5,24,32]}/>
-        <meshBasicMaterial color="#fbbf24" transparent opacity={.52} blending={THREE.AdditiveBlending} depthWrite={false}/>
-      </mesh>
-      <mesh position={[0,.38,.12]} scale={[.2,1.2,.2]}>
-        <sphereGeometry args={[.46,20,28]}/>
-        <meshBasicMaterial color="#fff7ed" transparent opacity={.76} blending={THREE.AdditiveBlending} depthWrite={false}/>
-      </mesh>
-      <mesh position={[.24,1.25,-.06]} rotation={[0,0,.22]} scale={[.16,.82,.16]}>
-        <sphereGeometry args={[.42,18,24]}/>
-        <meshBasicMaterial color="#fb923c" transparent opacity={.36} blending={THREE.AdditiveBlending} depthWrite={false}/>
-      </mesh>
-      <pointLight position={[0,.7,0]} intensity={34} distance={8.5} color="#f97316"/>
-      <pointLight position={[0,2.15,0]} intensity={18} distance={5.8} color="#fbbf24"/>
-    </group>
-
-    <Text position={[0,.15,2.15]} fontSize={.28} color="#fef3c7" anchorX="center">WEAVE</Text>
+    {particles.map((particle,index)=><CoreSignal key={index} {...particle} index={index}/>)}
+    <pointLight position={[0,1.3,0]} intensity={22} distance={9} color="#fb923c"/>
+    <Text position={[0,-.55,1.18]} fontSize={.24} color="#f8fafc" anchorX="center">BRIDGE PLAZA</Text>
+    <Text position={[0,-.86,1.18]} fontSize={.08} color="#94a3b8" anchorX="center">DISTRICTS → PLACES → FUNCTION</Text>
   </group>
 }
 
-function GrandHall(){
-  const bell=useRef<THREE.Group>(null)
+function CoreSignal({
+  angle,
+  radius,
+  lift,
+  speed,
+  index,
+}:{
+  angle:number
+  radius:number
+  lift:number
+  speed:number
+  index:number
+}){
+  const ref=useRef<THREE.Mesh>(null)
   useFrame(({clock})=>{
-    if(bell.current)bell.current.rotation.z=Math.sin(clock.getElapsedTime()*.34)*.03
+    if(!ref.current)return
+    const t=clock.getElapsedTime()*speed+index*.23
+    ref.current.position.set(
+      Math.cos(angle+t)*radius,
+      .1+((t+lift)%2.8),
+      Math.sin(angle+t)*radius,
+    )
+    const pulse=.75+Math.sin(t*4.2)*.18
+    ref.current.scale.setScalar(pulse)
   })
-  return <group position={[0,-.86,-8.45]}>
-    <mesh position={[0,.35,0]} receiveShadow castShadow>
-      <boxGeometry args={[10.2,1.25,2.35]}/>
-      <meshStandardMaterial color="#07090d" roughness={.82}/>
-    </mesh>
-    <mesh position={[0,1.72,.08]} castShadow>
-      <boxGeometry args={[9.4,1.8,1.65]}/>
-      <meshStandardMaterial color="#0d1117" roughness={.72} metalness={.1}/>
-    </mesh>
-    <mesh position={[0,2.83,.08]} castShadow>
-      <boxGeometry args={[10.0,.3,1.92]}/>
-      <meshStandardMaterial color="#292524" metalness={.55} roughness={.36}/>
-    </mesh>
-    {[-4,-2.7,-1.35,1.35,2.7,4].map(x=><group key={x} position={[x,.92,.98]}>
-      <mesh position={[0,.45,0]}><cylinderGeometry args={[.17,.22,2.35,16]}/><meshStandardMaterial color="#18181b" roughness={.56}/></mesh>
-      <mesh position={[0,1.67,0]}><boxGeometry args={[.42,.16,.42]}/><meshStandardMaterial color="#d6a45f" metalness={.7} roughness={.28}/></mesh>
-    </group>)}
-    <mesh position={[0,1.38,1.18]}>
-      <boxGeometry args={[1.86,2.66,.15]}/>
-      <meshStandardMaterial color="#050607" emissive="#f59e0b" emissiveIntensity={.1}/>
-    </mesh>
-    <Text position={[0,2.2,1.28]} fontSize={.31} color="#fef3c7" anchorX="center">WEAVE HALL</Text>
-    <Text position={[0,1.78,1.28]} fontSize={.105} color="#a8a29e" anchorX="center">ORDER · CONTINUITY · MOVEMENT</Text>
-    <group ref={bell} position={[0,4.28,.04]}>
-      <mesh position={[0,.15,0]}><cylinderGeometry args={[.46,.7,.62,24]}/><meshStandardMaterial color="#a36a35" metalness={.9} roughness={.22}/></mesh>
-      <mesh position={[0,-.2,0]}><torusGeometry args={[.62,.07,10,28]}/><meshStandardMaterial color="#d6a45f" metalness={.92} roughness={.2}/></mesh>
-    </group>
-    <mesh position={[0,5.02,.02]}><coneGeometry args={[1.58,1.18,8]}/><meshStandardMaterial color="#111827" metalness={.4} roughness={.44}/></mesh>
-    <FlameBowl position={[-4.2,-.6,1.7]} scale={.6}/>
-    <FlameBowl position={[4.2,-.6,1.7]} scale={.6}/>
-  </group>
+  return <mesh ref={ref}>
+    <sphereGeometry args={[.045,8,8]}/>
+    <meshBasicMaterial color={index%3===0?'#fff7ed':'#fb923c'} transparent opacity={.64}/>
+  </mesh>
 }
 
-function TerraceWing({side}:{side:-1|1}){
-  const x=side*6.2
-  return <group position={[x,-.48,-.15]}>
-    <mesh position={[0,.6,0]} castShadow receiveShadow>
-      <boxGeometry args={[2.65,1.95,6.3]}/>
-      <meshStandardMaterial color="#0b0d11" roughness={.72} metalness={.1}/>
-    </mesh>
-    <mesh position={[-side*.18,1.63,0]} castShadow>
-      <boxGeometry args={[2.94,.18,6.52]}/>
-      <meshStandardMaterial color="#1c1917" metalness={.56} roughness={.34}/>
-    </mesh>
-    {[-2,0,2].map(z=><group key={z} position={[-side*1.34,.12,z]}>
-      <mesh position={[0,.58,0]}><cylinderGeometry args={[.15,.19,1.68,12]}/><meshStandardMaterial color="#171717" roughness={.55}/></mesh>
-      <mesh position={[0,1.45,0]}><boxGeometry args={[.34,.13,.36]}/><meshStandardMaterial color="#d6a45f" metalness={.68} roughness={.28}/></mesh>
-    </group>)}
-  </group>
-}
-
-function Arcade({side}:{side:-1|1}){
-  const x=side*8.55
-  return <group position={[x,-.72,-3.5]} rotation={[0,side<0?-.08:.08,0]}>
-    <mesh position={[0,1.65,0]} castShadow>
-      <boxGeometry args={[1.18,4.85,7.4]}/>
-      <meshStandardMaterial color="#080a0e" roughness={.82}/>
-    </mesh>
-    {[-2.55,0,2.55].map(z=><group key={z} position={[-side*.63,.86,z]}>
-      <mesh position={[0,.45,0]}><cylinderGeometry args={[.13,.17,2.2,12]}/><meshStandardMaterial color="#171717" roughness={.64}/></mesh>
-      <FlameBowl position={[-side*.08,-.72,.52]} scale={.48}/>
-    </group>)}
-  </group>
-}
-
-function SystemRoute({portal,active,index,currentStrength}:{portal:BridgePlazaPortal;active:boolean;index:number;currentStrength:number}){
+function DistrictRoute({
+  portal,
+  active,
+  index,
+  routeCurrent,
+}:{
+  portal:BridgePlazaDistrictPortal
+  active:boolean
+  index:number
+  routeCurrent:number
+}){
   const signal=useRef<THREE.Mesh>(null)
-  const start=new THREE.Vector3(0,-.92,0)
-  const end=new THREE.Vector3(portal.position[0],-.92,portal.position[2])
-  const delta=end.clone().sub(start)
+  const start=useMemo(()=>new THREE.Vector3(0,-.95,0),[])
+  const end=useMemo(()=>new THREE.Vector3(portal.position[0],-.95,portal.position[2]),[portal.position])
+  const delta=useMemo(()=>end.clone().sub(start),[end,start])
   const length=delta.length()
   const midpoint=start.clone().add(end).multiplyScalar(.5)
   const angle=Math.atan2(delta.x,delta.z)
 
   useFrame(({clock})=>{
     if(!signal.current)return
-    const speed=(active ? .22:.095)*(.45+Math.max(0,Math.min(2,currentStrength))*.55)
-    const t=(clock.getElapsedTime()*speed+index*.17)%1
+    const speed=(active?.24:.10)*(.5+Math.max(0,Math.min(2,routeCurrent))*.42)
+    const t=(clock.getElapsedTime()*speed+index*.13)%1
     signal.current.position.lerpVectors(start,end,t)
-    const pulse=.7+Math.sin(clock.getElapsedTime()*4+index)*.22
-    signal.current.scale.setScalar(active?1.25*pulse:.85*pulse)
+    signal.current.scale.setScalar(active?1.3:.82)
   })
 
   return <group>
-    <mesh position={[midpoint.x,-.94,midpoint.z]} rotation={[0,angle,0]}>
-      <boxGeometry args={[active ? .18:.11,.035,length]}/>
-      <meshStandardMaterial color={portal.accent} emissive={portal.accent} emissiveIntensity={(active ? .26:.055)*(.55+currentStrength*.45)} transparent opacity={active ? .62:.24}/>
+    <mesh position={[midpoint.x,-1.03,midpoint.z]} rotation={[0,angle,0]}>
+      <boxGeometry args={[active?.12:.055,.018,length]}/>
+      <meshBasicMaterial color={active?'#fb923c':'#475569'} transparent opacity={active?.62:.22}/>
     </mesh>
-    <mesh ref={signal} position={[0,-.84,0]}>
-      <sphereGeometry args={[active ? .085:.055,10,10]}/>
-      <meshBasicMaterial color={portal.accent} transparent opacity={active ? .9:.46}/>
+    <mesh ref={signal}>
+      <sphereGeometry args={[active?.07:.045,8,8]}/>
+      <meshBasicMaterial color={active?'#fff7ed':'#94a3b8'} transparent opacity={active?.9:.48}/>
     </mesh>
   </group>
 }
 
-function DistrictEntrance({
+function DistrictSignal({
   portal,
   selected,
   onSelect,
 }:{
-  portal:BridgePlazaPortal
+  portal:BridgePlazaDistrictPortal
   selected:boolean
-  onSelect:(portal:BridgePlazaPortal)=>void
+  onSelect:(portal:BridgePlazaDistrictPortal)=>void
 }){
   const group=useRef<THREE.Group>(null)
   const [hovered,setHovered]=useState(false)
+
   useFrame(({clock})=>{
     if(!group.current)return
-    group.current.position.y=portal.position[1]+((hovered||selected)?Math.sin(clock.getElapsedTime()*2.2)*.025:0)
+    const t=clock.getElapsedTime()
+    group.current.position.y=portal.position[1]+Math.sin(t*1.35+portal.position[0])*.035
   })
 
   return <group
     ref={group}
     position={portal.position}
     rotation={[0,portal.rotation,0]}
-    onClick={event=>{event.stopPropagation();if(portal.unlocked)onSelect(portal)}}
-    onPointerOver={event=>{event.stopPropagation();setHovered(true);if(portal.unlocked)document.body.style.cursor='pointer'}}
+    onClick={event=>{event.stopPropagation();onSelect(portal)}}
+    onPointerOver={event=>{event.stopPropagation();setHovered(true);document.body.style.cursor='pointer'}}
     onPointerOut={()=>{setHovered(false);document.body.style.cursor='auto'}}
   >
-    <mesh position={[0,.18,0]} castShadow receiveShadow>
-      <boxGeometry args={[2.65,1.82,.96]}/>
-      <meshStandardMaterial color={portal.unlocked?'#0b0d11':'#171717'} roughness={.68} metalness={.16}/>
+    <mesh position={[0,.7,0]} castShadow>
+      <boxGeometry args={[.11,3.1,.11]}/>
+      <meshBasicMaterial color={selected?'#fff7ed':hovered?'#fed7aa':'#64748b'} transparent opacity={selected?.9:hovered?.72:.42}/>
     </mesh>
-    <mesh position={[0,1.12,.02]} castShadow>
-      <boxGeometry args={[2.9,.25,1.08]}/>
-      <meshStandardMaterial color={portal.unlocked?'#292524':'#27272a'} metalness={.62} roughness={.34}/>
+    <mesh position={[0,2.08,0]} scale={selected?1.18:hovered?1.08:1}>
+      <octahedronGeometry args={[.26,0]}/>
+      <meshBasicMaterial color={selected?'#fb923c':'#e2e8f0'} transparent opacity={selected?.95:.68}/>
     </mesh>
-    {[-1.08,1.08].map(x=><mesh key={x} position={[x,.06,.6]} castShadow>
-      <cylinderGeometry args={[.12,.16,1.75,12]}/>
-      <meshStandardMaterial color={portal.unlocked?'#27272a':'#18181b'} roughness={.52}/>
-    </mesh>)}
-    <mesh position={[0,.2,.57]}>
-      <boxGeometry args={[1.72,1.16,.08]}/>
-      <meshStandardMaterial color="#0b0a09" emissive={portal.unlocked?portal.accent:'#111'} emissiveIntensity={portal.unlocked?(selected ? .48:hovered ? .28:.11):0}/>
-    </mesh>
-    <Text position={[0,.5,.63]} fontSize={.21} maxWidth={2.1} color={portal.unlocked?'#fff4d7':'#737373'} anchorX="center">{portal.unlocked?portal.name:portal.name+' · LOCKED'}</Text>
-    <Text position={[0,.13,.64]} fontSize={.095} maxWidth={2.05} color={portal.unlocked?'#cbd5e1':'#525252'} anchorX="center">{portal.subtitle}</Text>
-    <Text position={[0,-.12,.64]} fontSize={.065} maxWidth={2.0} color={selected?portal.accent:'#71717a'} anchorX="center">{selected?'MOVEMENT LOCKED':'ENTER'}</Text>
-    {portal.unlocked&&<pointLight position={[0,.45,.96]} intensity={selected?7:hovered?4.5:2.2} distance={3.3} color={portal.accent}/>}
+    <pointLight position={[0,1.6,.1]} intensity={selected?7:hovered?4:1.8} distance={3.5} color={selected?'#fb923c':'#cbd5e1'}/>
+    <Text position={[0,.3,.22]} fontSize={.16} maxWidth={2.4} color="#f8fafc" anchorX="center">{portal.name}</Text>
+    <Text position={[0,.02,.22]} fontSize={.065} maxWidth={2.45} color="#94a3b8" anchorX="center">{portal.subtitle}</Text>
+    <Text position={[0,-.22,.22]} fontSize={.07} color={selected?'#fdba74':'#64748b'} anchorX="center">
+      {portal.placeCount} {portal.placeCount===1?'PLACE':'PLACES'}
+    </Text>
   </group>
 }
 
-function WorldCamera({
+function DistrictCamera({
   focus,
   onArrival,
 }:{
-  focus:BridgePlazaPortal|null
-  onArrival:(portal:BridgePlazaPortal)=>void
+  focus:BridgePlazaDistrictPortal|null
+  onArrival:(portal:BridgePlazaDistrictPortal)=>void
 }){
   const controls=useRef<any>(null)
   const {camera}=useThree()
   const arrived=useRef<string|null>(null)
-
   const direction=useMemo(()=>new THREE.Vector3(),[])
   const desiredPosition=useMemo(()=>new THREE.Vector3(),[])
   const desiredTarget=useMemo(()=>new THREE.Vector3(),[])
+
   useFrame((_,delta)=>{
     const ctl=controls.current
     if(!ctl)return
@@ -309,18 +189,14 @@ function WorldCamera({
     const px=focus.position[0]
     const pz=focus.position[2]
     direction.set(px,0,pz).normalize()
-    desiredPosition.set(
-      px-direction.x*4.1,
-      3.2,
-      pz-direction.z*4.1,
-    )
-    desiredTarget.set(px,.45,pz)
+    desiredPosition.set(px-direction.x*3.7,2.8,pz-direction.z*3.7)
+    desiredTarget.set(px,.55,pz)
 
-    camera.position.lerp(desiredPosition,1-Math.pow(.935,Math.min(delta,.05)*60))
-    ctl.target.lerp(desiredTarget,1-Math.pow(.91,Math.min(delta,.05)*60))
+    camera.position.lerp(desiredPosition,1-Math.pow(.93,Math.min(delta,.05)*60))
+    ctl.target.lerp(desiredTarget,1-Math.pow(.9,Math.min(delta,.05)*60))
     ctl.update()
 
-    if(camera.position.distanceTo(desiredPosition)<.24&&ctl.target.distanceTo(desiredTarget)<.18&&arrived.current!==focus.id){
+    if(camera.position.distanceTo(desiredPosition)<.22&&ctl.target.distanceTo(desiredTarget)<.16&&arrived.current!==focus.id){
       arrived.current=focus.id
       onArrival(focus)
     }
@@ -329,97 +205,31 @@ function WorldCamera({
   return <OrbitControls
     ref={controls}
     enablePan={false}
-    minDistance={6.5}
+    minDistance={6.4}
     maxDistance={17}
     minPolarAngle={.58}
-    maxPolarAngle={1.32}
-    target={[0,.35,-.8]}
+    maxPolarAngle={1.3}
+    target={[0,.3,0]}
     enableDamping
     dampingFactor={.07}
   />
 }
 
-function WorldInscriptions(){
-  const ring=useRef<THREE.Group>(null)
-  useFrame(({clock})=>{
-    if(ring.current)ring.current.rotation.y=clock.getElapsedTime()*.025
-  })
-  const terms=['SCHOOL · LIFE','BOARD · INTERACTION','SUBJECT · WEAVE','TOPICS · WHAT WE BUILD']
-  return <group ref={ring} position={[0,3.6,0]}>
-    {terms.map((term,index)=>{
-      const angle=(index/terms.length)*Math.PI*2
-      return <Text
-        key={term}
-        position={[Math.cos(angle)*4.6,0,Math.sin(angle)*4.6]}
-        rotation={[0,-angle+Math.PI/2,0]}
-        fontSize={.11}
-        color="#d8c3a3"
-        anchorX="center"
-      >{term}</Text>
-    })}
-  </group>
-}
-
 export function BridgePlazaMap({
-  currentPass,
-  worldRoles,
-  userRole,
-  fileNumber,
-  supportAvailable,
-  onTravel,
-  onOpenSupport,
+  districts,
+  onOpenDistrict,
 }:{
-  currentPass:number
-  worldRoles:string[]
-  userRole?:string|null
-  fileNumber?:string|null
-  supportAvailable?:boolean
-  onTravel:(href:string)=>void
-  onOpenSupport?:()=>void
+  districts:BridgePlazaDistrictPortal[]
+  onOpenDistrict:(id:string)=>void
 }){
-  const [focus,setFocus]=useState<BridgePlazaPortal|null>(null)
-  const [movement,setMovement]=useState<'present'|'moving'|'station'>('present')
+  const [focus,setFocus]=useState<BridgePlazaDistrictPortal|null>(null)
+  const [movement,setMovement]=useState<'present'|'moving'|'district'>('present')
   const {config:visualRuntime}=useVisualRuntime()
   const routeCurrent=Math.max(0,Math.min(2,visualRuntime.world.routeCurrent))
 
-  const portals=useMemo<BridgePlazaPortal[]>(()=>{
-    const base:BridgePlazaPortal[]=[
-      {id:'enterprise',name:'Enterprise Exchange',subtitle:'SYSTEMS · MARKETS · VALUE',href:'/marketplace',action:'route',accent:'#f59e0b',position:[-5.2,.05,-2.9],rotation:.78,unlocked:true,system:'Enterprise'},
-      {id:'arena',name:'Arena District',subtitle:'PEOPLE · COMPETITION · MOVEMENT',href:'/arena',action:'route',accent:'#fb7185',position:[5.2,.05,-2.9],rotation:-.78,unlocked:true,system:'Arena'},
-      {id:'business',name:'Business District',subtitle:'WORK · SERVICES · OPPORTUNITY',href:'/places',action:'route',accent:'#fbbf24',position:[0,.05,-6.0],rotation:0,unlocked:true,system:'Work'},
-      {id:'knowledge',name:'Knowledge Library',subtitle:'LEARN · RECORD · CONTINUE',href:'/weave/standing',action:'route',accent:'#7dd3fc',position:[0,.05,6.25],rotation:Math.PI,unlocked:true,system:'Knowledge'},
-    ]
+  useEffect(()=>()=>{document.body.style.cursor='auto'},[])
 
-    if(worldRoles.includes('admin')||worldRoles.includes('administration')){
-      base.push({id:'administration',name:'Administration Hall',subtitle:'AUTHORITY · CONTROL · CONTINUITY',href:'/admin',action:'route',accent:'#f97316',position:[6.45,.05,2.8],rotation:-2.05,unlocked:true,system:'Administration'})
-    }
-
-    if(supportAvailable){
-      base.push({id:'client-support',name:'System Switch · File Folders',subtitle:'CLIENT WORLDS · FILE FOLDERS · SUPPORT',action:'support',accent:'#67e8f9',position:[-6.45,.05,2.8],rotation:2.05,unlocked:true,system:'System Switch'})
-    }
-
-    if(userRole==='client'&&fileNumber){
-      base.push({
-        id:'file-folder',
-        name:'System Switch · My File Folder',
-        subtitle:'BUILD · OPERATE · GROW',
-        href:'/client/system-switch',
-        action:'route',
-        accent:'#a78bfa',
-        position:[6.35,.05,2.9],
-        rotation:-2.08,
-        unlocked:true,
-        system:'Client world',
-      })
-    }
-
-    return base
-  },[fileNumber,supportAvailable,userRole,worldRoles])
-
-  const travelTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined)
-  useEffect(()=>()=>{clearTimeout(travelTimer.current);document.body.style.cursor='auto'},[])
-  const handleSelect=useCallback((portal:BridgePlazaPortal)=>{
-    clearTimeout(travelTimer.current)
+  const handleSelect=useCallback((portal:BridgePlazaDistrictPortal)=>{
     setFocus(portal)
     setMovement('moving')
     emitWeaveMotion({
@@ -431,7 +241,8 @@ export function BridgePlazaMap({
     })
   },[])
 
-  const handleArrival=useCallback((portal:BridgePlazaPortal)=>{
+  const handleArrival=useCallback((portal:BridgePlazaDistrictPortal)=>{
+    setMovement('district')
     emitWeaveMotion({
       kind:'arrival',
       label:`Entered ${portal.name}`,
@@ -439,71 +250,49 @@ export function BridgePlazaMap({
       confirmed:true,
       source:'bridge-plaza',
     })
-    if(portal.action==='support'){
-      setMovement('station')
-      onOpenSupport?.()
-      return
-    }
-    if(portal.href){
-      setMovement('moving')
-      clearTimeout(travelTimer.current)
-      travelTimer.current=setTimeout(()=>onTravel(portal.href!),220)
-    }
-  },[onOpenSupport,onTravel])
+    onOpenDistrict(portal.id)
+  },[onOpenDistrict])
 
-  return <div className="relative h-full min-h-[440px] sm:min-h-[690px] w-full overflow-hidden bg-transparent" data-bridge-plaza-system="continuous-moving-world" data-bridge-plaza-atmosphere="live-flame">
-    <InteractionMotionField className="z-[2] mix-blend-screen" opacity={0.58}/>
-    <AdaptiveCanvas shadows camera={{position:[0,8.3,14.1],fov:45}} dpr={[1,1.5]}>
-      <fog attach="fog" args={['#080507',13,31]}/>
-      <ambientLight intensity={.48} color="#ffd8a8"/>
-      <directionalLight position={[3,10,5]} intensity={3.2} color="#ffe0b2" castShadow/>
-      <pointLight position={[-6,3,1]} intensity={8} color="#fb923c" distance={10}/>
-      <pointLight position={[6,3,-1]} intensity={7} color="#fbbf24" distance={10}/>
+  return <div className="relative h-full min-h-[440px] w-full overflow-hidden bg-transparent sm:min-h-[690px]" data-bridge-plaza-system="district-place-world" data-bridge-plaza-atmosphere="live-flame">
+    <InteractionMotionField className="z-[2] mix-blend-screen" opacity={0.48}/>
+    <AdaptiveCanvas shadows camera={{position:[0,8.6,14.8],fov:45}} dpr={[1,1.5]}>
+      <fog attach="fog" args={['#030a15',12,29]}/>
+      <ambientLight intensity={.42} color="#e2e8f0"/>
+      <directionalLight position={[3,10,5]} intensity={2.4} color="#f8fafc"/>
+      <pointLight position={[0,4,0]} intensity={7} color="#fb923c" distance={13}/>
 
-      <StoneFloor/>
-      <GrandHall/>
-      <TerraceWing side={-1}/>
-      <TerraceWing side={1}/>
-      <Arcade side={-1}/>
-      <Arcade side={1}/>
+      <mesh position={[0,-1.25,0]} receiveShadow>
+        <cylinderGeometry args={[10.8,10.8,.12,72]}/>
+        <meshStandardMaterial color="#030a15" roughness={.96} metalness={.04}/>
+      </mesh>
 
-      <FlameFountain/>
-      <WorldInscriptions/>
+      <PresenceCore/>
 
-      {portals.map((portal,index)=><SystemRoute key={'route-'+portal.id} portal={portal} active={focus?.id===portal.id} index={index} currentStrength={routeCurrent}/>)}
-      {portals.map(portal=><DistrictEntrance key={portal.id} portal={portal} selected={focus?.id===portal.id} onSelect={handleSelect}/>)}
+      {districts.map((portal,index)=><DistrictRoute
+        key={portal.id}
+        portal={portal}
+        active={focus?.id===portal.id}
+        index={index}
+        routeCurrent={routeCurrent}
+      />)}
 
-      <FlameBowl position={[-3.2,-.9,2.55]} scale={.8}/>
-      <FlameBowl position={[3.2,-.9,2.55]} scale={.8}/>
-      <FlameBowl position={[-3.2,-.9,-2.45]} scale={.8}/>
-      <FlameBowl position={[3.2,-.9,-2.45]} scale={.8}/>
+      {districts.map(portal=><DistrictSignal
+        key={portal.id}
+        portal={portal}
+        selected={focus?.id===portal.id}
+        onSelect={handleSelect}
+      />)}
 
-      <Text position={[0,5.75,-1.2]} fontSize={.6} color="#fef3c7" anchorX="center">BRIDGE PLAZA</Text>
-      <Text position={[0,5.18,-1.2]} fontSize={.135} color="#d6a45f" anchorX="center">CONNECTION BECOMES MOVEMENT</Text>
-      <Text position={[0,4.82,-1.2]} fontSize={.095} color="#78716c" anchorX="center">PASS {Math.max(0,currentPass)} · INTERACTION IN MOTION</Text>
-
-      <ContactShadows frames={1} resolution={256} position={[0,-1.06,0]} opacity={.46} scale={22} blur={2.7} far={8}/>
-      <WorldCamera focus={focus} onArrival={handleArrival}/>
+      <DistrictCamera focus={focus} onArrival={handleArrival}/>
     </AdaptiveCanvas>
 
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-4 sm:p-5">
-      <div className="max-w-[72%]">
-        <p className="text-[8px] font-black uppercase tracking-[.26em] text-amber-200/90">WEAVE · Bridge Plaza</p>
-        <p className="mt-1 text-xs font-semibold text-stone-300">One world surface. Enter a structure to move.</p>
-      </div>
-      <div className="text-right">
-        <p className="text-[7px] font-black uppercase tracking-[.2em] text-stone-500">System state</p>
-        <p className="mt-1 text-[9px] font-black uppercase tracking-[.12em] text-amber-100">{movement}</p>
-      </div>
-    </div>
-
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex min-h-24 items-end justify-between gap-4 bg-gradient-to-t from-[#090604]/92 via-[#090604]/58 to-transparent px-4 pb-4 pt-12 sm:px-6">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex min-h-24 items-end justify-between gap-4 bg-gradient-to-t from-[#030a15] via-[#030a15]/78 to-transparent px-4 pb-4 pt-12 sm:px-6">
       <div className="min-w-0">
-        <p className="text-[7px] font-black uppercase tracking-[.18em] text-stone-500">{focus?.system||'Central WEAVE'}</p>
-        <p className="mt-1 break-words text-sm font-black leading-5 text-white">{focus?.name||'Select a district entrance'}</p>
-        <p className="mt-1 break-words text-[9px] uppercase leading-4 tracking-[.1em] text-stone-400">{focus?.subtitle||'Movement begins from the plaza itself.'}</p>
+        <p className="text-[7px] font-black uppercase tracking-[.18em] text-slate-500">Bridge Plaza · District Navigator</p>
+        <p className="mt-1 break-words text-sm font-black leading-5 text-white">{focus?.name||'Choose a district'}</p>
+        <p className="mt-1 break-words text-[9px] uppercase leading-4 tracking-[.1em] text-slate-400">{focus?.subtitle||'Every page is a place. Every place performs a function.'}</p>
       </div>
-      {focus&&<p className="shrink-0 text-[8px] font-black uppercase tracking-[.18em]" style={{color:focus.accent}}>{movement==='moving'?'moving →':movement==='station'?'station open':'enter'}</p>}
+      {focus&&<p className="shrink-0 text-[8px] font-black uppercase tracking-[.18em] text-orange-200">{movement==='moving'?'moving →':movement==='district'?'district open':'enter'}</p>}
     </div>
   </div>
 }
