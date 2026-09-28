@@ -1,6 +1,5 @@
 "use client"
 
-import { AppSidebar } from "@/components/app-sidebar"
 import { AppHeader } from "@/components/app-header"
 
 interface AppLayoutProps {
@@ -14,12 +13,9 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, user }: AppLayoutProps) {
   return (
-    <div className="flex min-h-screen">
-      <AppSidebar user={user} />
-      <div className="flex flex-1 flex-col pl-64">
-        <AppHeader user={user} />
-        <main className="flex-1 p-6">{children}</main>
-      </div>
+    <div className="flex min-h-screen flex-col">
+      <AppHeader user={user} />
+      <main className="flex-1">{children}</main>
     </div>
   )
 }
