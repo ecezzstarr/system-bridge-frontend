@@ -172,6 +172,10 @@ export async function ensureFileFolderWorldSchema(sql: any) {
     CREATE INDEX IF NOT EXISTS idx_client_built_system_entries_system
     ON client_built_system_entries(system_id, created_at DESC)
   `
+  await sql`ALTER TABLE client_built_system_entries ADD COLUMN IF NOT EXISTS evidence_type varchar(40) NOT NULL DEFAULT 'internal'`
+  await sql`ALTER TABLE client_built_system_entries ADD COLUMN IF NOT EXISTS evidence_value numeric(18,4)`
+  await sql`ALTER TABLE client_built_system_entries ADD COLUMN IF NOT EXISTS evidence_unit varchar(40)`
+  await sql`ALTER TABLE client_built_system_entries ADD COLUMN IF NOT EXISTS completed_at timestamptz`
 
   await sql`
     CREATE TABLE IF NOT EXISTS client_library_catalog (
@@ -736,6 +740,10 @@ export async function getFileFolderWorldSnapshot(
             'title',e.title,
             'body',e.body,
             'status',e.status,
+            'evidence_type',e.evidence_type,
+            'evidence_value',e.evidence_value,
+            'evidence_unit',e.evidence_unit,
+            'completed_at',e.completed_at,
             'metadata',e.metadata,
             'created_at',e.created_at
           )
