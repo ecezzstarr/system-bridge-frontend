@@ -587,3 +587,10 @@ assert.ok(environmentsSource.includes("weaveWorldForPath")&&environmentsSource.i
 assert.ok(environmentSurfaceSource.includes("data-weave-world={worldLayer}"),'Persistent environment surface exposes its parent world')
 assert.ok(environmentSurfaceSource.includes("'FILE FOLDER WORLD':'OPEN WEAVE WORLD'"),'HUD keeps district movement visibly inside one of the two parent worlds')
 assert.ok(environmentSurfaceSource.includes("worldLayer==='file-folder'?'/client/system-switch':worldReturnFor(role)"),'File Folder interiors return to File Folder world rather than another role world')
+
+
+assert.ok(environmentTransitSource.includes("min-h-[100dvh]")&&environmentTransitSource.includes("items-stretch"),'Global loader occupies the full viewport instead of exposing the root background')
+assert.ok(environmentTransitSource.includes("bg-[#02050a]")&&!environmentTransitSource.includes("bg-[#090807]/98"),'Loader has no brown fallback background')
+assert.ok(environmentTransitSource.includes("const showFlameBriefing=booting&&flameEventActive"),'Active Flame Event owns the cold-entry loader rather than requiring a 30-minute reentry gap')
+assert.ok(environmentTransitSource.includes('data-flame-event-loader={showFlameBriefing?\'burning-river\':undefined}'),'Flame Event loader exposes the Burning River state')
+assert.ok(environmentTransitSource.includes("max-w-3xl")&&environmentTransitSource.includes("min-h-[15rem]"),'Loading cards occupy a substantial readable part of the viewport')
