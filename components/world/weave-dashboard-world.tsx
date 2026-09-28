@@ -180,9 +180,9 @@ export function WeaveDashboardWorld({
   }))
 
   return (
-    <div className="weave-dashboard-world weave-operating-environment relative mx-auto w-full max-w-6xl overflow-hidden border-y border-amber-200/10 bg-[#0c0907]/76 shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-md sm:rounded-[1.6rem] sm:border">
+    <div className="weave-dashboard-world weave-operating-environment relative mx-auto min-h-[calc(100dvh-4rem)] w-full max-w-6xl overflow-hidden border-y border-cyan-200/10 bg-[#050a10]/72 shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-md sm:rounded-[1.6rem] sm:border">
       <div className="relative p-3.5 sm:p-5 md:p-7">
-        <div className="pointer-events-none absolute inset-x-[4%] top-[8%] h-[58%] rounded-[50%] bg-[radial-gradient(circle_at_50%_50%,rgba(251,146,60,.09),transparent_68%)] blur-2xl" />
+        <div className="pointer-events-none absolute inset-x-[4%] top-[8%] h-[58%] rounded-[50%] bg-[radial-gradient(circle_at_50%_42%,rgba(56,189,248,.10),transparent_42%),radial-gradient(circle_at_72%_68%,rgba(251,146,60,.055),transparent_34%)] blur-2xl" />
 
         <div className="relative">
           <WeaveLogo size="sm" />
@@ -197,7 +197,7 @@ export function WeaveDashboardWorld({
           <h1 data-weave-live-word="title" className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{copy.title}</h1>
           <p className="mt-1.5 text-xs leading-5 text-slate-400 sm:text-sm">{copy.subtitle}</p>
 
-          <div className="weave-dashboard-position mt-5 grid gap-4 border-y border-amber-300/15 py-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-center">
+          <div className="weave-dashboard-position mt-5 grid gap-4 border-y border-cyan-300/15 py-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-center">
             <div>
               <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300">Present position</p>
               <p data-weave-live-word="station" className="mt-1 text-lg font-black text-white">{userName || copy.eyebrow}</p>
@@ -205,7 +205,7 @@ export function WeaveDashboardWorld({
             </div>
             <Link
               href={copy.functionsHref}
-              className="group flex min-h-14 items-center justify-between border-l-2 border-amber-300/30 bg-amber-300/[0.035] px-4 py-3 text-amber-50 transition hover:bg-amber-300/[0.07]"
+              className="group flex min-h-14 items-center justify-between border-l-2 border-sky-300/30 bg-sky-300/[0.035] px-4 py-3 text-amber-50 transition hover:bg-sky-300/[0.07]"
             >
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Control station</p>
