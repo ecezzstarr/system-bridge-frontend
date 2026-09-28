@@ -44,6 +44,24 @@ export type ClientGrowthSnapshot={
   routes:any[]
 }
 
+const COMPOSITION_RULES=[
+  {key:'customer_service_infrastructure',name:'Customer Service Infrastructure',description:'A public customer entrance woven to payment, operations and assisted service.',systems:['customer_door','payments_gateway','operations_suite','ai_service_desk'],requiresConnection:true},
+  {key:'automated_commerce_infrastructure',name:'Automated Commerce Infrastructure',description:'Commerce, payment and marketplace movement connected into one operating capability.',systems:['commerce_storefront','payments_gateway','marketplace_network','route_station'],requiresConnection:true},
+  {key:'intelligence_operating_network',name:'Intelligence Operating Network',description:'Structured records and intelligence capability connected for reusable analysis and decision support.',systems:['data_room','intelligence_lab','integration_network'],requiresConnection:true},
+  {key:'client_media_network',name:'Client Media Network',description:'Creation, production, streaming and distribution operating as one media capability.',systems:['creator_booth','broadcast_studio','streaming_gate','media_network'],requiresConnection:true},
+  {key:'enterprise_operating_infrastructure',name:'Enterprise Operating Infrastructure',description:'Enterprise command, treasury and distribution connected into a persistent operating institution.',systems:['enterprise_hall','operations_command','enterprise_treasury','distribution_network'],requiresConnection:true},
+] as const
+
+function recognizeCompositions(systemTypes:Set<string>,routes:any[]){
+  return COMPOSITION_RULES.map(rule=>{
+    const presentSystems=rule.systems.filter(type=>systemTypes.has(type))
+    const required=new Set(rule.systems)
+    const connectionPresent=routes.some(route=>required.has(String(route.source_type) as any)&&required.has(String(route.target_type) as any)&&route.authority_state==='client_authorized')
+    const complete=presentSystems.length===rule.systems.length&&(!rule.requiresConnection||connectionPresent)
+    return {...rule,requiredSystems:[...rule.systems],presentSystems,requiredConnection:rule.requiresConnection,connectionPresent,state:complete?'recognized' as const:'forming' as const}
+  }).filter(item=>item.presentSystems.length>0)
+}
+
 export function publicGrowthSlug(fileNumber:string){
   return fileNumber.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')
 }
@@ -270,7 +288,7 @@ export async function getClientGrowthSnapshot(
     ORDER BY r.created_at DESC
   `
 
-  const [enterpriseApplication]=await sql`
+  const activeSystemTypes=new Set<string>()\n  for(const route of routes){ activeSystemTypes.add(String(route.source_type)); activeSystemTypes.add(String(route.target_type)) }\n  const allActiveTypes=await sql`SELECT system_type FROM client_built_systems WHERE client_id=${clientId}::uuid AND status='active'`\n  for(const system of allActiveTypes)activeSystemTypes.add(String(system.system_type))\n  const compositions=recognizeCompositions(activeSystemTypes,routes)\n\n  const [enterpriseApplication]=await sql`
     SELECT id,requested_position,enterprise_name,sector,status,public_slug
     FROM enterprise_applications
     WHERE client_id=${clientId}::uuid
