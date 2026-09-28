@@ -90,7 +90,7 @@ export default function BridgerNumbersPage(){
   }
  }
 
- useEffect(()=>visiblePoll(signal=>load(true,signal),10000),[])
+ useEffect(()=>{void load();return visiblePoll(signal=>load(true,signal),10000,false)},[])
  useEffect(()=>{const timer=window.setInterval(()=>setNow(Date.now()),15000);return()=>window.clearInterval(timer)},[])
 
  const buyCountry=async(country:string)=>{
