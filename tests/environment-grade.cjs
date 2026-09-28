@@ -501,7 +501,7 @@ assert.ok(!ledgerWorldSource.includes("from '@/components/ui/card'"),'Record no 
 
 const fileFolderWorldApiSource=read('app/api/client/file-folder-world/route.ts')
 assert.ok(fileFolderOpenWorld.includes("key: 'parts_workshop'")&&fileFolderOpenWorld.includes('data-client-parts-workshop="capability"'),'Client construction separates capability Parts Workshop from Materials Depot')
-assert.ok(clientFileFolderOperatingSource.includes("district:'parts_workshop'")&&clientFileFolderOperatingSource.includes("phase:'Equip'"),'Client build route includes a dedicated equipment phase')
+assert.ok(clientFileFolder.includes("district:'parts_workshop'")&&clientFileFolder.includes("phase:'Equip'"),'Client build route includes a dedicated equipment phase')
 assert.ok(environmentRegistry.includes("file-folder-parts")&&environmentRegistry.includes("#studio:parts_workshop"),'Parts Workshop is registered as a File Folder world station')
 assert.ok(fileFolderWorldApiSource.includes("completes_at=CASE")&&fileFolderWorldApiSource.includes("EXTRACT(EPOCH FROM (completes_at-NOW()))"),'Applied construction acceleration recalculates the live build completion time')
 assert.ok(fileFolderWorldApiSource.includes("speed_multiplier=CASE"),'Applied acceleration updates the multiplier displayed by Construction Yard')
