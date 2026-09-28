@@ -49,27 +49,6 @@ function StoneFloor(){
   </group>
 }
 
-function FlameBowl({position,scale=1}:{position:[number,number,number];scale?:number}){
-  const flame=useRef<THREE.Group>(null)
-  useFrame(({clock})=>{
-    if(!flame.current)return
-    const t=clock.getElapsedTime()
-    flame.current.scale.y=1+Math.sin(t*2.6+position[0])*.07
-    flame.current.rotation.z=Math.sin(t*1.55+position[2])*.045
-  })
-  return <group position={position} scale={scale}>
-    <mesh position={[0,-.05,0]} castShadow>
-      <cylinderGeometry args={[.26,.36,.24,20]}/>
-      <meshStandardMaterial color="#16191f" metalness={.68} roughness={.3}/>
-    </mesh>
-    <group ref={flame} position={[0,.52,0]}>
-      <mesh><coneGeometry args={[.18,.76,7]}/><meshBasicMaterial color="#f97316"/></mesh>
-      <mesh position={[0,-.05,.04]} scale={.6}><coneGeometry args={[.16,.68,7]}/><meshBasicMaterial color="#fef3c7"/></mesh>
-      <pointLight intensity={5} distance={2.8} color="#fb923c"/>
-    </group>
-  </group>
-}
-
 function FlameFountain(){
   const fire=useRef<THREE.Group>(null)
   const bronze=useRef<THREE.Group>(null)
@@ -133,76 +112,6 @@ function FlameFountain(){
     </group>
 
     <Text position={[0,.15,2.15]} fontSize={.28} color="#fef3c7" anchorX="center">WEAVE</Text>
-  </group>
-}
-
-function GrandHall(){
-  const bell=useRef<THREE.Group>(null)
-  useFrame(({clock})=>{
-    if(bell.current)bell.current.rotation.z=Math.sin(clock.getElapsedTime()*.34)*.03
-  })
-  return <group position={[0,-.86,-8.45]}>
-    <mesh position={[0,.35,0]} receiveShadow castShadow>
-      <boxGeometry args={[10.2,1.25,2.35]}/>
-      <meshStandardMaterial color="#07090d" roughness={.82}/>
-    </mesh>
-    <mesh position={[0,1.72,.08]} castShadow>
-      <boxGeometry args={[9.4,1.8,1.65]}/>
-      <meshStandardMaterial color="#0d1117" roughness={.72} metalness={.1}/>
-    </mesh>
-    <mesh position={[0,2.83,.08]} castShadow>
-      <boxGeometry args={[10.0,.3,1.92]}/>
-      <meshStandardMaterial color="#292524" metalness={.55} roughness={.36}/>
-    </mesh>
-    {[-4,-2.7,-1.35,1.35,2.7,4].map(x=><group key={x} position={[x,.92,.98]}>
-      <mesh position={[0,.45,0]}><cylinderGeometry args={[.17,.22,2.35,16]}/><meshStandardMaterial color="#18181b" roughness={.56}/></mesh>
-      <mesh position={[0,1.67,0]}><boxGeometry args={[.42,.16,.42]}/><meshStandardMaterial color="#d6a45f" metalness={.7} roughness={.28}/></mesh>
-    </group>)}
-    <mesh position={[0,1.38,1.18]}>
-      <boxGeometry args={[1.86,2.66,.15]}/>
-      <meshStandardMaterial color="#050607" emissive="#f59e0b" emissiveIntensity={.1}/>
-    </mesh>
-    <Text position={[0,2.2,1.28]} fontSize={.31} color="#fef3c7" anchorX="center">WEAVE HALL</Text>
-    <Text position={[0,1.78,1.28]} fontSize={.105} color="#a8a29e" anchorX="center">ORDER · CONTINUITY · MOVEMENT</Text>
-    <group ref={bell} position={[0,4.28,.04]}>
-      <mesh position={[0,.15,0]}><cylinderGeometry args={[.46,.7,.62,24]}/><meshStandardMaterial color="#a36a35" metalness={.9} roughness={.22}/></mesh>
-      <mesh position={[0,-.2,0]}><torusGeometry args={[.62,.07,10,28]}/><meshStandardMaterial color="#d6a45f" metalness={.92} roughness={.2}/></mesh>
-    </group>
-    <mesh position={[0,5.02,.02]}><coneGeometry args={[1.58,1.18,8]}/><meshStandardMaterial color="#111827" metalness={.4} roughness={.44}/></mesh>
-    <FlameBowl position={[-4.2,-.6,1.7]} scale={.6}/>
-    <FlameBowl position={[4.2,-.6,1.7]} scale={.6}/>
-  </group>
-}
-
-function TerraceWing({side}:{side:-1|1}){
-  const x=side*6.2
-  return <group position={[x,-.48,-.15]}>
-    <mesh position={[0,.6,0]} castShadow receiveShadow>
-      <boxGeometry args={[2.65,1.95,6.3]}/>
-      <meshStandardMaterial color="#0b0d11" roughness={.72} metalness={.1}/>
-    </mesh>
-    <mesh position={[-side*.18,1.63,0]} castShadow>
-      <boxGeometry args={[2.94,.18,6.52]}/>
-      <meshStandardMaterial color="#1c1917" metalness={.56} roughness={.34}/>
-    </mesh>
-    {[-2,0,2].map(z=><group key={z} position={[-side*1.34,.12,z]}>
-      <mesh position={[0,.58,0]}><cylinderGeometry args={[.15,.19,1.68,12]}/><meshStandardMaterial color="#171717" roughness={.55}/></mesh>
-      <mesh position={[0,1.45,0]}><boxGeometry args={[.34,.13,.36]}/><meshStandardMaterial color="#d6a45f" metalness={.68} roughness={.28}/></mesh>
-    </group>)}
-  </group>
-}
-
-function Arcade({side}:{side:-1|1}){
-  const x=side*8.55
-  return <group position={[x,-.72,-3.5]} rotation={[0,side<0?-.08:.08,0]}>
-    <mesh position={[0,1.65,0]} castShadow>
-      <boxGeometry args={[1.18,4.85,7.4]}/>
-      <meshStandardMaterial color="#080a0e" roughness={.82}/>
-    </mesh>
-    {[-2.55,0,2.55].map(z=><group key={z} position={[-side*.63,.86,z]}>
-      <mesh position={[0,.45,0]}><cylinderGeometry args={[.13,.17,2.2,12]}/><meshStandardMaterial color="#171717" roughness={.64}/></mesh>
-      <FlameBowl position={[-side*.08,-.72,.52]} scale={.48}/>
-    </group>)}
   </group>
 }
 
