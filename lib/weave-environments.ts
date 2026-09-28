@@ -101,6 +101,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'Observe → connect → support → continue',
     layer: 'district',
   },
+  '/presence': {
+    key: 'presence-district',
+    title: 'Presence District',
+    district: 'Presence',
+    purpose: 'The district where standing, human presence, record and value remain organized as one continuous layer of the WEAVE world.',
+    movement: 'Recognize position → enter place → continue movement',
+    layer: 'district',
+  },
   '/marketplace': {
     key: 'enterprise-exchange',
     title: 'Enterprise Systems Exchange',
@@ -184,7 +192,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
   '/weave/standing': {
     key: 'standing-field',
     title: 'Standing Field',
-    district: 'WEAVE',
+    district: 'Presence',
     purpose: 'A shared view of current position, participation and visible movement across the environment.',
     movement: 'Position → participation → standing',
     layer: 'district',
