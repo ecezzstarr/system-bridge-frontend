@@ -497,9 +497,6 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     >
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
         <div className="flex items-start gap-3 md:gap-4">
-          <div className="hidden rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3 sm:block">
-            <FolderOpen className="h-6 w-6 text-sky-300" />
-          </div>
           <div className="min-w-0 flex-1">
             <p className="text-[8px] font-black uppercase tracking-[0.2em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · {territoryPosition} · {territoryName}</p>
             <h1 className="mt-1 truncate text-xl font-black text-white md:mt-2 md:text-3xl">{data.workshop.title}</h1>
@@ -507,9 +504,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           </div>
         </div>
         <div className="pointer-events-auto mt-3 flex gap-4 overflow-x-auto border-y border-cyan-100/10 py-2 text-[8px] uppercase tracking-wider text-stone-500 md:mt-3 md:max-w-xl md:grid-cols-3 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[9px]">
-          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3"><b className="text-base text-amber-100 md:mt-1 md:block md:text-xl">{activeBuilds.length}</b><span className="text-amber-300">Building</span></div>
-          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-emerald-300/15 md:bg-emerald-400/5 md:px-4 md:py-3"><b className="text-base text-emerald-100 md:mt-1 md:block md:text-xl">{systems.length}</b><span className="text-emerald-300">Live</span></div>
-          <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-violet-300/15 md:bg-violet-400/5 md:px-4 md:py-3"><b className="text-base text-violet-100 md:mt-1 md:block md:text-xl">×{Number(world?.buildFunding?.buildSpeedMultiplier || data.build_funding?.buildSpeedMultiplier || 1).toFixed(2)}</b><span className="text-violet-300">Build power</span></div>
+          <div className="flex shrink-0 items-baseline gap-1.5"><b className="text-base text-amber-100">{activeBuilds.length}</b><span className="text-amber-300">Building</span></div>
+          <div className="flex shrink-0 items-baseline gap-1.5"><b className="text-base text-emerald-100">{systems.length}</b><span className="text-emerald-300">Live</span></div>
+          <div className="flex shrink-0 items-baseline gap-1.5"><b className="text-base text-violet-100">×{Number(world?.buildFunding?.buildSpeedMultiplier || data.build_funding?.buildSpeedMultiplier || 1).toFixed(2)}</b><span className="text-violet-300">Build power</span></div>
         </div>
       </header>
 
@@ -583,7 +580,6 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 {index<BUILD_LADDER.length-1&&<span className="h-px w-3 bg-amber-200/15 md:w-5"/>}
               </div>)}
             </div>
-            <p className="hidden max-w-xs text-[9px] leading-4 text-stone-500 lg:block">Blueprint → physical formation → live operation. The active construction world below carries the detailed location.</p>
           </div>
         </section>
 
@@ -595,7 +591,6 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-5 md:p-7">
                 <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Current movement</p>
                 <h2 className="mt-2 text-2xl font-black text-white">{data.workshop.title}</h2>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">{data.workshop.purpose}</p>
                 <button
                   onClick={() => travelToStudio('workshop_core')}
                   className="mt-5 inline-flex items-center gap-2 rounded-full bg-sky-400 px-4 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950"
@@ -733,7 +728,6 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <div className="flex flex-col gap-3 border-y border-cyan-100/10 bg-[#17100b]/62 px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">Construction territory active</p>
-                    <p className="mt-1 text-[11px] leading-5 text-stone-400">Blueprint Foundry, Materials Depot, Parts Workshop, Formation Yard, Acceleration Bay and Systems in Motion are one continuous site. Move through the site instead of opening separate dashboard pages.</p>
                   </div>
                   <div className="flex shrink-0 gap-4 text-right text-[8px] uppercase tracking-wider text-stone-500">
                     <span><b className="block text-base text-amber-100">{activeBuilds.length}</b>building</span>
@@ -792,11 +786,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
       {!panelOpen && (
         <div className="pointer-events-none absolute inset-x-0 bottom-[4.7rem] z-30 flex justify-center px-4">
-          <div className="rounded-full border border-cyan-100/10 bg-[#070b10]/72 px-4 py-2 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300 backdrop-blur-xl">
-            {travelingTo
-              ? `Moving to ${surfaces.find(item=>item.key===travelingTo)?.label || 'structure'}`
-              : 'Move through the territory · select a structure to enter its function'}
-          </div>
+          {travelingTo&&<div className="border-b border-cyan-100/15 px-3 py-1.5 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300">
+            Moving to {surfaces.find(item=>item.key===travelingTo)?.label || 'structure'}
+          </div>}
         </div>
       )}
     </section>
