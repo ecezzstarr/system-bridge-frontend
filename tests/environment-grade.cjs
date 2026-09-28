@@ -409,3 +409,11 @@ for(const [source,label] of [
 }
 assert.ok(!loadStabilityDjPlayer.includes('setInterval(() => void syncBroadcast()'),'DJ player no longer launches overlapping hidden-tab network intervals')
 assert.ok(!loadStabilityAdminHub.includes('setInterval(loadMessages'),'Administration hub no longer stacks message requests')
+
+
+const worldRuntimeLayout = read('app/(app)/layout.tsx')
+const worldRuntimeHeader = read('components/app-header.tsx')
+assert.ok(worldRuntimeLayout.includes('data-weave-world-runtime="persistent"'),'Authenticated roles share a persistent world runtime')
+assert.ok(worldRuntimeLayout.includes('data-weave-world-interior="route"'),'Authenticated route content mounts as a world interior')
+assert.ok(!worldRuntimeLayout.includes('lg:pl-72'),'World runtime is not permanently displaced by a website sidebar')
+assert.ok(worldRuntimeHeader.includes('data-weave-world-hud="top"'),'Authenticated status and navigation controls render as a floating HUD')
