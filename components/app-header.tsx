@@ -1,13 +1,12 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Search, Wallet, Menu, X } from "lucide-react"
+import { Search, Wallet, Landmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PresenceIndicator } from "@/components/presence-indicator"
 import { NotificationBell } from "@/components/notification-bell"
-import { useState, useEffect } from "react"
-import { AppSidebar } from "./app-sidebar"
+import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-provider"
 
 interface AppHeaderProps {
@@ -21,7 +20,6 @@ interface AppHeaderProps {
 export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter()
   const [search, setSearch] = useState("")
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { user: authUser } = useAuth()
   const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
 
@@ -46,11 +44,13 @@ export function AppHeader({ user }: AppHeaderProps) {
           </div>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-9 w-9 text-slate-400 hover:text-white"
-            onClick={() => setIsMobileMenuOpen(true)}
+            className="h-9 gap-2 px-2 text-slate-400 hover:text-white sm:px-3"
+            onClick={() => router.push('/weave')}
+            aria-label="Enter Bridge Plaza"
+            data-bridge-plaza-return="true"
           >
-            <Menu className="h-5 w-5" />
+            <Landmark className="h-4 w-4" />
+            <span className="hidden text-[9px] font-black uppercase tracking-[0.12em] sm:inline">Bridge Plaza</span>
           </Button>
 
           {/* Search - Hidden on small mobile */}
@@ -99,28 +99,6 @@ export function AppHeader({ user }: AppHeaderProps) {
         </div>
       </header>
 
-      {/* World navigator: the same role-aware radar is available on phone and desktop. */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50" data-weave-world-navigator="role-radar">
-          <div
-            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-          <div className="absolute inset-y-0 left-0 w-72 max-w-[88vw] animate-in slide-in-from-left duration-300">
-            <div className="absolute right-2 top-2 z-[60]">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="h-6 w-6" />
-              </Button>
-            </div>
-            <AppSidebar user={authUser || undefined} />
-          </div>
-        </div>
-      )}
     </>
   )
 }
