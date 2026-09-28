@@ -1,4 +1,4 @@
-export type WeavePlaceScope='shared'|'admin'|'agent'|'bridger'|'client'|'staff'
+export type WeavePlaceScope='shared'|'admin'|'agent'|'bridger'|'client'|'staff'|'public'
 
 export type WeavePlaceSurface={
   surface_key:string
@@ -130,6 +130,7 @@ export function districtKeyForRoute(route:string,scope?:string):WeaveDistrictKey
 }
 
 export function roleCanEnterSurface(role:string|undefined|null,scope:string){
+  if(scope==='public')return !role
   if(scope==='shared')return true
   if(scope==='staff')return role==='admin'||role==='agent'||role==='bridger'
   return Boolean(role&&role===scope)
