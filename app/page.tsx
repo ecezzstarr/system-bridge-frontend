@@ -13,6 +13,7 @@ import {
   Network,
   Orbit,
   Sparkles,
+  Bot,
   Store,
   Radio,
   Workflow,
@@ -91,7 +92,7 @@ export default function Home() {
           </div>
         </nav>
 
-        <main className="mx-auto w-full max-w-6xl px-3 pb-16 pt-4 sm:px-5 sm:pt-7">
+        <main className="mx-auto w-full max-w-6xl px-3 pb-16 pt-4 sm:px-5 sm:pt-7" data-weave-public-entry-world="true">
           <section className="relative overflow-hidden rounded-[1.7rem] border border-sky-300/10 bg-[#030a15]/52 p-4 shadow-[0_30px_100px_rgba(2,8,23,.5)] backdrop-blur-md sm:p-6 md:p-8">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,.09),transparent_30%),radial-gradient(circle_at_85%_35%,rgba(245,158,11,.05),transparent_25%)]" />
 
@@ -163,7 +164,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="relative h-[250px] overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/15 sm:h-[320px] md:h-[390px]">
+              <div className="relative h-[250px] overflow-hidden border-y border-white/10 bg-black/15 sm:h-[320px] md:h-[390px]" data-world-window="public-presence">
                 <div className="pointer-events-none absolute inset-x-5 top-4 z-10 flex items-center justify-between text-[7px] font-black uppercase tracking-[0.16em] text-white/40">
                   <span>Human Presence</span>
                   <span>Living World</span>
@@ -172,7 +173,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative mt-4 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+            <div className="relative mt-4 grid grid-cols-3 gap-1.5 sm:grid-cols-6" data-world-route="presence-to-livelihood">
               {movement.map((item, index) => (
                 <div
                   key={item}
@@ -236,7 +237,11 @@ export default function Home() {
             </aside>
           </section>
 
-          <section className="mt-3 rounded-[1.6rem] border border-white/10 bg-black/18 p-4 backdrop-blur-md sm:p-5">
+          <section className="mt-3 border-y border-white/10 bg-black/18 p-4 backdrop-blur-md sm:p-5" data-ai-participation="public-world">
+            <div className="mb-4 flex items-start gap-3 border-l border-violet-300/25 pl-3">
+              <Bot className="mt-0.5 h-5 w-5 text-violet-300"/>
+              <div><p className="text-[8px] font-black uppercase tracking-[.2em] text-violet-300">AI has a place inside participation</p><p className="mt-1 max-w-3xl text-[10px] leading-4 text-slate-400">AI participates where human movement is happening: recognizing authorized context, preparing work, guiding routes and extending capability. People remain the source of authority, ownership, approval and value movement.</p></div>
+            </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-sky-300/12 bg-sky-400/[0.035] p-4">
                 <Gamepad2 className="h-5 w-5 text-sky-300" />
