@@ -544,11 +544,11 @@ const environmentSurfaceSource=read('components/world/weave-environment-surface.
 const environmentsSource=read('lib/weave-environments.ts')
 assert.ok(environmentSurfaceSource.includes('data-world-stays-mounted="true"'),'District interiors explicitly preserve the mounted WEAVE world')
 assert.ok(environmentSurfaceSource.includes('data-environment-location="world-position"'),'Destination identity remains a compact in-world position marker rather than a large page card')
-assert.ok(environmentSurfaceSource.includes('data-environment-interior="station"'),'Working interiors are framed as stations inside the world')
-assert.ok(environmentSurfaceSource.includes('Return to role world'),'Every authenticated station has a route back to its role world')
-assert.ok(environmentSurfaceSource.includes('data-ai-station-presence="contextual"'),'AI participation remains contextually present at working stations')
+assert.ok(environmentSurfaceSource.includes('data-environment-interior="place"'),'Every routed interior is framed as a functional place inside the world')
+assert.ok(environmentSurfaceSource.includes('Return to Bridge Plaza'),'Every authenticated place can return to Bridge Plaza')
+assert.ok(environmentSurfaceSource.includes('data-ai-station-presence="contextual"'),'AI participation remains contextually present inside working places')
 for(const route of ['/bridger/bridge-radiance','/agent/bridge-radiance','/admin/bridge-radiance']){
- assert.ok(environmentsSource.includes(route),route+' is registered as a WEAVE world station')
+ assert.ok(environmentsSource.includes(route),route+' is registered as a WEAVE functional place')
 }
 
 
