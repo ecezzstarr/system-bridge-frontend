@@ -17,6 +17,7 @@ import { getAuthHeaders } from '@/lib/auth-client'
 import { toast } from 'sonner'
 import { WeaveSystemRoom } from '@/components/world/weave-system-room'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
+import { visiblePoll } from '@/lib/visible-poll'
 
 function deadlineLabel(deadline:string,now:number){
  const ms=new Date(deadline).getTime()-now
@@ -36,8 +37,8 @@ export default function BridgerNumbersPage(){
  const [now,setNow]=useState(()=>Date.now())
  const orderStateRef=useRef<Map<string,string>>(new Map())
 
- const readBayJson=async(url:string,fallback:string)=>{
-  const response=await fetch(url,{headers:getAuthHeaders(),cache:'no-store'})
+ const readBayJson=async(url:string,fallback:string,signal?:AbortSignal)=>{
+  const response=await fetch(url,{headers:getAuthHeaders(),cache:'no-store',signal})
   const data=await response.json().catch(()=>({}))
   if(!response.ok)throw new Error(data.error||fallback)
   return data
@@ -59,12 +60,12 @@ export default function BridgerNumbersPage(){
   setOrders(nextOrders)
  }
 
- const load=async()=>{
-  setLoading(true)
+ const load=async(silent=false,signal?:AbortSignal)=>{
+  if(!silent)setLoading(true)
   try{
    const [bayResult,verificationResult]=await Promise.allSettled([
-    readBayJson('/api/bridger/numbers','Unable to load Number Bay'),
-    readBayJson('/api/bridger/number-verifications','Unable to load verification movement'),
+    readBayJson('/api/bridger/numbers','Unable to load Number Bay',signal),
+    readBayJson('/api/bridger/number-verifications','Unable to load verification movement',signal),
    ])
 
    if(bayResult.status==='fulfilled'){
@@ -84,11 +85,11 @@ export default function BridgerNumbersPage(){
   }catch(e:any){
    toast.error(e.message||'Unable to load Number Bay')
   }finally{
-   setLoading(false)
+   if(!silent)setLoading(false)
   }
  }
 
- useEffect(()=>{void load()},[])
+ useEffect(()=>visiblePoll(signal=>load(true,signal),10000),[])
  useEffect(()=>{const timer=window.setInterval(()=>setNow(Date.now()),15000);return()=>window.clearInterval(timer)},[])
 
  const buyCountry=async(country:string)=>{
