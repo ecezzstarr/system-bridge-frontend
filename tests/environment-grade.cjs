@@ -464,3 +464,14 @@ assert.ok(bridgerSupportApiSource.includes('b.bridger_id = ${auth.userId}::uuid'
 assert.ok(agentSupportApiSource.includes('bridger.assigned_agent_id=${auth.userId}::uuid'),'Agent Prospect interaction is restricted to Bridgers assigned to that Agent')
 assert.ok(adminBridgeSupportSource.includes("authUser.role !== 'admin'")||adminBridgeSupportSource.includes("user.role !== 'admin'"),'Administration Bridge Radiance interaction remains institutionally gated')
 assert.ok(bridgerRadianceSource.includes('data-bridge-radiance-operator="bridger"'),'Hope has an active Bridge Radiance Prospect interaction station')
+
+
+const publicWorldSource=read('app/page.tsx')
+const weaveSystemMapSource=read('lib/weave-system-map.ts')
+const dashboardWorldSource=read('components/world/weave-dashboard-world.tsx')
+assert.ok(publicWorldSource.includes('data-weave-public-entry-world="true"'),'WEAVE homepage declares the public entry world')
+assert.ok(publicWorldSource.includes('AI has a place inside participation'),'Public world explains AI as participation rather than a detached chatbot')
+assert.ok(weaveSystemMapSource.includes("principle: 'AI participates inside human movement; it does not replace the human source.'"),'WEAVE system map protects the AI participation principle')
+assert.ok(weaveSystemMapSource.includes("AI does not own territory"),'AI participation keeps human authority and ownership boundaries')
+assert.ok(dashboardWorldSource.includes('data-ai-participation={role}')&&dashboardWorldSource.includes('data-ai-participation="client"'),'Every authenticated role world exposes contextual AI participation')
+assert.ok(!dashboardWorldSource.includes(String.fromCharCode(92)+'n'),'Role world source contains no escaped newline corruption')
