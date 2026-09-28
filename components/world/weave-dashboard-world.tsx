@@ -90,7 +90,7 @@ const ROLE: Record<WorldRole, {
     purpose: WEAVE_SYSTEM_MAP.positions.agent.description,
     functionsHref: '/agent/functions',
     links: [
-      { label: 'My Bridgers', detail: 'Participation field', href: '/agent/bridgers', icon: Users, tone: 'sky' },\n      { label: 'Bridge Radiance', detail: 'Support Prospects owned by your assigned Bridgers', href: '/admin/hub', icon: MessageCircle, tone: 'sky' },
+      { label: 'My Bridgers', detail: 'Participation field', href: '/agent/bridgers', icon: Users, tone: 'sky' },\n      { label: 'Bridge Radiance', detail: 'Support Prospects owned by your assigned Bridgers', href: '/agent/bridge-radiance', icon: MessageCircle, tone: 'sky' },
       { label: 'Prospect Campaigns', detail: 'Campaigns Bridgers can purchase into', href: '/agent/stability-supply', icon: Zap, tone: 'gold' },
       { label: 'Number Supply', detail: 'Number movement for Bridger participation', href: '/agent/stability-supply', icon: Radio, tone: 'sky' },
       { label: 'Agility', detail: 'Real-world distribution movement', href: '/agility', icon: ShoppingBag, tone: 'gold' },
