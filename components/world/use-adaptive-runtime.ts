@@ -13,7 +13,7 @@ let sampleStart=0
 let lastDowngrade=0
 let initialized=false
 function publish(level:0|1|2,hidden=snapshot.hidden,reducedMotion=snapshot.reducedMotion){
-  const next={level,hidden,covered:snapshot.covered,reducedMotion,fps:level===2?28:level===1?20:12,dpr:level===2?1.15:level===1?.85:.7,shadows:level===2}
+  const next={level,hidden,covered:snapshot.covered,reducedMotion,fps:level===2?28:level===1?15:8,dpr:level===2?1.15:level===1?.72:.55,shadows:level===2}
   if(JSON.stringify(next)===JSON.stringify(snapshot))return
   snapshot=next
   document.documentElement.dataset.weaveQuality=String(level)
