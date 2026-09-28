@@ -104,7 +104,7 @@ export default function FileFolderOpenWorld({
   const [busy, setBusy] = useState('')
   const [message, setMessage] = useState('')
   const [now, setNow] = useState(Date.now())
-  const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})
+  const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})\n  const [systemEvidence, setSystemEvidence] = useState<Record<string, string>>({})
   const { recordOutput } = usePresenceCamera()
   const buildStateRef=useRef<Map<string,string>>(new Map())
 
@@ -457,14 +457,14 @@ export default function FileFolderOpenWorld({
 
           {district === 'active_systems' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Live Systems</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Systems in Motion</p>
               <h3 className="mt-2 text-2xl font-black">A finished structure becomes valuable when it moves, connects and produces an output.</h3>
               <div className="mt-5 space-y-4">
                 {(world?.systems || []).length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No system has finished construction yet.</p>}
                 {(world?.systems || []).map((system:any) => <div key={system.id} className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.035] p-5">
                   <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] uppercase tracking-wider text-sky-300">{system.system_type.replaceAll('_',' ')}</p><h4 className="mt-1 font-bold text-white">{system.title}</h4></div><CheckCircle2 className="h-5 w-5 text-emerald-300"/></div>
-                  <div className="mt-4 space-y-2">{(system.entries || []).map((entry:any)=><div key={entry.id} className="flex items-start gap-3 rounded-xl border border-white/5 bg-black/20 p-3"><button disabled={readOnly} onClick={()=>act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} className={`mt-0.5 h-4 w-4 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-600'}`}/><div><p className={`text-xs font-semibold ${entry.status==='done'?'text-slate-500 line-through':'text-slate-200'}`}>{entry.title}</p>{entry.body&&<p className="mt-1 text-[10px] leading-4 text-slate-500">{entry.body}</p>}</div></div>)}</div>
-                  {!readOnly && <div className="mt-4 flex gap-2"><input value={systemDrafts[system.id]||''} onChange={e=>setSystemDrafts({...systemDrafts,[system.id]:e.target.value})} placeholder="Add the next real task / record…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"/><button disabled={!systemDrafts[system.id]?.trim() || busy===system.id} onClick={async()=>{await act({action:'add_system_entry',system_id:system.id,title:systemDrafts[system.id]},system.id);setSystemDrafts({...systemDrafts,[system.id]:''})}} className="rounded-xl bg-sky-500 px-3 text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/></button></div>}
+                  <div className="mt-4 space-y-2">{(system.entries || []).map((entry:any)=><div key={entry.id} className="flex items-start gap-3 rounded-xl border border-white/5 bg-black/20 p-3"><button disabled={readOnly} onClick={()=>act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} className={`mt-0.5 h-4 w-4 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-600'}`}/><div><p className={`text-xs font-semibold ${entry.status==='done'?'text-slate-500 line-through':'text-slate-200'}`}>{entry.title}</p>{entry.body&&<p className="mt-1 text-[10px] leading-4 text-slate-500">{entry.body}</p>}{entry.evidence_type&&entry.evidence_type!=='internal'&&<p className="mt-1 text-[8px] font-black uppercase tracking-wider text-emerald-300/70">Field evidence · {String(entry.evidence_type).replaceAll('_',' ')}</p>}</div></div>)}</div>
+                  {!readOnly && <div className="mt-4 flex gap-2"><input value={systemDrafts[system.id]||''} onChange={e=>setSystemDrafts({...systemDrafts,[system.id]:e.target.value})} placeholder="Record the next real operation…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"/><select value={systemEvidence[system.id]||'internal'} onChange={e=>setSystemEvidence({...systemEvidence,[system.id]:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 px-2 text-[9px] font-black uppercase text-slate-300"><option value="internal">Internal</option><option value="customer_use">Customer use</option><option value="visitor_use">Visitor use</option><option value="fulfilment">Fulfilment</option><option value="delivery">Delivery</option><option value="service">Service</option><option value="revenue">Revenue</option></select><button disabled={!systemDrafts[system.id]?.trim() || busy===system.id} onClick={async()=>{await act({action:'add_system_entry',system_id:system.id,title:systemDrafts[system.id],evidence_type:systemEvidence[system.id]||'internal'},system.id);setSystemDrafts({...systemDrafts,[system.id]:''})}} className="rounded-xl bg-sky-500 px-3 text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/></button></div>}
                 </div>)}
               </div>
             </div>
@@ -472,7 +472,7 @@ export default function FileFolderOpenWorld({
 
           {district === 'library_district' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Build Intelligence</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Formation Intelligence</p>
               <h3 className="mt-2 text-2xl font-black">Understand the build while the Client is using it.</h3>
               <div className="mt-5 space-y-3">
                 {(world?.library || []).map((entry:any)=><div key={entry.entry_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
