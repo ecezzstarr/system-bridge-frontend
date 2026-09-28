@@ -31,12 +31,12 @@ export async function ensureEnvironmentOrganizerSchema(){
       ALTER TABLE weave_environment_surfaces DROP CONSTRAINT IF EXISTS weave_environment_surfaces_surface_kind_check
     `
     await sql`
-      UPDATE weave_environment_surfaces SET surface_kind=CASE surface_kind WHEN 'page' THEN 'district' WHEN 'card' THEN 'station' ELSE surface_kind END
+      UPDATE weave_environment_surfaces SET surface_kind=CASE surface_kind WHEN 'page' THEN 'place' WHEN 'card' THEN 'station' ELSE surface_kind END
       WHERE surface_kind IN ('page','card')
     `
     await sql`
       ALTER TABLE weave_environment_surfaces ADD CONSTRAINT weave_environment_surfaces_surface_kind_check
-      CHECK (surface_kind IN ('district','station')) NOT VALID
+      CHECK (surface_kind IN ('district','place','station')) NOT VALID
     `
     await sql`CREATE INDEX IF NOT EXISTS weave_environment_surfaces_area_idx ON weave_environment_surfaces(area,sort_order,label)`
 
