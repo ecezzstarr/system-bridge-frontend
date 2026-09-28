@@ -37,7 +37,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
     startsAt: '',
   })
 
-  const matches = matchesData?.matches || matchesData?.data?.matches || []
+  const matches = matchesData?.matches || []
   
   const filteredMatches = matches.filter((m: any) => {
     if (activeTab === 'curated') return m.category === 'football_curated' || m.category === 'football'
