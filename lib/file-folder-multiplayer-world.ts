@@ -7,8 +7,12 @@ export type AiFileFolderIdentity={
   chosenName:string
   chosenLogo:string|null
   publicDoor:string
+  fileFolderTier:'none'|'standard'|'premium'
   systems:string[]
   products:string[]
+  inventoryItems:number
+  activeBuilds:number
+  boostsOwned:number
   earnedFlameCoin:number
   operatorLabel:'Flame AI'|'Echo AI'
   activity:string
@@ -40,8 +44,8 @@ export const WEAVE_AI_FILE_FOLDERS:AiFileFolderIdentity[]=[
   {
     aiId:'flame-0001',department:'flame_ai',fileNumber:'WEAVE-FLAME-0001',
     chosenName:'Ember Works',chosenLogo:null,publicDoor:'Ember Works Gate',
-    systems:['Customer Door','Formation Yard','Commerce Storefront'],products:['Starter Service System'],
-    earnedFlameCoin:0,operatorLabel:'Flame AI',activity:'Forming products · serving visitors',
+    fileFolderTier:'none',systems:[],products:[],inventoryItems:0,activeBuilds:0,boostsOwned:0,
+    earnedFlameCoin:0,operatorLabel:'Flame AI',activity:'Awaiting File Folder acquisition',
     visitorsAllowed:true,privateAuthority:'ai_within_weave_mandate',
   },
 ]
