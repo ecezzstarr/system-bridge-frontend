@@ -42,10 +42,10 @@ export default async function PublicClientMarket(){
       <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.045)_1px,transparent_1px)] [background-size:54px_54px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"/>
       <div className="relative mx-auto max-w-7xl">
         <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-sky-300"><Landmark className="h-4 w-4"/>WEAVE Client Market</p>
-        <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">A public market made from Client-built businesses.</h1>
-        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Clients construct Customer Doors, storefronts and larger market systems inside their File Folders. When a business opens, anyone can enter here, inspect the store and purchase without becoming a WEAVE user.</p>
+        <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">The open internet meets Client-built territories.</h1>
+        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Each Lord/Lady builds a business territory inside WEAVE and opens it outward to the internet. Visitors can arrive directly from a link, search, social media, QR code or another website, enter the Client-named Door and purchase without a WEAVE account.</p>
         <div className="mt-7 flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-wider text-slate-400">
-          <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Public access</span>
+          <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Open internet access</span>
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Client-owned stores</span>
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Real orders</span>
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Persistent construction</span>
@@ -65,7 +65,7 @@ export default async function PublicClientMarket(){
       </div>:<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {stores.map((store:any,index:number)=>{
           const config=normalizeStoreEnvironmentConfig(store.environment_config)
-          const level=store.has_market_hall?'Market Hall':store.has_storefront?'Store Building':'Customer Door'
+          const doorName=config.platformName || store.name || 'Customer Door'\n          const level=store.has_market_hall?'Market Hall':store.has_storefront?'Store Building':doorName
           return <Link key={store.public_slug} href={`/market/${store.public_slug}`} className="group relative min-h-[360px] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(155deg,rgba(14,165,233,.09),rgba(17,24,39,.88)_48%,rgba(88,28,135,.16))] p-5 shadow-[0_28px_80px_rgba(0,0,0,.28)] transition hover:-translate-y-1 hover:border-sky-200/20">
             <div className="absolute inset-x-5 bottom-4 h-6 rounded-[50%] bg-black/50 blur-lg"/>
             <div className="relative flex items-start justify-between gap-3">
@@ -81,7 +81,7 @@ export default async function PublicClientMarket(){
             </div>
             <div className="relative mt-3">
               <p className="text-[8px] font-black uppercase tracking-[0.18em] text-violet-300">{config.sign}</p>
-              <h3 className="mt-1 text-2xl font-black">{store.name}</h3>
+              <div className="mt-2 flex items-center gap-3">{config.logoUrl&&<img src={config.logoUrl} alt={`${doorName} logo`} className="h-10 w-10 rounded-lg border border-white/10 bg-white/5 object-contain p-1"/>}<div><p className="text-[8px] font-black uppercase tracking-wider text-slate-500">Public Door</p><h3 className="text-2xl font-black">{doorName}</h3></div></div>
               <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-400">{store.description||config.tagline}</p>
               <div className="mt-4 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>{store.offer_count} offer windows</span><span className="inline-flex items-center gap-1 text-sky-300">Enter <ArrowRight className="h-3.5 w-3.5"/></span></div>
             </div>
