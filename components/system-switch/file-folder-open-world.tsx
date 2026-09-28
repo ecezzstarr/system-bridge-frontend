@@ -30,6 +30,7 @@ type Props = {
   workshopPurpose?: string | null
   initialWorld: any
   readOnly?: boolean
+  observerLabel?: string
   refreshUrl?: string
   refreshToken?: string | null
   onWorldChange?: (world: any) => void
@@ -37,13 +38,13 @@ type Props = {
 }
 
 const districts = [
-  { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Read the business objective, resources and build state from one place.' },
-  { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Choose the next real system and understand its required functions.' },
-  { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire functional components matched to the systems they enable.' },
-  { key: 'formation_yard', label: 'Construction Yard', icon: Hammer, detail: 'Watch real structures form through time and attach build parts.' },
+  { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Hold the purpose, authority, resources and next movement of this territory in one command position.' },
+  { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Turn an intended capability into a buildable system with defined functions, dependencies and consequence.' },
+  { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire the primary kits that supply a blueprint before construction begins.' },\n  { key: 'parts_workshop', label: 'Parts Workshop', icon: Boxes, detail: 'Acquire capability modules and attach compatible parts to structures while they form.' },
+  { key: 'formation_yard', label: 'Formation Yard', icon: Hammer, detail: 'Form the technology through time, install capability parts and watch the territory change with the build.' },
   { key: 'boost_bay', label: 'Acceleration Bay', icon: Zap, detail: 'Use recorded acceleration instruments on active construction.' },
-  { key: 'active_systems', label: 'Live Systems', icon: PackageOpen, detail: 'Operate completed systems and record real movement inside them.' },
-  { key: 'library_district', label: 'Build Intelligence', icon: Library, detail: 'Understand why each build works and learn through movement.' },
+  { key: 'active_systems', label: 'Systems in Motion', icon: PackageOpen, detail: 'Operate completed technologies, connect their outputs and preserve the movement they produce.' },
+  { key: 'library_district', label: 'Formation Intelligence', icon: Library, detail: 'Understand why each system works, what it can connect to and what larger capability can emerge.' },
 ]
 
 function duration(seconds: number) {
@@ -69,6 +70,19 @@ function branchLabel(district: string) {
   return labels[district] || 'System'
 }
 
+const CUSTOMER_DOOR_FORMATION=[
+  {at:0,label:'Foundation Frame',detail:'Public entrance structure anchored to the Client territory.'},
+  {at:15,label:'Client Identity Facade',detail:'Company/platform identity takes its public position.'},
+  {at:32,label:'Customer Intake Interface',detail:'Visitor requests and order intent gain an entry path.'},
+  {at:50,label:'Service Interface',detail:'Customer movement connects to the Client operation behind the Door.'},
+  {at:68,label:'Fulfilment Interface',detail:'Delivery and fulfilment movement gains a recorded path.'},
+  {at:88,label:'Public Commissioning',detail:'Door is verified for open-internet visitors.'},
+] as const
+
+function customerDoorFormation(progress:number){
+  return CUSTOMER_DOOR_FORMATION.map((part,index)=>({...part,state:progress>=part.at?'formed':index===0||progress>=CUSTOMER_DOOR_FORMATION[index-1].at?'forming':'waiting'}))
+}
+
 function operatingEffect(item: any) {
   const value = Number(item.effect_value || 0)
   const effects: Record<string,string> = {
@@ -91,6 +105,7 @@ export default function FileFolderOpenWorld({
   workshopPurpose,
   initialWorld,
   readOnly = false,
+  observerLabel = 'Staff / Visitor observation',
   refreshUrl,
   refreshToken,
   onWorldChange,
@@ -102,7 +117,7 @@ export default function FileFolderOpenWorld({
   const [busy, setBusy] = useState('')
   const [message, setMessage] = useState('')
   const [now, setNow] = useState(Date.now())
-  const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})
+  const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})\n  const [systemEvidence, setSystemEvidence] = useState<Record<string, string>>({})
   const { recordOutput } = usePresenceCamera()
   const buildStateRef=useRef<Map<string,string>>(new Map())
 
@@ -221,20 +236,21 @@ export default function FileFolderOpenWorld({
   const boostItems = (world?.items || []).filter((item: any) => item.build_effect === 'speed_boost')
 
   return (
-    <section className="overflow-clip rounded-[1.35rem] border border-amber-200/10 bg-[#120c08] shadow-[0_30px_100px_rgba(0,0,0,.42)] md:rounded-[2rem]" data-construction-workspace="progressive-site">
-      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(18,12,8,.02))] px-4 py-4 md:p-8">
+    <section className="overflow-clip rounded-[1.35rem] border border-amber-200/10 bg-[#02080d] shadow-[0_30px_100px_rgba(0,0,0,.42)] md:rounded-[2rem]" data-construction-workspace="progressive-site">
+      <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(2,8,13,.02))] px-4 py-4 md:p-8">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Active Construction Site</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Technology Formation Territory</p>
             <h2 className="mt-1 truncate text-lg font-black text-white md:mt-2 md:text-4xl">{workshopTitle}</h2>
             <p className="mt-1 truncate text-[9px] font-mono text-slate-500 md:mt-2 md:text-[10px]">{clientName} · {fileNumber}</p>
           </div>
           <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] ${readOnly?'border-violet-300/20 bg-violet-400/5 text-violet-200':'border-emerald-300/20 bg-emerald-400/5 text-emerald-200'}`}>
-            {readOnly?'Support view':'Client control'}
+            {readOnly?'Observable territory':'Client control'}
           </span>
         </div>
 
         <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
+        {readOnly&&<div className="mt-3 border-l-2 border-violet-300/30 bg-violet-400/[.035] px-3 py-2 text-[9px] leading-4 text-violet-100" data-territory-observer="progress-visible"><span className="font-black uppercase tracking-wider">{observerLabel} · </span>Construction progress, completed structures, Customer Door maturity and public business movement are visible here. Ownership, wallet, private records and build controls remain with the Lord/Lady.</div>}
 
         <div className="mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2.5 text-[8px] uppercase tracking-wider text-stone-500 md:mt-5 md:grid md:grid-cols-4 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[10px]">
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3">
@@ -362,6 +378,10 @@ export default function FileFolderOpenWorld({
                     </div>}
                     {!readOnly && <div className="mt-4 rounded-xl border border-sky-300/10 bg-sky-400/[0.025] p-3">
                       <div className="flex items-center justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Continue building live</p><p className="mt-1 text-[9px] text-slate-500">Attach purchased parts to this active build. Speed boosts immediately change its live formation time.</p></div><Zap className="h-4 w-4 text-sky-300"/></div>
+                      {build.system_type==='customer_door'&&<div className="mt-4 border-y border-emerald-300/10 py-3" data-customer-door-formation="72-hour-cycle">
+                        <p className="text-[8px] font-black uppercase tracking-[.16em] text-emerald-300">Standard formation · 72 real hours · acceleration optional</p>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">{customerDoorFormation(buildProgress(build,now)).map(part=><div key={part.label} className="border-l border-emerald-300/15 pl-3"><p className={`text-[9px] font-black ${part.state==='formed'?'text-emerald-200':part.state==='forming'?'text-amber-200':'text-slate-600'}`}>{part.label} · {part.state}</p><p className="mt-1 text-[8px] leading-4 text-slate-500">{part.detail}</p></div>)}</div>
+                      </div>}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {availableBuildItems.length === 0 && <span className="text-[9px] text-slate-600">No purchased build items are waiting in inventory.</span>}
                         {availableBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
@@ -402,7 +422,7 @@ export default function FileFolderOpenWorld({
           {district === 'build_market' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Materials Depot</p>
-              <h3 className="mt-2 text-2xl font-black">Every material is tied to a build function, inventory state and price.</h3>
+              <h3 className="mt-2 text-2xl font-black">Every material has a structural consequence. Nothing enters the territory without a function.</h3>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {buildMarketItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
@@ -418,11 +438,29 @@ export default function FileFolderOpenWorld({
             </div>
           )}
 
+          {district === 'parts_workshop' && (
+            <div data-client-parts-workshop="capability">
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Parts Workshop</p>
+              <h3 className="mt-2 text-2xl font-black">Start modest. Add capability. Keep moving.</h3>
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Parts are an open market, not a wealth gate. A Standard Client can choose inexpensive, narrower capabilities and operate them for as long as needed. More advanced parts increase capacity, automation and reach; they do not erase the value of a modest working system. Install purchased capability into a compatible active structure in Formation Yard.</p>
+              <div className="mt-4 border-l border-amber-300/20 bg-amber-300/[0.025] p-4" data-standard-growth-path="time-capital-continuum"><p className="text-[8px] font-black uppercase tracking-[.16em] text-amber-200">Standard growth path</p><p className="mt-2 text-[10px] leading-5 text-slate-400">Low capital can be exchanged for longer time and smaller capability. Operate what you can afford, preserve field evidence, earn, add parts, connect systems and expand. Enterprise remains reachable through sustained movement and recognition.</p></div>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {buildPartItems.map((item:any)=><div key={item.item_key} className="border-l border-sky-300/20 bg-sky-400/[0.025] p-5">
+                  <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[.15em] text-sky-300">{String(item.category||'build part').replaceAll('_',' ')}</p><h4 className="mt-1 font-bold text-white">{item.name}</h4></div><div className="text-right"><p className="text-sm font-black text-amber-200">{Number(item.price_flame_coin).toLocaleString()} FC</p>{item.category==='accessible_part'&&<p className="mt-1 text-[7px] font-black uppercase tracking-wider text-emerald-300">Accessible part</p>}</div></div>
+                  <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
+                  <p className="mt-3 text-[9px] leading-4 text-slate-500"><span className="font-black uppercase text-sky-300">Installed capability · </span>{operatingEffect(item)}</p>
+                  <div className="mt-3 flex items-center justify-between text-[9px]"><span className="text-slate-500">Workshop inventory</span><span className="font-black text-white">{Number(inventory.get(item.item_key)||0)} owned</span></div>
+                  {!readOnly&&<button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 border border-sky-300/20 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-sky-100 disabled:opacity-40">{busy===item.item_key?'Acquiring…':'Acquire part'}</button>}
+                </div>)}
+              </div>
+            </div>
+          )}
+
           {district === 'boost_bay' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Acceleration Bay</p>
-              <h3 className="mt-2 text-2xl font-black">Speed is a live construction instrument.</h3>
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire a boost here, then attach it to an active build in Formation Yard. The build timer recalculates from recorded File Folder state.</p>
+              <h3 className="mt-2 text-2xl font-black">Acceleration changes formation time; it does not replace formation.</h3>
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire acceleration here, then attach it to an active build in Construction Yard. The remaining countdown is recalculated immediately from recorded File Folder state.</p>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {boostItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-amber-300/12 bg-amber-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-amber-300">Live acceleration</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
@@ -437,14 +475,14 @@ export default function FileFolderOpenWorld({
 
           {district === 'active_systems' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Live Systems</p>
-              <h3 className="mt-2 text-2xl font-black">Finished structures are usable systems.</h3>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Systems in Motion</p>
+              <h3 className="mt-2 text-2xl font-black">A finished structure becomes valuable when it moves, connects and produces an output.</h3>
               <div className="mt-5 space-y-4">
                 {(world?.systems || []).length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No system has finished construction yet.</p>}
                 {(world?.systems || []).map((system:any) => <div key={system.id} className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.035] p-5">
                   <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] uppercase tracking-wider text-sky-300">{system.system_type.replaceAll('_',' ')}</p><h4 className="mt-1 font-bold text-white">{system.title}</h4></div><CheckCircle2 className="h-5 w-5 text-emerald-300"/></div>
-                  <div className="mt-4 space-y-2">{(system.entries || []).map((entry:any)=><div key={entry.id} className="flex items-start gap-3 rounded-xl border border-white/5 bg-black/20 p-3"><button disabled={readOnly} onClick={()=>act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} className={`mt-0.5 h-4 w-4 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-600'}`}/><div><p className={`text-xs font-semibold ${entry.status==='done'?'text-slate-500 line-through':'text-slate-200'}`}>{entry.title}</p>{entry.body&&<p className="mt-1 text-[10px] leading-4 text-slate-500">{entry.body}</p>}</div></div>)}</div>
-                  {!readOnly && <div className="mt-4 flex gap-2"><input value={systemDrafts[system.id]||''} onChange={e=>setSystemDrafts({...systemDrafts,[system.id]:e.target.value})} placeholder="Add the next real task / record…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"/><button disabled={!systemDrafts[system.id]?.trim() || busy===system.id} onClick={async()=>{await act({action:'add_system_entry',system_id:system.id,title:systemDrafts[system.id]},system.id);setSystemDrafts({...systemDrafts,[system.id]:''})}} className="rounded-xl bg-sky-500 px-3 text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/></button></div>}
+                  <div className="mt-4 space-y-2">{(system.entries || []).map((entry:any)=><div key={entry.id} className="flex items-start gap-3 rounded-xl border border-white/5 bg-black/20 p-3"><button disabled={readOnly} onClick={()=>act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} className={`mt-0.5 h-4 w-4 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-600'}`}/><div><p className={`text-xs font-semibold ${entry.status==='done'?'text-slate-500 line-through':'text-slate-200'}`}>{entry.title}</p>{entry.body&&<p className="mt-1 text-[10px] leading-4 text-slate-500">{entry.body}</p>}{entry.evidence_type&&entry.evidence_type!=='internal'&&<p className="mt-1 text-[8px] font-black uppercase tracking-wider text-emerald-300/70">Field evidence · {String(entry.evidence_type).replaceAll('_',' ')}</p>}</div></div>)}</div>
+                  {!readOnly && <div className="mt-4 flex gap-2"><input value={systemDrafts[system.id]||''} onChange={e=>setSystemDrafts({...systemDrafts,[system.id]:e.target.value})} placeholder="Record the next real operation…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"/><select value={systemEvidence[system.id]||'internal'} onChange={e=>setSystemEvidence({...systemEvidence,[system.id]:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 px-2 text-[9px] font-black uppercase text-slate-300"><option value="internal">Internal</option><option value="customer_use">Customer use</option><option value="visitor_use">Visitor use</option><option value="fulfilment">Fulfilment</option><option value="delivery">Delivery</option><option value="service">Service</option><option value="revenue">Revenue</option></select><button disabled={!systemDrafts[system.id]?.trim() || busy===system.id} onClick={async()=>{await act({action:'add_system_entry',system_id:system.id,title:systemDrafts[system.id],evidence_type:systemEvidence[system.id]||'internal'},system.id);setSystemDrafts({...systemDrafts,[system.id]:''})}} className="rounded-xl bg-sky-500 px-3 text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/></button></div>}
                 </div>)}
               </div>
             </div>
@@ -452,7 +490,7 @@ export default function FileFolderOpenWorld({
 
           {district === 'library_district' && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Build Intelligence</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Formation Intelligence</p>
               <h3 className="mt-2 text-2xl font-black">Understand the build while the Client is using it.</h3>
               <div className="mt-5 space-y-3">
                 {(world?.library || []).map((entry:any)=><div key={entry.entry_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
