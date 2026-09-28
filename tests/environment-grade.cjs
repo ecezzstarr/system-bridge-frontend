@@ -534,7 +534,8 @@ for(const field of ['source_output','target_input','integration_type','authority
 assert.ok(growthWorldApiSource.includes("'client_authorized'"),'Technology weaves preserve explicit Client authorization')
 assert.ok(growthWorldUiSource.includes('Authorize weave')&&growthWorldUiSource.includes('AI may assist configuration but cannot authorize it.'),'Weaving UI keeps AI assistance subordinate to Client authority')
 assert.ok(growthWorldUiSource.includes('Source output')&&growthWorldUiSource.includes('Target input'),'A File Folder weave names both sides of technology movement')
-assert.ok(!growthWorldApiSource.includes('growthMotion(action)},{headers'),'Growth-world GET does not reference a POST-only action variable')
+const growthWorldGetSource=growthWorldApiSource.split('export async function POST')[0]
+assert.ok(growthWorldGetSource.includes("growthMotion('snapshot')")&&!growthWorldGetSource.includes('growthMotion(action)'),'Growth-world GET uses snapshot motion and does not reference a POST-only action variable')
 
 
 assert.ok(clientFileFolder3d.includes('function PersistedSystemWeave('),'3D File Folder renders each persisted system weave')
