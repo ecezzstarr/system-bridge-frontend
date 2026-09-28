@@ -13,6 +13,7 @@ import {
   Headphones,
   Landmark,
   LayoutTemplate,
+  MessageCircle,
   MessageSquare,
   Network,
   Orbit,
@@ -134,6 +135,23 @@ const ROUTE_TONE:Record<WorldLink['tone'],WeaveRouteTone>={
   emerald:'emerald',
 }
 
+const DAILY_AWARENESS:Partial<Record<WorldRole,Array<{label:string;detail:string;href:string}>>>={
+  agent:[
+    {label:'Check your Bridgers',detail:'See which Bridgers need Stability support or follow-through today.',href:'/agent/bridgers'},
+    {label:'Open Prospect Campaigns',detail:'Keep Prospect supply available for Bridger participation.',href:'/agent/stability-supply'},
+    {label:'Review continuance',detail:'See commission and participation returns already produced.',href:'/agent/commissions'},
+  ],
+  bridger:[
+    {label:'Claim or buy a Prospect',detail:'Begin today with one real person you can contact and support.',href:'/weave/market/prospects'},
+    {label:'Continue Bridge Radiance',detail:'Return to active Prospect conversations and movement.',href:'/bridger/bridge-radiance'},
+    {label:'Check Client continuity',detail:'Support Clients already carried through the crossing.',href:'/bridger/clients'},
+  ],
+  admin:[
+    {label:'Review institutional movement',detail:'Check people, verification and operating controls requiring Administration.',href:'/admin/control-center'},
+    {label:'Check world systems',detail:'Inspect environment, visual and live operating authority.',href:'/admin/environment-organizer'},
+  ],
+}
+
 function districtFor(role:WorldRole,href:string){
   if(role==='client'){
     if(href.startsWith('/client/system-switch'))return 'File Folder'
@@ -180,7 +198,7 @@ export function WeaveDashboardWorld({
 
   if (role !== 'client') {
     const positions=['left-[50%] top-[25%] -translate-x-1/2','left-[16%] top-[39%]','right-[12%] top-[39%]','left-[22%] top-[61%]','right-[18%] top-[61%]','left-[37%] top-[77%]','right-[30%] top-[77%]','left-[50%] top-[51%] -translate-x-1/2','left-[8%] top-[73%]','right-[7%] top-[72%]']
-    return <section className="relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-role-world-hud={role}>
+    return <section className="weave-dashboard-world relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-role-world-hud={role}>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_48%,rgba(14,116,144,.15),transparent_27%),radial-gradient(ellipse_at_50%_70%,rgba(245,158,11,.05),transparent_38%),linear-gradient(180deg,#02070d_0%,#07111a_50%,#02070b_100%)]"/>
       <div className="absolute inset-x-[-12%] bottom-[-22%] h-[78%] [transform:perspective(520px)_rotateX(58deg)] bg-[linear-gradient(rgba(56,189,248,.065)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,.065)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_top,black,transparent_92%)]"/>
       <div className="absolute left-1/2 top-[53%] h-[54%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-cyan-200/10 shadow-[0_0_90px_rgba(34,211,238,.07)]"/>
@@ -218,7 +236,7 @@ export function WeaveDashboardWorld({
   ] as const
   const positionFor=(label:string)=>positions.find(([key])=>key===label)?.[1] || 'left-[50%] top-[50%]'
 
-  return <section className="relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-client-world-hud="true">
+  return <section className="weave-dashboard-world relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-client-world-hud="true">
     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_48%,rgba(14,116,144,.16),transparent_28%),radial-gradient(ellipse_at_50%_68%,rgba(16,185,129,.07),transparent_40%),linear-gradient(180deg,#02070d_0%,#061019_48%,#02070b_100%)]"/>
     <div className="absolute inset-x-[-12%] bottom-[-22%] h-[78%] [transform:perspective(520px)_rotateX(58deg)] bg-[linear-gradient(rgba(56,189,248,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,.07)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_top,black,transparent_92%)]"/>
     <div className="absolute left-1/2 top-[53%] h-[54%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-cyan-200/10 shadow-[0_0_90px_rgba(34,211,238,.08),inset_0_0_80px_rgba(14,116,144,.05)]"/>
