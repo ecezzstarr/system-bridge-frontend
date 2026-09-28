@@ -205,7 +205,6 @@ const enterpriseClientSource=fs.readFileSync(path.join(root,'app/api/client/ente
 const enterpriseAdminSource=fs.readFileSync(path.join(root,'app/api/admin/enterprise/route.ts'),'utf8')
 const enterpriseSystemSwitchSource=fs.readFileSync(path.join(root,'app/api/client/system-switch/route.ts'),'utf8')
 const enterprisePanelSource=fs.readFileSync(path.join(root,'components/system-switch/enterprise-dream-panel.tsx'),'utf8')
-const enterpriseSidebarSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
 assert.ok(enterpriseDreamLibSource.includes('enterprise_applications'),'Enterprise Dream application schema exists')
 assert.ok(enterpriseDreamLibSource.includes('enterprise_legions'),'Enterprise Legion schema exists')
 assert.ok(enterpriseClientSource.includes("['lord', 'lady']"),'Client may request only Lord or Lady elevation')
@@ -216,7 +215,7 @@ assert.ok(enterpriseAdminSource.includes('notifyUser'),'Client is notified after
 assert.ok(enterpriseSystemSwitchSource.includes('getEnterpriseDream'),'Client System Switch returns Enterprise Dream state')
 assert.ok(enterpriseSystemSwitchSource.includes("'Legions'"),'Approved Enterprise Dream exposes Legions module')
 assert.ok(enterprisePanelSource.includes('Add Legion'),'Approved Lord/Lady can add Legion participation')
-assert.ok(enterpriseSidebarSource.includes('/admin/enterprise-dream'),'Administration can reach Enterprise Dream authority')
+assert.ok(placeRegistrySource.includes("route:'/admin/enterprise-dream'"),'Administration district registers Enterprise Dream authority')
 for(const file of [
  'app/(app)/admin/enterprise-dream/page.tsx',
  'app/api/client/enterprise/legions/route.ts',
@@ -438,11 +437,10 @@ assert.ok(clientNavUnifiedSource.includes("label: 'Loop 1 Ground'"),'Client navi
 assert.ok(!clientNavUnifiedSource.includes('eventIsLive'),'Client navigation remains persistent during events')
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
-assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Loop 1 Ground'),'Sidebar exposes Loop 1 as a WEAVE destination')
-const canonicalSidebarSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
-assert.ok(canonicalSidebarSource.includes('Bridger Operating Room'),'Sidebar exposes the Bridger operating room in Position')
-assert.ok(canonicalSidebarSource.includes('Agent Operating Room'),'Sidebar exposes the Agent operating room in Position')
-assert.ok(canonicalSidebarSource.includes('Administration Operating Room'),'Sidebar exposes the Administration operating room in Position')
+assert.ok(placeRegistrySource.includes("route:'/event'"),'Loop 1 Ground is a registered Participation place')
+assert.ok(placeRegistrySource.includes("label:'Bridger Operating Room'"),'Bridger Operating Room is a registered Position place')
+assert.ok(placeRegistrySource.includes("label:'Agent Operating Room'"),'Agent Operating Room is a registered Position place')
+assert.ok(placeRegistrySource.includes("label:'Administration Operating Room'"),'Administration Operating Room is a registered Administration place')
 for(const route of [
  'app/(app)/bridger/functions/page.tsx',
  'app/(app)/agent/functions/page.tsx',
@@ -890,7 +888,7 @@ const clientLoginShieldSource=fs.readFileSync(path.join(root,'app/api/client/wea
 const clientRegisterShieldSource=fs.readFileSync(path.join(root,'app/api/client/weave-register/route.ts'),'utf8')
 const nextAuthShieldSource=fs.readFileSync(path.join(root,'lib/auth.ts'),'utf8')
 const adminWorkshopInfrastructureSource=fs.readFileSync(path.join(root,'app/(app)/admin/workshop/page.tsx'),'utf8')
-const sidebarInfrastructureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+const navigationRegistrySource=placeRegistrySource
 const devWorkshopInfrastructureSource=fs.readFileSync(path.join(root,'app/(app)/admin/dev-workshop/page.tsx'),'utf8')
 const previewBuildSource=fs.readFileSync(path.join(root,'cloudbuild.weave-preview.yaml'),'utf8')
 const promoteBuildSource=fs.readFileSync(path.join(root,'cloudbuild.weave-promote.yaml'),'utf8')
@@ -960,7 +958,7 @@ assert.ok(promoteBuildSource.includes("candidate['revisionName']"),'Promotion re
 assert.ok(infrastructurePageSource.includes('WEAVE Infrastructure Workshop'),'Administration has one live infrastructure operating surface')
 assert.ok(infrastructurePageSource.includes('Divine Shield'),'Infrastructure Workshop operates maintenance control')
 assert.ok(adminWorkshopInfrastructureSource.includes("href: '/admin/infrastructure'"),'Admin Workshop exposes Infrastructure Workshop')
-assert.ok(sidebarInfrastructureSource.includes('href: "/admin/infrastructure"'),'Administration sidebar exposes Infrastructure Workshop')
+assert.ok(navigationRegistrySource.includes("route:'/admin/infrastructure'"),'Administration district registers Infrastructure Workshop')
 assert.ok(devWorkshopInfrastructureSource.includes("fetch('/api/admin/infrastructure'"),'EIGHT Deploy Center uses the shared infrastructure deployment authority')
 assert.ok(devWorkshopInfrastructureSource.includes('Deploy Preview'),'EIGHT Deploy Center no longer labels a zero-traffic build as live production')
 assert.ok(!devWorkshopInfrastructureSource.includes('> Push Live</Button>'),'Old misleading direct Push Live control is removed')
@@ -1011,10 +1009,10 @@ assert.ok(enterpriseSystemSwitchSource.includes("premium_dj_enabled:fileFolderTi
 assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientPremiumDJ'),'Premium DJ is contained inside the Client File Folder Sound surface')
 assert.ok(adminBuildCatalogApiSource.includes("user.role !== 'admin'"),'Client build catalog updates are Administration-only')
 assert.ok(adminBuildCatalogPageSource.includes('Client Build Catalog'),'Administration can manage Client build pricing')
-assert.ok(sidebarInfrastructureSource.includes('/admin/client-build-catalog'),'Administration sidebar exposes Client Build Catalog')
+assert.ok(navigationRegistrySource.includes("route:'/admin/client-build-catalog'"),'Administration district registers Client Build Catalog')
 assert.ok(adminClientDepositsApiSource.includes("u.role='client'"),'Client deposit queue is restricted to Client funding requests')
 assert.ok(adminClientDepositsPageSource.includes('Client Deposit Requests'),'Administration has a dedicated Client deposit queue')
-assert.ok(sidebarInfrastructureSource.includes('/admin/client-deposits'),'Administration sidebar exposes Client deposits')
+assert.ok(navigationRegistrySource.includes("route:'/admin/client-deposits'"),'Administration district registers Client deposits')
 for(const file of [
  'components/system-switch/client-premium-dj.tsx',
  'app/api/admin/client-build-catalog/route.ts',
@@ -1034,7 +1032,6 @@ const enterpriseSystemsApiSource=fs.readFileSync(path.join(root,'app/api/enterpr
 const adminEnterpriseSystemsApiSource=fs.readFileSync(path.join(root,'app/api/admin/enterprise-systems/route.ts'),'utf8')
 const adminEnterpriseSystemsPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/enterprise-systems/page.tsx'),'utf8')
 const enterpriseExchangeMigrationSource=fs.readFileSync(path.join(root,'migrations/20260925_enterprise_systems_exchange.sql'),'utf8')
-const sidebarEnterpriseSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
 assert.ok(enterpriseExchangeSource.includes('Enterprise Systems Exchange'),'Marketplace is now the Enterprise Systems Exchange')
 assert.ok(enterpriseExchangeSource.includes('1 Flame Coin = 1 TRX'),'Enterprise Exchange explains the Flame Coin peg')
 assert.ok(enterpriseExchangeSource.includes('indicative live conversion'),'Enterprise Exchange distinguishes live Flame Coin reference from GBP contract price')
@@ -1057,14 +1054,10 @@ assert.ok(enterpriseSystemsApiSource.includes("user.role !== 'client' && user.ro
 assert.ok(adminEnterpriseSystemsApiSource.includes('price < 1000000'),'Administration cannot price an Enterprise Exchange system below £1M')
 assert.ok(adminEnterpriseSystemsPageSource.includes('Enterprise Systems Workshop'),'Administration has an Enterprise Systems operating surface')
 assert.ok(enterpriseExchangeMigrationSource.includes('price_gbp >= 1000000'),'Production migration enforces enterprise-scale prices')
-const enterpriseSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),sidebarEnterpriseSource.indexOf('// 5. WEAVE'))
-assert.ok(!enterpriseSection.includes('Prospect Market'),'Bridger Prospect Market is removed from Enterprise navigation')
-assert.ok(!enterpriseSection.includes('Prospect Engine'),'Prospect Engine is removed from Enterprise navigation')
-assert.ok(sidebarEnterpriseSource.indexOf('Prospect Market') < sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),'Prospect Market now belongs to the Bridge side of navigation')
-assert.ok(enterpriseSection.includes('WEAVE_SYSTEM_MAP.language.marketplace'),'Enterprise navigation uses the canonical marketplace label')
-assert.ok(weaveSystemMapSource.includes("marketplace: 'Enterprise Systems Exchange'"),'Canonical marketplace label is Enterprise Systems Exchange')
-const administrationSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.indexOf('// 6. ADMINISTRATION'))
-assert.ok(administrationSection.includes('Enterprise Systems Workshop'),'Administration navigation exposes system sales control')
+assert.ok(placeRegistrySource.includes("route:'/weave/market/prospects'"),'Prospect Market remains a registered Bridge place')
+assert.ok(placeMapSource.includes("path.startsWith('/weave/market/prospects')"),'Prospect Market is classified into the Bridge district')
+assert.ok(placeRegistrySource.includes("route:'/marketplace'"),'Enterprise Systems Exchange is a registered Enterprise place')
+assert.ok(placeRegistrySource.includes("route:'/admin/enterprise-systems'"),'Administration district registers Enterprise Systems Workshop')
 for(const file of [
  'lib/enterprise-systems.ts',
  'app/api/enterprise-systems/route.ts',
@@ -1190,11 +1183,10 @@ const valueMovementSource=fs.readFileSync(path.join(root,'app/(app)/wallet/depos
 const reserveEngineSource=fs.readFileSync(path.join(root,'app/(app)/fund-wall/page.tsx'),'utf8')
 const bridgePlazaMatureSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
 const cadenceEngineSource=fs.readFileSync(path.join(root,'app/(app)/search/page.tsx'),'utf8')
-const sidebarMatureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
 
 assert.ok(positionIdentitySource.includes('Position + Identity Engine'),'Legacy roles/settings route is a real Position and Identity system')
 assert.ok(positionIdentitySource.includes('Changing your name or password does not silently change'),'Identity changes do not masquerade as institutional role changes')
-assert.ok(sidebarMatureSource.includes('Position + Identity'),'Sidebar names the identity surface truthfully')
+assert.ok(placeRegistrySource.includes("route:'/roles'"),'Position registry is a canonical WEAVE place')
 assert.ok(businessDistrictSource.includes('Business District'),'Places route is the canonical Business District')
 assert.ok(!businessDistrictSource.includes('<Market'),'Business District no longer embeds a duplicate Market mini-app')
 assert.ok(!businessDistrictSource.includes('<Arena'),'Business District no longer embeds a duplicate Arena mini-app')
