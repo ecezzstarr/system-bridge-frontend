@@ -490,11 +490,11 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
   return (
     <section
-      className="weave-system-depth relative h-[calc(100dvh-5.5rem)] min-h-[720px] overflow-hidden border-y border-amber-200/10 bg-[#120c08] shadow-[0_34px_110px_rgba(0,0,0,.42)]"
+      className="weave-system-depth relative h-[calc(100dvh-5.5rem)] min-h-[720px] overflow-hidden border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)]"
       data-file-folder-world="persistent-territory-interface"
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-amber-100/10 bg-[linear-gradient(180deg,rgba(12,8,5,.96),rgba(12,8,5,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
         <div className="flex items-start gap-3 md:gap-4">
           <div className="hidden rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3 sm:block">
             <FolderOpen className="h-6 w-6 text-sky-300" />
@@ -505,7 +505,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             <p className="mt-1 truncate text-[10px] text-slate-400 md:mt-2 md:text-xs">{data.client.name} · {data.client.file_number}</p>
           </div>
         </div>
-        <div className="pointer-events-auto mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2 text-[8px] uppercase tracking-wider text-stone-500 md:mt-3 md:max-w-xl md:grid-cols-3 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[9px]">
+        <div className="pointer-events-auto mt-3 flex gap-4 overflow-x-auto border-y border-cyan-100/10 py-2 text-[8px] uppercase tracking-wider text-stone-500 md:mt-3 md:max-w-xl md:grid-cols-3 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[9px]">
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3"><b className="text-base text-amber-100 md:mt-1 md:block md:text-xl">{activeBuilds.length}</b><span className="text-amber-300">Building</span></div>
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-emerald-300/15 md:bg-emerald-400/5 md:px-4 md:py-3"><b className="text-base text-emerald-100 md:mt-1 md:block md:text-xl">{systems.length}</b><span className="text-emerald-300">Live</span></div>
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-violet-300/15 md:bg-violet-400/5 md:px-4 md:py-3"><b className="text-base text-violet-100 md:mt-1 md:block md:text-xl">×{Number(world?.buildFunding?.buildSpeedMultiplier || data.build_funding?.buildSpeedMultiplier || 1).toFixed(2)}</b><span className="text-violet-300">Build power</span></div>
@@ -551,7 +551,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         aria-hidden={!panelOpen}
       >
         <div className="flex h-full max-h-[56dvh] flex-col overflow-hidden rounded-[1.4rem] border border-amber-100/15 bg-[#0d0907]/96 shadow-[0_30px_100px_rgba(0,0,0,.62)] backdrop-blur-2xl md:max-h-[calc(100dvh-9rem)] md:rounded-[1.8rem]">
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-amber-100/10 bg-[#17100b]/92 px-4 py-3">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-cyan-100/10 bg-[#17100b]/92 px-4 py-3">
             <div className="min-w-0">
               <p className="text-[7px] font-black uppercase tracking-[.18em] text-amber-200">Inside the territory</p>
               <div className="mt-1 flex items-center gap-2">
@@ -569,9 +569,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             </button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-5">
-        <section aria-label="Construction sequence" className="border-y border-amber-100/10 bg-[#18110c]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
+        <section aria-label="Construction sequence" className="border-y border-cyan-100/10 bg-[#18110c]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
           <div className="flex items-center gap-3">
-            <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-amber-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">
+            <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-cyan-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">
               <Hammer className="h-3.5 w-3.5"/>Build
             </button>
             <div className="flex min-w-0 flex-1 snap-x snap-mandatory gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -695,7 +695,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               <HostedSystem system={selectedSystem} onClose={()=>setSelectedSystemId('')} onWorldChange={setWorld} />
             ) : (
               <>
-                <div className="flex flex-col gap-3 border-y border-amber-100/10 bg-[#17100b]/62 px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 border-y border-cyan-100/10 bg-[#17100b]/62 px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">Construction territory active</p>
                     <p className="mt-1 text-[11px] leading-5 text-stone-400">Blueprint Foundry, Materials Depot, Construction Yard, Acceleration and Live Systems are one continuous site. Move through the site instead of opening separate dashboard pages.</p>
@@ -757,7 +757,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
       {!panelOpen && (
         <div className="pointer-events-none absolute inset-x-0 bottom-[4.7rem] z-30 flex justify-center px-4">
-          <div className="rounded-full border border-amber-100/10 bg-[#120c08]/72 px-4 py-2 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300 backdrop-blur-xl">
+          <div className="rounded-full border border-cyan-100/10 bg-[#070b10]/72 px-4 py-2 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300 backdrop-blur-xl">
             {travelingTo
               ? `Moving to ${surfaces.find(item=>item.key===travelingTo)?.label || 'structure'}`
               : 'Move through the territory · select a structure to enter its function'}
