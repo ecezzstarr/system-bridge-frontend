@@ -38,13 +38,13 @@ type Props = {
 }
 
 const districts = [
-  { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Read the business objective, resources and build state from one place.' },
-  { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Choose the next real system and understand its required functions.' },
+  { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Hold the purpose, authority, resources and next movement of this territory in one command position.' },
+  { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Turn an intended capability into a buildable system with defined functions, dependencies and consequence.' },
   { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire the primary kits that supply a blueprint before construction begins.' },\n  { key: 'parts_workshop', label: 'Parts Workshop', icon: Boxes, detail: 'Acquire capability modules and attach compatible parts to structures while they form.' },
-  { key: 'formation_yard', label: 'Construction Yard', icon: Hammer, detail: 'Watch real structures form through time and attach build parts.' },
+  { key: 'formation_yard', label: 'Formation Yard', icon: Hammer, detail: 'Form the technology through time, install capability parts and watch the territory change with the build.' },
   { key: 'boost_bay', label: 'Acceleration Bay', icon: Zap, detail: 'Use recorded acceleration instruments on active construction.' },
-  { key: 'active_systems', label: 'Live Systems', icon: PackageOpen, detail: 'Operate completed systems and record real movement inside them.' },
-  { key: 'library_district', label: 'Build Intelligence', icon: Library, detail: 'Understand why each build works and learn through movement.' },
+  { key: 'active_systems', label: 'Systems in Motion', icon: PackageOpen, detail: 'Operate completed technologies, connect their outputs and preserve the movement they produce.' },
+  { key: 'library_district', label: 'Formation Intelligence', icon: Library, detail: 'Understand why each system works, what it can connect to and what larger capability can emerge.' },
 ]
 
 function duration(seconds: number) {
@@ -227,7 +227,7 @@ export default function FileFolderOpenWorld({
       <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(2,8,13,.02))] px-4 py-4 md:p-8">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Active Construction Site</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Technology Formation Territory</p>
             <h2 className="mt-1 truncate text-lg font-black text-white md:mt-2 md:text-4xl">{workshopTitle}</h2>
             <p className="mt-1 truncate text-[9px] font-mono text-slate-500 md:mt-2 md:text-[10px]">{clientName} · {fileNumber}</p>
           </div>
@@ -405,7 +405,7 @@ export default function FileFolderOpenWorld({
           {district === 'build_market' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Materials Depot</p>
-              <h3 className="mt-2 text-2xl font-black">Every material is tied to a build function, inventory state and price.</h3>
+              <h3 className="mt-2 text-2xl font-black">Every material has a structural consequence. Nothing enters the territory without a function.</h3>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {buildMarketItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
@@ -441,7 +441,7 @@ export default function FileFolderOpenWorld({
           {district === 'boost_bay' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Acceleration Bay</p>
-              <h3 className="mt-2 text-2xl font-black">Speed is a live construction instrument.</h3>
+              <h3 className="mt-2 text-2xl font-black">Acceleration changes formation time; it does not replace formation.</h3>
               <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire acceleration here, then attach it to an active build in Construction Yard. The remaining countdown is recalculated immediately from recorded File Folder state.</p>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {boostItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-amber-300/12 bg-amber-400/[0.035] p-5">
@@ -458,7 +458,7 @@ export default function FileFolderOpenWorld({
           {district === 'active_systems' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Live Systems</p>
-              <h3 className="mt-2 text-2xl font-black">Finished structures are usable systems.</h3>
+              <h3 className="mt-2 text-2xl font-black">A finished structure becomes valuable when it moves, connects and produces an output.</h3>
               <div className="mt-5 space-y-4">
                 {(world?.systems || []).length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No system has finished construction yet.</p>}
                 {(world?.systems || []).map((system:any) => <div key={system.id} className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.035] p-5">
