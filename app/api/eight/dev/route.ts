@@ -27,7 +27,7 @@ const TOOLS = [
       },
       {
         name: 'read_file',
-        description: 'Read the contents of a source file in the project, e.g. "lib/db.ts", "app/api/wallet/route.ts", "components/app-sidebar.tsx". Use this to see real code before answering questions about it.',
+        description: 'Read the contents of a source file in the project, e.g. "lib/db.ts", "app/api/wallet/route.ts", "components/world/bridge-plaza-map.tsx". Use this to see real code before answering questions about it.',
         parameters: {
           type: 'OBJECT',
           properties: { filename: { type: 'STRING', description: 'Relative path from the project root' } },
