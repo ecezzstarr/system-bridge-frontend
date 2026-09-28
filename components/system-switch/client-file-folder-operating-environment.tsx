@@ -465,7 +465,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
   const studioDistricts = [
     { label:'Blueprint Foundry', district:'blueprint_foundry', phase:'Design' },
-    { label:'Materials Depot', district:'build_market', phase:'Supply' },
+    { label:'Materials Depot', district:'build_market', phase:'Supply' },\n    { label:'Parts Workshop', district:'parts_workshop', phase:'Equip' },
     { label:'Construction Yard', district:'formation_yard', phase:'Build' },
     { label:'Acceleration Bay', district:'boost_bay', phase:'Accelerate' },
     { label:'Live Systems', district:'active_systems', phase:'Operate' },
