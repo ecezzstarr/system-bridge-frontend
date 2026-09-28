@@ -594,3 +594,7 @@ assert.ok(environmentTransitSource.includes("bg-[#02050a]")&&!environmentTransit
 assert.ok(environmentTransitSource.includes("const showFlameBriefing=booting&&flameEventActive"),'Active Flame Event owns the cold-entry loader rather than requiring a 30-minute reentry gap')
 assert.ok(environmentTransitSource.includes('data-flame-event-loader={showFlameBriefing?\'burning-river\':undefined}'),'Flame Event loader exposes the Burning River state')
 assert.ok(environmentTransitSource.includes("max-w-3xl")&&environmentTransitSource.includes("min-h-[15rem]"),'Loading cards occupy a substantial readable part of the viewport')
+
+
+assert.ok(environmentTransitSource.includes('data-environment-reveal-shell="continuous"'),'Loader and destination share one continuous dark reveal shell with no exposed frame')
+assert.ok(!environmentTransitSource.includes('FLAME_REENTRY_AFTER_MS'),'Flame Event loader is not suppressed by an obsolete reentry timeout')
