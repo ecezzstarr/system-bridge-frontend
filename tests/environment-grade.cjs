@@ -300,8 +300,7 @@ assert.ok(cleanRevealTransit2026.includes('const LOADING_SEQUENCE_MS=PLATFORM_BR
 assert.ok(cleanRevealTransit2026.includes('activeBriefs.map((_,index)'),'Loading progress follows whichever three-card briefing is active without removing the normal platform sequence')
 assert.ok(cleanRevealTransit2026.includes("document.addEventListener('click',handleInternalNavigation,true)"),'Internal navigation primes the environment cover at click time, including sidebar links')
 assert.ok(cleanRevealTransit2026.includes('setReadyPath(null)')&&cleanRevealTransit2026.includes('setTransiting(true)'),'Sidebar movement hides the old environment immediately while preserving destination formation')
-assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence('transit',startedAt,controller.signal)
-          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations use the short travel handoff before the final readiness check')
+assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence('transit',startedAt,controller.signal)\n          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations use the short travel handoff before the final readiness check')
 const loadingBriefCss2026=read('app/weave-readability.css')
 assert.ok(loadingBriefCss2026.includes('@keyframes weave-loading-brief-cycle')&&loadingBriefCss2026.includes('.weave-loading-brief'),'Loading cards enter as discrete readable briefing surfaces')
 
