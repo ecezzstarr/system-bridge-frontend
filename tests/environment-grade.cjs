@@ -554,3 +554,9 @@ assert.ok(growthWorldModelSource.includes('fieldEvidence')&&growthWorldModelSour
 assert.ok(growthWorldModelSource.includes('Capital can expand construction but does not count as demonstrated use.'),'Investment capacity is explicitly separated from field recognition')
 assert.ok(clientFileFolderOperatingSource.includes('data-formation-intelligence="field-evidence"'),'Formation Intelligence exposes real-world use evidence')
 assert.ok(clientFileFolderOperatingSource.includes('Potential is recognized through movement already happening.'),'File Folder states the participation-before-recognition principle')
+
+
+assert.ok(growthWorldModelSource.includes('missingSystems')&&growthWorldModelSource.includes("nextMovement=complete?'operate'"),'Formation Intelligence derives the missing systems and next movement for advanced capability')
+assert.ok(clientFileFolderOperatingSource.includes('Move to Blueprint Foundry')&&clientFileFolderOperatingSource.includes('Move to System Weaves'),'Formation Intelligence routes Clients from diagnosis into the required movement')
+assert.ok(clientFileFolderOperatingSource.includes("label:'Formation Intelligence'")&&clientFileFolderOperatingSource.includes("phase:'Recognize + Direct'"),'File Folder names its intelligence district by its operating function')
+assert.ok(clientFileFolderOperatingSource.includes('Parts Workshop, Formation Yard, Acceleration Bay and Systems in Motion'),'File Folder construction territory uses the mature formation grammar')
