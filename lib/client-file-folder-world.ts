@@ -247,6 +247,26 @@ async function seedFileFolderWorld(sql: any) {
     `
   }
 
+  const accessibleParts=[
+    ['basic_interface_part','Basic Interface Part','accessible_part','A simple human-operated interface for a modest Client system. Lower capacity than an advanced interface, but sufficient for real use.',3,'component',1],
+    ['record_ledger_part','Record Ledger Part','accessible_part','Adds a basic persistent record surface so a small system can preserve requests, work and outcomes.',4,'component',1],
+    ['manual_route_part','Manual Route Part','accessible_part','Adds a human-operated movement path between compatible functions without advanced automation.',5,'route_capacity',1],
+    ['basic_verification_part','Basic Verification Part','accessible_part','Adds a simple human verification checkpoint for work that needs confirmation before movement continues.',5,'verification',1],
+    ['customer_intake_part','Customer Intake Part','accessible_part','Adds a basic request and enquiry intake function for customer-facing systems.',4,'component',1],
+    ['service_queue_part','Service Queue Part','accessible_part','Adds a small service queue for organizing customer requests and completed work.',6,'component',1],
+    ['starter_automation_part','Starter Automation Part','accessible_part','Automates one narrow repeatable step. It is intentionally less capable than a full Automation Node.',8,'automation',1],
+    ['starter_audience_part','Starter Audience Part','accessible_part','Adds a small public participation surface for early programs and demonstrations.',7,'audience_capacity',50],
+    ['starter_integration_part','Starter Integration Part','accessible_part','Connects one narrow output to a compatible input while the Client grows toward a full Integration Weave.',9,'component',1],
+    ['starter_ai_assist_part','Starter AI Assist Part','accessible_part','Adds limited AI assistance to one supported workflow while human authority remains in control.',10,'ai_node',1],
+  ]
+  for(const part of accessibleParts){
+    await sql`
+      INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,build_effect,effect_value,published)
+      VALUES(${part[0]},${part[1]},${part[2]},${part[3]},${part[4]},${part[5]},${part[6]},true)
+      ON CONFLICT(item_key) DO UPDATE SET name=EXCLUDED.name,category=EXCLUDED.category,description=EXCLUDED.description,price_flame_coin=EXCLUDED.price_flame_coin,build_effect=EXCLUDED.build_effect,effect_value=EXCLUDED.effect_value,updated_at=NOW()
+    `
+  }
+
   const liveBuildUpgrades = [
     ['build_speed_15', 'Build Speed Boost · 15%', 'acceleration', 'Attach to one active build to increase its formation speed live.', 25, 'speed_boost', 1.15],
     ['build_speed_35', 'Build Speed Boost · 35%', 'acceleration', 'Attach to one active build to increase its formation speed live.', 60, 'speed_boost', 1.35],
@@ -282,14 +302,30 @@ async function seedFileFolderWorld(sql: any) {
     `
   }
 
+  const customerDoorParts=[
+    ['door_foundation_frame','Customer Door Foundation Frame','door_part','Structural frame that establishes the public entrance and anchors the Client territory to its outward-facing door.',0,'component',0],
+    ['door_identity_facade','Client Identity Facade','door_part','Carries the Client company or platform name, logo position and public identity above WEAVE infrastructure.',0,'component',0],
+    ['door_customer_intake','Customer Intake Interface','door_part','Receives visitor enquiries, requests and order intent from outside WEAVE.',0,'component',0],
+    ['door_service_interface','Service Interface','door_part','Connects public requests to the Client service or operating movement behind the door.',0,'component',0],
+    ['door_fulfilment_interface','Fulfilment Interface','door_part','Preserves the path from accepted customer movement to delivery or fulfilment evidence.',0,'component',0],
+    ['door_public_commissioning','Public Commissioning Seal','door_part','Marks the completed Customer Door as ready for real visitors on the open internet.',0,'verification',1],
+  ]
+  for(const part of customerDoorParts){
+    await sql`
+      INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,build_effect,effect_value,published)
+      VALUES(${part[0]},${part[1]},${part[2]},${part[3]},${part[4]},${part[5]},${part[6]},true)
+      ON CONFLICT(item_key) DO UPDATE SET name=EXCLUDED.name,description=EXCLUDED.description,price_flame_coin=EXCLUDED.price_flame_coin,build_effect=EXCLUDED.build_effect,effect_value=EXCLUDED.effect_value,updated_at=NOW()
+    `
+  }
+
   const blueprints = [
     ['operations_board', 'Operations Board', 'formation_yard', 'operations_board', 'A persistent working board for tasks, decisions and movement inside the Client File Folder.', 4, 'planning_kit', 1],
     ['research_room', 'Research Room', 'library_district', 'research_room', 'A persistent research system for findings, sources, questions and decisions.', 6, 'research_kit', 1],
     ['service_workflow', 'Service Workflow', 'formation_yard', 'service_workflow', 'A working service pipeline that can hold steps, responsibilities and completion records.', 8, 'automation_kit', 1],
-    ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A public customer-facing system where people outside WEAVE can discover, request and purchase the Client’s products or services.', 24, null, 0],
+    ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A three-day public formation: foundation, Client identity, customer intake, service and fulfilment interfaces, then commissioning to the open internet. Standard Clients can complete it through real elapsed time without purchasing acceleration.', 72, null, 0],
     ['data_room', 'Data Room', 'technology_district', 'data_room', 'A structured system for persistent records and reusable information.', 10, 'data_kit', 1],
     ['enterprise_shell', 'Enterprise System Shell', 'formation_yard', 'enterprise_shell', 'A larger multi-function system shell that can hold operations, people, records and later enterprise modules.', 24, 'architecture_kit', 1],
-    ['integration_network', 'Integration Network', 'technology_district', 'integration_network', 'A long-form build that organizes connections between several persistent WEAVE systems.', 72, 'integration_kit', 1],
+    ['integration_network', 'Integration Weave', 'technology_district', 'integration_network', 'A connection fabric that lets completed Client technologies exchange movement, records and outputs instead of remaining isolated systems.', 72, 'integration_kit', 1],
     ['crypto_exchange_workshop', 'Crypto Exchange Workshop', 'technology_district', 'crypto_exchange_workshop', 'A Client-owned workshop inspired by the CJ Dorado build: market movement, buy/sell records, holdings, orders, business operation and technology formation.', 168, 'crypto_exchange_kit', 1],
     ['ai_service_desk', 'AI Flame Service Desk', 'technology_district', 'ai_service_desk', 'A service system where AI assists the Client with intake, support movement, responses and persistent records.', 36, 'ai_flame_kit', 1],
     ['commerce_storefront', 'Commerce Storefront', 'market_district', 'commerce_storefront', 'A constructed customer-facing store building inside the public WEAVE Client Market, with offers, order intake, patronage and fulfillment movement.', 72, 'commerce_kit', 1],
@@ -300,7 +336,7 @@ async function seedFileFolderWorld(sql: any) {
     ['mobile_service_app', 'Mobile Service App', 'technology_district', 'mobile_service_app', 'A Client-facing mobile service system for account access, requests, notifications and continuing customer interaction.', 120, 'mobile_app_kit', 1],
     ['intelligence_lab', 'Intelligence Lab', 'library_district', 'intelligence_lab', 'A persistent AI-assisted research and analysis system that turns findings into reusable Client intelligence.', 168, 'intelligence_lab_kit', 1],
     ['marketplace_network', 'Marketplace Network', 'market_district', 'marketplace_network', 'A seven-day base construction that expands the Client storefront into a larger public Market Hall with multi-offer commercial movement, buyers, orders and records.', 168, 'market_network_kit', 1],
-    ['route_station', 'Business Route Station', 'network_district', 'route_station', 'A Client network station that connects completed systems so commerce, media, service, distribution and operating movement can be recorded between them.', 72, 'route_station_kit', 1],
+    ['route_station', 'System Route Station', 'network_district', 'route_station', 'A persistent route station that carries authorized movement between completed Client technologies and records what crossed, where it went and what it produced.', 72, 'route_station_kit', 1],
     ['creator_booth', 'Creator Booth', 'streaming_district', 'creator_booth', 'The first Client-owned production room for planning programs, launches, demonstrations, interviews and media movement.', 24, 'creator_booth_kit', 1],
     ['broadcast_studio', 'Broadcast Studio', 'streaming_district', 'broadcast_studio', 'A three-day studio build that opens structured programming, scheduling and broadcast preparation.', 72, 'broadcast_studio_kit', 1],
     ['streaming_gate', 'Streaming Open Gate', 'streaming_district', 'streaming_gate', 'A five-day public broadcast gate that allows people outside WEAVE to visit the Client channel and enter a live source when the Client opens it.', 120, 'streaming_gate_kit', 1],
