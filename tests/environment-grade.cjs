@@ -354,7 +354,7 @@ assert.ok(routeNetwork.includes('data-weave-route-network')&&routeNetwork.includ
 assert.ok(dashboardWorld.includes('data-role-world-beacon={item.label}')&&dashboardWorld.includes('data-client-world-beacon'),'Role Home Worlds use spatial destination beacons instead of WorldLinkCard tiles')
 assert.ok(!dashboardWorld.includes('WorldLinkCard'),'Role Home Worlds cannot regress to a link-card grid')
 assert.ok(operatingRoom.includes('<WeaveRouteNetwork')&&operatingRoom.includes('Role route network'),'Agent/Admin Operating Rooms use connected route lanes')
-assert.ok(bridgerOperatingRoom.includes('<WeaveRouteNetwork')&&bridgerOperatingRoom.includes('Prospect intake dock'),'Bridger Operating Room combines route lanes with one Prospect intake station')
+assert.ok(bridgerOperatingRoom.includes('<WeaveRouteNetwork')&&bridgerOperatingRoom.includes('Prospect intake')&&bridgerOperatingRoom.includes('Daily Prospect → Bridge Radiance'),'Bridger Operating Room combines live route lanes with Prospect intake flowing into Radiance')
 assert.ok(clientOperatingRoom.includes('<WeaveRouteNetwork')&&clientOperatingRoom.includes('Client route network'),'Client Operating Room uses connected lanes around the File Folder')
 assert.ok(room.includes('data-weave-room-stage'),'Reusable WEAVE rooms expose one active stage between environment rails')
 assert.ok(marketplaceEnvironment.includes('data-enterprise-exchange-floor')&&!marketplaceEnvironment.includes('grid gap-5 md:grid-cols-2 xl:grid-cols-3'),'Enterprise Exchange is a continuous bay floor, not a product-card grid')
