@@ -39,7 +39,7 @@ export function WeaveEnvironmentSurface({
       data-world-stays-mounted="true"
       data-weave-world={worldLayer}
     >
-      <header className={`sticky top-[4.15rem] z-30 mx-2 border-y border-amber-200/10 bg-[#05080d]/68 px-3 py-2 backdrop-blur-xl sm:mx-4 ${compact?'':'sm:px-4'}`} data-environment-location-hud="true">
+      <header className={`sticky top-[4.15rem] z-30 mx-2 border-y border-amber-200/10 bg-[#05080d]/68 px-3 py-2 backdrop-blur-xl sm:mx-4 ${compact?'':'sm:px-4'}`} data-environment-location="world-position">
         <div className="flex min-w-0 items-center gap-3">
           {!isWorldHome&&<Link href={returnHref} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-200/15 bg-sky-300/[.04] text-sky-100" aria-label="Return to role world"><ChevronLeft className="h-4 w-4"/></Link>}
           <div className="min-w-0 flex-1">
