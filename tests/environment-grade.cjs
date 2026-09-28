@@ -560,3 +560,10 @@ assert.ok(growthWorldModelSource.includes('missingSystems')&&growthWorldModelSou
 assert.ok(clientFileFolderOperatingSource.includes('Move to Blueprint Foundry')&&clientFileFolderOperatingSource.includes('Move to System Weaves'),'Formation Intelligence routes Clients from diagnosis into the required movement')
 assert.ok(clientFileFolderOperatingSource.includes("label:'Formation Intelligence'")&&clientFileFolderOperatingSource.includes("phase:'Recognize + Direct'"),'File Folder names its intelligence district by its operating function')
 assert.ok(clientFileFolderOperatingSource.includes('Parts Workshop, Formation Yard, Acceleration Bay and Systems in Motion'),'File Folder construction territory uses the mature formation grammar')
+
+
+assert.ok(fileFolderWorldSource.includes('evidence_type')&&fileFolderWorldSource.includes('evidence_value')&&fileFolderWorldSource.includes('completed_at'),'Built-system operations preserve typed field evidence')
+assert.ok(fileFolderApiSource.includes("'customer_use'")&&fileFolderApiSource.includes("'visitor_use'")&&fileFolderApiSource.includes("'fulfilment'")&&fileFolderApiSource.includes("'delivery'"),'File Folder accepts real-world system-use evidence types')
+assert.ok(fileFolderApiSource.includes("completed_at=CASE WHEN")&&fileFolderApiSource.includes("'done'"),'Completing an operation records when the work became evidence')
+assert.ok(fileFolderOpenWorldSource.includes('Systems in Motion')&&fileFolderOpenWorldSource.includes('Record the next real operation'),'Systems in Motion treats completed technology as an operating system rather than a static build')
+assert.ok(fileFolderOpenWorldSource.includes('Field evidence ·'),'System operation records expose field-evidence meaning to the Client')
