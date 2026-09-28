@@ -548,3 +548,9 @@ assert.ok(growthWorldModelSource.includes("'customer_service_infrastructure'")&&
 assert.ok(growthWorldModelSource.includes("route.authority_state==='client_authorized'"),'Emergent capability only accepts an explicitly Client-authorized system weave')
 assert.ok(clientFileFolderOperatingSource.includes('data-formation-intelligence="capability-composition"'),'Formation Intelligence exposes recognized and forming capabilities inside the File Folder')
 assert.ok(clientFileFolderOperatingSource.includes('authorized weave required'),'Formation Intelligence tells the Client when connection is the missing formation condition')
+
+
+assert.ok(growthWorldModelSource.includes('fieldEvidence')&&growthWorldModelSource.includes('demonstrated:'),'File Folder computes field evidence from recorded participation')
+assert.ok(growthWorldModelSource.includes('Capital can expand construction but does not count as demonstrated use.'),'Investment capacity is explicitly separated from field recognition')
+assert.ok(clientFileFolderOperatingSource.includes('data-formation-intelligence="field-evidence"'),'Formation Intelligence exposes real-world use evidence')
+assert.ok(clientFileFolderOperatingSource.includes('Potential is recognized through movement already happening.'),'File Folder states the participation-before-recognition principle')
