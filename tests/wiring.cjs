@@ -68,7 +68,7 @@ function matches(route, matchers) {
 }
 
 const navigationFiles = [
-  'components/app-sidebar.tsx',
+  'app/(app)/weave/page.tsx',
   'components/client-navigation.tsx',
   'components/world/weave-dashboard-world.tsx',
   'app/(app)/admin/workshop/page.tsx',
