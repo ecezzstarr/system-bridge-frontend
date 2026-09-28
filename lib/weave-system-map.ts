@@ -15,11 +15,18 @@ export const WEAVE_SYSTEM_MAP = {
     participation: 'Value becomes participation.',
     livelihood: 'Participation can become livelihood.',
   },
+  aiParticipation: {
+    principle: 'AI participates inside human movement; it does not replace the human source.',
+    perception: 'AI may recognize authorized world context, records and the active district so assistance begins where movement is happening.',
+    action: 'AI may explain, prepare, route, draft and assist work within the authority granted at that place.',
+    boundary: 'AI does not own territory, silently approve institutional authority, move value, impersonate a participant or make the final human decision.',
+    continuity: 'AI assistance remains attached to the person, district and movement instead of becoming a detached application.',
+  },
   bridgeAI: {
     name: 'Bridge AI',
     crossingRole: 'Begins with the human at the crossing.',
-    clientRole: 'Continues as the Client AI support inside the File Folder, builds and live systems.',
-    bridgerRole: 'The Bridger opens and accompanies the path; the Client remains the player.',
+    clientRole: 'Continues as the Client AI participant inside the File Folder, builds and live systems.',
+    bridgerRole: 'The Bridger opens and accompanies the path; AI extends the movement while the human remains the source.',
   },
   positions: {
     client: {
