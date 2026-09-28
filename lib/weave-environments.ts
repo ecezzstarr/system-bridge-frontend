@@ -4,10 +4,15 @@ export type WeaveEnvironmentCopy = {
   district: string
   purpose: string
   movement: string
-  layer: 'world' | 'district' | 'system' | 'interaction'\n  world?: 'open-weave' | 'file-folder'
+  layer: 'world' | 'district' | 'system' | 'interaction'
+  world?: 'open-weave' | 'file-folder'
 }
 
-export function weaveWorldForPath(pathname:string):'open-weave'|'file-folder'{\n  return pathname.startsWith('/client/system-switch')?'file-folder':'open-weave'\n}\n\nconst exact: Record<string, WeaveEnvironmentCopy> = {
+export function weaveWorldForPath(pathname:string):'open-weave'|'file-folder'{
+  return pathname.startsWith('/client/system-switch')?'file-folder':'open-weave'
+}
+
+const exact: Record<string, WeaveEnvironmentCopy> = {
   '/login': {
     key: 'position-entry',
     title: 'WEAVE Position Gate',
