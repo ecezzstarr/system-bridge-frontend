@@ -142,6 +142,7 @@ export function buildBridgePlazaDistricts(role:string|undefined|null,surfaces:We
     .filter(surface=>surface.surface_kind==='place'||(surface.surface_kind==='station'&&surface.route.startsWith('/weave#')))
     .filter(surface=>surface.route!=='/weave')
     .filter(surface=>roleCanEnterSurface(role,surface.scope))
+    .filter(surface=>!(role==='bridger'&&surface.route==='/clients'))
     .filter(surface=>!surface.route.includes('['))
     .map<BridgePlazaPlace>(surface=>({
       key:surface.surface_key,
