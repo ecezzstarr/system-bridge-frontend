@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'\nimport Link from 'next/link'
 import {
   ArrowRight,
   CheckCircle2,
@@ -66,7 +66,7 @@ export default function OutreachMovementRegistryPage() {
           <div>
             <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Administration · Outreach Movement Registry</p>
             <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Administration observes the Prospect path without replacing the Bridger.</h1>
-            <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">The Bridger owns the first outreach. This registry follows recorded movement from contact → message → Bridge Radiance → Client conversion. System Switch begins only after the person has become a Client.</p>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">This registry follows recorded movement from contact → message → Bridge Radiance → Client conversion. Administration can enter the active communication station when intervention is required; the owning Bridger and assigned Agent retain their scoped movement.</p>
           </div>
           <button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-emerald-300/15 bg-emerald-400/[0.06] px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-emerald-100 disabled:opacity-40"><RefreshCw className={`h-4 w-4 ${loading?'animate-spin':''}`}/>Refresh</button>
         </div>
@@ -96,7 +96,7 @@ export default function OutreachMovementRegistryPage() {
 
         <aside className="space-y-4">
           <section className="rounded-3xl border border-sky-300/15 bg-sky-400/[0.04] p-4"><div className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-sky-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Prospect causality</p></div><div className="mt-3 space-y-2 text-xs font-semibold text-slate-300"><p>Prospect → Bridger contact.</p><p>Contact → Bridge Radiance.</p><p>Bridge movement → Client conversion.</p><p>Client → System Switch.</p></div></section>
-          <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Authority boundary</p></div><p className="mt-3 text-xs leading-5 text-slate-300">Administration can observe this funnel. It does not send the Bridger's first message or falsely move a Prospect into System Switch.</p></section>
+          <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Authority boundary</p></div><p className="mt-3 text-xs leading-5 text-slate-300">Administration may interact institutionally inside Bridge Radiance. Assigned Agents are limited to Prospects owned by their assigned Bridgers; Bridgers are limited to their own Prospect movement.</p></section>
           <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[0.04] p-4"><div className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-violet-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Conversion meaning</p></div><p className="mt-3 text-xs leading-5 text-slate-300">Converted means the Prospect has become a Client in recorded state. It does not mean a particular business result has been achieved.</p></section>
         </aside>
       </div>
