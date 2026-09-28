@@ -2,11 +2,13 @@
 
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '@/lib/auth-provider'
 import { Loader2, Users, Search, ShieldCheck, Orbit, X, MoveRight } from 'lucide-react'
-import { WEAVE_ARCHITECTURE } from '@/lib/weave-architecture'
+import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
+import { WEAVE_ENVIRONMENT_REGISTRY } from '@/lib/weave-environment-registry'
+import { buildBridgePlazaDistricts, type WeavePlaceSurface } from '@/lib/weave-place-map'
 
 const BridgePlazaMap = dynamic(
   () => import('@/components/world/bridge-plaza-map').then((module) => module.BridgePlazaMap),
@@ -62,6 +64,34 @@ export default function WeavePage() {
   const [loadingFolders, setLoadingFolders] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [supportOpen, setSupportOpen] = useState(false)
+  const [selectedDistrictId,setSelectedDistrictId]=useState<string|null>(null)
+  const {items:environmentItems}=useEnvironmentOrganizer()
+
+  const registryFallback=useMemo<WeavePlaceSurface[]>(()=>WEAVE_ENVIRONMENT_REGISTRY.map(surface=>({
+    surface_key:surface.key,
+    label:surface.label,
+    surface_kind:surface.kind,
+    route:surface.route,
+    area:surface.area,
+    scope:surface.scope,
+    is_visible:true,
+    sort_order:surface.defaultOrder,
+    is_protected:Boolean(surface.protected),
+  })),[])
+
+  const districtGroups=useMemo(
+    ()=>buildBridgePlazaDistricts(user?.role,environmentItems.length?environmentItems as WeavePlaceSurface[]:registryFallback),
+    [environmentItems,registryFallback,user?.role],
+  )
+  const districtPortals=useMemo(()=>districtGroups.map(district=>({
+    id:district.key,
+    name:district.label,
+    subtitle:district.subtitle,
+    placeCount:district.places.length,
+    position:district.position,
+    rotation:district.rotation,
+  })),[districtGroups])
+  const selectedDistrict=districtGroups.find(district=>district.key===selectedDistrictId)||null
 
   const isSupport = user?.role === 'admin' || user?.role === 'agent' || user?.role === 'bridger'
 
@@ -168,83 +198,63 @@ export default function WeavePage() {
     (f.identity_data?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const architectureFlow = [
-    { label:'School', value:WEAVE_ARCHITECTURE.school.name },
-    { label:'Board', value:WEAVE_ARCHITECTURE.board.name },
-    { label:'Subject', value:WEAVE_ARCHITECTURE.subject.name },
-    { label:'Topics', value:'What we build and do' },
-  ]
-
   return (
     <main
       className="relative min-h-[720px] h-[calc(100dvh-1rem)] overflow-hidden bg-transparent"
       data-bridge-plaza-theme="continuous-moving-system"
     >
       <BridgePlazaMap
-        currentPass={state.crossing.currentPass}
-        worldRoles={state.worldRoles}
-        userRole={user.role}
-        fileNumber={state.crossing.fileNumber}
-        supportAvailable={isSupport}
-        onTravel={(href) => {
-          setSupportOpen(false)
-          router.push(href)
-        }}
-        onOpenSupport={() => setSupportOpen(true)}
+        districts={districtPortals}
+        onOpenDistrict={(districtId)=>setSelectedDistrictId(districtId)}
       />
 
-      <div className="pointer-events-none absolute left-3 top-20 z-20 hidden w-[210px] sm:block">
-        <div className="relative pl-5">
-          <div className="absolute bottom-2 left-[5px] top-2 w-px bg-gradient-to-b from-amber-200/5 via-amber-200/35 to-amber-200/5" />
-          {architectureFlow.map((item,index)=>(
-            <motion.div
-              key={item.label}
-              initial={{opacity:0,x:-8}}
-              animate={{opacity:1,x:0}}
-              transition={{delay:index*.09,duration:.45}}
-              className="relative mb-4"
-            >
-              <span className="absolute -left-5 top-1.5 h-2.5 w-2.5 rounded-full border border-amber-200/35 bg-[#0a0c10] shadow-[0_0_16px_rgba(251,191,36,.18)]" />
-              <p className="text-[7px] font-black uppercase tracking-[.2em] text-amber-200/60">{item.label}</p>
-              <p className="mt-1 text-[9px] font-semibold leading-4 text-stone-400">{item.value}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
 
-      <div className="absolute right-3 top-20 z-30 flex flex-col items-end gap-2 sm:right-4">
-        {isSupport && (
-          <button
-            type="button"
-            onClick={()=>setSupportOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-[#071016]/88 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-[0_14px_40px_rgba(0,0,0,.3)] backdrop-blur-xl transition hover:border-cyan-200/35 hover:bg-cyan-300/[.08]"
+      <AnimatePresence>
+        {selectedDistrict&&(
+          <motion.nav
+            key={selectedDistrict.key}
+            initial={{opacity:0,y:18}}
+            animate={{opacity:1,y:0}}
+            exit={{opacity:0,y:18}}
+            transition={{duration:.28,ease:[.22,1,.36,1]}}
+            className="absolute inset-x-3 bottom-28 z-30 border-y border-white/10 bg-[#030a15]/88 px-3 py-3 backdrop-blur-xl sm:inset-x-6"
+            data-bridge-plaza-district={selectedDistrict.key}
           >
-            <Orbit className="h-3.5 w-3.5" />
-            System Switch · File Folder View
-          </button>
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-[7px] font-black uppercase tracking-[.2em] text-orange-200">District entered</p>
+                <h2 className="mt-1 truncate text-sm font-black text-white sm:text-base">{selectedDistrict.label}</h2>
+              </div>
+              <p className="shrink-0 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{selectedDistrict.places.length} {selectedDistrict.places.length===1?'place':'places'}</p>
+            </div>
+            <div className="mt-3 flex gap-1 overflow-x-auto pb-1" data-district-place-line="true">
+              {selectedDistrict.places.map((place,index)=>(
+                <button
+                  key={place.key}
+                  type="button"
+                  onClick={()=>{
+                    if(place.route==='/weave#file-folders'){
+                      setSupportOpen(true)
+                      return
+                    }
+                    setSupportOpen(false)
+                    router.push(place.route)
+                  }}
+                  className="group flex min-w-[180px] max-w-[260px] items-center gap-3 border-r border-white/10 px-3 py-2 text-left first:pl-0 last:border-r-0"
+                  data-bridge-plaza-place={place.key}
+                >
+                  <span className="font-mono text-[8px] text-slate-600">{String(index+1).padStart(2,'0')}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[10px] font-black text-white group-hover:text-orange-100">{place.label}</span>
+                    <span className="mt-1 block text-[7px] font-bold uppercase tracking-[.12em] text-slate-600">{place.kind==='station'?'station inside Bridge Plaza':'functional place'}</span>
+                  </span>
+                  <MoveRight className="h-3.5 w-3.5 shrink-0 text-slate-700 transition group-hover:translate-x-1 group-hover:text-orange-200"/>
+                </button>
+              ))}
+            </div>
+          </motion.nav>
         )}
-        {user.role==='client' && state.crossing.fileNumber && (
-          <button
-            type="button"
-            onClick={()=>router.push('/client/system-switch')}
-            className="inline-flex items-center gap-2 rounded-full border border-violet-200/20 bg-[#100b17]/88 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-violet-100 shadow-[0_14px_40px_rgba(0,0,0,.3)] backdrop-blur-xl transition hover:border-violet-200/35 hover:bg-violet-300/[.08]"
-          >
-            <Orbit className="h-3.5 w-3.5" />
-            System Switch · My File Folder
-          </button>
-        )}
-      </div>
-
-      <div className="pointer-events-none absolute inset-x-0 top-12 z-20 flex justify-center px-4 sm:hidden">
-        <div className="flex max-w-full items-center gap-2 overflow-hidden text-[7px] font-black uppercase tracking-[.15em] text-stone-500">
-          {architectureFlow.map((item,index)=>(
-            <span key={item.label} className="flex shrink-0 items-center gap-2">
-              {index>0&&<span className="text-amber-300/35">→</span>}
-              <span className={item.label==='Subject'?'text-amber-200':'text-stone-500'}>{item.label}</span>
-            </span>
-          ))}
-        </div>
-      </div>
+      </AnimatePresence>
 
       <AnimatePresence>
         {isSupport && supportOpen && (
