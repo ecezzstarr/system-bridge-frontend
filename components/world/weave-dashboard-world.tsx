@@ -91,8 +91,8 @@ const ROLE: Record<WorldRole, {
     functionsHref: '/agent/functions',
     links: [
       { label: 'My Bridgers', detail: 'Participation field', href: '/agent/bridgers', icon: Users, tone: 'sky' },
-      { label: 'Prospect Campaigns', detail: 'Campaigns Bridgers can purchase into', href: '/weave/market/prospects', icon: Zap, tone: 'gold' },
-      { label: 'Number Supply', detail: 'Number movement for Bridger participation', href: '/bridger/numbers', icon: Radio, tone: 'sky' },
+      { label: 'Prospect Campaigns', detail: 'Campaigns Bridgers can purchase into', href: '/agent/stability-supply', icon: Zap, tone: 'gold' },
+      { label: 'Number Supply', detail: 'Number movement for Bridger participation', href: '/agent/stability-supply', icon: Radio, tone: 'sky' },
       { label: 'Agility', detail: 'Real-world distribution movement', href: '/agility', icon: ShoppingBag, tone: 'gold' },
       { label: 'Channels', detail: 'Company positions', href: '/agent/channels', icon: Network, tone: 'violet' },
       { label: 'Continuance', detail: 'Commission and returns', href: '/agent/commissions', icon: CircleDollarSign, tone: 'emerald' },
@@ -116,7 +116,7 @@ const ROLE: Record<WorldRole, {
       { label: 'Authority', detail: 'Operating structures', href: '/authority/workshops', icon: BriefcaseBusiness, tone: 'violet' },
       { label: 'Ad Workshop', detail: 'Communication control', href: '/admin/ad-workshop', icon: Radio, tone: 'sky' },
       { label: 'Visual Systems', detail: 'World motion authority', href: '/admin/visual-systems', icon: Palette, tone: 'violet' },
-      { label: 'Environment Organizer', detail: 'Pages + cards', href: '/admin/environment-organizer', icon: LayoutTemplate, tone: 'sky' },
+      { label: 'Environment Organizer', detail: 'World districts + HUD stations', href: '/admin/environment-organizer', icon: LayoutTemplate, tone: 'sky' },
       { label: 'DJ Workshop', detail: 'Sound and atmosphere', href: '/admin/dj-workshop', icon: Waves, tone: 'violet' },
       { label: 'Bridge Plaza', detail: 'Institution world', href: '/weave', icon: Landmark, tone: 'sky' },
     ],
@@ -148,8 +148,8 @@ function districtFor(role:WorldRole,href:string){
     return 'Shared WEAVE'
   }
   if(role==='agent'){
-    if(href.includes('/agent/bridgers'))return 'Bridger support'
-    if(href.includes('/agent/channels'))return 'Company work'
+    if(href.includes('/agent/bridgers'))return 'Participation Field'
+    if(href.includes('/agent/stability-supply'))return 'Stability Commerce'\n    if(href.includes('/agent/channels'))return 'Company movement'
     if(href.includes('/agent/commissions'))return 'Livelihood'
     if(href.includes('agility'))return 'Delivery'
     if(href.startsWith('/marketplace'))return 'Enterprise'
