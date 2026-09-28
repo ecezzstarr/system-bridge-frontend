@@ -71,7 +71,7 @@ export async function GET(request:NextRequest){
       String(ctx.client.file_number),
       String(ctx.client.business_name||ctx.client.name||'Client'),
     )
-    return NextResponse.json({success:true,growth,motion:growthMotion(action)},{headers:{'Cache-Control':'private, no-store'}})
+    return NextResponse.json({success:true,growth,motion:growthMotion('snapshot')},{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){
     console.error('[client/growth-world GET]',error)
     return NextResponse.json({error:'Unable to load Client growth world'},{status:500})
