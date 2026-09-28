@@ -235,7 +235,7 @@ export async function getDevelopmentFoundryState() {
     success: true,
     agents,
     work,
-    continuousRuntimeReady: Boolean(process.env.WEAVE_DEVELOPMENT_AGENT_SECRET),
+    continuousRuntimeReady: Boolean(process.env.CRON_SECRET || process.env.WEAVE_DEVELOPMENT_AGENT_SECRET),
     pulseIntervalMinutes: 15,
   }
 }
