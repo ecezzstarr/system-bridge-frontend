@@ -441,3 +441,9 @@ const customerDoorControlSource = read('components/system-switch/client-customer
 assert.ok(clientStoreIdentitySource.includes('platformName: string')&&clientStoreIdentitySource.includes('logoUrl: string'),'Client territory persists platform name and logo in its Customer Door environment')
 assert.ok(customerDoorWorldSource.includes('Lord/Lady Territory')&&customerDoorWorldSource.includes('Built on WEAVE'),'public Customer Door presents the Client enterprise as primary identity while retaining WEAVE infrastructure attribution')
 assert.ok(customerDoorControlSource.includes('Platform / territory name')&&customerDoorControlSource.includes('Logo URL'),'Lord/Lady can define public territory identity from the construction HUD')
+
+const territoryObservationSource = read('components/system-switch/file-folder-open-world.tsx')
+const staffTerritorySource = read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
+assert.ok(territoryObservationSource.includes('data-territory-observer="progress-visible"')&&territoryObservationSource.includes('Customer Door maturity'),'observable Client territories expose construction and public business progress')
+assert.ok(territoryObservationSource.includes('wallet, private records and build controls remain with the Lord/Lady'),'territory observation does not expose Client authority')
+assert.ok(staffTerritorySource.includes('Territory observer')&&staffTerritorySource.includes('authority remains with the Client'),'authorized staff enter Client territory as observers rather than owners')
