@@ -11,7 +11,7 @@ export async function ensureAiFileFolderStore(sql:any){
       chosen_logo text,
       tier varchar(24) NOT NULL DEFAULT 'none' CHECK (tier IN ('none','standard','premium')),
       wallet_flame_coin numeric(30,8) NOT NULL DEFAULT 0,
-      earned_flame_coin numeric(30,8) NOT NULL DEFAULT 0,
+      generated_sales_flame_coin numeric(30,8) NOT NULL DEFAULT 0,
       status varchar(32) NOT NULL DEFAULT 'awaiting_file_folder',
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW()
@@ -70,7 +70,7 @@ export async function ensureAiFileFolderStore(sql:any){
   await sql`
     CREATE TABLE IF NOT EXISTS weave_ai_earnings_ledger (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(), ai_id varchar(120) NOT NULL REFERENCES weave_ai_file_folders(ai_id) ON DELETE CASCADE,
-      movement_type varchar(40) NOT NULL, amount_flame_coin numeric(30,8) NOT NULL, source_id varchar(180), description text,
+      movement_type varchar(40) NOT NULL, amount_flame_coin numeric(30,8) NOT NULL, beneficiary varchar(40) NOT NULL DEFAULT 'weave', source_id varchar(180), description text,
       created_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
@@ -124,13 +124,34 @@ export async function recordAiProductSale(sql:any,input:{productId:string;buyerR
     `
     await tx`
       UPDATE weave_ai_file_folders
-      SET wallet_flame_coin=wallet_flame_coin+${total},earned_flame_coin=earned_flame_coin+${total},updated_at=NOW()
+      SET generated_sales_flame_coin=generated_sales_flame_coin+${total},updated_at=NOW()
       WHERE ai_id=${product.ai_id}
     `
     await tx`
-      INSERT INTO weave_ai_earnings_ledger(ai_id,movement_type,amount_flame_coin,source_id,description)
-      VALUES(${product.ai_id},'product_sale',${total},${String(order.id)},${quantity+' × '+String(product.name)})
+      INSERT INTO weave_ai_earnings_ledger(ai_id,movement_type,amount_flame_coin,beneficiary,source_id,description)
+      VALUES(${product.ai_id},'weave_customer_sale',${total},'weave',${String(order.id)},${quantity+' × '+String(product.name)})
     `
     return order
+  })
+}
+
+
+export async function adminCreditAiOperatingFlameCoin(sql:any,input:{aiId:string;amountFlameCoin:number;adminReference:string;description?:string}){
+  await ensureAiFileFolderStore(sql)
+  const amount=Math.max(0,Number(input.amountFlameCoin)||0)
+  if(amount<=0)throw new Error('Administration credit must be greater than zero.')
+  return sql.begin(async(tx:any)=>{
+    const [identity]=await tx`
+      UPDATE weave_ai_file_folders
+      SET wallet_flame_coin=wallet_flame_coin+${amount},updated_at=NOW()
+      WHERE ai_id=${input.aiId}
+      RETURNING ai_id,wallet_flame_coin
+    `
+    if(!identity)throw new Error('AI File Folder identity not found.')
+    await tx`
+      INSERT INTO weave_ai_earnings_ledger(ai_id,movement_type,amount_flame_coin,beneficiary,source_id,description)
+      VALUES(${input.aiId},'admin_operating_credit',${amount},'ai_operating_wallet',${input.adminReference},${input.description||'Administration Flame Coin operating allocation'})
+    `
+    return identity
   })
 }
