@@ -212,8 +212,8 @@ for(const route of ['/bridger/bridge-radiance','/bridger/numbers','/bridger/clie
 }
 assert.ok(bridgerOperatingRoom.includes('visiblePoll(signal => loadPulse(signal), 20000)'),'Bridger Operating Room refreshes current movement while visible without overlapping hidden-tab work')
 assert.ok(bridgerOperatingRoom.includes('Flame Coin')&&!bridgerOperatingRoom.includes('referralEarnings ?? 0} TRX'),'Bridger referral continuity uses Flame Coin language')
-assert.ok(appSidebar.includes('/bridger/bridge-radiance')&&appSidebar.includes('/bridger/clients')&&appSidebar.includes('/bridger/subscription'),'Bridger sidebar reaches Radiance, Client continuity and Continuance directly')
-assert.ok(appSidebar.includes('hideForBridger'),'Generic Clients route is hidden from Bridgers in favor of Bridger Client continuity')
+assert.ok(environmentRegistry.includes("route:'/bridger/bridge-radiance'")&&environmentRegistry.includes("route:'/bridger/clients'")&&environmentRegistry.includes("route:'/bridger/subscription'"),'Bridge Plaza registry preserves Bridger Radiance, Client continuity and Continuance places')
+assert.ok(placeMap.includes("role==='bridger'&&surface.route==='/clients'"),'Bridge Plaza hides the generic Clients place from Bridgers in favor of their Client continuity place')
 assert.ok(environmentRegistry.includes("key:'bridger-bridge-radiance'")&&environmentRegistry.includes("route:'/bridger/bridge-radiance'"),'Bridge Radiance is registered as a Bridger district')
 assert.ok(dashboardWorld.includes('Worldwide Number Bay')&&dashboardWorld.includes("href: '/bridger/subscription'"),'Bridger World exposes Number Bay and Continuance as current operations')
 assert.ok(bridgerRadiancePage.includes('visiblePoll(signal=>loadThreads(signal),5000)')&&bridgerRadiancePage.includes('visiblePoll(signal=>loadMessages(selected,signal),2500)'),'Bridge Radiance stays current while visible')
@@ -255,7 +255,7 @@ assert.ok(environmentPublicApi.includes('getEnvironmentOrganizerState'),'Running
 assert.ok(environmentProvider.includes('EnvironmentPageGuard'),'Withdrawn registered pages are guarded at runtime')
 assert.ok(environmentProvider.includes('useEnvironmentRuntimeConfig')&&environmentRuntimeHook.includes('weave-environment-refresh'),'Organizer changes can refresh mounted navigation without deployment')
 assert.ok(environmentWorkshop.includes('Environment Organizer')&&environmentWorkshop.includes('Remove'),'Administration has the page/card organizer workshop')
-assert.ok(appSidebar.includes('/admin/environment-organizer'),'Administration sidebar exposes Environment Organizer')
+assert.ok(environmentRegistry.includes("route:'/admin/environment-organizer'"),'Administration district registers Environment Organizer')
 assert.ok(adminWorkshop.includes('/admin/environment-organizer'),'Admin Workshop exposes Environment Organizer')
 assert.ok(adminWorkshop.includes('WEAVE Integrity Engine')&&adminWorkshop.includes('/admin/dev-workshop?tab=terminal'),'Admin Workshop exposes the live Integrity Engine repair surface')
 assert.ok(operatingRoom.includes('/admin/environment-organizer'),'Administration Operating Room exposes Environment Organizer')
@@ -391,7 +391,7 @@ assert.ok(liveFlameCss.includes('@keyframes weave-live-word-flow')&&liveFlameCss
 assert.ok(liveFlameCss.includes('html[data-weave-pulse] [data-weave-live-word]'),'Confirmed movement propagates into live words')
 assert.ok(liveWordSurface.includes('data-weave-live-word="title"'),'Environment titles carry live flame state')
 assert.ok(liveWordRoutes.includes('data-weave-live-word="station"'),'Route and station words carry live flame state')
-assert.ok(liveWordSidebar.includes('data-weave-live-word="station"'),'Sidebar words participate in the live system')
+assert.ok(liveWordHeader.includes('data-weave-live-word="station"'),'Persistent world chrome words participate in the live system')
 assert.ok(!read('app/(auth)/layout.tsx').includes('FlameEventWorldGate'),'Authentication no longer mounts a second event wallpaper')
 
 
