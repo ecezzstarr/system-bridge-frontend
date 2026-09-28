@@ -3,21 +3,19 @@
 import { useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { setRuntimeCovered } from './use-adaptive-runtime'
-import { ArrowRight,Flame,Orbit } from 'lucide-react'
+import { ArrowRight,Flame,Megaphone,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-runtime-config'
 import type { EnvironmentRuntimeConfig } from '@/lib/weave-environment-runtime-profile'
 import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
+import { AGENT_REVEAL_CAMPAIGNS } from '@/lib/weave-reveal-campaigns'
 
 // Every readiness resource has one bounded lifetime, including image listeners.
 export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:EnvironmentRuntimeConfig,signal:AbortSignal){
   return new Promise<void>(resolve=>{
     const loading=config.loading
     const maximum=Math.min(loading.maxWaitMs,mode==='boot'?8000:3000)
-    // A destination may explicitly hold the clean reveal while it resolves its
-    // own state, but no route is allowed to keep the whole application covered
-    // forever. After this ceiling the route's own loader/error surface is shown.
     const absoluteMaximum=maximum+(mode==='boot'?7000:4000)
     const minimum=Math.min(mode==='boot'?loading.bootMinMs:loading.transitMinMs,maximum)
     const started=performance.now()
@@ -59,7 +57,6 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
       }
     }
     const observer=new MutationObserver(records=>{
-      // Brief rotation is presentation, not destination work to wait for.
       if(records.some(record=>{
         const target=record.target instanceof Element?record.target:record.target.parentElement
         return !target?.closest('[data-environment-readiness-gate]')
@@ -85,9 +82,28 @@ type LoadingBrief={
   title:string
   body:string
   movement?:string
+  mediaUrl?:string|null
+  mediaType?:'none'|'image'|'video'
+  actionLabel?:string|null
+  actionUrl?:string|null
+  adId?:string
+  frequency?:'once'|'daily'|'every_login'|'persistent'
 }
 
-const LOADING_CARD_HOLD_MS=2000
+type RevealAd={
+  id:string
+  title:string
+  body:string
+  media_url:string|null
+  media_type:'none'|'image'|'video'
+  action_label:string|null
+  action_url:string|null
+  frequency:'once'|'daily'|'every_login'|'persistent'
+}
+
+const LOADING_CARD_HOLD_MS=1500
+const TRANSIT_CARD_HOLD_MS=1100
+const LOADING_SEQUENCE_MS=3*LOADING_CARD_HOLD_MS
 
 const PLATFORM_BRIEFS:LoadingBrief[]=[
   {
@@ -102,15 +118,7 @@ const PLATFORM_BRIEFS:LoadingBrief[]=[
     body:'The human is the source. Presence is the space. Interaction is the movement. What works can become value, participation and livelihood.',
     movement:'Be → interact → reveal → recognize → make → become',
   },
-  {
-    eyebrow:'One operating world',
-    title:'Your movement continues between environments.',
-    body:'WEAVE keeps position, work, records, systems and participation connected instead of treating every destination as a disconnected page.',
-    movement:'Notice → recognize → solve → move',
-  },
 ]
-
-const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS
 
 const FLAME_REENTRY_LAST_ACTIVE_KEY='weave:flame-event:last-active-at'
 
@@ -135,12 +143,113 @@ const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
   },
 ]
 
-function waitForBriefingSequence(mode:'boot'|'transit',startedAt:number,signal:AbortSignal){
+function destinationBrief(path:string):LoadingBrief{
+  const target=resolveWeaveEnvironment(path.split('?')[0])
+  return {
+    eyebrow:target.district,
+    title:target.title,
+    body:target.purpose,
+    movement:target.movement,
+  }
+}
+
+function placementFromPath(pathname:string){
+  if(pathname.includes('/system-switch'))return 'system-switch'
+  if(pathname.includes('/market'))return 'marketplace'
+  if(pathname.includes('/event'))return 'event'
+  if(pathname.includes('/dashboard'))return 'dashboard'
+  if(pathname.includes('/login'))return 'login'
+  return 'app'
+}
+
+function adStorageKey(ad:RevealAd){
+  if(ad.frequency==='once')return `weave:ad:once:${ad.id}`
+  if(ad.frequency==='daily')return `weave:ad:daily:${ad.id}:${new Date().toLocaleDateString('en-CA')}`
+  if(ad.frequency==='every_login')return `weave:ad:session:${ad.id}`
+  return null
+}
+
+function adSeen(ad:RevealAd){
+  const key=adStorageKey(ad)
+  if(!key)return false
+  try{return ad.frequency==='every_login'?sessionStorage.getItem(key)==='1':localStorage.getItem(key)==='1'}catch{return false}
+}
+
+function markAdSeen(brief:LoadingBrief){
+  if(!brief.adId||!brief.frequency)return
+  const key=adStorageKey({
+    id:brief.adId,title:'',body:'',media_url:null,media_type:'none',
+    action_label:null,action_url:null,frequency:brief.frequency,
+  })
+  if(!key)return
+  try{
+    if(brief.frequency==='every_login')sessionStorage.setItem(key,'1')
+    else localStorage.setItem(key,'1')
+  }catch{}
+}
+
+function safeActionUrl(value:string|null|undefined){
+  if(!value)return null
+  if(value.startsWith('/')&&!value.startsWith('//'))return value
+  try{
+    const url=new URL(value)
+    return url.protocol==='https:'||url.protocol==='http:'?value:null
+  }catch{return null}
+}
+
+async function readRevealAd(path:string,signal:AbortSignal):Promise<LoadingBrief|null>{
+  try{
+    const token=localStorage.getItem('ssb_auth_token')
+    if(!token)return null
+    const placement=placementFromPath(path)
+    const response=await fetch(`/api/ads?placement=${encodeURIComponent(placement)}`,{
+      cache:'no-store',
+      signal,
+      headers:{Authorization:`Bearer ${token}`},
+    })
+    if(!response.ok)return null
+    const data=await response.json()
+    const ad=(Array.isArray(data?.ads)?data.ads:[]).find((item:RevealAd)=>!adSeen(item)) as RevealAd|undefined
+    if(!ad)return null
+    return {
+      eyebrow:'WEAVE · Administration',
+      title:ad.title,
+      body:ad.body,
+      movement:'Information received before the environment opens.',
+      mediaUrl:ad.media_url,
+      mediaType:ad.media_type,
+      actionLabel:ad.action_label,
+      actionUrl:safeActionUrl(ad.action_url),
+      adId:ad.id,
+      frequency:ad.frequency,
+    }
+  }catch{return null}
+}
+
+function readQueuedCampaign(path:string):LoadingBrief|null{
+  if(!path.startsWith('/agent/'))return null
+  try{
+    for(const campaign of AGENT_REVEAL_CAMPAIGNS){
+      if(sessionStorage.getItem(campaign.key)!=='1')continue
+      sessionStorage.removeItem(campaign.key)
+      return {
+        eyebrow:campaign.eyebrow,
+        title:campaign.title,
+        body:campaign.body,
+        movement:campaign.movement,
+        actionLabel:campaign.actionLabel,
+        actionUrl:campaign.actionUrl,
+      }
+    }
+  }catch{}
+  return null
+}
+
+function waitForPresentation(startedAt:number,briefCount:number,mode:'boot'|'transit',signal:AbortSignal){
   return new Promise<void>(resolve=>{
-    // Keep the complete three-card introduction for a cold entrance. Internal
-    // movement must never feel frozen behind presentation after the destination
-    // itself is ready.
-    const presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:650
+    const perCard=mode==='boot'?LOADING_CARD_HOLD_MS:TRANSIT_CARD_HOLD_MS
+    const floor=mode==='boot'?LOADING_SEQUENCE_MS:650
+    const presentationWindow=Math.max(floor,briefCount*perCard)
     const remaining=Math.max(0,presentationWindow-(performance.now()-startedAt))
     if(remaining===0||signal.aborted){resolve();return}
     const timer=window.setTimeout(resolve,remaining)
@@ -161,11 +270,13 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const [briefIndex,setBriefIndex]=useState(0)
   const [sequenceId,setSequenceId]=useState(0)
   const [requestedPath,setRequestedPath]=useState<string|null>(null)
+  const [activeBriefs,setActiveBriefs]=useState<LoadingBrief[]>(PLATFORM_BRIEFS)
   const [flameEventActive,setFlameEventActive]=useState(()=>resolveEventStatus(FLAME_EVENT,new Date())==='active')
   const first=useRef(true)
   const transitionStartedAtRef=useRef<number|null>(null)
   const queryTransitionControllerRef=useRef<AbortController|null>(null)
   const covered=booting||transiting||readyPath!==pathname
+
   useEffect(()=>{
     setRuntimeCovered(covered)
     return ()=>setRuntimeCovered(false)
@@ -181,16 +292,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setFlameEventActive(resolveEventStatus(FLAME_EVENT,new Date())==='active')
     }
 
-    const markPresence=()=>{
-      try{window.localStorage.setItem(FLAME_REENTRY_LAST_ACTIVE_KEY,String(Date.now()))}catch{}
-    }
-    const onVisibilityChange=()=>{
-      if(document.visibilityState==='hidden')markPresence()
-    }
-    const presenceClock=window.setInterval(()=>{
-      if(document.visibilityState==='visible')markPresence()
-    },60000)
-
+    const markPresence=()=>{try{window.localStorage.setItem(FLAME_REENTRY_LAST_ACTIVE_KEY,String(Date.now()))}catch{}}
+    const onVisibilityChange=()=>{if(document.visibilityState==='hidden')markPresence()}
+    const presenceClock=window.setInterval(()=>{if(document.visibilityState==='visible')markPresence()},60000)
     document.addEventListener('visibilitychange',onVisibilityChange)
     window.addEventListener('pagehide',markPresence)
     return ()=>{
@@ -199,27 +303,50 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       window.removeEventListener('pagehide',markPresence)
     }
   },[])
+
   useEffect(()=>{
     const controller=new AbortController()
     const mode=first.current?'boot':'transit'
     const alreadyPrimed=mode==='transit'&&transitionStartedAtRef.current!==null
-    const startedAt=alreadyPrimed
-      ? transitionStartedAtRef.current!
-      : performance.now()
+    const startedAt=alreadyPrimed?transitionStartedAtRef.current!:performance.now()
+    const targetPath=pathname
+    const flameReveal=flameEventActive&&(mode==='boot'||targetPath.includes('/event'))
+    const base=mode==='boot'
+      ? (flameReveal?FLAME_EVENT_BRIEFS:[...PLATFORM_BRIEFS,destinationBrief(targetPath)])
+      : [destinationBrief(targetPath)]
 
     if(!alreadyPrimed){
       transitionStartedAtRef.current=startedAt
       setBriefIndex(0)
       setSequenceId(value=>value+1)
     }
+    setActiveBriefs(base)
     if(mode==='transit'){
       setReadyPath(null)
       setTransiting(true)
     }
 
+    const presentation=(async()=>{
+      const queued=readQueuedCampaign(targetPath)
+      let ad:LoadingBrief|null=null
+      try{
+        ad=await Promise.race([
+          readRevealAd(targetPath,controller.signal),
+          new Promise<null>(resolve=>window.setTimeout(()=>resolve(null),700)),
+        ])
+      }catch{}
+      if(controller.signal.aborted)return
+      // Keep the reveal concise: the destination teaching belongs here, but the
+      // opened environment must remain free of informational cards and ads.
+      const extra=queued||ad
+      const next=extra?[...base,extra]:base
+      setActiveBriefs(next)
+      await waitForPresentation(startedAt,next.length,mode,controller.signal)
+    })()
+
     void Promise.all([
       waitForEnvironmentReadiness(mode,configRef.current,controller.signal),
-      waitForBriefingSequence(mode,startedAt,controller.signal),
+      presentation,
     ]).then(()=>{
       if(controller.signal.aborted)return
       first.current=false
@@ -230,7 +357,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setTransiting(false)
     })
     return ()=>controller.abort()
-  },[pathname])
+  },[pathname,flameEventActive])
 
   useEffect(()=>{
     const handleInternalNavigation=(event:MouseEvent)=>{
@@ -254,15 +381,16 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setReadyPath(null)
       setTransiting(true)
 
-      // Query-only sidebar stations do not change usePathname(). Keep a brief
-      // handoff, then uncover as soon as the destination is actually ready.
       if(target.pathname===current.pathname){
         queryTransitionControllerRef.current?.abort()
         const controller=new AbortController()
         queryTransitionControllerRef.current=controller
-        void waitForBriefingSequence('transit',startedAt,controller.signal)
-          .then(()=>waitForEnvironmentReadiness('transit',configRef.current,controller.signal))
-          .then(()=>{
+        const brief=destinationBrief(target.pathname+target.search)
+        setActiveBriefs([brief])
+        void Promise.all([
+          waitForPresentation(startedAt,1,'transit',controller.signal),
+          waitForEnvironmentReadiness('transit',configRef.current,controller.signal),
+        ]).then(()=>{
           if(controller.signal.aborted)return
           transitionStartedAtRef.current=null
           setRequestedPath(null)
@@ -279,25 +407,26 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     }
   },[])
 
-  const showFlameBriefing=booting&&flameEventActive
-
-  useEffect(()=>{
-    if(!covered)return
-    setBriefIndex(0)
-    const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
-    const timers=briefs.slice(1).map((_,index)=>
-      window.setTimeout(()=>setBriefIndex(index+1),(index+1)*LOADING_CARD_HOLD_MS)
-    )
-    return ()=>timers.forEach(timer=>window.clearTimeout(timer))
-  },[covered,sequenceId,showFlameBriefing])
-
   const requestedEnvironment=useMemo(
     ()=>requestedPath?resolveWeaveEnvironment(requestedPath.split('?')[0]):null,
     [requestedPath],
   )
   const destinationEnvironment=requestedEnvironment||environment
-  const activeBriefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
-  const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
+  const showFlameBriefing=flameEventActive&&(booting||destinationEnvironment.key.includes('event')||destinationEnvironment.key.includes('loop-ground'))
+
+  useEffect(()=>{
+    if(!covered)return
+    setBriefIndex(0)
+    const hold=booting?LOADING_CARD_HOLD_MS:TRANSIT_CARD_HOLD_MS
+    const timers=activeBriefs.slice(1).map((_,index)=>
+      window.setTimeout(()=>setBriefIndex(index+1),(index+1)*hold)
+    )
+    return ()=>timers.forEach(timer=>window.clearTimeout(timer))
+  },[covered,sequenceId,activeBriefs,booting])
+
+  const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]||destinationBrief(pathname)
+  useEffect(()=>{markAdSeen(briefing)},[briefing.adId])
+
   const openingLabel=showFlameBriefing
     ? 'Flame Event · Burning River'
     : booting
@@ -306,8 +435,8 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const statusLabel=showFlameBriefing
     ? 'FLAME EVENT · BURNING RIVER · THE RIVER THAT BURNS'
     : booting
-      ? 'Preparing WEAVE world · preserving continuity'
-      : `Moving through ${destinationEnvironment.district} · keeping your position intact`
+      ? 'Information stays in reveal · the world opens clean'
+      : `Opening ${destinationEnvironment.district} · live work follows`
 
   return <>
     <div
@@ -318,14 +447,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       {children}
     </div>
     {covered&&<div
-      className={'fixed inset-0 z-[9999] flex min-h-[100dvh] items-stretch justify-center overflow-hidden bg-[#02050a] px-4 text-white sm:px-6 '+(showFlameBriefing?'data-[flame=true]:bg-[#02050a]':'')}
+      className="fixed inset-0 z-[9999] flex min-h-[100dvh] items-stretch justify-center overflow-hidden bg-[#02050a] px-4 text-white sm:px-6"
       role="status"
       aria-live="polite"
-      aria-label={booting?'Loading WEAVE environment':'Moving to '+environment.title}
+      aria-label={booting?'Loading WEAVE environment':'Moving to '+destinationEnvironment.title}
       data-environment-readiness-gate={booting?'boot':'transit'}
-      data-environment-reveal-shell="continuous"
+      data-environment-reveal-shell="loader-first"
       data-flame-event-loader={showFlameBriefing?'burning-river':undefined}
-      data-flame={showFlameBriefing?'true':'false'}
+      data-loader-ad={briefing.adId||undefined}
     >
       <div className={showFlameBriefing
         ? "pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(14,165,233,.28),transparent_32%),radial-gradient(ellipse_at_42%_78%,rgba(249,115,22,.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(239,68,68,.16),transparent_24%),linear-gradient(180deg,#02050a_0%,#05070b_52%,#020914_100%)]"
@@ -335,40 +464,40 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         <div className="pointer-events-none absolute inset-x-[-8%] bottom-[-8%] h-[34%] rotate-[-2deg] bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,.30),rgba(251,113,133,.12)_38%,rgba(56,189,248,.08)_58%,transparent_72%)] blur-2xl"/>
         <div className="pointer-events-none absolute inset-x-0 bottom-[12%] h-px bg-gradient-to-r from-transparent via-orange-300/55 to-transparent shadow-[0_0_35px_rgba(249,115,22,.7)]"/>
       </>}
-      <div className="pointer-events-none absolute left-1/2 top-[34%] h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-100/[.035]"/>
-      <div className="pointer-events-none absolute left-1/2 top-[34%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-200/[.045]"/>
-      <div className="pointer-events-none absolute inset-x-[7%] bottom-[13%] h-px bg-gradient-to-r from-transparent via-amber-200/15 to-transparent"/>
 
       <div className="relative flex min-h-[100dvh] w-full max-w-3xl flex-col justify-center py-6 sm:py-10">
         <div className="flex flex-col items-center text-center">
-          <div className="relative flex h-24 w-24 items-center justify-center sm:h-28 sm:w-28">
+          <div className="relative flex h-20 w-20 items-center justify-center sm:h-24 sm:w-24">
             <div className="absolute inset-0 animate-[spin_5.4s_linear_infinite] rounded-full border border-amber-200/15 border-t-orange-300/70 motion-reduce:animate-none"/>
             <div className="absolute inset-3 animate-[spin_3.2s_linear_infinite_reverse] rounded-full border border-stone-300/10 border-r-amber-100/50 motion-reduce:animate-none"/>
-            <div className="absolute inset-7 animate-pulse rounded-full border border-orange-300/10 bg-orange-400/[.035] motion-reduce:animate-none"/>
-            {showFlameBriefing
-              ? <Flame className="h-8 w-8 text-orange-200 drop-shadow-[0_0_18px_rgba(249,115,22,.8)]"/>
-              : <Orbit className="h-7 w-7 text-amber-100"/>
+            {briefing.adId
+              ? <Megaphone className="h-7 w-7 text-cyan-200"/>
+              : showFlameBriefing
+                ? <Flame className="h-7 w-7 text-orange-200 drop-shadow-[0_0_18px_rgba(249,115,22,.8)]"/>
+                : <Orbit className="h-6 w-6 text-amber-100"/>
             }
           </div>
 
-          <p className={'mt-4 text-[9px] font-black uppercase tracking-[.3em] '+(showFlameBriefing?'text-orange-200':'text-amber-200')}>
-            {showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
+          <p className={'mt-3 text-[9px] font-black uppercase tracking-[.3em] '+(showFlameBriefing?'text-orange-200':'text-amber-200')}>
+            {briefing.adId?'WEAVE INFORMATION':showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
           </p>
-          <p className={'mt-1 text-[8px] font-bold uppercase tracking-[.18em] '+(showFlameBriefing?'text-rose-200/70':'text-stone-500')}>
-            {showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
-          </p>
-          <h1 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
+          <h1 className="mt-2 text-xl font-black tracking-tight sm:text-2xl">{openingLabel}</h1>
         </div>
 
         <section
           key={briefing.eyebrow+'-'+briefing.title}
           data-loading-brief={briefIndex+1}
-          className="weave-loading-brief mx-auto mt-6 w-full min-h-[15rem] overflow-hidden rounded-3xl border border-white/10 bg-black/45 p-5 shadow-[0_30px_90px_rgba(0,0,0,.42)] backdrop-blur-xl sm:p-5"
+          className="weave-loading-brief mx-auto mt-5 w-full overflow-hidden border-y border-white/10 bg-black/38 px-2 py-5 backdrop-blur-xl sm:px-5"
         >
+          {briefing.mediaUrl&&briefing.mediaType==='image'&&
+            <div className="mb-4 max-h-[24vh] overflow-hidden"><img src={briefing.mediaUrl} alt="" className="mx-auto max-h-[24vh] w-auto max-w-full object-contain"/></div>}
+          {briefing.mediaUrl&&briefing.mediaType==='video'&&
+            <video src={briefing.mediaUrl} className="mb-4 max-h-[24vh] w-full object-contain" autoPlay muted playsInline controls/>}
+
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
-            <span className="rounded-full border border-white/10 bg-white/[.035] px-2.5 py-1 text-[7px] font-black uppercase tracking-[.16em] text-stone-400">
-              {showFlameBriefing?'LIVE · LOOP 1':destinationEnvironment.district}
+            <span className="text-[7px] font-black uppercase tracking-[.16em] text-stone-500">
+              {destinationEnvironment.district}
             </span>
           </div>
           <h2 className="mt-2 text-lg font-black text-white sm:text-xl">{briefing.title}</h2>
@@ -377,12 +506,16 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
             <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-200"/>
             <p className="text-[9px] font-bold leading-4 text-stone-400">{briefing.movement}</p>
           </div>}
+          {briefing.actionUrl&&briefing.actionLabel&&
+            <a href={briefing.actionUrl} className="mt-4 inline-flex items-center gap-2 border-b border-cyan-200/30 pb-1 text-[10px] font-black uppercase tracking-[.12em] text-cyan-200">
+              {briefing.actionLabel}<ArrowRight className="h-3.5 w-3.5"/>
+            </a>}
         </section>
 
-        <div className="mx-auto mt-5 flex max-w-sm items-center gap-2" aria-hidden="true">
+        <div className="mx-auto mt-4 flex max-w-sm items-center gap-2" aria-hidden="true">
           {activeBriefs.map((_,index)=><span
             key={index}
-            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,PLATFORM_BRIEFS.length-1)?'bg-amber-200/80':'bg-white/10')}
+            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,activeBriefs.length-1)?'bg-amber-200/80':'bg-white/10')}
           />)}
         </div>
 
