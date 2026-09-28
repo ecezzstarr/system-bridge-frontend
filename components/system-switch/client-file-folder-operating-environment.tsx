@@ -540,6 +540,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           enterpriseName={data.enterprise?.enterprise_name || null}
           routeCount={routeCount}
           vitalityScore={vitalityScore}
+          systemWeaves={Array.isArray(world?.growth?.routes)?world.growth.routes:[]}
           territoryMode
         />
       </div>
