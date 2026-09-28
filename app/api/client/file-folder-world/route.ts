@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       world,
-      motion:fileFolderMotion(action),
+      motion:fileFolderMotion('snapshot'),
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('[client/file-folder-world GET]', error)
@@ -554,7 +554,10 @@ export async function POST(request: NextRequest) {
       const systemId = clean(body.system_id, 80)
       const title = clean(body.title, 220)
       const entryBody = clean(body.body, 4000)
-      const moduleKey = clean(body.module_key, 120)\n      const evidenceType = ['internal','customer_use','visitor_use','fulfilment','delivery','service','revenue'].includes(String(body.evidence_type)) ? String(body.evidence_type) : 'internal'\n      const evidenceValue = Number.isFinite(Number(body.evidence_value)) ? Math.max(0,Number(body.evidence_value)) : null\n      const evidenceUnit = clean(body.evidence_unit,40)
+      const moduleKey = clean(body.module_key, 120)
+      const evidenceType = ['internal','customer_use','visitor_use','fulfilment','delivery','service','revenue'].includes(String(body.evidence_type)) ? String(body.evidence_type) : 'internal'
+      const evidenceValue = Number.isFinite(Number(body.evidence_value)) ? Math.max(0,Number(body.evidence_value)) : null
+      const evidenceUnit = clean(body.evidence_unit,40)
       if (!systemId || !title) {
         return NextResponse.json({ error: 'System and entry title are required' }, { status: 400 })
       }
@@ -607,6 +610,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       world,
+      motion:fileFolderMotion(action),
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('[client/file-folder-world POST]', error)
