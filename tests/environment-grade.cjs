@@ -249,7 +249,7 @@ assert.ok(clientFileFolder.includes('data-file-folder-awareness="compact-build-s
 assert.ok(!clientFileFolder.includes('studioDistricts.map((item,index)=><button'),'Client wrapper no longer duplicates the detailed construction-site navigation')
 assert.ok(clientFileFolder3d.includes('territoryMode ? "h-full min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"'),'File Folder 3D can expand from embedded preview depth into persistent territory depth')
 assert.ok(clientFileFolder.includes('data-file-folder-world="persistent-territory-interface"'),'Client File Folder declares the persistent world-as-interface runtime')
-assert.ok(read('app/client/system-switch/page.tsx').includes('data-client-file-folder-entry="world-direct"'),'Client File Folder opens directly as the world after gate resolution')
+assert.ok(read('app/client/system-switch/page.tsx').includes('data-client-file-folder-entry="crossing-to-open-world"'),'Client File Folder opens directly as the world after gate resolution')
 assert.ok(!read('app/client/system-switch/page.tsx').includes('data-system-switch-flame-event="burning-river"'),'File Folder is not boxed beneath a duplicate System Switch event page')
 assert.ok(read('components/client-navigation.tsx').includes('aria-label="Client world routes"'),'Client navigation is expressed as world routes')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes("bg-[#0c0907]/76"),'Dashboard world no longer uses the brown shell')
