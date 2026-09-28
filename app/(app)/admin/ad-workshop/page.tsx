@@ -170,7 +170,7 @@ export default function AdWorkshopPage() {
       const data = await response.json()
       if (!data.success) throw new Error(data.error || 'Save failed')
       setMessage((statusOverride || form.status) === 'published'
-        ? 'Published. Intended participant surfaces now receive this ad from live data.'
+        ? 'Published. The intended environment reveal now receives this ad from live data.'
         : 'Ad saved.')
       setForm(blankForm())
       await loadAds()
@@ -247,8 +247,7 @@ export default function AdWorkshopPage() {
             </div>
             <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl">Ad Workshop</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-              Create the message, choose the participant position and placement, then publish. After this workshop is installed,
-              ad changes travel through live platform data and do not require a new Cloud Run deployment.
+              Create the message, choose the participant position and reveal destination, then publish. Ads appear while the selected environment is opening, not on top of the live environment. Changes travel through live data and do not require a new Cloud Run deployment.
             </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-right">
@@ -268,7 +267,7 @@ export default function AdWorkshopPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-black text-white">{form.id ? 'Edit Advertisement' : 'Create Advertisement'}</h2>
-              <p className="text-xs text-slate-500">Words and media become a live placement for the intended position.</p>
+              <p className="text-xs text-slate-500">Words and media become part of the intended environment reveal.</p>
             </div>
             {form.id && (
               <button onClick={() => setForm(blankForm())} className="text-xs font-bold text-slate-400 hover:text-white">New ad</button>
@@ -351,7 +350,7 @@ export default function AdWorkshopPage() {
           </div>
 
           <div className="space-y-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Where it appears</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Reveal before</label>
             <div className="flex flex-wrap gap-2">
               {PLACEMENTS.map(place => (
                 <button
