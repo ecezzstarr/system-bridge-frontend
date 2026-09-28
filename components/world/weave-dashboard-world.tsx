@@ -73,7 +73,7 @@ const ROLE: Record<WorldRole, {
     purpose: WEAVE_SYSTEM_MAP.positions.bridger.description,
     functionsHref: '/bridger/functions',
     links: [
-      { label: 'Bridge AI', detail: 'Crossing → Client AI support', href: '/bridger/bridge-ai', icon: GitBranch, tone: 'sky' },
+      { label: 'Bridge AI', detail: 'Crossing → Client AI support', href: '/bridger/bridge-ai', icon: GitBranch, tone: 'sky' },\n      { label: 'Bridge Radiance', detail: 'Interact with your active Prospects', href: '/bridger/bridge-radiance', icon: MessageCircle, tone: 'sky' },
       { label: 'Prospect Market', detail: 'Available prospects', href: '/weave/market/prospects', icon: ShoppingBag, tone: 'gold' },
       { label: 'Clients', detail: 'Client continuity and support', href: '/bridger/clients', icon: Users, tone: 'emerald' },
       { label: 'Guidance', detail: 'Company support', href: '/company-chat', icon: Headphones, tone: 'sky' },
@@ -90,7 +90,7 @@ const ROLE: Record<WorldRole, {
     purpose: WEAVE_SYSTEM_MAP.positions.agent.description,
     functionsHref: '/agent/functions',
     links: [
-      { label: 'My Bridgers', detail: 'Participation field', href: '/agent/bridgers', icon: Users, tone: 'sky' },
+      { label: 'My Bridgers', detail: 'Participation field', href: '/agent/bridgers', icon: Users, tone: 'sky' },\n      { label: 'Bridge Radiance', detail: 'Support Prospects owned by your assigned Bridgers', href: '/admin/hub', icon: MessageCircle, tone: 'sky' },
       { label: 'Prospect Campaigns', detail: 'Campaigns Bridgers can purchase into', href: '/agent/stability-supply', icon: Zap, tone: 'gold' },
       { label: 'Number Supply', detail: 'Number movement for Bridger participation', href: '/agent/stability-supply', icon: Radio, tone: 'sky' },
       { label: 'Agility', detail: 'Real-world distribution movement', href: '/agility', icon: ShoppingBag, tone: 'gold' },
