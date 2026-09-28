@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 import { createRuntimeResource } from '@/lib/runtime-resource'
 import { DEFAULT_ENVIRONMENT_RUNTIME_CONFIG,normalizeEnvironmentRuntimeConfig } from '@/lib/weave-environment-runtime-profile'
 export type RuntimeSurface={
-  surface_key:string;label:string;surface_kind:'page'|'card';route:string
+  surface_key:string;label:string;surface_kind:'district'|'station';route:string
   area:string;scope:string;is_visible:boolean;sort_order:number;is_protected:boolean
 }
 const environmentResource=createRuntimeResource('/api/environment-organizer',{
