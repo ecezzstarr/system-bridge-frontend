@@ -22,6 +22,7 @@ import { getClientToken } from '@/lib/client-auth'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 import { emitWeaveMotion,fileFolderMotion } from '@/lib/weave-interaction-motion'
+import { WEAVE_AI_DEMONSTRATION_TERRITORIES } from '@/lib/file-folder-multiplayer-world'
 
 type Props = {
   clientName: string
@@ -252,6 +253,12 @@ export default function FileFolderOpenWorld({
         </div>
 
         <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
+        <div className="mt-4 border-y border-cyan-300/10 py-3" data-file-folder-multiplayer-world="human-and-weave-ai">
+          <div className="flex items-center justify-between gap-4"><div><p className="text-[8px] font-black uppercase tracking-[.2em] text-cyan-200">Multiplayer File Folder World</p><p className="mt-1 text-[10px] leading-5 text-slate-400">Human Client territories and clearly identified WEAVE AI-operated demonstration territories occupy the same public world. Visitors can observe public systems without receiving private authority.</p></div><span className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-300">World active</span></div>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {WEAVE_AI_DEMONSTRATION_TERRITORIES.map(territory=><div key={territory.territoryId} className="min-w-[15rem] border-l border-cyan-300/25 bg-cyan-400/[.025] px-3 py-2" data-ai-demonstration-territory={territory.territoryId}><p className="text-[7px] font-black uppercase tracking-[.16em] text-cyan-300">{territory.operatorLabel}</p><p className="mt-1 text-xs font-black text-white">{territory.publicName}</p><p className="mt-1 text-[8px] text-slate-500">{territory.fileNumber} · {territory.activity}</p><p className="mt-2 text-[9px] leading-4 text-slate-400">{territory.purpose}</p></div>)}
+          </div>
+        </div>
         {readOnly&&<div className="mt-3 border-l-2 border-violet-300/30 bg-violet-400/[.035] px-3 py-2 text-[9px] leading-4 text-violet-100" data-territory-observer="progress-visible"><span className="font-black uppercase tracking-wider">{observerLabel} · </span>Construction progress, completed structures, Customer Door maturity and public business movement are visible here. Ownership, wallet, private records and build controls remain with the Lord/Lady.</div>}
 
         <div className="mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2.5 text-[8px] uppercase tracking-wider text-stone-500 md:mt-5 md:grid md:grid-cols-4 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[10px]">
