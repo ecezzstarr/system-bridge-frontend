@@ -506,3 +506,12 @@ assert.ok(environmentRegistrySource.includes("file-folder-parts")&&environmentRe
 assert.ok(fileFolderWorldApiSource.includes("completes_at=CASE")&&fileFolderWorldApiSource.includes("EXTRACT(EPOCH FROM (completes_at-NOW()))"),'Applied construction acceleration recalculates the live build completion time')
 assert.ok(fileFolderWorldApiSource.includes("speed_multiplier=CASE"),'Applied acceleration updates the multiplier displayed by Construction Yard')
 assert.ok(!fileFolderWorldApiSource.includes("eventType:\`client_file_folder_\${action}\`")||fileFolderWorldApiSource.indexOf("eventType:\`client_file_folder_\${action}\`")>fileFolderWorldApiSource.indexOf('export async function POST'),'File Folder GET does not reference a POST-only action variable')
+
+
+const clientFileFolderOperatingSource=read('components/system-switch/client-file-folder-operating-environment.tsx')
+const clientFileFolderWorldModel=read('lib/client-file-folder-world.ts')
+assert.ok(fileFolderOpenWorldSource.includes('Main File Folder · Technology Formation Territory'),'File Folder names itself as a technology formation territory')
+assert.ok(fileFolderOpenWorldSource.includes('Systems in Motion')&&fileFolderOpenWorldSource.includes('outputs'),'Completed Client technology is described through operation and connection')
+assert.ok(clientFileFolder3d.includes('Main File Folder · Weaving Territory')&&clientFileFolder3d.includes('one connected Client territory'),'3D File Folder presents one connected weaving territory')
+assert.ok(clientFileFolderOperatingSource.includes("phase:'Operate + Connect'"),'Client formation route explicitly continues from operation into connection')
+assert.ok(clientFileFolderWorldModel.includes("'Integration Weave'")&&clientFileFolderWorldModel.includes("'System Route Station'"),'Advanced Client blueprints include explicit system weaving and movement routes')
