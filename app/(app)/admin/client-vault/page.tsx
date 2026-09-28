@@ -23,7 +23,7 @@ export default function ClientVaultAuthorityEnginePage() {
   const [message,setMessage]=useState('')
   const [loading,setLoading]=useState(false)
 
-  const headers=token?{Authorization:`Bearer ${token}`}:{}
+  const headers:Record<string,string>=token?{Authorization:`Bearer ${token}`}:{}
 
   const load=async(query='')=>{
     if(!token) return
