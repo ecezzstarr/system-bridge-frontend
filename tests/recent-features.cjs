@@ -355,7 +355,7 @@ assert.ok(loop1AgentAdSource.includes('Open Continuance'),'Loop 1 Agent ad route
 assert.ok(!loop1AgentAdSource.includes('AGILITY'),'Loop 1 Agent ad stays separate from Agility')
 assert.ok(loginSource.includes('LOOP1_AGENT_LOGIN_AD_KEY'),'Agent login queues Loop 1 awareness ad')
 assert.ok(agentDashboardSource.includes('Loop1AgentLoginAd'),'Agent dashboard renders Loop 1 ad')
-assert.ok(agentDashboardSource.includes('agilityAdQueued'),'Loop 1 and Agility ads are sequenced rather than stacked')
+assert.ok(agentDashboardSource.includes('agilityQueued')&&agentDashboardSource.includes('if(!open&&agilityQueued)')&&agentDashboardSource.includes('setShowAgilityAd(true)'),'Loop 1 and Agility ads are sequenced rather than stacked')
 assert.ok(agentContinuanceSource.includes('Loop 1 Prospect Commission'),'Continuance explains Agent Prospect commission')
 assert.ok(agentContinuanceSource.includes('Prospect activity under your Agent position'),'Continuance shows Bridger Prospect activity')
 assert.ok(agentContinuanceSource.includes('prospectPurchaseCount'),'Continuance shows Prospect purchase counts')
