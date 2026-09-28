@@ -464,7 +464,7 @@ assert.ok(positionEventSource.includes('River Bank · Functions'),'Role function
 assert.ok(positionEventSource.includes('data-weave-route-station'),'Loop 1 exposes movement stations inside one current')
 assert.ok(!positionEventSource.includes('ROLE_ORDER'),'Event page does not explain other user roles')
 assert.ok(!positionEventSource.includes('FLAME_EVENT_FEATURES'),'Event page removes generic event feature clutter')
-assert.ok(compactWorldSource.includes('<WeaveRouteNetwork')&&compactWorldSource.includes('Control station'),'Home is a route environment with an Operating Room control station')
+assert.ok(compactWorldSource.includes('data-client-world-hud="true"')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home is a spatial HUD territory with physical movement beacons')
 assert.ok(bridgerOperatingRoomSource.includes('Crossing') && bridgerOperatingRoomSource.includes('Client continuity'),'Bridger functions are organized by responsibility instead of one stacked terminal')
 assert.ok(roleOperatingRoomSource.includes("title: 'Bridger support'"),'Agent Operating Room organizes Bridger support as a system function')
 assert.ok(roleOperatingRoomSource.includes("title: 'Client system'"),'Administration Operating Room organizes Client authority as a system function')
