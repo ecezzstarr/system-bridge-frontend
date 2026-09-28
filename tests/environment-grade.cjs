@@ -574,3 +574,10 @@ assert.ok(fileFolderWorldSource.includes("'door_foundation_frame'")&&fileFolderW
 assert.ok(fileFolderOpenWorldSource.includes('CUSTOMER_DOOR_FORMATION')&&fileFolderOpenWorldSource.includes('data-customer-door-formation="72-hour-cycle"'),'Formation Yard exposes the three-day Customer Door construction cycle')
 assert.ok(fileFolderOpenWorldSource.includes('72 real hours · acceleration optional'),'Standard Client can understand that acceleration is optional rather than required')
 assert.ok(fileFolderOpenWorldSource.includes('compatible active structure in Formation Yard'),'Parts Workshop uses mature Formation Yard terminology')
+
+
+assert.ok(fileFolderWorldSource.includes("'basic_interface_part'")&&fileFolderWorldSource.includes("'record_ledger_part'")&&fileFolderWorldSource.includes("'manual_route_part'"),'Standard Clients have low-cost functional technology parts')
+assert.ok(fileFolderWorldSource.includes("'starter_automation_part'")&&fileFolderWorldSource.includes("'starter_ai_assist_part'")&&fileFolderWorldSource.includes("'starter_integration_part'"),'Accessible parts provide narrower automation AI and integration capability')
+assert.ok(fileFolderOpenWorldSource.includes('data-standard-growth-path="time-capital-continuum"'),'Parts Workshop exposes the time-capital continuum')
+assert.ok(fileFolderOpenWorldSource.includes('Low capital can be exchanged for longer time and smaller capability.'),'Standard growth explicitly preserves a long-term path toward expansion')
+assert.ok(fileFolderOpenWorldSource.includes('Parts are an open market, not a wealth gate.'),'Parts economy preserves Client choice instead of imposing a wealth gate')
