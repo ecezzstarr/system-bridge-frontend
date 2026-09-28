@@ -61,16 +61,6 @@ export async function GET(request: NextRequest) {
     const ctx = await resolveClientWorld(request)
     if (ctx.error) return ctx.error
 
-    await recordSystemEvent({
-      eventType:`client_file_folder_${action}`,
-      actorId:String(ctx.client.id),
-      actorRole:'client',
-      subjectType:'client_file_folder',
-      subjectId:String(ctx.client.file_number),
-      source:'client-file-folder-world',
-      payload:{action},
-    })
-
     const world = await getFileFolderWorldSnapshot(
       ctx.sql,
       String(ctx.client.id),
@@ -499,6 +489,19 @@ export async function POST(request: NextRequest) {
               )
               ELSE COALESCE(purchase_speed_multiplier,1)
             END,
+            speed_multiplier=CASE
+              WHEN ${effectType}='speed_boost'
+              THEN LEAST(
+                ${CLIENT_BUILD_SPEED_MAX},
+                COALESCE(speed_multiplier,1) * ${effectFactor}
+              )
+              ELSE COALESCE(speed_multiplier,1)
+            END,
+            completes_at=CASE
+              WHEN ${effectType}='speed_boost' AND completes_at>NOW()
+              THEN NOW() + make_interval(secs => GREATEST(60,CEIL(EXTRACT(EPOCH FROM (completes_at-NOW())) / ${effectFactor})::int))
+              ELSE completes_at
+            END,
             updated_at=NOW()
           WHERE id=${buildId}::uuid
             AND EXISTS (SELECT 1 FROM part)
@@ -551,7 +554,7 @@ export async function POST(request: NextRequest) {
       const systemId = clean(body.system_id, 80)
       const title = clean(body.title, 220)
       const entryBody = clean(body.body, 4000)
-      const moduleKey = clean(body.module_key, 120)
+      const moduleKey = clean(body.module_key, 120)\n      const evidenceType = ['internal','customer_use','visitor_use','fulfilment','delivery','service','revenue'].includes(String(body.evidence_type)) ? String(body.evidence_type) : 'internal'\n      const evidenceValue = Number.isFinite(Number(body.evidence_value)) ? Math.max(0,Number(body.evidence_value)) : null\n      const evidenceUnit = clean(body.evidence_unit,40)
       if (!systemId || !title) {
         return NextResponse.json({ error: 'System and entry title are required' }, { status: 400 })
       }
@@ -585,7 +588,7 @@ export async function POST(request: NextRequest) {
       const status = body.status === 'done' ? 'done' : 'open'
       const rows = await ctx.sql`
         UPDATE client_built_system_entries
-        SET status=${status},updated_at=NOW()
+        SET status=${status},completed_at=CASE WHEN ${status}='done' THEN COALESCE(completed_at,NOW()) ELSE NULL END,updated_at=NOW()
         WHERE id=${entryId}::uuid
           AND client_id=${ctx.client.id}::uuid
         RETURNING id
