@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
 import { usePresenceCamera } from '@/components/world/presence-camera'
 import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-runtime-config'
+import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 import type { WeaveMotionDetail } from '@/lib/weave-interaction-motion'
 
 type DjAudioState={
@@ -43,8 +44,7 @@ function makeNoiseBuffer(context:AudioContext,seconds:number,brown=false){
   return buffer
 }
 
-function makeHallImpulse(context:AudioContext){
-  const seconds=2.7
+function makeHallImpulse(context:AudioContext,seconds=2.7){
   const length=Math.floor(context.sampleRate*seconds)
   const buffer=context.createBuffer(2,length,context.sampleRate)
   for(let channel=0;channel<2;channel+=1){
@@ -70,6 +70,9 @@ export function WeavePresenceAmbience(){
   const pathname=usePathname()||'/'
   const {scene}=usePresenceCamera()
   const {config}=useEnvironmentRuntimeConfig()
+  const runtimeBudget=useAdaptiveRuntime()
+  const budgetLevelRef=useRef(runtimeBudget.level)
+  budgetLevelRef.current=runtimeBudget.level
   const configRef=useRef(config)
   configRef.current=config
   const runtimeRef=useRef<Runtime|null>(null)
@@ -79,7 +82,7 @@ export function WeavePresenceAmbience(){
   const sceneRef=useRef(scene)
   sceneRef.current=scene
 
-  const enabled=Boolean(user)&&config.ambience.enabled&&pathname!=='/'&&!pathname.startsWith('/login')&&!pathname.startsWith('/register')&&!pathname.startsWith('/bridge/')
+  const enabled=Boolean(user)&&runtimeBudget.level>0&&config.ambience.enabled&&pathname!=='/'&&!pathname.startsWith('/login')&&!pathname.startsWith('/register')&&!pathname.startsWith('/bridge/')
 
   const targetMaster=useCallback(()=>{
     const ambience=configRef.current.ambience
@@ -162,7 +165,8 @@ export function WeavePresenceAmbience(){
     panner.connect(runtime.wet)
 
     const root=sceneRef.current.district==='Bridge'||sceneRef.current.district==='Institution'?196:164.81
-    ;[1,2.01,3.04,4.2].forEach((ratio,index)=>{
+    const harmonics=budgetLevelRef.current===2?[1,2.01,3.04,4.2]:[1,2.01]
+    harmonics.forEach((ratio,index)=>{
       const osc=context.createOscillator()
       const gain=context.createGain()
       osc.type=index===0?'sine':'triangle'
@@ -206,9 +210,11 @@ export function WeavePresenceAmbience(){
     const delay=ambience.footstepMinMs+Math.random()*Math.max(250,ambience.footstepMaxMs-ambience.footstepMinMs)
     runtime.footstepTimer=window.setTimeout(()=>{
       if(!runtime.active)return
-      const pan=(Math.random()*1.6)-.8
-      const steps=2+Math.floor(Math.random()*3)
-      for(let i=0;i<steps;i+=1)playFootstep(runtime,i*(.34+Math.random()*.08),pan+(i*.04))
+      if(!djPlayingRef.current&&!personalDjRef.current){
+        const pan=(Math.random()*1.6)-.8
+        const steps=budgetLevelRef.current===2?2+Math.floor(Math.random()*3):1+Math.floor(Math.random()*2)
+        for(let i=0;i<steps;i+=1)playFootstep(runtime,i*(.34+Math.random()*.08),pan+(i*.04))
+      }
       scheduleFootsteps(runtime)
     },delay)
   },[playFootstep])
@@ -223,7 +229,7 @@ export function WeavePresenceAmbience(){
     const delay=min+Math.random()*Math.max(1000,max-min)
     runtime.bellTimer=window.setTimeout(()=>{
       if(!runtime.active)return
-      playBell(runtime)
+      if(!djPlayingRef.current&&!personalDjRef.current)playBell(runtime)
       scheduleBell(runtime)
     },delay)
   },[playBell])
@@ -234,7 +240,7 @@ export function WeavePresenceAmbience(){
     const delay=ambience.movementMinMs+Math.random()*Math.max(500,ambience.movementMaxMs-ambience.movementMinMs)
     runtime.movementTimer=window.setTimeout(()=>{
       if(!runtime.active)return
-      playDistantMovement(runtime)
+      if(!djPlayingRef.current&&!personalDjRef.current)playDistantMovement(runtime)
       scheduleMovement(runtime)
     },delay)
   },[playDistantMovement])
@@ -252,7 +258,7 @@ export function WeavePresenceAmbience(){
       master.gain.value=0
       dry.gain.value=.72
       wet.gain.value=.34
-      reverb.buffer=makeHallImpulse(context)
+      reverb.buffer=makeHallImpulse(context,runtimeBudget.level===2?2.7:1.1)
 
       dry.connect(master)
       wet.connect(reverb)
@@ -269,7 +275,7 @@ export function WeavePresenceAmbience(){
       const bedLow=context.createBiquadFilter()
       const bedGain=context.createGain()
       const bedPan=safePan(context,-.05)
-      bedSource.buffer=makeNoiseBuffer(context,9,true)
+      bedSource.buffer=makeNoiseBuffer(context,runtimeBudget.level===2?9:3,true)
       bedSource.loop=true
       bedLow.type='lowpass'
       bedLow.frequency.value=215
@@ -299,7 +305,7 @@ export function WeavePresenceAmbience(){
     }catch{
       stopRuntime()
     }
-  },[enabled,scheduleBell,scheduleFootsteps,scheduleMovement,stopRuntime,targetMaster])
+  },[enabled,runtimeBudget.level,scheduleBell,scheduleFootsteps,scheduleMovement,stopRuntime,targetMaster])
 
   useEffect(()=>{
     if(!enabled){
