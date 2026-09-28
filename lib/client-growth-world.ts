@@ -359,7 +359,7 @@ export async function getClientGrowthSnapshot(
       routeMovements30d,
       streamPrograms30d,
       activeLegions,
-      explanation:'30-day field evidence: customer orders, completed operations, authorized route movement, public programming and active participation. Flame Coin purchases do not directly increase this score; capital can expand construction but does not count as demonstrated use.',
+      explanation:'30-day field evidence: customer orders, completed operations, authorized route movement, public programming and active participation. Flame Coin purchases do not directly increase this score. Capital can expand construction but does not count as demonstrated use.',
       fieldEvidence:{customerOrders:orders30d,completedOperations:completedOperations30d,routeMovements:routeMovements30d,streamPrograms:streamPrograms30d,activeLegions,demonstrated:(orders30d+completedOperations30d+routeMovements30d+streamPrograms30d+activeLegions)>0},
     },
     capabilities,
