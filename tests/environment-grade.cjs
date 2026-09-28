@@ -515,3 +515,10 @@ assert.ok(fileFolderOpenWorldSource.includes('Systems in Motion')&&fileFolderOpe
 assert.ok(clientFileFolder3d.includes('Main File Folder · Weaving Territory')&&clientFileFolder3d.includes('one connected Client territory'),'3D File Folder presents one connected weaving territory')
 assert.ok(clientFileFolderOperatingSource.includes("phase:'Operate + Connect'"),'Client formation route explicitly continues from operation into connection')
 assert.ok(clientFileFolderWorldModel.includes("'Integration Weave'")&&clientFileFolderWorldModel.includes("'System Route Station'"),'Advanced Client blueprints include explicit system weaving and movement routes')
+
+
+assert.ok(clientFileFolder3d.includes('FORMATION INTELLIGENCE'),'File Folder central structure is Formation Intelligence')
+assert.ok(clientFileFolder3d.includes('function WeavingCurrent('),'File Folder renders visible system weaving currents')
+assert.ok(clientFileFolder3d.includes('function FormationSupplyRing(')&&clientFileFolder3d.includes('MATERIAL · PARTS · ACCELERATION'),'Active formation has a visible construction supply layer')
+assert.ok(clientFileFolder3d.includes("Math.max(routeCount,liveSystems.length>1?liveSystems.length:0)"),'Multiple completed Client technologies produce visible route-network state')
+assert.ok(clientFileFolder3d.includes('Purpose → material → parts → formation → connection → advanced technology → value.'),'File Folder states the complete technology formation movement')
