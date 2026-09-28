@@ -124,7 +124,8 @@ export function ClientMarketEnvironment({
   enterpriseUrl?:string|null
 }){
   const style=presetClass[config.preset]||presetClass.radiant_arcade
-  const doorName=config.platformName || store.name || 'Customer Door'\n  const levelLabel=level==='market_hall'?'Market Hall':level==='storefront'?'Constructed Storefront':doorName
+  const doorName=config.platformName || store.name || 'Customer Door'
+  const levelLabel=level==='market_hall'?'Market Hall':level==='storefront'?'Constructed Storefront':doorName
   return <main className="min-h-screen bg-transparent text-white" data-client-market-world>
     <section className={`relative isolate overflow-hidden border-b border-white/10 bg-gradient-to-b ${style.sky}`}>
       <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.04)_1px,transparent_1px)] [background-size:42px_42px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]"/>
@@ -143,7 +144,7 @@ export function ClientMarketEnvironment({
             {store.description&&<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">{store.description}</p>}
             <div className="mt-6 flex flex-wrap gap-2">
               <a href="#offers" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-black text-slate-950">{level==='door'?`Enter ${doorName}`:'Enter store'} <ArrowRight className="h-4 w-4"/></a>
-              <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><ShoppingBag className="h-4 w-4"/>Open internet · no WEAVE account</span>
+              <span className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><ShoppingBag className="h-4 w-4"/>No WEAVE account required</span>
               {streamUrl&&<Link href={streamUrl} className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><Radio className="h-4 w-4"/>Streaming Gate</Link>}
               {enterpriseUrl&&<Link href={enterpriseUrl} className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-black uppercase tracking-wider ${style.glass}`}><Crown className="h-4 w-4"/>Enterprise Door</Link>}
             </div>
