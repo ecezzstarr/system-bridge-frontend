@@ -250,7 +250,7 @@ assert.ok(!clientFileFolder.includes('studioDistricts.map((item,index)=><button'
 assert.ok(clientFileFolder3d.includes('territoryMode ? "h-full min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"'),'File Folder 3D can expand from embedded preview depth into persistent territory depth')
 assert.ok(clientFileFolder.includes('data-file-folder-world="persistent-territory-interface"'),'Client File Folder declares the persistent world-as-interface runtime')
 assert.ok(read('app/client/system-switch/page.tsx').includes('data-client-file-folder-entry="crossing-to-open-world"'),'Client File Folder opens directly as the world after gate resolution')
-assert.ok(!read('app/client/system-switch/page.tsx').includes('data-system-switch-flame-event="burning-river"'),'File Folder is not boxed beneath a duplicate System Switch event page')
+assert.ok(read('app/client/system-switch/page.tsx').includes('<ClientFileFolderOperatingEnvironment data={data} />')&&!read('app/client/system-switch/page.tsx').includes('FLAME_EVENT'),'Crossing hands directly into the File Folder open world without a duplicate Flame Event page wrapper')
 assert.ok(read('components/client-navigation.tsx').includes('aria-label="Client world routes"'),'Client navigation is expressed as world routes')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes("bg-[#0c0907]/76"),'Dashboard world no longer uses the brown shell')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world-hud="true"'),'Client World is rendered as a HUD territory rather than a dashboard panel')
