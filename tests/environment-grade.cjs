@@ -535,3 +535,9 @@ assert.ok(growthWorldApiSource.includes("'client_authorized'"),'Technology weave
 assert.ok(growthWorldUiSource.includes('Authorize weave')&&growthWorldUiSource.includes('AI may assist configuration but cannot authorize it.'),'Weaving UI keeps AI assistance subordinate to Client authority')
 assert.ok(growthWorldUiSource.includes('Source output')&&growthWorldUiSource.includes('Target input'),'A File Folder weave names both sides of technology movement')
 assert.ok(!growthWorldApiSource.includes('growthMotion(action)},{headers'),'Growth-world GET does not reference a POST-only action variable')
+
+
+assert.ok(clientFileFolder3d.includes('function PersistedSystemWeave('),'3D File Folder renders each persisted system weave')
+assert.ok(clientFileFolder3d.includes('source_system_id')&&clientFileFolder3d.includes('target_system_id'),'3D weave resolves its real source and target systems')
+assert.ok(clientFileFolder3d.includes('movement_count')&&clientFileFolder3d.includes("activeMovements>0?1.35:.72"),'Recorded movement increases physical weave current')
+assert.ok(clientFileFolderOperatingSource.includes('systemWeaves={Array.isArray(world?.growth?.routes)?world.growth.routes:[]}'),'File Folder feeds persisted route state into the 3D territory')
