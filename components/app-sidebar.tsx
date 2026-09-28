@@ -66,7 +66,8 @@ const navigation = [
   // 2. POSITION — the operating room for the current role.
   { group: "Position", items: [
     { name: "Bridger Operating Room", href: "/bridger/functions", icon: LayoutTemplate, bridgerOnly: true },
-    { name: "WhatsApp Numbers", href: "/bridger/numbers", icon: Phone, bridgerOnly: true },
+    { name: "Worldwide Number Bay", href: "/bridger/numbers", icon: Phone, bridgerOnly: true },
+    { name: "Bridger Continuance", href: "/bridger/subscription", icon: ShieldCheck, bridgerOnly: true },
     { name: "Agent Operating Room", href: "/agent/functions", icon: LayoutTemplate, agentOnly: true },
     { name: "Administration Operating Room", href: "/admin/functions", icon: ShieldCheck, adminOnly: true },
     { name: "My Bridgers", href: "/agent/bridgers", icon: Users, agentOnly: true },
@@ -78,11 +79,13 @@ const navigation = [
   { group: "Bridge", items: [
     { name: WEAVE_SYSTEM_MAP.language.supportEntrance, href: "/weave", icon: LayoutTemplate },
     { name: WEAVE_SYSTEM_MAP.language.bridgeAI, href: "/bridger/bridge-ai", icon: GitBranch, bridgerOnly: true },
+    { name: "Bridge Radiance", href: "/bridger/bridge-radiance", icon: MessageSquare, bridgerOnly: true },
     { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
+    { name: "My Clients", href: "/bridger/clients", icon: Users, bridgerOnly: true },
     { name: "Company Guidance", href: "/company-chat", icon: Headphones },
     { name: "Private Lounge", href: "/lounge?view=private", icon: Shield },
     { name: "Lounge", href: "/lounge", icon: MessageSquare },
-    { name: "Clients", href: "/clients", icon: Users },
+    { name: "Clients", href: "/clients", icon: Users, hideForBridger: true },
   ]},
 
   // 4. ENTERPRISE — technology, products and commercial systems.
@@ -247,6 +250,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
               if (item.adminOnly && user?.role !== "admin") return false
               if (item.bridgerOnly && user?.role !== "bridger") return false
               if (item.agentOnly && user?.role !== "agent") return false
+              if (item.hideForBridger && user?.role === "bridger") return false
               if (item.staffOnly && user?.role !== "admin" && user?.role !== "agent") return false
               return isVisible(item.href)
             }).sort((a:any,b:any)=>orderFor(a.href)-orderFor(b.href))

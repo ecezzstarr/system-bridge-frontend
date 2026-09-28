@@ -29,6 +29,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'bridger-functions', label:'Bridger Operating Room', kind:'district', route:'/bridger/functions', area:'Bridger', scope:'bridger', protected:true, defaultOrder:10 },
   { key:'bridger-numbers', label:'WhatsApp Numbers', kind:'district', route:'/bridger/numbers', area:'Bridger', scope:'bridger', defaultOrder:20 },
   { key:'bridger-bridge-ai', label:'Bridge AI Paths', kind:'district', route:'/bridger/bridge-ai', area:'Bridger', scope:'bridger', defaultOrder:30 },
+  { key:'bridger-bridge-radiance', label:'Bridge Radiance', kind:'district', route:'/bridger/bridge-radiance', area:'Bridger', scope:'bridger', defaultOrder:35 },
   { key:'bridger-prospect-market', label:'Prospect Market', kind:'district', route:'/weave/market/prospects', area:'Bridger', scope:'bridger', defaultOrder:40 },
   { key:'bridger-clients', label:'My Clients', kind:'district', route:'/bridger/clients', area:'Bridger', scope:'bridger', defaultOrder:50 },
   { key:'bridger-continuance', label:'Bridger Continuance', kind:'district', route:'/bridger/subscription', area:'Bridger', scope:'bridger', defaultOrder:60 },

@@ -6,6 +6,7 @@ import { ArrowLeft,CalendarClock,CheckCircle2,Clock3,ReceiptText,ShieldCheck } f
 import { useAuth } from '@/lib/auth-provider'
 import { WORLD_RULES } from '@/lib/world/constants'
 import { WeaveSystemRoom } from '@/components/world/weave-system-room'
+import { visiblePoll } from '@/lib/visible-poll'
 
 const SUBSCRIPTION_AMOUNT=WORLD_RULES.BRIDGER_CONTINUANCE_NGN
 type Continuance={id:string;role:string;subscription_status:'active'|'due'|'suspended';subscription_expiry:string|null;is_subscription_exempt:boolean;subscription_last_paid_at:string|null}
@@ -14,8 +15,8 @@ export default function BridgerContinuancePage(){
  const {user,token}=useAuth();const userId=user?.id??null
  const [subscription,setContinuance]=useState<Continuance|null>(null),[loading,setLoading]=useState(true),[submitting,setSubmitting]=useState(false),[reference,setReference]=useState(''),[paymentMethod,setPaymentMethod]=useState('bank_transfer'),[message,setMessage]=useState<string|null>(null),[error,setError]=useState<string|null>(null)
 
- useEffect(()=>{if(userId)void fetchContinuance();else setLoading(false)},[userId,token])
- async function fetchContinuance(){setLoading(true);try{const res=await fetch('/api/bridger/subscription',{headers:token?{Authorization:`Bearer ${token}`}:{},cache:'no-store'});const data=await res.json();if(data.success)setContinuance(data.subscription);else setError(data.error||'Failed to load continuance')}catch{setError('Failed to load continuance')}finally{setLoading(false)}}
+ useEffect(()=>{if(!userId){setLoading(false);return}void fetchContinuance();return visiblePoll(signal=>fetchContinuance(true,signal),30000,false)},[userId,token])
+ async function fetchContinuance(silent=false,signal?:AbortSignal){if(!silent)setLoading(true);try{const res=await fetch('/api/bridger/subscription',{headers:token?{Authorization:`Bearer ${token}`}:{},cache:'no-store',signal});const data=await res.json();if(data.success){setContinuance(data.subscription);setError(null)}else setError(data.error||'Failed to load continuance')}catch(error:any){if(error?.name!=='AbortError')setError('Failed to load continuance')}finally{if(!silent)setLoading(false)}}
  async function handleSubmit(e:React.FormEvent){e.preventDefault();if(!userId)return;if(!reference.trim()){setError('Enter a payment reference');return}setSubmitting(true);setError(null);setMessage(null);try{const res=await fetch('/api/bridger/subscription/submit',{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:JSON.stringify({reference:reference.trim(),paymentMethod})});const data=await res.json();if(data.success){setMessage('Continuance payment submitted to Administration for review.');setReference('')}else setError(data.message||'Submission failed')}catch{setError('Submission failed')}finally{setSubmitting(false)}}
 
  const status=subscription?.subscription_status||'due'
