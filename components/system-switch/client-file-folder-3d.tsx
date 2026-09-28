@@ -10,7 +10,7 @@ import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
 type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber'|'rose'}
 type ActiveBuild={id?:string;title?:string;systemType?:string;progress:number}
-type LiveSystem={id?:string;title?:string;systemType?:string;activity?:number}
+type LiveSystem={id?:string;title?:string;systemType?:string;activity?:number}\ntype SystemWeave={id?:string;source_system_id?:string;target_system_id?:string;source_output?:string;target_input?:string;integration_type?:string;authority_state?:string;movement_count?:number}
 
 const COLORS:Record<District['tone'],string>={
   sky:'#7dd3fc',
@@ -431,6 +431,28 @@ function WeavingCurrent({from,to,strength=1}:{from:[number,number,number];to:[nu
   </mesh>
 }
 
+function liveSystemPosition(index:number,total:number):[number,number,number]{
+  const radius=6.55
+  const angle=(index/Math.max(1,total))*Math.PI*2-Math.PI/2
+  return [Math.cos(angle)*radius,0,Math.sin(angle)*radius]
+}
+
+function PersistedSystemWeave({weave,liveSystems,currentStrength}:{weave:SystemWeave;liveSystems:LiveSystem[];currentStrength:number}){
+  const sourceIndex=liveSystems.findIndex(system=>String(system.id)===String(weave.source_system_id))
+  const targetIndex=liveSystems.findIndex(system=>String(system.id)===String(weave.target_system_id))
+  if(sourceIndex<0||targetIndex<0)return null
+  const from=liveSystemPosition(sourceIndex,liveSystems.length)
+  const to=liveSystemPosition(targetIndex,liveSystems.length)
+  const activeMovements=Math.max(0,Number(weave.movement_count||0))
+  const strength=Math.min(2,currentStrength*(activeMovements>0?1.35:.72))
+  return <group data-weave-route={String(weave.id||'')}>
+    <WeavingCurrent from={from} to={to} strength={strength}/>
+    <Text position={[(from[0]+to[0])/2,.16,(from[2]+to[2])/2]} fontSize={.07} color={activeMovements>0?'#a7f3d0':'#94a3b8'} anchorX="center">
+      {String(weave.integration_type||'direct').replaceAll('_',' ').toUpperCase()}
+    </Text>
+  </group>
+}
+
 function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
   if(activeBuilds.length===0)return null
   return <group position={POSITIONS.builds}>
@@ -444,7 +466,7 @@ function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,emergence,routeCurrent,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,emergence,routeCurrent,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -492,7 +514,7 @@ function Scene({
       emergence={emergence}
     />)}
 
-    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence}/>)}
+    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence}/>)}\n    {systemWeaves.map((weave)=><PersistedSystemWeave key={String(weave.id)} weave={weave} liveSystems={liveSystems.slice(0,12)} currentStrength={routeCurrent}/>)}
     <StreamingTower level={streamLevel}/>
     <RouteNetwork count={Math.max(routeCount,liveSystems.length>1?liveSystems.length:0)} vitality={vitalityScore} currentStrength={routeCurrent}/>
 
@@ -508,7 +530,7 @@ function Scene({
 
 export function ClientFileFolder3D({
   activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,
-  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,territoryMode=false,
+  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],territoryMode=false,
 }:{
   activeSurface:DistrictKey
   onSurfaceChange:(key:DistrictKey)=>void
