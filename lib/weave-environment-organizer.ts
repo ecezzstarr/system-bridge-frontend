@@ -15,7 +15,7 @@ export async function ensureEnvironmentOrganizerSchema(){
       CREATE TABLE IF NOT EXISTS weave_environment_surfaces (
         surface_key varchar(180) PRIMARY KEY,
         label varchar(180) NOT NULL,
-        surface_kind varchar(24) NOT NULL CHECK (surface_kind IN ('page','card')),
+        surface_kind varchar(24) NOT NULL,
         route varchar(320) NOT NULL,
         area varchar(160) NOT NULL,
         scope varchar(40) NOT NULL,
@@ -26,6 +26,17 @@ export async function ensureEnvironmentOrganizerSchema(){
         created_at timestamptz NOT NULL DEFAULT NOW(),
         updated_at timestamptz NOT NULL DEFAULT NOW()
       )
+    `
+    await sql`
+      ALTER TABLE weave_environment_surfaces DROP CONSTRAINT IF EXISTS weave_environment_surfaces_surface_kind_check
+    `
+    await sql`
+      UPDATE weave_environment_surfaces SET surface_kind=CASE surface_kind WHEN 'page' THEN 'district' WHEN 'card' THEN 'station' ELSE surface_kind END
+      WHERE surface_kind IN ('page','card')
+    `
+    await sql`
+      ALTER TABLE weave_environment_surfaces ADD CONSTRAINT weave_environment_surfaces_surface_kind_check
+      CHECK (surface_kind IN ('district','station')) NOT VALID
     `
     await sql`CREATE INDEX IF NOT EXISTS weave_environment_surfaces_area_idx ON weave_environment_surfaces(area,sort_order,label)`
 
