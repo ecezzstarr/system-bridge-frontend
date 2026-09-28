@@ -50,7 +50,7 @@ const ROLE: Record<WorldRole, {
   links: WorldLink[]
 }> = {
   client: {
-    eyebrow: 'Client World',
+    eyebrow: 'Lord/Lady · Client Department',
     title: 'Your world. Your movement.',
     subtitle: 'Your functions remain inside one WEAVE operating world while your File Folder carries the live systems you build and use.',
     purpose: WEAVE_SYSTEM_MAP.positions.client.description,
@@ -67,8 +67,8 @@ const ROLE: Record<WorldRole, {
     ],
   },
   bridger: {
-    eyebrow: 'Bridger World',
-    title: 'Connection in motion.',
+    eyebrow: 'Hope · Bridger Department',
+    title: 'Hope carries connection forward.',
     subtitle: 'Crossing, Prospect movement and Client continuity remain distinct functions inside one Bridger operating system.',
     purpose: WEAVE_SYSTEM_MAP.positions.bridger.description,
     functionsHref: '/bridger/functions',
@@ -84,14 +84,16 @@ const ROLE: Record<WorldRole, {
     ],
   },
   agent: {
-    eyebrow: 'Agent World',
-    title: 'Support made practical.',
-    subtitle: 'Your Bridgers, company work and delivery functions stay ordered as parts of one Agent operating system.',
+    eyebrow: 'Stability · Agent Department',
+    title: 'Stability keeps participation moving.',
+    subtitle: 'Keep Bridgers participating through Prospect campaigns, Number movement, Agility, company work and continuance while Bridgers carry connection toward Clients.',
     purpose: WEAVE_SYSTEM_MAP.positions.agent.description,
     functionsHref: '/agent/functions',
     links: [
-      { label: 'My Bridgers', detail: 'Your working team', href: '/agent/bridgers', icon: Users, tone: 'sky' },
-      { label: 'Agility', detail: 'Food distribution', href: '/agility', icon: ShoppingBag, tone: 'gold' },
+      { label: 'My Bridgers', detail: 'Participation field', href: '/agent/bridgers', icon: Users, tone: 'sky' },
+      { label: 'Prospect Campaigns', detail: 'Campaigns Bridgers can purchase into', href: '/weave/market/prospects', icon: Zap, tone: 'gold' },
+      { label: 'Number Supply', detail: 'Number movement for Bridger participation', href: '/bridger/numbers', icon: Radio, tone: 'sky' },
+      { label: 'Agility', detail: 'Real-world distribution movement', href: '/agility', icon: ShoppingBag, tone: 'gold' },
       { label: 'Channels', detail: 'Company positions', href: '/agent/channels', icon: Network, tone: 'violet' },
       { label: 'Continuance', detail: 'Commission and returns', href: '/agent/commissions', icon: CircleDollarSign, tone: 'emerald' },
       { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Large technology systems', href: '/marketplace', icon: Store, tone: 'sky' },
@@ -101,7 +103,7 @@ const ROLE: Record<WorldRole, {
     ],
   },
   admin: {
-    eyebrow: 'Administration',
+    eyebrow: 'A Cat · Administration Department',
     title: 'The institution in view.',
     subtitle: 'Authority, verification, infrastructure and company controls remain distinct functions inside one institutional system.',
     purpose: WEAVE_SYSTEM_MAP.positions.admin.description,
