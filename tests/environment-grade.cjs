@@ -253,6 +253,8 @@ assert.ok(read('app/client/system-switch/page.tsx').includes('data-client-file-f
 assert.ok(!read('app/client/system-switch/page.tsx').includes('data-system-switch-flame-event="burning-river"'),'File Folder is not boxed beneath a duplicate System Switch event page')
 assert.ok(read('components/client-navigation.tsx').includes('aria-label="Client world routes"'),'Client navigation is expressed as world routes')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes("bg-[#0c0907]/76"),'Dashboard world no longer uses the brown shell')
+assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world-hud="true"'),'Client World is rendered as a HUD territory rather than a dashboard panel')
+assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world-beacon'),'Client functions are physical HUD beacons in the world')
 assert.ok(!clientFileFolder.includes('bg-[#120c08]'),'Persistent File Folder shell no longer falls back to the brown wash')
 assert.ok(!clientFileFolder3d.includes('bg-[#120c08]')&&!clientFileFolder3d.includes("args={['#17100b']}"),'File Folder territory no longer renders the brown fallback world')
 assert.ok(environmentTransit.includes("presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:650"),'Internal environment travel is not held behind the full boot briefing sequence')
