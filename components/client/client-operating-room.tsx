@@ -130,7 +130,6 @@ export function ClientOperatingRoom() {
               <WeaveRouteNetwork
                 stations={stations}
                 title="Client route network"
-                detail="Money, support, participation and enterprise are lanes around the same Client position. They are stations in one world rather than a grid of separate destinations."
               />
             </div>
           </section>
