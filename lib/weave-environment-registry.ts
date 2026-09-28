@@ -140,12 +140,17 @@ export function environmentRouteMatches(registeredRoute:string,pathname:string){
   const registered=normalizeEnvironmentPageRoute(registeredRoute)
   const actual=normalizeEnvironmentPageRoute(pathname)
   if(!registered.includes('['))return registered===actual
-  const pattern=registered
-    .replace(/[.*+?^${}()|[\]\\]/g,'\\export function normalizeEnvironmentPageRoute(route:string){
-  return String(route||'').split('#')[0].split('?')[0] || '/'
-}')
-    .replace(/\\\[\\\.\\\.\\\.([^\\\]]+)\\\]/g,'.+')
-    .replace(/\\\[([^\\\]]+)\\\]/g,'[^/]+')
-  return new RegExp('^'+pattern+'
-).test(actual)
+
+  const expected=registered.split('/').filter(Boolean)
+  const received=actual.split('/').filter(Boolean)
+
+  for(let index=0;index<expected.length;index+=1){
+    const segment=expected[index]
+    if(segment.startsWith('[...')&&segment.endsWith(']'))return received.length>=index
+    if(index>=received.length)return false
+    if(segment.startsWith('[')&&segment.endsWith(']'))continue
+    if(segment!==received[index])return false
+  }
+
+  return received.length===expected.length
 }
