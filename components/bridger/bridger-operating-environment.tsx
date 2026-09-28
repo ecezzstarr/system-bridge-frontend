@@ -64,6 +64,8 @@ type OperationalPulse = {
   ownedNumbers: number
   activeNumberOrders: number
   continuance: string
+  bridgeAiContinuance: string
+  bridgeAiExpiry: string | null
   updatedAt: number | null
 }
 
@@ -75,6 +77,8 @@ const EMPTY_PULSE: OperationalPulse = {
   ownedNumbers: 0,
   activeNumberOrders: 0,
   continuance: 'unknown',
+  bridgeAiContinuance: 'inactive',
+  bridgeAiExpiry: null,
   updatedAt: null,
 }
 
@@ -97,12 +101,13 @@ export function BridgerOperatingEnvironment() {
   }))
 
   const loadPulse = async (signal?: AbortSignal) => {
-    const [daily, radiance, clients, numbers, continuance] = await Promise.allSettled([
+    const [daily, radiance, clients, numbers, continuance, bridgeAi] = await Promise.allSettled([
       readJson('/api/bridger/daily-prospect', signal),
       readJson('/api/bridger/support-inbox', signal),
       readJson('/api/bridger/clients', signal),
       readJson('/api/bridger/numbers', signal),
       readJson('/api/bridger/subscription', signal),
+      readJson('/api/bridger/bridge-ai/subscribe', signal),
     ])
 
     const dailyData = daily.status === 'fulfilled' ? daily.value : null
@@ -110,6 +115,7 @@ export function BridgerOperatingEnvironment() {
     const clientsData = clients.status === 'fulfilled' ? clients.value : null
     const numbersData = numbers.status === 'fulfilled' ? numbers.value : null
     const continuanceData = continuance.status === 'fulfilled' ? continuance.value : null
+    const bridgeAiData = bridgeAi.status === 'fulfilled' ? bridgeAi.value : null
 
     const bridgerThreads = Array.isArray(radianceData?.threads)
       ? radianceData.threads.filter((thread: any) => thread.position === 'bridger')
@@ -118,6 +124,12 @@ export function BridgerOperatingEnvironment() {
       ? numbersData.orders.filter((order: any) => ['requested', 'fulfilling'].includes(String(order.status)))
       : []
     const standing = continuanceData?.continuance || continuanceData?.subscription
+    const bridgeAiStanding = bridgeAiData?.subscription
+    const bridgeAiActive = Boolean(
+      bridgeAiStanding?.status === 'active'
+      && bridgeAiStanding?.expiry
+      && new Date(bridgeAiStanding.expiry) > new Date()
+    )
     if (signal?.aborted) return
 
     setPulse(prev => ({
@@ -128,6 +140,10 @@ export function BridgerOperatingEnvironment() {
       ownedNumbers: numbersData && Array.isArray(numbersData.mine) ? numbersData.mine.length : prev.ownedNumbers,
       activeNumberOrders: numbersData ? activeOrders.length : prev.activeNumberOrders,
       continuance: standing?.subscription_status ? String(standing.subscription_status) : prev.continuance,
+      bridgeAiContinuance: bridgeAiData
+        ? (bridgeAiActive ? 'active' : bridgeAiStanding?.status === 'active' ? 'expired' : String(bridgeAiStanding?.status || 'inactive'))
+        : prev.bridgeAiContinuance,
+      bridgeAiExpiry: bridgeAiStanding?.expiry ? String(bridgeAiStanding.expiry) : prev.bridgeAiExpiry,
       updatedAt: Date.now(),
     }))
   }
@@ -180,6 +196,15 @@ export function BridgerOperatingEnvironment() {
       detail: 'Your current Bridger partnership standing.',
       href: '/bridger/subscription',
       tone: pulse.continuance === 'active' ? 'text-emerald-200' : pulse.continuance === 'suspended' ? 'text-red-200' : 'text-amber-200',
+    },
+    {
+      label: 'Bridge AI Subscription',
+      value: pulse.bridgeAiContinuance.toUpperCase(),
+      detail: pulse.bridgeAiContinuance === 'active'
+        ? `Bridge AI paths active${pulse.bridgeAiExpiry ? ` until ${new Date(pulse.bridgeAiExpiry).toLocaleDateString()}` : ''}.`
+        : '15 Flame Coin/month is required to open and maintain Bridge AI crossing paths.',
+      href: '/bridger/bridge-ai',
+      tone: pulse.bridgeAiContinuance === 'active' ? 'text-emerald-200' : 'text-amber-200',
     },
   ]
 
