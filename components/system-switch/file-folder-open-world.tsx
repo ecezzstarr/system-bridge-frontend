@@ -40,7 +40,7 @@ type Props = {
 const districts = [
   { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Read the business objective, resources and build state from one place.' },
   { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Choose the next real system and understand its required functions.' },
-  { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire functional components matched to the systems they enable.' },
+  { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire the primary kits that supply a blueprint before construction begins.' },\n  { key: 'parts_workshop', label: 'Parts Workshop', icon: Boxes, detail: 'Acquire capability modules and attach compatible parts to structures while they form.' },
   { key: 'formation_yard', label: 'Construction Yard', icon: Hammer, detail: 'Watch real structures form through time and attach build parts.' },
   { key: 'boost_bay', label: 'Acceleration Bay', icon: Zap, detail: 'Use recorded acceleration instruments on active construction.' },
   { key: 'active_systems', label: 'Live Systems', icon: PackageOpen, detail: 'Operate completed systems and record real movement inside them.' },
@@ -421,11 +421,28 @@ export default function FileFolderOpenWorld({
             </div>
           )}
 
+          {district === 'parts_workshop' && (
+            <div data-client-parts-workshop="capability">
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Parts Workshop</p>
+              <h3 className="mt-2 text-2xl font-black">Parts change what a structure can do.</h3>
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Modules are not construction kits. Acquire a capability here, then install it into a compatible active structure in Construction Yard. The installed part remains in that system's build record.</p>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {buildPartItems.map((item:any)=><div key={item.item_key} className="border-l border-sky-300/20 bg-sky-400/[0.025] p-5">
+                  <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[.15em] text-sky-300">{String(item.category||'build part').replaceAll('_',' ')}</p><h4 className="mt-1 font-bold text-white">{item.name}</h4></div><p className="text-sm font-black text-amber-200">{Number(item.price_flame_coin).toLocaleString()} FC</p></div>
+                  <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
+                  <p className="mt-3 text-[9px] leading-4 text-slate-500"><span className="font-black uppercase text-sky-300">Installed capability · </span>{operatingEffect(item)}</p>
+                  <div className="mt-3 flex items-center justify-between text-[9px]"><span className="text-slate-500">Workshop inventory</span><span className="font-black text-white">{Number(inventory.get(item.item_key)||0)} owned</span></div>
+                  {!readOnly&&<button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 border border-sky-300/20 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-sky-100 disabled:opacity-40">{busy===item.item_key?'Acquiring…':'Acquire part'}</button>}
+                </div>)}
+              </div>
+            </div>
+          )}
+
           {district === 'boost_bay' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-amber-300">Acceleration Bay</p>
               <h3 className="mt-2 text-2xl font-black">Speed is a live construction instrument.</h3>
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire a boost here, then attach it to an active build in Formation Yard. The build timer recalculates from recorded File Folder state.</p>
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Acquire acceleration here, then attach it to an active build in Construction Yard. The remaining countdown is recalculated immediately from recorded File Folder state.</p>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {boostItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-amber-300/12 bg-amber-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-amber-300">Live acceleration</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
