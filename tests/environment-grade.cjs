@@ -41,6 +41,10 @@ for(const key of ['client-loop-field','number-bay','bridger-continuance','loop-w
 }
 
 const css=read('app/globals.css')
+assert.ok(css.includes('WEAVE ONE-COLOR OPERATING FIELD'),'WEAVE declares one structural color field')
+assert.ok(css.includes('--weave-one-field: #030a15'),'WEAVE structural surfaces share the canonical dark field')
+assert.ok(css.includes('[data-weave-environment] :is(h1, h2, h3)'),'Authenticated headings inherit the homepage word hierarchy')
+
 assert.ok(css.includes('Environment-first enforcement.'),'Authenticated legacy roots are absorbed into the persistent world')
 
 const rootLayout=read('app/layout.tsx')
