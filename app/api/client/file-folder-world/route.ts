@@ -574,7 +574,8 @@ export async function POST(request: NextRequest) {
 
       await ctx.sql`
         INSERT INTO client_built_system_entries (
-          system_id,client_id,entry_type,title,body,status,metadata
+          system_id,client_id,entry_type,title,body,status,
+          evidence_type,evidence_value,evidence_unit,metadata
         )
         VALUES (
           ${system.id}::uuid,
@@ -583,6 +584,9 @@ export async function POST(request: NextRequest) {
           ${title},
           ${entryBody || null},
           'open',
+          ${evidenceType},
+          ${evidenceValue},
+          ${evidenceUnit || null},
           ${JSON.stringify({ moduleKey: moduleKey || null, source: 'file_folder_system_host' })}::jsonb
         )
       `
