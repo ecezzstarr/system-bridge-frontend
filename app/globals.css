@@ -545,27 +545,7 @@ html[data-weave-hidden="true"] *, html[data-weave-hidden="true"] *::before, html
 html[data-weave-quality="0"] [data-interaction-motion-field] { contain: paint; }
 
 
-/* Operating chrome: navigation is an instrument panel, not a second page. */
-.weave-sidebar {
-  background: rgba(2, 11, 23, 0.96);
-  border-color: rgba(125, 211, 252, 0.10);
-}
-.weave-nav-group {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
-}
-.weave-nav-item {
-  position: relative;
-  overflow: hidden;
-}
-.weave-nav-item[data-active="true"]::before {
-  content: '';
-  position: absolute;
-  inset: 22% auto 22% 0;
-  width: 2px;
-  border-radius: 999px;
-  background: rgb(125 211 252 / .9);
-  box-shadow: 0 0 14px rgb(56 189 248 / .55);
-}
+/* Bridge Plaza owns world navigation; top chrome only exposes status and return. */
 .weave-flame-live-indicator {
   display: none;
 }
@@ -583,25 +563,6 @@ html[data-weave-event="flame-live"] {
 }
 html[data-weave-event="flame-live"] .weave-flame-live-indicator {
   display: inline-flex;
-}
-html[data-weave-event="flame-live"] .weave-sidebar {
-  background: linear-gradient(180deg, rgba(22,8,7,.985), rgba(8,7,10,.985));
-  border-color: rgba(251,146,60,.22);
-  box-shadow: 24px 0 72px rgba(69,10,10,.22);
-}
-html[data-weave-event="flame-live"] .weave-nav-group {
-  border-color: rgba(251,146,60,.10);
-  background: rgba(69,10,10,.055);
-}
-html[data-weave-event="flame-live"] .weave-nav-item[data-active="true"] {
-  border-color: rgba(251,146,60,.28) !important;
-  background: linear-gradient(90deg, rgba(239,68,68,.10), rgba(251,146,60,.075)) !important;
-  color: rgb(255 247 237) !important;
-  box-shadow: 0 0 24px rgba(249,115,22,.08) !important;
-}
-html[data-weave-event="flame-live"] .weave-nav-item[data-active="true"]::before {
-  background: rgb(251 146 60 / .95);
-  box-shadow: 0 0 16px rgb(249 115 22 / .62);
 }
 html[data-weave-event="flame-live"] .weave-header,
 html[data-weave-event="flame-live"] .weave-client-nav {
@@ -1048,7 +1009,6 @@ html[data-weave-quality="0"] .flame-event-ember-column {
   --popover: var(--weave-one-field);
   --muted: var(--weave-one-field);
   --input: var(--weave-one-field);
-  --sidebar: var(--weave-one-field);
   --field-surface: rgb(3 10 21 / .92);
 }
 
@@ -1062,7 +1022,6 @@ body {
 :where(
   [data-public-weave-world],
   [data-weave-environment],
-  .weave-sidebar,
   .weave-header,
   .weave-client-nav,
   .weave-environment-panel,
@@ -1082,7 +1041,6 @@ body {
 /* Event state changes the live flame/artifact and word accents, not the
    structural surface color. */
 html[data-weave-event="flame-live"] :where(
-  .weave-sidebar,
   .weave-header,
   .weave-client-nav,
   .weave-environment-panel,
@@ -1117,7 +1075,6 @@ html[data-weave-event="flame-live"] :where(
 
 /* Keep one-color depth subtle and consistent instead of recoloring sections. */
 :where(
-  .weave-sidebar,
   .weave-header,
   .weave-client-nav,
   .weave-environment-panel,
