@@ -12,6 +12,8 @@ export type StoreEnvironmentConfig = {
   tagline: string
   marketSection: string
   featuredMessage: string
+  platformName: string
+  logoUrl: string
 }
 
 export const DEFAULT_STORE_ENVIRONMENT: StoreEnvironmentConfig = {
@@ -20,6 +22,8 @@ export const DEFAULT_STORE_ENVIRONMENT: StoreEnvironmentConfig = {
   tagline: 'Built inside the WEAVE Client Market.',
   marketSection: 'Main Arcade',
   featuredMessage: 'Enter the store, inspect the offers and purchase directly from this Client.',
+  platformName: 'Client Enterprise',
+  logoUrl: '',
 }
 
 export function normalizeStoreEnvironmentConfig(value: unknown): StoreEnvironmentConfig {
@@ -38,6 +42,8 @@ export function normalizeStoreEnvironmentConfig(value: unknown): StoreEnvironmen
     tagline: clean(input.tagline,DEFAULT_STORE_ENVIRONMENT.tagline,180),
     marketSection: clean(input.marketSection,DEFAULT_STORE_ENVIRONMENT.marketSection,80),
     featuredMessage: clean(input.featuredMessage,DEFAULT_STORE_ENVIRONMENT.featuredMessage,320),
+    platformName: clean(input.platformName,DEFAULT_STORE_ENVIRONMENT.platformName,120),
+    logoUrl: String(input.logoUrl ?? '').trim().slice(0,1000),
   }
 }
 
