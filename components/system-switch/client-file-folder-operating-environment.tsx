@@ -683,6 +683,21 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               </div>
             </div>
 
+            <section className="border-y border-cyan-200/10 bg-cyan-300/[0.025] px-4 py-5" data-formation-intelligence="capability-composition">
+              <div className="flex items-end justify-between gap-3">
+                <div><p className="text-[8px] font-black uppercase tracking-[.2em] text-cyan-300">Formation Intelligence · Emergent capability</p><h3 className="mt-1 text-lg font-black text-white">What this territory can become because its systems are woven.</h3></div>
+                <span className="text-[8px] font-black uppercase tracking-wider text-slate-500">{(world?.growth?.compositions||[]).filter((item:any)=>item.state==='recognized').length} recognized</span>
+              </div>
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                {(world?.growth?.compositions||[]).map((item:any)=><div key={item.key} className="border-l border-cyan-300/20 bg-black/20 p-4">
+                  <div className="flex items-center justify-between gap-3"><p className="text-sm font-black text-white">{item.name}</p><span className={`text-[8px] font-black uppercase tracking-wider ${item.state==='recognized'?'text-emerald-300':'text-amber-200'}`}>{item.state}</span></div>
+                  <p className="mt-2 text-[10px] leading-5 text-slate-400">{item.description}</p>
+                  <p className="mt-3 text-[9px] text-slate-500">{item.presentSystems.length}/{item.requiredSystems.length} required systems present · {item.requiredConnection?(item.connectionPresent?'authorized weave present':'authorized weave required'):'no weave required'}</p>
+                </div>)}
+                {!(world?.growth?.compositions||[]).length&&<p className="text-xs text-slate-500">Build complementary systems and authorize their movement. Formation Intelligence will recognize larger capabilities from real territory state.</p>}
+              </div>
+            </section>
+
             <ClientBridgeAiSupport />
 
 
