@@ -247,7 +247,6 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
             <WeaveRouteNetwork
               stations={stations}
               title="Role route network"
-              detail="Each district is a connected lane in the same Operating Room. Enter a station to work; the role position remains continuous."
             />
           </section>
 
