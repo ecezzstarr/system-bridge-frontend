@@ -420,6 +420,8 @@ const loadStabilityHero3d=read('components/weave-hero-3d.tsx')
 const loadStabilityEcho3d=read('components/echo-orb.tsx')
 const loadStabilityBridgeRadiance3d=read('components/bridge/bridge-radiance-world.tsx')
 const loadStabilityVisualSystems3d=read('app/(app)/admin/visual-systems/page.tsx')
+const loadStabilityDevelopmentFoundry=read('app/(app)/admin/development-agents/page.tsx')
+const loadStabilityPositionEvent=read('components/events/position-event-world.tsx')
 
 assert.ok(cleanRevealTransit2026.includes('absoluteMaximum')&&cleanRevealTransit2026.includes('elapsed<absoluteMaximum'),'Global environment cover has an absolute ceiling even when a destination leaves a pending marker mounted')
 assert.ok(loadStabilityClientFolder.includes('new AbortController()')&&loadStabilityClientFolder.includes('12000')&&loadStabilityClientFolder.includes('signal:controller.signal'),'Client File Folder boot has a bounded network wait')
@@ -466,6 +468,8 @@ for(const [source,label] of [
 }
 assert.ok(!loadStabilityDjPlayer.includes('setInterval(() => void syncBroadcast()'),'DJ player no longer launches overlapping hidden-tab network intervals')
 assert.ok(!loadStabilityAdminHub.includes('setInterval(loadMessages'),'Administration hub no longer stacks message requests')
+assert.ok(loadStabilityDevelopmentFoundry.includes('visiblePoll(() => refresh(), 30000)')&&loadStabilityDevelopmentFoundry.includes('visiblePoll(() => pulse(false), 60000)')&&!loadStabilityDevelopmentFoundry.includes('window.setInterval'),'Development Foundry UI uses serial visible polling rather than overlapping background intervals')
+assert.ok(loadStabilityPositionEvent.includes('visiblePoll(() => setNow(new Date()), 1000)')&&!loadStabilityPositionEvent.includes('window.setInterval(() => setNow(new Date())'),'Flame Event clock stops consuming render work while its page is hidden')
 
 
 const worldRuntimeLayout = read('app/(app)/layout.tsx')
