@@ -102,18 +102,18 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'bridger-dashboard', label:'Bridger Home', kind:'place', route:'/bridger/dashboard', area:'Bridger', scope:'bridger', protected:true, defaultOrder:5 },
   { key:'agent-dashboard', label:'Agent Home', kind:'place', route:'/agent/dashboard', area:'Agent', scope:'agent', protected:true, defaultOrder:5 },
   { key:'agent-bridge-radiance', label:'Bridge Radiance · Stability', kind:'place', route:'/agent/bridge-radiance', area:'Agent', scope:'agent', defaultOrder:35 },
-  { key:'agent-client-chat', label:'Client Interaction Room', kind:'station', route:'/agent-chat/[clientId]/[position]', area:'Agent', scope:'agent', defaultOrder:90 },
+  { key:'agent-client-chat', label:'Client Interaction Room', kind:'place', route:'/agent-chat/[clientId]/[position]', area:'Agent', scope:'agent', defaultOrder:90 },
 
-  { key:'client-access', label:'Client Access Point', kind:'station', route:'/client', area:'Client', scope:'client', defaultOrder:1 },
-  { key:'client-login', label:'Client Access Gate', kind:'station', route:'/client/login', area:'Client', scope:'client', defaultOrder:2 },
-  { key:'client-register', label:'Client Registration Gate', kind:'station', route:'/client/register', area:'Client', scope:'client', defaultOrder:3 },
+  { key:'client-access', label:'Client Access Point', kind:'place', route:'/client', area:'Public Entry', scope:'public', defaultOrder:1 },
+  { key:'client-login', label:'Client Access Gate', kind:'place', route:'/client/login', area:'Public Entry', scope:'public', defaultOrder:2 },
+  { key:'client-register', label:'Client Registration Gate', kind:'place', route:'/client/register', area:'Public Entry', scope:'public', defaultOrder:3 },
   { key:'client-settings', label:'Client Position Settings', kind:'place', route:'/client/settings', area:'Client', scope:'client', defaultOrder:55 },
   { key:'client-deposit', label:'Client Value Entry', kind:'place', route:'/client/deposit', area:'Client', scope:'client', defaultOrder:60 },
   { key:'client-withdraw', label:'Client Value Release', kind:'place', route:'/client/withdraw', area:'Client', scope:'client', defaultOrder:70 },
   { key:'client-admin-chat', label:'Administration Support', kind:'place', route:'/client/admin-chat', area:'Client', scope:'client', defaultOrder:80 },
   { key:'client-arena', label:'Client Arena', kind:'place', route:'/client/arena', area:'Client', scope:'client', defaultOrder:90 },
   { key:'client-pattern', label:'Client Pattern', kind:'place', route:'/client/casino', area:'Client', scope:'client', defaultOrder:100 },
-  { key:'client-chat-position', label:'Client Support Interaction', kind:'station', route:'/client/chat/[position]', area:'Client', scope:'client', defaultOrder:110 },
+  { key:'client-chat-position', label:'Client Support Interaction', kind:'place', route:'/client/chat/[position]', area:'Client', scope:'client', defaultOrder:110 },
 
   { key:'admin-root', label:'Administration Entrance', kind:'place', route:'/admin', area:'Administration', scope:'admin', protected:true, defaultOrder:1 },
   { key:'admin-bridge-ai', label:'Bridge AI Continuity', kind:'place', route:'/admin/bridge-ai', area:'Administration', scope:'admin', defaultOrder:45 },
@@ -128,7 +128,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
 
   { key:'staff-file-folder-support', label:'File Folder Support Entrance', kind:'station', route:'/weave#file-folders', area:'System Switch', scope:'staff', protected:true, defaultOrder:80 },
 
-  { key:'staff-file-folder-observer', label:'Client File Folder Observer', kind:'station', route:'/weave/file-folder/[fileNumber]', area:'System Switch', scope:'staff', defaultOrder:90 },
+  { key:'staff-file-folder-observer', label:'Client File Folder Observer', kind:'place', route:'/weave/file-folder/[fileNumber]', area:'System Switch', scope:'staff', defaultOrder:90 },
 
   { key:'shared-company-chat-position', label:'Company Guidance Interaction', kind:'place', route:'/company-chat/[position]', area:'Bridge', scope:'staff', defaultOrder:225 },
 
