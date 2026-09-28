@@ -1,0 +1,27 @@
+name: WEAVE Development Foundry Pulse
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.WEAVE_DEVELOPMENT_AGENT_SECRET != '' }}
+    steps:
+      - name: Pulse one due WEAVE development agent
+        env:
+          DEVELOPMENT_AGENT_SECRET: ${{ secrets.WEAVE_DEVELOPMENT_AGENT_SECRET }}
+          DEVELOPMENT_AGENT_URL: ${{ vars.WEAVE_DEVELOPMENT_AGENT_URL || 'https://weavingsystem.online/api/admin/development-agents' }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --header "x-weave-development-agent-secret: ${DEVELOPMENT_AGENT_SECRET}" \
+            --data '{"action":"pulse","maxAgents":1}' \
+            "${DEVELOPMENT_AGENT_URL}"
