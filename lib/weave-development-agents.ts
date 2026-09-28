@@ -1,5 +1,3 @@
-"use server"
-
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 import { sql } from '@/lib/db'
