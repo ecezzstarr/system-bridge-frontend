@@ -61,16 +61,6 @@ export async function GET(request: NextRequest) {
     const ctx = await resolveClientWorld(request)
     if (ctx.error) return ctx.error
 
-    await recordSystemEvent({
-      eventType:`client_file_folder_${action}`,
-      actorId:String(ctx.client.id),
-      actorRole:'client',
-      subjectType:'client_file_folder',
-      subjectId:String(ctx.client.file_number),
-      source:'client-file-folder-world',
-      payload:{action},
-    })
-
     const world = await getFileFolderWorldSnapshot(
       ctx.sql,
       String(ctx.client.id),
@@ -498,6 +488,19 @@ export async function POST(request: NextRequest) {
                 COALESCE(purchase_speed_multiplier,1) * ${effectFactor}
               )
               ELSE COALESCE(purchase_speed_multiplier,1)
+            END,
+            speed_multiplier=CASE
+              WHEN ${effectType}='speed_boost'
+              THEN LEAST(
+                ${CLIENT_BUILD_SPEED_MAX},
+                COALESCE(speed_multiplier,1) * ${effectFactor}
+              )
+              ELSE COALESCE(speed_multiplier,1)
+            END,
+            completes_at=CASE
+              WHEN ${effectType}='speed_boost' AND completes_at>NOW()
+              THEN NOW() + make_interval(secs => GREATEST(60,CEIL(EXTRACT(EPOCH FROM (completes_at-NOW())) / ${effectFactor})::int))
+              ELSE completes_at
             END,
             updated_at=NOW()
           WHERE id=${buildId}::uuid
