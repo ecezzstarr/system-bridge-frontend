@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
 import { Music2, Play, Pause, GripVertical, Volume2 } from 'lucide-react'
 import { visiblePoll } from '@/lib/visible-poll'
+import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 
 const POSITION_KEY = 'ssb_dj_player_pos'
 const LIVE_SOUND_KEY = 'weave_live_sound_joined'
@@ -27,6 +28,7 @@ function clamp(pos: { x: number; y: number }) {
 
 export function DJBroadcastPlayer() {
   const { user } = useAuth()
+  const runtimeBudget = useAdaptiveRuntime()
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const currentUrlRef = useRef<string | null>(null)
   const autoplayAttemptedRef = useRef(false)
@@ -112,6 +114,7 @@ export function DJBroadcastPlayer() {
   const startHarmonyAudience = useCallback(async () => {
     if (
       typeof window === 'undefined' ||
+      runtimeBudget.level === 0 ||
       trackTypeRef.current !== 'music' ||
       userPausedRef.current
     ) return
@@ -143,8 +146,10 @@ export function DJBroadcastPlayer() {
         { frequency: 1320, q: 0.85, gain: 0.17, rate: 1.07, pan: 0.72, lfo: 0.17 },
       ]
 
-      for (const layer of layers) {
-        const seconds = 7
+      const activeLayers = runtimeBudget.level === 2 ? layers : layers.slice(0, 2)
+      const seconds = runtimeBudget.level === 2 ? 4 : 1.75
+
+      for (const layer of activeLayers) {
         const buffer = context.createBuffer(1, Math.floor(context.sampleRate * seconds), context.sampleRate)
         const data = buffer.getChannelData(0)
         let smoothed = 0
@@ -202,7 +207,7 @@ export function DJBroadcastPlayer() {
       // Harmony is atmosphere only. The DJ track must keep playing if Web Audio is unavailable.
       stopHarmonyAudience(true)
     }
-  }, [stopHarmonyAudience])
+  }, [runtimeBudget.level, stopHarmonyAudience])
 
   const applyPersonalPause = useCallback(() => {
     const audio = audioRef.current
@@ -251,6 +256,11 @@ export function DJBroadcastPlayer() {
     emitDjAudioState(false)
     stopHarmonyAudience(true)
   }, [emitDjAudioState, stopHarmonyAudience])
+
+  useEffect(() => {
+    // Recreate Harmony only on demand at the new device budget.
+    stopHarmonyAudience(true)
+  }, [runtimeBudget.level, stopHarmonyAudience])
 
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
@@ -386,7 +396,7 @@ export function DJBroadcastPlayer() {
 
   useEffect(() => {
     if (!eligibleRole) return
-    const stop = visiblePoll(() => syncBroadcast(), 4000)
+    const stop = visiblePoll(() => syncBroadcast(), 6000)
     const onOnline = () => void syncBroadcast()
     window.addEventListener('online', onOnline)
 

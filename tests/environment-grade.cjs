@@ -414,6 +414,14 @@ const loadStabilityTicketPanel=read('components/admin/department-entry-tickets-p
 const loadStabilityTicketGate=read('components/department-entry-ticket-gate.tsx')
 const loadStabilityDjPlayer=read('components/dj-broadcast-player.tsx')
 const loadStabilityDjWorkshop=read('app/(app)/admin/dj-workshop/page.tsx')
+const loadStabilityAmbience=read('components/world/weave-presence-ambience.tsx')
+const loadStabilityMotionField=read('components/world/interaction-motion-field.tsx')
+const loadStabilityHero3d=read('components/weave-hero-3d.tsx')
+const loadStabilityEcho3d=read('components/echo-orb.tsx')
+const loadStabilityBridgeRadiance3d=read('components/bridge/bridge-radiance-world.tsx')
+const loadStabilityVisualSystems3d=read('app/(app)/admin/visual-systems/page.tsx')
+const loadStabilityDevelopmentFoundry=read('app/(app)/admin/development-agents/page.tsx')
+const loadStabilityPositionEvent=read('components/events/position-event-world.tsx')
 
 assert.ok(cleanRevealTransit2026.includes('absoluteMaximum')&&cleanRevealTransit2026.includes('elapsed<absoluteMaximum'),'Global environment cover has an absolute ceiling even when a destination leaves a pending marker mounted')
 assert.ok(loadStabilityClientFolder.includes('new AbortController()')&&loadStabilityClientFolder.includes('12000')&&loadStabilityClientFolder.includes('signal:controller.signal'),'Client File Folder boot has a bounded network wait')
@@ -425,9 +433,23 @@ assert.ok(loadStabilityClientRegister.includes('fetchWithTimeout')&&loadStabilit
 assert.ok(loadStabilityAuthLayout.includes('overflow-y-auto')&&!loadStabilityAuthLayout.includes('justify-center overflow-hidden'),'Shared auth shell does not crop tall registration states')
 assert.ok(loadStabilityClientLogin.includes('overflow-y-auto')&&!loadStabilityClientLogin.includes('justify-center bg-transparent p-4 relative overflow-hidden'),'Client login can scroll on short screens')
 assert.ok(loadStabilityClientRegister.includes('overflow-y-auto')&&!loadStabilityClientRegister.includes('justify-center bg-transparent p-4 relative overflow-hidden'),'Client registration can scroll on short screens')
-assert.ok(loadStabilityAdaptive.includes('level===1?20:12')&&loadStabilityAdaptive.includes("level===1?.85:.7"),'Adaptive runtime lowers medium/mobile FPS and DPR instead of overdriving phones')
+assert.ok(loadStabilityAdaptive.includes('level===1?15:8')&&loadStabilityAdaptive.includes("level===1?.72:.55"),'Adaptive runtime keeps medium/mobile FPS and DPR below the phone freeze threshold')
 assert.ok(loadStabilityAdaptive.includes('dataset.weaveCovered'),'Environment cover state is published so decorative animation can pause during loading')
 assert.ok(loadStabilityFlame.includes('1000/Math.max(12,runtime.fps)'),'Pointer-driven Flame updates respect the adaptive frame budget')
+assert.ok(loadStabilityMotionField.includes('budget.reducedMotion||budget.level===0'),'Lowest runtime tier paints the living field without maintaining a continuous canvas loop')
+assert.ok(cleanRevealTransit2026.includes('touchesPendingSurface')&&cleanRevealTransit2026.includes("record.type!=='childList'")&&cleanRevealTransit2026.includes("target?.matches('[data-environment-pending]')"),'Environment readiness only reacts to actual pending-surface changes instead of ordinary React DOM churn')
+assert.ok(cleanRevealCss2026.includes('html[data-weave-quality="0"] .weave-live-flame-current')&&cleanRevealCss2026.includes('display: none')&&cleanRevealCss2026.includes('mix-blend-mode: normal'),'Low and medium tiers remove expensive full-screen flame blend/compositor layers')
+for(const [source,label] of [
+ [loadStabilityHero3d,'public hero'],
+ [loadStabilityEcho3d,'Echo orb'],
+ [loadStabilityBridgeRadiance3d,'Bridge Radiance'],
+ [loadStabilityVisualSystems3d,'Visual Systems preview'],
+]){
+ assert.ok(source.includes('AdaptiveCanvas')&&!source.includes("import { Canvas } from '@react-three/fiber'"),label+' 3D rendering shares the capped/offscreen adaptive runtime')
+}
+assert.ok(loadStabilityAmbience.includes('runtimeBudget.level>0'),'Lowest runtime tier does not create a procedural ambience AudioContext')
+assert.ok(loadStabilityAmbience.includes('!djPlayingRef.current&&!personalDjRef.current'),'Procedural ambience does not generate decorative sound bursts while DJ audio is active')
+assert.ok(loadStabilityDjPlayer.includes('runtimeBudget.level === 0')&&loadStabilityDjPlayer.includes('layers.slice(0, 2)')&&loadStabilityDjPlayer.includes('visiblePoll(() => syncBroadcast(), 6000)'),'DJ harmony and sync cadence reduce CPU/memory pressure on constrained devices')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-covered="true"] .weave-live-flame-current')&&cleanRevealCss2026.includes('html[data-weave-quality="1"] .weave-live-flame-current-b'),'Covered/mobile Flame layers reduce compositor work')
 for(const [source,label] of [
  [loadStabilityRegistrationChat,'registration chat'],
@@ -446,6 +468,8 @@ for(const [source,label] of [
 }
 assert.ok(!loadStabilityDjPlayer.includes('setInterval(() => void syncBroadcast()'),'DJ player no longer launches overlapping hidden-tab network intervals')
 assert.ok(!loadStabilityAdminHub.includes('setInterval(loadMessages'),'Administration hub no longer stacks message requests')
+assert.ok(loadStabilityDevelopmentFoundry.includes('visiblePoll(() => refresh(), 30000)')&&loadStabilityDevelopmentFoundry.includes('visiblePoll(() => pulse(false), 60000)')&&!loadStabilityDevelopmentFoundry.includes('window.setInterval'),'Development Foundry UI uses serial visible polling rather than overlapping background intervals')
+assert.ok(loadStabilityPositionEvent.includes('visiblePoll(() => setNow(new Date()), 1000)')&&!loadStabilityPositionEvent.includes('window.setInterval(() => setNow(new Date())'),'Flame Event clock stops consuming render work while its page is hidden')
 
 
 const worldRuntimeLayout = read('app/(app)/layout.tsx')

@@ -1,6 +1,6 @@
 'use client'
 
-import { Canvas } from '@react-three/fiber'
+import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { OrbitControls } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
@@ -67,7 +67,7 @@ function MemoryParticles() {
 
 export default function EchoOrb() {
   return (
-    <Canvas camera={{ position: [0, 0, 8], fov: 60 }}>
+    <AdaptiveCanvas camera={{ position: [0, 0, 8], fov: 60 }}>
       <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={1} />
       <pointLight position={[-10, -10, -10]} intensity={0.4} color="#22d3ee" />
@@ -81,6 +81,6 @@ export default function EchoOrb() {
         enableZoom={false}
         enablePan={false}
       />
-    </Canvas>
+    </AdaptiveCanvas>
   )
 }

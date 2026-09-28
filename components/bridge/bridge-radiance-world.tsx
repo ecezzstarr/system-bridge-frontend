@@ -1,6 +1,6 @@
 'use client'
 
-import { Canvas } from '@react-three/fiber'
+import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { OrbitControls, Float, Html } from '@react-three/drei'
 import { useState } from 'react'
 import { FlameEventArtifact3D } from '@/components/events/flame-event-artifact'
@@ -45,7 +45,7 @@ function Portal({ item, active, onSelect, z }: { item: typeof positions[number];
 
 function Scene({ active, onSelect }: { active: string | null; onSelect: (id: string) => void }) {
   return (
-    <Canvas camera={{ position: [0, 5, 10], fov: 58 }}>
+    <AdaptiveCanvas camera={{ position: [0, 5, 10], fov: 58 }}>
       <color attach="background" args={['#02040a']} />
       <fog attach="fog" args={['#02040a', 10, 30]} />
       <ambientLight intensity={0.35} />
@@ -59,7 +59,7 @@ function Scene({ active, onSelect }: { active: string | null; onSelect: (id: str
       <Portal item={positions[3]} z={-8} active={active === 'administration'} onSelect={() => onSelect('administration')} />
       <gridHelper args={[28, 28, '#1e293b', '#0f172a']} position={[0, -0.15, -5]} />
       <OrbitControls enablePan={false} minDistance={7} maxDistance={15} maxPolarAngle={1.45} minPolarAngle={0.45} />
-    </Canvas>
+    </AdaptiveCanvas>
   )
 }
 

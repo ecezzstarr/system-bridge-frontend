@@ -22,6 +22,7 @@ import { getAuthHeaders } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import { visiblePoll } from '@/lib/visible-poll'
 
 type Agent = {
   agent_key: string
@@ -131,17 +132,11 @@ export default function DevelopmentFoundryPage() {
     }
   }, [refresh])
 
-  useEffect(() => {
-    void refresh()
-    const readTimer = window.setInterval(() => void refresh(), 30000)
-    return () => window.clearInterval(readTimer)
-  }, [refresh])
+  useEffect(() => visiblePoll(() => refresh(), 30000), [refresh])
 
   useEffect(() => {
     if (!continuousFloor) return
-    const timer = window.setInterval(() => void pulse(false), 60000)
-    void pulse(false)
-    return () => window.clearInterval(timer)
+    return visiblePoll(() => pulse(false), 60000)
   }, [continuousFloor, pulse])
 
   const queueWork = async () => {

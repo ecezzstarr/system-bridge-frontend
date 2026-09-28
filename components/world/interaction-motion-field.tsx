@@ -89,7 +89,7 @@ export function InteractionMotionField({
   const canvasRef=useRef<HTMLCanvasElement>(null)
   const budget=useAdaptiveRuntime()
   const onscreen=useOnscreen(canvasRef,config.world.enabled)
-  const reduceMotion=budget.reducedMotion
+  const reduceMotion=budget.reducedMotion||budget.level===0
   const [impulse,setImpulse]=useState({flame:0,river:0,heat:0})
   const impulseTimer=useRef<number|null>(null)
   const world=config.world
@@ -147,8 +147,8 @@ export function InteractionMotionField({
     let height=1
     let dpr=1
 
-    const embers=buildEmbers(budget.level===2?60:budget.level===1?28:10)
-    const flames=buildFlames(budget.level===2?18:budget.level===1?10:5)
+    const embers=buildEmbers(budget.level===2?60:budget.level===1?18:6)
+    const flames=buildFlames(budget.level===2?18:budget.level===1?7:3)
 
     const resize=()=>{
       const rect=canvas.getBoundingClientRect()
@@ -170,7 +170,7 @@ export function InteractionMotionField({
       ctx.globalCompositeOperation='lighter'
       ctx.lineCap='round'
 
-      const bands=budget.level===2?7:3
+      const bands=budget.level===2?7:budget.level===1?2:1
       for(let band=0;band<bands;band++){
         const p=band/(bands-1)
         const y=baseY+p*height*.22

@@ -13,6 +13,7 @@ import {
 } from '@/lib/weave-event'
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
 import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
+import { visiblePoll } from '@/lib/visible-poll'
 
 const ROLE_LABELS: Record<EventRole, string> = {
   client: 'CLIENT',
@@ -31,10 +32,7 @@ export default function PositionEventWorld({
   const [now, setNow] = useState(() => new Date())
   const [event, setEvent] = useState<WeaveEvent>(FLAME_EVENT)
 
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1000)
-    return () => window.clearInterval(timer)
-  }, [])
+  useEffect(() => visiblePoll(() => setNow(new Date()), 1000), [])
 
   useEffect(() => {
     let mounted = true
