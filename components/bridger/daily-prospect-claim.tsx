@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { getAuthHeaders } from '@/lib/auth-client'
 import { openWhatsAppWithNumber } from '@/components/external-apps-nav'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
+import { visiblePoll } from '@/lib/visible-poll'
 
 export function DailyProspectClaim() {
   const [loading, setLoading] = useState(true)
@@ -15,11 +16,11 @@ export function DailyProspectClaim() {
   const [claim, setClaim] = useState<any>(null)
   const [error, setError] = useState('')
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (silent = false, signal?: AbortSignal) => {
+    if (!silent) setLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/bridger/daily-prospect', { headers: getAuthHeaders() })
+      const response = await fetch('/api/bridger/daily-prospect', { headers: getAuthHeaders(), cache: 'no-store', signal })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Unable to load daily prospect')
       setClaimed(Boolean(data.claimed))
@@ -27,12 +28,13 @@ export function DailyProspectClaim() {
     } catch (err: any) {
       setError(err?.message || 'Unable to load daily prospect')
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
   useEffect(() => {
-    load()
+    void load()
+    return visiblePoll(signal => load(true, signal), 60000, false)
   }, [])
 
   const claimToday = async () => {
@@ -104,8 +106,9 @@ export function DailyProspectClaim() {
         )}
 
         {!loading && error && (
-          <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-200">
-            {error}
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-200">
+            <span>{error}</span>
+            <Button variant="outline" size="sm" onClick={() => void load()} className="border-amber-400/20 text-amber-100"><RefreshCw className="mr-2 h-4 w-4"/>Refresh intake</Button>
           </div>
         )}
 
