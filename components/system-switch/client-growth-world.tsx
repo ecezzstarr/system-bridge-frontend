@@ -64,6 +64,9 @@ export default function ClientGrowthWorld({
     source_system_id:'',
     target_system_id:'',
     route_type:'commerce',
+    source_output:'movement',
+    target_input:'movement',
+    integration_type:'direct',
   })
   const [movement,setMovement]=useState<Record<string,{title:string;value:string;unit:string;note:string}>>({})
 
@@ -140,7 +143,7 @@ export default function ClientGrowthWorld({
   }
   const createRoute=async()=>{
     const ok=await act({action:'create_business_route',...route},'route')
-    if(ok)setRoute({name:'',source_system_id:'',target_system_id:'',route_type:'commerce'})
+    if(ok)setRoute({name:'',source_system_id:'',target_system_id:'',route_type:'commerce',source_output:'movement',target_input:'movement',integration_type:'direct'})
   }
   const recordMovement=async(routeId:string)=>{
     const draft=movement[routeId]||{title:'',value:'',unit:'',note:''}
