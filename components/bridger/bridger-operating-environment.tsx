@@ -263,7 +263,6 @@ export function BridgerOperatingEnvironment() {
               <WeaveRouteNetwork
                 stations={stations}
                 title="Bridger operating routes"
-                detail="Prospect movement, number supply, Client continuity, position continuity and value record stay synchronized inside one Bridger operation."
               />
             </div>
           </section>
