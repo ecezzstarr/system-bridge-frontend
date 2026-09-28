@@ -335,7 +335,7 @@ export async function POST(request:NextRequest){
       String(ctx.client.file_number),
       String(ctx.client.business_name||ctx.client.name||'Client'),
     )
-    return NextResponse.json({success:true,growth},{headers:{'Cache-Control':'private, no-store'}})
+    return NextResponse.json({success:true,growth,motion:growthMotion(action)},{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){
     console.error('[client/growth-world POST]',error)
     return NextResponse.json({error:'Client growth movement failed'},{status:500})
