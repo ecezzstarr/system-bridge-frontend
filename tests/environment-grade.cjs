@@ -606,3 +606,11 @@ assert.ok(multiplayerFileFolderSource.includes('WEAVE_AI_FILE_FOLDERS'),'Singula
 assert.ok(multiplayerFileFolderSource.includes("department:'flame_ai'|'echo'"),'AI File Folders originate from the Flame AI or Echo department')\nassert.ok(multiplayerFileFolderSource.includes('chosenName:string')&&multiplayerFileFolderSource.includes('chosenLogo:string|null'),'Each AI chooses an individual public name and logo')\nassert.ok(multiplayerFileFolderSource.includes('products:string[]')&&multiplayerFileFolderSource.includes('earnedFlameCoin:number'),'AI File Folders expose products and attributable earnings')
 assert.ok(multiplayerFileFolderSource.includes("privateAuthority:'ai_within_weave_mandate'"),'AI operation remains bounded by WEAVE institutional authority')
 assert.ok(fileFolderOpenWorldSource.includes('data-file-folder-multiplayer-world="human-and-weave-ai"'),'Client File Folder renders the shared multiplayer territory layer')
+
+
+const aiFileFolderEconomySource=read('lib/ai-file-folder-economy.ts')
+assert.ok(aiFileFolderEconomySource.includes("AiFileFolderTier='standard'|'premium'"),'AI Agents must acquire Standard or Premium File Folder tiers')
+assert.ok(aiFileFolderEconomySource.includes('usesSharedItemCatalog:true')&&aiFileFolderEconomySource.includes('usesSharedBlueprintCatalog:true'),'AI Agents use the same parts/materials and blueprint catalogs as Clients')
+assert.ok(aiFileFolderEconomySource.includes('usesSharedFormationClock:true')&&aiFileFolderEconomySource.includes('effectiveBuildMinutes'),'AI construction uses the same real-time formation engine as Clients')
+assert.ok(aiFileFolderEconomySource.includes('usesSharedBoostRules:true')&&aiFileFolderEconomySource.includes('freeBoosts:false'),'AI Agents purchase boosts under the same rules rather than receiving free acceleration')
+assert.ok(multiplayerFileFolderSource.includes("fileFolderTier:'none'")&&multiplayerFileFolderSource.includes('systems:[]')&&multiplayerFileFolderSource.includes('products:[]'),'New AI File Folders begin without free systems or products')
