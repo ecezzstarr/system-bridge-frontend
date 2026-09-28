@@ -447,3 +447,8 @@ const staffTerritorySource = read('app/(app)/weave/file-folder/[fileNumber]/page
 assert.ok(territoryObservationSource.includes('data-territory-observer="progress-visible"')&&territoryObservationSource.includes('Customer Door maturity'),'observable Client territories expose construction and public business progress')
 assert.ok(territoryObservationSource.includes('wallet, private records and build controls remain with the Lord/Lady'),'territory observation does not expose Client authority')
 assert.ok(staffTerritorySource.includes('Territory observer')&&staffTerritorySource.includes('authority remains with the Client'),'authorized staff enter Client territory as observers rather than owners')
+
+const publicInternetWorldSource = read('app/market/page.tsx')
+assert.ok(publicInternetWorldSource.includes('The open internet meets Client-built territories.')&&publicInternetWorldSource.includes('without a WEAVE account'),'public Client territory is reachable as open-internet commerce rather than an authenticated WEAVE-only world')
+assert.ok(publicInternetWorldSource.includes("const doorName=config.platformName || store.name || 'Customer Door'"),'public market names the Client Door from the Client platform/company identity')
+assert.ok(customerDoorWorldSource.includes('Open internet · no WEAVE account')&&customerDoorWorldSource.includes('Enter ${doorName}'),'Client-named Customer Door is directly usable by non-WEAVE visitors')
