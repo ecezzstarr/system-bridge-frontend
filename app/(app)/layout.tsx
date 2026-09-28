@@ -95,7 +95,20 @@ export default function AppLayout({
   // The global environment transit owns the visible loading experience.
   // This marker keeps the destination covered until auth has resolved.
   if (!isInitialized || isLoading || (isRedirecting && !isAuthenticated)) {
-    return <div className="min-h-dvh" data-environment-pending="true" aria-hidden="true" />
+    return (
+      <div
+        className="flex min-h-dvh items-center justify-center bg-transparent px-4 text-center"
+        data-environment-pending="true"
+        role="status"
+        aria-live="polite"
+      >
+        <div className="max-w-sm">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border border-amber-200/15 border-t-amber-200 motion-reduce:animate-none" />
+          <p className="mt-4 text-[9px] font-black uppercase tracking-[.18em] text-amber-100">Opening WEAVE</p>
+          <p className="mt-2 text-xs leading-5 text-slate-400">Restoring your position and the current environment.</p>
+        </div>
+      </div>
+    )
   }
 
   // Only render children if authenticated

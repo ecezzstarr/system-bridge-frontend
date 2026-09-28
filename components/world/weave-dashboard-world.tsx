@@ -270,7 +270,7 @@ export function WeaveDashboardWorld({
           className={'group absolute '+positionFor(item.label)+' flex min-w-0 items-center gap-2'}
         >
           <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cyan-100/20 bg-[#03101a]/80 shadow-[0_0_24px_rgba(34,211,238,.13)] backdrop-blur-md transition group-hover:scale-110 group-hover:border-cyan-200/50">
-            <span className="absolute inset-[-5px] animate-pulse rounded-full border border-cyan-300/10"/>
+            <span className="absolute inset-[-5px] rounded-full border border-cyan-300/10"/>
             <Icon className="h-4 w-4 text-cyan-100"/>
           </span>
           <span className="max-w-[92px] sm:max-w-[150px]">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '@/lib/auth-provider'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { Loader2, Users, Search, ShieldCheck, Orbit, X, MoveRight } from 'lucide-react'
 import { WEAVE_ARCHITECTURE } from '@/lib/weave-architecture'
 
@@ -58,6 +59,7 @@ export default function WeavePage() {
   const router = useRouter()
   const [state, setState] = useState<WorldState | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [folders, setFolders] = useState<FileFolder[]>([])
   const [loadingFolders, setLoadingFolders] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -71,34 +73,92 @@ export default function WeavePage() {
       return
     }
 
-    // Load World State
-    fetch('/api/world/state', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((response) => response.json())
-      .then((data) => setState(data.success ? data.state : null))
-      .catch(() => setState(null))
-      .finally(() => setLoading(false))
+    const controller = new AbortController()
+    let mounted = true
 
-    // Load File Folders if support
-    if (isSupport) {
+    const loadWorld = async () => {
+      setLoading(true)
+      setLoadError('')
+      try {
+        const response = await fetchWithTimeout('/api/world/state', {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+          cache: 'no-store',
+        }, 10000)
+        const data = await response.json()
+        if (!response.ok || !data.success || !data.state) {
+          throw new Error(data?.error || 'Unable to read WEAVE world state.')
+        }
+        if (mounted) setState(data.state)
+      } catch (error) {
+        if (!mounted || controller.signal.aborted) return
+        setState(null)
+        setLoadError(error instanceof Error ? error.message : 'Unable to open Bridge Plaza.')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    const loadFolders = async () => {
+      if (!isSupport) return
       setLoadingFolders(true)
-      fetch('/api/world/file-folders', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(res => res.json())
-        .then(data => { if (data.success) setFolders(data.folders) })
-        .catch(err => console.error('Failed to load folders:', err))
-        .finally(() => setLoadingFolders(false))
+      try {
+        const response = await fetchWithTimeout('/api/world/file-folders', {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+          cache: 'no-store',
+        }, 10000)
+        const data = await response.json()
+        if (mounted && response.ok && data.success) setFolders(data.folders || [])
+      } catch (error) {
+        if (mounted && !controller.signal.aborted) console.error('Failed to load folders:', error)
+      } finally {
+        if (mounted) setLoadingFolders(false)
+      }
+    }
+
+    void loadWorld()
+    void loadFolders()
+
+    return () => {
+      mounted = false
+      controller.abort()
     }
   }, [token, isSupport])
 
   if (loading) {
-    return <div className="min-h-[70vh]" data-environment-pending="true" aria-hidden="true" />
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center px-4 text-center" data-environment-pending="true" role="status" aria-live="polite">
+        <div>
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border border-amber-200/15 border-t-amber-200 motion-reduce:animate-none" />
+          <p className="mt-4 text-[9px] font-black uppercase tracking-[.18em] text-amber-100">Opening Bridge Plaza</p>
+          <p className="mt-2 text-xs text-slate-400">Reading your WEAVE position and district state.</p>
+        </div>
+      </div>
+    )
   }
 
-  if (!user || !state) {
-    return <div className="p-8 text-muted-foreground">Sign in to enter Weave.</div>
+  if (!user) {
+    return <div className="p-8 text-muted-foreground">Sign in to enter WEAVE.</div>
+  }
+
+  if (!state) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-xl items-center justify-center p-5 text-center">
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-200">Bridge Plaza · Recovery</p>
+          <h1 className="mt-3 text-2xl font-black text-white">The world state did not finish opening.</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-400">{loadError || 'WEAVE could not read the current world state.'}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-5 rounded-full border border-amber-200/20 px-5 py-3 text-[10px] font-black uppercase tracking-[.12em] text-amber-100"
+          >
+            Reopen Bridge Plaza
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // Client Crossing View
