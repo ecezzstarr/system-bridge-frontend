@@ -3,6 +3,7 @@ import { WORLD_RULES } from './world/constants'
 
 export type CommissionActivity =
   | 'prospect_package_purchase'
+  | 'number_purchase'
   | 'arena_win'
   | 'casino_win'
   | 'client_deposit'
@@ -37,7 +38,7 @@ export async function creditAgentCommission(params: {
     let rate = Number(agentProfiles[0]?.commission_rate) || WORLD_RULES.AGENT_LEAD_YIELD_RATE
 
     // Apply refined commission structure
-    if (activity === 'prospect_package_purchase') {
+    if (activity === 'prospect_package_purchase' || activity === 'number_purchase') {
       rate = WORLD_RULES.AGENT_LEAD_YIELD_RATE // 30% on lead purchase
     } else if (activity === 'client_deposit') {
       rate = WORLD_RULES.AGENT_CROSSING_YIELD_RATE // 5% of Weave's 40% company percentage = 2% total
