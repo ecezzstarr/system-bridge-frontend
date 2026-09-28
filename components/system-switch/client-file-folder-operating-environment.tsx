@@ -683,6 +683,22 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               </div>
             </div>
 
+            <section className="border-y border-emerald-200/10 bg-emerald-300/[0.02] px-4 py-5" data-formation-intelligence="field-evidence">
+              <p className="text-[8px] font-black uppercase tracking-[.2em] text-emerald-300">Field Evidence · World Use</p>
+              <h3 className="mt-1 text-lg font-black text-white">Potential is recognized through movement already happening.</h3>
+              <p className="mt-2 max-w-3xl text-[10px] leading-5 text-slate-400">Investment can fund materials, parts, acceleration and larger systems. Recognition remains separate: it comes from customers, visitors and participants actually using what this territory has put into the world.</p>
+              <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-5">
+                {[
+                  ['Customer orders',world?.growth?.vitality?.fieldEvidence?.customerOrders||0],
+                  ['Completed operations',world?.growth?.vitality?.fieldEvidence?.completedOperations||0],
+                  ['Route movements',world?.growth?.vitality?.fieldEvidence?.routeMovements||0],
+                  ['Public programs',world?.growth?.vitality?.fieldEvidence?.streamPrograms||0],
+                  ['Active participation',world?.growth?.vitality?.fieldEvidence?.activeLegions||0],
+                ].map(([label,value])=><div key={String(label)} className="border-l border-emerald-300/20 bg-black/20 p-3"><p className="text-lg font-black text-white">{String(value)}</p><p className="mt-1 text-[8px] font-black uppercase tracking-wider text-slate-500">{label}</p></div>)}
+              </div>
+              <p className="mt-3 text-[9px] font-black uppercase tracking-[.14em] text-emerald-200">{world?.growth?.vitality?.fieldEvidence?.demonstrated?'Demonstrated movement present':'Awaiting demonstrated movement'}</p>
+            </section>
+
             <section className="border-y border-cyan-200/10 bg-cyan-300/[0.025] px-4 py-5" data-formation-intelligence="capability-composition">
               <div className="flex items-end justify-between gap-3">
                 <div><p className="text-[8px] font-black uppercase tracking-[.2em] text-cyan-300">Formation Intelligence · Emergent capability</p><h3 className="mt-1 text-lg font-black text-white">What this territory can become because its systems are woven.</h3></div>
