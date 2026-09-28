@@ -85,6 +85,13 @@ function customerDoorFormation(progress:number){
   return CUSTOMER_DOOR_FORMATION.map((part,index)=>({...part,state:progress>=part.at?'formed':index===0||progress>=CUSTOMER_DOOR_FORMATION[index-1].at?'forming':'waiting'}))
 }
 
+function buildProgress(build:any,now:number){
+  const completesAt=new Date(build?.completes_at||now).getTime()
+  const totalSeconds=Math.max(1,Number(build?.duration_minutes||Number(build?.duration_hours||1)*60)*60)
+  const remainingSeconds=Math.max(0,(completesAt-now)/1000)
+  return Math.min(100,Math.max(0,((totalSeconds-remainingSeconds)/totalSeconds)*100))
+}
+
 function operatingEffect(item: any) {
   const value = Number(item.effect_value || 0)
   const effects: Record<string,string> = {
@@ -235,7 +242,14 @@ export default function FileFolderOpenWorld({
   const fundingGateLocked = Boolean(buildFunding && !buildFunding.publicDoorUnlocked && world?.customerDoor?.formation_status === 'funding_gate')
   const completedBuilds = (world?.builds || []).filter((build: any) => build.status === 'complete')
   const availableBuildItems = (world?.inventory || []).filter((item: any) => Number(item.quantity || 0) > 0)
-  const buildMarketItems = (world?.items || []).filter((item: any) => item.build_effect !== 'speed_boost')
+  const isCapabilityPart=(item:any)=>{
+    const category=String(item?.category||'')
+    const effect=String(item?.build_effect||'component')
+    return category==='accessible_part'||category==='build_part'||category.endsWith('_upgrade')||
+      ['route_capacity','legion_capacity','stream_capacity','audience_capacity','ai_node','automation','verification'].includes(effect)
+  }
+  const buildPartItems = (world?.items || []).filter((item:any)=>item.build_effect!=='speed_boost'&&isCapabilityPart(item))
+  const buildMarketItems = (world?.items || []).filter((item: any) => item.build_effect !== 'speed_boost'&&!isCapabilityPart(item))
   const boostItems = (world?.items || []).filter((item: any) => item.build_effect === 'speed_boost')
 
   return (
