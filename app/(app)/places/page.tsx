@@ -4,121 +4,212 @@ import Link from 'next/link'
 import {
   ArrowRight,
   BriefcaseBusiness,
-  Gamepad2,
+  Building2,
   GitBranch,
-  Globe2,
   MessageCircle,
+  RadioTower,
   Sparkles,
   Store,
+  Users,
+  WandSparkles,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { ClientBuildPull } from '@/components/world/client-build-pull'
 
-const DISTRICTS = [
+type Place = {
+  label:string
+  detail:string
+  href:string
+  consequence:string
+  icon:any
+  roles?:string[]
+}
+
+const PLACES:Place[] = [
   {
-    label: 'Enterprise Exchange',
-    detail: 'Acquire or inspect enterprise-scale software, hardware and operating systems.',
-    href: '/marketplace',
-    icon: Store,
-    tone: 'border-emerald-300/20 bg-emerald-400/[0.05] text-emerald-200',
-    consequence: 'System acquisition path',
+    label:'Company Loops',
+    detail:'Enter active company movement, agreements and participation.',
+    href:'/company/loops',
+    consequence:'Institutional movement',
+    icon:GitBranch,
   },
   {
-    label: 'Company Loops',
-    detail: 'Enter current company movement, agreements and participation.',
-    href: '/company/loops',
-    icon: GitBranch,
-    tone: 'border-amber-300/20 bg-amber-400/[0.05] text-amber-200',
-    consequence: 'Institutional participation',
+    label:'Lounge',
+    detail:'Continue human communication inside the same WEAVE world.',
+    href:'/lounge',
+    consequence:'Shared communication',
+    icon:MessageCircle,
   },
   {
-    label: 'Arena',
-    detail: 'Enter participant-versus-participant contest movement.',
-    href: '/arena',
-    icon: Gamepad2,
-    tone: 'border-sky-300/20 bg-sky-400/[0.05] text-sky-200',
-    consequence: 'Competitive participation',
+    label:'Echo',
+    detail:'Operate AI-assisted outreach, routing and continuing human interaction.',
+    href:'/echo',
+    consequence:'AI participation',
+    icon:Sparkles,
   },
   {
-    label: 'Pattern',
-    detail: 'Enter user-versus-system pattern play.',
-    href: '/casino',
-    icon: Sparkles,
-    tone: 'border-violet-300/20 bg-violet-400/[0.05] text-violet-200',
-    consequence: 'System interaction',
+    label:'Agent Operating Room',
+    detail:'Develop Bridgers, commissions, channels and Agent movement.',
+    href:'/agent/functions',
+    consequence:'Agent work',
+    icon:Users,
+    roles:['agent'],
   },
   {
-    label: 'Lounge',
-    detail: 'Move into shared WEAVE communication without leaving the same world.',
-    href: '/lounge',
-    icon: MessageCircle,
-    tone: 'border-cyan-300/20 bg-cyan-400/[0.05] text-cyan-200',
-    consequence: 'Human communication',
+    label:'Agility',
+    detail:'Operate the Agent food-package movement and fulfillment path.',
+    href:'/agility',
+    consequence:'Agent commerce',
+    icon:Store,
+    roles:['agent'],
   },
   {
-    label: 'Bridge Plaza',
-    detail: 'Return to the world map and Client support entrance.',
-    href: '/weave',
-    icon: Globe2,
-    tone: 'border-white/10 bg-white/[0.035] text-slate-200',
-    consequence: 'World navigation',
+    label:'Bridger Operating Room',
+    detail:'Operate prospects, Client movement, support and continuance.',
+    href:'/bridger/functions',
+    consequence:'Bridger work',
+    icon:Building2,
+    roles:['bridger'],
+  },
+  {
+    label:'Prospect Market',
+    detail:'Acquire authorized prospects for Bridge Radiance movement.',
+    href:'/weave/market/prospects',
+    consequence:'Prospect acquisition',
+    icon:RadioTower,
+    roles:['bridger'],
+  },
+  {
+    label:'Worldwide Number Bay',
+    detail:'Acquire the authenticated number required for authorized outreach.',
+    href:'/bridger/numbers',
+    consequence:'Communication infrastructure',
+    icon:RadioTower,
+    roles:['bridger'],
+  },
+  {
+    label:'Administration Operating Room',
+    detail:'Enter company authority, recognition, verification and continuity.',
+    href:'/admin/functions',
+    consequence:'Administration',
+    icon:Building2,
+    roles:['admin'],
+  },
+  {
+    label:'Development Foundry',
+    detail:'Direct the AI development agents that continuously improve WEAVE.',
+    href:'/admin/development-agents',
+    consequence:'System development',
+    icon:WandSparkles,
+    roles:['admin'],
   },
 ]
 
 export default function BusinessDistrictPage() {
   const { user } = useAuth()
-  const staffRole = user?.role === 'agent' || user?.role === 'bridger' || user?.role === 'admin'
-    ? user.role
+  const role = user?.role || 'client'
+  const staffRole = role === 'agent' || role === 'bridger' || role === 'admin'
+    ? role
     : null
 
+  const places = PLACES.filter(place => !place.roles || place.roles.includes(role))
+
   return (
-    <main className="mx-auto w-full max-w-6xl p-3 md:p-6">
-      <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-violet-300/15 bg-[#030a15]/72">
-        <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(139,92,246,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(16,185,129,.08),transparent_28%)] p-5 md:p-7">
-          <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Business District</p>
-          <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">One district routes movement into the canonical WEAVE systems.</h1>
-          <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
-            This district no longer embeds miniature copies of Market, Arena or Lounge. Each destination is one authoritative system with its own state and record.
+    <main
+      className="relative min-h-[calc(100dvh-4rem)] overflow-hidden px-3 pb-10 pt-20 md:px-6"
+      data-weave-room="business-district"
+      data-business-district="continuous-work-avenue"
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-amber-200/20 to-transparent" />
+        <div className="absolute left-1/2 top-24 h-[70%] w-[min(72vw,760px)] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,.055),transparent_68%)] blur-3xl" />
+      </div>
+
+      <section className="relative mx-auto w-full max-w-5xl">
+        <header className="mx-auto max-w-3xl text-center">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-amber-200/20 bg-amber-300/[0.06]">
+            <BriefcaseBusiness className="h-5 w-5 text-amber-200" />
+          </div>
+          <p className="mt-4 text-[8px] font-black uppercase tracking-[.24em] text-amber-200/70">Bridge Plaza · Business District</p>
+          <h1 className="mt-3 text-3xl font-black tracking-tight text-white md:text-5xl">Work is organized into places.</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+            This district does not duplicate the rest of WEAVE. It houses the working places attached to your position, while Enterprise, Arena, Knowledge and System Switch remain separate districts in Bridge Plaza.
           </p>
         </header>
 
-        <div className="grid gap-4 p-4 md:p-6 lg:grid-cols-[1fr_320px]">
-          <section className="weave-reading-surface rounded-3xl p-4 md:p-5">
-            <div className="flex items-center gap-2 border-b border-white/10 pb-4">
-              <BriefcaseBusiness className="h-5 w-5 text-violet-300"/>
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Movement portals</p>
-                <p className="mt-1 text-xs text-slate-400">Choose the consequence you want, then enter that system.</p>
-              </div>
-            </div>
+        <div className="relative mx-auto mt-10 max-w-4xl">
+          <div className="absolute bottom-0 left-5 top-0 w-px bg-gradient-to-b from-amber-200/30 via-sky-200/15 to-transparent md:left-1/2 md:-translate-x-1/2" />
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {DISTRICTS.map(item=>{
-                const Icon=item.icon
-                return (
-                  <Link key={item.label} href={item.href} className={`group rounded-2xl border p-4 transition hover:-translate-y-0.5 ${item.tone}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/25"><Icon className="h-4 w-4"/></div>
-                      <ArrowRight className="h-4 w-4 opacity-60 transition group-hover:translate-x-0.5 group-hover:opacity-100"/>
+          <div className="space-y-3">
+            {places.map((place,index)=>{
+              const Icon=place.icon
+              const right=index%2===1
+              return (
+                <div
+                  key={place.href}
+                  className={`relative grid min-h-28 grid-cols-[40px_minmax(0,1fr)] items-stretch gap-3 md:grid-cols-[1fr_56px_1fr] md:gap-5`}
+                >
+                  <div className={`hidden md:block ${right?'md:col-start-3':''}`}>
+                    <Link
+                      href={place.href}
+                      className="group flex h-full min-h-28 flex-col justify-center border-y border-white/[0.07] px-5 py-4 transition hover:border-amber-200/20 hover:bg-white/[0.018]"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-[8px] font-black uppercase tracking-[.16em] text-amber-200/60">{place.consequence}</p>
+                          <h2 className="mt-1 text-lg font-black text-white">{place.label}</h2>
+                        </div>
+                        <ArrowRight className="h-4 w-4 shrink-0 text-slate-600 transition group-hover:translate-x-1 group-hover:text-amber-200" />
+                      </div>
+                      <p className="mt-2 max-w-xl text-xs leading-5 text-slate-400">{place.detail}</p>
+                    </Link>
+                  </div>
+
+                  <div className="relative z-10 flex items-center justify-center md:col-start-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-200/20 bg-[#07101b] shadow-[0_0_28px_rgba(245,158,11,.08)]">
+                      <Icon className="h-4 w-4 text-amber-100" />
                     </div>
-                    <p className="mt-3 text-sm font-black text-white">{item.label}</p>
-                    <p className="mt-1 text-[11px] leading-5 text-slate-300">{item.detail}</p>
-                    <p className="mt-3 text-[8px] font-black uppercase tracking-[0.12em] opacity-80">{item.consequence}</p>
+                  </div>
+
+                  <Link
+                    href={place.href}
+                    className="group flex min-h-28 flex-col justify-center border-y border-white/[0.07] px-1 py-4 transition hover:border-amber-200/20 md:hidden"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-[8px] font-black uppercase tracking-[.16em] text-amber-200/60">{place.consequence}</p>
+                        <h2 className="mt-1 text-base font-black text-white">{place.label}</h2>
+                      </div>
+                      <ArrowRight className="h-4 w-4 shrink-0 text-slate-600 transition group-hover:translate-x-1 group-hover:text-amber-200" />
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-slate-400">{place.detail}</p>
                   </Link>
-                )
-              })}
-            </div>
-          </section>
 
-          <aside className="space-y-4">
-            <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">District rule</p>
-              <p className="mt-3 text-xs leading-5 text-slate-300">A portal is navigation, not duplication. Market data lives in Market. Arena state lives in Arena. Communication lives in Lounge. The Business District only organizes how those systems relate.</p>
-            </section>
-
-            {staffRole && <ClientBuildPull role={staffRole} />}
-          </aside>
+                  {!right && (
+                    <div className="hidden md:col-start-3 md:flex md:items-center">
+                      <p className="max-w-xs text-[9px] font-semibold uppercase tracking-[.12em] text-slate-600">
+                        Place {String(index+1).padStart(2,'0')} · enter to operate
+                      </p>
+                    </div>
+                  )}
+                  {right && (
+                    <div className="hidden md:col-start-1 md:row-start-1 md:flex md:items-center md:justify-end">
+                      <p className="max-w-xs text-right text-[9px] font-semibold uppercase tracking-[.12em] text-slate-600">
+                        Place {String(index+1).padStart(2,'0')} · enter to operate
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
+
+        {staffRole && (
+          <div className="mx-auto mt-10 max-w-3xl border-t border-white/[0.07] pt-7">
+            <ClientBuildPull role={staffRole} />
+          </div>
+        )}
       </section>
     </main>
   )
