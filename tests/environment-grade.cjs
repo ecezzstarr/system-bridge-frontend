@@ -240,7 +240,7 @@ assert.ok(!clientFileFolder3d.includes('<gridHelper'),'File Folder removes the o
 assert.ok(clientFileFolder3d.includes('CommandHall')&&clientFileFolder3d.includes('MarketDistrict')&&clientFileFolder3d.includes('EnterpriseKeep'),'File Folder uses grounded architectural districts')
 assert.ok(clientFileFolder3d.includes('FileFolderCamera'),'Selecting a File Folder district redirects the world camera focus')
 assert.ok(clientFileFolder3d.includes('isMarket')&&clientFileFolder3d.includes('isMedia')&&clientFileFolder3d.includes('isEnterprise')&&clientFileFolder3d.includes('isIntelligence')&&clientFileFolder3d.includes('isNetwork'),'Completed systems retain distinct architectural silhouettes by function')
-assert.ok(fileFolderOpenWorld.includes('Materials Depot')&&fileFolderOpenWorld.includes('Construction Yard')&&fileFolderOpenWorld.includes('Build Intelligence'),'Build support surfaces are ordered by construction purpose')
+assert.ok(fileFolderOpenWorld.includes('Materials Depot')&&fileFolderOpenWorld.includes('Construction Yard')&&fileFolderOpenWorld.includes('Formation Intelligence'),'Build support surfaces are ordered by construction purpose')
 assert.ok(fileFolderOpenWorld.includes('data-construction-workspace="progressive-site"'),'File Folder construction tools are contained inside one progressive site')
 assert.ok(fileFolderOpenWorld.includes('Walk the build site'),'Construction support navigation behaves as site travel rather than a sidebar page menu')
 assert.ok(fileFolderOpenWorld.includes('data-build-site-awareness="compact-sticky-rail"'),'Build-site awareness stays in one compact sticky rail on mobile')
