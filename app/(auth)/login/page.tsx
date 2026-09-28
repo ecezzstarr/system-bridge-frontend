@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, Lock, Mail, KeyRound, Loader2 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
-import { AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
-import { LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
+import { AGILITY_AGENT_REVEAL_KEY, LOOP1_AGENT_REVEAL_KEY } from '@/lib/weave-reveal-campaigns'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 export default function LoginPage() {
@@ -46,8 +45,8 @@ export default function LoginPage() {
 
       if (loggedInUser?.role === 'admin') router.push(administrationPortal ? '/authority/workshops' : '/admin/dashboard')
       else if (loggedInUser?.role === 'agent') {
-        sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
-        sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
+        sessionStorage.setItem(LOOP1_AGENT_REVEAL_KEY, '1')
+        sessionStorage.setItem(AGILITY_AGENT_REVEAL_KEY, '1')
         router.push('/agent/dashboard')
       }
       else if (loggedInUser?.role === 'bridger') router.push('/bridger/dashboard')
