@@ -58,6 +58,7 @@ export const WEAVE_DISTRICTS:WeaveDistrictDefinition[]=[
 const clean=(route:string)=>String(route||'').split('?')[0].split('#')[0]||'/'
 
 export function districtKeyForRoute(route:string,scope?:string):WeaveDistrictKey{
+  if(String(route||'').startsWith('/weave#file-folders'))return 'system-switch'
   const path=clean(route)
 
   if(path.startsWith('/client/system-switch')||path.startsWith('/weave/file-folder/'))return 'system-switch'
