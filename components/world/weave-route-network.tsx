@@ -27,12 +27,10 @@ const TONE:Record<WeaveRouteTone,{line:string;dot:string;icon:string;label:strin
 export function WeaveRouteNetwork({
   stations,
   title='Movement routes',
-  detail='Functions are stations inside one operating environment. Enter one, act, and return with changed state.',
   compact=false,
 }:{
   stations:WeaveRouteStation[]
   title?:string
-  detail?:string
   compact?:boolean
 }){
   const districts:string[]=[]
@@ -52,7 +50,6 @@ export function WeaveRouteNetwork({
           <Route className="h-4 w-4 text-amber-300"/>
           <p data-weave-live-word="station" className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300">{title}</p>
         </div>
-        <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-400">{detail}</p>
       </div>
       <div className="shrink-0 text-left sm:text-right">
         <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-600">Live stations</p>
@@ -82,7 +79,7 @@ export function WeaveRouteNetwork({
                 key={station.label+station.href}
                 href={station.href}
                 data-weave-route-station={station.label}
-                className={'group grid min-h-16 grid-cols-[34px_minmax(0,1fr)_22px] items-center gap-3 border-b border-white/[0.055] px-3 py-3 transition last:border-b-0 '+stationTone.wash+(compact?' sm:min-h-14':' sm:min-h-[72px]')}
+                className={'group grid min-h-14 grid-cols-[34px_minmax(0,1fr)_22px] items-center gap-3 border-b border-white/[0.055] px-3 py-2.5 transition last:border-b-0 '+stationTone.wash+(compact?' sm:min-h-12':' sm:min-h-14')}
               >
                 <span className="relative flex h-8 w-8 items-center justify-center">
                   <span className={'absolute h-2.5 w-2.5 rounded-full border '+stationTone.dot}/>
@@ -93,7 +90,6 @@ export function WeaveRouteNetwork({
                     <span data-weave-live-word="station" className="text-sm font-black text-white">{station.label}</span>
                     <span className="text-[8px] font-black uppercase tracking-[0.12em] text-slate-600">Station {String(index+1).padStart(2,'0')}</span>
                   </span>
-                  <span className="mt-1 block text-[10px] leading-4 text-slate-400">{station.detail}</span>
                 </span>
                 <ArrowRight className={'h-4 w-4 text-slate-700 transition group-hover:translate-x-1 '+stationTone.icon}/>
               </Link>
