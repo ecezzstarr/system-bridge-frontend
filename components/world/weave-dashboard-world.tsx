@@ -78,8 +78,10 @@ const ROLE: Record<WorldRole, {
     links: [
       { label: 'Bridge AI', detail: 'Crossing → Client AI support', href: '/bridger/bridge-ai', icon: GitBranch, tone: 'sky' },
       { label: 'Bridge Radiance', detail: 'Interact with your active Prospects', href: '/bridger/bridge-radiance', icon: MessageCircle, tone: 'sky' },
+      { label: 'Worldwide Number Bay', detail: 'Numbers, orders and verification', href: '/bridger/numbers', icon: Radio, tone: 'sky' },
       { label: 'Prospect Market', detail: 'Available prospects', href: '/weave/market/prospects', icon: ShoppingBag, tone: 'gold' },
       { label: 'Clients', detail: 'Client continuity and support', href: '/bridger/clients', icon: Users, tone: 'emerald' },
+      { label: 'Continuance', detail: 'Partnership standing and renewal', href: '/bridger/subscription', icon: ShieldCheck, tone: 'emerald' },
       { label: 'Guidance', detail: 'Company support', href: '/company-chat', icon: Headphones, tone: 'sky' },
       { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Software + infrastructure', href: '/marketplace', icon: Store, tone: 'sky' },
       { label: 'Record', detail: 'Ledger and preserved movement', href: '/ledger', icon: CircleDollarSign, tone: 'emerald' },
@@ -199,7 +201,7 @@ export function WeaveDashboardWorld({
   const visibleLinks = copy.links.filter(item=>isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
 
   if (role !== 'client') {
-    const positions=['left-[50%] top-[25%] -translate-x-1/2','left-[16%] top-[39%]','right-[12%] top-[39%]','left-[22%] top-[61%]','right-[18%] top-[61%]','left-[37%] top-[77%]','right-[30%] top-[77%]','left-[50%] top-[51%] -translate-x-1/2','left-[8%] top-[73%]','right-[7%] top-[72%]']
+    const positions=['left-[50%] top-[25%] -translate-x-1/2','left-[16%] top-[39%]','right-[12%] top-[39%]','left-[22%] top-[61%]','right-[18%] top-[61%]','left-[37%] top-[77%]','right-[30%] top-[77%]','left-[50%] top-[51%] -translate-x-1/2','left-[8%] top-[73%]','right-[7%] top-[72%]','left-[10%] top-[52%]','right-[9%] top-[53%]']
     return <section className="weave-dashboard-world relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-role-world={role}>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_48%,rgba(14,116,144,.15),transparent_27%),radial-gradient(ellipse_at_50%_70%,rgba(245,158,11,.05),transparent_38%),linear-gradient(180deg,#02070d_0%,#07111a_50%,#02070b_100%)]"/>
       <div className="absolute inset-x-[-12%] bottom-[-22%] h-[78%] [transform:perspective(520px)_rotateX(58deg)] bg-[linear-gradient(rgba(56,189,248,.065)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,.065)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_top,black,transparent_92%)]"/>
