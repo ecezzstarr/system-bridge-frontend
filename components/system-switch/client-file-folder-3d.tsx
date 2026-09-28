@@ -509,7 +509,7 @@ export function ClientFileFolder3D({
 
   const districts=useMemo<District[]>(()=>[
     {key:'command',label:'Command Hall',tone:'sky'},
-    {key:'builds',label:'Construction Yard',tone:'violet'},
+    {key:'builds',label:'Formation Yard',tone:'violet'},
     {key:'business',label:'Market District',tone:'emerald'},
     {key:'enterprise',label:'Enterprise Territory',tone:'amber'},
     ...(premiumSound?[{key:'sound' as const,label:'Sound Pavilion',tone:'rose' as const}]:[]),
@@ -529,15 +529,15 @@ export function ClientFileFolder3D({
       ? "absolute left-3 top-[7.5rem] z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-5 sm:top-[8.5rem] sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
       : "absolute left-3 top-3 z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
     }>
-      <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Persistent construction territory</p>
-      <p className="mt-1 text-xs font-black text-white">The File Folder physically changes as the Client builds.</p>
-      <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">Foundation → frame → structure → integration → commissioning → live building.</p>
+      <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Weaving Territory</p>
+      <p className="mt-1 text-xs font-black text-white">Every completed technology becomes part of one connected Client territory.</p>
+      <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">Purpose → formation → parts → connection → commissioning → system in motion.</p>
     </div>
 
     <div className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>
       <div className="rounded-xl border border-cyan-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Constructing</p><p className="text-sm font-black text-amber-100">{activeBuilds.length}</p></div>
-      <div className="rounded-xl border border-emerald-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Live structures</p><p className="text-sm font-black text-emerald-100">{completed}</p></div>
-      <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Build formation</p><p className="text-sm font-black text-white">{average}%</p></div>
+      <div className="rounded-xl border border-emerald-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Systems in motion</p><p className="text-sm font-black text-emerald-100">{completed}</p></div>
+      <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Formation state</p><p className="text-sm font-black text-white">{average}%</p></div>
     </div>
 
     <div className={territoryMode ? "h-full min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"}>
