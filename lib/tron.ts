@@ -125,12 +125,16 @@ export async function sendTrx(
     })
     
     const amountSun = trxToSun(amountTrx)
+    const fromAddress = tronWeb.defaultAddress.base58
+    if (!fromAddress) {
+      throw new Error('Platform TRON address is unavailable')
+    }
     
     // Create and sign transaction
     const transaction = await tronWeb.transactionBuilder.sendTrx(
       toAddress,
       amountSun,
-      tronWeb.defaultAddress.base58
+      fromAddress
     )
     
     const signedTx = await tronWeb.trx.sign(transaction)

@@ -50,6 +50,7 @@ export type ClientGrowthSnapshot={
     application:any|null
   }
   routes:any[]
+  compositions:ReturnType<typeof recognizeCompositions>
 }
 
 const COMPOSITION_RULES=[

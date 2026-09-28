@@ -144,8 +144,8 @@ export function clearToken(): void {
     } catch (e) {
       // Silently fail
     }
-    (window as any).__auth_token = null
-    (window as any).__auth_user = null
+    ;(window as any).__auth_token = null
+    ;(window as any).__auth_user = null
   }
 }
 

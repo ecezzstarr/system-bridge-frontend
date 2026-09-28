@@ -43,6 +43,14 @@ function formatViews(count: number) {
   return count.toString()
 }
 
+type PresenceStatus = 'online' | 'offline' | 'away' | 'busy'
+
+function normalizePresence(status?: string): PresenceStatus | undefined {
+  return status === 'online' || status === 'offline' || status === 'away' || status === 'busy'
+    ? status
+    : undefined
+}
+
 function TipDialog({ videoId, onSuccess }: { videoId: string; onSuccess: () => void }) {
   const [amount, setAmount] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -233,7 +241,7 @@ export default function VideoFeedPage() {
                           </AvatarFallback>
                         </Avatar>
                         <PresenceIndicator
-                          status={video.user.presence}
+                          status={normalizePresence(video.user.presence)}
                           size="sm"
                           className="absolute -bottom-0.5 -right-0.5"
                         />

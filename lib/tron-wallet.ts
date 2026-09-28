@@ -321,7 +321,7 @@ export async function getTransactionHistory(address: string, limit: number = 20)
   try {
     const tronWeb = await getTronWeb()
     const transactions = await tronWeb.trx.getTransactionsRelated(address, 'all', limit)
-    return transactions.data || []
+    return transactions || []
   } catch (error) {
     console.error('Error fetching transaction history:', error)
     return []
