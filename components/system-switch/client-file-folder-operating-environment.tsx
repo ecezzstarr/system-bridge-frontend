@@ -87,20 +87,20 @@ function buildProgress(build: any, now: number) {
 }
 
 function buildDepth(progress: number) {
-  if (progress < 12) return { label: 'Blueprint', layer: 1, detail: 'System shape fixed; construction is beginning.' }
-  if (progress < 38) return { label: 'Foundation', layer: 2, detail: 'Core structure is being established.' }
-  if (progress < 68) return { label: 'Structure', layer: 3, detail: 'Working functions are taking shape.' }
-  if (progress < 90) return { label: 'Integration', layer: 4, detail: 'Parts and functions are being connected.' }
-  return { label: 'Commissioning', layer: 5, detail: 'The system is being prepared for live operation.' }
+  if (progress < 12) return { label: 'Blueprint', layer: 1, detail: 'System purpose is fixed; formation has begun.' }
+  if (progress < 38) return { label: 'Foundation', layer: 2, detail: 'The structural core is taking authority over the blueprint.' }
+  if (progress < 68) return { label: 'Structure', layer: 3, detail: 'Working functions are becoming a usable technology.' }
+  if (progress < 90) return { label: 'Integration', layer: 4, detail: 'Parts, functions and routes are being woven into one capability.' }
+  return { label: 'Commissioning', layer: 5, detail: 'The technology is being verified for real movement and connection.' }
 }
 
 const BUILD_LADDER = [
-  { label:'Blueprint', detail:'Choose the system and understand what it must do.' },
-  { label:'Foundation', detail:'Secure the required build kit and establish the core.' },
-  { label:'Structure', detail:'Functions appear as construction progresses through time.' },
-  { label:'Integration', detail:'Attach components, verification and connections.' },
-  { label:'Commissioning', detail:'Prepare the finished build for real users and activity.' },
-  { label:'Live operation', detail:'Use the system, record movement, serve customers and expand.' },
+  { label:'Blueprint', detail:'Name the capability and choose the system that can carry it.' },
+  { label:'Foundation', detail:'Commit the required material and establish the structural core.' },
+  { label:'Structure', detail:'Functions become technology as formation progresses through time.' },
+  { label:'Integration', detail:'Install parts, verification, AI capability and system connections.' },
+  { label:'Commissioning', detail:'Commission the finished technology for real people, movement and connected systems.' },
+  { label:'Live operation', detail:'Operate it, connect it, record its movement and weave it into larger capability.' },
 ]
 
 function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { blueprint: any; label?: string; onBuild?: () => void }) {
@@ -466,9 +466,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const studioDistricts = [
     { label:'Blueprint Foundry', district:'blueprint_foundry', phase:'Design' },
     { label:'Materials Depot', district:'build_market', phase:'Supply' },\n    { label:'Parts Workshop', district:'parts_workshop', phase:'Equip' },
-    { label:'Construction Yard', district:'formation_yard', phase:'Build' },
+    { label:'Formation Yard', district:'formation_yard', phase:'Form' },
     { label:'Acceleration Bay', district:'boost_bay', phase:'Accelerate' },
-    { label:'Live Systems', district:'active_systems', phase:'Operate' },
+    { label:'Systems in Motion', district:'active_systems', phase:'Operate + Connect' },
     { label:'Build Intelligence', district:'library_district', phase:'Understand' },
   ].filter(item=>isVisible(`/client/system-switch#studio:${item.district}`))
     .sort((a,b)=>orderFor(`/client/system-switch#studio:${a.district}`)-orderFor(`/client/system-switch#studio:${b.district}`))
