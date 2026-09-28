@@ -118,17 +118,18 @@ export function BridgerOperatingEnvironment() {
       ? numbersData.orders.filter((order: any) => ['requested', 'fulfilling'].includes(String(order.status)))
       : []
     const standing = continuanceData?.continuance || continuanceData?.subscription
+    if (signal?.aborted) return
 
-    setPulse({
-      dailyClaimed: Boolean(dailyData?.claimed),
-      radianceThreads: bridgerThreads.length,
-      unreadRadiance: bridgerThreads.reduce((sum: number, thread: any) => sum + (Number(thread.unreadCount) || 0), 0),
-      clients: Array.isArray(clientsData?.clients) ? clientsData.clients.length : 0,
-      ownedNumbers: Array.isArray(numbersData?.mine) ? numbersData.mine.length : 0,
-      activeNumberOrders: activeOrders.length,
-      continuance: String(standing?.subscription_status || 'unknown'),
+    setPulse(prev => ({
+      dailyClaimed: dailyData ? Boolean(dailyData.claimed) : prev.dailyClaimed,
+      radianceThreads: radianceData ? bridgerThreads.length : prev.radianceThreads,
+      unreadRadiance: radianceData ? bridgerThreads.reduce((sum: number, thread: any) => sum + (Number(thread.unreadCount) || 0), 0) : prev.unreadRadiance,
+      clients: clientsData && Array.isArray(clientsData.clients) ? clientsData.clients.length : prev.clients,
+      ownedNumbers: numbersData && Array.isArray(numbersData.mine) ? numbersData.mine.length : prev.ownedNumbers,
+      activeNumberOrders: numbersData ? activeOrders.length : prev.activeNumberOrders,
+      continuance: standing?.subscription_status ? String(standing.subscription_status) : prev.continuance,
       updatedAt: Date.now(),
-    })
+    }))
   }
 
   useEffect(() => {
