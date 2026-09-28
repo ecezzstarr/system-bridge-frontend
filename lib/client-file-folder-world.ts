@@ -247,6 +247,26 @@ async function seedFileFolderWorld(sql: any) {
     `
   }
 
+  const accessibleParts=[
+    ['basic_interface_part','Basic Interface Part','accessible_part','A simple human-operated interface for a modest Client system. Lower capacity than an advanced interface, but sufficient for real use.',3,'component',1],
+    ['record_ledger_part','Record Ledger Part','accessible_part','Adds a basic persistent record surface so a small system can preserve requests, work and outcomes.',4,'component',1],
+    ['manual_route_part','Manual Route Part','accessible_part','Adds a human-operated movement path between compatible functions without advanced automation.',5,'route_capacity',1],
+    ['basic_verification_part','Basic Verification Part','accessible_part','Adds a simple human verification checkpoint for work that needs confirmation before movement continues.',5,'verification',1],
+    ['customer_intake_part','Customer Intake Part','accessible_part','Adds a basic request and enquiry intake function for customer-facing systems.',4,'component',1],
+    ['service_queue_part','Service Queue Part','accessible_part','Adds a small service queue for organizing customer requests and completed work.',6,'component',1],
+    ['starter_automation_part','Starter Automation Part','accessible_part','Automates one narrow repeatable step. It is intentionally less capable than a full Automation Node.',8,'automation',1],
+    ['starter_audience_part','Starter Audience Part','accessible_part','Adds a small public participation surface for early programs and demonstrations.',7,'audience_capacity',50],
+    ['starter_integration_part','Starter Integration Part','accessible_part','Connects one narrow output to a compatible input while the Client grows toward a full Integration Weave.',9,'component',1],
+    ['starter_ai_assist_part','Starter AI Assist Part','accessible_part','Adds limited AI assistance to one supported workflow while human authority remains in control.',10,'ai_node',1],
+  ]
+  for(const part of accessibleParts){
+    await sql`
+      INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,build_effect,effect_value,published)
+      VALUES(${part[0]},${part[1]},${part[2]},${part[3]},${part[4]},${part[5]},${part[6]},true)
+      ON CONFLICT(item_key) DO UPDATE SET name=EXCLUDED.name,category=EXCLUDED.category,description=EXCLUDED.description,price_flame_coin=EXCLUDED.price_flame_coin,build_effect=EXCLUDED.build_effect,effect_value=EXCLUDED.effect_value,updated_at=NOW()
+    `
+  }
+
   const liveBuildUpgrades = [
     ['build_speed_15', 'Build Speed Boost · 15%', 'acceleration', 'Attach to one active build to increase its formation speed live.', 25, 'speed_boost', 1.15],
     ['build_speed_35', 'Build Speed Boost · 35%', 'acceleration', 'Attach to one active build to increase its formation speed live.', 60, 'speed_boost', 1.35],
