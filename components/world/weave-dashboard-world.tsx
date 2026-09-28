@@ -20,6 +20,7 @@ import {
   Palette,
   Radio,
   ShoppingBag,
+  ShieldCheck,
   Sparkles,
   Store,
   Users,
