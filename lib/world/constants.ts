@@ -22,6 +22,7 @@ export const WORLD_RULES = {
   
   // Continuance (formerly Continuance)
   BRIDGER_CONTINUANCE_NGN: 5000,
+  BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN: 15,
   
   // Wallet Fees
   PLATFORM_FEE_PERCENT: 5,

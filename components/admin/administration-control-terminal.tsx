@@ -726,6 +726,7 @@ function FileNumberEngineSection() {
 function BridgerManagementSection() {
   const { token } = useAuth()
   const [bridgers, setBridgers] = useState<any[]>([])
+  const [summary, setSummary] = useState({ total: 0, continuanceActive: 0, continuanceDue: 0, continuanceSuspended: 0, bridgeAiActive: 0 })
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
   const [error, setError] = useState('')
@@ -750,6 +751,7 @@ function BridgerManagementSection() {
         throw new Error(data.error || data.message || 'Unable to read Bridger operations')
       }
       setBridgers(data.bridgers || [])
+      setSummary(data.summary || { total: 0, continuanceActive: 0, continuanceDue: 0, continuanceSuspended: 0, bridgeAiActive: 0 })
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : 'Unable to read Bridger operations'
       console.error('Failed to fetch bridgers:', requestError)
@@ -824,6 +826,14 @@ function BridgerManagementSection() {
         </div>
       </div>
 
+      <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <div className="rounded-xl border border-white/10 bg-black/20 p-3"><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Current Bridgers</p><p className="mt-1 text-lg font-black text-white">{summary.total}</p></div>
+        <div className="rounded-xl border border-emerald-300/15 bg-emerald-400/[.04] p-3"><p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Continuance active</p><p className="mt-1 text-lg font-black text-white">{summary.continuanceActive}</p></div>
+        <div className="rounded-xl border border-amber-300/15 bg-amber-400/[.04] p-3"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Due</p><p className="mt-1 text-lg font-black text-white">{summary.continuanceDue}</p></div>
+        <div className="rounded-xl border border-red-300/15 bg-red-400/[.04] p-3"><p className="text-[9px] font-black uppercase tracking-wider text-red-300">Suspended</p><p className="mt-1 text-lg font-black text-white">{summary.continuanceSuspended}</p></div>
+        <div className="rounded-xl border border-cyan-300/15 bg-cyan-400/[.04] p-3"><p className="text-[9px] font-black uppercase tracking-wider text-cyan-300">Bridge AI active</p><p className="mt-1 text-lg font-black text-white">{summary.bridgeAiActive}</p></div>
+      </div>
+
       {error && (
         <div className="mb-4 flex flex-col gap-3 rounded-xl border border-rose-400/20 bg-rose-500/5 p-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs font-semibold text-rose-200">{error}</p>
@@ -843,7 +853,9 @@ function BridgerManagementSection() {
             <tr>
               <th className="px-4 py-3">Bridger Identity</th>
               <th className="px-4 py-3">Continuance</th>
-              <th className="px-4 py-3">Expiry</th>
+              <th className="px-4 py-3">Continuance Expiry</th>
+              <th className="px-4 py-3">Bridge AI</th>
+              <th className="px-4 py-3">Bridge AI Expiry</th>
               <th className="px-4 py-3">Exempt</th>
               <th className="px-4 py-3 text-right">Control</th>
             </tr>
@@ -851,7 +863,7 @@ function BridgerManagementSection() {
           <tbody className="divide-y divide-slate-800/50">
             {bridgers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-20 text-center text-slate-600 text-sm italic">
+                <td colSpan={7} className="py-20 text-center text-slate-600 text-sm italic">
                   {error ? 'Bridger registry is unavailable.' : 'No Bridgers found in the system.'}
                 </td>
               </tr>
@@ -881,6 +893,20 @@ function BridgerManagementSection() {
                   </td>
                   <td className="px-4 py-4 font-mono text-[10px] text-slate-400">
                     {bridger.subscription_expiry ? new Date(bridger.subscription_expiry).toLocaleDateString() : 'N/A'}
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-black uppercase ${
+                      bridger.bridge_ai_status === 'active'
+                        ? 'border-cyan-400/20 bg-cyan-500/10 text-cyan-300'
+                        : bridger.bridge_ai_status === 'expired'
+                          ? 'border-amber-400/20 bg-amber-500/10 text-amber-300'
+                          : 'border-slate-700 bg-slate-800/60 text-slate-500'
+                    }`}>
+                      {bridger.bridge_ai_status || 'inactive'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 font-mono text-[10px] text-slate-400">
+                    {bridger.bridge_ai_expiry ? new Date(bridger.bridge_ai_expiry).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-4 py-4">
                     {bridger.is_subscription_exempt ? (
