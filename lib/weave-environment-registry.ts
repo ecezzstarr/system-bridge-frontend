@@ -126,6 +126,8 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-workshop', label:'Administration Workshop', kind:'place', route:'/admin/workshop', area:'Administration', scope:'admin', defaultOrder:211 },
   { key:'authority-root', label:'Authority', kind:'place', route:'/authority', area:'Administration', scope:'admin', defaultOrder:212 },
 
+  { key:'staff-file-folder-support', label:'File Folder Support Entrance', kind:'station', route:'/weave#file-folders', area:'System Switch', scope:'staff', protected:true, defaultOrder:80 },
+
   { key:'staff-file-folder-observer', label:'Client File Folder Observer', kind:'station', route:'/weave/file-folder/[fileNumber]', area:'System Switch', scope:'staff', defaultOrder:90 },
 
 ]
