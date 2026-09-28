@@ -3,12 +3,13 @@ import { useEffect,useState } from 'react'
 import Link from 'next/link'
 import { Radio,Users,Zap,ArrowRight } from 'lucide-react'
 import { getAuthHeaders } from '@/lib/auth-client'
+import { WeaveStationFrame } from '@/components/world/weave-station-frame'
 
 export default function StabilitySupplyDistrict(){
  const [data,setData]=useState<any>({numbers:[],prospects:[]})
  const [error,setError]=useState('')
  useEffect(()=>{const c=new AbortController();fetch('/api/agent/stability-supply',{headers:getAuthHeaders(),signal:c.signal}).then(r=>r.json().then(d=>({ok:r.ok,d}))).then(({ok,d})=>{if(ok)setData(d);else setError(d.error||'Supply unavailable')}).catch(e=>{if(e.name!=='AbortError')setError('Supply unavailable')});return()=>c.abort()},[])
- return <section className="relative min-h-[calc(100dvh-3.8rem)] overflow-hidden bg-[#02080e] px-4 pb-20 pt-24 text-white" data-stability-commercial-district="true">
+ return <WeaveStationFrame station="Stability Supply Ground" movement="Administration supply → Agent awareness → Bridger purchase → commission → continuity"><section className="relative min-h-[calc(100dvh-3.8rem)] overflow-hidden bg-[#02080e]/55 px-4 pb-20 pt-10 text-white" data-stability-commercial-district="true">
   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(34,211,238,.12),transparent_28%),radial-gradient(circle_at_70%_70%,rgba(245,158,11,.08),transparent_30%)]"/>
   <div className="relative mx-auto max-w-6xl">
    <p className="text-[9px] font-black uppercase tracking-[.24em] text-cyan-300">Stability · Commercial District</p>
@@ -21,5 +22,5 @@ export default function StabilitySupplyDistrict(){
    </div>
    <div className="mt-12 flex flex-wrap gap-5 text-xs font-bold"><Link href="/agent/bridgers" className="flex items-center gap-2 text-cyan-200"><Users className="h-4 w-4"/>Participation Field<ArrowRight className="h-3 w-3"/></Link><Link href="/agent/commissions" className="flex items-center gap-2 text-emerald-200">Continuance<ArrowRight className="h-3 w-3"/></Link></div>
   </div>
- </section>
+ </section></WeaveStationFrame>
 }
