@@ -58,6 +58,12 @@
   --field-border: rgba(232, 185, 63, 0.14);
   --field-active: rgba(20, 184, 166, 0.22);
   --presence-intensity: 0.8;
+
+  /* One world, one ground. Routes do not own viewport paint. */
+  --weave-world-base: #050607;
+  --weave-world-surface: rgba(5, 6, 7, 0.72);
+  --weave-world-surface-strong: rgba(5, 6, 7, 0.9);
+  --weave-world-line: rgba(255, 255, 255, 0.08);
 }
 
 .dark {
@@ -536,6 +542,49 @@
 [data-weave-environment] [data-weave-room] {
   isolation: isolate;
   transform: translateZ(0);
+}
+
+/* WORLD-OWNED SURFACE
+   Each route is a place inside WEAVE, not a new webpage with its own wallpaper.
+   Only local instruments keep surface paint; the route root reveals the same
+   persistent world and live flame field underneath. */
+body,
+.weave-app-shell,
+.weave-environment-surface,
+[data-environment-interior="station"] {
+  background-color: var(--weave-world-base);
+}
+
+[data-weave-environment] [data-environment-interior="station"] > :is(main,section,div):not([role="dialog"]) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+[data-weave-environment] [data-weave-room],
+[data-weave-environment] .weave-operating-environment {
+  background-color: transparent !important;
+}
+
+.weave-header,
+[data-environment-location="world-position"] {
+  background-color: var(--weave-world-surface-strong) !important;
+  background-image: none !important;
+  border-color: var(--weave-world-line) !important;
+}
+
+.weave-reading-surface,
+.weave-environment-panel,
+.card,
+[role="card"] {
+  background-color: var(--weave-world-surface) !important;
+  background-image: none !important;
+}
+
+/* Districts may use light, live signal gradients only as non-opaque atmosphere.
+   They cannot replace the world ground. */
+[data-weave-environment] [class*="bg-gradient-to-"],
+[data-weave-environment] [class*="bg-[radial-gradient"] {
+  background-color: transparent;
 }
 
 /* Hidden tabs retain state without compositor animation work. */
