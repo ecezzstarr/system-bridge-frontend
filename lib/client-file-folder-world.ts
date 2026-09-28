@@ -282,11 +282,27 @@ async function seedFileFolderWorld(sql: any) {
     `
   }
 
+  const customerDoorParts=[
+    ['door_foundation_frame','Customer Door Foundation Frame','door_part','Structural frame that establishes the public entrance and anchors the Client territory to its outward-facing door.',0,'component',0],
+    ['door_identity_facade','Client Identity Facade','door_part','Carries the Client company or platform name, logo position and public identity above WEAVE infrastructure.',0,'component',0],
+    ['door_customer_intake','Customer Intake Interface','door_part','Receives visitor enquiries, requests and order intent from outside WEAVE.',0,'component',0],
+    ['door_service_interface','Service Interface','door_part','Connects public requests to the Client service or operating movement behind the door.',0,'component',0],
+    ['door_fulfilment_interface','Fulfilment Interface','door_part','Preserves the path from accepted customer movement to delivery or fulfilment evidence.',0,'component',0],
+    ['door_public_commissioning','Public Commissioning Seal','door_part','Marks the completed Customer Door as ready for real visitors on the open internet.',0,'verification',1],
+  ]
+  for(const part of customerDoorParts){
+    await sql`
+      INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,build_effect,effect_value,published)
+      VALUES(${part[0]},${part[1]},${part[2]},${part[3]},${part[4]},${part[5]},${part[6]},true)
+      ON CONFLICT(item_key) DO UPDATE SET name=EXCLUDED.name,description=EXCLUDED.description,price_flame_coin=EXCLUDED.price_flame_coin,build_effect=EXCLUDED.build_effect,effect_value=EXCLUDED.effect_value,updated_at=NOW()
+    `
+  }
+
   const blueprints = [
     ['operations_board', 'Operations Board', 'formation_yard', 'operations_board', 'A persistent working board for tasks, decisions and movement inside the Client File Folder.', 4, 'planning_kit', 1],
     ['research_room', 'Research Room', 'library_district', 'research_room', 'A persistent research system for findings, sources, questions and decisions.', 6, 'research_kit', 1],
     ['service_workflow', 'Service Workflow', 'formation_yard', 'service_workflow', 'A working service pipeline that can hold steps, responsibilities and completion records.', 8, 'automation_kit', 1],
-    ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A public customer-facing system where people outside WEAVE can discover, request and purchase the Client’s products or services.', 24, null, 0],
+    ['customer_door', 'Customer Door', 'market_district', 'customer_door', 'A three-day public formation: foundation, Client identity, customer intake, service and fulfilment interfaces, then commissioning to the open internet. Standard Clients can complete it through real elapsed time without purchasing acceleration.', 72, null, 0],
     ['data_room', 'Data Room', 'technology_district', 'data_room', 'A structured system for persistent records and reusable information.', 10, 'data_kit', 1],
     ['enterprise_shell', 'Enterprise System Shell', 'formation_yard', 'enterprise_shell', 'A larger multi-function system shell that can hold operations, people, records and later enterprise modules.', 24, 'architecture_kit', 1],
     ['integration_network', 'Integration Weave', 'technology_district', 'integration_network', 'A connection fabric that lets completed Client technologies exchange movement, records and outputs instead of remaining isolated systems.', 72, 'integration_kit', 1],
