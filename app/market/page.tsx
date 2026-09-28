@@ -65,7 +65,8 @@ export default async function PublicClientMarket(){
       </div>:<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {stores.map((store:any,index:number)=>{
           const config=normalizeStoreEnvironmentConfig(store.environment_config)
-          const doorName=config.platformName || store.name || 'Customer Door'\n          const level=store.has_market_hall?'Market Hall':store.has_storefront?'Store Building':doorName
+          const doorName=config.platformName || store.name || 'Customer Door'
+          const level=store.has_market_hall?'Market Hall':store.has_storefront?'Store Building':doorName
           return <Link key={store.public_slug} href={`/market/${store.public_slug}`} className="group relative min-h-[360px] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(155deg,rgba(14,165,233,.09),rgba(17,24,39,.88)_48%,rgba(88,28,135,.16))] p-5 shadow-[0_28px_80px_rgba(0,0,0,.28)] transition hover:-translate-y-1 hover:border-sky-200/20">
             <div className="absolute inset-x-5 bottom-4 h-6 rounded-[50%] bg-black/50 blur-lg"/>
             <div className="relative flex items-start justify-between gap-3">
