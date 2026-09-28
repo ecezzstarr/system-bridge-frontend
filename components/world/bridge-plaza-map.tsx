@@ -253,10 +253,10 @@ function DistrictEntrance({
     if(!group.current)return
     const active=hovered||selected
     group.current.position.y=portal.position[1]+(active?Math.sin(clock.getElapsedTime()*1.8)*.035:0)
-    if(ring.current)ring.current.rotation.z+=delta*(selected?.24:hovered?.16:.055)
+    if(ring.current)ring.current.rotation.z+=delta*(selected ? .24 : hovered ? .16 : .055)
   })
 
-  const signal=selected?1:hovered?.7:.32
+  const signal=selected ? 1 : hovered ? .7 : .32
 
   return <group
     ref={group}
@@ -268,7 +268,7 @@ function DistrictEntrance({
   >
     <mesh position={[0,-.58,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[.88,1.14,64]}/>
-      <meshBasicMaterial color={portal.unlocked?portal.accent:'#3f3f46'} transparent opacity={portal.unlocked?.2+.28*signal:.12}/>
+      <meshBasicMaterial color={portal.unlocked?portal.accent:'#3f3f46'} transparent opacity={portal.unlocked ? .2+.28*signal : .12}/>
     </mesh>
 
     <mesh ref={ring} position={[0,.55,0]}>
@@ -276,9 +276,9 @@ function DistrictEntrance({
       <meshStandardMaterial
         color={portal.unlocked?portal.accent:'#3f3f46'}
         emissive={portal.unlocked?portal.accent:'#111827'}
-        emissiveIntensity={portal.unlocked?.16+.52*signal:0}
+        emissiveIntensity={portal.unlocked ? .16+.52*signal : 0}
         transparent
-        opacity={portal.unlocked?.46+.36*signal:.22}
+        opacity={portal.unlocked ? .46+.36*signal : .22}
         metalness={.56}
         roughness={.22}
       />
@@ -291,12 +291,12 @@ function DistrictEntrance({
 
     <mesh position={[0,.55,.018]}>
       <circleGeometry args={[.72,48]}/>
-      <meshBasicMaterial color={portal.unlocked?portal.accent:'#18181b'} transparent opacity={portal.unlocked?.035+.055*signal:.025}/>
+      <meshBasicMaterial color={portal.unlocked?portal.accent:'#18181b'} transparent opacity={portal.unlocked ? .035+.055*signal : .025}/>
     </mesh>
 
     <mesh position={[0,.55,.045]}>
       <ringGeometry args={[.18,.22,48]}/>
-      <meshBasicMaterial color={portal.unlocked?portal.accent:'#52525b'} transparent opacity={portal.unlocked?.62+.28*signal:.28}/>
+      <meshBasicMaterial color={portal.unlocked?portal.accent:'#52525b'} transparent opacity={portal.unlocked ? .62+.28*signal : .28}/>
     </mesh>
 
     <Text position={[0,.76,.07]} fontSize={.18} maxWidth={1.72} color={portal.unlocked?'#fff7ed':'#737373'} anchorX="center">
