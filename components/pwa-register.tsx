@@ -12,22 +12,26 @@ export function PWARegister() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(
-          (registration) => {
-            console.log('Service Worker registered with scope:', registration.scope)
-          },
-          (err) => {
-            console.log('Service Worker registration failed:', err)
-          }
-        )
-      })
+    const registerWorker = () => {
+      if (!('serviceWorker' in navigator) || window.location.hostname === 'localhost') return
+      navigator.serviceWorker.register('/sw.js').then(
+        (registration) => {
+          console.log('Service Worker registered with scope:', registration.scope)
+          void registration.update()
+        },
+        (err) => {
+          console.log('Service Worker registration failed:', err)
+        }
+      )
     }
 
+    if (document.readyState === 'complete') registerWorker()
+    else window.addEventListener('load', registerWorker, { once: true })
+
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('load', registerWorker)
+    }
   }, [])
 
   return null
