@@ -25,6 +25,7 @@ import {
   Wallet,
   Waves,
   Zap,
+  Bot,
 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
@@ -73,7 +74,8 @@ const ROLE: Record<WorldRole, {
     purpose: WEAVE_SYSTEM_MAP.positions.bridger.description,
     functionsHref: '/bridger/functions',
     links: [
-      { label: 'Bridge AI', detail: 'Crossing → Client AI support', href: '/bridger/bridge-ai', icon: GitBranch, tone: 'sky' },\n      { label: 'Bridge Radiance', detail: 'Interact with your active Prospects', href: '/bridger/bridge-radiance', icon: MessageCircle, tone: 'sky' },
+      { label: 'Bridge AI', detail: 'Crossing → Client AI support', href: '/bridger/bridge-ai', icon: GitBranch, tone: 'sky' },
+      { label: 'Bridge Radiance', detail: 'Interact with your active Prospects', href: '/bridger/bridge-radiance', icon: MessageCircle, tone: 'sky' },
       { label: 'Prospect Market', detail: 'Available prospects', href: '/weave/market/prospects', icon: ShoppingBag, tone: 'gold' },
       { label: 'Clients', detail: 'Client continuity and support', href: '/bridger/clients', icon: Users, tone: 'emerald' },
       { label: 'Guidance', detail: 'Company support', href: '/company-chat', icon: Headphones, tone: 'sky' },
@@ -90,7 +92,8 @@ const ROLE: Record<WorldRole, {
     purpose: WEAVE_SYSTEM_MAP.positions.agent.description,
     functionsHref: '/agent/functions',
     links: [
-      { label: 'My Bridgers', detail: 'Participation field', href: '/agent/bridgers', icon: Users, tone: 'sky' },\n      { label: 'Bridge Radiance', detail: 'Support Prospects owned by your assigned Bridgers', href: '/agent/bridge-radiance', icon: MessageCircle, tone: 'sky' },
+      { label: 'My Bridgers', detail: 'Participation field', href: '/agent/bridgers', icon: Users, tone: 'sky' },
+      { label: 'Bridge Radiance', detail: 'Support Prospects owned by your assigned Bridgers', href: '/agent/bridge-radiance', icon: MessageCircle, tone: 'sky' },
       { label: 'Prospect Campaigns', detail: 'Campaigns Bridgers can purchase into', href: '/agent/stability-supply', icon: Zap, tone: 'gold' },
       { label: 'Number Supply', detail: 'Number movement for Bridger participation', href: '/agent/stability-supply', icon: Radio, tone: 'sky' },
       { label: 'Agility', detail: 'Real-world distribution movement', href: '/agility', icon: ShoppingBag, tone: 'gold' },
@@ -109,7 +112,8 @@ const ROLE: Record<WorldRole, {
     purpose: WEAVE_SYSTEM_MAP.positions.admin.description,
     functionsHref: '/admin/functions',
     links: [
-      { label: 'Control Center', detail: 'Deposits, people, wallets and institutional operations', href: '/admin/control-center', icon: LayoutTemplate, tone: 'emerald' },\n      { label: 'Company Loops', detail: 'Shared movement', href: '/company/loops', icon: GitBranch, tone: 'gold' },
+      { label: 'Control Center', detail: 'Deposits, people, wallets and institutional operations', href: '/admin/control-center', icon: LayoutTemplate, tone: 'emerald' },
+      { label: 'Company Loops', detail: 'Shared movement', href: '/company/loops', icon: GitBranch, tone: 'gold' },
       { label: 'File Number Engine', detail: 'Client identity', href: '/admin/file-number-engine', icon: FileBox, tone: 'sky' },
       { label: 'Message Hub', detail: 'People and staff', href: '/admin/hub', icon: MessageSquare, tone: 'emerald' },
       { label: 'Prospect Engine', detail: 'Opportunity', href: '/admin/prospect-engine', icon: Zap, tone: 'gold' },
@@ -149,7 +153,8 @@ function districtFor(role:WorldRole,href:string){
   }
   if(role==='agent'){
     if(href.includes('/agent/bridgers'))return 'Participation Field'
-    if(href.includes('/agent/stability-supply'))return 'Stability Commerce'\n    if(href.includes('/agent/channels'))return 'Company movement'
+    if(href.includes('/agent/stability-supply'))return 'Stability Commerce'
+    if(href.includes('/agent/channels'))return 'Company movement'
     if(href.includes('/agent/commissions'))return 'Livelihood'
     if(href.includes('agility'))return 'Delivery'
     if(href.startsWith('/marketplace'))return 'Enterprise'
@@ -194,7 +199,7 @@ export function WeaveDashboardWorld({
           <span className="max-w-[100px] sm:max-w-[155px]"><span className="block text-[9px] font-black uppercase tracking-[.08em] text-white sm:text-[11px]">{item.label}</span><span className="mt-0.5 hidden text-[8px] leading-3 text-slate-500 sm:block">{districtFor(role,item.href)} · {item.detail}</span></span>
         </Link>})}
       </div>
-      <div className="pointer-events-none absolute bottom-4 left-4 z-20 border-l-2 border-sky-300/30 pl-3"><p className="text-[7px] font-black uppercase tracking-[.18em] text-sky-300">Presence camera</p><p className="mt-1 text-[9px] text-slate-500">Choose a beacon to travel into a working district</p></div>
+      <aside className="absolute bottom-16 right-4 z-20 max-w-[230px] border-r border-violet-300/25 bg-[#050817]/55 p-3 text-right backdrop-blur-md" data-ai-participation={role}><div className="flex items-center justify-end gap-2 text-violet-200"><span className="text-[7px] font-black uppercase tracking-[.18em]">AI participation · authorized extension</span><Bot className="h-3.5 w-3.5"/></div><p className="mt-1 text-[8px] leading-3 text-slate-400">AI can recognize context, prepare work and guide movement here. Human presence keeps authority, ownership, approval and value movement.</p></aside>\n      <aside className="absolute bottom-16 right-4 z-20 max-w-[230px] border-r border-violet-300/25 bg-[#050817]/55 p-3 text-right backdrop-blur-md" data-ai-participation="client"><div className="flex items-center justify-end gap-2 text-violet-200"><span className="text-[7px] font-black uppercase tracking-[.18em]">AI participation · Bridge AI</span><Bot className="h-3.5 w-3.5"/></div><p className="mt-1 text-[8px] leading-3 text-slate-400">Bridge AI participates inside your builds and live systems when authorized. You remain the Lord/Lady, owner and decision source.</p></aside>\n    <div className="pointer-events-none absolute bottom-4 left-4 z-20 border-l-2 border-sky-300/30 pl-3"><p className="text-[7px] font-black uppercase tracking-[.18em] text-sky-300">Presence camera</p><p className="mt-1 text-[9px] text-slate-500">Choose a beacon to travel into a working district</p></div>
       <Link href={copy.functionsHref} className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-amber-200/25 bg-amber-300/[.06] text-amber-100 backdrop-blur-md" aria-label="Open operating functions"><ArrowRight className="h-4 w-4"/></Link>
     </section>
   }
