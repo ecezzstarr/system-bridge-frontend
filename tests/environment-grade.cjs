@@ -493,7 +493,7 @@ assert.ok(!dashboardWorldSource.includes(String.fromCharCode(92)+'n'),'Role worl
 const environmentSurfaceSource=read('components/world/weave-environment-surface.tsx')
 const environmentsSource=read('lib/weave-environments.ts')
 assert.ok(environmentSurfaceSource.includes('data-world-stays-mounted="true"'),'District interiors explicitly preserve the mounted WEAVE world')
-assert.ok(environmentSurfaceSource.includes('data-environment-location-hud="true"'),'Destination identity is a location HUD rather than a large page card')
+assert.ok(environmentSurfaceSource.includes('data-environment-location="world-position"'),'Destination identity remains a compact in-world position marker rather than a large page card')
 assert.ok(environmentSurfaceSource.includes('data-environment-interior="station"'),'Working interiors are framed as stations inside the world')
 assert.ok(environmentSurfaceSource.includes('Return to role world'),'Every authenticated station has a route back to its role world')
 assert.ok(environmentSurfaceSource.includes('data-ai-station-presence="contextual"'),'AI participation remains contextually present at working stations')
@@ -599,7 +599,7 @@ assert.ok(fileFolderOpenWorld.includes('Parts are an open market, not a wealth g
 
 assert.ok(environmentsSource.includes("weaveWorldForPath")&&environmentsSource.includes("'open-weave'|'file-folder'"),'WEAVE runtime has exactly Open WEAVE and File Folder world identities')
 assert.ok(environmentSurfaceSource.includes("data-weave-world={worldLayer}"),'Persistent environment surface exposes its parent world')
-assert.ok(environmentSurfaceSource.includes("'FILE FOLDER WORLD':'OPEN WEAVE WORLD'"),'HUD keeps district movement visibly inside one of the two parent worlds')
+assert.ok(environmentSurfaceSource.includes("'FILE FOLDER WORLD':'OPEN WEAVE WORLD'"),'World position marker keeps district movement visibly inside one of the two parent worlds')
 assert.ok(environmentSurfaceSource.includes("worldLayer==='file-folder'?'/client/system-switch':worldReturnFor(role)"),'File Folder interiors return to File Folder world rather than another role world')
 
 
