@@ -1,5 +1,5 @@
 export type EnvironmentSurfaceKind = 'district' | 'place' | 'station'
-export type EnvironmentSurfaceScope = 'shared' | 'admin' | 'agent' | 'bridger' | 'client' | 'staff'
+export type EnvironmentSurfaceScope = 'shared' | 'admin' | 'agent' | 'bridger' | 'client' | 'staff' | 'public'
 
 export type EnvironmentSurfaceDefinition = {
   key: string
@@ -129,6 +129,30 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'staff-file-folder-support', label:'File Folder Support Entrance', kind:'station', route:'/weave#file-folders', area:'System Switch', scope:'staff', protected:true, defaultOrder:80 },
 
   { key:'staff-file-folder-observer', label:'Client File Folder Observer', kind:'station', route:'/weave/file-folder/[fileNumber]', area:'System Switch', scope:'staff', defaultOrder:90 },
+
+  { key:'shared-company-chat-position', label:'Company Guidance Interaction', kind:'place', route:'/company-chat/[position]', area:'Bridge', scope:'staff', defaultOrder:225 },
+
+  { key:'public-login', label:'WEAVE Position Gate', kind:'place', route:'/login', area:'Public Entry', scope:'public', defaultOrder:10 },
+  { key:'public-register', label:'WEAVE Position Registration', kind:'place', route:'/register', area:'Public Entry', scope:'public', defaultOrder:20 },
+  { key:'public-client-register', label:'Client Crossing Registration', kind:'place', route:'/client-register', area:'Public Entry', scope:'public', defaultOrder:30 },
+  { key:'public-forgot-password', label:'Access Recovery Gate', kind:'place', route:'/forgot-password', area:'Public Entry', scope:'public', defaultOrder:40 },
+  { key:'public-reset-password', label:'Access Reset Gate', kind:'place', route:'/reset-password', area:'Public Entry', scope:'public', defaultOrder:50 },
+  { key:'public-client-login-alias', label:'Client Access Gate', kind:'place', route:'/client-login', area:'Public Entry', scope:'public', defaultOrder:60 },
+  { key:'public-weave-register', label:'WEAVE Registration Gate', kind:'place', route:'/weave-register', area:'Public Entry', scope:'public', defaultOrder:70 },
+  { key:'public-bridge-code', label:'Bridge Crossing Place', kind:'place', route:'/bridge/[code]', area:'Public Entry', scope:'public', defaultOrder:80 },
+  { key:'public-system-switch', label:'System Switch Entrance', kind:'place', route:'/system-switch', area:'Public Entry', scope:'public', defaultOrder:90 },
+  { key:'public-support', label:'Public Support Place', kind:'place', route:'/support', area:'Public Entry', scope:'public', defaultOrder:100 },
+  { key:'public-river-connect', label:'River Connection Place', kind:'place', route:'/river/connect', area:'Public Entry', scope:'public', defaultOrder:110 },
+  { key:'public-privacy', label:'Privacy Place', kind:'place', route:'/privacy', area:'Public Entry', scope:'public', defaultOrder:120 },
+  { key:'public-terms', label:'Terms Place', kind:'place', route:'/terms', area:'Public Entry', scope:'public', defaultOrder:130 },
+
+  { key:'public-market', label:'Client Market', kind:'place', route:'/market', area:'Public Enterprise', scope:'public', defaultOrder:10 },
+  { key:'public-market-store', label:'Client Market Store', kind:'place', route:'/market/[slug]', area:'Public Enterprise', scope:'public', defaultOrder:20 },
+  { key:'public-store-door', label:'Customer Door', kind:'place', route:'/store/[slug]', area:'Public Enterprise', scope:'public', defaultOrder:30 },
+  { key:'public-stream', label:'Stream Network', kind:'place', route:'/stream', area:'Public Enterprise', scope:'public', defaultOrder:40 },
+  { key:'public-stream-channel', label:'Streaming Gate', kind:'place', route:'/stream/[slug]', area:'Public Enterprise', scope:'public', defaultOrder:50 },
+  { key:'public-enterprise', label:'Enterprise Territory', kind:'place', route:'/enterprise', area:'Public Enterprise', scope:'public', defaultOrder:60 },
+  { key:'public-enterprise-door', label:'Enterprise Door', kind:'place', route:'/enterprise/[slug]', area:'Public Enterprise', scope:'public', defaultOrder:70 },
 
 ]
 
