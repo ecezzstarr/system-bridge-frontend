@@ -225,7 +225,7 @@ assert.ok(operatingRoom.includes('/admin/environment-organizer'),'Administration
 assert.ok(dashboardWorld.includes('/admin/environment-organizer'),'Administration World exposes Environment Organizer')
 assert.ok(clientNavigation.includes('useEnvironmentOrganizer'),'Client navigation honors the organizer registry')
 assert.ok(clientLayout.includes('EnvironmentOrganizerProvider'),'Client world mounts the organizer runtime')
-assert.ok(supportFileFolderPage.includes('Support · Read only'),'Support File Folder preserves role awareness in a compact context strip')
+assert.ok(supportFileFolderPage.includes('Territory observer · Read only'),'Support File Folder preserves observer role awareness in a compact context strip')
 assert.ok(supportFileFolderPage.includes('md:static'),'Support context is sticky only where mobile needs it')
 assert.ok(!supportFileFolderPage.includes("['Recognize'"),'Support File Folder removes the duplicated five-stage card strip')
 assert.ok(clientFileFolder.includes('Command Citadel'),'Main File Folder has one strategic command center')
