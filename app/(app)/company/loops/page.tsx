@@ -28,7 +28,7 @@ export default function CompanyLoopsPage() {
 
   useEffect(() => {
     if (!user) return
-    fetch(`/api/company-loops?role=${encodeURIComponent(user.role)}`, { cache:'no-store' })
+    fetch(`/api/company-loops?role=${encodeURIComponent(user.role||'')}`, { cache:'no-store' })
       .then(async res => {
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Unable to load loops')
