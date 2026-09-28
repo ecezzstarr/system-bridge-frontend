@@ -581,3 +581,9 @@ assert.ok(fileFolderWorldSource.includes("'starter_automation_part'")&&fileFolde
 assert.ok(fileFolderOpenWorldSource.includes('data-standard-growth-path="time-capital-continuum"'),'Parts Workshop exposes the time-capital continuum')
 assert.ok(fileFolderOpenWorldSource.includes('Low capital can be exchanged for longer time and smaller capability.'),'Standard growth explicitly preserves a long-term path toward expansion')
 assert.ok(fileFolderOpenWorldSource.includes('Parts are an open market, not a wealth gate.'),'Parts economy preserves Client choice instead of imposing a wealth gate')
+
+
+assert.ok(environmentsSource.includes("weaveWorldForPath")&&environmentsSource.includes("'open-weave'|'file-folder'"),'WEAVE runtime has exactly Open WEAVE and File Folder world identities')
+assert.ok(environmentSurfaceSource.includes("data-weave-world={worldLayer}"),'Persistent environment surface exposes its parent world')
+assert.ok(environmentSurfaceSource.includes("'FILE FOLDER WORLD':'OPEN WEAVE WORLD'"),'HUD keeps district movement visibly inside one of the two parent worlds')
+assert.ok(environmentSurfaceSource.includes("worldLayer==='file-folder'?'/client/system-switch':worldReturnFor(role)"),'File Folder interiors return to File Folder world rather than another role world')
