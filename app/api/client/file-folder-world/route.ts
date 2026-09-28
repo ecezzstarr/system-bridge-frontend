@@ -554,7 +554,7 @@ export async function POST(request: NextRequest) {
       const systemId = clean(body.system_id, 80)
       const title = clean(body.title, 220)
       const entryBody = clean(body.body, 4000)
-      const moduleKey = clean(body.module_key, 120)
+      const moduleKey = clean(body.module_key, 120)\n      const evidenceType = ['internal','customer_use','visitor_use','fulfilment','delivery','service','revenue'].includes(String(body.evidence_type)) ? String(body.evidence_type) : 'internal'\n      const evidenceValue = Number.isFinite(Number(body.evidence_value)) ? Math.max(0,Number(body.evidence_value)) : null\n      const evidenceUnit = clean(body.evidence_unit,40)
       if (!systemId || !title) {
         return NextResponse.json({ error: 'System and entry title are required' }, { status: 400 })
       }
@@ -588,7 +588,7 @@ export async function POST(request: NextRequest) {
       const status = body.status === 'done' ? 'done' : 'open'
       const rows = await ctx.sql`
         UPDATE client_built_system_entries
-        SET status=${status},updated_at=NOW()
+        SET status=${status},completed_at=CASE WHEN ${status}='done' THEN COALESCE(completed_at,NOW()) ELSE NULL END,updated_at=NOW()
         WHERE id=${entryId}::uuid
           AND client_id=${ctx.client.id}::uuid
         RETURNING id
