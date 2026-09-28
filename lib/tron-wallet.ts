@@ -9,6 +9,15 @@ const COMPANY_WALLET = process.env.COMPANY_TRON_WALLET
 // TronGrid API base URL
 const TRONGRID_API = 'https://api.trongrid.io'
 
+async function getTronWeb(privateKey?: string) {
+  const { TronWeb } = await import('tronweb')
+  return new TronWeb({
+    fullHost: TRONGRID_API,
+    headers: TRONGRID_API_KEY ? { 'TRON-PRO-API-KEY': TRONGRID_API_KEY } : {},
+    ...(privateKey ? { privateKey } : {}),
+  })
+}
+
 // Helper to make TronGrid API calls
 async function tronGridFetch(endpoint: string, options?: RequestInit) {
   const headers: Record<string, string> = {
