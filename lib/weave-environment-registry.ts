@@ -133,3 +133,17 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
 export function normalizeEnvironmentPageRoute(route:string){
   return String(route||'').split('#')[0].split('?')[0] || '/'
 }
+
+export function environmentRouteMatches(registeredRoute:string,pathname:string){
+  const registered=normalizeEnvironmentPageRoute(registeredRoute)
+  const actual=normalizeEnvironmentPageRoute(pathname)
+  if(!registered.includes('['))return registered===actual
+  const pattern=registered
+    .replace(/[.*+?^${}()|[\]\\]/g,'\\export function normalizeEnvironmentPageRoute(route:string){
+  return String(route||'').split('#')[0].split('?')[0] || '/'
+}')
+    .replace(/\\\[\\\.\\\.\\\.([^\\\]]+)\\\]/g,'.+')
+    .replace(/\\\[([^\\\]]+)\\\]/g,'[^/]+')
+  return new RegExp('^'+pattern+'
+).test(actual)
+}
