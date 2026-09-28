@@ -1250,7 +1250,7 @@ const adminOutreachSource=fs.readFileSync(path.join(root,'app/(app)/admin/outrea
 const adminOutreachApiSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/outreach/pending/route.ts'),'utf8')
 const adminVaultAuthoritySource=fs.readFileSync(path.join(root,'app/(app)/admin/client-vault/page.tsx'),'utf8')
 const adminHubMatureSource=fs.readFileSync(path.join(root,'app/(app)/admin/hub/page.tsx'),'utf8')
-const adminSidebarMatureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
+const adminNavigationMatureSource=fs.readFileSync(path.join(root,'components/world/role-operating-room.tsx'),'utf8')
 
 assert.ok(legacyClientAdminChatSource.includes("redirect('/client/chat/admin')"),'Legacy mock Client Admin chat resolves to canonical Client Administration chat')
 assert.ok(!legacyClientAdminChatSource.includes('mockSessions'),'Legacy Client Admin chat no longer fabricates conversations')
@@ -1272,8 +1272,8 @@ assert.ok(adminVaultAuthoritySource.includes('ready for manual settlement'),'Wit
 assert.ok(adminHubMatureSource.includes('Communication Matrix'),'Hub is a causal communication system')
 assert.ok(adminHubMatureSource.includes('senderType: user.role'),'Agent messages retain Agent identity instead of being stamped Admin')
 assert.ok(adminHubMatureSource.includes('const pos = isAgent ? threadPosition : position'),'Administration Prospect position selector controls the real channel')
-assert.ok(adminSidebarMatureSource.includes('/admin/control-center#bridgers'),'Administration Continuance verification sidebar route reaches the control center')
-assert.ok(adminSidebarMatureSource.includes('/admin/control-center#users'),'Administration verification sidebar route reaches the control center')
+assert.ok(adminNavigationMatureSource.includes('/admin/control-center#bridgers'),'Administration Continuance verification operating-place route reaches the control center')
+assert.ok(adminNavigationMatureSource.includes('/admin/control-center#users'),'Administration verification operating-place route reaches the control center')
 
 for(const file of [
  'app/client/admin-chat/page.tsx',
