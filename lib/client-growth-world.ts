@@ -317,7 +317,8 @@ export async function getClientGrowthSnapshot(
         SELECT COUNT(*) FROM client_built_system_entries e
         WHERE e.client_id=${clientId}::uuid
           AND e.status='done'
-          AND e.updated_at>=NOW()-INTERVAL '30 days'
+          AND e.evidence_type<>'internal'
+          AND COALESCE(e.completed_at,e.updated_at)>=NOW()-INTERVAL '30 days'
       ),0)::int AS completed_operations_30d,
       COALESCE((
         SELECT COUNT(*) FROM client_business_route_movements m
