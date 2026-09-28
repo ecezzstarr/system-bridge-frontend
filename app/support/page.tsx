@@ -6,8 +6,8 @@ export const metadata = {
 
 export default function SupportPage() {
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-16 text-slate-100">
-      <article className="mx-auto max-w-3xl space-y-8 rounded-3xl border border-white/10 bg-white/[0.03] p-8 md:p-12">
+    <main className="min-h-screen bg-transparent px-6 py-16 text-slate-100">
+      <article className="mx-auto max-w-3xl space-y-8 rounded-3xl border border-white/10 bg-transparent p-8 md:p-12">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-300">Weave of Presence</p>
           <h1 className="mt-3 text-3xl font-semibold">Support</h1>
