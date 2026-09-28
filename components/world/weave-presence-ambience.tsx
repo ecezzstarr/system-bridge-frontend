@@ -323,6 +323,10 @@ export function WeavePresenceAmbience(){
 
   useEffect(()=>()=>stopRuntime(),[stopRuntime])
   useEffect(()=>{
+    // A measured downgrade must release buffers created by the previous tier.
+    if(runtimeRef.current)stopRuntime()
+  },[runtimeBudget.level,stopRuntime])
+  useEffect(()=>{
     const visibility=()=>{
       const runtime=runtimeRef.current
       if(!runtime)return
