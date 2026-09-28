@@ -112,7 +112,6 @@ const PLATFORM_BRIEFS:LoadingBrief[]=[
 
 const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS
 
-const FLAME_REENTRY_AFTER_MS=30*60*1000
 const FLAME_REENTRY_LAST_ACTIVE_KEY='weave:flame-event:last-active-at'
 
 const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
@@ -175,7 +174,6 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   useEffect(()=>{
     const now=Date.now()
     try{
-      const previous=Number(window.localStorage.getItem(FLAME_REENTRY_LAST_ACTIVE_KEY)||0)
       const eventIsLive=resolveEventStatus(FLAME_EVENT,new Date(now))==='active'
       setFlameEventActive(eventIsLive)
       window.localStorage.setItem(FLAME_REENTRY_LAST_ACTIVE_KEY,String(now))
