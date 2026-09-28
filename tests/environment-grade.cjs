@@ -65,6 +65,7 @@ assert.ok(liveFlameField.includes("window.addEventListener('pointermove'")&&live
 assert.ok(!fs.existsSync(path.join(root,'components/world/weave-normal-world-backdrop.tsx')),'Static architectural wallpaper has been removed from the codebase')
 assert.ok(!fs.existsSync(path.join(root,'components/world/weave-world-backdrop.tsx')),'Legacy sky/world wallpaper has been removed from the codebase')
 assert.ok(bridgePlazaPage.includes('data-bridge-plaza-theme="continuous-moving-system"'),'Bridge Plaza page is one continuous moving system rather than a card layout')
+assert.ok(bridgePlazaPage.includes("fetchWithTimeout('/api/world/state'")&&bridgePlazaPage.includes('Reopen Bridge Plaza'),'Bridge Plaza bounds world-state loading and exposes a visible recovery path')
 assert.ok(!bridgePlazaPage.includes('grid gap-3 sm:grid-cols-2 xl:grid-cols-4'),'Bridge Plaza removes the four architecture-card row')
 assert.ok(bridgePlazaPage.includes('data-bridge-plaza-station="client-support"'),'Client support is an entered Plaza station instead of a permanent side card')
 assert.ok(bridgePlazaPage.includes('Bridge Plaza · System Switch')&&bridgePlazaPage.includes('File Folder View'),'Bridge Plaza exposes System Switch File Folder View as an entered station')
