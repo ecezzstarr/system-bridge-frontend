@@ -316,7 +316,7 @@ const patternEnvironment=read('components/places/casino.tsx')
 const echoEnvironment=read('app/(app)/echo/page.tsx')
 
 assert.ok(routeNetwork.includes('data-weave-route-network')&&routeNetwork.includes('data-weave-route-station'),'Shared route grammar exposes connected lanes and stations')
-assert.ok(dashboardWorld.includes('<WeaveRouteNetwork'),'Role Home Worlds use route stations instead of WorldLinkCard tiles')
+assert.ok(dashboardWorld.includes('data-role-world-beacon={item.label}')&&dashboardWorld.includes('data-client-world-beacon'),'Role Home Worlds use spatial destination beacons instead of WorldLinkCard tiles')
 assert.ok(!dashboardWorld.includes('WorldLinkCard'),'Role Home Worlds cannot regress to a link-card grid')
 assert.ok(operatingRoom.includes('<WeaveRouteNetwork')&&operatingRoom.includes('Role route network'),'Agent/Admin Operating Rooms use connected route lanes')
 assert.ok(bridgerOperatingRoom.includes('<WeaveRouteNetwork')&&bridgerOperatingRoom.includes('Prospect intake dock'),'Bridger Operating Room combines route lanes with one Prospect intake station')
