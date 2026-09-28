@@ -87,3 +87,50 @@ export async function getAiFileFolderSnapshot(sql:any,aiId:string){
   const ledger=await sql`SELECT * FROM weave_ai_earnings_ledger WHERE ai_id=${aiId} ORDER BY created_at DESC LIMIT 100`
   return {identity,inventory,builds,systems,products,ledger}
 }
+
+
+export async function publishAiProduct(sql:any,input:{aiId:string;systemId:string;name:string;description?:string;priceFlameCoin:number}){
+  await ensureAiFileFolderStore(sql)
+  const price=Math.max(0,Number(input.priceFlameCoin)||0)
+  const [system]=await sql`
+    SELECT id FROM weave_ai_built_systems
+    WHERE id=${input.systemId}::uuid AND ai_id=${input.aiId} AND status='active'
+    LIMIT 1
+  `
+  if(!system)throw new Error('AI Agent must finish and activate the source system before publishing its product.')
+  const [product]=await sql`
+    INSERT INTO weave_ai_products(ai_id,system_id,name,description,price_flame_coin,published)
+    VALUES(${input.aiId},${input.systemId}::uuid,${input.name},${input.description||''},${price},true)
+    RETURNING *
+  `
+  return product
+}
+
+export async function recordAiProductSale(sql:any,input:{productId:string;buyerReference?:string;quantity?:number}){
+  await ensureAiFileFolderStore(sql)
+  const quantity=Math.max(1,Math.min(100,Number(input.quantity)||1))
+  return sql.begin(async(tx:any)=>{
+    const [product]=await tx`
+      SELECT id,ai_id,name,price_flame_coin FROM weave_ai_products
+      WHERE id=${input.productId}::uuid AND published=true
+      FOR UPDATE
+    `
+    if(!product)throw new Error('AI product is not available.')
+    const total=Number(product.price_flame_coin)*quantity
+    const [order]=await tx`
+      INSERT INTO weave_ai_product_orders(product_id,ai_id,buyer_reference,quantity,total_flame_coin,status)
+      VALUES(${product.id},${product.ai_id},${input.buyerReference||null},${quantity},${total},'completed')
+      RETURNING *
+    `
+    await tx`
+      UPDATE weave_ai_file_folders
+      SET wallet_flame_coin=wallet_flame_coin+${total},earned_flame_coin=earned_flame_coin+${total},updated_at=NOW()
+      WHERE ai_id=${product.ai_id}
+    `
+    await tx`
+      INSERT INTO weave_ai_earnings_ledger(ai_id,movement_type,amount_flame_coin,source_id,description)
+      VALUES(${product.ai_id},'product_sale',${total},${String(order.id)},${quantity+' × '+String(product.name)})
+    `
+    return order
+  })
+}
