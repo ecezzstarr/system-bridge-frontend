@@ -1,6 +1,6 @@
 'use client'
 
-import { Canvas } from '@react-three/fiber'
+import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { OrbitControls } from '@react-three/drei'
 import { useEffect,useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -207,12 +207,12 @@ export default function VisualSystemsWorkshop(){
         </div>
         <div className="relative h-[360px] overflow-hidden bg-[#0c0806]" data-visual-preview="interaction-motion">
           <InteractionMotionField configOverride={draft} forceEvent={draft.world.mode==='flame-event'} className="z-0" opacity={0.95}/>
-          {draft.enabled?<div className="relative z-10 h-full"><Canvas camera={{position:[0,0.15,4.8],fov:44}} dpr={[1,1.5]}>
+          {draft.enabled?<div className="relative z-10 h-full"><AdaptiveCanvas camera={{position:[0,0.15,4.8],fov:44}}>
             <ambientLight intensity={0.42}/>
             <pointLight position={[3,4,4]} intensity={16} color="#fff4dc"/>
             <FlameEventArtifact3D variant="hero" progress={4} active configOverride={draft}/>
             <OrbitControls enablePan={false} enableZoom={false}/>
-          </Canvas></div>:<div className="relative z-10 flex h-full items-center justify-center p-8 text-center"><div><Eye className="mx-auto h-7 w-7 text-slate-600"/><p className="mt-3 text-sm font-black text-slate-400">Artifact disabled · world motion can remain active</p></div></div>}
+          </AdaptiveCanvas></div>:<div className="relative z-10 flex h-full items-center justify-center p-8 text-center"><div><Eye className="mx-auto h-7 w-7 text-slate-600"/><p className="mt-3 text-sm font-black text-slate-400">Artifact disabled · world motion can remain active</p></div></div>}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/70 to-transparent px-4 pb-3 pt-10">
             <p className="text-[8px] font-black uppercase tracking-[.18em] text-amber-200">World motion · {draft.world.mode}</p>
             <p className="mt-1 text-[9px] text-stone-400">Flame {draft.world.flameIntensity.toFixed(2)} · River {draft.world.riverIntensity.toFixed(2)} · Emergence {draft.world.emergence.toFixed(2)}</p>
