@@ -115,7 +115,7 @@ function CommandHall({active}:{active:boolean}){
       <boxGeometry args={[.64,.95,.14]}/>
       <meshStandardMaterial color="#071016" emissive="#f59e0b" emissiveIntensity={active ? .16:.06}/>
     </mesh>
-    <Text position={[0,.8,1.48]} fontSize={.16} color="#fef3c7" anchorX="center">COMMAND</Text>
+    <Text position={[0,.8,1.48]} fontSize={.14} color="#fef3c7" anchorX="center">FORMATION INTELLIGENCE</Text>
     <FlameBeacon position={[-1.4,.02,.95]} scale={.55}/>
     <FlameBeacon position={[1.4,.02,.95]} scale={.55}/>
   </group>
@@ -181,7 +181,7 @@ function ConstructionYard({activeBuilds,emergence}:{activeBuilds:ActiveBuild[];e
   return <group>
     <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[3.5,.16,2.85]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
     <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#5f7884" metalness={.45} roughness={.45}/></mesh>
-    <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">CONSTRUCTION YARD</Text>
+    <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">FORMATION YARD</Text>
     {shown.length===0?<>
       <mesh position={[0,.22,-.1]} receiveShadow><boxGeometry args={[1.5,.15,1.0]}/><meshStandardMaterial color="#1b2a34" roughness={.85}/></mesh>
       <Text position={[0,.48,.35]} fontSize={.1} color="#8f7c66" anchorX="center">WAITING FOR BLUEPRINT</Text>
@@ -418,6 +418,30 @@ function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
   />
 }
 
+
+function WeavingCurrent({from,to,strength=1}:{from:[number,number,number];to:[number,number,number];strength?:number}){
+  const pulse=useRef<THREE.MeshBasicMaterial>(null)
+  const dx=to[0]-from[0],dz=to[2]-from[2]
+  const length=Math.sqrt(dx*dx+dz*dz)
+  const rotation=Math.atan2(dx,dz)
+  useFrame(({clock})=>{if(pulse.current)pulse.current.opacity=.16+Math.sin(clock.getElapsedTime()*2.4+length)*.08})
+  return <mesh position={[(from[0]+to[0])/2,-.07,(from[2]+to[2])/2]} rotation={[0,rotation,0]}>
+    <boxGeometry args={[.055,.035,length]}/>
+    <meshBasicMaterial ref={pulse} color="#67e8f9" transparent opacity={.18*Math.max(.5,strength)}/>
+  </mesh>
+}
+
+function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
+  if(activeBuilds.length===0)return null
+  return <group position={POSITIONS.builds}>
+    <mesh position={[0,.08,0]} rotation={[-Math.PI/2,0,0]}>
+      <ringGeometry args={[2.05,2.18,48]}/>
+      <meshBasicMaterial color="#f59e0b" transparent opacity={.16}/>
+    </mesh>
+    <Text position={[0,.2,-1.72]} fontSize={.085} color="#fde68a" anchorX="center">MATERIAL · PARTS · ACCELERATION</Text>
+  </group>
+}
+
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
   marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,emergence,routeCurrent,
@@ -451,7 +475,7 @@ function Scene({
     <WaterChannel position={[0,-.05,-5.5]} rotation={Math.PI/2} length={10.5}/>
     <WaterChannel position={[0,-.05,5.55]} rotation={Math.PI/2} length={9.5}/>
 
-    {districts.filter(d=>d.key!=='command').map(d=><PavedRoad key={d.key} from={POSITIONS.command} to={POSITIONS[d.key]}/>)}
+    {districts.filter(d=>d.key!=='command').map(d=><PavedRoad key={d.key} from={POSITIONS.command} to={POSITIONS[d.key]}/>)}\n    {districts.filter(d=>d.key!=='command').map(d=><WeavingCurrent key={'weave:'+d.key} from={POSITIONS.command} to={POSITIONS[d.key]} strength={routeCurrent}/>)}\n    <FormationSupplyRing activeBuilds={activeBuilds}/>
 
     {districts.map(d=><DistrictPlot
       key={d.key}
@@ -470,7 +494,7 @@ function Scene({
 
     {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence}/>)}
     <StreamingTower level={streamLevel}/>
-    <RouteNetwork count={routeCount} vitality={vitalityScore} currentStrength={routeCurrent}/>
+    <RouteNetwork count={Math.max(routeCount,liveSystems.length>1?liveSystems.length:0)} vitality={vitalityScore} currentStrength={routeCurrent}/>
 
     <FlameBeacon position={[-7.7,.02,-5.9]} scale={.55}/>
     <FlameBeacon position={[7.7,.02,-5.9]} scale={.55}/>
@@ -508,7 +532,7 @@ export function ClientFileFolder3D({
   const routeCurrent=Math.max(0,Math.min(2,visualRuntime.world.routeCurrent))
 
   const districts=useMemo<District[]>(()=>[
-    {key:'command',label:'Command Hall',tone:'sky'},
+    {key:'command',label:'Formation Intelligence',tone:'sky'},
     {key:'builds',label:'Formation Yard',tone:'violet'},
     {key:'business',label:'Market District',tone:'emerald'},
     {key:'enterprise',label:'Enterprise Territory',tone:'amber'},
@@ -531,7 +555,7 @@ export function ClientFileFolder3D({
     }>
       <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Weaving Territory</p>
       <p className="mt-1 text-xs font-black text-white">Every completed technology becomes part of one connected Client territory.</p>
-      <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">Purpose → formation → parts → connection → commissioning → system in motion.</p>
+      <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">Purpose → material → parts → formation → connection → advanced technology → value.</p>
     </div>
 
     <div className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>
