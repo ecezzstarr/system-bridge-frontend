@@ -371,7 +371,7 @@ function AdminWorkshopsSection() {
     <div className="space-y-6">
       <div className="p-4 bg-slate-900/60 rounded-xl border border-purple-900/30 backdrop-blur-sm">
         <p className="text-xs text-purple-400 mb-3 font-bold uppercase tracking-wider">Navigate WEAVE</p>
-        <EcosystemNav currentSystem="dashboard" />
+        <EcosystemNav currentSystem="online" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -528,7 +528,7 @@ function FileNumberEngineSection() {
     setIsLoading(true)
     try {
       const token = localStorage.getItem('ssb_auth_token')
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+      const headers: Record<string,string> = token ? { Authorization: `Bearer ${token}` } : {}
       const [bridgersRes, foldersRes] = await Promise.all([
         fetch('/api/users', { headers }),
         fetch('/api/admin/fne/list', { headers })
