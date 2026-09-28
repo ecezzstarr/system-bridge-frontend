@@ -14,9 +14,9 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
 function hasSchedulerAuthority(request: NextRequest) {
-  const expected = process.env.WEAVE_DEVELOPMENT_AGENT_SECRET
-  const supplied = request.headers.get('x-weave-development-agent-secret')
-  return Boolean(expected && supplied && supplied === expected)
+  const supplied = request.headers.get('x-weave-development-agent-secret') || request.headers.get('x-cron-secret')
+  const expected = [process.env.WEAVE_DEVELOPMENT_AGENT_SECRET, process.env.CRON_SECRET].filter(Boolean)
+  return Boolean(supplied && expected.some(secret => supplied === secret))
 }
 
 async function requireAdmin(request: NextRequest) {
