@@ -469,7 +469,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     { label:'Formation Yard', district:'formation_yard', phase:'Form' },
     { label:'Acceleration Bay', district:'boost_bay', phase:'Accelerate' },
     { label:'Systems in Motion', district:'active_systems', phase:'Operate + Connect' },
-    { label:'Build Intelligence', district:'library_district', phase:'Understand' },
+    { label:'Formation Intelligence', district:'library_district', phase:'Recognize + Direct' },
   ].filter(item=>isVisible(`/client/system-switch#studio:${item.district}`))
     .sort((a,b)=>orderFor(`/client/system-switch#studio:${a.district}`)-orderFor(`/client/system-switch#studio:${b.district}`))
 
@@ -709,6 +709,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   <div className="flex items-center justify-between gap-3"><p className="text-sm font-black text-white">{item.name}</p><span className={`text-[8px] font-black uppercase tracking-wider ${item.state==='recognized'?'text-emerald-300':'text-amber-200'}`}>{item.state}</span></div>
                   <p className="mt-2 text-[10px] leading-5 text-slate-400">{item.description}</p>
                   <p className="mt-3 text-[9px] text-slate-500">{item.presentSystems.length}/{item.requiredSystems.length} required systems present · {item.requiredConnection?(item.connectionPresent?'authorized weave present':'authorized weave required'):'no weave required'}</p>
+                  {item.missingSystems?.length>0&&<p className="mt-2 text-[9px] leading-4 text-amber-100">Missing: {item.missingSystems.map((type:string)=>type.replaceAll('_',' ')).join(' · ')}</p>}
+                  <button onClick={()=>item.nextMovement==='connect'?enterSurface('enterprise'):travelToStudio('blueprint_foundry')} className="mt-3 inline-flex items-center gap-2 border-b border-cyan-300/30 pb-1 text-[8px] font-black uppercase tracking-[.14em] text-cyan-200">{item.nextMovement==='build'?'Move to Blueprint Foundry':item.nextMovement==='connect'?'Move to System Weaves':'Operate recognized capability'} <ArrowRight className="h-3 w-3"/></button>
                 </div>)}
                 {!(world?.growth?.compositions||[]).length&&<p className="text-xs text-slate-500">Build complementary systems and authorize their movement. Formation Intelligence will recognize larger capabilities from real territory state.</p>}
               </div>
@@ -729,7 +731,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <div className="flex flex-col gap-3 border-y border-cyan-100/10 bg-[#17100b]/62 px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">Construction territory active</p>
-                    <p className="mt-1 text-[11px] leading-5 text-stone-400">Blueprint Foundry, Materials Depot, Construction Yard, Acceleration and Live Systems are one continuous site. Move through the site instead of opening separate dashboard pages.</p>
+                    <p className="mt-1 text-[11px] leading-5 text-stone-400">Blueprint Foundry, Materials Depot, Parts Workshop, Formation Yard, Acceleration Bay and Systems in Motion are one continuous site. Move through the site instead of opening separate dashboard pages.</p>
                   </div>
                   <div className="flex shrink-0 gap-4 text-right text-[8px] uppercase tracking-wider text-stone-500">
                     <span><b className="block text-base text-amber-100">{activeBuilds.length}</b>building</span>
