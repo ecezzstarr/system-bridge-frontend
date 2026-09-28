@@ -9,10 +9,8 @@ import { toast } from 'sonner'
 import { usePathname } from 'next/navigation'
 import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Toaster } from '@/components/ui/sonner'
-import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
 import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
-import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
@@ -108,7 +106,6 @@ export default function AppLayout({
     <div className="weave-app-shell relative min-h-dvh overflow-hidden bg-transparent" data-weave-world-runtime="persistent">
       <div className="relative z-10 flex min-h-dvh min-w-0 flex-col">
         <AppHeader user={user as any} />
-        <FlameEventAd />
         <main className="relative min-w-0 flex-1 overflow-x-clip" data-weave-world-interior="route">
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
@@ -130,7 +127,6 @@ export default function AppLayout({
         </main>
       </div>
       <Toaster position="top-center" richColors />
-      <LiveAdSurface />
       <PresenceCameraSignal />
       {termsChecked && termsNeeded && user?.role && ['agent', 'bridger'].includes(user.role) && (
         <TermsAcceptanceModal
