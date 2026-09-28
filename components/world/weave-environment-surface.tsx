@@ -4,7 +4,7 @@ import { useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Bot, ChevronLeft, Layers3, MoveRight } from 'lucide-react'
-import { resolveWeaveEnvironment } from '@/lib/weave-environments'
+import { resolveWeaveEnvironment, weaveWorldForPath } from '@/lib/weave-environments'
 
 function worldReturnFor(role?:string|null){
   if(role==='client')return '/client/dashboard'
@@ -27,7 +27,7 @@ export function WeaveEnvironmentSurface({
 }) {
   const pathname = usePathname() || '/'
   const environment = useMemo(() => resolveWeaveEnvironment(pathname), [pathname])
-  const returnHref=worldReturnFor(role)
+  const worldLayer=weaveWorldForPath(pathname)\n  const returnHref=worldLayer==='file-folder'?'/client/system-switch':worldReturnFor(role)
   const isWorldHome=pathname===returnHref||pathname==='/weave'
 
   return (
@@ -35,14 +35,14 @@ export function WeaveEnvironmentSurface({
       className="weave-environment-surface relative mx-auto w-full max-w-[1800px]"
       data-weave-environment={environment.key}
       data-weave-layer={environment.layer}
-      data-world-stays-mounted="true"
+      data-world-stays-mounted="true"\n      data-weave-world={worldLayer}
     >
       <header className={`sticky top-[4.15rem] z-30 mx-2 border-y border-amber-200/10 bg-[#05080d]/68 px-3 py-2 backdrop-blur-xl sm:mx-4 ${compact?'':'sm:px-4'}`} data-environment-location-hud="true">
         <div className="flex min-w-0 items-center gap-3">
           {!isWorldHome&&<Link href={returnHref} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-200/15 bg-sky-300/[.04] text-sky-100" aria-label="Return to role world"><ChevronLeft className="h-4 w-4"/></Link>}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5 text-[7px] font-black uppercase tracking-[.16em]">
-              <span className="inline-flex items-center gap-1 text-amber-200"><Layers3 className="h-3 w-3"/>{environment.district}</span>
+              <span className="inline-flex items-center gap-1 text-amber-200"><Layers3 className="h-3 w-3"/>{worldLayer==='file-folder'?'FILE FOLDER WORLD':'OPEN WEAVE WORLD'}</span><span className="text-white/20">→</span><span className="text-sky-300">{environment.district}</span>
               <span className="text-white/20">→</span>
               <span className="text-slate-400">{environment.layer}</span>
               {role&&<><span className="text-white/20">·</span><span className="text-emerald-300">{role} presence</span></>}
