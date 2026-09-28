@@ -258,6 +258,11 @@ export function DJBroadcastPlayer() {
   }, [emitDjAudioState, stopHarmonyAudience])
 
   useEffect(() => {
+    // Recreate Harmony only on demand at the new device budget.
+    stopHarmonyAudience(true)
+  }, [runtimeBudget.level, stopHarmonyAudience])
+
+  useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key !== USER_PAUSED_KEY) return
       const paused = event.newValue === '1'
