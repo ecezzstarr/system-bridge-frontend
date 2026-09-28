@@ -83,6 +83,7 @@ export default function BridgerNumbersPage(){
     console.error('[Number Bay verification rail]',verificationResult.reason)
    }
   }catch(e:any){
+   if(e?.name==='AbortError')return
    toast.error(e.message||'Unable to load Number Bay')
   }finally{
    if(!silent)setLoading(false)
