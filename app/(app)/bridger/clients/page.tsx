@@ -76,6 +76,11 @@ function BridgerClientsContent() {
     fetchClients()
   }, [user, authLoading, router])
 
+  useEffect(() => {
+    if (user?.role !== 'bridger') return
+    return visiblePoll(signal => fetchClients(true, signal), 15000, false)
+  }, [user?.id])
+
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -90,10 +95,10 @@ function BridgerClientsContent() {
     }
   }, [selectedClient, activePosition])
 
-  const fetchClients = async () => {
+  const fetchClients = async (silent = false, signal?: AbortSignal) => {
     if (!user?.id) return
     try {
-      const response = await fetch('/api/bridger/clients', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      const response = await fetch('/api/bridger/clients', { headers: token ? { Authorization: `Bearer ${token}` } : {}, cache: 'no-store', signal })
       const data = await response.json()
       setClients(data.clients || [])
       
@@ -107,7 +112,7 @@ function BridgerClientsContent() {
     } catch (error) {
       console.error('Error fetching clients:', error)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
