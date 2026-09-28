@@ -500,9 +500,9 @@ assert.ok(!ledgerWorldSource.includes("from '@/components/ui/card'"),'Record no 
 
 
 const fileFolderWorldApiSource=read('app/api/client/file-folder-world/route.ts')
-assert.ok(fileFolderOpenWorldSource.includes("key: 'parts_workshop'")&&fileFolderOpenWorldSource.includes('data-client-parts-workshop="capability"'),'Client construction separates capability Parts Workshop from Materials Depot')
-assert.ok(fileFolderOperatingEnvironmentSource.includes("district:'parts_workshop'")&&fileFolderOperatingEnvironmentSource.includes("phase:'Equip'"),'Client build route includes a dedicated equipment phase')
-assert.ok(environmentRegistrySource.includes("file-folder-parts")&&environmentRegistrySource.includes("#studio:parts_workshop"),'Parts Workshop is registered as a File Folder world station')
+assert.ok(fileFolderOpenWorld.includes("key: 'parts_workshop'")&&fileFolderOpenWorld.includes('data-client-parts-workshop="capability"'),'Client construction separates capability Parts Workshop from Materials Depot')
+assert.ok(clientFileFolderOperatingSource.includes("district:'parts_workshop'")&&clientFileFolderOperatingSource.includes("phase:'Equip'"),'Client build route includes a dedicated equipment phase')
+assert.ok(environmentRegistry.includes("file-folder-parts")&&environmentRegistry.includes("#studio:parts_workshop"),'Parts Workshop is registered as a File Folder world station')
 assert.ok(fileFolderWorldApiSource.includes("completes_at=CASE")&&fileFolderWorldApiSource.includes("EXTRACT(EPOCH FROM (completes_at-NOW()))"),'Applied construction acceleration recalculates the live build completion time')
 assert.ok(fileFolderWorldApiSource.includes("speed_multiplier=CASE"),'Applied acceleration updates the multiplier displayed by Construction Yard')
 assert.ok(!fileFolderWorldApiSource.includes("eventType:\`client_file_folder_\${action}\`")||fileFolderWorldApiSource.indexOf("eventType:\`client_file_folder_\${action}\`")>fileFolderWorldApiSource.indexOf('export async function POST'),'File Folder GET does not reference a POST-only action variable')
@@ -510,8 +510,8 @@ assert.ok(!fileFolderWorldApiSource.includes("eventType:\`client_file_folder_\${
 
 const clientFileFolderOperatingSource=read('components/system-switch/client-file-folder-operating-environment.tsx')
 const clientFileFolderWorldModel=read('lib/client-file-folder-world.ts')
-assert.ok(fileFolderOpenWorldSource.includes('Main File Folder · Technology Formation Territory'),'File Folder names itself as a technology formation territory')
-assert.ok(fileFolderOpenWorldSource.includes('Systems in Motion')&&fileFolderOpenWorldSource.includes('outputs'),'Completed Client technology is described through operation and connection')
+assert.ok(fileFolderOpenWorld.includes('Main File Folder · Technology Formation Territory'),'File Folder names itself as a technology formation territory')
+assert.ok(fileFolderOpenWorld.includes('Systems in Motion')&&fileFolderOpenWorld.includes('outputs'),'Completed Client technology is described through operation and connection')
 assert.ok(clientFileFolder3d.includes('Main File Folder · Weaving Territory')&&clientFileFolder3d.includes('one connected Client territory'),'3D File Folder presents one connected weaving territory')
 assert.ok(clientFileFolderOperatingSource.includes("phase:'Operate + Connect'"),'Client formation route explicitly continues from operation into connection')
 assert.ok(clientFileFolderWorldModel.includes("'Integration Weave'")&&clientFileFolderWorldModel.includes("'System Route Station'"),'Advanced Client blueprints include explicit system weaving and movement routes')
@@ -562,25 +562,25 @@ assert.ok(clientFileFolderOperatingSource.includes("label:'Formation Intelligenc
 assert.ok(clientFileFolderOperatingSource.includes('Parts Workshop, Formation Yard, Acceleration Bay and Systems in Motion'),'File Folder construction territory uses the mature formation grammar')
 
 
-assert.ok(fileFolderWorldSource.includes('evidence_type')&&fileFolderWorldSource.includes('evidence_value')&&fileFolderWorldSource.includes('completed_at'),'Built-system operations preserve typed field evidence')
-assert.ok(fileFolderApiSource.includes("'customer_use'")&&fileFolderApiSource.includes("'visitor_use'")&&fileFolderApiSource.includes("'fulfilment'")&&fileFolderApiSource.includes("'delivery'"),'File Folder accepts real-world system-use evidence types')
-assert.ok(fileFolderApiSource.includes("completed_at=CASE WHEN")&&fileFolderApiSource.includes("'done'"),'Completing an operation records when the work became evidence')
-assert.ok(fileFolderOpenWorldSource.includes('Systems in Motion')&&fileFolderOpenWorldSource.includes('Record the next real operation'),'Systems in Motion treats completed technology as an operating system rather than a static build')
-assert.ok(fileFolderOpenWorldSource.includes('Field evidence ·'),'System operation records expose field-evidence meaning to the Client')
+assert.ok(clientFileFolderWorldModel.includes('evidence_type')&&clientFileFolderWorldModel.includes('evidence_value')&&clientFileFolderWorldModel.includes('completed_at'),'Built-system operations preserve typed field evidence')
+assert.ok(fileFolderWorldApiSource.includes("'customer_use'")&&fileFolderWorldApiSource.includes("'visitor_use'")&&fileFolderWorldApiSource.includes("'fulfilment'")&&fileFolderWorldApiSource.includes("'delivery'"),'File Folder accepts real-world system-use evidence types')
+assert.ok(fileFolderWorldApiSource.includes("completed_at=CASE WHEN")&&fileFolderWorldApiSource.includes("'done'"),'Completing an operation records when the work became evidence')
+assert.ok(fileFolderOpenWorld.includes('Systems in Motion')&&fileFolderOpenWorld.includes('Record the next real operation'),'Systems in Motion treats completed technology as an operating system rather than a static build')
+assert.ok(fileFolderOpenWorld.includes('Field evidence ·'),'System operation records expose field-evidence meaning to the Client')
 
 
-assert.ok(fileFolderWorldSource.includes("'customer_door'")&&fileFolderWorldSource.includes("72, null, 0"),'Standard Customer Door uses a 72-hour real-time base formation')
-assert.ok(fileFolderWorldSource.includes("'door_foundation_frame'")&&fileFolderWorldSource.includes("'door_customer_intake'")&&fileFolderWorldSource.includes("'door_fulfilment_interface'")&&fileFolderWorldSource.includes("'door_public_commissioning'"),'Customer Door formation contains deeper functional parts')
-assert.ok(fileFolderOpenWorldSource.includes('CUSTOMER_DOOR_FORMATION')&&fileFolderOpenWorldSource.includes('data-customer-door-formation="72-hour-cycle"'),'Formation Yard exposes the three-day Customer Door construction cycle')
-assert.ok(fileFolderOpenWorldSource.includes('72 real hours · acceleration optional'),'Standard Client can understand that acceleration is optional rather than required')
-assert.ok(fileFolderOpenWorldSource.includes('compatible active structure in Formation Yard'),'Parts Workshop uses mature Formation Yard terminology')
+assert.ok(clientFileFolderWorldModel.includes("'customer_door'")&&clientFileFolderWorldModel.includes("72, null, 0"),'Standard Customer Door uses a 72-hour real-time base formation')
+assert.ok(clientFileFolderWorldModel.includes("'door_foundation_frame'")&&clientFileFolderWorldModel.includes("'door_customer_intake'")&&clientFileFolderWorldModel.includes("'door_fulfilment_interface'")&&clientFileFolderWorldModel.includes("'door_public_commissioning'"),'Customer Door formation contains deeper functional parts')
+assert.ok(fileFolderOpenWorld.includes('CUSTOMER_DOOR_FORMATION')&&fileFolderOpenWorld.includes('data-customer-door-formation="72-hour-cycle"'),'Formation Yard exposes the three-day Customer Door construction cycle')
+assert.ok(fileFolderOpenWorld.includes('72 real hours · acceleration optional'),'Standard Client can understand that acceleration is optional rather than required')
+assert.ok(fileFolderOpenWorld.includes('compatible active structure in Formation Yard'),'Parts Workshop uses mature Formation Yard terminology')
 
 
-assert.ok(fileFolderWorldSource.includes("'basic_interface_part'")&&fileFolderWorldSource.includes("'record_ledger_part'")&&fileFolderWorldSource.includes("'manual_route_part'"),'Standard Clients have low-cost functional technology parts')
-assert.ok(fileFolderWorldSource.includes("'starter_automation_part'")&&fileFolderWorldSource.includes("'starter_ai_assist_part'")&&fileFolderWorldSource.includes("'starter_integration_part'"),'Accessible parts provide narrower automation AI and integration capability')
-assert.ok(fileFolderOpenWorldSource.includes('data-standard-growth-path="time-capital-continuum"'),'Parts Workshop exposes the time-capital continuum')
-assert.ok(fileFolderOpenWorldSource.includes('Low capital can be exchanged for longer time and smaller capability.'),'Standard growth explicitly preserves a long-term path toward expansion')
-assert.ok(fileFolderOpenWorldSource.includes('Parts are an open market, not a wealth gate.'),'Parts economy preserves Client choice instead of imposing a wealth gate')
+assert.ok(clientFileFolderWorldModel.includes("'basic_interface_part'")&&clientFileFolderWorldModel.includes("'record_ledger_part'")&&clientFileFolderWorldModel.includes("'manual_route_part'"),'Standard Clients have low-cost functional technology parts')
+assert.ok(clientFileFolderWorldModel.includes("'starter_automation_part'")&&clientFileFolderWorldModel.includes("'starter_ai_assist_part'")&&clientFileFolderWorldModel.includes("'starter_integration_part'"),'Accessible parts provide narrower automation AI and integration capability')
+assert.ok(fileFolderOpenWorld.includes('data-standard-growth-path="time-capital-continuum"'),'Parts Workshop exposes the time-capital continuum')
+assert.ok(fileFolderOpenWorld.includes('Low capital can be exchanged for longer time and smaller capability.'),'Standard growth explicitly preserves a long-term path toward expansion')
+assert.ok(fileFolderOpenWorld.includes('Parts are an open market, not a wealth gate.'),'Parts economy preserves Client choice instead of imposing a wealth gate')
 
 
 assert.ok(environmentsSource.includes("weaveWorldForPath")&&environmentsSource.includes("'open-weave'|'file-folder'"),'WEAVE runtime has exactly Open WEAVE and File Folder world identities')
@@ -589,15 +589,15 @@ assert.ok(environmentSurfaceSource.includes("'FILE FOLDER WORLD':'OPEN WEAVE WOR
 assert.ok(environmentSurfaceSource.includes("worldLayer==='file-folder'?'/client/system-switch':worldReturnFor(role)"),'File Folder interiors return to File Folder world rather than another role world')
 
 
-assert.ok(environmentTransitSource.includes("min-h-[100dvh]")&&environmentTransitSource.includes("items-stretch"),'Global loader occupies the full viewport instead of exposing the root background')
-assert.ok(environmentTransitSource.includes("bg-[#02050a]")&&!environmentTransitSource.includes("bg-[#090807]/98"),'Loader has no brown fallback background')
-assert.ok(environmentTransitSource.includes("const showFlameBriefing=booting&&flameEventActive"),'Active Flame Event owns the cold-entry loader rather than requiring a 30-minute reentry gap')
-assert.ok(environmentTransitSource.includes('data-flame-event-loader={showFlameBriefing?\'burning-river\':undefined}'),'Flame Event loader exposes the Burning River state')
-assert.ok(environmentTransitSource.includes("max-w-3xl")&&environmentTransitSource.includes("min-h-[15rem]"),'Loading cards occupy a substantial readable part of the viewport')
+assert.ok(environmentTransit.includes("min-h-[100dvh]")&&environmentTransit.includes("items-stretch"),'Global loader occupies the full viewport instead of exposing the root background')
+assert.ok(environmentTransit.includes("bg-[#02050a]")&&!environmentTransit.includes("bg-[#090807]/98"),'Loader has no brown fallback background')
+assert.ok(environmentTransit.includes("const showFlameBriefing=booting&&flameEventActive"),'Active Flame Event owns the cold-entry loader rather than requiring a 30-minute reentry gap')
+assert.ok(environmentTransit.includes('data-flame-event-loader={showFlameBriefing?\'burning-river\':undefined}'),'Flame Event loader exposes the Burning River state')
+assert.ok(environmentTransit.includes("max-w-3xl")&&environmentTransit.includes("min-h-[15rem]"),'Loading cards occupy a substantial readable part of the viewport')
 
 
-assert.ok(environmentTransitSource.includes('data-environment-reveal-shell="continuous"'),'Loader and destination share one continuous dark reveal shell with no exposed frame')
-assert.ok(!environmentTransitSource.includes('FLAME_REENTRY_AFTER_MS'),'Flame Event loader is not suppressed by an obsolete reentry timeout')
+assert.ok(environmentTransit.includes('data-environment-reveal-shell="continuous"'),'Loader and destination share one continuous dark reveal shell with no exposed frame')
+assert.ok(!environmentTransit.includes('FLAME_REENTRY_AFTER_MS'),'Flame Event loader is not suppressed by an obsolete reentry timeout')
 
 
 const multiplayerFileFolderSource=read('lib/file-folder-multiplayer-world.ts')
@@ -607,7 +607,7 @@ assert.ok(multiplayerFileFolderSource.includes("department:'flame_ai'|'echo'"),'
 assert.ok(multiplayerFileFolderSource.includes('chosenName:string')&&multiplayerFileFolderSource.includes('chosenLogo:string|null'),'Each AI chooses an individual public name and logo')
 assert.ok(multiplayerFileFolderSource.includes('products:string[]')&&multiplayerFileFolderSource.includes('generatedSalesFlameCoin:number'),'AI File Folders expose products and attributable sales generated for WEAVE')
 assert.ok(multiplayerFileFolderSource.includes("privateAuthority:'ai_within_weave_mandate'"),'AI operation remains bounded by WEAVE institutional authority')
-assert.ok(fileFolderOpenWorldSource.includes('data-file-folder-multiplayer-world="human-and-weave-ai"'),'Client File Folder renders the shared multiplayer territory layer')
+assert.ok(fileFolderOpenWorld.includes('data-file-folder-multiplayer-world="human-and-weave-ai"'),'Client File Folder renders the shared multiplayer territory layer')
 
 
 const aiFileFolderEconomySource=read('lib/ai-file-folder-economy.ts')
