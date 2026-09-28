@@ -48,7 +48,7 @@ export function ClientNavigation() {
             </Link>
           )
         })}
-      </div></div>
+      </div>
     </nav>
   )
 }
