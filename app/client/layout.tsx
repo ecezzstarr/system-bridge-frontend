@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { ClientNavigation } from '@/components/client-navigation'
-import { LiveAdSurface } from '@/components/live-ad-surface'
 import { ClientRouteGuard } from '@/components/client/client-route-guard'
-import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
@@ -38,8 +36,6 @@ export default function ClientLayout({
       <ClientRouteGuard>
         <div className="relative z-10 min-h-screen">
           <ClientNavigation />
-          <FlameEventAd />
-          <LiveAdSurface />
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role="client">
               <FlameEventRoleAtmosphere userRole="client">
