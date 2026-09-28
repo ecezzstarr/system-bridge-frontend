@@ -17,10 +17,10 @@ interface Bridger {
 }
 
 const SUPPORT_POSITIONS = [
-  { id: 'mandate', name: 'Mandate' },
-  { id: 'attorney', name: 'Attorney' },
+  { id: 'bridger', name: 'My Bridger' },\n  { id: 'mandate', name: 'Mandate' },
+  { id: 'lawyer', name: 'Attorney' },
   { id: 'forensic', name: 'Forensic' },
-  { id: 'administration', name: 'Administration' },
+  { id: 'admin', name: 'Administration' },
 ]
 
 interface SupportMessage { id: string; senderType: 'visitor' | 'staff'; content: string; createdAt: string }
