@@ -132,6 +132,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
 
   { key:'shared-company-chat-position', label:'Company Guidance Interaction', kind:'place', route:'/company-chat/[position]', area:'Bridge', scope:'staff', defaultOrder:225 },
 
+  { key:'public-home', label:'WEAVE World Entrance', kind:'place', route:'/', area:'Public Entry', scope:'public', defaultOrder:1 },
   { key:'public-login', label:'WEAVE Position Gate', kind:'place', route:'/login', area:'Public Entry', scope:'public', defaultOrder:10 },
   { key:'public-register', label:'WEAVE Position Registration', kind:'place', route:'/register', area:'Public Entry', scope:'public', defaultOrder:20 },
   { key:'public-client-register', label:'Client Crossing Registration', kind:'place', route:'/client-register', area:'Public Entry', scope:'public', defaultOrder:30 },
