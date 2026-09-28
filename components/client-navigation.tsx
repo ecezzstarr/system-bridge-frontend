@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Flame, GitBranch, Home, LayoutGrid, Orbit } from 'lucide-react'
+import { Flame, GitBranch, Home, LayoutGrid, Orbit, Route } from 'lucide-react'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const items = [
@@ -28,8 +28,8 @@ export function ClientNavigation() {
   if (isClientEntry) return null
 
   return (
-    <nav className="weave-client-nav sticky top-0 z-40 border-b border-sky-300/10 bg-[#03101d]/92 px-1.5 py-1.5 backdrop-blur-2xl">
-      <div className="mx-auto grid max-w-3xl gap-1" style={{gridTemplateColumns:`repeat(${Math.max(1,visibleItems.length)},minmax(0,1fr))`}}>
+    <nav className="weave-client-nav sticky top-0 z-40 border-b border-sky-300/10 bg-[#020912]/94 px-2 py-2 backdrop-blur-2xl" aria-label="Client world routes">
+      <div className="mx-auto flex max-w-4xl items-center gap-1 overflow-x-auto"><div className="mr-1 hidden shrink-0 items-center gap-1.5 border-r border-white/10 pr-3 text-[8px] font-black uppercase tracking-[.14em] text-sky-300 sm:flex"><Route className="h-3.5 w-3.5"/>World routes</div>
         {visibleItems.map(({ label, href, icon: Icon }) => {
           const active = pathname === href || (href !== '/client/dashboard' && pathname.startsWith(href + '/'))
           return (
@@ -37,14 +37,14 @@ export function ClientNavigation() {
               key={href}
               href={href}
               data-active={active ? 'true' : 'false'}
-              className={`weave-client-nav-item flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[7px] font-black uppercase tracking-[0.06em] transition ${
+              className={`weave-client-nav-item flex min-w-[88px] shrink-0 items-center justify-center gap-2 border-l-2 px-2.5 py-2 text-[7px] font-black uppercase tracking-[0.06em] transition ${
                 active
-                  ? 'border border-sky-300/20 bg-sky-400/[0.08] text-white'
-                  : 'border border-transparent text-slate-500'
+                  ? 'border-sky-300 bg-sky-400/[0.08] text-white'
+                  : 'border-white/10 text-slate-500'
               }`}
             >
               <Icon className={`h-3.5 w-3.5 ${active ? 'text-sky-300' : 'text-slate-500'}`} />
-              <span className="w-full truncate text-center">{label}</span>
+              <span className="truncate">{label}</span>
             </Link>
           )
         })}

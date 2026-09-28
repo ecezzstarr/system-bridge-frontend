@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, CalendarDays, Flame, Music2, Radio, Sparkles, Waves, Wind } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowRight, CalendarDays, Flame, Music2, Orbit, Radio, Sparkles, Waves, Wind } from 'lucide-react'
 import {
   FLAME_EVENT,
   type EventRole,
@@ -175,6 +176,26 @@ export default function PositionEventWorld({
             <span>Presence</span><ArrowRight className="h-3 w-3" /><span>Interaction</span><ArrowRight className="h-3 w-3" /><span>Record</span><ArrowRight className="h-3 w-3" /><span>Next movement</span>
           </div>
         </section>
+
+        {role === 'client' && (
+          <section className="relative min-h-[18rem] overflow-hidden border-b border-white/8" data-flame-event-crossing-route="system-switch">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_58%,rgba(56,189,248,.16),transparent_22%),linear-gradient(180deg,transparent,rgba(2,8,23,.68))]" />
+            <div className="pointer-events-none absolute left-1/2 top-[62%] h-[45%] w-px -translate-x-1/2 bg-gradient-to-t from-cyan-200/60 via-sky-300/25 to-transparent shadow-[0_0_30px_rgba(103,232,249,.28)]" />
+            <div className="relative z-10 flex min-h-[18rem] flex-col items-center justify-center px-4 text-center">
+              <p className="text-[8px] font-black uppercase tracking-[.24em] text-sky-200">Client travel route</p>
+              <h2 className="mt-2 text-2xl font-black text-white">System Switch Crossing</h2>
+              <p className="mt-2 max-w-lg text-[11px] leading-5 text-stone-400">Travel from the Flame Event Hall into System Switch. Your File Number and crossing state are resolved there before the File Folder open world forms.</p>
+              <Link href="/client/system-switch" data-weave-world-gate="system-switch" className="group mt-6 flex items-center gap-3">
+                <span className="relative flex h-14 w-14 items-center justify-center rounded-full border border-cyan-100/30 bg-cyan-300/[.07] shadow-[0_0_38px_rgba(34,211,238,.16)]">
+                  <span className="absolute inset-[-7px] animate-pulse rounded-full border border-cyan-300/10" />
+                  <Orbit className="h-5 w-5 text-cyan-100" />
+                </span>
+                <span className="text-left"><span className="block text-[9px] font-black uppercase tracking-[.16em] text-white">Travel to crossing</span><span className="mt-1 block text-[8px] text-stone-500">Flame Event Hall → System Switch</span></span>
+                <ArrowRight className="h-4 w-4 text-cyan-200 transition group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </section>
+        )}
 
         <section id="your-position" className="grid border-b border-white/8 lg:grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)]">
           <div className="border-b border-white/8 px-4 py-6 sm:px-6 lg:border-b-0 lg:border-r lg:px-8 lg:py-8">
