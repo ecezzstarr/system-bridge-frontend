@@ -52,7 +52,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'file-folder-enterprise', label:'Expansion Council', kind:'station', route:'/client/system-switch#enterprise', area:'File Folder', scope:'client', defaultOrder:40 },
   { key:'file-folder-sound', label:'Sound Room', kind:'station', route:'/client/system-switch#sound', area:'File Folder', scope:'client', defaultOrder:50 },
   { key:'file-folder-blueprints', label:'Blueprint Foundry', kind:'station', route:'/client/system-switch#studio:blueprint_foundry', area:'File Folder Build Studio', scope:'client', defaultOrder:10 },
-  { key:'file-folder-materials', label:'Materials Depot', kind:'station', route:'/client/system-switch#studio:build_market', area:'File Folder Build Studio', scope:'client', defaultOrder:20 },
+  { key:'file-folder-materials', label:'Materials Depot', kind:'station', route:'/client/system-switch#studio:build_market', area:'File Folder Build Studio', scope:'client', defaultOrder:20 },\n  { key:'file-folder-parts', label:'Parts Workshop', kind:'station', route:'/client/system-switch#studio:parts_workshop', area:'File Folder Build Studio', scope:'client', defaultOrder:25 },
   { key:'file-folder-construction', label:'Construction Yard', kind:'station', route:'/client/system-switch#studio:formation_yard', area:'File Folder Build Studio', scope:'client', defaultOrder:30 },
   { key:'file-folder-boosts', label:'Acceleration Bay', kind:'station', route:'/client/system-switch#studio:boost_bay', area:'File Folder Build Studio', scope:'client', defaultOrder:40 },
   { key:'file-folder-live', label:'Live Systems', kind:'station', route:'/client/system-switch#studio:active_systems', area:'File Folder Build Studio', scope:'client', defaultOrder:50 },
