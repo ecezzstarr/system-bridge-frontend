@@ -475,3 +475,15 @@ assert.ok(weaveSystemMapSource.includes("principle: 'AI participates inside huma
 assert.ok(weaveSystemMapSource.includes("AI does not own territory"),'AI participation keeps human authority and ownership boundaries')
 assert.ok(dashboardWorldSource.includes('data-ai-participation={role}')&&dashboardWorldSource.includes('data-ai-participation="client"'),'Every authenticated role world exposes contextual AI participation')
 assert.ok(!dashboardWorldSource.includes(String.fromCharCode(92)+'n'),'Role world source contains no escaped newline corruption')
+
+
+const environmentSurfaceSource=read('components/world/weave-environment-surface.tsx')
+const environmentsSource=read('lib/weave-environments.ts')
+assert.ok(environmentSurfaceSource.includes('data-world-stays-mounted="true"'),'District interiors explicitly preserve the mounted WEAVE world')
+assert.ok(environmentSurfaceSource.includes('data-environment-location-hud="true"'),'Destination identity is a location HUD rather than a large page card')
+assert.ok(environmentSurfaceSource.includes('data-environment-interior="station"'),'Working interiors are framed as stations inside the world')
+assert.ok(environmentSurfaceSource.includes('Return to role world'),'Every authenticated station has a route back to its role world')
+assert.ok(environmentSurfaceSource.includes('data-ai-station-presence="contextual"'),'AI participation remains contextually present at working stations')
+for(const route of ['/bridger/bridge-radiance','/agent/bridge-radiance','/admin/bridge-radiance']){
+ assert.ok(environmentsSource.includes(route),route+' is registered as a WEAVE world station')
+}
