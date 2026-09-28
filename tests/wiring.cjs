@@ -67,6 +67,13 @@ function matches(route, matchers) {
   return matchers.some(([, regex]) => regex.test(route))
 }
 
+const environmentRegistrySource = fs.readFileSync(path.join(root, 'lib/weave-environment-registry.ts'), 'utf8')
+const registeredPlaceRoutes = [...environmentRegistrySource.matchAll(/route:'([^']+)'/g)]
+  .map(match => normalizeLocal(match[1]))
+  .filter(Boolean)
+const unregisteredPagePlaces = pagePatterns.filter(pattern => !registeredPlaceRoutes.includes(pattern))
+assert.deepEqual(unregisteredPagePlaces, [], 'Every page route must be registered as a WEAVE place')
+
 const navigationFiles = [
   'app/(app)/weave/page.tsx',
   'components/client-navigation.tsx',
