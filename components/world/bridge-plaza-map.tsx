@@ -387,7 +387,7 @@ export function BridgePlazaMap({
       {id:'enterprise',name:'Enterprise Exchange',subtitle:'SYSTEMS · MARKETS · VALUE',href:'/marketplace',action:'route',accent:'#f59e0b',position:[-5.2,.05,-2.9],rotation:.78,unlocked:true,system:'Enterprise'},
       {id:'arena',name:'Arena District',subtitle:'PEOPLE · COMPETITION · MOVEMENT',href:'/arena',action:'route',accent:'#fb7185',position:[5.2,.05,-2.9],rotation:-.78,unlocked:true,system:'Arena'},
       {id:'business',name:'Business District',subtitle:'WORK · SERVICES · OPPORTUNITY',href:'/places',action:'route',accent:'#fbbf24',position:[0,.05,-6.0],rotation:0,unlocked:true,system:'Work'},
-      {id:'knowledge',name:'Knowledge Library',subtitle:'LEARN · RECORD · CONTINUE',href:'/weave/standing',action:'route',accent:'#7dd3fc',position:[0,.05,6.25],rotation:Math.PI,unlocked:true,system:'Knowledge'},
+      {id:'presence',name:'Presence District',subtitle:'STANDING · RECORD · HOLDING',href:'/presence',action:'route',accent:'#7dd3fc',position:[0,.05,6.25],rotation:Math.PI,unlocked:true,system:'Presence'},
     ]
 
     if(worldRoles.includes('admin')||worldRoles.includes('administration')){
