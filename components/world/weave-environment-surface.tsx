@@ -27,7 +27,8 @@ export function WeaveEnvironmentSurface({
 }) {
   const pathname = usePathname() || '/'
   const environment = useMemo(() => resolveWeaveEnvironment(pathname), [pathname])
-  const worldLayer=weaveWorldForPath(pathname)\n  const returnHref=worldLayer==='file-folder'?'/client/system-switch':worldReturnFor(role)
+  const worldLayer=weaveWorldForPath(pathname)
+  const returnHref=worldLayer==='file-folder'?'/client/system-switch':worldReturnFor(role)
   const isWorldHome=pathname===returnHref||pathname==='/weave'
 
   return (
@@ -35,7 +36,8 @@ export function WeaveEnvironmentSurface({
       className="weave-environment-surface relative mx-auto w-full max-w-[1800px]"
       data-weave-environment={environment.key}
       data-weave-layer={environment.layer}
-      data-world-stays-mounted="true"\n      data-weave-world={worldLayer}
+      data-world-stays-mounted="true"
+      data-weave-world={worldLayer}
     >
       <header className={`sticky top-[4.15rem] z-30 mx-2 border-y border-amber-200/10 bg-[#05080d]/68 px-3 py-2 backdrop-blur-xl sm:mx-4 ${compact?'':'sm:px-4'}`} data-environment-location-hud="true">
         <div className="flex min-w-0 items-center gap-3">
