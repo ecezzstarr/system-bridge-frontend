@@ -7,6 +7,8 @@ import {
 } from '@/lib/client-build-economy'
 import { getFileFolderTier } from '@/lib/file-folder-pricing'
 
+const WEAVE_PLATFORM_ADMIN_ID='be4f0618-d666-4e13-ae8f-13c986784ff7'
+
 function aiFileNumber(aiId:string,department:'flame_ai'|'echo'){
   const suffix=aiId.replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toUpperCase().slice(-28)||'0001'
   return `WEAVE-${department==='echo'?'ECHO':'FLAME'}-${suffix}`
@@ -573,6 +575,10 @@ export async function purchaseAiProductFromWallet(sql:any,input:{
       WHERE w.user_id=${input.buyerUserId}::uuid
         AND w.is_primary=true
         AND w.balance_trx>=(product.price_flame_coin*${quantity})
+        AND EXISTS(
+          SELECT 1 FROM wallets platform
+          WHERE platform.user_id=${WEAVE_PLATFORM_ADMIN_ID}::uuid AND platform.is_primary=true
+        )
       RETURNING w.balance_trx,product.id AS product_id,product.ai_id,product.name,product.price_flame_coin
     ),
     order_row AS (
@@ -588,6 +594,13 @@ export async function purchaseAiProductFromWallet(sql:any,input:{
       WHERE ai.ai_id=order_row.ai_id
       RETURNING ai.ai_id
     ),
+    platform_settlement AS (
+      UPDATE wallets w
+      SET balance_trx=w.balance_trx+order_row.total_flame_coin,updated_at=NOW()
+      FROM order_row
+      WHERE w.user_id=${WEAVE_PLATFORM_ADMIN_ID}::uuid AND w.is_primary=true
+      RETURNING w.balance_trx
+    ),
     ledger AS (
       INSERT INTO weave_ai_earnings_ledger(ai_id,movement_type,amount_flame_coin,beneficiary,source_id,description)
       SELECT order_row.ai_id,'weave_customer_sale',order_row.total_flame_coin,'weave',order_row.id::text,
@@ -595,7 +608,8 @@ export async function purchaseAiProductFromWallet(sql:any,input:{
       FROM order_row JOIN debited ON debited.product_id=order_row.product_id
       RETURNING id
     )
-    SELECT order_row.*,debited.balance_trx AS buyer_balance_after
+    SELECT order_row.*,debited.balance_trx AS buyer_balance_after,
+      (SELECT balance_trx FROM platform_settlement LIMIT 1) AS weave_balance_after
     FROM order_row JOIN debited ON debited.product_id=order_row.product_id
   `
   if(!rows[0])throw new Error('AI product is unavailable or the buyer wallet does not contain enough Flame Coin.')

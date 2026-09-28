@@ -624,7 +624,7 @@ for(const table of ['weave_ai_file_folders','weave_ai_file_folder_inventory','we
  assert.ok(aiFileFolderStoreSource.includes(table),`AI File Folder persistence includes ${table}`)
 }
 assert.ok(aiFileFolderStoreSource.includes("status='active'")&&aiFileFolderStoreSource.includes('before publishing its product'),'AI product publication requires a completed active AI-built system')
-assert.ok(aiFileFolderStoreSource.includes('generated_sales_flame_coin=generated_sales_flame_coin+')&&aiFileFolderStoreSource.includes("'weave_customer_sale'")&&aiFileFolderStoreSource.includes("'weave'"),'AI Customer Door sales settle to WEAVE and remain attributable to the field AI')
+assert.ok(aiFileFolderStoreSource.includes('generated_sales_flame_coin=ai.generated_sales_flame_coin+order_row.total_flame_coin')&&aiFileFolderStoreSource.includes('platform_settlement AS (')&&aiFileFolderStoreSource.includes('balance_trx=w.balance_trx+order_row.total_flame_coin')&&aiFileFolderStoreSource.includes('WEAVE_PLATFORM_ADMIN_ID')&&aiFileFolderStoreSource.includes("'weave_customer_sale'")&&aiFileFolderStoreSource.includes("'weave'"),'AI Customer Door sales transfer to the WEAVE platform wallet and remain attributable to the field AI')
 assert.ok(!aiFileFolderStoreSource.includes('wallet_flame_coin=wallet_flame_coin+${total}'),'Customer sales never auto-credit the AI operating wallet')
 assert.ok(aiFileFolderStoreSource.includes('adminCreditAiOperatingFlameCoin')&&aiFileFolderStoreSource.includes("'admin_operating_credit'"),'Administration separately credits AI operating Flame Coin')
 assert.ok(aiFileFolderStoreSource.includes('source_id')&&aiFileFolderStoreSource.includes('product_id'),'AI earnings retain sale/product provenance')
