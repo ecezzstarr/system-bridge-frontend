@@ -326,7 +326,7 @@ assert.ok(cleanRevealHeader2026.includes('data-bridge-plaza-return="true"')&&!cl
 assert.ok(cleanRevealHeader2026.includes('weave-header'),'Header belongs to the shared operating chrome')
 assert.ok(cleanRevealWorld2026.includes("root.dataset.weaveEvent=active?'flame-live':'normal'"),'Flame event publishes a live interface theme state')
 assert.ok(!cleanRevealWorld2026.includes('FlameEventWorldDecorations'),'Flame Live is not mounted as a full-world wallpaper decoration')
-assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-sidebar')&&cleanRevealCss2026.includes('.weave-flame-live-indicator'),'Flame Live changes operating chrome and exposes a live state indicator')
+assert.ok(cleanRevealCss2026.includes('.weave-flame-live-indicator')&&!cleanRevealCss2026.includes('.weave-sidebar'),'Flame Live exposes state without restoring sidebar chrome')
 assert.ok(cleanRevealBridgeMap2026.includes("name:'System Switch · File Folders'")&&cleanRevealBridgeMap2026.includes("href:'/client/system-switch'"),'Bridge Plaza exposes both support File Folder view and the Client System Switch route')
 
 const cleanRevealDashboard2026=read('components/world/weave-dashboard-world.tsx')
@@ -386,7 +386,7 @@ assert.ok(adminRootEnvironment.includes("redirect('/admin/dashboard')")&&!adminR
 const liveFlameCss=read('app/globals.css')
 const liveWordSurface=read('components/world/weave-environment-surface.tsx')
 const liveWordRoutes=read('components/world/weave-route-network.tsx')
-const liveWordSidebar=read('components/app-sidebar.tsx')
+const liveWordHeader=read('components/app-header.tsx')
 assert.ok(liveFlameCss.includes('@keyframes weave-live-word-flow')&&liveFlameCss.includes('@keyframes weave-word-flare'),'Live flame CSS has continuous word flow and motion-triggered flare')
 assert.ok(liveFlameCss.includes('html[data-weave-pulse] [data-weave-live-word]'),'Confirmed movement propagates into live words')
 assert.ok(liveWordSurface.includes('data-weave-live-word="title"'),'Environment titles carry live flame state')
