@@ -11,12 +11,12 @@ permissions:
 jobs:
   pulse:
     runs-on: ubuntu-latest
-    if: ${{ secrets.WEAVE_DEVELOPMENT_AGENT_SECRET != '' }}
+    env:
+      DEVELOPMENT_AGENT_SECRET: ${{ secrets.WEAVE_DEVELOPMENT_AGENT_SECRET }}
+      DEVELOPMENT_AGENT_URL: ${{ vars.WEAVE_DEVELOPMENT_AGENT_URL || 'https://weavingsystem.online/api/admin/development-agents' }}
     steps:
       - name: Pulse one due WEAVE development agent
-        env:
-          DEVELOPMENT_AGENT_SECRET: ${{ secrets.WEAVE_DEVELOPMENT_AGENT_SECRET }}
-          DEVELOPMENT_AGENT_URL: ${{ vars.WEAVE_DEVELOPMENT_AGENT_URL || 'https://weavingsystem.online/api/admin/development-agents' }}
+        if: ${{ env.DEVELOPMENT_AGENT_SECRET != '' }}
         run: |
           set -euo pipefail
           curl --fail-with-body --silent --show-error \
@@ -25,3 +25,7 @@ jobs:
             --header "x-weave-development-agent-secret: ${DEVELOPMENT_AGENT_SECRET}" \
             --data '{"action":"pulse","maxAgents":1}' \
             "${DEVELOPMENT_AGENT_URL}"
+
+      - name: Report unarmed scheduler
+        if: ${{ env.DEVELOPMENT_AGENT_SECRET == '' }}
+        run: echo "WEAVE Development Foundry scheduler is installed but not armed. Set WEAVE_DEVELOPMENT_AGENT_SECRET in both GitHub Actions and the Cloud Run service."
