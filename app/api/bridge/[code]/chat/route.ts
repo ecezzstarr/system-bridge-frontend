@@ -32,7 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const bridge = bridges[0]
 
     const rawResponse = await chatWithBridge(messages as BridgeMessage[], bridge.system_prompt)
-      const match = rawResponse.match(/<<BUSINESS_CONCEPT:({.*?})>>/s)
+      const match = rawResponse.match(/<<BUSINESS_CONCEPT:({[\s\S]*?})>>/)
       let businessConcept: { summary: string } | null = null
       let response = rawResponse
       if (match) {
