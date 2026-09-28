@@ -598,3 +598,11 @@ assert.ok(environmentTransitSource.includes("max-w-3xl")&&environmentTransitSour
 
 assert.ok(environmentTransitSource.includes('data-environment-reveal-shell="continuous"'),'Loader and destination share one continuous dark reveal shell with no exposed frame')
 assert.ok(!environmentTransitSource.includes('FLAME_REENTRY_AFTER_MS'),'Flame Event loader is not suppressed by an obsolete reentry timeout')
+
+
+const multiplayerFileFolderSource=read('lib/file-folder-multiplayer-world.ts')
+assert.ok(multiplayerFileFolderSource.includes("'human_client'|'weave_ai_agent'"),'File Folder world distinguishes human Clients from institutional WEAVE AI operators')
+assert.ok(multiplayerFileFolderSource.includes('WEAVE_AI_DEMONSTRATION_TERRITORIES'),'WEAVE AI demonstration territories populate the multiplayer world')
+assert.ok(multiplayerFileFolderSource.includes("operatorLabel:'WEAVE AI-operated'"),'AI territories are visibly disclosed rather than impersonating human Clients')
+assert.ok(multiplayerFileFolderSource.includes("privateAuthority:'owner_or_weave_administration'"),'Public multiplayer visibility does not grant private territory authority')
+assert.ok(fileFolderOpenWorldSource.includes('data-file-folder-multiplayer-world="human-and-weave-ai"'),'Client File Folder renders the shared multiplayer territory layer')
