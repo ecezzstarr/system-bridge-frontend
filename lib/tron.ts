@@ -116,7 +116,7 @@ export async function sendTrx(
 }> {
   try {
     // Dynamic import TronWeb
-    const TronWeb = (await import('tronweb')).default
+    const { TronWeb } = await import('tronweb')
     
     const tronWeb = new TronWeb({
       fullHost: TRON_CONFIG.fullHost,
