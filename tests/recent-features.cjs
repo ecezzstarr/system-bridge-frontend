@@ -18,8 +18,8 @@ for(const role of ['admin','agent','bridger','client','creator','user',null]){
  auth={...initialAuth,user:role?{id:'sidebar-test',name:'Sidebar Test',role}:null}
  const sidebar=renderToStaticMarkup(React.createElement(AppSidebar))
  assert.doesNotMatch(sidebar,/Lounge Media Hub|Public Lounge|DM:|Send Photo|Send Video|Send Screenshot|type="file"|<select/)
- assert.ok(sidebar.includes('href="/lounge"'),'Lounge navigation remains for '+role)
- assert.ok(sidebar.includes('href="/lounge?view=private"'),'Private Lounge navigation remains for '+role)
+ assert.ok(sidebar.includes('Company Guidance'),'Core Bridge guidance remains reachable for '+role)
+ assert.ok(!sidebar.includes('Flame Live · Company Loop 1'),'Event information is not repeated inside the live sidebar')
  assert.equal(sidebar.includes('href="/bridger/numbers"'),role==='bridger')
  assert.equal(sidebar.includes('href="/admin/bridger-numbers"'),role==='admin')
 }
@@ -326,13 +326,13 @@ assert.ok(devWorkshopSource.includes('Integrity Scan')&&devWorkshopSource.includ
 assert.ok(!devWorkshopSource.includes('Fixing path alignment...'),'Old fake EIGHT repair output is removed')
 assert.ok(adminWorkshopSource.includes('WEAVE Integrity Engine'),'Main Admin Workshop exposes Integrity Engine directly')
 assert.ok(!dailyProspectRouteSource.includes('FROM prospects p'),'Daily claim must not use the legacy prospects table')
-assert.ok(dailyProspectUiSource.includes('Daily Prospect Claim'),'Daily claim UI uses Prospect wording')
-assert.ok(dailyProspectUiSource.includes('next free prospect'),'Daily reset wording uses Prospect')
+assert.ok(dailyProspectUiSource.includes('data-daily-prospect-station="live"'),'Daily Prospect is a live control station rather than an information card')
+assert.ok(dailyProspectUiSource.includes("claimed?'CLAIMED':'READY'"),'Daily Prospect station exposes current claim state')
 assert.ok(!dailyProspectUiSource.includes('Daily Project Claim'),'Project typo removed from daily claim')
 assert.ok(bridgerOperatingRoomSource.includes('DailyProspectClaim'),'Bridger Operating Room owns the corrected Prospect component')
 assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim renders only once in the Bridger Operating Room')
 assert.ok(!bridgerDashboardSource.includes('DailyProspectClaim'),'Bridger Home stays a compact world instead of duplicating Prospect intake')
-assert.ok(bridgerOperatingRoomSource.includes('Prospect intake')&&bridgerOperatingRoomSource.includes('Daily Prospect → Bridge Radiance'),'Daily Prospect movement is visibly organized as intake flowing into live Bridge Radiance')
+assert.ok(bridgerOperatingRoomSource.includes('data-weave-station="prospect-intake"'),'Daily Prospect movement occupies one functional station in the Bridger environment')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260925_bridger_daily_prospect_claim.sql')),'Daily Prospect claim migration exists')
 for(const file of [
  'lib/bridger-daily-prospect-engine.ts',
