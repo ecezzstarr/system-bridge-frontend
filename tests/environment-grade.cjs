@@ -421,3 +421,9 @@ assert.ok(worldRuntimeHeader.includes('data-weave-world-hud="top"'),'Authenticat
 const roleWorldSource = read('components/world/weave-dashboard-world.tsx')
 assert.ok(roleWorldSource.includes('data-role-world-hud={role}'),'Agent Bridger and Administration homes render as spatial HUD territories')
 assert.ok(roleWorldSource.includes('data-role-world-beacon={item.label}'),'Role worlds expose physical destination beacons instead of route cards')
+
+const departmentWorldSource = read('components/world/weave-dashboard-world.tsx')
+const departmentRoomSource = read('components/world/role-operating-room.tsx')
+assert.ok(departmentWorldSource.includes('Stability · Agent Department')&&departmentWorldSource.includes('Hope · Bridger Department'),'Agent and Bridger worlds preserve Stability and Hope department identities')
+assert.ok(departmentWorldSource.includes('A Cat · Administration Department')&&departmentWorldSource.includes('Lord/Lady · Client Department'),'Administration and Client worlds preserve A Cat and Lord/Lady department identities')
+assert.ok(departmentRoomSource.includes('Prospect Campaigns')&&departmentRoomSource.includes('Number Supply')&&departmentRoomSource.includes('Bridger participation'),'Stability operating world exposes the Bridger participation systems Agents are responsible for')
