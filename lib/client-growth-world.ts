@@ -102,6 +102,11 @@ export async function ensureClientGrowthWorldSchema(sql:any=getClientGrowthDb())
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_client_business_routes_client ON client_business_routes(client_id,status,created_at DESC)`
+  await sql`ALTER TABLE client_business_routes ADD COLUMN IF NOT EXISTS source_output varchar(120) NOT NULL DEFAULT 'movement'`
+  await sql`ALTER TABLE client_business_routes ADD COLUMN IF NOT EXISTS target_input varchar(120) NOT NULL DEFAULT 'movement'`
+  await sql`ALTER TABLE client_business_routes ADD COLUMN IF NOT EXISTS integration_type varchar(40) NOT NULL DEFAULT 'direct'`
+  await sql`ALTER TABLE client_business_routes ADD COLUMN IF NOT EXISTS authority_state varchar(40) NOT NULL DEFAULT 'client_authorized'`
+
   await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_client_business_routes_unique_pair
     ON client_business_routes(client_id,source_system_id,target_system_id)
@@ -247,7 +252,7 @@ export async function getClientGrowthSnapshot(
 
   const routes=await sql`
     SELECT
-      r.id,r.name,r.route_type,r.status,r.created_at,
+      r.id,r.name,r.route_type,r.source_output,r.target_input,r.integration_type,r.authority_state,r.status,r.created_at,
       source.id AS source_system_id,source.title AS source_title,source.system_type AS source_type,
       target.id AS target_system_id,target.title AS target_title,target.system_type AS target_type,
       COALESCE(m.movement_count,0)::int AS movement_count,
