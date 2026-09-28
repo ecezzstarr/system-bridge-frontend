@@ -5,7 +5,6 @@ import { useFrame,useThree } from '@react-three/fiber'
 import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
 import { useCallback,useEffect,useMemo,useRef,useState } from 'react'
 import * as THREE from 'three'
-import { InteractionMotionField } from '@/components/world/interaction-motion-field'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 
@@ -391,7 +390,6 @@ export function BridgePlazaMap({
   },[onOpenSupport,onTravel])
 
   return <div className="relative h-full min-h-[440px] sm:min-h-[690px] w-full overflow-hidden bg-transparent" data-bridge-plaza-system="continuous-moving-world" data-bridge-plaza-atmosphere="live-flame">
-    <InteractionMotionField className="z-[2] mix-blend-screen" opacity={0.58}/>
     <AdaptiveCanvas shadows camera={{position:[0,8.3,14.1],fov:45}} dpr={[1,1.5]}>
       <fog attach="fog" args={['#080507',13,31]}/>
       <ambientLight intensity={.48} color="#ffd8a8"/>
