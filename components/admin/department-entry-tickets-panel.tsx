@@ -28,7 +28,7 @@ export function DepartmentEntryTicketsPanel() {
   const [loading, setLoading] = useState(true)
   const [workingId, setWorkingId] = useState<string | null>(null)
 
-  const authHeaders = () => {
+  const authHeaders = (): Record<string,string> => {
     const token = localStorage.getItem('ssb_auth_token')
     return token ? { Authorization: `Bearer ${token}` } : {}
   }
