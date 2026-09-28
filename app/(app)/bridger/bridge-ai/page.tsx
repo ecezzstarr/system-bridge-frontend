@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Copy, QrCode, Eye, MessageSquare, UserPlus, Loader2, Code2, Sparkles, ShieldCheck } from 'lucide-react'
 import { RiverChat } from '@/components/river-chat'
+import { WORLD_RULES } from '@/lib/world/constants'
 
 interface Template { id: string; name: string; welcome_message: string; description?: string }
 interface Bridge {
@@ -19,7 +20,7 @@ interface Bridge {
   views: number; conversations: number; registrations: number
 }
 
-const BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN = 15
+const BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN = WORLD_RULES.BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN
 
 const PALETTE = [
   { from: '#06b6d4', to: '#3b82f6', glow: 'rgba(6,182,212,0.25)' },
