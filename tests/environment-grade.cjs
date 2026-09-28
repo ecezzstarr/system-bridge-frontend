@@ -292,6 +292,7 @@ assert.ok(read('app/client/system-switch/page.tsx').includes('<ClientFileFolderO
 assert.ok(read('components/client-navigation.tsx').includes('aria-label="Client world routes"'),'Client navigation is expressed as world routes')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes("bg-[#0c0907]/76"),'Dashboard world no longer uses the brown shell')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world="open-territory"'),'Client World identifies as an open territory rather than a dashboard or HUD shell')
+assert.ok(!read('components/world/weave-dashboard-world.tsx').includes('animate-pulse rounded-full border border-cyan-300/10'),'Client World beacons do not run redundant infinite pulse animations')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world-beacon'),'Client functions remain spatial travel beacons inside the world')
 assert.ok(!clientFileFolder.includes('bg-[#120c08]'),'Persistent File Folder shell no longer falls back to the brown wash')
 assert.ok(!clientFileFolder3d.includes('bg-[#120c08]')&&!clientFileFolder3d.includes("args={['#17100b']}"),'File Folder territory no longer renders the brown fallback world')
