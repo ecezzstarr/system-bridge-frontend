@@ -305,6 +305,7 @@ console.log('environment-grade regression checks passed')
 
 
 /* Clean environment reveal + live-theme regression coverage. */
+const cleanRevealPwa2026=read('components/pwa-register.tsx')
 const cleanRevealTransit2026=read('components/world/weave-environment-transit.tsx')
 const cleanRevealWorld2026=read('components/world/weave-world-environment.tsx')
 const cleanRevealAppLayout2026=read('app/(app)/layout.tsx')
@@ -318,10 +319,12 @@ const cleanRevealFileLoader2026=read('components/system-switch/file-folder-envir
 assert.ok(cleanRevealTransit2026.includes('[data-environment-pending="true"]')&&cleanRevealTransit2026.includes("readyPath!==pathname"),'Environment cover remains until destination-level pending work clears')
 assert.ok(cleanRevealTransit2026.includes("data-environment-content-state={covered?'forming':'ready'}"),'Incomplete destination content stays hidden until the clean reveal')
 assert.ok(cleanRevealAppLayout2026.includes('data-environment-pending="true"'),'Authenticated shell keeps the global cover while auth state resolves')
+assert.ok(cleanRevealAppLayout2026.includes('Opening WEAVE')&&cleanRevealAppLayout2026.includes('Restoring your position and the current environment.'),'Authenticated shell has a visible recovery surface if auth initialization outlives the global cover')
 assert.ok(cleanRevealFileLoader2026.includes('data-environment-pending="true"'),'File Folder boot participates in the global readiness gate')
 assert.ok(cleanRevealClientLayout2026.includes('overflow-x-clip')&&!cleanRevealClientLayout2026.includes('min-h-screen overflow-hidden'),'Client environments are not vertically clipped by their shell')
 assert.ok(cleanRevealSidebar2026.includes('weave-sidebar')&&cleanRevealSidebar2026.includes('weave-nav-group')&&cleanRevealSidebar2026.includes('weave-nav-item'),'Sidebar is organized as a dedicated operating panel')
 assert.ok(cleanRevealHeader2026.includes('weave-header'),'Header belongs to the shared operating chrome')
+assert.ok(cleanRevealPwa2026.includes('registration.update()')&&cleanRevealPwa2026.includes("window.removeEventListener('load', registerWorker)"),'PWA registration refreshes installed clients and cleans up its load listener')
 assert.ok(cleanRevealWorld2026.includes("root.dataset.weaveEvent=active?'flame-live':'normal'"),'Flame event publishes a live interface theme state')
 assert.ok(!cleanRevealWorld2026.includes('FlameEventWorldDecorations'),'Flame Live is not mounted as a full-world wallpaper decoration')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-sidebar')&&cleanRevealCss2026.includes('.weave-flame-live-indicator'),'Flame Live changes operating chrome and exposes a live state indicator')
