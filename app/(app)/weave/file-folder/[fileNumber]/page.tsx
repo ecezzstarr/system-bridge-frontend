@@ -60,9 +60,9 @@ export default function SupportFileFolderPage() {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-violet-300"/>
-            <p className="truncate text-[8px] font-black uppercase tracking-[.14em] text-violet-200">Territory observer · {data.client.name}</p>
+            <p className="truncate text-[8px] font-black uppercase tracking-[.14em] text-violet-200">Support · Read only · {data.client.name}</p>
           </div>
-          <p className="mt-0.5 hidden truncate text-[9px] text-slate-500 sm:block">Observe the Lord/Lady territory forming in real time. Progress is visible; authority remains with the Client.</p>
+          <p className="mt-0.5 hidden truncate text-[9px] text-slate-500 sm:block">Observe the territory forming in real time. Ownership and build controls remain with the Client.</p>
         </div>
         <span className="shrink-0 font-mono text-[7px] text-slate-600 md:text-[8px]">{data.client.file_number}</span>
       </div>
