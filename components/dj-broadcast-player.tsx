@@ -213,7 +213,7 @@ export function DJBroadcastPlayer() {
     stopHarmonyAudience()
   }, [stopHarmonyAudience])
 
-  const authHeaders = () => {
+  const authHeaders = (): Record<string,string> => {
     const token = localStorage.getItem('ssb_auth_token')
     return token ? { Authorization: `Bearer ${token}` } : {}
   }
@@ -382,7 +382,7 @@ export function DJBroadcastPlayer() {
     return () => window.removeEventListener('weave:personal-dj', onPersonalDj as EventListener)
   }, [applyPersonalPause, syncBroadcast])
 
-  const eligibleRole = Boolean(user && ['admin', 'agent', 'bridger', 'client'].includes(user.role))
+  const eligibleRole = Boolean(user?.role && ['admin', 'agent', 'bridger', 'client'].includes(user.role))
 
   useEffect(() => {
     if (!eligibleRole) return
