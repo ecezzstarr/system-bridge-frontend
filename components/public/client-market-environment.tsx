@@ -132,12 +132,12 @@ export function ClientMarketEnvironment({
       <div className="absolute -right-20 top-0 h-96 w-96 rounded-full bg-violet-400/10 blur-3xl"/>
       <div className="relative mx-auto max-w-7xl px-5 pb-8 pt-5 md:px-8 md:pt-8">
         <nav className="flex flex-wrap items-center justify-between gap-3 text-[9px] font-black uppercase tracking-[0.2em] text-white/55">
-          <Link href="/market" className="inline-flex items-center gap-2 hover:text-white"><Landmark className="h-4 w-4"/>WEAVE Client Market</Link>
+          <div className="flex items-center gap-3">{config.logoUrl?<img src={config.logoUrl} alt={`${config.platformName} logo`} className="h-10 w-10 rounded-xl border border-white/15 bg-white/5 object-contain p-1"/>:<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5"><Crown className="h-5 w-5 text-amber-200"/></div>}<div><p className="text-[10px] font-black text-white">{config.platformName}</p><Link href="/market" className="mt-0.5 inline-flex items-center gap-1 text-[7px] text-white/45 hover:text-white"><Landmark className="h-3 w-3"/>Built on WEAVE</Link></div></div>
           <span>{config.marketSection} · {levelLabel}</span>
         </nav>
         <div className="mt-8 grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(520px,1.1fr)]">
           <div>
-            <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${style.accent}`}>{config.sign}</p>
+            <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${style.accent}`}>Lord/Lady Territory · {config.sign}</p>
             <h1 data-weave-live-word="title" className="mt-3 max-w-3xl text-4xl font-black leading-[0.96] tracking-[-0.04em] sm:text-6xl lg:text-7xl">{store.name}</h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">{config.tagline}</p>
             {store.description&&<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">{store.description}</p>}
