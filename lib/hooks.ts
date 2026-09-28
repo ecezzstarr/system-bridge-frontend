@@ -57,7 +57,7 @@ export function useVideos(params?: { category?: string; isLive?: boolean }) {
 }
 
 // Arena
-export function useArenaMatches(params?: { status?: string; category?: string }) {
+export function useArenaMatches(params?: { status?: string; category?: string; limit?: number }) {
   return useSWR(['arenaMatches', params], async () => {
     const res = await api.getArenaMatches(params)
     if (!res.success) throw new Error(res.error)
