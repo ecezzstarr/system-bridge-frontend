@@ -17,7 +17,8 @@ interface Bridger {
 }
 
 const SUPPORT_POSITIONS = [
-  { id: 'bridger', name: 'My Bridger' },\n  { id: 'mandate', name: 'Mandate' },
+  { id: 'bridger', name: 'My Bridger' },
+  { id: 'mandate', name: 'Mandate' },
   { id: 'lawyer', name: 'Attorney' },
   { id: 'forensic', name: 'Forensic' },
   { id: 'admin', name: 'Administration' },
