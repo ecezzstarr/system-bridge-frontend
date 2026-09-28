@@ -202,7 +202,7 @@ const supportFileFolderPage=read('app/(app)/weave/file-folder/[fileNumber]/page.
 assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent/Admin Operating Room removes Position Map card')
 assert.ok(!bridgerOperatingRoom.toLowerCase().includes('position map'),'Bridger Operating Room removes Position Map card')
 assert.ok(bridgerOperatingRoom.includes('data-bridger-live-operations="true"'),'Bridger Operating Room exposes a live operational pulse instead of a static route menu')
-for(const route of ['/api/bridger/daily-prospect','/api/bridger/support-inbox','/api/bridger/clients','/api/bridger/numbers','/api/bridger/subscription']){
+for(const route of ['/api/bridger/daily-prospect','/api/bridger/support-inbox','/api/bridger/clients','/api/bridger/numbers','/api/bridger/subscription','/api/bridger/bridge-ai/subscribe']){
  assert.ok(bridgerOperatingRoom.includes(route),'Bridger live operations reads '+route)
 }
 for(const route of ['/bridger/bridge-radiance','/bridger/numbers','/bridger/clients','/bridger/subscription']){
@@ -219,6 +219,8 @@ assert.ok(!bridgerRadiancePage.includes('setInterval('),'Bridge Radiance no long
 assert.ok(bridgerNumbers.includes('visiblePoll(signal=>load(true,signal),10000,false)'),'Number Bay refreshes delivery and verification movement while visible')
 assert.ok(bridgerClientsPage.includes('visiblePoll(signal => fetchClients(true, signal), 15000, false)'),'Client Continuity refreshes newly crossed Clients while visible')
 assert.ok(bridgerContinuancePage.includes('visiblePoll(signal=>fetchContinuance(true,signal),30000,false)'),'Bridger Continuance reflects Administration decisions without reopening the page')
+assert.ok(bridgerOperatingRoom.includes('Bridge AI Subscription')&&bridgerOperatingRoom.includes('bridgeAiContinuance'),'Bridger Operating Room makes Bridge AI subscription standing visible')
+assert.ok(bridgerContinuancePage.includes('BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN')&&bridgerContinuancePage.includes('Subscribe to Bridge AI'),'Bridger Continuance chamber explains the separate Bridge AI subscription')
 assert.ok(dailyProspectClaimUi.includes('visiblePoll(signal => load(true, signal), 60000, false)')&&dailyProspectClaimUi.includes('Refresh intake'),'Daily Prospect intake can recover and reflect new reserve state')
 assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit world surface registry')
 assert.ok(environmentRegistry.includes("kind:'station'")&&environmentRegistry.includes("kind:'district'"),'Environment Organizer registers world districts and operating stations')
