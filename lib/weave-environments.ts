@@ -201,7 +201,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     key: 'administration-environment-organizer',
     title: 'Environment Organizer',
     district: 'Institution',
-    purpose: 'Administration control for withdrawing, restoring and ordering registered pages and cards while preserving source and records.',
+    purpose: 'Administration control for withdrawing, restoring and ordering registered places and stations while preserving source and records.',
     movement: 'Inspect → withdraw or restore → reorder → observe',
     layer: 'system',
   },
