@@ -549,10 +549,14 @@
    Only local instruments keep surface paint; the route root reveals the same
    persistent world and live flame field underneath. */
 body,
-.weave-app-shell,
+.weave-app-shell {
+  background-color: var(--weave-world-base);
+}
+
 .weave-environment-surface,
 [data-environment-interior="station"] {
-  background-color: var(--weave-world-base);
+  background-color: transparent !important;
+  background-image: none !important;
 }
 
 [data-weave-environment] [data-environment-interior="station"] > :is(main,section,div):not([role="dialog"]) {
