@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Activity,
   ArrowLeft,
@@ -86,6 +86,7 @@ export default function DevelopmentFoundryPage() {
   const [title, setTitle] = useState('')
   const [brief, setBrief] = useState('')
   const [queueing, setQueueing] = useState(false)
+  const pulseLock = useRef(false)
 
   const refresh = useCallback(async () => {
     try {
@@ -104,7 +105,8 @@ export default function DevelopmentFoundryPage() {
   }, [])
 
   const pulse = useCallback(async (force = false, target?: string) => {
-    if (pulsing) return
+    if (pulseLock.current) return
+    pulseLock.current = true
     setPulsing(true)
     try {
       const response = await fetch('/api/admin/development-agents', {
@@ -124,9 +126,10 @@ export default function DevelopmentFoundryPage() {
     } catch (error: any) {
       if (force) toast.error(error?.message || 'Development cycle interrupted')
     } finally {
+      pulseLock.current = false
       setPulsing(false)
     }
-  }, [pulsing, refresh])
+  }, [refresh])
 
   useEffect(() => {
     void refresh()
@@ -352,7 +355,7 @@ export default function DevelopmentFoundryPage() {
                           <XCircle className="mr-2 h-4 w-4" />Reject
                         </Button>
                         <Button size="sm" onClick={() => void decide(item.id, 'approved')}>
-                          <CheckCircle2 className="mr-2 h-4 w-4" />Approve build
+                          <CheckCircle2 className="mr-2 h-4 w-4" />Approve proposal
                         </Button>
                       </div>
                     )}
