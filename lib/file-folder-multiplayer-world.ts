@@ -37,7 +37,9 @@ export type PublicFileFolderTerritory={
 }
 
 // One AI identity owns one operating identity and one File Folder position.
-// It may choose its public name/logo, form systems and publish products as a field extension of WEAVE.\n// Customer Door settlement belongs to WEAVE. Administration separately credits the AI operating wallet\n// with Flame Coin for approved File Folder purchases, parts, boosts and construction.
+// It may choose its public name/logo, form systems and publish products as a field extension of WEAVE.
+// Customer Door settlement belongs to WEAVE. Administration separately credits the AI operating wallet
+// with Flame Coin for approved File Folder purchases, parts, boosts and construction.
 export const WEAVE_AI_FILE_FOLDERS:AiFileFolderIdentity[]=[
   {
     aiId:'flame-0001',department:'flame_ai',fileNumber:'WEAVE-FLAME-0001',
