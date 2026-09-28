@@ -50,10 +50,10 @@ assert.ok(rootLayout.includes('<WeaveEnvironmentTransit>'),'Global environment t
 assert.ok(rootLayout.includes('<InteractionMotionLayer />'),'Interaction output remains globally visible')
 assert.ok(rootLayout.includes('<WeavePresenceAmbience />'),'Persistent WEAVE world mounts one adaptive presence ambience engine')
 const flameReentryTransit=read('components/world/weave-environment-transit.tsx')
-assert.ok(flameReentryTransit.includes("FLAME_REENTRY_AFTER_MS=30*60*1000"),'Flame Event re-entry briefing waits for meaningful absence')
+assert.ok(!flameReentryTransit.includes('FLAME_REENTRY_AFTER_MS'),'Flame Event cold-entry briefing is not suppressed by an obsolete re-entry timeout')
 assert.ok(flameReentryTransit.includes("FLAME_REENTRY_LAST_ACTIVE_KEY"),'Flame Event re-entry state persists last app presence')
 assert.ok(flameReentryTransit.includes("resolveEventStatus(FLAME_EVENT"),'Flame Event re-entry briefing follows the October 1 event lifecycle')
-assert.ok(flameReentryTransit.includes("const showFlameBriefing=booting&&flameReentry"),'Flame Event briefing is boot-only and cannot replace ordinary route transit')
+assert.ok(flameReentryTransit.includes("const showFlameBriefing=booting&&flameEventActive"),'Flame Event briefing is boot-only and cannot replace ordinary route transit')
 assert.ok(flameReentryTransit.includes("const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS"),'Normal WEAVE loading briefs remain intact outside eligible Flame Event re-entry')
 assert.ok(flameReentryTransit.includes("Burning River")&&flameReentryTransit.includes("The River that Burns"),'Flame Event re-entry identifies the Burning River explicitly')
 
