@@ -46,88 +46,46 @@ import { PresenceIndicator } from "@/components/presence-indicator"
 import { WeaveLogo } from "@/components/weave-logo"
 import { useAuth } from "@/lib/auth-provider"
 import { useState, useEffect } from "react"
-import { toast } from "sonner"
 import { WEAVE_SYSTEM_MAP } from "@/lib/weave-system-map"
 import { useEnvironmentOrganizer } from "@/components/world/environment-organizer-provider"
 
 const navigation = [
-  // 1. PRESENCE — identity, participation, value and record.
-  { group: "Presence", items: [
+  { group: "World", items: [
     { name: "Home", href: "/", icon: Home },
-    { name: "Loop 1 Ground", href: "/event", icon: Flame },
+    { name: "Loop 1", href: "/event", icon: Flame },
     { name: "Company Loops", href: "/company/loops", icon: GitBranch },
-    { name: "Human Cadences", href: "/search", icon: MessageSquare },
-    { name: "Presences", href: "/profiles", icon: UserCircle },
-    { name: WEAVE_SYSTEM_MAP.language.wallet, href: "/wallet", icon: Wallet },
-    { name: WEAVE_SYSTEM_MAP.language.ledger, href: "/ledger", icon: BookOpen },
-    { name: "Reserve", href: "/fund-wall", icon: DollarSign, adminOnly: true },
   ]},
-
-  // 2. POSITION — the operating room for the current role.
   { group: "Position", items: [
     { name: "Bridger Operating Room", href: "/bridger/functions", icon: LayoutTemplate, bridgerOnly: true },
-    { name: "Worldwide Number Bay", href: "/bridger/numbers", icon: Phone, bridgerOnly: true },
-    { name: "Bridger Continuance", href: "/bridger/subscription", icon: ShieldCheck, bridgerOnly: true },
+    { name: "Number Bay", href: "/bridger/numbers", icon: Phone, bridgerOnly: true },
+    { name: "Continuance", href: "/bridger/subscription", icon: ShieldCheck, bridgerOnly: true },
     { name: "Agent Operating Room", href: "/agent/functions", icon: LayoutTemplate, agentOnly: true },
-    { name: "Administration Operating Room", href: "/admin/functions", icon: ShieldCheck, adminOnly: true },
     { name: "My Bridgers", href: "/agent/bridgers", icon: Users, agentOnly: true },
-    { name: "Agent Channels", href: "/agent/channels", icon: ShieldCheck, agentOnly: true },
-    { name: "Agent Continuance", href: "/agent/commissions", icon: DollarSign, agentOnly: true },
+    { name: "Continuance", href: "/agent/commissions", icon: DollarSign, agentOnly: true },
+    { name: "Administration Operating Room", href: "/admin/functions", icon: ShieldCheck, adminOnly: true },
+    { name: "Control Center", href: "/admin/control-center", icon: LayoutTemplate, adminOnly: true },
+    { name: "Development Foundry", href: "/admin/development-agents", icon: Rocket, adminOnly: true },
   ]},
-
-  // 3. BRIDGE — connection, support and movement between people.
   { group: "Bridge", items: [
     { name: WEAVE_SYSTEM_MAP.language.supportEntrance, href: "/weave", icon: LayoutTemplate },
     { name: WEAVE_SYSTEM_MAP.language.bridgeAI, href: "/bridger/bridge-ai", icon: GitBranch, bridgerOnly: true },
     { name: "Bridge Radiance", href: "/bridger/bridge-radiance", icon: MessageSquare, bridgerOnly: true },
-    { name: "Prospect Market", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
+    { name: "Prospects", href: "/weave/market/prospects", icon: ShoppingCart, bridgerOnly: true },
     { name: "My Clients", href: "/bridger/clients", icon: Users, bridgerOnly: true },
     { name: "Company Guidance", href: "/company-chat", icon: Headphones },
-    { name: "Private Lounge", href: "/lounge?view=private", icon: Shield },
-    { name: "Lounge", href: "/lounge", icon: MessageSquare },
-    { name: "Clients", href: "/clients", icon: Users, hideForBridger: true },
   ]},
-
-  // 4. ENTERPRISE — technology, products and commercial systems.
   { group: "Enterprise", items: [
     { name: WEAVE_SYSTEM_MAP.language.marketplace, href: "/marketplace", icon: Store },
-    { name: "Agility Agent Store", href: "/agility", icon: Store, agentOnly: true },
+    { name: "Agility", href: "/agility", icon: Store, agentOnly: true },
     { name: "Echo", href: "/echo", icon: Sparkles },
   ]},
-
-  // 5. WEAVE — shared participation across positions.
-  { group: "WEAVE", items: [
-    { name: "Contest", href: "/arena", icon: Gamepad2 },
-    { name: "Pattern", href: "/casino", icon: Dices },
-    { name: "Stream", href: "/video-feed", icon: Video },
-    { name: "Standing", href: "/weave/standing", icon: Globe },
-  ]},
-
-  // 6. ADMINISTRATION — company authority and control surfaces.
   { group: "Administration", items: [
-    { name: "Message Hub", href: "/admin/hub", icon: MessageSquare, adminOnly: true },
+    { name: "Admin Workshop", href: "/admin/workshop", icon: Rocket, adminOnly: true },
     { name: "Prospect Engine", href: "/admin/prospect-engine", icon: Zap, adminOnly: true },
-    { name: "WhatsApp Number Engine", href: "/admin/bridger-numbers", icon: Phone, adminOnly: true },
-    { name: "Bridge Templates", href: "/admin/bridge-templates", icon: Briefcase, adminOnly: true },
-    { name: "File Number Engine", href: "/admin/file-number-engine", icon: FileBox, adminOnly: true },
-    { name: "Fulfillment Agent", href: "/admin/outreach", icon: ShieldCheck, adminOnly: true },
-    { name: "Agent Channel Requests", href: "/admin/agent-channels", icon: UserCog, adminOnly: true },
-    { name: "Verify Continuances", href: "/admin/control-center#bridgers", icon: FileCheck, adminOnly: true },
-    { name: "Verification Center", href: "/admin/control-center#users", icon: Shield, adminOnly: true },
-    { name: "Client Deposits", href: "/admin/client-deposits", icon: Wallet, adminOnly: true },
-    { name: "Client Vaults", href: "/admin/client-vault", icon: Wallet, adminOnly: true },
-    { name: "Enterprise Systems Workshop", href: "/admin/enterprise-systems", icon: Cloud, adminOnly: true },
-    { name: "Agility Fulfillment", href: "/admin/agility", icon: FileBox, adminOnly: true },
-    { name: "Enterprise Dream", href: "/admin/enterprise-dream", icon: Crown, adminOnly: true },
-    { name: "Client Build Catalog", href: "/admin/client-build-catalog", icon: FileBox, adminOnly: true },
-    { name: "Loop Workshop", href: "/admin/loop-workshop", icon: FileCheck, adminOnly: true },
-    { name: "Authority Workshop", href: "/authority/workshops", icon: Rocket, adminOnly: true },
-    { name: "Infrastructure", href: "/admin/infrastructure", icon: Cloud, adminOnly: true },
-    { name: "DJ Workshop", href: "/admin/dj-workshop", icon: Radio, adminOnly: true },
-    { name: "Ad Workshop", href: "/admin/ad-workshop", icon: Megaphone, adminOnly: true },
-    { name: "Visual Systems", href: "/admin/visual-systems", icon: Palette, adminOnly: true },
+    { name: "Number Engine", href: "/admin/bridger-numbers", icon: Phone, adminOnly: true },
     { name: "Environment Organizer", href: "/admin/environment-organizer", icon: LayoutTemplate, adminOnly: true },
-    { name: "Flame Event · Loop 1", href: "/admin/flame-event", icon: Sparkles, adminOnly: true },
+    { name: "Infrastructure", href: "/admin/infrastructure", icon: Cloud, adminOnly: true },
+    { name: "Flame Event", href: "/admin/flame-event", icon: Flame, adminOnly: true },
   ]},
 ]
 
@@ -178,33 +136,6 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
             <span className="mt-1 block truncate text-[8px] font-bold uppercase tracking-[0.16em] text-slate-500">System Switch · Bridge Radiance</span>
           </div>
         </div>
-        <div className="weave-flame-live-indicator mt-3 items-center gap-2 rounded-full border border-orange-300/25 bg-orange-400/[0.08] px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.16em] text-orange-100">
-          <Flame className="h-3.5 w-3.5" />
-          Flame Live · Company Loop 1
-        </div>
-
-        {/* PWA Download Button */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-3 w-full h-9 text-[9px] border-cyan-500/25 bg-cyan-500/[0.045] text-cyan-300 hover:bg-cyan-500/10 gap-2"
-          onClick={() => {
-            const prompt = (window as any).deferredPrompt;
-            if (prompt) {
-              prompt.prompt();
-              prompt.userChoice.then((choice: any) => {
-                if (choice.outcome === 'accepted') {
-                  toast.success("Beginning...");
-                }
-              });
-            } else {
-              toast.info("To download, use 'Add to Home Screen' in your browser menu.");
-            }
-          }}
-        >
-          <Rocket className="h-3 w-3" />
-          Download App
-        </Button>
       </div>
 
       {/* User Profile */}
