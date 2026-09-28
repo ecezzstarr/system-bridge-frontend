@@ -462,6 +462,7 @@ assert.ok(positionEventSource.includes('The River that Burns'),'Loop 1 visibly d
 assert.ok(positionEventSource.includes('Your Loop 1 Position'),'Event ground centers the signed-in role')
 assert.ok(positionEventSource.includes('River Bank · Functions'),'Role functions are stations on the event ground rather than a generic card section')
 assert.ok(positionEventSource.includes('data-weave-route-station'),'Loop 1 exposes movement stations inside one current')
+assert.ok(positionEventSource.includes('data-flame-event-crossing-route="system-switch"')&&positionEventSource.includes('data-weave-world-gate="system-switch"'),'Client Flame Event Hall exposes physical travel into System Switch crossing')
 assert.ok(!positionEventSource.includes('ROLE_ORDER'),'Event page does not explain other user roles')
 assert.ok(!positionEventSource.includes('FLAME_EVENT_FEATURES'),'Event page removes generic event feature clutter')
 assert.ok(compactWorldSource.includes('data-client-world-hud="true"')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home is a spatial HUD territory with physical movement beacons')
