@@ -256,13 +256,13 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setReadyPath(null)
       setTransiting(true)
 
-      // Query-only sidebar stations do not change usePathname(). They still get
-      // the same three-card environmental handoff and then uncover safely.
+      // Query-only sidebar stations do not change usePathname(). Keep a brief
+      // handoff, then uncover as soon as the destination is actually ready.
       if(target.pathname===current.pathname){
         queryTransitionControllerRef.current?.abort()
         const controller=new AbortController()
         queryTransitionControllerRef.current=controller
-        void waitForBriefingSequence(mode,startedAt,controller.signal)
+        void waitForBriefingSequence('transit',startedAt,controller.signal)
           .then(()=>waitForEnvironmentReadiness('transit',configRef.current,controller.signal))
           .then(()=>{
           if(controller.signal.aborted)return
