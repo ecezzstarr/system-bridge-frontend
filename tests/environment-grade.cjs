@@ -541,3 +541,10 @@ assert.ok(clientFileFolder3d.includes('function PersistedSystemWeave('),'3D File
 assert.ok(clientFileFolder3d.includes('source_system_id')&&clientFileFolder3d.includes('target_system_id'),'3D weave resolves its real source and target systems')
 assert.ok(clientFileFolder3d.includes('movement_count')&&clientFileFolder3d.includes("activeMovements>0?1.35:.72"),'Recorded movement increases physical weave current')
 assert.ok(clientFileFolderOperatingSource.includes('systemWeaves={Array.isArray(world?.growth?.routes)?world.growth.routes:[]}'),'File Folder feeds persisted route state into the 3D territory')
+
+
+assert.ok(growthWorldModelSource.includes('COMPOSITION_RULES')&&growthWorldModelSource.includes('recognizeCompositions'),'Formation Intelligence derives higher-order technology from real Client systems')
+assert.ok(growthWorldModelSource.includes("'customer_service_infrastructure'")&&growthWorldModelSource.includes("'intelligence_operating_network'")&&growthWorldModelSource.includes("'enterprise_operating_infrastructure'"),'File Folder defines advanced technology compositions')
+assert.ok(growthWorldModelSource.includes("route.authority_state==='client_authorized'"),'Emergent capability only accepts an explicitly Client-authorized system weave')
+assert.ok(clientFileFolderOperatingSource.includes('data-formation-intelligence="capability-composition"'),'Formation Intelligence exposes recognized and forming capabilities inside the File Folder')
+assert.ok(clientFileFolderOperatingSource.includes('authorized weave required'),'Formation Intelligence tells the Client when connection is the missing formation condition')
