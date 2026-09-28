@@ -26,6 +26,7 @@ export function DailyProspectClaim() {
       setClaimed(Boolean(data.claimed))
       setClaim(data.claim || null)
     } catch (err: any) {
+      if (err?.name === 'AbortError') return
       setError(err?.message || 'Unable to load daily prospect')
     } finally {
       if (!silent) setLoading(false)
