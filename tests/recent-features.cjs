@@ -754,6 +754,7 @@ assert.ok(fileFolder3dSource.includes('RouteNetwork'),'File Folder 3D world visi
 assert.ok(fileFolder3dSource.includes('enterpriseLevel'),'File Folder 3D enterprise district grows with constructed enterprise structures')
 assert.ok(fileFolder3dSource.includes("data-file-folder-territory={territoryMode?'persistent-world':'embedded-world'}"),'File Folder 3D supports persistent world-as-interface mode')
 assert.ok(fileFolder3dSource.includes('enterpriseApproved')&&fileFolder3dSource.includes('ENTERPRISE DREAM'),'Approved Lord/Lady elevation changes the visible File Folder territory')
+assert.ok(fileFolder3dSource.includes('approved={enterpriseApproved}')&&fileFolder3dSource.includes('position={enterprisePosition}'),'Enterprise district receives approved elevation state')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('data-file-folder-world="persistent-territory-interface"'),'Client File Folder is a persistent territory instead of a stacked page shell')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}"),'File Folder function interiors open over the persistent territory')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Return to File Folder territory'),'Client can close an interior and return to the same territory')
