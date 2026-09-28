@@ -22,11 +22,11 @@ interface FundWallData {
 
 export default function ReserveEnginePage() {
   const { user, token } = useAuth()
-  const creator = user?.role === 'creator'
+  const administrator = user?.role === 'admin'
   const [copied, setCopied] = useState<string | null>(null)
 
   const { data, error, mutate, isLoading } = useSWR<FundWallData>(
-    creator ? '/api/fund-wall' : null,
+    administrator ? '/api/fund-wall' : null,
     async (url:string) => {
       const response = await fetch(url, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
