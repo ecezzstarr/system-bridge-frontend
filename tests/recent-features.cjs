@@ -498,13 +498,15 @@ assert.ok(roleOperatingRoomSource.includes("href: '/admin/ad-workshop'"),'Admini
 assert.ok(roleOperatingRoomSource.includes('Agent Working Panel'),'Agent Operating Room restores the dense middle working panel')
 for(const sharedRoute of ['/company/loops','/search','/profiles','/lounge?view=private','/lounge','/echo','/arena','/casino','/video-feed','/weave/standing']){
  assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Agent Operating Room preserves shared WEAVE component ${sharedRoute}`)
- assert.ok(bridgerOperatingRoomSource.includes(`href: '${sharedRoute}'`) || ['/arena','/casino'].includes(sharedRoute),`Bridger Operating Room preserves shared WEAVE component ${sharedRoute}`)
+}
+for(const bridgerRoute of ['/bridger/bridge-radiance','/weave/market/prospects','/bridger/bridge-ai','/bridger/numbers','/bridger/clients','/bridger/subscription','/company-chat','/wallet','/ledger','/company/loops','/marketplace','/weave']){
+ assert.ok(bridgerOperatingRoomSource.includes(`href: '${bridgerRoute}'`),`Bridger Operating Room preserves current Bridger operation ${bridgerRoute}`)
 }
 assert.ok(roleOperatingRoomSource.includes("href: '/clients'"),'Agent Operating Room preserves the Client directory')
 assert.ok(roleOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Agent and Administration components preserve district color structure on route lanes')
 assert.ok(bridgerOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Bridger components preserve district color structure on route lanes')
-assert.ok(bridgerOperatingRoomSource.includes('Bridger route network'),'Bridger Operating Room is a connected route environment')
-assert.ok(bridgerOperatingRoomSource.includes('Prospect intake dock'),'Bridger role keeps Prospect intake as a live station inside the environment')
+assert.ok(bridgerOperatingRoomSource.includes('Bridger operating routes'),'Bridger Operating Room is a connected current-operation environment')
+assert.ok(bridgerOperatingRoomSource.includes('Prospect intake')&&bridgerOperatingRoomSource.includes('Daily Prospect → Bridge Radiance'),'Bridger role keeps Prospect intake flowing into live Bridge Radiance')
 assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim remains one place after restoring the Bridger middle panel')
 assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
 assert.ok(adminFunctionsSource.includes('<RoleOperatingRoom role="admin"'),'Administration Functions opens the Administration Operating Room instead of importing the dashboard')
