@@ -194,8 +194,8 @@ const supportFileFolderPage=read('app/(app)/weave/file-folder/[fileNumber]/page.
 
 assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent/Admin Operating Room removes Position Map card')
 assert.ok(!bridgerOperatingRoom.toLowerCase().includes('position map'),'Bridger Operating Room removes Position Map card')
-assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit page/card registry')
-assert.ok(environmentRegistry.includes("kind:'card'")&&environmentRegistry.includes("kind:'page'"),'Environment Organizer registers both cards and pages')
+assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit world surface registry')
+assert.ok(environmentRegistry.includes("kind:'station'")&&environmentRegistry.includes("kind:'district'"),'Environment Organizer registers world districts and HUD stations')
 assert.ok(environmentRegistry.includes("protected:true"),'Environment Organizer protects critical control surfaces')
 assert.ok(environmentRegistry.includes("key:'admin-integrity-engine'")&&environmentRegistry.includes("route:'/admin/dev-workshop'"),'Integrity Engine is a protected Administration environment surface')
 assert.ok(environmentRuntime.includes('weave_environment_surfaces'),'Environment organization persists in the database')
@@ -250,7 +250,7 @@ assert.ok(!clientFileFolder.includes('studioDistricts.map((item,index)=><button'
 assert.ok(clientFileFolder3d.includes('territoryMode ? "h-full min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"'),'File Folder 3D can expand from embedded preview depth into persistent territory depth')
 assert.ok(clientFileFolder.includes('data-file-folder-world="persistent-territory-interface"'),'Client File Folder declares the persistent world-as-interface runtime')
 assert.ok(read('app/client/system-switch/page.tsx').includes('data-client-file-folder-entry="crossing-to-open-world"'),'Client File Folder opens directly as the world after gate resolution')
-assert.ok(read('app/client/system-switch/page.tsx').includes('<ClientFileFolderOperatingEnvironment data={data} />')&&!read('app/client/system-switch/page.tsx').includes('max-w-7xl'),'Crossing hands directly into the File Folder open world without a duplicate event-page container')
+assert.ok(!read('app/client/system-switch/page.tsx').includes('data-system-switch-flame-event="burning-river"'),'File Folder is not boxed beneath a duplicate System Switch event page')
 assert.ok(read('components/client-navigation.tsx').includes('aria-label="Client world routes"'),'Client navigation is expressed as world routes')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes("bg-[#0c0907]/76"),'Dashboard world no longer uses the brown shell')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world-hud="true"'),'Client World is rendered as a HUD territory rather than a dashboard panel')
@@ -409,3 +409,175 @@ for(const [source,label] of [
 }
 assert.ok(!loadStabilityDjPlayer.includes('setInterval(() => void syncBroadcast()'),'DJ player no longer launches overlapping hidden-tab network intervals')
 assert.ok(!loadStabilityAdminHub.includes('setInterval(loadMessages'),'Administration hub no longer stacks message requests')
+
+
+const worldRuntimeLayout = read('app/(app)/layout.tsx')
+const worldRuntimeHeader = read('components/app-header.tsx')
+assert.ok(worldRuntimeLayout.includes('data-weave-world-runtime="persistent"'),'Authenticated roles share a persistent world runtime')
+assert.ok(worldRuntimeLayout.includes('data-weave-world-interior="route"'),'Authenticated route content mounts as a world interior')
+assert.ok(!worldRuntimeLayout.includes('lg:pl-72'),'World runtime is not permanently displaced by a website sidebar')
+assert.ok(worldRuntimeHeader.includes('data-weave-world-hud="top"'),'Authenticated status and navigation controls render as a floating HUD')
+
+const roleWorldSource = read('components/world/weave-dashboard-world.tsx')
+assert.ok(roleWorldSource.includes('data-role-world-hud={role}'),'Agent Bridger and Administration homes render as spatial HUD territories')
+assert.ok(roleWorldSource.includes('data-role-world-beacon={item.label}'),'Role worlds expose physical destination beacons instead of route cards')
+
+const departmentWorldSource = read('components/world/weave-dashboard-world.tsx')
+const departmentRoomSource = read('components/world/role-operating-room.tsx')
+assert.ok(departmentWorldSource.includes('Stability · Agent Department')&&departmentWorldSource.includes('Hope · Bridger Department'),'Agent and Bridger worlds preserve Stability and Hope department identities')
+assert.ok(departmentWorldSource.includes('A Cat · Administration Department')&&departmentWorldSource.includes('Lord/Lady · Client Department'),'Administration and Client worlds preserve A Cat and Lord/Lady department identities')
+assert.ok(departmentRoomSource.includes('Prospect Campaigns')&&departmentRoomSource.includes('Number Supply')&&departmentRoomSource.includes('Bridger participation'),'Stability operating world exposes the Bridger participation systems Agents are responsible for')
+
+const dailyAwarenessSource = read('components/world/weave-dashboard-world.tsx')
+const agentCommissionSource = read('lib/agent-commission.ts')
+const numberBayApiSource = read('app/api/bridger/numbers/route.ts')
+assert.ok(dailyAwarenessSource.includes('data-daily-awareness={role}')&&dailyAwarenessSource.includes('What should I move today?'),'Stability and Hope worlds carry daily movement awareness')
+assert.ok(dailyAwarenessSource.includes('Check your Bridgers')&&dailyAwarenessSource.includes('Claim or buy a Prospect'),'Agent and Bridger daily awareness remains role-specific')
+assert.ok(agentCommissionSource.includes("'number_purchase'")&&numberBayApiSource.includes("activity:'number_purchase'"),'Bridger Number Bay purchases return commission to the assigned Stability Agent')
+
+const clientStoreIdentitySource = read('lib/client-business-store.ts')
+const customerDoorWorldSource = read('components/public/client-market-environment.tsx')
+const customerDoorControlSource = read('components/system-switch/client-customer-door-panel.tsx')
+assert.ok(clientStoreIdentitySource.includes('platformName: string')&&clientStoreIdentitySource.includes('logoUrl: string'),'Client territory persists platform name and logo in its Customer Door environment')
+assert.ok(customerDoorWorldSource.includes('Lord/Lady Territory')&&customerDoorWorldSource.includes('Built on WEAVE'),'public Customer Door presents the Client enterprise as primary identity while retaining WEAVE infrastructure attribution')
+assert.ok(customerDoorControlSource.includes('Platform / territory name')&&customerDoorControlSource.includes('Logo URL'),'Lord/Lady can define public territory identity from the construction HUD')
+
+const territoryObservationSource = read('components/system-switch/file-folder-open-world.tsx')
+const staffTerritorySource = read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
+assert.ok(territoryObservationSource.includes('data-territory-observer="progress-visible"')&&territoryObservationSource.includes('Customer Door maturity'),'observable Client territories expose construction and public business progress')
+assert.ok(territoryObservationSource.includes('wallet, private records and build controls remain with the Lord/Lady'),'territory observation does not expose Client authority')
+assert.ok(staffTerritorySource.includes('Territory observer')&&staffTerritorySource.includes('authority remains with the Client'),'authorized staff enter Client territory as observers rather than owners')
+
+const publicInternetWorldSource = read('app/market/page.tsx')
+assert.ok(publicInternetWorldSource.includes('The open internet meets Client-built territories.')&&publicInternetWorldSource.includes('without a WEAVE account'),'public Client territory is reachable as open-internet commerce rather than an authenticated WEAVE-only world')
+assert.ok(publicInternetWorldSource.includes("const doorName=config.platformName || store.name || 'Customer Door'"),'public market names the Client Door from the Client platform/company identity')
+assert.ok(customerDoorWorldSource.includes('Open internet · no WEAVE account')&&customerDoorWorldSource.includes('Enter ${doorName}'),'Client-named Customer Door is directly usable by non-WEAVE visitors')
+
+
+const bridgeVisitorSource=read('components/legacy-bridge-page.tsx')
+const bridgerRadianceSource=read('app/(app)/bridger/bridge-radiance/page.tsx')
+const bridgerSupportApiSource=read('app/api/bridger/support-inbox/route.ts')
+const agentSupportApiSource=read('app/api/agent/support-inbox/route.ts')
+const adminBridgeSupportSource=read('app/api/admin/bridge-support/route.ts')
+assert.ok(bridgeVisitorSource.includes("{ id: 'bridger', name: 'My Bridger' }"),'Bridge Radiance exposes the owning Bridger as an active Prospect position')
+assert.ok(bridgerSupportApiSource.includes('b.bridger_id = ${auth.userId}::uuid'),'Bridger Prospect interaction is restricted to the owning Bridger')
+assert.ok(agentSupportApiSource.includes('bridger.assigned_agent_id=${auth.userId}::uuid'),'Agent Prospect interaction is restricted to Bridgers assigned to that Agent')
+assert.ok(adminBridgeSupportSource.includes("authUser.role !== 'admin'")||adminBridgeSupportSource.includes("user.role !== 'admin'"),'Administration Bridge Radiance interaction remains institutionally gated')
+assert.ok(bridgerRadianceSource.includes('data-bridge-radiance-operator="bridger"'),'Hope has an active Bridge Radiance Prospect interaction station')
+
+
+const publicWorldSource=read('app/page.tsx')
+const weaveSystemMapSource=read('lib/weave-system-map.ts')
+const dashboardWorldSource=read('components/world/weave-dashboard-world.tsx')
+assert.ok(publicWorldSource.includes('data-weave-public-entry-world="true"'),'WEAVE homepage declares the public entry world')
+assert.ok(publicWorldSource.includes('AI has a place inside participation'),'Public world explains AI as participation rather than a detached chatbot')
+assert.ok(weaveSystemMapSource.includes("principle: 'AI participates inside human movement; it does not replace the human source.'"),'WEAVE system map protects the AI participation principle')
+assert.ok(weaveSystemMapSource.includes("AI does not own territory"),'AI participation keeps human authority and ownership boundaries')
+assert.ok(dashboardWorldSource.includes('data-ai-participation={role}')&&dashboardWorldSource.includes('data-ai-participation="client"'),'Every authenticated role world exposes contextual AI participation')
+assert.ok(!dashboardWorldSource.includes(String.fromCharCode(92)+'n'),'Role world source contains no escaped newline corruption')
+
+
+const environmentSurfaceSource=read('components/world/weave-environment-surface.tsx')
+const environmentsSource=read('lib/weave-environments.ts')
+assert.ok(environmentSurfaceSource.includes('data-world-stays-mounted="true"'),'District interiors explicitly preserve the mounted WEAVE world')
+assert.ok(environmentSurfaceSource.includes('data-environment-location-hud="true"'),'Destination identity is a location HUD rather than a large page card')
+assert.ok(environmentSurfaceSource.includes('data-environment-interior="station"'),'Working interiors are framed as stations inside the world')
+assert.ok(environmentSurfaceSource.includes('Return to role world'),'Every authenticated station has a route back to its role world')
+assert.ok(environmentSurfaceSource.includes('data-ai-station-presence="contextual"'),'AI participation remains contextually present at working stations')
+for(const route of ['/bridger/bridge-radiance','/agent/bridge-radiance','/admin/bridge-radiance']){
+ assert.ok(environmentsSource.includes(route),route+' is registered as a WEAVE world station')
+}
+
+
+const stationFrameSource=read('components/world/weave-station-frame.tsx')
+const stabilitySupplySource=read('app/(app)/agent/stability-supply/page.tsx')
+const ledgerWorldSource=read('app/(app)/ledger/page.tsx')
+assert.ok(stationFrameSource.includes('data-weave-working-station={station}'),'Dense functions share an explicit in-world station grammar')
+assert.ok(stationFrameSource.includes('data-ai-working-position="assist"'),'AI has an assist position at working stations without taking authority')
+assert.ok(stabilitySupplySource.includes('<WeaveStationFrame station="Stability Supply Ground"'),'Stability supply remains inside the role world as a working station')
+assert.ok(ledgerWorldSource.includes('<WeaveStationFrame station="Movement Record"'),'Record is a movement station inside WEAVE')
+assert.ok(!ledgerWorldSource.includes("from '@/components/ui/card'"),'Record no longer depends on the generic Card shell')
+
+
+const fileFolderWorldApiSource=read('app/api/client/file-folder-world/route.ts')
+assert.ok(fileFolderOpenWorldSource.includes("key: 'parts_workshop'")&&fileFolderOpenWorldSource.includes('data-client-parts-workshop="capability"'),'Client construction separates capability Parts Workshop from Materials Depot')
+assert.ok(fileFolderOperatingEnvironmentSource.includes("district:'parts_workshop'")&&fileFolderOperatingEnvironmentSource.includes("phase:'Equip'"),'Client build route includes a dedicated equipment phase')
+assert.ok(environmentRegistrySource.includes("file-folder-parts")&&environmentRegistrySource.includes("#studio:parts_workshop"),'Parts Workshop is registered as a File Folder world station')
+assert.ok(fileFolderWorldApiSource.includes("completes_at=CASE")&&fileFolderWorldApiSource.includes("EXTRACT(EPOCH FROM (completes_at-NOW()))"),'Applied construction acceleration recalculates the live build completion time')
+assert.ok(fileFolderWorldApiSource.includes("speed_multiplier=CASE"),'Applied acceleration updates the multiplier displayed by Construction Yard')
+assert.ok(!fileFolderWorldApiSource.includes("eventType:\`client_file_folder_\${action}\`")||fileFolderWorldApiSource.indexOf("eventType:\`client_file_folder_\${action}\`")>fileFolderWorldApiSource.indexOf('export async function POST'),'File Folder GET does not reference a POST-only action variable')
+
+
+const clientFileFolderOperatingSource=read('components/system-switch/client-file-folder-operating-environment.tsx')
+const clientFileFolderWorldModel=read('lib/client-file-folder-world.ts')
+assert.ok(fileFolderOpenWorldSource.includes('Main File Folder · Technology Formation Territory'),'File Folder names itself as a technology formation territory')
+assert.ok(fileFolderOpenWorldSource.includes('Systems in Motion')&&fileFolderOpenWorldSource.includes('outputs'),'Completed Client technology is described through operation and connection')
+assert.ok(clientFileFolder3d.includes('Main File Folder · Weaving Territory')&&clientFileFolder3d.includes('one connected Client territory'),'3D File Folder presents one connected weaving territory')
+assert.ok(clientFileFolderOperatingSource.includes("phase:'Operate + Connect'"),'Client formation route explicitly continues from operation into connection')
+assert.ok(clientFileFolderWorldModel.includes("'Integration Weave'")&&clientFileFolderWorldModel.includes("'System Route Station'"),'Advanced Client blueprints include explicit system weaving and movement routes')
+
+
+assert.ok(clientFileFolder3d.includes('FORMATION INTELLIGENCE'),'File Folder central structure is Formation Intelligence')
+assert.ok(clientFileFolder3d.includes('function WeavingCurrent('),'File Folder renders visible system weaving currents')
+assert.ok(clientFileFolder3d.includes('function FormationSupplyRing(')&&clientFileFolder3d.includes('MATERIAL · PARTS · ACCELERATION'),'Active formation has a visible construction supply layer')
+assert.ok(clientFileFolder3d.includes("Math.max(routeCount,liveSystems.length>1?liveSystems.length:0)"),'Multiple completed Client technologies produce visible route-network state')
+assert.ok(clientFileFolder3d.includes('Purpose → material → parts → formation → connection → advanced technology → value.'),'File Folder states the complete technology formation movement')
+
+
+const growthWorldApiSource=read('app/api/client/growth-world/route.ts')
+const growthWorldModelSource=read('lib/client-growth-world.ts')
+const growthWorldUiSource=read('components/system-switch/client-growth-world.tsx')
+const weavingMigrationSource=read('db/migrations/20260928_file_folder_weaving_engine.sql')
+for(const field of ['source_output','target_input','integration_type','authority_state']){
+ assert.ok(growthWorldModelSource.includes(field)&&growthWorldApiSource.includes(field)&&weavingMigrationSource.includes(field),'File Folder weave persists '+field)
+}
+assert.ok(growthWorldApiSource.includes("'client_authorized'"),'Technology weaves preserve explicit Client authorization')
+assert.ok(growthWorldUiSource.includes('Authorize weave')&&growthWorldUiSource.includes('AI may assist configuration but cannot authorize it.'),'Weaving UI keeps AI assistance subordinate to Client authority')
+assert.ok(growthWorldUiSource.includes('Source output')&&growthWorldUiSource.includes('Target input'),'A File Folder weave names both sides of technology movement')
+assert.ok(!growthWorldApiSource.includes('growthMotion(action)},{headers'),'Growth-world GET does not reference a POST-only action variable')
+
+
+assert.ok(clientFileFolder3d.includes('function PersistedSystemWeave('),'3D File Folder renders each persisted system weave')
+assert.ok(clientFileFolder3d.includes('source_system_id')&&clientFileFolder3d.includes('target_system_id'),'3D weave resolves its real source and target systems')
+assert.ok(clientFileFolder3d.includes('movement_count')&&clientFileFolder3d.includes("activeMovements>0?1.35:.72"),'Recorded movement increases physical weave current')
+assert.ok(clientFileFolderOperatingSource.includes('systemWeaves={Array.isArray(world?.growth?.routes)?world.growth.routes:[]}'),'File Folder feeds persisted route state into the 3D territory')
+
+
+assert.ok(growthWorldModelSource.includes('COMPOSITION_RULES')&&growthWorldModelSource.includes('recognizeCompositions'),'Formation Intelligence derives higher-order technology from real Client systems')
+assert.ok(growthWorldModelSource.includes("'customer_service_infrastructure'")&&growthWorldModelSource.includes("'intelligence_operating_network'")&&growthWorldModelSource.includes("'enterprise_operating_infrastructure'"),'File Folder defines advanced technology compositions')
+assert.ok(growthWorldModelSource.includes("route.authority_state==='client_authorized'"),'Emergent capability only accepts an explicitly Client-authorized system weave')
+assert.ok(clientFileFolderOperatingSource.includes('data-formation-intelligence="capability-composition"'),'Formation Intelligence exposes recognized and forming capabilities inside the File Folder')
+assert.ok(clientFileFolderOperatingSource.includes('authorized weave required'),'Formation Intelligence tells the Client when connection is the missing formation condition')
+
+
+assert.ok(growthWorldModelSource.includes('fieldEvidence')&&growthWorldModelSource.includes('demonstrated:'),'File Folder computes field evidence from recorded participation')
+assert.ok(growthWorldModelSource.includes('Capital can expand construction but does not count as demonstrated use.'),'Investment capacity is explicitly separated from field recognition')
+assert.ok(clientFileFolderOperatingSource.includes('data-formation-intelligence="field-evidence"'),'Formation Intelligence exposes real-world use evidence')
+assert.ok(clientFileFolderOperatingSource.includes('Potential is recognized through movement already happening.'),'File Folder states the participation-before-recognition principle')
+
+
+assert.ok(growthWorldModelSource.includes('missingSystems')&&growthWorldModelSource.includes("nextMovement=complete?'operate'"),'Formation Intelligence derives the missing systems and next movement for advanced capability')
+assert.ok(clientFileFolderOperatingSource.includes('Move to Blueprint Foundry')&&clientFileFolderOperatingSource.includes('Move to System Weaves'),'Formation Intelligence routes Clients from diagnosis into the required movement')
+assert.ok(clientFileFolderOperatingSource.includes("label:'Formation Intelligence'")&&clientFileFolderOperatingSource.includes("phase:'Recognize + Direct'"),'File Folder names its intelligence district by its operating function')
+assert.ok(clientFileFolderOperatingSource.includes('Parts Workshop, Formation Yard, Acceleration Bay and Systems in Motion'),'File Folder construction territory uses the mature formation grammar')
+
+
+assert.ok(fileFolderWorldSource.includes('evidence_type')&&fileFolderWorldSource.includes('evidence_value')&&fileFolderWorldSource.includes('completed_at'),'Built-system operations preserve typed field evidence')
+assert.ok(fileFolderApiSource.includes("'customer_use'")&&fileFolderApiSource.includes("'visitor_use'")&&fileFolderApiSource.includes("'fulfilment'")&&fileFolderApiSource.includes("'delivery'"),'File Folder accepts real-world system-use evidence types')
+assert.ok(fileFolderApiSource.includes("completed_at=CASE WHEN")&&fileFolderApiSource.includes("'done'"),'Completing an operation records when the work became evidence')
+assert.ok(fileFolderOpenWorldSource.includes('Systems in Motion')&&fileFolderOpenWorldSource.includes('Record the next real operation'),'Systems in Motion treats completed technology as an operating system rather than a static build')
+assert.ok(fileFolderOpenWorldSource.includes('Field evidence ·'),'System operation records expose field-evidence meaning to the Client')
+
+
+assert.ok(fileFolderWorldSource.includes("'customer_door'")&&fileFolderWorldSource.includes("72, null, 0"),'Standard Customer Door uses a 72-hour real-time base formation')
+assert.ok(fileFolderWorldSource.includes("'door_foundation_frame'")&&fileFolderWorldSource.includes("'door_customer_intake'")&&fileFolderWorldSource.includes("'door_fulfilment_interface'")&&fileFolderWorldSource.includes("'door_public_commissioning'"),'Customer Door formation contains deeper functional parts')
+assert.ok(fileFolderOpenWorldSource.includes('CUSTOMER_DOOR_FORMATION')&&fileFolderOpenWorldSource.includes('data-customer-door-formation="72-hour-cycle"'),'Formation Yard exposes the three-day Customer Door construction cycle')
+assert.ok(fileFolderOpenWorldSource.includes('72 real hours · acceleration optional'),'Standard Client can understand that acceleration is optional rather than required')
+assert.ok(fileFolderOpenWorldSource.includes('compatible active structure in Formation Yard'),'Parts Workshop uses mature Formation Yard terminology')
+
+
+assert.ok(fileFolderWorldSource.includes("'basic_interface_part'")&&fileFolderWorldSource.includes("'record_ledger_part'")&&fileFolderWorldSource.includes("'manual_route_part'"),'Standard Clients have low-cost functional technology parts')
+assert.ok(fileFolderWorldSource.includes("'starter_automation_part'")&&fileFolderWorldSource.includes("'starter_ai_assist_part'")&&fileFolderWorldSource.includes("'starter_integration_part'"),'Accessible parts provide narrower automation AI and integration capability')
+assert.ok(fileFolderOpenWorldSource.includes('data-standard-growth-path="time-capital-continuum"'),'Parts Workshop exposes the time-capital continuum')
+assert.ok(fileFolderOpenWorldSource.includes('Low capital can be exchanged for longer time and smaller capability.'),'Standard growth explicitly preserves a long-term path toward expansion')
+assert.ok(fileFolderOpenWorldSource.includes('Parts are an open market, not a wealth gate.'),'Parts economy preserves Client choice instead of imposing a wealth gate')
