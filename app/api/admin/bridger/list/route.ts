@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { ensureContinuanceTables } from '@/lib/bridger-subscription'
-import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
+import { getAuthUser } from '@/lib/auth-api'
 
 export async function GET(request: NextRequest) {
-  const auth = await requireWorkshopAuthorization(request)
-  if (!auth.authorized) return auth.response
+  const admin = await getAuthUser(request)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (admin.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   try {
     await ensureContinuanceTables()
     const filter = request.nextUrl.searchParams.get('filter') || 'all'
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
             FROM users WHERE role='bridger' OR departmental_code='HOPE'
             ORDER BY created_at DESC
           `
-    return NextResponse.json({ success: true, bridgers })
+    return NextResponse.json({ success: true, bridgers }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('Bridger list error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -64,6 +64,7 @@ import Lounge from '@/components/places/lounge'
 import { eightOperate, readScroll } from '@/lib/eight'
 import { DepartmentalCodesSection } from '@/components/admin/departmental-codes-section'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
+import { WORLD_RULES } from '@/lib/world/constants'
 
 type TabId = 'lounge' | 'arena' | 'casino' | 'wallet' | 'workshops' | 'panel' | 'eight'
 
@@ -723,52 +724,73 @@ function FileNumberEngineSection() {
 }
 
 function BridgerManagementSection() {
-  const { user } = useAuth()
+  const { token } = useAuth()
   const [bridgers, setBridgers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchBridgers()
-  }, [])
+  const [error, setError] = useState('')
 
   const fetchBridgers = async () => {
+    if (!token) {
+      setBridgers([])
+      setError('Administration session is unavailable. Sign in again to operate Bridgers.')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
+    setError('')
     try {
-      const token = localStorage.getItem('ssb_auth_token')
       const res = await fetch('/api/admin/bridger/list', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
       })
       const data = await res.json()
-      if (data.success) {
-        setBridgers(data.bridgers || [])
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || data.message || 'Unable to read Bridger operations')
       }
-    } catch (error) {
-      console.error('Failed to fetch bridgers:', error)
+      setBridgers(data.bridgers || [])
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : 'Unable to read Bridger operations'
+      console.error('Failed to fetch bridgers:', requestError)
+      setBridgers([])
+      setError(message)
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    void fetchBridgers()
+  }, [token])
+
   const toggleExempt = async (userId: string, currentExempt: boolean) => {
+    if (!token) {
+      setError('Administration session is unavailable. Sign in again to operate Bridgers.')
+      return
+    }
+
     setUpdating(userId)
+    setError('')
     try {
-      const token = localStorage.getItem('ssb_auth_token')
       const res = await fetch('/api/admin/bridger/exemption', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ userId, isExempt: !currentExempt })
       })
       const data = await res.json()
-      if (data.success) {
-        toast.success(data.message)
-        fetchBridgers()
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || data.message || 'Unable to update Bridger Continuance')
       }
-    } catch (error) {
-      toast.error("That didn't update")
+      toast.success(data.message)
+      await fetchBridgers()
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : 'Unable to update Bridger Continuance'
+      setError(message)
+      toast.error(message)
     } finally {
       setUpdating(null)
     }
@@ -782,18 +804,38 @@ function BridgerManagementSection() {
 
   return (
     <div className="p-4 text-white">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold uppercase tracking-tight">Bridger Operations</h3>
-          <p className="text-xs text-slate-500 font-medium">Manage monthly subscriptions and operational status.</p>
+          <p className="text-xs text-slate-500 font-medium">Manage Continuance standing and operational access from the live Bridger registry.</p>
         </div>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 items-center">
+          <button
+            type="button"
+            onClick={() => void fetchBridgers()}
+            className="h-9 rounded-lg border border-slate-700 bg-slate-800/50 px-3 text-[9px] font-black uppercase tracking-widest text-slate-300 hover:border-purple-400/40 hover:text-white"
+          >
+            Refresh
+          </button>
           <div className="text-center px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Fee</p>
-            <p className="text-sm font-bold text-emerald-400">₦25,000</p>
+            <p className="text-sm font-bold text-emerald-400">₦{WORLD_RULES.BRIDGER_CONTINUANCE_NGN.toLocaleString()}</p>
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 flex flex-col gap-3 rounded-xl border border-rose-400/20 bg-rose-500/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold text-rose-200">{error}</p>
+          <button
+            type="button"
+            onClick={() => void fetchBridgers()}
+            className="shrink-0 rounded-lg border border-rose-300/20 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-rose-100"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full text-left">
@@ -809,7 +851,9 @@ function BridgerManagementSection() {
           <tbody className="divide-y divide-slate-800/50">
             {bridgers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-20 text-center text-slate-600 text-sm italic">No Bridgers found in the system.</td>
+                <td colSpan={5} className="py-20 text-center text-slate-600 text-sm italic">
+                  {error ? 'Bridger registry is unavailable.' : 'No Bridgers found in the system.'}
+                </td>
               </tr>
             ) : (
               bridgers.map((bridger) => (
@@ -849,7 +893,7 @@ function BridgerManagementSection() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => toggleExempt(bridger.id, bridger.is_subscription_exempt)}
+                      onClick={() => void toggleExempt(bridger.id, Boolean(bridger.is_subscription_exempt))}
                       disabled={updating === bridger.id}
                       className={`h-8 text-[9px] font-black uppercase tracking-widest ${
                         bridger.is_subscription_exempt 
