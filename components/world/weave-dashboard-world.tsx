@@ -109,7 +109,7 @@ const ROLE: Record<WorldRole, {
     purpose: WEAVE_SYSTEM_MAP.positions.admin.description,
     functionsHref: '/admin/functions',
     links: [
-      { label: 'Company Loops', detail: 'Shared movement', href: '/company/loops', icon: GitBranch, tone: 'gold' },
+      { label: 'Control Center', detail: 'Deposits, people, wallets and institutional operations', href: '/admin/control-center', icon: LayoutTemplate, tone: 'emerald' },\n      { label: 'Company Loops', detail: 'Shared movement', href: '/company/loops', icon: GitBranch, tone: 'gold' },
       { label: 'File Number Engine', detail: 'Client identity', href: '/admin/file-number-engine', icon: FileBox, tone: 'sky' },
       { label: 'Message Hub', detail: 'People and staff', href: '/admin/hub', icon: MessageSquare, tone: 'emerald' },
       { label: 'Prospect Engine', detail: 'Opportunity', href: '/admin/prospect-engine', icon: Zap, tone: 'gold' },
