@@ -17,25 +17,34 @@ export default function BridgerBridgeRadiance(){
  const end=useRef<HTMLDivElement>(null)
 
  const loadThreads=useCallback(async(signal?:AbortSignal)=>{
-  const r=await fetch('/api/bridger/support-inbox',{headers:getAuthHeaders(),cache:'no-store',signal})
-  const d=await r.json().catch(()=>({}))
-  if(!r.ok||!d.success)throw new Error(d.error||'Unable to load Bridge Radiance')
-  const next=(d.threads||[]).filter((thread:any)=>thread.position==='bridger')
-  setThreads(next)
-  setSelected((current:any)=>{
-   if(!current)return current
-   return next.find((thread:any)=>thread.sessionId===current.sessionId)||null
-  })
-  setError('')
-  setLoading(false)
+  try{
+   const r=await fetch('/api/bridger/support-inbox',{headers:getAuthHeaders(),cache:'no-store',signal})
+   const d=await r.json().catch(()=>({}))
+   if(!r.ok||!d.success)throw new Error(d.error||'Unable to load Bridge Radiance')
+   const next=(d.threads||[]).filter((thread:any)=>thread.position==='bridger')
+   setThreads(next)
+   setSelected((current:any)=>{
+    if(!current)return current
+    return next.find((thread:any)=>thread.sessionId===current.sessionId)||null
+   })
+   setError('')
+  }catch(error:any){
+   if(error?.name!=='AbortError')setError(error?.message||'Unable to load Bridge Radiance')
+  }finally{
+   if(!signal?.aborted)setLoading(false)
+  }
  },[])
 
  const loadMessages=useCallback(async(session:any,signal?:AbortSignal)=>{
-  const r=await fetch(`/api/bridger/support-inbox?sessionId=${session.sessionId}&position=bridger`,{headers:getAuthHeaders(),cache:'no-store',signal})
-  const d=await r.json().catch(()=>({}))
-  if(!r.ok||!d.success)throw new Error(d.error||'Unable to load Prospect movement')
-  setMessages(d.messages||[])
-  setError('')
+  try{
+   const r=await fetch(`/api/bridger/support-inbox?sessionId=${session.sessionId}&position=bridger`,{headers:getAuthHeaders(),cache:'no-store',signal})
+   const d=await r.json().catch(()=>({}))
+   if(!r.ok||!d.success)throw new Error(d.error||'Unable to load Prospect movement')
+   setMessages(d.messages||[])
+   setError('')
+  }catch(error:any){
+   if(error?.name!=='AbortError')setError(error?.message||'Unable to load Prospect movement')
+  }
  },[])
 
  useEffect(()=>{
