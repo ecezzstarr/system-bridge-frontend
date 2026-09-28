@@ -177,7 +177,7 @@ const bridgeDepositSource=fs.readFileSync(path.join(root,'app/api/bridge/[code]/
 const bridgeVerifySource=fs.readFileSync(path.join(root,'app/api/admin/bridge-deposits/verify/route.ts'),'utf8')
 const notificationsApiSource=fs.readFileSync(path.join(root,'app/api/notifications/route.ts'),'utf8')
 const notificationBellSource=fs.readFileSync(path.join(root,'components/notification-bell.tsx'),'utf8')
-const adminDashboardNotificationSource=fs.readFileSync(path.join(root,'app/(app)/admin/dashboard/page.tsx'),'utf8')
+const adminDashboardNotificationSource=fs.readFileSync(path.join(root,'components/admin/administration-control-terminal.tsx'),'utf8')
 assert.ok(depositNotificationSource.includes('deposit_pending'),'Deposit submissions create Admin notifications')
 assert.ok(depositNotificationSource.includes('deposit_approved'),'Approved deposits notify originating users')
 assert.ok(depositNotificationSource.includes('deposit_rejected'),'Rejected deposits notify originating users')
