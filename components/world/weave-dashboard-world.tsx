@@ -170,66 +170,79 @@ export function WeaveDashboardWorld({
   const copy = ROLE[role]
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const visibleLinks = copy.links.filter(item=>isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
-  const stations=visibleLinks.map(item=>({
-    label:item.label,
-    detail:item.detail,
-    href:item.href,
-    icon:item.icon,
-    district:districtFor(role,item.href),
-    tone:ROUTE_TONE[item.tone],
-  }))
 
-  return (
-    <div className="weave-dashboard-world weave-operating-environment relative mx-auto min-h-[calc(100dvh-4rem)] w-full max-w-6xl overflow-hidden border-y border-cyan-200/10 bg-[#050a10]/72 shadow-[0_28px_90px_rgba(0,0,0,.32)] backdrop-blur-md sm:rounded-[1.6rem] sm:border">
-      <div className="relative p-3.5 sm:p-5 md:p-7">
-        <div className="pointer-events-none absolute inset-x-[4%] top-[8%] h-[58%] rounded-[50%] bg-[radial-gradient(circle_at_50%_42%,rgba(56,189,248,.10),transparent_42%),radial-gradient(circle_at_72%_68%,rgba(251,146,60,.055),transparent_34%)] blur-2xl" />
-
-        <div className="relative">
-          <WeaveLogo size="sm" />
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-[8px] font-black uppercase tracking-[0.18em]">
-            <span className="text-sky-300">WEAVE World</span>
-            <span className="text-white/20">•</span>
-            <span className="text-amber-300">{copy.eyebrow}</span>
-            <span className="text-white/20">•</span>
-            <span className="text-emerald-300">Interaction in Motion</span>
-          </div>
-
-          <h1 data-weave-live-word="title" className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{copy.title}</h1>
-          <p className="mt-1.5 text-xs leading-5 text-slate-400 sm:text-sm">{copy.subtitle}</p>
-
-          <div className="weave-dashboard-position mt-5 grid gap-4 border-y border-cyan-300/15 py-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-center">
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300">Present position</p>
-              <p data-weave-live-word="station" className="mt-1 text-lg font-black text-white">{userName || copy.eyebrow}</p>
-              <p className="mt-1.5 max-w-3xl text-[10px] leading-5 text-slate-400">{copy.purpose}</p>
-            </div>
-            <Link
-              href={copy.functionsHref}
-              className="group flex min-h-14 items-center justify-between border-l-2 border-sky-300/30 bg-sky-300/[0.035] px-4 py-3 text-amber-50 transition hover:bg-sky-300/[0.07]"
-            >
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Control station</p>
-                <p data-weave-live-word="station" className="mt-0.5 text-sm font-black">Operating Room</p>
-              </div>
-              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-            </Link>
-          </div>
-
-          <div className="mt-6">
-            <WeaveRouteNetwork
-              stations={stations}
-              title="World movement"
-              detail="Districts remain connected to the same role position. Functions are stations on the route, not separate card destinations."
-            />
-          </div>
-
-          <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3 text-[7px] font-semibold uppercase tracking-[0.16em] text-slate-600">
-            <span>One world · separate functions</span>
-            <span className="text-right">Phone-first WEAVE</span>
-          </div>
-        </div>
-      </div>
+  if (role !== 'client') {
+    const stations=visibleLinks.map(item=>({
+      label:item.label,detail:item.detail,href:item.href,icon:item.icon,
+      district:districtFor(role,item.href),tone:ROUTE_TONE[item.tone],
+    }))
+    return <div className="weave-dashboard-world weave-operating-environment relative mx-auto w-full max-w-6xl overflow-hidden border-y border-cyan-200/10 bg-[#050a10]/72 p-4 backdrop-blur-md sm:rounded-[1.6rem] sm:border md:p-7">
+      <WeaveLogo size="sm"/>
+      <h1 className="mt-3 text-2xl font-black text-white">{copy.title}</h1>
+      <p className="mt-2 text-xs leading-5 text-slate-400">{copy.subtitle}</p>
+      <div className="mt-6"><WeaveRouteNetwork stations={stations}/></div>
     </div>
-  )
-}
+  }
 
+  const positions=[
+    ['System Switch','left-[50%] top-[24%] -translate-x-1/2'],
+    ['Company Loops','left-[13%] top-[39%]'],
+    [WEAVE_SYSTEM_MAP.language.marketplace,'right-[9%] top-[38%]'],
+    ['Main Wallet','left-[18%] top-[62%]'],
+    ['Your Bridger','right-[14%] top-[61%]'],
+    ['Arena','left-[35%] top-[76%]'],
+    ['Casino','right-[27%] top-[76%]'],
+    ['Bridge Plaza','left-[50%] top-[51%] -translate-x-1/2'],
+  ] as const
+  const positionFor=(label:string)=>positions.find(([key])=>key===label)?.[1] || 'left-[50%] top-[50%]'
+
+  return <section className="relative h-[calc(100dvh-3.8rem)] min-h-[640px] w-full overflow-hidden bg-[#03080e]" data-client-world-hud="true">
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_48%,rgba(14,116,144,.16),transparent_28%),radial-gradient(ellipse_at_50%_68%,rgba(16,185,129,.07),transparent_40%),linear-gradient(180deg,#02070d_0%,#061019_48%,#02070b_100%)]"/>
+    <div className="absolute inset-x-[-12%] bottom-[-22%] h-[78%] [transform:perspective(520px)_rotateX(58deg)] bg-[linear-gradient(rgba(56,189,248,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,.07)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_top,black,transparent_92%)]"/>
+    <div className="absolute left-1/2 top-[53%] h-[54%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-cyan-200/10 shadow-[0_0_90px_rgba(34,211,238,.08),inset_0_0_80px_rgba(14,116,144,.05)]"/>
+    <div className="absolute left-1/2 top-[53%] h-[37%] w-[52%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-emerald-200/[.08]"/>
+
+    <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between p-4 sm:p-6">
+      <div>
+        <WeaveLogo size="sm"/>
+        <p className="mt-2 text-[8px] font-black uppercase tracking-[.22em] text-sky-300">Client World · HUD</p>
+        <h1 className="mt-1 text-lg font-black text-white sm:text-2xl">{userName || 'Client'}</h1>
+      </div>
+      <div className="border-r-2 border-emerald-300/40 pr-3 text-right">
+        <p className="text-[7px] font-black uppercase tracking-[.16em] text-emerald-300">World state</p>
+        <p className="mt-1 text-[10px] font-black text-white">CONNECTED</p>
+      </div>
+    </header>
+
+    <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M50 28 L50 51 M50 51 L18 42 M50 51 L86 42 M50 51 L22 65 M50 51 L82 64 M50 51 L38 79 M50 51 L72 79" fill="none" stroke="rgba(103,232,249,.42)" strokeWidth=".18" strokeDasharray="1.2 1.4"/>
+      <circle cx="50" cy="51" r="1.1" fill="rgba(103,232,249,.75)"/>
+    </svg>
+
+    <div className="absolute inset-0 z-10">
+      {visibleLinks.map((item,index)=>{
+        const Icon=item.icon
+        return <Link key={item.href} href={item.href} data-client-world-beacon={item.label}
+          className={'group absolute '+positionFor(item.label)+' flex min-w-0 items-center gap-2'}
+        >
+          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cyan-100/20 bg-[#03101a]/80 shadow-[0_0_24px_rgba(34,211,238,.13)] backdrop-blur-md transition group-hover:scale-110 group-hover:border-cyan-200/50">
+            <span className="absolute inset-[-5px] animate-pulse rounded-full border border-cyan-300/10"/>
+            <Icon className="h-4 w-4 text-cyan-100"/>
+          </span>
+          <span className="max-w-[92px] sm:max-w-[150px]">
+            <span className="block text-[9px] font-black uppercase tracking-[.08em] text-white sm:text-[11px]">{item.label}</span>
+            <span className="mt-0.5 hidden text-[8px] leading-3 text-slate-500 sm:block">{item.detail}</span>
+          </span>
+        </Link>
+      })}
+    </div>
+
+    <div className="pointer-events-none absolute bottom-4 left-4 z-20 border-l-2 border-sky-300/30 pl-3">
+      <p className="text-[7px] font-black uppercase tracking-[.18em] text-sky-300">Presence camera</p>
+      <p className="mt-1 text-[9px] text-slate-500">Tap a beacon to move through the world</p>
+    </div>
+    <Link href={copy.functionsHref} className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-amber-200/25 bg-amber-300/[.06] text-amber-100 backdrop-blur-md" aria-label="Open operating functions">
+      <ArrowRight className="h-4 w-4"/>
+    </Link>
+  </section>
+}
