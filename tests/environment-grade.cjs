@@ -13,7 +13,7 @@ const converted=[
  ['app/client/loops/page.tsx','client-loop-field'],
  ['app/(app)/admin/loop-workshop/page.tsx','administration-loop-workshop'],
  ['app/(app)/bridger/subscription/page.tsx','bridger-continuance'],
- ['app/(app)/bridger/numbers/page.tsx','bridger-number-bay'],
+ ['app/(app)/agent/stability-supply/page.tsx','bridger-number-bay'],
  ['app/(app)/admin/bridger-numbers/page.tsx','administration-number-engine'],
 ]
 for(const [file,key] of converted){
@@ -23,8 +23,8 @@ for(const [file,key] of converted){
  assert.ok(!source.includes('min-h-screen bg-slate-950'),file+' does not recreate an opaque standalone page')
 }
 
-const bridgerNumbers=read('app/(app)/bridger/numbers/page.tsx')
-const bridgerNumbersApi=read('app/api/bridger/numbers/route.ts')
+const bridgerNumbers=read('app/(app)/agent/stability-supply/page.tsx')
+const bridgerNumbersApi=read('app/api/agent/stability-supply/route.ts')
 const adminNumbers=read('app/(app)/admin/bridger-numbers/page.tsx')
 assert.ok(!bridgerNumbers.includes('n.acquisition_cost'),'Bridger Number Bay never renders provider acquisition cost')
 assert.ok(!bridgerNumbersApi.includes('acquisition_cost'),'Bridger Number API never returns provider acquisition cost')
@@ -194,8 +194,8 @@ const supportFileFolderPage=read('app/(app)/weave/file-folder/[fileNumber]/page.
 
 assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent/Admin Operating Room removes Position Map card')
 assert.ok(!bridgerOperatingRoom.toLowerCase().includes('position map'),'Bridger Operating Room removes Position Map card')
-assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit page/card registry')
-assert.ok(environmentRegistry.includes("kind:'card'")&&environmentRegistry.includes("kind:'page'"),'Environment Organizer registers both cards and pages')
+assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit world surface registry')
+assert.ok(environmentRegistry.includes("kind:'station'")&&environmentRegistry.includes("kind:'district'"),'Environment Organizer registers world districts and HUD stations')
 assert.ok(environmentRegistry.includes("protected:true"),'Environment Organizer protects critical control surfaces')
 assert.ok(environmentRegistry.includes("key:'admin-integrity-engine'")&&environmentRegistry.includes("route:'/admin/dev-workshop'"),'Integrity Engine is a protected Administration environment surface')
 assert.ok(environmentRuntime.includes('weave_environment_surfaces'),'Environment organization persists in the database')
@@ -430,7 +430,7 @@ assert.ok(departmentRoomSource.includes('Prospect Campaigns')&&departmentRoomSou
 
 const dailyAwarenessSource = read('components/world/weave-dashboard-world.tsx')
 const agentCommissionSource = read('lib/agent-commission.ts')
-const numberBayApiSource = read('app/api/bridger/numbers/route.ts')
+const numberBayApiSource = read('app/api/agent/stability-supply/route.ts')
 assert.ok(dailyAwarenessSource.includes('data-daily-awareness={role}')&&dailyAwarenessSource.includes('What should I move today?'),'Stability and Hope worlds carry daily movement awareness')
 assert.ok(dailyAwarenessSource.includes('Check your Bridgers')&&dailyAwarenessSource.includes('Claim or buy a Prospect'),'Agent and Bridger daily awareness remains role-specific')
 assert.ok(agentCommissionSource.includes("'number_purchase'")&&numberBayApiSource.includes("activity:'number_purchase'"),'Bridger Number Bay purchases return commission to the assigned Stability Agent')
