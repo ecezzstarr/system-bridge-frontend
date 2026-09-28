@@ -336,7 +336,7 @@ function RouteNetwork({count,vitality,currentStrength}:{count:number;vitality:nu
 }
 
 function DistrictPlot({
-  district,active,onSelect,marketLevel,marketBuildProgress,enterpriseLevel,activeBuilds,emergence,
+  district,active,onSelect,marketLevel,marketBuildProgress,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,activeBuilds,emergence,
 }:{
   district:District
   active:boolean
