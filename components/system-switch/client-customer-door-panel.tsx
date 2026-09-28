@@ -287,15 +287,15 @@ export default function ClientCustomerDoorPanel({
     <section className="grid gap-5 xl:grid-cols-[1fr_1fr]">
       <div className="rounded-[2rem] border border-violet-300/15 bg-violet-400/[0.035] p-5 md:p-6">
         <div className="flex items-center gap-2"><Landmark className="h-4 w-4 text-violet-300"/><p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Market architecture studio</p></div>
-        <h4 className="mt-2 text-lg font-black text-white">Shape the store before and after construction.</h4>
-        <p className="mt-2 text-xs leading-5 text-slate-400">The architecture preset controls the public atmosphere; the building level itself is earned by completing the timed storefront and marketplace builds.</p>
+        <h4 className="mt-2 text-lg font-black text-white">Shape the territory customers recognize.</h4>
+        <p className="mt-2 text-xs leading-5 text-slate-400">Set the Client-owned platform identity, then shape its public atmosphere. Construction level is still earned through the Customer Door, storefront and marketplace builds.</p>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           {PRESETS.map(preset=><button key={preset.key} onClick={()=>setEnvironment({...environment,preset:preset.key})} className={`rounded-xl border p-3 text-left transition ${environment.preset===preset.key?'border-violet-300/30 bg-violet-400/10':'border-white/10 bg-black/20'}`}><p className="text-[10px] font-black text-white">{preset.label}</p><p className="mt-1 text-[9px] leading-4 text-slate-500">{preset.detail}</p></button>)}
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <label className="text-[10px] text-slate-500">Store name<input value={identity.name} onChange={e=>setIdentity({...identity,name:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
+          <label className="text-[10px] text-slate-500">Platform / territory name<input value={environment.platformName} onChange={e=>setEnvironment({...environment,platformName:e.target.value})} placeholder="The name customers know this territory by" className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>\n          <label className="text-[10px] text-slate-500">Logo URL<input value={environment.logoUrl} onChange={e=>setEnvironment({...environment,logoUrl:e.target.value})} placeholder="https://…/logo.png" className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>\n          <label className="text-[10px] text-slate-500">Store name<input value={identity.name} onChange={e=>setIdentity({...identity,name:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
           <label className="text-[10px] text-slate-500">Market section<input value={environment.marketSection} onChange={e=>setEnvironment({...environment,marketSection:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
           <label className="text-[10px] text-slate-500">Building sign<input value={environment.sign} onChange={e=>setEnvironment({...environment,sign:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
           <label className="text-[10px] text-slate-500">Public tagline<input value={environment.tagline} onChange={e=>setEnvironment({...environment,tagline:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
