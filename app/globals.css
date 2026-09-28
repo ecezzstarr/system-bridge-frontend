@@ -1034,3 +1034,101 @@ html[data-weave-quality="0"] .flame-event-ember-column {
     animation: none !important;
   }
 }
+
+
+/* WEAVE ONE-COLOR OPERATING FIELD
+   Structural surfaces use one continuous dark field. Typography keeps the
+   homepage hierarchy: dense uppercase station labels, heavy white titles,
+   restrained supporting copy, and color carried by words rather than panels. */
+:root,
+.dark {
+  --weave-one-field: #030a15;
+  --background: var(--weave-one-field);
+  --card: var(--weave-one-field);
+  --popover: var(--weave-one-field);
+  --muted: var(--weave-one-field);
+  --input: var(--weave-one-field);
+  --sidebar: var(--weave-one-field);
+  --field-surface: rgb(3 10 21 / .92);
+}
+
+body {
+  background: var(--weave-one-field) !important;
+  background-image: none !important;
+}
+
+/* The viewport, navigation, panels and room shells are one visual field.
+   Borders, blur and spacing provide depth without introducing a second color. */
+:where(
+  [data-public-weave-world],
+  [data-weave-environment],
+  .weave-sidebar,
+  .weave-header,
+  .weave-client-nav,
+  .weave-environment-panel,
+  .weave-dashboard-world,
+  .weave-dashboard-position,
+  .weave-reading-surface,
+  .weave-operating-environment,
+  .field-surface,
+  .field-item,
+  .card,
+  [role="card"]
+) {
+  background-color: var(--weave-one-field) !important;
+  background-image: none !important;
+}
+
+/* Event state changes the live flame/artifact and word accents, not the
+   structural surface color. */
+html[data-weave-event="flame-live"] :where(
+  .weave-sidebar,
+  .weave-header,
+  .weave-client-nav,
+  .weave-environment-panel,
+  .weave-dashboard-world,
+  .weave-dashboard-position,
+  .weave-operating-environment
+) {
+  background: var(--weave-one-field) !important;
+}
+
+/* Homepage word grammar becomes the default writing hierarchy throughout the
+   operating world. Existing semantic text colors remain available. */
+[data-weave-environment] :is(h1, h2, h3),
+[data-public-weave-world] :is(h1, h2, h3) {
+  color: rgb(255 255 255 / .98);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+[data-weave-environment] :is(nav, aside, header) :is(a, button),
+[data-weave-environment] :is(label, th),
+[data-public-weave-world] :is(nav, aside, header) :is(a, button),
+[data-public-weave-world] :is(label, th) {
+  font-weight: 800;
+}
+
+[data-weave-environment] :is(p, li, td),
+[data-public-weave-world] :is(p, li, td) {
+  line-height: 1.55;
+}
+
+/* Keep one-color depth subtle and consistent instead of recoloring sections. */
+:where(
+  .weave-sidebar,
+  .weave-header,
+  .weave-client-nav,
+  .weave-environment-panel,
+  .weave-dashboard-world,
+  .weave-dashboard-position,
+  .weave-reading-surface,
+  .weave-operating-environment,
+  .field-surface,
+  .field-item,
+  .card,
+  [role="card"]
+) {
+  border-color: rgb(255 255 255 / .10) !important;
+}
