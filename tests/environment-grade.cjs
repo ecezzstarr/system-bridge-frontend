@@ -327,7 +327,7 @@ assert.ok(cleanRevealHeader2026.includes('weave-header'),'Header belongs to the 
 assert.ok(cleanRevealWorld2026.includes("root.dataset.weaveEvent=active?'flame-live':'normal'"),'Flame event publishes a live interface theme state')
 assert.ok(!cleanRevealWorld2026.includes('FlameEventWorldDecorations'),'Flame Live is not mounted as a full-world wallpaper decoration')
 assert.ok(cleanRevealCss2026.includes('.weave-flame-live-indicator')&&!cleanRevealCss2026.includes('.weave-sidebar'),'Flame Live exposes state without restoring sidebar chrome')
-assert.ok(cleanRevealBridgeMap2026.includes("name:'System Switch · File Folders'")&&cleanRevealBridgeMap2026.includes("href:'/client/system-switch'"),'Bridge Plaza exposes both support File Folder view and the Client System Switch route')
+assert.ok(environmentRegistry.includes("route:'/weave#file-folders'")&&environmentRegistry.includes("route:'/client/system-switch'"),'System Switch support and Client File Folder remain registered places/stations for Bridge Plaza')
 
 const cleanRevealDashboard2026=read('components/world/weave-dashboard-world.tsx')
 assert.ok(bridgePlazaPage.includes('System Switch · File Folder View')&&bridgePlazaPage.includes('setSupportOpen(true)'),'Bridge Plaza HUD exposes System Switch File Folder View without requiring discovery of a hidden panel')
