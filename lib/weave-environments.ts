@@ -203,6 +203,31 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
 }
 
 const prefix: Array<[string, WeaveEnvironmentCopy]> = [
+  ['/bridger/bridge-radiance', {
+    key: 'bridger-radiance-station',
+    title: 'Bridge Radiance · Hope Station',
+    district: 'Bridge Radiance',
+    purpose: 'The active human interaction station where a Bridger continues movement with Prospects they own.',
+    movement: 'Recognize Prospect → interact → clarify → continue toward Client',
+    layer: 'interaction',
+  }],
+  ['/agent/bridge-radiance', {
+    key: 'agent-radiance-station',
+    title: 'Bridge Radiance · Stability Station',
+    district: 'Bridge Radiance',
+    purpose: 'The support station where an assigned Agent may participate with Prospects belonging to that Agent’s Bridgers.',
+    movement: 'Observe assigned movement → support → clarify → return continuity',
+    layer: 'interaction',
+  }],
+  ['/admin/bridge-radiance', {
+    key: 'administration-radiance-station',
+    title: 'Bridge Radiance · Administration Station',
+    district: 'Bridge Radiance',
+    purpose: 'The institutional interaction station for authorized Administration participation in active Prospect movement.',
+    movement: 'Observe → interact when required → preserve record → continue',
+    layer: 'interaction',
+  }],
+
   ['/stream', {
     key: 'public-stream-network',
     title: 'WEAVE Stream Network',
