@@ -10,9 +10,8 @@ async function requireAgent(request: NextRequest) {
   return { userId: user.id }
 }
 
-// GET without sessionId: list of prospect threads across all channels this
-// agent is approved for. GET with sessionId+position: full history, only
-// if the agent holds an approved application for that specific position.
+// Stability access is relational, not global: an Agent may interact only with
+// Prospect sessions owned by Bridgers assigned to that Agent.
 export async function GET(request: NextRequest) {
   const auth = await requireAgent(request)
   if (auth.error) return auth.error
@@ -23,9 +22,18 @@ export async function GET(request: NextRequest) {
 
   try {
     if (sessionId && position) {
-      const hasChannel = await agentHasApprovedChannel(auth.userId, position)
-      if (!hasChannel) {
-        return NextResponse.json({ success: false, error: 'Not approved for this channel' }, { status: 403 })
+      const ownership = await sql`
+        SELECT s.id
+        FROM bridge_sessions s
+        JOIN bridge_ais b ON b.id=s.bridge_id
+        JOIN users bridger ON bridger.id=b.bridger_id
+        WHERE s.id=${sessionId}::uuid
+          AND bridger.role='bridger'
+          AND bridger.assigned_agent_id=${auth.userId}::uuid
+        LIMIT 1
+      `
+      if (ownership.length===0) {
+        return NextResponse.json({ success:false,error:'This Prospect is not in your assigned Stability movement' },{status:403})
       }
 
       const messages = await sql`
@@ -43,11 +51,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, messages })
     }
 
-    const channels = await getApprovedChannelsForAgent(auth.userId)
-    if (channels.length === 0) {
-      return NextResponse.json({ success: true, threads: [] })
-    }
-
     const threads = await sql`
       SELECT
         m.session_id as "sessionId",
@@ -60,7 +63,9 @@ export async function GET(request: NextRequest) {
       FROM bridge_support_messages m
       JOIN bridge_sessions s ON s.id = m.session_id
       JOIN bridge_ais b ON b.id = s.bridge_id
-      WHERE m.position = ANY(${channels})
+      JOIN users bridger ON bridger.id=b.bridger_id
+      WHERE bridger.role='bridger'
+        AND bridger.assigned_agent_id=${auth.userId}::uuid
       GROUP BY m.session_id, m.position, b.bridge_code, s.visitor_fingerprint
       ORDER BY MAX(m.created_at) DESC
     `
@@ -71,7 +76,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: agent replies to a prospect, only on an approved channel.
+// POST: assigned Stability Agent replies inside a Prospect session owned by their Bridger.
 export async function POST(request: NextRequest) {
   const auth = await requireAgent(request)
   if (auth.error) return auth.error
@@ -83,9 +88,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'sessionId, position and content are required' }, { status: 400 })
     }
 
-    const hasChannel = await agentHasApprovedChannel(auth.userId, position)
-    if (!hasChannel) {
-      return NextResponse.json({ success: false, error: 'Not approved for this channel' }, { status: 403 })
+    const ownership = await sql`
+      SELECT s.id
+      FROM bridge_sessions s
+      JOIN bridge_ais b ON b.id=s.bridge_id
+      JOIN users bridger ON bridger.id=b.bridger_id
+      WHERE s.id=${sessionId}::uuid
+        AND bridger.role='bridger'
+        AND bridger.assigned_agent_id=${auth.userId}::uuid
+      LIMIT 1
+    `
+    if (ownership.length===0) {
+      return NextResponse.json({ success:false,error:'This Prospect is not in your assigned Stability movement' },{status:403})
     }
 
     const rows = await sql`
