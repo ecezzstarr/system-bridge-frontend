@@ -453,7 +453,7 @@ for(const route of [
 const positionEventSource=fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8')
 const compactWorldSource=fs.readFileSync(path.join(root,'components/world/weave-dashboard-world.tsx'),'utf8')
 const roleOperatingRoomSource=fs.readFileSync(path.join(root,'components/world/role-operating-room.tsx'),'utf8')
-const adminDashboardCenterSource=fs.readFileSync(path.join(root,'app/(app)/admin/dashboard/page.tsx'),'utf8')
+const adminDashboardCenterSource=fs.readFileSync(path.join(root,'components/admin/administration-control-terminal.tsx'),'utf8')
 const adminControlCenterRouteSource=fs.readFileSync(path.join(root,'app/(app)/admin/control-center/page.tsx'),'utf8')
 const agentFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/agent/functions/page.tsx'),'utf8')
 const adminFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/admin/functions/page.tsx'),'utf8')
@@ -467,10 +467,10 @@ assert.ok(!positionEventSource.includes('ROLE_ORDER'),'Event page does not expla
 assert.ok(!positionEventSource.includes('FLAME_EVENT_FEATURES'),'Event page removes generic event feature clutter')
 assert.ok(compactWorldSource.includes('data-client-world-hud="true"')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home is a spatial HUD territory with physical movement beacons')
 assert.ok(bridgerOperatingRoomSource.includes('Crossing') && bridgerOperatingRoomSource.includes('Client continuity'),'Bridger functions are organized by responsibility instead of one stacked terminal')
-assert.ok(roleOperatingRoomSource.includes("title: 'Bridger support'"),'Agent Operating Room organizes Bridger support as a system function')
+assert.ok(roleOperatingRoomSource.includes("title: 'Bridger participation'"),'Agent Operating Room organizes Bridger participation as a Stability function')
 assert.ok(roleOperatingRoomSource.includes("title: 'Client system'"),'Administration Operating Room organizes Client authority as a system function')
 assert.ok(roleOperatingRoomSource.includes('Administration Control Panel'),'Administration Operating Room restores the dense middle control panel')
-assert.ok(adminControlCenterRouteSource.includes("export { default } from '../dashboard/page'"),'Administration has a reachable route for the preserved dense control center')
+assert.ok(adminControlCenterRouteSource.includes("@/components/admin/administration-control-terminal"),'Administration has a reachable route for the preserved dense control center')
 for(const hash of ['#users','#clients','#fne','#bridgers','#deposits','#tron','#bridge','#withdrawals','#announcements','#wallet','#workshops','#eight']){
  assert.ok(roleOperatingRoomSource.includes('/admin/control-center'+hash),`Administration middle panel exposes preserved control-center component ${hash}`)
 }
