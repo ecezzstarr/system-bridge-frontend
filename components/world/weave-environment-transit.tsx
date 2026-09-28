@@ -323,6 +323,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       aria-live="polite"
       aria-label={booting?'Loading WEAVE environment':'Moving to '+environment.title}
       data-environment-readiness-gate={booting?'boot':'transit'}
+      data-environment-reveal-shell="continuous"
       data-flame-event-loader={showFlameBriefing?'burning-river':undefined}
       data-flame={showFlameBriefing?'true':'false'}
     >
