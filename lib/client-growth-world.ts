@@ -288,7 +288,13 @@ export async function getClientGrowthSnapshot(
     ORDER BY r.created_at DESC
   `
 
-  const activeSystemTypes=new Set<string>()\n  for(const route of routes){ activeSystemTypes.add(String(route.source_type)); activeSystemTypes.add(String(route.target_type)) }\n  const allActiveTypes=await sql`SELECT system_type FROM client_built_systems WHERE client_id=${clientId}::uuid AND status='active'`\n  for(const system of allActiveTypes)activeSystemTypes.add(String(system.system_type))\n  const compositions=recognizeCompositions(activeSystemTypes,routes)\n\n  const [enterpriseApplication]=await sql`
+  const activeSystemTypes=new Set<string>()
+  for(const route of routes){ activeSystemTypes.add(String(route.source_type)); activeSystemTypes.add(String(route.target_type)) }
+  const allActiveTypes=await sql`SELECT system_type FROM client_built_systems WHERE client_id=${clientId}::uuid AND status='active'`
+  for(const system of allActiveTypes)activeSystemTypes.add(String(system.system_type))
+  const compositions=recognizeCompositions(activeSystemTypes,routes)
+
+  const [enterpriseApplication]=await sql`
     SELECT id,requested_position,enterprise_name,sector,status,public_slug
     FROM enterprise_applications
     WHERE client_id=${clientId}::uuid
@@ -352,7 +358,8 @@ export async function getClientGrowthSnapshot(
       routeMovements30d,
       streamPrograms30d,
       activeLegions,
-      explanation:'30-day field evidence: customer orders, completed operations, authorized route movement, public programming and active participation. Capital can expand construction but does not count as demonstrated use.',\n      fieldEvidence:{customerOrders:orders30d,completedOperations:completedOperations30d,routeMovements:routeMovements30d,streamPrograms:streamPrograms30d,activeLegions,demonstrated:(orders30d+completedOperations30d+routeMovements30d+streamPrograms30d+activeLegions)>0},
+      explanation:'30-day field evidence: customer orders, completed operations, authorized route movement, public programming and active participation. Capital can expand construction but does not count as demonstrated use.',
+      fieldEvidence:{customerOrders:orders30d,completedOperations:completedOperations30d,routeMovements:routeMovements30d,streamPrograms:streamPrograms30d,activeLegions,demonstrated:(orders30d+completedOperations30d+routeMovements30d+streamPrograms30d+activeLegions)>0},
     },
     capabilities,
     streaming:{
