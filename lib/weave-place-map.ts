@@ -137,7 +137,7 @@ export function roleCanEnterSurface(role:string|undefined|null,scope:string){
 export function buildBridgePlazaDistricts(role:string|undefined|null,surfaces:WeavePlaceSurface[]):BridgePlazaDistrict[]{
   const places=surfaces
     .filter(surface=>surface.is_visible!==false)
-    .filter(surface=>surface.surface_kind==='place')
+    .filter(surface=>surface.surface_kind==='place'||(surface.surface_kind==='station'&&surface.route.startsWith('/weave#')))
     .filter(surface=>surface.route!=='/weave')
     .filter(surface=>roleCanEnterSurface(role,surface.scope))
     .filter(surface=>!surface.route.includes('['))
@@ -147,7 +147,7 @@ export function buildBridgePlazaDistricts(role:string|undefined|null,surfaces:We
       route:surface.route,
       district:districtKeyForRoute(surface.route,surface.scope),
       order:Number(surface.sort_order||1000),
-      kind:'place',
+      kind:surface.surface_kind==='station'?'station':'place',
     }))
 
   return WEAVE_DISTRICTS
