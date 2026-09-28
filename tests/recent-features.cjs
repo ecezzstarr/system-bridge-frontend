@@ -243,7 +243,7 @@ assert.ok(djAdminSource.includes("action === 'stop'"),'Admin can stop the live b
 assert.ok(djAdminSource.includes('manual_stop_event_key'),'Admin stop suppresses event auto-restart')
 assert.ok(djPlayerSource.includes('<audio'),'Live audio engine is mounted by the global player')
 assert.ok(!djPlayerSource.includes("user?.role !== 'client'"),'Clients are not excluded from ordinary live DJ broadcasts')
-assert.ok(djPlayerSource.includes('visiblePoll(() => syncBroadcast(), 4000)'),'Live player synchronizes serially every four seconds only while visible')
+assert.ok(djPlayerSource.includes('visiblePoll(() => syncBroadcast(), 6000)'),'Live player synchronizes serially on the reduced six-second cadence only while visible')
 assert.ok(djPlayerSource.includes('startHarmonyAudience'),'DJ music carries the Harmony audience layer')
 assert.ok(djPlayerSource.includes("trackTypeRef.current !== 'music'"),'Harmony audience stays off voice and announcement tracks')
 assert.ok(djPlayerSource.includes('createBiquadFilter'),'Harmony audience uses a shaped crowd ambience rather than a second song')
