@@ -522,3 +522,16 @@ assert.ok(clientFileFolder3d.includes('function WeavingCurrent('),'File Folder r
 assert.ok(clientFileFolder3d.includes('function FormationSupplyRing(')&&clientFileFolder3d.includes('MATERIAL · PARTS · ACCELERATION'),'Active formation has a visible construction supply layer')
 assert.ok(clientFileFolder3d.includes("Math.max(routeCount,liveSystems.length>1?liveSystems.length:0)"),'Multiple completed Client technologies produce visible route-network state')
 assert.ok(clientFileFolder3d.includes('Purpose → material → parts → formation → connection → advanced technology → value.'),'File Folder states the complete technology formation movement')
+
+
+const growthWorldApiSource=read('app/api/client/growth-world/route.ts')
+const growthWorldModelSource=read('lib/client-growth-world.ts')
+const growthWorldUiSource=read('components/system-switch/client-growth-world.tsx')
+const weavingMigrationSource=read('db/migrations/20260928_file_folder_weaving_engine.sql')
+for(const field of ['source_output','target_input','integration_type','authority_state']){
+ assert.ok(growthWorldModelSource.includes(field)&&growthWorldApiSource.includes(field)&&weavingMigrationSource.includes(field),'File Folder weave persists '+field)
+}
+assert.ok(growthWorldApiSource.includes("'client_authorized'"),'Technology weaves preserve explicit Client authorization')
+assert.ok(growthWorldUiSource.includes('Authorize weave')&&growthWorldUiSource.includes('AI may assist configuration but cannot authorize it.'),'Weaving UI keeps AI assistance subordinate to Client authority')
+assert.ok(growthWorldUiSource.includes('Source output')&&growthWorldUiSource.includes('Target input'),'A File Folder weave names both sides of technology movement')
+assert.ok(!growthWorldApiSource.includes('growthMotion(action)},{headers'),'Growth-world GET does not reference a POST-only action variable')
