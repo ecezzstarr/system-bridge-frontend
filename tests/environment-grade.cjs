@@ -497,3 +497,12 @@ assert.ok(stationFrameSource.includes('data-ai-working-position="assist"'),'AI h
 assert.ok(stabilitySupplySource.includes('<WeaveStationFrame station="Stability Supply Ground"'),'Stability supply remains inside the role world as a working station')
 assert.ok(ledgerWorldSource.includes('<WeaveStationFrame station="Movement Record"'),'Record is a movement station inside WEAVE')
 assert.ok(!ledgerWorldSource.includes("from '@/components/ui/card'"),'Record no longer depends on the generic Card shell')
+
+
+const fileFolderWorldApiSource=read('app/api/client/file-folder-world/route.ts')
+assert.ok(fileFolderOpenWorldSource.includes("key: 'parts_workshop'")&&fileFolderOpenWorldSource.includes('data-client-parts-workshop="capability"'),'Client construction separates capability Parts Workshop from Materials Depot')
+assert.ok(fileFolderOperatingEnvironmentSource.includes("district:'parts_workshop'")&&fileFolderOperatingEnvironmentSource.includes("phase:'Equip'"),'Client build route includes a dedicated equipment phase')
+assert.ok(environmentRegistrySource.includes("file-folder-parts")&&environmentRegistrySource.includes("#studio:parts_workshop"),'Parts Workshop is registered as a File Folder world station')
+assert.ok(fileFolderWorldApiSource.includes("completes_at=CASE")&&fileFolderWorldApiSource.includes("EXTRACT(EPOCH FROM (completes_at-NOW()))"),'Applied construction acceleration recalculates the live build completion time')
+assert.ok(fileFolderWorldApiSource.includes("speed_multiplier=CASE"),'Applied acceleration updates the multiplier displayed by Construction Yard')
+assert.ok(!fileFolderWorldApiSource.includes("eventType:\`client_file_folder_\${action}\`")||fileFolderWorldApiSource.indexOf("eventType:\`client_file_folder_\${action}\`")>fileFolderWorldApiSource.indexOf('export async function POST'),'File Folder GET does not reference a POST-only action variable')
