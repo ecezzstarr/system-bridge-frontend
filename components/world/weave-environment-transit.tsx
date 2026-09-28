@@ -59,11 +59,19 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
       }
     }
     const observer=new MutationObserver(records=>{
-      // Brief rotation is presentation, not destination work to wait for.
-      if(records.some(record=>{
-        const target=record.target instanceof Element?record.target:record.target.parentElement
-        return !target?.closest('[data-environment-readiness-gate]')
-      }))check()
+      const touchesPendingSurface=records.some(record=>{
+        if(record.type==='attributes'){
+          const target=record.target instanceof Element?record.target:null
+          return Boolean(target?.matches('[data-environment-pending]'))
+        }
+        if(record.type!=='childList')return false
+        const nodes=[...record.addedNodes,...record.removedNodes]
+        return nodes.some(node=>{
+          if(!(node instanceof Element))return false
+          return node.matches('[data-environment-pending]')||Boolean(node.querySelector?.('[data-environment-pending]'))
+        })
+      })
+      if(touchesPendingSurface)check()
     })
     if(document.body)observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-environment-pending']})
     cleanup.push(()=>observer.disconnect())
