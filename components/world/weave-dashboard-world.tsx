@@ -218,7 +218,6 @@ export function WeaveDashboardWorld({
         </Link>})}
       </div>
       <aside className="absolute bottom-16 right-4 z-20 max-w-[230px] border-r border-violet-300/25 bg-[#050817]/55 p-3 text-right backdrop-blur-md" data-ai-participation={role}><div className="flex items-center justify-end gap-2 text-violet-200"><span className="text-[7px] font-black uppercase tracking-[.18em]">AI participation · authorized extension</span><Bot className="h-3.5 w-3.5"/></div><p className="mt-1 text-[8px] leading-3 text-slate-400">AI can recognize context, prepare work and guide movement here. Human presence keeps authority, ownership, approval and value movement.</p></aside>
-      <aside className="absolute bottom-16 right-4 z-20 max-w-[230px] border-r border-violet-300/25 bg-[#050817]/55 p-3 text-right backdrop-blur-md" data-ai-participation="client"><div className="flex items-center justify-end gap-2 text-violet-200"><span className="text-[7px] font-black uppercase tracking-[.18em]">AI participation · Bridge AI</span><Bot className="h-3.5 w-3.5"/></div><p className="mt-1 text-[8px] leading-3 text-slate-400">Bridge AI participates inside your builds and live systems when authorized. You remain the Lord/Lady, owner and decision source.</p></aside>
     <div className="pointer-events-none absolute bottom-4 left-4 z-20 border-l-2 border-sky-300/30 pl-3"><p className="text-[7px] font-black uppercase tracking-[.18em] text-sky-300">Presence camera</p><p className="mt-1 text-[9px] text-slate-500">Choose a beacon to travel into a working district</p></div>
       <Link href={copy.functionsHref} className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-amber-200/25 bg-amber-300/[.06] text-amber-100 backdrop-blur-md" aria-label="Open operating functions"><ArrowRight className="h-4 w-4"/></Link>
     </section>
@@ -276,6 +275,8 @@ export function WeaveDashboardWorld({
         </Link>
       })}
     </div>
+
+    <aside className="absolute bottom-16 right-4 z-20 max-w-[230px] border-r border-violet-300/25 bg-[#050817]/55 p-3 text-right backdrop-blur-md" data-ai-participation="client"><div className="flex items-center justify-end gap-2 text-violet-200"><span className="text-[7px] font-black uppercase tracking-[.18em]">AI participation · Bridge AI</span><Bot className="h-3.5 w-3.5"/></div><p className="mt-1 text-[8px] leading-3 text-slate-400">Bridge AI participates inside your builds and live systems when authorized. You remain the Lord/Lady, owner and decision source.</p></aside>
 
     <div className="pointer-events-none absolute bottom-4 left-4 z-20 border-l-2 border-sky-300/30 pl-3">
       <p className="text-[7px] font-black uppercase tracking-[.18em] text-sky-300">Presence camera</p>
