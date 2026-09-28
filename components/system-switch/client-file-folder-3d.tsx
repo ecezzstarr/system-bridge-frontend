@@ -10,7 +10,8 @@ import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
 type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber'|'rose'}
 type ActiveBuild={id?:string;title?:string;systemType?:string;progress:number}
-type LiveSystem={id?:string;title?:string;systemType?:string;activity?:number}\ntype SystemWeave={id?:string;source_system_id?:string;target_system_id?:string;source_output?:string;target_input?:string;integration_type?:string;authority_state?:string;movement_count?:number}
+type LiveSystem={id?:string;title?:string;systemType?:string;activity?:number}
+type SystemWeave={id?:string;source_system_id?:string;target_system_id?:string;source_output?:string;target_input?:string;integration_type?:string;authority_state?:string;movement_count?:number}
 
 const COLORS:Record<District['tone'],string>={
   sky:'#7dd3fc',
@@ -497,7 +498,9 @@ function Scene({
     <WaterChannel position={[0,-.05,-5.5]} rotation={Math.PI/2} length={10.5}/>
     <WaterChannel position={[0,-.05,5.55]} rotation={Math.PI/2} length={9.5}/>
 
-    {districts.filter(d=>d.key!=='command').map(d=><PavedRoad key={d.key} from={POSITIONS.command} to={POSITIONS[d.key]}/>)}\n    {districts.filter(d=>d.key!=='command').map(d=><WeavingCurrent key={'weave:'+d.key} from={POSITIONS.command} to={POSITIONS[d.key]} strength={routeCurrent}/>)}\n    <FormationSupplyRing activeBuilds={activeBuilds}/>
+    {districts.filter(d=>d.key!=='command').map(d=><PavedRoad key={d.key} from={POSITIONS.command} to={POSITIONS[d.key]}/>)}
+    {districts.filter(d=>d.key!=='command').map(d=><WeavingCurrent key={'weave:'+d.key} from={POSITIONS.command} to={POSITIONS[d.key]} strength={routeCurrent}/>)}
+    <FormationSupplyRing activeBuilds={activeBuilds}/>
 
     {districts.map(d=><DistrictPlot
       key={d.key}
@@ -514,7 +517,8 @@ function Scene({
       emergence={emergence}
     />)}
 
-    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence}/>)}\n    {systemWeaves.map((weave)=><PersistedSystemWeave key={String(weave.id)} weave={weave} liveSystems={liveSystems.slice(0,12)} currentStrength={routeCurrent}/>)}
+    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence}/>)}
+    {systemWeaves.map((weave)=><PersistedSystemWeave key={String(weave.id)} weave={weave} liveSystems={liveSystems.slice(0,12)} currentStrength={routeCurrent}/>)}
     <StreamingTower level={streamLevel}/>
     <RouteNetwork count={Math.max(routeCount,liveSystems.length>1?liveSystems.length:0)} vitality={vitalityScore} currentStrength={routeCurrent}/>
 
@@ -576,7 +580,7 @@ export function ClientFileFolder3D({
       : "absolute left-3 top-3 z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
     }>
       <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Weaving Territory</p>
-      <p className="mt-1 text-xs font-black text-white">Every completed technology becomes part of one connected Client territory.</p>
+      <p className="mt-1 text-xs font-black text-white">Persistent construction territory. Every completed technology becomes part of one connected Client territory.</p>
       <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">Purpose → material → parts → formation → connection → advanced technology → value.</p>
     </div>
 
