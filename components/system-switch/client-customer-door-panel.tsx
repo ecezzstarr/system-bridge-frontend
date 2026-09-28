@@ -39,6 +39,8 @@ const DEFAULT_ENV={
   tagline:'Built inside the WEAVE Client Market.',
   marketSection:'Main Arcade',
   featuredMessage:'Enter the store, inspect the offers and purchase directly from this Client.',
+  platformName:'',
+  logoUrl:'',
 }
 
 function normalizeEnvironment(value:any){
@@ -50,6 +52,8 @@ function normalizeEnvironment(value:any){
     tagline:String(source.tagline||DEFAULT_ENV.tagline).slice(0,180),
     marketSection:String(source.marketSection||DEFAULT_ENV.marketSection).slice(0,80),
     featuredMessage:String(source.featuredMessage||DEFAULT_ENV.featuredMessage).slice(0,320),
+    platformName:String(source.platformName||DEFAULT_ENV.platformName).slice(0,120),
+    logoUrl:String(source.logoUrl||DEFAULT_ENV.logoUrl).slice(0,1000),
   }
 }
 
