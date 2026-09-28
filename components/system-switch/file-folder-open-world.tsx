@@ -40,7 +40,8 @@ type Props = {
 const districts = [
   { key: 'workshop_core', label: 'Command Core', icon: Workflow, detail: 'Hold the purpose, authority, resources and next movement of this territory in one command position.' },
   { key: 'blueprint_foundry', label: 'Blueprint Foundry', icon: Boxes, detail: 'Turn an intended capability into a buildable system with defined functions, dependencies and consequence.' },
-  { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire the primary kits that supply a blueprint before construction begins.' },\n  { key: 'parts_workshop', label: 'Parts Workshop', icon: Boxes, detail: 'Acquire capability modules and attach compatible parts to structures while they form.' },
+  { key: 'build_market', label: 'Materials Depot', icon: Store, detail: 'Acquire the primary kits that supply a blueprint before construction begins.' },
+  { key: 'parts_workshop', label: 'Parts Workshop', icon: Boxes, detail: 'Acquire capability modules and attach compatible parts to structures while they form.' },
   { key: 'formation_yard', label: 'Formation Yard', icon: Hammer, detail: 'Form the technology through time, install capability parts and watch the territory change with the build.' },
   { key: 'boost_bay', label: 'Acceleration Bay', icon: Zap, detail: 'Use recorded acceleration instruments on active construction.' },
   { key: 'active_systems', label: 'Systems in Motion', icon: PackageOpen, detail: 'Operate completed technologies, connect their outputs and preserve the movement they produce.' },
@@ -117,7 +118,8 @@ export default function FileFolderOpenWorld({
   const [busy, setBusy] = useState('')
   const [message, setMessage] = useState('')
   const [now, setNow] = useState(Date.now())
-  const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})\n  const [systemEvidence, setSystemEvidence] = useState<Record<string, string>>({})
+  const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})
+  const [systemEvidence, setSystemEvidence] = useState<Record<string, string>>({})
   const { recordOutput } = usePresenceCamera()
   const buildStateRef=useRef<Map<string,string>>(new Map())
 
