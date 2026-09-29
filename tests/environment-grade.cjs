@@ -463,7 +463,7 @@ assert.ok(loadStabilityAdaptive.includes('level===1?15:8')&&loadStabilityAdaptiv
 assert.ok(loadStabilityAdaptive.includes('dataset.weaveCovered'),'Environment cover state is published so decorative animation can pause during loading')
 assert.ok(loadStabilityFlame.includes('1000/Math.max(12,runtime.fps)'),'Pointer-driven Flame updates respect the adaptive frame budget')
 assert.ok(loadStabilityMotionField.includes('budget.reducedMotion||budget.level===0'),'Lowest runtime tier paints the living field without maintaining a continuous canvas loop')
-assert.ok(cleanRevealTransit2026.includes('touchesPendingSurface')&&cleanRevealTransit2026.includes("record.type!=='childList'")&&cleanRevealTransit2026.includes("target?.matches('[data-environment-pending]')"),'Environment readiness only reacts to actual pending-surface changes instead of ordinary React DOM churn')
+assert.ok(cleanRevealTransit2026.includes('touchesReadiness')&&cleanRevealTransit2026.includes("record.type!=='childList'")&&cleanRevealTransit2026.includes("[data-environment-pending],[data-adaptive-canvas]")&&cleanRevealTransit2026.includes("attributeFilter:['data-environment-pending','data-adaptive-canvas-ready']"),'Environment readiness reacts only to pending-state and adaptive-canvas readiness changes instead of ordinary React DOM churn')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-quality="0"] .weave-live-flame-current')&&cleanRevealCss2026.includes('display: none')&&cleanRevealCss2026.includes('mix-blend-mode: normal'),'Low and medium tiers remove expensive full-screen flame blend/compositor layers')
 for(const [source,label] of [
  [loadStabilityHero3d,'public hero'],
