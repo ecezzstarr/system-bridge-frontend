@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import { WeaveLogo } from '@/components/weave-logo'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
+import { getRolePlaces } from '@/lib/weave-role-districts'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 import { WeaveRouteNetwork, type WeaveRouteTone } from '@/components/world/weave-route-network'
 
@@ -73,7 +74,7 @@ const ROLE: Record<WorldRole, {
   bridger: {
     eyebrow: 'Hope · Bridger Department',
     title: 'Hope carries connection forward.',
-    subtitle: 'Crossing, Prospect movement and Client continuity remain distinct functions inside one Bridger operating system.',
+    subtitle: 'Bridge AI, Prospect Market, Number Bay, Echo, Presences and value movement form one focused Bridger account.',
     purpose: WEAVE_SYSTEM_MAP.positions.bridger.description,
     functionsHref: '/bridger/functions',
     links: [
@@ -93,7 +94,7 @@ const ROLE: Record<WorldRole, {
   agent: {
     eyebrow: 'Stability · Agent Department',
     title: 'Stability keeps participation moving.',
-    subtitle: 'Keep Bridgers participating through Prospect campaigns, Number movement, Agility, company work and continuance while Bridgers carry connection toward Clients.',
+    subtitle: 'Agility movement and commissions from Bridger Prospect purchases are the Agent working functions.',
     purpose: WEAVE_SYSTEM_MAP.positions.agent.description,
     functionsHref: '/agent/functions',
     links: [
@@ -182,7 +183,22 @@ export function WeaveDashboardWorld({
 }) {
   const copy = ROLE[role]
   const { isVisible, orderFor } = useEnvironmentOrganizer()
-  const visibleLinks = copy.links.filter(item=>isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
+  // Agent and Bridger homes are controlled by the canonical role catalog.
+  // Their older dashboard link sets remain visual metadata only and cannot
+  // re-introduce removed account functions.
+  const sourceLinks:WorldLink[] = role==='agent'||role==='bridger'
+    ? getRolePlaces(role).map(place=>{
+        const visual=copy.links.find(item=>item.href===place.href)
+        return {
+          label:place.label,
+          detail:place.detail,
+          href:place.href,
+          icon:visual?.icon||LayoutTemplate,
+          tone:(visual?.tone||'sky') as WorldLink['tone'],
+        }
+      })
+    : copy.links
+  const visibleLinks = sourceLinks.filter(item=>isVisible(item.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href))
 
   if (role !== 'client') {
     const positions=['left-[50%] top-[25%] -translate-x-1/2','left-[16%] top-[39%]','right-[12%] top-[39%]','left-[22%] top-[61%]','right-[18%] top-[61%]','left-[37%] top-[77%]','right-[30%] top-[77%]','left-[50%] top-[51%] -translate-x-1/2','left-[8%] top-[73%]','right-[7%] top-[72%]','left-[10%] top-[52%]','right-[9%] top-[53%]']
