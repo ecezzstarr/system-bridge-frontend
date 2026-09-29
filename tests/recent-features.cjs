@@ -519,13 +519,6 @@ for(const file of ['components/world/role-operating-room.tsx','app/(app)/admin/d
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
  assert.equal(syntaxErrors.length,0,file+' Administration center restoration syntax/transpile check')
 }
-for(const file of ['components/world/role-operating-room.tsx','components/bridger/bridger-operating-environment.tsx']){
- const source=fs.readFileSync(path.join(root,file),'utf8')
- const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
- const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
- assert.equal(syntaxErrors.length,0,file+' restored role center-panel syntax/transpile check')
-}
-
 const arenaRouteSource=fs.readFileSync(path.join(root,'app/api/arena/matches/[id]/route.ts'),'utf8')
 const arenaJoinSource=fs.readFileSync(path.join(root,'app/api/arena/matches/[id]/join/route.ts'),'utf8')
 const arenaCompleteSource=fs.readFileSync(path.join(root,'app/api/arena/matches/[id]/complete/route.ts'),'utf8')
