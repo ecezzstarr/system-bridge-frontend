@@ -54,8 +54,8 @@ export const ROLE_ACCOUNT_PLACES: Record<LeanAccountRole, RoleAccountPlace[]> = 
 }
 
 const ACCOUNT_SHELL_ROUTES: Record<LeanAccountRole, string[]> = {
-  bridger: ['/bridger/dashboard', '/weave', '/district/position', '/roles'],
-  agent: ['/agent/dashboard', '/weave', '/district/position', '/roles'],
+  bridger: ['/bridger/dashboard', '/weave', '/district/position'],
+  agent: ['/agent/dashboard', '/weave', '/district/position'],
 }
 
 function routeMatches(pathname: string, route: string) {
