@@ -504,8 +504,11 @@ assert.ok(roleOperatingRoomSource.includes('Agent Working Panel'),'Agent Operati
 for(const sharedRoute of ['/company/loops','/search','/profiles','/lounge?view=private','/lounge','/echo','/arena','/casino','/video-feed','/weave/standing']){
  assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Agent Operating Room preserves shared WEAVE component ${sharedRoute}`)
 }
-for(const bridgerRoute of ['/bridger/bridge-radiance','/weave/market/prospects','/bridger/bridge-ai','/bridger/numbers','/bridger/clients','/bridger/subscription','/company-chat','/wallet','/ledger','/company/loops','/marketplace','/weave']){
- assert.ok(bridgerOperatingRoomSource.includes(`href: '${bridgerRoute}'`),`Bridger Operating Room preserves current Bridger operation ${bridgerRoute}`)
+for(const bridgerRoute of ['/bridger/bridge-ai','/wallet/deposit-withdraw','/bridger/numbers','/weave/market/prospects','/echo','/profiles']){
+ assert.ok(bridgerOperatingRoomSource.includes(`href: '${bridgerRoute}'`),`Bridger account preserves core operation ${bridgerRoute}`)
+}
+for(const removedRoute of ['/bridger/bridge-radiance','/bridger/clients','/bridger/subscription','/company-chat','/wallet','/ledger','/company/loops','/marketplace','/lounge','/arena','/casino']){
+ assert.ok(!bridgerOperatingRoomSource.includes(`href: '${removedRoute}'`),`Bridger account excludes overloaded route ${removedRoute}`)
 }
 assert.ok(roleOperatingRoomSource.includes("href: '/clients'"),'Agent Operating Room preserves the Client directory')
 assert.ok(roleOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Agent and Administration components preserve district color structure on route lanes')
