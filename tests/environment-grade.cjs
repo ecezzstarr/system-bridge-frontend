@@ -365,6 +365,7 @@ assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence('transit',sta
 const loadingBriefCss2026=read('app/weave-readability.css')
 assert.ok(loadingBriefCss2026.includes('@keyframes weave-loading-brief-cycle')&&loadingBriefCss2026.includes('.weave-loading-brief'),'Loading cards enter as discrete readable briefing surfaces')
 assert.ok(loadingBriefCss2026.includes('weave-loading-brief-cycle 3s'),'Loading card animation duration matches the three-second hold')
+assert.ok(loadingBriefCss2026.includes('100% {\n    opacity: 1;'),'Final loader brief remains visible until the destination reveal')
 
 
 /* Environment grammar: major operating surfaces may contain instruments,
