@@ -34,9 +34,16 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
     }
     const pending=new Set<object>()
     const hasPendingSurface=()=>Boolean(document.querySelector?.('[data-environment-pending="true"]'))
+    const hasUnreadyCanvas=()=>[...document.querySelectorAll<HTMLElement>('[data-adaptive-canvas]')].some(canvas=>{
+      const rect=canvas.getBoundingClientRect()
+      if(rect.bottom<=0||rect.top>=window.innerHeight||rect.right<=0||rect.left>=window.innerWidth)return false
+      return canvas.getAttribute('data-adaptive-canvas-ready')!=='true'
+    })
     const check=()=>{
       clearTimeout(quietTimer)
-      if(!pending.size&&!hasPendingSurface())quietTimer=setTimeout(finish,Math.max(0,minimum-(performance.now()-started),loading.settleQuietMs))
+      if(!pending.size&&!hasPendingSurface()&&!hasUnreadyCanvas()){
+        quietTimer=setTimeout(finish,Math.max(0,minimum-(performance.now()-started),loading.settleQuietMs))
+      }
     }
     signal.addEventListener('abort',finish,{once:true})
     cleanup.push(()=>signal.removeEventListener('abort',finish))
@@ -59,21 +66,27 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
       }
     }
     const observer=new MutationObserver(records=>{
-      const touchesPendingSurface=records.some(record=>{
+      const touchesReadiness=records.some(record=>{
         if(record.type==='attributes'){
           const target=record.target instanceof Element?record.target:null
-          return Boolean(target?.matches('[data-environment-pending]'))
+          return Boolean(target?.matches('[data-environment-pending],[data-adaptive-canvas]'))
         }
         if(record.type!=='childList')return false
         const nodes=[...record.addedNodes,...record.removedNodes]
         return nodes.some(node=>{
           if(!(node instanceof Element))return false
-          return node.matches('[data-environment-pending]')||Boolean(node.querySelector?.('[data-environment-pending]'))
+          return node.matches('[data-environment-pending],[data-adaptive-canvas]')||
+            Boolean(node.querySelector?.('[data-environment-pending],[data-adaptive-canvas]'))
         })
       })
-      if(touchesPendingSurface)check()
+      if(touchesReadiness)check()
     })
-    if(document.body)observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-environment-pending']})
+    if(document.body)observer.observe(document.body,{
+      childList:true,
+      subtree:true,
+      attributes:true,
+      attributeFilter:['data-environment-pending','data-adaptive-canvas-ready'],
+    })
     cleanup.push(()=>observer.disconnect())
     const hardFinish=()=>{
       const elapsed=performance.now()-started
@@ -175,7 +188,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const queryTransitionControllerRef=useRef<AbortController|null>(null)
   const covered=booting||transiting||readyPath!==pathname
   useEffect(()=>{
-    setRuntimeCovered(covered)
+    // The loader is a formation cover, not a runtime pause. The destination
+    // must be allowed to render underneath so it is ready before reveal.
+    setRuntimeCovered(false)
     return ()=>setRuntimeCovered(false)
   },[covered])
 
@@ -225,10 +240,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setTransiting(true)
     }
 
-    void Promise.all([
-      waitForEnvironmentReadiness(mode,configRef.current,controller.signal),
-      waitForBriefingSequence(mode,startedAt,controller.signal),
-    ]).then(()=>{
+    void waitForBriefingSequence(mode,startedAt,controller.signal)
+      .then(()=>waitForEnvironmentReadiness(mode,configRef.current,controller.signal))
+      .then(()=>{
       if(controller.signal.aborted)return
       first.current=false
       transitionStartedAtRef.current=null
