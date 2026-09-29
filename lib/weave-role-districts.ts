@@ -32,6 +32,11 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
           "href": "/agent/presence",
           "detail": "Understand the Agent position, Agility movement and commission return.",
           "daily": true
+        },
+        {
+          "label": "Settings",
+          "href": "/settings",
+          "detail": "Manage identity, password and the current signed-in Agent session."
         }
       ]
     },
@@ -55,6 +60,27 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
           "daily": true
         }
       ]
+    },
+    {
+      "key": "participation",
+      "name": "Communication & Event",
+      "subtitle": "BRIDGER + LOOP ONE",
+      "purpose": "Speak directly with attached Bridgers and enter the shared Company Loop 1 Flame Event.",
+      "accent": "#7dd3fc",
+      "places": [
+        {
+          "label": "Direct Communication",
+          "href": "/communications",
+          "detail": "Message Bridgers attached to your Agent position directly.",
+          "daily": true
+        },
+        {
+          "label": "Flame Event · Loop 1",
+          "href": "/event",
+          "detail": "Enter the same Burning River event ground used by every WEAVE role.",
+          "daily": true
+        }
+      ]
     }
   ],
   "bridger": [
@@ -70,6 +96,11 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
           "href": "/bridger/presence",
           "detail": "Understand prospect movement, Bridge AI, Number Bay, Echo, Presences and value continuity.",
           "daily": true
+        },
+        {
+          "label": "Settings",
+          "href": "/settings",
+          "detail": "Manage identity, password and the current signed-in Bridger session."
         }
       ]
     },
@@ -121,6 +152,27 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
           "label": "Deposit & Withdrawal",
           "href": "/wallet/deposit-withdraw",
           "detail": "Deposit Flame Coin value or request withdrawal.",
+          "daily": true
+        }
+      ]
+    },
+    {
+      "key": "enterprise",
+      "name": "Communication & Event",
+      "subtitle": "AGENT + PROSPECT + CLIENT + LOOP ONE",
+      "purpose": "Speak directly with your assigned Agent, your own Prospects and your referred Clients, then enter the shared Loop 1 event.",
+      "accent": "#7dd3fc",
+      "places": [
+        {
+          "label": "Direct Communication",
+          "href": "/communications",
+          "detail": "Message your assigned Agent, Prospect conversations and referred Clients from one authorized place.",
+          "daily": true
+        },
+        {
+          "label": "Flame Event · Loop 1",
+          "href": "/event",
+          "detail": "Enter the same Burning River event ground used by every WEAVE role.",
           "daily": true
         }
       ]
@@ -222,8 +274,8 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
     },
     {
       "key": "bridge",
-      "name": "Support",
-      "subtitle": "HUMAN CONTINUITY",
+      "name": "Direct Communication & Support",
+      "subtitle": "BRIDGER + WEAVE POSITIONS",
       "purpose": "Reach the authorized WEAVE position needed for the next Client movement.",
       "accent": "#7dd3fc",
       "places": [
@@ -278,6 +330,11 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
           "label": "Subscriptions",
           "href": "/admin/subscriptions",
           "detail": "Review subscription and Continuance standing."
+        },
+        {
+          "label": "Settings",
+          "href": "/settings",
+          "detail": "Manage Administration identity, password and the current signed-in session."
         }
       ]
     },
@@ -455,9 +512,9 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       "accent": "#7dd3fc",
       "places": [
         {
-          "label": "Message Hub",
-          "href": "/admin/hub",
-          "detail": "People, Client and staff communication.",
+          "label": "Direct Communication",
+          "href": "/communications",
+          "detail": "Message Agents, Bridgers, Clients and Prospect conversations from one authorized environment.",
           "daily": true
         },
         {
@@ -477,8 +534,14 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         },
         {
           "label": "Flame Event · Loop 1",
+          "href": "/event",
+          "detail": "Enter the same Burning River event ground used by every WEAVE role.",
+          "daily": true
+        },
+        {
+          "label": "Flame Event Control",
           "href": "/admin/flame-event",
-          "detail": "Event-world control and opening movement."
+          "detail": "Administration-only event schedule, announcement and lifecycle control."
         }
       ]
     }
