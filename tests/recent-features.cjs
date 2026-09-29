@@ -901,8 +901,8 @@ assert.ok(presenceCameraLibSource.includes("path.startsWith('/river/')"),'River 
 assert.ok(originSystemsApiSource.includes('getAuthUser'),'Origin Systems registry requires authenticated identity')
 assert.ok(originSystemsApiSource.includes("authUser.role!=='admin'"),'Origin Systems registry is Administration-only')
 assert.ok(eightCommandSource.includes("authUser.role!=='admin'"),'EIGHT command and sweep history remain Administration-only')
-assert.ok(!systemIdentitySource.includes('"vercel"'),'System identity no longer advertises legacy Vercel deployment')
-assert.ok(!originTruthLedgerSource.includes('"vercel"'),'Origin runtime ledger uses Cloud Run/local/playstore targets only')
+assert.ok(systemIdentitySource.includes('DEPLOYMENT_TARGET: "cloudrun" | "local" | "playstore"'),'System identity permits only the current deployment targets')
+assert.ok(originTruthLedgerSource.includes('export type DeploymentType = "cloudrun" | "local" | "playstore"'),'Origin runtime ledger permits only Cloud Run, local and Play Store targets')
 
 const authApiDivineShieldSource=fs.readFileSync(path.join(root,'lib/auth-api.ts'),'utf8')
 const infrastructureMigrationSource=fs.readFileSync(path.join(root,'migrations/20260925_weave_infrastructure_divine_shield.sql'),'utf8')
