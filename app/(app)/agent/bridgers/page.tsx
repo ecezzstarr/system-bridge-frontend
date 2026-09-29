@@ -25,10 +25,15 @@ export default function AgentBridgersPage() {
     <div className="max-w-7xl mx-auto pb-20 sm:pb-0">
       <div className="mb-6">
         <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 mb-1">
-          Institutional Development
+          Bridger Management
         </h1>
         <p className="text-slate-400 text-sm">Support and manage the human relationship carriers (Bridgers) assigned to your team.</p>
       </div>
+      <section className="mb-6 border-y border-sky-300/15 py-4">
+        <h2 className="font-semibold text-white">Recruitment & assignment</h2>
+        <p className="mt-2 text-sm text-slate-400">Bring prospective Bridgers to Weave. Contact Administration through Company Support to arrange their registration and assignment to your team.</p>
+        <a href="/company-chat" className="mt-3 inline-block text-sm font-semibold text-sky-300">Open Company Support</a>
+      </section>
       <MyBridgers />
     </div>
   )
@@ -67,7 +72,7 @@ function MyBridgers() {
           <div className="flex items-center gap-3">
             <Users className="h-8 w-8 text-cyan-400" />
             <div>
-              <h2 className="text-2xl font-bold text-white uppercase tracking-tighter">Human Carrying Structure</h2>
+              <h2 className="text-2xl font-bold text-white uppercase tracking-tighter">My Bridgers</h2>
               <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Bridgers assigned to your development context</p>
             </div>
           </div>

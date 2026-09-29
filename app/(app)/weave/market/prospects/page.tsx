@@ -1,4 +1,5 @@
 'use client'
+import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
 import { getAuthHeaders } from '@/lib/auth-client'
 
 import { useState, useEffect } from 'react'
@@ -189,6 +190,7 @@ export default function ProspectMarketPage() {
 
   return (
     <div className="container mx-auto py-10 space-y-8">
+      {user?.role === 'bridger' && <DailyProspectClaim />}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="bg-blue-600 p-3 rounded-xl shadow-lg shadow-blue-900/20">
