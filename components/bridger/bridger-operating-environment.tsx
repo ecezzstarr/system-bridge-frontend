@@ -2,48 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  ArrowRight,
-  BookOpen,
-  Bot,
-  CircleDollarSign,
-  Flame,
-  Gamepad2,
-  Globe2,
-  Headphones,
-  MessageCircle,
-  Network,
-  Phone,
-  ShieldCheck,
-  ShoppingBag,
-  Store,
-  Users,
-  Wallet,
-} from 'lucide-react'
-import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
+import { ArrowRight, Bot, CircleDollarSign, Flame } from 'lucide-react'
+import { getRolePlaces } from '@/lib/weave-role-districts'
 import { getAuthHeaders } from '@/lib/auth-client'
-import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { ClientBuildPull } from '@/components/world/client-build-pull'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 import { WeaveRouteNetwork, type WeaveRouteTone } from '@/components/world/weave-route-network'
 import { visiblePoll } from '@/lib/visible-poll'
 
-const commands = [
-  { label: 'Bridge Radiance', detail: 'Active Prospect conversations and unread movement.', href: '/bridger/bridge-radiance', icon: MessageCircle, district: 'Prospect movement' },
-  { label: 'Prospect Market', detail: 'Claim, acquire and continue available Prospect movement.', href: '/weave/market/prospects', icon: ShoppingBag, district: 'Prospect movement' },
-  { label: 'Bridge AI Paths', detail: 'Crossing routes and Client AI support.', href: '/bridger/bridge-ai', icon: Bot, district: 'Prospect movement' },
-  { label: 'Worldwide Number Bay', detail: 'Buy stocked numbers, order countries and complete verification.', href: '/bridger/numbers', icon: Phone, district: 'Participation supply' },
-  { label: 'My Clients', detail: 'Continue with Clients after crossing and support active builds.', href: '/bridger/clients', icon: Users, district: 'Client continuity' },
-  { label: 'Bridger Continuance', detail: 'Partnership standing, expiry and Administration verification.', href: '/bridger/subscription', icon: ShieldCheck, district: 'Position continuity' },
-  { label: 'Company Guidance', detail: 'Internal company support and clarification.', href: '/company-chat', icon: Headphones, district: 'Position continuity' },
-  { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Operational holding and Flame Coin movement.', href: '/wallet', icon: Wallet, district: 'Value + record' },
-  { label: WEAVE_SYSTEM_MAP.language.ledger, detail: 'Preserved movement and value record.', href: '/ledger', icon: BookOpen, district: 'Value + record' },
-  { label: 'Company Loops', detail: 'Current company movement and participation.', href: '/company/loops', icon: Network, district: 'Participation' },
-  { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Enterprise-scale systems available through WEAVE.', href: '/marketplace', icon: Store, district: 'Enterprise' },
-  { label: 'Bridge Plaza', detail: 'Enter shared Client worlds as support.', href: '/weave', icon: Globe2, district: 'Client continuity' },
-  { label: 'Loop 1 Ground', detail: 'Current Flame Event movement.', href: '/event', icon: Flame, district: 'Participation' },
-  { label: 'Arena', detail: 'Participant contest.', href: '/arena', icon: Gamepad2, district: 'Participation' },
-]
+const commands = getRolePlaces('bridger').map(item=>({...item,icon:Bot}))
 
 const DISTRICT_ROUTE_TONE: Record<string, WeaveRouteTone> = {
   'Prospect movement': 'amber',
@@ -224,15 +191,13 @@ export function BridgerOperatingEnvironment() {
 
         <div className="grid min-h-[620px] xl:grid-cols-[minmax(0,1fr)_250px]">
           <section className="min-w-0 border-b border-white/[0.07] p-4 md:p-6 xl:border-b-0 xl:border-r">
-            <div data-weave-station="prospect-intake">
-              <DailyProspectClaim />
-            </div>
+
 
             <div className="mt-5">
               <WeaveRouteNetwork
                 stations={stations}
                 title="Bridger operating routes"
-                detail="Open Prospect, Number Bay, Client continuity, continuance, value or participation work directly."
+                detail="Acquire prospects, continue conversations and support their crossing into Client File Folders."
               />
             </div>
           </section>
