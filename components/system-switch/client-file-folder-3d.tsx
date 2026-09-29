@@ -461,7 +461,7 @@ function AiTerritoryOutpost({territory,index,total}:{territory:AiTerritory;index
   const x=Math.cos(angle)*radius
   const z=Math.sin(angle)*radius
   const activity=String(territory.activity||'active').toUpperCase()
-  return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]} data-ai-territory={territory.territoryId}>
+  return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]}>
     <mesh position={[0,.06,0]} receiveShadow><cylinderGeometry args={[.82,.9,.12,18]}/><meshStandardMaterial color="#101821" roughness={.86}/></mesh>
     <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.08,1.28,.76]}/><meshStandardMaterial color="#182934" roughness={.62} metalness={.12}/></mesh>
     <mesh position={[0,1.52,0]} castShadow><coneGeometry args={[.62,.58,6]}/><meshStandardMaterial color="#315160" roughness={.48} metalness={.2}/></mesh>
