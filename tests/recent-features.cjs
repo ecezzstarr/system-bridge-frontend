@@ -1196,7 +1196,7 @@ const reserveEngineSource=fs.readFileSync(path.join(root,'app/(app)/fund-wall/pa
 const bridgePlazaMatureSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
 const cadenceEngineSource=fs.readFileSync(path.join(root,'app/(app)/search/page.tsx'),'utf8')
 
-assert.ok(positionIdentitySource.includes('Position + Identity Engine'),'Legacy roles/settings route is a real Position and Identity system')
+assert.ok(positionIdentitySource.includes('Settings · Position + Identity'),'Settings is the live Position and Identity system')
 assert.ok(positionIdentitySource.includes('Changing your name or password does not silently change'),'Identity changes do not masquerade as institutional role changes')
 assert.ok(businessDistrictSource.includes('Business District'),'Places route is the canonical Business District')
 assert.ok(!businessDistrictSource.includes('<Market'),'Business District no longer embeds a duplicate Market mini-app')
