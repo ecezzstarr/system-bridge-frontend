@@ -155,7 +155,7 @@ function AdminPanelSection({ user }: { user: any }) {
       const hash = window.location.hash
       if (hash === '#bridgers') setActiveSubTab('bridgers')
       else if (hash === '#users') setActiveSubTab('users')
-      else if (hash === '#clients') window.location.replace('/admin/hub?tab=clients')
+      else if (hash === '#clients') window.location.replace('/communications?tab=clients')
       else if (hash === '#fne') window.location.replace('/admin/file-number-engine')
       else if (hash === '#deposits') setActiveSubTab('deposits')
       else if (hash === '#tron') window.location.replace('/admin/client-deposits')
