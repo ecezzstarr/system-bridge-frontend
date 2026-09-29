@@ -1,0 +1,28 @@
+name: WEAVE Bridger Continuance Renewal
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    env:
+      CONTINUANCE_SECRET: ${{ secrets.CRON_SECRET }}
+      CONTINUANCE_URL: ${{ vars.WEAVE_CONTINUANCE_URL || 'https://weavingsystem.online/api/cron/subscription-check' }}
+    steps:
+      - name: Renew due Bridger Continuance
+        if: ${{ env.CONTINUANCE_SECRET != '' }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error             --request GET             --header "x-cron-secret: ${CONTINUANCE_SECRET}"             "${CONTINUANCE_URL}"
+
+      - name: Report unarmed scheduler
+        if: ${{ env.CONTINUANCE_SECRET == '' }}
+        run: |
+          echo "Bridger Continuance scheduler is installed but CRON_SECRET is not configured in GitHub Actions."
+          exit 1
