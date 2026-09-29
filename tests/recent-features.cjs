@@ -461,6 +461,10 @@ const adminDashboardCenterSource=fs.readFileSync(path.join(root,'components/admi
 const adminControlCenterRouteSource=fs.readFileSync(path.join(root,'app/(app)/admin/control-center/page.tsx'),'utf8')
 const agentFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/agent/functions/page.tsx'),'utf8')
 const agentPresenceSource=fs.readFileSync(path.join(root,'app/(app)/agent/presence/page.tsx'),'utf8')
+const bridgerPresenceSource=fs.readFileSync(path.join(root,'app/(app)/bridger/presence/page.tsx'),'utf8')
+const clientPresenceSource=fs.readFileSync(path.join(root,'app/client/presence/page.tsx'),'utf8')
+const rolePresenceEnvironmentSource=fs.readFileSync(path.join(root,'components/world/role-presence-environment.tsx'),'utf8')
+const roleDistrictEnvironmentSource=fs.readFileSync(path.join(root,'components/world/role-district-environment.tsx'),'utf8')
 const adminFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/admin/functions/page.tsx'),'utf8')
 assert.ok(positionEventSource.includes('data-loop-one-environment="burning-river"'),'Loop 1 is a continuous Burning River operating environment')
 assert.ok(positionEventSource.includes('The River that Burns'),'Loop 1 visibly declares the Flame Event identity')
@@ -470,7 +474,7 @@ assert.ok(positionEventSource.includes('data-weave-route-station'),'Loop 1 expos
 assert.ok(positionEventSource.includes('data-flame-event-crossing-route="system-switch"')&&positionEventSource.includes('data-weave-world-gate="system-switch"'),'Client Flame Event Hall exposes physical travel into System Switch crossing')
 assert.ok(!positionEventSource.includes('ROLE_ORDER'),'Event page does not explain other user roles')
 assert.ok(!positionEventSource.includes('FLAME_EVENT_FEATURES'),'Event page removes generic event feature clutter')
-assert.ok(compactWorldSource.includes('data-client-world="open-territory"')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home is a spatial open territory with physical movement beacons')
+assert.ok(compactWorldSource.includes('data-client-world={role===\'client\'?\'open-territory\':undefined}')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home remains a spatial open territory with district beacons')
 // Role organization: preserve Admin tools and enforce focused working entrances.
 for(const hash of ['#users','#clients','#fne','#bridgers','#deposits','#tron','#bridge','#withdrawals','#announcements','#wallet','#workshops','#eight']) {
  assert.ok(roleHas('admin','/admin/control-center'+hash),'Admin control remains reachable: '+hash)
@@ -485,11 +489,13 @@ assert.deepEqual(
 )
 assert.deepEqual(
  getRolePlaces('bridger').map(place=>place.href),
- ['/bridger/bridge-ai','/weave/market/prospects','/bridger/numbers','/echo','/profiles','/wallet/deposit-withdraw'],
- 'Bridger account stays limited to Bridge AI, Prospect Market, Number Bay, Echo, Presences and Deposit/Withdrawal'
+ ['/bridger/presence','/bridger/bridge-ai','/weave/market/prospects','/bridger/numbers','/echo','/profiles','/wallet/deposit-withdraw'],
+ 'Bridger account is Presence plus Bridge AI, Prospect Market, Number Bay, Echo, Presences and Deposit/Withdrawal'
 )
 for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace','/lounge']) assert.ok(!roleHas(role,href),role+' excludes unrelated account entrance '+href)
 assert.ok(roleLabel('agent','Agent Presence'),'Agent has a Presence environment for understanding the position')
+assert.ok(roleLabel('bridger','Bridger Presence'),'Bridger has a Presence environment for understanding the position')
+assert.ok(roleLabel('client','Client Presence'),'Client has a Presence environment for understanding the Client world')
 assert.ok(roleOperatingRoomSource.includes('getRolePlaces(role)'),'Agent and Admin rooms use the role catalog')
 assert.ok(bridgerOperatingRoomSource.includes("getRolePlaces('bridger')"),'Bridger room uses the role catalog')
 assert.ok(adminControlCenterRouteSource.includes('@/components/admin/administration-control-terminal'),'Admin control center stays connected')
@@ -497,7 +503,11 @@ for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcem
 assert.ok(!adminDashboardCenterSource.includes("onClick={() => setActiveSubTab('sweeps')}"),'Mock sweeps remain hidden')
 assert.ok(!roleHas('admin','/admin/control-center#sweeps'),'No mock sweep entrance')
 assert.ok(roleOperatingRoomSource.includes('<WeaveRouteNetwork'),'Operating rooms keep connected routes')
-assert.ok(agentPresenceSource.includes('Agent Presence')&&agentPresenceSource.includes('Presence → Agility + Commissions'),'Agent Presence explains the position before work')
+assert.ok(agentPresenceSource.includes('RolePresenceEnvironment role="agent"'),'Agent Presence uses the shared Presence environment')
+assert.ok(bridgerPresenceSource.includes('RolePresenceEnvironment role="bridger"'),'Bridger Presence uses the shared Presence environment')
+assert.ok(clientPresenceSource.includes('RolePresenceEnvironment role="client"'),'Client Presence uses the shared Presence environment')
+assert.ok(rolePresenceEnvironmentSource.includes("data-role-presence={role}")&&rolePresenceEnvironmentSource.includes('Presence is orientation. Districts organize movement. Places perform the work.'),'Role Presence is one reusable environment with district organization')
+assert.ok(roleDistrictEnvironmentSource.includes('data-role-district={district.key}')&&roleDistrictEnvironmentSource.includes('Places inside this district'),'Role districts keep places inside the district instead of scattering functions across the world')
 assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
 assert.ok(adminFunctionsSource.includes('<RoleOperatingRoom role="admin"'),'Administration Functions opens the Administration Operating Room instead of importing the dashboard')
 assert.ok(!compactWorldSource.includes('{children}'),'Home no longer stacks the old terminal underneath the world')
