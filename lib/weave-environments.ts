@@ -166,11 +166,11 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     layer: 'district',
   },
   '/event': {
-    key: 'loop-ground',
-    title: 'Company Loop Ground',
+    key: 'flame-event-loop-one',
+    title: 'Flame Event · Loop 1',
     district: 'Presence',
-    purpose: 'The live company-event environment where published loops become shared participation in time.',
-    movement: 'Arrive → recognize the loop → participate → continue',
+    purpose: 'The shared Burning River event ground for Agent, Bridger and Administration positions inside Company Loop 1.',
+    movement: 'Arrive → recognize position → participate → continue',
     layer: 'district',
   },
   '/company/loops': {
