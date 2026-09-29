@@ -114,12 +114,44 @@ export async function GET(request: NextRequest) {
 
     if (user.role === 'admin') {
       const summary = await client.query(
-        `SELECT client_id,client_name,position,COUNT(*) AS total_messages,
-                SUM(CASE WHEN is_read=false AND sender_type='client' THEN 1 ELSE 0 END) AS unread_count,
-                MAX(created_at) AS last_message_at
-         FROM client_messages
-         GROUP BY client_id,client_name,position
-         ORDER BY MAX(created_at) DESC`
+        `WITH raw_people AS (
+           SELECT id,name,0 AS priority FROM users WHERE role='client' AND is_active=true
+           UNION ALL
+           SELECT id,name,1 AS priority FROM clients
+         ),
+         people AS (
+           SELECT DISTINCT ON (id) id,name
+           FROM raw_people
+           ORDER BY id,priority
+         ),
+         direct_summary AS (
+           SELECT client_id,MAX(client_name) AS client_name,COUNT(*) AS total_messages,
+                  SUM(CASE WHEN is_read=false AND sender_type='client' THEN 1 ELSE 0 END) AS unread_count,
+                  MAX(created_at) AS last_message_at
+           FROM client_messages
+           WHERE position='admin'
+           GROUP BY client_id
+         ),
+         direct_rows AS (
+           SELECT p.id AS client_id,p.name AS client_name,'admin'::text AS position,
+                  COALESCE(s.total_messages,0)::bigint AS total_messages,
+                  COALESCE(s.unread_count,0)::bigint AS unread_count,
+                  s.last_message_at
+           FROM people p
+           LEFT JOIN direct_summary s ON s.client_id=p.id
+         ),
+         other_rows AS (
+           SELECT client_id,MAX(client_name) AS client_name,position,COUNT(*) AS total_messages,
+                  SUM(CASE WHEN is_read=false AND sender_type='client' THEN 1 ELSE 0 END) AS unread_count,
+                  MAX(created_at) AS last_message_at
+           FROM client_messages
+           WHERE position<>'admin'
+           GROUP BY client_id,position
+         )
+         SELECT * FROM direct_rows
+         UNION ALL
+         SELECT * FROM other_rows
+         ORDER BY last_message_at DESC NULLS LAST,client_name ASC`
       )
       return NextResponse.json({ success: true, summary: summary.rows })
     }
@@ -128,15 +160,44 @@ export async function GET(request: NextRequest) {
       const ids = await staffClientIds(client, user)
       if (!ids.length) return NextResponse.json({ success: true, summary: [] })
 
-      let channels = ['bridger']
-      if (user.role === 'agent') {
-        const approved = await client.query(
-          "SELECT channel FROM agent_channel_applications WHERE agent_id=$1::uuid AND status='approved'",
-          [user.id]
+      if (user.role === 'bridger') {
+        const summary = await client.query(
+          `WITH raw_people AS (
+             SELECT id,name,0 AS priority FROM users WHERE id=ANY($1::uuid[]) AND role='client'
+             UNION ALL
+             SELECT id,name,1 AS priority FROM clients WHERE id=ANY($1::uuid[])
+           ),
+           people AS (
+             SELECT DISTINCT ON (id) id,name
+             FROM raw_people
+             ORDER BY id,priority
+           ),
+           movement AS (
+             SELECT client_id,COUNT(*) AS total_messages,
+                    SUM(CASE WHEN is_read=false AND sender_type='client' THEN 1 ELSE 0 END) AS unread_count,
+                    MAX(created_at) AS last_message_at
+             FROM client_messages
+             WHERE client_id=ANY($1::uuid[]) AND position='bridger'
+             GROUP BY client_id
+           )
+           SELECT p.id AS client_id,p.name AS client_name,'bridger'::text AS position,
+                  COALESCE(m.total_messages,0)::bigint AS total_messages,
+                  COALESCE(m.unread_count,0)::bigint AS unread_count,
+                  m.last_message_at
+           FROM people p
+           LEFT JOIN movement m ON m.client_id=p.id
+           ORDER BY m.last_message_at DESC NULLS LAST,p.name ASC`,
+          [ids]
         )
-        channels = approved.rows.map((r: any) => String(r.channel))
-        if (!channels.length) return NextResponse.json({ success: true, summary: [] })
+        return NextResponse.json({ success: true, summary: summary.rows })
       }
+
+      const approved = await client.query(
+        "SELECT channel FROM agent_channel_applications WHERE agent_id=$1::uuid AND status='approved'",
+        [user.id]
+      )
+      const channels = approved.rows.map((r: any) => String(r.channel))
+      if (!channels.length) return NextResponse.json({ success: true, summary: [] })
 
       const summary = await client.query(
         `SELECT client_id,client_name,position,COUNT(*) AS total_messages,
