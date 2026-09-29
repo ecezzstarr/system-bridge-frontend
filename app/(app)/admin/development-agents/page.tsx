@@ -208,9 +208,9 @@ export default function DevelopmentFoundryPage() {
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-cyan-100/10 pb-5">
           <div className="min-w-0">
-            <Link href="/admin/workshop" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 hover:text-cyan-200">
+            <Link href="/district/administration" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 hover:text-cyan-200">
               <ArrowLeft className="h-3.5 w-3.5" />
-              Admin Workshop
+              Workshops District
             </Link>
             <p className="mt-5 text-[9px] font-black uppercase tracking-[0.3em] text-cyan-300">Administration · Development Foundry</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">AI engineers inside WEAVE.</h1>
