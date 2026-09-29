@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, CircleUserRound, Globe2, Route, Sparkles } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
-import { getRoleDistricts, type WeaveRole } from '@/lib/weave-role-districts'
+import { getRoleDistricts } from '@/lib/weave-role-districts'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 type PresenceRole='agent'|'bridger'|'client'
