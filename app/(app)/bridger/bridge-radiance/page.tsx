@@ -89,7 +89,7 @@ export default function BridgerBridgeRadiance(){
   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_20%,rgba(34,211,238,.12),transparent_30%),radial-gradient(circle_at_76%_68%,rgba(249,115,22,.08),transparent_28%)]"/>
   <div className="relative mx-auto grid max-w-6xl gap-4 md:grid-cols-[300px_1fr]">
    <aside className="border-r border-white/10 pr-3">
-    <Link href="/bridger/functions" className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[.18em] text-slate-500 hover:text-cyan-200"><ArrowLeft className="h-3.5 w-3.5"/>Operating Room</Link>
+    <Link href="/bridger/dashboard" className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[.18em] text-slate-500 hover:text-cyan-200"><ArrowLeft className="h-3.5 w-3.5"/>Operating Room</Link>
     <p className="mt-5 text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Hope · Bridge Radiance</p>
     <div className="mt-2 flex items-end justify-between gap-3"><h1 className="text-2xl font-black">Prospect movement now.</h1><span className="text-[9px] font-black uppercase text-cyan-200">{unread>0?`${unread} unread`:`${threads.length} active`}</span></div>
     <p className="mt-2 text-xs leading-5 text-slate-400">Only Prospects attached to your Bridges are visible here. The list and active conversation refresh while this world is visible.</p>
