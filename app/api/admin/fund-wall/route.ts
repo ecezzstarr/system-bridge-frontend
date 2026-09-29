@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
       walletTiers: tierMap,
     })
   } catch (error) {
-    console.error('[v0] Fund wall error:', error)
+    console.error('[WEAVE] Fund wall error:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to fetch fund wall data' },
       { status: 500 }
