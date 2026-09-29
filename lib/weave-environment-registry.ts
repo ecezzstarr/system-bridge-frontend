@@ -68,7 +68,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-agent-channels', label:'Agent Channel Requests', kind:'district', route:'/admin/agent-channels', area:'Administration', scope:'admin', defaultOrder:110 },
   { key:'admin-client-deposits', label:'Client Deposits', kind:'district', route:'/admin/client-deposits', area:'Administration', scope:'admin', defaultOrder:120 },
   { key:'admin-client-vault', label:'Client Vaults', kind:'district', route:'/admin/client-vault', area:'Administration', scope:'admin', defaultOrder:130 },
-  { key:'admin-enterprise-systems', label:'Enterprise Systems Workshop', kind:'district', route:'/admin/enterprise-systems', area:'Administration', scope:'admin', defaultOrder:140 },
+  { key:'admin-enterprise-systems', label:'Enterprise Systems', kind:'district', route:'/admin/enterprise-systems', area:'Administration', scope:'admin', defaultOrder:140 },
   { key:'admin-agility', label:'Agility Fulfillment', kind:'district', route:'/admin/agility', area:'Administration', scope:'admin', defaultOrder:150 },
   { key:'admin-enterprise-dream', label:'Enterprise Dream', kind:'district', route:'/admin/enterprise-dream', area:'Administration', scope:'admin', defaultOrder:160 },
   { key:'admin-client-build-catalog', label:'Client Build Catalog', kind:'district', route:'/admin/client-build-catalog', area:'Administration', scope:'admin', defaultOrder:170 },
