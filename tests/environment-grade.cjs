@@ -211,9 +211,12 @@ const supportFileFolderPage=read('app/(app)/weave/file-folder/[fileNumber]/page.
 
 assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent/Admin Operating Room removes Position Map card')
 assert.ok(!bridgerOperatingRoom.toLowerCase().includes('position map'),'Bridger Operating Room removes Position Map card')
-assert.ok(bridgerOperatingRoom.includes('data-bridger-live-operations="true"'),'Bridger Operating Room exposes a live operational pulse instead of a static route menu')
-for(const route of ['/api/bridger/daily-prospect','/api/bridger/support-inbox','/api/bridger/clients','/api/bridger/numbers','/api/bridger/subscription','/api/bridger/bridge-ai/subscribe']){
- assert.ok(bridgerOperatingRoom.includes(route),'Bridger live operations reads '+route)
+assert.ok(bridgerOperatingRoom.includes('Six places. One account.'),'Bridger Operating Room states the lean account boundary')
+for(const route of ['/bridger/bridge-ai','/wallet/deposit-withdraw','/bridger/numbers','/weave/market/prospects','/echo','/profiles']){
+ assert.ok(bridgerOperatingRoom.includes(route),'Bridger account includes '+route)
+}
+for(const removed of ['/bridger/bridge-radiance','/bridger/clients','/bridger/subscription','/lounge','/arena','/casino']){
+ assert.ok(!bridgerOperatingRoom.includes(removed),'Bridger account excludes '+removed)
 }
 for(const route of ['/bridger/bridge-radiance','/bridger/numbers','/bridger/clients','/bridger/subscription']){
  assert.ok(bridgerOperatingRoom.includes(route),'Bridger Operating Room exposes '+route)
@@ -582,7 +585,7 @@ const stabilitySupplySource=read('app/(app)/agent/stability-supply/page.tsx')
 const ledgerWorldSource=read('app/(app)/ledger/page.tsx')
 assert.ok(stationFrameSource.includes('data-weave-working-station={station}'),'Dense functions share an explicit in-world station grammar')
 assert.ok(stationFrameSource.includes('data-ai-working-position="assist"'),'AI has an assist position at working stations without taking authority')
-assert.ok(stabilitySupplySource.includes('<WeaveStationFrame station="Stability Supply Ground"'),'Stability supply remains inside the role world as a working station')
+assert.ok(!environmentRegistry.includes("agent-stability-supply"),'Stability Supply is no longer an Agent account environment')
 assert.ok(ledgerWorldSource.includes('<WeaveStationFrame station="Movement Record"'),'Record is a movement station inside WEAVE')
 assert.ok(!ledgerWorldSource.includes("from '@/components/ui/card'"),'Record no longer depends on the generic Card shell')
 
