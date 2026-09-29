@@ -266,16 +266,11 @@ assert.ok(weaveSystemMapSource.includes('An interactional company that turns hum
 assert.ok(homePageSource.includes("title: 'Services'") && homePageSource.includes("title: 'Instruments'") && homePageSource.includes("title: 'Systems'"),'Homepage explains WEAVE services, instruments and systems')
 assert.ok(homePageSource.includes('Client Access Point'),'Homepage contains a dedicated Client access surface')
 assert.ok(homePageSource.includes('href="/client/login"'),'Homepage directs existing Clients to the Client Portal')
-const clientNavSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
 const clientGuardSource=fs.readFileSync(path.join(root,'components/client/client-route-guard.tsx'),'utf8')
 const clientTerminalSource=fs.readFileSync(path.join(root,'components/client/client-terminal-legacy.tsx'),'utf8')
 const clientRegisterSource2=fs.readFileSync(path.join(root,'app/client/register/page.tsx'),'utf8')
 const walletBalanceSource=fs.readFileSync(path.join(root,'app/api/wallet/balance/route.ts'),'utf8')
 const clientBridgerSource=fs.readFileSync(path.join(root,'app/api/client/bridger/route.ts'),'utf8')
-assert.ok(clientNavSource.includes("pathname === '/client/login'"),'Client login is excluded from signed-in Client navigation')
-assert.ok(clientNavSource.includes("pathname === '/client/register'"),'Client registration is excluded from signed-in Client navigation')
-assert.ok(clientNavSource.includes('File Folder') || clientNavSource.includes('My Workshop & Store'),'Client File Folder/workshop link remains available after login')
-assert.ok(clientNavSource.includes("label: 'Loop Field'"),'Company Loops remain available after Client login as an environment entrance')
 assert.ok(clientGuardSource.includes("router.replace('/client/login')"),'Protected Client routes send unauthenticated visitors to Client login')
 assert.ok(clientTerminalSource.includes('Flame Coin</span>'),'Client Vault displays Flame Coin instead of TRX')
 assert.ok(clientTerminalSource.includes("fetch('/api/client/bridger'"),'Client Bridger lookup no longer sends clientId in query')
@@ -416,7 +411,6 @@ const worldEnvironmentSource=fs.readFileSync(path.join(root,'components/world/we
 const interactionMotionSource=fs.readFileSync(path.join(root,'components/world/interaction-motion-layer.tsx'),'utf8')
 const flameAdSource=fs.readFileSync(path.join(root,'components/events/flame-event-ad.tsx'),'utf8')
 const clientDashboardUnifiedSource=fs.readFileSync(path.join(root,'app/client/dashboard/page.tsx'),'utf8')
-const clientNavUnifiedSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
 const appEventUnifiedSource=fs.readFileSync(path.join(root,'app/(app)/event/page.tsx'),'utf8')
 const clientEventUnifiedSource=fs.readFileSync(path.join(root,'app/client/event/page.tsx'),'utf8')
 assert.ok(!rootLayoutSource.includes('<FlameEventAd />'),'Flame Event signal is not mounted above every application shell')
@@ -438,16 +432,13 @@ assert.ok(!worldEnvironmentSource.includes('<WeaveWorldBackdrop'),'Event no long
 assert.ok(flameAdSource.includes('DASHBOARD_PATHS'),'Event banner stays off role Home dashboards')
 assert.ok(!clientDashboardUnifiedSource.includes('ClientFlameEventDashboard'),'Client dashboard is no longer replaced by a second event application')
 assert.ok(clientDashboardUnifiedSource.includes('<WeaveDashboardWorld'),'Client Home keeps one compact persistent world')
-assert.ok(clientNavUnifiedSource.includes("href: '/client/presence'"),'Client navigation exposes Client Presence as the orientation entrance')
-assert.ok(!clientNavUnifiedSource.includes("href: '/client/functions'"),'Client navigation has no duplicate Operating Room entrance')
-assert.ok(clientNavUnifiedSource.includes("label: 'Flame Event · Loop 1'"),'Client navigation uses the canonical Flame Event name')
-assert.ok(!clientNavUnifiedSource.includes('eventIsLive'),'Client navigation remains persistent during events')
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
 assert.ok(roleHas('admin','/event'),'Sidebar exposes Loop 1 as a WEAVE destination')
 assert.ok(!fs.existsSync(path.join(root,'components/app-sidebar.tsx')),'Retired flattened sidebar is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/client/client-operating-room.tsx')),'Retired Client Operating Room component is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/bridger/bridger-operating-environment.tsx')),'Retired Bridger Operating Room component is removed')
+assert.ok(!fs.existsSync(path.join(root,'components/client-navigation.tsx')),'Retired Client top navigation is removed')
 for(const route of [
  'app/(app)/bridger/functions/page.tsx',
  'app/(app)/agent/functions/page.tsx',
@@ -497,6 +488,8 @@ for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/v
 assert.ok(roleLabel('agent','Agent Presence'),'Agent has a Presence environment for understanding the position')
 assert.ok(roleLabel('bridger','Bridger Presence'),'Bridger has a Presence environment for understanding the position')
 assert.ok(roleLabel('client','Client Presence'),'Client has a Presence environment for understanding the Client world')
+assert.ok(roleHas('client','/client/loops')&&roleHas('client','/client/event'),'Client Loops and Flame Event live inside the canonical Client world catalog')
+assert.ok(roleLabel('client','Loop Field')&&roleLabel('client','Flame Event · Loop 1'),'Client Loop/Event names are canonical inside the role world')
 assert.ok(roleOperatingRoomSource.includes('getRolePlaces(role)'),'Agent Operating Room uses the role catalog')
 assert.ok(adminControlCenterRouteSource.includes('@/components/admin/administration-control-terminal'),'Admin control center stays connected')
 for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcements'"]) assert.ok(adminDashboardCenterSource.includes(hash),hash)
@@ -1407,7 +1400,6 @@ const rootEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/layout.tsx
 const appEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
 const clientEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/client/layout.tsx'),'utf8')
 const authEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/(auth)/layout.tsx'),'utf8')
-const clientEnvironmentNavigationSource=fs.readFileSync(path.join(root,'components/client-navigation.tsx'),'utf8')
 
 assert.ok(weaveEnvironmentTransitSource.includes("first.current?'boot':'transit'")&&weaveEnvironmentTransitSource.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'Boot and route entry use cancellable environment readiness')
 assert.ok(weaveEnvironmentTransitSource.includes("mode==='boot'?8000:3000"),'Readiness has a bounded fallback for stalled assets')
@@ -1424,8 +1416,6 @@ assert.ok(weaveEnvironmentMapSource.includes("'Client Access Gate'"),'Client log
 assert.ok(!weaveEnvironmentMapSource.includes("'Bridger Operating Room'"),'Bridger environment map has no duplicate Operating Room layer')
 assert.ok(weaveEnvironmentMapSource.includes("'Agent Operating Room'"),'Agent functions are written as an operating environment')
 assert.ok(!weaveEnvironmentMapSource.includes("'Administration Operating Room'"),'Administration environment map has no duplicate Operating Room layer')
-assert.ok(clientEnvironmentNavigationSource.includes("'Client World'")&&clientEnvironmentNavigationSource.includes("'Client Presence'"),'Client navigation uses canonical Presence and World names')
-assert.ok(!clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation has no duplicate Operating Room layer')
 
 for(const file of [
   'lib/weave-development-agents.ts',
@@ -1449,7 +1439,6 @@ for(const file of [
   'app/(app)/layout.tsx',
   'app/client/layout.tsx',
   'app/(auth)/layout.tsx',
-  'components/client-navigation.tsx',
 ]){
  const source=fs.readFileSync(path.join(root,file),'utf8')
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
