@@ -287,7 +287,7 @@ export default function BridgerNumbersPage(){
  const right=<>
   <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><ShieldCheck className="h-5 w-5 text-amber-300"/><p className="mt-3 text-sm font-black text-white">WEAVE wrapper</p><p className="mt-2 text-xs leading-5 text-slate-400">Provider acquisition details remain Administration-only. You see the country, Flame Coin price, stock state, delivery deadline, assigned number and verification movement.</p></section>
   <section className="rounded-3xl border border-white/10 bg-black/20 p-4"><Phone className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-sm font-black text-white">30-minute order path</p><p className="mt-2 text-xs leading-5 text-slate-400">When a published country is out of stock: order → Flame Coin reserved as purchase → Administration acquires number → delivery enters My Numbers → request SMS/call verification.</p></section>
-  <Link href="/bridger/functions" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white">Bridger Operating Room <span className="text-cyan-300">→</span></Link>
+  <Link href="/bridger/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white">Bridger Operating Room <span className="text-cyan-300">→</span></Link>
  </>
 
  return <WeaveSystemRoom
