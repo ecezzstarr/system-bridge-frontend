@@ -1,15 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Bell, ChevronLeft, Eye, Moon, Save, ShieldCheck, UserCircle } from 'lucide-react'
+import { Bell, ChevronLeft, Eye, LogOut, Moon, Save, ShieldCheck, UserCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 
 export default function ClientSettings() {
-  const { user, token } = useAuth()
+  const router = useRouter()
+  const { user, token, logout } = useAuth()
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -91,7 +93,7 @@ export default function ClientSettings() {
     <main className="mx-auto w-full max-w-5xl p-3 md:p-6">
       <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(14,165,233,.13),transparent_34%),radial-gradient(circle_at_86%_0%,rgba(139,92,246,.08),transparent_28%)] p-5 md:p-7">
-          <Link href="/client/dashboard" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em] text-sky-200"><ChevronLeft className="h-4 w-4"/>Client Operating Room</Link>
+          <Link href="/client/dashboard" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em] text-sky-200"><ChevronLeft className="h-4 w-4"/>Client World</Link>
           <div className="mt-4 flex items-start gap-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-sky-300/20 bg-sky-400/10"><UserCircle className="h-5 w-5 text-sky-200"/></div>
             <div>
@@ -139,6 +141,14 @@ export default function ClientSettings() {
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Current position</p></div>
               <p className="mt-3 text-sm font-black capitalize text-white">{user.role}</p>
               <p className="mt-1 break-all text-xs text-slate-400">{user.email}</p>
+            </section>
+
+            <section className="rounded-3xl border border-rose-300/15 bg-rose-400/[0.035] p-4">
+              <div className="flex items-center gap-2"><LogOut className="h-4 w-4 text-rose-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-rose-300">Session</p></div>
+              <p className="mt-3 text-xs leading-5 text-slate-300">End this Client session and return to the Client login entrance.</p>
+              <Button onClick={()=>{ logout(); router.replace('/client/login') }} variant="outline" className="mt-4 w-full border-rose-300/15 bg-rose-400/[0.04] text-rose-100 hover:bg-rose-400/[0.08]">
+                <LogOut className="mr-2 h-4 w-4"/>Sign out → Client login
+              </Button>
             </section>
 
             <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[0.04] p-4">
