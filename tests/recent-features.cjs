@@ -460,6 +460,7 @@ const roleOperatingRoomSource=fs.readFileSync(path.join(root,'components/world/r
 const adminDashboardCenterSource=fs.readFileSync(path.join(root,'components/admin/administration-control-terminal.tsx'),'utf8')
 const adminControlCenterRouteSource=fs.readFileSync(path.join(root,'app/(app)/admin/control-center/page.tsx'),'utf8')
 const agentFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/agent/functions/page.tsx'),'utf8')
+const agentPresenceSource=fs.readFileSync(path.join(root,'app/(app)/agent/presence/page.tsx'),'utf8')
 const adminFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/admin/functions/page.tsx'),'utf8')
 assert.ok(positionEventSource.includes('data-loop-one-environment="burning-river"'),'Loop 1 is a continuous Burning River operating environment')
 assert.ok(positionEventSource.includes('The River that Burns'),'Loop 1 visibly declares the Flame Event identity')
@@ -477,9 +478,18 @@ for(const hash of ['#users','#clients','#fne','#bridgers','#deposits','#tron','#
 for(const href of ['/admin/file-number-engine','/admin/agent-channels','/admin/origin-systems','/admin/infrastructure','/admin/loop-workshop','/admin/dj-workshop','/admin/ad-workshop','/admin/development-agents','/admin/bridger-numbers','/admin/client-build-catalog','/authority/workshops','/admin/dev-workshop','/admin/visual-systems','/admin/environment-organizer']) assert.ok(roleHas('admin',href),href)
 for(const label of ['EIGHT AI','Administration Wallet','Administration Workshops']) assert.ok(roleLabel('admin',label),label)
 assert.equal(getRoleDistricts('admin')[0].name,'People','Admin starts with people management')
-for(const href of ['/agility','/agent/bridgers','/agent/commissions','/agent/bridge-radiance','/agent/channels','/company-chat','/wallet']) assert.ok(roleHas('agent',href),href)
-for(const href of ['/bridger/bridge-radiance','/weave/market/prospects','/bridger/bridge-ai','/bridger/numbers','/bridger/clients','/bridger/subscription','/company-chat','/wallet','/ledger','/echo','/profiles']) assert.ok(roleHas('bridger',href),href)
-for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace']) assert.ok(!roleHas(role,href),role+' excludes unrelated daily entrance '+href)
+assert.deepEqual(
+ getRolePlaces('agent').map(place=>place.href),
+ ['/agent/presence','/agility','/agent/commissions'],
+ 'Agent account is Presence plus Agility and Commissions only'
+)
+assert.deepEqual(
+ getRolePlaces('bridger').map(place=>place.href),
+ ['/bridger/bridge-ai','/weave/market/prospects','/bridger/numbers','/echo','/profiles','/wallet/deposit-withdraw'],
+ 'Bridger account stays limited to Bridge AI, Prospect Market, Number Bay, Echo, Presences and Deposit/Withdrawal'
+)
+for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace','/lounge']) assert.ok(!roleHas(role,href),role+' excludes unrelated account entrance '+href)
+assert.ok(roleLabel('agent','Agent Presence'),'Agent has a Presence environment for understanding the position')
 assert.ok(roleOperatingRoomSource.includes('getRolePlaces(role)'),'Agent and Admin rooms use the role catalog')
 assert.ok(bridgerOperatingRoomSource.includes("getRolePlaces('bridger')"),'Bridger room uses the role catalog')
 assert.ok(adminControlCenterRouteSource.includes('@/components/admin/administration-control-terminal'),'Admin control center stays connected')
@@ -487,6 +497,7 @@ for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcem
 assert.ok(!adminDashboardCenterSource.includes("onClick={() => setActiveSubTab('sweeps')}"),'Mock sweeps remain hidden')
 assert.ok(!roleHas('admin','/admin/control-center#sweeps'),'No mock sweep entrance')
 assert.ok(roleOperatingRoomSource.includes('<WeaveRouteNetwork'),'Operating rooms keep connected routes')
+assert.ok(agentPresenceSource.includes('Agent Presence')&&agentPresenceSource.includes('Presence → Agility + Commissions'),'Agent Presence explains the position before work')
 assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
 assert.ok(adminFunctionsSource.includes('<RoleOperatingRoom role="admin"'),'Administration Functions opens the Administration Operating Room instead of importing the dashboard')
 assert.ok(!compactWorldSource.includes('{children}'),'Home no longer stacks the old terminal underneath the world')
