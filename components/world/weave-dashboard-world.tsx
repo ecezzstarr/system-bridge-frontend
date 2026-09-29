@@ -25,28 +25,28 @@ const COPY:Record<WorldRole,{
   presenceHref:string
 }> = {
   client:{
-    eyebrow:'Client World',
+    eyebrow:'Lord/Lady · Client Department',
     title:'Your world. Your movement.',
     subtitle:'Presence is the arrival point. Districts organize the File Folder, value and human support without scattering every function across the world.',
     functionsHref:'/client/functions',
     presenceHref:'/client/presence',
   },
   bridger:{
-    eyebrow:'Hope · Bridger',
+    eyebrow:'Hope · Bridger Department',
     title:'Connection moves through clear districts.',
     subtitle:'Presence gives orientation. Bridge Movement carries Prospects and crossing. Value remains a separate support district.',
     functionsHref:'/bridger/functions',
     presenceHref:'/bridger/presence',
   },
   agent:{
-    eyebrow:'Stability · Agent',
+    eyebrow:'Stability · Agent Department',
     title:'A small position inside one open world.',
     subtitle:'Presence gives orientation. Agent Movement contains Agility and Commissions. Nothing else needs to crowd the account.',
     functionsHref:'/agent/functions',
     presenceHref:'/agent/presence',
   },
   admin:{
-    eyebrow:'Administration',
+    eyebrow:'A Cat · Administration Department',
     title:'The institution in one organized world.',
     subtitle:'People, Finance, Operations, Workshops and Communication remain separate districts inside one Administration world.',
     functionsHref:'/admin/functions',
