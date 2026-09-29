@@ -76,14 +76,14 @@ function AuthContextProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      console.log('[v0] Attempting login for username:', username)
+      console.log('[WEAVE] Attempting login for username:', username)
       const result = await signIn('credentials', {
         username,
         password,
         redirect: false,
       })
 
-      console.log('[v0] SignIn result:', result?.ok ? 'success' : 'failed', result?.error)
+      console.log('[WEAVE] SignIn result:', result?.ok ? 'success' : 'failed', result?.error)
 
       if (result?.error) {
         // Map NextAuth error codes to user-friendly messages
@@ -93,21 +93,21 @@ function AuthContextProvider({ children }: { children: ReactNode }) {
         } else if (result.error === 'Callback') {
           errorMessage = 'There was an error processing your login. Please try again.'
         }
-        console.error('[v0] Login error:', errorMessage)
+        console.error('[WEAVE] Login error:', errorMessage)
         return { success: false, error: errorMessage }
       }
 
       if (result?.ok) {
-        console.log('[v0] Login successful, updating session...')
+        console.log('[WEAVE] Login successful, updating session...')
         // Force session update to reflect new login
         await updateSession()
-        console.log('[v0] Session updated')
+        console.log('[WEAVE] Session updated')
         return { success: true }
       }
 
       return { success: false, error: 'Login failed' }
     } catch (error) {
-      console.error('[v0] Login error:', error)
+      console.error('[WEAVE] Login error:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Login failed' }
     }
   }
@@ -139,13 +139,13 @@ function AuthContextProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
-    console.log('[v0] Logging out user...')
+    console.log('[WEAVE] Logging out user...')
     try {
       await signOut({ callbackUrl: '/login' })
       setWallet(null)
-      console.log('[v0] Logout successful')
+      console.log('[WEAVE] Logout successful')
     } catch (error) {
-      console.error('[v0] Logout error:', error)
+      console.error('[WEAVE] Logout error:', error)
     }
   }
 
