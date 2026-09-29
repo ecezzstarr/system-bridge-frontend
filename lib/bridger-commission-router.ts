@@ -1,5 +1,6 @@
 import { creditAgentCommission, type CommissionActivity } from './agent-commission'
 import { creditBridgerCommission } from './bridger-commission'
+import { sql } from './db'
 
 // Commission routing follows the role Presence economics:
 // - qualifying Bridger Prospect purchase -> attached Agent share
@@ -22,6 +23,14 @@ export async function creditBridgerActivityCommission(params: {
       })
     : null
 
+  const [relationship]=await sql`
+    SELECT assigned_agent_id
+    FROM users
+    WHERE id=${bridgerId}::uuid
+      AND role='bridger'
+    LIMIT 1
+  `
+  const agentExpected=Boolean(relationship?.assigned_agent_id)
   const agentShare = await creditAgentCommission({
     bridgerId,
     activity,
@@ -30,5 +39,5 @@ export async function creditBridgerActivityCommission(params: {
     sourceId,
   })
 
-  return { bridgerShare, agentShare }
+  return { bridgerShare, agentShare, agentExpected }
 }
