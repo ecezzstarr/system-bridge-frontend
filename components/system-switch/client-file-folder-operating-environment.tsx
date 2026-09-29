@@ -29,6 +29,7 @@ import { ClientBridgeAiSupport } from '@/components/system-switch/client-bridge-
 import { ClientFileFolder3D } from '@/components/system-switch/client-file-folder-3d'
 import { getClientToken } from '@/lib/client-auth'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
+import { WEAVE_AI_FILE_FOLDERS, aiFileFolderTerritory, type AiFileFolderIdentity } from '@/lib/file-folder-multiplayer-world'
 
 type Surface = 'command' | 'builds' | 'business' | 'enterprise' | 'sound'
 
@@ -342,6 +343,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const [travelingTo, setTravelingTo] = useState<Surface | null>(null)
   const travelTimer = useRef<number | null>(null)
   const [world, setWorld] = useState(data.file_folder_world)
+  const [aiFileFolders,setAiFileFolders]=useState<AiFileFolderIdentity[]>(WEAVE_AI_FILE_FOLDERS)
   const [formationOpen, setFormationOpen] = useState(false)
   const [formationDistrict, setFormationDistrict] = useState('workshop_core')
   const [now, setNow] = useState(Date.now())
@@ -360,12 +362,16 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       try {
         const token = getClientToken()
         if (!token) return
-        const response = await fetch('/api/client/file-folder-world', {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: 'no-store',signal,
-        })
-        const body = await response.json()
+        const [response,aiResponse] = await Promise.all([
+          fetch('/api/client/file-folder-world', {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store',signal,
+          }),
+          fetch('/api/world/ai-file-folders',{cache:'no-store',signal}),
+        ])
+        const [body,aiBody] = await Promise.all([response.json(),aiResponse.json()])
         if (!signal.aborted && response.ok && body.world) setWorld(body.world)
+        if (!signal.aborted && aiResponse.ok && Array.isArray(aiBody.agents)) setAiFileFolders(aiBody.agents)
       } catch {
         // Keep the current File Folder visible if a background refresh fails.
       }
@@ -541,6 +547,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           routeCount={routeCount}
           vitalityScore={vitalityScore}
           systemWeaves={Array.isArray(world?.growth?.routes)?world.growth.routes:[]}
+          aiTerritories={aiFileFolders.map(aiFileFolderTerritory)}
           territoryMode
         />
       </div>
@@ -749,6 +756,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   initialWorld={world}
                   onWorldChange={setWorld}
                   initialDistrict={formationDistrict || 'workshop_core'}
+                  initialAiFileFolders={aiFileFolders}
+                  pollWorld={false}
+                  pollAi={false}
                 />
               </>
             )}
