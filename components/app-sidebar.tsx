@@ -49,6 +49,7 @@ import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { WEAVE_SYSTEM_MAP } from "@/lib/weave-system-map"
 import { useEnvironmentOrganizer } from "@/components/world/environment-organizer-provider"
+import { isLeanAccountRole, isRoleAccountRouteAllowed } from "@/lib/role-account-scope"
 
 const navigation = [
   // 1. PRESENCE — identity, participation, value and record.
@@ -145,27 +146,6 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
   const { user: authUser, logout } = useAuth()
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const user = propUser || authUser
-  const [subscription, setContinuance] = useState<any>(null)
-  useEffect(() => {
-    if (user?.role === 'bridger') {
-      fetchContinuance()
-    }
-  }, [user])
-
-  const fetchContinuance = async () => {
-    try {
-      const token = localStorage.getItem('ssb_auth_token')
-      const res = await fetch('/api/bridger/subscription', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      const data = await res.json()
-      if (data.success) {
-        setContinuance(data.continuance)
-      }
-    } catch (error) {
-      console.error('Failed to fetch subscription in sidebar:', error)
-    }
-  }
 
   return (
     <aside className="weave-sidebar relative flex h-dvh w-72 max-w-[88vw] flex-col overflow-hidden border-r border-sky-300/10 bg-[#020b17]/96 shadow-[22px_0_70px_rgba(2,8,23,.38)] backdrop-blur-2xl">
@@ -252,6 +232,7 @@ export function AppSidebar({ user: propUser }: AppSidebarProps) {
               if (item.agentOnly && user?.role !== "agent") return false
               if (item.hideForBridger && user?.role === "bridger") return false
               if (item.staffOnly && user?.role !== "admin" && user?.role !== "agent") return false
+              if (isLeanAccountRole(user?.role) && !isRoleAccountRouteAllowed(user.role, item.href)) return false
               return isVisible(item.href)
             }).sort((a:any,b:any)=>orderFor(a.href)-orderFor(b.href))
 
