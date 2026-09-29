@@ -332,7 +332,7 @@ assert.ok(!dailyProspectUiSource.includes('Daily Project Claim'),'Project typo r
 assert.ok(bridgerOperatingRoomSource.includes('DailyProspectClaim'),'Bridger Operating Room owns the corrected Prospect component')
 assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim renders only once in the Bridger Operating Room')
 assert.ok(!bridgerDashboardSource.includes('DailyProspectClaim'),'Bridger Home stays a compact world instead of duplicating Prospect intake')
-assert.ok(bridgerOperatingRoomSource.includes('Prospect intake')&&bridgerOperatingRoomSource.includes('Daily Prospect → Bridge Radiance'),'Daily Prospect movement is visibly organized as intake flowing into live Bridge Radiance')
+assert.ok(bridgerOperatingRoomSource.includes('<DailyProspectClaim />')&&bridgerOperatingRoomSource.includes('Bridger operating routes'),'Daily Prospect remains a direct working instrument inside the Bridger Operating Room without an awareness blocker')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260925_bridger_daily_prospect_claim.sql')),'Daily Prospect claim migration exists')
 for(const file of [
  'lib/bridger-daily-prospect-engine.ts',
