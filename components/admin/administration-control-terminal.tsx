@@ -66,12 +66,9 @@ import { DepartmentalCodesSection } from '@/components/admin/departmental-codes-
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 import { WORLD_RULES } from '@/lib/world/constants'
 
-type TabId = 'lounge' | 'arena' | 'casino' | 'wallet' | 'workshops' | 'panel' | 'eight'
-
 export default function AdminTerminal() {
   const { user, logout } = useAuth()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<TabId>('lounge')
   const [liveStats, setLiveStats] = useState<{ totalUsers: number; platformVaultTrx: number; escrowPoolTrx: number } | null>(null)
 
   useEffect(() => {
@@ -90,43 +87,6 @@ export default function AdminTerminal() {
       .catch(() => {})
   }, [user])
 
-  useEffect(() => {
-    // Handle hash navigation for direct links from sidebar
-    const handleHash = () => {
-      const hash = window.location.hash
-      if (
-        hash === '#panel' ||
-        hash === '#bridgers' ||
-        hash === '#users' ||
-        hash === '#clients' ||
-        hash === '#fne' ||
-        hash === '#deposits' ||
-        hash === '#tron' ||
-        hash === '#bridge' ||
-        hash === '#withdrawals' ||
-        hash === '#announcements' ||
-        hash === '#departmental'
-      ) {
-        setActiveTab('panel')
-      } else if (hash === '#lounge') {
-        setActiveTab('lounge')
-      } else if (hash === '#arena') {
-        setActiveTab('arena')
-      } else if (hash === '#casino') {
-        setActiveTab('casino')
-      } else if (hash === '#wallet') {
-        setActiveTab('wallet')
-      } else if (hash === '#workshops') {
-        setActiveTab('workshops')
-      } else if (hash === '#eight') {
-        setActiveTab('eight')
-      }
-    }
-
-    handleHash()
-    window.addEventListener('hashchange', handleHash)
-    return () => window.removeEventListener('hashchange', handleHash)
-  }, [])
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -144,15 +104,6 @@ export default function AdminTerminal() {
     router.push('/')
   }
 
-  const tabs = [
-    { id: 'lounge' as TabId, label: 'Lounge', icon: <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" /> },
-    { id: 'arena' as TabId, label: 'Arena', icon: <Gamepad2 className="h-4 w-4 sm:h-5 sm:w-5" /> },
-    { id: 'casino' as TabId, label: 'Casino', icon: <Trophy className="h-4 w-4 sm:h-5 sm:w-5" /> },
-    { id: 'wallet' as TabId, label: 'Wallet', icon: <Wallet className="h-4 w-4 sm:h-5 sm:w-5" /> },
-    { id: 'workshops' as TabId, label: 'Admin Workshops', icon: <Code className="h-4 w-4 sm:h-5 sm:w-5" /> },
-    { id: 'panel' as TabId, label: 'Admin Panel', icon: <Shield className="h-4 w-4 sm:h-5 sm:w-5" /> },
-    { id: 'eight' as TabId, label: 'Eight AI', icon: <Terminal className="h-4 w-4 sm:h-5 sm:w-5" /> },
-  ]
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -160,9 +111,9 @@ export default function AdminTerminal() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400 mb-1">
-            The Keeping
+            Administration Control Center
           </h1>
-          <p className="text-slate-400 text-sm">Administration · {user.name}</p>
+          <p className="text-slate-400 text-sm">People, authorization, verification and announcements · {user.name}</p>
         </div>
       </div>
 
@@ -188,34 +139,13 @@ export default function AdminTerminal() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 sm:gap-2 mb-6 border-b border-slate-700 overflow-x-auto pb-px scrollbar-hide">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-3 sm:px-4 py-3 font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
-              activeTab === tab.id
-                ? 'text-purple-400 border-b-2 border-purple-400'
-                : 'text-slate-400 hover:text-slate-300'
-            }`}
-          >
-            {tab.icon}
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Content Area */}
-      <div className="space-y-6">
-        {activeTab === 'lounge' && <Lounge />}
-        {activeTab === 'arena' && <Arena />}
-        {activeTab === 'casino' && <Casino />}
-        {activeTab === 'wallet' && <AdminWalletSection user={user} />}
-        {activeTab === 'workshops' && <AdminWorkshopsSection />}
-        {activeTab === 'panel' && <AdminPanelSection user={user} />}
-        {activeTab === 'eight' && <EightAiSection user={user} />}
-      </div>
+      <section className="border-y border-purple-300/10 bg-black/15 px-2 py-4 sm:px-4" data-administration-control-room="focused">
+        <div className="mb-4 border-l-2 border-purple-300/30 pl-3">
+          <p className="text-[9px] font-black uppercase tracking-[.18em] text-purple-300">One control room</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Users, departmental authorization, File Number verification, Bridger standing, Client communications, deposits, withdrawals and announcements stay as stations inside this room. Shared WEAVE places and Workshops no longer repeat here.</p>
+        </div>
+        <AdminPanelSection user={user} />
+      </section>
 
       <RiverChat />
     </div>
