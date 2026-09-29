@@ -91,7 +91,7 @@ export default function ClientSettings() {
     <main className="mx-auto w-full max-w-5xl p-3 md:p-6">
       <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_14%_0%,rgba(14,165,233,.13),transparent_34%),radial-gradient(circle_at_86%_0%,rgba(139,92,246,.08),transparent_28%)] p-5 md:p-7">
-          <Link href="/client/functions" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em] text-sky-200"><ChevronLeft className="h-4 w-4"/>Client Operating Room</Link>
+          <Link href="/client/dashboard" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em] text-sky-200"><ChevronLeft className="h-4 w-4"/>Client Operating Room</Link>
           <div className="mt-4 flex items-start gap-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-sky-300/20 bg-sky-400/10"><UserCircle className="h-5 w-5 text-sky-200"/></div>
             <div>
