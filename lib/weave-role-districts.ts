@@ -71,7 +71,13 @@ const clientDistricts:WeaveRoleDistrict[]=[
   },
   {
     key:'participation',name:'Participation District',subtitle:'LOOPS · ARENA · PATTERN · STREAM',
-    purpose:'Shared company movement, events and participation.',accent:'#fb7185',places:sharedParticipation,
+    purpose:'Shared company movement, events and participation.',accent:'#fb7185',places:[
+      {label:'Client Loops',detail:'Recurring company movement from the Client position.',href:'/client/loops',daily:true},
+      {label:'Loop 1 Ground',detail:'Enter the current live company-event ground.',href:'/event'},
+      {label:'Arena',detail:'Client participant competition and recorded outcomes.',href:'/client/arena'},
+      {label:'Pattern',detail:'Client pattern play and recorded stakes.',href:'/client/casino'},
+      {label:'Stream',detail:'Live and recorded WEAVE media movement.',href:'/video-feed'},
+    ],
   },
 ]
 
