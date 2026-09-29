@@ -9,7 +9,6 @@ import {
 } from '@/lib/bridger-number-engine'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
-import { creditAgentCommission } from '@/lib/agent-commission'
 
 export const dynamic='force-dynamic'
 
@@ -381,8 +380,6 @@ export async function POST(request:NextRequest){
     }
 
     await client.query('COMMIT')
-
-    creditAgentCommission({ bridgerId:user.id, activity:'number_purchase', baseAmount:price, description:'Stability return from Bridger Number Bay purchase' }).catch(err=>console.error('[Number Bay Stability return]',err))
 
     let receipt:any=null
     try{
