@@ -1,3 +1,5 @@
+import { ROLE_ACCOUNT_PLACES } from '@/lib/role-account-scope'
+
 export type WeaveRole='client'|'agent'|'bridger'|'admin'
 export type WeaveDistrictKey='presence'|'position'|'bridge'|'enterprise'|'participation'|'administration'
 
@@ -83,77 +85,23 @@ const clientDistricts:WeaveRoleDistrict[]=[
 
 const agentDistricts:WeaveRoleDistrict[]=[
   {
-    key:'presence',name:'Presence District',subtitle:'STANDING · IDENTITY · VALUE · RECORD',
-    purpose:'Current position, recognition and value.',accent:'#7dd3fc',places:sharedPresence,
-  },
-  {
-    key:'position',name:'Agent District',subtitle:'STABILITY · BRIDGERS · CHANNELS · CONTINUANCE',
-    purpose:'Daily Agent work that keeps participation moving.',accent:'#34d399',places:[
-      {label:'Agent World',detail:'Your role arrival world and daily movement.',href:'/agent/dashboard',daily:true},
-      {label:'Agent Operating Room',detail:'Enter the Agent working environment.',href:'/agent/functions',daily:true},
-      {label:'My Bridgers',detail:'See Bridgers connected to your Agent position.',href:'/agent/bridgers',daily:true},
-      {label:'Agent Channels',detail:'Authorized company positions and working channels.',href:'/agent/channels'},
-      {label:'Agent Continuance',detail:'Commission, Bridger-linked participation and earnings.',href:'/agent/commissions',daily:true},
-      {label:'Stability Supply',detail:'Prospect and number supply for Bridger participation.',href:'/agent/stability-supply'},
-    ],
-  },
-  {
-    key:'bridge',name:'Bridge District',subtitle:'BRIDGER SUPPORT · RADIANCE · GUIDANCE',
-    purpose:'Support the connection movement carried by Bridgers.',accent:'#67e8f9',places:[
-      {label:'Client File Folder Support',detail:'Enter Client File Folder worlds in read-only support mode.',href:'/weave?station=file-folders',daily:true},
-      {label:'Bridge Radiance',detail:'Support active Prospect movement owned by assigned Bridgers.',href:'/agent/bridge-radiance',daily:true},
-      ...sharedBridge,
-    ],
-  },
-  {
-    key:'enterprise',name:'Enterprise District',subtitle:'AGILITY · SYSTEMS · ECHO',
-    purpose:'Commercial systems and real-world distribution.',accent:'#f59e0b',places:[
-      {label:'Agility',detail:'Operate Agility food-package distribution and fulfillment.',href:'/agility',daily:true},
-      {label:'Enterprise Systems Exchange',detail:'Large technology systems and infrastructure.',href:'/marketplace'},
-      {label:'Echo',detail:'AI-assisted routing and continuing interaction.',href:'/echo'},
-    ],
-  },
-  {
-    key:'participation',name:'Participation District',subtitle:'LOOPS · ARENA · PATTERN · STREAM',
-    purpose:'Shared company movement and participation.',accent:'#fb7185',places:sharedParticipation,
+    key:'position',
+    name:'Agent District',
+    subtitle:'AGILITY · PROSPECT COMMISSIONS',
+    purpose:'Two places only: operate Agility and receive commission from Bridger Prospect purchases.',
+    accent:'#34d399',
+    places:ROLE_ACCOUNT_PLACES.agent.map(place=>({...place,daily:true})),
   },
 ]
 
 const bridgerDistricts:WeaveRoleDistrict[]=[
   {
-    key:'presence',name:'Presence District',subtitle:'STANDING · IDENTITY · VALUE · RECORD',
-    purpose:'Current position, recognition and value.',accent:'#7dd3fc',places:sharedPresence,
-  },
-  {
-    key:'position',name:'Bridger District',subtitle:'HOPE · NUMBERS · CLIENTS · CONTINUANCE',
-    purpose:'Daily Bridger work from prospect movement through Client continuity.',accent:'#38bdf8',places:[
-      {label:'Bridger World',detail:'Your role arrival world and daily movement.',href:'/bridger/dashboard',daily:true},
-      {label:'Bridger Operating Room',detail:'Enter the Bridger working environment.',href:'/bridger/functions',daily:true},
-      {label:'Worldwide Number Bay',detail:'Acquire numbers, receive delivery and verification movement.',href:'/bridger/numbers',daily:true},
-      {label:'My Clients',detail:'Continue support for Clients already carried through the crossing.',href:'/bridger/clients',daily:true},
-      {label:'Bridger Continuance',detail:'Partnership standing, subscription and renewal.',href:'/bridger/subscription',daily:true},
-    ],
-  },
-  {
-    key:'bridge',name:'Bridge District',subtitle:'PROSPECTS · BRIDGE AI · RADIANCE · GUIDANCE',
-    purpose:'Connection movement from prospect to Client.',accent:'#67e8f9',places:[
-      {label:'Client File Folder Support',detail:'Enter connected Client File Folder worlds in read-only support mode.',href:'/weave?station=file-folders',daily:true},
-      {label:'Bridge AI',detail:'AI-assisted crossing and Client continuity support.',href:'/bridger/bridge-ai',daily:true},
-      {label:'Bridge Radiance',detail:'Continue active Prospect conversations and movement.',href:'/bridger/bridge-radiance',daily:true},
-      {label:'Prospect Market',detail:'Claim or purchase authorized Prospects.',href:'/weave/market/prospects',daily:true},
-      ...sharedBridge,
-    ],
-  },
-  {
-    key:'enterprise',name:'Enterprise District',subtitle:'SYSTEMS · MARKETS · ECHO',
-    purpose:'Technology and commercial movement.',accent:'#f59e0b',places:[
-      {label:'Enterprise Systems Exchange',detail:'Software, infrastructure and enterprise systems.',href:'/marketplace'},
-      {label:'Echo',detail:'AI-assisted routing and continuing interaction.',href:'/echo'},
-    ],
-  },
-  {
-    key:'participation',name:'Participation District',subtitle:'LOOPS · ARENA · PATTERN · STREAM',
-    purpose:'Shared company movement and participation.',accent:'#fb7185',places:sharedParticipation,
+    key:'position',
+    name:'Bridger District',
+    subtitle:'BRIDGE AI · VALUE · NUMBER BAY · PROSPECTS · ECHO · PRESENCES',
+    purpose:'The complete Bridger account in one district, with no unrelated WEAVE surfaces.',
+    accent:'#38bdf8',
+    places:ROLE_ACCOUNT_PLACES.bridger.map(place=>({...place,daily:true})),
   },
 ]
 
