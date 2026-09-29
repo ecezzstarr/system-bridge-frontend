@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       totalSystems: systems.length,
     })
   } catch (error: any) {
-    console.error('[v0] Error fetching origin systems:', error)
+    console.error('[WEAVE] Error fetching origin systems:', error)
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
