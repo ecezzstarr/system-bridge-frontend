@@ -108,7 +108,8 @@ type LoadingBrief={
   movement?:string
 }
 
-const LOADING_CARD_HOLD_MS=2000
+const LOADING_CARD_HOLD_MS=3000
+const TRANSIT_FORMATION_MS=1800
 
 const PLATFORM_BRIEFS:LoadingBrief[]=[
   {
@@ -161,7 +162,7 @@ function waitForBriefingSequence(mode:'boot'|'transit',startedAt:number,signal:A
     // Keep the complete three-card introduction for a cold entrance. Internal
     // movement must never feel frozen behind presentation after the destination
     // itself is ready.
-    const presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:650
+    const presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:TRANSIT_FORMATION_MS
     const remaining=Math.max(0,presentationWindow-(performance.now()-startedAt))
     if(remaining===0||signal.aborted){resolve();return}
     const timer=window.setTimeout(resolve,remaining)
@@ -318,7 +319,15 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     [requestedPath],
   )
   const destinationEnvironment=requestedEnvironment||environment
-  const activeBriefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
+  const transitBrief=useMemo<LoadingBrief>(()=>({
+    eyebrow:`${destinationEnvironment.district} · ${destinationEnvironment.layer}`,
+    title:`Opening ${destinationEnvironment.title}`,
+    body:destinationEnvironment.purpose,
+    movement:destinationEnvironment.movement,
+  }),[destinationEnvironment])
+  const activeBriefs=booting
+    ? (showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS)
+    : [transitBrief]
   const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
   const openingLabel=showFlameBriefing
     ? 'Flame Event · Burning River'
@@ -404,7 +413,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         <div className="mx-auto mt-5 flex max-w-sm items-center gap-2" aria-hidden="true">
           {activeBriefs.map((_,index)=><span
             key={index}
-            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,PLATFORM_BRIEFS.length-1)?'bg-amber-200/80':'bg-white/10')}
+            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,activeBriefs.length-1)?'bg-amber-200/80':'bg-white/10')}
           />)}
         </div>
 
