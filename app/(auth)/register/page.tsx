@@ -224,9 +224,8 @@ function RegisterContent() {
             </p>
           </div>
           <ul className="text-sm text-slate-400 space-y-2">
-            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> Your account activity, earnings, and client dealings happen under WEAVE's terms.</li>
-            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> Certain roles (Bridgers) carry a recurring subscription to remain active.</li>
-            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> You will be asked to review and accept our Terms of Service next.</li>
+            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> {formData.role === 'agent' ? 'Your account contains Agility and Prospect commissions.' : 'Your account contains Bridge AI, Deposit & Withdrawal, Number Bay, Prospect Market, Echo and Presences.'}</li>
+            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> You will be asked to review and accept the current role terms next.</li>
           </ul>
           <Button onClick={() => setStep('terms')} className="w-full bg-amber-600 hover:bg-amber-700 font-bold uppercase tracking-widest h-11">
             I Understand, Continue
@@ -253,10 +252,10 @@ function RegisterContent() {
             onScroll={handleTermsScroll}
             className="h-64 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-lg p-4 text-xs text-slate-400 space-y-3"
           >
-            <p><strong className="text-slate-300">1. Platform Nature.</strong> WEAVE is a paid operational platform. Access to Arena, Casino, the Enterprise Systems Exchange, and related paid functions may require an active balance, subscription, contract, or company approval.</p>
-            <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents represent WEAVE directly and are compensated on a fixed schedule set by Administration.' : 'Bridgers operate as independent partners connecting clients to WEAVE and earn a share of client activity, subject to an active monthly subscription.'}</p>
-            <p><strong className="text-slate-300">3. Financial Conduct.</strong> All deposits, withdrawals, and client fund handling must go through WEAVE's official channels. Off-platform arrangements with clients are not covered or protected by WEAVE.</p>
-            <p><strong className="text-slate-300">4. Continuance & Access.</strong> Certain roles may be suspended if recurring dues are not paid within the grace period communicated to you.</p>
+            <p><strong className="text-slate-300">1. Platform Nature.</strong> WEAVE is an operational platform with four live user roles: Client, Bridger, Agent and Administration.</p>
+            <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents operate Agility and receive commission from qualifying Bridger Prospect purchases.' : 'Bridgers operate Bridge AI, Deposit & Withdrawal, Number Bay, Prospect Market, Echo and Presences.'}</p>
+            <p><strong className="text-slate-300">3. Financial Conduct.</strong> All deposits, withdrawals and purchases must go through WEAVE's official channels.</p>
+            <p><strong className="text-slate-300">4. Account Scope.</strong> Your role account exposes only the operating places assigned to that role.</p>
             <p><strong className="text-slate-300">5. Conduct.</strong> Misrepresentation of WEAVE, fraudulent client dealings, or circumventing platform fees may result in immediate suspension.</p>
             <p><strong className="text-slate-300">6. Data & Communication.</strong> Your registered contact details may be used by WEAVE Administration for account verification, payouts, and platform notices.</p>
             <p><strong className="text-slate-300">7. Changes.</strong> WEAVE may update these terms; continued use of the platform after an update constitutes acceptance.</p>
@@ -291,22 +290,22 @@ function RegisterContent() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-3 text-sm text-slate-300">
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">1</span>
-              <p className="text-xs">Share your personal referral link with prospective clients directly — WhatsApp, social media, or in person.</p>
-            </div>
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">2</span>
-              <p className="text-xs">Explain WEAVE clearly and honestly — clients trust representatives who don't overpromise returns.</p>
-            </div>
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">3</span>
-              <p className="text-xs">Once a client registers through your link, they're tracked to your account automatically.</p>
-            </div>
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">4</span>
-              <p className="text-xs">Stay responsive in the Lounge — clients and Administration may reach you there for support.</p>
-            </div>
+            {(formData.role === 'agent'
+              ? [
+                  'Agility is your operating work surface.',
+                  'Prospect Commissions records commission when an assigned Bridger purchases a Prospect package.',
+                ]
+              : [
+                  'Bridge AI carries the Prospect crossing interaction.',
+                  'Prospect Market and Number Bay supply the movement you need.',
+                  'Deposit & Withdrawal, Echo and Presences complete the Bridger account.',
+                ]
+            ).map((item, index) => (
+              <div key={item} className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">{index + 1}</span>
+                <p className="text-xs">{item}</p>
+              </div>
+            ))}
           </div>
           <Button onClick={() => setStep('details')} className="w-full bg-green-600 hover:bg-green-700 mt-2 font-bold uppercase tracking-widest h-11">
             Complete Registration
