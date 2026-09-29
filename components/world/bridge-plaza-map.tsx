@@ -7,6 +7,7 @@ import { useCallback,useEffect,useMemo,useRef,useState } from 'react'
 import * as THREE from 'three'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
+import { getRoleDistricts } from '@/lib/weave-role-districts'
 
 type PortalAction='route'|'support'
 
@@ -321,38 +322,34 @@ export function BridgePlazaMap({
   const routeCurrent=Math.max(0,Math.min(2,visualRuntime.world.routeCurrent))
 
   const portals=useMemo<BridgePlazaPortal[]>(()=>{
-    const base:BridgePlazaPortal[]=[
-      {id:'enterprise',name:'Enterprise Exchange',subtitle:'SYSTEMS · MARKETS · VALUE',href:'/marketplace',action:'route',accent:'#f59e0b',position:[-5.2,.05,-2.9],rotation:.78,unlocked:true,system:'Enterprise'},
-      {id:'arena',name:'Arena District',subtitle:'PEOPLE · COMPETITION · MOVEMENT',href:'/arena',action:'route',accent:'#fb7185',position:[5.2,.05,-2.9],rotation:-.78,unlocked:true,system:'Arena'},
-      {id:'business',name:'Business District',subtitle:'WORK · SERVICES · OPPORTUNITY',href:'/places',action:'route',accent:'#fbbf24',position:[0,.05,-6.0],rotation:0,unlocked:true,system:'Work'},
-      {id:'presence',name:'Presence District',subtitle:'STANDING · RECORD · HOLDING',href:'/presence',action:'route',accent:'#7dd3fc',position:[0,.05,6.25],rotation:Math.PI,unlocked:true,system:'Presence'},
+    const positions:Array<{position:[number,number,number];rotation:number}>=[
+      {position:[-5.7,.05,-3.1],rotation:.78},
+      {position:[0,.05,-6.15],rotation:0},
+      {position:[5.7,.05,-3.1],rotation:-.78},
+      {position:[5.7,.05,3.05],rotation:-2.05},
+      {position:[0,.05,6.35],rotation:Math.PI},
+      {position:[-5.7,.05,3.05],rotation:2.05},
     ]
-
-    if(userRole==='admin'||worldRoles.includes('admin')||worldRoles.includes('administration')){
-      base.push({id:'administration',name:'Administration District',subtitle:'AUTHORITY · CONTROL · CONTINUITY',href:'/admin',action:'route',accent:'#f97316',position:[6.45,.05,2.8],rotation:-2.05,unlocked:true,system:'Administration'})
-    }
-
-    if(supportAvailable){
-      base.push({id:'client-support',name:'System Switch · File Folders',subtitle:'CLIENT WORLDS · FILE FOLDERS · SUPPORT',action:'support',accent:'#67e8f9',position:[-6.45,.05,2.8],rotation:2.05,unlocked:true,system:'System Switch'})
-    }
-
-    if(userRole==='client'&&fileNumber){
-      base.push({
-        id:'file-folder',
-        name:'System Switch · My File Folder',
-        subtitle:'BUILD · OPERATE · GROW',
-        href:'/client/system-switch',
-        action:'route',
-        accent:'#a78bfa',
-        position:[6.35,.05,2.9],
-        rotation:-2.08,
+    return getRoleDistricts(userRole).map((district,index)=>{
+      const placement=positions[index]||positions[index%positions.length]
+      return {
+        id:district.key,
+        name:district.name,
+        subtitle:district.subtitle,
+        href:`/district/${district.key}`,
+        action:'route' as const,
+        accent:district.accent,
+        position:placement.position,
+        rotation:placement.rotation,
         unlocked:true,
-        system:'Client world',
-      })
-    }
+        system:district.name,
+      }
+    })
+  },[userRole])
 
-    return base
-  },[fileNumber,supportAvailable,userRole,worldRoles])
+  void worldRoles
+  void fileNumber
+  void supportAvailable
 
   const arrivalFallbackTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined)
   const travelTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined)

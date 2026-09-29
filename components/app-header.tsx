@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Globe2, Search, Wallet } from "lucide-react"
+import { Globe2, Search, Wallet, Settings, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PresenceIndicator } from "@/components/presence-indicator"
@@ -20,7 +20,8 @@ interface AppHeaderProps {
 export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter()
   const [search, setSearch] = useState("")
-  const { user: authUser } = useAuth()
+  const { user: authUser, logout } = useAuth()
+  const [accountOpen, setAccountOpen] = useState(false)
   const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
 
   useEffect(() => {
@@ -92,8 +93,14 @@ export function AppHeader({ user }: AppHeaderProps) {
 
         {user && (
           <div className="relative ml-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 p-[1px] md:h-9 md:w-9">
-              <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-950">
+            <button
+              type="button"
+              onClick={() => setAccountOpen(open => !open)}
+              className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 p-[1px] md:h-9 md:w-9"
+              aria-label="Open position controls"
+              aria-expanded={accountOpen}
+            >
+              <span className="flex h-full w-full items-center justify-center rounded-full bg-slate-950">
                 {user.avatar ? (
                   <img
                     src={user.avatar}
@@ -105,9 +112,32 @@ export function AppHeader({ user }: AppHeaderProps) {
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 )}
+              </span>
+              <PresenceIndicator className="absolute -bottom-0.5 -right-0.5" />
+            </button>
+
+            {accountOpen && (
+              <div className="absolute right-0 top-12 w-56 overflow-hidden rounded-2xl border border-white/10 bg-[#030914]/96 p-2 shadow-2xl backdrop-blur-xl">
+                <div className="border-b border-white/[.07] px-3 py-2">
+                  <p className="truncate text-[10px] font-black text-white">{user.name}</p>
+                  <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{user.role} position</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setAccountOpen(false); router.push('/roles') }}
+                  className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold text-slate-300 hover:bg-white/[.04] hover:text-white"
+                >
+                  <Settings className="h-4 w-4" />Position + Identity
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAccountOpen(false); logout(); router.replace('/login') }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold text-slate-400 hover:bg-red-400/[.06] hover:text-red-200"
+                >
+                  <LogOut className="h-4 w-4" />Sign Out
+                </button>
               </div>
-            </div>
-            <PresenceIndicator className="absolute -bottom-0.5 -right-0.5" />
+            )}
           </div>
         )}
 
