@@ -405,7 +405,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     key: 'agent-operating-room',
     title: 'Agent Operating Room',
     district: 'Support',
-    purpose: 'The Agent working environment for company support, Bridger participation, delivery and earning movement.',
+    purpose: 'The focused Agent working environment for Agility and the commission movement created by attached Bridger Prospects and verified Client File Folder crossings.',
     movement: 'Receive function → support movement → confirm → continue',
     layer: 'system',
   }],
@@ -427,10 +427,10 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
   }],
   ['/agent/commissions', {
     key: 'agent-continuance',
-    title: 'Agent Continuance',
-    district: 'Support',
-    purpose: 'The Agent value environment for commission logic, Bridger-linked participation and continuing earnings.',
-    movement: 'Participation → qualifying movement → commission → record',
+    title: 'Agent Commissions',
+    district: 'Agent Movement',
+    purpose: 'The Agent value environment for Prospect purchase shares, verified Client File Folder shares and the resulting commission record.',
+    movement: 'Prospect purchase → Agent share · File Folder crossing → Agent share → record',
     layer: 'system',
   }],
   ['/district', {
