@@ -21,6 +21,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter()
   const [search, setSearch] = useState("")
   const { user: authUser, logout } = useAuth()
+  const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar_url || undefined } : undefined)
   const [accountOpen, setAccountOpen] = useState(false)
   const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
 
@@ -59,6 +60,16 @@ export function AppHeader({ user }: AppHeaderProps) {
           </span>
         </Button>
 
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 w-9 rounded-full px-0 text-slate-300 hover:bg-sky-300/[0.06] hover:text-white md:hidden"
+          onClick={() => router.push('/search')}
+          aria-label="Search human cadences"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+
         <div className="relative hidden w-64 md:block lg:w-96">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
@@ -91,7 +102,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           </span>
         </Button>
 
-        {user && (
+        {effectiveUser && (
           <div className="relative ml-1">
             <button
               type="button"
@@ -101,15 +112,15 @@ export function AppHeader({ user }: AppHeaderProps) {
               aria-expanded={accountOpen}
             >
               <span className="flex h-full w-full items-center justify-center rounded-full bg-slate-950">
-                {user.avatar ? (
+                {effectiveUser.avatar ? (
                   <img
-                    src={user.avatar}
-                    alt={user.name}
+                    src={effectiveUser.avatar}
+                    alt={effectiveUser.name}
                     className="h-full w-full rounded-full object-cover"
                   />
                 ) : (
                   <span className="text-[10px] font-black text-white md:text-xs">
-                    {user.name.charAt(0).toUpperCase()}
+                    {effectiveUser.name.charAt(0).toUpperCase()}
                   </span>
                 )}
               </span>
@@ -119,19 +130,19 @@ export function AppHeader({ user }: AppHeaderProps) {
             {accountOpen && (
               <div className="absolute right-0 top-12 w-56 overflow-hidden rounded-2xl border border-white/10 bg-[#030914]/96 p-2 shadow-2xl backdrop-blur-xl">
                 <div className="border-b border-white/[.07] px-3 py-2">
-                  <p className="truncate text-[10px] font-black text-white">{user.name}</p>
-                  <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{user.role} position</p>
+                  <p className="truncate text-[10px] font-black text-white">{effectiveUser.name}</p>
+                  <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{effectiveUser.role} position</p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => { setAccountOpen(false); router.push('/roles') }}
+                  onClick={() => { setAccountOpen(false); router.push(effectiveUser.role === 'client' ? '/client/settings' : '/settings') }}
                   className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold text-slate-300 hover:bg-white/[.04] hover:text-white"
                 >
-                  <Settings className="h-4 w-4" />Position + Identity
+                  <Settings className="h-4 w-4" />Settings
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setAccountOpen(false); logout(); router.replace('/login') }}
+                  onClick={() => { setAccountOpen(false); logout(); router.replace(effectiveUser.role === 'client' ? '/client/login' : '/login') }}
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold text-slate-400 hover:bg-red-400/[.06] hover:text-red-200"
                 >
                   <LogOut className="h-4 w-4" />Sign Out
