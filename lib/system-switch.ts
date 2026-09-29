@@ -22,7 +22,7 @@ interface EngineRoute {
 export async function getEngineRoute(userId: string): Promise<EngineRoute> {
   try {
     const sql = getSql()
-    console.log('[v0] Getting engine route for user:', userId)
+    console.log('[WEAVE] Getting engine route for user:', userId)
     
     // Get user details
     const userResult = await sql`
@@ -55,7 +55,7 @@ export async function getEngineRoute(userId: string): Promise<EngineRoute> {
       engine = 'arena' // Default user starts in arena
     }
     
-    console.log('[v0] Routing to engine:', engine)
+    console.log('[WEAVE] Routing to engine:', engine)
     
     return {
       engine,
@@ -63,7 +63,7 @@ export async function getEngineRoute(userId: string): Promise<EngineRoute> {
       context,
     }
   } catch (error) {
-    console.error('[v0] Error getting engine route:', error)
+    console.error('[WEAVE] Error getting engine route:', error)
     throw error
   }
 }
@@ -76,7 +76,7 @@ export async function callEngineAPI(
   body?: any
 ) {
   try {
-    console.log('[v0] Calling engine API:', engine, endpoint)
+    console.log('[WEAVE] Calling engine API:', engine, endpoint)
     
     const url = `${CLOUD_RUN_BASE_URL}/api/engine/${engine}${endpoint}`
     const response = await fetch(url, {
@@ -95,7 +95,7 @@ export async function callEngineAPI(
     
     return await response.json()
   } catch (error) {
-    console.error('[v0] Engine API error:', error)
+    console.error('[WEAVE] Engine API error:', error)
     throw error
   }
 }
