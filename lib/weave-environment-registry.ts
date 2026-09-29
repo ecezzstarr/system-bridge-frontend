@@ -34,6 +34,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'bridger-clients', label:'My Clients', kind:'district', route:'/bridger/clients', area:'Bridger', scope:'bridger', defaultOrder:50 },
   { key:'bridger-continuance', label:'Bridger Continuance', kind:'district', route:'/bridger/subscription', area:'Bridger', scope:'bridger', defaultOrder:60 },
 
+  { key:'agent-presence', label:'Agent Presence', kind:'district', route:'/agent/presence', area:'Agent', scope:'agent', protected:true, defaultOrder:5 },
   { key:'agent-functions', label:'Agent Operating Room', kind:'district', route:'/agent/functions', area:'Agent', scope:'agent', protected:true, defaultOrder:10 },
   { key:'agent-bridgers', label:'My Bridgers', kind:'district', route:'/agent/bridgers', area:'Agent', scope:'agent', defaultOrder:20 },
   { key:'agent-stability-supply', label:'Stability Commercial Supply', kind:'district', route:'/agent/stability-supply', area:'Stability', scope:'agent', defaultOrder:25 },
