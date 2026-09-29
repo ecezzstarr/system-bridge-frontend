@@ -461,11 +461,6 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
           "daily": true
         },
         {
-          "label": "Client Messages",
-          "href": "/admin/client-messages",
-          "detail": "Direct Client communication records."
-        },
-        {
           "label": "Company Loops",
           "href": "/company/loops",
           "detail": "Shared company movement visible across WEAVE."
