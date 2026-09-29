@@ -216,6 +216,13 @@ export async function POST(request: NextRequest) {
     const deposit = deposits[0]
     const fileFolderTier = getFileFolderTier(Number(deposit.tier_trx))
 
+    if (!fileFolderTier) {
+      return NextResponse.json(
+        { error: 'Stored File Folder amount is outside the current Standard/Premium pricing rules' },
+        { status: 409 }
+      )
+    }
+
     if (deposit.status === 'approved') {
       if (status !== 'approved' || !deposit.file_number) {
         return NextResponse.json({ error: 'This File Folder approval is already complete' }, { status: 409 })
@@ -253,13 +260,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    if (!fileFolderTier) {
-      return NextResponse.json(
-        { error: 'Stored File Folder amount is outside the current Standard/Premium pricing rules' },
-        { status: 409 }
-      )
-    }
-
     if (status === 'rejected') {
       await sql`
         UPDATE bridge_deposits
@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
           type: 'client_deposit_rejected',
           title: 'Client File Folder payment rejected',
           content: `Administration rejected ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX File Folder payment. No File Number was issued.`,
-          link: '/bridger/clients',
+          link: '/bridger/presence',
           fromUserId: admin.id,
           fromUserName: 'WEAVE Administration',
         })
@@ -355,7 +355,7 @@ export async function POST(request: NextRequest) {
         type: 'client_deposit_approved',
         title: 'Client File Folder payment approved',
         content: `Administration approved ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment. File Number ${fileNumber} was issued.`,
-        link: '/bridger/clients',
+        link: '/bridger/presence',
         fromUserId: admin.id,
         fromUserName: 'WEAVE Administration',
       })
