@@ -60,6 +60,8 @@ assert.ok(flameReentryTransit.includes("Burning River")&&flameReentryTransit.inc
 
 const liveFlameField=read('components/world/weave-live-flame-field.tsx')
 const bridgePlazaPage=read('app/(app)/weave/page.tsx')
+const roleDistricts2026=read('lib/weave-role-districts.ts')
+const roleDistrictPage2026=read('app/(app)/district/[district]/page.tsx')
 assert.ok(liveFlameField.includes('data-weave-live-flame'),'Persistent WEAVE world exposes a live flame field')
 assert.ok(liveFlameField.includes("window.addEventListener('pointermove'")&&liveFlameField.includes("window.addEventListener('weave:system-motion'"),'Persistent flame reacts to human presence and confirmed system movement')
 assert.ok(!fs.existsSync(path.join(root,'components/world/weave-normal-world-backdrop.tsx')),'Static architectural wallpaper has been removed from the codebase')
@@ -338,8 +340,6 @@ assert.ok(cleanRevealPwa2026.includes('registration.update()')&&cleanRevealPwa20
 assert.ok(cleanRevealWorld2026.includes("root.dataset.weaveEvent=active?'flame-live':'normal'"),'Flame event publishes a live interface theme state')
 assert.ok(!cleanRevealWorld2026.includes('FlameEventWorldDecorations'),'Flame Live is not mounted as a full-world wallpaper decoration')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-sidebar')&&cleanRevealCss2026.includes('.weave-flame-live-indicator'),'Flame Live changes operating chrome and exposes a live state indicator')
-const roleDistricts2026=read('lib/weave-role-districts.ts')
-const roleDistrictPage2026=read('app/(app)/district/[district]/page.tsx')
 assert.ok(cleanRevealBridgeMap2026.includes('getRoleDistricts(userRole)')&&cleanRevealBridgeMap2026.includes('/district/'),'Bridge Plaza exposes only role-aware district entrances')
 assert.ok(roleDistricts2026.includes("href:'/client/system-switch'")&&roleDistricts2026.includes("href:'/weave?station=file-folders'"),'File Folder entry and staff support are organized as places inside role districts')
 assert.ok(bridgePlazaPage.includes("searchParams.get('station') === 'file-folders'")&&bridgePlazaPage.includes('setSupportOpen(true)'),'Role district support place can reopen the Bridge Plaza File Folder support station')
