@@ -97,8 +97,9 @@ assert.ok(bridgePlaza.includes("userRole==='client'?\`/client/district/\${distri
 assert.ok(!bridgePlaza.includes('InteractionMotionField'),'Bridge Plaza uses the single global live motion field instead of mounting a second canvas')
 assert.ok(roleDistricts2026.includes('"label": "Agent Presence"')&&roleDistricts2026.includes('"href": "/agility"')&&roleDistricts2026.includes('"href": "/agent/commissions"'),'Agent Bridge Plaza contains Presence, Agility and Commissions only')
 assert.ok(roleDistricts2026.includes('"label": "Bridger Presence"')&&roleDistricts2026.includes('"label": "Bridge AI"')&&roleDistricts2026.includes('"label": "Number Bay"')&&roleDistricts2026.includes('"label": "Prospect Market"')&&roleDistricts2026.includes('"label": "Deposit & Withdrawal"'),'Bridger account has Presence plus focused working environments')
-assert.ok(roleDistricts2026.includes('"label": "Administration Operating Room"')&&roleDistricts2026.includes('"label": "Infrastructure"')&&roleDistricts2026.includes('"label": "Development Foundry"'),'Administration authority remains organized inside Bridge Plaza districts')
-assert.ok(roleDistricts2026.includes('"label": "Client Presence"')&&roleDistricts2026.includes('"label": "System Switch · File Folder"')&&roleDistricts2026.includes('"label": "Your Bridger"'),'Client Presence, File Folder and human support remain organized inside role districts')
+assert.ok(roleDistricts2026.includes('"label": "Administration Control Center"')&&roleDistricts2026.includes('"label": "Infrastructure"')&&roleDistricts2026.includes('"label": "Development Foundry"'),'Administration authority remains organized inside distinct Bridge Plaza districts')
+assert.ok(roleDistricts2026.includes('"label": "Client Presence"')&&roleDistricts2026.includes('"label": "File Folder"')&&roleDistricts2026.includes('"label": "Your Bridger"'),'Client Presence, File Folder and human support remain organized inside role districts')
+assert.ok(roleDistricts2026.includes('"label": "Loop Field"')&&roleDistricts2026.includes('"label": "Flame Event · Loop 1"'),'Client Loops and Flame Event live inside a Client world district rather than a second top navigation')
 assert.ok(!bridgePlaza.includes('torusKnotGeometry'),'Bridge Plaza no longer uses the old gold/green woven ring object')
 assert.ok(!bridgePlaza.includes("color='#e8b93f'") && !bridgePlaza.includes('color="#e8b93f"'),'Bridge Plaza no longer hard-codes the old gold ring identity')
 assert.ok(!bridgePlaza.includes("color='#14b8a6'") && !bridgePlaza.includes('color="#14b8a6"'),'Bridge Plaza no longer hard-codes the old teal ring identity')
@@ -135,7 +136,6 @@ const growthWorldApi=read('app/api/client/growth-world/route.ts')
 const dailyProspectClaimUi=read('components/bridger/daily-prospect-claim.tsx')
 const flameEventWorld=read('components/world/weave-live-flame-field.tsx')
 const adminWorkshop=read('app/(app)/admin/workshop/page.tsx')
-const appSidebar=read('components/app-sidebar.tsx')
 const operatingRoom=read('components/world/role-operating-room.tsx')
 const dashboardWorld=read('components/world/weave-dashboard-world.tsx')
 assert.ok(visualProfile.includes('FLAME_ARTIFACT_SURFACES'),'Visual runtime has an explicit surface registry')
@@ -177,7 +177,7 @@ assert.ok(dailyProspectClaimUi.includes("kind:'route'")&&dailyProspectClaimUi.in
 assert.ok(bridgerNumbers.includes("kind:'value'")&&bridgerNumbers.includes("kind:'confirmation'"),'Number Bay purchase, order, delivery and verification have confirmed motion responses')
 assert.ok(bridgePlaza.includes("kind:'route'")&&bridgePlaza.includes("kind:'arrival'"),'Bridge Plaza physical travel emits route and arrival movement')
 assert.ok(visualWorkshop.includes('data-admin-motion-tests="true"')&&visualWorkshop.includes('Admin motion test'),'Administration can test motion responses without creating business records')
-assert.ok(adminWorkshop.includes('/admin/visual-systems'),'Administration Workshop exposes Visual Systems')
+assert.ok(adminWorkshop.includes("redirect('/district/administration')"),'Retired Administration Workshop menu redirects to the canonical Workshops district')
 assert.ok(roleDistricts2026.includes('"href": "/admin/visual-systems"'),'Canonical Administration role catalog exposes Visual Systems')
 assert.ok(roleDistricts2026.includes('"href": "/admin/visual-systems"'),'Canonical Administration catalog preserves Visual Systems as an Administration district')
 assert.ok(fs.existsSync(path.join(root,'db/migrations/20260926_visual_systems_workshop.sql')),'Visual Systems Workshop migration exists')
@@ -196,7 +196,6 @@ const environmentRuntimeProfile=read('lib/weave-environment-runtime-profile.ts')
 const environmentRuntimeControls=read('components/admin/environment-runtime-controls.tsx')
 const environmentRuntimeHook=read('components/world/use-environment-runtime-config.ts')
 const environmentTransit=read('components/world/weave-environment-transit.tsx')
-const bridgerOperatingRoom=read('components/bridger/bridger-operating-environment.tsx')
 const bridgerRadiancePage=read('app/(app)/bridger/bridge-radiance/page.tsx')
 const bridgerClientsPage=read('app/(app)/bridger/clients/page.tsx')
 const bridgerContinuancePage=read('app/(app)/bridger/subscription/page.tsx')
@@ -206,30 +205,30 @@ assert.ok(clientFileFolder3d.includes('visualRuntime.world.emergence')&&clientFi
 const fileFolderOpenWorld=read('components/system-switch/file-folder-open-world.tsx')
 assert.ok(fileFolderOpenWorld.includes('body.motion||fileFolderMotion'),'Client File Folder consumes server-confirmed motion meaning')
 assert.ok(fileFolderOpenWorld.includes("status==='complete'")&&fileFolderOpenWorld.includes('commissioned and live'),'Automatic build completion produces emergence without requiring a click')
-const clientNavigation=read('components/client-navigation.tsx')
 const clientLayout=read('app/client/layout.tsx')
 const supportFileFolderPage=read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
 
-assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent/Admin Operating Room removes Position Map card')
-assert.ok(!bridgerOperatingRoom.toLowerCase().includes('position map'),'Bridger Operating Room removes Position Map card')
-assert.ok(bridgerOperatingRoom.includes('data-bridger-live-operations="focused"'),'Bridger Operating Room exposes only a focused live pulse')
+assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent Operating Room removes Position Map card')
 for(const route of ['/api/bridger/daily-prospect','/api/bridger/numbers','/api/bridger/bridge-ai/subscribe']){
- assert.ok(bridgerOperatingRoom.includes(route),'Focused Bridger pulse reads '+route)
 }
 for(const removed of ['/bridger/bridge-radiance','/bridger/clients','/bridger/subscription','/api/bridger/support-inbox','/api/bridger/clients','ClientBuildPull','referral-commissions']){
- assert.ok(!bridgerOperatingRoom.includes(removed),'Bridger Operating Room excludes old account clutter '+removed)
 }
 for(const href of ['/bridger/bridge-ai','/weave/market/prospects','/bridger/numbers','/echo','/profiles','/wallet/deposit-withdraw']){
  assert.ok(roleDistricts2026.includes('"href": "'+href+'"'),'Bridger role catalog exposes '+href)
 }
-assert.ok(bridgerOperatingRoom.includes('visiblePoll(load,20000)'),'Bridger Operating Room refreshes its focused pulse serially while visible')
 assert.ok(dashboardWorld.includes('getRoleDistricts(role)')&&dashboardWorld.includes('data-world-organization="presence-district-place"'),'Role Home Worlds derive district entrances from the canonical role catalog')
-assert.ok(bridgerRadiancePage.includes('visiblePoll(signal=>loadThreads(signal),5000)')&&bridgerRadiancePage.includes('visiblePoll(signal=>loadMessages(selected,signal),2500)'),'Bridge Radiance stays current while visible')
-assert.ok(!bridgerRadiancePage.includes('setInterval('),'Bridge Radiance no longer uses overlapping fixed intervals')
+assert.ok(!dashboardWorld.includes('functionsHref')&&!dashboardWorld.includes('Open operating functions'),'Bridger, Client and Administration worlds do not expose a duplicate Operating Room shortcut')
+assert.ok(!fs.existsSync(path.join(root,'components/app-sidebar.tsx')),'Retired flattened sidebar is removed')
+assert.ok(!fs.existsSync(path.join(root,'components/bridger/bridger-operating-environment.tsx')),'Retired Bridger Operating Room is removed')
+assert.ok(!fs.existsSync(path.join(root,'components/client/client-operating-room.tsx')),'Retired Client Operating Room is removed')
+assert.ok(!fs.existsSync(path.join(root,'components/client-navigation.tsx')),'Retired Client top navigation is removed')
+const adminCatalogText=roleDistricts2026.slice(roleDistricts2026.indexOf('"admin": ['))
+assert.ok(!adminCatalogText.includes('/admin/control-center#'),'Administration catalog exposes one Control Center place rather than hash aliases')
+assert.ok(bridgerRadiancePage.includes("redirect('/bridger/bridge-ai')"),'Retired Bridger Bridge Radiance resolves to the canonical Bridge AI environment')
+assert.ok(!bridgerRadiancePage.includes('visiblePoll(')&&!bridgerRadiancePage.includes('setInterval('),'Retired Bridger Bridge Radiance mounts no duplicate polling runtime')
 assert.ok(bridgerNumbers.includes('visiblePoll(signal=>load(true,signal),10000,false)'),'Number Bay refreshes delivery and verification movement while visible')
-assert.ok(bridgerClientsPage.includes('visiblePoll(signal => fetchClients(true, signal), 15000, false)'),'Client Continuity refreshes newly crossed Clients while visible')
+assert.ok(bridgerClientsPage.includes("redirect('/bridger/presence')"),'Retired Bridger Clients route resolves to Bridger Presence without mounting a second continuity application')
 assert.ok(bridgerContinuancePage.includes('visiblePoll(signal=>fetchContinuance(true,signal),30000,false)'),'Bridger Continuance reflects Administration decisions without reopening the page')
-assert.ok(bridgerOperatingRoom.includes("label:'Bridge AI'")&&bridgerOperatingRoom.includes('bridgeAiContinuance'),'Bridger Operating Room keeps Bridge AI standing visible without a separate subscription card')
 assert.ok(bridgerContinuancePage.includes('Automatic Continuance')&&bridgerContinuancePage.includes('Retry automatic wallet renewal'),'Bridger Continuance makes wallet-first automatic renewal visible')
 assert.ok(bridgerContinuancePage.includes('BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN')&&bridgerContinuancePage.includes('Subscribe to Bridge AI'),'Bridger Continuance still distinguishes the separate Bridge AI subscription')
 assert.ok(dailyProspectClaimUi.includes('visiblePoll(signal => load(true, signal), 60000, false)')&&dailyProspectClaimUi.includes('Refresh intake'),'Daily Prospect intake can recover and reflect new reserve state')
@@ -264,14 +263,13 @@ assert.ok(environmentPublicApi.includes('getEnvironmentOrganizerState'),'Running
 assert.ok(environmentProvider.includes('EnvironmentPageGuard'),'Withdrawn registered pages are guarded at runtime')
 assert.ok(environmentProvider.includes('useEnvironmentRuntimeConfig')&&environmentRuntimeHook.includes('weave-environment-refresh'),'Organizer changes can refresh mounted navigation without deployment')
 assert.ok(environmentWorkshop.includes('Environment Organizer')&&environmentWorkshop.includes('Remove'),'Administration has the page/card organizer workshop')
-assert.ok(appSidebar.includes('getRoleDistricts')&&roleDistricts2026.includes('"href": "/admin/environment-organizer"'),'Administration navigation derives Environment Organizer from the canonical role catalog')
-assert.ok(adminWorkshop.includes('/admin/environment-organizer'),'Admin Workshop exposes Environment Organizer')
-assert.ok(adminWorkshop.includes('WEAVE Integrity Engine')&&adminWorkshop.includes('/admin/dev-workshop?tab=terminal'),'Admin Workshop exposes the live Integrity Engine repair surface')
-assert.ok(operatingRoom.includes('getRolePlaces(role)')&&roleDistricts2026.includes('"href": "/admin/environment-organizer"'),'Administration Operating Room derives Environment Organizer from the canonical role catalog')
+assert.ok(roleDistricts2026.includes('"href": "/admin/environment-organizer"'),'Workshops district exposes Environment Organizer')
+assert.ok(roleDistricts2026.includes('"label": "WEAVE Integrity Engine"')&&roleDistricts2026.includes('"href": "/admin/dev-workshop"'),'Workshops district exposes the live Integrity Engine repair surface')
+assert.ok(roleDistricts2026.includes('"href": "/admin/environment-organizer"'),'Administration World derives Environment Organizer from the canonical role catalog')
 assert.ok(roleDistricts2026.includes('"href": "/admin/environment-organizer"'),'Administration World organization keeps Environment Organizer reachable through the canonical district catalog')
 assert.ok(roleDistricts2026.includes('"href": "/admin/development-agents"'),'Administration World organization keeps Development Foundry reachable through the canonical district catalog')
 assert.ok(!dashboardWorld.includes('Client World · HUD')&&!dashboardWorld.includes(' · HUD'),'Dashboard world no longer describes the world itself as a HUD')
-assert.ok(clientNavigation.includes('useEnvironmentOrganizer'),'Client navigation honors the organizer registry')
+assert.ok(!fs.existsSync(path.join(root,'components/client-navigation.tsx')),'Client world has no duplicate top navigation layer')
 assert.ok(clientLayout.includes('EnvironmentOrganizerProvider'),'Client world mounts the organizer runtime')
 assert.ok(supportFileFolderPage.includes('Territory observer · Read only'),'Support File Folder preserves observer role awareness in a compact context strip')
 assert.ok(supportFileFolderPage.includes('md:static'),'Support context is sticky only where mobile needs it')
@@ -299,7 +297,6 @@ assert.ok(clientFileFolder3d.includes('territoryMode ? "h-full min-h-[680px]" : 
 assert.ok(clientFileFolder.includes('data-file-folder-world="persistent-territory-interface"'),'Client File Folder declares the persistent world-as-interface runtime')
 assert.ok(read('app/client/system-switch/page.tsx').includes('data-client-file-folder-entry="crossing-to-open-world"'),'Client File Folder opens directly as the world after gate resolution')
 assert.ok(read('app/client/system-switch/page.tsx').includes('<ClientFileFolderOperatingEnvironment data={data} />')&&!read('app/client/system-switch/page.tsx').includes('FLAME_EVENT'),'Crossing hands directly into the File Folder open world without a duplicate Flame Event page wrapper')
-assert.ok(read('components/client-navigation.tsx').includes('aria-label="Client world routes"'),'Client navigation is expressed as world routes')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes("bg-[#0c0907]/76"),'Dashboard world no longer uses the brown shell')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world={role===')&&read('components/world/weave-dashboard-world.tsx').includes("'open-territory'"),'Client World identifies as an open territory rather than a dashboard or HUD shell')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes('animate-pulse rounded-full border border-cyan-300/10'),'Client World beacons do not run redundant infinite pulse animations')
@@ -322,7 +319,6 @@ const cleanRevealTransit2026=read('components/world/weave-environment-transit.ts
 const cleanRevealWorld2026=read('components/world/weave-world-environment.tsx')
 const cleanRevealAppLayout2026=read('app/(app)/layout.tsx')
 const cleanRevealClientLayout2026=read('app/client/layout.tsx')
-const cleanRevealSidebar2026=read('components/app-sidebar.tsx')
 const cleanRevealHeader2026=read('components/app-header.tsx')
 const cleanRevealCss2026=read('app/globals.css')
 const cleanRevealBridgeMap2026=read('components/world/bridge-plaza-map.tsx')
@@ -334,7 +330,6 @@ assert.ok(cleanRevealAppLayout2026.includes('data-environment-pending="true"'),'
 assert.ok(cleanRevealAppLayout2026.includes('Opening WEAVE')&&cleanRevealAppLayout2026.includes('Restoring your position and the current environment.'),'Authenticated shell has a visible recovery surface if auth initialization outlives the global cover')
 assert.ok(cleanRevealFileLoader2026.includes('data-environment-pending="true"'),'File Folder boot participates in the global readiness gate')
 assert.ok(cleanRevealClientLayout2026.includes('overflow-x-clip')&&!cleanRevealClientLayout2026.includes('min-h-screen overflow-hidden'),'Client environments are not vertically clipped by their shell')
-assert.ok(cleanRevealSidebar2026.includes('weave-sidebar')&&cleanRevealSidebar2026.includes('weave-nav-group')&&cleanRevealSidebar2026.includes('weave-nav-item'),'Sidebar is organized as a dedicated operating panel')
 assert.ok(cleanRevealHeader2026.includes('weave-header'),'Header belongs to the shared operating chrome')
 assert.ok(cleanRevealHeader2026.includes('Position + Identity')&&cleanRevealHeader2026.includes('Sign Out'),'Identity and logout remain utility controls while navigation lives in Bridge Plaza districts')
 assert.ok(cleanRevealPwa2026.includes('registration.update()')&&cleanRevealPwa2026.includes("window.removeEventListener('load', registerWorker)"),'PWA registration refreshes installed clients and cleans up its load listener')
@@ -375,7 +370,6 @@ assert.ok(loadingBriefCss2026.includes('100% {\n    opacity: 1;'),'Final loader 
 /* Environment grammar: major operating surfaces may contain instruments,
    but their primary navigation cannot regress into a card grid. */
 const routeNetwork=read('components/world/weave-route-network.tsx')
-const clientOperatingRoom=read('components/client/client-operating-room.tsx')
 const marketplaceEnvironment=read('app/(app)/marketplace/page.tsx')
 const arenaEnvironment=read('components/places/arena.tsx')
 const loungeEnvironment=read('components/places/lounge.tsx')
@@ -385,9 +379,7 @@ const echoEnvironment=read('app/(app)/echo/page.tsx')
 assert.ok(routeNetwork.includes('data-weave-route-network')&&routeNetwork.includes('data-weave-route-station'),'Shared route grammar exposes connected lanes and stations')
 assert.ok(dashboardWorld.includes('data-role-world-beacon={district.name}')&&dashboardWorld.includes('data-client-world-beacon'),'Role Home Worlds use spatial district beacons instead of scattering individual place cards')
 assert.ok(!dashboardWorld.includes('WorldLinkCard'),'Role Home Worlds cannot regress to a link-card grid')
-assert.ok(operatingRoom.includes('<WeaveRouteNetwork')&&operatingRoom.includes('data-operating-room={role}'),'Agent/Admin Operating Rooms open directly into connected working routes')
-assert.ok(bridgerOperatingRoom.includes('<WeaveRouteNetwork')&&!bridgerOperatingRoom.includes('<DailyProspectClaim')&&bridgerOperatingRoom.includes('data-operating-room="bridger"'),'Bridger Operating Room stays focused while Daily Prospect claim lives only in Prospect Market')
-assert.ok(clientOperatingRoom.includes('<WeaveRouteNetwork')&&clientOperatingRoom.includes('Client operating routes')&&clientOperatingRoom.includes('data-operating-room="client"'),'Client Operating Room opens directly into its working route network')
+assert.ok(operatingRoom.includes('<WeaveRouteNetwork')&&operatingRoom.includes('data-operating-room={role}'),'Agent Operating Room opens directly into connected working routes')
 assert.ok(room.includes('data-weave-room-stage'),'Reusable WEAVE rooms expose one active stage between environment rails')
 assert.ok(marketplaceEnvironment.includes('data-enterprise-exchange-floor')&&!marketplaceEnvironment.includes('grid gap-5 md:grid-cols-2 xl:grid-cols-3'),'Enterprise Exchange is a continuous bay floor, not a product-card grid')
 assert.ok(arenaEnvironment.includes('data-arena-environment')&&arenaEnvironment.includes('data-arena-lane'),'Arena renders contests as lanes inside one ground')
@@ -414,12 +406,10 @@ assert.ok(adminRootEnvironment.includes("redirect('/admin/dashboard')")&&!adminR
 const liveFlameCss=read('app/globals.css')
 const liveWordSurface=read('components/world/weave-environment-surface.tsx')
 const liveWordRoutes=read('components/world/weave-route-network.tsx')
-const liveWordSidebar=read('components/app-sidebar.tsx')
 assert.ok(liveFlameCss.includes('@keyframes weave-live-word-flow')&&liveFlameCss.includes('@keyframes weave-word-flare'),'Live flame CSS has continuous word flow and motion-triggered flare')
 assert.ok(liveFlameCss.includes('html[data-weave-pulse] [data-weave-live-word]'),'Confirmed movement propagates into live words')
 assert.ok(liveWordSurface.includes('data-weave-live-word="title"'),'Environment titles carry live flame state')
 assert.ok(liveWordRoutes.includes('data-weave-live-word="station"'),'Route and station words carry live flame state')
-assert.ok(liveWordSidebar.includes('data-weave-live-word="station"'),'Sidebar words participate in the live system')
 assert.ok(!read('app/(auth)/layout.tsx').includes('FlameEventWorldGate'),'Authentication no longer mounts a second event wallpaper')
 
 
@@ -435,10 +425,8 @@ const loadStabilityAdaptive=read('components/world/use-adaptive-runtime.ts')
 const loadStabilityFlame=read('components/world/weave-live-flame-field.tsx')
 const loadStabilityRegistrationChat=read('components/registration-chat.tsx')
 const loadStabilityClientChat=read('app/client/chat/[position]/page.tsx')
-const loadStabilityBridgerClients=read('app/(app)/bridger/clients/page.tsx')
 const loadStabilityAgentChat=read('app/(app)/agent-chat/[clientId]/[position]/page.tsx')
 const loadStabilityAdminHub=read('app/(app)/admin/hub/page.tsx')
-const loadStabilityAdminMessages=read('app/(app)/admin/client-messages/page.tsx')
 const loadStabilityDeptRegistration=read('app/(app)/admin/departmental-registration/page.tsx')
 const loadStabilityTicketPanel=read('components/admin/department-entry-tickets-panel.tsx')
 const loadStabilityTicketGate=read('components/department-entry-ticket-gate.tsx')
@@ -485,10 +473,8 @@ assert.ok(cleanRevealCss2026.includes('html[data-weave-covered="true"] .weave-li
 for(const [source,label] of [
  [loadStabilityRegistrationChat,'registration chat'],
  [loadStabilityClientChat,'Client chat'],
- [loadStabilityBridgerClients,'Bridger Client chat'],
  [loadStabilityAgentChat,'Agent chat'],
  [loadStabilityAdminHub,'Administration hub'],
- [loadStabilityAdminMessages,'Administration Client messages'],
  [loadStabilityDeptRegistration,'departmental registration chat'],
  [loadStabilityTicketPanel,'entry ticket panel'],
  [loadStabilityTicketGate,'entry ticket gate'],
@@ -497,6 +483,8 @@ for(const [source,label] of [
 ]){
  assert.ok(source.includes('visiblePoll'),label+' uses serial visible polling')
 }
+assert.ok(read('app/(app)/bridger/clients/page.tsx').includes("redirect('/bridger/presence')"),'Retired Bridger Clients route mounts no polling runtime')
+assert.ok(read('app/(app)/admin/client-messages/page.tsx').includes("redirect('/admin/hub?tab=clients')"),'Retired Administration Client Messages route mounts no polling runtime')
 assert.ok(!loadStabilityDjPlayer.includes('setInterval(() => void syncBroadcast()'),'DJ player no longer launches overlapping hidden-tab network intervals')
 assert.ok(!loadStabilityAdminHub.includes('setInterval(loadMessages'),'Administration hub no longer stacks message requests')
 assert.ok(loadStabilityDevelopmentFoundry.includes('visiblePoll(() => refresh(), 30000)')&&loadStabilityDevelopmentFoundry.includes('visiblePoll(() => pulse(false), 60000)')&&!loadStabilityDevelopmentFoundry.includes('window.setInterval'),'Development Foundry UI uses serial visible polling rather than overlapping background intervals')
@@ -539,7 +527,7 @@ const genericTronDepositVerifySource = read('app/api/admin/deposit/tron/verify/r
 const numberBayApiSource = read('app/api/bridger/numbers/route.ts')
 const agentYieldCronSource = read('app/api/cron/agent-salary/route.ts')
 const environmentOrganizerEngineSource = read('lib/weave-environment-organizer.ts')
-assert.ok(!dailyAwarenessSource.includes('data-daily-awareness')&&!dailyAwarenessSource.includes('What should I move today?'),'Role worlds do not place Daily Awareness cards over world movement or Operating Room entry')
+assert.ok(!dailyAwarenessSource.includes('data-daily-awareness')&&!dailyAwarenessSource.includes('What should I move today?'),'Role worlds do not place Daily Awareness cards over world movement')
 assert.ok(!dailyAwarenessSource.includes('DAILY_AWARENESS'),'Role worlds no longer maintain a blocking awareness-card layer')
 assert.ok(agentCommissionSource.includes("'prospect_package_purchase'")&&agentCommissionSource.includes("'client_deposit'")&&!agentCommissionSource.includes("'number_purchase'"),'Agent commissions are limited to attached Bridger Prospect and verified File Folder movement')
 assert.ok(!numberBayApiSource.includes('creditAgentCommission'),'Number Bay cannot create Agent commission')
@@ -580,7 +568,7 @@ assert.ok(bridgeVisitorSource.includes("{ id: 'bridger', name: 'My Bridger' }"),
 assert.ok(bridgerSupportApiSource.includes('b.bridger_id = ${auth.userId}::uuid'),'Bridger Prospect interaction is restricted to the owning Bridger')
 assert.ok(agentSupportApiSource.includes('bridger.assigned_agent_id=${auth.userId}::uuid'),'Agent Prospect interaction is restricted to Bridgers assigned to that Agent')
 assert.ok(adminBridgeSupportSource.includes("authUser.role !== 'admin'")||adminBridgeSupportSource.includes("user.role !== 'admin'"),'Administration Bridge Radiance interaction remains institutionally gated')
-assert.ok(bridgerRadianceSource.includes('data-bridge-radiance-operator="bridger"'),'Hope has an active Bridge Radiance Prospect interaction station')
+assert.ok(bridgerRadianceSource.includes("redirect('/bridger/bridge-ai')"),'Retired Bridger Bridge Radiance route resolves to canonical Bridge AI')
 
 
 const publicWorldSource=read('app/page.tsx')
@@ -601,9 +589,11 @@ assert.ok(environmentSurfaceSource.includes('data-environment-location="world-po
 assert.ok(environmentSurfaceSource.includes('data-environment-interior="station"'),'Working interiors are framed as stations inside the world')
 assert.ok(environmentSurfaceSource.includes('Return to role world'),'Every authenticated station has a route back to its role world')
 assert.ok(environmentSurfaceSource.includes('data-ai-station-presence="contextual"'),'AI participation remains contextually present at working stations')
-for(const route of ['/bridger/bridge-radiance','/agent/bridge-radiance','/admin/bridge-radiance']){
- assert.ok(environmentsSource.includes(route),route+' is registered as a WEAVE world station')
+for(const route of ['/agent/bridge-radiance','/admin/bridge-radiance']){
+ assert.ok(environmentsSource.includes(route),route+' remains registered as an authorized support station')
 }
+assert.ok(!environmentsSource.includes("['/bridger/bridge-radiance'"),'Retired Bridger Bridge Radiance alias is removed from environment metadata')
+assert.ok(!environmentsSource.includes("['/bridger/clients'"),'Retired Bridger Clients alias is removed from environment metadata')
 
 
 const stationFrameSource=read('components/world/weave-station-frame.tsx')

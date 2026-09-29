@@ -48,7 +48,7 @@ export default function BridgerContinuancePage(){
    {bridgeAi?.expiry&&<p className="mt-2 text-[10px] text-slate-500">Expiry · {new Date(bridgeAi.expiry).toLocaleDateString()}</p>}
    <Link href="/bridger/bridge-ai" className="mt-3 flex items-center justify-between rounded-xl border border-cyan-300/15 bg-cyan-400/[.04] px-3 py-2 text-[10px] font-black uppercase tracking-wider text-cyan-100"><span>{bridgeAiActive?'Open Bridge AI':'Subscribe to Bridge AI'}</span><span>→</span></Link>
   </section>
-  <Link href="/bridger/functions" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white"><span className="inline-flex items-center gap-2"><ArrowLeft className="h-4 w-4 text-emerald-300"/>Bridger Operating Room</span></Link>
+  <Link href="/bridger/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white"><span className="inline-flex items-center gap-2"><ArrowLeft className="h-4 w-4 text-emerald-300"/>Bridger Operating Room</span></Link>
  </>
 
  return <WeaveSystemRoom roomKey="bridger-continuance" eyebrow="Bridge · Partnership Continuity" title="Bridger Continuance Chamber" detail="Standing and renewal remain automatic whenever the primary Flame Coin wallet can cover the monthly Continuance. Manual payment proof is only a fallback." tone="emerald" left={left} center={center} right={right} pulse={status==='active'?'Partnership active':status==='suspended'?'Movement suspended':'Continuance due'}/>

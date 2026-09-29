@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import {
-  ArrowRight,
   Building2,
   CircleUserRound,
   Landmark,
@@ -21,36 +20,31 @@ const COPY:Record<WorldRole,{
   eyebrow:string
   title:string
   subtitle:string
-  functionsHref:string
-  presenceHref:string
+  centerHref:string
 }> = {
   client:{
     eyebrow:'Lord/Lady · Client Department',
     title:'Your world. Your movement.',
     subtitle:'Presence is the arrival point. Districts organize the File Folder, value and human support without scattering every function across the world.',
-    functionsHref:'/client/functions',
-    presenceHref:'/client/presence',
+    centerHref:'/client/presence',
   },
   bridger:{
     eyebrow:'Hope · Bridger Department',
     title:'Connection moves through clear districts.',
     subtitle:'Presence gives orientation. Bridge Movement carries Prospects and crossing. Value remains a separate support district.',
-    functionsHref:'/bridger/functions',
-    presenceHref:'/bridger/presence',
+    centerHref:'/bridger/presence',
   },
   agent:{
     eyebrow:'Stability · Agent Department',
     title:'A small position inside one open world.',
     subtitle:'Presence gives orientation. Agent Movement contains Agility and Commissions. Nothing else needs to crowd the account.',
-    functionsHref:'/agent/functions',
-    presenceHref:'/agent/presence',
+    centerHref:'/agent/presence',
   },
   admin:{
     eyebrow:'A Cat · Administration Department',
     title:'The institution in one organized world.',
     subtitle:'People, Finance, Operations, Workshops and Communication remain separate districts inside one Administration world.',
-    functionsHref:'/admin/functions',
-    presenceHref:'/admin/functions',
+    centerHref:'/admin/control-center',
   },
 }
 
@@ -125,7 +119,7 @@ export function WeaveDashboardWorld({
     </svg>
 
     <Link
-      href={copy.presenceHref}
+      href={copy.centerHref}
       data-role-presence-gate={role}
       className="group absolute left-1/2 top-[52%] z-20 -translate-x-1/2 -translate-y-1/2 text-center"
     >
@@ -165,8 +159,5 @@ export function WeaveDashboardWorld({
       <p className="mt-1 text-[9px] text-slate-500">Enter a district, then choose the place that performs the work.</p>
     </div>
 
-    <Link href={copy.functionsHref} className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-amber-200/25 bg-amber-300/[.06] text-amber-100 backdrop-blur-md" aria-label="Open operating functions">
-      <ArrowRight className="h-4 w-4"/>
-    </Link>
   </section>
 }

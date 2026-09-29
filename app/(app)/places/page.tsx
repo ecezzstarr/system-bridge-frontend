@@ -66,7 +66,7 @@ const PLACES:Place[] = [
   {
     label:'Bridger Operating Room',
     detail:'Operate Bridge AI, Prospect Market, Number Bay, Echo, Presences and value movement.',
-    href:'/bridger/functions',
+    href:'/bridger/dashboard',
     consequence:'Bridger work',
     icon:Building2,
     roles:['bridger'],
@@ -90,7 +90,7 @@ const PLACES:Place[] = [
   {
     label:'Administration Operating Room',
     detail:'Enter company authority, recognition, verification and continuity.',
-    href:'/admin/functions',
+    href:'/admin/dashboard',
     consequence:'Administration',
     icon:Building2,
     roles:['admin'],

@@ -1,7 +1,5 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { ClientOperatingRoom } from '@/components/client/client-operating-room'
-
-export default function ClientFunctionsPage() {
-  return <ClientOperatingRoom />
+export default function LegacyOperatingRoomRedirect(){
+  redirect('/client/dashboard')
 }
