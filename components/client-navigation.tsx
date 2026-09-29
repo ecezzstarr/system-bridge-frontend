@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Flame, GitBranch, Home, LayoutGrid, Orbit, Route } from 'lucide-react'
+import { CircleUserRound, Flame, GitBranch, Home, LayoutGrid, Orbit, Route } from 'lucide-react'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const items = [
-  { label: 'Home World', href: '/client/dashboard', icon: Home },
+  { label: 'Presence', href: '/client/presence', icon: CircleUserRound },
+  { label: 'Open World', href: '/client/dashboard', icon: Home },
   { label: 'Operating Room', href: '/client/functions', icon: LayoutGrid },
   { label: 'File Folder', href: '/client/system-switch', icon: Orbit },
   { label: 'Loop Field', href: '/client/loops', icon: GitBranch },
