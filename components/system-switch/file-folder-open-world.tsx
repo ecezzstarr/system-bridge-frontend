@@ -36,6 +36,9 @@ type Props = {
   refreshToken?: string | null
   onWorldChange?: (world: any) => void
   initialDistrict?: string
+  initialAiFileFolders?: AiFileFolderIdentity[]
+  pollWorld?: boolean
+  pollAi?: boolean
 }
 
 const districts = [
@@ -119,10 +122,13 @@ export default function FileFolderOpenWorld({
   refreshToken,
   onWorldChange,
   initialDistrict = 'workshop_core',
+  initialAiFileFolders,
+  pollWorld = true,
+  pollAi = true,
 }: Props) {
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [world, setWorld] = useState(initialWorld)
-  const [aiFileFolders,setAiFileFolders]=useState<AiFileFolderIdentity[]>(WEAVE_AI_FILE_FOLDERS)
+  const [aiFileFolders,setAiFileFolders]=useState<AiFileFolderIdentity[]>(initialAiFileFolders || WEAVE_AI_FILE_FOLDERS)
   const [district, setDistrict] = useState(initialDistrict)
   const [busy, setBusy] = useState('')
   const [message, setMessage] = useState('')
@@ -138,6 +144,15 @@ export default function FileFolderOpenWorld({
   }, [])
 
   useEffect(()=>{
+    setWorld(initialWorld)
+  },[initialWorld])
+
+  useEffect(()=>{
+    if(initialAiFileFolders)setAiFileFolders(initialAiFileFolders)
+  },[initialAiFileFolders])
+
+  useEffect(()=>{
+    if(!pollAi)return
     const refreshAiWorld=async(signal:AbortSignal)=>{
       try{
         const response=await fetch('/api/world/ai-file-folders',{cache:'no-store',signal})
@@ -149,7 +164,7 @@ export default function FileFolderOpenWorld({
     }
     const stop=visiblePoll(refreshAiWorld,15000,true)
     return ()=>stop()
-  },[])
+  },[pollAi])
 
   useEffect(()=>{
     const next=new Map<string,string>()
@@ -173,6 +188,7 @@ export default function FileFolderOpenWorld({
   },[world?.builds])
 
   useEffect(() => {
+    if(!pollWorld)return
     const url = refreshUrl || (!readOnly ? '/api/client/file-folder-world' : null)
     if (!url) return
 
@@ -195,7 +211,7 @@ export default function FileFolderOpenWorld({
 
     const id = visiblePoll(refresh, 20000, false)
     return () => id()
-  }, [onWorldChange, readOnly, refreshToken, refreshUrl])
+  }, [onWorldChange, pollWorld, readOnly, refreshToken, refreshUrl])
 
   const inventory = useMemo(
     () => new Map((world?.inventory || []).map((item: any) => [item.item_key, Number(item.quantity || 0)])),
