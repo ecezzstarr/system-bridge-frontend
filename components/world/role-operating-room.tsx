@@ -38,7 +38,6 @@ import {
   Zap,
 } from 'lucide-react'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
-import { ClientBuildPull } from '@/components/world/client-build-pull'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 import { WeaveRouteNetwork, type WeaveRouteTone } from '@/components/world/weave-route-network'
 
@@ -54,11 +53,7 @@ type FunctionItem = {
 
 const OPERATING_SEQUENCE = {
   agent: [
-    { title: 'Shared WEAVE' },
-    { title: 'Bridger participation' },
-    { title: 'Stability movement' },
-    { title: 'Client + company support' },
-    { title: 'Record + value' },
+    { title: 'Agent' },
   ],
   admin: [
     { title: 'Shared WEAVE' },
@@ -72,32 +67,8 @@ const OPERATING_SEQUENCE = {
 } as const
 
 const AGENT_COMMANDS: FunctionItem[] = [
-  { label: 'Company Loops', detail: 'Shared company movement and current participation.', href: '/company/loops', icon: GitBranch, district: 'Shared WEAVE' },
-  { label: 'Human Cadences', detail: 'Find people through recorded participation and movement.', href: '/search', icon: MessageSquare, district: 'Shared WEAVE' },
-  { label: 'Presences', detail: 'See people and their place in the WEAVE.', href: '/profiles', icon: UserCircle, district: 'Shared WEAVE' },
-  { label: 'Private Lounge', detail: 'Private WEAVE communication.', href: '/lounge?view=private', icon: Shield, district: 'Shared WEAVE' },
-  { label: 'Lounge', detail: 'Shared WEAVE communication.', href: '/lounge', icon: MessageSquare, district: 'Shared WEAVE' },
-  { label: 'Echo', detail: 'Use the WEAVE Echo surface.', href: '/echo', icon: Sparkles, district: 'Shared WEAVE' },
-  { label: 'Contest', detail: 'Shared participant contest movement.', href: '/arena', icon: Gamepad2, district: 'Shared WEAVE' },
-  { label: 'Pattern', detail: 'Shared system pattern play.', href: '/casino', icon: Trophy, district: 'Shared WEAVE' },
-  { label: 'Stream', detail: 'Shared WEAVE media stream.', href: '/video-feed', icon: Video, district: 'Shared WEAVE' },
-  { label: 'Standing', detail: 'Shared WEAVE standing and position.', href: '/weave/standing', icon: Globe, district: 'Shared WEAVE' },
-  { label: 'My Bridgers', detail: 'Assigned Bridgers and team movement.', href: '/agent/bridgers', icon: Users, district: 'Bridger participation' },
-  { label: 'Agent Channels', detail: 'Approved company channels and responsibilities.', href: '/agent/channels', icon: Network, district: 'Bridger participation' },
-  { label: 'Prospect Campaigns', detail: 'Prospect campaigns available for Bridgers to purchase into and move forward.', href: '/agent/stability-supply', icon: Zap, district: 'Bridger participation' },
-  { label: 'Number Supply', detail: 'Worldwide number supply that supports Bridger outreach participation.', href: '/agent/stability-supply', icon: Radio, district: 'Bridger participation' },
-  { label: 'Agent Continuance', detail: 'Commission records, performance and rewards.', href: '/agent/commissions', icon: Gauge, district: 'Stability movement' },
-  { label: 'Agility Agent Store', detail: 'Acquire and move Agility stock.', href: '/agility', icon: ShoppingBag, district: 'Stability movement' },
-  { label: 'Company Activities', detail: 'Company loops and current movement.', href: '/company/loops', icon: Activity, district: 'Stability movement' },
-  { label: 'Event Tasks', detail: 'Current WEAVE event participation.', href: '/event', icon: Flame, district: 'Stability movement' },
-  { label: 'Client Interactions', detail: 'Approved Client service channels.', href: '/client-interactions', icon: MessageSquare, district: 'Client + company support' },
-  { label: 'Clients', detail: 'Client directory and company-side Client continuity.', href: '/clients', icon: Users, district: 'Client + company support' },
-  { label: 'Bridge Plaza', detail: 'Shared Client worlds and support entrance.', href: '/weave', icon: Landmark, district: 'Client + company support' },
-  { label: 'Company Guidance', detail: 'Internal company support and clarification.', href: '/company-chat', icon: Headphones, district: 'Client + company support' },
-  { label: WEAVE_SYSTEM_MAP.language.wallet, detail: 'Operational holding and funds.', href: '/wallet', icon: Wallet, district: 'Record + value' },
-  { label: WEAVE_SYSTEM_MAP.language.ledger, detail: 'Preserved movement and value record.', href: '/ledger', icon: BookOpen, district: 'Record + value' },
-  { label: 'Receipts', detail: 'Receipts for payments, withdrawals and purchases.', href: '/receipts', icon: FileCheck, district: 'Record + value' },
-  { label: WEAVE_SYSTEM_MAP.language.marketplace, detail: 'Enterprise-scale systems available through WEAVE.', href: '/marketplace', icon: Store, district: 'Record + value' },
+  { label: 'Agility', detail: 'Operate Agility distribution and sales movement.', href: '/agility', icon: ShoppingBag, district: 'Agent' },
+  { label: 'Prospect Commissions', detail: 'Commission earned from Bridger Prospect purchases.', href: '/agent/commissions', icon: Gauge, district: 'Agent' },
 ]
 
 const ADMIN_COMMANDS: FunctionItem[] = [
@@ -172,6 +143,7 @@ const ADMIN_COMMANDS: FunctionItem[] = [
 ]
 
 const DISTRICT_ROUTE_TONE:Record<string,WeaveRouteTone>={
+  'Agent':'emerald',
   'Shared WEAVE':'sky',
   'Bridger participation':'emerald',
   'Stability movement':'amber',
@@ -187,12 +159,12 @@ const DISTRICT_ROUTE_TONE:Record<string,WeaveRouteTone>={
 
 const ROLE_COPY = {
   agent: {
-    eyebrow: 'Stability · Agent Department',
-    title: 'Keep Bridger participation stable and moving.',
-    detail: 'Stability is the Agent department. Agents keep Bridgers participating through Prospect campaigns, Number supply, Agility, company work and continuance while Bridgers carry Hope forward into Client connection.',
+    eyebrow: 'Agent',
+    title: 'Agility and Prospect commissions.',
+    detail: 'The Agent account has two working places: Agility and commission created by Bridger Prospect purchases.',
     commands: AGENT_COMMANDS,
-    panelTitle: 'Agent Working Panel',
-    panelDetail: 'The middle panel keeps the Agent’s real working components together. Open a function without leaving the operating system.',
+    panelTitle: 'Agent',
+    panelDetail: 'Two functions only.',
   },
   admin: {
     eyebrow: 'A Cat · Administration Department',
@@ -236,12 +208,6 @@ export function RoleOperatingRoom({ role }: { role: Role }) {
               <ArrowRight className="h-4 w-4 text-sky-300" />
             </Link>
           </section>
-
-          {role==='agent'&&<aside className="border-t border-white/[0.07] bg-black/10 p-4 md:p-5 xl:border-l xl:border-t-0">
-            <div className="sticky top-20">
-              <ClientBuildPull role="agent" />
-            </div>
-          </aside>}
         </div>
       </section>
     </main>
