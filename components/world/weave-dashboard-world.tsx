@@ -140,23 +140,6 @@ const ROUTE_TONE:Record<WorldLink['tone'],WeaveRouteTone>={
   emerald:'emerald',
 }
 
-const DAILY_AWARENESS:Partial<Record<WorldRole,Array<{label:string;detail:string;href:string}>>>={
-  agent:[
-    {label:'Check your Bridgers',detail:'See which Bridgers need Stability support or follow-through today.',href:'/agent/bridgers'},
-    {label:'Open Prospect Campaigns',detail:'Keep Prospect supply available for Bridger participation.',href:'/agent/stability-supply'},
-    {label:'Review continuance',detail:'See commission and participation returns already produced.',href:'/agent/commissions'},
-  ],
-  bridger:[
-    {label:'Claim or buy a Prospect',detail:'Begin today with one real person you can contact and support.',href:'/weave/market/prospects'},
-    {label:'Continue Bridge Radiance',detail:'Return to active Prospect conversations and movement.',href:'/bridger/bridge-radiance'},
-    {label:'Check Client continuity',detail:'Support Clients already carried through the crossing.',href:'/bridger/clients'},
-  ],
-  admin:[
-    {label:'Review institutional movement',detail:'Check people, verification and operating controls requiring Administration.',href:'/admin/control-center'},
-    {label:'Check world systems',detail:'Inspect environment, visual and live operating authority.',href:'/admin/environment-organizer'},
-  ],
-}
-
 function districtFor(role:WorldRole,href:string){
   if(role==='client'){
     if(href.startsWith('/client/system-switch'))return 'File Folder'
@@ -212,17 +195,12 @@ export function WeaveDashboardWorld({
         <div className="border-r-2 border-emerald-300/40 pr-3 text-right"><p className="text-[7px] font-black uppercase tracking-[.16em] text-emerald-300">World state</p><p className="mt-1 text-[10px] font-black text-white">CONNECTED</p></div>
       </header>
       <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M50 28 L50 51 M50 51 L18 42 M50 51 L86 42 M50 51 L22 65 M50 51 L82 64 M50 51 L38 79 M50 51 L72 79" fill="none" stroke="rgba(103,232,249,.42)" strokeWidth=".18" strokeDasharray="1.2 1.4"/><circle cx="50" cy="51" r="1.1" fill="rgba(103,232,249,.75)"/></svg>
-      {DAILY_AWARENESS[role]&&<aside className="absolute left-4 top-[132px] z-30 w-[min(310px,calc(100%-2rem))] border-l border-cyan-200/20 bg-[#020912]/55 p-3 backdrop-blur-md sm:left-6" data-daily-awareness={role}>
-        <p className="text-[7px] font-black uppercase tracking-[.2em] text-cyan-300">Daily awareness · What should I move today?</p>
-        <div className="mt-2 space-y-1.5">{DAILY_AWARENESS[role]!.map((item,index)=><Link key={item.href} href={item.href} className="group flex gap-2 py-1.5"><span className="mt-0.5 text-[8px] font-black text-amber-300">0{index+1}</span><span><span className="block text-[9px] font-black text-white group-hover:text-cyan-200">{item.label}</span><span className="mt-0.5 block text-[8px] leading-3 text-slate-500">{item.detail}</span></span></Link>)}</div>
-      </aside>}
       <div className="absolute inset-0 z-10">
         {visibleLinks.map((item,index)=>{const Icon=item.icon;return <Link key={item.href} href={item.href} data-role-world-beacon={item.label} className={'group absolute '+positions[index%positions.length]+' flex min-w-0 items-center gap-2'}>
           <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cyan-100/20 bg-[#03101a]/80 shadow-[0_0_24px_rgba(34,211,238,.13)] backdrop-blur-md transition group-hover:scale-110 group-hover:border-cyan-200/50"><span className="absolute inset-[-5px] rounded-full border border-cyan-300/10"/><Icon className="h-4 w-4 text-cyan-100"/></span>
           <span className="max-w-[100px] sm:max-w-[155px]"><span className="block text-[9px] font-black uppercase tracking-[.08em] text-white sm:text-[11px]">{item.label}</span><span className="mt-0.5 hidden text-[8px] leading-3 text-slate-500 sm:block">{districtFor(role,item.href)} · {item.detail}</span></span>
         </Link>})}
       </div>
-      <aside className="absolute bottom-16 right-4 z-20 max-w-[230px] border-r border-violet-300/25 bg-[#050817]/55 p-3 text-right backdrop-blur-md" data-ai-participation={role}><div className="flex items-center justify-end gap-2 text-violet-200"><span className="text-[7px] font-black uppercase tracking-[.18em]">AI participation · authorized extension</span><Bot className="h-3.5 w-3.5"/></div><p className="mt-1 text-[8px] leading-3 text-slate-400">AI can recognize context, prepare work and guide movement here. Human presence keeps authority, ownership, approval and value movement.</p></aside>
     <div className="pointer-events-none absolute bottom-4 left-4 z-20 border-l-2 border-sky-300/30 pl-3"><p className="text-[7px] font-black uppercase tracking-[.18em] text-sky-300">Presence camera</p><p className="mt-1 text-[9px] text-slate-500">Choose a beacon to travel into a working district</p></div>
       <Link href={copy.functionsHref} className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-amber-200/25 bg-amber-300/[.06] text-amber-100 backdrop-blur-md" aria-label="Open operating functions"><ArrowRight className="h-4 w-4"/></Link>
     </section>
@@ -280,8 +258,6 @@ export function WeaveDashboardWorld({
         </Link>
       })}
     </div>
-
-    <aside className="absolute bottom-16 right-4 z-20 max-w-[230px] border-r border-violet-300/25 bg-[#050817]/55 p-3 text-right backdrop-blur-md" data-ai-participation="client"><div className="flex items-center justify-end gap-2 text-violet-200"><span className="text-[7px] font-black uppercase tracking-[.18em]">AI participation · Bridge AI</span><Bot className="h-3.5 w-3.5"/></div><p className="mt-1 text-[8px] leading-3 text-slate-400">Bridge AI participates inside your builds and live systems when authorized. You remain the Lord/Lady, owner and decision source.</p></aside>
 
     <div className="pointer-events-none absolute bottom-4 left-4 z-20 border-l-2 border-sky-300/30 pl-3">
       <p className="text-[7px] font-black uppercase tracking-[.18em] text-sky-300">Presence camera</p>

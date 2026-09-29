@@ -332,7 +332,7 @@ assert.ok(!dailyProspectUiSource.includes('Daily Project Claim'),'Project typo r
 assert.ok(bridgerOperatingRoomSource.includes('DailyProspectClaim'),'Bridger Operating Room owns the corrected Prospect component')
 assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim renders only once in the Bridger Operating Room')
 assert.ok(!bridgerDashboardSource.includes('DailyProspectClaim'),'Bridger Home stays a compact world instead of duplicating Prospect intake')
-assert.ok(bridgerOperatingRoomSource.includes('Prospect intake')&&bridgerOperatingRoomSource.includes('Daily Prospect → Bridge Radiance'),'Daily Prospect movement is visibly organized as intake flowing into live Bridge Radiance')
+assert.ok(bridgerOperatingRoomSource.includes('<DailyProspectClaim />')&&bridgerOperatingRoomSource.includes('Bridger operating routes'),'Daily Prospect remains a direct working instrument inside the Bridger Operating Room without an awareness blocker')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260925_bridger_daily_prospect_claim.sql')),'Daily Prospect claim migration exists')
 for(const file of [
  'lib/bridger-daily-prospect-engine.ts',
@@ -487,7 +487,7 @@ for(const sharedRoute of ['/company/loops','/search','/profiles','/weave','/comp
  assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Administration middle panel preserves shared WEAVE component ${sharedRoute}`)
 }
 assert.ok(roleOperatingRoomSource.indexOf("district: 'Shared WEAVE'") < roleOperatingRoomSource.indexOf("district: 'People + recognition'"),'Administration shared WEAVE components precede authority-specific controls')
-assert.ok(roleOperatingRoomSource.includes('Role route network'),'Role Operating Rooms expose one connected route network')
+assert.ok(roleOperatingRoomSource.includes('<WeaveRouteNetwork')&&roleOperatingRoomSource.includes('data-operating-room={role}'),'Role Operating Rooms expose one connected route network directly')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/file-number-engine'"),'Administration middle panel exposes File Number Engine')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/agent-channels'"),'Administration middle panel exposes Agent Channel Requests')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/origin-systems'"),'Administration middle panel exposes Origin Systems')
@@ -506,7 +506,7 @@ assert.ok(roleOperatingRoomSource.includes("href: '/clients'"),'Agent Operating 
 assert.ok(roleOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Agent and Administration components preserve district color structure on route lanes')
 assert.ok(bridgerOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Bridger components preserve district color structure on route lanes')
 assert.ok(bridgerOperatingRoomSource.includes('Bridger operating routes'),'Bridger Operating Room is a connected current-operation environment')
-assert.ok(bridgerOperatingRoomSource.includes('Prospect intake')&&bridgerOperatingRoomSource.includes('Daily Prospect → Bridge Radiance'),'Bridger role keeps Prospect intake flowing into live Bridge Radiance')
+assert.ok(bridgerOperatingRoomSource.includes('<DailyProspectClaim />')&&bridgerOperatingRoomSource.includes("href: '/bridger/bridge-radiance'"),'Bridger role keeps Prospect claim and live Bridge Radiance available directly without an awareness layer')
 assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim remains one place after restoring the Bridger middle panel')
 assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
 assert.ok(adminFunctionsSource.includes('<RoleOperatingRoom role="admin"'),'Administration Functions opens the Administration Operating Room instead of importing the dashboard')
