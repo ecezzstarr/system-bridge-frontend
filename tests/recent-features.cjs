@@ -1060,7 +1060,7 @@ assert.ok(enterpriseSystemsApiSource.includes("user.role !== 'client' && user.ro
 assert.ok(adminEnterpriseSystemsApiSource.includes('price < 1000000'),'Administration cannot price an Enterprise Exchange system below £1M')
 assert.ok(adminEnterpriseSystemsPageSource.includes('Enterprise Systems Workshop'),'Administration has an Enterprise Systems operating surface')
 assert.ok(enterpriseExchangeMigrationSource.includes('price_gbp >= 1000000'),'Production migration enforces enterprise-scale prices')
-assert.ok(getRoleDistricts('bridger').find(d=>d.name==='Prospects & Conversations').places.some(p=>p.href==='/weave/market/prospects'),'Prospect Market belongs to prospect conversion')
+assert.ok(roleHas('bridger','/weave/market/prospects'),'Prospect Market belongs to the focused Bridger movement')
 assert.ok(roleHas('client','/marketplace'),'Clients can reach enterprise systems')
 assert.ok(roleHas('admin','/admin/enterprise-systems'),'Admin retains enterprise sales controls')
 assert.ok(weaveSystemMapSource.includes("marketplace: 'Enterprise Systems Exchange'"),'Canonical enterprise label remains')
