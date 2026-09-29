@@ -29,8 +29,12 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Build the application
+# Production acceptance gate — keep Cloud Build aligned with GitHub CI.
 RUN node tests/recent-features.cjs
+RUN node tests/wiring.cjs
+RUN node tests/environment-grade.cjs
+RUN node tests/adaptive-runtime.cjs
+RUN npx tsc --noEmit
 RUN npm run build
 
 # Production image, copy all the files and run next

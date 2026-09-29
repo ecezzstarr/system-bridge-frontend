@@ -39,16 +39,17 @@ export default function AppLayout({
   // Continuance enforcement for Bridgers
   useEffect(() => {
     const checkSub = async () => {
-      if (user?.role === 'bridger' && pathname !== '/bridger/functions') {
+      if (user?.role === 'bridger' && pathname !== '/bridger/subscription') {
         try {
           const token = localStorage.getItem('ssb_auth_token')
           const res = await fetch('/api/bridger/subscription', {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
+            cache: 'no-store',
           })
           const data = await res.json()
           if (data.success && data.subscription.subscription_status === 'suspended') {
-            router.push('/bridger/functions')
-            toast.error('Your movement here has paused — renewal is needed to continue.')
+            router.replace('/bridger/subscription')
+            toast.error('Automatic renewal could not complete. Add enough Flame Coin to your wallet to restore Continuance.')
           }
         } catch (e) {
           console.error('Sub check error:', e)
