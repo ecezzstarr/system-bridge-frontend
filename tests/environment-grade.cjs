@@ -333,6 +333,7 @@ assert.ok(cleanRevealFileLoader2026.includes('data-environment-pending="true"'),
 assert.ok(cleanRevealClientLayout2026.includes('overflow-x-clip')&&!cleanRevealClientLayout2026.includes('min-h-screen overflow-hidden'),'Client environments are not vertically clipped by their shell')
 assert.ok(cleanRevealSidebar2026.includes('weave-sidebar')&&cleanRevealSidebar2026.includes('weave-nav-group')&&cleanRevealSidebar2026.includes('weave-nav-item'),'Sidebar is organized as a dedicated operating panel')
 assert.ok(cleanRevealHeader2026.includes('weave-header'),'Header belongs to the shared operating chrome')
+assert.ok(cleanRevealHeader2026.includes('Position + Identity')&&cleanRevealHeader2026.includes('Sign Out'),'Identity and logout remain utility controls while navigation lives in Bridge Plaza districts')
 assert.ok(cleanRevealPwa2026.includes('registration.update()')&&cleanRevealPwa2026.includes("window.removeEventListener('load', registerWorker)"),'PWA registration refreshes installed clients and cleans up its load listener')
 assert.ok(cleanRevealWorld2026.includes("root.dataset.weaveEvent=active?'flame-live':'normal'"),'Flame event publishes a live interface theme state')
 assert.ok(!cleanRevealWorld2026.includes('FlameEventWorldDecorations'),'Flame Live is not mounted as a full-world wallpaper decoration')
