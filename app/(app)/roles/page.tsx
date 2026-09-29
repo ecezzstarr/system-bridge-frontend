@@ -1,12 +1,14 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowRight,
   BookOpen,
   Fingerprint,
   KeyRound,
+  LogOut,
   LayoutTemplate,
   Save,
   ShieldCheck,
@@ -26,7 +28,7 @@ const ROLE_SYSTEM: Record<string, { title: string; detail: string; operatingRoom
   agent: {
     title: 'Agent',
     detail: 'WEAVE employee position supporting Bridgers, Clients and company movement.',
-    operatingRoom: '/agent/functions',
+    operatingRoom: '/agent/dashboard',
     tone: 'border-emerald-300/20 bg-emerald-400/[0.05] text-emerald-200',
   },
   bridger: {
@@ -44,7 +46,8 @@ const ROLE_SYSTEM: Record<string, { title: string; detail: string; operatingRoom
 }
 
 export default function PositionIdentityPage() {
-  const { user, token } = useAuth()
+  const router = useRouter()
+  const { user, token, logout } = useAuth()
   const [name, setName] = useState(user?.name || '')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -112,7 +115,7 @@ export default function PositionIdentityPage() {
     <main className="mx-auto w-full max-w-6xl p-3 md:p-6">
       <section className="weave-system-depth overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030a15]/72">
         <header className="border-b border-white/10 bg-[radial-gradient(circle_at_12%_0%,rgba(56,189,248,.13),transparent_34%),radial-gradient(circle_at_88%_0%,rgba(139,92,246,.08),transparent_30%)] p-5 md:p-7">
-          <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Position + Identity Engine</p>
+          <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Settings · Position + Identity</p>
           <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">Who you are and what position is operating are separate records.</h1>
           <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
             Identity is your authenticated human account. Position is the function WEAVE currently recognizes you as performing. Changing your name or password does not silently change your institutional position.
@@ -127,7 +130,7 @@ export default function PositionIdentityPage() {
                 <p className="mt-4 text-xl font-black text-white">{role.title}</p>
                 <p className="mt-2 text-xs leading-5 text-slate-300">{role.detail}</p>
                 <Link href={role.operatingRoom} className="mt-4 inline-flex w-full items-center justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-white">
-                  Open operating room <ArrowRight className="h-3.5 w-3.5"/>
+                  Open role world <ArrowRight className="h-3.5 w-3.5"/>
                 </Link>
               </div>
 
@@ -181,6 +184,14 @@ export default function PositionIdentityPage() {
               <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-sky-300"/>Record</span>
               <ArrowRight className="h-4 w-4 text-sky-300"/>
             </Link>
+
+            <section className="rounded-3xl border border-rose-300/15 bg-rose-400/[0.035] p-4">
+              <div className="flex items-center gap-2"><LogOut className="h-4 w-4 text-rose-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-rose-300">Session</p></div>
+              <p className="mt-3 text-xs leading-5 text-slate-300">End this signed-in role session and return to the WEAVE login entrance.</p>
+              <Button onClick={()=>{ logout(); router.replace('/login') }} variant="outline" className="mt-4 w-full border-rose-300/15 bg-rose-400/[0.04] text-rose-100 hover:bg-rose-400/[0.08]">
+                <LogOut className="mr-2 h-4 w-4"/>Sign out → Login
+              </Button>
+            </section>
           </aside>
         </div>
       </section>

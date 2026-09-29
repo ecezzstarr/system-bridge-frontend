@@ -413,9 +413,18 @@ const flameAdSource=fs.readFileSync(path.join(root,'components/events/flame-even
 const clientDashboardUnifiedSource=fs.readFileSync(path.join(root,'app/client/dashboard/page.tsx'),'utf8')
 const appEventUnifiedSource=fs.readFileSync(path.join(root,'app/(app)/event/page.tsx'),'utf8')
 const clientEventUnifiedSource=fs.readFileSync(path.join(root,'app/client/event/page.tsx'),'utf8')
+const appHeaderRoleShellSource=fs.readFileSync(path.join(root,'components/app-header.tsx'),'utf8')
+const directCommunicationSource=fs.readFileSync(path.join(root,'components/communication/weave-communication-hub.tsx'),'utf8')
+const managementContactsSource=fs.readFileSync(path.join(root,'app/api/lounge/management-contacts/route.ts'),'utf8')
+const bridgerSupportDirectSource=fs.readFileSync(path.join(root,'app/api/bridger/support-inbox/route.ts'),'utf8')
+const clientMessagesDirectSource=fs.readFileSync(path.join(root,'app/api/client/messages/route.ts'),'utf8')
+const staffSettingsSource=fs.readFileSync(path.join(root,'app/(app)/roles/page.tsx'),'utf8')
 assert.ok(!rootLayoutSource.includes('<FlameEventAd />'),'Flame Event signal is not mounted above every application shell')
 assert.ok(appLayoutSource.includes('<FlameEventAd />'),'Staff operating shell owns the Flame Event system signal')
 assert.ok(clientLayoutSource.includes('<FlameEventAd />'),'Client operating shell owns the Flame Event system signal')
+assert.ok(clientLayoutSource.includes('<AppHeader />'),'Client shell mounts the same global top header as staff roles')
+assert.ok(appHeaderRoleShellSource.includes('Search human cadences')&&appHeaderRoleShellSource.includes("router.push('/search')"),'Global top header exposes cadence search on desktop and mobile')
+assert.ok(appHeaderRoleShellSource.includes("effectiveUser.role === 'client' ? '/client/settings' : '/settings'"),'Global top header routes every role into its Settings place')
 assert.ok(clientLayoutSource.includes('<FlameEventRoleAtmosphere userRole="client">'),'Client environments carry the live Burning River atmosphere')
 assert.ok(normalWorldAtmosphereSource.includes('Home is the compact WEAVE world'),'Role Home is a compact WEAVE landing page')
 assert.ok(normalWorldAtmosphereSource.includes('<WeaveDashboardWorld'),'Role dashboards keep one persistent WEAVE world')
@@ -434,7 +443,9 @@ assert.ok(!clientDashboardUnifiedSource.includes('ClientFlameEventDashboard'),'C
 assert.ok(clientDashboardUnifiedSource.includes('<WeaveDashboardWorld'),'Client Home keeps one compact persistent world')
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
-assert.ok(roleHas('admin','/admin/flame-event'),'Administration exposes one canonical Flame Event control environment')
+assert.ok(roleHas('admin','/admin/flame-event'),'Administration exposes a separate Flame Event control environment')
+assert.ok(roleHas('agent','/event')&&roleHas('bridger','/event')&&roleHas('admin','/event')&&roleHas('client','/client/event'),'All four roles can enter Company Loop 1 Flame Event')
+assert.ok(appEventUnifiedSource.includes('<PositionEventWorld role={role}')&&clientEventUnifiedSource.includes('<PositionEventWorld')&&clientEventUnifiedSource.includes('role="client"'),'Agent Bridger Admin and Client render the same PositionEventWorld for Loop 1')
 assert.ok(!fs.existsSync(path.join(root,'components/app-sidebar.tsx')),'Retired flattened sidebar is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/client/client-operating-room.tsx')),'Retired Client Operating Room component is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/bridger/bridger-operating-environment.tsx')),'Retired Bridger Operating Room component is removed')
@@ -476,13 +487,13 @@ for(const href of ['/admin/control-center','/admin/file-number-engine','/admin/o
 assert.equal(getRoleDistricts('admin')[0].name,'Control','Administration starts with one control district')
 assert.deepEqual(
  getRolePlaces('agent').map(place=>place.href),
- ['/agent/presence','/agility','/agent/commissions'],
- 'Agent account is Presence plus Agility and Commissions only'
+ ['/agent/presence','/settings','/agility','/agent/commissions','/communications','/event'],
+ 'Agent account keeps Presence Agility and Commissions while adding Settings Direct Communication and Loop 1'
 )
 assert.deepEqual(
  getRolePlaces('bridger').map(place=>place.href),
- ['/bridger/presence','/bridger/bridge-ai','/weave/market/prospects','/bridger/numbers','/echo','/profiles','/wallet/deposit-withdraw'],
- 'Bridger account is Presence plus Bridge AI, Prospect Market, Number Bay, Echo, Presences and Deposit/Withdrawal'
+ ['/bridger/presence','/settings','/bridger/bridge-ai','/weave/market/prospects','/bridger/numbers','/echo','/profiles','/wallet/deposit-withdraw','/communications','/event'],
+ 'Bridger account keeps its focused functions while adding Settings Direct Communication and Loop 1'
 )
 for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace','/lounge']) assert.ok(!roleHas(role,href),role+' excludes unrelated account entrance '+href)
 assert.ok(roleLabel('agent','Agent Presence'),'Agent has a Presence environment for understanding the position')
@@ -490,6 +501,8 @@ assert.ok(roleLabel('bridger','Bridger Presence'),'Bridger has a Presence enviro
 assert.ok(roleLabel('client','Client Presence'),'Client has a Presence environment for understanding the Client world')
 assert.ok(roleHas('client','/client/loops')&&roleHas('client','/client/event'),'Client Loops and Flame Event live inside the canonical Client world catalog')
 assert.ok(roleLabel('client','Loop Field')&&roleLabel('client','Flame Event · Loop 1'),'Client Loop/Event names are canonical inside the role world')
+assert.ok(roleHas('agent','/communications')&&roleHas('bridger','/communications')&&roleHas('admin','/communications'),'Agent Bridger and Administration expose Direct Communication')
+assert.ok(roleHas('agent','/settings')&&roleHas('bridger','/settings')&&roleHas('admin','/settings')&&roleHas('client','/client/settings'),'Every role exposes Settings')
 assert.ok(roleOperatingRoomSource.includes('getRolePlaces(role)'),'Agent Operating Room uses the role catalog')
 assert.ok(adminControlCenterRouteSource.includes('@/components/admin/administration-control-terminal'),'Admin control center stays connected')
 for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcements'"]) assert.ok(adminDashboardCenterSource.includes(hash),hash)
@@ -1151,6 +1164,8 @@ assert.ok(standingSystemSource.includes('does not simulate progress'),'Standing 
 assert.ok(clientSettingsSystemSource.includes("fetch('/api/auth/profile'"),'Client Settings updates the live authenticated account')
 assert.ok(!clientSettingsSystemSource.includes('/api/client/admin/settings'),'Client Settings no longer uses the mock admin settings endpoint')
 assert.ok(!clientSettingsSystemSource.includes('Only admins can access settings'),'Client Settings no longer rejects actual Clients')
+assert.ok(clientSettingsSystemSource.includes('Sign out → Client login')&&clientSettingsSystemSource.includes("router.replace('/client/login')"),'Client Settings owns logout back to Client login')
+assert.ok(staffSettingsSource.includes('Sign out → Login')&&staffSettingsSource.includes("router.replace('/login')"),'Agent Bridger and Administration Settings own logout back to login')
 assert.ok(clientPortalSource.includes("user?.role === 'client'"),'Staff roles can inspect the Client path without being redirected into a Client dashboard')
 for(const file of [
  'components/world/client-build-pull.tsx',
@@ -1181,7 +1196,7 @@ const reserveEngineSource=fs.readFileSync(path.join(root,'app/(app)/fund-wall/pa
 const bridgePlazaMatureSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
 const cadenceEngineSource=fs.readFileSync(path.join(root,'app/(app)/search/page.tsx'),'utf8')
 
-assert.ok(positionIdentitySource.includes('Position + Identity Engine'),'Legacy roles/settings route is a real Position and Identity system')
+assert.ok(positionIdentitySource.includes('Settings · Position + Identity'),'Settings is the live Position and Identity system')
 assert.ok(positionIdentitySource.includes('Changing your name or password does not silently change'),'Identity changes do not masquerade as institutional role changes')
 assert.ok(businessDistrictSource.includes('Business District'),'Places route is the canonical Business District')
 assert.ok(!businessDistrictSource.includes('<Market'),'Business District no longer embeds a duplicate Market mini-app')
@@ -1245,7 +1260,8 @@ const adminContinuanceSource=fs.readFileSync(path.join(root,'app/(app)/admin/sub
 const adminOutreachSource=fs.readFileSync(path.join(root,'app/(app)/admin/outreach/page.tsx'),'utf8')
 const adminOutreachApiSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/outreach/pending/route.ts'),'utf8')
 const adminVaultAuthoritySource=fs.readFileSync(path.join(root,'app/(app)/admin/client-vault/page.tsx'),'utf8')
-const adminHubMatureSource=fs.readFileSync(path.join(root,'app/(app)/admin/hub/page.tsx'),'utf8')
+const legacyAdminHubSource=fs.readFileSync(path.join(root,'app/(app)/admin/hub/page.tsx'),'utf8')
+const directCommunicationMatureSource=fs.readFileSync(path.join(root,'components/communication/weave-communication-hub.tsx'),'utf8')
 
 assert.ok(legacyClientAdminChatSource.includes("redirect('/client/chat/admin')"),'Legacy mock Client Admin chat resolves to canonical Client Administration chat')
 assert.ok(!legacyClientAdminChatSource.includes('mockSessions'),'Legacy Client Admin chat no longer fabricates conversations')
@@ -1264,9 +1280,14 @@ assert.ok(adminOutreachApiSource.includes("authUser.role !== 'admin'"),'Outreach
 assert.ok(adminOutreachApiSource.includes("status: 403"),'Non-Admin outreach access is forbidden')
 assert.ok(adminVaultAuthoritySource.includes('Client Vault Authority Engine'),'Client Vault is an Administration authority system')
 assert.ok(adminVaultAuthoritySource.includes('ready for manual settlement'),'Withdrawal approval is distinguished from completed settlement')
-assert.ok(adminHubMatureSource.includes('Communication Matrix'),'Hub is a causal communication system')
-assert.ok(adminHubMatureSource.includes('senderType: user.role'),'Agent messages retain Agent identity instead of being stamped Admin')
-assert.ok(adminHubMatureSource.includes('const pos = isAgent ? threadPosition : position'),'Administration Prospect position selector controls the real channel')
+assert.ok(legacyAdminHubSource.includes("redirect('/communications')"),'Legacy Administration Message Hub resolves to Direct Communication')
+assert.ok(directCommunicationMatureSource.includes('Direct Communication'),'Canonical role communication is one causal environment')
+assert.ok(directCommunicationMatureSource.includes("const isAgent = user?.role === 'agent'")&&directCommunicationMatureSource.includes("const isBridger = user?.role === 'bridger'")&&directCommunicationMatureSource.includes("const isAdmin = user?.role === 'admin'"),'Direct Communication recognizes Agent Bridger and Administration positions')
+assert.ok(directCommunicationMatureSource.includes("const pos = isAdmin ? position : threadPosition"),'Administration selects Prospect position while Agent and Bridger stay on their authorized thread')
+assert.ok(directCommunicationMatureSource.includes('/api/bridger/support-inbox')&&directCommunicationMatureSource.includes('/api/client/messages')&&directCommunicationMatureSource.includes('/api/lounge/management-contacts'),'Direct Communication joins Prospect Client and role-to-role channels without another chat backend')
+assert.ok(managementContactsSource.includes("role = 'admin'")&&managementContactsSource.includes("assigned_agent_id = ${authUser.id}::uuid"),'Agent and Bridger relationship contacts include Administration and their authorized Agent-Bridger link')
+assert.ok(bridgerSupportDirectSource.includes('LEFT JOIN bridge_support_messages'),'Bridger can initiate with an owned Prospect before the Prospect sends first')
+assert.ok(clientMessagesDirectSource.includes("'bridger'::text AS position")&&clientMessagesDirectSource.includes("'admin'::text AS position"),'Bridger and Administration can initiate direct Client channels')
 assert.ok(roleHas('admin','/admin/control-center'),'Administration Continuance verification lives inside the canonical Control Center')
 assert.ok(!roleHas('admin','/admin/control-center#users'),'Administration no longer advertises internal Control Center tabs as separate places')
 
@@ -1280,6 +1301,9 @@ for(const file of [
  'app/api/admin/market/prospects/outreach/pending/route.ts',
  'app/(app)/admin/client-vault/page.tsx',
  'app/(app)/admin/hub/page.tsx',
+ 'components/communication/weave-communication-hub.tsx',
+ 'app/(app)/communications/page.tsx',
+ 'app/(app)/settings/page.tsx',
 ]){
  const source=fs.readFileSync(path.join(root,file),'utf8')
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})

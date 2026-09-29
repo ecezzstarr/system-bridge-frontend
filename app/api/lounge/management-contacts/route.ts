@@ -14,23 +14,29 @@ export async function GET(request: NextRequest) {
 
   try {
     if (authUser.role === 'agent') {
-      const bridgers = await sql`
+      const contacts = await sql`
         SELECT id, name, username, avatar_url, role
         FROM users
-        WHERE assigned_agent_id = ${authUser.id}::uuid AND role = 'bridger'
-        ORDER BY name
+        WHERE (assigned_agent_id = ${authUser.id}::uuid AND role = 'bridger')
+           OR (role = 'admin' AND is_active = true)
+        ORDER BY role, name
       `
-      return NextResponse.json({ success: true, contacts: bridgers })
+      return NextResponse.json({ success: true, contacts })
     }
 
     if (authUser.role === 'bridger') {
-      const agents = await sql`
+      const contacts = await sql`
         SELECT a.id, a.name, a.username, a.avatar_url, a.role
         FROM users u
         JOIN users a ON a.id = u.assigned_agent_id
         WHERE u.id = ${authUser.id}::uuid AND a.role = 'agent'
+        UNION
+        SELECT id, name, username, avatar_url, role
+        FROM users
+        WHERE role = 'admin' AND is_active = true
+        ORDER BY role, name
       `
-      return NextResponse.json({ success: true, contacts: agents })
+      return NextResponse.json({ success: true, contacts })
     }
 
     if (authUser.role === 'admin') {

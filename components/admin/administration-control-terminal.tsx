@@ -137,7 +137,7 @@ export default function AdminTerminal() {
       <section className="border-y border-purple-300/10 bg-black/15 px-2 py-4 sm:px-4" data-administration-control-room="focused">
         <div className="mb-4 border-l-2 border-purple-300/30 pl-3">
           <p className="text-[9px] font-black uppercase tracking-[.18em] text-purple-300">One control room</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">Users, departmental authorization, File Number verification, Bridger standing, Client communications, deposits, withdrawals and announcements stay as stations inside this room. Shared WEAVE places and Workshops no longer repeat here.</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">Users, departmental authorization, Bridger standing, deposits, withdrawals and announcements stay as stations inside this room. Direct Communication, File Number and Workshops remain in their own WEAVE places.</p>
         </div>
         <AdminPanelSection user={user} />
       </section>
@@ -155,7 +155,7 @@ function AdminPanelSection({ user }: { user: any }) {
       const hash = window.location.hash
       if (hash === '#bridgers') setActiveSubTab('bridgers')
       else if (hash === '#users') setActiveSubTab('users')
-      else if (hash === '#clients') window.location.replace('/admin/hub?tab=clients')
+      else if (hash === '#clients') window.location.replace('/communications?tab=clients')
       else if (hash === '#fne') window.location.replace('/admin/file-number-engine')
       else if (hash === '#deposits') setActiveSubTab('deposits')
       else if (hash === '#tron') window.location.replace('/admin/client-deposits')

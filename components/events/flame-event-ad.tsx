@@ -12,7 +12,7 @@ const ROLE_COPY = {
   client: { label: 'CLIENT PLAYER', destination: '/client/event', action: 'Open Loop 1' },
   bridger: { label: 'BRIDGER SUPPORT', destination: '/event', action: 'Open Loop 1' },
   agent: { label: 'AGENT SUPPORT', destination: '/event', action: 'Open Loop 1' },
-  admin: { label: 'ADMINISTRATION', destination: '/admin/flame-event', action: 'Event Control' },
+  admin: { label: 'ADMINISTRATION', destination: '/event', action: 'Open Loop 1' },
 } as const
 
 const HIDDEN_PATHS = ['/login', '/register', '/client/login', '/client/register', '/event', '/client/event', '/admin/flame-event']

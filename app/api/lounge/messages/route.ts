@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         `INSERT INTO notifications
           (user_id,type,title,content,from_user_id,from_user_name,link)
          VALUES ($1::uuid,'private_message',$2,$3,$4::uuid,$5,$6)`,
-        [recipientId, senderName + ' reached out', content.slice(0, 100) || 'Sent media', user.id, senderName, '/lounge?chat=' + user.id]
+        [recipientId, senderName + ' reached out', content.slice(0, 100) || 'Sent media', user.id, senderName, '/communications?tab=' + (user.role === 'agent' ? 'agents' : user.role === 'bridger' ? 'bridgers' : 'administration') + '&contact=' + user.id]
       ).catch(() => {})
     }
 

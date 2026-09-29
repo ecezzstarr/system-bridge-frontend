@@ -166,11 +166,11 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     layer: 'district',
   },
   '/event': {
-    key: 'loop-ground',
-    title: 'Company Loop Ground',
+    key: 'flame-event-loop-one',
+    title: 'Flame Event · Loop 1',
     district: 'Presence',
-    purpose: 'The live company-event environment where published loops become shared participation in time.',
-    movement: 'Arrive → recognize the loop → participate → continue',
+    purpose: 'The shared Burning River event ground for Agent, Bridger and Administration positions inside Company Loop 1.',
+    movement: 'Arrive → recognize position → participate → continue',
     layer: 'district',
   },
   '/company/loops': {
@@ -196,6 +196,22 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     purpose: 'Search the WEAVE field by the movement, presence and participation people make visible.',
     movement: 'Notice → recognize → connect',
     layer: 'district',
+  },
+  '/communications': {
+    key: 'direct-communication',
+    title: 'Direct Communication',
+    district: 'Presence',
+    purpose: 'Authorized direct communication between connected WEAVE positions, Prospects and Clients.',
+    movement: 'Select relationship → speak directly → preserve continuity',
+    layer: 'interaction',
+  },
+  '/settings': {
+    key: 'role-settings',
+    title: 'Settings',
+    district: 'Presence',
+    purpose: 'Manage identity, password and the current signed-in role session.',
+    movement: 'Review identity → update → sign out or continue',
+    layer: 'system',
   },
   '/weave/standing': {
     key: 'standing-field',
