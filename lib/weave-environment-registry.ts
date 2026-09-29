@@ -18,6 +18,9 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'shared-presences', label:'Presences', kind:'district', route:'/profiles', area:'Shared WEAVE', scope:'shared', defaultOrder:30 },
   { key:'shared-bridge-plaza', label:'Bridge Plaza', kind:'district', route:'/weave', area:'Shared WEAVE', scope:'shared', defaultOrder:40 },
   { key:'shared-company-guidance', label:'Company Guidance', kind:'district', route:'/company-chat', area:'Shared WEAVE', scope:'shared', defaultOrder:50 },
+  { key:'shared-direct-communication', label:'Direct Communication', kind:'district', route:'/communications', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:55 },
+  { key:'shared-flame-event', label:'Flame Event · Loop 1', kind:'district', route:'/event', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:57 },
+  { key:'shared-settings', label:'Settings', kind:'district', route:'/settings', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:58 },
   { key:'shared-lounge', label:'Lounge', kind:'district', route:'/lounge', area:'Shared WEAVE', scope:'shared', defaultOrder:60 },
   { key:'shared-marketplace', label:'Enterprise Systems', kind:'district', route:'/marketplace', area:'Shared WEAVE', scope:'shared', defaultOrder:70 },
   { key:'shared-echo', label:'Echo', kind:'district', route:'/echo', area:'Shared WEAVE', scope:'shared', defaultOrder:80 },
@@ -42,6 +45,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'client-file-folder', label:'File Folder', kind:'district', route:'/client/system-switch', area:'Client', scope:'client', protected:true, defaultOrder:30 },
   { key:'client-loops', label:'Loop Field', kind:'district', route:'/client/loops', area:'Client', scope:'client', defaultOrder:40 },
   { key:'client-event', label:'Flame Event · Loop 1', kind:'district', route:'/client/event', area:'Client', scope:'client', defaultOrder:50 },
+  { key:'client-settings', label:'Settings', kind:'district', route:'/client/settings', area:'Client', scope:'client', protected:true, defaultOrder:60 },
 
   { key:'file-folder-command', label:'Command Citadel', kind:'station', route:'/client/system-switch#command', area:'File Folder', scope:'client', protected:true, defaultOrder:10 },
   { key:'file-folder-builds', label:'Build Yard + Live Systems', kind:'station', route:'/client/system-switch#builds', area:'File Folder', scope:'client', defaultOrder:20 },
@@ -59,7 +63,6 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-dashboard', label:'Administration World', kind:'district', route:'/admin/dashboard', area:'Administration', scope:'admin', protected:true, defaultOrder:10 },
   { key:'admin-control-center', label:'Administration Control Center', kind:'district', route:'/admin/control-center', area:'Administration', scope:'admin', protected:true, defaultOrder:30 },
   { key:'admin-environment-organizer', label:'Environment Organizer', kind:'district', route:'/admin/environment-organizer', area:'Administration', scope:'admin', protected:true, defaultOrder:40 },
-  { key:'admin-message-hub', label:'Message Hub', kind:'district', route:'/admin/hub', area:'Administration', scope:'admin', defaultOrder:50 },
   { key:'admin-prospect-engine', label:'Prospect Engine', kind:'district', route:'/admin/prospect-engine', area:'Administration', scope:'admin', defaultOrder:60 },
   { key:'admin-number-engine', label:'Number Bay Engine', kind:'district', route:'/admin/bridger-numbers', area:'Administration', scope:'admin', defaultOrder:70 },
   { key:'admin-bridge-templates', label:'Bridge Templates', kind:'district', route:'/admin/bridge-templates', area:'Administration', scope:'admin', defaultOrder:80 },
@@ -80,7 +83,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-dj-workshop', label:'DJ Workshop', kind:'district', route:'/admin/dj-workshop', area:'Administration', scope:'admin', defaultOrder:210 },
   { key:'admin-ad-workshop', label:'Ad Workshop', kind:'district', route:'/admin/ad-workshop', area:'Administration', scope:'admin', defaultOrder:220 },
   { key:'admin-visual-systems', label:'Visual Systems · Interaction in Motion', kind:'district', route:'/admin/visual-systems', area:'Administration', scope:'admin', defaultOrder:230 },
-  { key:'admin-flame-event', label:'Flame Event · Loop 1', kind:'district', route:'/admin/flame-event', area:'Administration', scope:'admin', defaultOrder:240 },
+  { key:'admin-flame-event', label:'Flame Event Control', kind:'district', route:'/admin/flame-event', area:'Administration', scope:'admin', defaultOrder:240 },
 ]
 
 export function normalizeEnvironmentPageRoute(route:string){
