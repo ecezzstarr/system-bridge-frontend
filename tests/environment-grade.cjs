@@ -305,7 +305,7 @@ assert.ok(!read('components/world/weave-dashboard-world.tsx').includes('animate-
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world-beacon'),'Client functions remain spatial travel beacons inside the world')
 assert.ok(!clientFileFolder.includes('bg-[#120c08]'),'Persistent File Folder shell no longer falls back to the brown wash')
 assert.ok(!clientFileFolder3d.includes('bg-[#120c08]')&&!clientFileFolder3d.includes("args={['#17100b']}"),'File Folder territory no longer renders the brown fallback world')
-assert.ok(environmentTransit.includes("presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:650"),'Internal environment travel is not held behind the full boot briefing sequence')
+assert.ok(environmentTransit.includes("presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:TRANSIT_FORMATION_MS")&&environmentTransit.includes('const TRANSIT_FORMATION_MS=1800'),'Internal travel gets a deliberate formation interval without replaying the full cold-entry sequence')
 assert.ok(read('components/world/use-adaptive-runtime.ts').includes('level===2?1.15'),'High-tier 3D DPR is capped for smooth persistent-world interaction')
 assert.ok(clientFileFolder.includes('one continuous site'),'Construction opens directly into one continuous site rather than an intermediary catalog dashboard')
 assert.ok(fileFolderOpenWorld.includes('materialPurpose'),'Materials explain which blueprints/functions they enable')
