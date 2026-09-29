@@ -176,9 +176,9 @@ assert.ok(dailyProspectClaimUi.includes("kind:'route'")&&dailyProspectClaimUi.in
 assert.ok(bridgerNumbers.includes("kind:'value'")&&bridgerNumbers.includes("kind:'confirmation'"),'Number Bay purchase, order, delivery and verification have confirmed motion responses')
 assert.ok(bridgePlaza.includes("kind:'route'")&&bridgePlaza.includes("kind:'arrival'"),'Bridge Plaza physical travel emits route and arrival movement')
 assert.ok(visualWorkshop.includes('data-admin-motion-tests="true"')&&visualWorkshop.includes('Admin motion test'),'Administration can test motion responses without creating business records')
-for(const source of [adminWorkshop,appSidebar,operatingRoom,dashboardWorld]){
- assert.ok(source.includes('/admin/visual-systems'),'Administration navigation exposes Visual Systems Workshop')
-}
+assert.ok(adminWorkshop.includes('/admin/visual-systems'),'Administration Workshop exposes Visual Systems')
+assert.ok(roleDistricts2026.includes('"href": "/admin/visual-systems"'),'Canonical Administration role catalog exposes Visual Systems')
+assert.ok(environmentRegistry.includes("route:'/admin/visual-systems'"),'Environment registry preserves Visual Systems as an Administration district')
 assert.ok(fs.existsSync(path.join(root,'db/migrations/20260926_visual_systems_workshop.sql')),'Visual Systems Workshop migration exists')
 
 const developmentFoundry=read('lib/weave-development-agents.ts')
