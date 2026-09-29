@@ -248,9 +248,9 @@ function WorldCamera({
     const pz=focus.position[2]
     direction.set(px,0,pz).normalize()
     desiredPosition.set(
-      px-direction.x*4.1,
+      px-direction.x*6.4,
       3.2,
-      pz-direction.z*4.1,
+      pz-direction.z*6.4,
     )
     desiredTarget.set(px,.45,pz)
 
@@ -328,7 +328,7 @@ export function BridgePlazaMap({
       {id:'presence',name:'Presence District',subtitle:'STANDING · RECORD · HOLDING',href:'/presence',action:'route',accent:'#7dd3fc',position:[0,.05,6.25],rotation:Math.PI,unlocked:true,system:'Presence'},
     ]
 
-    if(worldRoles.includes('admin')||worldRoles.includes('administration')){
+    if(userRole==='admin'||worldRoles.includes('admin')||worldRoles.includes('administration')){
       base.push({id:'administration',name:'Administration District',subtitle:'AUTHORITY · CONTROL · CONTINUITY',href:'/admin',action:'route',accent:'#f97316',position:[6.45,.05,2.8],rotation:-2.05,unlocked:true,system:'Administration'})
     }
 
@@ -354,22 +354,14 @@ export function BridgePlazaMap({
     return base
   },[fileNumber,supportAvailable,userRole,worldRoles])
 
+  const arrivalFallbackTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined)
   const travelTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined)
-  useEffect(()=>()=>{clearTimeout(travelTimer.current);document.body.style.cursor='auto'},[])
-  const handleSelect=useCallback((portal:BridgePlazaPortal)=>{
-    clearTimeout(travelTimer.current)
-    setFocus(portal)
-    setMovement('moving')
-    emitWeaveMotion({
-      kind:'route',
-      label:`Movement toward ${portal.name}`,
-      intensity:.9,
-      confirmed:false,
-      source:'bridge-plaza',
-    })
-  },[])
+  const completedPortalRef=useRef<string|null>(null)
 
-  const handleArrival=useCallback((portal:BridgePlazaPortal)=>{
+  const completePortalEntry=useCallback((portal:BridgePlazaPortal)=>{
+    if(completedPortalRef.current===portal.id)return
+    completedPortalRef.current=portal.id
+    clearTimeout(arrivalFallbackTimer.current)
     emitWeaveMotion({
       kind:'arrival',
       label:`Entered ${portal.name}`,
@@ -385,9 +377,39 @@ export function BridgePlazaMap({
     if(portal.href){
       setMovement('moving')
       clearTimeout(travelTimer.current)
-      travelTimer.current=setTimeout(()=>onTravel(portal.href!),220)
+      travelTimer.current=setTimeout(()=>onTravel(portal.href!),160)
     }
   },[onOpenSupport,onTravel])
+
+  useEffect(()=>()=> {
+    clearTimeout(arrivalFallbackTimer.current)
+    clearTimeout(travelTimer.current)
+    document.body.style.cursor='auto'
+  },[])
+
+  const handleSelect=useCallback((portal:BridgePlazaPortal)=>{
+    clearTimeout(arrivalFallbackTimer.current)
+    clearTimeout(travelTimer.current)
+    completedPortalRef.current=null
+    setFocus(portal)
+    setMovement('moving')
+    emitWeaveMotion({
+      kind:'route',
+      label:`Movement toward ${portal.name}`,
+      intensity:.9,
+      confirmed:false,
+      source:'bridge-plaza',
+    })
+
+    // Camera motion is presentation, never an access gate. If OrbitControls,
+    // device frame pressure or pointer interruption delays arrival, the selected
+    // district still opens deterministically.
+    arrivalFallbackTimer.current=setTimeout(()=>completePortalEntry(portal),1100)
+  },[completePortalEntry])
+
+  const handleArrival=useCallback((portal:BridgePlazaPortal)=>{
+    completePortalEntry(portal)
+  },[completePortalEntry])
 
   return <div className="relative h-full min-h-[440px] sm:min-h-[690px] w-full overflow-hidden bg-transparent" data-bridge-plaza-system="continuous-moving-world" data-bridge-plaza-atmosphere="live-flame">
     <AdaptiveCanvas shadows camera={{position:[0,8.3,14.1],fov:45}} dpr={[1,1.5]}>
