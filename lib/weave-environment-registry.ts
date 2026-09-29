@@ -27,7 +27,6 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'shared-standing', label:'Standing', kind:'district', route:'/weave/standing', area:'Shared WEAVE', scope:'shared', defaultOrder:120 },
 
   { key:'bridger-presence', label:'Bridger Presence', kind:'district', route:'/bridger/presence', area:'Bridger', scope:'bridger', protected:true, defaultOrder:5 },
-  { key:'bridger-functions', label:'Bridger Operating Room', kind:'district', route:'/bridger/functions', area:'Bridger', scope:'bridger', protected:true, defaultOrder:10 },
   { key:'bridger-bridge-ai', label:'Bridge AI', kind:'district', route:'/bridger/bridge-ai', area:'Bridger', scope:'bridger', defaultOrder:20 },
   { key:'bridger-prospect-market', label:'Prospect Market', kind:'district', route:'/weave/market/prospects', area:'Bridger', scope:'bridger', defaultOrder:30 },
   { key:'bridger-numbers', label:'Number Bay', kind:'district', route:'/bridger/numbers', area:'Bridger', scope:'bridger', defaultOrder:40 },
@@ -39,11 +38,10 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'agent-commissions', label:'Commissions', kind:'district', route:'/agent/commissions', area:'Agent', scope:'agent', defaultOrder:30 },
 
   { key:'client-presence', label:'Client Presence', kind:'district', route:'/client/presence', area:'Client', scope:'client', protected:true, defaultOrder:5 },
-  { key:'client-dashboard', label:'Client Home World', kind:'district', route:'/client/dashboard', area:'Client', scope:'client', protected:true, defaultOrder:10 },
-  { key:'client-functions', label:'Client Operating Room', kind:'district', route:'/client/functions', area:'Client', scope:'client', protected:true, defaultOrder:20 },
-  { key:'client-file-folder', label:'Main File Folder', kind:'district', route:'/client/system-switch', area:'Client', scope:'client', protected:true, defaultOrder:30 },
-  { key:'client-loops', label:'Client Loop Field', kind:'district', route:'/client/loops', area:'Client', scope:'client', defaultOrder:40 },
-  { key:'client-event', label:'Client Loop 1 Ground', kind:'district', route:'/client/event', area:'Client', scope:'client', defaultOrder:50 },
+  { key:'client-dashboard', label:'Client World', kind:'district', route:'/client/dashboard', area:'Client', scope:'client', protected:true, defaultOrder:10 },
+  { key:'client-file-folder', label:'File Folder', kind:'district', route:'/client/system-switch', area:'Client', scope:'client', protected:true, defaultOrder:30 },
+  { key:'client-loops', label:'Loop Field', kind:'district', route:'/client/loops', area:'Client', scope:'client', defaultOrder:40 },
+  { key:'client-event', label:'Flame Event · Loop 1', kind:'district', route:'/client/event', area:'Client', scope:'client', defaultOrder:50 },
 
   { key:'file-folder-command', label:'Command Citadel', kind:'station', route:'/client/system-switch#command', area:'File Folder', scope:'client', protected:true, defaultOrder:10 },
   { key:'file-folder-builds', label:'Build Yard + Live Systems', kind:'station', route:'/client/system-switch#builds', area:'File Folder', scope:'client', defaultOrder:20 },
@@ -58,13 +56,12 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'file-folder-live', label:'Live Systems', kind:'station', route:'/client/system-switch#studio:active_systems', area:'File Folder Build Studio', scope:'client', defaultOrder:50 },
   { key:'file-folder-library', label:'Build Intelligence Library', kind:'station', route:'/client/system-switch#studio:library_district', area:'File Folder Build Studio', scope:'client', defaultOrder:60 },
 
-  { key:'admin-dashboard', label:'Administration Home', kind:'district', route:'/admin/dashboard', area:'Administration', scope:'admin', protected:true, defaultOrder:10 },
-  { key:'admin-functions', label:'Administration Operating Room', kind:'district', route:'/admin/functions', area:'Administration', scope:'admin', protected:true, defaultOrder:20 },
+  { key:'admin-dashboard', label:'Administration World', kind:'district', route:'/admin/dashboard', area:'Administration', scope:'admin', protected:true, defaultOrder:10 },
   { key:'admin-control-center', label:'Administration Control Center', kind:'district', route:'/admin/control-center', area:'Administration', scope:'admin', protected:true, defaultOrder:30 },
   { key:'admin-environment-organizer', label:'Environment Organizer', kind:'district', route:'/admin/environment-organizer', area:'Administration', scope:'admin', protected:true, defaultOrder:40 },
   { key:'admin-message-hub', label:'Message Hub', kind:'district', route:'/admin/hub', area:'Administration', scope:'admin', defaultOrder:50 },
   { key:'admin-prospect-engine', label:'Prospect Engine', kind:'district', route:'/admin/prospect-engine', area:'Administration', scope:'admin', defaultOrder:60 },
-  { key:'admin-number-engine', label:'WhatsApp Number Engine', kind:'district', route:'/admin/bridger-numbers', area:'Administration', scope:'admin', defaultOrder:70 },
+  { key:'admin-number-engine', label:'Number Bay Engine', kind:'district', route:'/admin/bridger-numbers', area:'Administration', scope:'admin', defaultOrder:70 },
   { key:'admin-bridge-templates', label:'Bridge Templates', kind:'district', route:'/admin/bridge-templates', area:'Administration', scope:'admin', defaultOrder:80 },
   { key:'admin-file-number-engine', label:'File Number Engine', kind:'district', route:'/admin/file-number-engine', area:'Administration', scope:'admin', defaultOrder:90 },
   { key:'admin-outreach', label:'Fulfillment Agent', kind:'district', route:'/admin/outreach', area:'Administration', scope:'admin', defaultOrder:100 },
@@ -82,7 +79,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-integrity-engine', label:'WEAVE Integrity Engine', kind:'district', route:'/admin/dev-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:205 },
   { key:'admin-dj-workshop', label:'DJ Workshop', kind:'district', route:'/admin/dj-workshop', area:'Administration', scope:'admin', defaultOrder:210 },
   { key:'admin-ad-workshop', label:'Ad Workshop', kind:'district', route:'/admin/ad-workshop', area:'Administration', scope:'admin', defaultOrder:220 },
-  { key:'admin-visual-systems', label:'Visual Systems', kind:'district', route:'/admin/visual-systems', area:'Administration', scope:'admin', defaultOrder:230 },
+  { key:'admin-visual-systems', label:'Visual Systems · Interaction in Motion', kind:'district', route:'/admin/visual-systems', area:'Administration', scope:'admin', defaultOrder:230 },
   { key:'admin-flame-event', label:'Flame Event · Loop 1', kind:'district', route:'/admin/flame-event', area:'Administration', scope:'admin', defaultOrder:240 },
 ]
 
