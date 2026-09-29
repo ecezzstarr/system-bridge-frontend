@@ -94,6 +94,7 @@ const agentDistricts:WeaveRoleDistrict[]=[
   {
     key:'bridge',name:'Bridge District',subtitle:'BRIDGER SUPPORT · RADIANCE · GUIDANCE',
     purpose:'Support the connection movement carried by Bridgers.',accent:'#67e8f9',places:[
+      {label:'Client File Folder Support',detail:'Enter Client File Folder worlds in read-only support mode.',href:'/weave?station=file-folders',daily:true},
       {label:'Bridge Radiance',detail:'Support active Prospect movement owned by assigned Bridgers.',href:'/agent/bridge-radiance',daily:true},
       ...sharedBridge,
     ],
@@ -130,6 +131,7 @@ const bridgerDistricts:WeaveRoleDistrict[]=[
   {
     key:'bridge',name:'Bridge District',subtitle:'PROSPECTS · BRIDGE AI · RADIANCE · GUIDANCE',
     purpose:'Connection movement from prospect to Client.',accent:'#67e8f9',places:[
+      {label:'Client File Folder Support',detail:'Enter connected Client File Folder worlds in read-only support mode.',href:'/weave?station=file-folders',daily:true},
       {label:'Bridge AI',detail:'AI-assisted crossing and Client continuity support.',href:'/bridger/bridge-ai',daily:true},
       {label:'Bridge Radiance',detail:'Continue active Prospect conversations and movement.',href:'/bridger/bridge-radiance',daily:true},
       {label:'Prospect Market',detail:'Claim or purchase authorized Prospects.',href:'/weave/market/prospects',daily:true},
@@ -190,8 +192,11 @@ const adminDistricts:WeaveRoleDistrict[]=[
     purpose:'The daily Administration position before entering specialized authority.',accent:'#fb923c',places:administrationPlaces.slice(0,4),
   },
   {
-    key:'bridge',name:'Bridge District',subtitle:'GUIDANCE · LOUNGE · HUMAN CONTINUITY',
-    purpose:'Human communication and company guidance.',accent:'#67e8f9',places:sharedBridge,
+    key:'bridge',name:'Bridge District',subtitle:'GUIDANCE · LOUNGE · CLIENT SUPPORT',
+    purpose:'Human communication, company guidance and Client support.',accent:'#67e8f9',places:[
+      {label:'Client File Folder Support',detail:'Enter Client File Folder worlds in read-only support mode.',href:'/weave?station=file-folders',daily:true},
+      ...sharedBridge,
+    ],
   },
   {
     key:'enterprise',name:'Enterprise District',subtitle:'SYSTEMS · MARKETS · ECHO',
