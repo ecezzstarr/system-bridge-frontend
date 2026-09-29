@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '@/lib/auth-provider'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Activity, Send, Users, UserCircle, GitBranch, Briefcase, ShieldCheck } from 'lucide-react'
@@ -36,6 +36,7 @@ interface Msg {
 export default function AdminHubPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const isAgent = user?.role === 'agent'
 
@@ -54,6 +55,14 @@ export default function AdminHubPage() {
       router.push('/dashboard')
     }
   }, [user, authLoading, router])
+
+  useEffect(() => {
+    if (user?.role !== 'admin') return
+    const requested = searchParams.get('tab')
+    if (requested === 'prospects' || requested === 'clients' || requested === 'bridgers' || requested === 'agents') {
+      setTab(requested)
+    }
+  }, [searchParams, user?.role])
 
   useEffect(() => {
     if (isAgent) setTab('prospects')
