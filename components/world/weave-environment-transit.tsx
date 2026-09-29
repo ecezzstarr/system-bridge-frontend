@@ -113,21 +113,21 @@ const LOADING_CARD_HOLD_MS=2000
 const PLATFORM_BRIEFS:LoadingBrief[]=[
   {
     eyebrow:'WEAVE of Presence',
-    title:'Interaction in Motion.',
-    body:WEAVE_SYSTEM_MAP.identity.publicDescription,
-    movement:'People · Participation · Systems · Value · Opportunity',
+    title:'Heaven and Earth as One',
+    body:'Presence is not separated from movement. Human source, environment, interaction and consequence remain connected inside one operating world.',
+    movement:'Presence · Interaction · Movement · Continuity',
   },
   {
-    eyebrow:'How the world works',
-    title:'Presence becomes movement.',
-    body:'The human is the source. Presence is the space. Interaction is the movement. What works can become value, participation and livelihood.',
+    eyebrow:'INTERACTION IN MOTION',
+    title:'People · Participation · Livelihood',
+    body:'Real people enter real functions. Participation becomes organized work, value, opportunity and a means to continue living.',
     movement:'Be → interact → reveal → recognize → make → become',
   },
   {
-    eyebrow:'One operating world',
-    title:'Your movement continues between environments.',
-    body:'WEAVE keeps position, work, records, systems and participation connected instead of treating every destination as a disconnected page.',
-    movement:'Notice → recognize → solve → move',
+    eyebrow:'COMPANY LOOP 1 · FLAME EVENT',
+    title:'Burning River',
+    body:'The River that Burns. Water and flame move together as one current—the visible signal of transformation and continuity through WEAVE.',
+    movement:'Burning River · The River that Burns',
   },
 ]
 
