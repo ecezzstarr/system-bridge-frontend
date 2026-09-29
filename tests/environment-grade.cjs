@@ -508,7 +508,7 @@ assert.ok(worldRuntimeHeader.includes('data-weave-world-header="top"'),'Authenti
 
 const roleWorldSource = read('components/world/weave-dashboard-world.tsx')
 assert.ok(roleWorldSource.includes('data-role-world={role}'),'Agent Bridger and Administration homes identify as spatial operating worlds instead of HUD territories')
-assert.ok(roleWorldSource.includes('data-role-world-beacon={item.label}'),'Role worlds expose physical destination beacons instead of route cards')
+assert.ok(roleWorldSource.includes('data-role-world-beacon={district.name}')&&roleWorldSource.includes('data-world-organization="presence-district-place"'),'Role worlds expose organized district beacons instead of scattered place cards')
 
 const departmentWorldSource = read('components/world/weave-dashboard-world.tsx')
 const departmentRoomSource = read('components/world/role-operating-room.tsx')
