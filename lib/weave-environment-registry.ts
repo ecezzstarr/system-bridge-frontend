@@ -26,6 +26,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'shared-stream', label:'Stream', kind:'district', route:'/video-feed', area:'Shared WEAVE', scope:'shared', defaultOrder:110 },
   { key:'shared-standing', label:'Standing', kind:'district', route:'/weave/standing', area:'Shared WEAVE', scope:'shared', defaultOrder:120 },
 
+  { key:'bridger-presence', label:'Bridger Presence', kind:'district', route:'/bridger/presence', area:'Bridger', scope:'bridger', protected:true, defaultOrder:5 },
   { key:'bridger-functions', label:'Bridger Operating Room', kind:'district', route:'/bridger/functions', area:'Bridger', scope:'bridger', protected:true, defaultOrder:10 },
   { key:'bridger-numbers', label:'WhatsApp Numbers', kind:'district', route:'/bridger/numbers', area:'Bridger', scope:'bridger', defaultOrder:20 },
   { key:'bridger-bridge-ai', label:'Bridge AI Paths', kind:'district', route:'/bridger/bridge-ai', area:'Bridger', scope:'bridger', defaultOrder:30 },
@@ -42,6 +43,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'agent-commissions', label:'Agent Continuance', kind:'district', route:'/agent/commissions', area:'Agent', scope:'agent', defaultOrder:40 },
   { key:'agent-agility', label:'Agility Agent Store', kind:'district', route:'/agility', area:'Agent', scope:'agent', defaultOrder:50 },
 
+  { key:'client-presence', label:'Client Presence', kind:'district', route:'/client/presence', area:'Client', scope:'client', protected:true, defaultOrder:5 },
   { key:'client-dashboard', label:'Client Home World', kind:'district', route:'/client/dashboard', area:'Client', scope:'client', protected:true, defaultOrder:10 },
   { key:'client-functions', label:'Client Operating Room', kind:'district', route:'/client/functions', area:'Client', scope:'client', protected:true, defaultOrder:20 },
   { key:'client-file-folder', label:'Main File Folder', kind:'district', route:'/client/system-switch', area:'Client', scope:'client', protected:true, defaultOrder:30 },
