@@ -1,20 +1,10 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { ChevronDown, Shield, UserCheck, User, Wallet, TrendingUp, FileText, Info, Camera, Loader2 } from "lucide-react"
+import { ChevronDown, Shield, UserCheck, User, FileText, Info, Camera, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-provider"
-import { ClientBuildPull } from "@/components/world/client-build-pull"
-import {
-  AGENT_CONTENT,
-  BRIDGER_CONTENT,
-  FILE_FOLDER_CONTENT,
-  BRIDGE_PLAZA_CONTENT,
-  MOVEMENT_CONTENT,
-  COMPANY_SUPPORT,
-  HOW_WEAVE_WORKS,
-  TERMS_SECTIONS,
-  CURRENT_TERMS_VERSION,
-} from "@/lib/weave-terms"
+import { TERMS_SECTIONS, CURRENT_TERMS_VERSION } from "@/lib/weave-terms"
+import { ROLE_ACCOUNT_PLACES } from "@/lib/role-account-scope"
 
 function CollapsibleSection({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -138,167 +128,33 @@ export default function ProfilePage() {
           {uploadError && <p className="text-xs text-red-400 mt-1">{uploadError}</p>}
         </div>
       </div>
-
-      {/* Role-specific position section */}
+      {/* Role-specific account scope */}
       {(isAgent || isBridger) && (
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6">
-          <div>
-            <h2 className="text-sm font-black uppercase tracking-wider text-cyan-400 mb-2">
-              {isAgent ? AGENT_CONTENT.positionTitle : BRIDGER_CONTENT.positionTitle}
-            </h2>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              {isAgent ? AGENT_CONTENT.positionSummary : BRIDGER_CONTENT.positionSummary}
-            </p>
+        <section className="rounded-2xl border border-sky-300/15 bg-slate-900/45 p-5 md:p-6">
+          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">
+            {isAgent ? 'Agent account' : 'Bridger account'}
+          </p>
+          <h2 className="mt-2 text-xl font-black text-white">
+            {isAgent ? 'Two working places.' : 'Six working places.'}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            {isAgent
+              ? 'Agility and commission from Bridger Prospect purchases are the complete Agent operating surface.'
+              : 'Bridge AI, Deposit & Withdrawal, Number Bay, Prospect Market, Echo and Presences are the complete Bridger operating surface.'}
+          </p>
+
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            {ROLE_ACCOUNT_PLACES[isAgent ? 'agent' : 'bridger'].map(place => (
+              <div key={place.href} className="rounded-xl border border-white/[0.07] bg-black/20 p-3">
+                <p className="text-xs font-black text-white">{place.label}</p>
+                <p className="mt-1 text-[11px] leading-5 text-slate-500">{place.detail}</p>
+              </div>
+            ))}
           </div>
-
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Your Role</h3>
-            <p className="text-sm text-slate-300">
-              {isAgent ? AGENT_CONTENT.role : BRIDGER_CONTENT.role}
-            </p>
-          </div>
-
-          {isAgent && (
-            <>
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Earning Movements</h3>
-                <ul className="space-y-1.5">
-                  {AGENT_CONTENT.earningMovements.map((m, i) => (
-                    <li key={i} className="text-sm text-slate-300 flex gap-2">
-                      <span className="text-cyan-400 flex-shrink-0">•</span>
-                      {m}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-                  <Wallet className="h-3.5 w-3.5" /> Calculations (Loop 1)
-                </h3>
-                <ul className="space-y-1.5">
-                  {AGENT_CONTENT.calculations.map((c, i) => (
-                    <li key={i} className="text-sm text-slate-300 flex gap-2">
-                      <span className="text-emerald-400 flex-shrink-0">•</span>
-                      {c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Folder Support Work</h3>
-                <p className="text-sm text-slate-300 leading-relaxed italic border-l-2 border-purple-500 pl-4 py-1 bg-purple-500/5">
-                  {AGENT_CONTENT.folderWork}
-                </p>
-              </div>
-            </>
-          )}
-
-          {isBridger && (
-            <>
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Participation</h3>
-                <p className="text-sm text-slate-300 leading-relaxed">{BRIDGER_CONTENT.action}</p>
-              </div>
-
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-                  <TrendingUp className="h-3.5 w-3.5" /> Earnings (Loop 1)
-                </h3>
-                <ul className="space-y-1.5">
-                  {BRIDGER_CONTENT.earnings.map((e, i) => (
-                    <li key={i} className="text-sm text-slate-300 flex gap-2">
-                      <span className="text-emerald-400 flex-shrink-0">•</span>
-                      {e}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Client Connection</h3>
-                <p className="text-sm text-slate-300 leading-relaxed italic border-l-2 border-emerald-500 pl-4 py-1 bg-emerald-500/5">
-                  {BRIDGER_CONTENT.relationship}
-                </p>
-              </div>
-            </>
-          )}
-
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5" /> Movement Loop
-            </h3>
-            <p className="text-sm text-slate-300 leading-relaxed italic border-l-2 border-cyan-500 pl-4 py-1 bg-cyan-500/5">
-              {isAgent ? AGENT_CONTENT.movement : BRIDGER_CONTENT.movement}
-            </p>
-          </div>
-        </div>
+        </section>
       )}
 
-      {(isAgent || isBridger) && <ClientBuildPull role={isAgent ? "agent" : "bridger"} />}
 
-            {/* Architectural Context */}
-      {(isAgent || isBridger) && (
-        <div className="space-y-4">
-          <CollapsibleSection title={FILE_FOLDER_CONTENT.title}>
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">{FILE_FOLDER_CONTENT.subtitle}</h4>
-                <p className="text-sm text-slate-300 leading-relaxed">{FILE_FOLDER_CONTENT.body}</p>
-              </div>
-              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                <p className="text-xs text-slate-400 leading-relaxed italic">{FILE_FOLDER_CONTENT.establishment}</p>
-              </div>
-            </div>
-          </CollapsibleSection>
-
-          <CollapsibleSection title={BRIDGE_PLAZA_CONTENT.title}>
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">{BRIDGE_PLAZA_CONTENT.subtitle}</h4>
-                <p className="text-sm text-slate-300 leading-relaxed">{BRIDGE_PLAZA_CONTENT.body}</p>
-              </div>
-            </div>
-          </CollapsibleSection>
-
-          <CollapsibleSection title={MOVEMENT_CONTENT.title}>
-            <div className="space-y-4">
-              <p className="text-sm text-slate-300 leading-relaxed">{MOVEMENT_CONTENT.body}</p>
-              <p className="text-sm font-black text-cyan-400 uppercase tracking-[0.2em]">{MOVEMENT_CONTENT.footer}</p>
-            </div>
-          </CollapsibleSection>
-
-          <CollapsibleSection title="Real Company Support">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {COMPANY_SUPPORT.map((support) => (
-                <div key={support.name} className="bg-slate-800/40 border border-slate-700/50 p-3 rounded-lg">
-                  <p className="text-xs font-bold text-white mb-0.5">{support.name}</p>
-                  <p className="text-[10px] text-slate-400">{support.detail}</p>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] text-slate-500 mt-4 italic">
-              These are not decorative departments. They are functions that can become active around the Client&apos;s movement.
-            </p>
-          </CollapsibleSection>
-        </div>
-      )}
-
-      {/* How WEAVE Works */}
-      {(isAgent || isBridger) && (
-        <CollapsibleSection title="How WEAVE Works">
-          <div className="space-y-4">
-            <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{HOW_WEAVE_WORKS.summary}</p>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">Institutional Flow</h4>
-              <p className="text-sm font-bold text-white">{HOW_WEAVE_WORKS.institutionalFlow}</p>
-            </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">Client Flow</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">{HOW_WEAVE_WORKS.clientFlow}</p>
-            </div>
-          </div>
-        </CollapsibleSection>
-      )}
 
       {/* Terms & Conditions */}
       {(isAgent || isBridger) && (
