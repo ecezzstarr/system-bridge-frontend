@@ -9,11 +9,10 @@ export type CommissionActivity =
   | 'client_deposit'
 
 /**
- * Resolves the Agent for a given Bridger and credits them commission.
- * Primarily 30% on lead purchases and 2% on client deposits.
+ * Credits an Agent only when an assigned Bridger purchases a Prospect package.
+ * Other Bridger activity is intentionally not Agent commission.
  *
- * Best-effort by design — never throws, so it can't
- * break the primary transaction it's called from.
+ * Best-effort by design — never throws, so it cannot break the primary purchase.
  */
 export async function creditAgentCommission(params: {
   bridgerId: string
@@ -24,6 +23,7 @@ export async function creditAgentCommission(params: {
   const { bridgerId, activity, baseAmount, description } = params
 
   if (!bridgerId || !baseAmount || baseAmount <= 0) return null
+  if (activity !== 'prospect_package_purchase') return null
 
   try {
     const bridgers = await sql`
@@ -32,18 +32,7 @@ export async function creditAgentCommission(params: {
     const agentId = bridgers[0]?.assigned_agent_id
     if (!agentId) return null
 
-    const agentProfiles = await sql`
-      SELECT commission_rate FROM agent_profiles WHERE user_id = ${agentId}::uuid
-    `
-    let rate = Number(agentProfiles[0]?.commission_rate) || WORLD_RULES.AGENT_LEAD_YIELD_RATE
-
-    // Apply refined commission structure
-    if (activity === 'prospect_package_purchase' || activity === 'number_purchase') {
-      rate = WORLD_RULES.AGENT_LEAD_YIELD_RATE // 30% on lead purchase
-    } else if (activity === 'client_deposit') {
-      rate = WORLD_RULES.AGENT_CROSSING_YIELD_RATE // 5% of Weave's 40% company percentage = 2% total
-    }
-
+    const rate = WORLD_RULES.AGENT_LEAD_YIELD_RATE
     const commissionAmount = Math.round(baseAmount * rate * 1e6) / 1e6
 
     if (commissionAmount <= 0) return null
@@ -76,8 +65,8 @@ export async function creditAgentCommission(params: {
         VALUES (
           ${agentId}::uuid,
           'commission',
-          'A return has come to you',
-          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin commission (${(rate * 100).toFixed(0)}%) from a referred Bridger's activity.`},
+          'Prospect commission received',
+          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin commission (${(rate * 100).toFixed(0)}%) from your Bridger's Prospect purchase.`},
           'WEAVE'
         )
       `
