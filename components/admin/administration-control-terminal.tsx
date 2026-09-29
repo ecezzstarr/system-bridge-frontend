@@ -161,6 +161,7 @@ function AdminPanelSection({ user }: { user: any }) {
       else if (hash === '#tron') window.location.replace('/admin/client-deposits')
       else if (hash === '#bridge') setActiveSubTab('bridge')
       else if (hash === '#withdrawals') setActiveSubTab('withdrawals')
+      else if (hash === '#announcements') setActiveSubTab('announcements')
       else if (hash === '#departmental') setActiveSubTab('departmental')
     }
 
