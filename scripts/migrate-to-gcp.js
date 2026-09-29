@@ -7,7 +7,7 @@
  * SQL statements to import into Google Cloud SQL.
  * 
  * Usage:
- *   1. Run: node --env-file-if-exists=/vercel/share/.env.project scripts/migrate-to-gcp.js export
+ *   1. Run: node --env-file-if-exists=.env.local scripts/migrate-to-gcp.js export
  *   2. This creates migration.sql file
  *   3. Import into Cloud SQL: gcloud sql connect [INSTANCE] --user=[USER] < migration.sql
  */
