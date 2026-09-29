@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       })),
     })
   } catch (error: unknown) {
-    console.error('[v0] Fund wall error:', error)
+    console.error('[WEAVE] Fund wall error:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
