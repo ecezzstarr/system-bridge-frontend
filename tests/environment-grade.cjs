@@ -305,7 +305,7 @@ assert.ok(!read('components/world/weave-dashboard-world.tsx').includes('animate-
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world-beacon'),'Client functions remain spatial travel beacons inside the world')
 assert.ok(!clientFileFolder.includes('bg-[#120c08]'),'Persistent File Folder shell no longer falls back to the brown wash')
 assert.ok(!clientFileFolder3d.includes('bg-[#120c08]')&&!clientFileFolder3d.includes("args={['#17100b']}"),'File Folder territory no longer renders the brown fallback world')
-assert.ok(environmentTransit.includes("presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:650"),'Internal environment travel is not held behind the full boot briefing sequence')
+assert.ok(environmentTransit.includes("presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:TRANSIT_FORMATION_MS")&&environmentTransit.includes('const TRANSIT_FORMATION_MS=1800'),'Internal travel gets a deliberate formation interval without replaying the full cold-entry sequence')
 assert.ok(read('components/world/use-adaptive-runtime.ts').includes('level===2?1.15'),'High-tier 3D DPR is capped for smooth persistent-world interaction')
 assert.ok(clientFileFolder.includes('one continuous site'),'Construction opens directly into one continuous site rather than an intermediary catalog dashboard')
 assert.ok(fileFolderOpenWorld.includes('materialPurpose'),'Materials explain which blueprints/functions they enable')
@@ -346,18 +346,27 @@ assert.ok(bridgePlazaPage.includes("searchParams.get('station') === 'file-folder
 assert.ok(!bridgePlazaPage.includes('System Switch · My File Folder'),'Bridge Plaza no longer bypasses the Client District with a direct File Folder shortcut')
 assert.ok(roleDistrictPage2026.includes('getRoleDistrict(user?.role,key)')&&roleDistrictPage2026.includes('data-daily-place'),'District environment resolves role-specific places and marks daily places')
 
+const adaptiveCanvas2026=read('components/world/adaptive-canvas.tsx')
 const cleanRevealDashboard2026=read('components/world/weave-dashboard-world.tsx')
 assert.ok(cleanRevealDashboard2026.includes('weave-dashboard-world')&&cleanRevealDashboard2026.includes('data-role-world-beacon={item.label}')&&cleanRevealDashboard2026.includes('data-client-world-beacon'),'Dashboard world exposes the live-theme shell and spatial beacon movement')
+assert.ok(adaptiveCanvas2026.includes("data-adaptive-canvas-ready")&&adaptiveCanvas2026.includes("weave:adaptive-canvas-ready"),'Adaptive canvas publishes first-frame readiness for the loader handoff')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-event="flame-live"] .weave-dashboard-world'),'Flame Live themes dashboard surfaces rather than adding a wallpaper')
-assert.ok(cleanRevealTransit2026.includes('hasPendingSurface()&&elapsed<absoluteMaximum'),'Pending application state holds the clean reveal only until the absolute recovery ceiling')
-assert.ok(cleanRevealTransit2026.includes('const LOADING_CARD_HOLD_MS=2000'),'Loading briefs remain visible long enough to read')
+assert.ok(cleanRevealTransit2026.includes('(hasPendingSurface()||hasUnreadyCanvas())&&elapsed<absoluteMaximum'),'Pending application state and unfinished 3D worlds hold the clean reveal only until the absolute recovery ceiling')
+assert.ok(cleanRevealTransit2026.includes('const LOADING_CARD_HOLD_MS=3000'),'Cold-entry loading briefs remain visible for three seconds each')
 assert.ok(cleanRevealTransit2026.includes('const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS'),'Environment reveal waits for the complete three-card briefing sequence')
+assert.ok(cleanRevealTransit2026.includes('const TRANSIT_FORMATION_MS=1800'),'Internal movement gets a deliberate destination-formation interval')
+assert.ok(cleanRevealTransit2026.includes('setRuntimeCovered(false)'),'Loader covers the destination visually without freezing the open-world runtime underneath')
+assert.ok(cleanRevealTransit2026.includes('void Promise.all([')&&cleanRevealTransit2026.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'Loader briefing and destination formation run together before reveal')
+assert.ok(cleanRevealTransit2026.includes('hasUnreadyCanvas')&&cleanRevealTransit2026.includes('data-adaptive-canvas-ready'),'Environment reveal waits for visible adaptive canvases to render a ready frame')
+assert.ok(cleanRevealTransit2026.includes("title:\`Opening \${destinationEnvironment.title}\`")&&cleanRevealTransit2026.includes('body:destinationEnvironment.purpose'),'Internal loader describes the actual destination being formed')
 assert.ok(cleanRevealTransit2026.includes('activeBriefs.map((_,index)'),'Loading progress follows whichever three-card briefing is active without removing the normal platform sequence')
 assert.ok(cleanRevealTransit2026.includes("document.addEventListener('click',handleInternalNavigation,true)"),'Internal navigation primes the environment cover at click time, including sidebar links')
 assert.ok(cleanRevealTransit2026.includes('setReadyPath(null)')&&cleanRevealTransit2026.includes('setTransiting(true)'),'Sidebar movement hides the old environment immediately while preserving destination formation')
 assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence('transit',startedAt,controller.signal)\n          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations use the short travel handoff before the final readiness check')
 const loadingBriefCss2026=read('app/weave-readability.css')
 assert.ok(loadingBriefCss2026.includes('@keyframes weave-loading-brief-cycle')&&loadingBriefCss2026.includes('.weave-loading-brief'),'Loading cards enter as discrete readable briefing surfaces')
+assert.ok(loadingBriefCss2026.includes('weave-loading-brief-cycle 3s'),'Loading card animation duration matches the three-second hold')
+assert.ok(loadingBriefCss2026.includes('100% {\n    opacity: 1;'),'Final loader brief remains visible until the destination reveal')
 
 
 /* Environment grammar: major operating surfaces may contain instruments,
@@ -455,7 +464,7 @@ assert.ok(loadStabilityAdaptive.includes('level===1?15:8')&&loadStabilityAdaptiv
 assert.ok(loadStabilityAdaptive.includes('dataset.weaveCovered'),'Environment cover state is published so decorative animation can pause during loading')
 assert.ok(loadStabilityFlame.includes('1000/Math.max(12,runtime.fps)'),'Pointer-driven Flame updates respect the adaptive frame budget')
 assert.ok(loadStabilityMotionField.includes('budget.reducedMotion||budget.level===0'),'Lowest runtime tier paints the living field without maintaining a continuous canvas loop')
-assert.ok(cleanRevealTransit2026.includes('touchesPendingSurface')&&cleanRevealTransit2026.includes("record.type!=='childList'")&&cleanRevealTransit2026.includes("target?.matches('[data-environment-pending]')"),'Environment readiness only reacts to actual pending-surface changes instead of ordinary React DOM churn')
+assert.ok(cleanRevealTransit2026.includes('touchesReadiness')&&cleanRevealTransit2026.includes("record.type!=='childList'")&&cleanRevealTransit2026.includes("[data-environment-pending],[data-adaptive-canvas]")&&cleanRevealTransit2026.includes("attributeFilter:['data-environment-pending','data-adaptive-canvas-ready']"),'Environment readiness reacts only to pending-state and adaptive-canvas readiness changes instead of ordinary React DOM churn')
 assert.ok(cleanRevealCss2026.includes('html[data-weave-quality="0"] .weave-live-flame-current')&&cleanRevealCss2026.includes('display: none')&&cleanRevealCss2026.includes('mix-blend-mode: normal'),'Low and medium tiers remove expensive full-screen flame blend/compositor layers')
 for(const [source,label] of [
  [loadStabilityHero3d,'public hero'],
