@@ -254,8 +254,8 @@ export default function WeaveCommunicationHub() {
             <div><p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">{isAdmin ? 'Administration Direct Communication' : isBridger ? 'Bridger Direct Communication' : 'Agent Direct Communication'}</p><h1 className="mt-1 text-xl font-black text-white md:text-2xl">Every conversation stays attached to a person, position and movement state.</h1><p className="mt-2 max-w-4xl text-xs leading-5 text-slate-300">Agent and Bridger communicate directly through authorized private WEAVE rooms. Bridgers speak directly with their own Prospects and referred Clients. Administration can reach the active user roles from the same communication environment.</p></div>
           </div>
         </header>
-        <div className="flex h-[calc(100vh-13rem)] min-h-[600px] overflow-hidden">
-      <div className="w-72 border-r border-white/10 bg-black/15 flex flex-col">
+        <div className="flex min-h-[640px] flex-col overflow-hidden md:h-[calc(100vh-13rem)] md:flex-row">
+      <div className="flex max-h-[18rem] w-full flex-col border-b border-white/10 bg-black/15 md:max-h-none md:w-72 md:border-b-0 md:border-r">
         <div className="flex border-b border-slate-800">
           {TABS.map(t => (
             <button
@@ -293,7 +293,7 @@ export default function WeaveCommunicationHub() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col bg-black/10">
+      <div className="flex min-h-[28rem] flex-1 flex-col bg-black/10 md:min-h-0">
         {!selected ? (
           <div className="flex-1 flex items-center justify-center p-8 text-center"><div><ShieldCheck className="mx-auto h-8 w-8 text-slate-600"/><p className="mt-3 text-sm font-black text-white">Select recorded movement.</p><p className="mt-2 max-w-sm text-xs leading-5 text-slate-400">Choose a Prospect, Client, Bridger or Agent thread. The channel and participant determine where the next message is recorded.</p></div></div>
         ) : (
