@@ -550,7 +550,7 @@ assert.ok(!walletTransferSource.includes("searchParams.get('userId')"),'Wallet G
 assert.ok(walletWithdrawSource.includes('getAuthUser'),'TRON withdrawal derives identity from session')
 assert.ok(walletOpayWithdrawSource.includes('const userId = authedUser.id'),'OPay withdrawal derives identity from session')
 assert.ok(continuanceSource.includes('getAuthUser'),'Bridger Continuance derives identity from session')
-assert.ok(continuanceEngineSource.includes("subscription_status IN ('active', 'due', 'suspended')"),'Suspended Bridgers remain eligible for automatic Continuance recovery')
+assert.ok(continuanceEngineSource.includes("subscription_status IN ('due', 'suspended')")&&continuanceEngineSource.includes("subscription_status = 'active' AND subscription_expiry IS NOT NULL"),'Due and suspended Bridgers remain eligible for automatic Continuance recovery, including legacy records without expiry')
 assert.ok(continuanceEngineSource.includes("bridger.status === 'due' || bridger.status === 'suspended'")&&continuanceEngineSource.includes('await autoDeductContinuance(userId)'),'Status reads attempt wallet renewal before enforcing Continuance state')
 assert.ok(continuanceEngineSource.includes("const client = await getPool().connect()")&&continuanceEngineSource.includes("await client.query('BEGIN')")&&continuanceEngineSource.includes("FOR UPDATE"),'Automatic Continuance debit and activation use one locked database transaction')
 assert.ok(continuanceEngineSource.includes("balance_trx=balance_trx-$1")&&continuanceEngineSource.includes("subscription_status='active'"),'Automatic Continuance debits the primary Flame Coin wallet and restores active standing')
