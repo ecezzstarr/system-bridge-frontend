@@ -260,7 +260,7 @@ export async function addSystemSwitchMilestone(
           'Your Client has crossed',
           ${'A Client you carry has purchased their File Folder and accepted you as their Bridger. File Number: ' + (state.fileNumber || 'pending') + '.'},
           'WEAVE',
-          '/bridger/clients'
+          '/bridger/presence'
         )
       `
       await sql`
