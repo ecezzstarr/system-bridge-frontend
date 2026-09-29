@@ -21,6 +21,21 @@ export type WeaveRoleDistrict={
 const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
   "agent": [
     {
+      "key": "presence",
+      "name": "Presence",
+      "subtitle": "UNDERSTAND YOUR POSITION",
+      "purpose": "Understand the Agent position before entering its working functions.",
+      "accent": "#7dd3fc",
+      "places": [
+        {
+          "label": "Agent Presence",
+          "href": "/agent/presence",
+          "detail": "See what the Agent position does, how Agility moves, and how Bridger Prospect purchases create commissions.",
+          "daily": true
+        }
+      ]
+    },
+    {
       "key": "position",
       "name": "Agent Movement",
       "subtitle": "AGILITY + COMMISSIONS",
