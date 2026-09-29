@@ -125,9 +125,9 @@
     filter: blur(0);
   }
   100% {
-    opacity: 0;
-    transform: translate3d(0,-8px,0) scale(.992);
-    filter: blur(1.5px);
+    opacity: 1;
+    transform: translate3d(0,0,0) scale(1);
+    filter: blur(0);
   }
 }
 
