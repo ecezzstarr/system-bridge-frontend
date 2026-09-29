@@ -46,7 +46,7 @@ export async function notifyAdministrators(input: NotificationInput) {
         ${input.content},
         ${input.fromUserId || null}::uuid,
         ${input.fromUserName || 'WEAVE'},
-        ${input.link || '/admin/dashboard#deposits'}
+        ${input.link || '/admin/control-center#deposits'}
       FROM users
       WHERE role = 'admin'
         AND COALESCE(is_active, true) = true
@@ -72,7 +72,7 @@ export async function notifyDepositSubmitted(input: {
     type: 'deposit_pending',
     title: `${input.role} deposit awaiting verification`,
     content: `${input.depositorName} submitted ${input.amountLabel}${input.secondaryLabel ? ` (${input.secondaryLabel})` : ''} through ${input.rail}. Deposit ${input.depositId} is awaiting Administration.`,
-    link: input.adminLink || '/admin/dashboard#deposits',
+    link: input.adminLink || '/admin/control-center#deposits',
     fromUserId: input.depositorId || null,
     fromUserName: input.depositorName,
   })
