@@ -20,7 +20,7 @@ const ROLE_SYSTEM: Record<string, { title: string; detail: string; operatingRoom
   admin: {
     title: 'Administration',
     detail: 'Institutional authority, verification, infrastructure and continuity.',
-    operatingRoom: '/admin/functions',
+    operatingRoom: '/admin/dashboard',
     tone: 'border-violet-300/20 bg-violet-400/[0.05] text-violet-200',
   },
   agent: {
@@ -32,7 +32,7 @@ const ROLE_SYSTEM: Record<string, { title: string; detail: string; operatingRoom
   bridger: {
     title: 'Bridger',
     detail: 'Partnership position opening Client paths and continuing beside the Client.',
-    operatingRoom: '/bridger/functions',
+    operatingRoom: '/bridger/dashboard',
     tone: 'border-sky-300/20 bg-sky-400/[0.05] text-sky-200',
   },
   creator: {
