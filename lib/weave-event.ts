@@ -56,10 +56,10 @@ export const FLAME_EVENT: WeaveEvent = {
     },
     agent: {
       mode: 'support',
-      headline: 'Your Team. Company Movement. Real Impact.',
-      purpose: 'The Agent supports Company Loop 1 by organizing Bridger movement, maintaining company continuity and helping real participation move.',
-      focus: ['My Bridgers', 'Team Movement', 'Company Activities', 'Support Required', 'New Bridger Opportunities', 'Event Record'],
-      movement: ['Keep assigned Bridgers moving', 'Recognize Bridgers requiring support', 'Support company activities opened to Agents', 'Extend the Bridger team where appropriate', 'Follow resulting Client movement'],
+      headline: 'Agility. Prospect Movement. File Folder Return.',
+      purpose: 'The Agent supports Company Loop 1 through Agility and the commission movement created when attached Bridgers purchase Prospects and convert Clients through verified File Folder purchases.',
+      focus: ['Agility', 'Prospect Purchase Returns', 'File Folder Returns', 'Commission Record', 'Event Movement'],
+      movement: ['Move Agility distribution', 'Follow attached Bridger Prospect purchases through Commission records', 'Recognize verified File Folder crossings connected to those Bridgers', 'Preserve the resulting Agent return'],
     },
     admin: {
       mode: 'support',
