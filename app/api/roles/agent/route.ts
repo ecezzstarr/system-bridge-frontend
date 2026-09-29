@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: agent[0] })
   } catch (error) {
-    console.error('[v0] Agent profile error:', error)
+    console.error('[WEAVE] Agent profile error:', error)
     return NextResponse.json({ error: 'Failed to fetch agent profile' }, { status: 500 })
   }
 }
