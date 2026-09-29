@@ -211,26 +211,26 @@ const supportFileFolderPage=read('app/(app)/weave/file-folder/[fileNumber]/page.
 
 assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent/Admin Operating Room removes Position Map card')
 assert.ok(!bridgerOperatingRoom.toLowerCase().includes('position map'),'Bridger Operating Room removes Position Map card')
-assert.ok(bridgerOperatingRoom.includes('data-bridger-live-operations="true"'),'Bridger Operating Room exposes a live operational pulse instead of a static route menu')
-for(const route of ['/api/bridger/daily-prospect','/api/bridger/support-inbox','/api/bridger/clients','/api/bridger/numbers','/api/bridger/subscription','/api/bridger/bridge-ai/subscribe']){
- assert.ok(bridgerOperatingRoom.includes(route),'Bridger live operations reads '+route)
+assert.ok(bridgerOperatingRoom.includes('data-bridger-live-operations="focused"'),'Bridger Operating Room exposes only a focused live pulse')
+for(const route of ['/api/bridger/daily-prospect','/api/bridger/numbers','/api/bridger/bridge-ai/subscribe']){
+ assert.ok(bridgerOperatingRoom.includes(route),'Focused Bridger pulse reads '+route)
 }
-for(const route of ['/bridger/bridge-radiance','/bridger/numbers','/bridger/clients','/bridger/subscription']){
- assert.ok(bridgerOperatingRoom.includes(route),'Bridger Operating Room exposes '+route)
+for(const removed of ['/bridger/bridge-radiance','/bridger/clients','/bridger/subscription','/api/bridger/support-inbox','/api/bridger/clients','ClientBuildPull','referral-commissions']){
+ assert.ok(!bridgerOperatingRoom.includes(removed),'Bridger Operating Room excludes old account clutter '+removed)
 }
-assert.ok(bridgerOperatingRoom.includes('visiblePoll(signal => loadPulse(signal), 20000)'),'Bridger Operating Room refreshes current movement while visible without overlapping hidden-tab work')
-assert.ok(bridgerOperatingRoom.includes('Flame Coin')&&!bridgerOperatingRoom.includes('referralEarnings ?? 0} TRX'),'Bridger referral continuity uses Flame Coin language')
-assert.ok(appSidebar.includes('/bridger/bridge-radiance')&&appSidebar.includes('/bridger/clients')&&appSidebar.includes('/bridger/subscription'),'Bridger sidebar reaches Radiance, Client continuity and Continuance directly')
-assert.ok(appSidebar.includes('hideForBridger'),'Generic Clients route is hidden from Bridgers in favor of Bridger Client continuity')
-assert.ok(environmentRegistry.includes("key:'bridger-bridge-radiance'")&&environmentRegistry.includes("route:'/bridger/bridge-radiance'"),'Bridge Radiance is registered as a Bridger district')
-assert.ok(dashboardWorld.includes('Worldwide Number Bay')&&dashboardWorld.includes("href: '/bridger/subscription'"),'Bridger World exposes Number Bay and Continuance as current operations')
+for(const href of ['/bridger/bridge-ai','/weave/market/prospects','/bridger/numbers','/echo','/profiles','/wallet/deposit-withdraw']){
+ assert.ok(roleDistricts2026.includes('"href": "'+href+'"'),'Bridger role catalog exposes '+href)
+}
+assert.ok(bridgerOperatingRoom.includes('visiblePoll(load,20000)'),'Bridger Operating Room refreshes its focused pulse serially while visible')
+assert.ok(dashboardWorld.includes("getRolePlaces(role)")&&dashboardWorld.includes("links: []"),'Agent and Bridger Home Worlds derive destinations from the canonical role catalog instead of duplicate route lists')
 assert.ok(bridgerRadiancePage.includes('visiblePoll(signal=>loadThreads(signal),5000)')&&bridgerRadiancePage.includes('visiblePoll(signal=>loadMessages(selected,signal),2500)'),'Bridge Radiance stays current while visible')
 assert.ok(!bridgerRadiancePage.includes('setInterval('),'Bridge Radiance no longer uses overlapping fixed intervals')
 assert.ok(bridgerNumbers.includes('visiblePoll(signal=>load(true,signal),10000,false)'),'Number Bay refreshes delivery and verification movement while visible')
 assert.ok(bridgerClientsPage.includes('visiblePoll(signal => fetchClients(true, signal), 15000, false)'),'Client Continuity refreshes newly crossed Clients while visible')
 assert.ok(bridgerContinuancePage.includes('visiblePoll(signal=>fetchContinuance(true,signal),30000,false)'),'Bridger Continuance reflects Administration decisions without reopening the page')
-assert.ok(bridgerOperatingRoom.includes('Bridge AI Subscription')&&bridgerOperatingRoom.includes('bridgeAiContinuance'),'Bridger Operating Room makes Bridge AI subscription standing visible')
-assert.ok(bridgerContinuancePage.includes('BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN')&&bridgerContinuancePage.includes('Subscribe to Bridge AI'),'Bridger Continuance chamber explains the separate Bridge AI subscription')
+assert.ok(bridgerOperatingRoom.includes("label:'Bridge AI'")&&bridgerOperatingRoom.includes('bridgeAiContinuance'),'Bridger Operating Room keeps Bridge AI standing visible without a separate subscription card')
+assert.ok(bridgerContinuancePage.includes('Automatic Continuance')&&bridgerContinuancePage.includes('Retry automatic wallet renewal'),'Bridger Continuance makes wallet-first automatic renewal visible')
+assert.ok(bridgerContinuancePage.includes('BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN')&&bridgerContinuancePage.includes('Subscribe to Bridge AI'),'Bridger Continuance still distinguishes the separate Bridge AI subscription')
 assert.ok(dailyProspectClaimUi.includes('visiblePoll(signal => load(true, signal), 60000, false)')&&dailyProspectClaimUi.includes('Refresh intake'),'Daily Prospect intake can recover and reflect new reserve state')
 assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit world surface registry')
 assert.ok(environmentRegistry.includes("kind:'station'")&&environmentRegistry.includes("kind:'district'"),'Environment Organizer registers world districts and operating stations')
@@ -383,7 +383,7 @@ assert.ok(routeNetwork.includes('data-weave-route-network')&&routeNetwork.includ
 assert.ok(dashboardWorld.includes('data-role-world-beacon={item.label}')&&dashboardWorld.includes('data-client-world-beacon'),'Role Home Worlds use spatial destination beacons instead of WorldLinkCard tiles')
 assert.ok(!dashboardWorld.includes('WorldLinkCard'),'Role Home Worlds cannot regress to a link-card grid')
 assert.ok(operatingRoom.includes('<WeaveRouteNetwork')&&operatingRoom.includes('data-operating-room={role}'),'Agent/Admin Operating Rooms open directly into connected working routes')
-assert.ok(bridgerOperatingRoom.includes('<WeaveRouteNetwork')&&bridgerOperatingRoom.includes('<DailyProspectClaim />')&&bridgerOperatingRoom.includes('data-operating-room="bridger"'),'Bridger Operating Room exposes live routes and Prospect claim directly without an awareness preamble')
+assert.ok(bridgerOperatingRoom.includes('<WeaveRouteNetwork')&&!bridgerOperatingRoom.includes('<DailyProspectClaim')&&bridgerOperatingRoom.includes('data-operating-room="bridger"'),'Bridger Operating Room stays focused while Daily Prospect claim lives only in Prospect Market')
 assert.ok(clientOperatingRoom.includes('<WeaveRouteNetwork')&&clientOperatingRoom.includes('Client operating routes')&&clientOperatingRoom.includes('data-operating-room="client"'),'Client Operating Room opens directly into its working route network')
 assert.ok(room.includes('data-weave-room-stage'),'Reusable WEAVE rooms expose one active stage between environment rails')
 assert.ok(marketplaceEnvironment.includes('data-enterprise-exchange-floor')&&!marketplaceEnvironment.includes('grid gap-5 md:grid-cols-2 xl:grid-cols-3'),'Enterprise Exchange is a continuous bay floor, not a product-card grid')
