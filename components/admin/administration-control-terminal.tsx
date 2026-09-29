@@ -336,17 +336,17 @@ function AdminWorkshopsSection() {
 }
 
 function AdminPanelSection({ user }: { user: any }) {
-  const [activeSubTab, setActiveSubTab] = useState<'users' | 'sweeps' | 'clients' | 'bridgers' | 'fne' | 'deposits' | 'tron' | 'bridge' | 'withdrawals' | 'announcements' | 'departmental'>('users')
+  const [activeSubTab, setActiveSubTab] = useState<'users' | 'bridgers' | 'deposits' | 'bridge' | 'withdrawals' | 'announcements' | 'departmental'>('users')
 
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash
       if (hash === '#bridgers') setActiveSubTab('bridgers')
       else if (hash === '#users') setActiveSubTab('users')
-      else if (hash === '#clients') setActiveSubTab('clients')
-      else if (hash === '#fne') setActiveSubTab('fne')
+      else if (hash === '#clients') window.location.replace('/admin/hub?tab=clients')
+      else if (hash === '#fne') window.location.replace('/admin/file-number-engine')
       else if (hash === '#deposits') setActiveSubTab('deposits')
-      else if (hash === '#tron') setActiveSubTab('tron')
+      else if (hash === '#tron') window.location.replace('/admin/client-deposits')
       else if (hash === '#bridge') setActiveSubTab('bridge')
       else if (hash === '#withdrawals') setActiveSubTab('withdrawals')
       else if (hash === '#departmental') setActiveSubTab('departmental')
@@ -372,36 +372,21 @@ function AdminPanelSection({ user }: { user: any }) {
         >
           Dept. Authorization
         </button>
-        <button 
-          onClick={() => setActiveSubTab('fne')}
-          className={`pb-2 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeSubTab === 'fne' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500 hover:text-slate-400'}`}
-        >
-          File Number Engine
-        </button>
+
         <button 
           onClick={() => setActiveSubTab('bridgers')}
           className={`pb-2 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeSubTab === 'bridgers' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500 hover:text-slate-400'}`}
         >
           Bridger Ops
         </button>
-        <button 
-          onClick={() => setActiveSubTab('clients')}
-          className={`pb-2 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeSubTab === 'clients' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500 hover:text-slate-400'}`}
-        >
-          Messages
-        </button>
+
         <button 
           onClick={() => setActiveSubTab('deposits')}
           className={`pb-2 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeSubTab === 'deposits' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500 hover:text-slate-400'}`}
         >
           Deposits
         </button>
-        <button 
-          onClick={() => setActiveSubTab('tron')}
-          className={`pb-2 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeSubTab === 'tron' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500 hover:text-slate-400'}`}
-        >
-          TRON Deposits
-        </button>
+
         <button 
           onClick={() => setActiveSubTab('bridge')}
           className={`pb-2 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeSubTab === 'bridge' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-slate-500 hover:text-slate-400'}`}
@@ -425,11 +410,8 @@ function AdminPanelSection({ user }: { user: any }) {
       <div className="bg-slate-900/40 rounded-xl border border-slate-800 p-1 min-h-[400px]">
         {activeSubTab === 'users' && <UserManagementSection />}
         {activeSubTab === 'departmental' && <DepartmentalCodesSection />}
-        {activeSubTab === 'fne' && <FileNumberEngineSection />}
         {activeSubTab === 'bridgers' && <BridgerManagementSection />}
-        {activeSubTab === 'clients' && <ClientMessagesPreview />}
         {activeSubTab === 'deposits' && <DepositApprovalSection user={user} />}
-        {activeSubTab === 'tron' && <TronDepositApprovalSection user={user} />}
         {activeSubTab === 'bridge' && <BridgeDepositApprovalSection user={user} />}
         {activeSubTab === 'withdrawals' && <WithdrawalApprovalSection user={user} />}
         {activeSubTab === 'announcements' && <AnnouncementSection />}
