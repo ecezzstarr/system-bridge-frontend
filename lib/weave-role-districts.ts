@@ -150,7 +150,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       "accent": "#7dd3fc",
       "places": [
         {
-          "label": "System Switch · File Folder",
+          "label": "File Folder",
           "href": "/client/system-switch",
           "detail": "Build and operate systems, your store and Customer Door.",
           "daily": true
