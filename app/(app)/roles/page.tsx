@@ -25,21 +25,15 @@ const ROLE_SYSTEM: Record<string, { title: string; detail: string; operatingRoom
   },
   agent: {
     title: 'Agent',
-    detail: 'WEAVE employee position supporting Bridgers, Clients and company movement.',
-    operatingRoom: '/agent/functions',
+    detail: 'Agility and commission from Bridger Prospect purchases.',
+    operatingRoom: '/district/position',
     tone: 'border-emerald-300/20 bg-emerald-400/[0.05] text-emerald-200',
   },
   bridger: {
     title: 'Bridger',
-    detail: 'Partnership position opening Client paths and continuing beside the Client.',
-    operatingRoom: '/bridger/functions',
+    detail: 'Bridge AI, value movement, Number Bay, Prospect Market, Echo and Presences.',
+    operatingRoom: '/district/position',
     tone: 'border-sky-300/20 bg-sky-400/[0.05] text-sky-200',
-  },
-  creator: {
-    title: 'Creator',
-    detail: 'Reserved institutional position with creator-level access.',
-    operatingRoom: '/dashboard',
-    tone: 'border-amber-300/20 bg-amber-400/[0.05] text-amber-200',
   },
 }
 
