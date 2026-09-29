@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import { ClientNavigation } from '@/components/client-navigation'
 import { LiveAdSurface } from '@/components/live-ad-surface'
 import { ClientRouteGuard } from '@/components/client/client-route-guard'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
@@ -37,7 +36,6 @@ export default function ClientLayout({
     <div className="weave-client-shell relative min-h-dvh overflow-x-clip bg-transparent">
       <ClientRouteGuard>
         <div className="relative z-10 min-h-screen">
-          <ClientNavigation />
           <FlameEventAd />
           <LiveAdSurface />
           <PresenceCameraViewport>
