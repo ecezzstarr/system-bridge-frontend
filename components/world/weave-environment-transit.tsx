@@ -241,9 +241,13 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setTransiting(true)
     }
 
-    void waitForBriefingSequence(mode,startedAt,controller.signal)
-      .then(()=>waitForEnvironmentReadiness(mode,configRef.current,controller.signal))
-      .then(()=>{
+    // Briefing and destination formation happen together. The cover remains
+    // visible for the full presentation window while the real environment
+    // renders underneath; reveal occurs only after both are complete.
+    void Promise.all([
+      waitForBriefingSequence(mode,startedAt,controller.signal),
+      waitForEnvironmentReadiness(mode,configRef.current,controller.signal),
+    ]).then(()=>{
       if(controller.signal.aborted)return
       first.current=false
       transitionStartedAtRef.current=null
