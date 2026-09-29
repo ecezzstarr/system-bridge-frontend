@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Activity, Send, Users, UserCircle, GitBranch, Briefcase, ShieldCheck } from 'lucide-react'
 import { visiblePoll } from '@/lib/visible-poll'
 
-type TabId = 'prospects' | 'clients' | 'bridgers' | 'agents'
+type TabId = 'prospects' | 'clients' | 'bridgers' | 'agents' | 'administration'
 
 const POSITIONS = [
   { id: 'mandate', name: 'Mandate' },
@@ -64,8 +64,8 @@ export default function WeaveCommunicationHub() {
     const allowed = user.role === 'admin'
       ? ['prospects','clients','bridgers','agents']
       : user.role === 'bridger'
-        ? ['prospects','clients','agents']
-        : ['bridgers']
+        ? ['prospects','clients','agents','administration']
+        : ['bridgers','administration']
     const fallback:TabId = user.role === 'bridger' ? 'prospects' : user.role === 'agent' ? 'bridgers' : 'prospects'
     setTab(requested && allowed.includes(requested) ? requested : fallback)
   }, [searchParams, user?.role])
@@ -129,7 +129,14 @@ export default function WeaveCommunicationHub() {
         const res = await fetch('/api/lounge/management-contacts', { headers: authHeaders() })
         const data = await res.json()
         if (data.success) {
-          setContacts((data.contacts || []).filter((c: any) => c.role === (tab === 'bridgers' ? 'bridger' : 'agent')))
+          const wantedRole = tab === 'bridgers' ? 'bridger' : tab === 'agents' ? 'agent' : 'admin'
+          const filtered = (data.contacts || []).filter((contact: any) => contact.role === wantedRole)
+          setContacts(filtered)
+          const contactId = searchParams.get('contact')
+          if (contactId) {
+            const requested = filtered.find((contact:any)=>String(contact.id)===String(contactId))
+            if (requested) setSelected({ id: requested.id, name: requested.name, sub: requested.role, unread: 0 })
+          }
         }
       }
     } catch (e) {
@@ -226,14 +233,15 @@ export default function WeaveCommunicationHub() {
     { id: 'clients', label: 'Clients', icon: UserCircle },
     { id: 'bridgers', label: 'Bridgers', icon: GitBranch },
     { id: 'agents', label: 'Agents', icon: Briefcase },
+    { id: 'administration', label: 'Administration', icon: ShieldCheck },
   ]
   const TABS = isAdmin
-    ? ALL_TABS
+    ? ALL_TABS.filter(t => t.id !== 'administration')
     : isBridger
-      ? ALL_TABS.filter(t => t.id === 'prospects' || t.id === 'clients' || t.id === 'agents')
-      : ALL_TABS.filter(t => t.id === 'bridgers')
+      ? ALL_TABS.filter(t => t.id === 'prospects' || t.id === 'clients' || t.id === 'agents' || t.id === 'administration')
+      : ALL_TABS.filter(t => t.id === 'bridgers' || t.id === 'administration')
 
-  const listItems = tab === 'bridgers' || tab === 'agents'
+  const listItems = tab === 'bridgers' || tab === 'agents' || tab === 'administration'
     ? contacts.map(c => ({ id: c.id, name: c.name, sub: c.role, unread: 0 }))
     : threads
 
