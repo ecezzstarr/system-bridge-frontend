@@ -34,9 +34,16 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
     }
     const pending=new Set<object>()
     const hasPendingSurface=()=>Boolean(document.querySelector?.('[data-environment-pending="true"]'))
+    const hasUnreadyCanvas=()=>[...document.querySelectorAll<HTMLElement>('[data-adaptive-canvas]')].some(canvas=>{
+      const rect=canvas.getBoundingClientRect()
+      if(rect.bottom<=0||rect.top>=window.innerHeight||rect.right<=0||rect.left>=window.innerWidth)return false
+      return canvas.getAttribute('data-adaptive-canvas-ready')!=='true'
+    })
     const check=()=>{
       clearTimeout(quietTimer)
-      if(!pending.size&&!hasPendingSurface())quietTimer=setTimeout(finish,Math.max(0,minimum-(performance.now()-started),loading.settleQuietMs))
+      if(!pending.size&&!hasPendingSurface()&&!hasUnreadyCanvas()){
+        quietTimer=setTimeout(finish,Math.max(0,minimum-(performance.now()-started),loading.settleQuietMs))
+      }
     }
     signal.addEventListener('abort',finish,{once:true})
     cleanup.push(()=>signal.removeEventListener('abort',finish))
@@ -59,25 +66,31 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
       }
     }
     const observer=new MutationObserver(records=>{
-      const touchesPendingSurface=records.some(record=>{
+      const touchesReadiness=records.some(record=>{
         if(record.type==='attributes'){
           const target=record.target instanceof Element?record.target:null
-          return Boolean(target?.matches('[data-environment-pending]'))
+          return Boolean(target?.matches('[data-environment-pending],[data-adaptive-canvas]'))
         }
         if(record.type!=='childList')return false
         const nodes=[...record.addedNodes,...record.removedNodes]
         return nodes.some(node=>{
           if(!(node instanceof Element))return false
-          return node.matches('[data-environment-pending]')||Boolean(node.querySelector?.('[data-environment-pending]'))
+          return node.matches('[data-environment-pending],[data-adaptive-canvas]')||
+            Boolean(node.querySelector?.('[data-environment-pending],[data-adaptive-canvas]'))
         })
       })
-      if(touchesPendingSurface)check()
+      if(touchesReadiness)check()
     })
-    if(document.body)observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-environment-pending']})
+    if(document.body)observer.observe(document.body,{
+      childList:true,
+      subtree:true,
+      attributes:true,
+      attributeFilter:['data-environment-pending','data-adaptive-canvas-ready'],
+    })
     cleanup.push(()=>observer.disconnect())
     const hardFinish=()=>{
       const elapsed=performance.now()-started
-      if(hasPendingSurface()&&elapsed<absoluteMaximum){
+      if((hasPendingSurface()||hasUnreadyCanvas())&&elapsed<absoluteMaximum){
         hardTimer=setTimeout(hardFinish,1000)
         return
       }
@@ -95,26 +108,27 @@ type LoadingBrief={
   movement?:string
 }
 
-const LOADING_CARD_HOLD_MS=2000
+const LOADING_CARD_HOLD_MS=3000
+const TRANSIT_FORMATION_MS=1800
 
 const PLATFORM_BRIEFS:LoadingBrief[]=[
   {
     eyebrow:'WEAVE of Presence',
-    title:'Interaction in Motion.',
-    body:WEAVE_SYSTEM_MAP.identity.publicDescription,
-    movement:'People · Participation · Systems · Value · Opportunity',
+    title:'Heaven and Earth as One',
+    body:'Presence is not separated from movement. Human source, environment, interaction and consequence remain connected inside one operating world.',
+    movement:'Presence · Interaction · Movement · Continuity',
   },
   {
-    eyebrow:'How the world works',
-    title:'Presence becomes movement.',
-    body:'The human is the source. Presence is the space. Interaction is the movement. What works can become value, participation and livelihood.',
+    eyebrow:'INTERACTION IN MOTION',
+    title:'People · Participation · Livelihood',
+    body:'Real people enter real functions. Participation becomes organized work, value, opportunity and a means to continue living.',
     movement:'Be → interact → reveal → recognize → make → become',
   },
   {
-    eyebrow:'One operating world',
-    title:'Your movement continues between environments.',
-    body:'WEAVE keeps position, work, records, systems and participation connected instead of treating every destination as a disconnected page.',
-    movement:'Notice → recognize → solve → move',
+    eyebrow:'COMPANY LOOP 1 · FLAME EVENT',
+    title:'Burning River',
+    body:'The River that Burns. Water and flame move together as one current—the visible signal of transformation and continuity through WEAVE.',
+    movement:'Burning River · The River that Burns',
   },
 ]
 
@@ -148,7 +162,7 @@ function waitForBriefingSequence(mode:'boot'|'transit',startedAt:number,signal:A
     // Keep the complete three-card introduction for a cold entrance. Internal
     // movement must never feel frozen behind presentation after the destination
     // itself is ready.
-    const presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:650
+    const presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:TRANSIT_FORMATION_MS
     const remaining=Math.max(0,presentationWindow-(performance.now()-startedAt))
     if(remaining===0||signal.aborted){resolve();return}
     const timer=window.setTimeout(resolve,remaining)
@@ -175,7 +189,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const queryTransitionControllerRef=useRef<AbortController|null>(null)
   const covered=booting||transiting||readyPath!==pathname
   useEffect(()=>{
-    setRuntimeCovered(covered)
+    // The loader is a formation cover, not a runtime pause. The destination
+    // must be allowed to render underneath so it is ready before reveal.
+    setRuntimeCovered(false)
     return ()=>setRuntimeCovered(false)
   },[covered])
 
@@ -225,9 +241,12 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setTransiting(true)
     }
 
+    // Briefing and destination formation happen together. The cover remains
+    // visible for the full presentation window while the real environment
+    // renders underneath; reveal occurs only after both are complete.
     void Promise.all([
-      waitForEnvironmentReadiness(mode,configRef.current,controller.signal),
       waitForBriefingSequence(mode,startedAt,controller.signal),
+      waitForEnvironmentReadiness(mode,configRef.current,controller.signal),
     ]).then(()=>{
       if(controller.signal.aborted)return
       first.current=false
@@ -304,7 +323,15 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     [requestedPath],
   )
   const destinationEnvironment=requestedEnvironment||environment
-  const activeBriefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
+  const transitBrief=useMemo<LoadingBrief>(()=>({
+    eyebrow:`${destinationEnvironment.district} · ${destinationEnvironment.layer}`,
+    title:`Opening ${destinationEnvironment.title}`,
+    body:destinationEnvironment.purpose,
+    movement:destinationEnvironment.movement,
+  }),[destinationEnvironment])
+  const activeBriefs=booting
+    ? (showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS)
+    : [transitBrief]
   const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
   const openingLabel=showFlameBriefing
     ? 'Flame Event · Burning River'
@@ -390,7 +417,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         <div className="mx-auto mt-5 flex max-w-sm items-center gap-2" aria-hidden="true">
           {activeBriefs.map((_,index)=><span
             key={index}
-            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,PLATFORM_BRIEFS.length-1)?'bg-amber-200/80':'bg-white/10')}
+            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,activeBriefs.length-1)?'bg-amber-200/80':'bg-white/10')}
           />)}
         </div>
 
