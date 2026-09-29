@@ -50,7 +50,7 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
   },
   {
     match: path => path === '/agent/commissions',
-    scene: { key:'agent-continuance', label:'Agent Continuance', district:'Support', level:'system', camera:{x:13,y:7,yaw:2,pitch:1.5,zoom:1.026,depth:36} },
+    scene: { key:'agent-commissions', label:'Agent Commissions', district:'Agent Movement', level:'system', camera:{x:13,y:7,yaw:2,pitch:1.5,zoom:1.026,depth:36} },
   },
   {
     match: path => path === '/admin/loop-workshop',

@@ -49,7 +49,7 @@ const PLACES:Place[] = [
   },
   {
     label:'Agent Operating Room',
-    detail:'Develop Bridgers, commissions, channels and Agent movement.',
+    detail:'Operate Agility and review Prospect/File Folder commission movement.',
     href:'/agent/functions',
     consequence:'Agent work',
     icon:Users,
@@ -65,7 +65,7 @@ const PLACES:Place[] = [
   },
   {
     label:'Bridger Operating Room',
-    detail:'Operate prospects, Client movement, support and continuance.',
+    detail:'Operate Bridge AI, Prospect Market, Number Bay, Echo, Presences and value movement.',
     href:'/bridger/functions',
     consequence:'Bridger work',
     icon:Building2,

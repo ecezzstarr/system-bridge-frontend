@@ -94,7 +94,7 @@ export function requireOriginConnection(systemConfig: any): void {
     throw new Error(message)
   }
 
-  console.log("[v0] System verified and linked to origin")
+  console.log("[WEAVE] System verified and linked to origin")
 }
 
 /**

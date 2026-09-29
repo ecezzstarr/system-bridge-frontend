@@ -14,7 +14,7 @@ function clamp(value:number,min:number,max:number){
 export function WeaveLiveFlameField({flameLive=false}:{flameLive?:boolean}){
   const {scene,moving}=usePresenceCamera()
   const runtime=useAdaptiveRuntime()
-  const reduceMotion=Boolean(useReducedMotion())||runtime.reducedMotion||runtime.level===0
+  const reduceMotion=Boolean(useReducedMotion())||runtime.reducedMotion||runtime.level===0||runtime.covered
   const [energy,setEnergy]=useState(0)
   const [motionKind,setMotionKind]=useState<string>('presence')
   const frame=useRef<number|null>(null)

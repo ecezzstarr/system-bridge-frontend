@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('[v0] EIGHT cross-system operator - command received:', command)
+    console.log('[WEAVE] EIGHT cross-system operator - command received:', command)
 
     const companyWallet = process.env.COMPANY_TRON_WALLET || 'THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk'
     const platformWallet = process.env.PLATFORM_WALLET_PUBLIC_KEY || 'TNzNPekX1tbeFYRe3DPjnNV2dG6QfvHymt'
@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
       try {
         const walletData = await getWalletBalance(platformWalletAddress)
         realBalance = walletData.trx
-        console.log('[v0] EIGHT: Platform wallet TRON balance:', realBalance, 'Address:', platformWalletAddress)
+        console.log('[WEAVE] EIGHT: Platform wallet TRON balance:', realBalance, 'Address:', platformWalletAddress)
       } catch (error: any) {
-        console.log('[v0] EIGHT: Error fetching TRON balance:', error.message || error)
+        console.log('[WEAVE] EIGHT: Error fetching TRON balance:', error.message || error)
         return NextResponse.json({
           success: false,
           message: `Error: Could not fetch platform wallet balance from TRON blockchain. Details: ${error.message || error}`,
@@ -274,7 +274,7 @@ Quick Commands:
     })
 
   } catch (error: any) {
-    console.error('[v0] EIGHT API error:', error)
+    console.error('[WEAVE] EIGHT API error:', error)
     return NextResponse.json(
       { message: 'Error processing EIGHT command', error: error.message },
       { status: 500 }

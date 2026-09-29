@@ -57,7 +57,7 @@ export async function connectToOrigin(
       ORIGIN_SYSTEM_ID
     )
 
-    console.log("[v0] System successfully linked to origin:", record.id)
+    console.log("[WEAVE] System successfully linked to origin:", record.id)
 
     return {
       success: true,
@@ -121,7 +121,7 @@ export async function systemBootSequence(systemIdentity: SystemIdentity): Promis
     return { canBoot: false, authority: null, errors }
   }
 
-  console.log("[v0] System boot sequence complete - granted ecosystem authority")
+  console.log("[WEAVE] System boot sequence complete - granted ecosystem authority")
 
   return {
     canBoot: true,

@@ -91,7 +91,7 @@ export function saveToken(token: string): void {
       localStorage.setItem('ssb_auth_token', token)
     } catch (e) {
       // localStorage not available (private browsing, quota exceeded, etc)
-      console.warn('[v0] localStorage unavailable, using memory storage')
+      console.warn('[WEAVE] localStorage unavailable, using memory storage')
       if (typeof window !== 'undefined') {
         (window as any).__auth_token = token
       }
@@ -105,7 +105,7 @@ export function saveUser(user: any): void {
       localStorage.setItem('ssb_auth_user', JSON.stringify(user))
     } catch (e) {
       // localStorage not available
-      console.warn('[v0] localStorage unavailable, using memory storage')
+      console.warn('[WEAVE] localStorage unavailable, using memory storage')
       if (typeof window !== 'undefined') {
         (window as any).__auth_user = user
       }

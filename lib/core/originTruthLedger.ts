@@ -54,7 +54,7 @@ export function registerSystemToOrigin(
   }
 
   originLedger.push(record)
-  console.log("[v0] System registered to origin ledger:", record.id, systemName)
+  console.log("[WEAVE] System registered to origin ledger:", record.id, systemName)
   return record
 }
 
@@ -86,7 +86,7 @@ export function updateSystemStatus(systemId: string, newStatus: SystemStatus): b
   const system = originLedger.find((s) => s.id === systemId)
   if (system) {
     system.status = newStatus
-    console.log("[v0] System status updated:", systemId, newStatus)
+    console.log("[WEAVE] System status updated:", systemId, newStatus)
     return true
   }
   return false
@@ -114,6 +114,6 @@ export function initializeOriginSystem() {
     // Register the public WEAVE application domain.
     registerSystemToOrigin("WEAVINGSYSTEM.ONLINE - WEAVE Public App", "cloudrun", "weavingsystem.online", "THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk", ORIGIN_SYSTEM_ID)
     
-    console.log("[v0] Origin Truth Ledger initialized with 3 interconnected systems")
+    console.log("[WEAVE] Origin Truth Ledger initialized with 3 interconnected systems")
   }
 }

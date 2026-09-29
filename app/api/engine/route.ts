@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('[v0] Getting engine route for user:', user.id)
+    console.log('[WEAVE] Getting engine route for user:', user.id)
     const route = await getEngineRoute(user.id)
 
     return NextResponse.json({
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       data: route,
     })
   } catch (error) {
-    console.error('[v0] Error:', error)
+    console.error('[WEAVE] Error:', error)
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Failed to get engine route' },
       { status: 500 }

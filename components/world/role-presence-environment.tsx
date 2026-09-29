@@ -20,15 +20,15 @@ const COPY:Record<PresenceRole,{
   agent:{
     eyebrow:'Agent Presence',
     title:'Know the position before movement.',
-    detail:'The Agent position stays intentionally small. Presence gives orientation; Agility carries real distribution; Commissions records return created by qualifying Bridger Prospect purchases.',
-    loop:'Presence → Agility → Bridger Prospect movement → Commission record',
+    detail:'The Agent position stays intentionally small. Presence gives orientation; Agility carries real distribution; Commissions records the Agent share from qualifying Prospect purchases by attached Bridgers and the Agent share when those Bridgers convert Clients through verified File Folder purchases.',
+    loop:'Presence → Agility + Bridger Prospect movement → File Folder crossing → Commission record',
     worldHref:'/agent/dashboard',
   },
   bridger:{
     eyebrow:'Bridger Presence',
     title:'Carry connection without carrying clutter.',
-    detail:'The Bridger position acquires Prospects, operates Bridge AI and Number Bay, uses Echo and Presences for authorized movement, and keeps value available through one Deposit & Withdrawal station.',
-    loop:'Presence → Prospect → outreach → crossing → Client continuity',
+    detail:'The Bridger position acquires Prospects, operates Bridge AI and Number Bay, uses Echo and Presences for authorized movement, and earns the Bridger share when a guided Prospect completes a verified Client File Folder purchase.',
+    loop:'Presence → Prospect → outreach → File Folder crossing → Bridger share → Client continuity',
     worldHref:'/bridger/dashboard',
   },
   client:{

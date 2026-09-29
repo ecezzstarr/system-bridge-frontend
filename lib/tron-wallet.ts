@@ -95,7 +95,7 @@ export async function getWalletBalance(address: string): Promise<WalletBalance> 
       ],
     }
   } catch (error: any) {
-    console.error('[v0] Error getting wallet balance:', error.message || error)
+    console.error('[WEAVE] Error getting wallet balance:', error.message || error)
     throw new Error(`Failed to fetch wallet balance: ${error.message || error}`)
   }
 }

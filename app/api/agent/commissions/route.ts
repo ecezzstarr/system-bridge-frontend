@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { WORLD_RULES } from '@/lib/world/constants'
-import { getAgentSalaryTier } from '@/lib/agent-salary'
 
 export async function GET(request: NextRequest) {
   const agent = await getAuthUser(request)
@@ -23,7 +22,6 @@ export async function GET(request: NextRequest) {
 
     const commissionRate = Number(profiles[0]?.commission_rate) || WORLD_RULES.AGENT_LEAD_YIELD_RATE
     const totalEarnings = Number(profiles[0]?.total_earnings) || 0
-    const salaryTier = await getAgentSalaryTier(agent.id)
 
     const recent = await sql`
       SELECT amount, description, created_at
@@ -88,12 +86,6 @@ export async function GET(request: NextRequest) {
       leadCommissionRate: WORLD_RULES.AGENT_LEAD_YIELD_RATE,
       clientCrossingRate: WORLD_RULES.AGENT_CROSSING_YIELD_RATE,
       totalEarnings,
-      loop1: {
-        activeBridgers: salaryTier.activeCount,
-        yieldTier: salaryTier.tier,
-        yieldNgn: salaryTier.yieldNgn,
-        maxBridgers: 3,
-      },
       bridgers,
       recentCommissions: recent.map((row: any) => ({
         amount: Number(row.amount),

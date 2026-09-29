@@ -93,10 +93,10 @@ export async function createLedgerEntry(data: {
       await sql`UPDATE wallets SET balance_trx = ${newBalance} WHERE user_id = ${data.userId}::uuid AND is_primary = true`
     }
 
-    console.log('[v0] Ledger entry created:', result[0]?.id)
+    console.log('[WEAVE] Ledger entry created:', result[0]?.id)
     return result[0]
   } catch (error) {
-    console.error('[v0] Error creating ledger entry:', error)
+    console.error('[WEAVE] Error creating ledger entry:', error)
     throw error
   }
 }
@@ -138,10 +138,10 @@ export async function createEscrow(data: {
       description: `Escrow locked for transaction ${data.transactionId}`,
     })
 
-    console.log('[v0] Escrow created:', escrowId)
+    console.log('[WEAVE] Escrow created:', escrowId)
     return escrowResult[0]
   } catch (error) {
-    console.error('[v0] Error creating escrow:', error)
+    console.error('[WEAVE] Error creating escrow:', error)
     throw error
   }
 }
@@ -176,10 +176,10 @@ export async function releaseEscrow(escrowId: string): Promise<EscrowRecord> {
       description: `Escrow released from transaction ${escrow.transaction_id}`,
     })
 
-    console.log('[v0] Escrow released:', escrowId)
+    console.log('[WEAVE] Escrow released:', escrowId)
     return updated[0]
   } catch (error) {
-    console.error('[v0] Error releasing escrow:', error)
+    console.error('[WEAVE] Error releasing escrow:', error)
     throw error
   }
 }
@@ -201,7 +201,7 @@ export async function getUserLedger(userId: string, limit = 50): Promise<LedgerE
       balance_after: entry.balance_after == null ? undefined : moneyNumber(entry.balance_after),
     }))
   } catch (error) {
-    console.error('[v0] Error fetching user ledger:', error)
+    console.error('[WEAVE] Error fetching user ledger:', error)
     return []
   }
 }
@@ -221,7 +221,7 @@ export async function getUserEscrow(userId: string): Promise<EscrowRecord[]> {
       amount: moneyNumber(record.amount),
     }))
   } catch (error) {
-    console.error('[v0] Error fetching user escrow:', error)
+    console.error('[WEAVE] Error fetching user escrow:', error)
     return []
   }
 }
@@ -252,7 +252,7 @@ export async function getUserTotalBalance(userId: string): Promise<{ available: 
       total: available + locked,
     }
   } catch (error) {
-    console.error('[v0] Error calculating total balance:', error)
+    console.error('[WEAVE] Error calculating total balance:', error)
     return { available: 0, locked: 0, total: 0 }
   }
 }

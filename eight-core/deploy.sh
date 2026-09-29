@@ -21,7 +21,7 @@ PROJECT_ID="${GCP_PROJECT_ID:-ssb-now}"
 REGION="${GCP_REGION:-us-central1}"
 SERVICE_NAME="eight-core"
 
-# Your Neon database URL (get from Vercel env vars or Neon dashboard)
+# Database connection used by EIGHT Core
 DATABASE_URL="${DATABASE_URL:-}"
 
 # Google AI Key (get free from https://aistudio.google.com/app/apikey)
@@ -31,9 +31,7 @@ if [ -z "$DATABASE_URL" ]; then
     echo ""
     echo "ERROR: DATABASE_URL not set"
     echo ""
-    echo "Get your Neon connection string from:"
-    echo "  1. Vercel Terminal > Project > Settings > Environment Variables"
-    echo "  2. Or Neon Console > Your Project > Connection Details"
+    echo "Set DATABASE_URL from the approved database connection stored for Cloud Run or your local environment."
     echo ""
     echo "Then run:"
     echo "  export DATABASE_URL='postgresql://USER:PASSWORD@HOST/DATABASE'"

@@ -35,7 +35,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
       >
         <DialogTitle className="sr-only">Loop 1 Agent Commission</DialogTitle>
         <DialogDescription className="sr-only">
-          Learn how Agents earn from Bridger Prospect purchases in Loop 1.
+          Learn how Agents earn from attached Bridger Prospect purchases and verified Client File Folder crossings in Loop 1.
         </DialogDescription>
 
         <div className="relative overflow-hidden rounded-lg">
@@ -62,10 +62,10 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
                   LOOP 1
                 </h2>
                 <p className="mt-1 text-lg font-black uppercase tracking-[0.16em] text-cyan-100 sm:text-2xl">
-                  Bridgers move Prospects. Agents share the return.
+                  Prospects move. File Folders cross. Agent shares are recorded.
                 </p>
                 <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white sm:text-xl">
-                  Each time a Bridger attached to your Agent position buys a Prospect package, your Agent position earns 30% of that purchase value.
+                  Your Agent position receives 30% of a qualifying Prospect purchase by an attached Bridger, and 2% of a verified Client File Folder purchase completed through that Bridger.
                 </p>
               </div>
 
@@ -85,7 +85,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
               <p className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">1 · Your Bridger</p>
               <h3 className="mt-1 text-xl font-black text-white">A Bridger is connected to your Agent position.</h3>
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Your Loop 1 movement grows through the Bridgers you develop and support.
+                Your commission movement follows the Bridgers attached to your Agent position.
               </p>
             </div>
 
@@ -114,7 +114,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
               <div>
                 <p className="text-sm font-black text-white">Continuance shows the movement behind the number.</p>
                 <p className="mt-1 text-sm leading-6 text-slate-400">
-                  See each of your Bridgers, their Prospect-package purchase count, the Flame Coin value they moved, and your credited commission history.
+                  See attached Bridger Prospect movement, Client crossings, and the commission history credited to your Agent position.
                 </p>
               </div>
             </div>
@@ -128,7 +128,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
                   <p className="text-xs font-black uppercase tracking-[0.2em]">Know your Loop 1 return</p>
                 </div>
                 <p className="mt-2 text-sm text-slate-400">
-                  Open Continuance to see the Bridgers and Prospect purchases connected to your Agent earnings.
+                  Open Commissions to see Prospect and File Folder movements connected to your Agent earnings.
                 </p>
               </div>
               <Button
@@ -136,7 +136,7 @@ export function Loop1AgentLoginAd({ open, onOpenChange, onOpenContinuance }: Pro
                 onClick={onOpenContinuance}
                 className="h-12 shrink-0 bg-emerald-500 px-6 font-black text-black hover:bg-emerald-400"
               >
-                Open Continuance
+                Open Commissions
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>

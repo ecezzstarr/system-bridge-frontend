@@ -17,15 +17,18 @@ export const AGENT_CONTENT = {
     "Weave is an interactional company. This whole platform is an interaction in motion real life gaming operating system for human presence. We create services, instruments, and systems that turn human participation into organized work, value, and opportunity. Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value. As an Agent, you have a place inside that movement as a Weave employee.",
   role: 'Your role is to move Agility and receive commissions when assigned Bridgers make qualifying Prospect purchases through Weave.',
   earningMovements: [
-    `You earn ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% whenever an assigned Bridger makes a qualifying Prospect purchase through the Prospect Market.`,
-    'Agility is the Agent real-world distribution function. Ordering, fulfillment, distribution and recorded sales remain separate from Prospect-purchase commissions.',
+    `You earn ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% whenever an attached Bridger makes a qualifying Prospect purchase through the Prospect Market.`,
+    `When that Bridger converts a Prospect through a verified Client File Folder purchase, you earn ${(WORLD_RULES.AGENT_CROSSING_YIELD_RATE * 100).toFixed(0)}% of the File Folder value, which is 5% of WEAVE's 40% company share.`,
+    'Agility is the Agent real-world distribution function. Its ordering and fulfillment movement remains separate from commission calculations.',
   ],
   calculations: [
     `Reference value: 1 Flame Coin = 1 TRX (₦${FLAME_COIN_RATE} per TRX at the configured reference rate):`,
     `Premium File Folder example: ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin = ₦${FILE_FOLDER_NGN}`,
-    `Bridger Prospect-purchase commission rate for the assigned Agent: ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% of the qualifying Prospect purchase.`,
+    `Agent Prospect-purchase share: ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% of the qualifying attached Bridger Prospect purchase.`,
+    `Agent File Folder share: ${(WORLD_RULES.AGENT_CROSSING_YIELD_RATE * 100).toFixed(0)}% of the verified File Folder value (5% of WEAVE's 40% company share).`,
+    `Bridger File Folder share: ${(WORLD_RULES.BRIDGER_YIELD_RATE * 100).toFixed(0)}% of the verified File Folder value.`,
   ],
-  movement: 'Presence → Agility movement + assigned Bridger Prospect movement → qualifying commission → record.',
+  movement: 'Presence → Agility + attached Bridger Prospect movement → Prospect commission → verified File Folder crossing → File Folder share → record.',
   folderWork: 'The Agent account does not own or operate a Client File Folder. Presence explains the Agent position; Agility and Commissions are the Agent working environments.',
 }
 
@@ -74,7 +77,7 @@ export const COMPANY_SUPPORT = [
 
 export const HOW_WEAVE_WORKS = {
   summary:
-    'WEAVE is the institution.\n\nAdministration governs the system.\nAgents move Agility and receive qualifying commissions from assigned Bridger Prospect purchases.\nBridgers carry Prospect connection and crossing.\nClients own and operate their File Folder worlds.\n\nThe Client is the game player inside System Switch, where the Client’s real-life movement forms the continuing game. Shared participation systems do not change a user’s institutional position. The Company provides authorized support positions that help Clients continue without taking ownership of the Client world.',
+    'WEAVE is the institution.\n\nAdministration governs the system.\nAgents move Agility and receive their defined shares from attached Bridger Prospect purchases and verified Client File Folder crossings.\nBridgers carry Prospect connection and crossing and receive their defined File Folder share when a guided Prospect becomes a Client.\nClients own and operate their File Folder worlds.\n\nThe Client is the game player inside System Switch, where the Client’s real-life movement forms the continuing game. Shared participation systems do not change a user’s institutional position. The Company provides authorized support positions that help Clients continue without taking ownership of the Client world.',
   institutionalFlow: 'Administration → Agent → Bridger → Client',
   clientFlow: 'WEAVE → Bridger relationship → Prospect movement → File Folder → File Number → System Switch → Client World → build + learn + participate → Customer Door → outside patronage → Enterprise → Client Vault / Siblings Funds Wallet / Main Client Wallet → continued systems and livelihood',
 }
@@ -84,7 +87,7 @@ export const TERMS_SECTIONS = [
   { title: '2. Agent Status', body: 'An Agent is an employee and authorized representative of WEAVE. The Agent does not receive ownership or partnership rights in the Company unless separately agreed in writing.' },
   { title: '3. Bridger Status', body: 'A Bridger is an independent operational partner and is not an employee of WEAVE. A Bridger does not receive ownership of the Company.' },
   { title: '4. Bridger Earning Movement', body: 'A Bridger earns 30% of the actual verified File Folder purchase value when a prospect they guide becomes a Weave Client. A Standard File Folder may be any value from 180 Flame Coin up to anything below 35,800; the Premium File Folder is fixed at 35,800 Flame Coin.' },
-  { title: '5. Agent Earning Movement', body: `An Agent earns ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% on qualifying Prospect purchases made by assigned Bridgers. Agility remains the Agent real-world distribution function; File Folder ownership and operation belong to Clients.` },
+  { title: '5. Agent Earning Movement', body: `An Agent earns ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% on qualifying Prospect purchases made by attached Bridgers and ${(WORLD_RULES.AGENT_CROSSING_YIELD_RATE * 100).toFixed(0)}% of a verified Client File Folder purchase completed through that Bridger, equal to 5% of WEAVE's 40% company share. Agility remains the Agent real-world distribution function; File Folder ownership and operation belong to Clients.` },
   { title: '6. The File Folder', body: `The File Folder is the persistent open-world workshop at System Switch owned and operated by one Client, with WEAVE support assembled around that Client. Agents, Bridgers and Administration may support an authorized Client File Folder but do not receive their own File Folder through a support position. It carries personalized formation, blueprints, timed builds, learning, operational systems and a public Customer Door. Standard access begins at ${STANDARD_FILE_FOLDER_MIN.toLocaleString()} Flame Coin and may be any value below the ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin Premium price. Premium remains fixed at ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin. File Folder value establishes starting Build Power. Below ${PUBLIC_DOOR_THRESHOLD.toLocaleString()} Flame Coin, the Client can cross and begin early participation but must add verified Flame Coin before the first public Customer Door opens; additional verified participation can accelerate build timers.` },
   { title: '7. System Switch', body: `System Switch is the Client's crossing into the Main File Folder. Once opened, the File Folder is the persistent world where the Client's personalized workshop continues through blueprints, timed formation, build inventory, active systems, the Library District, support participation and real company work inside the fixed subject: ${WEAVE_ARCHITECTURE.subject.name}.` },
   { title: '8. Bridge Plaza', body: 'Bridge Plaza is the support entrance for authorized Agents, Bridgers and Administration. They select a Client File Number and enter that Client-owned world through a support-only view. Bridge Plaza does not create File Folder ownership for support positions and does not return the Client to the prospect Bridge.' },

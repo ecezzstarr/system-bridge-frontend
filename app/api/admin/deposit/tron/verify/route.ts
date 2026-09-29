@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
-import { creditAgentCommission } from '@/lib/agent-commission'
 import { trxPaymentToFlameCoin } from '@/lib/trx-payment'
 import { notifyDepositDecision } from '@/lib/deposit-notifications'
 import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
@@ -105,14 +104,6 @@ export async function POST(request: NextRequest) {
     `
 
     const bridgerId = await resolveBridgerForClient(clientId)
-    if (bridgerId) {
-      creditAgentCommission({
-        bridgerId,
-        activity: 'client_deposit',
-        baseAmount: flameCoinAmount,
-        description: `2% commission (5% of Weave's 40%): referred Bridger's client funded ${flameCoinAmount.toFixed(2)} Flame Coin from ${paidTrx.toFixed(6)} TRX`,
-      }).catch(err => console.error('[tron verify] commission error:', err))
-    }
 
     await notifyDepositDecision({
       userId: clientId,

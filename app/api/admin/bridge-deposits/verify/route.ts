@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       FROM bridge_deposits bd
       INNER JOIN bridge_ais ba ON ba.id = bd.bridge_id
       WHERE bd.id = ${depositId}::uuid
-        AND bd.status = 'pending'
+        AND bd.status IN ('pending','approved')
       LIMIT 1
     `
 
@@ -223,6 +223,43 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (deposit.status === 'approved') {
+      if (status !== 'approved' || !deposit.file_number) {
+        return NextResponse.json({ error: 'This File Folder approval is already complete' }, { status: 409 })
+      }
+
+      let commissionMovement = null
+      if (deposit.bridger_id) {
+        commissionMovement = await creditBridgerActivityCommission({
+          bridgerId: deposit.bridger_id,
+          activity: 'client_deposit',
+          baseAmount: Number(deposit.tier_trx),
+          sourceId: String(deposit.id),
+          description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${deposit.file_number}`
+        })
+        if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
+          return NextResponse.json({
+            error: 'File Folder is approved, but one or more required role shares are not yet recoverable. Verify the Bridger and attached Agent primary wallets, then retry this approval.'
+          }, { status: 503 })
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        status: 'approved',
+        source: 'bridge_deposit',
+        replayed: true,
+        depositId: deposit.id,
+        fileNumber: deposit.file_number,
+        bridgerId: deposit.bridger_id,
+        amount: Number(deposit.tier_trx),
+        fileFolderTier,
+        currency: 'Flame Coin',
+        commissionMovement,
+        message: 'Existing File Folder approval verified and commission movement reconciled.'
+      })
+    }
+
     if (status === 'rejected') {
       await sql`
         UPDATE bridge_deposits
@@ -235,7 +272,7 @@ export async function POST(request: NextRequest) {
           type: 'client_deposit_rejected',
           title: 'Client File Folder payment rejected',
           content: `Administration rejected ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX File Folder payment. No File Number was issued.`,
-          link: '/bridger/clients',
+          link: '/bridger/presence',
           fromUserId: admin.id,
           fromUserName: 'WEAVE Administration',
         })
@@ -303,18 +340,22 @@ export async function POST(request: NextRequest) {
     }
 
     if (deposit.bridger_id) {
-      creditBridgerActivityCommission({
+      const commissionMovement = await creditBridgerActivityCommission({
         bridgerId: deposit.bridger_id,
         activity: 'client_deposit',
         baseAmount: Number(deposit.tier_trx),
-        description: `Commission for ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
-      }).catch(err => console.error('[bridge verify] commission error:', err))
+        sourceId: String(deposit.id),
+        description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
+      })
+      if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
+        throw new Error('File Folder approved but a required Bridger/Agent share could not be credited; retry approval after wallet verification')
+      }
 
       await notifyUser(deposit.bridger_id, {
         type: 'client_deposit_approved',
         title: 'Client File Folder payment approved',
         content: `Administration approved ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment. File Number ${fileNumber} was issued.`,
-        link: '/bridger/clients',
+        link: '/bridger/presence',
         fromUserId: admin.id,
         fromUserName: 'WEAVE Administration',
       })

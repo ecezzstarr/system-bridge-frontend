@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('[v0] Ledger API error:', error)
+    console.error('[WEAVE] Ledger API error:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch ledger' },
       { status: 500 }
