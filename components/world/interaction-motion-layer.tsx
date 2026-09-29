@@ -244,7 +244,7 @@ export function InteractionMotionLayer(){
     const timers=new Set<number>()
     let lastPulse=0
     const add=(detail:WeaveMotionDetail,position?:{x:number;y:number})=>{
-      if(!config.world.enabled||document.hidden)return
+      if(!config.world.enabled||document.hidden||budget.covered)return
       const now=performance.now()
       if(now-lastPulse<80)return
       lastPulse=now
@@ -311,7 +311,7 @@ export function InteractionMotionLayer(){
       window.removeEventListener('weave:presence-output',onPresence as EventListener)
       window.removeEventListener('weave:system-motion',onSystem as EventListener)
     }
-  },[config.world.enabled,budget.level])
+  },[config.world.enabled,budget.level,budget.covered])
 
   return <div
     aria-hidden="true"
