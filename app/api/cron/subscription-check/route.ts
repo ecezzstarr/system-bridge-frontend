@@ -32,11 +32,11 @@ export async function GET(request: NextRequest) {
   for (const bridger of dueForDeduction) {
     try {
       const result = await autoDeductContinuance(bridger.id)
-      if (result.success && result.renewed) {
+      if (result.success && 'renewed' in result && result.renewed) {
         results.autoRenewed++
       } else if (result.success) {
         results.alreadyCurrent++
-      } else if (result.reason === 'insufficient_balance') {
+      } else if ('reason' in result && result.reason === 'insufficient_balance') {
         results.insufficient++
         await sql`
           INSERT INTO notifications (user_id, type, title, content, link)
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         `
       } else {
         results.errors++
-        console.error('Continuance renewal deferred for', bridger.id, result.reason)
+        console.error('Continuance renewal deferred for', bridger.id, 'reason' in result ? result.reason : 'unknown')
       }
     } catch (e) {
       console.error('Auto-deduct failed for', bridger.id, e)
