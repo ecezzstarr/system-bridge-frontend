@@ -66,7 +66,7 @@ export default function OriginSystemsPanel() {
       const data = await response.json()
       setSystems(data.systems || [])
     } catch (error) {
-      console.error('[v0] Error fetching systems:', error)
+      console.error('[WEAVE] Error fetching systems:', error)
     } finally {
       setLoading(false)
     }
