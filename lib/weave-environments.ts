@@ -216,6 +216,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
 }
 
 const prefix: Array<[string, WeaveEnvironmentCopy]> = [
+  ['/district', {
+    key: 'bridge-plaza-role-district',
+    title: 'Bridge Plaza District',
+    district: 'Bridge Plaza',
+    purpose: 'A role-aware district that organizes the places this position actually uses inside WEAVE.',
+    movement: 'Enter district → choose place → operate → return to the world',
+    layer: 'district',
+  }],
   ['/bridger/bridge-radiance', {
     key: 'bridger-radiance-station',
     title: 'Bridge Radiance · Hope Station',
