@@ -425,10 +425,8 @@ const loadStabilityAdaptive=read('components/world/use-adaptive-runtime.ts')
 const loadStabilityFlame=read('components/world/weave-live-flame-field.tsx')
 const loadStabilityRegistrationChat=read('components/registration-chat.tsx')
 const loadStabilityClientChat=read('app/client/chat/[position]/page.tsx')
-const loadStabilityBridgerClients=read('app/(app)/bridger/clients/page.tsx')
 const loadStabilityAgentChat=read('app/(app)/agent-chat/[clientId]/[position]/page.tsx')
 const loadStabilityAdminHub=read('app/(app)/admin/hub/page.tsx')
-const loadStabilityAdminMessages=read('app/(app)/admin/client-messages/page.tsx')
 const loadStabilityDeptRegistration=read('app/(app)/admin/departmental-registration/page.tsx')
 const loadStabilityTicketPanel=read('components/admin/department-entry-tickets-panel.tsx')
 const loadStabilityTicketGate=read('components/department-entry-ticket-gate.tsx')
@@ -475,10 +473,8 @@ assert.ok(cleanRevealCss2026.includes('html[data-weave-covered="true"] .weave-li
 for(const [source,label] of [
  [loadStabilityRegistrationChat,'registration chat'],
  [loadStabilityClientChat,'Client chat'],
- [loadStabilityBridgerClients,'Bridger Client chat'],
  [loadStabilityAgentChat,'Agent chat'],
  [loadStabilityAdminHub,'Administration hub'],
- [loadStabilityAdminMessages,'Administration Client messages'],
  [loadStabilityDeptRegistration,'departmental registration chat'],
  [loadStabilityTicketPanel,'entry ticket panel'],
  [loadStabilityTicketGate,'entry ticket gate'],
@@ -487,6 +483,8 @@ for(const [source,label] of [
 ]){
  assert.ok(source.includes('visiblePoll'),label+' uses serial visible polling')
 }
+assert.ok(read('app/(app)/bridger/clients/page.tsx').includes("redirect('/bridger/presence')"),'Retired Bridger Clients route mounts no polling runtime')
+assert.ok(read('app/(app)/admin/client-messages/page.tsx').includes("redirect('/admin/hub?tab=clients')"),'Retired Administration Client Messages route mounts no polling runtime')
 assert.ok(!loadStabilityDjPlayer.includes('setInterval(() => void syncBroadcast()'),'DJ player no longer launches overlapping hidden-tab network intervals')
 assert.ok(!loadStabilityAdminHub.includes('setInterval(loadMessages'),'Administration hub no longer stacks message requests')
 assert.ok(loadStabilityDevelopmentFoundry.includes('visiblePoll(() => refresh(), 30000)')&&loadStabilityDevelopmentFoundry.includes('visiblePoll(() => pulse(false), 60000)')&&!loadStabilityDevelopmentFoundry.includes('window.setInterval'),'Development Foundry UI uses serial visible polling rather than overlapping background intervals')
