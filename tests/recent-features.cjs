@@ -434,7 +434,7 @@ assert.ok(!clientDashboardUnifiedSource.includes('ClientFlameEventDashboard'),'C
 assert.ok(clientDashboardUnifiedSource.includes('<WeaveDashboardWorld'),'Client Home keeps one compact persistent world')
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
-assert.ok(roleHas('admin','/event'),'Sidebar exposes Loop 1 as a WEAVE destination')
+assert.ok(roleHas('admin','/admin/flame-event'),'Administration exposes one canonical Flame Event control environment')
 assert.ok(!fs.existsSync(path.join(root,'components/app-sidebar.tsx')),'Retired flattened sidebar is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/client/client-operating-room.tsx')),'Retired Client Operating Room component is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/bridger/bridger-operating-environment.tsx')),'Retired Bridger Operating Room component is removed')
