@@ -68,7 +68,7 @@ export default function ClientSystemSwitchPage() {
         window.clearTimeout(timeout)
         const remainingBoot=Math.max(0,2200-(Date.now()-bootStartedAt))
         if(remainingBoot>0)await new Promise(resolve=>window.setTimeout(resolve,remainingBoot))
-        if(!controller.signal.aborted)setLoading(false)
+        setLoading(false)
       }
     }
 
