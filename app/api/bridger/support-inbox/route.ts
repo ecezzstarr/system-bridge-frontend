@@ -55,19 +55,21 @@ export async function GET(request: NextRequest) {
 
     const threads = await sql`
       SELECT
-        m.session_id as "sessionId",
-        m.position as "position",
+        s.id as "sessionId",
+        'bridger'::text as "position",
         b.bridge_code as "bridgeCode",
         s.visitor_fingerprint as "visitorFingerprint",
         MAX(m.created_at) as "lastMessageAt",
         COUNT(*) FILTER (WHERE m.sender_type = 'visitor' AND m.is_read = false)::int as "unreadCount",
-        (ARRAY_AGG(m.content ORDER BY m.created_at DESC))[1] as "lastMessage"
-      FROM bridge_support_messages m
-      JOIN bridge_sessions s ON s.id = m.session_id
+        (ARRAY_AGG(m.content ORDER BY m.created_at DESC) FILTER (WHERE m.id IS NOT NULL))[1] as "lastMessage"
+      FROM bridge_sessions s
       JOIN bridge_ais b ON b.id = s.bridge_id
+      LEFT JOIN bridge_support_messages m
+        ON m.session_id = s.id
+       AND m.position = 'bridger'
       WHERE b.bridger_id = ${auth.userId}::uuid
-      GROUP BY m.session_id, m.position, b.bridge_code, s.visitor_fingerprint
-      ORDER BY MAX(m.created_at) DESC
+      GROUP BY s.id, b.bridge_code, s.visitor_fingerprint
+      ORDER BY MAX(m.created_at) DESC NULLS LAST, s.id DESC
     `
     return NextResponse.json({ success: true, threads })
   } catch (error: any) {
