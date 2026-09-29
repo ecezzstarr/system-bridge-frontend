@@ -12,6 +12,7 @@ type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber
 type ActiveBuild={id?:string;title?:string;systemType?:string;progress:number}
 type LiveSystem={id?:string;title?:string;systemType?:string;activity?:number}
 type SystemWeave={id?:string;source_system_id?:string;target_system_id?:string;source_output?:string;target_input?:string;integration_type?:string;authority_state?:string;movement_count?:number}
+type AiTerritory={territoryId:string;publicName:string;fileNumber:string;operatorLabel?:string;activity?:string;products?:string[];generatedSalesFlameCoin?:number}
 
 const COLORS:Record<District['tone'],string>={
   sky:'#7dd3fc',
@@ -433,8 +434,8 @@ function WeavingCurrent({from,to,strength=1}:{from:[number,number,number];to:[nu
 }
 
 function liveSystemPosition(index:number,total:number):[number,number,number]{
-  const radius=6.55
-  const angle=(index/Math.max(1,total))*Math.PI*2-Math.PI/2
+  const radius=7.05+(index%2)*.42
+  const angle=(index/Math.max(1,total))*Math.PI*2
   return [Math.cos(angle)*radius,0,Math.sin(angle)*radius]
 }
 
@@ -454,6 +455,24 @@ function PersistedSystemWeave({weave,liveSystems,currentStrength}:{weave:SystemW
   </group>
 }
 
+function AiTerritoryOutpost({territory,index,total}:{territory:AiTerritory;index:number;total:number}){
+  const angle=(index/Math.max(1,total))*Math.PI*2-Math.PI/2
+  const radius=10.15+(index%2)*.55
+  const x=Math.cos(angle)*radius
+  const z=Math.sin(angle)*radius
+  const activity=String(territory.activity||'active').toUpperCase()
+  return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]}>
+    <mesh position={[0,.06,0]} receiveShadow><cylinderGeometry args={[.82,.9,.12,18]}/><meshStandardMaterial color="#101821" roughness={.86}/></mesh>
+    <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.08,1.28,.76]}/><meshStandardMaterial color="#182934" roughness={.62} metalness={.12}/></mesh>
+    <mesh position={[0,1.52,0]} castShadow><coneGeometry args={[.62,.58,6]}/><meshStandardMaterial color="#315160" roughness={.48} metalness={.2}/></mesh>
+    <mesh position={[0,.76,.4]}><boxGeometry args={[.52,.3,.04]}/><meshStandardMaterial color="#0d2024" emissive="#67e8f9" emissiveIntensity={.28}/></mesh>
+    <pointLight position={[0,1.45,.5]} intensity={2.4} distance={2.6} color="#67e8f9"/>
+    <Text position={[0,2.08,0]} fontSize={.095} color="#a5f3fc" anchorX="center">WEAVE AI TERRITORY</Text>
+    <Text position={[0,1.86,0]} fontSize={.075} color="#f8fafc" anchorX="center">{String(territory.publicName||'AI File Folder').toUpperCase().slice(0,24)}</Text>
+    <Text position={[0,.22,.56]} fontSize={.06} color="#94a3b8" anchorX="center">{activity.slice(0,28)}</Text>
+  </group>
+}
+
 function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
   if(activeBuilds.length===0)return null
   return <group position={POSITIONS.builds}>
@@ -467,7 +486,7 @@ function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,emergence,routeCurrent,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -484,6 +503,7 @@ function Scene({
   routeCount:number
   vitalityScore:number
   systemWeaves:SystemWeave[]
+  aiTerritories:AiTerritory[]
   emergence:number
   routeCurrent:number
 }){
@@ -520,6 +540,7 @@ function Scene({
 
     {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence}/>)}
     {systemWeaves.map((weave)=><PersistedSystemWeave key={String(weave.id)} weave={weave} liveSystems={liveSystems.slice(0,12)} currentStrength={routeCurrent}/>)}
+    {aiTerritories.slice(0,8).map((territory,index,visible)=><AiTerritoryOutpost key={territory.territoryId} territory={territory} index={index} total={visible.length}/>)}
     <StreamingTower level={streamLevel}/>
     <RouteNetwork count={Math.max(routeCount,liveSystems.length>1?liveSystems.length:0)} vitality={vitalityScore} currentStrength={routeCurrent}/>
 
@@ -535,7 +556,7 @@ function Scene({
 
 export function ClientFileFolder3D({
   activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,
-  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],territoryMode=false,
+  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],territoryMode=false,
 }:{
   activeSurface:DistrictKey
   onSurfaceChange:(key:DistrictKey)=>void
@@ -553,6 +574,7 @@ export function ClientFileFolder3D({
   routeCount?:number
   vitalityScore?:number
   systemWeaves?:SystemWeave[]
+  aiTerritories?:AiTerritory[]
   territoryMode?:boolean
 }){
   const {config:visualRuntime}=useVisualRuntime()
@@ -610,6 +632,7 @@ export function ClientFileFolder3D({
           routeCount={routeCount}
           vitalityScore={vitalityScore}
           systemWeaves={systemWeaves}
+          aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
         />

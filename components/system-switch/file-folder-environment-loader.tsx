@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Boxes, Bot, Building2, FolderOpen, Store, Zap } from 'lucide-react'
 
 export function FileFolderEnvironmentLoader({
@@ -10,11 +11,20 @@ export function FileFolderEnvironmentLoader({
   const stages = support
     ? ['Authorizing support position', 'Loading Client world', 'Opening read-only support layer']
     : ['Reading File Folder state', 'Loading workshops + systems', 'Opening 4D operating environment']
+  const [stage,setStage]=useState(0)
+
+  useEffect(()=>{
+    const timers=[
+      window.setTimeout(()=>setStage(1),650),
+      window.setTimeout(()=>setStage(2),1350),
+    ]
+    return()=>timers.forEach(window.clearTimeout)
+  },[])
 
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#020711] p-6 text-white" data-environment-pending="true">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(56,189,248,.12),transparent_26%),radial-gradient(circle_at_28%_70%,rgba(139,92,246,.08),transparent_25%),radial-gradient(circle_at_72%_72%,rgba(52,211,153,.07),transparent_24%)]" />
-      <div className="relative w-full max-w-2xl rounded-[2rem] border border-sky-300/15 bg-[#030914]/88 p-6 text-center shadow-[0_30px_100px_rgba(2,8,23,.72)] backdrop-blur-xl md:p-9">
+      <div className="relative w-full max-w-2xl border-y border-sky-300/15 bg-[#030914]/82 p-6 text-center shadow-[0_30px_100px_rgba(2,8,23,.72)] backdrop-blur-xl md:p-9">
         <div className="relative mx-auto h-32 w-32">
           <div className="absolute inset-0 animate-spin rounded-full border border-sky-300/15 border-t-sky-300/80 [animation-duration:2.8s]" />
           <div className="absolute inset-3 animate-spin rounded-full border border-violet-300/15 border-r-violet-300/80 [animation-duration:2s] [animation-direction:reverse]" />
@@ -43,14 +53,16 @@ export function FileFolderEnvironmentLoader({
             [support ? Bot : Zap, stages[2]],
           ].map(([Icon,label],index) => {
             const StageIcon = Icon as typeof Building2
+            const active=index<=stage
             return (
-              <div key={String(label)} className="rounded-2xl border border-white/8 bg-white/[0.025] p-3">
+              <div key={String(label)} className={`border-y p-3 transition-all duration-500 ${active?'border-cyan-200/20 bg-cyan-300/[.045] opacity-100':'border-white/5 bg-black/10 opacity-35'}`}>
                 <StageIcon className={"mx-auto h-4 w-4 " + (index===0?'text-sky-300':index===1?'text-violet-300':'text-emerald-300')} />
                 <p className="mt-2 text-[9px] leading-4 text-slate-400">{String(label)}</p>
               </div>
             )
           })}
         </div>
+        <div className="mx-auto mt-5 h-px max-w-md overflow-hidden bg-white/8"><div className="h-full bg-cyan-200/70 transition-all duration-700" style={{width:`${((stage+1)/stages.length)*100}%`}} /></div>
         <p className="mt-5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">
           Space + time + live movement
         </p>
