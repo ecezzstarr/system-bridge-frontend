@@ -28,7 +28,7 @@ interface AgentProfile {
 export async function promoteToBridger(userId: string, commissionRate: number = 0.1) {
   try {
     const sql = getSql()
-    console.log('[v0] Promoting user to Bridger:', userId)
+    console.log('[WEAVE] Promoting user to Bridger:', userId)
     
     // Update user role
     await sql`
@@ -44,10 +44,10 @@ export async function promoteToBridger(userId: string, commissionRate: number = 
       RETURNING *
     `
     
-    console.log('[v0] Bridger profile created:', result[0].id)
+    console.log('[WEAVE] Bridger profile created:', result[0].id)
     return result[0]
   } catch (error) {
-    console.error('[v0] Error promoting to Bridger:', error)
+    console.error('[WEAVE] Error promoting to Bridger:', error)
     throw error
   }
 }
@@ -56,7 +56,7 @@ export async function promoteToBridger(userId: string, commissionRate: number = 
 export async function registerAgent(userId: string, bridgerId: string, commissionRate: number = 0.05) {
   try {
     const sql = getSql()
-    console.log('[v0] Registering agent:', userId, 'under bridger:', bridgerId)
+    console.log('[WEAVE] Registering agent:', userId, 'under bridger:', bridgerId)
     
     // Update user role
     await sql`
@@ -72,10 +72,10 @@ export async function registerAgent(userId: string, bridgerId: string, commissio
       RETURNING *
     `
     
-    console.log('[v0] Agent profile created:', result[0].id)
+    console.log('[WEAVE] Agent profile created:', result[0].id)
     return result[0]
   } catch (error) {
-    console.error('[v0] Error registering agent:', error)
+    console.error('[WEAVE] Error registering agent:', error)
     throw error
   }
 }
@@ -89,7 +89,7 @@ export async function getBridgerProfile(userId: string) {
     `
     return result[0] || null
   } catch (error) {
-    console.error('[v0] Error getting bridger profile:', error)
+    console.error('[WEAVE] Error getting bridger profile:', error)
     return null
   }
 }
@@ -103,7 +103,7 @@ export async function getAgentProfile(userId: string) {
     `
     return result[0] || null
   } catch (error) {
-    console.error('[v0] Error getting agent profile:', error)
+    console.error('[WEAVE] Error getting agent profile:', error)
     return null
   }
 }
@@ -116,7 +116,7 @@ export async function distributeCommission(
 ) {
   try {
     const sql = getSql()
-    console.log('[v0] Distributing commission for transaction:', transactionAmount)
+    console.log('[WEAVE] Distributing commission for transaction:', transactionAmount)
     
     // Get commission rates
     const agentProfile = await getAgentProfile(agentId)
@@ -137,7 +137,7 @@ export async function distributeCommission(
         (${bridgerId}::uuid, 'earning', ${bridgerCommission}, 'Flame Coin', 'Bridger commission')
     `
     
-    console.log('[v0] Commissions distributed - Agent:', agentCommission, 'Bridger:', bridgerCommission)
+    console.log('[WEAVE] Commissions distributed - Agent:', agentCommission, 'Bridger:', bridgerCommission)
     
     return {
       agentCommission,
@@ -145,7 +145,7 @@ export async function distributeCommission(
       total: agentCommission + bridgerCommission,
     }
   } catch (error) {
-    console.error('[v0] Error distributing commission:', error)
+    console.error('[WEAVE] Error distributing commission:', error)
     throw error
   }
 }
@@ -154,7 +154,7 @@ export async function distributeCommission(
 export async function getReferralTree(bridgerId: string) {
   try {
     const sql = getSql()
-    console.log('[v0] Getting referral tree for bridger:', bridgerId)
+    console.log('[WEAVE] Getting referral tree for bridger:', bridgerId)
     
     const result = await sql`
       SELECT 
@@ -169,7 +169,7 @@ export async function getReferralTree(bridgerId: string) {
     
     return result || []
   } catch (error) {
-    console.error('[v0] Error getting referral tree:', error)
+    console.error('[WEAVE] Error getting referral tree:', error)
     return []
   }
 }
