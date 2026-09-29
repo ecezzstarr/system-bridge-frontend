@@ -303,12 +303,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (deposit.bridger_id) {
-      creditBridgerActivityCommission({
+      await creditBridgerActivityCommission({
         bridgerId: deposit.bridger_id,
         activity: 'client_deposit',
         baseAmount: Number(deposit.tier_trx),
-        description: `Commission for ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
-      }).catch(err => console.error('[bridge verify] commission error:', err))
+        sourceId: String(deposit.id),
+        description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
+      })
 
       await notifyUser(deposit.bridger_id, {
         type: 'client_deposit_approved',
