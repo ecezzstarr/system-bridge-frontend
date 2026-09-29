@@ -47,35 +47,35 @@ const providers: NextAuthOptions['providers'] = [
     },
     async authorize(credentials) {
       try {
-        console.log('[v0] Authorize called with username:', credentials?.username)
+        console.log('[WEAVE] Authorize called with username:', credentials?.username)
         
         if (!credentials?.username || !credentials?.password) {
-          console.log('[v0] Missing credentials')
+          console.log('[WEAVE] Missing credentials')
           return null
         }
 
         // Get user from Neon database
-        console.log('[v0] Looking up user in database...')
+        console.log('[WEAVE] Looking up user in database...')
         const user = await getUserByUsername(credentials.username)
-        console.log('[v0] User found:', user ? 'yes' : 'no')
+        console.log('[WEAVE] User found:', user ? 'yes' : 'no')
         
         if (!user) {
-          console.log('[v0] No user found for username:', credentials.username)
+          console.log('[WEAVE] No user found for username:', credentials.username)
           return null
         }
 
         if (!user.password_hash) {
-          console.log('[v0] User has no password')
+          console.log('[WEAVE] User has no password')
           return null
         }
 
         // Verify password
-        console.log('[v0] Verifying password...')
+        console.log('[WEAVE] Verifying password...')
         const isValid = await bcrypt.compare(credentials.password, user.password_hash)
-        console.log('[v0] Password valid:', isValid)
+        console.log('[WEAVE] Password valid:', isValid)
         
         if (!isValid) {
-          console.log('[v0] Invalid password')
+          console.log('[WEAVE] Invalid password')
           return null
         }
 
@@ -87,7 +87,7 @@ const providers: NextAuthOptions['providers'] = [
 
         // Update last login
         await updateUserLastLogin(user.id)
-        console.log('[v0] Login successful for:', user.username)
+        console.log('[WEAVE] Login successful for:', user.username)
 
         return {
           id: user.id,
@@ -98,7 +98,7 @@ const providers: NextAuthOptions['providers'] = [
           walletAddress: user.tron_wallet_address,
         }
       } catch (error) {
-        console.error('[v0] Authorize error:', error)
+        console.error('[WEAVE] Authorize error:', error)
         return null
       }
     },
