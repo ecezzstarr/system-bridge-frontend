@@ -202,6 +202,25 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       ]
     },
     {
+      "key": "enterprise",
+      "name": "Loops & Event",
+      "subtitle": "COMPANY MOVEMENT",
+      "purpose": "Enter Company Loops and the current Flame Event without adding another navigation layer above the Client world.",
+      "accent": "#7dd3fc",
+      "places": [
+        {
+          "label": "Loop Field",
+          "href": "/client/loops",
+          "detail": "See Company Loops, responsibilities, agreements and participation stages."
+        },
+        {
+          "label": "Flame Event · Loop 1",
+          "href": "/client/event",
+          "detail": "Enter the current Client event ground and live Loop 1 movement."
+        }
+      ]
+    },
+    {
       "key": "bridge",
       "name": "Support",
       "subtitle": "HUMAN CONTINUITY",
