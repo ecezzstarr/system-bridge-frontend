@@ -139,7 +139,7 @@ export function WeaveDashboardWorld({
     <div className="absolute inset-0 z-10">
       {movementDistricts.map((district,index)=>{
         const DistrictIcon=ICON[district.key]
-        const href=`/district/${district.key}`
+        const href=role==='client'?`/client/district/${district.key}`:`/district/${district.key}`
         return <Link
           key={district.key}
           href={href}
