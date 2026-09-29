@@ -339,7 +339,7 @@ assert.ok(read('app/client/system-switch/page.tsx').includes('2200-(Date.now()-b
 assert.ok(!clientFileFolder.includes("bg-[#0d0907]")&&!clientFileFolder.includes("bg-[#17100b]"),'File Folder interior no longer reintroduces the brown panel shell over the 4D territory')
 assert.ok(cleanRevealClientLayout2026.includes('overflow-x-clip')&&!cleanRevealClientLayout2026.includes('min-h-screen overflow-hidden'),'Client environments are not vertically clipped by their shell')
 assert.ok(cleanRevealHeader2026.includes('weave-header'),'Header belongs to the shared operating chrome')
-assert.ok(cleanRevealHeader2026.includes('Position + Identity')&&cleanRevealHeader2026.includes('Sign Out'),'Identity and logout remain utility controls while navigation lives in Bridge Plaza districts')
+assert.ok(cleanRevealHeader2026.includes('Settings')&&cleanRevealHeader2026.includes('Sign Out')&&roleDistricts2026.includes('"href": "/settings"'),'Global header links into role Settings while logout remains available and Settings is also a real role place')
 assert.ok(cleanRevealPwa2026.includes('registration.update()')&&cleanRevealPwa2026.includes("window.removeEventListener('load', registerWorker)"),'PWA registration refreshes installed clients and cleans up its load listener')
 assert.ok(cleanRevealWorld2026.includes("root.dataset.weaveEvent=active?'flame-live':'normal'"),'Flame event publishes a live interface theme state')
 assert.ok(!cleanRevealWorld2026.includes('FlameEventWorldDecorations'),'Flame Live is not mounted as a full-world wallpaper decoration')
