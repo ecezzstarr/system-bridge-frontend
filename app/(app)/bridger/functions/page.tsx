@@ -1,5 +1,5 @@
-import { BridgerOperatingEnvironment } from '@/components/bridger/bridger-operating-environment'
+import { redirect } from 'next/navigation'
 
-export default function BridgerFunctionsPage() {
-  return <BridgerOperatingEnvironment />
+export default function LegacyOperatingRoomRedirect(){
+  redirect('/bridger/dashboard')
 }
