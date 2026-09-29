@@ -21,7 +21,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter()
   const [search, setSearch] = useState("")
   const { user: authUser, logout } = useAuth()
-  const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar_url || undefined } : undefined)
+  const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar || undefined } : undefined)
   const [accountOpen, setAccountOpen] = useState(false)
   const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
 
