@@ -239,84 +239,56 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
   "admin": [
     {
       "key": "position",
-      "name": "People",
-      "subtitle": "PEOPLE",
-      "purpose": "Manage Agents, Bridgers and Clients.",
+      "name": "Control",
+      "subtitle": "PEOPLE + AUTHORITY",
+      "purpose": "Govern people, departmental placement, Bridger standing and institutional authorization from one control district.",
       "accent": "#7dd3fc",
       "places": [
         {
-          "label": "User Management",
-          "detail": "Manage users, departments, roles and Bridger-to-Agent assignment.",
-          "href": "/admin/control-center#users"
-        },
-        {
-          "label": "Department Authorization",
-          "detail": "Open the embedded departmental authorization component.",
-          "href": "/admin/control-center#departmental"
-        },
-        {
-          "label": "Bridger Operations",
-          "detail": "Open Bridger operations, standing and exemption controls.",
-          "href": "/admin/control-center#bridgers"
+          "label": "Administration Control Center",
+          "href": "/admin/control-center",
+          "detail": "Users, departmental authorization, Bridger operations, verification queues and announcements.",
+          "daily": true
         },
         {
           "label": "Departmental Registration",
-          "detail": "Departmental codes and company placement.",
-          "href": "/admin/departmental-registration"
-        },
-        {
-          "label": "Agent Channel Requests",
-          "detail": "Approve Agent service channels.",
-          "href": "/admin/agent-channels"
+          "href": "/admin/departmental-registration",
+          "detail": "Issue departmental codes and company placement."
         },
         {
           "label": "Subscriptions",
-          "detail": "Subscription and continuance administration.",
-          "href": "/admin/subscriptions"
+          "href": "/admin/subscriptions",
+          "detail": "Review subscription and Continuance standing."
         }
       ]
     },
     {
       "key": "presence",
       "name": "Finance",
-      "subtitle": "FINANCE",
-      "purpose": "Finance.",
+      "subtitle": "VALUE + RECORDS",
+      "purpose": "Review, release and preserve institutional value movement without duplicating verification stations.",
       "accent": "#7dd3fc",
       "places": [
         {
-          "label": "Receipts",
-          "detail": "Receipts issued for Administration value movement.",
-          "href": "/receipts"
-        },
-        {
-          "label": "Administration Wallet",
-          "detail": "Platform balances, deposit, withdrawal and participation controls.",
-          "href": "/admin/control-center#wallet"
-        },
-        {
-          "label": "OPay Deposit Review",
-          "detail": "Review and decide pending OPay deposits.",
-          "href": "/admin/control-center#deposits"
-        },
-        {
-          "label": "Withdrawal Review",
-          "detail": "Review and decide pending withdrawal requests.",
-          "href": "/admin/control-center#withdrawals"
-        },
-        {
           "label": "Client Deposits",
+          "href": "/admin/client-deposits",
           "detail": "Review Client funding requests.",
-          "href": "/admin/client-deposits"
+          "daily": true
         },
         {
           "label": "Client Vaults",
-          "detail": "Administer Client vault movement.",
-          "href": "/admin/client-vault"
+          "href": "/admin/client-vault",
+          "detail": "Administer Client vault movement."
         },
         {
           "label": "Payments",
-          "detail": "Institutional payment administration.",
-          "href": "/admin/payments"
+          "href": "/admin/payments",
+          "detail": "Institutional payment administration."
+        },
+        {
+          "label": "Wallet",
+          "href": "/wallet",
+          "detail": "Administration balances and value position."
         },
         {
           "label": "Reserve",
@@ -324,277 +296,175 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
           "detail": "Institutional reserve and fund position."
         },
         {
-          "label": "Wallet",
-          "href": "/wallet",
-          "detail": "Administration balances."
-        },
-        {
           "label": "Records",
           "href": "/ledger",
           "detail": "Administration value history."
+        },
+        {
+          "label": "Receipts",
+          "href": "/receipts",
+          "detail": "Receipts issued for Administration value movement."
         }
       ]
     },
     {
       "key": "bridge",
       "name": "Operations",
-      "subtitle": "OPERATIONS",
-      "purpose": "Operations.",
+      "subtitle": "LIVE COMPANY SYSTEMS",
+      "purpose": "Operate the engines that move Clients, Prospects, Bridgers, Agility and enterprise formation.",
       "accent": "#7dd3fc",
       "places": [
-        {"label":"Enterprise Systems Exchange","href":"/marketplace","detail":"Explore the live enterprise systems market."},
-        {
-          "label": "Human Cadences",
-          "detail": "Find people through their recorded participation and movement.",
-          "href": "/search"
-        },
-        {
-          "label": "Presences",
-          "detail": "See people and their place in the WEAVE.",
-          "href": "/profiles"
-        },
-        {
-          "label": "Bridge Plaza",
-          "detail": "Enter the shared WEAVE world and Client support entrance.",
-          "href": "/weave"
-        },
-        {
-          "label": "Standing",
-          "detail": "See shared WEAVE standing and position.",
-          "href": "/weave/standing"
-        },
-        {
-          "label": "Administration Control Center",
-          "detail": "Open the preserved dense Administration center and its live embedded components.",
-          "href": "/admin/control-center"
-        },
-        {
-          "label": "File Number Registry",
-          "detail": "Open the existing File Number Engine component and registry history.",
-          "href": "/admin/control-center#fne"
-        },
-        {
-          "label": "Client Communications",
-          "detail": "Open the existing Client communications panel.",
-          "href": "/admin/control-center#clients"
-        },
-        {
-          "label": "TRON Deposit Review",
-          "detail": "Review and decide pending TRON deposits.",
-          "href": "/admin/control-center#tron"
-        },
-        {
-          "label": "Bridge Deposit Review",
-          "detail": "Review Bridge AI and File Folder deposit movement.",
-          "href": "/admin/control-center#bridge"
-        },
-        {
-          "label": "Announcements",
-          "detail": "Send role-targeted WEAVE announcements and update notices.",
-          "href": "/admin/control-center#announcements"
-        },
         {
           "label": "File Number Engine",
+          "href": "/admin/file-number-engine",
           "detail": "Issue and administer Client File Numbers.",
-          "href": "/admin/file-number-engine"
-        },
-        {
-          "label": "Enterprise Dream",
-          "detail": "Lord/Lady elevation and enterprise plans.",
-          "href": "/admin/enterprise-dream"
+          "daily": true
         },
         {
           "label": "Prospect Engine",
+          "href": "/admin/prospect-engine",
           "detail": "Create and organize Prospect movement.",
-          "href": "/admin/prospect-engine"
+          "daily": true
+        },
+        {
+          "label": "Number Bay Engine",
+          "href": "/admin/bridger-numbers",
+          "detail": "Number Bay stock, delivery and verification authority.",
+          "daily": true
+        },
+        {
+          "label": "Bridge AI",
+          "href": "/admin/bridge-ai",
+          "detail": "Review Bridge AI crossing and Client continuity."
         },
         {
           "label": "Bridge Templates",
-          "detail": "Control Bridge AI crossing templates.",
-          "href": "/admin/bridge-templates"
-        },
-        {
-          "label": "Bridge AI Continuity",
-          "detail": "Review Client Bridge AI support insight.",
-          "href": "/admin/bridge-ai"
+          "href": "/admin/bridge-templates",
+          "detail": "Control Bridge AI crossing templates."
         },
         {
           "label": "Fulfillment Agent",
-          "detail": "Authorized outreach and delivery movement.",
-          "href": "/admin/outreach"
+          "href": "/admin/outreach",
+          "detail": "Authorized Prospect outreach and delivery movement."
         },
         {
           "label": "Agility Fulfillment",
-          "detail": "Administer Agility orders and fulfillment.",
-          "href": "/admin/agility"
+          "href": "/admin/agility",
+          "detail": "Administer Agility orders and fulfillment."
         },
         {
-          "label": "Administration World",
-          "detail": "Institutional arrival world and daily authority state.",
-          "href": "/admin/dashboard"
+          "label": "Enterprise Dream",
+          "href": "/admin/enterprise-dream",
+          "detail": "Lord/Lady elevation and enterprise plans."
         },
         {
-          "label": "Administration Operating Room",
-          "detail": "Enter administrative systems and controls.",
-          "href": "/admin/functions"
+          "label": "Client Build Catalog",
+          "href": "/admin/client-build-catalog",
+          "detail": "Control Client build systems and pricing."
         },
         {
-          "label": "WhatsApp Number Engine",
-          "detail": "Number Bay stock, delivery and verification authority.",
-          "href": "/admin/bridger-numbers"
+          "label": "Enterprise Systems",
+          "href": "/admin/enterprise-systems",
+          "detail": "Build and administer enterprise-scale systems."
         }
       ]
     },
     {
       "key": "administration",
       "name": "Workshops",
-      "subtitle": "WORKSHOPS",
-      "purpose": "Workshops.",
+      "subtitle": "BUILD + GOVERN",
+      "purpose": "Develop, govern and tune WEAVE itself through distinct Administration workshops.",
       "accent": "#7dd3fc",
       "places": [
         {
-          "label": "Administration Workshops",
-          "detail": "Developer, Authority, AI Registry, EIGHT Dev Core and event workshop access.",
-          "href": "/admin/control-center#workshops"
-        },
-        {
-          "label": "EIGHT AI",
-          "detail": "Direct Administration interaction with EIGHT and its Scroll.",
-          "href": "/admin/control-center#eight"
-        },
-        {
-          "label": "Client Build Catalog",
-          "detail": "Control Client build systems and pricing.",
-          "href": "/admin/client-build-catalog"
-        },
-        {
           "label": "Authority Workshop",
-          "detail": "Institutional structures and authority.",
-          "href": "/authority/workshops"
+          "href": "/authority/workshops",
+          "detail": "Institutional structures and authority."
         },
         {
           "label": "Development Foundry",
-          "detail": "Eight and persistent coding agents developing WEAVE against the real source.",
-          "href": "/admin/development-agents"
+          "href": "/admin/development-agents",
+          "detail": "EIGHT and persistent coding agents developing WEAVE against the real source."
         },
         {
-          "label": "Developer Workshop",
-          "detail": "Develop and refine WEAVE systems.",
-          "href": "/admin/dev-workshop"
+          "label": "WEAVE Integrity Engine",
+          "href": "/admin/dev-workshop",
+          "detail": "Inspect and safely repair live WEAVE system state."
         },
         {
           "label": "Origin Systems",
-          "detail": "Inspect origin runtime and system foundations.",
-          "href": "/admin/origin-systems"
-        },
-        {
-          "label": "Enterprise Systems Workshop",
-          "detail": "Million-scale software, hardware and infrastructure systems.",
-          "href": "/admin/enterprise-systems"
+          "href": "/admin/origin-systems",
+          "detail": "Inspect origin runtime and system foundations."
         },
         {
           "label": "Infrastructure",
-          "detail": "Cloud Run, runtime and maintenance control.",
-          "href": "/admin/infrastructure"
+          "href": "/admin/infrastructure",
+          "detail": "Cloud Run, runtime and maintenance control."
         },
         {
-          "label": "Visual Systems \u00b7 Interaction in Motion",
-          "detail": "Govern live Flame, River, route current, emergence and visual runtime with history and rollback.",
-          "href": "/admin/visual-systems"
+          "label": "Visual Systems · Interaction in Motion",
+          "href": "/admin/visual-systems",
+          "detail": "Govern live Flame, River, route current and visual runtime."
         },
         {
           "label": "Environment Organizer",
-          "detail": "Withdraw, restore and reorder registered cards and pages without deleting source.",
-          "href": "/admin/environment-organizer"
+          "href": "/admin/environment-organizer",
+          "detail": "Withdraw, restore and reorder active WEAVE environments."
         },
         {
           "label": "Loop Workshop",
-          "detail": "Create and publish company loops.",
-          "href": "/admin/loop-workshop"
+          "href": "/admin/loop-workshop",
+          "detail": "Create and publish Company Loops."
         },
         {
           "label": "DJ Workshop",
-          "detail": "System sound and live atmosphere.",
-          "href": "/admin/dj-workshop"
+          "href": "/admin/dj-workshop",
+          "detail": "System sound and live atmosphere."
         },
         {
           "label": "Ad Workshop",
-          "detail": "Role-targeted communication without deployment.",
-          "href": "/admin/ad-workshop"
+          "href": "/admin/ad-workshop",
+          "detail": "Role-targeted communication without deployment."
         }
       ]
     },
     {
       "key": "participation",
       "name": "Communication & Events",
-      "subtitle": "COMMUNICATION & EVENTS",
-      "purpose": "Communication & Events.",
+      "subtitle": "MESSAGE + LOOP",
+      "purpose": "Operate company communication and current event movement without duplicating shared participant spaces.",
       "accent": "#7dd3fc",
       "places": [
         {
-          "label": "Company Loops",
-          "detail": "Shared company movement visible across WEAVE.",
-          "href": "/company/loops"
-        },
-        {
-          "label": "Company Guidance",
-          "detail": "Use the shared company clarification channel.",
-          "href": "/company-chat"
-        },
-        {
-          "label": "Private Lounge",
-          "detail": "Enter private WEAVE communication.",
-          "href": "/lounge?view=private"
-        },
-        {
-          "label": "Lounge",
-          "detail": "Enter the shared WEAVE communication space.",
-          "href": "/lounge"
-        },
-        {
-          "label": "Echo",
-          "detail": "Use the WEAVE Echo surface.",
-          "href": "/echo"
-        },
-        {
-          "label": "Contest",
-          "detail": "Enter shared participant contest movement.",
-          "href": "/arena"
-        },
-        {
-          "label": "Pattern",
-          "detail": "Enter shared system pattern play.",
-          "href": "/casino"
-        },
-        {
-          "label": "Stream",
-          "detail": "Enter the shared WEAVE media stream.",
-          "href": "/video-feed"
-        },
-        {
-          "label": "Loop 1 Ground",
-          "detail": "Enter the current shared WEAVE event ground.",
-          "href": "/event"
-        },
-        {
           "label": "Message Hub",
+          "href": "/admin/hub",
           "detail": "People, Client and staff communication.",
-          "href": "/admin/hub"
+          "daily": true
         },
         {
           "label": "Client Messages",
-          "detail": "Direct Client communication records.",
-          "href": "/admin/client-messages"
+          "href": "/admin/client-messages",
+          "detail": "Direct Client communication records."
+        },
+        {
+          "label": "Company Loops",
+          "href": "/company/loops",
+          "detail": "Shared company movement visible across WEAVE."
+        },
+        {
+          "label": "Company Guidance",
+          "href": "/company-chat",
+          "detail": "Use the shared company clarification channel."
         },
         {
           "label": "Campaign Flame",
-          "detail": "Campaign construction and coordinated movement.",
-          "href": "/admin/campaign-flame"
+          "href": "/admin/campaign-flame",
+          "detail": "Campaign construction and coordinated movement."
         },
         {
-          "label": "Flame Event \u00b7 Loop 1",
-          "detail": "Event-world control and opening movement.",
-          "href": "/admin/flame-event"
+          "label": "Flame Event · Loop 1",
+          "href": "/admin/flame-event",
+          "detail": "Event-world control and opening movement."
         }
       ]
     }
