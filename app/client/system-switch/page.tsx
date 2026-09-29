@@ -30,6 +30,7 @@ export default function ClientSystemSwitchPage() {
     const headers = { Authorization: `Bearer ${token}` }
 
     const load = async () => {
+      const bootStartedAt=Date.now()
       try {
         const entryResponse = await fetch('/api/client/file-folder-entry', { headers, cache: 'no-store', signal:controller.signal })
         const entryBody = await entryResponse.json()
@@ -65,7 +66,9 @@ export default function ClientSystemSwitchPage() {
         }
       } finally {
         window.clearTimeout(timeout)
-        setLoading(false)
+        const remainingBoot=Math.max(0,2200-(Date.now()-bootStartedAt))
+        if(remainingBoot>0)await new Promise(resolve=>window.setTimeout(resolve,remainingBoot))
+        if(!controller.signal.aborted)setLoading(false)
       }
     }
 
@@ -81,7 +84,7 @@ export default function ClientSystemSwitchPage() {
   if (entry && !entry.active) return <ClientFileFolderGate entry={entry} />
 
   if (error || !data?.verified || !data?.workshop) {
-    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg rounded-3xl border border-white/10 bg-slate-950 p-8 text-center"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><Link href="/client/dashboard" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Portal</Link></div></main>
+    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg border-y border-cyan-200/10 bg-[#040a12]/92 p-8 text-center backdrop-blur-xl"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><Link href="/client/dashboard" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Portal</Link></div></main>
   }
 
   return (
