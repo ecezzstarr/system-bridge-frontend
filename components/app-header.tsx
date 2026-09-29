@@ -130,13 +130,15 @@ export function AppHeader({ user }: AppHeaderProps) {
                   <p className="truncate text-[10px] font-black text-white">{user.name}</p>
                   <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{user.role} position</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => { setAccountOpen(false); router.push('/roles') }}
-                  className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold text-slate-300 hover:bg-white/[.04] hover:text-white"
-                >
-                  <Settings className="h-4 w-4" />Position + Identity
-                </button>
+                {role !== 'agent' && role !== 'bridger' && (
+                  <button
+                    type="button"
+                    onClick={() => { setAccountOpen(false); router.push('/roles') }}
+                    className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[10px] font-bold text-slate-300 hover:bg-white/[.04] hover:text-white"
+                  >
+                    <Settings className="h-4 w-4" />Position + Identity
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => { setAccountOpen(false); logout(); router.replace('/login') }}
