@@ -5,7 +5,7 @@ import { getAuthUser, type AuthUser } from '@/lib/auth-api'
 
 async function bridgerOwnsClient(client: any, bridgerId: string, clientId: string) {
   const modern = await client.query(
-    "SELECT id FROM users WHERE id=$1::uuid AND role='client' AND referred_by=$2::uuid LIMIT 1",
+    "SELECT id FROM users WHERE id=$1::uuid AND role='client' AND COALESCE(referred_by,referred_by_bridger_id)=$2::uuid LIMIT 1",
     [clientId, bridgerId]
   )
   if (modern.rows.length) return true
@@ -55,7 +55,7 @@ async function resolveClientName(client: any, clientId: string) {
 async function staffClientIds(client: any, user: AuthUser): Promise<string[]> {
   if (user.role === 'bridger') {
     const result = await client.query(
-      `SELECT id FROM users WHERE role='client' AND referred_by=$1::uuid
+      `SELECT id FROM users WHERE role='client' AND COALESCE(referred_by,referred_by_bridger_id)=$1::uuid
        UNION
        SELECT id FROM clients WHERE referred_by=$1::uuid OR assigned_bridger_id=$1::uuid`,
       [user.id]
