@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       FROM bridge_deposits bd
       INNER JOIN bridge_ais ba ON ba.id = bd.bridge_id
       WHERE bd.id = ${depositId}::uuid
-        AND bd.status = 'pending'
+        AND bd.status IN ('pending','approved')
       LIMIT 1
     `
 
@@ -215,6 +215,43 @@ export async function POST(request: NextRequest) {
 
     const deposit = deposits[0]
     const fileFolderTier = getFileFolderTier(Number(deposit.tier_trx))
+
+    if (deposit.status === 'approved') {
+      if (status !== 'approved' || !deposit.file_number) {
+        return NextResponse.json({ error: 'This File Folder approval is already complete' }, { status: 409 })
+      }
+
+      let commissionMovement = null
+      if (deposit.bridger_id) {
+        commissionMovement = await creditBridgerActivityCommission({
+          bridgerId: deposit.bridger_id,
+          activity: 'client_deposit',
+          baseAmount: Number(deposit.tier_trx),
+          sourceId: String(deposit.id),
+          description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${deposit.file_number}`
+        })
+        if (!commissionMovement.bridgerShare) {
+          return NextResponse.json({
+            error: 'File Folder is approved, but the Bridger share is not yet recoverable. Verify the Bridger primary wallet and retry this approval.'
+          }, { status: 503 })
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        status: 'approved',
+        source: 'bridge_deposit',
+        replayed: true,
+        depositId: deposit.id,
+        fileNumber: deposit.file_number,
+        bridgerId: deposit.bridger_id,
+        amount: Number(deposit.tier_trx),
+        fileFolderTier,
+        currency: 'Flame Coin',
+        commissionMovement,
+        message: 'Existing File Folder approval verified and commission movement reconciled.'
+      })
+    }
 
     if (!fileFolderTier) {
       return NextResponse.json(
@@ -303,13 +340,16 @@ export async function POST(request: NextRequest) {
     }
 
     if (deposit.bridger_id) {
-      await creditBridgerActivityCommission({
+      const commissionMovement = await creditBridgerActivityCommission({
         bridgerId: deposit.bridger_id,
         activity: 'client_deposit',
         baseAmount: Number(deposit.tier_trx),
         sourceId: String(deposit.id),
         description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
       })
+      if (!commissionMovement.bridgerShare) {
+        throw new Error('File Folder approved but Bridger share could not be credited; retry approval after wallet verification')
+      }
 
       await notifyUser(deposit.bridger_id, {
         type: 'client_deposit_approved',
