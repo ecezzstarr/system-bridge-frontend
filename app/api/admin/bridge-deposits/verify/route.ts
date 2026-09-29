@@ -237,9 +237,9 @@ export async function POST(request: NextRequest) {
           sourceId: String(deposit.id),
           description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${deposit.file_number}`
         })
-        if (!commissionMovement.bridgerShare) {
+        if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
           return NextResponse.json({
-            error: 'File Folder is approved, but the Bridger share is not yet recoverable. Verify the Bridger primary wallet and retry this approval.'
+            error: 'File Folder is approved, but one or more required role shares are not yet recoverable. Verify the Bridger and attached Agent primary wallets, then retry this approval.'
           }, { status: 503 })
         }
       }
@@ -347,8 +347,8 @@ export async function POST(request: NextRequest) {
         sourceId: String(deposit.id),
         description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
       })
-      if (!commissionMovement.bridgerShare) {
-        throw new Error('File Folder approved but Bridger share could not be credited; retry approval after wallet verification')
+      if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
+        throw new Error('File Folder approved but a required Bridger/Agent share could not be credited; retry approval after wallet verification')
       }
 
       await notifyUser(deposit.bridger_id, {
