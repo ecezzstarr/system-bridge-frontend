@@ -79,7 +79,7 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
   },
   '/client/dashboard': {
     key: 'client-home-world',
-    title: 'Client Home World',
+    title: 'Client World',
     district: 'Client World',
     purpose: 'The Client arrival ground: one world connecting the File Folder, support, value, loops, enterprise and live systems.',
     movement: 'Arrive → choose district → move → return with changed state',
@@ -232,14 +232,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Enter district → choose place → operate → return to the world',
     layer: 'district',
   }],
-  ['/bridger/bridge-radiance', {
-    key: 'bridger-radiance-station',
-    title: 'Bridge Radiance · Hope Station',
-    district: 'Bridge Radiance',
-    purpose: 'The active human interaction station where a Bridger continues movement with Prospects they own.',
-    movement: 'Recognize Prospect → interact → clarify → continue toward Client',
-    layer: 'interaction',
-  }],
+
   ['/agent/bridge-radiance', {
     key: 'agent-radiance-station',
     title: 'Bridge Radiance · Stability Station',
@@ -297,17 +290,10 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Presence → district → place → changed state',
     layer: 'district',
   }],
-  ['/client/functions', {
-    key: 'client-operating-room',
-    title: 'Client Operating Room',
-    district: 'Client World',
-    purpose: 'The Client control environment for entering the functions that move the File Folder, value, support and enterprise forward.',
-    movement: 'Choose function → act → return with changed state',
-    layer: 'system',
-  }],
+
   ['/client/loops', {
     key: 'client-loops',
-    title: 'Client Loop Field',
+    title: 'Loop Field',
     district: 'Client World',
     purpose: 'The Client view of company loops, participation stages and active movement connected to the File Folder.',
     movement: 'See → enter → participate → preserve',
@@ -315,7 +301,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
   }],
   ['/client/event', {
     key: 'client-event-ground',
-    title: 'Client Event Ground',
+    title: 'Flame Event · Loop 1',
     district: 'Client World',
     purpose: 'A live event environment where the Client participates inside current WEAVE movement.',
     movement: 'Arrive → participate → carry movement forward',
@@ -353,14 +339,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Recognize position → acquire Prospect → connect → cross',
     layer: 'district',
   }],
-  ['/bridger/functions', {
-    key: 'bridger-operating-room',
-    title: 'Bridger Operating Room',
-    district: 'Bridge',
-    purpose: 'The focused Bridger working environment for Bridge AI, Prospect Market, Number Bay, Echo, Presences and value movement.',
-    movement: 'Choose function → act → preserve movement',
-    layer: 'system',
-  }],
+
   ['/bridger/bridge-ai', {
     key: 'bridge-ai-crossing',
     title: 'Bridge AI Crossing',
@@ -369,14 +348,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Interact → reveal → recognize → cross',
     layer: 'interaction',
   }],
-  ['/bridger/clients', {
-    key: 'bridger-client-field',
-    title: 'Client Continuity Field',
-    district: 'Bridge',
-    purpose: 'The Bridger environment for supporting connected Clients while Client ownership remains with each Client.',
-    movement: 'See Client movement → support → confirm continuity',
-    layer: 'district',
-  }],
+
   ['/bridger/numbers', {
     key: 'bridger-number-bay',
     title: 'Worldwide Number Bay',
@@ -449,14 +421,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Observe → authorize → verify → keep the world moving',
     layer: 'world',
   }],
-  ['/admin/functions', {
-    key: 'administration-operating-room',
-    title: 'Administration Operating Room',
-    district: 'Institution',
-    purpose: 'The control environment for entering WEAVE administrative systems without reducing them to disconnected tools.',
-    movement: 'Observe state → enter system → act → verify',
-    layer: 'system',
-  }],
+
   ['/admin/', {
     key: 'administration-system',
     title: 'Administration System',
