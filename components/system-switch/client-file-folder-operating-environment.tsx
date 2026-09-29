@@ -555,12 +555,12 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       <div
         className={`absolute z-40 transition-all duration-500 ease-out
           inset-x-2 bottom-[4.75rem] max-h-[56dvh]
-          md:inset-y-[7.75rem] md:left-auto md:right-4 md:bottom-auto md:w-[min(48rem,54vw)] md:max-h-none
+          md:inset-y-[7.75rem] md:left-auto md:right-0 md:bottom-auto md:w-[min(43rem,48vw)] md:max-h-none
           ${panelOpen ? 'translate-y-0 opacity-100 md:translate-x-0' : 'pointer-events-none translate-y-[115%] opacity-0 md:translate-y-0 md:translate-x-[110%]'}`}
         aria-hidden={!panelOpen}
       >
-        <div className="flex h-full max-h-[56dvh] flex-col overflow-hidden rounded-[1.4rem] border border-amber-100/15 bg-[#0d0907]/96 shadow-[0_30px_100px_rgba(0,0,0,.62)] backdrop-blur-2xl md:max-h-[calc(100dvh-9rem)] md:rounded-[1.8rem]">
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-cyan-100/10 bg-[#17100b]/92 px-4 py-3">
+        <div className="flex h-full max-h-[56dvh] flex-col overflow-hidden border border-cyan-100/12 bg-[#040a12]/92 shadow-[0_30px_100px_rgba(0,0,0,.62)] backdrop-blur-2xl md:max-h-[calc(100dvh-9rem)] md:border-y md:border-l md:border-r-0">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-cyan-100/10 bg-[#06101b]/92 px-4 py-3">
             <div className="min-w-0">
               <p className="text-[7px] font-black uppercase tracking-[.18em] text-amber-200">Inside the territory</p>
               <div className="mt-1 flex items-center gap-2">
@@ -578,7 +578,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             </button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-5">
-        <section aria-label="Construction sequence" className="border-y border-cyan-100/10 bg-[#18110c]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
+        <section aria-label="Construction sequence" className="border-y border-cyan-100/10 bg-[#06101b]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
           <div className="flex items-center gap-3">
             <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-cyan-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">
               <Hammer className="h-3.5 w-3.5"/>Build
