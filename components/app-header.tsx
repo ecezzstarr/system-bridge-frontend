@@ -23,6 +23,12 @@ export function AppHeader({ user }: AppHeaderProps) {
   const { user: authUser, logout } = useAuth()
   const [accountOpen, setAccountOpen] = useState(false)
   const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
+  const role = user?.role || authUser?.role
+  const valueRoute = role === 'bridger'
+    ? '/wallet/deposit-withdraw'
+    : role === 'agent'
+      ? '/agent/commissions'
+      : '/wallet'
 
   useEffect(() => {
     if (!authUser?.id) return
@@ -59,6 +65,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           </span>
         </Button>
 
+        {role !== 'agent' && role !== 'bridger' && (
         <div className="relative hidden w-64 md:block lg:w-96">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <Input
@@ -75,6 +82,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             className="h-8 border-transparent bg-transparent pl-10 text-xs focus-visible:ring-cyan-500/30"
           />
         </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
@@ -82,8 +90,8 @@ export function AppHeader({ user }: AppHeaderProps) {
           variant="outline"
           size="sm"
           className="h-8 gap-2 border-white/5 bg-transparent px-2 md:px-3"
-          onClick={() => router.push('/wallet')}
-          aria-label="Open Flame Coin wallet"
+          onClick={() => router.push(valueRoute)}
+          aria-label={role === 'agent' ? 'Open Prospect commissions' : role === 'bridger' ? 'Open Deposit and Withdrawal' : 'Open Flame Coin wallet'}
         >
           <Wallet className="h-4 w-4 text-cyan-400" />
           <span data-weave-live-word="station" className="hidden font-mono text-[10px] sm:inline md:text-xs">
