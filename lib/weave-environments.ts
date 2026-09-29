@@ -197,6 +197,22 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'Notice → recognize → connect',
     layer: 'district',
   },
+  '/communications': {
+    key: 'direct-communication',
+    title: 'Direct Communication',
+    district: 'Presence',
+    purpose: 'Authorized direct communication between connected WEAVE positions, Prospects and Clients.',
+    movement: 'Select relationship → speak directly → preserve continuity',
+    layer: 'interaction',
+  },
+  '/settings': {
+    key: 'role-settings',
+    title: 'Settings',
+    district: 'Presence',
+    purpose: 'Manage identity, password and the current signed-in role session.',
+    movement: 'Review identity → update → sign out or continue',
+    layer: 'system',
+  },
   '/weave/standing': {
     key: 'standing-field',
     title: 'Standing Field',
