@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { AppHeader } from '@/components/app-header'
-import { toast } from 'sonner'
 import { usePathname } from 'next/navigation'
 import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
 import { Toaster } from '@/components/ui/sonner'
@@ -16,6 +15,7 @@ import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
+import { isLeanAccountRole, isRoleAccountRouteAllowed, roleAccountHome } from '@/lib/role-account-scope'
 
 export default function AppLayout({
   children,
@@ -36,30 +36,14 @@ export default function AppLayout({
     }
   }, [isInitialized, isLoading, isAuthenticated, isRedirecting, router])
 
-  // Continuance enforcement for Bridgers
+  // Agent and Bridger accounts intentionally expose only their defined working places.
+  // Historical routes remain in source for Administration and migration safety, but are
+  // not part of these account surfaces.
   useEffect(() => {
-    const checkSub = async () => {
-      if (user?.role === 'bridger' && pathname !== '/bridger/functions') {
-        try {
-          const token = localStorage.getItem('ssb_auth_token')
-          const res = await fetch('/api/bridger/subscription', {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          })
-          const data = await res.json()
-          if (data.success && data.subscription.subscription_status === 'suspended') {
-            router.push('/bridger/functions')
-            toast.error('Your movement here has paused — renewal is needed to continue.')
-          }
-        } catch (e) {
-          console.error('Sub check error:', e)
-        }
-      }
-    }
-    
-    if (isAuthenticated && user?.role === 'bridger') {
-      checkSub()
-    }
-  }, [user, pathname, isAuthenticated, router])
+    if (!isAuthenticated || !isLeanAccountRole(user?.role)) return
+    if (isRoleAccountRouteAllowed(user.role, pathname)) return
+    router.replace(roleAccountHome(user.role))
+  }, [isAuthenticated, user?.role, pathname, router])
 
   // Terms acceptance gate for Agents and Bridgers
   const [termsNeeded, setTermsNeeded] = useState(false)
@@ -114,6 +98,17 @@ export default function AppLayout({
   // Only render children if authenticated
   if (!isAuthenticated) {
     return null
+  }
+
+  if (isLeanAccountRole(user?.role) && !isRoleAccountRouteAllowed(user.role, pathname)) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-transparent px-4 text-center" role="status" aria-live="polite">
+        <div>
+          <div className="mx-auto h-9 w-9 animate-spin rounded-full border border-sky-200/15 border-t-sky-200 motion-reduce:animate-none" />
+          <p className="mt-4 text-[9px] font-black uppercase tracking-[.18em] text-sky-100">Returning to your position</p>
+        </div>
+      </div>
+    )
   }
 
   return (
