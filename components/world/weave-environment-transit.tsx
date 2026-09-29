@@ -34,11 +34,14 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
     }
     const pending=new Set<object>()
     const hasPendingSurface=()=>Boolean(document.querySelector?.('[data-environment-pending="true"]'))
-    const hasUnreadyCanvas=()=>[...document.querySelectorAll<HTMLElement>('[data-adaptive-canvas]')].some(canvas=>{
-      const rect=canvas.getBoundingClientRect()
-      if(rect.bottom<=0||rect.top>=window.innerHeight||rect.right<=0||rect.left>=window.innerWidth)return false
-      return canvas.getAttribute('data-adaptive-canvas-ready')!=='true'
-    })
+    const hasUnreadyCanvas=()=>{
+      if(typeof document.querySelectorAll!=='function')return false
+      return Array.from(document.querySelectorAll<HTMLElement>('[data-adaptive-canvas]')).some(canvas=>{
+        const rect=canvas.getBoundingClientRect()
+        if(rect.bottom<=0||rect.top>=window.innerHeight||rect.right<=0||rect.left>=window.innerWidth)return false
+        return canvas.getAttribute('data-adaptive-canvas-ready')!=='true'
+      })
+    }
     const check=()=>{
       clearTimeout(quietTimer)
       if(!pending.size&&!hasPendingSurface()&&!hasUnreadyCanvas()){
