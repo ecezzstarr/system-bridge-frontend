@@ -368,9 +368,10 @@ export async function getBridgersNeedingAttention() {
   const dueForDeduction = await sql`
     SELECT id FROM users
     WHERE role = 'bridger' AND is_subscription_exempt = false
-      AND subscription_status IN ('active', 'due', 'suspended')
-      AND subscription_expiry IS NOT NULL
-      AND subscription_expiry <= ${now}
+      AND (
+        subscription_status IN ('due', 'suspended')
+        OR (subscription_status = 'active' AND subscription_expiry IS NOT NULL AND subscription_expiry <= ${now})
+      )
   `
 
   return { dueForReminder, dueForDeduction }
