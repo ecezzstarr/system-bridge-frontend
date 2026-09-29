@@ -369,6 +369,14 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Check standing → renew when due → continue',
     layer: 'system',
   }],
+  ['/agent/presence', {
+    key: 'agent-presence',
+    title: 'Agent Presence',
+    district: 'Presence',
+    purpose: 'The orientation environment for understanding the Agent position before entering Agility or Commission movement.',
+    movement: 'Recognize position → understand functions → move Agility or review commission',
+    layer: 'district',
+  }],
   ['/agent/functions', {
     key: 'agent-operating-room',
     title: 'Agent Operating Room',
