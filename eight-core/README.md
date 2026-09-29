@@ -1,6 +1,6 @@
 # EIGHT Core - Standalone System Builder
 
-A standalone AI-powered system builder that can be deployed to Google Cloud Run, giving you full control over your ecosystem outside of Vercel.
+A standalone AI-powered system builder deployed to Google Cloud Run as part of the WEAVE infrastructure.
 
 ## Features
 
