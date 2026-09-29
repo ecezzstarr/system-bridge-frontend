@@ -1440,7 +1440,7 @@ assert.ok(weaveEnvironmentMapSource.includes("'Client Access Gate'"),'Client log
 assert.ok(weaveEnvironmentMapSource.includes("'Bridger Operating Room'"),'Bridger functions are written as an operating environment')
 assert.ok(weaveEnvironmentMapSource.includes("'Agent Operating Room'"),'Agent functions are written as an operating environment')
 assert.ok(weaveEnvironmentMapSource.includes("'Administration Operating Room'"),'Administration functions are written as an operating environment')
-assert.ok(clientEnvironmentNavigationSource.includes("'Home World'"),'Client navigation names the home as a world')
+assert.ok(clientEnvironmentNavigationSource.includes("'Open World'")&&clientEnvironmentNavigationSource.includes("'Presence'"),'Client navigation separates Presence from the open world')
 assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
 
 for(const file of [
