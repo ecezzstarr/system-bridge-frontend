@@ -1,12 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { getAuthHeaders } from '@/lib/auth-client'
 import {
-  ArrowRight,
   CheckCircle2,
   CircleDollarSign,
   Network,
@@ -31,12 +29,6 @@ type CommissionState = {
   leadCommissionRate: number
   clientCrossingRate: number
   totalEarnings: number
-  loop1: {
-    activeBridgers: number
-    yieldTier: number
-    yieldNgn: number
-    maxBridgers: number
-  }
   bridgers: BridgerCommissionRow[]
   recentCommissions: Array<{
     amount: number
@@ -74,13 +66,13 @@ export default function AgentCommissionsPage() {
     <div className="mx-auto max-w-7xl pb-20 sm:pb-0">
       <div className="mb-6">
         <p className="text-[10px] font-black uppercase tracking-[0.24em] text-emerald-300">
-          Agent · Loop 1
+          Agent · Commissions
         </p>
         <h1 className="mt-2 bg-gradient-to-r from-cyan-400 to-emerald-300 bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
           Continuance
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          See how Bridger movement becomes Agent commission.
+          See the two commission movements attached to your Agent position.
         </p>
       </div>
 
@@ -95,7 +87,7 @@ export default function AgentCommissionsPage() {
               Your Bridger buys a Prospect package. Your Agent position receives {leadRate}%.
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-              The Prospect Engine records the Bridger purchase and routes the eligible Agent return into your WEAVE balance. The Continuance page lets you see the movement behind that return.
+              The Prospect Engine records the Bridger purchase and routes the eligible Agent return into your WEAVE balance. A verified Client File Folder purchase through that Bridger creates the separate File Folder share.
             </p>
           </div>
 
@@ -130,10 +122,9 @@ export default function AgentCommissionsPage() {
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-          <p className="text-xs text-slate-500">Active Loop 1 Bridgers</p>
-          <p className="mt-2 text-3xl font-black text-cyan-300">
-            {commissions ? commissions.loop1.activeBridgers : '—'} / {commissions?.loop1.maxBridgers || 3}
-          </p>
+          <p className="text-xs text-slate-500">Prospect purchase share</p>
+          <p className="mt-2 text-3xl font-black text-cyan-300">{leadRate}%</p>
+          <p className="mt-1 text-[11px] leading-5 text-slate-500">From qualifying Prospect purchases by Bridgers attached to your Agent position.</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
           <p className="text-xs text-slate-500">Client crossing return</p>
@@ -149,19 +140,13 @@ export default function AgentCommissionsPage() {
           <div>
             <div className="flex items-center gap-2 text-cyan-300">
               <Users className="h-5 w-5" />
-              <p className="text-xs font-black uppercase tracking-[0.18em]">Your Bridgers</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em]">Attached Bridger movement</p>
             </div>
-            <h2 className="mt-2 text-2xl font-black text-white">Prospect activity under your Agent position</h2>
+            <h2 className="mt-2 text-2xl font-black text-white">The sources behind your commissions</h2>
             <p className="mt-1 text-sm text-slate-500">
-              These are the Bridgers currently assigned to you and the Prospect-package activity recorded in their ledger.
+              Bridgers attached to your Agent position stay visible here only as commission sources: Prospect purchases and resulting Client File Folder crossings.
             </p>
           </div>
-          <Link
-            href="/agent/bridgers"
-            className="inline-flex items-center text-xs font-bold uppercase tracking-wider text-cyan-300 hover:text-cyan-200"
-          >
-            Open My Bridgers <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
         </div>
 
         {loading ? (
