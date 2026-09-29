@@ -21,6 +21,18 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
     scene: { key:'entry', label:'WEAVE Entrance', district:'Presence', level:'world', camera:{x:0,y:2,yaw:0,pitch:0.5,zoom:1.006,depth:8} },
   },
   {
+    match: path => path === '/agent/presence',
+    scene: { key:'agent-presence', label:'Agent Presence', district:'Presence', level:'district', camera:{x:-10,y:3,yaw:-1.5,pitch:0.8,zoom:1.014,depth:20} },
+  },
+  {
+    match: path => path === '/bridger/presence',
+    scene: { key:'bridger-presence', label:'Bridger Presence', district:'Presence', level:'district', camera:{x:0,y:4,yaw:0,pitch:1,zoom:1.015,depth:21} },
+  },
+  {
+    match: path => path === '/client/presence',
+    scene: { key:'client-presence', label:'Client Presence', district:'Presence', level:'district', camera:{x:10,y:3,yaw:1.5,pitch:0.8,zoom:1.014,depth:20} },
+  },
+  {
     match: path => path === '/admin/file-number-engine',
     scene: { key:'file-number-engine', label:'File Number Engine', district:'Institution', level:'system', camera:{x:24,y:-3,yaw:4,pitch:-1,zoom:1.03,depth:42} },
   },

@@ -69,6 +69,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'File Number → establish access → enter world',
     layer: 'interaction',
   },
+  '/client/presence': {
+    key: 'client-presence',
+    title: 'Client Presence',
+    district: 'Presence',
+    purpose: 'The Client orientation environment for understanding the File Folder, value movement, support and ownership of the Client world.',
+    movement: 'Recognize position → enter File Folder → build → activate → operate',
+    layer: 'district',
+  },
   '/client/dashboard': {
     key: 'client-home-world',
     title: 'Client Home World',
@@ -281,6 +289,14 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Recognize → build → activate → operate → continue',
     layer: 'world',
   }],
+  ['/client/district', {
+    key: 'client-role-district',
+    title: 'Client District',
+    district: 'Client World',
+    purpose: 'An organized Client district containing the places that perform one class of Client movement.',
+    movement: 'Presence → district → place → changed state',
+    layer: 'district',
+  }],
   ['/client/functions', {
     key: 'client-operating-room',
     title: 'Client Operating Room',
@@ -329,12 +345,20 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Speak → clarify → act → preserve continuity',
     layer: 'interaction',
   }],
+  ['/bridger/presence', {
+    key: 'bridger-presence',
+    title: 'Bridger Presence',
+    district: 'Presence',
+    purpose: 'The Bridger orientation environment for understanding Prospect movement, crossing tools, value continuity and authorized outreach.',
+    movement: 'Recognize position → acquire Prospect → connect → cross',
+    layer: 'district',
+  }],
   ['/bridger/functions', {
     key: 'bridger-operating-room',
     title: 'Bridger Operating Room',
     district: 'Bridge',
-    purpose: 'The Bridger working environment for connection, prospect movement, Client continuity and authorized support.',
-    movement: 'Connect → clarify → move → support',
+    purpose: 'The focused Bridger working environment for Bridge AI, Prospect Market, Number Bay, Echo, Presences and value movement.',
+    movement: 'Choose function → act → preserve movement',
     layer: 'system',
   }],
   ['/bridger/bridge-ai', {
@@ -408,6 +432,14 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     purpose: 'The Agent value environment for commission logic, Bridger-linked participation and continuing earnings.',
     movement: 'Participation → qualifying movement → commission → record',
     layer: 'system',
+  }],
+  ['/district', {
+    key: 'role-district',
+    title: 'Role District',
+    district: 'Open WEAVE World',
+    purpose: 'A role-specific district that contains related places without scattering every function across the open world.',
+    movement: 'World → district → place → return with changed state',
+    layer: 'district',
   }],
   ['/admin/dashboard', {
     key: 'administration-world',

@@ -18,7 +18,7 @@ const ICONS:Record<string,typeof Bot>={
   '/wallet/deposit-withdraw':CircleDollarSign,
 }
 
-const commands=getRolePlaces('bridger').map(item=>({
+const commands=getRolePlaces('bridger').filter(item=>item.href!=='/bridger/presence').map(item=>({
   ...item,
   icon:ICONS[item.href]||Bot,
 }))
@@ -112,7 +112,7 @@ export function BridgerOperatingEnvironment(){
   return <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-6" data-operating-room="bridger">
     <section className="weave-system-depth weave-operating-environment overflow-hidden border-y border-emerald-300/15 bg-[#03100f]/82 backdrop-blur-xl sm:rounded-[2rem] sm:border">
       <header className="border-b border-white/10 px-4 py-5 md:px-6">
-        <p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Bridger Presence</p>
+        <p className="text-[9px] font-black uppercase tracking-[.2em] text-cyan-300">Bridger Operating Room</p>
         <h1 className="mt-2 text-2xl font-black text-white">Connection stays simple.</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Bridge AI, Prospect Market, Number Bay, Echo, Presences and Deposit/Withdrawal are the Bridger account. Continuance renewal runs in the background from the primary Flame Coin wallet.</p>
       </header>

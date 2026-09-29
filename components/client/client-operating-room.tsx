@@ -7,7 +7,7 @@ import { WeaveRouteNetwork, type WeaveRouteTone } from '@/components/world/weave
 
 
 export function ClientOperatingRoom() {
-  const stations=getRolePlaces('client').map(item=>({...item,icon:FolderOpen,tone:'sky' as WeaveRouteTone}))
+  const stations=getRolePlaces('client').filter(item=>item.href!=='/client/presence').map(item=>({...item,icon:FolderOpen,tone:'sky' as WeaveRouteTone}))
 
   return (
     <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-6" data-operating-room="client">

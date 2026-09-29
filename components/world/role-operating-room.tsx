@@ -11,7 +11,7 @@ type Role = 'agent' | 'admin'
 
 export function RoleOperatingRoom({ role }: { role: Role }) {
   const { isVisible, orderFor } = useEnvironmentOrganizer()
-  const stations = getRolePlaces(role).filter(item=>isVisible(item.href))
+  const stations = getRolePlaces(role).filter(item=>role==='admin'||!item.href.endsWith('/presence')).filter(item=>isVisible(item.href))
     .sort((a,b)=>orderFor(a.href)-orderFor(b.href))
     .map(item=>({...item,icon:LayoutTemplate,tone:'sky' as WeaveRouteTone}))
 
