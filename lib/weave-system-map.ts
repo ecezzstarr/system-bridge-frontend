@@ -42,7 +42,7 @@ export const WEAVE_SYSTEM_MAP = {
     agent: {
       name: 'Agent',
       kind: 'employee',
-      description: 'The Agent develops and supports Bridgers and carries company execution.',
+      description: 'The Agent moves Agility and receives defined shares from attached Bridger Prospect purchases and verified Client File Folder crossings.',
     },
     admin: {
       name: 'Administration',
