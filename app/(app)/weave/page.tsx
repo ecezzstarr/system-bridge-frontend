@@ -66,7 +66,7 @@ export default function WeavePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [supportOpen, setSupportOpen] = useState(false)
 
-  const isSupport = user?.role === 'admin' || user?.role === 'agent' || user?.role === 'bridger'
+  const isSupport = user?.role === 'admin'
 
   useEffect(() => {
     if (isSupport && searchParams.get('station') === 'file-folders') {
