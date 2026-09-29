@@ -289,6 +289,14 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Recognize → build → activate → operate → continue',
     layer: 'world',
   }],
+  ['/client/district', {
+    key: 'client-role-district',
+    title: 'Client District',
+    district: 'Client World',
+    purpose: 'An organized Client district containing the places that perform one class of Client movement.',
+    movement: 'Presence → district → place → changed state',
+    layer: 'district',
+  }],
   ['/client/functions', {
     key: 'client-operating-room',
     title: 'Client Operating Room',
@@ -424,6 +432,14 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     purpose: 'The Agent value environment for commission logic, Bridger-linked participation and continuing earnings.',
     movement: 'Participation → qualifying movement → commission → record',
     layer: 'system',
+  }],
+  ['/district', {
+    key: 'role-district',
+    title: 'Role District',
+    district: 'Open WEAVE World',
+    purpose: 'A role-specific district that contains related places without scattering every function across the open world.',
+    movement: 'World → district → place → return with changed state',
+    layer: 'district',
   }],
   ['/admin/dashboard', {
     key: 'administration-world',
