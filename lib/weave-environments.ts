@@ -69,6 +69,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'File Number → establish access → enter world',
     layer: 'interaction',
   },
+  '/client/presence': {
+    key: 'client-presence',
+    title: 'Client Presence',
+    district: 'Presence',
+    purpose: 'The Client orientation environment for understanding the File Folder, value movement, support and ownership of the Client world.',
+    movement: 'Recognize position → enter File Folder → build → activate → operate',
+    layer: 'district',
+  },
   '/client/dashboard': {
     key: 'client-home-world',
     title: 'Client Home World',
@@ -329,12 +337,20 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Speak → clarify → act → preserve continuity',
     layer: 'interaction',
   }],
+  ['/bridger/presence', {
+    key: 'bridger-presence',
+    title: 'Bridger Presence',
+    district: 'Presence',
+    purpose: 'The Bridger orientation environment for understanding Prospect movement, crossing tools, value continuity and authorized outreach.',
+    movement: 'Recognize position → acquire Prospect → connect → cross',
+    layer: 'district',
+  }],
   ['/bridger/functions', {
     key: 'bridger-operating-room',
     title: 'Bridger Operating Room',
     district: 'Bridge',
-    purpose: 'The Bridger working environment for connection, prospect movement, Client continuity and authorized support.',
-    movement: 'Connect → clarify → move → support',
+    purpose: 'The focused Bridger working environment for Bridge AI, Prospect Market, Number Bay, Echo, Presences and value movement.',
+    movement: 'Choose function → act → preserve movement',
     layer: 'system',
   }],
   ['/bridger/bridge-ai', {
