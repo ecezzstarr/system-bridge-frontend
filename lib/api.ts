@@ -252,7 +252,7 @@ class ApiClient {
     })
   }
 
-  // Arena - uses local Vercel API routes (connected to Neon)
+  // Arena - uses the local WEAVE API routes served by Cloud Run
   async getArenaMatches(params?: { status?: string; category?: string; limit?: number }): Promise<ApiResponse<{ matches: unknown[] }>> {
     const searchParams = new URLSearchParams()
     if (params?.status) searchParams.set('status', params.status)
