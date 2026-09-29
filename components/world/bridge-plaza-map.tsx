@@ -336,7 +336,7 @@ export function BridgePlazaMap({
         id:district.key,
         name:district.name,
         subtitle:district.subtitle,
-        href:`/district/${district.key}`,
+        href:userRole==='client'?`/client/district/${district.key}`:`/district/${district.key}`,
         action:'route' as const,
         accent:district.accent,
         position:placement.position,
