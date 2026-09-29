@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: bridger[0] })
   } catch (error) {
-    console.error('[v0] Bridger profile error:', error)
+    console.error('[WEAVE] Bridger profile error:', error)
     return NextResponse.json({ error: 'Failed to fetch bridger profile' }, { status: 500 })
   }
 }
