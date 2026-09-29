@@ -506,7 +506,7 @@ assert.ok(roleOperatingRoomSource.includes("href: '/clients'"),'Agent Operating 
 assert.ok(roleOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Agent and Administration components preserve district color structure on route lanes')
 assert.ok(bridgerOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Bridger components preserve district color structure on route lanes')
 assert.ok(bridgerOperatingRoomSource.includes('Bridger operating routes'),'Bridger Operating Room is a connected current-operation environment')
-assert.ok(bridgerOperatingRoomSource.includes('Prospect intake')&&bridgerOperatingRoomSource.includes('Daily Prospect → Bridge Radiance'),'Bridger role keeps Prospect intake flowing into live Bridge Radiance')
+assert.ok(bridgerOperatingRoomSource.includes('<DailyProspectClaim />')&&bridgerOperatingRoomSource.includes("href: '/bridger/bridge-radiance'"),'Bridger role keeps Prospect claim and live Bridge Radiance available directly without an awareness layer')
 assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim remains one place after restoring the Bridger middle panel')
 assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
 assert.ok(adminFunctionsSource.includes('<RoleOperatingRoom role="admin"'),'Administration Functions opens the Administration Operating Room instead of importing the dashboard')
