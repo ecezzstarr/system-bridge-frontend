@@ -32,7 +32,7 @@ export async function GET(
     const path = url.pathname.replace(`/api/engine/${engine}`, '')
     const query = url.search
 
-    console.log('[v0] Proxying to engine:', engine, path)
+    console.log('[WEAVE] Proxying to engine:', engine, path)
 
     const result = await callEngineAPI(engine, `${path}${query}`)
 
@@ -41,7 +41,7 @@ export async function GET(
       data: result,
     })
   } catch (error) {
-    console.error('[v0] Engine proxy error:', error)
+    console.error('[WEAVE] Engine proxy error:', error)
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Engine request failed' },
       { status: 500 }
@@ -72,7 +72,7 @@ export async function POST(
     const url = new URL(request.url)
     const path = url.pathname.replace(`/api/engine/${engine}`, '')
 
-    console.log('[v0] POST to engine:', engine, path)
+    console.log('[WEAVE] POST to engine:', engine, path)
 
     const result = await callEngineAPI(engine, path, 'POST', body)
 
@@ -81,7 +81,7 @@ export async function POST(
       data: result,
     })
   } catch (error) {
-    console.error('[v0] Engine proxy error:', error)
+    console.error('[WEAVE] Engine proxy error:', error)
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Engine request failed' },
       { status: 500 }
