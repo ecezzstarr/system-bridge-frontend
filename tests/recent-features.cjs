@@ -13,13 +13,17 @@ Module._load=function(id,parent,isMain){
 }
 for(const ext of ['.ts','.tsx'])require.extensions[ext]=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}}).outputText,file)
 const {AppSidebar}=require('../components/app-sidebar.tsx')
+const {getRoleDistricts,getRolePlaces}=require('../lib/weave-role-districts.ts')
+const roleHas=(role,href)=>getRolePlaces(role).some(place=>place.href===href)
+const roleLabel=(role,label)=>getRolePlaces(role).some(place=>place.label===label)
+const prospectMarketSource=fs.readFileSync(path.join(root,'app/(app)/weave/market/prospects/page.tsx'),'utf8')
 const initialAuth=auth
 for(const role of ['admin','agent','bridger','client','creator','user',null]){
  auth={...initialAuth,user:role?{id:'sidebar-test',name:'Sidebar Test',role}:null}
  const sidebar=renderToStaticMarkup(React.createElement(AppSidebar))
  assert.doesNotMatch(sidebar,/Lounge Media Hub|Public Lounge|DM:|Send Photo|Send Video|Send Screenshot|type="file"|<select/)
- assert.ok(sidebar.includes('href="/lounge"'),'Lounge navigation remains for '+role)
- assert.ok(sidebar.includes('href="/lounge?view=private"'),'Private Lounge navigation remains for '+role)
+ assert.equal(sidebar.includes('href="/lounge"'),role==='admin','Lounge is retained under Admin tools')
+ assert.equal(sidebar.includes('href="/lounge?view=private"'),role==='admin','Private Lounge is retained under Admin tools')
  assert.equal(sidebar.includes('href="/bridger/numbers"'),role==='bridger')
  assert.equal(sidebar.includes('href="/admin/bridger-numbers"'),role==='admin')
 }
@@ -217,7 +221,7 @@ assert.ok(enterpriseAdminSource.includes('notifyUser'),'Client is notified after
 assert.ok(enterpriseSystemSwitchSource.includes('getEnterpriseDream'),'Client System Switch returns Enterprise Dream state')
 assert.ok(enterpriseSystemSwitchSource.includes("'Legions'"),'Approved Enterprise Dream exposes Legions module')
 assert.ok(enterprisePanelSource.includes('Add Legion'),'Approved Lord/Lady can add Legion participation')
-assert.ok(enterpriseSidebarSource.includes('/admin/enterprise-dream'),'Administration can reach Enterprise Dream authority')
+assert.ok(roleHas('admin','/admin/enterprise-dream'),'Administration can reach Enterprise Dream authority')
 for(const file of [
  'app/(app)/admin/enterprise-dream/page.tsx',
  'app/api/client/enterprise/legions/route.ts',
@@ -329,10 +333,10 @@ assert.ok(!dailyProspectRouteSource.includes('FROM prospects p'),'Daily claim mu
 assert.ok(dailyProspectUiSource.includes('Daily Prospect Claim'),'Daily claim UI uses Prospect wording')
 assert.ok(dailyProspectUiSource.includes('next free prospect'),'Daily reset wording uses Prospect')
 assert.ok(!dailyProspectUiSource.includes('Daily Project Claim'),'Project typo removed from daily claim')
-assert.ok(bridgerOperatingRoomSource.includes('DailyProspectClaim'),'Bridger Operating Room owns the corrected Prospect component')
-assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim renders only once in the Bridger Operating Room')
+assert.equal((prospectMarketSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily claim has one home in Prospect Market'); assert.ok(!bridgerOperatingRoomSource.includes('<DailyProspectClaim'),'Operating Room does not duplicate the claim')
+assert.equal((prospectMarketSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily claim has one home in Prospect Market'); assert.ok(!bridgerOperatingRoomSource.includes('<DailyProspectClaim'),'Operating Room does not duplicate the claim')
 assert.ok(!bridgerDashboardSource.includes('DailyProspectClaim'),'Bridger Home stays a compact world instead of duplicating Prospect intake')
-assert.ok(bridgerOperatingRoomSource.includes('<DailyProspectClaim />')&&bridgerOperatingRoomSource.includes('Bridger operating routes'),'Daily Prospect remains a direct working instrument inside the Bridger Operating Room without an awareness blocker')
+assert.equal((prospectMarketSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily claim has one home in Prospect Market'); assert.ok(!bridgerOperatingRoomSource.includes('<DailyProspectClaim'),'Operating Room does not duplicate the claim')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260925_bridger_daily_prospect_claim.sql')),'Daily Prospect claim migration exists')
 for(const file of [
  'lib/bridger-daily-prospect-engine.ts',
@@ -439,11 +443,11 @@ assert.ok(clientNavUnifiedSource.includes("label: 'Loop 1 Ground'"),'Client navi
 assert.ok(!clientNavUnifiedSource.includes('eventIsLive'),'Client navigation remains persistent during events')
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
-assert.ok(fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8').includes('Loop 1 Ground'),'Sidebar exposes Loop 1 as a WEAVE destination')
+assert.ok(roleHas('admin','/event'),'Sidebar exposes Loop 1 as a WEAVE destination')
 const canonicalSidebarSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
-assert.ok(canonicalSidebarSource.includes('Bridger Operating Room'),'Sidebar exposes the Bridger operating room in Position')
-assert.ok(canonicalSidebarSource.includes('Agent Operating Room'),'Sidebar exposes the Agent operating room in Position')
-assert.ok(canonicalSidebarSource.includes('Administration Operating Room'),'Sidebar exposes the Administration operating room in Position')
+assert.ok(canonicalSidebarSource.includes('getRoleDistricts'),'Sidebar uses the shared role catalog')
+assert.ok(canonicalSidebarSource.includes('getRoleDistricts'),'Sidebar uses the shared role catalog')
+assert.ok(canonicalSidebarSource.includes('getRoleDistricts'),'Sidebar uses the shared role catalog')
 for(const route of [
  'app/(app)/bridger/functions/page.tsx',
  'app/(app)/agent/functions/page.tsx',
@@ -466,48 +470,23 @@ assert.ok(positionEventSource.includes('data-flame-event-crossing-route="system-
 assert.ok(!positionEventSource.includes('ROLE_ORDER'),'Event page does not explain other user roles')
 assert.ok(!positionEventSource.includes('FLAME_EVENT_FEATURES'),'Event page removes generic event feature clutter')
 assert.ok(compactWorldSource.includes('data-client-world="open-territory"')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home is a spatial open territory with physical movement beacons')
-assert.ok(bridgerOperatingRoomSource.includes('Crossing') && bridgerOperatingRoomSource.includes('Client continuity'),'Bridger functions are organized by responsibility instead of one stacked terminal')
-assert.ok(roleOperatingRoomSource.includes("title: 'Bridger participation'"),'Agent Operating Room organizes Bridger participation as a Stability function')
-assert.ok(roleOperatingRoomSource.includes("title: 'Client system'"),'Administration Operating Room organizes Client authority as a system function')
-assert.ok(roleOperatingRoomSource.includes('Administration Control Panel'),'Administration Operating Room restores the dense middle control panel')
-assert.ok(adminControlCenterRouteSource.includes("@/components/admin/administration-control-terminal"),'Administration has a reachable route for the preserved dense control center')
-for(const hash of ['#users','#clients','#fne','#bridgers','#deposits','#tron','#bridge','#withdrawals','#announcements','#wallet','#workshops','#eight']){
- assert.ok(roleOperatingRoomSource.includes('/admin/control-center'+hash),`Administration middle panel exposes preserved control-center component ${hash}`)
+// Role organization: preserve Admin tools and enforce focused working entrances.
+for(const hash of ['#users','#clients','#fne','#bridgers','#deposits','#tron','#bridge','#withdrawals','#announcements','#wallet','#workshops','#eight']) {
+ assert.ok(roleHas('admin','/admin/control-center'+hash),'Admin control remains reachable: '+hash)
 }
-for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcements'"]){
- assert.ok(adminDashboardCenterSource.includes(hash),`Administration control center activates direct hash ${hash}`)
-}
-assert.ok(!adminDashboardCenterSource.includes("onClick={() => setActiveSubTab('sweeps')}"),'Mock in-memory EIGHT sweep requests are not exposed as a live Administration tab')
-assert.ok(!roleOperatingRoomSource.includes('/admin/control-center#sweeps'),'Administration middle panel does not present mock sweep requests as live operations')
-assert.ok(roleOperatingRoomSource.includes("label: 'EIGHT AI'"),'Administration middle panel restores EIGHT AI access')
-assert.ok(roleOperatingRoomSource.includes("label: 'Administration Wallet'"),'Administration middle panel restores the existing Admin wallet surface')
-assert.ok(roleOperatingRoomSource.includes("label: 'Administration Workshops'"),'Administration middle panel restores the existing workshop surface')
-assert.ok(roleOperatingRoomSource.includes("title: 'Shared WEAVE'"),'Administration Operating Room begins with the shared WEAVE layer')
-for(const sharedRoute of ['/company/loops','/search','/profiles','/weave','/company-chat','/lounge?view=private','/lounge','/marketplace','/echo','/arena','/casino','/video-feed','/weave/standing','/event','/wallet','/ledger']){
- assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Administration middle panel preserves shared WEAVE component ${sharedRoute}`)
-}
-assert.ok(roleOperatingRoomSource.indexOf("district: 'Shared WEAVE'") < roleOperatingRoomSource.indexOf("district: 'People + recognition'"),'Administration shared WEAVE components precede authority-specific controls')
-assert.ok(roleOperatingRoomSource.includes('<WeaveRouteNetwork')&&roleOperatingRoomSource.includes('data-operating-room={role}'),'Role Operating Rooms expose one connected route network directly')
-assert.ok(roleOperatingRoomSource.includes("href: '/admin/file-number-engine'"),'Administration middle panel exposes File Number Engine')
-assert.ok(roleOperatingRoomSource.includes("href: '/admin/agent-channels'"),'Administration middle panel exposes Agent Channel Requests')
-assert.ok(roleOperatingRoomSource.includes("href: '/admin/origin-systems'"),'Administration middle panel exposes Origin Systems')
-assert.ok(roleOperatingRoomSource.includes("href: '/admin/infrastructure'"),'Administration middle panel exposes Infrastructure')
-assert.ok(roleOperatingRoomSource.includes("href: '/admin/loop-workshop'"),'Administration middle panel exposes Loop Workshop')
-assert.ok(roleOperatingRoomSource.includes("href: '/admin/dj-workshop'"),'Administration middle panel exposes DJ Workshop')
-assert.ok(roleOperatingRoomSource.includes("href: '/admin/ad-workshop'"),'Administration middle panel exposes Ad Workshop')
-assert.ok(roleOperatingRoomSource.includes('Agent Working Panel'),'Agent Operating Room restores the dense middle working panel')
-for(const sharedRoute of ['/company/loops','/search','/profiles','/lounge?view=private','/lounge','/echo','/arena','/casino','/video-feed','/weave/standing']){
- assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Agent Operating Room preserves shared WEAVE component ${sharedRoute}`)
-}
-for(const bridgerRoute of ['/bridger/bridge-radiance','/weave/market/prospects','/bridger/bridge-ai','/bridger/numbers','/bridger/clients','/bridger/subscription','/company-chat','/wallet','/ledger','/company/loops','/marketplace','/weave']){
- assert.ok(bridgerOperatingRoomSource.includes(`href: '${bridgerRoute}'`),`Bridger Operating Room preserves current Bridger operation ${bridgerRoute}`)
-}
-assert.ok(roleOperatingRoomSource.includes("href: '/clients'"),'Agent Operating Room preserves the Client directory')
-assert.ok(roleOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Agent and Administration components preserve district color structure on route lanes')
-assert.ok(bridgerOperatingRoomSource.includes('DISTRICT_ROUTE_TONE'),'Bridger components preserve district color structure on route lanes')
-assert.ok(bridgerOperatingRoomSource.includes('Bridger operating routes'),'Bridger Operating Room is a connected current-operation environment')
-assert.ok(bridgerOperatingRoomSource.includes('<DailyProspectClaim />')&&bridgerOperatingRoomSource.includes("href: '/bridger/bridge-radiance'"),'Bridger role keeps Prospect claim and live Bridge Radiance available directly without an awareness layer')
-assert.equal((bridgerOperatingRoomSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily Prospect claim remains one place after restoring the Bridger middle panel')
+for(const href of ['/admin/file-number-engine','/admin/agent-channels','/admin/origin-systems','/admin/infrastructure','/admin/loop-workshop','/admin/dj-workshop','/admin/ad-workshop','/admin/development-agents','/admin/bridger-numbers','/admin/client-build-catalog','/authority/workshops','/admin/dev-workshop','/admin/visual-systems','/admin/environment-organizer']) assert.ok(roleHas('admin',href),href)
+for(const label of ['EIGHT AI','Administration Wallet','Administration Workshops']) assert.ok(roleLabel('admin',label),label)
+assert.equal(getRoleDistricts('admin')[0].name,'People','Admin starts with people management')
+for(const href of ['/agility','/agent/bridgers','/agent/commissions','/agent/bridge-radiance','/agent/channels','/company-chat','/wallet']) assert.ok(roleHas('agent',href),href)
+for(const href of ['/bridger/bridge-radiance','/weave/market/prospects','/bridger/bridge-ai','/bridger/numbers','/bridger/clients','/bridger/subscription','/company-chat','/wallet','/ledger','/echo','/profiles']) assert.ok(roleHas('bridger',href),href)
+for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace']) assert.ok(!roleHas(role,href),role+' excludes unrelated daily entrance '+href)
+assert.ok(roleOperatingRoomSource.includes('getRolePlaces(role)'),'Agent and Admin rooms use the role catalog')
+assert.ok(bridgerOperatingRoomSource.includes("getRolePlaces('bridger')"),'Bridger room uses the role catalog')
+assert.ok(adminControlCenterRouteSource.includes('@/components/admin/administration-control-terminal'),'Admin control center stays connected')
+for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcements'"]) assert.ok(adminDashboardCenterSource.includes(hash),hash)
+assert.ok(!adminDashboardCenterSource.includes("onClick={() => setActiveSubTab('sweeps')}"),'Mock sweeps remain hidden')
+assert.ok(!roleHas('admin','/admin/control-center#sweeps'),'No mock sweep entrance')
+assert.ok(roleOperatingRoomSource.includes('<WeaveRouteNetwork'),'Operating rooms keep connected routes')
 assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
 assert.ok(adminFunctionsSource.includes('<RoleOperatingRoom role="admin"'),'Administration Functions opens the Administration Operating Room instead of importing the dashboard')
 assert.ok(!compactWorldSource.includes('{children}'),'Home no longer stacks the old terminal underneath the world')
@@ -670,9 +649,9 @@ assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Market + Custom
 assert.ok(supportFileFolderSource.includes('Territory observer · Read only')&&supportFileFolderSource.includes('Client authority remains with the Client'),'Bridge Plaza support view preserves clear read-only Client authority without a large intro card')
 assert.ok(clientFunctionsPageSource.includes('<ClientOperatingRoom'),'Client Functions now opens the organized Client Operating Room')
 assert.ok(!clientFunctionsPageSource.includes('LegacyClientDashboard'),'Client Functions no longer uses the old stacked legacy dashboard as its primary surface')
-for(const route of ['/client/system-switch','/client/loops','/client/deposit','/client/withdraw','/client/chat/bridger','/marketplace','/weave','/lounge','/echo','/video-feed','/weave/standing','/client/arena','/client/casino']){
- assert.ok(clientOperatingRoomSource.includes(`href: '${route}'`),`Client Operating Room preserves ${route}`)
-}
+for(const route of ['/client/system-switch','/client/deposit','/client/withdraw','/client/chat/bridger','/client/chat/mandate','/client/chat/forensic','/client/chat/lawyer','/client/chat/admin','/marketplace','/client/settings']) assert.ok(roleHas('client',route),route)
+assert.equal(getRolePlaces('client')[0].href,'/client/system-switch','File Folder is the Client starting point')
+assert.ok(clientOperatingRoomSource.includes("getRolePlaces('client')"),'Client room uses shared catalog')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('function buildDepth'),'File Folder build depth changes as construction progresses')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Foundation') && fileFolderOperatingEnvironmentSource.includes('Commissioning'),'Build depth exposes formation stages before live activation')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Hosted live inside this File Folder'),'Completed Client systems remain hosted inside the File Folder')
@@ -961,7 +940,7 @@ assert.ok(promoteBuildSource.includes("candidate['revisionName']"),'Promotion re
 assert.ok(infrastructurePageSource.includes('WEAVE Infrastructure Workshop'),'Administration has one live infrastructure operating surface')
 assert.ok(infrastructurePageSource.includes('Divine Shield'),'Infrastructure Workshop operates maintenance control')
 assert.ok(adminWorkshopInfrastructureSource.includes("href: '/admin/infrastructure'"),'Admin Workshop exposes Infrastructure Workshop')
-assert.ok(sidebarInfrastructureSource.includes('href: "/admin/infrastructure"'),'Administration sidebar exposes Infrastructure Workshop')
+assert.ok(roleHas('admin','/admin/infrastructure'),'Administration sidebar exposes Infrastructure Workshop')
 assert.ok(devWorkshopInfrastructureSource.includes("fetch('/api/admin/infrastructure'"),'EIGHT Deploy Center uses the shared infrastructure deployment authority')
 assert.ok(devWorkshopInfrastructureSource.includes('Deploy Preview'),'EIGHT Deploy Center no longer labels a zero-traffic build as live production')
 assert.ok(!devWorkshopInfrastructureSource.includes('> Push Live</Button>'),'Old misleading direct Push Live control is removed')
@@ -1012,10 +991,10 @@ assert.ok(enterpriseSystemSwitchSource.includes("premium_dj_enabled:fileFolderTi
 assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientPremiumDJ'),'Premium DJ is contained inside the Client File Folder Sound surface')
 assert.ok(adminBuildCatalogApiSource.includes("user.role !== 'admin'"),'Client build catalog updates are Administration-only')
 assert.ok(adminBuildCatalogPageSource.includes('Client Build Catalog'),'Administration can manage Client build pricing')
-assert.ok(sidebarInfrastructureSource.includes('/admin/client-build-catalog'),'Administration sidebar exposes Client Build Catalog')
+assert.ok(roleHas('admin','/admin/client-build-catalog'),'Administration sidebar exposes Client Build Catalog')
 assert.ok(adminClientDepositsApiSource.includes("u.role='client'"),'Client deposit queue is restricted to Client funding requests')
 assert.ok(adminClientDepositsPageSource.includes('Client Deposit Requests'),'Administration has a dedicated Client deposit queue')
-assert.ok(sidebarInfrastructureSource.includes('/admin/client-deposits'),'Administration sidebar exposes Client deposits')
+assert.ok(roleHas('admin','/admin/client-deposits'),'Administration sidebar exposes Client deposits')
 for(const file of [
  'components/system-switch/client-premium-dj.tsx',
  'app/api/admin/client-build-catalog/route.ts',
@@ -1058,14 +1037,10 @@ assert.ok(enterpriseSystemsApiSource.includes("user.role !== 'client' && user.ro
 assert.ok(adminEnterpriseSystemsApiSource.includes('price < 1000000'),'Administration cannot price an Enterprise Exchange system below £1M')
 assert.ok(adminEnterpriseSystemsPageSource.includes('Enterprise Systems Workshop'),'Administration has an Enterprise Systems operating surface')
 assert.ok(enterpriseExchangeMigrationSource.includes('price_gbp >= 1000000'),'Production migration enforces enterprise-scale prices')
-const enterpriseSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),sidebarEnterpriseSource.indexOf('// 5. WEAVE'))
-assert.ok(!enterpriseSection.includes('Prospect Market'),'Bridger Prospect Market is removed from Enterprise navigation')
-assert.ok(!enterpriseSection.includes('Prospect Engine'),'Prospect Engine is removed from Enterprise navigation')
-assert.ok(sidebarEnterpriseSource.indexOf('Prospect Market') < sidebarEnterpriseSource.indexOf('// 4. ENTERPRISE'),'Prospect Market now belongs to the Bridge side of navigation')
-assert.ok(enterpriseSection.includes('WEAVE_SYSTEM_MAP.language.marketplace'),'Enterprise navigation uses the canonical marketplace label')
-assert.ok(weaveSystemMapSource.includes("marketplace: 'Enterprise Systems Exchange'"),'Canonical marketplace label is Enterprise Systems Exchange')
-const administrationSection=sidebarEnterpriseSource.slice(sidebarEnterpriseSource.indexOf('// 6. ADMINISTRATION'))
-assert.ok(administrationSection.includes('Enterprise Systems Workshop'),'Administration navigation exposes system sales control')
+assert.ok(getRoleDistricts('bridger').find(d=>d.name==='Prospects & Conversations').places.some(p=>p.href==='/weave/market/prospects'),'Prospect Market belongs to prospect conversion')
+assert.ok(roleHas('client','/marketplace'),'Clients can reach enterprise systems')
+assert.ok(roleHas('admin','/admin/enterprise-systems'),'Admin retains enterprise sales controls')
+assert.ok(weaveSystemMapSource.includes("marketplace: 'Enterprise Systems Exchange'"),'Canonical enterprise label remains')
 for(const file of [
  'lib/enterprise-systems.ts',
  'app/api/enterprise-systems/route.ts',
@@ -1281,8 +1256,8 @@ assert.ok(adminVaultAuthoritySource.includes('ready for manual settlement'),'Wit
 assert.ok(adminHubMatureSource.includes('Communication Matrix'),'Hub is a causal communication system')
 assert.ok(adminHubMatureSource.includes('senderType: user.role'),'Agent messages retain Agent identity instead of being stamped Admin')
 assert.ok(adminHubMatureSource.includes('const pos = isAgent ? threadPosition : position'),'Administration Prospect position selector controls the real channel')
-assert.ok(adminSidebarMatureSource.includes('/admin/control-center#bridgers'),'Administration Continuance verification sidebar route reaches the control center')
-assert.ok(adminSidebarMatureSource.includes('/admin/control-center#users'),'Administration verification sidebar route reaches the control center')
+assert.ok(roleHas('admin','/admin/control-center#bridgers'),'Administration Continuance verification sidebar route reaches the control center')
+assert.ok(roleHas('admin','/admin/control-center#users'),'Administration verification sidebar route reaches the control center')
 
 for(const file of [
  'app/client/admin-chat/page.tsx',
