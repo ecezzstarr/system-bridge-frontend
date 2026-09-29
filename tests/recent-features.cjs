@@ -487,7 +487,7 @@ for(const sharedRoute of ['/company/loops','/search','/profiles','/weave','/comp
  assert.ok(roleOperatingRoomSource.includes(`href: '${sharedRoute}'`),`Administration middle panel preserves shared WEAVE component ${sharedRoute}`)
 }
 assert.ok(roleOperatingRoomSource.indexOf("district: 'Shared WEAVE'") < roleOperatingRoomSource.indexOf("district: 'People + recognition'"),'Administration shared WEAVE components precede authority-specific controls')
-assert.ok(roleOperatingRoomSource.includes('Role route network'),'Role Operating Rooms expose one connected route network')
+assert.ok(roleOperatingRoomSource.includes('<WeaveRouteNetwork')&&roleOperatingRoomSource.includes('data-operating-room={role}'),'Role Operating Rooms expose one connected route network directly')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/file-number-engine'"),'Administration middle panel exposes File Number Engine')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/agent-channels'"),'Administration middle panel exposes Agent Channel Requests')
 assert.ok(roleOperatingRoomSource.includes("href: '/admin/origin-systems'"),'Administration middle panel exposes Origin Systems')
