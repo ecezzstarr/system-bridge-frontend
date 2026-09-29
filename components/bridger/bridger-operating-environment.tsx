@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Activity,
   ArrowRight,
   BookOpen,
   Bot,
@@ -209,25 +208,8 @@ export function BridgerOperatingEnvironment() {
   ]
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-6">
+    <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-6" data-operating-room="bridger">
       <section className="weave-system-depth weave-operating-environment overflow-hidden border-y border-emerald-300/15 bg-[#03100f]/82 backdrop-blur-xl sm:rounded-[2rem] sm:border">
-        <header className="border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,rgba(52,211,153,.13),transparent_36%),radial-gradient(circle_at_90%_0%,rgba(56,189,248,.08),transparent_30%)] p-5 md:p-7">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Hope · Bridger Operating Room</p>
-              <h1 data-weave-live-word="title" className="mt-2 text-2xl font-black text-white md:text-3xl">Connection moving now.</h1>
-              <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
-                The Bridger carries Prospect movement into Bridge Radiance, supports the crossing into Clienthood, keeps Clients connected after crossing, and maintains the participation tools that make that movement possible.
-              </p>
-            </div>
-            <div className="border-l border-emerald-300/20 pl-4 text-right">
-              <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">Live operations</p>
-              <p className="mt-1 text-xs font-black text-white">{pulse.updatedAt ? 'SYNCED' : 'CONNECTING'}</p>
-              {pulse.updatedAt && <p className="mt-1 text-[8px] text-slate-500">refreshes while visible</p>}
-            </div>
-          </div>
-        </header>
-
         <div className="border-b border-white/10 bg-black/15 px-4 py-3 md:px-6" data-bridger-live-operations="true">
           <div className="flex gap-5 overflow-x-auto pb-1">
             {liveMoves.map(move => (
@@ -242,28 +224,15 @@ export function BridgerOperatingEnvironment() {
 
         <div className="grid min-h-[620px] xl:grid-cols-[minmax(0,1fr)_250px]">
           <section className="min-w-0 border-b border-white/[0.07] p-4 md:p-6 xl:border-b-0 xl:border-r">
-            <section className="border-b border-amber-300/15 pb-5">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex items-start gap-3">
-                  <Network className="mt-0.5 h-5 w-5 text-amber-300" />
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Prospect intake</p>
-                    <p data-weave-live-word="station" className="mt-1 text-sm font-black text-white">Daily Prospect → Bridge Radiance</p>
-                    <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">Claiming does not end at ownership. The Prospect enters outreach, then Bridge Radiance carries the live conversation.</p>
-                  </div>
-                </div>
-                <Link href="/bridger/bridge-radiance" className="inline-flex items-center gap-2 border-l border-cyan-300/20 pl-3 text-[8px] font-black uppercase tracking-[0.14em] text-cyan-200">
-                  Open Radiance <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-              <div className="mt-4" data-weave-station="prospect-intake"><DailyProspectClaim /></div>
-            </section>
+            <div data-weave-station="prospect-intake">
+              <DailyProspectClaim />
+            </div>
 
             <div className="mt-5">
               <WeaveRouteNetwork
                 stations={stations}
                 title="Bridger operating routes"
-                detail="Prospect movement, number supply, Client continuity, position continuity and value record stay synchronized inside one Bridger operation."
+                detail="Open Prospect, Number Bay, Client continuity, continuance, value or participation work directly."
               />
             </div>
           </section>
@@ -275,7 +244,6 @@ export function BridgerOperatingEnvironment() {
                   <CircleDollarSign className="h-4 w-4 text-sky-300" />
                   <p className="text-[9px] font-black uppercase tracking-[0.18em] text-sky-300">Referral continuity</p>
                 </div>
-                <p className="mt-3 text-xs leading-5 text-slate-400">Invite another Bridger through the recorded partnership route.</p>
                 {referralLink && <input readOnly value={referralLink} className="mt-3 w-full border-b border-white/10 bg-transparent px-0 py-2 text-[10px] font-semibold text-white outline-none" />}
                 <div className="mt-4 grid grid-cols-2 divide-x divide-white/10 border-y border-white/10 py-3 text-center">
                   <div>
@@ -287,17 +255,6 @@ export function BridgerOperatingEnvironment() {
                     <p className="mt-1 text-sm font-black text-emerald-200">{referral?.referralEarnings ?? 0} Flame Coin</p>
                   </div>
                 </div>
-              </section>
-
-              <section className="border-l border-emerald-300/20 pl-4">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-emerald-300" />
-                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">System pulse</p>
-                </div>
-                <p data-weave-live-word="station" className="mt-3 text-sm font-black text-white">
-                  {pulse.unreadRadiance > 0 ? `${pulse.unreadRadiance} Prospect message${pulse.unreadRadiance === 1 ? '' : 's'} waiting` : 'Connection active'}
-                </p>
-                <p className="mt-2 text-xs leading-5 text-slate-400">Prospect → Bridge Radiance → Crossing → Client continuity → company record remains one Bridger movement.</p>
               </section>
 
               <ClientBuildPull role="bridger" />
