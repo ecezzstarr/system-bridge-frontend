@@ -36,6 +36,8 @@ export function AppHeader({ user }: AppHeaderProps) {
       .catch(() => {})
   }, [authUser?.id])
 
+  if (!effectiveUser) return null
+
   return (
     <header
       className="weave-header fixed left-3 right-3 top-3 z-40 flex h-12 items-center justify-between rounded-full border border-sky-200/10 bg-[#020914]/72 px-3 shadow-[0_12px_40px_rgba(2,8,23,.22)] backdrop-blur-xl md:left-5 md:right-5 md:px-4"
@@ -102,8 +104,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           </span>
         </Button>
 
-        {effectiveUser && (
-          <div className="relative ml-1">
+        <div className="relative ml-1">
             <button
               type="button"
               onClick={() => setAccountOpen(open => !open)}
@@ -150,7 +151,6 @@ export function AppHeader({ user }: AppHeaderProps) {
               </div>
             )}
           </div>
-        )}
 
         <NotificationBell />
       </div>
