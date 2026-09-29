@@ -137,12 +137,13 @@ export async function POST(request: NextRequest) {
       fulfillmentAgent.reconcile().catch(err => console.error('[market purchase] reconcile error:', err))
     })
 
-    creditBridgerActivityCommission({
+    await creditBridgerActivityCommission({
       bridgerId: userId,
       activity: 'prospect_package_purchase',
       baseAmount: priceTrx,
-      description: `30% commission: Bridger purchased a ${priceTrx} Flame Coin prospect package`,
-    }).catch(err => console.error('[market purchase] commission error:', err))
+      sourceId: packageId,
+      description: `Agent Prospect share from Bridger purchase of ${priceTrx} Flame Coin`,
+    })
 
     const receipt = await issueWeaveReceipt({
       userId,
