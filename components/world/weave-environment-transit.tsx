@@ -90,7 +90,7 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
     cleanup.push(()=>observer.disconnect())
     const hardFinish=()=>{
       const elapsed=performance.now()-started
-      if(hasPendingSurface()&&elapsed<absoluteMaximum){
+      if((hasPendingSurface()||hasUnreadyCanvas())&&elapsed<absoluteMaximum){
         hardTimer=setTimeout(hardFinish,1000)
         return
       }
