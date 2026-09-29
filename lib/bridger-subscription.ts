@@ -307,13 +307,6 @@ export async function autoDeductContinuance(userId: string) {
       [userId, nextExpiry, now]
     )
 
-    await client.query(
-      `INSERT INTO notifications (user_id,type,title,content,link)
-       VALUES ($1::uuid,'subscription','Continuance renewed',
-        $2,'/receipts')`,
-      [userId, 'Your Bridger Continuance renewed automatically from your Flame Coin wallet.']
-    )
-
     await client.query('COMMIT')
   } catch (error) {
     try { await client.query('ROLLBACK') } catch {}
@@ -343,6 +336,16 @@ export async function autoDeductContinuance(userId: string) {
     }
   } catch (error) {
     console.error('Continuance receipt creation failed:', error)
+  }
+
+  try {
+    await sql`
+      INSERT INTO notifications (user_id,type,title,content,link)
+      VALUES (${userId}::uuid,'subscription','Continuance renewed',
+        'Your Bridger Continuance renewed automatically from your Flame Coin wallet.','/receipts')
+    `
+  } catch (error) {
+    console.error('Continuance renewal notification failed:', error)
   }
 
   return { success: true, renewed: true, flameCoinAmount, rate, nextExpiry, newBalance, paymentId }
