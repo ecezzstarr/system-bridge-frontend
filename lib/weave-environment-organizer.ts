@@ -105,7 +105,7 @@ export async function getEnvironmentRuntimeProfile(){
 
 export async function getEnvironmentOrganizerState(){
   await ensureEnvironmentOrganizerSchema()
-  const [items,runtime]=await Promise.all([
+  const [storedItems,runtime]=await Promise.all([
     sql`
       SELECT surface_key,label,surface_kind,route,area,scope,is_visible,sort_order,is_protected,updated_at
       FROM weave_environment_surfaces
@@ -113,6 +113,8 @@ export async function getEnvironmentOrganizerState(){
     `,
     getEnvironmentRuntimeProfile(),
   ])
+  const activeKeys=new Set(WEAVE_ENVIRONMENT_REGISTRY.map(surface=>surface.key))
+  const items=storedItems.filter((item:any)=>activeKeys.has(String(item.surface_key)))
   return {items,runtime}
 }
 
