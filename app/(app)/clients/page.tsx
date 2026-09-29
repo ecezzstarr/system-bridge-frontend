@@ -46,7 +46,7 @@ export default function ClientPresenceRegistryPage() {
   }), [clients])
 
   const continuityHref =
-    user?.role === 'bridger' ? '/bridger/clients'
+    user?.role === 'bridger' ? '/bridger/presence'
       : user?.role === 'agent' || user?.role === 'admin' ? '/client-interactions'
         : '/weave'
 
