@@ -1,27 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
-import { creditAgentCommission } from '@/lib/agent-commission'
 import { trxPaymentToFlameCoin } from '@/lib/trx-payment'
 import { notifyDepositDecision } from '@/lib/deposit-notifications'
 import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
-
-// Resolves the Bridger for a client, checking both the legacy users(role='client')
-// path and the dedicated clients table — matches app/api/client/bridger/route.ts.
-async function resolveBridgerForClient(clientId: string): Promise<string | null> {
-  const users = await sql`
-    SELECT referred_by FROM users WHERE id = ${clientId}::uuid AND role = 'client'
-  `
-  if (users.length > 0 && users[0].referred_by) return users[0].referred_by
-
-  const clients = await sql`
-    SELECT referred_by, assigned_bridger_id FROM clients WHERE id = ${clientId}::uuid
-  `
-  if (clients.length > 0) {
-    return clients[0].assigned_bridger_id || clients[0].referred_by || null
-  }
-  return null
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -103,16 +85,6 @@ export async function POST(request: NextRequest) {
         })}
       )
     `
-
-    const bridgerId = await resolveBridgerForClient(clientId)
-    if (bridgerId) {
-      creditAgentCommission({
-        bridgerId,
-        activity: 'client_deposit',
-        baseAmount: flameCoinAmount,
-        description: `2% commission (5% of Weave's 40%): referred Bridger's client funded ${flameCoinAmount.toFixed(2)} Flame Coin from ${paidTrx.toFixed(6)} TRX`,
-      }).catch(err => console.error('[tron verify] commission error:', err))
-    }
 
     await notifyDepositDecision({
       userId: clientId,
