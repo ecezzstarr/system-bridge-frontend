@@ -12,24 +12,12 @@ Module._load=function(id,parent,isMain){
  return originalLoad.call(this,id,parent,isMain)
 }
 for(const ext of ['.ts','.tsx'])require.extensions[ext]=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}}).outputText,file)
-const {AppSidebar}=require('../components/app-sidebar.tsx')
 const {getRoleDistricts,getRolePlaces}=require('../lib/weave-role-districts.ts')
 const roleHas=(role,href)=>getRolePlaces(role).some(place=>place.href===href)
 const roleLabel=(role,label)=>getRolePlaces(role).some(place=>place.label===label)
 const prospectMarketSource=fs.readFileSync(path.join(root,'app/(app)/weave/market/prospects/page.tsx'),'utf8')
 const initialAuth=auth
-for(const role of ['admin','agent','bridger','client','creator','user',null]){
- auth={...initialAuth,user:role?{id:'sidebar-test',name:'Sidebar Test',role}:null}
- const sidebar=renderToStaticMarkup(React.createElement(AppSidebar))
- assert.doesNotMatch(sidebar,/Lounge Media Hub|Public Lounge|DM:|Send Photo|Send Video|Send Screenshot|type="file"|<select/)
- assert.equal(sidebar.includes('href="/lounge"'),role==='admin','Lounge is retained under Admin tools')
- assert.equal(sidebar.includes('href="/lounge?view=private"'),role==='admin','Private Lounge is retained under Admin tools')
- assert.equal(sidebar.includes('href="/bridger/numbers"'),role==='bridger')
- assert.equal(sidebar.includes('href="/admin/bridger-numbers"'),role==='admin')
-}
 auth=initialAuth
-const sidebarCleanupSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
-assert.doesNotMatch(sidebarCleanupSource,/fetchUsers|\/api\/users|\/api\/lounge\/messages|FileReader|getDisplayMedia|sendToLounge|handleFileUpload|handleCaptureScreenshot|fileInputRef|targetRoom|uploadType|isUploading/)
 const Workshop=require('../app/(app)/authority/workshops/page.tsx').default
 auth={...auth,isInitialized:false};assert.match(renderToStaticMarkup(React.createElement(Workshop)),/Loading Authority Workshop/)
 auth={...auth,isInitialized:true};const html=renderToStaticMarkup(React.createElement(Workshop))
@@ -210,7 +198,6 @@ const enterpriseClientSource=fs.readFileSync(path.join(root,'app/api/client/ente
 const enterpriseAdminSource=fs.readFileSync(path.join(root,'app/api/admin/enterprise/route.ts'),'utf8')
 const enterpriseSystemSwitchSource=fs.readFileSync(path.join(root,'app/api/client/system-switch/route.ts'),'utf8')
 const enterprisePanelSource=fs.readFileSync(path.join(root,'components/system-switch/enterprise-dream-panel.tsx'),'utf8')
-const enterpriseSidebarSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
 assert.ok(enterpriseDreamLibSource.includes('enterprise_applications'),'Enterprise Dream application schema exists')
 assert.ok(enterpriseDreamLibSource.includes('enterprise_legions'),'Enterprise Legion schema exists')
 assert.ok(enterpriseClientSource.includes("['lord', 'lady']"),'Client may request only Lord or Lady elevation')
@@ -305,7 +292,6 @@ const devWorkshopSource=fs.readFileSync(path.join(root,'app/(app)/admin/dev-work
 const adminWorkshopSource=fs.readFileSync(path.join(root,'app/(app)/admin/workshop/page.tsx'),'utf8')
 const dailyProspectUiSource=fs.readFileSync(path.join(root,'components/bridger/daily-prospect-claim.tsx'),'utf8')
 const bridgerDashboardSource=fs.readFileSync(path.join(root,'app/(app)/bridger/dashboard/page.tsx'),'utf8')
-const bridgerOperatingRoomSource=fs.readFileSync(path.join(root,'components/bridger/bridger-operating-environment.tsx'),'utf8')
 assert.ok(dailyProspectRouteSource.includes('market_prospect_contacts'),'Daily claim uses the active Prospect Engine contacts')
 assert.ok(dailyProspectRouteSource.includes('market_prospect_outreach'),'Daily claim creates the normal Bridger outreach record')
 assert.ok(dailyProspectRouteSource.includes('FOR UPDATE SKIP LOCKED'),'Daily claim prevents two Bridgers from receiving the same Prospect')
@@ -333,10 +319,7 @@ assert.ok(!dailyProspectRouteSource.includes('FROM prospects p'),'Daily claim mu
 assert.ok(dailyProspectUiSource.includes('Daily Prospect Claim'),'Daily claim UI uses Prospect wording')
 assert.ok(dailyProspectUiSource.includes('next free prospect'),'Daily reset wording uses Prospect')
 assert.ok(!dailyProspectUiSource.includes('Daily Project Claim'),'Project typo removed from daily claim')
-assert.equal((prospectMarketSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily claim has one home in Prospect Market'); assert.ok(!bridgerOperatingRoomSource.includes('<DailyProspectClaim'),'Operating Room does not duplicate the claim')
-assert.equal((prospectMarketSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily claim has one home in Prospect Market'); assert.ok(!bridgerOperatingRoomSource.includes('<DailyProspectClaim'),'Operating Room does not duplicate the claim')
 assert.ok(!bridgerDashboardSource.includes('DailyProspectClaim'),'Bridger Home stays a compact world instead of duplicating Prospect intake')
-assert.equal((prospectMarketSource.match(/<DailyProspectClaim\s*\/>/g)||[]).length,1,'Daily claim has one home in Prospect Market'); assert.ok(!bridgerOperatingRoomSource.includes('<DailyProspectClaim'),'Operating Room does not duplicate the claim')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260925_bridger_daily_prospect_claim.sql')),'Daily Prospect claim migration exists')
 for(const file of [
  'lib/bridger-daily-prospect-engine.ts',
@@ -456,16 +439,15 @@ assert.ok(flameAdSource.includes('DASHBOARD_PATHS'),'Event banner stays off role
 assert.ok(!clientDashboardUnifiedSource.includes('ClientFlameEventDashboard'),'Client dashboard is no longer replaced by a second event application')
 assert.ok(clientDashboardUnifiedSource.includes('<WeaveDashboardWorld'),'Client Home keeps one compact persistent world')
 assert.ok(clientNavUnifiedSource.includes("href: '/client/presence'"),'Client navigation exposes Client Presence as the orientation entrance')
-assert.ok(clientNavUnifiedSource.includes("href: '/client/functions'"),'Client navigation keeps the Client Operating Room as a distinct environment entrance')
-assert.ok(clientNavUnifiedSource.includes("label: 'Loop 1 Ground'"),'Client navigation keeps Loop 1 as a separate event environment')
+assert.ok(!clientNavUnifiedSource.includes("href: '/client/functions'"),'Client navigation has no duplicate Operating Room entrance')
+assert.ok(clientNavUnifiedSource.includes("label: 'Flame Event · Loop 1'"),'Client navigation uses the canonical Flame Event name')
 assert.ok(!clientNavUnifiedSource.includes('eventIsLive'),'Client navigation remains persistent during events')
 assert.ok(!appEventUnifiedSource.includes('min-h-screen bg-black'),'Staff event ground stays inside the WEAVE shell')
 assert.ok(!clientEventUnifiedSource.includes('min-h-screen bg-black'),'Client event ground stays inside the Client shell')
 assert.ok(roleHas('admin','/event'),'Sidebar exposes Loop 1 as a WEAVE destination')
-const canonicalSidebarSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
-assert.ok(canonicalSidebarSource.includes('getRoleDistricts'),'Sidebar uses the shared role catalog')
-assert.ok(canonicalSidebarSource.includes('getRoleDistricts'),'Sidebar uses the shared role catalog')
-assert.ok(canonicalSidebarSource.includes('getRoleDistricts'),'Sidebar uses the shared role catalog')
+assert.ok(!fs.existsSync(path.join(root,'components/app-sidebar.tsx')),'Retired flattened sidebar is removed')
+assert.ok(!fs.existsSync(path.join(root,'components/client/client-operating-room.tsx')),'Retired Client Operating Room component is removed')
+assert.ok(!fs.existsSync(path.join(root,'components/bridger/bridger-operating-environment.tsx')),'Retired Bridger Operating Room component is removed')
 for(const route of [
  'app/(app)/bridger/functions/page.tsx',
  'app/(app)/agent/functions/page.tsx',
@@ -484,6 +466,7 @@ const clientPresenceSource=fs.readFileSync(path.join(root,'app/client/presence/p
 const rolePresenceEnvironmentSource=fs.readFileSync(path.join(root,'components/world/role-presence-environment.tsx'),'utf8')
 const roleDistrictEnvironmentSource=fs.readFileSync(path.join(root,'components/world/role-district-environment.tsx'),'utf8')
 const adminFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/admin/functions/page.tsx'),'utf8')
+const bridgerFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/bridger/functions/page.tsx'),'utf8')
 assert.ok(positionEventSource.includes('data-loop-one-environment="burning-river"'),'Loop 1 is a continuous Burning River operating environment')
 assert.ok(positionEventSource.includes('The River that Burns'),'Loop 1 visibly declares the Flame Event identity')
 assert.ok(positionEventSource.includes('Your Loop 1 Position'),'Event ground centers the signed-in role')
@@ -493,13 +476,13 @@ assert.ok(positionEventSource.includes('data-flame-event-crossing-route="system-
 assert.ok(!positionEventSource.includes('ROLE_ORDER'),'Event page does not explain other user roles')
 assert.ok(!positionEventSource.includes('FLAME_EVENT_FEATURES'),'Event page removes generic event feature clutter')
 assert.ok(compactWorldSource.includes('data-client-world={role===\'client\'?\'open-territory\':undefined}')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home remains a spatial open territory with district beacons')
-// Role organization: preserve Admin tools and enforce focused working entrances.
-for(const hash of ['#users','#clients','#fne','#bridgers','#deposits','#tron','#bridge','#withdrawals','#announcements','#wallet','#workshops','#eight']) {
- assert.ok(roleHas('admin','/admin/control-center'+hash),'Admin control remains reachable: '+hash)
-}
-for(const href of ['/admin/file-number-engine','/admin/agent-channels','/admin/origin-systems','/admin/infrastructure','/admin/loop-workshop','/admin/dj-workshop','/admin/ad-workshop','/admin/development-agents','/admin/bridger-numbers','/admin/client-build-catalog','/authority/workshops','/admin/dev-workshop','/admin/visual-systems','/admin/environment-organizer']) assert.ok(roleHas('admin',href),href)
-for(const label of ['EIGHT AI','Administration Wallet','Administration Workshops']) assert.ok(roleLabel('admin',label),label)
-assert.equal(getRoleDistricts('admin')[0].name,'People','Admin starts with people management')
+// Role organization: one Admin world, one Control Center entrance, distinct places.
+assert.ok(roleHas('admin','/admin/control-center'),'Administration exposes one canonical Control Center entrance')
+assert.ok(!getRolePlaces('admin').some(place=>place.href.startsWith('/admin/control-center#')),'Administration catalog exposes no Control Center hash aliases as places')
+const adminBaseRoutes=getRolePlaces('admin').map(place=>place.href.split(/[?#]/)[0])
+assert.equal(new Set(adminBaseRoutes).size,adminBaseRoutes.length,'Administration catalog contains no repeated base routes')
+for(const href of ['/admin/control-center','/admin/file-number-engine','/admin/origin-systems','/admin/infrastructure','/admin/loop-workshop','/admin/dj-workshop','/admin/ad-workshop','/admin/development-agents','/admin/bridger-numbers','/admin/client-build-catalog','/authority/workshops','/admin/dev-workshop','/admin/visual-systems','/admin/environment-organizer']) assert.ok(roleHas('admin',href),href)
+assert.equal(getRoleDistricts('admin')[0].name,'Control','Administration starts with one control district')
 assert.deepEqual(
  getRolePlaces('agent').map(place=>place.href),
  ['/agent/presence','/agility','/agent/commissions'],
@@ -514,8 +497,7 @@ for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/v
 assert.ok(roleLabel('agent','Agent Presence'),'Agent has a Presence environment for understanding the position')
 assert.ok(roleLabel('bridger','Bridger Presence'),'Bridger has a Presence environment for understanding the position')
 assert.ok(roleLabel('client','Client Presence'),'Client has a Presence environment for understanding the Client world')
-assert.ok(roleOperatingRoomSource.includes('getRolePlaces(role)'),'Agent and Admin rooms use the role catalog')
-assert.ok(bridgerOperatingRoomSource.includes("getRolePlaces('bridger')"),'Bridger room uses the role catalog')
+assert.ok(roleOperatingRoomSource.includes('getRolePlaces(role)'),'Agent Operating Room uses the role catalog')
 assert.ok(adminControlCenterRouteSource.includes('@/components/admin/administration-control-terminal'),'Admin control center stays connected')
 for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcements'"]) assert.ok(adminDashboardCenterSource.includes(hash),hash)
 assert.ok(!adminDashboardCenterSource.includes("onClick={() => setActiveSubTab('sweeps')}"),'Mock sweeps remain hidden')
@@ -528,7 +510,8 @@ assert.ok(rolePresenceEnvironmentSource.includes("data-role-presence={role}")&&r
 assert.ok(rolePresenceEnvironmentSource.includes('verified File Folder purchases')&&rolePresenceEnvironmentSource.includes('Bridger share'),'Role Presence explicitly explains Agent and Bridger File Folder economics')
 assert.ok(roleDistrictEnvironmentSource.includes('data-role-district={district.key}')&&roleDistrictEnvironmentSource.includes('Places inside this district'),'Role districts keep places inside the district instead of scattering functions across the world')
 assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
-assert.ok(adminFunctionsSource.includes('<RoleOperatingRoom role="admin"'),'Administration Functions opens the Administration Operating Room instead of importing the dashboard')
+assert.ok(bridgerFunctionsSource.includes("redirect('/bridger/dashboard')"),'Legacy Bridger Functions redirects into the canonical Bridger World')
+assert.ok(adminFunctionsSource.includes("redirect('/admin/dashboard')"),'Legacy Administration Functions redirects into the canonical Administration World')
 assert.ok(!compactWorldSource.includes('{children}'),'Home no longer stacks the old terminal underneath the world')
 for(const file of ['components/world/role-operating-room.tsx','app/(app)/admin/dashboard/page.tsx','app/(app)/admin/control-center/page.tsx']){
  const source=fs.readFileSync(path.join(root,file),'utf8')
@@ -615,7 +598,6 @@ const fileFolderOperatingEnvironmentSource=fs.readFileSync(path.join(root,'compo
 const fileFolderOpenWorldSource=fs.readFileSync(path.join(root,'components/system-switch/file-folder-open-world.tsx'),'utf8')
 const fileFolder3dSource=fs.readFileSync(path.join(root,'components/system-switch/client-file-folder-3d.tsx'),'utf8')
 const supportFileFolderSource=fs.readFileSync(path.join(root,'app/(app)/weave/file-folder/[fileNumber]/page.tsx'),'utf8')
-const clientOperatingRoomSource=fs.readFileSync(path.join(root,'components/client/client-operating-room.tsx'),'utf8')
 const clientFunctionsPageSource=fs.readFileSync(path.join(root,'app/client/functions/page.tsx'),'utf8')
 const clientSystemSwitchSource=fs.readFileSync(path.join(root,'app/client/system-switch/page.tsx'),'utf8')
 const fileFolderOperatingMigrationSource=fs.readFileSync(path.join(root,'migrations/20260926_file_folder_operating_environment.sql'),'utf8')
@@ -699,11 +681,10 @@ assert.ok(!fileFolderOperatingEnvironmentSource.includes('Folder status'),'File 
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Construction + Systems'"),'Construction and live system operation are visibly one File Folder district')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Market + Customers'"),'Market and Customer Door are visibly one File Folder district')
 assert.ok(supportFileFolderSource.includes('Territory observer · Read only')&&supportFileFolderSource.includes('Client authority remains with the Client'),'Bridge Plaza support view preserves clear read-only Client authority without a large intro card')
-assert.ok(clientFunctionsPageSource.includes('<ClientOperatingRoom'),'Client Functions now opens the organized Client Operating Room')
-assert.ok(!clientFunctionsPageSource.includes('LegacyClientDashboard'),'Client Functions no longer uses the old stacked legacy dashboard as its primary surface')
+assert.ok(clientFunctionsPageSource.includes("redirect('/client/dashboard')"),'Legacy Client Functions redirects into the canonical Client World')
+assert.ok(!clientFunctionsPageSource.includes('ClientOperatingRoom'),'Legacy Client Functions no longer mounts a duplicate route network')
 for(const route of ['/client/system-switch','/client/deposit','/client/withdraw','/client/chat/bridger','/client/chat/mandate','/client/chat/forensic','/client/chat/lawyer','/client/chat/admin','/marketplace','/client/settings']) assert.ok(roleHas('client',route),route)
 assert.equal(getRolePlaces('client')[0].href,'/client/presence','Client Presence is the Client starting point before File Folder movement')
-assert.ok(clientOperatingRoomSource.includes("getRolePlaces('client')"),'Client room uses shared catalog')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('function buildDepth'),'File Folder build depth changes as construction progresses')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Foundation') && fileFolderOperatingEnvironmentSource.includes('Commissioning'),'Build depth exposes formation stages before live activation')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('Hosted live inside this File Folder'),'Completed Client systems remain hosted inside the File Folder')
@@ -825,12 +806,10 @@ for(const file of [
  'components/system-switch/client-file-folder-operating-environment.tsx',
  'components/system-switch/client-file-folder-3d.tsx',
  'components/world/interaction-motion-layer.tsx',
- 'components/client/client-operating-room.tsx',
  'app/(app)/weave/file-folder/[fileNumber]/page.tsx',
  'components/system-switch/client-bridge-ai-support.tsx',
  'components/system-switch/file-folder-environment-loader.tsx',
  'app/api/client/bridge-ai/route.ts',
- 'components/bridger/bridger-operating-environment.tsx',
  'components/world/role-operating-room.tsx',
  'app/api/client/messages/route.ts',
  'lib/client-growth-world.ts',
@@ -922,7 +901,6 @@ const clientLoginShieldSource=fs.readFileSync(path.join(root,'app/api/client/wea
 const clientRegisterShieldSource=fs.readFileSync(path.join(root,'app/api/client/weave-register/route.ts'),'utf8')
 const nextAuthShieldSource=fs.readFileSync(path.join(root,'lib/auth.ts'),'utf8')
 const adminWorkshopInfrastructureSource=fs.readFileSync(path.join(root,'app/(app)/admin/workshop/page.tsx'),'utf8')
-const sidebarInfrastructureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
 const devWorkshopInfrastructureSource=fs.readFileSync(path.join(root,'app/(app)/admin/dev-workshop/page.tsx'),'utf8')
 const previewBuildSource=fs.readFileSync(path.join(root,'cloudbuild.weave-preview.yaml'),'utf8')
 const promoteBuildSource=fs.readFileSync(path.join(root,'cloudbuild.weave-promote.yaml'),'utf8')
@@ -1066,7 +1044,6 @@ const enterpriseSystemsApiSource=fs.readFileSync(path.join(root,'app/api/enterpr
 const adminEnterpriseSystemsApiSource=fs.readFileSync(path.join(root,'app/api/admin/enterprise-systems/route.ts'),'utf8')
 const adminEnterpriseSystemsPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/enterprise-systems/page.tsx'),'utf8')
 const enterpriseExchangeMigrationSource=fs.readFileSync(path.join(root,'migrations/20260925_enterprise_systems_exchange.sql'),'utf8')
-const sidebarEnterpriseSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
 assert.ok(enterpriseExchangeSource.includes('Enterprise Systems Exchange'),'Marketplace is now the Enterprise Systems Exchange')
 assert.ok(enterpriseExchangeSource.includes('1 Flame Coin = 1 TRX'),'Enterprise Exchange explains the Flame Coin peg')
 assert.ok(enterpriseExchangeSource.includes('indicative live conversion'),'Enterprise Exchange distinguishes live Flame Coin reference from GBP contract price')
@@ -1177,13 +1154,12 @@ const clientPortalSource=fs.readFileSync(path.join(root,'app/client/page.tsx'),'
 assert.ok(clientBuildPullSource.includes('Client system-building path'),'Client build support instrument remains available where Client continuity needs it')
 assert.ok(clientBuildPullSource.includes('valid WEAVE File Number'),'Client build signal states the real access requirement')
 assert.ok(!roleOperatingRoomSource.includes('<ClientBuildPull role="agent"'),'Agent account is not overloaded with Client build controls')
-assert.ok(!bridgerOperatingRoomSource.includes('<ClientBuildPull role="bridger"'),'Bridger Operating Room is not overloaded with Client build controls')
 assert.ok(agentChannelsSystemSource.includes('Agent Channel Engine'),'Agent Channels is a working responsibility engine instead of a generic application list')
 assert.ok(agentChannelsSystemSource.includes('approval unlocks a Client-support function'),'Agent Channels explains the consequence of approval')
 assert.ok(clientInteractionsSystemSource.includes('Client Service Queue'),'Client Interactions is a movement queue instead of a generic chat list')
 assert.ok(clientInteractionsSystemSource.includes('A message is not isolated chat'),'Client service explicitly belongs to the Client process')
-assert.ok(bridgerClientsSystemSource.includes('Bridger Client Continuity'),'Bridger Clients is framed as post-crossing continuity')
-assert.ok(bridgerClientsSystemSource.includes('<ClientBuildPull role="bridger"'),'Bridger Client continuity retains the Client build signal')
+assert.ok(bridgerClientsSystemSource.includes("redirect('/bridger/presence')"),'Retired Bridger Clients route returns to Bridger Presence')
+assert.ok(!bridgerClientsSystemSource.includes('ClientBuildPull'),'Retired Bridger Clients route no longer mounts a duplicate Client continuity application')
 assert.ok(standingSystemSource.includes('Standing Engine'),'Standing is rendered as live system state')
 assert.ok(standingSystemSource.includes('does not simulate progress'),'Standing does not fabricate crossing progress')
 assert.ok(clientSettingsSystemSource.includes("fetch('/api/auth/profile'"),'Client Settings updates the live authenticated account')
@@ -1218,11 +1194,9 @@ const valueMovementSource=fs.readFileSync(path.join(root,'app/(app)/wallet/depos
 const reserveEngineSource=fs.readFileSync(path.join(root,'app/(app)/fund-wall/page.tsx'),'utf8')
 const bridgePlazaMatureSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
 const cadenceEngineSource=fs.readFileSync(path.join(root,'app/(app)/search/page.tsx'),'utf8')
-const sidebarMatureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
 
 assert.ok(positionIdentitySource.includes('Position + Identity Engine'),'Legacy roles/settings route is a real Position and Identity system')
 assert.ok(positionIdentitySource.includes('Changing your name or password does not silently change'),'Identity changes do not masquerade as institutional role changes')
-assert.ok(sidebarMatureSource.includes('Position + Identity'),'Sidebar names the identity surface truthfully')
 assert.ok(businessDistrictSource.includes('Business District'),'Places route is the canonical Business District')
 assert.ok(!businessDistrictSource.includes('<Market'),'Business District no longer embeds a duplicate Market mini-app')
 assert.ok(!businessDistrictSource.includes('<Arena'),'Business District no longer embeds a duplicate Arena mini-app')
@@ -1286,7 +1260,6 @@ const adminOutreachSource=fs.readFileSync(path.join(root,'app/(app)/admin/outrea
 const adminOutreachApiSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/outreach/pending/route.ts'),'utf8')
 const adminVaultAuthoritySource=fs.readFileSync(path.join(root,'app/(app)/admin/client-vault/page.tsx'),'utf8')
 const adminHubMatureSource=fs.readFileSync(path.join(root,'app/(app)/admin/hub/page.tsx'),'utf8')
-const adminSidebarMatureSource=fs.readFileSync(path.join(root,'components/app-sidebar.tsx'),'utf8')
 
 assert.ok(legacyClientAdminChatSource.includes("redirect('/client/chat/admin')"),'Legacy mock Client Admin chat resolves to canonical Client Administration chat')
 assert.ok(!legacyClientAdminChatSource.includes('mockSessions'),'Legacy Client Admin chat no longer fabricates conversations')
@@ -1308,8 +1281,8 @@ assert.ok(adminVaultAuthoritySource.includes('ready for manual settlement'),'Wit
 assert.ok(adminHubMatureSource.includes('Communication Matrix'),'Hub is a causal communication system')
 assert.ok(adminHubMatureSource.includes('senderType: user.role'),'Agent messages retain Agent identity instead of being stamped Admin')
 assert.ok(adminHubMatureSource.includes('const pos = isAgent ? threadPosition : position'),'Administration Prospect position selector controls the real channel')
-assert.ok(roleHas('admin','/admin/control-center#bridgers'),'Administration Continuance verification sidebar route reaches the control center')
-assert.ok(roleHas('admin','/admin/control-center#users'),'Administration verification sidebar route reaches the control center')
+assert.ok(roleHas('admin','/admin/control-center'),'Administration Continuance verification lives inside the canonical Control Center')
+assert.ok(!roleHas('admin','/admin/control-center#users'),'Administration no longer advertises internal Control Center tabs as separate places')
 
 for(const file of [
  'app/client/admin-chat/page.tsx',
@@ -1455,11 +1428,11 @@ assert.ok(clientEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface role=
 assert.ok(authEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface compact>'),'Authentication is framed as a WEAVE entry environment')
 assert.ok(weaveEnvironmentSurfaceSource.includes('data-weave-environment'),'Environment identity is explicit in the rendered shell')
 assert.ok(weaveEnvironmentMapSource.includes("'Client Access Gate'"),'Client login has explicit world-entry language')
-assert.ok(weaveEnvironmentMapSource.includes("'Bridger Operating Room'"),'Bridger functions are written as an operating environment')
+assert.ok(!weaveEnvironmentMapSource.includes("'Bridger Operating Room'"),'Bridger environment map has no duplicate Operating Room layer')
 assert.ok(weaveEnvironmentMapSource.includes("'Agent Operating Room'"),'Agent functions are written as an operating environment')
-assert.ok(weaveEnvironmentMapSource.includes("'Administration Operating Room'"),'Administration functions are written as an operating environment')
-assert.ok(clientEnvironmentNavigationSource.includes("'Open World'")&&clientEnvironmentNavigationSource.includes("'Presence'"),'Client navigation separates Presence from the open world')
-assert.ok(clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation moves to an operating room instead of generic functions')
+assert.ok(!weaveEnvironmentMapSource.includes("'Administration Operating Room'"),'Administration environment map has no duplicate Operating Room layer')
+assert.ok(clientEnvironmentNavigationSource.includes("'Client World'")&&clientEnvironmentNavigationSource.includes("'Client Presence'"),'Client navigation uses canonical Presence and World names')
+assert.ok(!clientEnvironmentNavigationSource.includes("'Operating Room'"),'Client navigation has no duplicate Operating Room layer')
 
 for(const file of [
   'lib/weave-development-agents.ts',
