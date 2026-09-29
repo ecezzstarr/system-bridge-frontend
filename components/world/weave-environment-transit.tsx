@@ -192,9 +192,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const queryTransitionControllerRef=useRef<AbortController|null>(null)
   const covered=booting||transiting||readyPath!==pathname
   useEffect(()=>{
-    // The loader is a formation cover, not a runtime pause. The destination
-    // must be allowed to render underneath so it is ready before reveal.
-    setRuntimeCovered(false)
+    // Pause background runtime while the formation cover is visible. Adaptive
+    // canvases are still allowed to draw their first readiness frame underneath.
+    setRuntimeCovered(covered)
     return ()=>setRuntimeCovered(false)
   },[covered])
 
