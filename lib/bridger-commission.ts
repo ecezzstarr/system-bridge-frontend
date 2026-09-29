@@ -81,12 +81,14 @@ export async function creditBridgerCommission(params: {
       ],
     )
 
-    await client.query(
+    const profileUpdate=await client.query(
       `UPDATE bridger_profiles
        SET total_earnings=COALESCE(total_earnings,0)+$1,updated_at=NOW()
-       WHERE user_id=$2::uuid`,
+       WHERE user_id=$2::uuid
+       RETURNING user_id`,
       [commissionAmount, bridgerId],
     )
+    if(profileUpdate.rows.length!==1)throw new Error('Bridger earnings profile unavailable')
 
     await client.query('COMMIT')
     credited = true
