@@ -136,7 +136,6 @@ const growthWorldApi=read('app/api/client/growth-world/route.ts')
 const dailyProspectClaimUi=read('components/bridger/daily-prospect-claim.tsx')
 const flameEventWorld=read('components/world/weave-live-flame-field.tsx')
 const adminWorkshop=read('app/(app)/admin/workshop/page.tsx')
-const operatingRoom=read('components/world/role-operating-room.tsx')
 const dashboardWorld=read('components/world/weave-dashboard-world.tsx')
 assert.ok(visualProfile.includes('FLAME_ARTIFACT_SURFACES'),'Visual runtime has an explicit surface registry')
 assert.ok(visualProfile.includes("red:'#fb7185'") && visualProfile.includes("sky:'#7dd3fc'"),'Published visual profile preserves Flame Event red/sky signature')
@@ -208,7 +207,6 @@ assert.ok(fileFolderOpenWorld.includes("status==='complete'")&&fileFolderOpenWor
 const clientLayout=read('app/client/layout.tsx')
 const supportFileFolderPage=read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
 
-assert.ok(!operatingRoom.toLowerCase().includes('position map'),'Agent Operating Room removes Position Map card')
 for(const route of ['/api/bridger/daily-prospect','/api/bridger/numbers','/api/bridger/bridge-ai/subscribe']){
 }
 for(const removed of ['/bridger/bridge-radiance','/bridger/clients','/bridger/subscription','/api/bridger/support-inbox','/api/bridger/clients','ClientBuildPull','referral-commissions']){
@@ -218,6 +216,7 @@ for(const href of ['/bridger/bridge-ai','/weave/market/prospects','/bridger/numb
 }
 assert.ok(dashboardWorld.includes('getRoleDistricts(role)')&&dashboardWorld.includes('data-world-organization="presence-district-place"'),'Role Home Worlds derive district entrances from the canonical role catalog')
 assert.ok(!dashboardWorld.includes('functionsHref')&&!dashboardWorld.includes('Open operating functions'),'Bridger, Client and Administration worlds do not expose a duplicate Operating Room shortcut')
+assert.ok(!fs.existsSync(path.join(root,'components/world/role-operating-room.tsx')),'Agent duplicate Operating Room is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/app-sidebar.tsx')),'Retired flattened sidebar is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/bridger/bridger-operating-environment.tsx')),'Retired Bridger Operating Room is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/client/client-operating-room.tsx')),'Retired Client Operating Room is removed')
@@ -387,7 +386,6 @@ const echoEnvironment=read('app/(app)/echo/page.tsx')
 assert.ok(routeNetwork.includes('data-weave-route-network')&&routeNetwork.includes('data-weave-route-station'),'Shared route grammar exposes connected lanes and stations')
 assert.ok(dashboardWorld.includes('data-role-world-beacon={district.name}')&&dashboardWorld.includes('data-client-world-beacon'),'Role Home Worlds use spatial district beacons instead of scattering individual place cards')
 assert.ok(!dashboardWorld.includes('WorldLinkCard'),'Role Home Worlds cannot regress to a link-card grid')
-assert.ok(operatingRoom.includes('<WeaveRouteNetwork')&&operatingRoom.includes('data-operating-room={role}'),'Agent Operating Room opens directly into connected working routes')
 assert.ok(room.includes('data-weave-room-stage'),'Reusable WEAVE rooms expose one active stage between environment rails')
 assert.ok(marketplaceEnvironment.includes('data-enterprise-exchange-floor')&&!marketplaceEnvironment.includes('grid gap-5 md:grid-cols-2 xl:grid-cols-3'),'Enterprise Exchange is a continuous bay floor, not a product-card grid')
 assert.ok(arenaEnvironment.includes('data-arena-environment')&&arenaEnvironment.includes('data-arena-lane'),'Arena renders contests as lanes inside one ground')
@@ -527,7 +525,6 @@ assert.ok(roleWorldSource.includes('data-role-world={role}'),'Agent Bridger and 
 assert.ok(roleWorldSource.includes('data-role-world-beacon={district.name}')&&roleWorldSource.includes('data-world-organization="presence-district-place"'),'Role worlds expose organized district beacons instead of scattered place cards')
 
 const departmentWorldSource = read('components/world/weave-dashboard-world.tsx')
-const departmentRoomSource = read('components/world/role-operating-room.tsx')
 assert.ok(departmentWorldSource.includes('Stability · Agent Department')&&departmentWorldSource.includes('Hope · Bridger Department'),'Agent and Bridger worlds preserve Stability and Hope department identities')
 assert.ok(departmentWorldSource.includes('A Cat · Administration Department')&&departmentWorldSource.includes('Lord/Lady · Client Department'),'Administration and Client worlds preserve A Cat and Lord/Lady department identities')
 const agentPresenceEnvironmentSource=read('app/(app)/agent/presence/page.tsx')
