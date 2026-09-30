@@ -9,7 +9,7 @@ async function requireBridger(request: NextRequest) {
   return { userId: user.id }
 }
 
-const VALID_POSITIONS = ['bridger', 'mandate', 'lawyer', 'forensic', 'admin']
+const BRIDGER_POSITION = 'bridger'
 
 // GET without sessionId: list of prospect threads for this Bridger's own
 // Bridges, grouped by session, with unread counts.
@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const sessionId = searchParams.get('sessionId')
-  const position = searchParams.get('position') || 'bridger'
+  const position = searchParams.get('position') || BRIDGER_POSITION
 
-  if (!VALID_POSITIONS.includes(position)) {
-    return NextResponse.json({ success: false, error: 'Invalid position' }, { status: 400 })
+  if (position !== BRIDGER_POSITION) {
+    return NextResponse.json({ success: false, error: 'Bridgers may only operate the direct Bridger Prospect channel' }, { status: 403 })
   }
 
   try {
@@ -85,10 +85,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const { sessionId, content, position } = await request.json()
-    const targetPosition = position || 'bridger'
+    const targetPosition = position || BRIDGER_POSITION
 
-    if (!sessionId || !content?.trim() || !VALID_POSITIONS.includes(targetPosition)) {
-      return NextResponse.json({ success: false, error: 'sessionId, valid position and content are required' }, { status: 400 })
+    if (!sessionId || !content?.trim()) {
+      return NextResponse.json({ success: false, error: 'sessionId and content are required' }, { status: 400 })
+    }
+    if (targetPosition !== BRIDGER_POSITION) {
+      return NextResponse.json({ success: false, error: 'Bridgers may only operate the direct Bridger Prospect channel' }, { status: 403 })
     }
 
     const ownership = await sql`
