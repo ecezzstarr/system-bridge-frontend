@@ -23,6 +23,7 @@ export function WeaveEnvironmentSurface({
       data-weave-layer={environment.layer}
       data-weave-live-word="title"
       data-environment-location="world-position"
+      data-environment-return-label="Return to role world"
       data-world-stays-mounted="true"
       data-weave-world={worldLayer}
     >
