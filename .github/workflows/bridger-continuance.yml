@@ -7,22 +7,25 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   renew:
     runs-on: ubuntu-latest
     env:
-      CONTINUANCE_SECRET: ${{ secrets.CRON_SECRET }}
       CONTINUANCE_URL: ${{ vars.WEAVE_CONTINUANCE_URL || 'https://weavingsystem.online/api/cron/subscription-check' }}
     steps:
-      - name: Renew due Bridger Continuance
-        if: ${{ env.CONTINUANCE_SECRET != '' }}
+      - name: Request short-lived WEAVE scheduler identity
+        id: oidc
+        shell: bash
         run: |
           set -euo pipefail
-          curl --fail-with-body --silent --show-error             --request GET             --header "x-cron-secret: ${CONTINUANCE_SECRET}"             "${CONTINUANCE_URL}"
+          RESPONSE="$(curl --fail-with-body --silent --show-error             --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=weave-scheduler")"
+          TOKEN="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"${RESPONSE}")"
+          echo "::add-mask::${TOKEN}"
+          echo "token=${TOKEN}" >> "${GITHUB_OUTPUT}"
 
-      - name: Report unarmed scheduler
-        if: ${{ env.CONTINUANCE_SECRET == '' }}
+      - name: Renew due Bridger Continuance
         run: |
-          echo "Bridger Continuance scheduler is installed but CRON_SECRET is not configured in GitHub Actions."
-          exit 1
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error             --request GET             --header "Authorization: Bearer ${{ steps.oidc.outputs.token }}"             "${CONTINUANCE_URL}"
