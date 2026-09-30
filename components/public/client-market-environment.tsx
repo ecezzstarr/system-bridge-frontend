@@ -222,7 +222,7 @@ export function ClientMarketEnvironment({
 
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">
         <span className="inline-flex items-center gap-2"><Sparkles className="h-3.5 w-3.5"/>Public business territory · constructed in a Client File Folder</span>
-        <Link href="/market" className="inline-flex items-center gap-2 text-slate-400 hover:text-white"><Store className="h-3.5 w-3.5"/>Return to Client Market</Link>
+        <Link href="/market" className="inline-flex items-center gap-2 text-slate-400 hover:text-white"><Store className="h-3.5 w-3.5"/>Return to Customer Market</Link>
       </footer>
     </section>
   </main>
