@@ -6,7 +6,6 @@ import {
   BriefcaseBusiness,
   Building2,
   GitBranch,
-  MessageCircle,
   RadioTower,
   Sparkles,
   Store,
@@ -32,13 +31,6 @@ const PLACES:Place[] = [
     href:'/company/loops',
     consequence:'Institutional movement',
     icon:GitBranch,
-  },
-  {
-    label:'Lounge',
-    detail:'Continue human communication inside the same WEAVE world.',
-    href:'/lounge',
-    consequence:'Shared communication',
-    icon:MessageCircle,
   },
   {
     label:'Echo',
