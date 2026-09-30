@@ -44,7 +44,7 @@ export const BRIDGER_CONTENT = {
     `Your Bridger earning is ${(WORLD_RULES.BRIDGER_YIELD_RATE * 100).toFixed(0)}% of the File Folder price: ${BRIDGER_30_FLAME_COIN} Flame Coin = ₦${BRIDGER_30_NGN}`,
   ],
   movement: `Purchase prospect → make contact → bridge the prospect → prospect participates → Standard or Premium File Folder purchase → prospect becomes Client → earn 30% of the actual verified File Folder purchase value. This closes Loop 1 for the Bridger.`,
-  relationship: 'The Bridger accompanies the Client beyond the first introduction. The File Folder gives that relationship a persistent place inside System Switch. You can return to the Client\'s environment, understand what has moved, communicate, coordinate support, and continue the bridge.',
+  relationship: 'The Bridger accompanies the Client beyond the first introduction through direct communication and authorized continuity. The Client\'s System Switch remains private. When the Client opens a Customer Door, the Bridger can encounter the public enterprise through the Customer Market or when Flame Event carries that Door into the shared event current.',
 }
 
 export const FILE_FOLDER_CONTENT = {
