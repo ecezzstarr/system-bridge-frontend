@@ -30,10 +30,6 @@ type Props = {
   workshopTitle: string
   workshopPurpose?: string | null
   initialWorld: any
-  readOnly?: boolean
-  observerLabel?: string
-  refreshUrl?: string
-  refreshToken?: string | null
   onWorldChange?: (world: any) => void
   initialDistrict?: string
   initialAiFileFolders?: AiFileFolderIdentity[]
@@ -116,10 +112,6 @@ export default function FileFolderOpenWorld({
   workshopTitle,
   workshopPurpose,
   initialWorld,
-  readOnly = false,
-  observerLabel = 'Staff / Visitor observation',
-  refreshUrl,
-  refreshToken,
   onWorldChange,
   initialDistrict = 'workshop_core',
   initialAiFileFolders,
@@ -189,13 +181,10 @@ export default function FileFolderOpenWorld({
 
   useEffect(() => {
     if(!pollWorld)return
-    const url = refreshUrl || (!readOnly ? '/api/client/file-folder-world' : null)
-    if (!url) return
-
     const refresh = async (signal:AbortSignal) => {
       try {
-        const token = refreshToken ?? (!readOnly ? getClientToken() : null)
-        const response = await fetch(url, {
+        const token = getClientToken()
+        const response = await fetch('/api/client/file-folder-world', {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           cache: 'no-store',signal,
         })
@@ -211,7 +200,7 @@ export default function FileFolderOpenWorld({
 
     const id = visiblePoll(refresh, 20000, false)
     return () => id()
-  }, [onWorldChange, pollWorld, readOnly, refreshToken, refreshUrl])
+  }, [onWorldChange, pollWorld])
 
   const inventory = useMemo(
     () => new Map((world?.inventory || []).map((item: any) => [item.item_key, Number(item.quantity || 0)])),
@@ -229,7 +218,6 @@ export default function FileFolderOpenWorld({
   },[world?.blueprints])
 
   const act = async (payload: any, key: string) => {
-    if (readOnly) return
     setBusy(key)
     setMessage('')
     try {
@@ -292,8 +280,8 @@ export default function FileFolderOpenWorld({
             <h2 className="mt-1 truncate text-lg font-black text-white md:mt-2 md:text-4xl">{workshopTitle}</h2>
             <p className="mt-1 truncate text-[9px] font-mono text-slate-500 md:mt-2 md:text-[10px]">{clientName} · {fileNumber}</p>
           </div>
-          <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] ${readOnly?'border-violet-300/20 bg-violet-400/5 text-violet-200':'border-emerald-300/20 bg-emerald-400/5 text-emerald-200'}`}>
-            {readOnly?'Observable territory':'Client control'}
+          <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-400/5 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] text-emerald-200">
+            Client control
           </span>
         </div>
 
@@ -304,7 +292,6 @@ export default function FileFolderOpenWorld({
             {aiFileFolders.map(ai=>{const territory=aiFileFolderTerritory(ai);return <div key={territory.territoryId} className="min-w-[15rem] border-l border-cyan-300/25 bg-cyan-400/[.025] px-3 py-2" data-ai-demonstration-territory={territory.territoryId}><p className="text-[7px] font-black uppercase tracking-[.16em] text-cyan-300">{territory.operatorLabel}</p><p className="mt-1 text-xs font-black text-white">{territory.publicName}</p><p className="mt-1 text-[8px] text-slate-500">{territory.fileNumber} · {territory.activity}</p><p className="mt-2 text-[9px] leading-4 text-slate-400">{territory.products.join(' · ')}</p><p className="mt-1 text-[8px] font-black text-amber-200">Generated for WEAVE · {territory.generatedSalesFlameCoin.toLocaleString()} FC</p></div>})}
           </div>
         </div>
-        {readOnly&&<div className="mt-3 border-l-2 border-violet-300/30 bg-violet-400/[.035] px-3 py-2 text-[9px] leading-4 text-violet-100" data-territory-observer="progress-visible"><span className="font-black uppercase tracking-wider">{observerLabel} · </span>Construction progress, completed structures, Customer Door maturity and public business movement are visible here. Ownership, wallet, private records and build controls remain with the Lord/Lady.</div>}
 
         <div className="mt-3 flex gap-4 overflow-x-auto border-y border-amber-100/10 py-2.5 text-[8px] uppercase tracking-wider text-stone-500 md:mt-5 md:grid md:grid-cols-4 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[10px]">
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3">
@@ -336,7 +323,7 @@ export default function FileFolderOpenWorld({
               <span className="md:hidden">{Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} FC</span>
               <span className="hidden md:inline">{Number(buildFunding.totalParticipationFlameCoin || 0).toLocaleString()} / {Number(buildFunding.publicDoorThresholdFlameCoin || 0).toLocaleString()} Flame Coin for the first public door.{!buildFunding.publicDoorUnlocked && <> Add {Number(buildFunding.requiredToOpenPublicDoorFlameCoin || 0).toLocaleString()} more Flame Coin before the Customer Door can open and new construction can continue after that gate.</>}</span>
             </div>
-            {!readOnly && !buildFunding.publicDoorUnlocked && (
+            {!buildFunding.publicDoorUnlocked && (
               <Link href="/client/deposit" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-300 px-2.5 py-1.5 font-black uppercase tracking-wider text-slate-950 md:px-3">
                 <Zap className="h-3 w-3"/><span className="hidden sm:inline">Add Flame Credits</span><span className="sm:hidden">Add</span>
               </Link>
@@ -346,7 +333,7 @@ export default function FileFolderOpenWorld({
       </header>
 
       <div className="min-h-[650px]">
-        <nav aria-label="Walk the build site" className={`sticky z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl ${readOnly?'top-11 md:top-0':'top-0'}`} data-build-site-awareness="compact-sticky-rail">
+        <nav aria-label="Walk the build site" className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
           <div className="flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
             <div className="min-w-0 shrink-0 border-r border-amber-100/10 pr-3">
               <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">Build site</p>
@@ -374,7 +361,6 @@ export default function FileFolderOpenWorld({
                 </button>
               })}
             </div>
-            {readOnly&&<span className="hidden shrink-0 rounded-full border border-violet-300/15 px-2 py-1 text-[7px] font-black uppercase tracking-[.1em] text-violet-200 sm:inline">Observe</span>}
           </div>
         </nav>
 
@@ -430,12 +416,12 @@ export default function FileFolderOpenWorld({
                       <p className="text-[8px] font-black uppercase tracking-[0.18em] text-slate-600">Installed during this build</p>
                       <div className="mt-2 flex flex-wrap gap-2">{(build.applied_parts || []).map((part:any)=><span key={part.id} className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[9px] text-slate-300">{part.name}{part.effect_type==='speed_boost' ? ` · ×${Number(part.effect_value || 1).toFixed(2)}` : ''}</span>)}</div>
                     </div>}
-                    {!readOnly && <div className="mt-4 rounded-xl border border-sky-300/10 bg-sky-400/[0.025] p-3">
+                    <div className="mt-4 rounded-xl border border-sky-300/10 bg-sky-400/[0.025] p-3">
                       <div className="flex items-center justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">Continue building live</p><p className="mt-1 text-[9px] text-slate-500">Attach purchased parts to this active build. Speed boosts immediately change its live formation time.</p></div><Zap className="h-4 w-4 text-sky-300"/></div>
                       {build.system_type==='customer_door'&&<div className="mt-4 border-y border-emerald-300/10 py-3" data-customer-door-formation="72-hour-cycle">
                         <p className="text-[8px] font-black uppercase tracking-[.16em] text-emerald-300">Standard formation · 72 real hours · acceleration optional</p>
                         <div className="mt-3 grid gap-2 sm:grid-cols-2">{customerDoorFormation(buildProgress(build,now)).map(part=><div key={part.label} className="border-l border-emerald-300/15 pl-3"><p className={`text-[9px] font-black ${part.state==='formed'?'text-emerald-200':part.state==='forming'?'text-amber-200':'text-slate-600'}`}>{part.label} · {part.state}</p><p className="mt-1 text-[8px] leading-4 text-slate-500">{part.detail}</p></div>)}</div>
-                      </div>}
+                      </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {availableBuildItems.length === 0 && <span className="text-[9px] text-slate-600">No purchased build items are waiting in inventory.</span>}
                         {availableBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
@@ -466,7 +452,7 @@ export default function FileFolderOpenWorld({
                     <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-violet-300">{branchLabel(blueprint.district)}</p><h4 className="mt-1 font-bold text-white">{blueprint.name}</h4></div><span className="shrink-0 rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">Base {blueprint.build_hours}h · Yours {effectiveLabel}</span></div>
                     <p className="mt-2 text-xs leading-5 text-slate-400">{blueprint.description}</p>
                     <p className="mt-3 text-[10px] text-slate-500">Requires: {blueprint.required_item_quantity || 0} × {blueprint.required_item_name || 'No component'} · Owned {owned}{blueprint.required_item_key ? <> · <span className="font-bold text-amber-200">{Number(blueprint.required_item_price_flame_coin || 0).toLocaleString()} Flame Coin each</span></> : null}</p>
-                    {!readOnly && <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Start Build':'Acquire Component'}</button>}
+                    <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Start Build':'Acquire Component'}</button>
                   </div>
                 })}
               </div>
@@ -486,7 +472,7 @@ export default function FileFolderOpenWorld({
                     {(materialPurpose.get(item.item_key)||[]).length ? `Required to begin ${materialPurpose.get(item.item_key)!.join(', ')}. ${operatingEffect(item)}` : operatingEffect(item)}
                   </div>
                   <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
-                  {!readOnly && <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire material'}</button>}
+                  <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire material'}</button>
                 </div>)}
               </div>
             </div>
@@ -504,7 +490,7 @@ export default function FileFolderOpenWorld({
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
                   <p className="mt-3 text-[9px] leading-4 text-slate-500"><span className="font-black uppercase text-sky-300">Installed capability · </span>{operatingEffect(item)}</p>
                   <div className="mt-3 flex items-center justify-between text-[9px]"><span className="text-slate-500">Workshop inventory</span><span className="font-black text-white">{Number(inventory.get(item.item_key)||0)} owned</span></div>
-                  {!readOnly&&<button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 border border-sky-300/20 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-sky-100 disabled:opacity-40">{busy===item.item_key?'Acquiring…':'Acquire part'}</button>}
+                  <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 border border-sky-300/20 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-sky-100 disabled:opacity-40">{busy===item.item_key?'Acquiring…':'Acquire part'}</button>
                 </div>)}
               </div>
             </div>
@@ -521,7 +507,7 @@ export default function FileFolderOpenWorld({
                   <p className="mt-3 text-xs leading-5 text-slate-400">{item.description}</p>
                   <p className="mt-3 text-[10px] text-slate-500">Inventory: {Number(inventory.get(item.item_key) || 0)}</p>
                   <p className="mt-2 inline-flex rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 text-[9px] font-black text-amber-200">Applies live · ×{Number(item.effect_value || 1).toFixed(2)} build speed</p>
-                  {!readOnly && <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-amber-300/20 bg-amber-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-amber-100 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire boost'}</button>}
+                  <button disabled={busy===item.item_key} onClick={()=>act({action:'purchase_item',item_key:item.item_key,quantity:1},item.item_key)} className="mt-4 rounded-full border border-amber-300/20 bg-amber-400/10 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-amber-100 disabled:opacity-50">{busy===item.item_key?'Acquiring…':'Acquire boost'}</button>
                 </div>)}
               </div>
             </div>
@@ -535,8 +521,8 @@ export default function FileFolderOpenWorld({
                 {(world?.systems || []).length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No system has finished construction yet.</p>}
                 {(world?.systems || []).map((system:any) => <div key={system.id} className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.035] p-5">
                   <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] uppercase tracking-wider text-sky-300">{system.system_type.replaceAll('_',' ')}</p><h4 className="mt-1 font-bold text-white">{system.title}</h4></div><CheckCircle2 className="h-5 w-5 text-emerald-300"/></div>
-                  <div className="mt-4 space-y-2">{(system.entries || []).map((entry:any)=><div key={entry.id} className="flex items-start gap-3 rounded-xl border border-white/5 bg-black/20 p-3"><button disabled={readOnly} onClick={()=>act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} className={`mt-0.5 h-4 w-4 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-600'}`}/><div><p className={`text-xs font-semibold ${entry.status==='done'?'text-slate-500 line-through':'text-slate-200'}`}>{entry.title}</p>{entry.body&&<p className="mt-1 text-[10px] leading-4 text-slate-500">{entry.body}</p>}{entry.evidence_type&&entry.evidence_type!=='internal'&&<p className="mt-1 text-[8px] font-black uppercase tracking-wider text-emerald-300/70">Field evidence · {String(entry.evidence_type).replaceAll('_',' ')}</p>}</div></div>)}</div>
-                  {!readOnly && <div className="mt-4 flex gap-2"><input value={systemDrafts[system.id]||''} onChange={e=>setSystemDrafts({...systemDrafts,[system.id]:e.target.value})} placeholder="Record the next real operation…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"/><select value={systemEvidence[system.id]||'internal'} onChange={e=>setSystemEvidence({...systemEvidence,[system.id]:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 px-2 text-[9px] font-black uppercase text-slate-300"><option value="internal">Internal</option><option value="customer_use">Customer use</option><option value="visitor_use">Visitor use</option><option value="fulfilment">Fulfilment</option><option value="delivery">Delivery</option><option value="service">Service</option><option value="revenue">Revenue</option></select><button disabled={!systemDrafts[system.id]?.trim() || busy===system.id} onClick={async()=>{await act({action:'add_system_entry',system_id:system.id,title:systemDrafts[system.id],evidence_type:systemEvidence[system.id]||'internal'},system.id);setSystemDrafts({...systemDrafts,[system.id]:''})}} className="rounded-xl bg-sky-500 px-3 text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/></button></div>}
+                  <div className="mt-4 space-y-2">{(system.entries || []).map((entry:any)=><div key={entry.id} className="flex items-start gap-3 rounded-xl border border-white/5 bg-black/20 p-3"><button onClick={()=>act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} className={`mt-0.5 h-4 w-4 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-600'}`}/><div><p className={`text-xs font-semibold ${entry.status==='done'?'text-slate-500 line-through':'text-slate-200'}`}>{entry.title}</p>{entry.body&&<p className="mt-1 text-[10px] leading-4 text-slate-500">{entry.body}</p>}{entry.evidence_type&&entry.evidence_type!=='internal'&&<p className="mt-1 text-[8px] font-black uppercase tracking-wider text-emerald-300/70">Field evidence · {String(entry.evidence_type).replaceAll('_',' ')}</p>}</div></div>)}</div>
+                  <div className="mt-4 flex gap-2"><input value={systemDrafts[system.id]||''} onChange={e=>setSystemDrafts({...systemDrafts,[system.id]:e.target.value})} placeholder="Record the next real operation…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"/><select value={systemEvidence[system.id]||'internal'} onChange={e=>setSystemEvidence({...systemEvidence,[system.id]:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 px-2 text-[9px] font-black uppercase text-slate-300"><option value="internal">Internal</option><option value="customer_use">Customer use</option><option value="visitor_use">Visitor use</option><option value="fulfilment">Fulfilment</option><option value="delivery">Delivery</option><option value="service">Service</option><option value="revenue">Revenue</option></select><button disabled={!systemDrafts[system.id]?.trim() || busy===system.id} onClick={async()=>{await act({action:'add_system_entry',system_id:system.id,title:systemDrafts[system.id],evidence_type:systemEvidence[system.id]||'internal'},system.id);setSystemDrafts({...systemDrafts,[system.id]:''})}} className="rounded-xl bg-sky-500 px-3 text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/></button></div>
                 </div>)}
               </div>
             </div>
@@ -548,7 +534,7 @@ export default function FileFolderOpenWorld({
               <h3 className="mt-2 text-2xl font-black">Understand the build while the Client is using it.</h3>
               <div className="mt-5 space-y-3">
                 {(world?.library || []).map((entry:any)=><div key={entry.entry_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-                  <div className="flex items-start gap-3"><BookOpen className="mt-0.5 h-5 w-5 text-cyan-300"/><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-bold text-white">{entry.title}</h4><span className="text-[9px] uppercase tracking-wider text-slate-500">{entry.status || 'available'}</span></div><p className="mt-2 text-xs leading-5 text-slate-400">{entry.summary}</p>{entry.status!=='available'&&<p className="mt-3 rounded-xl border border-cyan-300/10 bg-cyan-400/[0.03] p-3 text-[11px] leading-5 text-slate-300">{entry.lesson}</p>}<p className="mt-3 text-[10px] text-slate-500">Movement: {entry.movement}</p>{!readOnly&&entry.status!=='complete'&&<button onClick={()=>act({action:entry.status==='in_progress'?'library_complete':'library_start',entry_key:entry.entry_key},entry.entry_key)} disabled={busy===entry.entry_key} className="mt-4 inline-flex items-center gap-1 rounded-full border border-cyan-300/20 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-cyan-200 disabled:opacity-50">{entry.status==='in_progress'?'Complete movement':'Begin movement'}<ChevronRight className="h-3.5 w-3.5"/></button>}</div></div>
+                  <div className="flex items-start gap-3"><BookOpen className="mt-0.5 h-5 w-5 text-cyan-300"/><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><h4 className="font-bold text-white">{entry.title}</h4><span className="text-[9px] uppercase tracking-wider text-slate-500">{entry.status || 'available'}</span></div><p className="mt-2 text-xs leading-5 text-slate-400">{entry.summary}</p>{entry.status!=='available'&&<p className="mt-3 rounded-xl border border-cyan-300/10 bg-cyan-400/[0.03] p-3 text-[11px] leading-5 text-slate-300">{entry.lesson}</p>}<p className="mt-3 text-[10px] text-slate-500">Movement: {entry.movement}</p>{entry.status!=='complete'&&<button onClick={()=>act({action:entry.status==='in_progress'?'library_complete':'library_start',entry_key:entry.entry_key},entry.entry_key)} disabled={busy===entry.entry_key} className="mt-4 inline-flex items-center gap-1 rounded-full border border-cyan-300/20 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-cyan-200 disabled:opacity-50">{entry.status==='in_progress'?'Complete movement':'Begin movement'}<ChevronRight className="h-3.5 w-3.5"/></button>}</div></div>
                 </div>)}
               </div>
             </div>
