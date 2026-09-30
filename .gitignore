@@ -9,3 +9,4 @@ __pycache__/
 *.tsbuildinfo
 =
 screenshot-main.png
+*.failed-backup

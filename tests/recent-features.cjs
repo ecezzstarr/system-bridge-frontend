@@ -101,6 +101,7 @@ assert.ok(!fs.existsSync(path.join(root,'app/api/agility/payment/webhook/route.t
 assert.ok(!fs.existsSync(path.join(root,'app/api/deposit/flutterwave/route.ts')),'Retired Flutterwave deposit initializer removed')
 assert.ok(!fs.existsSync(path.join(root,'app/api/deposit/callback/route.ts')),'Retired Flutterwave verification callback removed')
 assert.ok(!fs.existsSync(path.join(root,'lib/flutterwave.ts')),'Retired Flutterwave library removed')
+assert.ok(!fs.existsSync(path.join(root,'app/api/deposit/opay/route.ts.failed-backup')),'Stale OPay failed-backup source stays out of the repository')
 const packageManifestSource=fs.readFileSync(path.join(root,'package.json'),'utf8')
 const packageLockSource=fs.readFileSync(path.join(root,'package-lock.json'),'utf8')
 const eightRuntimeSource=fs.readFileSync(path.join(root,'lib/eight.ts'),'utf8')
