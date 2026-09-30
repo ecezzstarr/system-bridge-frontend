@@ -720,7 +720,7 @@ assert.ok(!fileFolderOperatingEnvironmentSource.includes('Simple meaning'),'File
 assert.ok(!fileFolderOperatingEnvironmentSource.includes('Folder status'),'File Folder removes the duplicate status rail')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Construction + Systems'"),'Construction and live system operation are visibly one File Folder district')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Market + Customers'"),'Market and Customer Door are visibly one File Folder district')
-assert.ok(supportFileFolderSource.includes('Territory observer · Read only')&&supportFileFolderSource.includes('Client authority remains with the Client'),'Bridge Plaza support view preserves clear read-only Client authority without a large intro card')
+assert.ok(supportFileFolderSource.includes("redirect('/market')"),'Retired staff File Folder route resolves to the public Customer Market')
 assert.ok(clientFunctionsPageSource.includes("redirect('/client/dashboard')"),'Legacy Client Functions redirects into the canonical Client World')
 assert.ok(!clientFunctionsPageSource.includes('ClientOperatingRoom'),'Legacy Client Functions no longer mounts a duplicate route network')
 for(const route of ['/client/system-switch','/client/deposit','/client/withdraw','/client/chat/bridger','/client/chat/mandate','/client/chat/forensic','/client/chat/lawyer','/client/chat/admin','/marketplace','/client/settings']) assert.ok(roleHas('client',route),route)
@@ -1232,15 +1232,15 @@ const profileMatureSource=fs.readFileSync(path.join(root,'app/(app)/profiles/pag
 const walletCanonicalSource=fs.readFileSync(path.join(root,'app/(app)/wallet/page.tsx'),'utf8')
 const valueMovementSource=fs.readFileSync(path.join(root,'app/(app)/wallet/deposit-withdraw/page.tsx'),'utf8')
 const reserveEngineSource=fs.readFileSync(path.join(root,'app/(app)/fund-wall/page.tsx'),'utf8')
-const bridgePlazaMatureSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
+const roleWorldReturnSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
 const cadenceEngineSource=fs.readFileSync(path.join(root,'app/(app)/search/page.tsx'),'utf8')
 
 assert.ok(positionIdentitySource.includes('Settings · Position + Identity'),'Settings is the live Position and Identity system')
 assert.ok(positionIdentitySource.includes('Changing your name or password does not silently change'),'Identity changes do not masquerade as institutional role changes')
-assert.ok(businessDistrictSource.includes('Business District'),'Places route is the canonical Business District')
-assert.ok(!businessDistrictSource.includes('<Market'),'Business District no longer embeds a duplicate Market mini-app')
-assert.ok(!businessDistrictSource.includes('<Arena'),'Business District no longer embeds a duplicate Arena mini-app')
-assert.ok(!businessDistrictSource.includes('<Lounge'),'Business District no longer embeds a duplicate Lounge mini-app')
+assert.ok(businessDistrictSource.includes("router.replace(roleHome(user?.role))"),'Retired Places catalog resolves into the authenticated role world')
+assert.ok(!businessDistrictSource.includes('Business District'),'Retired Places route no longer creates a second business catalog')
+assert.ok(!businessDistrictSource.includes("href:'/marketplace'"),'Retired Places route no longer exposes duplicate marketplace navigation')
+assert.ok(!businessDistrictSource.includes("label:'Lounge'"),'Retired Places route does not expose Public Lounge')
 assert.ok(clientRegistrySource.includes('Client Presence Registry'),'Clients route is a state registry rather than a generic CRM')
 assert.ok(!clientRegistrySource.includes('Add Client'),'Client registry does not advertise an unwired Add Client action')
 assert.ok(!clientRegistrySource.includes('Edit Client'),'Client registry does not advertise an unwired Edit Client action')
@@ -1250,7 +1250,7 @@ for(const fakeAction of ['Schedule Session','Start</','End Session']){
  assert.ok(!privateGroundSource.includes(fakeAction),`Private Ground removes false action ${fakeAction}`)
 }
 assert.ok(streamSource.includes("redirect('/echo')"),'Retired shared Stream resolves to Echo instead of mounting a duplicate media surface')
-assert.ok(!businessDistrictSource.includes("href:'/lounge'")&&!businessDistrictSource.includes("label:'Lounge'"),'Business District no longer exposes Public Lounge')
+assert.ok(!businessDistrictSource.includes("href:'/lounge'"),'Retired Places route has no Public Lounge destination')
 assert.ok(companyGuidanceSource.includes('Company Guidance Router'),'Company guidance routes by functional consequence')
 assert.ok(companyLoopsMatureSource.includes('Company Loop Registry'),'Company Loops is an operating registry')
 assert.ok(profileMatureSource.includes('Presence Record'),'Profiles exposes one structural Presence record')
@@ -1260,9 +1260,9 @@ assert.ok(valueMovementSource.includes('Value Movement Engine'),'Wallet is a rec
 assert.ok(!valueMovementSource.includes('Your Referral Link'),'Wallet no longer mixes referral UI with financial movement')
 assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a coherent Reserve Engine')
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
-assert.ok(bridgePlazaMatureSource.includes('data-bridge-plaza-theme="continuous-moving-system"'),'Bridge Plaza is a continuous moving world rather than a card-rendering page')
-assert.ok(bridgePlazaMatureSource.includes('data-bridge-plaza-station="client-support"'),'Bridge Plaza Client support is entered as an in-world station')
-assert.ok(bridgePlazaMatureSource.includes('The Crossing is a recorded transition'),'Client crossing exposes recorded state')
+assert.ok(roleWorldReturnSource.includes("router.replace(roleHome(user?.role))"),'Retired /weave route returns each authenticated position to its own world')
+assert.ok(!roleWorldReturnSource.includes('Bridge Plaza'),'Retired /weave route does not expose Bridge Plaza')
+assert.ok(fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8').includes('Customer Doors carried into Flame Event'),'Flame Event carries public Client enterprises')
 assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
 assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
 
@@ -1279,7 +1279,6 @@ for(const file of [
  'app/(app)/wallet/deposit-withdraw/page.tsx',
  'app/(app)/fund-wall/page.tsx',
  'app/(app)/weave/page.tsx',
- 'components/world/bridge-plaza-map.tsx',
  'app/(app)/search/page.tsx',
 ]){
  const source=fs.readFileSync(path.join(root,file),'utf8')
@@ -1443,13 +1442,14 @@ for(const file of [
  assert.equal(syntaxErrors.length,0,file+' Number Bay purchase/order syntax/transpile check')
 }
 
-const bridgePlazaRepairSource=fs.readFileSync(path.join(root,'components/world/bridge-plaza-map.tsx'),'utf8')
-const bridgePlazaPageRepairSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
+const roleWorldReturnRepairSource=fs.readFileSync(path.join(root,'app/(app)/weave/page.tsx'),'utf8')
 const weaveReadabilityRepairSource=fs.readFileSync(path.join(root,'app/weave-readability.css'),'utf8')
-assert.ok(bridgePlazaRepairSource.includes('data-bridge-plaza-atmosphere="live-flame"'),'Bridge Plaza declares the live-flame atmosphere')
-assert.ok(!bridgePlazaRepairSource.includes('<color attach="background"'),'Bridge Plaza canvas no longer paints an opaque wallpaper over the live flame field')
-assert.ok(bridgePlazaRepairSource.includes('THREE.AdditiveBlending'),'Bridge Plaza central flame uses additive live light layers')
-assert.ok(bridgePlazaPageRepairSource.includes('data-bridge-plaza-theme="continuous-moving-system"')&&bridgePlazaPageRepairSource.includes('bg-transparent'),'Bridge Plaza page leaves the world flame field visible')
+const customerMarketApiRepairSource=fs.readFileSync(path.join(root,'app/api/public/client-market/route.ts'),'utf8')
+const flameEventEnterpriseSource=fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8')
+assert.ok(!fs.existsSync(path.join(root,'components/world/bridge-plaza-map.tsx')),'Retired Bridge Plaza implementation stays removed')
+assert.ok(roleWorldReturnRepairSource.includes('Opening your role world'),'Retired /weave route provides a role-world handoff')
+assert.ok(customerMarketApiRepairSource.includes("formation_status='selling'"),'Public enterprise discovery is limited to opened Customer Doors')
+assert.ok(flameEventEnterpriseSource.includes('data-flame-event-client-enterprises="customer-door-current"'),'Flame Event carries Customer Door enterprise discovery')
 assert.ok(weaveReadabilityRepairSource.includes('.truncate:not([data-allow-truncate="true"])'),'WEAVE has a default no-clipping guardrail for operational copy')
 assert.ok(weaveReadabilityRepairSource.includes('[class*="line-clamp-"]'),'WEAVE prevents accidental line-clamp text loss by default')
 
