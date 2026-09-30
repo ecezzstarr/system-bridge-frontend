@@ -421,12 +421,12 @@ export default function FileFolderOpenWorld({
                       {build.system_type==='customer_door'&&<div className="mt-4 border-y border-emerald-300/10 py-3" data-customer-door-formation="72-hour-cycle">
                         <p className="text-[8px] font-black uppercase tracking-[.16em] text-emerald-300">Standard formation · 72 real hours · acceleration optional</p>
                         <div className="mt-3 grid gap-2 sm:grid-cols-2">{customerDoorFormation(buildProgress(build,now)).map(part=><div key={part.label} className="border-l border-emerald-300/15 pl-3"><p className={`text-[9px] font-black ${part.state==='formed'?'text-emerald-200':part.state==='forming'?'text-amber-200':'text-slate-600'}`}>{part.label} · {part.state}</p><p className="mt-1 text-[8px] leading-4 text-slate-500">{part.detail}</p></div>)}</div>
-                      </div>
+                      </div>}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {availableBuildItems.length === 0 && <span className="text-[9px] text-slate-600">No purchased build items are waiting in inventory.</span>}
                         {availableBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
                       </div>
-                    </div>}
+                    </div>
                   </div>
                 })}
               </div>
