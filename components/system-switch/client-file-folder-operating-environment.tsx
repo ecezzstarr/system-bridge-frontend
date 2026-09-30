@@ -497,7 +497,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
   return (
     <section
-      className="weave-system-depth relative h-[calc(100dvh-5.5rem)] min-h-[720px] overflow-hidden border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)]"
+      className="weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-hidden"
       data-file-folder-world="persistent-territory-interface"
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
@@ -512,7 +512,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             <p className="mt-1 truncate text-[10px] text-slate-400 md:mt-2 md:text-xs">{data.client.name} · {data.client.file_number}</p>
           </div>
         </div>
-        <div className="pointer-events-auto mt-3 flex gap-4 overflow-x-auto border-y border-cyan-100/10 py-2 text-[8px] uppercase tracking-wider text-stone-500 md:mt-3 md:max-w-xl md:grid-cols-3 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[9px]">
+        <div className="pointer-events-auto mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain border-y border-cyan-100/10 py-2 text-[8px] uppercase tracking-wider text-stone-500 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mt-3 md:max-w-xl md:grid-cols-3 md:gap-2 md:border-0 md:py-0 md:text-center md:text-[9px]">
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-amber-300/15 md:bg-amber-400/5 md:px-4 md:py-3"><b className="text-base text-amber-100 md:mt-1 md:block md:text-xl">{activeBuilds.length}</b><span className="text-amber-300">Building</span></div>
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-emerald-300/15 md:bg-emerald-400/5 md:px-4 md:py-3"><b className="text-base text-emerald-100 md:mt-1 md:block md:text-xl">{systems.length}</b><span className="text-emerald-300">Live</span></div>
           <div className="flex shrink-0 items-baseline gap-1.5 md:block md:rounded-xl md:border md:border-violet-300/15 md:bg-violet-400/5 md:px-4 md:py-3"><b className="text-base text-violet-100 md:mt-1 md:block md:text-xl">×{Number(world?.buildFunding?.buildSpeedMultiplier || data.build_funding?.buildSpeedMultiplier || 1).toFixed(2)}</b><span className="text-violet-300">Build power</span></div>
