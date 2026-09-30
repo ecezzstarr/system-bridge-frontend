@@ -287,7 +287,7 @@ assert.ok(fileFolderOpenWorld.includes('data-build-site-awareness="compact-stick
 assert.ok(!fileFolderOpenWorld.includes('readOnly')&&!fileFolderOpenWorld.includes('data-territory-observer'),'Private Client File Folder has no staff observer mode')
 assert.ok(clientFileFolder.includes('data-file-folder-awareness="compact-build-sequence"'),'Client File Folder keeps construction sequence awareness compact instead of duplicating a tall navigation block')
 assert.ok(!clientFileFolder.includes('studioDistricts.map((item,index)=><button'),'Client wrapper no longer duplicates the detailed construction-site navigation')
-assert.ok(clientFileFolder3d.includes('territoryMode ? "h-full min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"'),'File Folder 3D can expand from embedded preview depth into persistent territory depth')
+assert.ok(clientFileFolder3d.includes('territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"'),'File Folder 3D keeps a phone-safe persistent depth while expanding to full territory depth from small screens upward')
 assert.ok(clientFileFolder.includes('data-file-folder-world="persistent-territory-interface"'),'Client File Folder declares the persistent world-as-interface runtime')
 assert.ok(read('app/client/system-switch/page.tsx').includes('data-client-file-folder-entry="crossing-to-open-world"'),'Client File Folder opens directly as the world after gate resolution')
 assert.ok(read('app/client/system-switch/page.tsx').includes('<ClientFileFolderOperatingEnvironment data={data} />')&&!read('app/client/system-switch/page.tsx').includes('FLAME_EVENT'),'Crossing hands directly into the File Folder open world without a duplicate Flame Event page wrapper')
