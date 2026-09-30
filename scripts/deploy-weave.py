@@ -66,6 +66,7 @@ def main():
   'NEXT_PUBLIC_APP_URL':PUBLIC_ORIGIN,
   'APP_URL':PUBLIC_ORIGIN,
   'NEXT_PUBLIC_BRIDGE_URL':PUBLIC_ORIGIN,
+  'PASSWORD_RECOVERY_EMAIL_FROM':'ecezzstarr@gmail.com',
  }
  for name,value in public_env.items():
   existing=next((e for e in env if e.get('name')==name),None)
