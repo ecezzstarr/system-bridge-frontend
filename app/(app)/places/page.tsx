@@ -48,14 +48,6 @@ const PLACES:Place[] = [
     icon:Sparkles,
   },
   {
-    label:'Agent Operating Room',
-    detail:'Operate Agility and review Prospect/File Folder commission movement.',
-    href:'/agent/functions',
-    consequence:'Agent work',
-    icon:Users,
-    roles:['agent'],
-  },
-  {
     label:'Agility',
     detail:'Operate the Agent food-package movement and fulfillment path.',
     href:'/agility',
