@@ -261,9 +261,8 @@ assert.ok(roleDistricts2026.includes('"href": "/admin/development-agents"'),'Adm
 assert.ok(!dashboardWorld.includes('Client World · HUD')&&!dashboardWorld.includes(' · HUD'),'Dashboard world no longer describes the world itself as a HUD')
 assert.ok(!fs.existsSync(path.join(root,'components/client-navigation.tsx')),'Client world has no duplicate top navigation layer')
 assert.ok(clientLayout.includes('EnvironmentOrganizerProvider'),'Client world mounts the organizer runtime')
-assert.ok(supportFileFolderPage.includes('Territory observer · Read only'),'Support File Folder preserves observer role awareness in a compact context strip')
-assert.ok(supportFileFolderPage.includes('md:static'),'Support context is sticky only where mobile needs it')
-assert.ok(!supportFileFolderPage.includes("['Recognize'"),'Support File Folder removes the duplicated five-stage card strip')
+assert.ok(supportFileFolderPage.includes("redirect('/market')"),'Retired staff File Folder route sends every role to the public Customer Market')
+assert.ok(!supportFileFolderPage.includes('FileFolderOpenWorld'),'Retired staff route cannot mount the private Client File Folder world')
 assert.ok(clientFileFolder.includes('Command Citadel'),'Main File Folder has one strategic command center')
 assert.ok(clientFileFolder.includes('BUILD_LADDER'),'Main File Folder exposes an ordered construction lifecycle')
 assert.ok(clientFileFolder.includes('Blueprint')&&clientFileFolder.includes('Foundation')&&clientFileFolder.includes('Commissioning')&&clientFileFolder.includes('Live operation'),'File Folder construction communicates real build stages')
@@ -440,7 +439,7 @@ const loadStabilityPositionEvent=read('components/events/position-event-world.ts
 
 assert.ok(cleanRevealTransit2026.includes('absoluteMaximum')&&cleanRevealTransit2026.includes('elapsed<absoluteMaximum'),'Global environment cover has an absolute ceiling even when a destination leaves a pending marker mounted')
 assert.ok(loadStabilityClientFolder.includes('new AbortController()')&&loadStabilityClientFolder.includes('12000')&&loadStabilityClientFolder.includes('signal:controller.signal'),'Client File Folder boot has a bounded network wait')
-assert.ok(loadStabilitySupportFolder.includes('new AbortController()')&&loadStabilitySupportFolder.includes('12000')&&loadStabilitySupportFolder.includes('signal:controller.signal'),'Support File Folder entry has a bounded network wait')
+assert.ok(loadStabilitySupportFolder.includes("redirect('/market')"),'Retired staff File Folder route has no private world network load')
 assert.ok(loadStabilityFetch.includes('Request timed out. Check the connection and try again.'),'Blocking user actions have one reusable timeout failure mode')
 assert.ok(loadStabilityAuth.includes("fetchWithTimeout('/api/auth/register'")&&loadStabilityAuth.includes("fetchWithTimeout('/api/auth/login'"),'Staff/Bridger/Agent authentication cannot spin forever on a stalled request')
 assert.ok(loadStabilityClientLogin.includes("fetchWithTimeout('/api/client/weave-login'"),'Client login cannot spin forever on a stalled request')
@@ -563,10 +562,10 @@ const territoryObservationSource = read('components/system-switch/file-folder-op
 const staffTerritorySource = read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
 assert.ok(territoryObservationSource.includes('data-territory-observer="progress-visible"')&&territoryObservationSource.includes('Customer Door maturity'),'observable Client territories expose construction and public business progress')
 assert.ok(territoryObservationSource.includes('wallet, private records and build controls remain with the Lord/Lady'),'territory observation does not expose Client authority')
-assert.ok(staffTerritorySource.includes('Territory observer')&&staffTerritorySource.includes('authority remains with the Client'),'authorized staff enter Client territory as observers rather than owners')
+assert.ok(staffTerritorySource.includes("redirect('/market')"),'staff and other roles cannot enter another Client private territory')
 
 const publicInternetWorldSource = read('app/market/page.tsx')
-assert.ok(publicInternetWorldSource.includes('The open internet meets Client-built territories.')&&publicInternetWorldSource.includes('without a WEAVE account'),'public Client territory is reachable as open-internet commerce rather than an authenticated WEAVE-only world')
+assert.ok(publicInternetWorldSource.includes('The open internet meets Client-built enterprises.')&&publicInternetWorldSource.includes('without a WEAVE account'),'public Client Customer Doors are reachable as open-internet commerce rather than private System Switch access')
 assert.ok(publicInternetWorldSource.includes("const doorName=config.platformName || store.name || 'Customer Door'"),'public market names the Client Door from the Client platform/company identity')
 assert.ok(customerDoorWorldSource.includes('No WEAVE account required')&&customerDoorWorldSource.includes('Enter ${doorName}'),'Client-named Customer Door is directly usable by non-WEAVE visitors')
 
