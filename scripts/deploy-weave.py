@@ -11,12 +11,15 @@ def run(*args):
  return subprocess.check_output(args,cwd=ROOT,text=True).strip()
 def cloud(*args):
  return run('gcloud',*args,'--project='+PROJECT,'--format=json')
-def check_source():
+def check_checkout():
  assert run('git','branch','--show-current')=='main', 'Deploy only canonical main'
  assert not run('git','status','--porcelain'), 'Commit all source changes first'
  assert run('git','remote','get-url','origin').removesuffix('.git').endswith('github.com/ecezzstarr/system-bridge-frontend'), 'Wrong repository'
+ return run('git','rev-parse','HEAD')
+
+def check_source():
+ sha=check_checkout()
  run('git','fetch','origin','main')
- sha=run('git','rev-parse','HEAD')
  assert sha==run('git','rev-parse','origin/main'), 'Checkout is not current origin/main'
  return sha
 def smoke(url):
@@ -37,11 +40,12 @@ def smoke(url):
  except urllib.error.HTTPError as error:assert error.code==401
  print('Preview checks passed:',url)
 def main():
- sha=check_source();rev=SERVICE+'-weave-'+sha[:12]
- if len(sys.argv)>1 and sys.argv[1]=='promote':
+ promoting=len(sys.argv)>1 and sys.argv[1]=='promote'
+ sha=check_checkout() if promoting else check_source();rev=SERVICE+'-weave-'+sha[:12]
+ if promoting:
   service=json.loads(cloud('run','services','describe',SERVICE,'--region='+REGION))
   preview=next(t['url'] for t in service['status']['traffic'] if t.get('revisionName')==rev and t.get('tag')=='weave-candidate')
-  smoke(preview);assert check_source()==sha
+  smoke(preview);assert check_checkout()==sha
   run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rev+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
   print('Promoted',rev);return
  image='us-central1-docker.pkg.dev/'+PROJECT+'/system-bridge/frontend:'+sha
@@ -51,7 +55,7 @@ def main():
   assert machine in ['e2-standard-2','e2-medium','e2-highcpu-8','e2-highcpu-32','n1-highcpu-8','n1-highcpu-32'], 'Unsupported build machine type'
   build_args.append('--machine-type='+machine)
  run(*build_args)
- assert check_source()==sha
+ assert check_checkout()==sha
  service=json.loads(cloud('run','services','describe',SERVICE,'--region='+REGION))
  active=[t for t in service['status']['traffic'] if t.get('percent',0)>0]
  assert len(active)==1 and active[0]['percent']==100,'Review split production traffic before deployment'
