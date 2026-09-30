@@ -24,31 +24,6 @@ export type BridgePlazaPortal={
   system:string
 }
 
-type PortalPlacement={position:[number,number,number];rotation:number}
-
-function facePlaza(position:[number,number,number]){
-  return Math.atan2(-position[0],-position[2])
-}
-
-function portalPlacements(count:number):PortalPlacement[]{
-  const layouts:Record<number,Array<[number,number]>>={
-    1:[[0,-6.6]],
-    2:[[-5.8,-4.5],[5.8,-4.5]],
-    3:[[-5.9,-4.6],[5.9,-4.6],[0,5.55]],
-    4:[[-6.2,-4.45],[6.2,-4.45],[5.05,4.95],[-5.05,4.95]],
-    5:[[-6.65,-4.15],[0,-6.55],[6.65,-4.15],[4.9,5.05],[-4.9,5.05]],
-    6:[[-6.7,-3.95],[0,-6.55],[6.7,-3.95],[6.05,3.85],[0,6.25],[-6.05,3.85]],
-  }
-  const coordinates=layouts[count]||Array.from({length:count},(_,index)=>{
-    const angle=-Math.PI/2+(index/count)*Math.PI*2
-    return [Math.cos(angle)*6.55,Math.sin(angle)*5.95] as [number,number]
-  })
-  return coordinates.map(([x,z])=>{
-    const position:[number,number,number]=[x,.05,z]
-    return {position,rotation:facePlaza(position)}
-  })
-}
-
 function StoneFloor(){
   return <group>
     <mesh position={[0,-1.45,0]} receiveShadow>
@@ -347,10 +322,16 @@ export function BridgePlazaMap({
   const routeCurrent=Math.max(0,Math.min(2,visualRuntime.world.routeCurrent))
 
   const portals=useMemo<BridgePlazaPortal[]>(()=>{
-    const districts=getRoleDistricts(userRole)
-    const positions=portalPlacements(districts.length)
-    return districts.map((district,index)=>{
-      const placement=positions[index]
+    const positions:Array<{position:[number,number,number];rotation:number}>=[
+      {position:[-6.7,.05,-4.05],rotation:.82},
+      {position:[0,.05,-6.7],rotation:0},
+      {position:[6.7,.05,-4.05],rotation:-.82},
+      {position:[6.05,.05,4.1],rotation:-2.08},
+      {position:[0,.05,6.45],rotation:Math.PI},
+      {position:[-6.05,.05,4.1],rotation:2.08},
+    ]
+    return getRoleDistricts(userRole).map((district,index)=>{
+      const placement=positions[index]||positions[index%positions.length]
       return {
         id:district.key,
         name:district.name,
