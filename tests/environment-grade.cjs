@@ -380,7 +380,8 @@ assert.ok(loadingBriefCss2026.includes('100% {\n    opacity: 1;'),'Final loader 
 const routeNetwork=read('components/world/weave-route-network.tsx')
 const marketplaceEnvironment=read('app/(app)/marketplace/page.tsx')
 const arenaEnvironment=read('components/places/arena.tsx')
-const loungeEnvironment=read('components/places/lounge.tsx')
+const retiredLoungeRoute=read('app/(app)/lounge/page.tsx')
+const retiredStreamRoute=read('app/(app)/video-feed/page.tsx')
 const patternEnvironment=read('components/places/casino.tsx')
 const echoEnvironment=read('app/(app)/echo/page.tsx')
 
@@ -390,7 +391,9 @@ assert.ok(!dashboardWorld.includes('WorldLinkCard'),'Role Home Worlds cannot reg
 assert.ok(room.includes('data-weave-room-stage'),'Reusable WEAVE rooms expose one active stage between environment rails')
 assert.ok(marketplaceEnvironment.includes('data-enterprise-exchange-floor')&&!marketplaceEnvironment.includes('grid gap-5 md:grid-cols-2 xl:grid-cols-3'),'Enterprise Exchange is a continuous bay floor, not a product-card grid')
 assert.ok(arenaEnvironment.includes('data-arena-environment')&&arenaEnvironment.includes('data-arena-lane'),'Arena renders contests as lanes inside one ground')
-assert.ok(loungeEnvironment.includes('data-lounge-environment'),'Lounge owns a continuous communication environment instead of a floating chat card')
+assert.ok(retiredLoungeRoute.includes("redirect('/communications')"),'Retired Public Lounge resolves to Direct Communication')
+assert.ok(retiredStreamRoute.includes("redirect('/echo')"),'Retired shared Stream resolves to Echo')
+assert.ok(!environmentRegistry.includes("route:'/lounge'")&&!environmentRegistry.includes("route:'/video-feed'"),'Environment registry does not expose retired Lounge or Stream districts')
 assert.ok(patternEnvironment.includes('data-pattern-ground')&&patternEnvironment.includes('data-pattern-stage="dice"'),'Pattern Ground exposes a continuous play stage')
 assert.ok(echoEnvironment.includes('data-echo-board')&&echoEnvironment.includes('data-echo-station="insights"'),'Echo is a continuous intelligence board with functional stations')
 
