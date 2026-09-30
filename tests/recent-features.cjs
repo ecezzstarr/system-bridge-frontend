@@ -837,7 +837,7 @@ assert.ok(fileFolderPurchaseApiSource.includes('export async function GET(reques
 assert.ok(fileFolderPurchaseApiSource.includes('Prospect name and phone are required'),'Unauthenticated File Folder purchase carries enough identity for File Number issuance')
 assert.ok(fileFolderPurchaseApiSource.includes("user && user.role !== 'client'"),'Authenticated support positions cannot purchase a File Folder for themselves')
 assert.ok(fileFolderPurchaseApiSource.includes("role='client'"),'File Folder assignment validates that the owner is a Client account')
-assert.ok(weaveTermsFileFolderSource.includes('support-only view'),'WEAVE terms codify support-only File Folder entry')
+assert.ok(weaveTermsFileFolderSource.includes("do not enter another Client's private File Folder")&&weaveTermsFileFolderSource.includes('Customer Door'),'WEAVE terms keep another Client System Switch private and expose the enterprise through Customer Door')
 assert.ok(fileFolderWorldSource.includes('crypto_exchange_workshop'),'Client build catalog includes a Crypto Exchange Workshop')
 assert.ok(fileFolderWorldSource.includes('enterprise_operating_system'),'Client build catalog includes high-capacity enterprise systems')
 assert.ok(fileFolderWorldSource.includes('ON CONFLICT (blueprint_key) DO NOTHING'),'Seed bootstrap preserves Administration blueprint edits')
