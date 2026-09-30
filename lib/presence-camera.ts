@@ -125,10 +125,6 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
     scene: { key:'role-world-return', label:'Role World', district:'Presence', level:'world', camera:{x:0,y:0,yaw:0,pitch:0,zoom:1,depth:0} },
   },
   {
-    match: path => path.startsWith('/weave/file-folder/'),
-    scene: { key:'client-file-folder-support', label:'Client File Folder Support', district:'Support', level:'system', camera:{x:-34,y:2,yaw:-5,pitch:1,zoom:1.018,depth:24} },
-  },
-  {
     match: path => path.includes('/system-switch'),
     scene: { key:'file-folder', label:'Main File Folder', district:'System Switch', level:'system', camera:{x:28,y:-3,yaw:5,pitch:-1,zoom:1.032,depth:42} },
   },
