@@ -21,7 +21,7 @@ export type PlatformRole = (typeof PLATFORM_ROLES)[number]
 export type WorldRole = CrossingRole | PlatformRole
 
 export const WEAVE_DISTRICTS = [
-  'bridge_plaza',
+  'role_world',
   'market',
   'arena',
   'business',
