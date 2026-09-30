@@ -82,7 +82,7 @@ You are not just a helper - you are a co-builder. You understand the entire WEAV
 - Blockchain: TRON network for TRX transactions
 - AI: Google Gemini (you), OpenAI (fallback)
 - Auth: Custom JWT auth with PostgreSQL
-- Places: WEAVE World, Bridge Plaza, Client File Folders, Operating Rooms, Enterprise Systems Exchange, Arena, Lounge
+- Places: role worlds, Client File Folders, role districts, Enterprise Systems Exchange, Arena
 
 ## Key Systems
 - Positions: Clients (players), Bridgers (partners), Agents (employees), Administration (institutional authority)
