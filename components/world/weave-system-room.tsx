@@ -39,10 +39,10 @@ export function WeaveSystemRoom({
   const t=TONES[tone]
 
   return (
-    <main className="mx-auto w-full max-w-[1500px] p-0 sm:p-3 md:p-5" data-weave-room={roomKey}>
+    <main className="mx-auto w-full min-w-0 max-w-[1500px] p-0 sm:p-3 md:p-5" data-weave-room={roomKey}>
       <section className={`weave-system-depth weave-operating-environment relative overflow-hidden border-y ${t.border} bg-[#0d0a08]/86 shadow-[0_28px_90px_rgba(0,0,0,.38)] backdrop-blur-xl sm:rounded-[2rem] sm:border`}>
         <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${t.wash} via-transparent to-transparent`} />
-        <header className="relative border-b border-amber-100/10 bg-[linear-gradient(180deg,rgba(92,55,28,.12),rgba(18,12,8,.02))] p-5 md:p-7">
+        <header className="relative border-b border-amber-100/10 bg-[linear-gradient(180deg,rgba(92,55,28,.12),rgba(18,12,8,.02))] p-4 sm:p-5 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className={`weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] ${t.accent}`}>{eyebrow}</p>
             <p className="text-[8px] font-black uppercase tracking-[0.16em] text-white/35">
@@ -53,9 +53,9 @@ export function WeaveSystemRoom({
           <p className="mt-3 max-w-5xl text-sm leading-7 text-slate-300">{detail}</p>
         </header>
 
-        <div className="relative grid min-h-[520px] xl:grid-cols-[210px_minmax(0,1fr)_230px]">
+        <div className="relative grid min-h-0 xl:min-h-[520px] xl:grid-cols-[210px_minmax(0,1fr)_230px]">
           <aside className="border-b border-white/[0.07] bg-black/10 p-4 xl:border-b-0 xl:border-r">
-            <div className="sticky top-20">
+            <div className="xl:sticky xl:top-20">
               <div className="mb-4 flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full ${t.soft}`}/>
                 <p className={`text-[9px] font-black uppercase tracking-[0.18em] ${t.accent}`}>Environment rail</p>
@@ -69,8 +69,8 @@ export function WeaveSystemRoom({
             </div>
           </aside>
 
-          <section className="min-w-0 bg-[linear-gradient(180deg,rgba(42,29,20,.42),rgba(10,9,8,.72))] p-4 md:p-6" data-weave-room-stage>
-            <div className="mb-4 flex items-center justify-between gap-3 border-b border-white/[0.07] pb-3">
+          <section className="min-w-0 bg-[linear-gradient(180deg,rgba(42,29,20,.42),rgba(10,9,8,.72))] p-3 sm:p-4 md:p-6" data-weave-room-stage>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] pb-3">
               <div>
                 <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-600">Active stage</p>
                 <p data-weave-live-word="station" className="mt-1 text-xs font-black text-white">{title}</p>
@@ -81,7 +81,7 @@ export function WeaveSystemRoom({
           </section>
 
           <aside className="border-t border-white/[0.07] bg-black/10 p-4 xl:border-l xl:border-t-0">
-            <div className="sticky top-20 space-y-5">
+            <div className="space-y-5 xl:sticky xl:top-20">
               <section className="border-l border-white/10 pl-4">
                 <div className="flex items-center gap-2">
                   <Activity className={`h-4 w-4 ${t.accent}`} />
