@@ -19,7 +19,7 @@ export type StoreEnvironmentConfig = {
 export const DEFAULT_STORE_ENVIRONMENT: StoreEnvironmentConfig = {
   preset: 'radiant_arcade',
   sign: 'OPEN FOR BUSINESS',
-  tagline: 'Built inside the WEAVE Client Market.',
+  tagline: 'Built inside the WEAVE Customer Market.',
   marketSection: 'Main Arcade',
   featuredMessage: 'Enter the store, inspect the offers and purchase directly from this Client.',
   platformName: 'Client Enterprise',
