@@ -22,9 +22,12 @@ def check_source():
  run('git','fetch','origin','main')
  assert sha==run('git','rev-parse','origin/main'), 'Checkout is not current origin/main'
  return sha
-def smoke(url):
+def smoke(url,expected_sha):
  with urllib.request.urlopen(url+'/api/health',timeout=60) as response:
-  assert response.status==200 and json.load(response).get('status')=='healthy'
+  health=json.load(response)
+  assert response.status==200 and health.get('status')=='healthy','WEAVE health check failed'
+  assert health.get('releaseSha')==expected_sha,'Served revision does not match the verified Git commit'
+  assert health.get('passwordRecoveryProvider')=='gmail','Google/Gmail is not the active password-recovery transport'
  with urllib.request.urlopen(url,timeout=60) as response:
   body=response.read().decode()
   assert response.status==200, 'WEAVE homepage unavailable'
@@ -41,16 +44,34 @@ def smoke(url):
   urllib.request.urlopen(url+'/api/client/agreements',timeout=60)
   raise AssertionError('Agreements accepted unauthenticated request')
  except urllib.error.HTTPError as error:assert error.code==401
- print('Preview checks passed:',url)
+ print('Runtime checks passed:',url,expected_sha)
 def main():
  promoting=len(sys.argv)>1 and sys.argv[1]=='promote'
  sha=check_checkout() if promoting else check_source();rev=SERVICE+'-weave-'+sha[:12]
  if promoting:
   service=json.loads(cloud('run','services','describe',SERVICE,'--region='+REGION))
   preview=next(t['url'] for t in service['status']['traffic'] if t.get('revisionName')==rev and t.get('tag')=='weave-candidate')
-  smoke(preview);assert check_checkout()==sha
+  smoke(preview,sha);assert check_checkout()==sha
+  active=[t for t in service['status']['traffic'] if t.get('percent',0)>0]
+  assert len(active)==1 and active[0]['percent']==100,'Review split production traffic before promotion'
+  rollback_revision=active[0]['revisionName']
   run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rev+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
-  print('Promoted',rev);return
+  try:
+   smoke(PUBLIC_ORIGIN,sha)
+   request=urllib.request.Request(
+    PUBLIC_ORIGIN+'/api/auth/forgot-password',
+    data=json.dumps({'email':'ecezzstarr@gmail.com'}).encode(),
+    headers={'Content-Type':'application/json'},
+    method='POST',
+   )
+   with urllib.request.urlopen(request,timeout=60) as response:
+    recovery=json.load(response)
+    assert response.status==200 and recovery.get('success') is True,'Live Google password recovery request failed'
+  except Exception:
+   run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rollback_revision+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
+   raise
+  print('LIVE VERIFIED',rev,sha)
+  return
  image='us-central1-docker.pkg.dev/'+PROJECT+'/system-bridge/frontend:'+sha
  build_args=['gcloud','builds','submit',str(ROOT),'--config='+str(ROOT/'cloudbuild.yaml'),'--substitutions=COMMIT_SHA='+sha,'--project='+PROJECT,'--quiet']
  machine=os.environ.get('WEAVE_BUILD_MACHINE_TYPE')
@@ -73,6 +94,7 @@ def main():
   'NEXT_PUBLIC_APP_URL':PUBLIC_ORIGIN,
   'APP_URL':PUBLIC_ORIGIN,
   'NEXT_PUBLIC_BRIDGE_URL':PUBLIC_ORIGIN,
+  'WEAVE_RELEASE_SHA':sha,
   'PASSWORD_RECOVERY_GMAIL_USER':'ecezzstarr@gmail.com',
   'PASSWORD_RECOVERY_GMAIL_FROM_NAME':'WEAVE Access',
   'PASSWORD_RECOVERY_EMAIL_FROM':'WEAVE Access <access@weavingsystem.online>',
@@ -86,11 +108,8 @@ def main():
    env.append({'name':name,'value':value})
  gmail_secret=next((e for e in env if e.get('name')=='PASSWORD_RECOVERY_GMAIL_APP_PASSWORD'),None)
  if not gmail_secret:
-  try:
-   run('gcloud','secrets','describe','weave-gmail-app-password','--project='+PROJECT,'--quiet')
-   env.append({'name':'PASSWORD_RECOVERY_GMAIL_APP_PASSWORD','valueFrom':{'secretKeyRef':{'name':'weave-gmail-app-password','key':'latest'}}})
-  except subprocess.CalledProcessError:
-   print('Google password recovery secret weave-gmail-app-password is not present; existing fallback transport, if configured, will remain available.')
+  run('gcloud','secrets','describe','weave-gmail-app-password','--project='+PROJECT,'--quiet')
+  env.append({'name':'PASSWORD_RECOVERY_GMAIL_APP_PASSWORD','valueFrom':{'secretKeyRef':{'name':'weave-gmail-app-password','key':'latest'}}})
  annotations={k:v for k,v in baseline['metadata'].get('annotations',{}).items() if k.startswith('autoscaling.knative.dev/') or k in ['run.googleapis.com/cloudsql-instances','run.googleapis.com/startup-cpu-boost','run.googleapis.com/cpu-throttling','run.googleapis.com/vpc-access-connector','run.googleapis.com/vpc-access-egress','run.googleapis.com/execution-environment']}
  active_revision=active[0]['revisionName']
  traffic=[
@@ -105,7 +124,7 @@ def main():
   run('gcloud','run','services','replace',str(path),'--region='+REGION,'--project='+PROJECT,'--quiet')
  service=json.loads(cloud('run','services','describe',SERVICE,'--region='+REGION))
  preview=next(t['url'] for t in service['status']['traffic'] if t.get('tag')=='weave-candidate')
- smoke(preview)
+ smoke(preview,sha)
  print('Production remains on',active[0]['revisionName'])
  print('After review: python3 scripts/deploy-weave.py promote')
 if __name__=='__main__':main()
