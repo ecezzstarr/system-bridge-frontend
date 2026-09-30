@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { WORLD_RULES } from '@/lib/world/constants'
 import { getBridgersNeedingAttention, autoDeductContinuance } from '@/lib/bridger-subscription'
+import { hasWeaveSchedulerAuthority } from '@/lib/weave-scheduler-auth'
 
 export async function GET(request: NextRequest) {
-  const secret = request.headers.get('x-cron-secret')
-  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+  const authorized = await hasWeaveSchedulerAuthority(request, {
+    workflowPath: '.github/workflows/bridger-continuance.yml',
+  })
+  if (!authorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
