@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     const user = await requireApiUser(request)
     if (user && user.role !== 'client') {
       return NextResponse.json({
-        error: 'File Folder ownership belongs to Clients. Support positions may support Client File Folders but cannot own one.',
+        error: 'File Folder ownership and private System Switch access belong to Clients. Staff positions support Client movement without entering another Client's private File Folder.',
       }, { status: 403 })
     }
     const clientId = user?.role === 'client' ? user.id : null
