@@ -720,7 +720,7 @@ assert.ok(!fileFolderOperatingEnvironmentSource.includes('Simple meaning'),'File
 assert.ok(!fileFolderOperatingEnvironmentSource.includes('Folder status'),'File Folder removes the duplicate status rail')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Construction + Systems'"),'Construction and live system operation are visibly one File Folder district')
 assert.ok(fileFolderOperatingEnvironmentSource.includes("label: 'Market + Customers'"),'Market and Customer Door are visibly one File Folder district')
-assert.ok(supportFileFolderSource.includes("redirect('/market')"),'Retired staff File Folder route resolves to the public Customer Market')
+assert.ok(supportFileFolderSource.includes("redirect('/event')"),'Retired staff File Folder route resolves to Flame Event Customer Door discovery')
 assert.ok(clientFunctionsPageSource.includes("redirect('/client/dashboard')"),'Legacy Client Functions redirects into the canonical Client World')
 assert.ok(!clientFunctionsPageSource.includes('ClientOperatingRoom'),'Legacy Client Functions no longer mounts a duplicate route network')
 for(const route of ['/client/system-switch','/client/deposit','/client/withdraw','/client/chat/bridger','/client/chat/mandate','/client/chat/forensic','/client/chat/lawyer','/client/chat/admin','/marketplace','/client/settings']) assert.ok(roleHas('client',route),route)
