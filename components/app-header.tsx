@@ -49,18 +49,20 @@ export function AppHeader({ user }: AppHeaderProps) {
           Flame Live
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-9 gap-2 rounded-full px-2.5 text-slate-300 hover:bg-sky-300/[0.06] hover:text-white"
-          onClick={() => router.push('/weave')}
-          aria-label="Enter Bridge Plaza"
-        >
-          <Globe2 className="h-4 w-4" />
-          <span data-weave-live-word="station" className="hidden text-[9px] font-black uppercase tracking-[0.12em] sm:inline">
-            Bridge Plaza
-          </span>
-        </Button>
+        {effectiveUser.role === 'agent' && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 gap-2 rounded-full px-2.5 text-slate-300 hover:bg-sky-300/[0.06] hover:text-white"
+            onClick={() => router.push('/weave')}
+            aria-label="Enter Bridge Plaza"
+          >
+            <Globe2 className="h-4 w-4" />
+            <span data-weave-live-word="station" className="hidden text-[9px] font-black uppercase tracking-[0.12em] sm:inline">
+              Bridge Plaza
+            </span>
+          </Button>
+        )}
 
         <Button
           variant="ghost"
