@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!passwordRecoveryEmailConfigured()) {
-      console.error('[password-recovery] RESEND_API_KEY or PASSWORD_RECOVERY_EMAIL_FROM is missing')
+      console.error('[password-recovery] Google/Gmail recovery transport and fallback mail transport are unavailable')
       return NextResponse.json(
         { error: 'Password recovery email is temporarily unavailable. Please try again later or contact WEAVE support.' },
         { status: 503 },

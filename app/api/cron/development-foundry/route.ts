@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { runDevelopmentAgentPulse } from '@/lib/weave-development-agents'
+import { hasWeaveSchedulerAuthority } from '@/lib/weave-scheduler-auth'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-function authorized(request: NextRequest) {
-  const supplied = request.headers.get('x-cron-secret') || request.headers.get('x-weave-development-agent-secret')
-  const expected = [process.env.CRON_SECRET, process.env.WEAVE_DEVELOPMENT_AGENT_SECRET].filter(Boolean)
-  return Boolean(supplied && expected.some(secret => supplied === secret))
-}
-
 export async function GET(request: NextRequest) {
-  if (!authorized(request)) {
+  const authorized = await hasWeaveSchedulerAuthority(request, {
+    workflowPath: '.github/workflows/weave-development-foundry.yml',
+    extraSecretNames: ['WEAVE_DEVELOPMENT_AGENT_SECRET'],
+  })
+  if (!authorized) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
