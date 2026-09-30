@@ -76,7 +76,7 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
     }))
     .filter(district=>district.places.length>0)
 
-  return <main className="relative min-h-[calc(100dvh-7rem)] overflow-hidden" data-role-presence={role}>
+  return <main className="relative min-h-[calc(100svh-7rem)] overflow-x-clip sm:min-h-[calc(100dvh-7rem)]" data-role-presence={role}>
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(56,189,248,.09),transparent_24%),radial-gradient(circle_at_50%_72%,rgba(16,185,129,.05),transparent_34%)]"/>
     <div className="pointer-events-none absolute left-1/2 top-[18%] h-[68%] w-px -translate-x-1/2 bg-gradient-to-b from-sky-300/0 via-sky-300/20 to-emerald-300/0"/>
 
@@ -98,7 +98,7 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
       </div>
 
       <section className="mx-auto mt-12 max-w-5xl" aria-label={role+' movement districts'}>
-        <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2"><Route className="h-4 w-4 text-amber-300"/><p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-300">Movement from Presence</p></div>
           <p className="text-[8px] font-black uppercase tracking-[.14em] text-slate-600">{districts.length} districts</p>
         </div>
