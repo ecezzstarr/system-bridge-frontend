@@ -16,7 +16,6 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'shared-company-loops', label:'Company Loops', kind:'district', route:'/company/loops', area:'Shared WEAVE', scope:'shared', defaultOrder:10 },
   { key:'shared-human-cadences', label:'Human Cadences', kind:'district', route:'/search', area:'Shared WEAVE', scope:'shared', defaultOrder:20 },
   { key:'shared-presences', label:'Presences', kind:'district', route:'/profiles', area:'Shared WEAVE', scope:'shared', defaultOrder:30 },
-  { key:'shared-bridge-plaza', label:'Bridge Plaza', kind:'district', route:'/weave', area:'Shared WEAVE', scope:'shared', defaultOrder:40 },
   { key:'shared-company-guidance', label:'Company Guidance', kind:'district', route:'/company-chat', area:'Shared WEAVE', scope:'shared', defaultOrder:50 },
   { key:'shared-direct-communication', label:'Direct Communication', kind:'district', route:'/communications', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:55 },
   { key:'shared-flame-event', label:'Flame Event · Loop 1', kind:'district', route:'/event', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:57 },
