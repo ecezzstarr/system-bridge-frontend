@@ -100,7 +100,7 @@ export async function getResidentWorldState(
     platformRole,
     worldRoles,
     crossing,
-    currentDistrict: hasCrossedIntoWeave(crossing) ? 'bridge_plaza' : null,
+    currentDistrict: hasCrossedIntoWeave(crossing) ? 'role_world' : null,
     visitedDistricts: [],
   }
 }
