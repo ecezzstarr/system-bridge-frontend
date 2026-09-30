@@ -109,7 +109,7 @@ export const WEAVE_SYSTEM_MAP = {
     wallet: 'Holding',
     clientWorkspace: 'File Folder',
     clientEntry: 'System Switch',
-    supportEntrance: 'Customer Door',
+    customerEntrance: 'Customer Door',
     bridgeAI: 'Bridge AI · Client Support',
   },
 } as const
