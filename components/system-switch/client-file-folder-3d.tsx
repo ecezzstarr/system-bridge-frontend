@@ -594,7 +594,7 @@ export function ClientFileFolder3D({
 
   return <section
     className={territoryMode
-      ? "relative h-full min-h-[680px] overflow-hidden bg-[#070b10]"
+      ? "relative h-full min-h-[540px] overflow-hidden bg-[#070b10] sm:min-h-[680px]"
       : "relative overflow-hidden rounded-[2rem] border border-cyan-200/10 bg-[#070b10] shadow-[0_32px_100px_rgba(0,0,0,.48)]"
     }
     data-file-folder-territory={territoryMode?'persistent-world':'embedded-world'}
@@ -614,7 +614,7 @@ export function ClientFileFolder3D({
       <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Formation state</p><p className="text-sm font-black text-white">{average}%</p></div><div className="rounded-xl border border-cyan-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Connections</p><p className="text-sm font-black text-cyan-100">{Math.max(routeCount,completed>1?completed:0)}</p></div>
     </div>
 
-    <div className={territoryMode ? "h-full min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"}>
+    <div className={territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"}>
       <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:46}} dpr={[1,1.5]}>
         <Scene
           districts={districts}
@@ -640,8 +640,8 @@ export function ClientFileFolder3D({
     </div>
 
     <div className={territoryMode
-      ? "absolute inset-x-2 bottom-3 z-20 flex justify-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:gap-2"
-      : "absolute inset-x-2 bottom-2 z-10 flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2"
+      ? "absolute inset-x-2 bottom-3 z-20 flex snap-x snap-mandatory justify-start gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:justify-center sm:gap-2"
+      : "absolute inset-x-2 bottom-2 z-10 flex snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2"
     }>
       {districts.map(d=>{
         const active=d.key===activeSurface
@@ -649,7 +649,7 @@ export function ClientFileFolder3D({
         return <button
           key={d.key}
           onClick={()=>onSurfaceChange(d.key)}
-          className="min-w-[104px] rounded-lg border bg-[#080d13]/88 px-2.5 py-2 text-left backdrop-blur-md sm:min-w-[135px] sm:rounded-xl sm:px-3"
+          className="min-w-[104px] snap-start rounded-lg border bg-[#080d13]/88 px-2.5 py-2 text-left backdrop-blur-md sm:min-w-[135px] sm:rounded-xl sm:px-3"
           style={{borderColor:active?color:'rgba(255,255,255,.09)'}}
         >
           <span className="block text-[8px] font-black uppercase tracking-[.08em]" style={{color}}>{d.label}</span>
