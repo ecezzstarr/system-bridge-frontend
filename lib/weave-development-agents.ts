@@ -80,7 +80,6 @@ export const WEAVE_DEVELOPMENT_AGENTS: DevelopmentAgentDefinition[] = [
     ownedPaths: [
       'app/api/bridger/numbers/route.ts',
       'components/bridger/daily-prospect-claim.tsx',
-      'components/world/role-operating-room.tsx',
       'lib/weave-interaction-motion.ts',
     ],
     standingMission: 'Inspect participation flows for dead buttons, duplicated surfaces, hidden state transitions or actions that do not produce visible confirmed movement. Prepare one end-to-end repair or refinement.',

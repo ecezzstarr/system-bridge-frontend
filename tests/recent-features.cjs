@@ -449,6 +449,7 @@ assert.ok(appEventUnifiedSource.includes('<PositionEventWorld role={role}')&&cli
 assert.ok(!fs.existsSync(path.join(root,'components/app-sidebar.tsx')),'Retired flattened sidebar is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/client/client-operating-room.tsx')),'Retired Client Operating Room component is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/bridger/bridger-operating-environment.tsx')),'Retired Bridger Operating Room component is removed')
+assert.ok(!fs.existsSync(path.join(root,'components/world/role-operating-room.tsx')),'Retired Agent Operating Room component is removed')
 assert.ok(!fs.existsSync(path.join(root,'components/client-navigation.tsx')),'Retired Client top navigation is removed')
 for(const route of [
  'app/(app)/bridger/functions/page.tsx',
@@ -458,7 +459,6 @@ for(const route of [
 ])assert.ok(fs.existsSync(path.join(root,route)),route+' exists')
 const positionEventSource=fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8')
 const compactWorldSource=fs.readFileSync(path.join(root,'components/world/weave-dashboard-world.tsx'),'utf8')
-const roleOperatingRoomSource=fs.readFileSync(path.join(root,'components/world/role-operating-room.tsx'),'utf8')
 const adminDashboardCenterSource=fs.readFileSync(path.join(root,'components/admin/administration-control-terminal.tsx'),'utf8')
 const adminControlCenterRouteSource=fs.readFileSync(path.join(root,'app/(app)/admin/control-center/page.tsx'),'utf8')
 const agentFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/agent/functions/page.tsx'),'utf8')
@@ -503,23 +503,24 @@ assert.ok(roleHas('client','/client/loops')&&roleHas('client','/client/event'),'
 assert.ok(roleLabel('client','Loop Field')&&roleLabel('client','Flame Event · Loop 1'),'Client Loop/Event names are canonical inside the role world')
 assert.ok(roleHas('agent','/communications')&&roleHas('bridger','/communications')&&roleHas('admin','/communications'),'Agent Bridger and Administration expose Direct Communication')
 assert.ok(roleHas('agent','/settings')&&roleHas('bridger','/settings')&&roleHas('admin','/settings')&&roleHas('client','/client/settings'),'Every role exposes Settings')
-assert.ok(roleOperatingRoomSource.includes('getRolePlaces(role)'),'Agent Operating Room uses the role catalog')
 assert.ok(adminControlCenterRouteSource.includes('@/components/admin/administration-control-terminal'),'Admin control center stays connected')
 for(const hash of ["hash === '#clients'","hash === '#fne'","hash === '#announcements'"]) assert.ok(adminDashboardCenterSource.includes(hash),hash)
 assert.ok(!adminDashboardCenterSource.includes("onClick={() => setActiveSubTab('sweeps')}"),'Mock sweeps remain hidden')
 assert.ok(!roleHas('admin','/admin/control-center#sweeps'),'No mock sweep entrance')
-assert.ok(roleOperatingRoomSource.includes('<WeaveRouteNetwork'),'Operating rooms keep connected routes')
 assert.ok(agentPresenceSource.includes('RolePresenceEnvironment role="agent"'),'Agent Presence uses the shared Presence environment')
 assert.ok(bridgerPresenceSource.includes('RolePresenceEnvironment role="bridger"'),'Bridger Presence uses the shared Presence environment')
 assert.ok(clientPresenceSource.includes('RolePresenceEnvironment role="client"'),'Client Presence uses the shared Presence environment')
 assert.ok(rolePresenceEnvironmentSource.includes("data-role-presence={role}")&&rolePresenceEnvironmentSource.includes('Presence is orientation. Districts organize movement. Places perform the work.'),'Role Presence is one reusable environment with district organization')
 assert.ok(rolePresenceEnvironmentSource.includes('verified File Folder purchases')&&rolePresenceEnvironmentSource.includes('Bridger share'),'Role Presence explicitly explains Agent and Bridger File Folder economics')
 assert.ok(roleDistrictEnvironmentSource.includes('data-role-district={district.key}')&&roleDistrictEnvironmentSource.includes('Places inside this district'),'Role districts keep places inside the district instead of scattering functions across the world')
-assert.ok(agentFunctionsSource.includes('<RoleOperatingRoom role="agent"'),'Agent Functions opens the Agent Operating Room instead of importing the dashboard')
+assert.ok(agentFunctionsSource.includes("redirect('/agent/dashboard')"),'Legacy Agent Functions redirects into the canonical Agent World')
+assert.ok(!fs.readFileSync(path.join(root,'app/(app)/places/page.tsx'),'utf8').includes('/agent/functions'),'Generic Places catalog does not resurrect the Agent Operating Room')
+assert.ok(!fs.readFileSync(path.join(root,'lib/weave-environments.ts'),'utf8').includes("'/agent/functions'"),'Environment metadata does not resurrect the Agent Operating Room')
+assert.ok(!fs.readFileSync(path.join(root,'lib/weave-environment-registry.ts'),'utf8').includes('/agent/functions'),'Environment organizer registry does not resurrect the Agent Operating Room')
 assert.ok(bridgerFunctionsSource.includes("redirect('/bridger/dashboard')"),'Legacy Bridger Functions redirects into the canonical Bridger World')
 assert.ok(adminFunctionsSource.includes("redirect('/admin/dashboard')"),'Legacy Administration Functions redirects into the canonical Administration World')
 assert.ok(!compactWorldSource.includes('{children}'),'Home no longer stacks the old terminal underneath the world')
-for(const file of ['components/world/role-operating-room.tsx','app/(app)/admin/dashboard/page.tsx','app/(app)/admin/control-center/page.tsx']){
+for(const file of ['app/(app)/admin/dashboard/page.tsx','app/(app)/admin/control-center/page.tsx']){
  const source=fs.readFileSync(path.join(root,file),'utf8')
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
@@ -809,7 +810,6 @@ for(const file of [
  'components/system-switch/client-bridge-ai-support.tsx',
  'components/system-switch/file-folder-environment-loader.tsx',
  'app/api/client/bridge-ai/route.ts',
- 'components/world/role-operating-room.tsx',
  'app/api/client/messages/route.ts',
  'lib/client-growth-world.ts',
  'app/api/client/growth-world/route.ts',
@@ -1152,7 +1152,6 @@ const clientSettingsSystemSource=fs.readFileSync(path.join(root,'app/client/sett
 const clientPortalSource=fs.readFileSync(path.join(root,'app/client/page.tsx'),'utf8')
 assert.ok(clientBuildPullSource.includes('Client system-building path'),'Client build support instrument remains available where Client continuity needs it')
 assert.ok(clientBuildPullSource.includes('valid WEAVE File Number'),'Client build signal states the real access requirement')
-assert.ok(!roleOperatingRoomSource.includes('<ClientBuildPull role="agent"'),'Agent account is not overloaded with Client build controls')
 assert.ok(agentChannelsSystemSource.includes('Agent Channel Engine'),'Agent Channels is a working responsibility engine instead of a generic application list')
 assert.ok(agentChannelsSystemSource.includes('approval unlocks a Client-support function'),'Agent Channels explains the consequence of approval')
 assert.ok(clientInteractionsSystemSource.includes('Client Service Queue'),'Client Interactions is a movement queue instead of a generic chat list')
@@ -1438,7 +1437,7 @@ assert.ok(authEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface compact
 assert.ok(weaveEnvironmentSurfaceSource.includes('data-weave-environment'),'Environment identity is explicit in the rendered shell')
 assert.ok(weaveEnvironmentMapSource.includes("'Client Access Gate'"),'Client login has explicit world-entry language')
 assert.ok(!weaveEnvironmentMapSource.includes("'Bridger Operating Room'"),'Bridger environment map has no duplicate Operating Room layer')
-assert.ok(weaveEnvironmentMapSource.includes("'Agent Operating Room'"),'Agent functions are written as an operating environment')
+assert.ok(!weaveEnvironmentMapSource.includes("'Agent Operating Room'"),'Agent environment map has no duplicate Operating Room layer')
 assert.ok(!weaveEnvironmentMapSource.includes("'Administration Operating Room'"),'Administration environment map has no duplicate Operating Room layer')
 
 for(const file of [

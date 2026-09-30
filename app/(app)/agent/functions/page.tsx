@@ -1,5 +1,5 @@
-import { RoleOperatingRoom } from '@/components/world/role-operating-room'
+import { redirect } from 'next/navigation'
 
-export default function AgentFunctionsPage() {
-  return <RoleOperatingRoom role="agent" />
+export default function LegacyAgentFunctionsRedirect(){
+  redirect('/agent/dashboard')
 }

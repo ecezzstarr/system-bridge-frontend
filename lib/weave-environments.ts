@@ -389,14 +389,6 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Recognize position → understand functions → move Agility or review commission',
     layer: 'district',
   }],
-  ['/agent/functions', {
-    key: 'agent-operating-room',
-    title: 'Agent Operating Room',
-    district: 'Support',
-    purpose: 'The focused Agent working environment for Agility and the commission movement created by attached Bridger Prospects and verified Client File Folder crossings.',
-    movement: 'Receive function → support movement → confirm → continue',
-    layer: 'system',
-  }],
   ['/agent/bridgers', {
     key: 'agent-bridger-field',
     title: 'Bridger Support Field',
