@@ -22,6 +22,7 @@ export function WeaveEnvironmentSurface({
       data-weave-environment={environment.key}
       data-weave-layer={environment.layer}
       data-weave-live-word="title"
+      data-environment-location="world-position"
       data-world-stays-mounted="true"
       data-weave-world={worldLayer}
     >
