@@ -55,9 +55,9 @@ export const FILE_FOLDER_CONTENT = {
 }
 
 export const BRIDGE_PLAZA_CONTENT = {
-  title: 'BRIDGE PLAZA',
+  title: 'CLIENT FILE FOLDER SUPPORT',
   subtitle: 'Enter the Client you are supporting',
-  body: 'Bridge Plaza is where the movement of support begins. Agents and Bridgers do not enter System Switch into an undefined space. They enter through a File Folder. Choose the File Folder of the Client you are visiting.',
+  body: 'Authorized support begins from the Client File Folder itself. Agents and Bridgers enter only the Client File Folder they are authorized to support. Choose the File Folder of the Client you are visiting.',
 }
 
 export const MOVEMENT_CONTENT = {
@@ -90,7 +90,7 @@ export const TERMS_SECTIONS = [
   { title: '5. Agent Earning Movement', body: `An Agent earns ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% on qualifying Prospect purchases made by attached Bridgers and ${(WORLD_RULES.AGENT_CROSSING_YIELD_RATE * 100).toFixed(0)}% of a verified Client File Folder purchase completed through that Bridger, equal to 5% of WEAVE's 40% company share. Agility remains the Agent real-world distribution function; File Folder ownership and operation belong to Clients.` },
   { title: '6. The File Folder', body: `The File Folder is the persistent open-world workshop at System Switch owned and operated by one Client, with WEAVE support assembled around that Client. Agents, Bridgers and Administration may support an authorized Client File Folder but do not receive their own File Folder through a support position. It carries personalized formation, blueprints, timed builds, learning, operational systems and a public Customer Door. Standard access begins at ${STANDARD_FILE_FOLDER_MIN.toLocaleString()} Flame Coin and may be any value below the ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin Premium price. Premium remains fixed at ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin. File Folder value establishes starting Build Power. Below ${PUBLIC_DOOR_THRESHOLD.toLocaleString()} Flame Coin, the Client can cross and begin early participation but must add verified Flame Coin before the first public Customer Door opens; additional verified participation can accelerate build timers.` },
   { title: '7. System Switch', body: `System Switch is the Client's crossing into the Main File Folder. Once opened, the File Folder is the persistent world where the Client's personalized workshop continues through blueprints, timed formation, build inventory, active systems, the Library District, support participation and real company work inside the fixed subject: ${WEAVE_ARCHITECTURE.subject.name}.` },
-  { title: '8. Bridge Plaza', body: 'Bridge Plaza is the support entrance for authorized Agents, Bridgers and Administration. They select a Client File Number and enter that Client-owned world through a support-only view. Bridge Plaza does not create File Folder ownership for support positions and does not return the Client to the prospect Bridge.' },
+  { title: '8. Client File Folder Support', body: 'Authorized Agents, Bridgers and Administration may enter a Client-owned File Folder through a support-only view when their position permits it. Support does not create File Folder ownership and does not return the Client to the prospect Bridge.' },
   { title: '9. Company Information', body: 'Agents and Bridgers must protect confidential Company information, Client information, operational procedures, internal communications, and system information during and after their relationship with WEAVE.' },
   { title: '10. Client Information', body: 'Client contact information supplied or generated through Company operations must be used only for authorized WEAVE activities. It must not be sold, transferred, or misused.' },
   { title: '11. No Unauthorized Representation', body: 'Agents and Bridgers may only represent WEAVE within the authority granted to them. They must not create unauthorized commitments, contracts, promises, or financial obligations on behalf of the Company.' },
