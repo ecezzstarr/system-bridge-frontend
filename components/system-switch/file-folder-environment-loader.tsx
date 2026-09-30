@@ -35,7 +35,7 @@ export function FileFolderEnvironmentLoader({
         </div>
 
         <p className="mt-6 text-[9px] font-black uppercase tracking-[0.28em] text-sky-300">
-          {support ? 'Bridge Plaza · Support Entry' : 'WEAVE File Folder · Environment Boot'}
+          {support ? 'Client File Folder · Support Entry' : 'WEAVE File Folder · Environment Boot'}
         </p>
         <h1 className="mt-2 text-2xl font-black md:text-3xl">
           {support ? 'Entering the Client environment' : 'Loading your whole operating environment'}
