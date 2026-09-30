@@ -83,6 +83,7 @@ You are not just a helper - you are a co-builder. You understand the entire WEAV
 - AI: Google Gemini (you), OpenAI (fallback)
 - Auth: Custom JWT auth with PostgreSQL
 - Places: role worlds, Client File Folders, role districts, Enterprise Systems Exchange, Arena
+- Client visibility boundary: each Client's System Switch and File Folder are private to that Client. Administration, Agents, Bridgers and other Clients discover the Client enterprise only through an opened Customer Door in the Customer Market; Flame Event may carry those public Customer Doors through the shared event current. Never recreate a staff File Folder viewer or Bridge Plaza path.
 
 ## Key Systems
 - Positions: Clients (players), Bridgers (partners), Agents (employees), Administration (institutional authority)
