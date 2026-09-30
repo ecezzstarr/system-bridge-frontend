@@ -1,16 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Boxes, Bot, Building2, FolderOpen, Store, Zap } from 'lucide-react'
+import { Boxes, Building2, FolderOpen, Store, Zap } from 'lucide-react'
 
-export function FileFolderEnvironmentLoader({
-  support = false,
-}: {
-  support?: boolean
-}) {
-  const stages = support
-    ? ['Authorizing support position', 'Loading Client world', 'Opening read-only support layer']
-    : ['Reading File Folder state', 'Loading workshops + systems', 'Opening 4D operating environment']
+export function FileFolderEnvironmentLoader() {
+  const stages = ['Reading File Folder state', 'Loading workshops + systems', 'Opening 4D operating environment']
   const [stage,setStage]=useState(0)
 
   useEffect(()=>{
@@ -35,22 +29,20 @@ export function FileFolderEnvironmentLoader({
         </div>
 
         <p className="mt-6 text-[9px] font-black uppercase tracking-[0.28em] text-sky-300">
-          {support ? 'Client File Folder · Support Entry' : 'WEAVE File Folder · Environment Boot'}
+          WEAVE File Folder · Environment Boot
         </p>
         <h1 className="mt-2 text-2xl font-black md:text-3xl">
-          {support ? 'Entering the Client environment' : 'Loading your whole operating environment'}
+          Loading your whole operating environment
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-xs leading-6 text-slate-400">
-          {support
-            ? 'Support can observe and assist inside the Client world. Ownership and Client controls remain locked to the Client.'
-            : 'Workshops, builds, materials, boosts, store, live systems, enterprise state and Bridge AI are being resolved as one persistent world.'}
+          Workshops, builds, materials, boosts, store, live systems, enterprise state and Bridge AI are being resolved as one persistent world.
         </p>
 
         <div className="mx-auto mt-6 grid max-w-xl grid-cols-3 gap-2">
           {[
             [Boxes, stages[0]],
             [Store, stages[1]],
-            [support ? Bot : Zap, stages[2]],
+            [Zap, stages[2]],
           ].map(([Icon,label],index) => {
             const StageIcon = Icon as typeof Building2
             const active=index<=stage
