@@ -95,9 +95,6 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
         <Link href={copy.worldHref} data-presence-output={'Open '+role+' WEAVE world'} className="inline-flex items-center gap-2 border-y border-sky-200/15 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-sky-100 transition hover:border-sky-200/35">
           <Globe2 className="h-4 w-4"/>Open WEAVE World<ArrowRight className="h-3.5 w-3.5"/>
         </Link>
-        {role==='agent'&&<Link href="/weave" className="hidden items-center gap-2 border-y border-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-slate-400 transition hover:text-white sm:inline-flex">
-          Bridge Plaza
-        </Link>}
       </div>
 
       <section className="mx-auto mt-12 max-w-5xl" aria-label={role+' movement districts'}>
