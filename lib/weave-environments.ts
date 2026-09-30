@@ -102,12 +102,12 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     layer: 'world',
   },
   '/weave': {
-    key: 'bridge-plaza',
-    title: 'Bridge Plaza',
-    district: 'Bridge',
-    purpose: 'The shared crossing ground where WEAVE positions meet Client movement without taking ownership of the Client world.',
-    movement: 'Observe → connect → support → continue',
-    layer: 'district',
+    key: 'role-world-return',
+    title: 'Role World',
+    district: 'Presence',
+    purpose: 'Return an authenticated participant to the world belonging to their established WEAVE position.',
+    movement: 'Recognize position → return to role world',
+    layer: 'world',
   },
   '/presence': {
     key: 'presence-district',
@@ -241,11 +241,11 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
 
 const prefix: Array<[string, WeaveEnvironmentCopy]> = [
   ['/district', {
-    key: 'bridge-plaza-role-district',
-    title: 'Bridge Plaza District',
-    district: 'Bridge Plaza',
-    purpose: 'A role-aware district that organizes the places this position actually uses inside WEAVE.',
-    movement: 'Enter district → choose place → operate → return to the world',
+    key: 'role-district',
+    title: 'Role District',
+    district: 'Role World',
+    purpose: 'A role-aware district that organizes only the places belonging to the authenticated position.',
+    movement: 'Enter district → choose place → operate → return to role world',
     layer: 'district',
   }],
 
