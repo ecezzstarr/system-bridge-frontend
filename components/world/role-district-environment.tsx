@@ -29,7 +29,7 @@ function roleWorld(role?:string|null){
   if(role==='agent')return '/agent/dashboard'
   if(role==='bridger')return '/bridger/dashboard'
   if(role==='admin')return '/admin/dashboard'
-  return '/weave'
+  return '/dashboard'
 }
 
 export function RoleDistrictEnvironment({
@@ -83,9 +83,6 @@ export function RoleDistrictEnvironment({
           <Link href={worldHref} className="inline-flex items-center gap-2 border-y border-white/10 px-3 py-2 text-[8px] font-black uppercase tracking-[.14em] text-slate-400 hover:text-white">
             <ArrowLeft className="h-3.5 w-3.5"/>Role World
           </Link>
-          {role==='agent'&&<Link href="/weave" className="hidden border-y border-white/10 px-3 py-2 text-[8px] font-black uppercase tracking-[.14em] text-slate-500 hover:text-white sm:inline-flex">
-            Bridge Plaza
-          </Link>}
         </div>
         <div className="mx-auto mt-5 flex h-12 w-12 items-center justify-center rounded-full border bg-black/20" style={{borderColor:`${district.accent}38`}}>
           <Icon className="h-5 w-5" style={{color:district.accent}}/>
