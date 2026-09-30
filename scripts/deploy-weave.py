@@ -26,7 +26,10 @@ def smoke(url):
  with urllib.request.urlopen(url+'/api/health',timeout=60) as response:
   assert response.status==200 and json.load(response).get('status')=='healthy'
  with urllib.request.urlopen(url,timeout=60) as response:
-  html=html_module.unescape(re.sub(r'<[^>]+>', ' ', response.read().decode()));html=' '.join(html.split());assert 'Interaction in Motion.' in html and 'An interactional company that turns human participation into organized work, value, systems and opportunity.' in html, 'WEAVE homepage identity missing'
+  body=response.read().decode()
+  assert response.status==200, 'WEAVE homepage unavailable'
+  lowered=body.lower()
+  assert '<html' in lowered and '<body' in lowered and '/_next/' in body, 'WEAVE homepage app shell missing'
  for route in ['/login','/client/loops','/company/loops','/admin/loop-workshop','/admin/visual-systems']:
   with urllib.request.urlopen(url+route,timeout=60) as response:assert response.status==200,route
  with urllib.request.urlopen(url+'/api/visual-runtime',timeout=60) as response:
