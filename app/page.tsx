@@ -53,7 +53,12 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    if (user) router.push('/weave')
+    if (!user) return
+    if (user.role === 'client') router.replace('/client/dashboard')
+    else if (user.role === 'agent') router.replace('/agent/dashboard')
+    else if (user.role === 'bridger') router.replace('/bridger/dashboard')
+    else if (user.role === 'admin') router.replace('/admin/dashboard')
+    else router.replace('/dashboard')
   }, [user, router])
 
   return (
@@ -69,7 +74,7 @@ export default function Home() {
                   variant="ghost"
                   className="h-9 px-3 text-[9px] font-black uppercase tracking-[0.10em] text-slate-300 hover:bg-white/[0.04] hover:text-white"
                 >
-                  Client Market
+                  Customer Market
                 </Button>
               </Link>
               <Link href="/client/login">
@@ -140,7 +145,7 @@ export default function Home() {
                       className="h-11 w-full border border-white/10 bg-white/[0.025] px-5 text-xs font-black text-slate-200 hover:bg-white/[0.05] sm:w-auto"
                     >
                       <Store className="mr-2 h-4 w-4" />
-                      Visit Client Market
+                      Visit Customer Market
                     </Button>
                   </Link>
                   <Link href="/stream" className="w-full sm:w-auto">
