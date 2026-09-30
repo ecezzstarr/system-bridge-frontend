@@ -334,7 +334,6 @@ const genericTronVerifySource=fs.readFileSync(path.join(root,'app/api/admin/depo
 const numberBayCommissionSource=fs.readFileSync(path.join(root,'app/api/bridger/numbers/route.ts'),'utf8')
 const agentYieldCronSource=fs.readFileSync(path.join(root,'app/api/cron/agent-salary/route.ts'),'utf8')
 const environmentOrganizerEngineSource=fs.readFileSync(path.join(root,'lib/weave-environment-organizer.ts'),'utf8')
-const agentBridgersApiSource=fs.readFileSync(path.join(root,'app/api/agent/bridgers/route.ts'),'utf8')
 assert.ok(loop1AgentAdSource.includes('LOOP 1'),'Loop 1 Agent ad exists')
 assert.ok(loop1AgentAdSource.includes('30%')&&loop1AgentAdSource.includes('2%'),'Loop 1 Agent ad explains Prospect and File Folder shares')
 assert.ok(loop1AgentAdSource.includes('Prospect package'),'Loop 1 Agent ad explains Prospect purchases')
@@ -358,7 +357,13 @@ assert.ok(!genericTronVerifySource.includes('creditAgentCommission'),'Ordinary C
 assert.ok(!numberBayCommissionSource.includes('creditAgentCommission')&&!numberBayCommissionSource.includes("activity:'number_purchase'"),'Number Bay purchase is not an Agent commission movement')
 assert.ok(agentYieldCronSource.includes("request.headers.get('x-cron-secret')")&&agentYieldCronSource.includes('process.env.CRON_SECRET'),'Legacy Agent yield cron cannot be triggered publicly')
 assert.ok(environmentOrganizerEngineSource.includes('activeKeys')&&environmentOrganizerEngineSource.includes('WEAVE_ENVIRONMENT_REGISTRY.map'),'Runtime Environment Organizer filters stale retired role surfaces')
-assert.ok(agentBridgersApiSource.includes('getAuthUser'),'Agent Bridger relationship API derives Agent identity from session')
+for(const retiredAgentSurface of [
+ 'app/(app)/agent/bridgers/page.tsx',
+ 'app/(app)/agent/stability-supply/page.tsx',
+ 'app/api/agent/bridgers/route.ts',
+ 'app/api/agent/bridger-stats/route.ts',
+ 'app/api/agent/stability-supply/route.ts',
+]) assert.ok(!fs.existsSync(path.join(root,retiredAgentSurface)),retiredAgentSurface+' retired from the focused Agent account')
 assert.ok(!fs.existsSync(path.join(root,'middleware.ts')),'Next.js 16 must have only the domain proxy entry point')
 const {proxy:domainProxy,config:domainProxyConfig}=require('../proxy.ts')
 const {NextRequest:DomainRequest}=require('next/server')
