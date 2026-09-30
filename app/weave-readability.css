@@ -124,3 +124,65 @@
     animation: none;
   }
 }
+
+
+/* Phone-fit guardrails
+   The WEAVE world may be spatial, but no route is allowed to be wider than the
+   physical viewport. Safe-area padding and intrinsic-width resets keep the
+   same operating environment usable on narrow Android/iOS screens. */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100svh;
+  min-height: 100dvh;
+  overscroll-behavior-x: none;
+}
+
+.weave-app-shell,
+.weave-client-shell,
+.weave-environment-surface,
+[data-weave-environment],
+[data-environment-interior="station"],
+[data-weave-room],
+[data-weave-room-stage] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+[data-weave-environment] :where(section,main,header,footer,aside,nav,form,fieldset,div) {
+  min-width: 0;
+}
+
+[data-weave-environment] :where(input,textarea,select) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+[data-weave-environment] :where(img,video,iframe) {
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  [data-weave-room] {
+    overflow-x: clip;
+  }
+
+  [data-weave-environment] :where(.weave-reading-surface,.weave-environment-panel) {
+    border-radius: 1rem;
+  }
+
+  [data-weave-environment] :where(table) {
+    font-size: .78rem;
+  }
+
+  [data-weave-environment] :where(button,a,[role="button"]) {
+    touch-action: manipulation;
+  }
+}
