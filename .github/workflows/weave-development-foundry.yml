@@ -7,23 +7,25 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   pulse:
     runs-on: ubuntu-latest
     env:
-      DEVELOPMENT_AGENT_SECRET: ${{ secrets.CRON_SECRET || secrets.WEAVE_DEVELOPMENT_AGENT_SECRET }}
       DEVELOPMENT_AGENT_URL: ${{ vars.WEAVE_DEVELOPMENT_AGENT_URL || 'https://weavingsystem.online/api/cron/development-foundry' }}
     steps:
-      - name: Pulse one due WEAVE development agent
-        if: ${{ env.DEVELOPMENT_AGENT_SECRET != '' }}
+      - name: Request short-lived WEAVE scheduler identity
+        id: oidc
+        shell: bash
         run: |
           set -euo pipefail
-          curl --fail-with-body --silent --show-error \
-            --request GET \
-            --header "x-cron-secret: ${DEVELOPMENT_AGENT_SECRET}" \
-            "${DEVELOPMENT_AGENT_URL}"
+          RESPONSE="$(curl --fail-with-body --silent --show-error             --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=weave-scheduler")"
+          TOKEN="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"${RESPONSE}")"
+          echo "::add-mask::${TOKEN}"
+          echo "token=${TOKEN}" >> "${GITHUB_OUTPUT}"
 
-      - name: Report unarmed scheduler
-        if: ${{ env.DEVELOPMENT_AGENT_SECRET == '' }}
-        run: echo "WEAVE Development Foundry scheduler is installed but not armed. Set CRON_SECRET (preferred) or WEAVE_DEVELOPMENT_AGENT_SECRET in GitHub Actions; Cloud Run may reuse its existing CRON_SECRET."
+      - name: Pulse one due WEAVE development agent
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error             --request GET             --header "Authorization: Bearer ${{ steps.oidc.outputs.token }}"             "${DEVELOPMENT_AGENT_URL}"
