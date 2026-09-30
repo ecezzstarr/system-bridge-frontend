@@ -67,7 +67,7 @@ export function RoleDistrictEnvironment({
     })
 
   return <main
-    className="relative min-h-[calc(100dvh-7rem)] overflow-hidden px-3 pb-12 pt-12 md:px-6"
+    className="relative min-h-[calc(100svh-7rem)] overflow-x-clip px-3 pb-[max(3rem,env(safe-area-inset-bottom))] pt-12 sm:min-h-[calc(100dvh-7rem)] md:px-6"
     data-weave-room="role-district"
     data-role-district={district.key}
     data-role-position={role||'client'}
@@ -94,7 +94,7 @@ export function RoleDistrictEnvironment({
       </header>
 
       <div className="mx-auto mt-10 max-w-4xl">
-        <div className="mb-4 flex items-center justify-between border-y border-white/[.07] py-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-y border-white/[.07] py-3">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-slate-500">Places inside this district</p>
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-slate-600">{places.length} active</p>
         </div>
