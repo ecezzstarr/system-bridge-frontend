@@ -56,7 +56,7 @@ export default async function PublicClientMarket(){
     <section className="mx-auto max-w-7xl px-5 py-10 md:px-8">
       <div className="mb-6 flex items-end justify-between gap-3">
         <div><p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Customer market</p><h2 data-weave-live-word="title" className="mt-2 text-3xl font-black">Open Customer Doors</h2></div>
-        <p className="text-xs text-slate-500">{stores.length} open {stores.length===1?'store':'stores'}</p>
+        <p className="text-xs text-slate-500">{stores.length} open {stores.length===1?'door':'doors'}</p>
       </div>
 
       {stores.length===0?<div className="rounded-[2rem] border border-dashed border-white/10 p-12 text-center">
@@ -91,6 +91,6 @@ export default async function PublicClientMarket(){
       </div>}
     </section>
 
-    <footer className="border-t border-white/10 px-5 py-6 text-center text-[9px] font-black uppercase tracking-[0.18em] text-slate-600"><span className="inline-flex items-center gap-2"><Store className="h-3.5 w-3.5"/>Client businesses constructed through WEAVE File Folders</span></footer>
+    <footer className="border-t border-white/10 px-5 py-6 text-center text-[9px] font-black uppercase tracking-[0.18em] text-slate-600"><span className="inline-flex items-center gap-2"><Store className="h-3.5 w-3.5"/>Customer Doors constructed from Client File Folders</span></footer>
   </main>
 }
