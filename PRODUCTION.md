@@ -16,6 +16,12 @@ The public WEAVE identity is `weavingsystem.online`. The repository and Cloud Ru
 
 September 16–17 Company Loops, Client Position, and Agreements changes are integrated into this baseline. The live dashboard and login are preserved. The broken Authority Workshop route resolves to the existing live administration workshop. Database additions are idempotent and do not delete records.
 
+## Verification standard
+
+A green source build is not a production verification. A WEAVE release is verified only after the zero-traffic candidate reports the exact Git SHA, Google/Gmail is the active recovery transport, production traffic is explicitly promoted, the public domain reports the same SHA, and a real production password-recovery request is accepted. If the post-promotion live checks fail, deployment automatically restores 100% traffic to the previous serving revision.
+
+The deployment path therefore distinguishes **built**, **candidate verified**, **promoted**, and **LIVE VERIFIED**. Only the final state is treated as complete.
+
 ## Deployment
 Use a clean main equal to origin/main. Run python3 scripts/deploy-weave.py to build and validate a preview. Review changed features, then run python3 scripts/deploy-weave.py promote. The script preserves the serving revision's runtime settings and pins traffic explicitly. The legacy login fallback is supplied by Secret Manager as PLATFORM_ADMIN_FALLBACK_PASSWORD, never stored in Git.
 
