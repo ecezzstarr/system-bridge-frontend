@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Globe2, Search, Wallet, Settings, LogOut } from "lucide-react"
+import { Search, Wallet, Settings, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PresenceIndicator } from "@/components/presence-indicator"
@@ -48,21 +48,6 @@ export function AppHeader({ user }: AppHeaderProps) {
           <span className="h-1.5 w-1.5 rounded-full bg-orange-300 shadow-[0_0_12px_rgba(251,146,60,.8)]" />
           Flame Live
         </div>
-
-        {effectiveUser.role === 'agent' && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 gap-2 rounded-full px-2.5 text-slate-300 hover:bg-sky-300/[0.06] hover:text-white"
-            onClick={() => router.push('/weave')}
-            aria-label="Enter Bridge Plaza"
-          >
-            <Globe2 className="h-4 w-4" />
-            <span data-weave-live-word="station" className="hidden text-[9px] font-black uppercase tracking-[0.12em] sm:inline">
-              Bridge Plaza
-            </span>
-          </Button>
-        )}
 
         <Button
           variant="ghost"
