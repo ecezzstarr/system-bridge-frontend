@@ -50,7 +50,7 @@ export default function SupportFileFolderPage() {
   if(isLoading || (!data && !error)) return <FileFolderEnvironmentLoader support />
 
   if(error || !data){
-    return <main className="min-h-screen bg-[#020711] p-6 text-white"><div className="mx-auto max-w-lg rounded-3xl border border-white/10 bg-slate-950 p-8 text-center"><ShieldCheck className="mx-auto h-9 w-9 text-violet-300"/><h1 className="mt-4 text-xl font-bold">Bridge Plaza Access</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error}</p><Link href="/weave" className="mt-5 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs">Return to Bridge Plaza</Link></div></main>
+    return <main className="min-h-screen bg-[#020711] p-6 text-white"><div className="mx-auto max-w-lg rounded-3xl border border-white/10 bg-slate-950 p-8 text-center"><ShieldCheck className="mx-auto h-9 w-9 text-violet-300"/><h1 className="mt-4 text-xl font-bold">Client File Folder Support</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error}</p><Link href="/weave" className="mt-5 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs">Return to Role World</Link></div></main>
   }
 
   return <main className="min-h-screen bg-[#020711] p-2 text-white sm:p-3 md:p-6">
