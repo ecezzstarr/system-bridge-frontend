@@ -41,9 +41,9 @@ export default async function PublicClientMarket(){
     <section className="relative border-b border-white/10 bg-[radial-gradient(circle_at_15%_0%,rgba(56,189,248,.18),transparent_34%),radial-gradient(circle_at_82%_14%,rgba(168,85,247,.14),transparent_30%),linear-gradient(180deg,#07111f,#040710)] px-5 py-10 md:px-8 md:py-16">
       <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.045)_1px,transparent_1px)] [background-size:54px_54px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"/>
       <div className="relative mx-auto max-w-7xl">
-        <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-sky-300"><Landmark className="h-4 w-4"/>WEAVE Client Market</p>
-        <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">The open internet meets Client-built territories.</h1>
-        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Each Lord/Lady builds a business territory inside WEAVE and opens it outward to the internet. Visitors can arrive directly from a link, search, social media, QR code or another website, enter the Client-named Door and purchase without a WEAVE account.</p>
+        <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-sky-300"><Landmark className="h-4 w-4"/>WEAVE Customer Market</p>
+        <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">The open internet meets Client-built enterprises.</h1>
+        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Each Client builds privately inside System Switch. When the Customer Door opens, the enterprise enters this public market. Customers, Administration, Agents, Bridgers and other Clients can visit that public Door without entering the private File Folder.</p>
         <div className="mt-7 flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-wider text-slate-400">
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Open internet access</span>
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Client-owned stores</span>
@@ -55,13 +55,13 @@ export default async function PublicClientMarket(){
 
     <section className="mx-auto max-w-7xl px-5 py-10 md:px-8">
       <div className="mb-6 flex items-end justify-between gap-3">
-        <div><p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Market district</p><h2 data-weave-live-word="title" className="mt-2 text-3xl font-black">Constructed businesses</h2></div>
+        <div><p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Customer market</p><h2 data-weave-live-word="title" className="mt-2 text-3xl font-black">Open Customer Doors</h2></div>
         <p className="text-xs text-slate-500">{stores.length} open {stores.length===1?'store':'stores'}</p>
       </div>
 
       {stores.length===0?<div className="rounded-[2rem] border border-dashed border-white/10 p-12 text-center">
         <Building2 className="mx-auto h-8 w-8 text-slate-600"/>
-        <p className="mt-4 text-sm text-slate-500">The first Client stores are still under construction.</p>
+        <p className="mt-4 text-sm text-slate-500">The first Client Customer Doors are still under construction.</p>
       </div>:<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {stores.map((store:any,index:number)=>{
           const config=normalizeStoreEnvironmentConfig(store.environment_config)
