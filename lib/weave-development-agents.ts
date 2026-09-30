@@ -2,6 +2,7 @@ import { readFile } from 'fs/promises'
 import { join } from 'path'
 import { sql } from '@/lib/db'
 import { askEight } from '@/lib/eight-engine'
+import { WEAVE_GITHUB_OIDC_SCHEDULER } from '@/lib/weave-scheduler-auth'
 
 export type DevelopmentAgentKey =
   | 'eight'
@@ -232,7 +233,8 @@ export async function getDevelopmentFoundryState() {
     success: true,
     agents,
     work,
-    continuousRuntimeReady: Boolean(process.env.CRON_SECRET || process.env.WEAVE_DEVELOPMENT_AGENT_SECRET),
+    continuousRuntimeReady: WEAVE_GITHUB_OIDC_SCHEDULER || Boolean(process.env.CRON_SECRET || process.env.WEAVE_DEVELOPMENT_AGENT_SECRET),
+    schedulerAuthority: WEAVE_GITHUB_OIDC_SCHEDULER ? 'github_oidc' : 'shared_secret',
     pulseIntervalMinutes: 15,
   }
 }
