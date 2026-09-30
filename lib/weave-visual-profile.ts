@@ -1,8 +1,6 @@
 export const FLAME_ARTIFACT_PROFILE_KEY='flame-event-artifact' as const
 
 export const FLAME_ARTIFACT_SURFACES=[
-  'bridge-plaza-core',
-  'bridge-plaza-portals',
   'weave-hero',
   'bridge-radiance-core',
   'bridge-radiance-portals',
@@ -94,8 +92,6 @@ export const DEFAULT_FLAME_ARTIFACT_CONFIG:FlameArtifactVisualConfig={
     reflection:0.36,
   },
   surfaces:{
-    'bridge-plaza-core':true,
-    'bridge-plaza-portals':true,
     'weave-hero':true,
     'bridge-radiance-core':true,
     'bridge-radiance-portals':true,
@@ -171,8 +167,6 @@ export function normalizeFlameArtifactConfig(input:unknown):FlameArtifactVisualC
 }
 
 export const FLAME_ARTIFACT_SURFACE_LABELS:Record<FlameArtifactSurface,string>={
-  'bridge-plaza-core':'Bridge Plaza · center artifact',
-  'bridge-plaza-portals':'Bridge Plaza · district portals',
   'weave-hero':'Public WEAVE · 3D hero',
   'bridge-radiance-core':'Bridge Radiance · center artifact',
   'bridge-radiance-portals':'Bridge Radiance · position portals',
