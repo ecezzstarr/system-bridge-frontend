@@ -36,7 +36,6 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'bridger-value', label:'Deposit & Withdrawal', kind:'district', route:'/wallet/deposit-withdraw', area:'Bridger', scope:'bridger', defaultOrder:50 },
 
   { key:'agent-presence', label:'Agent Presence', kind:'district', route:'/agent/presence', area:'Agent', scope:'agent', protected:true, defaultOrder:5 },
-  { key:'agent-functions', label:'Agent Operating Room', kind:'district', route:'/agent/functions', area:'Agent', scope:'agent', protected:true, defaultOrder:10 },
   { key:'agent-agility', label:'Agility', kind:'district', route:'/agility', area:'Agent', scope:'agent', defaultOrder:20 },
   { key:'agent-commissions', label:'Commissions', kind:'district', route:'/agent/commissions', area:'Agent', scope:'agent', defaultOrder:30 },
 
