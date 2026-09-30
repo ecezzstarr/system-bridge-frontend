@@ -40,11 +40,11 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   return (
     <header
-      className="weave-header fixed left-3 right-3 top-3 z-40 flex h-12 items-center justify-between rounded-full border border-sky-200/10 bg-[#020914]/72 px-3 shadow-[0_12px_40px_rgba(2,8,23,.22)] backdrop-blur-xl md:left-5 md:right-5 md:px-4"
+      className="weave-header fixed left-2 right-2 top-[max(.5rem,env(safe-area-inset-top))] z-40 flex h-12 min-w-0 items-center justify-between gap-1 rounded-full border border-sky-200/10 bg-[#020914]/72 px-2 shadow-[0_12px_40px_rgba(2,8,23,.22)] backdrop-blur-xl sm:left-3 sm:right-3 sm:px-3 md:left-5 md:right-5 md:px-4"
       data-weave-world-header="top"
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <div data-weave-live-word="station" className="weave-flame-live-indicator items-center gap-1.5 rounded-full border border-orange-300/20 bg-orange-400/[0.07] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-orange-100">
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3">
+        <div data-weave-live-word="station" className="weave-flame-live-indicator max-w-[8rem] items-center gap-1.5 overflow-hidden rounded-full border border-orange-300/20 bg-orange-400/[0.07] px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-orange-100 max-[390px]:hidden">
           <span className="h-1.5 w-1.5 rounded-full bg-orange-300 shadow-[0_0_12px_rgba(251,146,60,.8)]" />
           Flame Live
         </div>
@@ -77,11 +77,11 @@ export function AppHeader({ user }: AppHeaderProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-4">
         <Button
           variant="outline"
           size="sm"
-          className="h-8 gap-2 border-white/5 bg-transparent px-2 md:px-3"
+          className="h-8 min-w-10 gap-2 border-white/5 bg-transparent px-2 md:px-3"
           onClick={() => router.push('/wallet')}
           aria-label="Open Flame Coin wallet"
         >
@@ -91,7 +91,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           </span>
         </Button>
 
-        <div className="relative ml-1">
+        <div className="relative ml-0.5 sm:ml-1">
             <button
               type="button"
               onClick={() => setAccountOpen(open => !open)}
@@ -116,7 +116,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             </button>
 
             {accountOpen && (
-              <div className="absolute right-0 top-12 w-56 overflow-hidden rounded-2xl border border-white/10 bg-[#030914]/96 p-2 shadow-2xl backdrop-blur-xl">
+              <div className="absolute right-0 top-12 w-[min(14rem,calc(100vw-1rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#030914]/96 p-2 shadow-2xl backdrop-blur-xl">
                 <div className="border-b border-white/[.07] px-3 py-2">
                   <p className="truncate text-[10px] font-black text-white">{effectiveUser.name}</p>
                   <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{effectiveUser.role} position</p>
