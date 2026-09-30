@@ -284,7 +284,7 @@ assert.ok(fileFolderOpenWorld.includes('Materials Depot')&&fileFolderOpenWorld.i
 assert.ok(fileFolderOpenWorld.includes('data-construction-workspace="progressive-site"'),'File Folder construction tools are contained inside one progressive site')
 assert.ok(fileFolderOpenWorld.includes('Walk the build site'),'Construction support navigation behaves as site travel rather than a sidebar page menu')
 assert.ok(fileFolderOpenWorld.includes('data-build-site-awareness="compact-sticky-rail"'),'Build-site awareness stays in one compact sticky rail on mobile')
-assert.ok(fileFolderOpenWorld.includes("readOnly?'top-11 md:top-0':'top-0'"),'Support build-site awareness sits below the support context strip without overlap')
+assert.ok(!fileFolderOpenWorld.includes('readOnly')&&!fileFolderOpenWorld.includes('data-territory-observer'),'Private Client File Folder has no staff observer mode')
 assert.ok(clientFileFolder.includes('data-file-folder-awareness="compact-build-sequence"'),'Client File Folder keeps construction sequence awareness compact instead of duplicating a tall navigation block')
 assert.ok(!clientFileFolder.includes('studioDistricts.map((item,index)=><button'),'Client wrapper no longer duplicates the detailed construction-site navigation')
 assert.ok(clientFileFolder3d.includes('territoryMode ? "h-full min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"'),'File Folder 3D can expand from embedded preview depth into persistent territory depth')
@@ -558,10 +558,10 @@ assert.ok(clientStoreIdentitySource.includes('platformName: string')&&clientStor
 assert.ok(customerDoorWorldSource.includes('Lord/Lady Territory')&&customerDoorWorldSource.includes('Built on WEAVE'),'public Customer Door presents the Client enterprise as primary identity while retaining WEAVE infrastructure attribution')
 assert.ok(customerDoorControlSource.includes('Platform / territory name')&&customerDoorControlSource.includes('Logo URL'),'Lord/Lady can define public territory identity from the construction HUD')
 
-const territoryObservationSource = read('components/system-switch/file-folder-open-world.tsx')
+const privateTerritorySource = read('components/system-switch/file-folder-open-world.tsx')
 const staffTerritorySource = read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
-assert.ok(territoryObservationSource.includes('data-territory-observer="progress-visible"')&&territoryObservationSource.includes('Customer Door maturity'),'observable Client territories expose construction and public business progress')
-assert.ok(territoryObservationSource.includes('wallet, private records and build controls remain with the Lord/Lady'),'territory observation does not expose Client authority')
+assert.ok(!privateTerritorySource.includes('readOnly')&&!privateTerritorySource.includes('data-territory-observer'),'Client File Folder interior exposes no observer mode')
+assert.ok(privateTerritorySource.includes('Public visitors do not enter this File Folder')&&privateTerritorySource.includes('Customer Door'),'private formation language sends outward visibility through Customer Door')
 assert.ok(staffTerritorySource.includes("redirect('/market')"),'staff and other roles cannot enter another Client private territory')
 
 const publicInternetWorldSource = read('app/market/page.tsx')
