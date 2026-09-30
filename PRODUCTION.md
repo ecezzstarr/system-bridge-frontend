@@ -27,7 +27,8 @@ The previous automatic Cloud Build trigger is disabled to prevent unwanted revis
 Password recovery for Agent, Bridger, Client, and Administration accounts uses one-time email codes. Production Cloud Run must preserve these runtime settings:
 
 - `RESEND_API_KEY`: supplied through Secret Manager; never commit the value.
-- `PASSWORD_RECOVERY_EMAIL_FROM`: a verified sender identity for WEAVE access recovery.
+- `PASSWORD_RECOVERY_EMAIL_FROM`: `WEAVE Access <access@weavingsystem.online>` after `weavingsystem.online` is verified with the mail provider.
+- `PASSWORD_RECOVERY_REPLY_TO`: the existing WEAVE Administration email used for direct replies.
 
 If either value is absent, the recovery API deliberately reports that email recovery is unavailable instead of claiming a code was sent. The recovery database schema is created idempotently at runtime and is also recorded in `migrations/20260930_password_recovery.sql`.
 

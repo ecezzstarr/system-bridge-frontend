@@ -59,6 +59,7 @@ export async function sendPasswordRecoveryCode(input: {
 }) {
   const apiKey = process.env.RESEND_API_KEY
   const from = process.env.PASSWORD_RECOVERY_EMAIL_FROM
+  const replyTo = process.env.PASSWORD_RECOVERY_REPLY_TO
 
   if (!apiKey || !from) {
     throw new Error('Password recovery email transport is not configured')
@@ -77,6 +78,7 @@ export async function sendPasswordRecoveryCode(input: {
     body: JSON.stringify({
       from,
       to: [input.email],
+      ...(replyTo ? { reply_to: replyTo } : {}),
       subject: 'WEAVE access recovery code',
       text: `Hello ${name},
 
