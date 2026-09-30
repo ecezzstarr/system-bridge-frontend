@@ -24,13 +24,18 @@ The previous automatic Cloud Build trigger is disabled to prevent unwanted revis
 
 ## Password recovery email
 
-Password recovery for Agent, Bridger, Client, and Administration accounts uses one-time email codes. Production Cloud Run must preserve these runtime settings:
+Password recovery for Agent, Bridger, Client, and Administration accounts uses one-time email codes. Google/Gmail is the primary delivery transport.
 
-- `RESEND_API_KEY`: supplied through Secret Manager; never commit the value.
-- `PASSWORD_RECOVERY_EMAIL_FROM`: `WEAVE Access <access@weavingsystem.online>` after `weavingsystem.online` is verified with the mail provider.
-- `PASSWORD_RECOVERY_REPLY_TO`: the existing WEAVE Administration email used for direct replies.
+Production Cloud Run must preserve these runtime settings:
 
-If either value is absent, the recovery API deliberately reports that email recovery is unavailable instead of claiming a code was sent. The recovery database schema is created idempotently at runtime and is also recorded in `migrations/20260930_password_recovery.sql`.
+- `PASSWORD_RECOVERY_GMAIL_USER`: the Gmail account that sends WEAVE recovery messages.
+- `PASSWORD_RECOVERY_GMAIL_APP_PASSWORD`: supplied from Secret Manager secret `weave-gmail-app-password`; never commit the value.
+- `PASSWORD_RECOVERY_GMAIL_FROM_NAME`: `WEAVE Access`.
+- `PASSWORD_RECOVERY_REPLY_TO`: the WEAVE Administration email used for replies.
+
+The existing Resend settings remain an explicit fallback only when they are already configured. If neither Google/Gmail nor the fallback transport is configured, the recovery API reports that email recovery is unavailable instead of claiming a code was sent. Recovery codes expire after 15 minutes, are rate-limited, and successful reset closes prior sessions. The recovery database schema is created idempotently at runtime and is also recorded in `migrations/20260930_password_recovery.sql`.
+
+Google SMTP authentication must use a Google app-specific credential or another Google-authorized non-interactive credential; do not store the normal Google account password in Cloud Run.
 
 
 ## Recent feature recovery
