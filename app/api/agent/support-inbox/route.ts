@@ -22,6 +22,10 @@ export async function GET(request: NextRequest) {
 
   try {
     if (sessionId && position) {
+      if (!(await agentHasApprovedChannel(auth.userId, position))) {
+        return NextResponse.json({ success:false,error:'This Agent position is not approved for the requested Prospect channel' },{status:403})
+      }
+
       const ownership = await sql`
         SELECT s.id
         FROM bridge_sessions s
@@ -51,6 +55,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, messages })
     }
 
+    const approvedChannels = await getApprovedChannelsForAgent(auth.userId)
+    if (approvedChannels.length === 0) {
+      return NextResponse.json({ success: true, threads: [] })
+    }
+
     const threads = await sql`
       SELECT
         m.session_id as "sessionId",
@@ -66,6 +75,7 @@ export async function GET(request: NextRequest) {
       JOIN users bridger ON bridger.id=b.bridger_id
       WHERE bridger.role='bridger'
         AND bridger.assigned_agent_id=${auth.userId}::uuid
+        AND m.position = ANY(${approvedChannels}::text[])
       GROUP BY m.session_id, m.position, b.bridge_code, s.visitor_fingerprint
       ORDER BY MAX(m.created_at) DESC
     `
@@ -86,6 +96,9 @@ export async function POST(request: NextRequest) {
 
     if (!sessionId || !content?.trim() || !position) {
       return NextResponse.json({ success: false, error: 'sessionId, position and content are required' }, { status: 400 })
+    }
+    if (!(await agentHasApprovedChannel(auth.userId, position))) {
+      return NextResponse.json({ success:false,error:'This Agent position is not approved for the requested Prospect channel' },{status:403})
     }
 
     const ownership = await sql`
