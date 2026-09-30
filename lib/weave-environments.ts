@@ -446,14 +446,6 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Order → distribute → sell → record return',
     layer: 'district',
   }],
-  ['/lounge', {
-    key: 'human-lounge',
-    title: 'Human Lounge',
-    district: 'Bridge',
-    purpose: 'A direct interaction environment for communication and continuity between people inside WEAVE.',
-    movement: 'Enter → speak → connect → continue',
-    layer: 'interaction',
-  }],
   ['/company-chat', {
     key: 'company-guidance',
     title: 'Company Guidance Room',

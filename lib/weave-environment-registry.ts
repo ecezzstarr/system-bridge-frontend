@@ -21,12 +21,10 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'shared-direct-communication', label:'Direct Communication', kind:'district', route:'/communications', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:55 },
   { key:'shared-flame-event', label:'Flame Event · Loop 1', kind:'district', route:'/event', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:57 },
   { key:'shared-settings', label:'Settings', kind:'district', route:'/settings', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:58 },
-  { key:'shared-lounge', label:'Lounge', kind:'district', route:'/lounge', area:'Shared WEAVE', scope:'shared', defaultOrder:60 },
   { key:'shared-marketplace', label:'Enterprise Systems', kind:'district', route:'/marketplace', area:'Shared WEAVE', scope:'shared', defaultOrder:70 },
   { key:'shared-echo', label:'Echo', kind:'district', route:'/echo', area:'Shared WEAVE', scope:'shared', defaultOrder:80 },
   { key:'shared-arena', label:'Arena', kind:'district', route:'/arena', area:'Shared WEAVE', scope:'shared', defaultOrder:90 },
   { key:'shared-casino', label:'Casino', kind:'district', route:'/casino', area:'Shared WEAVE', scope:'shared', defaultOrder:100 },
-  { key:'shared-stream', label:'Stream', kind:'district', route:'/video-feed', area:'Shared WEAVE', scope:'shared', defaultOrder:110 },
   { key:'shared-standing', label:'Standing', kind:'district', route:'/weave/standing', area:'Shared WEAVE', scope:'shared', defaultOrder:120 },
 
   { key:'bridger-presence', label:'Bridger Presence', kind:'district', route:'/bridger/presence', area:'Bridger', scope:'bridger', protected:true, defaultOrder:5 },

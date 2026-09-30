@@ -141,7 +141,7 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
     scene: { key:'clients', label:'Client Movement', district:'Support', level:'system', camera:{x:18,y:3,yaw:3,pitch:1,zoom:1.024,depth:34} },
   },
   {
-    match: path => path.includes('/communications') || path.includes('/company-chat') || path.includes('/chat/') || path.includes('/messages') || path.includes('/lounge'),
+    match: path => path.includes('/communications') || path.includes('/company-chat') || path.includes('/chat/') || path.includes('/messages'),
     scene: { key:'interaction', label:'Human Interaction', district:'Support', level:'interaction', camera:{x:8,y:-5,yaw:1.5,pitch:-1,zoom:1.045,depth:58} },
   },
   {
@@ -210,8 +210,8 @@ export const PRESENCE_TRACE_LIMIT = 80
 const APP_SHELL_PREFIXES = [
   '/admin','/agent','/agility','/arena','/authority','/bridger','/casino',
   '/client-interactions','/clients','/company-chat','/company','/dashboard','/earnings',
-  '/echo','/event','/fund-wall','/ledger','/lounge','/marketplace','/places',
-  '/private-ground','/profiles','/roles','/search','/transactions','/video-feed',
+  '/echo','/event','/fund-wall','/ledger','/marketplace','/places',
+  '/private-ground','/profiles','/roles','/search','/transactions',
   '/wallet','/weave',
 ]
 

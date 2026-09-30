@@ -177,7 +177,6 @@ export async function eightHealthCheck(): Promise<{
   const services: Record<string, boolean> = {
     openai: false,
     tron: false,
-    flutterwave: false,
   }
 
   // Check OpenAI
@@ -201,15 +200,6 @@ export async function eightHealthCheck(): Promise<{
     services.tron = false
   }
 
-  // Check Flutterwave
-  try {
-    const res = await fetch('https://api.flutterwave.com/v3/banks/NG', {
-      headers: { 'Authorization': `Bearer ${process.env.FLW_SECRET_KEY}` },
-    })
-    services.flutterwave = res.ok
-  } catch {
-    services.flutterwave = false
-  }
 
   const allHealthy = Object.values(services).every(Boolean)
   const anyHealthy = Object.values(services).some(Boolean)
