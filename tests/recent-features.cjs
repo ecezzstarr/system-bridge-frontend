@@ -754,7 +754,7 @@ assert.ok(fileFolderOperatingMigrationSource.includes('client_file_folder_build_
 assert.ok(fileFolderWorldApiSource.includes("gate: 'build_funding'"),'New builds stop after an uncleared first Customer Door funding gate')
 assert.ok(publicCustomerDoorSource.includes("formation_status='selling'"),'Public Client store stays closed until the Customer Door build/funding gate clears')
 assert.ok(publicCustomerOrdersSource.includes("formation_status='selling'"),'Outsider orders cannot bypass the Customer Door gate')
-assert.ok(publicClientMarketSource.includes('WEAVE Client Market'),'Public Client Market exists as a discoverable district')
+assert.ok(publicClientMarketSource.includes('WEAVE Customer Market')||publicClientMarketSource.includes('WEAVE Client Market'),'Public Customer Market exists as a discoverable district')
 assert.ok(publicClientMarketSource.includes("formation_status='selling'"),'Only opened Client businesses enter the public market')
 assert.ok(publicClientMarketSource.includes("system_type='commerce_storefront'"),'Public market reflects constructed storefront buildings')
 assert.ok(publicClientMarketSource.includes("system_type='marketplace_network'"),'Public market reflects larger Market Hall construction')
