@@ -22,6 +22,16 @@ const ROLE_LABELS: Record<EventRole, string> = {
   admin: 'ADMINISTRATION',
 }
 
+type PublicClientEnterprise = {
+  public_slug:string
+  name:string
+  description?:string|null
+  platform_name?:string|null
+  market_section?:string|null
+  level:'door'|'storefront'|'market_hall'
+  offer_count:number
+}
+
 export default function PositionEventWorld({
   role,
   context,
@@ -31,6 +41,7 @@ export default function PositionEventWorld({
 }) {
   const [now, setNow] = useState(() => new Date())
   const [event, setEvent] = useState<WeaveEvent>(FLAME_EVENT)
+  const [enterprises, setEnterprises] = useState<PublicClientEnterprise[]>([])
 
   useEffect(() => visiblePoll(() => setNow(new Date()), 1000), [])
 
@@ -40,6 +51,19 @@ export default function PositionEventWorld({
       .then(res => res.json())
       .then(data => {
         if (mounted && data?.success && data.event) setEvent(data.event)
+      })
+      .catch(() => {})
+    return () => { mounted = false }
+  }, [])
+
+  useEffect(() => {
+    let mounted = true
+    fetch('/api/public/client-market', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (mounted && data?.success && Array.isArray(data.enterprises)) {
+          setEnterprises(data.enterprises.slice(0, 9))
+        }
       })
       .catch(() => {})
     return () => { mounted = false }
@@ -173,6 +197,49 @@ export default function PositionEventWorld({
           <div className="relative mx-auto mt-3 flex max-w-3xl items-center justify-center gap-2 text-[7px] font-black uppercase tracking-[.2em] text-white/28">
             <span>Presence</span><ArrowRight className="h-3 w-3" /><span>Interaction</span><ArrowRight className="h-3 w-3" /><span>Record</span><ArrowRight className="h-3 w-3" /><span>Next movement</span>
           </div>
+        </section>
+
+        <section className="border-b border-white/8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8" data-flame-event-client-enterprises="customer-door-current">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[8px] font-black uppercase tracking-[.22em] text-emerald-200">Client Enterprise Current</p>
+              <h2 className="mt-1 text-xl font-black text-white">Customer Doors carried into Flame Event</h2>
+              <p className="mt-2 max-w-3xl text-[11px] leading-5 text-stone-400">
+                The Client File Folder remains private to its Client. Flame Event carries only the public enterprise that has crossed through an opened Customer Door. Administration, Agents, Bridgers and Clients enter through that Door rather than another Client&apos;s System Switch.
+              </p>
+            </div>
+            <Link href="/market" className="inline-flex items-center gap-2 border-b border-emerald-300/30 pb-1 text-[9px] font-black uppercase tracking-[.14em] text-emerald-200">
+              Customer Market <ArrowRight className="h-3.5 w-3.5"/>
+            </Link>
+          </div>
+
+          {enterprises.length===0 ? (
+            <div className="mt-5 border-y border-white/8 py-6 text-center text-[10px] text-stone-500">
+              No Client Customer Door is open in the event current yet.
+            </div>
+          ) : (
+            <div className="mt-5 grid border-y border-white/8 sm:grid-cols-2 lg:grid-cols-3">
+              {enterprises.map((enterprise,index)=>(
+                <Link
+                  key={enterprise.public_slug}
+                  href={`/market/${enterprise.public_slug}`}
+                  data-flame-event-customer-door={enterprise.public_slug}
+                  className="group min-h-32 border-b border-white/8 p-4 transition hover:bg-white/[.025] sm:border-r lg:[&:nth-child(3n)]:border-r-0"
+                >
+                  <p className="text-[7px] font-black uppercase tracking-[.16em] text-emerald-200/70">
+                    Door {String(index+1).padStart(2,'0')} · {enterprise.market_section||'Customer Market'}
+                  </p>
+                  <h3 className="mt-2 text-sm font-black text-white">{enterprise.platform_name||enterprise.name}</h3>
+                  <p className="mt-1 text-[10px] leading-4 text-stone-500">
+                    {enterprise.level==='market_hall'?'Market Hall':enterprise.level==='storefront'?'Storefront':'Customer Door'} · {enterprise.offer_count} public offer{enterprise.offer_count===1?'':'s'}
+                  </p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.13em] text-sky-200">
+                    Enter Customer Door <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1"/>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
 
         {role === 'client' && (
