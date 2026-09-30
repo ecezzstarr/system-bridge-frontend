@@ -17,7 +17,7 @@ export type WeaveRoleDistrict={
   places:WeaveRolePlace[]
 }
 
-// Single role catalog used by Bridge Plaza and all operating rooms.
+// Single role catalog used by the four role worlds and their districts.
 const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
   "agent": [
     {
