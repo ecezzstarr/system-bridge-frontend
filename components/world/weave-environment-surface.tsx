@@ -21,9 +21,7 @@ export function WeaveEnvironmentSurface({
       className="weave-environment-surface relative mx-auto w-full max-w-[1800px]"
       data-weave-environment={environment.key}
       data-weave-layer={environment.layer}
-      data-weave-live-word="title"
       data-environment-location="world-position"
-      data-environment-return-label="Return to role world"
       data-world-stays-mounted="true"
       data-weave-world={worldLayer}
     >
