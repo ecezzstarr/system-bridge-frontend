@@ -60,13 +60,11 @@
   overflow-wrap: anywhere;
 }
 
-[data-weave-room] :where(p,button,a),
-[data-bridge-plaza-system] :where(p,button,a) {
+[data-weave-room] :where(p,button,a) {
   letter-spacing: normal;
 }
 
-[data-weave-room] :where(.uppercase,[class*="uppercase"]),
-[data-bridge-plaza-system] :where(.uppercase,[class*="uppercase"]) {
+[data-weave-room] :where(.uppercase,[class*="uppercase"]) {
   letter-spacing: .08em;
 }
 
@@ -90,16 +88,6 @@
   }
 }
 
-/* Bridge Plaza must reveal the live flame field supplied by the world shell.
-   The Three.js scene provides architecture and moving fire, never an opaque wallpaper. */
-[data-bridge-plaza-theme="continuous-moving-system"],
-[data-bridge-plaza-system="continuous-moving-world"] {
-  background: transparent !important;
-}
-
-[data-bridge-plaza-system="continuous-moving-world"] canvas {
-  background: transparent !important;
-}
 
 
 /* Environment briefing cards: each message arrives, stays readable, then yields
