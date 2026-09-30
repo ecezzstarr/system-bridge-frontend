@@ -32,6 +32,7 @@ jobs:
           node tests/wiring.cjs
           node tests/environment-grade.cjs
           node tests/adaptive-runtime.cjs
+          node tests/communication-security.cjs
 
       - name: TypeScript check
         run: npx tsc --noEmit
