@@ -389,7 +389,7 @@ export default function FileFolderOpenWorld({
               <div className="flex flex-wrap gap-3 text-[9px] font-black uppercase tracking-[.12em]">
                 <button onClick={()=>setDistrict('blueprint_foundry')} className="border-b border-violet-300/40 px-1 py-2 text-violet-200">Choose next blueprint →</button>
                 <button onClick={()=>setDistrict('formation_yard')} className="border-b border-amber-300/40 px-1 py-2 text-amber-200">Walk to construction →</button>
-                {world?.customerDoor?.public_slug&&<a href={`/store/${world.customerDoor.public_slug}`} target="_blank" rel="noreferrer" className="border-b border-emerald-300/40 px-1 py-2 text-emerald-200">Open Customer Door →</a>}
+                {world?.customerDoor?.public_slug&&<a href={`/market/${world.customerDoor.public_slug}`} target="_blank" rel="noreferrer" className="border-b border-emerald-300/40 px-1 py-2 text-emerald-200">Open Customer Door →</a>}
               </div>
             </div>
           )}
