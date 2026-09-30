@@ -25,7 +25,11 @@ export function WeaveEnvironmentSurface({
       data-world-stays-mounted="true"
       data-weave-world={worldLayer}
     >
-      <div className="relative min-h-[calc(100dvh-7rem)]" data-environment-interior="station">
+      <div
+        className="relative min-h-[calc(100dvh-7rem)]"
+        data-environment-interior="station"
+        data-ai-station-presence="contextual"
+      >
         {children}
       </div>
     </section>
