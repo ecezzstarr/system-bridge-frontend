@@ -122,6 +122,12 @@ export default function ClientLoginPage() {
               </div>
             </div>
 
+            <div className="flex justify-end">
+              <Link href="/forgot-password?portal=client" className="text-xs font-semibold text-blue-400 transition-colors hover:text-blue-300">
+                Forgot password?
+              </Link>
+            </div>
+
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 h-12 font-bold uppercase tracking-tighter shadow-lg shadow-blue-900/20" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

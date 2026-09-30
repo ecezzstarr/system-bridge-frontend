@@ -22,6 +22,16 @@ Use a clean main equal to origin/main. Run python3 scripts/deploy-weave.py to bu
 The previous automatic Cloud Build trigger is disabled to prevent unwanted revisions. Existing Git history is retained for recovery, not used as the active source. Do not deploy old branches.
 
 
+## Password recovery email
+
+Password recovery for Agent, Bridger, Client, and Administration accounts uses one-time email codes. Production Cloud Run must preserve these runtime settings:
+
+- `RESEND_API_KEY`: supplied through Secret Manager; never commit the value.
+- `PASSWORD_RECOVERY_EMAIL_FROM`: a verified sender identity for WEAVE access recovery.
+
+If either value is absent, the recovery API deliberately reports that email recovery is unavailable instead of claiming a code was sent. The recovery database schema is created idempotently at runtime and is also recorded in `migrations/20260930_password_recovery.sql`.
+
+
 ## Recent feature recovery
 The September feature integration is recorded in docs/recent-feature-integration.json.
 It includes River context/outreach, Human Cadences search, client business stores and international payment settings, and Flame crossings/provider reporting. Authority Workshop is restored at /authority/workshops, linked from the live sidebar. Client workshops use the existing users/sessions identity and the live database pool.
