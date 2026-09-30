@@ -1437,7 +1437,7 @@ assert.ok(authEnvironmentLayoutSource.includes('<WeaveEnvironmentSurface compact
 assert.ok(weaveEnvironmentSurfaceSource.includes('data-weave-environment'),'Environment identity is explicit in the rendered shell')
 assert.ok(weaveEnvironmentMapSource.includes("'Client Access Gate'"),'Client login has explicit world-entry language')
 assert.ok(!weaveEnvironmentMapSource.includes("'Bridger Operating Room'"),'Bridger environment map has no duplicate Operating Room layer')
-assert.ok(weaveEnvironmentMapSource.includes("'Agent Operating Room'"),'Agent functions are written as an operating environment')
+assert.ok(!weaveEnvironmentMapSource.includes("'Agent Operating Room'"),'Agent environment map has no duplicate Operating Room layer')
 assert.ok(!weaveEnvironmentMapSource.includes("'Administration Operating Room'"),'Administration environment map has no duplicate Operating Room layer')
 
 for(const file of [
