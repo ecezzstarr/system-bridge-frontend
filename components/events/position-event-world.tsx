@@ -208,9 +208,9 @@ export default function PositionEventWorld({
                 The Client File Folder remains private to its Client. Flame Event carries only the public enterprise that has crossed through an opened Customer Door. Administration, Agents, Bridgers and Clients enter through that Door rather than another Client&apos;s System Switch.
               </p>
             </div>
-            <Link href="/market" className="inline-flex items-center gap-2 border-b border-emerald-300/30 pb-1 text-[9px] font-black uppercase tracking-[.14em] text-emerald-200">
-              Customer Market <ArrowRight className="h-3.5 w-3.5"/>
-            </Link>
+            <span className="text-[9px] font-black uppercase tracking-[.14em] text-emerald-200">
+              Staff Customer Door current
+            </span>
           </div>
 
           {enterprises.length===0 ? (
