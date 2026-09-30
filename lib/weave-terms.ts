@@ -57,7 +57,7 @@ export const FILE_FOLDER_CONTENT = {
 export const CUSTOMER_MARKET_CONTENT = {
   title: 'CUSTOMER MARKET',
   subtitle: 'Enter through a Client Customer Door',
-  body: 'A Client private File Folder remains inside that Client position. Other people see the enterprise only after the Client opens a public Customer Door in the Customer Market. During Flame Event, those public Client enterprises can also be carried into the event current for WEAVE positions to discover.',
+  body: 'A Client private File Folder remains inside that Client position. Public visitors discover opened Customer Doors from the WEAVE homepage/Customer Market or from a Client-shared direct Door link. Logged-in Administration, Agents and Bridgers meet those opened Customer Doors inside Flame Event and enter the public enterprise from that event current.',
 }
 
 export const MOVEMENT_CONTENT = {
