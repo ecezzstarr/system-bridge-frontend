@@ -718,10 +718,9 @@ assert.ok(fileFolderOpenWorld.includes('Parts are an open market, not a wealth g
 
 
 assert.ok(environmentsSource.includes("weaveWorldForPath")&&environmentsSource.includes("'open-weave'|'file-folder'"),'WEAVE runtime has exactly Open WEAVE and File Folder world identities')
-assert.ok(environmentSurfaceSource.includes("data-weave-world={worldLayer}"),'Persistent environment surface exposes its parent world')
-assert.ok(environmentSurfaceSource.includes("'FILE FOLDER WORLD':'OPEN WEAVE WORLD'"),'World position marker keeps district movement visibly inside one of the two parent worlds')
-assert.ok(environmentSurfaceSource.includes("worldLayer==='file-folder'?'/client/system-switch':roleWorldHref"),'File Folder interiors return to File Folder world while other stations return to the organized role world')
-assert.ok(environmentSurfaceSource.includes('presenceFor(role)')&&environmentSurfaceSource.includes('aria-label="Open role Presence"'),'Every supported role can return directly to Presence from the persistent environment header')
+assert.ok(environmentSurfaceSource.includes("data-weave-world={worldLayer}"),'Persistent environment surface exposes its parent world without rendering a duplicate world header')
+assert.ok(!environmentSurfaceSource.includes('FILE FOLDER WORLD')&&!environmentSurfaceSource.includes('OPEN WEAVE WORLD'),'Persistent environment shell does not restore the retired duplicate world-position header')
+assert.ok(!environmentSurfaceSource.includes('roleWorldHref')&&!environmentSurfaceSource.includes('presenceFor(role)'),'Persistent environment shell leaves world and Presence navigation to canonical controls instead of duplicate header links')
 
 
 assert.ok(environmentTransit.includes("min-h-[100dvh]")&&environmentTransit.includes("items-stretch"),'Global loader occupies the full viewport instead of exposing the root background')
