@@ -34,6 +34,7 @@ RUN node tests/recent-features.cjs
 RUN node tests/wiring.cjs
 RUN node tests/environment-grade.cjs
 RUN node tests/adaptive-runtime.cjs
+RUN node tests/communication-security.cjs
 RUN npx tsc --noEmit
 RUN npm run build
 
