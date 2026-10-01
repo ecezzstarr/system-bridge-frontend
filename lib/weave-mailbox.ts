@@ -113,6 +113,24 @@ export async function getConnectedMailboxCredential(userId:string){
   }
 }
 
+export async function getConnectedMailboxCredentialById(mailboxId:string){
+  await ensureWeaveMailboxSchema()
+  const rows=await sql`
+    SELECT id,email,owner_role,credential_ciphertext
+    FROM weave_mailboxes
+    WHERE id=${mailboxId}::uuid AND status='connected'
+    LIMIT 1
+  `
+  const row=rows[0]
+  if(!row)return null
+  return {
+    id:row.id as string,
+    email:row.email as string,
+    fromName:row.owner_role==='admin'?'WeaveBridge - Weave of Presence':'WEAVE Bridger',
+    appPassword:decryptSecret(row.credential_ciphertext as string),
+  }
+}
+
 export async function getAdministrationGoogleMailboxCredential(){
   await ensureWeaveMailboxSchema()
   const rows=await sql`
