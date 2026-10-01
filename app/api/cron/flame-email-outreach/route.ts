@@ -3,6 +3,7 @@ import { sql } from '@/lib/db'
 import { runAdministrationEmailMovement } from '@/lib/prospect-email-engine'
 import { hasWeaveSchedulerAuthority } from '@/lib/weave-scheduler-auth'
 import { ensureWeaveMailboxSchema } from '@/lib/weave-mailbox'
+import { syncEmailOutreachFeedback } from '@/lib/weave-mail-feedback'
 
 const WORKFLOW='.github/workflows/flame-email-outreach.yml'
 
@@ -46,12 +47,14 @@ export async function POST(request:NextRequest){
 
     const configured=Number(process.env.FLAME_EMAIL_DAILY_LIMIT||0)
     const limit=Number.isFinite(configured)&&configured>0?configured:50
+    const feedback=await syncEmailOutreachFeedback({limit:250})
     const report=await runAdministrationEmailMovement({adminId:admins[0].id,limit})
     return NextResponse.json({
       success:true,
       active:true,
       date,
       sender:admins[0].email,
+      feedback,
       report,
     })
   }catch(error){
