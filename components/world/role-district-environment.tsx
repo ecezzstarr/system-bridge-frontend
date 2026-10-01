@@ -24,6 +24,34 @@ const districtIcons={
   administration:ShieldCheck,
 } as const
 
+
+const districtScenes={
+  presence:{
+    background:'radial-gradient(circle at 50% 24%,rgba(125,211,252,.14),transparent 24%),linear-gradient(180deg,rgba(5,18,30,.82),rgba(3,8,14,.28))',
+    label:'signal chamber',
+  },
+  position:{
+    background:'linear-gradient(90deg,transparent 0 17%,rgba(52,211,153,.07) 17% 18%,transparent 18% 82%,rgba(52,211,153,.07) 82% 83%,transparent 83%),radial-gradient(circle at 50% 42%,rgba(52,211,153,.12),transparent 28%)',
+    label:'operating ground',
+  },
+  bridge:{
+    background:'linear-gradient(145deg,transparent 0 44%,rgba(34,211,238,.08) 44% 45%,transparent 45% 100%),radial-gradient(circle at 26% 32%,rgba(34,211,238,.13),transparent 18%),radial-gradient(circle at 76% 66%,rgba(34,211,238,.08),transparent 20%)',
+    label:'crossing field',
+  },
+  enterprise:{
+    background:'radial-gradient(ellipse at 50% 72%,rgba(251,113,133,.12),transparent 34%),linear-gradient(180deg,transparent,rgba(80,20,35,.08))',
+    label:'company field',
+  },
+  participation:{
+    background:'repeating-radial-gradient(circle at 50% 55%,rgba(245,158,11,.07) 0 1px,transparent 1px 46px),radial-gradient(circle at 50% 55%,rgba(245,158,11,.09),transparent 32%)',
+    label:'value field',
+  },
+  administration:{
+    background:'linear-gradient(rgba(192,132,252,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(192,132,252,.055) 1px,transparent 1px),radial-gradient(circle at 50% 35%,rgba(192,132,252,.1),transparent 26%)',
+    label:'foundry',
+  },
+} as const
+
 function roleWorld(role?:string|null){
   if(role==='client')return '/client/dashboard'
   if(role==='agent')return '/agent/dashboard'
@@ -43,7 +71,9 @@ export function RoleDistrictEnvironment({
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const role=(forcedRole||user?.role) as WeaveRole|undefined
   const district=getRoleDistrict(role,districtKey)
-  const Icon=districtIcons[(district?.key||'position') as keyof typeof districtIcons]||Building2
+  const districtKey=(district?.key||'position') as keyof typeof districtIcons
+  const Icon=districtIcons[districtKey]||Building2
+  const scene=districtScenes[districtKey]||districtScenes.position
   const worldHref=roleWorld(role)
 
   if(!district){
@@ -72,9 +102,24 @@ export function RoleDistrictEnvironment({
     data-role-district={district.key}
     data-role-position={role||'client'}
   >
-    <div className="pointer-events-none absolute inset-0">
-      <div className="absolute left-1/2 top-8 h-[80%] w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/15 to-transparent"/>
-      <div className="absolute left-1/2 top-20 h-[62%] w-[min(78vw,880px)] -translate-x-1/2 rounded-[50%] opacity-50 blur-3xl" style={{background:`radial-gradient(ellipse at center,${district.accent}18,transparent 68%)`}}/>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" data-district-scene={scene.label}>
+      <div className="absolute inset-0" style={{background:scene.background}}/>
+      {district.key==='position'&&<>
+        <div className="absolute bottom-[12%] left-[16%] h-[48%] w-px bg-gradient-to-t from-emerald-300/20 to-transparent"/>
+        <div className="absolute bottom-[12%] right-[16%] h-[48%] w-px bg-gradient-to-t from-emerald-300/20 to-transparent"/>
+      </>}
+      {district.key==='bridge'&&<>
+        <div className="absolute left-[10%] top-[28%] h-px w-[80%] rotate-[7deg] bg-gradient-to-r from-transparent via-cyan-200/25 to-transparent"/>
+        <div className="absolute left-[23%] top-[31%] h-2 w-2 rounded-full border border-cyan-200/30"/>
+        <div className="absolute right-[21%] top-[56%] h-2 w-2 rounded-full border border-cyan-200/30"/>
+      </>}
+      {district.key==='participation'&&<>
+        <div className="absolute left-1/2 top-[54%] h-[42vw] max-h-[420px] w-[42vw] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-200/10"/>
+        <div className="absolute left-1/2 top-[54%] h-[24vw] max-h-[240px] w-[24vw] max-w-[240px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-200/[.07]"/>
+      </>}
+      {district.key==='administration'&&<div className="absolute inset-x-[12%] bottom-[8%] h-[28%] [transform:perspective(520px)_rotateX(62deg)] border-t border-violet-200/10"/>}
+      {district.key==='enterprise'&&<div className="absolute bottom-[11%] left-1/2 h-[24%] w-[68%] -translate-x-1/2 rounded-[50%] border border-rose-200/10"/>}
+      {district.key==='presence'&&<div className="absolute left-1/2 top-[34%] h-36 w-36 -translate-x-1/2 rounded-full border border-sky-200/10 shadow-[0_0_70px_rgba(125,211,252,.08)]"/>}
     </div>
 
     <section className="relative mx-auto w-full max-w-5xl">
