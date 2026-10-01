@@ -1,4 +1,4 @@
-import { sql } from './db'
+import { getPool, sql } from './db'
 
 const ECHO_SUBSCRIPTION_FEE_FLAME_COIN = 7
 
@@ -75,40 +75,79 @@ export async function hasActiveContinuance(userId: string): Promise<boolean> {
 export async function subscribeToEcho(userId: string) {
   await ensureEchoTables()
 
-  await sql`BEGIN`
+  const client = await getPool().connect()
   try {
-    const walletRows = await sql`
-      SELECT balance_trx FROM wallets WHERE user_id = ${userId}::uuid AND is_primary = true FOR UPDATE
-    `
-    const balance = walletRows[0]?.balance_trx ?? 0
+    await client.query('BEGIN')
 
-    if (balance < ECHO_SUBSCRIPTION_FEE_FLAME_COIN) {
-      await sql`ROLLBACK`
-      return { success: false, reason: 'insufficient_balance', requiredFlameCoin: ECHO_SUBSCRIPTION_FEE_FLAME_COIN, availableFlameCoin: balance }
+    const walletResult = await client.query(
+      `SELECT id,balance_trx
+       FROM wallets
+       WHERE user_id=$1::uuid AND is_primary=true
+       ORDER BY created_at ASC
+       LIMIT 1
+       FOR UPDATE`,
+      [userId],
+    )
+    const wallet = walletResult.rows[0]
+    const balance = Number(wallet?.balance_trx || 0)
+
+    if (!wallet || balance < ECHO_SUBSCRIPTION_FEE_FLAME_COIN) {
+      await client.query('ROLLBACK')
+      return {
+        success: false,
+        reason: 'insufficient_balance',
+        requiredFlameCoin: ECHO_SUBSCRIPTION_FEE_FLAME_COIN,
+        availableFlameCoin: balance,
+      }
     }
 
-    const newBalance = balance - ECHO_SUBSCRIPTION_FEE_FLAME_COIN
-    await sql`
-      UPDATE wallets SET balance_trx = ${newBalance}, updated_at = NOW()
-      WHERE user_id = ${userId}::uuid AND is_primary = true
-    `
+    const debit = await client.query(
+      `UPDATE wallets
+       SET balance_trx=balance_trx-$1,updated_at=NOW()
+       WHERE id=$2::uuid AND balance_trx >= $1
+       RETURNING balance_trx`,
+      [ECHO_SUBSCRIPTION_FEE_FLAME_COIN, wallet.id],
+    )
+    if (debit.rows.length !== 1) throw new Error('Echo wallet debit lost concurrency race')
 
     const now = new Date()
     const nextExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
 
-    await sql`
-      INSERT INTO echo_subscriptions (user_id, status, expiry, last_paid_at)
-      VALUES (${userId}, 'active', ${nextExpiry}, ${now})
-      ON CONFLICT (user_id) DO UPDATE
-        SET status = 'active', expiry = ${nextExpiry}, last_paid_at = ${now}
-    `
+    await client.query(
+      `INSERT INTO echo_subscriptions (user_id,status,expiry,last_paid_at)
+       VALUES ($1::uuid,'active',$2,$3)
+       ON CONFLICT (user_id) DO UPDATE
+       SET status='active',expiry=EXCLUDED.expiry,last_paid_at=EXCLUDED.last_paid_at`,
+      [userId, nextExpiry, now],
+    )
 
-    await sql`COMMIT`
-    return { success: true, expiry: nextExpiry, trxAmount: ECHO_SUBSCRIPTION_FEE_FLAME_COIN }
+    await client.query(
+      `INSERT INTO ledger_entries
+        (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
+       VALUES
+        (gen_random_uuid(),$1::uuid,'subscription',$2,'Flame Coin','Echo Continuance',$3,$4,$5::jsonb,NOW())`,
+      [
+        userId,
+        ECHO_SUBSCRIPTION_FEE_FLAME_COIN,
+        balance,
+        Number(debit.rows[0].balance_trx || 0),
+        JSON.stringify({ source: 'echo_continuance' }),
+      ],
+    )
+
+    await client.query('COMMIT')
+    return {
+      success: true,
+      expiry: nextExpiry,
+      trxAmount: ECHO_SUBSCRIPTION_FEE_FLAME_COIN,
+      newBalance: Number(debit.rows[0].balance_trx || 0),
+    }
   } catch (error) {
-    await sql`ROLLBACK`
+    try { await client.query('ROLLBACK') } catch {}
     console.error('Echo subscribe failed:', error)
     return { success: false, reason: 'error' }
+  } finally {
+    client.release()
   }
 }
 
