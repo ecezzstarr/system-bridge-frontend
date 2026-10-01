@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { ensureMarketTables } from '@/lib/market'
-import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 import {
   countDailyProspectReserve,
   ensureDailyProspectClaimSchema,
@@ -189,10 +188,9 @@ export async function POST(request: NextRequest) {
     )
     const bridgeAi = bridgeResult.rows[0]
     const outreachId = randomUUID()
-    const bridgeUrlBase = getWeaveBridgeOrigin()
-    const message = bridgeAi
-      ? `Hello, I'm connecting you with Bridge AI from Weave. You can continue here: ${bridgeUrlBase}/bridge/${bridgeAi.bridge_code}?pid=${outreachId}`
-      : `Hello, I'm connecting you with Bridge AI from Weave. You can continue here: ${bridgeUrlBase}/bridge/default`
+    const prospectName = String(prospect.name || '').trim()
+    const greeting = prospectName ? `Hello ${prospectName}.` : 'Hello.'
+    const message = `${greeting} My name is your Bridger from WEAVE. I work with people around something they are already trying to build, sell, organize or move forward in their life or work. Can I ask what you currently do, or what you're trying to make work better?`
 
     await client.query(
       `INSERT INTO market_prospect_outreach

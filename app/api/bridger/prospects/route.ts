@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
+import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
 // GET - list this Bridger's purchased prospects + their saved WhatsApp number
 export async function GET(request: NextRequest) {
@@ -19,9 +20,11 @@ export async function GET(request: NextRequest) {
         o.last_activity_at,
         c.name,
         c.phone,
-        c.whatsapp_number as prospect_whatsapp
+        c.whatsapp_number as prospect_whatsapp,
+        b.bridge_code
       FROM market_prospect_outreach o
       JOIN market_prospect_contacts c ON o.contact_id = c.id
+      LEFT JOIN bridge_ais b ON b.id = o.bridge_ai_id
       WHERE o.bridger_id = ${authUser.id}::uuid
       ORDER BY o.last_activity_at DESC
     `
@@ -29,6 +32,8 @@ export async function GET(request: NextRequest) {
     const userRow = await sql`
       SELECT whatsapp_number FROM users WHERE id = ${authUser.id}::uuid
     `
+
+    const bridgeOrigin = getWeaveBridgeOrigin()
 
     const prospects = rows.map((r: any) => ({
       outreachId: r.outreach_id,
@@ -39,6 +44,9 @@ export async function GET(request: NextRequest) {
       name: r.name,
       prospectWhatsapp: r.prospect_whatsapp,
       phone: r.phone,
+      bridgeUrl: r.bridge_code
+        ? `${bridgeOrigin}/bridge/${r.bridge_code}?pid=${r.outreach_id}`
+        : null,
     }))
 
     return NextResponse.json({

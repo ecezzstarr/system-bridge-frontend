@@ -112,6 +112,12 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       "accent": "#7dd3fc",
       "places": [
         {
+          "label": "Crossing Notebook",
+          "href": "/bridger/crossing-notebook",
+          "detail": "Read the Prospect → Bridge → File Folder → Client crossing one manual step at a time before carrying real outreach.",
+          "daily": true
+        },
+        {
           "label": "Bridge AI",
           "href": "/bridger/bridge-ai",
           "detail": "Use and maintain the Bridge AI crossing path.",

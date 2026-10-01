@@ -356,6 +356,15 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     layer: 'district',
   }],
 
+  ['/bridger/crossing-notebook', {
+    key: 'bridger-crossing-notebook',
+    title: 'Bridger Crossing Notebook',
+    district: 'Bridge Movement',
+    purpose: 'A Bridger-only 3D reading place for carrying the human conversation from first contact through Bridge, File Folder verification and Client continuity without forcing conversion.',
+    movement: 'Meet → listen → recognize → Bridge → File Folder → verify → Client continuity',
+    layer: 'interaction',
+  }],
+
   ['/bridger/bridge-ai', {
     key: 'bridge-ai-crossing',
     title: 'Bridge AI Crossing',
