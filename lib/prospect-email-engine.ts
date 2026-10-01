@@ -12,12 +12,38 @@ import { sendAuthenticatedGoogleMail } from '@/lib/weave-mail'
 export const FLAME_EMAIL_DAILY_DEFAULT=25
 export const FLAME_EMAIL_DAILY_MAX=250
 
+function outreachSigningSecret(){
+  const value=String(process.env.PROSPECT_FINGERPRINT_SECRET||process.env.NEXTAUTH_SECRET||'').trim()
+  if((!value||value==='your-secret-key-change-in-production')&&process.env.NODE_ENV==='production'){
+    throw new Error('Prospect email signing secret is not configured')
+  }
+  return value||'weave-local-prospect-email-signing'
+}
+
+export function prospectEmailUnsubscribeSignature(outreachId:string){
+  return crypto.createHmac('sha256',outreachSigningSecret()).update(`unsubscribe:${outreachId}`).digest('hex')
+}
+
+export function verifyProspectEmailUnsubscribe(outreachId:string,signature:string){
+  const expected=Buffer.from(prospectEmailUnsubscribeSignature(outreachId))
+  const received=Buffer.from(String(signature||''))
+  return expected.length===received.length&&crypto.timingSafeEqual(expected,received)
+}
+
+function escapeHtml(value:string){
+  return value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')
+}
+
 export function buildPremiumFileFolderEmail(input:{
   prospectName?:string|null
   bridgeUrl?:string|null
+  unsubscribeUrl?:string|null
 }){
   const name=String(input.prospectName||'').trim()
   const greeting=name?`Hello ${name},`:'Hello,'
+  const safeGreeting=escapeHtml(greeting)
+  const safeBridgeUrl=input.bridgeUrl?escapeHtml(input.bridgeUrl):''
+  const safeUnsubscribeUrl=input.unsubscribeUrl?escapeHtml(input.unsubscribeUrl):''
   const subject='WEAVE Flame Event · Premium File Folder'
   const text=`${greeting}
 
@@ -27,19 +53,17 @@ The Premium File Folder is a personal operating environment for building, organi
 
 You do not need to understand every part of WEAVE before entering. Begin by seeing the environment and deciding whether it fits what you are trying to build.
 
-${input.bridgeUrl?`Enter your WEAVE Bridge: ${input.bridgeUrl}\n\n`:''}If this is not relevant to you, reply STOP and WEAVE will end promotional outreach to this address.
-
-WEAVE of Presence
+${input.bridgeUrl?`Enter your WEAVE Bridge: ${input.bridgeUrl}\n\n`:''}${input.unsubscribeUrl?`Stop future WEAVE promotional email: ${input.unsubscribeUrl}\n\n`:''}WEAVE of Presence
 System Switch · Bridge Radiance`
   const html=`<div style="font-family:Arial,sans-serif;background:#050b12;color:#e8edf4;padding:28px">
     <div style="max-width:620px;margin:0 auto;border-top:1px solid #7f3f16;border-bottom:1px solid #7f3f16;padding:30px 0">
       <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f5a44b">Company Loop 1 · Flame Event</div>
       <h1 style="font-size:26px;line-height:1.2;margin:16px 0 10px;color:#fff">Premium File Folder</h1>
-      <p style="line-height:1.8;color:#c2ccd8">${greeting}</p>
+      <p style="line-height:1.8;color:#c2ccd8">${safeGreeting}</p>
       <p style="line-height:1.8;color:#c2ccd8">The Premium File Folder is a personal operating environment for building, organizing and opening real systems through WEAVE: your Customer Door, workshop, store and the systems that support your movement.</p>
       <p style="line-height:1.8;color:#c2ccd8">You do not need to understand every part of WEAVE before entering. Begin by seeing the environment and deciding whether it fits what you are trying to build.</p>
-      ${input.bridgeUrl?`<p style="margin:26px 0"><a href="${input.bridgeUrl}" style="display:inline-block;padding:12px 18px;border:1px solid #f5a44b;color:#fff;text-decoration:none;font-weight:700">Enter your WEAVE Bridge</a></p>`:''}
-      <p style="font-size:12px;line-height:1.7;color:#748398">If this is not relevant to you, reply STOP and WEAVE will end promotional outreach to this address.</p>
+      ${input.bridgeUrl?`<p style="margin:26px 0"><a href="${safeBridgeUrl}" style="display:inline-block;padding:12px 18px;border:1px solid #f5a44b;color:#fff;text-decoration:none;font-weight:700">Enter your WEAVE Bridge</a></p>`:''}
+      ${input.unsubscribeUrl?`<p style="font-size:12px;line-height:1.7;color:#748398"><a href="${safeUnsubscribeUrl}" style="color:#9fb0c3">Stop future WEAVE promotional email</a></p>`:''}
       <div style="margin-top:26px;font-size:11px;color:#657585">WEAVE of Presence · System Switch · Bridge Radiance</div>
     </div>
   </div>`
@@ -82,8 +106,9 @@ export async function sendEmailOutreach(input:{
   const bridgeOrigin=getWeaveBridgeOrigin()
   const bridgeUrl=outreach.bridge_code
     ? `${bridgeOrigin}/bridge/${outreach.bridge_code}?pid=${outreach.id}`
-    : null
-  const message=buildPremiumFileFolderEmail({prospectName:outreach.name,bridgeUrl})
+    : `${bridgeOrigin}/bridge/default?pid=${outreach.id}`
+  const unsubscribeUrl=`${bridgeOrigin}/api/public/prospect-email/unsubscribe?oid=${outreach.id}&sig=${prospectEmailUnsubscribeSignature(outreach.id)}`
+  const message=buildPremiumFileFolderEmail({prospectName:outreach.name,bridgeUrl,unsubscribeUrl})
 
   try{
     const delivery=await sendAuthenticatedGoogleMail({
@@ -93,6 +118,7 @@ export async function sendEmailOutreach(input:{
       text:message.text,
       html:message.html,
       replyTo:mailbox.email,
+      listUnsubscribe:unsubscribeUrl,
     })
 
     await sql`
