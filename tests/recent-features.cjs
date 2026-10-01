@@ -1552,7 +1552,7 @@ assert.ok(bridgerCrossingNotebookSource.includes('Next step'),'Crossing Notebook
 assert.ok(bridgerCrossingNotebookDataSource.includes("title: 'Meet the Human'"),'Crossing Notebook begins with the human rather than price')
 assert.ok(bridgerCrossingNotebookDataSource.includes("title: 'Remain the Bridger'"),'Crossing Notebook carries the relationship beyond conversion')
 assert.ok(bridgerCrossingNotebookDataSource.includes('Do not promise customers, sales or profit.'),'Crossing Notebook blocks false outcome promises')
-assert.ok(bridgerRoleDistrictSource.includes('"href": "/bridger/crossing-notebook"'),'Bridge Movement exposes Crossing Notebook')
+assert.ok(bridgerRoleDistrictSource.includes("name:'Prospect & Crossing'")&&bridgerRoleDistrictSource.includes("href:'/bridger/crossing-notebook'"),'Prospect & Crossing exposes Crossing Notebook')
 assert.ok(weaveEnvironmentMapSource.includes("'bridger-crossing-notebook'"),'Crossing Notebook has a registered WEAVE environment identity')
 assert.ok(bridgerProspectPurchaseSource.includes("Can I ask what you currently do, or what you're trying to make work better?"),'Purchased Prospect first message is human-first')
 assert.ok(bridgerDailyProspectSource.includes("Can I ask what you currently do, or what you're trying to make work better?"),'Daily Prospect first message is human-first')
