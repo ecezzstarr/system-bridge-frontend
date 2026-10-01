@@ -139,7 +139,7 @@ function MyBridgers() {
                     if (!statsById[bridger.id]) {
                       setStatsLoading(bridger.id)
                       try {
-                        const res = await fetch(`/api/agent/bridger-stats?bridgerId=${bridger.id}`)
+                        const res = await fetch(`/api/agent/bridger-stats?bridgerId=${bridger.id}`, { headers: getAuthHeaders(), cache: 'no-store' })
                         const data = await res.json()
                         if (data.success) {
                           setStatsById(prev => ({ ...prev, [bridger.id]: { clientCount: data.clientCount, depositsByCurrency: data.depositsByCurrency } }))
