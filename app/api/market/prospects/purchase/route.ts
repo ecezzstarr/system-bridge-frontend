@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
-import { ensureMarketTables } from '@/lib/market'\nimport { buildPremiumFileFolderEmail } from '@/lib/prospect-email-engine'
+import { ensureMarketTables } from '@/lib/market'
+import { buildPremiumFileFolderEmail } from '@/lib/prospect-email-engine'
 import { ensureWeaveReceiptSchema, issueWeaveReceipt } from '@/lib/weave-receipts'
 
 async function finalizeProspectPurchase(input:{
