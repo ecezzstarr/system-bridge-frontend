@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
-import { ensureMarketTables } from '@/lib/market'
+import { ensureMarketTables } from '@/lib/market'\nimport { buildPremiumFileFolderEmail } from '@/lib/prospect-email-engine'
 import { ensureWeaveReceiptSchema, issueWeaveReceipt } from '@/lib/weave-receipts'
 
 async function finalizeProspectPurchase(input:{
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       await client.query('ROLLBACK')
       return NextResponse.json({error:'Package not found'},{status:404})
     }
-    const priceTrx=Number(pkg.price_trx)
+    const priceTrx=Number(pkg.price_trx)\n    const channel=pkg.channel==='email'?'email':'whatsapp'
 
     if(pkg.status==='sold'){
       if(String(pkg.purchased_by||'')!==String(userId)){
@@ -212,12 +212,14 @@ export async function POST(request: NextRequest) {
       const outreachId=crypto.randomUUID()
       const prospectName=String(contact.name||'').trim()
       const greeting=prospectName?`Hello ${prospectName}.`:'Hello.'
-      const message=`${greeting} My name is your Bridger from WEAVE. I work with people around something they are already trying to build, sell, organize or move forward in their life or work. Can I ask what you currently do, or what you're trying to make work better?`
+      const message=channel==='email'
+        ? buildPremiumFileFolderEmail({prospectName:prospectName||null}).text
+        : `${greeting} My name is your Bridger from WEAVE. I work with people around something they are already trying to build, sell, organize or move forward in their life or work. Can I ask what you currently do, or what you're trying to make work better?`
       await client.query(
         `INSERT INTO market_prospect_outreach
-         (id,contact_id,bridger_id,bridge_ai_id,status,message_sent)
-         VALUES ($1::uuid,$2::uuid,$3::uuid,$4::uuid,'pending',$5)`,
-        [outreachId,contact.id,userId,bridgeAi?.id||null,message],
+         (id,contact_id,bridger_id,bridge_ai_id,channel,status,message_sent)
+         VALUES ($1::uuid,$2::uuid,$3::uuid,$4::uuid,$5,'pending',$6)`,
+        [outreachId,contact.id,userId,bridgeAi?.id||null,channel,message],
       )
     }
 
