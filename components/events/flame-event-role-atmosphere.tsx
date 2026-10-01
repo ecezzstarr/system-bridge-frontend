@@ -1,10 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { Flame, Waves } from 'lucide-react'
-import { FLAME_EVENT, resolveEventStatus, type WeaveEvent } from '@/lib/weave-event'
-import { visiblePoll } from '@/lib/visible-poll'
 
 export function FlameEventRoleAtmosphere({
   children,
@@ -19,8 +17,7 @@ export function FlameEventRoleAtmosphere({
 }) {
   const routePath = usePathname()
   const currentPath = pathname || routePath || '/'
-  const [event,setEvent]=useState<WeaveEvent>(FLAME_EVENT)
-  const [now,setNow]=useState(()=>new Date())
+  const [active,setActive]=useState(false)
 
   const roleLabel = userRole === 'admin'
     ? 'ADMINISTRATION'
@@ -33,19 +30,13 @@ export function FlameEventRoleAtmosphere({
           : 'WEAVE'
 
   useEffect(()=>{
-    const stopEvent=visiblePoll(async signal=>{
-      const response=await fetch('/api/events/flame',{cache:'no-store',signal})
-      const data=await response.json()
-      if(data?.success&&data.event)setEvent(data.event)
-    },60000)
-    const stopClock=visiblePoll(()=>setNow(new Date()),30000)
-    return ()=>{stopEvent();stopClock()}
+    const root=document.documentElement
+    const read=()=>setActive(root.dataset.weaveEvent==='flame-live')
+    read()
+    const observer=new MutationObserver(read)
+    observer.observe(root,{attributes:true,attributeFilter:['data-weave-event']})
+    return ()=>observer.disconnect()
   },[])
-
-  const active=useMemo(
-    ()=>(event.effectiveStatus||resolveEventStatus(event,now))==='active',
-    [event,now],
-  )
 
   return (
     <div
@@ -62,7 +53,7 @@ export function FlameEventRoleAtmosphere({
         >
           <span className="inline-flex min-w-0 items-center gap-2">
             <Waves className="h-3 w-3 shrink-0 text-sky-200/70"/>
-            <span className="truncate">Burning River · Flame Event Live</span>
+            <span className="truncate">Burning River · Flame Event Live · The River that Burns</span>
             <Flame className="h-3 w-3 shrink-0 text-orange-200/80"/>
           </span>
           <span className="hidden shrink-0 text-white/30 sm:inline">
