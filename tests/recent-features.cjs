@@ -1524,6 +1524,7 @@ const adminEmailRunSource=fs.readFileSync(path.join(root,'app/api/admin/market/p
 const bridgerEmailSendSource=fs.readFileSync(path.join(root,'app/api/bridger/prospects/[outreachId]/email/route.ts'),'utf8')
 const flameEmailCronSource=fs.readFileSync(path.join(root,'app/api/cron/flame-email-outreach/route.ts'),'utf8')
 const flameEmailWorkflowSource=fs.readFileSync(path.join(root,'.github/workflows/flame-email-outreach.yml'),'utf8')
+const prospectEmailUnsubscribeSource=fs.readFileSync(path.join(root,'app/api/public/prospect-email/unsubscribe/route.ts'),'utf8')
 const adminProspectEngineSource=fs.readFileSync(path.join(root,'app/(app)/admin/prospect-engine/page.tsx'),'utf8')
 const adminOutreachRegistrySource=fs.readFileSync(path.join(root,'app/(app)/admin/outreach/page.tsx'),'utf8')
 for(const file of [
@@ -1542,6 +1543,7 @@ for(const file of [
  'app/api/admin/market/prospects/email/run/route.ts',
  'app/api/bridger/prospects/[outreachId]/email/route.ts',
  'app/api/cron/flame-email-outreach/route.ts',
+ 'app/api/public/prospect-email/unsubscribe/route.ts',
  'app/(app)/admin/prospect-engine/page.tsx',
  'app/(app)/admin/outreach/page.tsx',
 ]){
@@ -1581,3 +1583,6 @@ assert.ok(flameEmailWorkflowSource.includes("cron: '15 8 * * *'")&&flameEmailWor
 assert.ok(adminProspectEngineSource.includes("selectChannel('email')")&&adminProspectEngineSource.includes("selectChannel('whatsapp')"),'Administration uses one Prospect Engine surface with channel modes')
 assert.ok(bridgerProspectMarketSource.includes('Email & report')&&bridgerProspectMarketSource.includes('Purchase · debit Flame Coin'),'Bridger email movement keeps purchase debit and send/report visible in one Prospect Market')
 assert.ok(adminOutreachRegistrySource.includes("row.channel==='email'")&&adminOutreachRegistrySource.includes('provider_message_id'),'Administration outreach registry reports both channels and email provider evidence')
+assert.ok(weaveMailSource.includes('List-Unsubscribe')&&weaveMailSource.includes('List-Unsubscribe-Post'),'Shared Google mail transport carries one-click unsubscribe headers')
+assert.ok(prospectEmailEngineSource.includes('prospectEmailUnsubscribeSignature')&&prospectEmailEngineSource.includes('/bridge/default?pid='),'Email outreach has a signed stop path and reliable WEAVE entry when no Bridge AI is attached')
+assert.ok(prospectEmailUnsubscribeSource.includes("status='unsubscribed'")&&prospectEmailUnsubscribeSource.includes("channel='email'"),'Signed unsubscribe closes the exact email Prospect movement')
