@@ -137,7 +137,7 @@ const SCENES: Array<{ match: (path: string) => boolean; scene: PresenceScene }> 
     scene: { key:'prospects', label:'Prospect Movement', district:'Enterprise', level:'system', camera:{x:-22,y:5,yaw:-3,pitch:1.5,zoom:1.026,depth:36} },
   },
   {
-    match: path => path.includes('/clients') || path.includes('/client-interactions'),
+    match: path => path.includes('/client-interactions'),
     scene: { key:'clients', label:'Client Movement', district:'Support', level:'system', camera:{x:18,y:3,yaw:3,pitch:1,zoom:1.024,depth:34} },
   },
   {
@@ -209,7 +209,7 @@ export const PRESENCE_TRACE_LIMIT = 80
 
 const APP_SHELL_PREFIXES = [
   '/admin','/agent','/agility','/arena','/authority','/bridger','/casino',
-  '/client-interactions','/clients','/company-chat','/company','/dashboard','/earnings',
+  '/client-interactions','/company-chat','/company','/dashboard','/earnings',
   '/echo','/event','/fund-wall','/ledger','/marketplace','/places',
   '/private-ground','/profiles','/roles','/search','/transactions',
   '/wallet','/weave',
