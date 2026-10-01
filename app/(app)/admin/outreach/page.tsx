@@ -76,7 +76,7 @@ export default function OutreachMovementRegistryPage(){
           <div>
             <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Administration · Outreach Movement Registry</p>
             <h1 className="mt-2 text-2xl font-black text-white md:text-3xl">One registry for every Prospect message.</h1>
-            <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">WhatsApp and email movement share one causality chain from Prospect assignment through sender identity, send report, Bridge movement and Client conversion.</p>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">WhatsApp and email movement share one causality chain from Prospect assignment through sender identity, send report, Bridge Radiance and Client conversion. Prospects remain in Bridge Radiance until recorded Client conversion.</p>
           </div>
           <button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-emerald-300/15 bg-emerald-400/[0.06] px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.1em] text-emerald-100 disabled:opacity-40"><RefreshCw className={`h-4 w-4 ${loading?'animate-spin':''}`}/>Refresh</button>
         </div>
