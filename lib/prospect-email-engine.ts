@@ -1,4 +1,4 @@
-import { getPool, sql } from '@/lib/db'
+import crypto from 'node:crypto'\n\nimport { getPool, sql } from '@/lib/db'
 import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 import { ensureMarketTables } from '@/lib/market'
 import {
