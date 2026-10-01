@@ -129,6 +129,8 @@ assert.ok(passwordRecoveryRequestSource.includes("role IN ('agent','bridger','cl
 assert.ok(!passwordRecoveryRequestSource.includes('[PASSWORD RESET] Link')&&!passwordRecoveryRequestSource.includes('resetLink'),'Production recovery no longer pretends that a console-only reset link was emailed')
 assert.ok(weaveMailSource.includes('PASSWORD_RECOVERY_GMAIL_USER')&&weaveMailSource.includes('PASSWORD_RECOVERY_GMAIL_APP_PASSWORD')&&weaveMailSource.includes("GMAIL_SMTP_HOST='smtp.gmail.com'"),'Recovery and outreach share the authenticated Google/Gmail transport')
 assert.ok(passwordRecoveryEngineSource.includes("provider === 'gmail'")&&passwordRecoveryEngineSource.includes('sendAuthenticatedGoogleMail'),'Recovery codes use the shared Google delivery layer')
+assert.ok(passwordRecoveryEngineSource.includes('getAdministrationGoogleMailboxCredential')&&passwordRecoveryRequestSource.includes('await passwordRecoveryEmailConfigured()'),'Forgot-password recovery can resolve the authenticated Administration Google mailbox through the shared mail layer')
+assert.ok(healthRouteSource.includes('await passwordRecoveryEmailProvider()'),'Health resolves the asynchronous shared recovery provider before reporting readiness')
 assert.ok(passwordRecoveryEngineSource.includes('RESEND_API_KEY')&&passwordRecoveryEngineSource.includes('sendResendFallback'),'Existing Resend delivery remains an explicit fallback instead of the primary transport')
 const deployWeaveSource=fs.readFileSync(path.join(root,'scripts/deploy-weave.py'),'utf8')
 assert.ok(passwordRecoveryEngineSource.includes('PASSWORD_RECOVERY_REPLY_TO'),'Recovery mail keeps the Administration email as the reply address')
