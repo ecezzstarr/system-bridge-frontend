@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 })
     }
 
-    if (!passwordRecoveryEmailConfigured()) {
+    if (!(await passwordRecoveryEmailConfigured())) {
       console.error('[password-recovery] Google/Gmail recovery transport and fallback mail transport are unavailable')
       return NextResponse.json(
         { error: 'Password recovery email is temporarily unavailable. Please try again later or contact WEAVE support.' },
