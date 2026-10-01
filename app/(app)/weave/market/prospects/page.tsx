@@ -43,6 +43,7 @@ interface MyProspect {
   channel:ProspectChannel
   messageSent:string
   deliveryError:string|null
+  replyDetectedAt:string|null
   sentAt:string|null
   lastActivityAt:string
   name:string|null
@@ -90,6 +91,7 @@ export default function ProspectMarketPage(){
   const [mailboxEmail,setMailboxEmail]=useState('')
   const [mailboxPassword,setMailboxPassword]=useState('')
   const [connectingMailbox,setConnectingMailbox]=useState(false)
+  const [syncingFeedback,setSyncingFeedback]=useState(false)
 
   useEffect(()=>{void fetchPackages()},[])
   useEffect(()=>{if(tab==='mine')void Promise.all([fetchMine(),loadMailbox()])},[tab])
@@ -193,6 +195,25 @@ export default function ProspectMarketPage(){
       toast.error(error instanceof Error?error.message:'Google authentication failed')
     }finally{
       setConnectingMailbox(false)
+    }
+  }
+
+  const syncEmailFeedback=async()=>{
+    if(mailbox?.status!=='connected')return toast.error('Authenticate your Google outreach mailbox first')
+    setSyncingFeedback(true)
+    try{
+      const res=await fetch('/api/bridger/prospects/email/feedback',{
+        method:'POST',
+        headers:getAuthHeaders(),
+      })
+      const data=await res.json()
+      if(!res.ok||!data.success)throw new Error(data.error||'Email feedback sync failed')
+      toast.success(`Checked ${data.feedback.checked} sent email${data.feedback.checked===1?'':'s'} · ${data.feedback.responded} new repl${data.feedback.responded===1?'y':'ies'}.`)
+      await fetchMine()
+    }catch(error){
+      toast.error(error instanceof Error?error.message:'Email feedback sync failed')
+    }finally{
+      setSyncingFeedback(false)
     }
   }
 
@@ -362,6 +383,7 @@ export default function ProspectMarketPage(){
                 <Input type="password" value={mailboxPassword} onChange={e=>setMailboxPassword(e.target.value)} placeholder="Google app password" className="border-slate-700 bg-slate-800 text-white"/>
                 <Button onClick={connectMailbox} disabled={connectingMailbox||!mailboxEmail.trim()||!mailboxPassword.trim()} className="w-full bg-sky-700 hover:bg-sky-800">{connectingMailbox?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ShieldCheck className="mr-2 h-4 w-4"/>}{mailbox?.status==='connected'?'Reconnect Google':'Authenticate Google'}</Button>
                 {mailbox?.status==='connected'&&<p className="text-[10px] text-emerald-300">Connected · {mailbox.email}{mailbox.last_sent_at?` · last send ${new Date(mailbox.last_sent_at).toLocaleString()}`:''}</p>}
+                <Button variant="outline" onClick={syncEmailFeedback} disabled={syncingFeedback||mailbox?.status!=='connected'} className="w-full border-emerald-300/20 text-emerald-200">{syncingFeedback?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<MessageCircle className="mr-2 h-4 w-4"/>}Check email feedback</Button>
               </CardContent>
             </Card>
           </div>
@@ -384,6 +406,7 @@ export default function ProspectMarketPage(){
                         <p className="mt-1 break-all text-xs text-slate-500">{contact}</p>
                         <Badge variant="outline" className={`mt-2 text-[10px] ${st.color}`}>{st.label}</Badge>
                         {p.deliveryError&&<p className="mt-2 text-[10px] text-rose-300">{p.deliveryError}</p>}
+                        {p.replyDetectedAt&&<p className="mt-2 text-[10px] text-emerald-300">Reply detected · {new Date(p.replyDetectedAt).toLocaleString()}</p>}
                       </div>
 
                       {p.status==='pending'?(
