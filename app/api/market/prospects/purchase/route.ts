@@ -97,7 +97,8 @@ export async function POST(request: NextRequest) {
       await client.query('ROLLBACK')
       return NextResponse.json({error:'Package not found'},{status:404})
     }
-    const priceTrx=Number(pkg.price_trx)\n    const channel=pkg.channel==='email'?'email':'whatsapp'
+    const priceTrx=Number(pkg.price_trx)
+    const channel=pkg.channel==='email'?'email':'whatsapp'
 
     if(pkg.status==='sold'){
       if(String(pkg.purchased_by||'')!==String(userId)){
