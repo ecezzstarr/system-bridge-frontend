@@ -201,7 +201,6 @@ export async function POST(request: NextRequest) {
       [packageId],
     )
 
-    const bridgeUrlBase=getWeaveBridgeOrigin()
     const bridgeResult=await client.query(
       `SELECT id,bridge_code FROM bridge_ais
        WHERE bridger_id=$1::uuid AND status='active'
@@ -212,9 +211,9 @@ export async function POST(request: NextRequest) {
 
     for(const contact of contactsResult.rows){
       const outreachId=crypto.randomUUID()
-      const message=bridgeAi
-        ?`Hello, I'm connecting you with Bridge AI from Weave. You can continue here: ${bridgeUrlBase}/bridge/${bridgeAi.bridge_code}?pid=${outreachId}`
-        :`Hello, I'm connecting you with Bridge AI from Weave. You can continue here: ${bridgeUrlBase}/bridge/default`
+      const prospectName=String(contact.name||'').trim()
+      const greeting=prospectName?`Hello ${prospectName}.`:'Hello.'
+      const message=`${greeting} My name is your Bridger from WEAVE. I work with people around something they are already trying to build, sell, organize or move forward in their life or work. Can I ask what you currently do, or what you're trying to make work better?`
       await client.query(
         `INSERT INTO market_prospect_outreach
          (id,contact_id,bridger_id,bridge_ai_id,status,message_sent)
