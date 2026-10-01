@@ -68,7 +68,7 @@ const SYSTEM_OPERATORS: Record<string, Omit<MockUser, 'id' | 'created_at'>> = {
     email: 'operator@ssbcompany.com',
     username: 'ssboperator',
     name: 'SSB System Operator',
-    password: 'SSBOperator@2026',
+    password: process.env.MOCK_OPERATOR_PASSWORD || '',
     role: 'admin',
     wallet_address: process.env.COMPANY_TRON_WALLET || '', // Real company wallet
     departmental_code: 'CAT',
@@ -80,7 +80,7 @@ const SYSTEM_OPERATORS: Record<string, Omit<MockUser, 'id' | 'created_at'>> = {
     email: 'ecezzstarr@gmail.com',
     username: 'platformadmin',
     name: 'Platform Admin',
-    password: 'PlatformAdmin@2026',
+    password: process.env.MOCK_PLATFORM_ADMIN_PASSWORD || '',
     role: 'admin',
     wallet_address: process.env.PLATFORM_TRON_WALLET || '', // Real platform wallet
     personal_wallet_address: process.env.COMPANY_WALLET_ADDRESS || 'THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk', // Company master wallet
@@ -93,7 +93,7 @@ const SYSTEM_OPERATORS: Record<string, Omit<MockUser, 'id' | 'created_at'>> = {
     email: 'agent@ssbnow.shop',
     username: 'agentuser',
     name: 'Agent Operations',
-    password: 'Agent@2026',
+    password: process.env.MOCK_AGENT_PASSWORD || '',
     role: 'agent',
     position: 'Mandate',
     wallet_address: process.env.AGENT_TRON_WALLET || '',
@@ -107,7 +107,7 @@ const SYSTEM_OPERATORS: Record<string, Omit<MockUser, 'id' | 'created_at'>> = {
     email: 'bridger@ssbnow.shop',
     username: 'bridgeruser',
     name: 'Bridger Systems',
-    password: 'Bridger@2026',
+    password: process.env.MOCK_BRIDGER_PASSWORD || '',
     role: 'bridger',
     wallet_address: process.env.BRIDGER_TRON_WALLET || '',
     personal_wallet_address: '',
