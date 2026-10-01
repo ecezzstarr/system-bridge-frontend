@@ -1549,3 +1549,20 @@ for(const file of [
 
 assert.ok(appEnvironmentLayoutSource.includes('requiredRoleForPath')&&appEnvironmentLayoutSource.includes("pathname.startsWith('/admin/')")&&appEnvironmentLayoutSource.includes("pathname.startsWith('/agent/')")&&appEnvironmentLayoutSource.includes("pathname.startsWith('/bridger/')"),'Authenticated staff layout enforces role-owned route namespaces')
 assert.ok(appEnvironmentLayoutSource.includes('data-role-route-pending="true"'),'Wrong-role staff routes are covered while returning to the correct role world')
+
+const bridgerProspectsBoundarySource=fs.readFileSync(path.join(root,'app/api/bridger/prospects/route.ts'),'utf8')
+const bridgerReferralBoundarySource=fs.readFileSync(path.join(root,'app/api/bridger/referral-commissions/route.ts'),'utf8')
+const bridgerBridgeAiContinuanceBoundarySource=fs.readFileSync(path.join(root,'app/api/bridger/bridge-ai/subscribe/route.ts'),'utf8')
+assert.ok((bridgerProspectsBoundarySource.match(/authUser\.role !== 'bridger'/g)||[]).length>=2,'Bridger Prospect read/write APIs enforce the Bridger role')
+assert.ok(bridgerReferralBoundarySource.includes("authUser.role !== 'bridger'"),'Bridger referral commission state enforces the Bridger role')
+assert.ok((bridgerBridgeAiContinuanceBoundarySource.match(/authUser\.role !== 'bridger'/g)||[]).length>=2,'Bridge AI Continuance read/write APIs enforce the Bridger role')
+for(const file of [
+  'app/api/bridger/prospects/route.ts',
+  'app/api/bridger/referral-commissions/route.ts',
+  'app/api/bridger/bridge-ai/subscribe/route.ts',
+]){
+  const source=fs.readFileSync(path.join(root,file),'utf8')
+  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+  assert.equal(syntaxErrors.length,0,file+' Bridger API boundary syntax/transpile check')
+}
