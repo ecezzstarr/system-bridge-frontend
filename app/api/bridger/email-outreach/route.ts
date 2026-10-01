@@ -20,9 +20,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Bridger authentication required' }, { status: 401 })
   }
 
-  await ensureEmailOutreachSchema()
-  const pool = getPool()
-  const [sender, wallet, available, leads, outreach] = await Promise.all([
+  try {
+    await ensureEmailOutreachSchema()
+    const pool = getPool()
+    const [sender, wallet, available, leads, outreach] = await Promise.all([
     senderForUser(user.id),
     pool.query(
       `SELECT balance_trx FROM wallets
@@ -55,10 +56,11 @@ export async function GET(request: NextRequest) {
     ),
   ])
 
-  return NextResponse.json({
+    return NextResponse.json({
     success: true,
     providerConfigured: emailOutreachProviderConfigured(),
     sender,
+    accountEmail: user.email,
     priceFlameCoin: EMAIL_PROSPECT_PRICE_FLAME_COIN,
     normalProspectReferenceFlameCoin: 1.1,
     walletBalance: Number(wallet.rows[0]?.balance_trx || 0),
@@ -67,7 +69,14 @@ export async function GET(request: NextRequest) {
     outreach: outreach.rows,
     defaultSubject: DEFAULT_SUBJECT,
     defaultMessage: DEFAULT_MESSAGE,
-  })
+    })
+  } catch (error) {
+    console.error('[bridger-email-outreach] GET failed', error)
+    return NextResponse.json(
+      { error: 'Email Outreach could not open. The runtime will retry schema initialization on the next request.' },
+      { status: 503 },
+    )
+  }
 }
 
 export async function POST(request: NextRequest) {
