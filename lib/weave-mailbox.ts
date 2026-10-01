@@ -55,7 +55,7 @@ export async function connectGoogleMailbox(input:{
   await ensureWeaveMailboxSchema()
   const email=normalizeMailAddress(input.email)
   const appPassword=String(input.appPassword||'').replace(/\s+/g,'')
-  await verifyGoogleMailbox({email,appPassword,fromName:input.role==='admin'?'WeaveBridge — Weave of Presence':'WEAVE Bridger'})
+  await verifyGoogleMailbox({email,appPassword,fromName:input.role==='admin'?'WeaveBridge - Weave of Presence':'WEAVE Bridger'})
   const encrypted=encryptSecret(appPassword)
 
   const rows=await sql`
@@ -108,7 +108,7 @@ export async function getConnectedMailboxCredential(userId:string){
   return {
     id:row.id as string,
     email:row.email as string,
-    fromName:row.owner_role==='admin'?'WeaveBridge — Weave of Presence':'WEAVE Bridger',
+    fromName:row.owner_role==='admin'?'WeaveBridge - Weave of Presence':'WEAVE Bridger',
     appPassword:decryptSecret(row.credential_ciphertext as string),
   }
 }
@@ -127,7 +127,7 @@ export async function getAdministrationGoogleMailboxCredential(){
   return {
     id:row.id as string,
     email:row.email as string,
-    fromName:'WeaveBridge — Weave of Presence',
+    fromName:'WeaveBridge - Weave of Presence',
     appPassword:decryptSecret(row.credential_ciphertext as string),
   }
 }
