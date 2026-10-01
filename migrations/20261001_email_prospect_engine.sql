@@ -12,6 +12,7 @@ ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS channel varchar(20
 ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS sender_mailbox_id uuid;
 ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS provider_message_id varchar(255);
 ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS delivery_error text;
+ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS reply_detected_at timestamptz;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_market_prospect_contact_fingerprint
 ON market_prospect_contacts(contact_fingerprint)
