@@ -9,6 +9,7 @@ import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { useEnvironmentRuntimeConfig } from '@/components/world/use-environment-runtime-config'
 import type { EnvironmentRuntimeConfig } from '@/lib/weave-environment-runtime-profile'
 import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
+import { visiblePoll } from '@/lib/visible-poll'
 
 // Every readiness resource has one bounded lifetime, including image listeners.
 export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:EnvironmentRuntimeConfig,signal:AbortSignal){
@@ -199,18 +200,22 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   },[covered])
 
   useEffect(()=>{
-    const now=Date.now()
-    try{
-      const eventIsLive=resolveEventStatus(FLAME_EVENT,new Date(now))==='active'
-      setFlameEventActive(eventIsLive)
-      window.localStorage.setItem(FLAME_REENTRY_LAST_ACTIVE_KEY,String(now))
-    }catch{
-      setFlameEventActive(resolveEventStatus(FLAME_EVENT,new Date())==='active')
+    const loadEventState=async(signal:AbortSignal)=>{
+      try{
+        const response=await fetch('/api/events/flame',{cache:'no-store',signal})
+        const data=await response.json()
+        const liveEvent=data?.success&&data?.event?data.event:FLAME_EVENT
+        setFlameEventActive((liveEvent.effectiveStatus||resolveEventStatus(liveEvent,new Date()))==='active')
+      }catch{
+        setFlameEventActive(resolveEventStatus(FLAME_EVENT,new Date())==='active')
+      }
     }
+    const stopEventPoll=visiblePoll(loadEventState,60000)
 
     const markPresence=()=>{
       try{window.localStorage.setItem(FLAME_REENTRY_LAST_ACTIVE_KEY,String(Date.now()))}catch{}
     }
+    markPresence()
     const onVisibilityChange=()=>{
       if(document.visibilityState==='hidden')markPresence()
     }
@@ -221,6 +226,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     document.addEventListener('visibilitychange',onVisibilityChange)
     window.addEventListener('pagehide',markPresence)
     return ()=>{
+      stopEventPoll()
       window.clearInterval(presenceClock)
       document.removeEventListener('visibilitychange',onVisibilityChange)
       window.removeEventListener('pagehide',markPresence)
