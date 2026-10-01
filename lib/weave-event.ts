@@ -73,13 +73,14 @@ export const FLAME_EVENT: WeaveEvent = {
 
 export function resolveEventStatus(event: Pick<WeaveEvent, 'status' | 'startsAt' | 'endsAt' | 'autoStart'>, now = new Date()): WeaveEventStatus {
   if (event.status === 'closed') return 'closed'
-  if (event.status === 'active') return 'active'
 
   const current = now.getTime()
   const start = new Date(event.startsAt).getTime()
   const end = new Date(event.endsAt).getTime()
 
+  // The event end is authoritative even after an automatic or manual opening.
   if (Number.isFinite(end) && current > end) return 'closed'
+  if (event.status === 'active') return 'active'
   if (event.autoStart && Number.isFinite(start) && current >= start) return 'active'
   return 'planned'
 }
