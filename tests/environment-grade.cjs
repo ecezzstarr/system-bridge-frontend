@@ -614,6 +614,7 @@ assert.ok(!dashboardWorldSource.includes(String.fromCharCode(92)+'n'),'Role worl
 
 const environmentSurfaceSource=read('components/world/weave-environment-surface.tsx')
 const environmentsSource=read('lib/weave-environments.ts')
+const presenceCameraSource=read('lib/presence-camera.ts')
 assert.ok(environmentSurfaceSource.includes('data-world-stays-mounted="true"'),'District interiors explicitly preserve the mounted WEAVE world')
 assert.ok(environmentSurfaceSource.includes('data-environment-location="world-position"'),'Destination identity remains a compact in-world position marker rather than a large page card')
 assert.ok(environmentSurfaceSource.includes('data-environment-interior="station"'),'Working interiors are framed as stations inside the world')
@@ -624,6 +625,8 @@ for(const route of ['/agent/bridge-radiance','/admin/bridge-radiance']){
 }
 assert.ok(!environmentsSource.includes("['/bridger/bridge-radiance'"),'Retired Bridger Bridge Radiance alias is removed from environment metadata')
 assert.ok(!environmentsSource.includes("['/bridger/clients'"),'Retired Bridger Clients alias is removed from environment metadata')
+assert.ok(!environmentsSource.includes("['/agent/bridgers'"),'Retired Agent Bridger management alias is removed from environment metadata')
+assert.ok(!presenceCameraSource.includes("path.includes('/clients')"),'Retired Clients route is removed from presence camera matching')
 
 
 const stationFrameSource=read('components/world/weave-station-frame.tsx')
