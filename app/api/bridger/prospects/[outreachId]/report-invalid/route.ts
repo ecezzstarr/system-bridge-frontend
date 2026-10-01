@@ -28,7 +28,7 @@ export async function POST(
 
     // 1. Verify ownership + get the contact behind this outreach row, lock it
     const outreachResult = await client.query(
-      `SELECT o.id, o.contact_id, o.bridge_ai_id, o.status
+      `SELECT o.id, o.contact_id, o.bridge_ai_id, o.status, o.channel
        FROM market_prospect_outreach o
        WHERE o.id = $1::uuid AND o.bridger_id = $2::uuid
        FOR UPDATE`,
@@ -39,7 +39,7 @@ export async function POST(
       await client.query('ROLLBACK')
       return NextResponse.json({ success: false, error: 'Prospect not found or not yours' }, { status: 404 })
     }
-    if (outreach.status === 'invalid_number') {
+    if (outreach.channel !== 'whatsapp') {\n      await client.query('ROLLBACK')\n      return NextResponse.json({ success: false, error: 'This report action is only for WhatsApp Prospects' }, { status: 400 })\n    }\n    if (outreach.status === 'invalid_number') {
       await client.query('ROLLBACK')
       return NextResponse.json({ success: false, error: 'Already reported' }, { status: 400 })
     }
