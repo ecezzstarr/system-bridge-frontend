@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
     const pkg = await createProspectPackage(
       authUser.id,
       contactIds,
-      priceTrx
+      priceTrx,
+      channel
     )
 
     return NextResponse.json({ success: true, package: pkg })
