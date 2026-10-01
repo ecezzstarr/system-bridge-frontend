@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { contactIds, priceTrx } = await request.json()
+    const { contactIds, priceTrx, channel } = await request.json()
 
     if (!Array.isArray(contactIds) || contactIds.length === 0) {
       return NextResponse.json({ error: 'contactIds array required' }, { status: 400 })
@@ -24,6 +24,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, package: pkg })
   } catch (error) {
     console.error('[Market Prospects Package] Error:', error)
-    return NextResponse.json({ error: 'Failed to create package' }, { status: 500 })
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to create package' }, { status: 500 })
   }
 }
