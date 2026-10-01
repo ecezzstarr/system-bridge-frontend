@@ -65,7 +65,10 @@ export default function ProspectEnginePage() {
   const [mailboxPassword,setMailboxPassword]=useState('')
   const [connectingMailbox,setConnectingMailbox]=useState(false)
   const [runningEmail,setRunningEmail]=useState(false)
+  const [emailRunLimit,setEmailRunLimit]=useState('50')
   const [emailReport,setEmailReport]=useState<{queued:number;sent:number;failed:number}|null>(null)
+  const [syncingFeedback,setSyncingFeedback]=useState(false)
+  const [feedbackReport,setFeedbackReport]=useState<{checked:number;responded:number;mailboxes:number}|null>(null)
 
   useEffect(()=>{ void Promise.all([fetchAvailable(),loadMailbox()]) },[])
 
@@ -189,7 +192,7 @@ export default function ProspectEnginePage() {
       const res=await fetch('/api/admin/market/prospects/email/run',{
         method:'POST',
         headers:getAuthHeaders(),
-        body:JSON.stringify({limit:25}),
+        body:JSON.stringify({limit:Math.max(1,Math.min(250,Number(emailRunLimit)||50))}),
       })
       const data=await res.json()
       if(!res.ok||!data.success)throw new Error(data.error||'Email movement failed')
@@ -200,6 +203,25 @@ export default function ProspectEnginePage() {
       toast.error(error instanceof Error?error.message:'Email movement failed')
     }finally{
       setRunningEmail(false)
+    }
+  }
+
+  const syncEmailFeedback=async()=>{
+    setSyncingFeedback(true)
+    try{
+      const res=await fetch('/api/admin/market/prospects/email/feedback',{
+        method:'POST',
+        headers:getAuthHeaders(),
+        body:JSON.stringify({limit:250}),
+      })
+      const data=await res.json()
+      if(!res.ok||!data.success)throw new Error(data.error||'Email feedback sync failed')
+      setFeedbackReport(data.feedback)
+      toast.success(`Email feedback: ${data.feedback.responded} new repl${data.feedback.responded===1?'y':'ies'} detected.`)
+    }catch(error){
+      toast.error(error instanceof Error?error.message:'Email feedback sync failed')
+    }finally{
+      setSyncingFeedback(false)
     }
   }
 
@@ -250,13 +272,19 @@ export default function ProspectEnginePage() {
 
               <section className="border-l border-emerald-300/25 pl-4">
                 <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Administration sender</p></div>
-                <p className="mt-2 text-[10px] leading-5 text-slate-500">The same authenticated Google transport also powers WEAVE forgotten-password codes. Outreach uses this connected sender identity; recovery remains on the protected system mailbox.</p>
+                <p className="mt-2 text-[10px] leading-5 text-slate-500">The same authenticated Google transport powers outreach and forgotten-password codes. The protected system mailbox remains primary for recovery; this verified Administration mailbox can serve as its Google fallback.</p>
                 <Input value={mailboxEmail} onChange={e=>setMailboxEmail(e.target.value)} placeholder="weavebridge@gmail.com" className="mt-3 border-white/10 bg-black/20 text-white"/>
                 <Input type="password" value={mailboxPassword} onChange={e=>setMailboxPassword(e.target.value)} placeholder="Google app password" className="mt-2 border-white/10 bg-black/20 text-white"/>
                 <Button type="button" onClick={connectMailbox} disabled={connectingMailbox||!mailboxEmail.trim()||!mailboxPassword.trim()} className="mt-2 w-full bg-emerald-700 font-black uppercase">{connectingMailbox?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ShieldCheck className="mr-2 h-4 w-4"/>}{mailbox?.status==='connected'?'Reconnect Google':'Authenticate Google'}</Button>
                 {mailbox?.status==='connected'&&<div className="mt-3 border-y border-emerald-300/15 py-3 text-[10px] text-emerald-200"><p className="font-black">{mailbox.email}</p><p className="mt-1 text-slate-500">Authenticated {mailbox.verified_at?new Date(mailbox.verified_at).toLocaleString():''}</p></div>}
-                <Button type="button" onClick={runEmailMovement} disabled={runningEmail||mailbox?.status!=='connected'} className="mt-3 w-full bg-sky-700 font-black uppercase">{runningEmail?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Send className="mr-2 h-4 w-4"/>}Run today&apos;s email movement</Button>
+                <div className="mt-3 grid grid-cols-[88px_1fr] gap-2">
+                  <Input type="number" min={1} max={250} value={emailRunLimit} onChange={e=>setEmailRunLimit(e.target.value)} className="border-white/10 bg-black/20 text-white" aria-label="Email daily run limit"/>
+                  <Button type="button" onClick={runEmailMovement} disabled={runningEmail||mailbox?.status!=='connected'} className="bg-sky-700 font-black uppercase">{runningEmail?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Send className="mr-2 h-4 w-4"/>}Run email movement</Button>
+                </div>
+                <p className="mt-1 text-[9px] text-slate-600">Run size · 1–250. Automatic Flame Event movement uses the configured daily limit.</p>
                 {emailReport&&<p className="mt-2 text-[10px] text-slate-400">Queued {emailReport.queued} · Sent {emailReport.sent} · Failed {emailReport.failed}</p>}
+                <Button type="button" variant="outline" onClick={syncEmailFeedback} disabled={syncingFeedback||mailbox?.status!=='connected'} className="mt-3 w-full border-emerald-300/20 text-emerald-200">{syncingFeedback?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<RefreshCw className="mr-2 h-4 w-4"/>}Sync Google feedback</Button>
+                {feedbackReport&&<p className="mt-2 text-[10px] text-slate-400">Checked {feedbackReport.checked} sent messages · {feedbackReport.responded} replies detected · {feedbackReport.mailboxes} mailbox{feedbackReport.mailboxes===1?'':'es'}</p>}
               </section>
             </>
           )}
