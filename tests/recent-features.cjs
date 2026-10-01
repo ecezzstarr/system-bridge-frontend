@@ -1241,7 +1241,7 @@ assert.ok(businessDistrictSource.includes("router.replace(roleHome(user?.role))"
 assert.ok(!businessDistrictSource.includes('Business District'),'Retired Places route no longer creates a second business catalog')
 assert.ok(!businessDistrictSource.includes("href:'/marketplace'"),'Retired Places route no longer exposes duplicate marketplace navigation')
 assert.ok(!businessDistrictSource.includes("label:'Lounge'"),'Retired Places route does not expose Public Lounge')
-assert.ok(clientRegistrySource.includes('Client Presence Registry'),'Clients route is a state registry rather than a generic CRM')
+assert.ok(clientRegistrySource.includes("redirect('/weave')"),'Retired Clients registry returns to the authenticated role world')
 assert.ok(!clientRegistrySource.includes('Add Client'),'Client registry does not advertise an unwired Add Client action')
 assert.ok(!clientRegistrySource.includes('Edit Client'),'Client registry does not advertise an unwired Edit Client action')
 assert.ok(!clientRegistrySource.includes('Remove Client'),'Client registry does not advertise an unwired Remove Client action')
@@ -1508,6 +1508,7 @@ for(const file of [
 
 const agentBridgerStatsIntegritySource=fs.readFileSync(path.join(root,'app/api/agent/bridger-stats/route.ts'),'utf8')
 const agentBridgerPageIntegritySource=fs.readFileSync(path.join(root,'app/(app)/agent/bridgers/page.tsx'),'utf8')
+const agentStabilitySupplyRedirectSource=fs.readFileSync(path.join(root,'app/(app)/agent/stability-supply/page.tsx'),'utf8')
 const echoContinuanceIntegritySource=fs.readFileSync(path.join(root,'lib/echo-db.ts'),'utf8')
 const bridgeAiContinuanceIntegritySource=fs.readFileSync(path.join(root,'lib/bridge-ai-subscription.ts'),'utf8')
 const bridgerContinuanceIntegritySource=fs.readFileSync(path.join(root,'lib/bridger-subscription.ts'),'utf8')
@@ -1518,7 +1519,8 @@ const mockDbIntegritySource=fs.readFileSync(path.join(root,'lib/mock-db.ts'),'ut
 
 assert.ok(agentBridgerStatsIntegritySource.includes('getAuthUser')&&agentBridgerStatsIntegritySource.includes("agent.role !== 'agent'"),'Agent Bridger statistics require an authenticated Agent')
 assert.ok(agentBridgerStatsIntegritySource.includes('assigned_agent_id=${agent.id}::uuid'),'Agent Bridger statistics are limited to the authenticated Agent relationship')
-assert.ok(agentBridgerPageIntegritySource.includes('bridger-stats?bridgerId=')&&agentBridgerPageIntegritySource.includes("headers: getAuthHeaders(), cache: 'no-store'"),'Agent Bridger statistics request carries authentication')
+assert.ok(agentBridgerPageIntegritySource.includes("redirect('/communications?tab=bridgers')"),'Retired Agent Bridger management route resolves into Direct Communication')
+assert.ok(agentStabilitySupplyRedirectSource.includes("redirect('/agent/commissions')"),'Retired Agent Stability Supply route resolves into Commissions')
 assert.ok(echoContinuanceIntegritySource.includes('getPool().connect()')&&echoContinuanceIntegritySource.includes("client.query('BEGIN')"),'Echo Continuance uses one pinned database transaction')
 assert.ok(!echoContinuanceIntegritySource.includes('await sql`BEGIN`'),'Echo Continuance no longer uses pooled pseudo-transactions')
 assert.ok(bridgeAiContinuanceIntegritySource.includes('getPool().connect()')&&bridgeAiContinuanceIntegritySource.includes("client.query('BEGIN')"),'Bridge AI Continuance uses one pinned database transaction')
@@ -1533,6 +1535,7 @@ for(const literal of ['SSBOperator@2026','PlatformAdmin@2026','Agent@2026','Brid
 for(const file of [
   'app/api/agent/bridger-stats/route.ts',
   'app/(app)/agent/bridgers/page.tsx',
+  'app/(app)/agent/stability-supply/page.tsx',
   'lib/echo-db.ts',
   'lib/bridge-ai-subscription.ts',
   'lib/bridger-subscription.ts',
