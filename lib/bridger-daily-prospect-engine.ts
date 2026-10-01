@@ -31,6 +31,7 @@ export async function countDailyProspectReserve(client:PoolClient|any){
     SELECT COUNT(*)::int AS count
     FROM market_prospect_contacts m
     WHERE m.status='available'
+      AND m.channel='whatsapp'
       AND m.package_id IS NULL
       AND COALESCE(NULLIF(TRIM(m.whatsapp_number),''),NULLIF(TRIM(m.phone),'')) IS NOT NULL
       AND NOT EXISTS (
@@ -48,6 +49,7 @@ async function reclaimFromUnsoldPublishedPackage(client:PoolClient|any){
     SELECT p.id,p.price_trx,p.title
     FROM market_prospect_packages p
     WHERE p.status='published'
+      AND p.channel='whatsapp'
       AND p.purchased_by IS NULL
       AND (
         SELECT COUNT(*)
@@ -74,6 +76,7 @@ async function reclaimFromUnsoldPublishedPackage(client:PoolClient|any){
     SELECT c.id
     FROM market_prospect_contacts c
     WHERE c.package_id=$1::uuid
+      AND c.channel='whatsapp'
       AND NOT EXISTS (SELECT 1 FROM market_prospect_outreach o WHERE o.contact_id=c.id)
       AND NOT EXISTS (SELECT 1 FROM bridger_daily_prospect_claims d WHERE d.prospect_id=c.id)
     ORDER BY c.created_at DESC NULLS LAST,c.id DESC
