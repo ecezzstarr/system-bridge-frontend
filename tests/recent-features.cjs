@@ -1578,6 +1578,6 @@ assert.ok(adminEmailRunSource.includes('runAdministrationEmailMovement'),'Admini
 assert.ok(flameEmailCronSource.includes('hasWeaveSchedulerAuthority')&&flameEmailCronSource.includes('.github/workflows/flame-email-outreach.yml'),'Flame email automation uses existing OIDC scheduler authority')
 assert.ok(flameEmailCronSource.includes("date<'2026-10-01'")&&flameEmailCronSource.includes("date>'2026-12-31'"),'Automatic email movement is bounded to Company Loop 1 Flame Event')
 assert.ok(flameEmailWorkflowSource.includes("cron: '15 8 * * *'")&&flameEmailWorkflowSource.includes('audience=weave-scheduler'),'Flame email outreach has a daily unattended OIDC schedule')
-assert.ok(adminProspectEngineSource.includes("setChannel('email')")&&adminProspectEngineSource.includes("setChannel('whatsapp')"),'Administration uses one Prospect Engine surface with channel modes')
+assert.ok(adminProspectEngineSource.includes("selectChannel('email')")&&adminProspectEngineSource.includes("selectChannel('whatsapp')"),'Administration uses one Prospect Engine surface with channel modes')
 assert.ok(bridgerProspectMarketSource.includes('Email & report')&&bridgerProspectMarketSource.includes('Purchase · debit Flame Coin'),'Bridger email movement keeps purchase debit and send/report visible in one Prospect Market')
 assert.ok(adminOutreachRegistrySource.includes("row.channel==='email'")&&adminOutreachRegistrySource.includes('provider_message_id'),'Administration outreach registry reports both channels and email provider evidence')
