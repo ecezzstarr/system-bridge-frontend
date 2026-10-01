@@ -1527,6 +1527,9 @@ const bridgerEmailSendSource=fs.readFileSync(path.join(root,'app/api/bridger/pro
 const flameEmailCronSource=fs.readFileSync(path.join(root,'app/api/cron/flame-email-outreach/route.ts'),'utf8')
 const flameEmailWorkflowSource=fs.readFileSync(path.join(root,'.github/workflows/flame-email-outreach.yml'),'utf8')
 const prospectEmailUnsubscribeSource=fs.readFileSync(path.join(root,'app/api/public/prospect-email/unsubscribe/route.ts'),'utf8')
+const prospectEmailFeedbackSource=fs.readFileSync(path.join(root,'lib/weave-mail-feedback.ts'),'utf8')
+const adminEmailFeedbackSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/email/feedback/route.ts'),'utf8')
+const bridgerEmailFeedbackSource=fs.readFileSync(path.join(root,'app/api/bridger/prospects/email/feedback/route.ts'),'utf8')
 const adminProspectEngineSource=fs.readFileSync(path.join(root,'app/(app)/admin/prospect-engine/page.tsx'),'utf8')
 const adminOutreachRegistrySource=fs.readFileSync(path.join(root,'app/(app)/admin/outreach/page.tsx'),'utf8')
 for(const file of [
@@ -1546,6 +1549,9 @@ for(const file of [
  'app/api/bridger/prospects/[outreachId]/email/route.ts',
  'app/api/cron/flame-email-outreach/route.ts',
  'app/api/public/prospect-email/unsubscribe/route.ts',
+ 'lib/weave-mail-feedback.ts',
+ 'app/api/admin/market/prospects/email/feedback/route.ts',
+ 'app/api/bridger/prospects/email/feedback/route.ts',
  'app/(app)/admin/prospect-engine/page.tsx',
  'app/(app)/admin/outreach/page.tsx',
 ]){
@@ -1588,3 +1594,8 @@ assert.ok(adminOutreachRegistrySource.includes("row.channel==='email'")&&adminOu
 assert.ok(weaveMailSource.includes('List-Unsubscribe')&&weaveMailSource.includes('List-Unsubscribe-Post'),'Shared Google mail transport carries one-click unsubscribe headers')
 assert.ok(prospectEmailEngineSource.includes('prospectEmailUnsubscribeSignature')&&prospectEmailEngineSource.includes('/bridge/default?pid='),'Email outreach has a signed stop path and reliable WEAVE entry when no Bridge AI is attached')
 assert.ok(prospectEmailUnsubscribeSource.includes("status='unsubscribed'")&&prospectEmailUnsubscribeSource.includes("channel='email'"),'Signed unsubscribe closes the exact email Prospect movement')
+assert.ok(prospectEmailFeedbackSource.includes("IMAP_HOST='imap.gmail.com'")&&prospectEmailFeedbackSource.includes('In-Reply-To')&&prospectEmailFeedbackSource.includes("status='responded'"),'Google reply feedback reuses the connected mailbox and advances the same Prospect outreach row')
+assert.ok(adminEmailFeedbackSource.includes('syncEmailOutreachFeedback')&&bridgerEmailFeedbackSource.includes('syncEmailOutreachFeedback'),'Administration and Bridgers share one email feedback engine')
+assert.ok(flameEmailCronSource.includes('syncEmailOutreachFeedback'),'Daily Flame automation checks Google reply feedback before new outreach')
+assert.ok(adminProspectEngineSource.includes('Sync Google feedback')&&bridgerProspectMarketSource.includes('Check email feedback'),'Existing Admin and Bridger Prospect environments expose reply feedback without duplicate pages')
+assert.ok(prospectMarketEngineSource.includes('reply_detected_at'),'Prospect outreach schema records reply detection in the same movement table')
