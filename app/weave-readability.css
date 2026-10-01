@@ -194,3 +194,16 @@ body {
 .weave-client-shell {
   padding-bottom: var(--weave-dj-dock-height, 0px);
 }
+
+
+/* Operating environments are places, not cards. Keep their outer surface flat
+   so working controls are never visually nested inside another card shell. */
+.weave-operating-environment {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.weave-operating-environment .weave-operating-environment {
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
+}
