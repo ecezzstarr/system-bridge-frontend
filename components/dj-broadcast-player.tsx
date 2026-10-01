@@ -417,7 +417,9 @@ export function DJBroadcastPlayer() {
     const root = document.documentElement
     if (canShow) root.style.setProperty('--weave-dj-dock-height', '52px')
     else root.style.removeProperty('--weave-dj-dock-height')
-    return () => root.style.removeProperty('--weave-dj-dock-height')
+    return () => {
+      root.style.removeProperty('--weave-dj-dock-height')
+    }
   }, [canShow])
 
   return (
