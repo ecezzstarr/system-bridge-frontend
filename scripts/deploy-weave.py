@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build canonical main, preview with zero traffic, then explicitly promote."""
-import os, json, subprocess, sys, tempfile, urllib.request, urllib.error, re, html as html_module
+import os, json, subprocess, sys, tempfile, urllib.request, urllib.error, re, html as html_module, getpass
 from pathlib import Path
 PROJECT='ssbr-495208'
 REGION='us-central1'
@@ -22,6 +22,30 @@ def check_source():
  run('git','fetch','origin','main')
  assert sha==run('git','rev-parse','origin/main'), 'Checkout is not current origin/main'
  return sha
+def ensure_gmail_secret():
+ try:
+  run('gcloud','secrets','describe','weave-gmail-app-password','--project='+PROJECT,'--quiet')
+  return
+ except subprocess.CalledProcessError:
+  pass
+ if not sys.stdin.isatty():
+  raise RuntimeError('Google recovery secret weave-gmail-app-password is missing and cannot be created non-interactively')
+ print('Google recovery secret weave-gmail-app-password is missing.')
+ print('Create a Google app password for the configured recovery Gmail account, then paste it at the hidden prompt.')
+ secret=re.sub(r'\s+','',getpass.getpass('Google app password (hidden): ').strip())
+ if len(secret)!=16:
+  raise RuntimeError('Google app password must be the 16-character app-specific password')
+ run('gcloud','secrets','create','weave-gmail-app-password','--replication-policy=automatic','--project='+PROJECT,'--quiet')
+ subprocess.run(
+  ['gcloud','secrets','versions','add','weave-gmail-app-password','--data-file=-','--project='+PROJECT,'--quiet'],
+  cwd=ROOT,
+  input=secret,
+  text=True,
+  check=True,
+ )
+ secret=''
+ print('Google recovery secret created in Secret Manager.')
+
 def smoke(url,expected_sha):
  with urllib.request.urlopen(url+'/api/health',timeout=60) as response:
   health=json.load(response)
@@ -108,7 +132,7 @@ def main():
    env.append({'name':name,'value':value})
  gmail_secret=next((e for e in env if e.get('name')=='PASSWORD_RECOVERY_GMAIL_APP_PASSWORD'),None)
  if not gmail_secret:
-  run('gcloud','secrets','describe','weave-gmail-app-password','--project='+PROJECT,'--quiet')
+  ensure_gmail_secret()
   env.append({'name':'PASSWORD_RECOVERY_GMAIL_APP_PASSWORD','valueFrom':{'secretKeyRef':{'name':'weave-gmail-app-password','key':'latest'}}})
  annotations={k:v for k,v in baseline['metadata'].get('annotations',{}).items() if k.startswith('autoscaling.knative.dev/') or k in ['run.googleapis.com/cloudsql-instances','run.googleapis.com/startup-cpu-boost','run.googleapis.com/cpu-throttling','run.googleapis.com/vpc-access-connector','run.googleapis.com/vpc-access-egress','run.googleapis.com/execution-environment']}
  active_revision=active[0]['revisionName']
