@@ -1505,3 +1505,43 @@ for(const file of [
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
  assert.equal(syntaxErrors.length,0,file+' environment-world syntax/transpile check')
 }
+
+
+const bridgerCrossingNotebookSource=fs.readFileSync(path.join(root,'components/bridger/crossing-notebook-world.tsx'),'utf8')
+const bridgerCrossingNotebookDataSource=fs.readFileSync(path.join(root,'lib/bridger-crossing-notebook.ts'),'utf8')
+const bridgerRoleDistrictSource=fs.readFileSync(path.join(root,'lib/weave-role-districts.ts'),'utf8')
+const bridgerProspectApiSource=fs.readFileSync(path.join(root,'app/api/bridger/prospects/route.ts'),'utf8')
+const bridgerProspectMarketSource=fs.readFileSync(path.join(root,'app/(app)/weave/market/prospects/page.tsx'),'utf8')
+const bridgerProspectPurchaseSource=fs.readFileSync(path.join(root,'app/api/market/prospects/purchase/route.ts'),'utf8')
+const bridgerDailyProspectSource=fs.readFileSync(path.join(root,'app/api/bridger/daily-prospect/route.ts'),'utf8')
+for(const file of [
+ 'components/bridger/crossing-notebook-world.tsx',
+ 'lib/bridger-crossing-notebook.ts',
+ 'app/(app)/bridger/crossing-notebook/page.tsx',
+ 'app/api/bridger/prospects/route.ts',
+ 'app/(app)/weave/market/prospects/page.tsx',
+ 'app/api/market/prospects/purchase/route.ts',
+ 'app/api/bridger/daily-prospect/route.ts',
+]){
+ const source=fs.readFileSync(path.join(root,file),'utf8')
+ const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+ const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+ assert.equal(syntaxErrors.length,0,file+' Bridger Crossing Notebook syntax/transpile check')
+}
+assert.ok(bridgerCrossingNotebookSource.includes('<AdaptiveCanvas'),'Crossing Notebook is a real 3D WEAVE place')
+assert.ok(bridgerCrossingNotebookSource.includes('No automatic page advance'),'Crossing Notebook states manual reading')
+assert.ok(bridgerCrossingNotebookSource.includes('Next step'),'Crossing Notebook advances only through the Bridger control')
+assert.ok(bridgerCrossingNotebookDataSource.includes("title: 'Meet the Human'"),'Crossing Notebook begins with the human rather than price')
+assert.ok(bridgerCrossingNotebookDataSource.includes("title: 'Remain the Bridger'"),'Crossing Notebook carries the relationship beyond conversion')
+assert.ok(bridgerCrossingNotebookDataSource.includes('Do not promise customers, sales or profit.'),'Crossing Notebook blocks false outcome promises')
+assert.ok(bridgerRoleDistrictSource.includes('"href": "/bridger/crossing-notebook"'),'Bridge Movement exposes Crossing Notebook')
+assert.ok(weaveEnvironmentMapSource.includes("'bridger-crossing-notebook'"),'Crossing Notebook has a registered WEAVE environment identity')
+assert.ok(bridgerProspectPurchaseSource.includes("Can I ask what you currently do, or what you're trying to make work better?"),'Purchased Prospect first message is human-first')
+assert.ok(bridgerDailyProspectSource.includes("Can I ask what you currently do, or what you're trying to make work better?"),'Daily Prospect first message is human-first')
+assert.ok(!bridgerProspectPurchaseSource.includes("I'm connecting you with Bridge AI from Weave. You can continue here"),'Purchased Prospect no longer receives a cold Bridge link')
+assert.ok(!bridgerDailyProspectSource.includes("I'm connecting you with Bridge AI from Weave. You can continue here"),'Daily Prospect no longer receives a cold Bridge link')
+assert.ok(bridgerProspectApiSource.includes('bridgeUrl'),'Bridger prospect API preserves the assigned Bridge as a separate next movement')
+assert.ok(bridgerProspectMarketSource.includes('Send Bridge When Ready'),'Prospect Market separates first contact from Bridge handoff')
+assert.ok(bridgerProspectMarketSource.includes('Open Crossing Notebook'),'Prospect Market points Bridgers back to the manual before outreach')
+assert.ok(!bridgerProspectMarketSource.includes('Acquire qualified leads for your Bridge AI.'),'Prospect Market does not claim unproven lead qualification')
+assert.ok(!bridgerProspectMarketSource.includes('Verified WhatsApp Numbers'),'Prospect Market does not claim contact verification before real outreach')
