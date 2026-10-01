@@ -389,14 +389,6 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Recognize position → understand functions → move Agility or review commission',
     layer: 'district',
   }],
-  ['/agent/bridgers', {
-    key: 'agent-bridger-field',
-    title: 'Bridger Support Field',
-    district: 'Support',
-    purpose: 'The Agent environment for the Bridgers connected to the Agent position and the movement created through them.',
-    movement: 'See → support → follow participation → continue',
-    layer: 'district',
-  }],
   ['/agent/channels', {
     key: 'agent-channel-field',
     title: 'Agent Channel Field',
