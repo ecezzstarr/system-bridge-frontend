@@ -1546,3 +1546,6 @@ for(const file of [
   const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
   assert.equal(syntaxErrors.length,0,file+' core-integrity syntax/transpile check')
 }
+
+assert.ok(appEnvironmentLayoutSource.includes('requiredRoleForPath')&&appEnvironmentLayoutSource.includes("pathname.startsWith('/admin/')")&&appEnvironmentLayoutSource.includes("pathname.startsWith('/agent/')")&&appEnvironmentLayoutSource.includes("pathname.startsWith('/bridger/')"),'Authenticated staff layout enforces role-owned route namespaces')
+assert.ok(appEnvironmentLayoutSource.includes('data-role-route-pending="true"'),'Wrong-role staff routes are covered while returning to the correct role world')
