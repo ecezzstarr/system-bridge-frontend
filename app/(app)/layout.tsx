@@ -17,6 +17,21 @@ import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
 
+function roleHome(role?: string | null) {
+  if (role === 'admin') return '/admin/dashboard'
+  if (role === 'agent') return '/agent/dashboard'
+  if (role === 'bridger') return '/bridger/dashboard'
+  if (role === 'client') return '/client/dashboard'
+  return '/dashboard'
+}
+
+function requiredRoleForPath(pathname: string) {
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) return 'admin'
+  if (pathname === '/agent' || pathname.startsWith('/agent/')) return 'agent'
+  if (pathname === '/bridger' || pathname.startsWith('/bridger/')) return 'bridger'
+  return null
+}
+
 export default function AppLayout({
   children,
 }: {
@@ -35,6 +50,14 @@ export default function AppLayout({
       router.replace('/login')
     }
   }, [isInitialized, isLoading, isAuthenticated, isRedirecting, router])
+
+  useEffect(() => {
+    if (!isInitialized || isLoading || !isAuthenticated || !user?.role) return
+    const requiredRole = requiredRoleForPath(pathname)
+    if (requiredRole && user.role !== requiredRole) {
+      router.replace(roleHome(user.role))
+    }
+  }, [isInitialized, isLoading, isAuthenticated, user?.role, pathname, router])
 
   // Continuance enforcement for Bridgers
   useEffect(() => {
@@ -115,6 +138,15 @@ export default function AppLayout({
   // Only render children if authenticated
   if (!isAuthenticated) {
     return null
+  }
+
+  const requiredRole = requiredRoleForPath(pathname)
+  if (requiredRole && user?.role !== requiredRole) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-transparent px-4 text-center" data-role-route-pending="true">
+        <p className="text-[9px] font-black uppercase tracking-[.18em] text-slate-400">Returning to your WEAVE position</p>
+      </div>
+    )
   }
 
   return (
