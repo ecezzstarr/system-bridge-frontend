@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 
-import { sql } from './db'
+import { getPool, sql } from './db'
 
 export const WHATSAPP_PROSPECT_UNIT_PRICE = 1.1
 export const EMAIL_PROSPECT_UNIT_PRICE = WHATSAPP_PROSPECT_UNIT_PRICE / 2
@@ -74,6 +74,11 @@ export async function ensureMarketTables() {
       ON market_prospect_contacts(contact_fingerprint)
       WHERE contact_fingerprint IS NOT NULL
     `
+    await sql`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_market_prospect_email_unique
+      ON market_prospect_contacts(LOWER(email))
+      WHERE email IS NOT NULL
+    `
 
     await sql`
       CREATE TABLE IF NOT EXISTS market_prospect_audit (
@@ -143,7 +148,7 @@ export async function addEmailProspects(adminId:string,emails:string[],source='e
         ${email},'email',${fingerprint},${source},'available',
         'Email Prospect candidate. Reachability and interest become known through real outreach.'
       )
-      ON CONFLICT(contact_fingerprint) DO NOTHING
+      ON CONFLICT DO NOTHING
       RETURNING id,email,channel,status,created_at
     `
     if(rows[0])added.push(rows[0])
@@ -164,39 +169,95 @@ export async function createProspectPackage(
   channel?:ProspectChannel,
 ){
   await ensureMarketTables()
+  const client=await getPool().connect()
+  try{
+    await client.query('BEGIN')
+    const result=await client.query(
+      `SELECT id,channel
+       FROM market_prospect_contacts
+       WHERE id=ANY($1::uuid[])
+       FOR UPDATE`,
+      [contactIds],
+    )
+    const contacts=result.rows
+    if(contacts.length!==contactIds.length){
+      await client.query('ROLLBACK')
+      throw new Error('One or more Prospects do not exist')
+    }
+    if(contacts.some((contact:any)=>contact.status&&contact.status!=='available')){
+      await client.query('ROLLBACK')
+      throw new Error('One or more Prospects are no longer available')
+    }
 
-  const contacts=await sql`
-    SELECT id,channel FROM market_prospect_contacts
-    WHERE id=ANY(${contactIds}::uuid[]) AND status='available'
-  `
-  if(contacts.length!==contactIds.length)throw new Error('One or more prospects are no longer available')
-  const channels=[...new Set(contacts.map((contact:any)=>String(contact.channel||'whatsapp')))]
-  if(channels.length!==1)throw new Error('Create separate packages for WhatsApp and email Prospects')
-  const resolvedChannel=(channel||channels[0]) as ProspectChannel
-  if(resolvedChannel!==channels[0])throw new Error('Package channel does not match selected Prospects')
+    const state=await client.query(
+      `SELECT id,channel,status
+       FROM market_prospect_contacts
+       WHERE id=ANY($1::uuid[])
+       FOR UPDATE`,
+      [contactIds],
+    )
+    if(state.rows.some((contact:any)=>contact.status!=='available')){
+      await client.query('ROLLBACK')
+      throw new Error('One or more Prospects are no longer available')
+    }
 
-  const unitPrice=resolvedChannel==='email'?EMAIL_PROSPECT_UNIT_PRICE:WHATSAPP_PROSPECT_UNIT_PRICE
-  const finalPrice=typeof priceTrx==='number'&&Number.isFinite(priceTrx)&&priceTrx>0
-    ? priceTrx
-    : Math.round((contactIds.length*unitPrice)*1e6)/1e6
-  const label=resolvedChannel==='email'?'Email Prospect':'WhatsApp Prospect'
-  const title=`${label} Package #${Math.floor(Math.random()*9000)+1000}`
-  const description=`${contactIds.length} ${label} candidate${contactIds.length===1?'':'s'} organized through the WEAVE Prospect Engine. Reachability is confirmed only through real outreach.`
+    const channels=[...new Set(state.rows.map((contact:any)=>String(contact.channel||'whatsapp')))]
+    if(channels.length!==1){
+      await client.query('ROLLBACK')
+      throw new Error('Create separate packages for WhatsApp and email Prospects')
+    }
+    const resolvedChannel=(channel||channels[0]) as ProspectChannel
+    if(resolvedChannel!=='whatsapp'&&resolvedChannel!=='email'){
+      await client.query('ROLLBACK')
+      throw new Error('Unsupported Prospect channel')
+    }
+    if(resolvedChannel!==channels[0]){
+      await client.query('ROLLBACK')
+      throw new Error('Package channel does not match selected Prospects')
+    }
 
-  const pkg=await sql`
-    INSERT INTO market_prospect_packages(created_by,title,description,price_trx,channel,status)
-    VALUES(${adminId}::uuid,${title},${description},${finalPrice},${resolvedChannel},'published')
-    RETURNING *
-  `
+    const unitPrice=resolvedChannel==='email'?EMAIL_PROSPECT_UNIT_PRICE:WHATSAPP_PROSPECT_UNIT_PRICE
+    const finalPrice=resolvedChannel==='email'
+      ? Math.round((contactIds.length*EMAIL_PROSPECT_UNIT_PRICE)*1e6)/1e6
+      : typeof priceTrx==='number'&&Number.isFinite(priceTrx)&&priceTrx>0
+        ? priceTrx
+        : Math.round((contactIds.length*unitPrice)*1e6)/1e6
+    const label=resolvedChannel==='email'?'Email Prospect':'WhatsApp Prospect'
+    const title=`${label} Package #${Math.floor(Math.random()*9000)+1000}`
+    const description=`${contactIds.length} ${label} candidate${contactIds.length===1?'':'s'} organized through the WEAVE Prospect Engine. Reachability is confirmed only through real outreach.`
 
-  const packageId=pkg[0].id
-  await sql`
-    UPDATE market_prospect_contacts
-    SET package_id=${packageId}::uuid,status='packaged'
-    WHERE id=ANY(${contactIds}::uuid[])
-  `
+    const pkgResult=await client.query(
+      `INSERT INTO market_prospect_packages(created_by,title,description,price_trx,channel,status)
+       VALUES($1::uuid,$2,$3,$4,$5,'published')
+       RETURNING *`,
+      [adminId,title,description,finalPrice,resolvedChannel],
+    )
+    const pkg=pkgResult.rows[0]
 
-  return pkg[0]
+    const assigned=await client.query(
+      `UPDATE market_prospect_contacts
+       SET package_id=$1::uuid,status='packaged'
+       WHERE id=ANY($2::uuid[]) AND status='available'
+       RETURNING id`,
+      [pkg.id,contactIds],
+    )
+    if(assigned.rowCount!==contactIds.length)throw new Error('Prospect inventory changed during package creation')
+
+    await client.query(
+      `INSERT INTO market_prospect_audit(package_id,actor_id,action,details)
+       VALUES($1::uuid,$2::uuid,'package_created',
+         jsonb_build_object('channel',$3::text,'contact_count',$4::int,'price_flame_coin',$5::numeric))`,
+      [pkg.id,adminId,resolvedChannel,contactIds.length,finalPrice],
+    )
+
+    await client.query('COMMIT')
+    return pkg
+  }catch(error){
+    try{await client.query('ROLLBACK')}catch{}
+    throw error
+  }finally{
+    client.release()
+  }
 }
 
 export async function generateNumberSeries(adminId: string, sourceNumber: string, count: number) {
@@ -217,12 +278,15 @@ export async function generateNumberSeries(adminId: string, sourceNumber: string
       INSERT INTO market_prospect_contacts(
         phone,whatsapp_number,channel,contact_fingerprint,source_platform,status,notes
       )
-      VALUES(
+      SELECT
         ${phoneNumber},${phoneNumber},'whatsapp',${fingerprint},
         'number_engine_candidate','available',
         'Generated candidate. Reachability has not been independently verified.'
+      WHERE NOT EXISTS(
+        SELECT 1 FROM market_prospect_contacts
+        WHERE COALESCE(NULLIF(TRIM(whatsapp_number),''),NULLIF(TRIM(phone),''))=${phoneNumber}
       )
-      ON CONFLICT(contact_fingerprint) DO NOTHING
+      ON CONFLICT DO NOTHING
       RETURNING *
     `
     if(contact[0])contacts.push(contact[0])
