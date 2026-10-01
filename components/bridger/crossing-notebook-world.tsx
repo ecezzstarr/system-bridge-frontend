@@ -123,13 +123,19 @@ function NotebookArtifact({ pageIndex }: { pageIndex: number }) {
       >
         {number} / {total}
       </Text>
-
-      {Array.from({ length: 8 }).map((_, index) => (
-        <mesh key={index} position={[1.53, 0.17, 0.72 + index * 0.22]} rotation={[-Math.PI / 2, 0, 0.035]}>
-          <planeGeometry args={[2.15, 0.012]} />
-          <meshBasicMaterial color="#b5a58a" transparent opacity={0.45} />
-        </mesh>
-      ))}
+      <Text
+        position={[1.53, 0.18, 0.72]}
+        rotation={[-Math.PI / 2, 0, 0.035]}
+        fontSize={0.095}
+        maxWidth={2.15}
+        lineHeight={1.28}
+        textAlign="left"
+        color="#6d5b47"
+        anchorX="center"
+        anchorY="top"
+      >
+        {(BRIDGER_CROSSING_NOTEBOOK.steps[pageIndex]?.meaning || '').slice(0, 260)}
+      </Text>
 
       <mesh position={[-2.77, 0.3, -1.63]} castShadow>
         <cylinderGeometry args={[0.08, 0.1, 0.34, 12]} />
