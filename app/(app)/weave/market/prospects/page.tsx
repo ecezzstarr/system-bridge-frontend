@@ -216,7 +216,7 @@ export default function ProspectMarketPage() {
           </div>
           <div>
             <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic">Prospect Marketplace</h1>
-            <p className="text-slate-400 font-medium">Acquire qualified leads for your Bridge AI.</p>
+            <p className="text-slate-400 font-medium">Acquire Prospect candidates and begin truthful human outreach.</p>
           </div>
         </div>
 
@@ -274,7 +274,7 @@ export default function ProspectMarketPage() {
                       <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
                         <div className="flex items-center gap-2 mb-2">
                           <CheckCircle2 className="h-3 w-3 text-green-500" />
-                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Verified WhatsApp Numbers</span>
+                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Prospect Contact Numbers</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="h-3 w-3 text-green-500" />
