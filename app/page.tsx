@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowRight,
   BriefcaseBusiness,
   Crown,
   DoorOpen,
+  Flame,
   Gamepad2,
   Network,
   Orbit,
@@ -22,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
+import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
 
 const WeaveHero3D = dynamic(
   () => import('@/components/weave-hero-3d').then(m => m.WeaveHero3D),
@@ -51,6 +53,7 @@ const systems = [
 export default function Home() {
   const { user } = useAuth()
   const router = useRouter()
+  const [flameEventLive,setFlameEventLive]=useState(()=>resolveEventStatus(FLAME_EVENT,new Date())==='active')
 
   useEffect(() => {
     if (!user) return
@@ -60,6 +63,18 @@ export default function Home() {
     else if (user.role === 'admin') router.replace('/admin/dashboard')
     else router.replace('/dashboard')
   }, [user, router])
+
+  useEffect(()=>{
+    const controller=new AbortController()
+    fetch('/api/events/flame',{cache:'no-store',signal:controller.signal})
+      .then(res=>res.json())
+      .then(data=>{
+        const event=data?.success&&data.event?data.event:FLAME_EVENT
+        setFlameEventLive((event.effectiveStatus||resolveEventStatus(event,new Date()))==='active')
+      })
+      .catch(()=>{})
+    return ()=>controller.abort()
+  },[])
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-transparent text-white" data-public-weave-world>
@@ -96,6 +111,19 @@ export default function Home() {
             </div>
           </div>
         </nav>
+
+        {flameEventLive&&(
+          <div className="border-b border-orange-300/15 bg-orange-400/[.035] px-3 py-2 sm:px-5" data-public-flame-event="live">
+            <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
+              <p className="inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.18em] text-orange-100">
+                <Flame className="h-3.5 w-3.5 text-orange-200"/> Flame Event Live · Burning River · The River that Burns
+              </p>
+              <Link href="/market" className="inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.14em] text-emerald-200">
+                Visit open Client Customer Doors <ArrowRight className="h-3 w-3"/>
+              </Link>
+            </div>
+          </div>
+        )}
 
         <main className="mx-auto w-full max-w-6xl px-3 pb-16 pt-4 sm:px-5 sm:pt-7" data-weave-public-entry-world="true">
           <section className="relative overflow-hidden rounded-[1.7rem] border border-sky-300/10 bg-[#030a15]/52 p-4 shadow-[0_30px_100px_rgba(2,8,23,.5)] backdrop-blur-md sm:p-6 md:p-8">
