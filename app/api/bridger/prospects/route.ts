@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { sql } from '@/lib/db'\nimport { getWeaveBridgeOrigin } from '@/lib/weave-origin'
+import { sql } from '@/lib/db'
+import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
 // GET - list this Bridger's purchased prospects + their saved WhatsApp number
 export async function GET(request: NextRequest) {
