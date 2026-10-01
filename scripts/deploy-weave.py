@@ -27,6 +27,7 @@ def smoke(url,expected_sha):
   health=json.load(response)
   assert response.status==200 and health.get('status')=='healthy','WEAVE health check failed'
   assert health.get('releaseSha')==expected_sha,'Served revision does not match the verified Git commit'
+  assert health.get('passwordRecoveryProvider')=='gmail','Google/Gmail is not the active password-recovery transport'
  with urllib.request.urlopen(url,timeout=60) as response:
   body=response.read().decode()
   assert response.status==200, 'WEAVE homepage unavailable'
@@ -57,6 +58,15 @@ def main():
   run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rev+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
   try:
    smoke(PUBLIC_ORIGIN,sha)
+   request=urllib.request.Request(
+    PUBLIC_ORIGIN+'/api/auth/forgot-password',
+    data=json.dumps({'email':'ecezzstarr@gmail.com'}).encode(),
+    headers={'Content-Type':'application/json'},
+    method='POST',
+   )
+   with urllib.request.urlopen(request,timeout=60) as response:
+    recovery=json.load(response)
+    assert response.status==200 and recovery.get('success') is True,'Live Google password recovery request failed'
   except Exception:
    run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rollback_revision+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
    raise
