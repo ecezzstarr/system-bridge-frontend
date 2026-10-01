@@ -151,6 +151,7 @@ export async function POST(request: NextRequest) {
       `SELECT m.*
        FROM market_prospect_contacts m
        WHERE m.status = 'available'
+         AND m.channel = 'whatsapp'
          AND m.package_id IS NULL
          AND COALESCE(NULLIF(TRIM(m.whatsapp_number), ''), NULLIF(TRIM(m.phone), '')) IS NOT NULL
          AND NOT EXISTS (
