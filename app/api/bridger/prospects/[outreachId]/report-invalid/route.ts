@@ -71,6 +71,7 @@ export async function POST(
       `SELECT id, phone, whatsapp_number, name
        FROM market_prospect_contacts
        WHERE status = 'available'
+         AND channel = 'whatsapp'
        ORDER BY created_at ASC
        LIMIT 2
        FOR UPDATE SKIP LOCKED`
