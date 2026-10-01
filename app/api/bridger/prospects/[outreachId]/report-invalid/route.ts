@@ -39,7 +39,11 @@ export async function POST(
       await client.query('ROLLBACK')
       return NextResponse.json({ success: false, error: 'Prospect not found or not yours' }, { status: 404 })
     }
-    if (outreach.channel !== 'whatsapp') {\n      await client.query('ROLLBACK')\n      return NextResponse.json({ success: false, error: 'This report action is only for WhatsApp Prospects' }, { status: 400 })\n    }\n    if (outreach.status === 'invalid_number') {
+    if (outreach.channel !== 'whatsapp') {
+      await client.query('ROLLBACK')
+      return NextResponse.json({ success: false, error: 'This report action is only for WhatsApp Prospects' }, { status: 400 })
+    }
+    if (outreach.status === 'invalid_number') {
       await client.query('ROLLBACK')
       return NextResponse.json({ success: false, error: 'Already reported' }, { status: 400 })
     }
