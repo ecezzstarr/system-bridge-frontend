@@ -172,23 +172,6 @@ export async function createProspectPackage(
   const client=await getPool().connect()
   try{
     await client.query('BEGIN')
-    const result=await client.query(
-      `SELECT id,channel
-       FROM market_prospect_contacts
-       WHERE id=ANY($1::uuid[])
-       FOR UPDATE`,
-      [contactIds],
-    )
-    const contacts=result.rows
-    if(contacts.length!==contactIds.length){
-      await client.query('ROLLBACK')
-      throw new Error('One or more Prospects do not exist')
-    }
-    if(contacts.some((contact:any)=>contact.status&&contact.status!=='available')){
-      await client.query('ROLLBACK')
-      throw new Error('One or more Prospects are no longer available')
-    }
-
     const state=await client.query(
       `SELECT id,channel,status
        FROM market_prospect_contacts
@@ -196,6 +179,10 @@ export async function createProspectPackage(
        FOR UPDATE`,
       [contactIds],
     )
+    if(state.rows.length!==contactIds.length){
+      await client.query('ROLLBACK')
+      throw new Error('One or more Prospects do not exist')
+    }
     if(state.rows.some((contact:any)=>contact.status!=='available')){
       await client.query('ROLLBACK')
       throw new Error('One or more Prospects are no longer available')
