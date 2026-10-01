@@ -18,7 +18,7 @@ September 16–17 Company Loops, Client Position, and Agreements changes are int
 
 ## Verification standard
 
-A green source build is not a production verification. A WEAVE release is verified only after the zero-traffic candidate reports the exact Git SHA, Google/Gmail is the active recovery transport, production traffic is explicitly promoted, the public domain reports the same SHA, and a real production password-recovery request is accepted. If the post-promotion live checks fail, deployment automatically restores 100% traffic to the previous serving revision.
+A green source build is not a production verification. A WEAVE release is verified only after the zero-traffic candidate reports the exact Git SHA, the configured password-recovery transport is active, production traffic is explicitly promoted, the public domain reports the same SHA, and a real production password-recovery request is accepted. If the post-promotion live checks fail, deployment automatically restores 100% traffic to the previous serving revision.
 
 The deployment path therefore distinguishes **built**, **candidate verified**, **promoted**, and **LIVE VERIFIED**. Only the final state is treated as complete.
 
@@ -30,18 +30,14 @@ The previous automatic Cloud Build trigger is disabled to prevent unwanted revis
 
 ## Password recovery email
 
-Password recovery for Agent, Bridger, Client, and Administration accounts uses one-time email codes. Google/Gmail is the primary delivery transport.
+Password recovery for Agent, Bridger, Client, and Administration accounts uses one-time email codes through the existing WEAVE mail transport.
 
-Production Cloud Run must preserve these runtime settings:
+Production Cloud Run preserves:
+- `PASSWORD_RECOVERY_EMAIL_FROM`: `WEAVE Access <access@weavingsystem.online>`
+- `PASSWORD_RECOVERY_REPLY_TO`: the WEAVE Administration email
+- the existing `RESEND_API_KEY` runtime secret
 
-- `PASSWORD_RECOVERY_GMAIL_USER`: the Gmail account that sends WEAVE recovery messages.
-- `PASSWORD_RECOVERY_GMAIL_APP_PASSWORD`: supplied from Secret Manager secret `weave-gmail-app-password`; never commit the value.
-- `PASSWORD_RECOVERY_GMAIL_FROM_NAME`: `WEAVE Access`.
-- `PASSWORD_RECOVERY_REPLY_TO`: the WEAVE Administration email used for replies.
-
-The existing Resend settings remain an explicit fallback only when they are already configured. If neither Google/Gmail nor the fallback transport is configured, the recovery API reports that email recovery is unavailable instead of claiming a code was sent. Recovery codes expire after 15 minutes, are rate-limited, and successful reset closes prior sessions. The recovery database schema is created idempotently at runtime and is also recorded in `migrations/20260930_password_recovery.sql`.
-
-Google SMTP authentication must use a Google app-specific credential or another Google-authorized non-interactive credential; do not store the normal Google account password in Cloud Run.
+The Gmail SMTP/app-password path and `weave-gmail-app-password` Secret Manager dependency are removed. Recovery codes expire after 15 minutes, are rate-limited, and successful reset closes prior sessions.
 
 
 ## Recent feature recovery
