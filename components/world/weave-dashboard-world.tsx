@@ -91,7 +91,7 @@ export function WeaveDashboardWorld({
     : districts
 
   return <section
-    className="weave-dashboard-world relative w-full overflow-x-clip bg-[#03080e] sm:h-[calc(100dvh-3.8rem)] sm:min-h-[640px] sm:overflow-hidden"
+    className="weave-dashboard-world relative min-h-[calc(100svh-3.5rem)] w-full overflow-x-clip bg-transparent sm:h-[calc(100dvh-3.8rem)] sm:min-h-[640px] sm:overflow-hidden"
     data-role-world={role}
     data-client-world={role==='client'?'open-territory':undefined}
     data-world-organization="presence-district-place"
@@ -115,11 +115,11 @@ export function WeaveDashboardWorld({
     </header>
 
 
-    <div className="relative z-20 mx-3 mt-4 space-y-2 pb-[max(.75rem,env(safe-area-inset-bottom))] sm:hidden" data-mobile-role-world="content-height-travel-field">
+    <div className="relative z-20 mx-3 mt-4 flex min-h-[calc(100svh-13rem)] flex-col pb-[max(.75rem,env(safe-area-inset-bottom))] sm:hidden" data-mobile-role-world="full-height-travel-field">
       <Link
         href={copy.centerHref}
         data-role-presence-gate={role}
-        className="group flex min-h-16 w-full items-center gap-3 rounded-2xl border border-sky-100/15 bg-[#06131d]/86 px-4 py-3 shadow-[0_0_34px_rgba(56,189,248,.10)] backdrop-blur-md"
+        className="group mb-2 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-sky-100/15 bg-[#06131d]/72 px-4 py-3 shadow-[0_0_34px_rgba(56,189,248,.10)] backdrop-blur-md"
       >
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sky-100/25 bg-black/20">
           <CircleUserRound className="h-5 w-5 text-sky-100"/>
@@ -130,7 +130,7 @@ export function WeaveDashboardWorld({
         </span>
       </Link>
 
-      <div className="border-y border-white/[.07] py-2">
+      <div className="my-2 border-y border-white/[.07] py-2">
         <p className="px-1 text-[8px] font-black uppercase tracking-[.14em] text-sky-300">District travel</p>
       </div>
 
@@ -143,7 +143,7 @@ export function WeaveDashboardWorld({
           data-role-world-beacon={district.name}
           data-client-world-beacon={role==='client'?district.name:undefined}
           data-world-district={district.key}
-          className="group flex min-h-16 w-full items-center gap-3 border-b border-white/[.06] px-2 py-3"
+          className="group flex min-h-20 w-full flex-1 items-center gap-3 border-b border-white/[.06] px-2 py-3"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cyan-100/20 bg-[#03101a]/88">
             <DistrictIcon className="h-4 w-4 text-cyan-100"/>
@@ -151,6 +151,7 @@ export function WeaveDashboardWorld({
           <span className="min-w-0 flex-1">
             <span className="block text-[10px] font-black uppercase tracking-[.08em] text-white">{district.name}</span>
             <span className="mt-0.5 block text-[9px] leading-4 text-slate-400">{district.places.length} place{district.places.length===1?'':'s'} · {district.subtitle}</span>
+            <span className="mt-1 block max-w-[30rem] text-[8px] leading-4 text-slate-500">{district.purpose}</span>
           </span>
           <span className="shrink-0 text-[10px] font-black text-cyan-200/70">{String(index+1).padStart(2,'0')}</span>
         </Link>
