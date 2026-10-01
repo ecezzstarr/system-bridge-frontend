@@ -14,6 +14,7 @@ import {
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
 import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { visiblePoll } from '@/lib/visible-poll'
+import { getRolePlaces } from '@/lib/weave-role-districts'
 
 const ROLE_LABELS: Record<EventRole, string> = {
   client: 'CLIENT',
@@ -47,26 +48,24 @@ export default function PositionEventWorld({
 
   useEffect(() => {
     let mounted = true
-    fetch('/api/events/flame', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => {
-        if (mounted && data?.success && data.event) setEvent(data.event)
-      })
-      .catch(() => {})
-    return () => { mounted = false }
+    const stop = visiblePoll(async signal => {
+      const res = await fetch('/api/events/flame', { cache: 'no-store', signal })
+      const data = await res.json()
+      if (mounted && data?.success && data.event) setEvent(data.event)
+    }, 15000)
+    return () => { mounted = false; stop() }
   }, [])
 
   useEffect(() => {
     let mounted = true
-    fetch('/api/public/client-market', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => {
-        if (mounted && data?.success && Array.isArray(data.enterprises)) {
-          setEnterprises(data.enterprises.slice(0, 9))
-        }
-      })
-      .catch(() => {})
-    return () => { mounted = false }
+    const stop = visiblePoll(async signal => {
+      const res = await fetch('/api/public/client-market', { cache: 'no-store', signal })
+      const data = await res.json()
+      if (mounted && data?.success && Array.isArray(data.enterprises)) {
+        setEnterprises(data.enterprises.slice(0, 9))
+      }
+    }, 12000)
+    return () => { mounted = false; stop() }
   }, [])
 
   const position = event.positions[role] || FLAME_EVENT.positions[role]
@@ -102,6 +101,23 @@ export default function PositionEventWorld({
       icon: Waves,
     },
   ] as const
+
+  const eventStations = useMemo(() => {
+    const selfEventHref = role === 'client' ? '/client/event' : '/event'
+    const available = getRolePlaces(role).filter(place =>
+      place.href !== selfEventHref &&
+      place.label !== 'Settings'
+    )
+    const daily = available.filter(place => place.daily)
+    const additional = available.filter(place => !place.daily)
+    const merged = [...daily, ...additional]
+    const seen = new Set<string>()
+    return merged.filter(place => {
+      if (seen.has(place.href)) return false
+      seen.add(place.href)
+      return true
+    }).slice(0, 6)
+  }, [role])
 
   return (
     <section
@@ -205,7 +221,7 @@ export default function PositionEventWorld({
               <p className="text-[8px] font-black uppercase tracking-[.22em] text-emerald-200">Client Enterprise Current</p>
               <h2 className="mt-1 text-xl font-black text-white">Customer Doors carried into Flame Event</h2>
               <p className="mt-2 max-w-3xl text-[11px] leading-5 text-stone-400">
-                The Client File Folder remains private to its Client. Flame Event carries only the public enterprise that has crossed through an opened Customer Door. Administration, Agents, Bridgers and Clients enter through that Door rather than another Client&apos;s System Switch.
+                The Client File Folder remains private to its Client. Flame Event carries only the public enterprise that has crossed through an opened Customer Door. Logged-in staff meet those Doors here; the Client keeps ownership of the private System Switch.
               </p>
             </div>
             <span className="text-[9px] font-black uppercase tracking-[.14em] text-emerald-200">
@@ -297,18 +313,22 @@ export default function PositionEventWorld({
           </div>
 
           <div className="mt-5 grid border-y border-white/8 sm:grid-cols-2 lg:grid-cols-3">
-            {position.focus.map((item, index) => (
-              <div
-                key={item}
+            {eventStations.map((station, index) => (
+              <Link
+                key={station.href}
+                href={station.href}
                 data-weave-route-station
-                className="group flex min-h-24 items-start gap-3 border-b border-white/8 px-1 py-4 sm:px-4 sm:[&:nth-last-child(-n+2)]:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
+                data-flame-event-function-gate={station.label}
+                className="group flex min-h-24 items-start gap-3 border-b border-white/8 px-1 py-4 transition hover:bg-white/[.025] sm:px-4 sm:[&:nth-last-child(-n+2)]:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
               >
                 <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-200/80" />
-                <div>
-                  <p className="text-[8px] font-black uppercase tracking-[.15em] text-white/25">Station {String(index + 1).padStart(2, '0')}</p>
-                  <p data-weave-live-word="station" className="mt-1 text-[11px] font-bold leading-5 text-stone-200">{item}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[8px] font-black uppercase tracking-[.15em] text-white/25">Gate {String(index + 1).padStart(2, '0')} · {station.district}</p>
+                  <p data-weave-live-word="station" className="mt-1 text-[11px] font-bold leading-5 text-stone-200">{station.label}</p>
+                  <p className="mt-1 text-[9px] leading-4 text-stone-500">{station.detail}</p>
                 </div>
-              </div>
+                <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-orange-200/60 transition group-hover:translate-x-1"/>
+              </Link>
             ))}
           </div>
         </section>
