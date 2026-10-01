@@ -7,8 +7,12 @@ import { ensureWeaveMailboxSchema } from '@/lib/weave-mailbox'
 // Route name is kept for compatibility; response contains the full Prospect funnel.
 export async function GET(request:NextRequest){
   const authUser=await getAuthUser(request)
-  if(!authUser)return NextResponse.json({error:'Unauthorized'},{status:401})
-  if(authUser.role!=='admin')return NextResponse.json({error:'Administration access required'},{status:403})
+  if (!authUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  if (authUser.role !== 'admin') {
+    return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
+  }
 
   try{
     await Promise.all([ensureMarketTables(),ensureWeaveMailboxSchema()])
