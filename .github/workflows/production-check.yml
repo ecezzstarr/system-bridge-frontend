@@ -39,3 +39,6 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Container build
+        run: docker build --progress=plain -t weave-production-check .

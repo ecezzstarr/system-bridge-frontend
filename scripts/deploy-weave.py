@@ -27,6 +27,7 @@ def smoke(url,expected_sha):
   health=json.load(response)
   assert response.status==200 and health.get('status')=='healthy','WEAVE health check failed'
   assert health.get('releaseSha')==expected_sha,'Served revision does not match the verified Git commit'
+  assert health.get('passwordRecoveryProvider')=='gmail','Google/Gmail is not the active password-recovery transport'
  with urllib.request.urlopen(url,timeout=60) as response:
   body=response.read().decode()
   assert response.status==200, 'WEAVE homepage unavailable'
@@ -57,6 +58,15 @@ def main():
   run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rev+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
   try:
    smoke(PUBLIC_ORIGIN,sha)
+   request=urllib.request.Request(
+    PUBLIC_ORIGIN+'/api/auth/forgot-password',
+    data=json.dumps({'email':'ecezzstarr@gmail.com'}).encode(),
+    headers={'Content-Type':'application/json'},
+    method='POST',
+   )
+   with urllib.request.urlopen(request,timeout=60) as response:
+    recovery=json.load(response)
+    assert response.status==200 and recovery.get('success') is True,'Live Google password recovery request failed'
   except Exception:
    run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rollback_revision+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
    raise
@@ -85,6 +95,8 @@ def main():
   'APP_URL':PUBLIC_ORIGIN,
   'NEXT_PUBLIC_BRIDGE_URL':PUBLIC_ORIGIN,
   'WEAVE_RELEASE_SHA':sha,
+  'PASSWORD_RECOVERY_GMAIL_USER':'ecezzstarr@gmail.com',
+  'PASSWORD_RECOVERY_GMAIL_FROM_NAME':'WEAVE Access',
   'PASSWORD_RECOVERY_EMAIL_FROM':'WEAVE Access <access@weavingsystem.online>',
   'PASSWORD_RECOVERY_REPLY_TO':'ecezzstarr@gmail.com',
  }
@@ -94,6 +106,10 @@ def main():
    existing.clear();existing.update({'name':name,'value':value})
   else:
    env.append({'name':name,'value':value})
+ gmail_secret=next((e for e in env if e.get('name')=='PASSWORD_RECOVERY_GMAIL_APP_PASSWORD'),None)
+ if not gmail_secret:
+  run('gcloud','secrets','describe','weave-gmail-app-password','--project='+PROJECT,'--quiet')
+  env.append({'name':'PASSWORD_RECOVERY_GMAIL_APP_PASSWORD','valueFrom':{'secretKeyRef':{'name':'weave-gmail-app-password','key':'latest'}}})
  annotations={k:v for k,v in baseline['metadata'].get('annotations',{}).items() if k.startswith('autoscaling.knative.dev/') or k in ['run.googleapis.com/cloudsql-instances','run.googleapis.com/startup-cpu-boost','run.googleapis.com/cpu-throttling','run.googleapis.com/vpc-access-connector','run.googleapis.com/vpc-access-egress','run.googleapis.com/execution-environment']}
  active_revision=active[0]['revisionName']
  traffic=[
