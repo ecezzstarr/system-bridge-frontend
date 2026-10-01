@@ -23,6 +23,7 @@ type Outreach={
   message_sent:string
   provider_message_id:string|null
   delivery_error:string|null
+  reply_detected_at:string|null
   status:string
   sent_at:string|null
   last_activity_at:string
@@ -120,6 +121,7 @@ export default function OutreachMovementRegistryPage(){
                       {row.channel==='email'&&row.sender_email&&<p className="mt-1 break-all text-[9px] text-slate-500">Mailbox {row.sender_email}</p>}
                       <p className="mt-3 text-[9px] font-black uppercase tracking-[0.1em]">{meta.label}</p>
                       {row.delivery_error&&<p className="mt-2 text-[10px] leading-5 text-rose-200">Delivery: {row.delivery_error}</p>}
+                      {row.reply_detected_at&&<p className="mt-2 text-[10px] leading-5 text-emerald-200">Google reply detected · {new Date(row.reply_detected_at).toLocaleString()}</p>}
                       {row.message_sent&&<p className="mt-2 line-clamp-2 text-[10px] leading-5 text-slate-300">{row.message_sent}</p>}
                       {row.provider_message_id&&<p className="mt-2 break-all font-mono text-[8px] text-slate-600">Message {row.provider_message_id}</p>}
                     </div>
