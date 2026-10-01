@@ -20,9 +20,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Administration authentication required' }, { status: 401 })
   }
 
-  await ensureEmailOutreachSchema()
-  const pool = getPool()
-  const [sender, automation, counts, leads, recent] = await Promise.all([
+  try {
+    await ensureEmailOutreachSchema()
+    const pool = getPool()
+    const [sender, automation, counts, leads, recent] = await Promise.all([
     senderForUser(user.id),
     pool.query(
       `SELECT enabled,daily_limit,subject_template,message_template,updated_at
@@ -56,10 +57,11 @@ export async function GET(request: NextRequest) {
     ),
   ])
 
-  return NextResponse.json({
+    return NextResponse.json({
     success: true,
     providerConfigured: emailOutreachProviderConfigured(),
     sender,
+    accountEmail: user.email,
     automation: automation.rows[0] || {
       enabled: false,
       daily_limit: EMAIL_OUTREACH_ADMIN_DAILY_LIMIT,
@@ -69,7 +71,14 @@ export async function GET(request: NextRequest) {
     counts: counts.rows[0] || {},
     leads: leads.rows,
     recent: recent.rows,
-  })
+    })
+  } catch (error) {
+    console.error('[admin-email-outreach] GET failed', error)
+    return NextResponse.json(
+      { error: 'Email Outreach could not open. The runtime will retry schema initialization on the next request.' },
+      { status: 503 },
+    )
+  }
 }
 
 export async function POST(request: NextRequest) {
