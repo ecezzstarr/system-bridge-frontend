@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getApiUser } from '@/lib/api-auth'
 import { ensureWeaveAdsSchema, WEAVE_AD_PLACEMENTS } from '@/lib/weave-ads'
 import { sql } from '@/lib/db'
+import { getFlameEvent } from '@/lib/weave-event-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,8 @@ export async function GET(request: NextRequest) {
     }
 
     await ensureWeaveAdsSchema()
+    const flameEvent = await getFlameEvent()
+    const activeEventKey = flameEvent.effectiveStatus === 'active' ? flameEvent.key : null
 
     const requestedPlacement = request.nextUrl.searchParams.get('placement')
     const placement = requestedPlacement && WEAVE_AD_PLACEMENTS.includes(requestedPlacement as any)
@@ -30,6 +33,7 @@ export async function GET(request: NextRequest) {
             AND start_at <= NOW()
             AND (end_at IS NULL OR end_at > NOW())
             AND ('all' = ANY(target_roles) OR ${user.role} = ANY(target_roles))
+            AND (event_key IS NULL OR event_key = ${activeEventKey})
             AND ('all' = ANY(placements) OR ${placement} = ANY(placements))
           ORDER BY priority DESC, published_at DESC NULLS LAST, created_at DESC
         `
@@ -43,6 +47,7 @@ export async function GET(request: NextRequest) {
             AND start_at <= NOW()
             AND (end_at IS NULL OR end_at > NOW())
             AND ('all' = ANY(target_roles) OR ${user.role} = ANY(target_roles))
+            AND (event_key IS NULL OR event_key = ${activeEventKey})
           ORDER BY priority DESC, published_at DESC NULLS LAST, created_at DESC
         `
 
