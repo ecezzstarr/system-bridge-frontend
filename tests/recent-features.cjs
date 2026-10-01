@@ -1505,3 +1505,44 @@ for(const file of [
  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
  assert.equal(syntaxErrors.length,0,file+' environment-world syntax/transpile check')
 }
+
+const agentBridgerStatsIntegritySource=fs.readFileSync(path.join(root,'app/api/agent/bridger-stats/route.ts'),'utf8')
+const agentBridgerPageIntegritySource=fs.readFileSync(path.join(root,'app/(app)/agent/bridgers/page.tsx'),'utf8')
+const echoContinuanceIntegritySource=fs.readFileSync(path.join(root,'lib/echo-db.ts'),'utf8')
+const bridgeAiContinuanceIntegritySource=fs.readFileSync(path.join(root,'lib/bridge-ai-subscription.ts'),'utf8')
+const bridgerContinuanceIntegritySource=fs.readFileSync(path.join(root,'lib/bridger-subscription.ts'),'utf8')
+const opayWithdrawalIntegritySource=fs.readFileSync(path.join(root,'app/api/wallet/withdraw/opay/route.ts'),'utf8')
+const retiredMockSweepsIntegritySource=fs.readFileSync(path.join(root,'app/api/admin/sweeps/route.ts'),'utf8')
+const eightCommandIntegritySource=fs.readFileSync(path.join(root,'app/api/eight/command/route.ts'),'utf8')
+const mockDbIntegritySource=fs.readFileSync(path.join(root,'lib/mock-db.ts'),'utf8')
+
+assert.ok(agentBridgerStatsIntegritySource.includes('getAuthUser')&&agentBridgerStatsIntegritySource.includes("agent.role !== 'agent'"),'Agent Bridger statistics require an authenticated Agent')
+assert.ok(agentBridgerStatsIntegritySource.includes('assigned_agent_id=${agent.id}::uuid'),'Agent Bridger statistics are limited to the authenticated Agent relationship')
+assert.ok(agentBridgerPageIntegritySource.includes('bridger-stats?bridgerId=')&&agentBridgerPageIntegritySource.includes("headers: getAuthHeaders(), cache: 'no-store'"),'Agent Bridger statistics request carries authentication')
+assert.ok(echoContinuanceIntegritySource.includes('getPool().connect()')&&echoContinuanceIntegritySource.includes("client.query('BEGIN')"),'Echo Continuance uses one pinned database transaction')
+assert.ok(!echoContinuanceIntegritySource.includes('await sql`BEGIN`'),'Echo Continuance no longer uses pooled pseudo-transactions')
+assert.ok(bridgeAiContinuanceIntegritySource.includes('getPool().connect()')&&bridgeAiContinuanceIntegritySource.includes("client.query('BEGIN')"),'Bridge AI Continuance uses one pinned database transaction')
+assert.ok(!bridgeAiContinuanceIntegritySource.includes('await sql`BEGIN`'),'Bridge AI Continuance no longer uses pooled pseudo-transactions')
+assert.ok(bridgerContinuanceIntegritySource.includes('const client = await getPool().connect()'),'Manual Bridger Continuance mutations use pinned transactions')
+assert.ok(!bridgerContinuanceIntegritySource.includes('await sql`BEGIN`'),'Bridger Continuance has no pooled pseudo-transaction remaining')
+assert.ok(opayWithdrawalIntegritySource.includes("status IN ('pending','approved')")&&opayWithdrawalIntegritySource.includes('FOR UPDATE'),'OPay withdrawal reserves already-pending movement under a wallet lock')
+assert.ok(retiredMockSweepsIntegritySource.includes('status: 410')&&!retiredMockSweepsIntegritySource.includes("from '@/lib/mock-db'"),'Legacy in-memory Administration sweep route is retired')
+assert.ok(!eightCommandIntegritySource.includes("from '@/lib/mock-db'"),'Live EIGHT has no mock database dependency')
+for(const literal of ['SSBOperator@2026','PlatformAdmin@2026','Agent@2026','Bridger@2026']) assert.ok(!mockDbIntegritySource.includes(literal),'Mock credentials are not hard-coded in source')
+
+for(const file of [
+  'app/api/agent/bridger-stats/route.ts',
+  'app/(app)/agent/bridgers/page.tsx',
+  'lib/echo-db.ts',
+  'lib/bridge-ai-subscription.ts',
+  'lib/bridger-subscription.ts',
+  'app/api/wallet/withdraw/opay/route.ts',
+  'app/api/admin/sweeps/route.ts',
+  'app/api/eight/command/route.ts',
+  'lib/mock-db.ts',
+]){
+  const source=fs.readFileSync(path.join(root,file),'utf8')
+  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
+  const syntaxErrors=(compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error)
+  assert.equal(syntaxErrors.length,0,file+' core-integrity syntax/transpile check')
+}
