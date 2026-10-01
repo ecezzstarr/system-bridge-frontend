@@ -114,6 +114,7 @@ export async function ensureMarketTables() {
         sender_mailbox_id UUID,
         provider_message_id VARCHAR(255),
         delivery_error TEXT,
+        reply_detected_at TIMESTAMPTZ,
         status VARCHAR(20) NOT NULL DEFAULT 'pending',
         message_sent TEXT,
         sent_at TIMESTAMPTZ,
@@ -125,6 +126,7 @@ export async function ensureMarketTables() {
     await sql`ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS sender_mailbox_id UUID`
     await sql`ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS provider_message_id VARCHAR(255)`
     await sql`ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS delivery_error TEXT`
+    await sql`ALTER TABLE market_prospect_outreach ADD COLUMN IF NOT EXISTS reply_detected_at TIMESTAMPTZ`
 
     return true
   } catch (error) {
