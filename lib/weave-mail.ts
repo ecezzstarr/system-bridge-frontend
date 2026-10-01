@@ -110,6 +110,7 @@ export async function sendAuthenticatedGoogleMail(input:{
   text:string
   html?:string|null
   replyTo?:string|null
+  listUnsubscribe?:string|null
 }){
   const recipient=normalizeMailAddress(input.to)
   if(!isValidMailAddress(recipient))throw new Error('Recipient email is invalid')
@@ -126,6 +127,10 @@ export async function sendAuthenticatedGoogleMail(input:{
     `To: <${recipient}>`,
     `Subject: ${safeHeader(input.subject)}`,
     ...(replyTo&&isValidMailAddress(replyTo)?[`Reply-To: <${replyTo}>`]:[]),
+    ...(input.listUnsubscribe?[
+      `List-Unsubscribe: <${safeHeader(input.listUnsubscribe)}>`,
+      'List-Unsubscribe-Post: List-Unsubscribe=One-Click',
+    ]:[]),
     `Date: ${new Date().toUTCString()}`,
     `Message-ID: ${messageId}`,
     'MIME-Version: 1.0',
