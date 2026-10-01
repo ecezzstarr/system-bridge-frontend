@@ -1,8 +1,10 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { Flame, Waves } from 'lucide-react'
+import { FLAME_EVENT, resolveEventStatus, type WeaveEvent } from '@/lib/weave-event'
+import { visiblePoll } from '@/lib/visible-poll'
 
 export function FlameEventRoleAtmosphere({
   children,
@@ -17,6 +19,9 @@ export function FlameEventRoleAtmosphere({
 }) {
   const routePath = usePathname()
   const currentPath = pathname || routePath || '/'
+  const [event,setEvent]=useState<WeaveEvent>(FLAME_EVENT)
+  const [now,setNow]=useState(()=>new Date())
+
   const roleLabel = userRole === 'admin'
     ? 'ADMINISTRATION'
     : userRole === 'agent'
@@ -27,31 +32,45 @@ export function FlameEventRoleAtmosphere({
           ? 'CLIENT'
           : 'WEAVE'
 
+  useEffect(()=>{
+    const stopEvent=visiblePoll(async signal=>{
+      const response=await fetch('/api/events/flame',{cache:'no-store',signal})
+      const data=await response.json()
+      if(data?.success&&data.event)setEvent(data.event)
+    },60000)
+    const stopClock=visiblePoll(()=>setNow(new Date()),30000)
+    return ()=>{stopEvent();stopClock()}
+  },[])
+
+  const active=useMemo(
+    ()=>(event.effectiveStatus||resolveEventStatus(event,now))==='active',
+    [event,now],
+  )
+
   return (
     <div
       className="flame-event-role-atmosphere relative min-w-0"
       data-flame-event-role={roleLabel.toLowerCase()}
       data-flame-event-path={currentPath}
+      data-flame-event-active={active?'true':'false'}
     >
-      <div
-        className="flame-event-role-signal pointer-events-none fixed right-4 top-20 z-[4] max-w-[15rem] rounded-2xl border border-orange-300/20 bg-[#160805]/82 px-3 py-2.5 text-right shadow-[0_18px_55px_rgba(69,10,10,.2)] backdrop-blur-xl lg:right-8"
-        aria-hidden="true"
-        data-flame-event-marker="burning-river"
-      >
-        <div className="flex items-center justify-end gap-2 text-orange-200">
-          <Waves className="h-3.5 w-3.5" />
-          <p className="text-[8px] font-black uppercase tracking-[.24em]">Burning River</p>
-          <Flame className="h-3.5 w-3.5" />
+      {active&&(
+        <div
+          className="flame-event-role-signal flex min-w-0 items-center justify-between gap-3 border-y border-orange-300/10 bg-orange-400/[.025] px-3 py-1.5 text-[7px] font-black uppercase tracking-[.16em] text-orange-100/70 sm:px-5"
+          aria-label="Flame Event live state"
+          data-flame-event-marker="burning-river"
+        >
+          <span className="inline-flex min-w-0 items-center gap-2">
+            <Waves className="h-3 w-3 shrink-0 text-sky-200/70"/>
+            <span className="truncate">Burning River · Flame Event Live</span>
+            <Flame className="h-3 w-3 shrink-0 text-orange-200/80"/>
+          </span>
+          <span className="hidden shrink-0 text-white/30 sm:inline">
+            {roleLabel}{userName ? ` · ${userName}` : ''}
+          </span>
         </div>
-        <p className="mt-1 text-[7px] font-bold uppercase tracking-[.18em] text-rose-100/60">
-          Flame Event · The River that Burns
-        </p>
-        <p className="mt-1 text-[7px] uppercase tracking-[.14em] text-white/30">
-          {roleLabel}{userName ? ` · ${userName}` : ''}
-        </p>
-      </div>
-
-      <div className="relative z-[3] min-w-0">{children}</div>
+      )}
+      <div className="relative min-w-0">{children}</div>
     </div>
   )
 }
