@@ -137,18 +137,26 @@ async function synchronizeFlameEventLifecycle(event: WeaveEvent): Promise<WeaveE
   const effectiveStatus = resolveEventStatus(event)
   const loopStage = effectiveStatus === 'closed' ? 'Closing' : effectiveStatus === 'active' ? 'Movement' : 'Preparing'
   const loopStatus = effectiveStatus === 'closed' ? 'archived' : 'published'
+  const legacyPreparingAnnouncement = event.announcement.includes('preparing the event ground')
+  const announcement = effectiveStatus === 'active' && legacyPreparingAnnouncement
+    ? FLAME_EVENT.announcement
+    : event.announcement
 
   // Auto-start and the end boundary are real state transitions, not only
   // presentation labels. Persist them once so every Loop/Event consumer sees
   // the same lifecycle.
-  if (effectiveStatus !== event.status) {
+  if (effectiveStatus !== event.status || announcement !== event.announcement) {
     await sql`
       UPDATE weave_events
       SET
         status = ${effectiveStatus},
+        announcement = ${announcement},
         updated_at = NOW()
       WHERE event_key = ${event.key}
-        AND status <> ${effectiveStatus}
+        AND (
+          status <> ${effectiveStatus}
+          OR announcement IS DISTINCT FROM ${announcement}
+        )
     `
   }
 
@@ -172,6 +180,7 @@ async function synchronizeFlameEventLifecycle(event: WeaveEvent): Promise<WeaveE
   return {
     ...event,
     status: effectiveStatus,
+    announcement,
     effectiveStatus,
   }
 }
