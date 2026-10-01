@@ -85,6 +85,8 @@ def main():
   'APP_URL':PUBLIC_ORIGIN,
   'NEXT_PUBLIC_BRIDGE_URL':PUBLIC_ORIGIN,
   'WEAVE_RELEASE_SHA':sha,
+  'PASSWORD_RECOVERY_GMAIL_USER':'ecezzstarr@gmail.com',
+  'PASSWORD_RECOVERY_GMAIL_FROM_NAME':'WEAVE Access',
   'PASSWORD_RECOVERY_EMAIL_FROM':'WEAVE Access <access@weavingsystem.online>',
   'PASSWORD_RECOVERY_REPLY_TO':'ecezzstarr@gmail.com',
  }
@@ -94,6 +96,10 @@ def main():
    existing.clear();existing.update({'name':name,'value':value})
   else:
    env.append({'name':name,'value':value})
+ gmail_secret=next((e for e in env if e.get('name')=='PASSWORD_RECOVERY_GMAIL_APP_PASSWORD'),None)
+ if not gmail_secret:
+  run('gcloud','secrets','describe','weave-gmail-app-password','--project='+PROJECT,'--quiet')
+  env.append({'name':'PASSWORD_RECOVERY_GMAIL_APP_PASSWORD','valueFrom':{'secretKeyRef':{'name':'weave-gmail-app-password','key':'latest'}}})
  annotations={k:v for k,v in baseline['metadata'].get('annotations',{}).items() if k.startswith('autoscaling.knative.dev/') or k in ['run.googleapis.com/cloudsql-instances','run.googleapis.com/startup-cpu-boost','run.googleapis.com/cpu-throttling','run.googleapis.com/vpc-access-connector','run.googleapis.com/vpc-access-egress','run.googleapis.com/execution-environment']}
  active_revision=active[0]['revisionName']
  traffic=[
