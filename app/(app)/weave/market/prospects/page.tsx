@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { DailyProspectClaim } from '@/components/bridger/daily-prospect-claim'
 import { getAuthHeaders } from '@/lib/auth-client'
 
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Package, ShoppingCart, CheckCircle2, AlertCircle, Wallet, Send, MessageCircle, Users } from 'lucide-react'
+import { Loader2, Package, ShoppingCart, CheckCircle2, AlertCircle, Wallet, Send, MessageCircle, Users, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth-provider'
 
@@ -28,6 +29,7 @@ interface MyProspect {
   name: string
   prospectWhatsapp: string
   phone: string
+  bridgeUrl: string | null
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
@@ -188,6 +190,22 @@ export default function ProspectMarketPage() {
     }
   }
 
+
+  const handleSendBridge = (p: MyProspect) => {
+    if (!whatsappNumber) {
+      toast.error('Add your WhatsApp number first')
+      return
+    }
+    if (!p.bridgeUrl) {
+      toast.error('Create or activate Bridge AI before sending this prospect into the Bridge')
+      return
+    }
+    const target = (p.prospectWhatsapp || p.phone || '').replace(/[^\d+]/g, '')
+    const message = `I've opened your WEAVE Bridge. Enter with the movement we were discussing; you do not need to understand every part of WEAVE at once. ${p.bridgeUrl}`
+    const waUrl = `https://wa.me/${target.replace('+', '')}?text=${encodeURIComponent(message)}`
+    window.open(waUrl, '_blank')
+  }
+
   return (
     <div className="container mx-auto py-10 space-y-8">
       {user?.role === 'bridger' && <DailyProspectClaim />}
@@ -294,13 +312,21 @@ export default function ProspectMarketPage() {
             <div className="space-y-1">
               <p className="text-sm font-bold text-blue-400 uppercase tracking-tight">Purchase Agreement</p>
               <p className="text-xs text-slate-400 leading-relaxed">
-                By purchasing a prospect package, you agree to the Weave Outreach Mandate. Outreach must be initiated through the system-approved Bridge AI link. Misuse of prospect contact information may result in Bridger status suspension.
+                By purchasing a prospect package, you agree to the WEAVE Outreach Mandate. Begin with human contact and recognition. Send the system-approved Bridge only after the prospect understands why the next step is relevant and agrees to continue. Misuse of prospect contact information may result in Bridger status suspension.
               </p>
             </div>
           </div>
         </>
       ) : (
         <div className="space-y-6">
+          <div className="border-y border-amber-300/15 bg-amber-300/[.035] px-4 py-4 sm:px-5">
+            <p className="text-[9px] font-black uppercase tracking-[.16em] text-amber-200">Before outreach</p>
+            <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-400">Read the Crossing Notebook one page at a time. First contact is human-first. The Bridge is a separate action only after recognition and permission.</p>
+            <Link href="/bridger/crossing-notebook" className="mt-3 inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[.12em] text-amber-100">
+              <BookOpen className="h-3.5 w-3.5" /> Open Crossing Notebook
+            </Link>
+          </div>
+
           <Card className="border-slate-700 bg-slate-900/50">
             <CardHeader>
               <CardTitle className="text-sm">Your WhatsApp Number</CardTitle>
@@ -360,6 +386,17 @@ export default function ProspectMarketPage() {
                         </div>
                       ) : p.status === 'converted' ? (
                         <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                      ) : p.status === 'sent' ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={!p.bridgeUrl || !whatsappNumber}
+                          onClick={() => handleSendBridge(p)}
+                          className="border-amber-300/30 text-amber-200 hover:bg-amber-300/10"
+                        >
+                          <MessageCircle className="mr-1 h-3 w-3" />
+                          Send Bridge When Ready
+                        </Button>
                       ) : (
                         <MessageCircle className="h-5 w-5 text-slate-500" />
                       )}
