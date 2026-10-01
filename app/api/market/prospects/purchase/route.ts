@@ -3,7 +3,6 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
 import { ensureMarketTables } from '@/lib/market'
-import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 import { ensureWeaveReceiptSchema, issueWeaveReceipt } from '@/lib/weave-receipts'
 
 async function finalizeProspectPurchase(input:{
