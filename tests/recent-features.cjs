@@ -118,6 +118,8 @@ const clientLoginSource=fs.readFileSync(path.join(root,'app/client/login/page.ts
 assert.ok(clientLoginSource.includes('WEAVE-583104927361'),'Client login shows random File Number format')
 const healthRouteSource=fs.readFileSync(path.join(root,'app/api/health/route.ts'),'utf8')
 const passwordRecoveryEngineSource=fs.readFileSync(path.join(root,'lib/password-recovery.ts'),'utf8')
+const weaveMailSource=fs.readFileSync(path.join(root,'lib/weave-mail.ts'),'utf8')
+const weaveMailboxSource=fs.readFileSync(path.join(root,'lib/weave-mailbox.ts'),'utf8')
 const passwordRecoveryRequestSource=fs.readFileSync(path.join(root,'app/api/auth/forgot-password/route.ts'),'utf8')
 const passwordRecoveryResetSource=fs.readFileSync(path.join(root,'app/api/auth/reset-password/route.ts'),'utf8')
 const passwordRecoveryPageSource=fs.readFileSync(path.join(root,'app/(auth)/forgot-password/page.tsx'),'utf8')
@@ -125,8 +127,8 @@ const sharedLoginRecoverySource=fs.readFileSync(path.join(root,'app/(auth)/login
 assert.ok(passwordRecoveryRequestSource.includes('sendPasswordRecoveryCode'),'Forgot-password API sends an actual recovery message instead of only logging a link')
 assert.ok(passwordRecoveryRequestSource.includes("role IN ('agent','bridger','client','admin')"),'Recovery request covers every WEAVE account role')
 assert.ok(!passwordRecoveryRequestSource.includes('[PASSWORD RESET] Link')&&!passwordRecoveryRequestSource.includes('resetLink'),'Production recovery no longer pretends that a console-only reset link was emailed')
-assert.ok(passwordRecoveryEngineSource.includes('PASSWORD_RECOVERY_GMAIL_USER')&&passwordRecoveryEngineSource.includes('PASSWORD_RECOVERY_GMAIL_APP_PASSWORD')&&passwordRecoveryEngineSource.includes("GMAIL_SMTP_HOST = 'smtp.gmail.com'"),'Recovery delivery uses authenticated Google/Gmail as the primary transport')
-assert.ok(passwordRecoveryEngineSource.includes("provider === 'gmail'")&&passwordRecoveryEngineSource.includes('sendGmailSmtp'),'Recovery codes prefer Google delivery')
+assert.ok(weaveMailSource.includes('PASSWORD_RECOVERY_GMAIL_USER')&&weaveMailSource.includes('PASSWORD_RECOVERY_GMAIL_APP_PASSWORD')&&weaveMailSource.includes("GMAIL_SMTP_HOST='smtp.gmail.com'"),'Recovery and outreach share the authenticated Google/Gmail transport')
+assert.ok(passwordRecoveryEngineSource.includes("provider === 'gmail'")&&passwordRecoveryEngineSource.includes('sendAuthenticatedGoogleMail'),'Recovery codes use the shared Google delivery layer')
 assert.ok(passwordRecoveryEngineSource.includes('RESEND_API_KEY')&&passwordRecoveryEngineSource.includes('sendResendFallback'),'Existing Resend delivery remains an explicit fallback instead of the primary transport')
 const deployWeaveSource=fs.readFileSync(path.join(root,'scripts/deploy-weave.py'),'utf8')
 assert.ok(passwordRecoveryEngineSource.includes('PASSWORD_RECOVERY_REPLY_TO'),'Recovery mail keeps the Administration email as the reply address')
@@ -1514,6 +1516,16 @@ const bridgerProspectApiSource=fs.readFileSync(path.join(root,'app/api/bridger/p
 const bridgerProspectMarketSource=fs.readFileSync(path.join(root,'app/(app)/weave/market/prospects/page.tsx'),'utf8')
 const bridgerProspectPurchaseSource=fs.readFileSync(path.join(root,'app/api/market/prospects/purchase/route.ts'),'utf8')
 const bridgerDailyProspectSource=fs.readFileSync(path.join(root,'app/api/bridger/daily-prospect/route.ts'),'utf8')
+const prospectMarketEngineSource=fs.readFileSync(path.join(root,'lib/market.ts'),'utf8')
+const prospectEmailEngineSource=fs.readFileSync(path.join(root,'lib/prospect-email-engine.ts'),'utf8')
+const mailboxApiSource=fs.readFileSync(path.join(root,'app/api/mailbox/route.ts'),'utf8')
+const adminEmailProspectSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/email/route.ts'),'utf8')
+const adminEmailRunSource=fs.readFileSync(path.join(root,'app/api/admin/market/prospects/email/run/route.ts'),'utf8')
+const bridgerEmailSendSource=fs.readFileSync(path.join(root,'app/api/bridger/prospects/[outreachId]/email/route.ts'),'utf8')
+const flameEmailCronSource=fs.readFileSync(path.join(root,'app/api/cron/flame-email-outreach/route.ts'),'utf8')
+const flameEmailWorkflowSource=fs.readFileSync(path.join(root,'.github/workflows/flame-email-outreach.yml'),'utf8')
+const adminProspectEngineSource=fs.readFileSync(path.join(root,'app/(app)/admin/prospect-engine/page.tsx'),'utf8')
+const adminOutreachRegistrySource=fs.readFileSync(path.join(root,'app/(app)/admin/outreach/page.tsx'),'utf8')
 for(const file of [
  'components/bridger/crossing-notebook-world.tsx',
  'lib/bridger-crossing-notebook.ts',
@@ -1522,6 +1534,16 @@ for(const file of [
  'app/(app)/weave/market/prospects/page.tsx',
  'app/api/market/prospects/purchase/route.ts',
  'app/api/bridger/daily-prospect/route.ts',
+ 'lib/weave-mail.ts',
+ 'lib/weave-mailbox.ts',
+ 'lib/prospect-email-engine.ts',
+ 'app/api/mailbox/route.ts',
+ 'app/api/admin/market/prospects/email/route.ts',
+ 'app/api/admin/market/prospects/email/run/route.ts',
+ 'app/api/bridger/prospects/[outreachId]/email/route.ts',
+ 'app/api/cron/flame-email-outreach/route.ts',
+ 'app/(app)/admin/prospect-engine/page.tsx',
+ 'app/(app)/admin/outreach/page.tsx',
 ]){
  const source=fs.readFileSync(path.join(root,file),'utf8')
  const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
@@ -1545,3 +1567,17 @@ assert.ok(bridgerProspectMarketSource.includes('Send Bridge When Ready'),'Prospe
 assert.ok(bridgerProspectMarketSource.includes('Open Crossing Notebook'),'Prospect Market points Bridgers back to the manual before outreach')
 assert.ok(!bridgerProspectMarketSource.includes('Acquire qualified leads for your Bridge AI.'),'Prospect Market does not claim unproven lead qualification')
 assert.ok(!bridgerProspectMarketSource.includes('Verified WhatsApp Numbers'),'Prospect Market does not claim contact verification before real outreach')
+assert.equal(require('../lib/market.ts').EMAIL_PROSPECT_UNIT_PRICE,require('../lib/market.ts').WHATSAPP_PROSPECT_UNIT_PRICE/2,'Email Prospect unit price is exactly half the WhatsApp unit price')
+assert.ok(prospectMarketEngineSource.includes("createHmac('sha256'")&&prospectMarketEngineSource.includes('contact_fingerprint'),'Prospect Engine cryptographically fingerprints email and WhatsApp candidates for deduplication')
+assert.ok(prospectMarketEngineSource.includes("channel VARCHAR(20) NOT NULL DEFAULT 'whatsapp'"),'Prospect channel is part of the existing Prospect schema rather than a duplicate marketplace')
+assert.ok(weaveMailboxSource.includes("createCipheriv('aes-256-gcm'")&&weaveMailboxSource.includes('credential_ciphertext'),'Connected Google mailbox credentials are encrypted at rest')
+assert.ok(mailboxApiSource.includes('connectGoogleMailbox')&&mailboxApiSource.includes("role==='admin'||role==='bridger'"),'Administration and Bridgers use the same mailbox connection boundary')
+assert.ok(prospectEmailEngineSource.includes('sendAuthenticatedGoogleMail')&&prospectEmailEngineSource.includes('provider_message_id'),'Email Prospect sends use authenticated Google delivery and preserve provider message proof')
+assert.ok(bridgerEmailSendSource.includes('sendEmailOutreach'),'Bridger Email action sends and reports through the shared email engine')
+assert.ok(adminEmailRunSource.includes('runAdministrationEmailMovement'),'Administration can manually run the same email movement used by automation')
+assert.ok(flameEmailCronSource.includes('hasWeaveSchedulerAuthority')&&flameEmailCronSource.includes('.github/workflows/flame-email-outreach.yml'),'Flame email automation uses existing OIDC scheduler authority')
+assert.ok(flameEmailCronSource.includes("date<'2026-10-01'")&&flameEmailCronSource.includes("date>'2026-12-31'"),'Automatic email movement is bounded to Company Loop 1 Flame Event')
+assert.ok(flameEmailWorkflowSource.includes("cron: '15 8 * * *'")&&flameEmailWorkflowSource.includes('audience=weave-scheduler'),'Flame email outreach has a daily unattended OIDC schedule')
+assert.ok(adminProspectEngineSource.includes("setChannel('email')")&&adminProspectEngineSource.includes("setChannel('whatsapp')"),'Administration uses one Prospect Engine surface with channel modes')
+assert.ok(bridgerProspectMarketSource.includes('Email & report')&&bridgerProspectMarketSource.includes('Purchase · debit Flame Coin'),'Bridger email movement keeps purchase debit and send/report visible in one Prospect Market')
+assert.ok(adminOutreachRegistrySource.includes("row.channel==='email'")&&adminOutreachRegistrySource.includes('provider_message_id'),'Administration outreach registry reports both channels and email provider evidence')
