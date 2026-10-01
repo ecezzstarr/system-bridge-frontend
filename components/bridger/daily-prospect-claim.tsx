@@ -65,7 +65,7 @@ export function DailyProspectClaim() {
   const name = claim?.name || claim?.full_name || 'Daily Prospect'
   const outreachMessage =
     claim?.message_sent ||
-    `Hi ${name}, this is your Bridger from Weave.`
+    `Hello ${name}. My name is your Bridger from WEAVE. I work with people around something they are already trying to build, sell, organize or move forward in their life or work. Can I ask what you currently do, or what you're trying to make work better?`
 
   return (
     <section className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-5 sm:p-6 shadow-lg">
