@@ -42,6 +42,35 @@ export async function ensureWeaveAdsSchema() {
   await sql`CREATE INDEX IF NOT EXISTS weave_ads_priority_idx ON weave_ads(priority DESC, published_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS weave_ads_roles_idx ON weave_ads USING GIN(target_roles)`
   await sql`CREATE INDEX IF NOT EXISTS weave_ads_placements_idx ON weave_ads USING GIN(placements)`
+
+  // Company Loop 1 · Day 2 Blueprint movement. This is seeded once and then
+  // remains fully editable from Administration Ad Workshop.
+  await sql`
+    INSERT INTO weave_ads (
+      title, body, target_roles, placements, action_label, action_url,
+      event_key, start_at, end_at, frequency, priority, status, published_at
+    )
+    SELECT
+      'Flame Event · Day 2 Blueprint',
+      'Day 2 opens the Blueprint movement. Enter Burning River, recognize the Client Customer Doors in the live current, then move from your own WEAVE position.',
+      ARRAY['all']::text[],
+      ARRAY['dashboard','event']::text[],
+      'Enter Burning River',
+      '/event',
+      'flame-event-01',
+      '2026-10-02T00:00:00+01:00'::timestamptz,
+      '2026-10-03T00:00:00+01:00'::timestamptz,
+      'daily',
+      60,
+      'published',
+      NOW()
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM weave_ads
+      WHERE event_key = 'flame-event-01'
+        AND title = 'Flame Event · Day 2 Blueprint'
+    )
+  `
 }
 
 export function normalizeAdRoles(value: unknown): WeaveAdRole[] {

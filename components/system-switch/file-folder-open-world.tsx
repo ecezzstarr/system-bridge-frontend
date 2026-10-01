@@ -288,8 +288,8 @@ export default function FileFolderOpenWorld({
         <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
         <div className="mt-4 border-y border-cyan-300/10 py-3" data-file-folder-multiplayer-world="human-and-weave-ai">
           <div className="flex items-center justify-between gap-4"><div><p className="text-[8px] font-black uppercase tracking-[.2em] text-cyan-200">File Folder Formation Network</p><p className="mt-1 text-[10px] leading-5 text-slate-400">This private Client formation view can show clearly identified WEAVE AI-operated demonstration territories for reference. Public visitors do not enter this File Folder; outward visibility begins at an opened Customer Door.</p></div><span className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-300">World active</span></div>
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-            {aiFileFolders.map(ai=>{const territory=aiFileFolderTerritory(ai);return <div key={territory.territoryId} className="min-w-[15rem] border-l border-cyan-300/25 bg-cyan-400/[.025] px-3 py-2" data-ai-demonstration-territory={territory.territoryId}><p className="text-[7px] font-black uppercase tracking-[.16em] text-cyan-300">{territory.operatorLabel}</p><p className="mt-1 text-xs font-black text-white">{territory.publicName}</p><p className="mt-1 text-[8px] text-slate-500">{territory.fileNumber} · {territory.activity}</p><p className="mt-2 text-[9px] leading-4 text-slate-400">{territory.products.join(' · ')}</p><p className="mt-1 text-[8px] font-black text-amber-200">Generated for WEAVE · {territory.generatedSalesFlameCoin.toLocaleString()} FC</p></div>})}
+          <div className="mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {aiFileFolders.map(ai=>{const territory=aiFileFolderTerritory(ai);return <div key={territory.territoryId} className="min-w-[min(15rem,82vw)] snap-start border-l border-cyan-300/25 bg-cyan-400/[.025] px-3 py-2" data-ai-demonstration-territory={territory.territoryId}><p className="text-[7px] font-black uppercase tracking-[.16em] text-cyan-300">{territory.operatorLabel}</p><p className="mt-1 text-xs font-black text-white">{territory.publicName}</p><p className="mt-1 text-[8px] text-slate-500">{territory.fileNumber} · {territory.activity}</p><p className="mt-2 text-[9px] leading-4 text-slate-400">{territory.products.join(' · ')}</p><p className="mt-1 text-[8px] font-black text-amber-200">Generated for WEAVE · {territory.generatedSalesFlameCoin.toLocaleString()} FC</p></div>})}
           </div>
         </div>
 
@@ -332,7 +332,7 @@ export default function FileFolderOpenWorld({
         )}
       </header>
 
-      <div className="min-h-[650px]">
+      <div className="min-h-[520px] sm:min-h-[650px]">
         <nav aria-label="Walk the build site" className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
           <div className="flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
             <div className="min-w-0 shrink-0 border-r border-amber-100/10 pr-3">
@@ -341,7 +341,7 @@ export default function FileFolderOpenWorld({
                 {visibleDistricts.find(item=>item.key===district)?.label || 'Command Core'}
               </p>
             </div>
-            <div className="flex min-w-0 flex-1 snap-x snap-mandatory gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex min-w-0 flex-1 snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {visibleDistricts.map((item,index) => {
                 const Icon=item.icon
                 const selected=district===item.key
@@ -389,7 +389,7 @@ export default function FileFolderOpenWorld({
               <div className="flex flex-wrap gap-3 text-[9px] font-black uppercase tracking-[.12em]">
                 <button onClick={()=>setDistrict('blueprint_foundry')} className="border-b border-violet-300/40 px-1 py-2 text-violet-200">Choose next blueprint →</button>
                 <button onClick={()=>setDistrict('formation_yard')} className="border-b border-amber-300/40 px-1 py-2 text-amber-200">Walk to construction →</button>
-                {world?.customerDoor?.public_slug&&<a href={`/store/${world.customerDoor.public_slug}`} target="_blank" rel="noreferrer" className="border-b border-emerald-300/40 px-1 py-2 text-emerald-200">Open Customer Door →</a>}
+                {world?.customerDoor?.public_slug&&<a href={`/market/${world.customerDoor.public_slug}`} target="_blank" rel="noreferrer" className="border-b border-emerald-300/40 px-1 py-2 text-emerald-200">Open Customer Door →</a>}
               </div>
             </div>
           )}
@@ -421,12 +421,12 @@ export default function FileFolderOpenWorld({
                       {build.system_type==='customer_door'&&<div className="mt-4 border-y border-emerald-300/10 py-3" data-customer-door-formation="72-hour-cycle">
                         <p className="text-[8px] font-black uppercase tracking-[.16em] text-emerald-300">Standard formation · 72 real hours · acceleration optional</p>
                         <div className="mt-3 grid gap-2 sm:grid-cols-2">{customerDoorFormation(buildProgress(build,now)).map(part=><div key={part.label} className="border-l border-emerald-300/15 pl-3"><p className={`text-[9px] font-black ${part.state==='formed'?'text-emerald-200':part.state==='forming'?'text-amber-200':'text-slate-600'}`}>{part.label} · {part.state}</p><p className="mt-1 text-[8px] leading-4 text-slate-500">{part.detail}</p></div>)}</div>
-                      </div>
+                      </div>}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {availableBuildItems.length === 0 && <span className="text-[9px] text-slate-600">No purchased build items are waiting in inventory.</span>}
                         {availableBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
                       </div>
-                    </div>}
+                    </div>
                   </div>
                 })}
               </div>

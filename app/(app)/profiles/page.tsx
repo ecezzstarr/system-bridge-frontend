@@ -251,11 +251,11 @@ export default function ProfilePage() {
             </div>
           </CollapsibleSection>
 
-          <CollapsibleSection title={BRIDGE_PLAZA_CONTENT.title}>
+          <CollapsibleSection title={CUSTOMER_MARKET_CONTENT.title}>
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">{BRIDGE_PLAZA_CONTENT.subtitle}</h4>
-                <p className="text-sm text-slate-300 leading-relaxed">{BRIDGE_PLAZA_CONTENT.body}</p>
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">{CUSTOMER_MARKET_CONTENT.subtitle}</h4>
+                <p className="text-sm text-slate-300 leading-relaxed">{CUSTOMER_MARKET_CONTENT.body}</p>
               </div>
             </div>
           </CollapsibleSection>

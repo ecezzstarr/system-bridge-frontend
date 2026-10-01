@@ -12,6 +12,7 @@ import { WeaveLogo } from '@/components/weave-logo'
 import { AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
 import { LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
+import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -30,6 +31,17 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const flameEventIsLive = async () => {
+    try {
+      const response = await fetch('/api/events/flame', { cache: 'no-store' })
+      const data = await response.json()
+      const event = data?.success && data.event ? data.event : FLAME_EVENT
+      return (event.effectiveStatus || resolveEventStatus(event, new Date())) === 'active'
+    } catch {
+      return resolveEventStatus(FLAME_EVENT, new Date()) === 'active'
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -44,14 +56,19 @@ export default function LoginPage() {
         return
       }
 
-      if (loggedInUser?.role === 'admin') router.push(administrationPortal ? '/authority/workshops' : '/admin/dashboard')
-      else if (loggedInUser?.role === 'agent') {
-        sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
+      const eventLive = await flameEventIsLive()
+
+      if (loggedInUser?.role === 'admin') {
+        router.push(administrationPortal ? '/authority/workshops' : eventLive ? '/event' : '/admin/dashboard')
+      } else if (loggedInUser?.role === 'agent') {
         sessionStorage.setItem(AGILITY_AGENT_LOGIN_AD_KEY, '1')
-        router.push('/agent/dashboard')
+        if (!eventLive) sessionStorage.setItem(LOOP1_AGENT_LOGIN_AD_KEY, '1')
+        router.push(eventLive ? '/event' : '/agent/dashboard')
+      } else if (loggedInUser?.role === 'bridger') {
+        router.push(eventLive ? '/event' : '/bridger/dashboard')
+      } else {
+        router.push('/weave')
       }
-      else if (loggedInUser?.role === 'bridger') router.push('/bridger/dashboard')
-      else router.push('/weave')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
       setIsSubmitting(false)

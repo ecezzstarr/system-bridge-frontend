@@ -2,29 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
-import { Music2, Play, Pause, GripVertical, Volume2 } from 'lucide-react'
+import { Music2, Play, Pause, Volume2 } from 'lucide-react'
 import { visiblePoll } from '@/lib/visible-poll'
 import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 
-const POSITION_KEY = 'ssb_dj_player_pos'
 const LIVE_SOUND_KEY = 'weave_live_sound_joined'
 const LEGACY_EVENT_SOUND_KEY = 'weave_flame_event_sound_joined'
 const USER_PAUSED_KEY = 'weave_live_sound_user_paused'
-const WIDGET_WIDTH = 232
-const WIDGET_HEIGHT = 48
-
-function getDefaultPosition() {
-  if (typeof window === 'undefined') return { x: 0, y: 0 }
-  return { x: window.innerWidth - WIDGET_WIDTH - 16, y: window.innerHeight - WIDGET_HEIGHT - 16 }
-}
-
-function clamp(pos: { x: number; y: number }) {
-  if (typeof window === 'undefined') return pos
-  return {
-    x: Math.min(Math.max(0, pos.x), Math.max(0, window.innerWidth - WIDGET_WIDTH)),
-    y: Math.min(Math.max(0, pos.y), Math.max(0, window.innerHeight - WIDGET_HEIGHT)),
-  }
-}
 
 export function DJBroadcastPlayer() {
   const { user } = useAuth()
@@ -48,9 +32,6 @@ export function DJBroadcastPlayer() {
   const [joined, setJoined] = useState(false)
   const [userPaused, setUserPaused] = useState(false)
   const [personalDjActive, setPersonalDjActive] = useState(false)
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
-
-  const dragState = useRef({ dragging: false, offsetX: 0, offsetY: 0 })
 
   const emitDjAudioState = useCallback((playing:boolean) => {
     if (typeof window === 'undefined') return
@@ -60,11 +41,7 @@ export function DJBroadcastPlayer() {
   }, [])
 
   useEffect(() => {
-    let initial = getDefaultPosition()
     try {
-      const saved = localStorage.getItem(POSITION_KEY)
-      if (saved) initial = clamp(JSON.parse(saved))
-
       const remembered =
         localStorage.getItem(LIVE_SOUND_KEY) === '1' ||
         localStorage.getItem(LEGACY_EVENT_SOUND_KEY) === '1'
@@ -76,11 +53,6 @@ export function DJBroadcastPlayer() {
 
       if (remembered) localStorage.setItem(LIVE_SOUND_KEY, '1')
     } catch {}
-    setPosition(initial)
-
-    const handleResize = () => setPosition(p => (p ? clamp(p) : p))
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   const stopHarmonyAudience = useCallback((immediate = false) => {
@@ -439,34 +411,16 @@ export function DJBroadcastPlayer() {
     void syncBroadcast()
   }
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (!position) return
-    dragState.current.dragging = true
-    dragState.current.offsetX = e.clientX - position.x
-    dragState.current.offsetY = e.clientY - position.y
-    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-  }
+  const canShow = eligibleRole && live && !personalDjActive
 
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragState.current.dragging) return
-    setPosition(clamp({
-      x: e.clientX - dragState.current.offsetX,
-      y: e.clientY - dragState.current.offsetY,
-    }))
-  }
-
-  const onPointerUp = () => {
-    if (!dragState.current.dragging) return
-    dragState.current.dragging = false
-    setPosition(p => {
-      if (p) {
-        try { localStorage.setItem(POSITION_KEY, JSON.stringify(p)) } catch {}
-      }
-      return p
-    })
-  }
-
-  const canShow = eligibleRole && live && Boolean(position) && !personalDjActive
+  useEffect(() => {
+    const root = document.documentElement
+    if (canShow) root.style.setProperty('--weave-dj-dock-height', '52px')
+    else root.style.removeProperty('--weave-dj-dock-height')
+    return () => {
+      root.style.removeProperty('--weave-dj-dock-height')
+    }
+  }, [canShow])
 
   return (
     <>
@@ -506,34 +460,16 @@ export function DJBroadcastPlayer() {
         }}
       />
 
-      {canShow && position && (
+      {canShow && (
         <div
-          className={`pointer-events-none fixed z-[85] flex select-none items-center gap-1.5 overflow-hidden rounded-2xl border px-1.5 py-1.5 backdrop-blur-[18px] touch-none ${
+          className={`fixed inset-x-0 bottom-0 z-[85] border-t backdrop-blur-[18px] ${
             flameEventLive
-              ? 'border-sky-100/15 bg-white/[0.022]'
-              : 'border-white/10 bg-white/[0.018]'
+              ? 'border-sky-100/15 bg-[#020914]/94'
+              : 'border-white/10 bg-[#020914]/94'
           }`}
-          style={{
-            left: position.x,
-            top: position.y,
-            width: WIDGET_WIDTH,
-            boxShadow: '0 8px 24px rgba(2,8,23,.12), inset 0 1px 0 rgba(255,255,255,.16)',
-            WebkitBackdropFilter: 'blur(18px) saturate(135%)',
-          }}
+          data-weave-dj-dock="true"
         >
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,.10)_0%,rgba(255,255,255,.018)_30%,transparent_48%,rgba(125,211,252,.025)_72%,rgba(255,255,255,.055)_100%)]" />
-          <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent" />
-
-          <div
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-            className="pointer-events-auto relative z-10 flex-shrink-0 cursor-grab text-white/25 transition hover:text-white/55 active:cursor-grabbing"
-            title="Drag to move"
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </div>
+          <div className="mx-auto flex h-[52px] max-w-7xl min-w-0 items-center gap-2 px-3 sm:px-5">
 
           <div className={`relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/10 backdrop-blur-sm ${
             userPaused
@@ -558,7 +494,7 @@ export function DJBroadcastPlayer() {
           {!joined ? (
             <button
               onClick={handleJoin}
-              className="pointer-events-auto relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-sky-100/20 bg-white/[0.055] text-sky-100/85 shadow-inner transition hover:bg-white/[0.10]"
+              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-sky-100/20 bg-white/[0.055] text-sky-100/85 shadow-inner transition hover:bg-white/[0.10]"
               title="Enter the live sound"
             >
               <Play className="h-3.5 w-3.5" />
@@ -566,7 +502,7 @@ export function DJBroadcastPlayer() {
           ) : userPaused ? (
             <button
               onClick={handleResume}
-              className="pointer-events-auto relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-emerald-100/20 bg-white/[0.055] text-emerald-100/85 shadow-inner transition hover:bg-white/[0.10]"
+              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-emerald-100/20 bg-white/[0.055] text-emerald-100/85 shadow-inner transition hover:bg-white/[0.10]"
               title="Resume live sound"
             >
               <Play className="h-3.5 w-3.5" />
@@ -574,12 +510,13 @@ export function DJBroadcastPlayer() {
           ) : (
             <button
               onClick={handlePause}
-              className="pointer-events-auto relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.035] text-white/70 shadow-inner transition hover:bg-white/[0.08] hover:text-white"
+              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.035] text-white/70 shadow-inner transition hover:bg-white/[0.08] hover:text-white"
               title="Pause live sound for you"
             >
               <Pause className="h-3.5 w-3.5" />
             </button>
           )}
+          </div>
         </div>
       )}
     </>

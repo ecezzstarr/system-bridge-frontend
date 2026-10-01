@@ -133,6 +133,58 @@ export async function ensureWeaveEventSchema() {
   `
 }
 
+async function synchronizeFlameEventLifecycle(event: WeaveEvent): Promise<WeaveEvent> {
+  const effectiveStatus = resolveEventStatus(event)
+  const loopStage = effectiveStatus === 'closed' ? 'Closing' : effectiveStatus === 'active' ? 'Movement' : 'Preparing'
+  const loopStatus = effectiveStatus === 'closed' ? 'archived' : 'published'
+  const legacyPreparingAnnouncement = event.announcement.includes('preparing the event ground')
+  const announcement = effectiveStatus === 'active' && legacyPreparingAnnouncement
+    ? FLAME_EVENT.announcement
+    : event.announcement
+
+  // Auto-start and the end boundary are real state transitions, not only
+  // presentation labels. Persist them once so every Loop/Event consumer sees
+  // the same lifecycle.
+  if (effectiveStatus !== event.status || announcement !== event.announcement) {
+    await sql`
+      UPDATE weave_events
+      SET
+        status = ${effectiveStatus},
+        announcement = ${announcement},
+        updated_at = NOW()
+      WHERE event_key = ${event.key}
+        AND (
+          status <> ${effectiveStatus}
+          OR announcement IS DISTINCT FROM ${announcement}
+        )
+    `
+  }
+
+  await sql`
+    UPDATE company_loops
+    SET
+      title = 'Flame Event',
+      stage = ${loopStage},
+      audience = ARRAY['client','bridger','agent','admin']::text[],
+      status = ${loopStatus},
+      published_at = CASE WHEN ${loopStatus} = 'published' THEN COALESCE(published_at, NOW()) ELSE published_at END,
+      updated_at = NOW()
+    WHERE loop_number = 1
+      AND (
+        stage IS DISTINCT FROM ${loopStage}
+        OR status IS DISTINCT FROM ${loopStatus}
+        OR title IS DISTINCT FROM 'Flame Event'
+      )
+  `
+
+  return {
+    ...event,
+    status: effectiveStatus,
+    announcement,
+    effectiveStatus,
+  }
+}
+
 export async function getFlameEvent(): Promise<WeaveEvent> {
   await ensureWeaveEventSchema()
   const [row] = await sql`
@@ -158,7 +210,7 @@ export async function getFlameEvent(): Promise<WeaveEvent> {
     autoStart: row.auto_start !== false,
   }
 
-  return { ...event, effectiveStatus: resolveEventStatus(event) }
+  return synchronizeFlameEventLifecycle(event)
 }
 
 export async function updateFlameEvent(input: {

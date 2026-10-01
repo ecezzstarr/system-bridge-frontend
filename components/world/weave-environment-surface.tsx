@@ -18,7 +18,7 @@ export function WeaveEnvironmentSurface({
 
   return (
     <section
-      className="weave-environment-surface relative mx-auto w-full max-w-[1800px]"
+      className="weave-environment-surface relative mx-auto w-full min-w-0 max-w-[1800px] overflow-x-clip"
       data-weave-environment={environment.key}
       data-weave-layer={environment.layer}
       data-environment-location="world-position"
@@ -26,7 +26,7 @@ export function WeaveEnvironmentSurface({
       data-weave-world={worldLayer}
     >
       <div
-        className="relative min-h-[calc(100dvh-7rem)]"
+        className="relative min-h-[calc(100svh-7rem)] min-w-0 pb-[env(safe-area-inset-bottom)] sm:min-h-[calc(100dvh-7rem)]"
         data-environment-interior="station"
         data-ai-station-presence="contextual"
       >

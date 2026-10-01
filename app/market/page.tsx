@@ -43,7 +43,7 @@ export default async function PublicClientMarket(){
       <div className="relative mx-auto max-w-7xl">
         <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-sky-300"><Landmark className="h-4 w-4"/>WEAVE Customer Market</p>
         <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">The open internet meets Client-built enterprises.</h1>
-        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Each Client builds privately inside System Switch. When the Customer Door opens, the enterprise enters this public market. Customers, Administration, Agents, Bridgers and other Clients can visit that public Door without entering the private File Folder. Public customers can enter without a WEAVE account.</p>
+        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Each Client builds privately inside System Switch. When the Customer Door opens, the enterprise enters this public market. Visitors arrive here from the WEAVE homepage or from a Client-shared Customer Door link. No WEAVE account is required. Logged-in staff meet Client Customer Doors inside Flame Event instead of browsing the private Client path.</p>
         <div className="mt-7 flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-wider text-slate-400">
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Open internet access</span>
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Client-owned stores</span>
