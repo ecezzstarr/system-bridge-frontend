@@ -1,7 +1,7 @@
 -- WEAVE unified email Prospect movement.
 -- Email is a channel inside the existing Prospect Engine, not a second marketplace.
 
-ALTER TABLE market_prospect_contacts ADD COLUMN IF NOT EXISTS email varchar(255);
+ALTER TABLE market_prospect_contacts ALTER COLUMN phone DROP NOT NULL;\nALTER TABLE market_prospect_contacts ADD COLUMN IF NOT EXISTS email varchar(255);
 ALTER TABLE market_prospect_contacts ADD COLUMN IF NOT EXISTS channel varchar(20) NOT NULL DEFAULT 'whatsapp';
 ALTER TABLE market_prospect_contacts ADD COLUMN IF NOT EXISTS contact_fingerprint varchar(64);
 
