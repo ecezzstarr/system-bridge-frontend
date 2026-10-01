@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { ensureMarketTables } from '@/lib/market'
-import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 import {
   countDailyProspectReserve,
   ensureDailyProspectClaimSchema,
