@@ -631,7 +631,7 @@ const stabilitySupplySource=read('app/(app)/agent/stability-supply/page.tsx')
 const ledgerWorldSource=read('app/(app)/ledger/page.tsx')
 assert.ok(stationFrameSource.includes('data-weave-working-station={station}'),'Dense functions share an explicit in-world station grammar')
 assert.ok(stationFrameSource.includes('data-ai-working-position="assist"'),'AI has an assist position at working stations without taking authority')
-assert.ok(stabilitySupplySource.includes('<WeaveStationFrame station="Stability Supply Ground"'),'Stability supply remains inside the role world as a working station')
+assert.ok(stabilitySupplySource.includes("redirect('/agent/commissions')"),'Retired Stability Supply route resolves into canonical Agent Commissions')
 assert.ok(ledgerWorldSource.includes('<WeaveStationFrame station="Movement Record"'),'Record is a movement station inside WEAVE')
 assert.ok(!ledgerWorldSource.includes("from '@/components/ui/card'"),'Record no longer depends on the generic Card shell')
 
