@@ -10,7 +10,7 @@ export async function GET() {
       version: '1.0.0',
       environment: process.env.NODE_ENV,
       releaseSha: process.env.WEAVE_RELEASE_SHA || null,
-      passwordRecoveryProvider: passwordRecoveryEmailProvider(),
+      passwordRecoveryProvider: await passwordRecoveryEmailProvider(),
     })
   } catch (error) {
     return NextResponse.json(
