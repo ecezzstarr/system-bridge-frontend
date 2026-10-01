@@ -186,3 +186,11 @@ body {
     touch-action: manipulation;
   }
 }
+
+
+/* Fixed sound controls reserve their own dock instead of covering an operating
+   environment. Ads/dialogs are the only intentional full-surface overlays. */
+.weave-app-shell,
+.weave-client-shell {
+  padding-bottom: var(--weave-dj-dock-height, 0px);
+}
