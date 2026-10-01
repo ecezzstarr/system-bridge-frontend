@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build canonical main, preview with zero traffic, then explicitly promote."""
-import os, json, subprocess, sys, tempfile, urllib.request, urllib.error, re, html as html_module, getpass
+import os, json, subprocess, sys, tempfile, urllib.request, urllib.error, re, html as html_module
 from pathlib import Path
 PROJECT='ssbr-495208'
 REGION='us-central1'
@@ -22,36 +22,12 @@ def check_source():
  run('git','fetch','origin','main')
  assert sha==run('git','rev-parse','origin/main'), 'Checkout is not current origin/main'
  return sha
-def ensure_gmail_secret():
- try:
-  run('gcloud','secrets','describe','weave-gmail-app-password','--project='+PROJECT,'--quiet')
-  return
- except subprocess.CalledProcessError:
-  pass
- if not sys.stdin.isatty():
-  raise RuntimeError('Google recovery secret weave-gmail-app-password is missing and cannot be created non-interactively')
- print('Google recovery secret weave-gmail-app-password is missing.')
- print('Create a Google app password for the configured recovery Gmail account, then paste it at the hidden prompt.')
- secret=re.sub(r'\s+','',getpass.getpass('Google app password (hidden): ').strip())
- if len(secret)!=16:
-  raise RuntimeError('Google app password must be the 16-character app-specific password')
- run('gcloud','secrets','create','weave-gmail-app-password','--replication-policy=automatic','--project='+PROJECT,'--quiet')
- subprocess.run(
-  ['gcloud','secrets','versions','add','weave-gmail-app-password','--data-file=-','--project='+PROJECT,'--quiet'],
-  cwd=ROOT,
-  input=secret,
-  text=True,
-  check=True,
- )
- secret=''
- print('Google recovery secret created in Secret Manager.')
-
 def smoke(url,expected_sha):
  with urllib.request.urlopen(url+'/api/health',timeout=60) as response:
   health=json.load(response)
   assert response.status==200 and health.get('status')=='healthy','WEAVE health check failed'
   assert health.get('releaseSha')==expected_sha,'Served revision does not match the verified Git commit'
-  assert health.get('passwordRecoveryProvider')=='gmail','Google/Gmail is not the active password-recovery transport'
+  assert health.get('passwordRecoveryProvider')=='resend','Password recovery transport is not active'
  with urllib.request.urlopen(url,timeout=60) as response:
   body=response.read().decode()
   assert response.status==200, 'WEAVE homepage unavailable'
@@ -90,7 +66,7 @@ def main():
    )
    with urllib.request.urlopen(request,timeout=60) as response:
     recovery=json.load(response)
-    assert response.status==200 and recovery.get('success') is True,'Live Google password recovery request failed'
+    assert response.status==200 and recovery.get('success') is True,'Live password recovery request failed'
   except Exception:
    run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rollback_revision+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
    raise
@@ -119,21 +95,16 @@ def main():
   'APP_URL':PUBLIC_ORIGIN,
   'NEXT_PUBLIC_BRIDGE_URL':PUBLIC_ORIGIN,
   'WEAVE_RELEASE_SHA':sha,
-  'PASSWORD_RECOVERY_GMAIL_USER':'ecezzstarr@gmail.com',
-  'PASSWORD_RECOVERY_GMAIL_FROM_NAME':'WEAVE Access',
   'PASSWORD_RECOVERY_EMAIL_FROM':'WEAVE Access <access@weavingsystem.online>',
   'PASSWORD_RECOVERY_REPLY_TO':'ecezzstarr@gmail.com',
  }
+ env[:]=[e for e in env if e.get('name') not in ['PASSWORD_RECOVERY_GMAIL_USER','PASSWORD_RECOVERY_GMAIL_APP_PASSWORD','PASSWORD_RECOVERY_GMAIL_FROM_NAME']]
  for name,value in public_env.items():
   existing=next((e for e in env if e.get('name')==name),None)
   if existing:
    existing.clear();existing.update({'name':name,'value':value})
   else:
    env.append({'name':name,'value':value})
- gmail_secret=next((e for e in env if e.get('name')=='PASSWORD_RECOVERY_GMAIL_APP_PASSWORD'),None)
- if not gmail_secret:
-  ensure_gmail_secret()
-  env.append({'name':'PASSWORD_RECOVERY_GMAIL_APP_PASSWORD','valueFrom':{'secretKeyRef':{'name':'weave-gmail-app-password','key':'latest'}}})
  annotations={k:v for k,v in baseline['metadata'].get('annotations',{}).items() if k.startswith('autoscaling.knative.dev/') or k in ['run.googleapis.com/cloudsql-instances','run.googleapis.com/startup-cpu-boost','run.googleapis.com/cpu-throttling','run.googleapis.com/vpc-access-connector','run.googleapis.com/vpc-access-egress','run.googleapis.com/execution-environment']}
  active_revision=active[0]['revisionName']
  traffic=[
