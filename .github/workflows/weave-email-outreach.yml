@@ -1,0 +1,31 @@
+name: WEAVE Email Outreach Daily
+
+on:
+  schedule:
+    - cron: '10 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  outreach:
+    runs-on: ubuntu-latest
+    env:
+      EMAIL_OUTREACH_URL: ${{ vars.WEAVE_EMAIL_OUTREACH_URL || 'https://weavingsystem.online/api/cron/email-outreach' }}
+    steps:
+      - name: Request short-lived WEAVE scheduler identity
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          RESPONSE="$(curl --fail-with-body --silent --show-error             --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=weave-scheduler")"
+          TOKEN="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"${RESPONSE}")"
+          echo "::add-mask::${TOKEN}"
+          echo "token=${TOKEN}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run Administration email outreach
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error             --request GET             --header "Authorization: Bearer ${{ steps.oidc.outputs.token }}"             "${EMAIL_OUTREACH_URL}"
