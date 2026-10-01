@@ -36,7 +36,7 @@ export const FLAME_EVENT: WeaveEvent = {
   startsAt: '2026-10-01T00:00:00+01:00',
   endsAt: '2026-12-31T23:59:59+01:00',
   loopNumber: 1,
-  announcement: 'Flame Event is Company Loop 1. Administration is preparing the event ground for Client, Bridger, Agent and Administration positions.',
+  announcement: 'Flame Event is Company Loop 1. Burning River is open and carrying Client, Bridger, Agent and Administration movement through one live current.',
   adEnabled: true,
   autoStart: true,
   positions: {
@@ -51,8 +51,8 @@ export const FLAME_EVENT: WeaveEvent = {
       mode: 'support',
       headline: 'More Prospects. More Clients. Greater Reach.',
       purpose: 'The Bridger supports Company Loop 1 by connecting prospects, accompanying Clients and extending participation into the event.',
-      focus: ['Available Prospects', 'Prospects in Motion', 'My Clients', 'Weave Activities', 'Client Support', 'Event Opportunities'],
-      movement: ['Follow active Weave activities', 'Acquire and work available prospects', 'Accompany prospects toward Client formation', 'Support Clients already in motion', 'Extend participation as Loop 1 develops'],
+      focus: ['Bridge AI', 'Prospect Market', 'Number Bay', 'Echo', 'Presences', 'Value Movement'],
+      movement: ['Move through the live Flame Event current', 'Acquire and work Prospect movement', 'Use Bridge AI and Number Bay where the crossing requires them', 'Carry Prospects toward Client formation', 'Continue authorized communication and value movement'],
     },
     agent: {
       mode: 'support',
@@ -66,7 +66,7 @@ export const FLAME_EVENT: WeaveEvent = {
       headline: 'Oversight. Recognition. Organization. Future.',
       purpose: 'Administration holds Company Loop 1 together: preparing the ground, recognizing movement, organizing positions and controlling the event lifecycle.',
       focus: ['Event Control', 'Four User Positions', 'Announcements', 'Schedule', 'Event Ground', 'Continuity'],
-      movement: ['Prepare the event before opening', 'Keep the Loop 1 signal visible platform-wide', 'Open the event on schedule', 'Coordinate position movement and announcements', 'Recognize, close or extend the event when required'],
+      movement: ['Hold the live event ground', 'Keep Loop 1 state synchronized across WEAVE', 'Coordinate position movement and Administration signals', 'Operate DJ, advertisements and event controls', 'Recognize, close or extend the event when required'],
     },
   },
 }
