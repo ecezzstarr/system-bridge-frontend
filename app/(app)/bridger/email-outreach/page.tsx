@@ -42,20 +42,27 @@ export default function BridgerEmailOutreachPage(){
 
   const load=useCallback(async()=>{
     setLoading(true);setError('')
+    const controller=new AbortController()
+    const timeout=window.setTimeout(()=>controller.abort(),15000)
     try{
-      const [state,sender]=await Promise.all([
-        fetch('/api/bridger/email-outreach',{headers:getAuthHeaders(),cache:'no-store'}),
-        fetch('/api/email-outreach/sender',{headers:getAuthHeaders(),cache:'no-store'}),
-      ])
-      const body=await state.json(),senderBody=await sender.json()
+      const state=await fetch('/api/bridger/email-outreach',{
+        headers:getAuthHeaders(),
+        cache:'no-store',
+        signal:controller.signal,
+      })
+      const body=await state.json().catch(()=>({error:'Email Outreach returned an invalid response'}))
       if(!state.ok)throw new Error(body.error||'Unable to open email outreach')
       setData(body)
-      setReplyEmail(senderBody.sender?.reply_email||senderBody.accountEmail||'')
-      setDisplayName(senderBody.sender?.display_name||'')
+      setReplyEmail(body.sender?.reply_email||body.accountEmail||'')
+      setDisplayName(body.sender?.display_name||'')
       setSubject(v=>v||body.defaultSubject||'')
       setMessage(v=>v||body.defaultMessage||'')
-    }catch(e:any){setError(e?.message||'Unable to open email outreach')}
-    finally{setLoading(false)}
+    }catch(e:any){
+      setError(e?.name==='AbortError'?'Email Outreach did not answer within 15 seconds. Retry after the environment reconnects.':e?.message||'Unable to open email outreach')
+    }finally{
+      window.clearTimeout(timeout)
+      setLoading(false)
+    }
   },[])
 
   useEffect(()=>{load()},[load])
