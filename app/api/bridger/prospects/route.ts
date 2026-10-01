@@ -3,7 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
-// GET - list this Bridger's purchased prospects + their saved WhatsApp number
+// One Bridger Prospect registry for both WhatsApp and email movement.
 export async function GET(request: NextRequest) {
   const authUser = await getAuthUser(request)
   if (!authUser) {
@@ -15,10 +15,13 @@ export async function GET(request: NextRequest) {
       SELECT
         o.id as outreach_id,
         o.status,
+        o.channel,
         o.message_sent,
+        o.delivery_error,
         o.sent_at,
         o.last_activity_at,
         c.name,
+        c.email,
         c.phone,
         c.whatsapp_number as prospect_whatsapp,
         b.bridge_code
@@ -34,14 +37,16 @@ export async function GET(request: NextRequest) {
     `
 
     const bridgeOrigin = getWeaveBridgeOrigin()
-
     const prospects = rows.map((r: any) => ({
       outreachId: r.outreach_id,
       status: r.status,
+      channel: r.channel || 'whatsapp',
       messageSent: r.message_sent,
+      deliveryError: r.delivery_error || null,
       sentAt: r.sent_at,
       lastActivityAt: r.last_activity_at,
       name: r.name,
+      prospectEmail: r.email || null,
       prospectWhatsapp: r.prospect_whatsapp,
       phone: r.phone,
       bridgeUrl: r.bridge_code
@@ -60,7 +65,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH - save/update the Bridger's WhatsApp number
+// WhatsApp identity remains part of the same Prospect surface.
+// Google email identity is authenticated separately through /api/mailbox.
 export async function PATCH(request: NextRequest) {
   const authUser = await getAuthUser(request)
   if (!authUser) {
