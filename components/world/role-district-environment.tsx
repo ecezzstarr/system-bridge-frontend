@@ -71,9 +71,9 @@ export function RoleDistrictEnvironment({
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const role=(forcedRole||user?.role) as WeaveRole|undefined
   const district=getRoleDistrict(role,districtKey)
-  const districtKey=(district?.key||'position') as keyof typeof districtIcons
-  const Icon=districtIcons[districtKey]||Building2
-  const scene=districtScenes[districtKey]||districtScenes.position
+  const resolvedDistrictKey=(district?.key||'position') as keyof typeof districtIcons
+  const Icon=districtIcons[resolvedDistrictKey]||Building2
+  const scene=districtScenes[resolvedDistrictKey]||districtScenes.position
   const worldHref=roleWorld(role)
 
   if(!district){
