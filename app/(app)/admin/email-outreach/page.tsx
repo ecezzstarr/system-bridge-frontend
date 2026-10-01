@@ -23,22 +23,29 @@ export default function AdminEmailOutreachPage(){
 
   const load=useCallback(async()=>{
     setLoading(true);setError('')
+    const controller=new AbortController()
+    const timeout=window.setTimeout(()=>controller.abort(),15000)
     try{
-      const [state,sender]=await Promise.all([
-        fetch('/api/admin/email-outreach',{headers:getAuthHeaders(),cache:'no-store'}),
-        fetch('/api/email-outreach/sender',{headers:getAuthHeaders(),cache:'no-store'}),
-      ])
-      const body=await state.json(),senderBody=await sender.json()
+      const state=await fetch('/api/admin/email-outreach',{
+        headers:getAuthHeaders(),
+        cache:'no-store',
+        signal:controller.signal,
+      })
+      const body=await state.json().catch(()=>({error:'Email Outreach returned an invalid response'}))
       if(!state.ok)throw new Error(body.error||'Unable to open email outreach')
       setData(body)
-      setReplyEmail(senderBody.sender?.reply_email||senderBody.accountEmail||'')
-      setDisplayName(senderBody.sender?.display_name||'WEAVE Administration')
+      setReplyEmail(body.sender?.reply_email||body.accountEmail||'')
+      setDisplayName(body.sender?.display_name||'WEAVE Administration')
       setEnabled(Boolean(body.automation?.enabled))
       setDailyLimit(Number(body.automation?.daily_limit||120))
       setSubject(String(body.automation?.subject_template||''))
       setMessage(String(body.automation?.message_template||''))
-    }catch(e:any){setError(e?.message||'Unable to open email outreach')}
-    finally{setLoading(false)}
+    }catch(e:any){
+      setError(e?.name==='AbortError'?'Email Outreach did not answer within 15 seconds. Retry after the environment reconnects.':e?.message||'Unable to open email outreach')
+    }finally{
+      window.clearTimeout(timeout)
+      setLoading(false)
+    }
   },[])
 
   useEffect(()=>{load()},[load])

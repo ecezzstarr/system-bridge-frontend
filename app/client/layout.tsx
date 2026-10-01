@@ -36,7 +36,7 @@ export default function ClientLayout({
     <EnvironmentOrganizerProvider>
     <div className="weave-client-shell relative min-h-dvh overflow-x-clip bg-transparent">
       <ClientRouteGuard>
-        <div className="relative z-10 min-h-screen">
+        <div className="relative z-10" data-client-shell-height="content-owned">
           <AppHeader />
           <FlameEventAd />
           <LiveAdSurface />
