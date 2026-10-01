@@ -85,12 +85,13 @@ export function WeaveDashboardWorld({
     }))
     .filter(district=>district.places.length>0)
 
-  const movementDistricts=hasRolePresence
-    ? districts.filter(district=>district.key!=='presence')
+  const centerDistrictKey=hasRolePresence?'presence':role==='admin'?'position':null
+  const movementDistricts=centerDistrictKey
+    ? districts.filter(district=>district.key!==centerDistrictKey)
     : districts
 
   return <section
-    className="weave-dashboard-world relative min-h-[calc(100svh-3.5rem)] w-full overflow-x-clip overflow-y-auto bg-[#03080e] sm:h-[calc(100dvh-3.8rem)] sm:min-h-[640px] sm:overflow-hidden"
+    className="weave-dashboard-world relative w-full overflow-x-clip bg-[#03080e] sm:h-[calc(100dvh-3.8rem)] sm:min-h-[640px] sm:overflow-hidden"
     data-role-world={role}
     data-client-world={role==='client'?'open-territory':undefined}
     data-world-organization="presence-district-place"
@@ -114,7 +115,7 @@ export function WeaveDashboardWorld({
     </header>
 
 
-    <div className="relative z-20 mx-3 mt-4 space-y-2 pb-[max(1rem,env(safe-area-inset-bottom))] sm:hidden" data-mobile-role-world="stacked-travel-field">
+    <div className="relative z-20 mx-3 mt-4 space-y-2 pb-[max(.75rem,env(safe-area-inset-bottom))] sm:hidden" data-mobile-role-world="content-height-travel-field">
       <Link
         href={copy.centerHref}
         data-role-presence-gate={role}
