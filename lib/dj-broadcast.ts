@@ -229,28 +229,15 @@ export async function ensureFlameEventTrackIfNeeded() {
     SELECT id
     FROM dj_tracks
     WHERE track_type = 'music'
+      AND LOWER(title) LIKE '%purple%'
+      AND LOWER(title) LIKE '%yellow%'
+      AND LOWER(title) LIKE '%red%'
+      AND LOWER(title) LIKE '%blue%'
       AND (
-        (
-          LOWER(title) LIKE '%purple%'
-          AND LOWER(title) LIKE '%yellow%'
-          AND LOWER(title) LIKE '%red%'
-          AND LOWER(title) LIKE '%blue%'
-        )
-        OR LOWER(COALESCE(artist,'')) LIKE '%portugal%'
-        OR LOWER(title) LIKE '%flame event%'
+        LOWER(COALESCE(artist,'')) LIKE '%portugal%'
+        OR LOWER(title) LIKE '%portugal%'
       )
-    ORDER BY
-      CASE
-        WHEN LOWER(title) LIKE '%purple%'
-          AND LOWER(title) LIKE '%yellow%'
-          AND LOWER(title) LIKE '%red%'
-          AND LOWER(title) LIKE '%blue%'
-        THEN 0
-        WHEN LOWER(COALESCE(artist,'')) LIKE '%portugal%' THEN 1
-        WHEN LOWER(title) LIKE '%flame event%' THEN 2
-        ELSE 3
-      END,
-      created_at DESC
+    ORDER BY created_at DESC
     LIMIT 1
   `
 
