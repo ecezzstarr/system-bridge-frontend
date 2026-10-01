@@ -518,6 +518,10 @@ assert.ok(!getRolePlaces('admin').some(place=>place.href.startsWith('/admin/cont
 const adminBaseRoutes=getRolePlaces('admin').map(place=>place.href.split(/[?#]/)[0])
 assert.equal(new Set(adminBaseRoutes).size,adminBaseRoutes.length,'Administration catalog contains no repeated base routes')
 for(const href of ['/admin/control-center','/admin/file-number-engine','/admin/origin-systems','/admin/infrastructure','/admin/loop-workshop','/admin/dj-workshop','/admin/ad-workshop','/admin/development-agents','/admin/bridger-numbers','/admin/client-build-catalog','/authority/workshops','/admin/dev-workshop','/admin/visual-systems','/admin/environment-organizer']) assert.ok(roleHas('admin',href),href)
+assert.ok(roleHas('admin','/admin/email-outreach'),'Administration world exposes Email Outreach')
+assert.ok(roleHas('bridger','/bridger/email-outreach'),'Bridger world exposes Email Outreach')
+assert.ok(compactWorldSource.includes('full-height-travel-field')&&compactWorldSource.includes("role==='admin'?'position':null"),'Shared role world fills the mobile viewport and removes duplicate Admin Control travel')
+assert.ok(roleDistrictEnvironmentSource.includes('districtScenes')&&roleDistrictEnvironmentSource.includes('data-district-scene={scene.label}'),'District destinations are spatially distinct rather than one renamed room')
 assert.equal(getRoleDistricts('admin')[0].name,'Control','Administration starts with one control district')
 assert.deepEqual(
  getRolePlaces('agent').map(place=>place.href),
@@ -526,8 +530,8 @@ assert.deepEqual(
 )
 assert.deepEqual(
  getRolePlaces('bridger').map(place=>place.href),
- ['/bridger/presence','/settings','/bridger/crossing-notebook','/bridger/bridge-ai','/weave/market/prospects','/bridger/numbers','/echo','/profiles','/wallet/deposit-withdraw','/communications','/event'],
- 'Bridger account keeps its focused functions while adding Settings Direct Communication and Loop 1'
+ ['/bridger/presence','/settings','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/profiles','/event'],
+ 'Bridger account keeps its focused Prospect/Crossing and Continuity functions including Email Outreach'
 )
 for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace','/lounge']) assert.ok(!roleHas(role,href),role+' excludes unrelated account entrance '+href)
 assert.ok(roleLabel('agent','Agent Presence'),'Agent has a Presence environment for understanding the position')
@@ -572,6 +576,13 @@ const continuanceEngineSource=fs.readFileSync(path.join(root,'lib/bridger-subscr
 const continuanceCronSource=fs.readFileSync(path.join(root,'app/api/cron/subscription-check/route.ts'),'utf8')
 const continuanceWorkflowSource=fs.readFileSync(path.join(root,'.github/workflows/bridger-continuance.yml'),'utf8')
 const schedulerAuthSource=fs.readFileSync(path.join(root,'lib/weave-scheduler-auth.ts'),'utf8')
+const emailOutreachEngineSource=fs.readFileSync(path.join(root,'lib/email-outreach.ts'),'utf8')
+const bridgerEmailOutreachSource=fs.readFileSync(path.join(root,'app/api/bridger/email-outreach/route.ts'),'utf8')
+const adminEmailOutreachSource=fs.readFileSync(path.join(root,'app/api/admin/email-outreach/route.ts'),'utf8')
+const emailOutreachCronSource=fs.readFileSync(path.join(root,'app/api/cron/email-outreach/route.ts'),'utf8')
+const emailOutreachWorkflowSource=fs.readFileSync(path.join(root,'.github/workflows/weave-email-outreach.yml'),'utf8')
+const bridgerEmailOutreachPageSource=fs.readFileSync(path.join(root,'app/(app)/bridger/email-outreach/page.tsx'),'utf8')
+const adminEmailOutreachPageSource=fs.readFileSync(path.join(root,'app/(app)/admin/email-outreach/page.tsx'),'utf8')
 const appLayoutContinuanceSource=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
 const adminFneGenerateSource=fs.readFileSync(path.join(root,'app/api/admin/fne/generate/route.ts'),'utf8')
 const adminFneListSource=fs.readFileSync(path.join(root,'app/api/admin/fne/list/route.ts'),'utf8')
@@ -608,6 +619,14 @@ assert.ok(continuanceWorkflowSource.includes('id-token: write')&&continuanceWork
 assert.ok(!continuanceWorkflowSource.includes('CONTINUANCE_SECRET')&&!continuanceWorkflowSource.includes('Report unarmed scheduler'),'Continuance no longer depends on an unconfigured GitHub CRON_SECRET')
 assert.ok(continuanceCronSource.includes('hasWeaveSchedulerAuthority')&&continuanceCronSource.includes('.github/workflows/bridger-continuance.yml'),'Continuance endpoint binds OIDC authority to the exact workflow')
 assert.ok(schedulerAuthSource.includes("claims.repository === WEAVE_REPOSITORY")&&schedulerAuthSource.includes("claims.ref === MAIN_REF")&&schedulerAuthSource.includes('claims.workflow_ref === expectedWorkflowRef'),'Scheduler OIDC verifies repository main ref and exact workflow claims')
+assert.ok(emailOutreachEngineSource.includes('EMAIL_PROSPECT_PRICE_FLAME_COIN = 0.55'),'Email Prospect price is half the 1.1 Flame Coin normal Prospect reference')
+assert.ok(emailOutreachEngineSource.includes('randomBytes(8)')&&emailOutreachEngineSource.includes('lead_code'),'Email Prospect inventory uses cryptographic lead references')
+assert.ok(bridgerEmailOutreachSource.includes("'email_prospect_purchase'")&&bridgerEmailOutreachSource.includes('issueWeaveReceipt'),'Bridger email Prospect acquisition debits value and issues a purchase receipt')
+assert.ok(adminEmailOutreachSource.includes("'import_leads'")&&adminEmailOutreachSource.includes("'set_automation'")&&adminEmailOutreachSource.includes("'run_now'"),'Administration can load inventory, control automation and execute outreach')
+assert.ok(emailOutreachWorkflowSource.includes("cron: '10 7 * * *'")&&emailOutreachWorkflowSource.includes('id-token: write')&&emailOutreachWorkflowSource.includes('audience=weave-scheduler'),'Email outreach runs daily with short-lived GitHub OIDC identity')
+assert.ok(emailOutreachCronSource.includes('hasWeaveSchedulerAuthority')&&emailOutreachCronSource.includes('.github/workflows/weave-email-outreach.yml'),'Email outreach cron binds authority to its exact workflow')
+assert.ok(bridgerEmailOutreachPageSource.includes('Email Prospect Movement')&&adminEmailOutreachPageSource.includes('Email Prospect Engine'),'Both Bridger and Administration have visible email outreach operating environments')
+assert.ok(fs.existsSync(path.join(root,'migrations/20261001_email_outreach.sql')),'Email outreach database migration exists')
 assert.ok(appLayoutContinuanceSource.includes("pathname !== '/bridger/subscription'")&&appLayoutContinuanceSource.includes("router.replace('/bridger/subscription')"),'A genuinely unfunded suspended Bridger is routed to Continuance instead of being trapped away from renewal')
 assert.ok(adminFneGenerateSource.includes('requireWorkshopAuthorization'),'File Number issuance is Administration-authorized')
 assert.ok(adminFneListSource.includes('requireWorkshopAuthorization'),'File Number inventory is Administration-authorized')
@@ -1533,7 +1552,7 @@ assert.ok(bridgerCrossingNotebookSource.includes('Next step'),'Crossing Notebook
 assert.ok(bridgerCrossingNotebookDataSource.includes("title: 'Meet the Human'"),'Crossing Notebook begins with the human rather than price')
 assert.ok(bridgerCrossingNotebookDataSource.includes("title: 'Remain the Bridger'"),'Crossing Notebook carries the relationship beyond conversion')
 assert.ok(bridgerCrossingNotebookDataSource.includes('Do not promise customers, sales or profit.'),'Crossing Notebook blocks false outcome promises')
-assert.ok(bridgerRoleDistrictSource.includes('"href": "/bridger/crossing-notebook"'),'Bridge Movement exposes Crossing Notebook')
+assert.ok(bridgerRoleDistrictSource.includes("name:'Prospect & Crossing'")&&bridgerRoleDistrictSource.includes("href:'/bridger/crossing-notebook'"),'Prospect & Crossing exposes Crossing Notebook')
 assert.ok(weaveEnvironmentMapSource.includes("'bridger-crossing-notebook'"),'Crossing Notebook has a registered WEAVE environment identity')
 assert.ok(bridgerProspectPurchaseSource.includes("Can I ask what you currently do, or what you're trying to make work better?"),'Purchased Prospect first message is human-first')
 assert.ok(bridgerDailyProspectSource.includes("Can I ask what you currently do, or what you're trying to make work better?"),'Daily Prospect first message is human-first')

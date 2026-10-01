@@ -29,6 +29,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'bridger-presence', label:'Bridger Presence', kind:'district', route:'/bridger/presence', area:'Bridger', scope:'bridger', protected:true, defaultOrder:5 },
   { key:'bridger-bridge-ai', label:'Bridge AI', kind:'district', route:'/bridger/bridge-ai', area:'Bridger', scope:'bridger', defaultOrder:20 },
   { key:'bridger-prospect-market', label:'Prospect Market', kind:'district', route:'/weave/market/prospects', area:'Bridger', scope:'bridger', defaultOrder:30 },
+  { key:'bridger-email-outreach', label:'Email Outreach', kind:'district', route:'/bridger/email-outreach', area:'Bridger', scope:'bridger', protected:true, defaultOrder:35 },
   { key:'bridger-numbers', label:'Number Bay', kind:'district', route:'/bridger/numbers', area:'Bridger', scope:'bridger', defaultOrder:40 },
   { key:'bridger-value', label:'Deposit & Withdrawal', kind:'district', route:'/wallet/deposit-withdraw', area:'Bridger', scope:'bridger', defaultOrder:50 },
 
@@ -60,6 +61,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-control-center', label:'Administration Control Center', kind:'district', route:'/admin/control-center', area:'Administration', scope:'admin', protected:true, defaultOrder:30 },
   { key:'admin-environment-organizer', label:'Environment Organizer', kind:'district', route:'/admin/environment-organizer', area:'Administration', scope:'admin', protected:true, defaultOrder:40 },
   { key:'admin-prospect-engine', label:'Prospect Engine', kind:'district', route:'/admin/prospect-engine', area:'Administration', scope:'admin', defaultOrder:60 },
+  { key:'admin-email-outreach', label:'Email Outreach', kind:'district', route:'/admin/email-outreach', area:'Administration', scope:'admin', protected:true, defaultOrder:65 },
   { key:'admin-number-engine', label:'Number Bay Engine', kind:'district', route:'/admin/bridger-numbers', area:'Administration', scope:'admin', defaultOrder:70 },
   { key:'admin-bridge-templates', label:'Bridge Templates', kind:'district', route:'/admin/bridge-templates', area:'Administration', scope:'admin', defaultOrder:80 },
   { key:'admin-file-number-engine', label:'File Number Engine', kind:'district', route:'/admin/file-number-engine', area:'Administration', scope:'admin', defaultOrder:90 },
