@@ -463,6 +463,14 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     movement: 'Ask → clarify → act → continue',
     layer: 'interaction',
   }],
+  ['/admin/company-guidance', {
+    key: 'administration-company-guidance',
+    title: 'Company Guidance Inbox',
+    district: 'Administration',
+    purpose: 'The Administration endpoint for receiving and replying to Agent and Bridger guidance by company position.',
+    movement: 'Receive → clarify → reply → continue',
+    layer: 'interaction',
+  }],
 ]
 
 export function resolveWeaveEnvironment(pathname: string): WeaveEnvironmentCopy {
