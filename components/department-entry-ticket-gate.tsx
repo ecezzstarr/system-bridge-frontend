@@ -62,6 +62,8 @@ export function DepartmentEntryTicketGate({
     paymentReference: '',
   })
 
+  const storageKey = `weave_department_entry_${department}`
+
   useEffect(() => {
     const onDjState = (event: Event) => {
       const detail = (event as CustomEvent<{ playing?: boolean }>).detail
