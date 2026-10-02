@@ -8,5 +8,18 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const [store] = await sql`SELECT id,name,description,public_slug FROM client_business_stores WHERE public_slug=${slug} AND enabled=true AND formation_status='selling' LIMIT 1`
   if (!store) return NextResponse.json({ error: 'Store not found' }, { status: 404 })
   const items = await sql`SELECT id,name,description,price,currency,offer_type FROM client_store_items WHERE store_id=${store.id}::uuid AND enabled=true ORDER BY created_at DESC`
-  return NextResponse.json({ store, items }, { headers: { 'Cache-Control': 'no-store' } })
+  const connectedSystems = await sql`
+    SELECT
+      p.system_id,
+      s.system_type,
+      COALESCE(p.public_label,s.title) AS public_label,
+      p.public_summary
+    FROM client_customer_door_systems p
+    JOIN client_built_systems s ON s.id=p.system_id
+    WHERE p.store_id=${store.id}::uuid
+      AND p.enabled=true
+      AND s.status='active'
+    ORDER BY p.published_at ASC NULLS LAST,p.created_at ASC
+  `
+  return NextResponse.json({ store, items, connected_systems: connectedSystems }, { headers: { 'Cache-Control': 'no-store' } })
 }
