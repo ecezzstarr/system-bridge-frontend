@@ -13,7 +13,7 @@ export default function AdminEmailOutreachPage(){
   const [busy,setBusy]=useState('')
   const [error,setError]=useState('')
   const [notice,setNotice]=useState('')
-  const [replyEmail,setReplyEmail]=useState('')
+  const [sourceEmail,setSourceEmail]=useState('')
   const [displayName,setDisplayName]=useState('')
   const [importText,setImportText]=useState('')
   const [enabled,setEnabled]=useState(false)
@@ -34,7 +34,7 @@ export default function AdminEmailOutreachPage(){
       const body=await state.json().catch(()=>({error:'Email Outreach returned an invalid response'}))
       if(!state.ok)throw new Error(body.error||'Unable to open email outreach')
       setData(body)
-      setReplyEmail(body.sender?.reply_email||body.accountEmail||'')
+      setSourceEmail(body.sender?.source_email||body.sender?.reply_email||body.accountEmail||'')
       setDisplayName(body.sender?.display_name||'WEAVE Administration')
       setEnabled(Boolean(body.automation?.enabled))
       setDailyLimit(Number(body.automation?.daily_limit||120))
@@ -61,11 +61,11 @@ export default function AdminEmailOutreachPage(){
     setBusy('sender');setError('');setNotice('')
     try{
       const response=await fetch('/api/email-outreach/sender',{
-        method:'POST',headers:getAuthHeaders(),body:JSON.stringify({replyEmail,displayName}),
+        method:'POST',headers:getAuthHeaders(),body:JSON.stringify({sourceEmail,displayName}),
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Unable to save Administration email')
-      setNotice('Administration outreach email identity saved.')
+      setNotice('Administration source email saved and active for outreach.')
       await load()
     }catch(e:any){setError(e?.message||'Unable to save Administration email')}
     finally{setBusy('')}
@@ -144,11 +144,11 @@ export default function AdminEmailOutreachPage(){
 
       <section className="mt-7 grid gap-6 lg:grid-cols-3">
         <div className="border-y border-white/10 py-5">
-          <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">Sender identity</p>
-          <input value={replyEmail} onChange={e=>setReplyEmail(e.target.value)} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="admin@example.com"/>
+          <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">Email Source Engine</p>
+          <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="source@example.com"/>
           <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="WEAVE Administration"/>
-          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='sender'?'Saving…':'Save sender'}</button>
-          <p className="mt-3 text-[10px] leading-5 text-slate-500">Mail leaves through the WEAVE provider; replies return to this Administration address.</p>
+          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='sender'?'Activating…':'Activate source'}</button>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">WEAVE uses this as the active Administration source identity. Delivery uses the configured WEAVE mail transport; replies return to this source mailbox.</p>
         </div>
 
         <div className="border-y border-white/10 py-5 lg:col-span-2">
@@ -197,7 +197,7 @@ export default function AdminEmailOutreachPage(){
           {(data.recent||[]).map((row:any)=><div key={row.id} className="grid gap-3 py-4 md:grid-cols-[1fr_auto] md:items-center">
             <div>
               <p className="text-[9px] font-black uppercase tracking-[.12em] text-sky-300">{row.lead_code} · {row.actor_role} · {row.mode} · {row.status}</p>
-              <p className="mt-1 text-sm">{row.name||'Email Prospect'} · {row.email}</p>
+              <p className="mt-1 text-sm">{row.name||'Email Prospect'} · {row.email}</p><p className="mt-1 text-[10px] text-slate-500">Source: {row.source_email||data.sender?.source_email||'not recorded'}</p>
               <p className="mt-1 text-[10px] text-slate-500">{row.subject}</p>
               {row.failure_reason&&<p className="mt-1 text-[10px] text-rose-300">{row.failure_reason}</p>}
             </div>
