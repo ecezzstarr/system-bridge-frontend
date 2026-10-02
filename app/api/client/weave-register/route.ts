@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
-import { randomBytes } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const name = identityData?.name || 'Client'
     const phone = identityData?.phone || ''
     const bridgerId = folder.bridger_id || null
-    const userId = crypto.randomUUID()
+    const userId = randomUUID()
     const referralCode = buildUserReferralCode(userId, 'client')
 
     const newUser = await sql`
