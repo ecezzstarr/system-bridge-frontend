@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ReferralCodePanel } from '@/components/referral-code-panel'
 
 const ROLE_SYSTEM: Record<string, { title: string; detail: string; operatingRoom: string; tone: string }> = {
   admin: {
@@ -169,6 +170,7 @@ export default function PositionIdentityPage() {
           </section>
 
           <aside className="space-y-4">
+            {(user.role==='agent'||user.role==='bridger')&&<ReferralCodePanel/>}
             <section className="rounded-3xl border border-violet-300/15 bg-violet-400/[0.04] p-4">
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-violet-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Standing is separate</p></div>
               <p className="mt-3 text-xs leading-5 text-slate-300">Standing records recognized access, crossing and File identity. Use it to understand what the system recognizes, not merely what your account says.</p>
