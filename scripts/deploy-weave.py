@@ -33,7 +33,7 @@ def smoke(url,expected_sha):
   assert response.status==200, 'WEAVE homepage unavailable'
   lowered=body.lower()
   assert '<html' in lowered and '<body' in lowered and '/_next/' in body, 'WEAVE homepage app shell missing'
- for route in ['/login','/client/loops','/company/loops','/admin/loop-workshop','/admin/visual-systems']:
+ for route in ['/login','/forgot-password','/client/loops','/company/loops','/admin/loop-workshop','/admin/visual-systems','/admin/access-recovery','/admin/company-guidance']:
   with urllib.request.urlopen(url+route,timeout=60) as response:assert response.status==200,route
  with urllib.request.urlopen(url+'/api/visual-runtime',timeout=60) as response:
   visual=json.load(response)
@@ -44,7 +44,25 @@ def smoke(url,expected_sha):
   urllib.request.urlopen(url+'/api/client/agreements',timeout=60)
   raise AssertionError('Agreements accepted unauthenticated request')
  except urllib.error.HTTPError as error:assert error.code==401
+ try:
+  urllib.request.urlopen(url+'/api/admin/access-recovery',timeout=60)
+  raise AssertionError('Recovery administration accepted unauthenticated request')
+ except urllib.error.HTTPError as error:assert error.code==401
+ recovery_smoke(url)
  print('Runtime checks passed:',url,expected_sha)
+
+def recovery_smoke(url):
+ request=urllib.request.Request(
+  url+'/api/auth/recovery-desk',
+  data=json.dumps({'email':'deployment-check@example.invalid','details':'Deployment readiness check'}).encode(),
+  headers={'Content-Type':'application/json'},method='POST',
+ )
+ with urllib.request.urlopen(request,timeout=60) as response:
+  recovery=json.load(response)
+  assert response.status==202 and re.fullmatch('[0-9a-f]{64}',recovery.get('token','')),'Recovery desk request failed'
+ status_request=urllib.request.Request(url+'/api/auth/recovery-desk',data=json.dumps({'action':'status','token':recovery['token']}).encode(),headers={'Content-Type':'application/json'},method='POST')
+ with urllib.request.urlopen(status_request,timeout=60) as response:
+  assert json.load(response).get('status')=='pending','Recovery request status is unavailable'
 def main():
  promoting=len(sys.argv)>1 and sys.argv[1]=='promote'
  sha=check_checkout() if promoting else check_source();rev=SERVICE+'-weave-'+sha[:12]
@@ -55,21 +73,11 @@ def main():
   active=[t for t in service['status']['traffic'] if t.get('percent',0)>0]
   assert len(active)==1 and active[0]['percent']==100,'Review split production traffic before promotion'
   rollback_revision=active[0]['revisionName']
+  with urllib.request.urlopen(PUBLIC_ORIGIN+'/api/health',timeout=60) as response:
+   assert response.status==200 and json.load(response).get('status')=='healthy','Public HTTPS must be healthy before traffic changes'
   run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rev+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
   try:
    smoke(PUBLIC_ORIGIN,sha)
-   request=urllib.request.Request(
-    PUBLIC_ORIGIN+'/api/auth/recovery-desk',
-    data=json.dumps({'email':'deployment-check@example.invalid','details':'Deployment readiness check'}).encode(),
-    headers={'Content-Type':'application/json'},
-    method='POST',
-   )
-   with urllib.request.urlopen(request,timeout=60) as response:
-    recovery=json.load(response)
-    assert response.status==202 and len(recovery.get('token',''))==64,'Live recovery desk request failed'
-   status_request=urllib.request.Request(PUBLIC_ORIGIN+'/api/auth/recovery-desk',data=json.dumps({'action':'status','token':recovery['token']}).encode(),headers={'Content-Type':'application/json'},method='POST')
-   with urllib.request.urlopen(status_request,timeout=60) as response:
-    assert json.load(response).get('status')=='pending','Recovery request status is unavailable'
   except Exception:
    run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rollback_revision+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
    raise
