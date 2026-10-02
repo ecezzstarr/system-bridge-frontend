@@ -44,21 +44,33 @@ async function attemptAutomaticPaymentVerification(purchase:any){
   })
 
   if(verification.state==='verified'){
-    const finalized=await finalizeBridgeRadiancePurchase({
-      purchaseId:String(purchase.id),
-      verificationSource:'tron_solidified',
-      verifierRole:'system',
-      txFrom:verification.fromAddress,
-      txTo:verification.toAddress,
-    })
-    return {
-      purchase:finalized.purchase,
-      verification,
-      crossing:{
-        ready:true,
-        registerUrl:finalized.registerUrl,
-        systemSwitchUrl:finalized.systemSwitchUrl,
-      },
+    try{
+      const finalized=await finalizeBridgeRadiancePurchase({
+        purchaseId:String(purchase.id),
+        verificationSource:'tron_solidified',
+        verifierRole:'system',
+        txFrom:verification.fromAddress,
+        txTo:verification.toAddress,
+      })
+      return {
+        purchase:finalized.purchase,
+        verification,
+        crossing:{
+          ready:true,
+          registerUrl:finalized.registerUrl,
+          systemSwitchUrl:finalized.systemSwitchUrl,
+        },
+      }
+    }catch(error:any){
+      console.error('[bridge-file-folder] verified payment finalization delayed',error)
+      return {
+        purchase,
+        verification:{
+          state:'pending',
+          reason:'TRX payment is verified. WEAVE is completing File Number formation and will retry automatically.',
+        },
+        crossing:{ready:false},
+      }
     }
   }
 
