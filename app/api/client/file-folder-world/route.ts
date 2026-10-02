@@ -87,7 +87,75 @@ export async function POST(request: NextRequest) {
     const action = clean(body.action, 80)
     let receipt = null as Awaited<ReturnType<typeof issueWeaveReceipt>> | null
 
-    if (action === 'purchase_item') {
+    if (action === 'set_business_formation') {
+      const businessName = clean(body.business_name, 220)
+      const sector = clean(body.sector, 160)
+      const purpose = clean(body.purpose, 2400)
+      const customerDescription = clean(body.customer_description, 1600)
+      const operatingModel = clean(body.operating_model, 120)
+
+      if (!businessName) {
+        return NextResponse.json({ error: 'Name the business you are forming.' }, { status: 400 })
+      }
+
+      await ctx.sql`
+        INSERT INTO client_business_formations (
+          client_id,file_number,business_name,sector,purpose,
+          customer_description,operating_model,formation_state,updated_at
+        )
+        VALUES (
+          ${ctx.client.id}::uuid,
+          ${ctx.client.file_number},
+          ${businessName},
+          ${sector || null},
+          ${purpose || null},
+          ${customerDescription || null},
+          ${operatingModel || null},
+          'forming',
+          NOW()
+        )
+        ON CONFLICT (client_id) DO UPDATE SET
+          file_number=EXCLUDED.file_number,
+          business_name=EXCLUDED.business_name,
+          sector=EXCLUDED.sector,
+          purpose=EXCLUDED.purpose,
+          customer_description=EXCLUDED.customer_description,
+          operating_model=EXCLUDED.operating_model,
+          formation_state='forming',
+          updated_at=NOW()
+      `
+
+      await ctx.sql`
+        UPDATE users
+        SET business_name=${businessName}
+        WHERE id=${ctx.client.id}::uuid
+          AND role='client'
+      `
+
+      await ctx.sql`
+        UPDATE client_business_stores
+        SET
+          name=${businessName},
+          description=COALESCE(${purpose || null},description),
+          updated_at=NOW()
+        WHERE client_id=${ctx.client.id}::uuid
+          AND file_number=${ctx.client.file_number}
+      `
+
+      await recordSystemEvent({
+        eventType: 'client_business_formation_defined',
+        actorId: String(ctx.client.id),
+        actorRole: 'client',
+        subjectType: 'client_file_folder',
+        subjectId: String(ctx.client.file_number),
+        source: 'file-folder-business-formation',
+        payload: {
+          businessName,
+          sector: sector || null,
+          operatingModel: operatingModel || null,
+        },
+      })
+    } else if (action === 'purchase_item') {
       const itemKey = clean(body.item_key, 80)
       const quantity = Math.max(1, Math.min(25, Number(body.quantity) || 1))
 
@@ -177,6 +245,13 @@ export async function POST(request: NextRequest) {
       const blueprintKey = clean(body.blueprint_key, 80)
       const customTitle = clean(body.title, 220)
       const purpose = clean(body.purpose, 2000)
+
+      const [formation] = await ctx.sql`
+        SELECT business_name,sector,purpose AS business_purpose
+        FROM client_business_formations
+        WHERE client_id=${ctx.client.id}::uuid
+        LIMIT 1
+      `
 
       const [blueprint] = await ctx.sql`
         SELECT *
@@ -357,7 +432,7 @@ export async function POST(request: NextRequest) {
               ${ctx.client.file_number},
               ${blueprint.blueprint_key},
               ${title},
-              ${purpose || blueprint.description},
+              ${purpose || `Built by ${formation?.business_name || ctx.client.name || 'Client Business'}: ${blueprint.description}`},
               ${blueprint.system_type},
               'building',
               ${durationHours},
@@ -388,7 +463,7 @@ export async function POST(request: NextRequest) {
             ${ctx.client.file_number},
             ${blueprint.blueprint_key},
             ${title},
-            ${purpose || blueprint.description},
+            ${purpose || `Built by ${formation?.business_name || ctx.client.name || 'Client Business'}: ${blueprint.description}`},
             ${blueprint.system_type},
             'building',
             ${durationHours},
