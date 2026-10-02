@@ -60,6 +60,20 @@ export default async function PublicClientMarketStore({
       AND enabled=true
     ORDER BY created_at ASC
   `
+  const connectedSystems=await sql`
+    SELECT
+      p.system_id,
+      s.system_type,
+      COALESCE(p.public_label,s.title) AS public_label,
+      p.public_summary
+    FROM client_customer_door_systems p
+    JOIN client_built_systems s ON s.id=p.system_id
+    WHERE p.store_id=${store.id}::uuid
+      AND p.client_id=${store.client_id}::uuid
+      AND p.enabled=true
+      AND s.status='active'
+    ORDER BY p.published_at ASC NULLS LAST,p.created_at ASC
+  `
   const payments=await ensureClientInternationalPaymentProfile(sql,store.client_id)
   const level=structure?.has_market_hall?'market_hall':structure?.has_storefront?'storefront':'door'
   const [channel]=await sql`
@@ -93,6 +107,7 @@ export default async function PublicClientMarketStore({
     slug={slug}
     store={store}
     offers={offers}
+    connectedSystems={connectedSystems}
     payments={payments}
     config={normalizeStoreEnvironmentConfig(store.environment_config)}
     level={level}
