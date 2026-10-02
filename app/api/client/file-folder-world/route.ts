@@ -10,6 +10,7 @@ import {
 import { CLIENT_BUILD_SPEED_MAX, effectiveBuildMinutes, getClientBuildEconomy } from '@/lib/client-build-economy'
 import { fileFolderMotion } from '@/lib/weave-interaction-motion'
 import { recordSystemEvent } from '@/lib/system-events'
+import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
 
 function clean(value: unknown, max = 4000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
     let receipt = null as Awaited<ReturnType<typeof issueWeaveReceipt>> | null
 
     if (action === 'set_business_formation') {
+      await ensureClientBusinessStoreSchema(ctx.sql)
       const businessName = clean(body.business_name, 220)
       const sector = clean(body.sector, 160)
       const purpose = clean(body.purpose, 2400)
