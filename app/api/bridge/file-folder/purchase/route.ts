@@ -6,7 +6,7 @@ import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { recordSystemEvent } from '@/lib/system-events'
 import { requireApiUser } from '@/lib/api-auth'
 import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
-import { issueWeaveReceipt } from '@/lib/weave-receipts'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'\nimport { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 
 const sql = neon(process.env.DATABASE_URL!)
 function validPrice(value: unknown) { const amount = Number(value); return isValidFileFolderAmount(amount) && amount <= 100000000 }
