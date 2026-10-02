@@ -7,18 +7,13 @@ import {
 
 export const dynamic = 'force-dynamic'
 
-// Returns the synchronized institutional broadcast for every signed-in WEAVE
-// position. Flame Event can auto-start its designated event track, while normal
-// Administration broadcasts remain available to Client, Bridger, Agent and Admin.
+// Returns the synchronized institutional broadcast. Signed-in WEAVE positions
+// receive the full state. Public registration may read only the live track so
+// Department Entry can remain inside the same sound current without creating a
+// second player or exposing Administration announcements.
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
-  if (!user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-  }
-
-  if (!['admin', 'agent', 'bridger', 'client'].includes(user.role)) {
-    return NextResponse.json({ success: true, live: false, flameEventLive: false })
-  }
+  const signedInRole = Boolean(user && ['admin', 'agent', 'bridger', 'client'].includes(user.role))
 
   try {
     const eventContext = await ensureFlameEventTrackIfNeeded()
@@ -47,7 +42,7 @@ export async function GET(request: NextRequest) {
       },
       playlistId: state.playlist_id,
       elapsedSeconds,
-      announcementText: state.announcement_text,
+      announcementText: signedInRole ? state.announcement_text : null,
       updatedAt: state.updated_at,
     })
   } catch (error: any) {
