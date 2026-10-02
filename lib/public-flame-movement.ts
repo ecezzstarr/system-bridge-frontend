@@ -17,6 +17,31 @@ export function publicFlameMovementCodeFromRequest(request: NextRequest) {
   return request.cookies.get(PUBLIC_FLAME_MOVEMENT_COOKIE)?.value?.trim().toUpperCase() || null
 }
 
+export async function getPublicFlameMovementAttribution(movementCodeInput: string | null | undefined) {
+  const movementCode = String(movementCodeInput || '').trim().toUpperCase()
+  if (!movementCode) return null
+
+  await ensureWeaveAdsSchema()
+  const [movement] = await sql`
+    SELECT
+      a.id,
+      a.movement_code,
+      a.referral_code,
+      u.id AS referral_owner_id,
+      u.role AS referral_owner_role
+    FROM weave_ads a
+    LEFT JOIN users u
+      ON UPPER(u.referral_code) = UPPER(a.referral_code)
+     AND u.is_active = true
+     AND u.role IN ('agent','bridger','client')
+    WHERE a.public_movement = true
+      AND a.movement_code = ${movementCode}
+    LIMIT 1
+  `
+
+  return movement || null
+}
+
 export async function recordPublicFlameMovementEvent(input: {
   movementCode: string | null | undefined
   eventType: PublicFlameMovementEvent
