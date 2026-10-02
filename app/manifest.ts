@@ -10,8 +10,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Interaction in Motion: people, ideas, opportunities, value and livelihood in one living WEAVE environment.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#02060d',
-    theme_color: '#06111f',
+    background_color: '#06152e',
+    theme_color: '#06152e',
     icons: [
       {
         src: `/icon.svg?v=${ICON_VERSION}`,
