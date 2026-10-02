@@ -1051,9 +1051,9 @@ assert.ok(infrastructurePageSource.includes('WEAVE Infrastructure Workshop'),'Ad
 assert.ok(infrastructurePageSource.includes('Divine Shield'),'Infrastructure Workshop operates maintenance control')
 assert.ok(adminWorkshopInfrastructureSource.includes("redirect('/district/administration')"),'Retired Admin Workshop menu resolves to the Workshops district')
 assert.ok(roleHas('admin','/admin/infrastructure'),'Administration Workshops district exposes Infrastructure')
-assert.ok(devWorkshopInfrastructureSource.includes("fetch('/api/admin/infrastructure'"),'EIGHT Deploy Center uses the shared infrastructure deployment authority')
-assert.ok(devWorkshopInfrastructureSource.includes('Deploy Preview'),'EIGHT Deploy Center no longer labels a zero-traffic build as live production')
-assert.ok(!devWorkshopInfrastructureSource.includes('> Push Live</Button>'),'Old misleading direct Push Live control is removed')
+assert.ok(!devWorkshopInfrastructureSource.includes("fetch('/api/admin/infrastructure'"),'Integrity Engine does not duplicate Infrastructure deployment authority')
+assert.ok(!devWorkshopInfrastructureSource.includes('Deploy Preview')&&devWorkshopInfrastructureSource.includes('href="/admin/infrastructure"'),'Integrity Engine links to Infrastructure instead of carrying deployment controls')
+assert.ok(!devWorkshopInfrastructureSource.includes('> Push Live</Button>'),'Integrity Engine exposes no direct production traffic control')
 
 const readableCssSource=fs.readFileSync(path.join(root,'app/globals.css'),'utf8')
 const recordPageSource=fs.readFileSync(path.join(root,'app/(app)/ledger/page.tsx'),'utf8')
