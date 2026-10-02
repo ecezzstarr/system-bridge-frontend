@@ -7,6 +7,11 @@ import { recordSystemEvent } from '@/lib/system-events'
 import { requireApiUser } from '@/lib/api-auth'
 import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
+import { verifyNativeTrxPayment } from '@/lib/tron-payment-verification'
+import {
+  ensureBridgePurchaseVerificationSchema,
+  finalizeBridgeRadiancePurchase,
+} from '@/lib/bridge-file-folder-verification'
 
 const sql = neon(process.env.DATABASE_URL!)
 function validPrice(value: unknown) { const amount = Number(value); return isValidFileFolderAmount(amount) && amount <= 100000000 }
@@ -25,6 +30,58 @@ async function ensurePurchaseSchema() {
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_external_id varchar(255)`
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_file_folder_purchases_payment_reference ON file_folder_purchases(payment_reference)`
   await sql`CREATE INDEX IF NOT EXISTS idx_file_folder_purchases_file_number ON file_folder_purchases(file_number)`
+  await ensureBridgePurchaseVerificationSchema()
+}
+
+async function attemptAutomaticPaymentVerification(purchase:any){
+  if(!purchase||purchase.status!=='pending_admin_confirmation'){
+    return {purchase,verification:{state:purchase?.status==='confirmed'?'verified':'not_required'}}
+  }
+
+  const verification=await verifyNativeTrxPayment({
+    txId:String(purchase.payment_reference||''),
+    expectedAmountTrx:Number(purchase.amount_trx||0),
+  })
+
+  if(verification.state==='verified'){
+    const finalized=await finalizeBridgeRadiancePurchase({
+      purchaseId:String(purchase.id),
+      verificationSource:'tron_solidified',
+      verifierRole:'system',
+      txFrom:verification.fromAddress,
+      txTo:verification.toAddress,
+    })
+    return {
+      purchase:finalized.purchase,
+      verification,
+      crossing:{
+        ready:true,
+        registerUrl:finalized.registerUrl,
+        systemSwitchUrl:finalized.systemSwitchUrl,
+      },
+    }
+  }
+
+  if(verification.state==='invalid'){
+    const [failed]=await sql`
+      UPDATE file_folder_purchases
+      SET status='verification_failed'
+      WHERE id=${purchase.id}::uuid
+        AND status='pending_admin_confirmation'
+      RETURNING *
+    `
+    return {
+      purchase:failed||purchase,
+      verification,
+      crossing:{ready:false,canResubmit:true},
+    }
+  }
+
+  return {
+    purchase,
+    verification,
+    crossing:{ready:false},
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -37,7 +94,7 @@ export async function GET(request: NextRequest) {
     if (!purchaseId) return NextResponse.json({ error: 'purchaseId is required' }, { status: 400 })
 
     const [purchase] = await sql`
-      SELECT id,file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,status,bridge_code,created_at,confirmed_at
+      SELECT id,file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,status,bridge_code,payment_reference,created_at,confirmed_at
       FROM file_folder_purchases
       WHERE id=${purchaseId}::uuid
       LIMIT 1
@@ -55,23 +112,26 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const confirmed = purchase.status === 'confirmed' && Boolean(purchase.file_number)
+    const automatic=await attemptAutomaticPaymentVerification(purchase)
+    const current=automatic.purchase||purchase
+    const confirmed=current.status === 'confirmed' && Boolean(current.file_number)
     return NextResponse.json({
       success: true,
       purchase: {
-        id: purchase.id,
-        status: purchase.status,
-        fileNumber: purchase.file_number || null,
-        amountFlameCoin: Number(purchase.amount_trx || 0),
-        confirmedAt: purchase.confirmed_at || null,
+        id: current.id,
+        status: current.status,
+        fileNumber: current.file_number || null,
+        amountFlameCoin: Number(current.amount_trx || 0),
+        confirmedAt: current.confirmed_at || null,
       },
-      crossing: confirmed ? {
+      verification: automatic.verification,
+      crossing: automatic.crossing || (confirmed ? {
         ready: true,
-        registerUrl: `/client/register?fileNumber=${encodeURIComponent(purchase.file_number)}`,
+        registerUrl: `/client/register?fileNumber=${encodeURIComponent(current.file_number)}`,
         systemSwitchUrl: '/client/system-switch',
       } : {
         ready: false,
-      },
+      }),
     })
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Unable to read File Folder purchase' }, { status: 500 })
@@ -128,19 +188,27 @@ export async function POST(request: NextRequest) {
     const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) RETURNING *`
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
     const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
+    const automatic=await attemptAutomaticPaymentVerification(record)
+    const current=automatic.purchase||record
+    const ready=Boolean(automatic.crossing?.ready)
     return NextResponse.json({
       success: true,
       purchase: {
-        id: record.id,
-        status: record.status,
-        fileNumber: record.file_number || null,
-        amountFlameCoin: Number(record.amount_trx || amountFlameCoin),
+        id: current.id,
+        status: current.status,
+        fileNumber: current.file_number || null,
+        amountFlameCoin: Number(current.amount_trx || amountFlameCoin),
         fileFolderTier,
       },
       receipt,
       fileFolderTier,
-      crossing: { ready: false },
-      message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration will verify the payment, issue the File Number, and open the Client registration crossing.`,
+      verification: automatic.verification,
+      crossing: automatic.crossing || { ready:false },
+      message: ready
+        ? `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment verified on TRON. File Number issued; continue into the Client crossing.`
+        : automatic.verification?.state==='invalid'
+          ? String(automatic.verification.reason||'TRX payment could not be verified.')
+          : `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. WEAVE is verifying the TRX transaction; Administration remains available as a fallback.`,
     }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
