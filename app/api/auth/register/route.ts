@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 import { ensureBridgerReferralColumns } from '@/lib/bridger-referral-commission'
 import { validateDepartmentalCode, useDepartmentalCode, Department } from '@/lib/departmental-codes'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
-import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-referral'
+import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-referral'\nimport { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 
 export async function POST(request: NextRequest) {
   try {
