@@ -7,7 +7,7 @@ import { recordSystemEvent } from '@/lib/system-events'
 import { requireApiUser } from '@/lib/api-auth'
 import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
-import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
+import { getPublicFlameMovementAttribution, publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 
 const sql = neon(process.env.DATABASE_URL!)
 function validPrice(value: unknown) { const amount = Number(value); return isValidFileFolderAmount(amount) && amount <= 100000000 }
@@ -24,6 +24,8 @@ async function ensurePurchaseSchema() {
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS provider_name varchar(255)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_name varchar(120)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_external_id varchar(255)`
+  await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS bridger_id uuid`
+  await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS movement_code varchar(40)`
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_file_folder_purchases_payment_reference ON file_folder_purchases(payment_reference)`
   await sql`CREATE INDEX IF NOT EXISTS idx_file_folder_purchases_file_number ON file_folder_purchases(file_number)`
 }
@@ -99,6 +101,11 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
     const clientId = user?.role === 'client' ? user.id : null
+    const movementCode = publicFlameMovementCodeFromRequest(request)
+    const movementAttribution = await getPublicFlameMovementAttribution(movementCode)
+    const movementBridgerId = movementAttribution?.referral_owner_role === 'bridger'
+      ? String(movementAttribution.referral_owner_id)
+      : null
     if (!clientId && (!buyerName || !buyerPhone)) {
       return NextResponse.json({
         error: 'Prospect name and phone are required so Administration can issue the File Number after payment verification.',
@@ -126,16 +133,16 @@ export async function POST(request: NextRequest) {
     }
     const [existing] = await sql`SELECT id FROM file_folder_purchases WHERE payment_reference=${paymentReference} LIMIT 1`
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
-    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) RETURNING *`
+    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${movementBridgerId}::uuid,${movementAttribution?.movement_code || null}) RETURNING *`
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
     const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
     try {
       await recordPublicFlameMovementEvent({
-        movementCode: publicFlameMovementCodeFromRequest(request),
+        movementCode,
         eventType: 'file_folder_purchase',
         userId: clientId,
         subjectId: String(record.id),
-        metadata: { amountFlameCoin, fileFolderTier },
+        metadata: { amountFlameCoin, fileFolderTier, bridgerId: movementBridgerId },
       })
     } catch (movementError) {
       console.error('[Public Flame Movement] File Folder attribution failed:', movementError)
