@@ -61,6 +61,8 @@ export async function verifyNativeTrxPayment(input:{
   txId:string
   expectedAmountTrx:number
   expectedRecipient?:string
+  notBeforeMs?:number|null
+  notAfterMs?:number|null
 }):Promise<TronPaymentVerification>{
   const txId=input.txId.trim()
   const expectedRecipient=(input.expectedRecipient||WORLD_RULES.COMPANY_TRX_WALLET).trim()
@@ -128,14 +130,22 @@ export async function verifyNativeTrxPayment(input:{
     }
   }
 
+  const transactionTimestamp=Number(transaction.raw_data?.timestamp)
+  if(input.notBeforeMs&&Number.isFinite(transactionTimestamp)&&transactionTimestamp<input.notBeforeMs){
+    return {state:'invalid',reason:'TRX transaction predates this Bridge Radiance payment crossing.'}
+  }
+  if(input.notAfterMs&&Number.isFinite(transactionTimestamp)&&transactionTimestamp>input.notAfterMs){
+    return {state:'invalid',reason:'TRX transaction timestamp is outside this Bridge Radiance payment crossing.'}
+  }
+
   return {
     state:'verified',
     txId,
     fromAddress,
     toAddress,
     amountTrx:amountSun/SUN_PER_TRX,
-    blockTimestamp:Number.isFinite(Number(transaction.raw_data?.timestamp))
-      ?Number(transaction.raw_data.timestamp)
+    blockTimestamp:Number.isFinite(transactionTimestamp)
+      ?transactionTimestamp
       :null,
   }
 }
