@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
@@ -45,6 +46,8 @@ export default function FileFolderPurchase({
   providerName?: string
   flameName?: string
 }) {
+  const router = useRouter()
+  const purchaseStorageKey = bridgeCode ? `weave:bridge-purchase:${bridgeCode}` : ''
   const [selectedTier, setSelectedTier] = useState<'standard' | 'premium'>('standard')
   const [standardPrice, setStandardPrice] = useState(String(STANDARD_MIN))
   const [name, setName] = useState('')
@@ -84,6 +87,29 @@ export default function FileFolderPurchase({
   }, [])
 
   useEffect(() => {
+    if (!purchaseStorageKey || purchase) return
+    try {
+      const storedPurchaseId = window.sessionStorage.getItem(purchaseStorageKey)
+      if (storedPurchaseId) {
+        setPurchase({ id: storedPurchaseId, status: 'pending_admin_confirmation' })
+        setMessage('Restoring this File Folder crossing while Administration verification is pending…')
+      }
+    } catch {
+      // Session storage is optional. The live Bridge still works without it.
+    }
+  }, [purchaseStorageKey, purchase])
+
+  const openReleasedCrossing = (url: string, fileNumber?: string | null) => {
+    if (!url) return
+    setRegisterUrl(url)
+    if (purchaseStorageKey) {
+      try { window.sessionStorage.removeItem(purchaseStorageKey) } catch {}
+    }
+    setMessage(`Administration verified the payment and issued File Number ${fileNumber || ''}. Opening the Client crossing…`)
+    window.setTimeout(() => router.replace(url), 900)
+  }
+
+  useEffect(() => {
     if (!purchase?.id || !bridgeCode || purchase.status !== 'pending_admin_confirmation') return
 
     let stopped = false
@@ -108,8 +134,7 @@ export default function FileFolderPurchase({
         setPurchase(next)
 
         if (body.crossing?.ready && body.crossing?.registerUrl) {
-          setRegisterUrl(body.crossing.registerUrl)
-          setMessage(`Administration verified the File Folder. File Number ${next.fileNumber} is ready. Continue as Client to open System Switch.`)
+          openReleasedCrossing(body.crossing.registerUrl, next.fileNumber)
           return
         }
 
@@ -167,7 +192,11 @@ export default function FileFolderPurchase({
       const body = await res.json()
       if (!res.ok) throw new Error(body.error || 'Unable to record payment')
 
-      setPurchase(body.purchase || null)
+      const nextPurchase = body.purchase || null
+      setPurchase(nextPurchase)
+      if (nextPurchase?.id && purchaseStorageKey) {
+        try { window.sessionStorage.setItem(purchaseStorageKey, String(nextPurchase.id)) } catch {}
+      }
       setMessage(body.message || 'File Folder payment recorded. Administration verification is now open.')
     } catch (error: any) {
       setMessage(error.message || 'Unable to record payment')
@@ -218,7 +247,7 @@ export default function FileFolderPurchase({
             </p>
             {purchase?.status === 'pending_admin_confirmation' && (
               <p className="mt-1 inline-flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[.14em] text-amber-200">
-                <Radio className="h-3 w-3" /> {checking ? 'Checking movement' : 'Awaiting Administration'}
+                <Radio className="h-3 w-3" /> {checking ? 'Reading Administration decision' : 'Awaiting Administration verification'}
               </p>
             )}
           </div>
@@ -376,7 +405,7 @@ export default function FileFolderPurchase({
             {!purchase && (
               <>
                 <p className="mt-4 text-xs leading-6 text-stone-400">
-                  After you send the exact TRX amount, record the transaction here. Administration verifies the real movement before WEAVE issues a File Number.
+                  After you send the exact TRX amount, confirm the transaction here. Administration manually verifies the payment. That verification issues the File Number and opens the Client crossing into System Switch.
                 </p>
                 <button
                   type="button"
@@ -395,8 +424,8 @@ export default function FileFolderPurchase({
                   <ShieldCheck className="h-6 w-6 text-amber-200" />
                 </div>
                 <h3 className="mt-4 text-xl font-black text-white">{WEAVE_WRITING.fileFolderCrossing.pendingTitle}</h3>
-                <p className="mt-2 text-xs leading-6 text-stone-400">{WEAVE_WRITING.fileFolderCrossing.pendingDetail}</p>
-                <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{checking ? 'Reading verification state…' : 'Awaiting verified movement'}</p>
+                <p className="mt-2 text-xs leading-6 text-stone-400">Your payment reference has reached Administration. Like an Agent or Bridger entry ticket, the crossing stays closed until Administration verifies the movement. Verification issues your File Number and releases the Client crossing.</p>
+                <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{checking ? 'Reading Administration verification…' : 'Waiting for Administration to verify and open crossing'}</p>
               </div>
             )}
 

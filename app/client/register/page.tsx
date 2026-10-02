@@ -96,9 +96,9 @@ function ClientRegisterContent() {
 
       const result = await res.json()
       if (result.success) {
-        toast.success('Welcome into the Weave')
+        toast.success('Welcome into WEAVE. Opening your File Folder.')
         setSession(result.token, result.user)
-        router.push('/client/dashboard')
+        router.replace('/client/system-switch')
       } else {
         toast.error(result.error || "That didn't complete. Try again.")
       }
