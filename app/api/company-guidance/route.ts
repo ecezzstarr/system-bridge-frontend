@@ -10,7 +10,7 @@ function normalizePosition(value: unknown) {
 }
 
 function guidanceType(position: string) {
-  return `company_guidance:${position}`
+  return `cg:${position}`
 }
 
 function privateRoom(userA: string, userB: string) {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
            SELECT room_id,message_type,MAX(created_at) AS last_message_at,
                   COUNT(*) FILTER (WHERE is_read=false AND user_id<>$1::uuid) AS unread_count
            FROM lounge_messages
-           WHERE room_type='private' AND message_type LIKE 'company_guidance:%'
+           WHERE room_type='private' AND message_type LIKE 'cg:%'
            GROUP BY room_id,message_type
          ),
          first_requester AS (
@@ -80,13 +80,13 @@ export async function GET(request: NextRequest) {
            FROM lounge_messages lm
            JOIN users u ON u.id=lm.user_id
            WHERE lm.room_type='private'
-             AND lm.message_type LIKE 'company_guidance:%'
+             AND lm.message_type LIKE 'cg:%'
              AND lm.user_id<>$1::uuid
              AND u.role IN ('agent','bridger')
            ORDER BY lm.room_id,lm.message_type,lm.created_at ASC
          )
          SELECT fr.user_id AS "requesterId",u.name,u.username,u.role,
-                REPLACE(g.message_type,'company_guidance:','') AS position,
+                REPLACE(g.message_type,'cg:','') AS position,
                 g.last_message_at AS "lastMessageAt",g.unread_count::int AS "unreadCount"
          FROM guidance g
          JOIN first_requester fr ON fr.room_id=g.room_id AND fr.message_type=g.message_type
