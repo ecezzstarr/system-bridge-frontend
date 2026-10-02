@@ -178,10 +178,10 @@ export default function WeaveIntegrityEnginePage(){
         })}
       </section>}
 
-      {report?.repairs?.length>0&&<section className="mt-6 border-y border-cyan-300/15 py-5">
+      {(report?.repairs?.length||0)>0&&<section className="mt-6 border-y border-cyan-300/15 py-5">
         <p className="text-[8px] font-black uppercase tracking-[.18em] text-cyan-300">Repairs carried</p>
         <div className="mt-3 space-y-2">
-          {report.repairs.map((repair,index)=><p key={index} className="text-xs leading-5 text-slate-300">• {repair}</p>)}
+          {report?.repairs?.map((repair,index)=><p key={index} className="text-xs leading-5 text-slate-300">• {repair}</p>)}
         </div>
       </section>}
     </div>
