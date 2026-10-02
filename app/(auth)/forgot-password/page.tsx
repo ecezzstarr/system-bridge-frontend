@@ -22,10 +22,20 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [resendIn, setResendIn] = useState(0)
   const [loginHref, setLoginHref] = useState('/login')
+  const [adminRecoveryMode, setAdminRecoveryMode] = useState(false)
 
   useEffect(() => {
-    const requestedPortal = new URLSearchParams(window.location.search).get('portal')
+    const params = new URLSearchParams(window.location.search)
+    const requestedPortal = params.get('portal')
     if (requestedPortal === 'client' || requestedPortal === 'admin') setPortal(requestedPortal)
+    if (params.get('recovery') === 'admin') {
+      setAdminRecoveryMode(true)
+      const suppliedEmail = params.get('email')
+      if (suppliedEmail) {
+        setEmail(suppliedEmail)
+        setStage('verify')
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -138,9 +148,11 @@ export default function ForgotPasswordPage() {
         <CardDescription className="text-slate-400">
           {stage === 'request'
             ? portal === 'client'
-              ? 'Use the email attached to your Client File Number. WEAVE will send a 6-digit code.'
-              : 'Use the email attached to your WEAVE account. WEAVE will send a 6-digit code.'
-            : `A one-time code was requested for ${email}. It expires in 15 minutes.`}
+              ? 'Use the email attached to your Client File Number. You can request an email code or use a one-time code issued by Administration.'
+              : 'Use the email attached to your WEAVE account. You can request an email code or use a one-time code issued by Administration.'
+            : adminRecoveryMode
+              ? `Enter the one-time Administration recovery code for ${email}. It expires in 15 minutes.`
+              : `A one-time code was requested for ${email}. It expires in 15 minutes.`}
         </CardDescription>
       </CardHeader>
 
@@ -162,8 +174,23 @@ export default function ForgotPasswordPage() {
               />
             </div>
             <Button type="submit" className="h-12 w-full bg-cyan-600 font-bold hover:bg-cyan-700" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><KeyRound className="mr-2 h-4 w-4" />Send 6-digit code</>}
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><KeyRound className="mr-2 h-4 w-4" />Send email code</>}
             </Button>
+            <button
+              type="button"
+              onClick={() => {
+                if (!email.trim()) {
+                  setError('Enter the registered email first.')
+                  return
+                }
+                setError(null)
+                setAdminRecoveryMode(true)
+                setStage('verify')
+              }}
+              className="w-full border-y border-violet-300/15 py-3 text-xs font-bold text-violet-200 transition-colors hover:text-white"
+            >
+              Use Administration recovery code
+            </button>
           </form>
         ) : (
           <form onSubmit={handleReset} className="space-y-4">
@@ -217,15 +244,30 @@ export default function ForgotPasswordPage() {
             </Button>
 
             <div className="flex items-center justify-between gap-3 text-xs">
-              <button
-                type="button"
-                onClick={() => void requestCode()}
-                disabled={isSubmitting || resendIn > 0}
-                className="text-cyan-300 disabled:text-slate-600"
-              >
-                {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
-              </button>
-              <button type="button" onClick={() => { setStage('request'); setCode(''); setError(null) }} className="text-slate-400 hover:text-white">
+              {adminRecoveryMode ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminRecoveryMode(false)
+                    setStage('request')
+                    setCode('')
+                    setError(null)
+                  }}
+                  className="text-cyan-300"
+                >
+                  Request email code instead
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void requestCode()}
+                  disabled={isSubmitting || resendIn > 0}
+                  className="text-cyan-300 disabled:text-slate-600"
+                >
+                  {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
+                </button>
+              )}
+              <button type="button" onClick={() => { setStage('request'); setAdminRecoveryMode(false); setCode(''); setError(null) }} className="text-slate-400 hover:text-white">
                 Change email
               </button>
             </div>
