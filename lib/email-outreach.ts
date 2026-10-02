@@ -145,7 +145,7 @@ export async function deliverOutreachEmail(input: {
   if (!emailOutreachProviderConfigured()) throw new Error('WEAVE email transport is not configured')
 
   const sender = await senderForUser(input.actorId)
-  if (!sender) throw new Error('Set your outreach email identity before sending')
+  if (!sender) throw new Error('Set an active source email before sending')
 
   const apiKey = process.env.RESEND_API_KEY!
   const from = process.env.WEAVE_OUTREACH_EMAIL_FROM || process.env.PASSWORD_RECOVERY_EMAIL_FROM!
