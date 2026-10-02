@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
-import { Music2, Play, Pause, Volume2 } from 'lucide-react'
+import { GripVertical, Music2, Play, Pause, Volume2 } from 'lucide-react'
+import { useFloatingPanel } from '@/components/use-floating-panel'
 import { visiblePoll } from '@/lib/visible-poll'
 import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 
@@ -445,6 +446,7 @@ export function DJBroadcastPlayer() {
   }
 
   const canShow = eligibleAudience && live && !personalDjActive
+  const floatingPanel = useFloatingPanel(canShow, 'weave_dj_panel_position:' + (user?.id || 'public'))
 
   return (
     <>
@@ -486,11 +488,20 @@ export function DJBroadcastPlayer() {
 
       {canShow && (
         <div
+          ref={floatingPanel.panelRef}
+          style={floatingPanel.style}
           className="pointer-events-auto fixed right-3 top-[calc(env(safe-area-inset-top)+4.5rem)] z-[85] w-[min(15rem,calc(100vw-1.5rem))] rounded-2xl border border-white/10 bg-white/[0.045] shadow-[0_16px_52px_rgba(0,0,0,.24),inset_0_1px_0_rgba(255,255,255,.08)] backdrop-blur-[22px] backdrop-saturate-150 sm:right-5 sm:top-20"
           data-weave-dj-mirror="true"
           data-flame-event-live={flameEventLive ? 'true' : 'false'}
         >
           <div className="flex min-h-11 min-w-0 items-center gap-2 px-2.5 py-2">
+            <button {...floatingPanel.gripProps}
+              type="button"
+              aria-label="Move Live DJ panel. Use arrow keys; Home resets position."
+              title="Drag to move. Double-click to reset."
+              className={'touch-none select-none rounded p-1 text-white/40 hover:text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/60 ' + (floatingPanel.dragging ? 'cursor-grabbing' : 'cursor-grab')}>
+              <GripVertical className="h-4 w-3" />
+            </button>
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.035]">
               {joined ? <Volume2 className={`h-4 w-4 ${userPaused ? 'text-white/35' : 'text-white/75'}`} /> : <Music2 className="h-4 w-4 text-white/75" />}
             </div>

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { PoolClient } from 'pg'
 
 import { getPool } from '@/lib/db'
+import { ensureRecoveryRequestSchema } from '@/lib/access-recovery-requests'
 import {
   PASSWORD_RECOVERY_MAX_ATTEMPTS,
   ensurePasswordRecoverySchema,
@@ -48,6 +49,7 @@ export async function POST(request:NextRequest){
     await Promise.all([
       ensurePasswordRecoverySchema(),
       ensureAdminAccessRecoverySchema(),
+      ensureRecoveryRequestSchema(),
     ])
 
     client=await pool.connect()
@@ -135,6 +137,7 @@ export async function POST(request:NextRequest){
       [recovery.user_id],
     )
     await client.query('DELETE FROM sessions WHERE user_id=$1::uuid',[recovery.user_id])
+    await client.query("UPDATE access_recovery_requests SET status='used',code_ciphertext=NULL WHERE user_id=$1::uuid AND status IN ('pending','approved')",[recovery.user_id])
 
     await client.query('COMMIT')
 

@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import type { PoolClient } from 'pg'
 
 import { getPool } from '@/lib/db'
 import { recoveryCodeHash } from '@/lib/password-recovery'
@@ -66,12 +67,14 @@ export async function issueAdminRecoveryGrant(input:{
   adminId:string
   targetUserId:string
   reason:string
+  client?:PoolClient
 }){
   await ensureAdminAccessRecoverySchema()
   const pool=getPool()
-  const client=await pool.connect()
+  const client=input.client||await pool.connect()
+  const ownsTransaction=!input.client
   try{
-    await client.query('BEGIN')
+    if(ownsTransaction)await client.query('BEGIN')
 
     const adminResult=await client.query(
       `SELECT id,role FROM users WHERE id=$1::uuid AND role='admin' AND is_active=true LIMIT 1 FOR UPDATE`,
@@ -146,7 +149,7 @@ export async function issueAdminRecoveryGrant(input:{
       [id,target.id,input.adminId,target.email,codeHash,reason,expiresAt],
     )
 
-    await client.query('COMMIT')
+    if(ownsTransaction)await client.query('COMMIT')
     return {
       id,
       code,
@@ -161,9 +164,9 @@ export async function issueAdminRecoveryGrant(input:{
       },
     }
   }catch(error){
-    try{await client.query('ROLLBACK')}catch{}
+    if(ownsTransaction)try{await client.query('ROLLBACK')}catch{}
     throw error
   }finally{
-    client.release()
+    if(ownsTransaction)client.release()
   }
 }

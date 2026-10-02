@@ -39,6 +39,8 @@ export default function AdminAccessRecoveryPage(){
   const [error,setError]=useState('')
   const [notice,setNotice]=useState('')
   const [issued,setIssued]=useState<any>(null)
+  const [requests,setRequests]=useState<any[]>([])
+  const [adminId,setAdminId]=useState('')
 
   const load=useCallback(async(q='')=>{
     setError('')
@@ -50,11 +52,32 @@ export default function AdminAccessRecoveryPage(){
     if(!response.ok)throw new Error(body.error||'Unable to open Access Recovery Desk')
     setUsers(body.users||[])
     setRecent(body.recent||[])
+    setRequests(body.requests||[])
+    setAdminId(body.adminId||'')
   },[])
 
   useEffect(()=>{
     load().catch((e:any)=>setError(e?.message||'Unable to open Access Recovery Desk'))
-  },[load])
+    const timer=window.setInterval(()=>{
+      if(!document.hidden)void load(query.trim()).catch((e:any)=>setError(e?.message||'Unable to refresh recovery requests'))
+    },15000)
+    return()=>window.clearInterval(timer)
+  },[load,query])
+
+  const respond=async(requestId:string,approve:boolean)=>{
+    setBusy(requestId);setError('');setNotice('')
+    try{
+      const response=await fetch('/api/admin/access-recovery',{
+        method:'POST',headers:getAuthHeaders(),
+        body:JSON.stringify({action:approve?'approve-request':'deny-request',requestId,reason}),
+      })
+      const body=await response.json()
+      if(!response.ok)throw new Error(body.error||'Unable to respond to recovery request')
+      setNotice(approve?'Passcode sent to the user’s recovery desk.':'Recovery request declined.')
+      setReason('');await load(query.trim())
+    }catch(e:any){setError(e?.message||'Unable to respond to recovery request')}
+    finally{setBusy('')}
+  }
 
   const search=async()=>{
     setBusy('search');setError('');setNotice('');setIssued(null)
@@ -121,6 +144,25 @@ export default function AdminAccessRecoveryPage(){
       </header>
 
       {(error||notice)&&<div className={'mt-5 border-l-2 px-4 py-3 text-sm '+(error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200')}>{error||notice}</div>}
+
+      <section className="mt-6 border-y border-white/10 py-6">
+        <h2 className="text-lg font-bold">Users waiting for recovery</h2>
+        <p className="mt-2 text-sm text-slate-400">Verify the person using their registered details before sending a passcode. Their note alone is not proof of identity.</p>
+        <label className="mt-4 block text-xs text-slate-400" htmlFor="request-verification">Identity verification record</label>
+        <textarea id="request-verification" value={reason} onChange={e=>setReason(e.target.value)} maxLength={500} rows={2} placeholder="Record how you verified this user" className="mt-2 w-full border border-white/10 bg-black/20 p-3 text-sm"/>
+        <div className="mt-4 divide-y divide-white/10">
+          {requests.map(row=><div key={row.id} className="space-y-3 py-4">
+            <p className="text-sm font-bold">{row.name} · {row.email}</p>
+            <p className="text-xs text-slate-400">{row.role}{row.file_number?' · '+row.file_number:''} · {new Date(row.created_at).toLocaleString()}</p>
+            <p className="whitespace-pre-wrap text-sm text-slate-300">{row.details}</p>
+            <div className="flex gap-4">
+              <button onClick={()=>respond(row.id,true)} disabled={!!busy||reason.trim().length<6||(row.role==='admin'&&row.user_id!==adminId)} className="border border-cyan-300/30 px-4 py-2 text-xs text-cyan-200 disabled:opacity-40">Verify and send passcode</button>
+              <button onClick={()=>respond(row.id,false)} disabled={!!busy} className="px-4 py-2 text-xs text-rose-200 disabled:opacity-40">Decline</button>
+            </div>
+          </div>)}
+          {!requests.length&&<p className="py-5 text-sm text-slate-500">No users are waiting for a passcode.</p>}
+        </div>
+      </section>
 
       {issued&&<section className="mt-6 border-y border-emerald-300/20 bg-emerald-400/[.04] py-6">
         <p className="text-[8px] font-black uppercase tracking-[.2em] text-emerald-300">One-time recovery access</p>
