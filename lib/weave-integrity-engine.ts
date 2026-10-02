@@ -28,6 +28,21 @@ export type IntegrityReport={
   }
 }
 
+let integrityBootstrapPromise:Promise<void>|null=null
+
+async function ensureIntegrityDependencies(){
+  if(integrityBootstrapPromise)return integrityBootstrapPromise
+  integrityBootstrapPromise=(async()=>{
+    const marketReady=await ensureMarketTables()
+    if(!marketReady)throw new Error('Prospect market prerequisites are unavailable')
+    await ensureBridgerNumberEngineSchema(getSql())
+  })().catch(error=>{
+    integrityBootstrapPromise=null
+    throw error
+  })
+  return integrityBootstrapPromise
+}
+
 async function scanWithClient(client:any):Promise<IntegrityCheck[]>{
   const [
     reserve,
@@ -175,14 +190,14 @@ async function scanWithClient(client:any):Promise<IntegrityCheck[]>{
 }
 
 export async function runWeaveIntegrityEngine(mode:'scan'|'repair'='scan'):Promise<IntegrityReport>{
-  await ensureMarketTables()
-  await ensureBridgerNumberEngineSchema(getSql())
+  await ensureIntegrityDependencies()
 
   const pool=getPool()
   const client=await pool.connect()
   const repairs:string[]=[]
 
   try{
+    await client.query("SET statement_timeout = '12000ms'")
     if(mode==='repair'){
       await client.query('BEGIN')
 
@@ -316,6 +331,7 @@ export async function runWeaveIntegrityEngine(mode:'scan'|'repair'='scan'):Promi
     if(mode==='repair')await client.query('ROLLBACK').catch(()=>null)
     throw error
   }finally{
+    await client.query('RESET statement_timeout').catch(()=>null)
     client.release()
   }
 }

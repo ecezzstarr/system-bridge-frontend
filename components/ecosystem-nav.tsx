@@ -42,8 +42,8 @@ export function EcosystemNav({ currentSystem = 'shop', showMobile = true }: Ecos
     },
     {
       id: 'workshop',
-      name: 'Dev Workshop',
-      subtitle: 'Admin Tools',
+      name: 'Integrity Engine',
+      subtitle: 'Live System Integrity',
       icon: Code,
       href: '/admin/dev-workshop',
       color: 'from-pink-500 to-rose-500',

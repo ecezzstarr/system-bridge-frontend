@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
 import { Music2, Play, Pause, Volume2 } from 'lucide-react'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -12,6 +13,7 @@ const USER_PAUSED_KEY = 'weave_live_sound_user_paused'
 
 export function DJBroadcastPlayer() {
   const { user } = useAuth()
+  const pathname = usePathname()
   const runtimeBudget = useAdaptiveRuntime()
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const currentUrlRef = useRef<string | null>(null)
@@ -255,7 +257,7 @@ export function DJBroadcastPlayer() {
   }, [applyPersonalPause, beginPlayback, joined])
 
   const syncBroadcast = useCallback(async () => {
-    if (!user || syncInFlightRef.current) return
+    if (syncInFlightRef.current) return
     syncInFlightRef.current = true
 
     try {
@@ -345,7 +347,7 @@ export function DJBroadcastPlayer() {
     } finally {
       syncInFlightRef.current = false
     }
-  }, [user?.id, joined, beginPlayback, applyPersonalPause, emitDjAudioState, stopHarmonyAudience])
+  }, [joined, beginPlayback, applyPersonalPause, emitDjAudioState, stopHarmonyAudience])
 
   useEffect(() => {
     const onPersonalDj = (event: Event) => {
@@ -365,9 +367,11 @@ export function DJBroadcastPlayer() {
   }, [applyPersonalPause, syncBroadcast])
 
   const eligibleRole = Boolean(user?.role && ['admin', 'agent', 'bridger', 'client'].includes(user.role))
+  const publicSoundEligible = pathname === '/register'
+  const eligibleAudience = eligibleRole || publicSoundEligible
 
   useEffect(() => {
-    if (!eligibleRole) return
+    if (!eligibleAudience) return
     const stop = visiblePoll(() => syncBroadcast(), 6000)
     const onOnline = () => void syncBroadcast()
     window.addEventListener('online', onOnline)
@@ -376,17 +380,46 @@ export function DJBroadcastPlayer() {
       stop()
       window.removeEventListener('online', onOnline)
     }
-  }, [eligibleRole, syncBroadcast])
+  }, [eligibleAudience, syncBroadcast])
 
-  const handleJoin = async () => {
+  const handleJoin = useCallback(async () => {
     autoplayAttemptedRef.current = true
     userPausedRef.current = false
     setUserPaused(false)
     try { localStorage.removeItem(USER_PAUSED_KEY) } catch {}
     const audio = audioRef.current
     if (audio) audio.muted = false
-    await beginPlayback(true, true)
-  }
+    const playing = await beginPlayback(true, true)
+    return playing
+  }, [beginPlayback])
+
+  useEffect(() => {
+    if (!publicSoundEligible) return
+
+    const onPublicPlayRequest = () => {
+      void (async () => {
+        let playing = false
+        const audio = audioRef.current
+
+        if (audio?.src) {
+          playing = await handleJoin()
+        } else {
+          await syncBroadcast()
+          playing = await handleJoin()
+        }
+
+        window.dispatchEvent(new CustomEvent('weave:dj-playback-result', {
+          detail: {
+            playing,
+            title: trackTitle || 'WEAVE Live Broadcast',
+          },
+        }))
+      })()
+    }
+
+    window.addEventListener('weave:dj-request-play', onPublicPlayRequest)
+    return () => window.removeEventListener('weave:dj-request-play', onPublicPlayRequest)
+  }, [publicSoundEligible, handleJoin, syncBroadcast, trackTitle])
 
   const handlePause = () => {
     userPausedRef.current = true
@@ -411,7 +444,7 @@ export function DJBroadcastPlayer() {
     void syncBroadcast()
   }
 
-  const canShow = eligibleRole && live && !personalDjActive
+  const canShow = eligibleAudience && live && !personalDjActive
 
   useEffect(() => {
     const root = document.documentElement
