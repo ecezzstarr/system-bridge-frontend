@@ -10,6 +10,12 @@ export type FileFolderWorldSnapshot = {
   systems: any[]
   library: any[]
   customerDoor: any | null
+  businessFormation: any
+  integration: {
+    owner: 'client'
+    host: 'WEAVE'
+    publicBoundary: 'customer_door'
+  }
   buildFunding: ClientBuildEconomy
   growth: ClientGrowthSnapshot
   guarantee: {
@@ -52,6 +58,22 @@ export async function ensureFileFolderWorldSchema(sql: any) {
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS client_business_formations (
+      client_id uuid PRIMARY KEY,
+      file_number varchar(120) NOT NULL,
+      business_name varchar(220) NOT NULL,
+      sector varchar(160),
+      purpose text,
+      customer_description text,
+      operating_model varchar(120),
+      formation_state varchar(40) NOT NULL DEFAULT 'forming',
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      updated_at timestamptz NOT NULL DEFAULT NOW()
+    )
+  `
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_client_business_formations_file_number ON client_business_formations(file_number)`
 
   await sql`
     CREATE TABLE IF NOT EXISTS client_file_folder_inventory (
@@ -579,6 +601,9 @@ export async function finalizeReadyBuilds(
         ${build.title},
         ${JSON.stringify({
           blueprintKey: build.blueprint_key,
+          ownership: 'client',
+          hostedBy: 'WEAVE',
+          publicBoundary: 'customer_door',
           district: 'main_file_folder',
           finalSpeedMultiplier: Number(build.speed_multiplier || 1),
           purchasedSpeedMultiplier: Number(build.purchase_speed_multiplier || 1),
@@ -630,11 +655,40 @@ export async function getFileFolderWorldSnapshot(
     WHERE u.id=${clientId}::uuid
     LIMIT 1
   `
+  await sql`
+    INSERT INTO client_business_formations (
+      client_id,file_number,business_name,formation_state
+    )
+    VALUES (
+      ${clientId}::uuid,
+      ${fileNumber},
+      ${clientIdentity?.business_name || clientIdentity?.name || 'Client Business'},
+      'forming'
+    )
+    ON CONFLICT (client_id) DO UPDATE SET
+      file_number=EXCLUDED.file_number,
+      business_name=CASE
+        WHEN client_business_formations.business_name IS NULL
+          OR BTRIM(client_business_formations.business_name)=''
+        THEN EXCLUDED.business_name
+        ELSE client_business_formations.business_name
+      END,
+      updated_at=NOW()
+  `
+
+  const [businessFormation] = await sql`
+    SELECT
+      client_id,file_number,business_name,sector,purpose,customer_description,
+      operating_model,formation_state,created_at,updated_at
+    FROM client_business_formations
+    WHERE client_id=${clientId}::uuid
+    LIMIT 1
+  `
   await ensureClientBusinessStore(
     sql,
     clientId,
     fileNumber,
-    clientIdentity?.business_name || clientIdentity?.name || 'Client Business',
+    businessFormation?.business_name || clientIdentity?.business_name || clientIdentity?.name || 'Client Business',
     clientIdentity?.workshop_type === 'crypto_exchange',
   )
 
@@ -784,7 +838,7 @@ export async function getFileFolderWorldSnapshot(
     sql,
     clientId,
     fileNumber,
-    clientIdentity?.business_name || clientIdentity?.name || 'Client',
+    businessFormation?.business_name || clientIdentity?.business_name || clientIdentity?.name || 'Client',
   )
 
   const library = await sql`
@@ -813,6 +867,19 @@ export async function getFileFolderWorldSnapshot(
     systems,
     library,
     customerDoor: customerDoor || null,
+    businessFormation: businessFormation || {
+      business_name: clientIdentity?.business_name || clientIdentity?.name || 'Client Business',
+      sector: null,
+      purpose: null,
+      customer_description: null,
+      operating_model: null,
+      formation_state: 'forming',
+    },
+    integration: {
+      owner: 'client',
+      host: 'WEAVE',
+      publicBoundary: 'customer_door',
+    },
     buildFunding,
     growth,
     guarantee: {
