@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Mail, Play, RefreshCw, Save, Upload } from 'lucide-react'
+import { Mail, Play, RefreshCw, Save, Sparkles, Upload } from 'lucide-react'
 
 import { getAuthHeaders } from '@/lib/auth-client'
 
@@ -16,6 +16,8 @@ export default function AdminEmailOutreachPage(){
   const [replyEmail,setReplyEmail]=useState('')
   const [displayName,setDisplayName]=useState('')
   const [importText,setImportText]=useState('')
+  const [generateCount,setGenerateCount]=useState(50)
+  const [destination,setDestination]=useState<'balanced'|'admin'|'bridger'>('balanced')
   const [enabled,setEnabled]=useState(false)
   const [dailyLimit,setDailyLimit]=useState(120)
   const [subject,setSubject]=useState('')
@@ -71,19 +73,35 @@ export default function AdminEmailOutreachPage(){
     finally{setBusy('')}
   }
 
-  const importLeads=async()=>{
+  const importSources=async()=>{
     setBusy('import');setError('');setNotice('')
     try{
       const response=await fetch('/api/admin/email-outreach',{
         method:'POST',headers:getAuthHeaders(),
-        body:JSON.stringify({action:'import_leads',leads:rows}),
+        body:JSON.stringify({action:'import_sources',leads:rows}),
       })
       const body=await response.json()
-      if(!response.ok)throw new Error(body.error||'Email Prospect import failed')
-      setNotice(`${body.inserted} email Prospects entered the system. ${body.skipped} skipped.`)
+      if(!response.ok)throw new Error(body.error||'Email lead source import failed')
+      setNotice(`${body.inserted} source record${body.inserted===1?'':'s'} ready for generation. ${body.skipped} skipped.`)
       setImportText('')
       await load()
-    }catch(e:any){setError(e?.message||'Email Prospect import failed')}
+    }catch(e:any){setError(e?.message||'Email lead source import failed')}
+    finally{setBusy('')}
+  }
+
+  const generateLeads=async()=>{
+    setBusy('generate');setError('');setNotice('')
+    try{
+      const response=await fetch('/api/admin/email-outreach',{
+        method:'POST',headers:getAuthHeaders(),
+        body:JSON.stringify({action:'generate_leads',limit:generateCount,destination}),
+      })
+      const body=await response.json()
+      if(!response.ok)throw new Error(body.error||'Email lead generation failed')
+      const result=body.result||{}
+      setNotice(`Generated ${result.generated||0} email lead${result.generated===1?'':'s'}: ${result.adminGenerated||0} for Administration and ${result.bridgerGenerated||0} for the Bridger market.`)
+      await load()
+    }catch(e:any){setError(e?.message||'Email lead generation failed')}
     finally{setBusy('')}
   }
 
@@ -152,20 +170,34 @@ export default function AdminEmailOutreachPage(){
         </div>
 
         <div className="border-y border-white/10 py-5 lg:col-span-2">
-          <p className="text-[8px] font-black uppercase tracking-[.18em] text-emerald-300">Email Prospect inventory</p>
+          <p className="text-[8px] font-black uppercase tracking-[.18em] text-emerald-300">Email Lead Generator</p>
           <div className="mt-4 grid grid-cols-4 gap-3 text-center">
             {[
-              ['Available',data.counts?.available||0],
-              ['Acquired',data.counts?.acquired||0],
+              ['Ready sources',data.sourceCounts?.ready||0],
+              ['Admin pool',data.counts?.admin_available||0],
+              ['Bridger pool',data.counts?.bridger_available||0],
               ['Contacted',data.counts?.contacted||0],
-              ['Blocked',data.counts?.blocked||0],
             ].map(([label,value])=><div key={String(label)} className="border border-white/[.07] px-2 py-3"><p className="text-xl font-black">{value}</p><p className="mt-1 text-[7px] uppercase tracking-[.12em] text-slate-500">{label}</p></div>)}
           </div>
-          <textarea value={importText} onChange={e=>setImportText(e.target.value)} rows={5} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 font-mono text-xs leading-5 outline-none" placeholder={"Name,email@example.com,source,consent basis\nAnother,email2@example.com,event signup,opt in"}/>
+
+          <p className="mt-5 text-[8px] font-black uppercase tracking-[.16em] text-slate-500">1 · Add real source records</p>
+          <textarea value={importText} onChange={e=>setImportText(e.target.value)} rows={5} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 font-mono text-xs leading-5 outline-none" placeholder={"Name,email@example.com,source,consent basis\nAnother,email2@example.com,event signup,opt in"}/>
           <div className="mt-3 flex items-center justify-between gap-3">
             <p className="text-[10px] text-slate-500">{rows.length} parsed row{rows.length===1?'':'s'} · max 200 per import</p>
-            <button onClick={importLeads} disabled={!rows.length||busy==='import'} className="flex items-center gap-2 border border-emerald-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Upload className="h-3.5 w-3.5"/>{busy==='import'?'Importing…':'Import leads'}</button>
+            <button onClick={importSources} disabled={!rows.length||busy==='import'} className="flex items-center gap-2 border border-emerald-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Upload className="h-3.5 w-3.5"/>{busy==='import'?'Adding…':'Add sources'}</button>
           </div>
+
+          <p className="mt-6 text-[8px] font-black uppercase tracking-[.16em] text-slate-500">2 · Generate outreach inventory</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-[110px_1fr_auto]">
+            <input type="number" min={1} max={200} value={generateCount} onChange={e=>setGenerateCount(Math.max(1,Math.min(200,Number(e.target.value||1))))} className="border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" aria-label="Email leads to generate"/>
+            <select value={destination} onChange={e=>setDestination(e.target.value as 'balanced'|'admin'|'bridger')} className="border border-white/10 bg-[#071526] px-3 py-3 text-sm outline-none">
+              <option value="balanced">Split: Admin + Bridgers</option>
+              <option value="admin">Administration outreach only</option>
+              <option value="bridger">Bridger market only</option>
+            </select>
+            <button onClick={generateLeads} disabled={busy==='generate'||!data.sourceCounts?.ready} className="flex items-center justify-center gap-2 border border-sky-300/30 px-4 py-3 text-[9px] font-black uppercase tracking-[.12em] text-sky-100 disabled:opacity-35"><Sparkles className="h-3.5 w-3.5"/>{busy==='generate'?'Generating…':'Generate leads'}</button>
+          </div>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">Generation creates cryptographic EML references and routes each real, contactable source into Administration or Bridger inventory. WEAVE does not fabricate email addresses.</p>
         </div>
       </section>
 
