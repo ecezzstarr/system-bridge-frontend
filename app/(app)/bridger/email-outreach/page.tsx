@@ -35,7 +35,7 @@ export default function BridgerEmailOutreachPage(){
   const [busy,setBusy]=useState('')
   const [error,setError]=useState('')
   const [notice,setNotice]=useState('')
-  const [replyEmail,setReplyEmail]=useState('')
+  const [sourceEmail,setSourceEmail]=useState('')
   const [displayName,setDisplayName]=useState('')
   const [subject,setSubject]=useState('')
   const [message,setMessage]=useState('')
@@ -53,7 +53,7 @@ export default function BridgerEmailOutreachPage(){
       const body=await state.json().catch(()=>({error:'Email Outreach returned an invalid response'}))
       if(!state.ok)throw new Error(body.error||'Unable to open email outreach')
       setData(body)
-      setReplyEmail(body.sender?.reply_email||body.accountEmail||'')
+      setSourceEmail(body.sender?.source_email||body.sender?.reply_email||body.accountEmail||'')
       setDisplayName(body.sender?.display_name||'')
       setSubject(v=>v||body.defaultSubject||'')
       setMessage(v=>v||body.defaultMessage||'')
@@ -72,11 +72,11 @@ export default function BridgerEmailOutreachPage(){
     try{
       const response=await fetch('/api/email-outreach/sender',{
         method:'POST',headers:getAuthHeaders(),
-        body:JSON.stringify({replyEmail,displayName}),
+        body:JSON.stringify({sourceEmail,displayName}),
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Unable to save outreach email')
-      setNotice('Outreach email identity saved. Replies return to this address.')
+      setNotice('Source email saved and active. Replies return to this mailbox.')
       await load()
     }catch(e:any){setError(e?.message||'Unable to save outreach email')}
     finally{setBusy('')}
@@ -144,13 +144,13 @@ export default function BridgerEmailOutreachPage(){
 
       <section className="mt-7 grid gap-5 md:grid-cols-[1fr_1fr]">
         <div className="border-y border-white/10 py-5">
-          <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">01 · Sender position</p>
-          <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Your reply email</label>
-          <input value={replyEmail} onChange={e=>setReplyEmail(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="you@example.com"/>
+          <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">01 · Email Source</p>
+          <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Your source email</label>
+          <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="you@example.com"/>
           <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Display name</label>
           <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="Your name · WEAVE Bridger"/>
-          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-sky-100 disabled:opacity-40">{busy==='sender'?'Saving…':'Save outreach email'}</button>
-          <p className="mt-3 text-[10px] leading-5 text-slate-500">WEAVE sends through its configured mail transport. Prospect replies return to the email you set here.</p>
+          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-sky-100 disabled:opacity-40">{busy==='sender'?'Saving…':'Activate source email'}</button>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">This is your Bridger source identity. WEAVE sends through its configured mail transport and Prospect replies return to this source mailbox.</p>
         </div>
 
         <div className="border-y border-white/10 py-5">
@@ -203,7 +203,7 @@ export default function BridgerEmailOutreachPage(){
           {outreach.map(row=><div key={row.id} className="grid gap-3 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
             <div>
               <p className="text-[9px] font-black uppercase tracking-[.12em] text-sky-300">{row.lead_code} · {row.status}</p>
-              <p className="mt-1 text-sm">{row.email}</p>
+              <p className="mt-1 text-sm">{row.email}</p><p className="mt-1 text-[10px] text-slate-500">Source: {row.source_email||data.sender?.source_email||'not recorded'}</p>
               {row.failure_reason&&<p className="mt-1 text-[10px] text-rose-300">{row.failure_reason}</p>}
             </div>
             {row.status==='sent'&&<button onClick={()=>markReplied(row)} disabled={busy==='reply:'+row.id} className="border border-emerald-300/20 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-emerald-200">Mark replied</button>}
