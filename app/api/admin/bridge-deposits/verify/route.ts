@@ -7,8 +7,7 @@ import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router
 import { getFileFolderTier } from '@/lib/file-folder-pricing'
 import { notifyUser } from '@/lib/deposit-notifications'
 import { ensureFlameSchema } from '@/lib/flame-schema'
-import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
-import { recordSystemEvent } from '@/lib/system-events'
+import { finalizeBridgeRadiancePurchase } from '@/lib/bridge-file-folder-verification'
 
 async function provisionPersistentFolder(fileNumber: string, clientName: string) {
   await ensureClientFileFolderSchema(sql)
@@ -52,7 +51,7 @@ async function verifyBridgeRadiancePurchase({
     SELECT *
     FROM file_folder_purchases
     WHERE id=${purchaseId}::uuid
-      AND status='pending_admin_confirmation'
+      AND status IN ('pending_admin_confirmation','confirmed')
     LIMIT 1
   `
 
@@ -66,6 +65,9 @@ async function verifyBridgeRadiancePurchase({
   }
 
   if (status === 'rejected') {
+    if (purchase.status === 'confirmed') {
+      return NextResponse.json({ error: 'Confirmed File Folder purchase cannot be rejected' }, { status: 409 })
+    }
     await sql`
       UPDATE file_folder_purchases
       SET status='rejected', confirmed_by=${admin.id}::uuid, confirmed_at=NOW()
@@ -80,72 +82,11 @@ async function verifyBridgeRadiancePurchase({
     })
   }
 
-  const prospectName = String(purchase.buyer_name || purchase.buyer_email || 'Bridge Radiance Prospect').trim().slice(0, 255)
-  const prospectPhone = String(purchase.buyer_phone || '').trim().slice(0, 80)
-
-  const fileFolder = await generateFileNumber(null, {
-    name: prospectName,
-    phone: prospectPhone,
-    bridgeCode: purchase.bridge_code || null,
-    purchaseId: purchase.id,
-    txHash: purchase.payment_reference,
-    amountTrx: Number(purchase.amount_trx),
-    providerName: purchase.provider_name || null,
-    flameName: purchase.flame_name || null,
-  })
-  const fileNumber = fileFolder.file_number
-
-  await provisionPersistentFolder(fileNumber, prospectName)
-
-  const [confirmed] = await sql`
-    UPDATE file_folder_purchases
-    SET
-      file_number=${fileNumber},
-      status='confirmed',
-      confirmed_at=NOW(),
-      confirmed_by=${admin.id}::uuid
-    WHERE id=${purchaseId}::uuid
-      AND status='pending_admin_confirmation'
-    RETURNING *
-  `
-
-  if (!confirmed) {
-    return NextResponse.json({ error: 'File Folder purchase changed before verification completed' }, { status: 409 })
-  }
-
-  if (confirmed.bridge_code) {
-    await sql`
-      UPDATE chatgpt_bridge_sessions
-      SET crossing_state='file_number_issued'
-      WHERE code=${confirmed.bridge_code}
-    `
-  }
-
-  const allocation = await accrueAiProviderAllocation({
-    sql,
-    purchaseId: String(confirmed.id),
-    fileNumber,
-    grossAmount: Number(confirmed.amount_trx),
-    bridgeCode: confirmed.bridge_code,
-    providerKey: confirmed.provider_key,
-    providerName: confirmed.provider_name,
-    flameExternalId: confirmed.flame_external_id,
-    flameName: confirmed.flame_name,
-  })
-
-  await recordSystemEvent({
-    eventType: 'file_number_issued',
-    actorId: admin.id,
-    actorRole: 'admin',
-    subjectType: 'client_file_folder',
-    subjectId: fileNumber,
-    source: 'bridge-radiance-file-folder',
-    payload: {
-      purchaseId,
-      bridgeCode: confirmed.bridge_code || null,
-      amountFlameCoin: Number(confirmed.amount_trx),
-      fileFolderTier,
-    },
+  const finalized = await finalizeBridgeRadiancePurchase({
+    purchaseId,
+    verifierId: admin.id,
+    verifierRole: 'admin',
+    verificationSource: 'administration',
   })
 
   return NextResponse.json({
@@ -153,13 +94,14 @@ async function verifyBridgeRadiancePurchase({
     status: 'approved',
     source: 'file_folder_purchase',
     purchaseId,
-    fileNumber,
-    amount: Number(confirmed.amount_trx),
-    fileFolderTier,
+    fileNumber: finalized.fileNumber,
+    amount: Number(finalized.purchase.amount_trx),
+    fileFolderTier: finalized.fileFolderTier,
     currency: 'Flame Coin',
-    registerUrl: `/client/register?fileNumber=${encodeURIComponent(fileNumber)}`,
-    systemSwitchUrl: '/client/system-switch',
-    aiProviderAllocation: allocation?.allocation || null,
+    registerUrl: finalized.registerUrl,
+    systemSwitchUrl: finalized.systemSwitchUrl,
+    aiProviderAllocation: finalized.allocation,
+    replayed: finalized.replayed,
     message: 'File Folder approved. File Number issued. Prospect can now register as Client and cross into System Switch.',
   })
 }
