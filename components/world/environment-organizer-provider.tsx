@@ -5,6 +5,8 @@ import { createContext,useContext,useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import { EyeOff,Home } from 'lucide-react'
 import { normalizeEnvironmentPageRoute } from '@/lib/weave-environment-registry'
+import { canAccessEnvironmentRoute } from '@/lib/company-guidance-access'
+import { useAuth } from '@/lib/auth-provider'
 
 import { useEnvironmentRuntimeConfig,type RuntimeSurface } from './use-environment-runtime-config'
 
@@ -25,7 +27,9 @@ const OrganizerContext=createContext<OrganizerContextValue>({
 })
 
 export function EnvironmentOrganizerProvider({children}:{children:React.ReactNode}){
-  const {items,ready,refresh}=useEnvironmentRuntimeConfig()
+  const {items:runtimeItems,ready,refresh}=useEnvironmentRuntimeConfig()
+  const {user}=useAuth()
+  const items=useMemo(()=>runtimeItems.filter(item=>canAccessEnvironmentRoute(item.route,user?.role)),[runtimeItems,user?.role])
 
   const value=useMemo<OrganizerContextValue>(()=>{
     const exact=new Map(items.map(item=>[item.route,item]))
@@ -34,6 +38,7 @@ export function EnvironmentOrganizerProvider({children}:{children:React.ReactNod
       items,
       ready,
       isVisible:(route:string)=>{
+        if(!canAccessEnvironmentRoute(route,user?.role))return false
         const exactItem=exact.get(route)
         if(exactItem)return exactItem.is_visible!==false
         const surface=surfaces.get(normalizeEnvironmentPageRoute(route))
@@ -47,7 +52,7 @@ export function EnvironmentOrganizerProvider({children}:{children:React.ReactNod
       },
       refresh,
     }
-  },[items,ready,refresh])
+  },[items,ready,refresh,user?.role])
 
   return <OrganizerContext.Provider value={value}>{children}</OrganizerContext.Provider>
 }

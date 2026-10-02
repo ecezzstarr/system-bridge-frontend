@@ -15,7 +15,7 @@ const environmentResource=createRuntimeResource('/api/environment-organizer',{
     version:Number(body.runtime?.version||0),
     items:Array.isArray(body.items)?body.items as RuntimeSurface[]:[],
   }
-},'weave-environment-refresh')
+},'weave-environment-refresh',true)
 export function useEnvironmentRuntimeConfig(){
   const {data,ready}=useSyncExternalStore(environmentResource.subscribe,environmentResource.getSnapshot,environmentResource.getServerSnapshot)
   return {...data,ready,refresh:environmentResource.refresh}

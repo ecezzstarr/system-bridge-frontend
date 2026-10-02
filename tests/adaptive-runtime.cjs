@@ -79,6 +79,15 @@ async function resources(){
   const stop=fresh.subscribe(()=>{});await h.tick(5000)
   assert.equal(fresh.getSnapshot().ready,true,'a failed first request releases readiness')
   stop();await h.flush()
+  let sentHeaders
+  const roleRuntime=harness()
+  roleRuntime.sandbox.localStorage={getItem:key=>key==='ssb_auth_token'?'role-session-token':null}
+  roleRuntime.sandbox.fetch=async(_url,options)=>{sentHeaders=options.headers;return {ok:true,json:async()=>({value:1})}}
+  const authorized=roleRuntime.load('lib/runtime-resource.ts').createRuntimeResource('/environment',{value:0},b=>b,'published',true)
+  const stopAuthorized=authorized.subscribe(()=>{})
+  await roleRuntime.flush()
+  assert.equal(sentHeaders.Authorization,'Bearer role-session-token','Role-aware environment requests carry the existing session token')
+  stopAuthorized();await roleRuntime.flush()
 }
 async function adaptation(){
   const h=harness();let subscribe,getSnapshot

@@ -542,12 +542,12 @@ assert.ok(roleDistrictEnvironmentSource.includes('districtScenes')&&roleDistrict
 assert.equal(getRoleDistricts('admin')[0].name,'Control','Administration starts with one control district')
 assert.deepEqual(
  getRolePlaces('agent').map(place=>place.href),
- ['/agent/presence','/settings','/agility','/agent/commissions','/communications','/event'],
- 'Agent account keeps Presence Agility and Commissions while adding Settings Direct Communication and Loop 1'
+ ['/agent/presence','/settings','/agility','/agent/commissions','/communications','/company-chat','/event'],
+ 'Agent account keeps focused districts with Company Guidance inside Connection & Event'
 )
 assert.deepEqual(
  getRolePlaces('bridger').map(place=>place.href),
- ['/bridger/presence','/settings','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/profiles','/event'],
+ ['/bridger/presence','/settings','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/company-chat','/profiles','/event'],
  'Bridger account keeps its focused Prospect/Crossing and Continuity functions including Email Outreach'
 )
 for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace','/lounge']) assert.ok(!roleHas(role,href),role+' excludes unrelated account entrance '+href)
@@ -1293,6 +1293,42 @@ for(const fakeAction of ['Schedule Session','Start</','End Session']){
 assert.ok(streamSource.includes("redirect('/echo')"),'Retired shared Stream resolves to Echo instead of mounting a duplicate media surface')
 assert.ok(!businessDistrictSource.includes("href:'/lounge'"),'Retired Places route has no Public Lounge destination')
 assert.ok(companyGuidanceSource.includes('Company Guidance Router'),'Company guidance routes by functional consequence')
+const {canAccessCompanyGuidance,isCompanyGuidanceRoute,canAccessEnvironmentRoute}=require('../lib/company-guidance-access.ts')
+const Guidance=require('../app/(app)/company-chat/page.tsx').default
+const guidanceAuth=auth
+for(const role of ['agent','bridger','admin','client','lawyer',undefined]){
+ const allowed=role==='agent'||role==='bridger'
+ assert.equal(canAccessCompanyGuidance(role),allowed,'Guidance role policy: '+role)
+ for(const route of ['/company-chat','/company-chat?position=admin','/company-chat/mandate','/company-chat/admin?draft=test']){
+  assert.equal(canAccessEnvironmentRoute(route,role),allowed,'Guidance nested/query route policy: '+role+' '+route)
+ }
+ auth={...guidanceAuth,user:{id:'guidance-test',name:'Guidance Fixture',role}}
+ const markup=renderToStaticMarkup(React.createElement(Guidance))
+ assert.equal(markup.includes('Company Guidance Router'),allowed,'Guidance page renders only for Agent/Bridger: '+role)
+ if(allowed){
+  assert.ok(markup.includes(role==='agent'?'Agent · Connection &amp; Event':'Bridger · Continuity'),'Guidance carries authenticated role context')
+  const places=getRolePlaces(role).filter(place=>place.href==='/company-chat')
+  assert.equal(places.length,1,'One guidance place per authorized role')
+  assert.equal(places[0].district,role==='agent'?'Connection & Event':'Continuity')
+ }
+}
+auth=guidanceAuth
+assert.equal(isCompanyGuidanceRoute('/company-chatty'),false,'Guidance guard respects route boundaries')
+assert.equal(canAccessEnvironmentRoute('/admin/agent-channels','admin'),true,'Admin retains channel workflow')
+assert.ok(roleHas('admin','/admin/agent-channels'),'Admin navigation exposes existing channel application workflow')
+for(const role of ['admin','client'])assert.ok(!roleHas(role,'/company-chat'),'Unauthorized role catalog/search omits guidance: '+role)
+const guidanceRegistry=require('../lib/weave-environment-registry.ts').WEAVE_ENVIRONMENT_REGISTRY.filter(item=>item.route==='/company-chat')
+assert.equal(guidanceRegistry.length,1,'One existing guidance environment')
+assert.equal(guidanceRegistry[0].scope,'agent-bridger','Guidance registry restricts scope to Agent and Bridger')
+const guidanceLayout=fs.readFileSync(path.join(root,'app/(app)/layout.tsx'),'utf8')
+assert.ok(guidanceLayout.includes('if (!routeAllowed) return null'),'Layout blocks guidance before rendering environment wrappers')
+assert.ok(guidanceLayout.includes("'/admin/agent-channels'"),'Denied Admin returns to channel management')
+const guidanceProvider=fs.readFileSync(path.join(root,'components/world/environment-organizer-provider.tsx'),'utf8')
+assert.ok(guidanceProvider.includes('canAccessEnvironmentRoute(item.route,user?.role)'),'Cached runtime items are filtered by current role')
+assert.ok(guidanceProvider.includes('if(!canAccessEnvironmentRoute(route,user?.role))return false'),'Navigation visibility remains denied without runtime items')
+for(const file of ['app/api/environment-organizer/route.ts','app/api/admin/environment-organizer/route.ts']){
+ assert.ok(fs.readFileSync(path.join(root,file),'utf8').includes('canAccessEnvironmentRoute(item.route,'),'Environment API filters guidance: '+file)
+}
 assert.ok(companyLoopsMatureSource.includes('Company Loop Registry'),'Company Loops is an operating registry')
 assert.ok(profileMatureSource.includes('Presence Record'),'Profiles exposes one structural Presence record')
 assert.ok(profileMatureSource.includes('<ClientBuildPull'),'Agent/Bridger profile keeps the Client build path visible')

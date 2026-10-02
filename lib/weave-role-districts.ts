@@ -51,6 +51,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       accent:'#f59e0b',
       places:[
         {label:'Direct Communication',href:'/communications',detail:'Message Bridgers attached to your Agent position directly.',daily:true},
+        {label:'Company Guidance',href:'/company-chat',detail:'Get company guidance for Agent movement, Agility, earnings and the current Loop.'},
         {label:'Flame Event · Loop 1',href:'/event',detail:'Enter the same Burning River event ground used by every WEAVE role.',daily:true},
       ],
     },
@@ -91,6 +92,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Deposit & Withdrawal',href:'/wallet/deposit-withdraw',detail:'Deposit Flame Coin value or request withdrawal.',daily:true},
         {label:'Direct Communication',href:'/communications',detail:'Message your assigned Agent, Prospect conversations and referred Clients from one authorized place.',daily:true},
+        {label:'Company Guidance',href:'/company-chat',detail:'Get company guidance for Prospect and Client movement, subscriptions, Number Bay, Bridge AI and the current Loop.'},
         {label:'Presences',href:'/profiles',detail:'See people and active Presences inside WEAVE.'},
         {label:'Flame Event · Loop 1',href:'/event',detail:'Enter the same Burning River event ground used by every WEAVE role.',daily:true},
       ],
@@ -159,6 +161,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       accent:'#60a5fa',
       places:[
         {label:'Administration Control Center',href:'/admin/control-center',detail:'Users, departmental authorization, Bridger operations, verification queues and announcements.',daily:true},
+        {label:'Agent Channel Requests',href:'/admin/agent-channels',detail:'Review channel applications and assign and manage Agents through the existing system workflow.',daily:true},
         {label:'Access Recovery Desk',href:'/admin/access-recovery',detail:'Verify a user and issue one-time password recovery access without exposing an old password.',daily:true},
         {label:'Departmental Registration',href:'/admin/departmental-registration',detail:'Issue departmental codes and company placement.'},
         {label:'Subscriptions',href:'/admin/subscriptions',detail:'Review subscription and Continuance standing.'},
@@ -229,7 +232,6 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Direct Communication',href:'/communications',detail:'Message Agents, Bridgers, Clients and Prospect conversations from one authorized environment.',daily:true},
         {label:'Company Loops',href:'/company/loops',detail:'Shared company movement visible across WEAVE.'},
-        {label:'Company Guidance',href:'/company-chat',detail:'Use the shared company clarification channel.'},
         {label:'Campaign Flame',href:'/admin/campaign-flame',detail:'Campaign construction and coordinated movement.'},
         {label:'Flame Event · Loop 1',href:'/event',detail:'Enter the same Burning River event ground used by every WEAVE role.',daily:true},
         {label:'Flame Event Control',href:'/admin/flame-event',detail:'Administration-only event schedule, announcement and lifecycle control.'},
