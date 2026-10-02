@@ -7,6 +7,7 @@ import {
   deliverOutreachEmail,
   emailLeadCode,
   emailOutreachProviderConfigured,
+  generateEmailCandidateSeries,
   ensureEmailOutreachSchema,
   normalizeOutreachEmail,
   runAdminEmailOutreach,
@@ -35,13 +36,15 @@ export async function GET(request: NextRequest) {
     pool.query(
       `SELECT
          COUNT(*) FILTER (WHERE status='available' AND contactable=true)::int AS available,
+         COUNT(*) FILTER (WHERE status='available' AND contactable=true AND pool='admin')::int AS admin_available,
+         COUNT(*) FILTER (WHERE status='available' AND contactable=true AND pool='bridger')::int AS bridger_available,
          COUNT(*) FILTER (WHERE status='contacted')::int AS contacted,
          COUNT(*) FILTER (WHERE status='acquired')::int AS acquired,
          COUNT(*) FILTER (WHERE contactable=false)::int AS blocked
        FROM weave_email_prospect_leads`,
     ),
     pool.query(
-      `SELECT id,lead_code,name,email,source,consent_basis,contactable,status,owned_by,created_at
+      `SELECT id,lead_code,name,email,source,consent_basis,contactable,status,pool,owned_by,created_at
        FROM weave_email_prospect_leads
        ORDER BY created_at DESC
        LIMIT 100`,
@@ -97,6 +100,33 @@ export async function POST(request: NextRequest) {
   await ensureEmailOutreachSchema()
   const pool = getPool()
   const action = String(body.action || '').trim()
+
+  if (action === 'generate_candidates') {
+    const seedEmail = normalizeOutreachEmail(body.seedEmail)
+    const count = Math.max(1, Math.min(200, Number(body.count || 20)))
+    const destination = ['admin','bridger','balanced'].includes(String(body.destination))
+      ? String(body.destination) as 'admin'|'bridger'|'balanced'
+      : 'balanced'
+
+    if (!validOutreachEmail(seedEmail)) {
+      return NextResponse.json({ error: 'Enter a valid seed email' }, { status: 400 })
+    }
+
+    try {
+      const result = await generateEmailCandidateSeries({
+        adminId: user.id,
+        seedEmail,
+        count,
+        destination,
+      })
+      return NextResponse.json({ success: true, result })
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: String(error?.message || 'Email candidate generation failed') },
+        { status: 400 },
+      )
+    }
+  }
 
   if (action === 'import_leads') {
     const input = Array.isArray(body.leads) ? body.leads.slice(0,200) : []
@@ -166,7 +196,7 @@ export async function POST(request: NextRequest) {
 
     const leadResult = await pool.query(
       `SELECT * FROM weave_email_prospect_leads
-       WHERE id=$1::uuid AND contactable=true
+       WHERE id=$1::uuid AND contactable=true AND pool='admin'
        LIMIT 1`,
       [leadId],
     )
