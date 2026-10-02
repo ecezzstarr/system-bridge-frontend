@@ -747,7 +747,7 @@ assert.ok(fileFolderOpenWorldSource.includes('compact-sticky-rail'),'Walk the bu
 assert.ok(fileFolderOperatingEnvironmentSource.includes('compact-build-sequence'),'Client construction sequence is a compact awareness strip')
 assert.ok(fileFolder3dSource.includes('h-[390px] sm:h-[500px] lg:h-[590px]'),'3D File Folder no longer consumes excessive phone height')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('one continuous site'),'Construction + Systems opens directly into the persistent site')
-assert.ok(fileFolder3dSource.includes('Persistent construction territory'),'File Folder presents construction time, systems and business movement as a persistent physical territory')
+assert.ok(fileFolder3dSource.includes('Client-owned Business World'),'File Folder presents construction time and systems inside the Client-owned business world')
 assert.ok(fileFolderEnvironmentLoaderSource.includes('Loading your whole operating environment'),'Client sees a world-loading boot sequence before entry')
 assert.ok(fileFolderEnvironmentLoaderSource.includes('animate-spin'),'File Folder boot sequence visibly spins while environment data loads')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientFileFolder3D'),'Client can see the File Folder as a 3D operating environment')
