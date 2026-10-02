@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
+import { ensureUserReferralCode } from '@/lib/user-referral'
 
 // Platform admin credentials (fallback)
 const PLATFORM_ADMIN = {
@@ -92,6 +93,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
     }
 
+    const referralCode = ['agent','bridger','client'].includes(user.role)
+      ? (user.referral_code || await ensureUserReferralCode(user.id))
+      : null
+
     // Generate token
     const token = `token_${user.id}_${Date.now()}`
 
@@ -115,6 +120,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         role: user.role,
         departmental_code: user.departmental_code,
+        referral_code: referralCode,
         platform_wallet_balance: Number(user.platform_wallet_balance) || 0,
         escrow_balance: 0,
         wallet_address: user.wallet_address,

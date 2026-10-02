@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { ReferralCodePanel } from '@/components/referral-code-panel'
 
 export default function ClientSettings() {
   const router = useRouter()
@@ -137,6 +138,7 @@ export default function ClientSettings() {
           </section>
 
           <aside className="space-y-4">
+            <ReferralCodePanel/>
             <section className="rounded-3xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
               <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Current position</p></div>
               <p className="mt-3 text-sm font-black capitalize text-white">{user.role}</p>

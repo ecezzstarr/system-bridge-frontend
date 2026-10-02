@@ -26,6 +26,7 @@ interface User {
   terms_accepted_version?: number
   business_name?: string
   referred_by?: string
+  referral_code?: string
   file_number?: string
 }
 
@@ -194,6 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           platform_wallet_balance: result.user.platform_wallet_balance || 0,
           escrow_balance: result.user.escrow_balance || 0,
           departmental_code: result.user.departmental_code,
+          referral_code: result.user.referral_code,
           wallet_address: result.user.wallet_address,
           subscription_status: result.user.subscription_status,
           terms_accepted_at: result.user.terms_accepted_at || null,

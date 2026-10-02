@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
-import { randomBytes } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
+import { buildUserReferralCode } from '@/lib/user-referral'
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,9 +43,12 @@ export async function POST(request: NextRequest) {
     const name = identityData?.name || 'Client'
     const phone = identityData?.phone || ''
     const bridgerId = folder.bridger_id || null
+    const userId = randomUUID()
+    const referralCode = buildUserReferralCode(userId, 'client')
 
     const newUser = await sql`
       INSERT INTO users (
+        id,
         name,
         email,
         password_hash,
@@ -52,9 +56,11 @@ export async function POST(request: NextRequest) {
         file_number,
         whatsapp_number,
         business_name,
+        referral_code,
         referred_by
       )
       VALUES (
+        ${userId}::uuid,
         ${name},
         ${email},
         ${hashedPassword},
@@ -62,9 +68,10 @@ export async function POST(request: NextRequest) {
         ${fileNumber},
         ${phone},
         ${businessName || null},
+        ${referralCode},
         ${bridgerId}
       )
-      RETURNING id, name, email, role, file_number, business_name, referred_by
+      RETURNING id, name, email, role, file_number, business_name, referral_code, referred_by
     `
 
     const user = newUser[0]
@@ -111,6 +118,7 @@ export async function POST(request: NextRequest) {
         role: user.role,
         file_number: user.file_number,
         business_name: user.business_name,
+        referral_code: user.referral_code,
         referred_by: user.referred_by,
       },
     })

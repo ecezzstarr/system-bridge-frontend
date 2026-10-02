@@ -230,6 +230,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       purpose:'Operate direct communication, Company Loops and the current event lifecycle as one company-movement district.',
       accent:'#fb7185',
       places:[
+        {label:'Company Guidance',href:'/admin/company-guidance',detail:'Reply to Agent and Bridger Company Guidance requests by person and company position.',daily:true},
         {label:'Direct Communication',href:'/communications',detail:'Message Agents, Bridgers, Clients and Prospect conversations from one authorized environment.',daily:true},
         {label:'Company Loops',href:'/company/loops',detail:'Shared company movement visible across WEAVE.'},
         {label:'Campaign Flame',href:'/admin/campaign-flame',detail:'Campaign construction and coordinated movement.'},
