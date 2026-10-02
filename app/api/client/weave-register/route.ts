@@ -6,7 +6,7 @@ import { validateFileNumber } from '@/lib/fne'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
-import { buildUserReferralCode } from '@/lib/user-referral'
+import { buildUserReferralCode } from '@/lib/user-referral'\nimport { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 
 export async function POST(request: NextRequest) {
   try {
