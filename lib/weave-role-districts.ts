@@ -159,6 +159,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       accent:'#60a5fa',
       places:[
         {label:'Administration Control Center',href:'/admin/control-center',detail:'Users, departmental authorization, Bridger operations, verification queues and announcements.',daily:true},
+        {label:'Access Recovery Desk',href:'/admin/access-recovery',detail:'Verify a user and issue one-time password recovery access without exposing an old password.',daily:true},
         {label:'Departmental Registration',href:'/admin/departmental-registration',detail:'Issue departmental codes and company placement.'},
         {label:'Subscriptions',href:'/admin/subscriptions',detail:'Review subscription and Continuance standing.'},
         {label:'Settings',href:'/settings',detail:'Manage Administration identity, password and the current signed-in session.'},
