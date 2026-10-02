@@ -3,6 +3,7 @@ import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { randomBytes } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
+import { ensureUserReferralCode } from '@/lib/user-referral'
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await sql`
-      SELECT id, email, name, role, password_hash, file_number, business_name, referred_by
+      SELECT id, email, name, role, password_hash, file_number, business_name, referral_code, referred_by
       FROM users
       WHERE file_number = ${fileNumber}
       AND is_active = true
@@ -42,6 +43,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const referralCode = user.referral_code || await ensureUserReferralCode(user.id)
+
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
       INSERT INTO sessions (id, user_id, token, created_at, expires_at)
@@ -59,6 +62,7 @@ export async function POST(request: NextRequest) {
         role: user.role,
         file_number: user.file_number,
         business_name: user.business_name,
+        referral_code: referralCode,
         referred_by: user.referred_by,
       }
     })
