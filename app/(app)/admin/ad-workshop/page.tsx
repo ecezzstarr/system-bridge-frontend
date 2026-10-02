@@ -21,12 +21,22 @@ type Ad = {
   frequency: 'once' | 'daily' | 'every_login' | 'persistent'
   priority: number
   status: 'draft' | 'published' | 'paused' | 'archived'
+  public_movement: boolean
+  movement_code: string | null
+  public_platforms: string[]
+  referral_code: string | null
+  movement_destination: string
+  public_entrances: number
+  public_registrations: number
+  public_file_folder_purchases: number
   updated_at: string
 }
 
 const ROLES = ['all', 'client', 'agent', 'bridger', 'admin', 'lord', 'lady', 'legion']
 const PLACEMENTS = ['all', 'dashboard', 'event', 'marketplace', 'system-switch', 'app', 'login']
-const PUBLIC_PLATFORMS = ['direct', 'instagram', 'tiktok', 'youtube', 'facebook', 'x', 'linkedin']\nconst PUBLIC_BASE = 'https://weavingsystem.online'\nconst FREQUENCIES = [
+const PUBLIC_PLATFORMS = ['direct', 'instagram', 'tiktok', 'youtube', 'facebook', 'x', 'linkedin']
+const PUBLIC_BASE = 'https://weavingsystem.online'
+const FREQUENCIES = [
   ['once', 'Once per participant'],
   ['daily', 'Once per day'],
   ['every_login', 'Once per login session'],
@@ -56,6 +66,11 @@ const blankForm = () => ({
   frequency: 'every_login' as 'once' | 'daily' | 'every_login' | 'persistent',
   priority: 0,
   status: 'draft' as 'draft' | 'published' | 'paused' | 'archived',
+  publicMovement: false,
+  movementCode: '',
+  publicPlatforms: ['direct'] as string[],
+  referralCode: '',
+  movementDestination: '/',
 })
 
 export default function AdWorkshopPage() {
@@ -111,7 +126,16 @@ export default function AdWorkshopPage() {
     })
   }
 
-  const togglePublicPlatform = (value: string) => {\n    setForm(current => {\n      const next = current.publicPlatforms.includes(value)\n        ? current.publicPlatforms.filter(item => item !== value)\n        : [...current.publicPlatforms, value]\n      return { ...current, publicPlatforms: next.length ? next : ['direct'] }\n    })\n  }\n\n  const handleMedia = async (event: ChangeEvent<HTMLInputElement>) => {
+  const togglePublicPlatform = (value: string) => {
+    setForm(current => {
+      const next = current.publicPlatforms.includes(value)
+        ? current.publicPlatforms.filter(item => item !== value)
+        : [...current.publicPlatforms, value]
+      return { ...current, publicPlatforms: next.length ? next : ['direct'] }
+    })
+  }
+
+  const handleMedia = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
     setUploading(true)
@@ -152,6 +176,10 @@ export default function AdWorkshopPage() {
     frequency: form.frequency,
     priority: form.priority,
     status: statusOverride || form.status,
+    publicMovement: form.publicMovement,
+    publicPlatforms: form.publicPlatforms,
+    referralCode: form.referralCode || null,
+    movementDestination: form.movementDestination || '/',
   })
 
   const save = async (statusOverride?: Ad['status']) => {
@@ -215,6 +243,11 @@ export default function AdWorkshopPage() {
       frequency: ad.frequency,
       priority: ad.priority || 0,
       status: ad.status,
+      publicMovement: Boolean(ad.public_movement),
+      movementCode: ad.movement_code || '',
+      publicPlatforms: ad.public_platforms?.length ? ad.public_platforms : ['direct'],
+      referralCode: ad.referral_code || '',
+      movementDestination: ad.movement_destination || '/',
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
