@@ -26,7 +26,7 @@ type Ad = {
 
 const ROLES = ['all', 'client', 'agent', 'bridger', 'admin', 'lord', 'lady', 'legion']
 const PLACEMENTS = ['all', 'dashboard', 'event', 'marketplace', 'system-switch', 'app', 'login']
-const FREQUENCIES = [
+const PUBLIC_PLATFORMS = ['direct', 'instagram', 'tiktok', 'youtube', 'facebook', 'x', 'linkedin']\nconst PUBLIC_BASE = 'https://weavingsystem.online'\nconst FREQUENCIES = [
   ['once', 'Once per participant'],
   ['daily', 'Once per day'],
   ['every_login', 'Once per login session'],
@@ -111,7 +111,7 @@ export default function AdWorkshopPage() {
     })
   }
 
-  const handleMedia = async (event: ChangeEvent<HTMLInputElement>) => {
+  const togglePublicPlatform = (value: string) => {\n    setForm(current => {\n      const next = current.publicPlatforms.includes(value)\n        ? current.publicPlatforms.filter(item => item !== value)\n        : [...current.publicPlatforms, value]\n      return { ...current, publicPlatforms: next.length ? next : ['direct'] }\n    })\n  }\n\n  const handleMedia = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
     setUploading(true)
@@ -334,6 +334,61 @@ export default function AdWorkshopPage() {
             </div>
           </div>
 
+          <div className="rounded-2xl border border-orange-300/15 bg-orange-400/[.035] p-4">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={form.publicMovement}
+                onChange={e => setForm({ ...form, publicMovement: e.target.checked })}
+                className="mt-1 h-4 w-4 accent-orange-300"
+              />
+              <span>
+                <span className="block text-xs font-black uppercase tracking-[.14em] text-orange-100">Public Flame Movement</span>
+                <span className="mt-1 block text-xs leading-5 text-slate-500">Turn this same Ad Workshop movement into a world-facing entrance for short-form media and public sharing.</span>
+              </span>
+            </label>
+
+            {form.publicMovement && (
+              <div className="mt-5 space-y-4 border-t border-orange-300/10 pt-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[.15em] text-slate-500">Distribution routes</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {PUBLIC_PLATFORMS.map(platform => (
+                      <button
+                        type="button"
+                        key={platform}
+                        onClick={() => togglePublicPlatform(platform)}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-bold capitalize ${form.publicPlatforms.includes(platform) ? 'border-orange-300/40 bg-orange-300/10 text-orange-100' : 'border-slate-700 text-slate-500'}`}
+                      >
+                        {platform}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Public destination</label>
+                    <input value={form.movementDestination} onChange={e => setForm({ ...form, movementDestination: e.target.value })} placeholder="/" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
+                    <p className="text-[10px] leading-4 text-slate-600">Internal WEAVE path only. Use / for the public Flame Event entrance or /market for open Customer Doors.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Referral identity · optional</label>
+                    <input value={form.referralCode} onChange={e => setForm({ ...form, referralCode: e.target.value })} placeholder="Agent / Bridger / Client referral code" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white" />
+                    <p className="text-[10px] leading-4 text-slate-600">If supplied, the existing WEAVE referral system remains the owner of referred registrations.</p>
+                  </div>
+                </div>
+
+                {form.movementCode && (
+                  <div className="rounded-xl border border-orange-300/10 bg-black/20 px-3 py-3">
+                    <p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Public entrance</p>
+                    <p className="mt-1 break-all font-mono text-xs text-orange-100">{PUBLIC_BASE}/m/{form.movementCode}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="space-y-3">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Intended user position</label>
             <div className="flex flex-wrap gap-2">
@@ -430,6 +485,27 @@ export default function AdWorkshopPage() {
                       </div>
                       <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{ad.body || 'No body text'}</p>
                       <p className="mt-2 text-[10px] text-slate-600">{ad.target_roles.join(', ')} · {ad.placements.join(', ')} · priority {ad.priority}</p>
+                      {ad.public_movement && ad.movement_code && (
+                        <div className="mt-3 border-t border-orange-300/10 pt-3">
+                          <p className="text-[9px] font-black uppercase tracking-[.14em] text-orange-200">Public Flame Movement · {ad.movement_code}</p>
+                          <p className="mt-1 text-[10px] text-slate-500">
+                            {Number(ad.public_entrances || 0)} entrances · {Number(ad.public_registrations || 0)} registrations · {Number(ad.public_file_folder_purchases || 0)} File Folder purchases
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(ad.public_platforms || ['direct']).map(platform => (
+                              <a
+                                key={platform}
+                                href={`${PUBLIC_BASE}/m/${ad.movement_code}?p=${encodeURIComponent(platform)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-lg border border-orange-300/15 px-2 py-1 text-[9px] font-bold capitalize text-orange-100 hover:border-orange-300/40"
+                              >
+                                {platform}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
