@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     pool.query(
       `SELECT COUNT(*)::int AS count
        FROM weave_email_prospect_leads
-       WHERE status='available' AND contactable=true AND owned_by IS NULL`,
+       WHERE status='available' AND contactable=true AND pool='bridger' AND owned_by IS NULL`,
     ),
     pool.query(
       `SELECT id,lead_code,name,email,source,consent_basis,status,acquired_at,created_at
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       const leadResult = await client.query(
         `SELECT *
          FROM weave_email_prospect_leads
-         WHERE status='available' AND contactable=true AND owned_by IS NULL
+         WHERE status='available' AND contactable=true AND pool='bridger' AND owned_by IS NULL
          ORDER BY created_at ASC
          FOR UPDATE SKIP LOCKED
          LIMIT 1`,
