@@ -1,0 +1,31 @@
+name: WEAVE File Folder Sales Manager
+
+on:
+  schedule:
+    - cron: '30 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  manager:
+    runs-on: ubuntu-latest
+    env:
+      SALES_MANAGER_URL: ${{ vars.WEAVE_FILE_FOLDER_SALES_MANAGER_URL || 'https://weavingsystem.online/api/cron/file-folder-sales-manager' }}
+    steps:
+      - name: Request short-lived WEAVE scheduler identity
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          RESPONSE="$(curl --fail-with-body --silent --show-error             --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}"             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=weave-scheduler")"
+          TOKEN="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])' <<<"${RESPONSE}")"
+          echo "::add-mask::${TOKEN}"
+          echo "token=${TOKEN}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run Echo and EIGHT File Folder sales manager
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error             --request GET             --header "Authorization: Bearer ${{ steps.oidc.outputs.token }}"             "${SALES_MANAGER_URL}"
