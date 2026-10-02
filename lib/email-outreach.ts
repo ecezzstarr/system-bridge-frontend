@@ -56,6 +56,8 @@ export async function ensureEmailOutreachSchema() {
           consent_basis VARCHAR(160) NOT NULL,
           contactable BOOLEAN NOT NULL DEFAULT TRUE,
           status VARCHAR(24) NOT NULL DEFAULT 'available',
+          pool VARCHAR(20) NOT NULL DEFAULT 'bridger',
+          source_id UUID,
           owned_by UUID REFERENCES users(id),
           acquired_at TIMESTAMPTZ,
           created_by UUID NOT NULL REFERENCES users(id),
@@ -70,6 +72,38 @@ export async function ensureEmailOutreachSchema() {
       await client.query(`
         CREATE INDEX IF NOT EXISTS idx_weave_email_leads_owner
         ON weave_email_prospect_leads(owned_by, created_at DESC)
+      `)
+      await client.query(`
+        ALTER TABLE weave_email_prospect_leads
+        ADD COLUMN IF NOT EXISTS pool VARCHAR(20) NOT NULL DEFAULT 'bridger'
+      `)
+      await client.query(`
+        ALTER TABLE weave_email_prospect_leads
+        ADD COLUMN IF NOT EXISTS source_id UUID
+      `)
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_weave_email_leads_pool
+        ON weave_email_prospect_leads(pool,status,contactable,created_at)
+      `)
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS weave_email_lead_sources (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          name VARCHAR(160),
+          email VARCHAR(255) NOT NULL UNIQUE,
+          source VARCHAR(120) NOT NULL,
+          consent_basis VARCHAR(160) NOT NULL,
+          contactable BOOLEAN NOT NULL DEFAULT TRUE,
+          status VARCHAR(24) NOT NULL DEFAULT 'ready',
+          created_by UUID NOT NULL REFERENCES users(id),
+          generated_at TIMESTAMPTZ,
+          generated_lead_id UUID REFERENCES weave_email_prospect_leads(id) ON DELETE SET NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `)
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_weave_email_lead_sources_ready
+        ON weave_email_lead_sources(status,contactable,created_at)
       `)
       await client.query(`
         CREATE TABLE IF NOT EXISTS weave_email_outreach (
@@ -115,6 +149,97 @@ export async function ensureEmailOutreachSchema() {
   })
 
   return emailOutreachSchemaPromise
+}
+
+export type EmailLeadPool='admin'|'bridger'|'balanced'
+
+export async function generateEmailLeadInventory(input:{
+  adminId:string
+  limit:number
+  destination:EmailLeadPool
+}){
+  await ensureEmailOutreachSchema()
+  const pool=getPool()
+  const client=await pool.connect()
+  const limit=Math.max(1,Math.min(200,Number(input.limit||1)))
+
+  try{
+    await client.query('BEGIN')
+
+    const sourceResult=await client.query(
+      `SELECT id,name,email,source,consent_basis
+       FROM weave_email_lead_sources s
+       WHERE s.status='ready'
+         AND s.contactable=true
+         AND NOT EXISTS (
+           SELECT 1 FROM weave_email_prospect_leads l
+           WHERE LOWER(l.email)=LOWER(s.email)
+         )
+       ORDER BY s.created_at ASC
+       FOR UPDATE SKIP LOCKED
+       LIMIT $1`,
+      [limit],
+    )
+
+    let adminGenerated=0
+    let bridgerGenerated=0
+    const generated:Array<{id:string;leadCode:string;pool:'admin'|'bridger';email:string}> = []
+
+    for(let index=0;index<sourceResult.rows.length;index+=1){
+      const sourceRow=sourceResult.rows[index]
+      const leadPool:'admin'|'bridger'=
+        input.destination==='admin'
+          ? 'admin'
+          : input.destination==='bridger'
+            ? 'bridger'
+            : index%2===0?'admin':'bridger'
+      const leadId=crypto.randomUUID()
+      const leadCode=emailLeadCode()
+
+      await client.query(
+        `INSERT INTO weave_email_prospect_leads
+          (id,lead_code,name,email,source,consent_basis,contactable,status,pool,source_id,created_by)
+         VALUES ($1::uuid,$2,$3,$4,$5,$6,true,'available',$7,$8::uuid,$9::uuid)`,
+        [
+          leadId,
+          leadCode,
+          sourceRow.name,
+          normalizeOutreachEmail(sourceRow.email),
+          sourceRow.source,
+          sourceRow.consent_basis,
+          leadPool,
+          sourceRow.id,
+          input.adminId,
+        ],
+      )
+
+      await client.query(
+        `UPDATE weave_email_lead_sources
+         SET status='generated',generated_at=NOW(),generated_lead_id=$1::uuid,updated_at=NOW()
+         WHERE id=$2::uuid`,
+        [leadId,sourceRow.id],
+      )
+
+      if(leadPool==='admin')adminGenerated+=1
+      else bridgerGenerated+=1
+      generated.push({id:leadId,leadCode,pool:leadPool,email:normalizeOutreachEmail(sourceRow.email)})
+    }
+
+    await client.query('COMMIT')
+    return {
+      requested:limit,
+      considered:sourceResult.rows.length,
+      generated:generated.length,
+      adminGenerated,
+      bridgerGenerated,
+      leads:generated,
+    }
+  }catch(error){
+    try{await client.query('ROLLBACK')}catch{}
+    throw error
+  }finally{
+    client.release()
+  }
 }
 
 export async function senderForUser(userId: string) {
@@ -222,6 +347,8 @@ export async function runAdminEmailOutreach(adminId: string) {
      FROM weave_email_prospect_leads l
      WHERE l.status='available'
        AND l.contactable=true
+       AND l.pool='admin'
+       AND l.owned_by IS NULL
        AND NOT EXISTS (
          SELECT 1 FROM weave_email_outreach o
          WHERE o.lead_id=l.id
