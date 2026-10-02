@@ -446,15 +446,6 @@ export function DJBroadcastPlayer() {
 
   const canShow = eligibleAudience && live && !personalDjActive
 
-  useEffect(() => {
-    const root = document.documentElement
-    if (canShow) root.style.setProperty('--weave-dj-dock-height', '52px')
-    else root.style.removeProperty('--weave-dj-dock-height')
-    return () => {
-      root.style.removeProperty('--weave-dj-dock-height')
-    }
-  }, [canShow])
-
   return (
     <>
       <audio
@@ -495,60 +486,50 @@ export function DJBroadcastPlayer() {
 
       {canShow && (
         <div
-          className={`fixed inset-x-0 bottom-0 z-[85] border-t backdrop-blur-[18px] ${
-            flameEventLive
-              ? 'border-sky-100/15 bg-[#020914]/94'
-              : 'border-white/10 bg-[#020914]/94'
-          }`}
-          data-weave-dj-dock="true"
+          className="pointer-events-auto fixed right-3 top-[calc(env(safe-area-inset-top)+4.5rem)] z-[85] w-[min(15rem,calc(100vw-1.5rem))] rounded-2xl border border-white/10 bg-white/[0.045] shadow-[0_16px_52px_rgba(0,0,0,.24),inset_0_1px_0_rgba(255,255,255,.08)] backdrop-blur-[22px] backdrop-saturate-150 sm:right-5 sm:top-20"
+          data-weave-dj-mirror="true"
+          data-flame-event-live={flameEventLive ? 'true' : 'false'}
         >
-          <div className="mx-auto flex h-[52px] max-w-7xl min-w-0 items-center gap-2 px-3 sm:px-5">
+          <div className="flex min-h-11 min-w-0 items-center gap-2 px-2.5 py-2">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.035]">
+              {joined ? <Volume2 className={`h-4 w-4 ${userPaused ? 'text-white/35' : 'text-white/75'}`} /> : <Music2 className="h-4 w-4 text-white/75" />}
+            </div>
 
-          <div className={`relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/10 backdrop-blur-sm ${
-            userPaused
-              ? 'bg-black/10'
-              : flameEventLive
-                ? 'bg-gradient-to-b from-sky-200/10 to-red-200/[0.06]'
-                : 'bg-sky-200/[0.07]'
-          }`}>
-            {joined ? <Volume2 className={`h-4 w-4 ${userPaused ? 'text-slate-500' : 'text-sky-300'}`} /> : <Music2 className="h-4 w-4 text-sky-300" />}
-          </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-white/55">
+                {flameEventLive ? 'Flame Event · Live DJ' : 'WEAVE · Live DJ'}
+              </p>
+              <p className="truncate text-[10px] font-medium text-white/90" data-allow-truncate="true">
+                {userPaused ? 'Paused by you' : announcement || trackTitle || 'Broadcasting'}
+              </p>
+              {!userPaused && !announcement && trackArtist && <p className="truncate text-[8px] text-white/35" data-allow-truncate="true">{trackArtist}</p>}
+            </div>
 
-          <div className="relative z-10 min-w-0 flex-1">
-            <p className="text-[8px] font-black uppercase tracking-[0.14em] text-sky-200/80">
-              {flameEventLive ? 'Flame Event Sound · Loop 1' : 'WEAVE Live · DJ'}
-            </p>
-            <p className="truncate text-[10px] font-medium text-white/85">
-              {userPaused ? 'Paused by you' : announcement || trackTitle || 'Broadcasting'}
-            </p>
-            {!userPaused && !announcement && trackArtist && <p className="truncate text-[8px] text-white/35">{trackArtist}</p>}
-          </div>
-
-          {!joined ? (
-            <button
-              onClick={handleJoin}
-              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-sky-100/20 bg-white/[0.055] text-sky-100/85 shadow-inner transition hover:bg-white/[0.10]"
-              title="Enter the live sound"
-            >
-              <Play className="h-3.5 w-3.5" />
-            </button>
-          ) : userPaused ? (
-            <button
-              onClick={handleResume}
-              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-emerald-100/20 bg-white/[0.055] text-emerald-100/85 shadow-inner transition hover:bg-white/[0.10]"
-              title="Resume live sound"
-            >
-              <Play className="h-3.5 w-3.5" />
-            </button>
-          ) : (
-            <button
-              onClick={handlePause}
-              className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.035] text-white/70 shadow-inner transition hover:bg-white/[0.08] hover:text-white"
-              title="Pause live sound for you"
-            >
-              <Pause className="h-3.5 w-3.5" />
-            </button>
-          )}
+            {!joined ? (
+              <button
+                onClick={handleJoin}
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/80 transition hover:bg-white/[0.10]"
+                title="Enter the live sound"
+              >
+                <Play className="h-3.5 w-3.5" />
+              </button>
+            ) : userPaused ? (
+              <button
+                onClick={handleResume}
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/80 transition hover:bg-white/[0.10]"
+                title="Resume live sound"
+              >
+                <Play className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <button
+                onClick={handlePause}
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white/75 transition hover:bg-white/[0.10] hover:text-white"
+                title="Pause live sound for you"
+              >
+                <Pause className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
       )}
