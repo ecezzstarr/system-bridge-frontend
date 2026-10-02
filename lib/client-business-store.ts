@@ -117,6 +117,24 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
   await sql`ALTER TABLE client_store_orders ADD COLUMN IF NOT EXISTS payment_reference varchar(255)`
   await sql`ALTER TABLE client_store_orders ADD COLUMN IF NOT EXISTS payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment'`
   await sql`CREATE INDEX IF NOT EXISTS idx_client_store_orders_store ON client_store_orders(store_id, created_at DESC)`
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS client_customer_door_systems (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      store_id uuid NOT NULL,
+      client_id uuid NOT NULL,
+      system_id uuid NOT NULL,
+      public_label varchar(220),
+      public_summary text,
+      enabled boolean NOT NULL DEFAULT false,
+      published_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      updated_at timestamptz NOT NULL DEFAULT NOW(),
+      UNIQUE (store_id, system_id)
+    )
+  `
+  await sql`CREATE INDEX IF NOT EXISTS idx_client_customer_door_systems_store ON client_customer_door_systems(store_id, enabled, updated_at DESC)`
+  await sql`CREATE INDEX IF NOT EXISTS idx_client_customer_door_systems_client ON client_customer_door_systems(client_id, updated_at DESC)`
 }
 
 export function publicStoreSlug(fileNumber: string) {

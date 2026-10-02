@@ -115,7 +115,14 @@ export default function ClientCustomerDoorPanel({
     store:initialStore||null,
     items:initialStore?.items||[],
     orders:initialStore?.orders||[],
+    customerDoorSystems:initialStore?.customer_door_systems||[],
   })
+  const [systemPublicationDrafts,setSystemPublicationDrafts]=useState<Record<string,{label:string;summary:string}>>(()=>Object.fromEntries(
+    (initialStore?.customer_door_systems||[]).map((system:any)=>[
+      String(system.system_id),
+      {label:String(system.public_label||system.title||''),summary:String(system.public_summary||'')},
+    ]),
+  ))
   const [form,setForm]=useState({name:'',description:'',price:'',currency:'NGN',offer_type:'product'})
   const [environment,setEnvironment]=useState(()=>normalizeEnvironment(initialStore?.environment_config))
   const [identity,setIdentity]=useState({
@@ -167,6 +174,15 @@ export default function ClientCustomerDoorPanel({
       store:{...body.store,public_url:body.store?.public_slug?`/market/${body.store.public_slug}`:null},
       items:body.items||[],
       orders:body.orders||[],
+      customerDoorSystems:body.customer_door_systems||[],
+    })
+    setSystemPublicationDrafts(current=>{
+      const next={...current}
+      for(const system of body.customer_door_systems||[]){
+        const key=String(system.system_id)
+        if(!next[key])next[key]={label:String(system.public_label||system.title||''),summary:String(system.public_summary||'')}
+      }
+      return next
     })
     if(body.store){
       setIdentity({name:body.store.name||'',description:body.store.description||''})
@@ -215,6 +231,40 @@ export default function ClientCustomerDoorPanel({
       setMessage('Market architecture and store identity saved.')
     }catch(error:any){
       setMessage(error?.message||'Unable to save market environment')
+    }finally{setBusy('')}
+  }
+
+  const setSystemPublication=async(system:any,enabled:boolean)=>{
+    const key='system:'+String(system.system_id)
+    setBusy(key);setMessage('')
+    try{
+      const token=getClientToken()
+      const draft=systemPublicationDrafts[String(system.system_id)]||{
+        label:String(system.public_label||system.title||''),
+        summary:String(system.public_summary||''),
+      }
+      const response=await fetch('/api/client/business-store',{
+        method:'PATCH',
+        headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          action:'set_system_publication',
+          system_id:system.system_id,
+          public_enabled:enabled,
+          public_label:draft.label,
+          public_summary:draft.summary,
+        }),
+      })
+      const body=await response.json()
+      if(!response.ok)throw new Error(body.error||'Unable to update Customer Door connection')
+      setData({
+        store:{...body.store,public_url:body.store?.public_slug?`/market/${body.store.public_slug}`:null},
+        items:body.items||[],
+        orders:body.orders||[],
+        customerDoorSystems:body.customer_door_systems||[],
+      })
+      setMessage(enabled?'System connected to your Customer Door.':'System kept private inside your File Folder.')
+    }catch(error:any){
+      setMessage(error?.message||'Unable to update Customer Door connection')
     }finally{setBusy('')}
   }
 
@@ -288,18 +338,48 @@ export default function ClientCustomerDoorPanel({
       </div>
     </section>}
 
+    <section className="rounded-[2rem] border border-emerald-300/15 bg-emerald-400/[0.03] p-5 md:p-6" data-customer-door-system-boundary="client-authorized">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">Customer Door connections</p>
+          <h3 className="mt-2 text-xl font-black text-white">You decide which systems customers can see.</h3>
+          <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-400">Completed systems stay private by default. Connect only the systems that belong in your public business. WEAVE carries the connection and hosting; it does not publish a Client system without the Client&apos;s choice.</p>
+        </div>
+        <span className="rounded-full border border-emerald-300/15 bg-emerald-400/5 px-3 py-2 text-[9px] font-black uppercase text-emerald-200">{(data.customerDoorSystems||[]).filter((system:any)=>system.public_enabled).length} public</span>
+      </div>
+      <div className="mt-5 grid gap-3 lg:grid-cols-2">
+        {(data.customerDoorSystems||[]).length===0&&<div className="rounded-2xl border border-dashed border-white/10 p-5 text-xs text-slate-500">Build a business system first. When it becomes live, you can connect it to the Customer Door here.</div>}
+        {(data.customerDoorSystems||[]).map((system:any)=>{
+          const key=String(system.system_id)
+          const draft=systemPublicationDrafts[key]||{label:String(system.public_label||system.title||''),summary:String(system.public_summary||'')}
+          const actionKey='system:'+key
+          return <article key={key} className={`rounded-2xl border p-4 ${system.public_enabled?'border-emerald-300/20 bg-emerald-400/[0.045]':'border-white/10 bg-black/20'}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div><p className="text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{String(system.system_type||'system').replaceAll('_',' ')}</p><h4 className="mt-1 text-sm font-black text-white">{system.title}</h4></div>
+              <span className={`text-[8px] font-black uppercase tracking-wider ${system.public_enabled?'text-emerald-300':'text-slate-600'}`}>{system.public_enabled?'Public':'Private'}</span>
+            </div>
+            <div className="mt-3 grid gap-2">
+              <input value={draft.label} onChange={event=>setSystemPublicationDrafts(current=>({...current,[key]:{...draft,label:event.target.value}}))} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-xs text-white outline-none" placeholder="Public system name"/>
+              <textarea value={draft.summary} onChange={event=>setSystemPublicationDrafts(current=>({...current,[key]:{...draft,summary:event.target.value}}))} rows={2} className="resize-none rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-xs text-white outline-none" placeholder="What should customers know about this system?"/>
+            </div>
+            <button disabled={busy===actionKey} onClick={()=>setSystemPublication(system,!system.public_enabled)} className={`mt-3 rounded-full px-4 py-2 text-[9px] font-black uppercase tracking-wider disabled:opacity-40 ${system.public_enabled?'border border-white/10 text-slate-300':'bg-emerald-400 text-slate-950'}`}>{busy===actionKey?'Updating…':system.public_enabled?'Keep private':'Connect to Customer Door'}</button>
+          </article>
+        })}
+      </div>
+    </section>
+
     <section className="grid gap-5 xl:grid-cols-[1fr_1fr]">
       <div className="rounded-[2rem] border border-violet-300/15 bg-violet-400/[0.035] p-5 md:p-6">
         <div className="flex items-center gap-2"><Landmark className="h-4 w-4 text-violet-300"/><p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Market architecture studio</p></div>
-        <h4 className="mt-2 text-lg font-black text-white">Shape the territory customers recognize.</h4>
-        <p className="mt-2 text-xs leading-5 text-slate-400">Set the Client-owned platform identity, then shape its public atmosphere. Construction level is still earned through the Customer Door, storefront and marketplace builds.</p>
+        <h4 className="mt-2 text-lg font-black text-white">Shape the public business customers recognize.</h4>
+        <p className="mt-2 text-xs leading-5 text-slate-400">Set the Client-owned public identity and customer experience. WEAVE hosts the entrance while the Client controls the business identity, offers and connected systems.</p>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           {PRESETS.map(preset=><button key={preset.key} onClick={()=>setEnvironment({...environment,preset:preset.key})} className={`rounded-xl border p-3 text-left transition ${environment.preset===preset.key?'border-violet-300/30 bg-violet-400/10':'border-white/10 bg-black/20'}`}><p className="text-[10px] font-black text-white">{preset.label}</p><p className="mt-1 text-[9px] leading-4 text-slate-500">{preset.detail}</p></button>)}
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <label className="text-[10px] text-slate-500">Platform / territory name<input value={environment.platformName} onChange={e=>setEnvironment({...environment,platformName:e.target.value})} placeholder="The name customers know this territory by" className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
+          <label className="text-[10px] text-slate-500">Public business name<input value={environment.platformName} onChange={e=>setEnvironment({...environment,platformName:e.target.value})} placeholder="The name customers know this business by" className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
           <label className="text-[10px] text-slate-500">Logo URL<input value={environment.logoUrl} onChange={e=>setEnvironment({...environment,logoUrl:e.target.value})} placeholder="https://…/logo.png" className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
           <label className="text-[10px] text-slate-500">Store name<input value={identity.name} onChange={e=>setIdentity({...identity,name:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
           <label className="text-[10px] text-slate-500">Market section<input value={environment.marketSection} onChange={e=>setEnvironment({...environment,marketSection:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>

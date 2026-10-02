@@ -556,7 +556,7 @@ function Scene({
 
 export function ClientFileFolder3D({
   activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,
-  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],territoryMode=false,
+  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
 }:{
   activeSurface:DistrictKey
   onSurfaceChange:(key:DistrictKey)=>void
@@ -575,6 +575,8 @@ export function ClientFileFolder3D({
   vitalityScore?:number
   systemWeaves?:SystemWeave[]
   aiTerritories?:AiTerritory[]
+  businessName?:string
+  businessSector?:string|null
   territoryMode?:boolean
 }){
   const {config:visualRuntime}=useVisualRuntime()
@@ -582,10 +584,10 @@ export function ClientFileFolder3D({
   const routeCurrent=Math.max(0,Math.min(2,visualRuntime.world.routeCurrent))
 
   const districts=useMemo<District[]>(()=>[
-    {key:'command',label:'Formation Intelligence',tone:'sky'},
-    {key:'builds',label:'Formation Yard',tone:'violet'},
-    {key:'business',label:'Market District',tone:'emerald'},
-    {key:'enterprise',label:'Enterprise Territory',tone:'amber'},
+    {key:'command',label:'Business Core',tone:'sky'},
+    {key:'builds',label:'Build Ground',tone:'violet'},
+    {key:'business',label:'Customer Door',tone:'emerald'},
+    {key:'enterprise',label:'Business Expansion',tone:'amber'},
     ...(premiumSound?[{key:'sound' as const,label:'Sound Pavilion',tone:'rose' as const}]:[]),
   ],[premiumSound]).filter(d=>!visibleSurfaceKeys||visibleSurfaceKeys.includes(d.key))
 
@@ -603,9 +605,9 @@ export function ClientFileFolder3D({
       ? "absolute left-3 top-[7.5rem] z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-5 sm:top-[8.5rem] sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
       : "absolute left-3 top-3 z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
     }>
-      <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Weaving Territory</p>
-      <p className="mt-1 text-xs font-black text-white">Persistent construction territory. Every completed technology becomes part of one connected Client territory.</p>
-      <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">Purpose → material → parts → formation → connection → advanced technology → value.</p>
+      <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Client-owned Business World</p>
+      <p className="mt-1 text-xs font-black text-white">{businessName}</p>
+      <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">{businessSector ? `${businessSector} · ` : ''}You decide what systems exist here. WEAVE hosts, organizes and connects them through your Customer Door.</p>
     </div>
 
     <div className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>

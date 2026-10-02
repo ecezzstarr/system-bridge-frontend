@@ -58,13 +58,33 @@ async function snapshot(sql: any, store: any) {
     ORDER BY created_at DESC
     LIMIT 50
   `
+  const customerDoorSystems = await sql`
+    SELECT
+      s.id AS system_id,
+      s.system_type,
+      s.title,
+      s.status,
+      COALESCE(p.public_label,s.title) AS public_label,
+      p.public_summary,
+      COALESCE(p.enabled,false) AS public_enabled,
+      p.published_at
+    FROM client_built_systems s
+    LEFT JOIN client_customer_door_systems p
+      ON p.system_id=s.id
+     AND p.store_id=${store.id}::uuid
+    WHERE s.client_id=${store.client_id}::uuid
+      AND s.file_number=${store.file_number}
+      AND s.status='active'
+      AND s.system_type<>'customer_door'
+    ORDER BY COALESCE(p.enabled,false) DESC,s.activated_at DESC
+  `
   const [freshStore] = await sql`
     SELECT *
     FROM client_business_stores
     WHERE id=${store.id}::uuid
     LIMIT 1
   `
-  return { store: freshStore || store, items, orders }
+  return { store: freshStore || store, items, orders, customer_door_systems: customerDoorSystems }
 }
 
 export async function GET(request: NextRequest) {
@@ -139,6 +159,59 @@ export async function PATCH(request: NextRequest) {
   if (ctx.error) return ctx.error
 
   const body = await request.json().catch(() => ({}))
+  const action = String(body.action || '').trim()
+
+  if (action === 'set_system_publication') {
+    const systemId = String(body.system_id || '').trim()
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(systemId)) {
+      return NextResponse.json({ error: 'Valid Client system required' }, { status: 400 })
+    }
+
+    const [system] = await ctx.sql`
+      SELECT id,title,system_type,status
+      FROM client_built_systems
+      WHERE id=${systemId}::uuid
+        AND client_id=${ctx.client.id}::uuid
+        AND file_number=${ctx.client.file_number}
+        AND status='active'
+        AND system_type<>'customer_door'
+      LIMIT 1
+    `
+    if (!system) return NextResponse.json({ error: 'Active Client system not found' }, { status: 404 })
+
+    const publicEnabled = Boolean(body.public_enabled)
+    const publicLabel = String(body.public_label || system.title || '').trim().slice(0,220)
+    const publicSummary = String(body.public_summary || '').trim().slice(0,1200)
+
+    await ctx.sql`
+      INSERT INTO client_customer_door_systems (
+        store_id,client_id,system_id,public_label,public_summary,enabled,published_at,updated_at
+      )
+      VALUES (
+        ${ctx.store.id}::uuid,
+        ${ctx.client.id}::uuid,
+        ${system.id}::uuid,
+        ${publicLabel || system.title},
+        ${publicSummary || null},
+        ${publicEnabled},
+        CASE WHEN ${publicEnabled} THEN NOW() ELSE NULL END,
+        NOW()
+      )
+      ON CONFLICT (store_id,system_id) DO UPDATE SET
+        public_label=EXCLUDED.public_label,
+        public_summary=EXCLUDED.public_summary,
+        enabled=EXCLUDED.enabled,
+        published_at=CASE
+          WHEN EXCLUDED.enabled THEN COALESCE(client_customer_door_systems.published_at,NOW())
+          ELSE NULL
+        END,
+        updated_at=NOW()
+    `
+
+    const data = await snapshot(ctx.sql, ctx.store)
+    return NextResponse.json({ success: true, ...data })
+  }
+
   const name = body.name == null ? null : String(body.name).trim().slice(0,255)
   const description = body.description == null ? null : String(body.description).trim().slice(0,4000)
   const enabled = body.enabled == null ? null : Boolean(body.enabled)

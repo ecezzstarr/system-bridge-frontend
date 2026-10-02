@@ -127,6 +127,15 @@ export default function FileFolderOpenWorld({
   const [now, setNow] = useState(Date.now())
   const [systemDrafts, setSystemDrafts] = useState<Record<string, string>>({})
   const [systemEvidence, setSystemEvidence] = useState<Record<string, string>>({})
+  const [formationDraft,setFormationDraft]=useState({
+    business_name:String(initialWorld?.businessFormation?.business_name||workshopTitle||''),
+    sector:String(initialWorld?.businessFormation?.sector||''),
+    purpose:String(initialWorld?.businessFormation?.purpose||''),
+    customer_description:String(initialWorld?.businessFormation?.customer_description||''),
+    operating_model:String(initialWorld?.businessFormation?.operating_model||''),
+  })
+  const [blueprintSearch,setBlueprintSearch]=useState('')
+  const [buildDrafts,setBuildDrafts]=useState<Record<string,{title:string;purpose:string}>>({})
   const { recordOutput } = usePresenceCamera()
   const buildStateRef=useRef<Map<string,string>>(new Map())
 
@@ -270,14 +279,20 @@ export default function FileFolderOpenWorld({
   const buildPartItems = (world?.items || []).filter((item:any)=>item.build_effect!=='speed_boost'&&isCapabilityPart(item))
   const buildMarketItems = (world?.items || []).filter((item: any) => item.build_effect !== 'speed_boost'&&!isCapabilityPart(item))
   const boostItems = (world?.items || []).filter((item: any) => item.build_effect === 'speed_boost')
+  const filteredBlueprints = (world?.blueprints || []).filter((blueprint:any)=>{
+    const query=blueprintSearch.trim().toLowerCase()
+    if(!query)return true
+    return [blueprint.name,blueprint.description,blueprint.district,blueprint.system_type]
+      .some(value=>String(value||'').toLowerCase().includes(query))
+  })
 
   return (
     <section className="overflow-clip rounded-[1.35rem] border border-amber-200/10 bg-[#02080d] shadow-[0_30px_100px_rgba(0,0,0,.42)] md:rounded-[2rem]" data-construction-workspace="progressive-site">
       <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(2,8,13,.02))] px-4 py-4 md:p-8">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Technology Formation Territory</p>
-            <h2 className="mt-1 truncate text-lg font-black text-white md:mt-2 md:text-4xl">{workshopTitle}</h2>
+            <p className="text-[8px] font-black uppercase tracking-[0.22em] text-amber-200 md:text-[9px] md:tracking-[0.28em]">Main File Folder · Client-owned Business Formation</p>
+            <h2 className="mt-1 truncate text-lg font-black text-white md:mt-2 md:text-4xl">{world?.businessFormation?.business_name || workshopTitle}</h2>
             <p className="mt-1 truncate text-[9px] font-mono text-slate-500 md:mt-2 md:text-[10px]">{clientName} · {fileNumber}</p>
           </div>
           <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-400/5 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] text-emerald-200">
@@ -285,7 +300,7 @@ export default function FileFolderOpenWorld({
           </span>
         </div>
 
-        <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{workshopPurpose || 'The Client’s chosen workshop remains the center while real systems form around it.'}</p>
+        <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{world?.businessFormation?.purpose || workshopPurpose || 'You own the business and decide what to build. WEAVE hosts, organizes and integrates the technology through your Customer Door.'}</p>
         <div className="mt-4 border-y border-cyan-300/10 py-3" data-file-folder-multiplayer-world="human-and-weave-ai">
           <div className="flex items-center justify-between gap-4"><div><p className="text-[8px] font-black uppercase tracking-[.2em] text-cyan-200">File Folder Formation Network</p><p className="mt-1 text-[10px] leading-5 text-slate-400">This private Client formation view can show clearly identified WEAVE AI-operated demonstration territories for reference. Public visitors do not enter this File Folder; outward visibility begins at an opened Customer Door.</p></div><span className="shrink-0 text-[8px] font-black uppercase tracking-wider text-emerald-300">World active</span></div>
           <div className="mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -370,9 +385,22 @@ export default function FileFolderOpenWorld({
           {district==='workshop_core'&&(
             <div className="space-y-5">
               <div className="border-l-2 border-amber-300/30 pl-4">
-                <p className="text-[9px] font-black uppercase tracking-[.22em] text-amber-200">Command Core</p>
-                <h3 className="mt-2 text-2xl font-black text-white">{workshopTitle}</h3>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-400">{workshopPurpose||'This workshop remains the Client command point while real systems rise around it.'}</p>
+                <p className="text-[9px] font-black uppercase tracking-[.22em] text-amber-200">Business Formation</p>
+                <h3 className="mt-2 text-2xl font-black text-white">{world?.businessFormation?.business_name || workshopTitle}</h3>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-400">This business belongs to you. WEAVE supplies the hosting, technology infrastructure, organization and public integration; you decide what the business becomes and which systems it needs.</p>
+              </div>
+              <div className="border-y border-amber-100/10 py-4" data-client-business-formation="owner-controlled">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500">Business name<input value={formationDraft.business_name} onChange={event=>setFormationDraft({...formationDraft,business_name:event.target.value})} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Name your business"/></label>
+                  <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500">Sector<input value={formationDraft.sector} onChange={event=>setFormationDraft({...formationDraft,sector:event.target.value})} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Commerce, media, services, technology…"/></label>
+                  <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500 md:col-span-2">What the business does<textarea value={formationDraft.purpose} onChange={event=>setFormationDraft({...formationDraft,purpose:event.target.value})} rows={3} className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Describe the value this business creates."/></label>
+                  <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500">Who it serves<input value={formationDraft.customer_description} onChange={event=>setFormationDraft({...formationDraft,customer_description:event.target.value})} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Customers, companies, communities…"/></label>
+                  <label className="text-[9px] font-black uppercase tracking-[.12em] text-stone-500">Operating model<input value={formationDraft.operating_model} onChange={event=>setFormationDraft({...formationDraft,operating_model:event.target.value})} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-3 py-3 text-sm normal-case tracking-normal text-white outline-none" placeholder="Store, service, marketplace, subscription…"/></label>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <button disabled={busy==='business-formation'} onClick={()=>act({action:'set_business_formation',...formationDraft},'business-formation')} className="rounded-full bg-amber-300 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-950 disabled:opacity-40">{busy==='business-formation'?'Saving…':'Save business formation'}</button>
+                  <span className="text-[9px] text-slate-500">Ownership: Client · Host: WEAVE · Public boundary: Customer Door</span>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-0 overflow-hidden border-y border-amber-100/10 md:grid-cols-4">
                 {[
@@ -436,9 +464,11 @@ export default function FileFolderOpenWorld({
           {district === 'blueprint_foundry' && (
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Blueprint Foundry</p>
-              <h3 className="mt-2 text-2xl font-black">Choose what becomes real next.</h3>
+              <h3 className="mt-2 text-2xl font-black">Choose the technology your business needs.</h3>
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">WEAVE provides buildable technology. You choose the system, name it for your business, define what it should do, and start formation. Your choices determine what this File Folder becomes.</p>
+              <input value={blueprintSearch} onChange={event=>setBlueprintSearch(event.target.value)} className="mt-4 w-full rounded-xl border border-violet-300/15 bg-black/25 px-4 py-3 text-sm text-white outline-none" placeholder="Search store, payments, AI, streaming, operations, marketplace…"/>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
-                {(world?.blueprints || []).map((blueprint:any) => {
+                {filteredBlueprints.map((blueprint:any) => {
                   const owned = Number(inventory.get(blueprint.required_item_key) || 0)
                   const hasComponents = !blueprint.required_item_key || owned >= Number(blueprint.required_item_quantity || 0)
                   const canStart = hasComponents && !fundingGateLocked
@@ -452,7 +482,11 @@ export default function FileFolderOpenWorld({
                     <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-violet-300">{branchLabel(blueprint.district)}</p><h4 className="mt-1 font-bold text-white">{blueprint.name}</h4></div><span className="shrink-0 rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">Base {blueprint.build_hours}h · Yours {effectiveLabel}</span></div>
                     <p className="mt-2 text-xs leading-5 text-slate-400">{blueprint.description}</p>
                     <p className="mt-3 text-[10px] text-slate-500">Requires: {blueprint.required_item_quantity || 0} × {blueprint.required_item_name || 'No component'} · Owned {owned}{blueprint.required_item_key ? <> · <span className="font-bold text-amber-200">{Number(blueprint.required_item_price_flame_coin || 0).toLocaleString()} Flame Coin each</span></> : null}</p>
-                    <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Start Build':'Acquire Component'}</button>
+                    <div className="mt-4 grid gap-2">
+                      <input value={buildDrafts[blueprint.blueprint_key]?.title||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:event.target.value,purpose:current[blueprint.blueprint_key]?.purpose||''}}))} className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder={`Business name for this system · ${blueprint.name}`}/>
+                      <textarea value={buildDrafts[blueprint.blueprint_key]?.purpose||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:current[blueprint.blueprint_key]?.title||'',purpose:event.target.value}}))} rows={2} className="resize-none rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder="How should this system serve your business?"/>
+                    </div>
+                    <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key,title:buildDrafts[blueprint.blueprint_key]?.title||'',purpose:buildDrafts[blueprint.blueprint_key]?.purpose||''},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Build this system':'Acquire Component'}</button>
                   </div>
                 })}
               </div>

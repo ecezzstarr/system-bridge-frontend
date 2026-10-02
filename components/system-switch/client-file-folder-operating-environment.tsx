@@ -449,9 +449,10 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const vitalityScore=Number(world?.growth?.vitality?.score||0)
   const enterpriseApproved=Boolean(data.enterprise?.enterprise_status==='approved' && ['lord','lady'].includes(String(data.enterprise?.position||'').toLowerCase()))
   const territoryPosition=enterpriseApproved ? String(data.enterprise.position).toUpperCase() : 'CLIENT'
+  const businessFormation=world?.businessFormation||{}
   const territoryName=enterpriseApproved
-    ? (data.enterprise?.enterprise_name || 'Enterprise Dream Territory')
-    : 'Client Construction Territory'
+    ? (data.enterprise?.enterprise_name || businessFormation.business_name || 'Enterprise Dream')
+    : (businessFormation.business_name || data.client.business_name || data.workshop.title || 'Client Business')
   const selectedSystem = systems.find((system:any)=>system.id===selectedSystemId) || null
   const selectedBlueprint = useMemo(
     () => blueprints.find((blueprint: any) => blueprint.blueprint_key === selectedBlueprintKey) || blueprints[0] || null,
@@ -459,10 +460,10 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   )
 
   const surfaces = [
-    { key: 'command' as Surface, label: 'Command Citadel', icon: Home, detail: 'Read the whole business world, its resources and its next movement.', tone: 'sky', step: '01' },
-    { key: 'builds' as Surface, label: 'Construction + Systems', icon: Hammer, detail: 'Blueprint, supply, build, commission and operate real systems.', tone: 'violet', step: '02' },
-    { key: 'business' as Surface, label: 'Market + Customers', icon: Store, detail: 'Turn finished systems into customer movement, orders, payments and service.', tone: 'emerald', step: '03' },
-    { key: 'enterprise' as Surface, label: 'Expansion Council', icon: BriefcaseBusiness, detail: 'Develop the business into a Lord/Lady enterprise with Legions and wider operations.', tone: 'amber', step: '04' },
+    { key: 'command' as Surface, label: 'Business Core', icon: Home, detail: 'Define the business you own and decide what technology it needs next.', tone: 'sky', step: '01' },
+    { key: 'builds' as Surface, label: 'Build + Systems', icon: Hammer, detail: 'Choose, configure, build, commission and operate your own systems.', tone: 'violet', step: '02' },
+    { key: 'business' as Surface, label: 'Customer Door + Market', icon: Store, detail: 'Connect selected public systems to customers through your WEAVE Customer Door.', tone: 'emerald', step: '03' },
+    { key: 'enterprise' as Surface, label: 'Business Expansion', icon: BriefcaseBusiness, detail: 'Expand the Client-owned business into wider enterprise capability when ready.', tone: 'amber', step: '04' },
     ...(data.premium_dj_enabled
       ? [{ key: 'sound' as Surface, label: 'Sound Room', icon: Headphones, detail: 'Private premium File Folder atmosphere and DJ.', tone: 'rose', step: '05' }]
       : []),
@@ -548,6 +549,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           vitalityScore={vitalityScore}
           systemWeaves={Array.isArray(world?.growth?.routes)?world.growth.routes:[]}
           aiTerritories={aiFileFolders.map(aiFileFolderTerritory)}
+          businessName={businessFormation.business_name || territoryName}
+          businessSector={businessFormation.sector || null}
           territoryMode
         />
       </div>
