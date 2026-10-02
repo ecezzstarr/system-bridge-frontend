@@ -22,6 +22,7 @@ type Outreach = {
   lead_code:string
   name?:string|null
   email:string
+  source_email?:string|null
   subject:string
   status:string
   sent_at?:string|null
