@@ -25,6 +25,51 @@ html[data-weave-theme="dark-blue"] body {
   font-weight: 700;
 }
 
+html[data-weave-theme="dark-blue"] {
+  --card: rgba(11, 34, 66, .58);
+  --popover: rgba(9, 28, 54, .86);
+  --sidebar: rgba(6, 21, 46, .72);
+  --input: rgba(14, 40, 72, .52);
+  --weave-world-surface: rgba(11, 34, 66, .48);
+  --weave-world-surface-strong: rgba(11, 34, 66, .68);
+}
+
+/* Glass instruments sit over the shared live world; they do not paint a new
+   page background or add another enclosing dashboard. */
+html[data-weave-theme="dark-blue"] :is(
+  .weave-header, .weave-sidebar, .weave-client-nav,
+  .weave-environment-panel, .weave-reading-surface,
+  .field-surface, .card, [role="card"],
+  [data-slot="card"], [data-slot="dialog-content"],
+  [data-slot="popover-content"], [data-slot="dropdown-menu-content"],
+  [data-slot="sheet-content"], [data-weave-dj-mirror="true"]
+) {
+  background: linear-gradient(135deg, rgba(24, 57, 97, .56), rgba(6, 21, 46, .72));
+  border-color: rgba(191, 219, 254, .22);
+  box-shadow: 0 16px 48px rgba(2, 8, 23, .28), inset 0 1px 0 rgba(239, 246, 255, .12);
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+  backdrop-filter: blur(20px) saturate(135%);
+}
+
+/* Keep menus and dialogs readable over any content beneath their glass. */
+html[data-weave-theme="dark-blue"] :is(
+  [data-slot="dialog-content"], [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"], [data-slot="sheet-content"]
+) {
+  background-color: rgba(6, 21, 46, .84);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html[data-weave-theme="dark-blue"] :is(
+    .weave-header, .weave-sidebar, .weave-client-nav,
+    .weave-environment-panel, .weave-reading-surface,
+    .field-surface, .card, [role="card"], [data-slot="card"],
+    [data-slot="dialog-content"], [data-slot="popover-content"],
+    [data-slot="dropdown-menu-content"], [data-slot="sheet-content"],
+    [data-weave-dj-mirror="true"]
+  ) { background: rgba(6, 21, 46, .94); }
+}
+
 html[data-weave-theme="dark-blue"] :where(h1,h2,h3,h4,h5,h6) {
   font-weight: 900;
 }
