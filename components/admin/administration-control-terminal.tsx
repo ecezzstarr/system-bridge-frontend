@@ -110,6 +110,12 @@ export default function AdminTerminal() {
           </h1>
           <p className="text-slate-400 text-sm">People, authorization, verification and announcements · {user.name}</p>
         </div>
+        <Link
+          href="/admin/access-recovery"
+          className="border border-cyan-300/20 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-cyan-200 transition-colors hover:border-cyan-300/40 hover:text-white"
+        >
+          Access Recovery Desk
+        </Link>
       </div>
 
       {/* Quick Stats */}
