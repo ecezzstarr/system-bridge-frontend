@@ -331,6 +331,7 @@ export async function runWeaveIntegrityEngine(mode:'scan'|'repair'='scan'):Promi
     if(mode==='repair')await client.query('ROLLBACK').catch(()=>null)
     throw error
   }finally{
+    await client.query('RESET statement_timeout').catch(()=>null)
     client.release()
   }
 }
