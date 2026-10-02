@@ -56,6 +56,8 @@ export async function ensureEmailOutreachSchema() {
           consent_basis VARCHAR(160) NOT NULL,
           contactable BOOLEAN NOT NULL DEFAULT TRUE,
           status VARCHAR(24) NOT NULL DEFAULT 'available',
+          pool VARCHAR(20) NOT NULL DEFAULT 'bridger',
+          series_id UUID,
           owned_by UUID REFERENCES users(id),
           acquired_at TIMESTAMPTZ,
           created_by UUID NOT NULL REFERENCES users(id),
@@ -70,6 +72,38 @@ export async function ensureEmailOutreachSchema() {
       await client.query(`
         CREATE INDEX IF NOT EXISTS idx_weave_email_leads_owner
         ON weave_email_prospect_leads(owned_by, created_at DESC)
+      `)
+      await client.query(`
+        ALTER TABLE weave_email_prospect_leads
+        ADD COLUMN IF NOT EXISTS pool VARCHAR(20) NOT NULL DEFAULT 'bridger'
+      `)
+      await client.query(`
+        ALTER TABLE weave_email_prospect_leads
+        ADD COLUMN IF NOT EXISTS series_id UUID
+      `)
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_weave_email_leads_pool
+        ON weave_email_prospect_leads(pool,status,contactable,created_at)
+      `)
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS weave_email_candidate_series (
+          id UUID PRIMARY KEY,
+          seed_email VARCHAR(255) NOT NULL,
+          domain VARCHAR(190) NOT NULL,
+          local_prefix VARCHAR(120) NOT NULL,
+          generator VARCHAR(40) NOT NULL DEFAULT 'crypto_series_v1',
+          destination VARCHAR(20) NOT NULL,
+          requested_count INTEGER NOT NULL,
+          generated_count INTEGER NOT NULL DEFAULT 0,
+          nonce VARCHAR(64) NOT NULL,
+          status VARCHAR(24) NOT NULL DEFAULT 'completed',
+          created_by UUID NOT NULL REFERENCES users(id),
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `)
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_weave_email_candidate_series_created
+        ON weave_email_candidate_series(created_at DESC)
       `)
       await client.query(`
         CREATE TABLE IF NOT EXISTS weave_email_outreach (
@@ -115,6 +149,148 @@ export async function ensureEmailOutreachSchema() {
   })
 
   return emailOutreachSchemaPromise
+}
+
+export type EmailCandidateDestination='admin'|'bridger'|'balanced'
+
+function splitSeedEmail(seedEmail:string){
+  const normalized=normalizeOutreachEmail(seedEmail)
+  if(!validOutreachEmail(normalized))throw new Error('Enter a valid seed email')
+  const at=normalized.lastIndexOf('@')
+  const local=normalized.slice(0,at)
+  const domain=normalized.slice(at+1)
+  const numeric=local.match(/^(.*?)(\d{2,12})$/)
+  return {
+    normalized,
+    domain,
+    prefix:numeric?.[1]||local.replace(/[._+-]+$/,'')||'prospect',
+    numericWidth:numeric?.[2]?.length||0,
+    numericBase:numeric?Number.parseInt(numeric[2],10):0,
+  }
+}
+
+function cryptoCandidateLocal(input:{
+  prefix:string
+  width:number
+  base:number
+  nonce:string
+  index:number
+}){
+  const digest=crypto
+    .createHmac('sha256',input.nonce)
+    .update(String(input.index))
+    .digest()
+
+  if(input.width>0){
+    const range=Math.max(100,10**Math.min(input.width,9))
+    const offset=digest.readUInt32BE(0)%range
+    const candidate=(input.base+offset)%range
+    return `${input.prefix}${String(candidate).padStart(input.width,'0')}`
+  }
+
+  const token=digest.toString('hex').slice(0,10)
+  return `${input.prefix}.${token}`
+}
+
+export async function generateEmailCandidateSeries(input:{
+  adminId:string
+  seedEmail:string
+  count:number
+  destination:EmailCandidateDestination
+}){
+  await ensureEmailOutreachSchema()
+  const parsed=splitSeedEmail(input.seedEmail)
+  const requested=Math.max(1,Math.min(200,Number(input.count||1)))
+  const seriesId=crypto.randomUUID()
+  const nonce=crypto.randomBytes(24).toString('hex')
+  const pool=getPool()
+  const client=await pool.connect()
+
+  try{
+    await client.query('BEGIN')
+
+    let adminGenerated=0
+    let bridgerGenerated=0
+    let attempts=0
+    let generated=0
+    const generatedLeads:Array<{id:string;leadCode:string;email:string;pool:'admin'|'bridger'}>=[]
+
+    while(generated<requested&&attempts<requested*12){
+      attempts+=1
+      const local=cryptoCandidateLocal({
+        prefix:parsed.prefix,
+        width:parsed.numericWidth,
+        base:parsed.numericBase,
+        nonce,
+        index:attempts,
+      })
+      const candidateEmail=`${local}@${parsed.domain}`
+      if(candidateEmail===parsed.normalized)continue
+
+      const destinationPool:'admin'|'bridger'=
+        input.destination==='admin'
+          ?'admin'
+          :input.destination==='bridger'
+            ?'bridger'
+            :generated%2===0?'admin':'bridger'
+
+      const leadId=crypto.randomUUID()
+      const leadCode=emailLeadCode()
+      const inserted=await client.query(
+        `INSERT INTO weave_email_prospect_leads
+          (id,lead_code,name,email,source,consent_basis,contactable,status,pool,series_id,created_by)
+         VALUES (
+           $1::uuid,$2,NULL,$3,'email_engine_candidate',
+           'Cryptographic candidate. Reachability and consent have not been independently verified.',
+           true,'available',$4,$5::uuid,$6::uuid
+         )
+         ON CONFLICT (email) DO NOTHING
+         RETURNING id`,
+        [leadId,leadCode,candidateEmail,destinationPool,seriesId,input.adminId],
+      )
+
+      if(!inserted.rowCount)continue
+      generated+=1
+      if(destinationPool==='admin')adminGenerated+=1
+      else bridgerGenerated+=1
+      generatedLeads.push({id:leadId,leadCode,email:candidateEmail,pool:destinationPool})
+    }
+
+    await client.query(
+      `INSERT INTO weave_email_candidate_series
+        (id,seed_email,domain,local_prefix,generator,destination,requested_count,generated_count,nonce,status,created_by)
+       VALUES ($1::uuid,$2,$3,$4,'crypto_series_v1',$5,$6,$7,$8,$9,$10::uuid)`,
+      [
+        seriesId,
+        parsed.normalized,
+        parsed.domain,
+        parsed.prefix,
+        input.destination,
+        requested,
+        generated,
+        nonce,
+        generated===requested?'completed':'partial',
+        input.adminId,
+      ],
+    )
+
+    await client.query('COMMIT')
+    return {
+      seriesId,
+      requested,
+      generated,
+      adminGenerated,
+      bridgerGenerated,
+      mode:'crypto_series_v1' as const,
+      reachability:'unverified' as const,
+      candidates:generatedLeads,
+    }
+  }catch(error){
+    try{await client.query('ROLLBACK')}catch{}
+    throw error
+  }finally{
+    client.release()
+  }
 }
 
 export async function senderForUser(userId: string) {
@@ -222,6 +398,8 @@ export async function runAdminEmailOutreach(adminId: string) {
      FROM weave_email_prospect_leads l
      WHERE l.status='available'
        AND l.contactable=true
+       AND l.pool='admin'
+       AND l.owned_by IS NULL
        AND NOT EXISTS (
          SELECT 1 FROM weave_email_outreach o
          WHERE o.lead_id=l.id
