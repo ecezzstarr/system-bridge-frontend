@@ -1639,7 +1639,7 @@ assert.ok(referralApiSource.includes("['agent','bridger','client']")&&referralAp
 assert.ok(referralPanelSource.includes('/api/referral/me')&&staffSettingsReferralSource.includes('ReferralCodePanel')&&clientSettingsReferralSource.includes('ReferralCodePanel'),'Referral identity is visible from staff and Client settings')
 assert.ok(staffRegistrationReferralSource.includes('resolveReferralOwnerByCode')&&staffRegistrationReferralSource.includes('referral_code'),'Staff registration accepts the visible referral code instead of requiring an internal UUID')
 assert.ok(clientRegistrationReferralSource.includes("buildUserReferralCode(userId, 'client')")&&clientRegistrationReferralSource.includes('referral_code'),'Client registration assigns referral identity at account creation')
-assert.ok(companyGuidanceApiSource.includes("company_guidance:")&&companyGuidanceApiSource.includes("['agent','bridger','admin']"),'Company Guidance uses authenticated Agent Bridger and Administration messaging')
+assert.ok(companyGuidanceApiSource.includes("cg:")&&companyGuidanceApiSource.includes("['agent','bridger','admin']"),'Company Guidance uses authenticated Agent Bridger and Administration messaging')
 assert.ok(companyGuidanceThreadSource.includes('/api/company-guidance')&&!companyGuidanceThreadSource.includes("redirect('/company-chat?position="),'Company Guidance position routes are live threads instead of a redirect loop')
 assert.ok(adminCompanyGuidanceSource.includes('/api/company-guidance')&&roleHas('admin','/admin/company-guidance'),'Administration has a discoverable Company Guidance reply endpoint')
 assert.ok(weaveEnvironmentMapSource.includes("'administration-company-guidance'"),'Administration Company Guidance has a registered WEAVE environment identity')
