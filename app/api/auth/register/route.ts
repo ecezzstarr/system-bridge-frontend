@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { ensureBridgerReferralColumns } from '@/lib/bridger-referral-commission'
 import { validateDepartmentalCode, useDepartmentalCode, Department } from '@/lib/departmental-codes'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
+import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-referral'
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,18 +87,29 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10)
 
-    // Bridger-referral link: ?ref=<bridgerUserId> resolves to this. Only
-    // honored when the role being registered is itself 'bridger' and the
-    // referrer is a real, existing bridger — silently ignored otherwise
-    // rather than failing the whole registration.
-    let validReferrerId: string | null = null
-    if (role === 'bridger' && referredByBridgerId) {
-      await ensureBridgerReferralColumns()
-      const referrerRows = await sql`
-        SELECT id FROM users WHERE id = ${referredByBridgerId}::uuid AND role = 'bridger'
-      `
-      if (referrerRows.length > 0) validReferrerId = referrerRows[0].id
+    // Referral input is a real shareable code. UUID links from older WEAVE
+    // builds remain accepted so existing outreach does not break.
+    let referralOwner: any = null
+    if (referredByBridgerId) {
+      referralOwner = await resolveReferralOwnerByCode(String(referredByBridgerId))
+      if (!referralOwner && /^[0-9a-f-]{36}$/i.test(String(referredByBridgerId))) {
+        const legacyOwner = await sql`
+          SELECT id, role, referral_code
+          FROM users
+          WHERE id = ${String(referredByBridgerId)}::uuid
+            AND role IN ('agent','bridger','client')
+            AND is_active = true
+          LIMIT 1
+        `
+        referralOwner = legacyOwner[0] || null
+      }
     }
+
+    const genericReferrerId: string | null = referralOwner?.id || null
+    const bridgerReferrerId: string | null =
+      role === 'bridger' && referralOwner?.role === 'bridger' ? referralOwner.id : null
+
+    if (bridgerReferrerId) await ensureBridgerReferralColumns()
 
     // Claim the code BEFORE creating anything. This atomic UPDATE is the
     // real concurrency gate -- two simultaneous registrations against the
@@ -112,10 +124,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const referralCode = buildUserReferralCode(userId, role)
     const userResult = await sql`
-      INSERT INTO users (id, email, username, name, password_hash, role, departmental_code, referred_by_bridger_id, created_at, updated_at)
-      VALUES (${userId}::uuid, ${email}, ${username}, ${name}, ${passwordHash}, ${role}, ${dept}, ${validReferrerId}::uuid, NOW(), NOW())
-      RETURNING id, email, username, name, role, departmental_code
+      INSERT INTO users (
+        id, email, username, name, password_hash, role, departmental_code,
+        referral_code, referred_by, referred_by_bridger_id, created_at, updated_at
+      )
+      VALUES (
+        ${userId}::uuid, ${email}, ${username}, ${name}, ${passwordHash}, ${role}, ${dept},
+        ${referralCode}, ${genericReferrerId}::uuid, ${bridgerReferrerId}::uuid, NOW(), NOW()
+      )
+      RETURNING id, email, username, name, role, departmental_code, referral_code
     `
 
     if (!userResult || userResult.length === 0) {
@@ -124,21 +143,21 @@ export async function POST(request: NextRequest) {
 
     const user = userResult[0]
 
-    // Let the referring bridger know their link brought someone in.
-    if (validReferrerId) {
+    // Record attribution without changing the role-specific commission rules.
+    if (genericReferrerId) {
       try {
         await sql`
           INSERT INTO notifications (user_id, type, title, content, from_user_name)
           VALUES (
-            ${validReferrerId}::uuid,
+            ${genericReferrerId}::uuid,
             'referral_signup',
             'Your referral joined WEAVE',
-            ${name + ' just registered as a bridger using your referral link.'},
+            ${name + ' joined WEAVE using your referral code.'},
             'WEAVE'
           )
         `
       } catch (notifyError) {
-        console.error('Failed to notify referring bridger:', notifyError)
+        console.error('Failed to notify referral owner:', notifyError)
       }
     }
 
@@ -170,10 +189,10 @@ export async function POST(request: NextRequest) {
         INSERT INTO bridger_profiles (id, user_id, status, referrals, total_earnings, commission_rate, created_at, updated_at)
         VALUES (gen_random_uuid(), ${userId}::uuid, 'active', 0, 0, 0.50, NOW(), NOW())
       `
-      if (validReferrerId) {
+      if (bridgerReferrerId) {
         await sql`
           UPDATE bridger_profiles SET bridger_referral_count = bridger_referral_count + 1, updated_at = NOW()
-          WHERE user_id = ${validReferrerId}::uuid
+          WHERE user_id = ${bridgerReferrerId}::uuid
         `
       }
     }
@@ -196,6 +215,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         role: user.role,
         departmental_code: user.departmental_code,
+        referral_code: user.referral_code,
         platform_wallet_balance: 0,
         escrow_balance: 0,
       },
