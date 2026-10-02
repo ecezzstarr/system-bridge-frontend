@@ -6,7 +6,8 @@ import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { recordSystemEvent } from '@/lib/system-events'
 import { requireApiUser } from '@/lib/api-auth'
 import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
-import { issueWeaveReceipt } from '@/lib/weave-receipts'\nimport { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
+import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 
 const sql = neon(process.env.DATABASE_URL!)
 function validPrice(value: unknown) { const amount = Number(value); return isValidFileFolderAmount(amount) && amount <= 100000000 }
@@ -128,6 +129,17 @@ export async function POST(request: NextRequest) {
     const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId}) RETURNING *`
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
     const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
+    try {
+      await recordPublicFlameMovementEvent({
+        movementCode: publicFlameMovementCodeFromRequest(request),
+        eventType: 'file_folder_purchase',
+        userId: clientId,
+        subjectId: String(record.id),
+        metadata: { amountFlameCoin, fileFolderTier },
+      })
+    } catch (movementError) {
+      console.error('[Public Flame Movement] File Folder attribution failed:', movementError)
+    }
     return NextResponse.json({
       success: true,
       purchase: {
