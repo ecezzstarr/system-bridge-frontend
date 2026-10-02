@@ -120,10 +120,10 @@ assert.ok(presenceAmbience.includes('ambience.musicGain')&&presenceAmbience.incl
 assert.ok(djBroadcastPlayer.includes("new CustomEvent('weave:dj-audio-state'"),'Global DJ publishes playback state for environmental mixing')
 assert.ok(djBroadcastPlayer.includes('data-weave-dj-broadcast="true"'),'Global DJ audio element is explicitly identified as the WEAVE broadcast source')
 assert.ok(djBroadcastPlayer.includes("const publicSoundEligible = pathname === '/register'")&&djBroadcastPlayer.includes("'weave:dj-request-play'"),'Staff visitor Department Entry joins the same persistent WEAVE sound current')
-assert.ok(djBroadcastPlayer.includes('data-weave-dj-dock="true"')&&!djBroadcastPlayer.includes('GripVertical'),'Live DJ controls use a reserved dock instead of a draggable card that can cover work')
+assert.ok(djBroadcastPlayer.includes('data-weave-dj-mirror="true"')&&!djBroadcastPlayer.includes('bottom-0')&&!djBroadcastPlayer.includes('inset-x-0 bottom-0'),'Live DJ is a compact floating mirror instead of a bottom dock')
 const readabilityCss=read('app/weave-readability.css')
 assert.ok(readabilityCss.includes('.weave-operating-environment')&&readabilityCss.includes('border-radius: 0 !important'),'Operating environments stay flat instead of becoming cards around other cards')
-assert.ok(readabilityCss.includes('--weave-dj-dock-height'),'Signed-in shells reserve space for the live DJ dock')
+assert.ok(readabilityCss.includes('[data-weave-dj-mirror="true"]')&&!readabilityCss.includes('--weave-dj-dock-height'),'Floating Live DJ does not resize Agent Bridger Client or Administration worlds')
 
 
 const visualProfile=read('lib/weave-visual-profile.ts')
@@ -326,6 +326,8 @@ assert.ok(!read('components/world/weave-dashboard-world.tsx').includes("bg-[#0c0
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world={role===')&&read('components/world/weave-dashboard-world.tsx').includes("'open-territory'"),'Client World identifies as an open territory rather than a dashboard or HUD shell')
 assert.ok(!read('components/world/weave-dashboard-world.tsx').includes('animate-pulse rounded-full border border-cyan-300/10'),'Client World beacons do not run redundant infinite pulse animations')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-client-world-beacon'),'Client districts remain spatial travel beacons inside the world')
+assert.ok(read('components/world/weave-dashboard-world.tsx').includes('data-world-theme-source="shared-live-flame"'),'Role worlds inherit the one shared live Flame theme')
+assert.ok(!read('components/world/weave-dashboard-world.tsx').includes('[background-size:44px_44px]')&&!read('components/world/weave-dashboard-world.tsx').includes('rounded-[50%] border border-cyan-200/10'),'Role worlds do not paint a local grid or ellipse wallpaper over the live Flame field')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes('full-height-travel-field')&&read('components/world/weave-dashboard-world.tsx').includes('flex-1 items-center'),'Mobile role worlds distribute district travel through the viewport instead of leaving a dead lower field')
 assert.ok(read('components/world/weave-dashboard-world.tsx').includes("role==='admin'?'position':null"),'Administration Control is the center gate and is not duplicated as a travel district')
 assert.ok(read('components/world/role-district-environment.tsx').includes('districtScenes')&&read('components/world/role-district-environment.tsx').includes('data-district-scene={scene.label}'),'Role districts have distinct spatial scene geometry instead of one renamed room')

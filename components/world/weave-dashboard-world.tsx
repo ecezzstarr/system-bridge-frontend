@@ -95,12 +95,8 @@ export function WeaveDashboardWorld({
     data-role-world={role}
     data-client-world={role==='client'?'open-territory':undefined}
     data-world-organization="presence-district-place"
+    data-world-theme-source="shared-live-flame"
   >
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(14,116,144,.15),transparent_27%),radial-gradient(ellipse_at_50%_72%,rgba(16,185,129,.055),transparent_39%),linear-gradient(180deg,#02070d_0%,#07111a_50%,#02070b_100%)]"/>
-    <div className="absolute inset-x-[-12%] bottom-[-22%] h-[78%] [transform:perspective(520px)_rotateX(58deg)] bg-[linear-gradient(rgba(56,189,248,.06)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,.06)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_top,black,transparent_92%)]"/>
-    <div className="absolute left-1/2 top-[53%] h-[54%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-cyan-200/10 shadow-[0_0_90px_rgba(34,211,238,.07)]"/>
-    <div className="absolute left-1/2 top-[53%] h-[31%] w-[43%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-emerald-200/[.07]"/>
-
     <header className="pointer-events-none relative z-20 flex items-start justify-between gap-3 px-4 pb-2 pt-16 sm:absolute sm:inset-x-0 sm:top-10 sm:p-6">
       <div>
         <WeaveLogo size="sm"/>
@@ -119,10 +115,10 @@ export function WeaveDashboardWorld({
       <Link
         href={copy.centerHref}
         data-role-presence-gate={role}
-        className="group mb-2 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-sky-100/15 bg-[#06131d]/72 px-4 py-3 shadow-[0_0_34px_rgba(56,189,248,.10)] backdrop-blur-md"
+        className="weave-dashboard-position group mb-2 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 shadow-[0_14px_40px_rgba(0,0,0,.16),inset_0_1px_0_rgba(255,255,255,.05)] backdrop-blur-xl"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sky-100/25 bg-black/20">
-          <CircleUserRound className="h-5 w-5 text-sky-100"/>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.035]">
+          <CircleUserRound className="h-5 w-5 text-white/80"/>
         </span>
         <span className="min-w-0 flex-1 text-left">
           <span className="block text-[10px] font-black uppercase tracking-[.12em] text-white">{hasRolePresence?'Presence':'Operating Center'}</span>
@@ -145,8 +141,8 @@ export function WeaveDashboardWorld({
           data-world-district={district.key}
           className="group flex min-h-20 w-full flex-1 items-center gap-3 border-b border-white/[.06] px-2 py-3"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cyan-100/20 bg-[#03101a]/88">
-            <DistrictIcon className="h-4 w-4 text-cyan-100"/>
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.035] backdrop-blur-xl">
+            <DistrictIcon className="h-4 w-4 text-white/75"/>
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[10px] font-black uppercase tracking-[.08em] text-white">{district.name}</span>
@@ -168,8 +164,8 @@ export function WeaveDashboardWorld({
       data-role-presence-gate={role}
       className="group absolute left-1/2 top-[52%] z-20 hidden -translate-x-1/2 -translate-y-1/2 text-center sm:block"
     >
-      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-sky-100/25 bg-[#06131d]/88 shadow-[0_0_44px_rgba(56,189,248,.18)] backdrop-blur-md transition group-hover:scale-105 group-hover:border-sky-100/50">
-        <CircleUserRound className="h-6 w-6 text-sky-100"/>
+      <span className="weave-dashboard-position mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/12 bg-white/[0.045] shadow-[0_16px_46px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.06)] backdrop-blur-xl transition group-hover:scale-105 group-hover:border-white/25">
+        <CircleUserRound className="h-6 w-6 text-white/80"/>
       </span>
       <span className="mt-2 block text-[10px] font-black uppercase tracking-[.12em] text-white">{hasRolePresence?'Presence':'Operating Center'}</span>
       <span className="mt-1 block text-[8px] text-slate-500">{hasRolePresence?'Understand your position':'Enter institutional control'}</span>
@@ -187,8 +183,8 @@ export function WeaveDashboardWorld({
           data-world-district={district.key}
           className={'group absolute '+POSITIONS[index%POSITIONS.length]+' flex max-w-[180px] items-center gap-2'}
         >
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cyan-100/20 bg-[#03101a]/82 shadow-[0_0_24px_rgba(34,211,238,.13)] backdrop-blur-md transition group-hover:scale-110 group-hover:border-cyan-200/50">
-            <span className="absolute inset-[-5px] rounded-full border border-cyan-300/10"/>
+          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.035] shadow-[0_12px_32px_rgba(0,0,0,.16),inset_0_1px_0_rgba(255,255,255,.05)] backdrop-blur-xl transition group-hover:scale-110 group-hover:border-white/25">
+            <span className="absolute inset-[-5px] rounded-full border border-white/[0.055]"/>
             <DistrictIcon className="h-4 w-4 text-cyan-100"/>
           </span>
           <span className="min-w-0">

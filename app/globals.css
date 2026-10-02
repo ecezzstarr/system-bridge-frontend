@@ -678,13 +678,14 @@ html[data-weave-event="flame-live"] :where(.weave-header,.weave-sidebar,.weave-c
 }
 
 html[data-weave-event="flame-live"] .weave-dashboard-world {
-  border-color: rgba(251,146,60,.22);
-  background: linear-gradient(145deg, rgba(28,10,9,.88), rgba(13,9,10,.82));
-  box-shadow: 0 28px 90px rgba(69,10,10,.22), inset 0 1px 0 rgba(254,215,170,.04);
+  border-color: transparent;
+  background: transparent !important;
+  box-shadow: none;
 }
 html[data-weave-event="flame-live"] .weave-dashboard-position {
-  border-color: rgba(251,146,60,.20);
-  background: linear-gradient(180deg, rgba(96,30,18,.22), rgba(24,10,9,.72));
+  border-color: rgba(255,247,237,.14);
+  background: rgba(255,255,255,.045);
+  box-shadow: 0 16px 48px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.07);
 }
 
 
