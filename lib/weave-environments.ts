@@ -459,7 +459,7 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     key: 'company-guidance',
     title: 'Company Guidance Room',
     district: 'Bridge',
-    purpose: 'The company interaction environment for position-specific guidance and operational clarification.',
+    purpose: 'The Agent and Bridger company interaction environment for role-specific guidance and operational clarification.',
     movement: 'Ask → clarify → act → continue',
     layer: 'interaction',
   }],

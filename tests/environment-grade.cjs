@@ -2,7 +2,7 @@ const assert=require('node:assert/strict')
 const fs=require('node:fs')
 const path=require('node:path')
 const root=path.resolve(__dirname,'..')
-const read=p=>fs.readFileSync(path.join(root,p),'utf8')
+const read=p=>fs.readFileSync(path.join(root,p),'utf8').replace(/\r\n/g,'\n')
 
 const room=read('components/world/weave-system-room.tsx')
 assert.ok(room.includes('data-weave-room={roomKey}'),'Reusable WEAVE room exposes room identity')

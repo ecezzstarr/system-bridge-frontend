@@ -1,7 +1,7 @@
 import { visiblePoll } from './visible-poll'
 
 /** One request, timer and event subscription per public runtime resource. */
-export function createRuntimeResource<T>(url:string,initial:T,parse:(body:any)=>T,event:string){
+export function createRuntimeResource<T>(url:string,initial:T,parse:(body:any)=>T,event:string,authenticated=false){
   const server={data:initial,ready:false}
   let snapshot=server
   let serialized=JSON.stringify(initial)
@@ -19,7 +19,8 @@ export function createRuntimeResource<T>(url:string,initial:T,parse:(body:any)=>
     const timeout=setTimeout(()=>request.abort(),5000)
     pending=(async()=>{
       try{
-        const response=await fetch(url,{cache:'no-store',signal:request.signal})
+        const token=authenticated?localStorage.getItem('ssb_auth_token'):null
+        const response=await fetch(url,{cache:'no-store',signal:request.signal,...(token?{headers:{Authorization:`Bearer ${token}`}}:{})})
         if(!response.ok)throw new Error('Runtime unavailable')
         const data=parse(await response.json())
         if(request.signal.aborted)return

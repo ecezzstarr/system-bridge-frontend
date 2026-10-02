@@ -16,6 +16,7 @@ import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
+import { canAccessEnvironmentRoute } from '@/lib/company-guidance-access'
 
 export default function AppLayout({
   children,
@@ -26,6 +27,13 @@ export default function AppLayout({
   const router = useRouter()
   const pathname = usePathname()
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const routeAllowed = canAccessEnvironmentRoute(pathname, user?.role)
+
+  useEffect(() => {
+    if (isInitialized && !isLoading && isAuthenticated && !routeAllowed) {
+      router.replace(user?.role === 'admin' ? '/admin/agent-channels' : '/client/dashboard')
+    }
+  }, [isInitialized, isLoading, isAuthenticated, routeAllowed, user?.role, router])
 
   useEffect(() => {
     // Only redirect if we've finished loading and confirmed not authenticated
@@ -116,6 +124,8 @@ export default function AppLayout({
   if (!isAuthenticated) {
     return null
   }
+
+  if (!routeAllowed) return null
 
   return (
     <EnvironmentOrganizerProvider>

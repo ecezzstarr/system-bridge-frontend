@@ -1,5 +1,6 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
+import { canAccessEnvironmentRoute } from '@/lib/company-guidance-access'
 import { logAudit } from '@/lib/db'
 import {
   getEnvironmentOrganizerState,
@@ -23,7 +24,8 @@ export async function GET(request:NextRequest){
   const auth=await requireAdmin(request)
   if(auth.error)return auth.error
   try{
-    return NextResponse.json({success:true,...await getEnvironmentOrganizerState()},{headers:{'Cache-Control':'no-store, max-age=0'}})
+    const state=await getEnvironmentOrganizerState()
+    return NextResponse.json({success:true,...state,items:state.items.filter((item:any)=>canAccessEnvironmentRoute(item.route,auth.user?.role))},{headers:{'Cache-Control':'no-store, max-age=0'}})
   }catch(error:any){
     return NextResponse.json({success:false,error:error.message||'Unable to load Environment Organizer'},{status:500})
   }
@@ -35,6 +37,7 @@ export async function PATCH(request:NextRequest){
 
   try{
     const input=await request.json()
+    if(input.surfaceKey==='shared-company-guidance')return NextResponse.json({success:false,error:'Agent and Bridger environment'},{status:403})
     const action=String(input.action||'')
     let state
 
@@ -61,7 +64,7 @@ export async function PATCH(request:NextRequest){
       return NextResponse.json({success:false,error:'Unknown Environment Organizer action'},{status:400})
     }
 
-    return NextResponse.json({success:true,...state},{headers:{'Cache-Control':'no-store, max-age=0'}})
+    return NextResponse.json({success:true,...state,items:state.items.filter((item:any)=>canAccessEnvironmentRoute(item.route,auth.user?.role))},{headers:{'Cache-Control':'no-store, max-age=0'}})
   }catch(error:any){
     console.error('[Environment Organizer] update error',error)
     return NextResponse.json({success:false,error:error.message||'Unable to update environment organization'},{status:500})

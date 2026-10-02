@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
 import { useEffect } from 'react'
+import { canAccessCompanyGuidance } from '@/lib/company-guidance-access'
 import {
   ArrowRight,
   FileCheck,
@@ -54,10 +55,11 @@ export default function CompanyGuidanceRouterPage() {
   const { user } = useAuth()
 
   useEffect(() => {
-    if (!user) router.push('/login')
+    if (!user) router.replace('/login')
+    else if (!canAccessCompanyGuidance(user.role)) router.replace(user.role === 'admin' ? '/admin/agent-channels' : '/client/dashboard')
   }, [user, router])
 
-  if (!user) return null
+  if (!user || !canAccessCompanyGuidance(user.role)) return null
 
   return (
     <main className="mx-auto w-full max-w-6xl p-3 md:p-6">
@@ -67,9 +69,10 @@ export default function CompanyGuidanceRouterPage() {
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10"><MessageCircle className="h-5 w-5 text-cyan-200"/></div>
             <div>
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-cyan-300">Company Guidance Router</p>
+              <p className="mt-2 text-xs font-semibold text-cyan-200">{user.role === 'agent' ? 'Agent · Connection & Event' : 'Bridger · Continuity'}</p>
               <h1 className="mt-1 text-2xl font-black text-white md:text-3xl">Choose the company position by the movement you need.</h1>
               <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-300">
-                Guidance is not a generic support inbox. Each company position owns a different transition in the Client process, so the correct conversation begins with the function required.
+                {user.role === 'agent' ? 'Company support for carrying Agent movement, Agility, earnings and the current Loop.' : 'Company support for carrying Prospect and Client movement, subscriptions, Number Bay, Bridge AI and the current Loop.'} Each company position owns a different transition in the Client process, so the correct conversation begins with the function required.
               </p>
             </div>
           </div>
