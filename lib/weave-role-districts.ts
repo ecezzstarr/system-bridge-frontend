@@ -194,6 +194,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'File Number Engine',href:'/admin/file-number-engine',detail:'Issue and administer Client File Numbers.',daily:true},
         {label:'Prospect Engine',href:'/admin/prospect-engine',detail:'Create and organize Prospect movement.',daily:true},
         {label:'Email Outreach',href:'/admin/email-outreach',detail:'Load email Prospects, configure Administration outreach, run the daily engine and inspect Admin/Bridger reports.',daily:true},
+        {label:'File Folder Sales Manager',href:'/admin/file-folder-sales-manager',detail:'Echo coordinates daily prospect follow-up while EIGHT diagnoses the weekly File Folder sales funnel and escalation state.',daily:true},
         {label:'Number Bay Engine',href:'/admin/bridger-numbers',detail:'Number Bay stock, delivery and verification authority.',daily:true},
         {label:'Bridge AI',href:'/admin/bridge-ai',detail:'Review Bridge AI crossing and Client continuity.'},
         {label:'Bridge Templates',href:'/admin/bridge-templates',detail:'Control Bridge AI crossing templates.'},
