@@ -1,11 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Mail, Play, RefreshCw, Save, Upload } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { Mail, Play, RefreshCw, Save, Sparkles } from 'lucide-react'
 
 import { getAuthHeaders } from '@/lib/auth-client'
 
-type ImportRow={name:string;email:string;source:string;consentBasis:string}
 
 export default function AdminEmailOutreachPage(){
   const [data,setData]=useState<any>(null)
@@ -15,7 +14,9 @@ export default function AdminEmailOutreachPage(){
   const [notice,setNotice]=useState('')
   const [replyEmail,setReplyEmail]=useState('')
   const [displayName,setDisplayName]=useState('')
-  const [importText,setImportText]=useState('')
+  const [seedEmail,setSeedEmail]=useState('prospect0001@example.com')
+  const [candidateCount,setCandidateCount]=useState(50)
+  const [candidateDestination,setCandidateDestination]=useState<'balanced'|'admin'|'bridger'>('balanced')
   const [enabled,setEnabled]=useState(false)
   const [dailyLimit,setDailyLimit]=useState(120)
   const [subject,setSubject]=useState('')
@@ -50,13 +51,6 @@ export default function AdminEmailOutreachPage(){
 
   useEffect(()=>{load()},[load])
 
-  const rows=useMemo<ImportRow[]>(()=>{
-    return importText.split(/\r?\n/).map(line=>{
-      const [name='',email='',source='',consentBasis='']=line.split(',').map(v=>v.trim())
-      return {name,email,source,consentBasis}
-    }).filter(row=>row.email)
-  },[importText])
-
   const saveSender=async()=>{
     setBusy('sender');setError('');setNotice('')
     try{
@@ -71,19 +65,24 @@ export default function AdminEmailOutreachPage(){
     finally{setBusy('')}
   }
 
-  const importLeads=async()=>{
-    setBusy('import');setError('');setNotice('')
+  const generateCandidates=async()=>{
+    setBusy('generate');setError('');setNotice('')
     try{
       const response=await fetch('/api/admin/email-outreach',{
         method:'POST',headers:getAuthHeaders(),
-        body:JSON.stringify({action:'import_leads',leads:rows}),
+        body:JSON.stringify({
+          action:'generate_candidates',
+          seedEmail,
+          count:candidateCount,
+          destination:candidateDestination,
+        }),
       })
       const body=await response.json()
-      if(!response.ok)throw new Error(body.error||'Email Prospect import failed')
-      setNotice(`${body.inserted} email Prospects entered the system. ${body.skipped} skipped.`)
-      setImportText('')
+      if(!response.ok)throw new Error(body.error||'Email candidate generation failed')
+      const result=body.result||{}
+      setNotice(`Generated ${result.generated||0} candidate email Prospect${result.generated===1?'':'s'}: ${result.adminGenerated||0} for Administration and ${result.bridgerGenerated||0} for Bridgers. Reachability remains unverified until outreach response.`)
       await load()
-    }catch(e:any){setError(e?.message||'Email Prospect import failed')}
+    }catch(e:any){setError(e?.message||'Email candidate generation failed')}
     finally{setBusy('')}
   }
 
@@ -137,7 +136,7 @@ export default function AdminEmailOutreachPage(){
       <header className="border-b border-white/10 pb-6">
         <div className="flex items-center gap-2 text-sky-300"><Mail className="h-4 w-4"/><span className="text-[9px] font-black uppercase tracking-[.2em]">Administration · Email Outreach</span></div>
         <h1 className="mt-3 text-3xl font-black">Email Prospect Engine</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Load contactable email Prospects, give each one a cryptographic WEAVE lead reference, control the daily Administration movement, and inspect Bridger/Admin send reports from one place.</p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Generate candidate email Prospect series from a seed pattern, assign cryptographic WEAVE lead references, route inventory to Administration or Bridgers, and let actual outreach determine reachability.</p>
       </header>
 
       {(error||notice)&&<div className={`mt-5 border-l-2 px-4 py-3 text-sm ${error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200'}`}>{error||notice}</div>}
@@ -152,20 +151,28 @@ export default function AdminEmailOutreachPage(){
         </div>
 
         <div className="border-y border-white/10 py-5 lg:col-span-2">
-          <p className="text-[8px] font-black uppercase tracking-[.18em] text-emerald-300">Email Prospect inventory</p>
+          <p className="text-[8px] font-black uppercase tracking-[.18em] text-emerald-300">Cryptographic Email Candidate Engine</p>
           <div className="mt-4 grid grid-cols-4 gap-3 text-center">
             {[
-              ['Available',data.counts?.available||0],
+              ['Admin pool',data.counts?.admin_available||0],
+              ['Bridger pool',data.counts?.bridger_available||0],
               ['Acquired',data.counts?.acquired||0],
               ['Contacted',data.counts?.contacted||0],
-              ['Blocked',data.counts?.blocked||0],
             ].map(([label,value])=><div key={String(label)} className="border border-white/[.07] px-2 py-3"><p className="text-xl font-black">{value}</p><p className="mt-1 text-[7px] uppercase tracking-[.12em] text-slate-500">{label}</p></div>)}
           </div>
-          <textarea value={importText} onChange={e=>setImportText(e.target.value)} rows={5} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 font-mono text-xs leading-5 outline-none" placeholder={"Name,email@example.com,source,consent basis\nAnother,email2@example.com,event signup,opt in"}/>
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <p className="text-[10px] text-slate-500">{rows.length} parsed row{rows.length===1?'':'s'} · max 200 per import</p>
-            <button onClick={importLeads} disabled={!rows.length||busy==='import'} className="flex items-center gap-2 border border-emerald-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Upload className="h-3.5 w-3.5"/>{busy==='import'?'Importing…':'Import leads'}</button>
+          <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_110px]">
+            <input value={seedEmail} onChange={e=>setSeedEmail(e.target.value)} className="border border-white/10 bg-black/20 px-3 py-3 font-mono text-sm outline-none focus:border-emerald-300/40" placeholder="prospect0001@example.com"/>
+            <input type="number" min={1} max={200} value={candidateCount} onChange={e=>setCandidateCount(Math.max(1,Math.min(200,Number(e.target.value||1))))} className="border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" aria-label="Candidate email count"/>
           </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
+            <select value={candidateDestination} onChange={e=>setCandidateDestination(e.target.value as 'balanced'|'admin'|'bridger')} className="border border-white/10 bg-[#071526] px-3 py-3 text-sm outline-none">
+              <option value="balanced">Split inventory: Administration + Bridgers</option>
+              <option value="admin">Administration outreach only</option>
+              <option value="bridger">Bridger market only</option>
+            </select>
+            <button onClick={generateCandidates} disabled={busy==='generate'||!seedEmail.trim()} className="flex items-center justify-center gap-2 border border-emerald-300/30 px-4 py-3 text-[9px] font-black uppercase tracking-[.12em] text-emerald-100 disabled:opacity-35"><Sparkles className="h-3.5 w-3.5"/>{busy==='generate'?'Generating…':'Generate candidate emails'}</button>
+          </div>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">The engine mirrors the Prospect number engine: it creates candidate addresses from a seed pattern and assigns cryptographic EML identities. It does not claim the generated inboxes are reachable; response or delivery evidence establishes that later.</p>
         </div>
       </section>
 
