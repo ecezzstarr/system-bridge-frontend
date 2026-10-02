@@ -5,7 +5,6 @@ import { getPool } from '@/lib/db'
 import {
   EMAIL_OUTREACH_ADMIN_DAILY_LIMIT,
   deliverOutreachEmail,
-  emailLeadCode,
   emailOutreachProviderConfigured,
   generateEmailCandidateSeries,
   ensureEmailOutreachSchema,
@@ -126,41 +125,6 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       )
     }
-  }
-
-  if (action === 'import_leads') {
-    const input = Array.isArray(body.leads) ? body.leads.slice(0,200) : []
-    if (!input.length) return NextResponse.json({ error: 'No email leads supplied' }, { status: 400 })
-
-    let inserted = 0
-    let skipped = 0
-    const errors: string[] = []
-
-    for (const item of input) {
-      const email = normalizeOutreachEmail(item?.email)
-      const name = String(item?.name || '').trim().slice(0,160) || null
-      const source = String(item?.source || '').trim().slice(0,120)
-      const consentBasis = String(item?.consentBasis || item?.consent_basis || '').trim().slice(0,160)
-
-      if (!validOutreachEmail(email) || !source || !consentBasis) {
-        skipped += 1
-        if (errors.length < 8) errors.push(email || 'invalid row')
-        continue
-      }
-
-      const result = await pool.query(
-        `INSERT INTO weave_email_prospect_leads
-          (lead_code,name,email,source,consent_basis,contactable,status,created_by)
-         VALUES ($1,$2,$3,$4,$5,true,'available',$6::uuid)
-         ON CONFLICT (email) DO NOTHING
-         RETURNING id`,
-        [emailLeadCode(), name, email, source, consentBasis, user.id],
-      )
-      if (result.rowCount) inserted += 1
-      else skipped += 1
-    }
-
-    return NextResponse.json({ success: true, inserted, skipped, errors })
   }
 
   if (action === 'set_automation') {
