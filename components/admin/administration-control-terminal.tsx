@@ -60,6 +60,7 @@ import { RiverChat } from '@/components/river-chat'
 import { EcosystemNav } from '@/components/ecosystem-nav'
 import { DepartmentalCodesSection } from '@/components/admin/departmental-codes-section'
 import { WORLD_RULES } from '@/lib/world/constants'
+import { visiblePoll } from '@/lib/visible-poll'
 
 export default function AdminTerminal() {
   const { user, logout } = useAuth()
@@ -834,10 +835,13 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
   const [processingId, setProcessingId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchPendingDeposits()
+    void fetchPendingDeposits()
+    const stop = visiblePoll(() => fetchPendingDeposits(true), 8000, false)
+    return stop
   }, [])
 
-  const fetchPendingDeposits = async () => {
+  const fetchPendingDeposits = async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const token = localStorage.getItem('ssb_auth_token')
       const response = await fetch('/api/admin/bridge-deposits/pending', {
@@ -848,7 +852,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
     } catch (error) {
       console.error('Error fetching pending bridge deposits:', error)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -870,7 +874,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
       } else {
         toast.error(data.error || "That didn't update")
       }
-      fetchPendingDeposits()
+      await fetchPendingDeposits(true)
     } catch (error) {
       console.error('Error verifying bridge deposit:', error)
       toast.error("That didn't go through")
@@ -882,7 +886,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
   return (
     <div className="p-4">
       <h3 className="font-bold text-white mb-1">Pending File Folder Crossings</h3>
-      <p className="mb-4 text-[10px] leading-5 text-slate-500">One Administration verification point for Bridger Bridge deposits and direct Bridge Radiance prospect purchases.</p>
+      <p className="mb-4 text-[10px] leading-5 text-slate-500">Like Department Entry Tickets: payment arrives here, Administration verifies it, and that verification issues the File Number and opens the Client crossing into System Switch.</p>
 
       {loading ? (
         <p className="text-slate-500 text-center py-8 text-xs">Loading deposits...</p>
@@ -919,7 +923,7 @@ function BridgeDepositApprovalSection({ user }: { user: any }) {
                   onClick={() => verifyDeposit(deposit.id, 'approved', deposit.source)}
                   className="bg-green-600 hover:bg-green-700 h-8 text-xs"
                 >
-                  {processingId === deposit.id ? 'Processing...' : 'Approve & Issue File Number'}
+                  {processingId === deposit.id ? 'Verifying…' : 'Verify · Issue File Number · Open Crossing'}
                 </Button>
                 <Button
                   size="sm"
