@@ -38,9 +38,30 @@ async function attemptAutomaticPaymentVerification(purchase:any){
     return {purchase,verification:{state:purchase?.status==='confirmed'?'verified':'not_required'}}
   }
 
+  let bridgeCreatedAtMs:number|null=null
+  if(purchase.bridge_code){
+    const [crossing]=await sql`
+      SELECT created_at
+      FROM chatgpt_bridge_sessions
+      WHERE code=${purchase.bridge_code}
+      LIMIT 1
+    `
+    const parsed=Date.parse(String(crossing?.created_at||''))
+    bridgeCreatedAtMs=Number.isFinite(parsed)?parsed:null
+  }
+  const purchaseCreatedAtMs=Date.parse(String(purchase.created_at||''))
+  const recentPaymentFloor=Number.isFinite(purchaseCreatedAtMs)
+    ?purchaseCreatedAtMs-(24*60*60*1000)
+    :null
+  const notBeforeMs=bridgeCreatedAtMs&&recentPaymentFloor
+    ?Math.max(bridgeCreatedAtMs,recentPaymentFloor)
+    :(bridgeCreatedAtMs||recentPaymentFloor)
+
   const verification=await verifyNativeTrxPayment({
     txId:String(purchase.payment_reference||''),
     expectedAmountTrx:Number(purchase.amount_trx||0),
+    notBeforeMs,
+    notAfterMs:Date.now()+(5*60*1000),
   })
 
   if(verification.state==='verified'){
