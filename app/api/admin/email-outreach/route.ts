@@ -7,6 +7,7 @@ import {
   deliverOutreachEmail,
   emailLeadCode,
   emailOutreachProviderConfigured,
+  generateEmailLeadInventory,
   ensureEmailOutreachSchema,
   normalizeOutreachEmail,
   runAdminEmailOutreach,
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     await ensureEmailOutreachSchema()
     const pool = getPool()
-    const [sender, automation, counts, leads, recent] = await Promise.all([
+    const [sender, automation, counts, sourceCounts, leads, recent] = await Promise.all([
     senderForUser(user.id),
     pool.query(
       `SELECT enabled,daily_limit,subject_template,message_template,updated_at
@@ -35,13 +36,22 @@ export async function GET(request: NextRequest) {
     pool.query(
       `SELECT
          COUNT(*) FILTER (WHERE status='available' AND contactable=true)::int AS available,
+         COUNT(*) FILTER (WHERE status='available' AND contactable=true AND pool='admin')::int AS admin_available,
+         COUNT(*) FILTER (WHERE status='available' AND contactable=true AND pool='bridger')::int AS bridger_available,
          COUNT(*) FILTER (WHERE status='contacted')::int AS contacted,
          COUNT(*) FILTER (WHERE status='acquired')::int AS acquired,
          COUNT(*) FILTER (WHERE contactable=false)::int AS blocked
        FROM weave_email_prospect_leads`,
     ),
     pool.query(
-      `SELECT id,lead_code,name,email,source,consent_basis,contactable,status,owned_by,created_at
+      `SELECT
+         COUNT(*) FILTER (WHERE status='ready' AND contactable=true)::int AS ready,
+         COUNT(*) FILTER (WHERE status='generated')::int AS generated,
+         COUNT(*) FILTER (WHERE contactable=false)::int AS blocked
+       FROM weave_email_lead_sources`,
+    ),
+    pool.query(
+      `SELECT id,lead_code,name,email,source,consent_basis,contactable,status,pool,owned_by,created_at
        FROM weave_email_prospect_leads
        ORDER BY created_at DESC
        LIMIT 100`,
@@ -69,6 +79,7 @@ export async function GET(request: NextRequest) {
       message_template: 'Hello {{name}}, I am reaching out from WEAVE. We work with people around something they are already trying to build, sell, organize or move forward. If that matches something you are carrying, reply and we can open the right path.',
     },
     counts: counts.rows[0] || {},
+    sourceCounts: sourceCounts.rows[0] || {},
     leads: leads.rows,
     recent: recent.rows,
     })
@@ -97,6 +108,65 @@ export async function POST(request: NextRequest) {
   await ensureEmailOutreachSchema()
   const pool = getPool()
   const action = String(body.action || '').trim()
+
+  if (action === 'import_sources') {
+    const input = Array.isArray(body.leads) ? body.leads.slice(0, 200) : []
+    if (!input.length) return NextResponse.json({ error: 'No email lead sources supplied' }, { status: 400 })
+
+    let inserted = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    for (const item of input) {
+      const email = normalizeOutreachEmail(item?.email)
+      const name = String(item?.name || '').trim().slice(0,160) || null
+      const source = String(item?.source || '').trim().slice(0,120)
+      const consentBasis = String(item?.consentBasis || item?.consent_basis || '').trim().slice(0,160)
+
+      if (!validOutreachEmail(email) || !source || !consentBasis) {
+        skipped += 1
+        if (errors.length < 8) errors.push(email || 'invalid row')
+        continue
+      }
+
+      const result = await pool.query(
+        `INSERT INTO weave_email_lead_sources
+          (name,email,source,consent_basis,contactable,status,created_by)
+         VALUES ($1,$2,$3,$4,true,'ready',$5::uuid)
+         ON CONFLICT (email)
+         DO UPDATE SET
+           name=COALESCE(EXCLUDED.name,weave_email_lead_sources.name),
+           source=EXCLUDED.source,
+           consent_basis=EXCLUDED.consent_basis,
+           contactable=true,
+           status=CASE
+             WHEN weave_email_lead_sources.status='generated' THEN weave_email_lead_sources.status
+             ELSE 'ready'
+           END,
+           updated_at=NOW()
+         RETURNING id,status`,
+        [name,email,source,consentBasis,user.id],
+      )
+
+      if (result.rowCount) inserted += 1
+      else skipped += 1
+    }
+
+    return NextResponse.json({ success: true, inserted, skipped, errors })
+  }
+
+  if (action === 'generate_leads') {
+    const destination = ['admin','bridger','balanced'].includes(String(body.destination))
+      ? String(body.destination) as 'admin'|'bridger'|'balanced'
+      : 'balanced'
+    const limit = Math.max(1, Math.min(200, Number(body.limit || 50)))
+    const result = await generateEmailLeadInventory({
+      adminId: user.id,
+      limit,
+      destination,
+    })
+    return NextResponse.json({ success: true, result })
+  }
 
   if (action === 'import_leads') {
     const input = Array.isArray(body.leads) ? body.leads.slice(0,200) : []
