@@ -21,6 +21,13 @@ type Offer={
   offer_type?:string|null
 }
 
+type ConnectedSystem={
+  system_id:string
+  system_type:string
+  public_label:string
+  public_summary?:string|null
+}
+
 type Payments={
   enabled:boolean
   account_name?:string|null
@@ -106,6 +113,7 @@ export function ClientMarketEnvironment({
   slug,
   store,
   offers,
+  connectedSystems,
   payments,
   config,
   level,
@@ -116,6 +124,7 @@ export function ClientMarketEnvironment({
   slug:string
   store:{name:string;description?:string|null;customer_wallet_required?:boolean}
   offers:Offer[]
+  connectedSystems:ConnectedSystem[]
   payments:Payments
   config:StoreEnvironmentConfig
   level:'door'|'storefront'|'market_hall'
@@ -138,7 +147,7 @@ export function ClientMarketEnvironment({
         </nav>
         <div className="mt-8 grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(520px,1.1fr)]">
           <div>
-            <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${style.accent}`}>Lord/Lady Territory · {config.sign}</p>
+            <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${style.accent}`}>Customer Door · {config.sign}</p>
             <h1 data-weave-live-word="title" className="mt-3 max-w-3xl text-4xl font-black leading-[0.96] tracking-[-0.04em] sm:text-6xl lg:text-7xl">{store.name}</h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">{config.tagline}</p>
             {store.description&&<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">{store.description}</p>}
@@ -166,10 +175,21 @@ export function ClientMarketEnvironment({
           <section className={`rounded-[2rem] border p-6 ${style.soft}`}>
             <div className="flex items-center gap-3"><Building2 className={`h-5 w-5 ${style.accent}`}/><p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Inside this building</p></div>
             <p className="mt-4 text-xl font-black">{config.featuredMessage}</p>
-            <div className="mt-5 grid grid-cols-2 gap-2 text-center">
+            <div className="mt-5 grid grid-cols-3 gap-2 text-center">
               <div className="rounded-xl border border-white/10 bg-black/20 p-3"><p className="text-[8px] uppercase tracking-wider text-slate-500">Public offers</p><p className="mt-1 text-2xl font-black">{offers.length}</p></div>
+              <div className="rounded-xl border border-white/10 bg-black/20 p-3"><p className="text-[8px] uppercase tracking-wider text-slate-500">Connected systems</p><p className="mt-1 text-2xl font-black">{connectedSystems.length}</p></div>
               <div className="rounded-xl border border-white/10 bg-black/20 p-3"><p className="text-[8px] uppercase tracking-wider text-slate-500">Structure</p><p className="mt-1 text-xs font-black uppercase">{levelLabel}</p></div>
             </div>
+            {connectedSystems.length>0&&<div className="mt-5 border-t border-white/10 pt-4">
+              <p className="text-[8px] font-black uppercase tracking-[.16em] text-slate-500">Systems this Client connected to the Door</p>
+              <div className="mt-3 space-y-2">
+                {connectedSystems.map(system=><div key={system.system_id} className="border-l border-emerald-300/25 pl-3">
+                  <p className="text-xs font-black text-white">{system.public_label}</p>
+                  <p className="mt-1 text-[8px] font-black uppercase tracking-wider text-emerald-300/70">{system.system_type.replaceAll('_',' ')}</p>
+                  {system.public_summary&&<p className="mt-1 text-[10px] leading-4 text-slate-400">{system.public_summary}</p>}
+                </div>)}
+              </div>
+            </div>}
           </section>
 
           {payments.enabled&&<section className="rounded-[2rem] border border-emerald-300/15 bg-emerald-400/[0.045] p-6">
@@ -221,7 +241,7 @@ export function ClientMarketEnvironment({
       </div>
 
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">
-        <span className="inline-flex items-center gap-2"><Sparkles className="h-3.5 w-3.5"/>Public business territory · constructed in a Client File Folder</span>
+        <span className="inline-flex items-center gap-2"><Sparkles className="h-3.5 w-3.5"/>Client-owned business · hosted and connected through WEAVE</span>
         <Link href="/market" className="inline-flex items-center gap-2 text-slate-400 hover:text-white"><Store className="h-3.5 w-3.5"/>Return to Customer Market</Link>
       </footer>
     </section>
