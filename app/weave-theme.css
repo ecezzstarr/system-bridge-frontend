@@ -1,0 +1,57 @@
+/* One dark-blue palette and strong writing for public and role entrances. */
+@theme {
+  --font-weight-thin: 650;
+  --font-weight-extralight: 650;
+  --font-weight-light: 650;
+  --font-weight-normal: 700;
+  --font-weight-medium: 700;
+  --font-weight-semibold: 750;
+  --font-weight-bold: 800;
+  --font-weight-extrabold: 850;
+  --font-weight-black: 900;
+  --color-slate-950: #06152e;
+  --color-slate-900: #0b2242;
+  --color-gray-950: #06152e;
+  --color-gray-900: #0b2242;
+  --color-zinc-950: #06152e;
+  --color-zinc-900: #0b2242;
+  --color-neutral-950: #06152e;
+  --color-neutral-900: #0b2242;
+}
+
+html[data-weave-theme="dark-blue"] body {
+  background: var(--background);
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+html[data-weave-theme="dark-blue"] :where(h1,h2,h3,h4,h5,h6) {
+  font-weight: 900;
+}
+
+/* Keep older explicitly painted surfaces in the shared navy family. Images,
+   media, status colors and transparent role worlds retain their own behavior. */
+html[data-weave-theme="dark-blue"] :is(
+  [class*="bg-[#020"], [class*="bg-[#030"], [class*="bg-[#040"],
+  [class*="bg-[#050"], [class*="bg-[#060"], [class*="bg-[#070"],
+  [class*="bg-[#080"], [class*="bg-[#090"], [class*="bg-[#0a0"],
+  [class*="bg-[#0A0"], [class*="bg-[#0b0"], [class*="bg-[#0B0"]
+) {
+  background-color: var(--weave-world-surface-strong);
+}
+
+html[data-weave-theme="dark-blue"] :where(input,textarea,select) {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+html[data-weave-theme="dark-blue"] :where(input,textarea)::placeholder {
+  color: var(--muted-foreground);
+  opacity: 1;
+  font-weight: 650;
+}
+
+/* The living field still moves behind every role, with a cool blue flame. */
+html[data-weave-theme="dark-blue"] .weave-live-flame-canvas {
+  filter: grayscale(1) sepia(1) hue-rotate(175deg) saturate(2);
+}

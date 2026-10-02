@@ -68,20 +68,23 @@ def main():
  sha=check_checkout() if promoting else check_source();rev=SERVICE+'-weave-'+sha[:12]
  if promoting:
   service=json.loads(cloud('run','services','describe',SERVICE,'--region='+REGION))
+  check_cloud_run=os.environ.get('WEAVE_CHECK_CLOUD_RUN','0')
+  assert check_cloud_run in ['0','1'],'WEAVE_CHECK_CLOUD_RUN must be 0 or 1'
+  production_url=service['status']['url'] if check_cloud_run=='1' else PUBLIC_ORIGIN
   preview=next(t['url'] for t in service['status']['traffic'] if t.get('revisionName')==rev and t.get('tag')=='weave-candidate')
   smoke(preview,sha);assert check_checkout()==sha
   active=[t for t in service['status']['traffic'] if t.get('percent',0)>0]
   assert len(active)==1 and active[0]['percent']==100,'Review split production traffic before promotion'
   rollback_revision=active[0]['revisionName']
-  with urllib.request.urlopen(PUBLIC_ORIGIN+'/api/health',timeout=60) as response:
+  with urllib.request.urlopen(production_url+'/api/health',timeout=60) as response:
    assert response.status==200 and json.load(response).get('status')=='healthy','Public HTTPS must be healthy before traffic changes'
   run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rev+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
   try:
-   smoke(PUBLIC_ORIGIN,sha)
+   smoke(production_url,sha)
   except Exception:
    run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rollback_revision+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
    raise
-  print('LIVE VERIFIED',rev,sha)
+  print('LIVE VERIFIED',rev,sha,'at',production_url)
   return
  image='us-central1-docker.pkg.dev/'+PROJECT+'/system-bridge/frontend:'+sha
  build_args=['gcloud','builds','submit',str(ROOT),'--config='+str(ROOT/'cloudbuild.yaml'),'--substitutions=COMMIT_SHA='+sha,'--project='+PROJECT,'--quiet']

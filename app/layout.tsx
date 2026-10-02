@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import './weave-readability.css'
+import './weave-theme.css'
 import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
@@ -32,7 +33,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#08090f',
+  themeColor: '#06152e',
 }
 
 export default function RootLayout({
@@ -41,9 +42,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden">
-      <body className="bg-slate-950 text-slate-100 overflow-x-hidden antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden" data-weave-theme="dark-blue">
+      <body className="bg-background text-foreground overflow-x-hidden antialiased">
+        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
           <AuthProvider>
             <PresenceCameraProvider>
               <WeaveWorldEnvironment />
