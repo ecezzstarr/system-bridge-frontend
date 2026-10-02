@@ -27,7 +27,7 @@ def smoke(url,expected_sha):
   health=json.load(response)
   assert response.status==200 and health.get('status')=='healthy','WEAVE health check failed'
   assert health.get('releaseSha')==expected_sha,'Served revision does not match the verified Git commit'
-  assert health.get('passwordRecoveryProvider')=='resend','Password recovery transport is not active'
+  assert health.get('passwordRecoveryDesk') is True,'Administration recovery desk is not active'
  with urllib.request.urlopen(url,timeout=60) as response:
   body=response.read().decode()
   assert response.status==200, 'WEAVE homepage unavailable'
@@ -59,14 +59,17 @@ def main():
   try:
    smoke(PUBLIC_ORIGIN,sha)
    request=urllib.request.Request(
-    PUBLIC_ORIGIN+'/api/auth/forgot-password',
-    data=json.dumps({'email':'ecezzstarr@gmail.com'}).encode(),
+    PUBLIC_ORIGIN+'/api/auth/recovery-desk',
+    data=json.dumps({'email':'deployment-check@example.invalid','details':'Deployment readiness check'}).encode(),
     headers={'Content-Type':'application/json'},
     method='POST',
    )
    with urllib.request.urlopen(request,timeout=60) as response:
     recovery=json.load(response)
-    assert response.status==200 and recovery.get('success') is True,'Live password recovery request failed'
+    assert response.status==202 and len(recovery.get('token',''))==64,'Live recovery desk request failed'
+   status_request=urllib.request.Request(PUBLIC_ORIGIN+'/api/auth/recovery-desk',data=json.dumps({'action':'status','token':recovery['token']}).encode(),headers={'Content-Type':'application/json'},method='POST')
+   with urllib.request.urlopen(status_request,timeout=60) as response:
+    assert json.load(response).get('status')=='pending','Recovery request status is unavailable'
   except Exception:
    run('gcloud','run','services','update-traffic',SERVICE,'--to-revisions='+rollback_revision+'=100','--region='+REGION,'--project='+PROJECT,'--quiet')
    raise

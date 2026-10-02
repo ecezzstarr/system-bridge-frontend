@@ -1,279 +1,145 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Lock, Mail } from 'lucide-react'
-
+import { ArrowLeft, CheckCircle2, KeyRound, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
-type Portal = 'standard' | 'client' | 'admin'
+const REQUEST_KEY = 'weave_recovery_desk_request'
 
 export default function ForgotPasswordPage() {
-  const [portal, setPortal] = useState<Portal>('standard')
   const [email, setEmail] = useState('')
+  const [details, setDetails] = useState('')
+  const [token, setToken] = useState('')
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [stage, setStage] = useState<'request' | 'verify' | 'done'>('request')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [resendIn, setResendIn] = useState(0)
+  const [stage, setStage] = useState<'request' | 'waiting' | 'verify' | 'done'>('request')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [expiresAt, setExpiresAt] = useState('')
   const [loginHref, setLoginHref] = useState('/login')
-  const [adminRecoveryMode, setAdminRecoveryMode] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const requestedPortal = params.get('portal')
-    if (requestedPortal === 'client' || requestedPortal === 'admin') setPortal(requestedPortal)
-    if (params.get('recovery') === 'admin') {
-      setAdminRecoveryMode(true)
-      const suppliedEmail = params.get('email')
-      if (suppliedEmail) {
-        setEmail(suppliedEmail)
-        setStage('verify')
+    if (params.get('portal') === 'client') setLoginHref('/client/login')
+    if (params.get('portal') === 'admin') setLoginHref('/login?portal=admin')
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(REQUEST_KEY) || 'null')
+      if (saved && /^[0-9a-f]{64}$/.test(saved.token)) {
+        setEmail(saved.email); setToken(saved.token); setStage('waiting'); return
       }
+    } catch {}
+    if (params.get('recovery') === 'admin') {
+      setEmail(params.get('email') || ''); setStage('verify')
     }
   }, [])
 
   useEffect(() => {
-    if (resendIn <= 0) return
-    const timer = window.setInterval(() => setResendIn(value => Math.max(0, value - 1)), 1000)
-    return () => window.clearInterval(timer)
-  }, [resendIn])
+    if (stage !== 'waiting' || !token) return
+    const controller = new AbortController()
+    let stopped = false
+    let timer: ReturnType<typeof setTimeout>
+    const poll = async () => {
+      try {
+        if (!document.hidden) {
+          const response = await fetch('/api/auth/recovery-desk', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'status', token }), signal: controller.signal, cache: 'no-store',
+          })
+          const result = await response.json()
+          if (!response.ok) throw new Error(result.error || 'Unable to check your request.')
+          if (stopped) return
+          setError('')
+          if (result.status === 'approved') {
+            setCode(result.code); setExpiresAt(result.expiresAt); setStage('verify'); return
+          }
+          if (['denied', 'expired', 'used'].includes(result.status)) {
+            sessionStorage.removeItem(REQUEST_KEY); setToken(''); setStage('request')
+            setError(result.status === 'denied' ? 'Administration could not approve this request. Contact your WEAVE administrator.' : 'This recovery request has ended. You can request a new passcode.'); return
+          }
+        }
+      } catch (err) {
+        if (!stopped) setError(err instanceof Error ? err.message : 'Unable to check your request.')
+      }
+      if (!stopped) timer = setTimeout(poll, 5000)
+    }
+    void poll()
+    return () => { stopped = true; controller.abort(); clearTimeout(timer) }
+  }, [stage, token])
 
-  const returnHref = useMemo(() => {
-    if (portal === 'client') return '/client/login'
-    if (portal === 'admin') return '/login?portal=admin'
-    return '/login'
-  }, [portal])
-
-  const portalLabel = portal === 'client' ? 'Client Access Recovery' : portal === 'admin' ? 'Administration Access Recovery' : 'Access Recovery'
-
-  const requestCode = async () => {
-    setError(null)
-    setIsSubmitting(true)
+  const requestPasscode = async (event: React.FormEvent) => {
+    event.preventDefault(); setBusy(true); setError('')
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+      const normalizedEmail = email.trim().toLowerCase()
+      const response = await fetch('/api/auth/recovery-desk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail, details }),
       })
       const result = await response.json()
-      if (!response.ok) throw new Error(result.error || 'Unable to send recovery code.')
-      setStage('verify')
-      setResendIn(60)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to send recovery code.')
-    } finally {
-      setIsSubmitting(false)
-    }
+      if (!response.ok) throw new Error(result.error || 'Unable to request a passcode.')
+      sessionStorage.setItem(REQUEST_KEY, JSON.stringify({ email: normalizedEmail, token: result.token }))
+      setEmail(normalizedEmail); setToken(result.token); setCode(''); setExpiresAt(''); setStage('waiting')
+    } catch (err) { setError(err instanceof Error ? err.message : 'Unable to request a passcode.') }
+    finally { setBusy(false) }
   }
 
-  const handleRequest = async (event: React.FormEvent) => {
-    event.preventDefault()
-    await requestCode()
-  }
-
-  const handleReset = async (event: React.FormEvent) => {
-    event.preventDefault()
-    setError(null)
-
-    if (!/^\d{6}$/.test(code)) {
-      setError('Enter the 6-digit code sent to your email.')
-      return
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.')
-      return
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
-
-    setIsSubmitting(true)
+  const resetPassword = async (event: React.FormEvent) => {
+    event.preventDefault(); setError('')
+    if (!/^\d{6}$/.test(code)) { setError('Enter your 6-digit Administration passcode.'); return }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
+    if (password !== confirmPassword) { setError('Passwords do not match.'); return }
+    setBusy(true)
     try {
       const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code, password }),
       })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'Unable to reset password.')
-
-      const destination = result.role === 'admin' && portal === 'admin'
-        ? '/login?portal=admin'
-        : result.login === '/client/login'
-          ? '/client/login'
-          : '/login'
-      setLoginHref(destination)
+      sessionStorage.removeItem(REQUEST_KEY)
+      setCode(''); setPassword(''); setConfirmPassword(''); setToken('')
+      if (result.role === 'client') setLoginHref('/client/login')
+      else if (result.role === 'admin') setLoginHref('/login?portal=admin')
+      else setLoginHref('/login')
       setStage('done')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to reset password.')
-    } finally {
-      setIsSubmitting(false)
-    }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Unable to reset password.') }
+    finally { setBusy(false) }
   }
 
-  if (stage === 'done') {
-    return (
-      <Card className="w-full max-w-md border-cyan-200/10 bg-[#050b12]/92 text-white backdrop-blur-xl">
-        <CardContent className="p-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-emerald-300/20 bg-emerald-400/10">
-            <CheckCircle2 className="h-6 w-6 text-emerald-300" />
-          </div>
-          <h1 className="mt-5 text-2xl font-black">Access restored</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-400">Your password has been changed and previous sessions were closed.</p>
-          <Button asChild className="mt-6 w-full bg-cyan-600 hover:bg-cyan-700">
-            <Link href={loginHref}>Return to your entrance</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="w-full max-w-md border-cyan-200/10 bg-[#050b12]/92 text-white backdrop-blur-xl">
-      <CardHeader>
-        <div className="mb-2 flex items-center gap-2">
-          <Link href={returnHref} className="text-slate-400 transition-colors hover:text-white">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/70">{portalLabel}</span>
-        </div>
-        <CardTitle className="text-2xl font-black">{stage === 'request' ? 'Recover your position' : 'Enter your recovery code'}</CardTitle>
-        <CardDescription className="text-slate-400">
-          {stage === 'request'
-            ? portal === 'client'
-              ? 'Use the email attached to your Client File Number. You can request an email code or use a one-time code issued by Administration.'
-              : 'Use the email attached to your WEAVE account. You can request an email code or use a one-time code issued by Administration.'
-            : adminRecoveryMode
-              ? `Enter the one-time Administration recovery code for ${email}. It expires in 15 minutes.`
-              : `A one-time code was requested for ${email}. It expires in 15 minutes.`}
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent>
-        {stage === 'request' ? (
-          <form onSubmit={handleRequest} className="space-y-4">
-            {error && <div className="border-y border-rose-300/20 bg-rose-400/5 px-4 py-3 text-sm text-rose-300">{error}</div>}
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-              <Input
-                type="email"
-                placeholder="Registered email"
-                value={email}
-                onChange={event => setEmail(event.target.value)}
-                className="h-12 border-slate-700 bg-slate-900/60 pl-10 text-white"
-                required
-                disabled={isSubmitting}
-                autoComplete="email"
-              />
-            </div>
-            <Button type="submit" className="h-12 w-full bg-cyan-600 font-bold hover:bg-cyan-700" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><KeyRound className="mr-2 h-4 w-4" />Send email code</>}
-            </Button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!email.trim()) {
-                  setError('Enter the registered email first.')
-                  return
-                }
-                setError(null)
-                setAdminRecoveryMode(true)
-                setStage('verify')
-              }}
-              className="w-full border-y border-violet-300/15 py-3 text-xs font-bold text-violet-200 transition-colors hover:text-white"
-            >
-              Use Administration recovery code
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleReset} className="space-y-4">
-            {error && <div className="border-y border-rose-300/20 bg-rose-400/5 px-4 py-3 text-sm text-rose-300">{error}</div>}
-
-            <div className="relative">
-              <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-              <Input
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                placeholder="6-digit code"
-                value={code}
-                onChange={event => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="h-12 border-slate-700 bg-slate-900/60 pl-10 font-mono tracking-[0.35em] text-white"
-                required
-              />
-            </div>
-
-            <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="New password"
-                value={password}
-                onChange={event => setPassword(event.target.value)}
-                className="h-12 border-slate-700 bg-slate-900/60 pl-10 pr-10 text-white"
-                required
-                autoComplete="new-password"
-              />
-              <button type="button" onClick={() => setShowPassword(value => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-
-            <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-              <Input
-                type="password"
-                placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={event => setConfirmPassword(event.target.value)}
-                className="h-12 border-slate-700 bg-slate-900/60 pl-10 text-white"
-                required
-                autoComplete="new-password"
-              />
-            </div>
-
-            <Button type="submit" className="h-12 w-full bg-cyan-600 font-bold hover:bg-cyan-700" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Reset password'}
-            </Button>
-
-            <div className="flex items-center justify-between gap-3 text-xs">
-              {adminRecoveryMode ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAdminRecoveryMode(false)
-                    setStage('request')
-                    setCode('')
-                    setError(null)
-                  }}
-                  className="text-cyan-300"
-                >
-                  Request email code instead
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void requestCode()}
-                  disabled={isSubmitting || resendIn > 0}
-                  className="text-cyan-300 disabled:text-slate-600"
-                >
-                  {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
-                </button>
-              )}
-              <button type="button" onClick={() => { setStage('request'); setAdminRecoveryMode(false); setCode(''); setError(null) }} className="text-slate-400 hover:text-white">
-                Change email
-              </button>
-            </div>
-          </form>
-        )}
-      </CardContent>
-    </Card>
-  )
+  return <Card className="w-full max-w-md border-cyan-200/10 bg-[#050b12]/92 text-white backdrop-blur-xl">
+    <CardHeader>
+      <Link href={loginHref} className="flex items-center gap-2 text-xs text-slate-400"><ArrowLeft className="h-4 w-4"/>Back to login</Link>
+      <CardTitle className="pt-3 text-2xl font-black">{stage === 'done' ? 'Access restored' : 'Recovery Desk'}</CardTitle>
+      <CardDescription className="text-slate-400">
+        {stage === 'request' ? 'Request a passcode from Administration to reset your password.' : stage === 'waiting' ? 'Your request is waiting for Administration.' : stage === 'verify' ? 'Use your Administration passcode and choose a new password.' : 'Your password has changed and previous sessions have closed.'}
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
+      {stage === 'request' && <form onSubmit={requestPasscode} className="space-y-4">
+        <Input aria-label="Registered email" type="email" placeholder="Registered email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required disabled={busy}/>
+        <textarea aria-label="Note for Administration" value={details} onChange={e => setDetails(e.target.value)} placeholder="Your name and registered phone or Client File Number" required minLength={6} maxLength={500} rows={3} disabled={busy} className="w-full rounded-md border border-slate-700 bg-slate-900/60 p-3 text-sm"/>
+        <Button type="submit" disabled={busy} className="w-full">{busy ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Request recovery passcode'}</Button>
+        <button type="button" onClick={() => { setError(''); setStage('verify') }} className="w-full text-xs text-cyan-300">Use Administration recovery code</button>
+      </form>}
+      {stage === 'waiting' && <div className="space-y-4 text-center">
+        <KeyRound className="mx-auto h-8 w-8 text-cyan-300"/>
+        <p className="text-sm leading-6 text-slate-400">If this email belongs to an active account, Admin has been notified. After verifying your identity, Admin will send a passcode here. Keep this desk open in the same browser. Requests last one hour.</p>
+        <button onClick={() => setStage('verify')} className="text-xs text-cyan-300">I already have a recovery code</button>
+      </div>}
+      {stage === 'verify' && <form onSubmit={resetPassword} className="space-y-4">
+        {expiresAt && <p className="text-sm text-emerald-300">Admin sent your passcode. It expires at {new Date(expiresAt).toLocaleTimeString()}.</p>}
+        <Input aria-label="Registered email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Registered email" required readOnly={!!token}/>
+        <Input aria-label="Recovery passcode" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit passcode" required/>
+        <Input aria-label="New password" type="password" autoComplete="new-password" minLength={8} value={password} onChange={e => setPassword(e.target.value)} placeholder="New password" required/>
+        <Input aria-label="Confirm new password" type="password" autoComplete="new-password" minLength={8} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirm new password" required/>
+        <Button type="submit" disabled={busy} className="w-full">{busy ? <Loader2 className="h-4 w-4 animate-spin"/> : 'Reset password'}</Button>
+        <button type="button" onClick={() => { setCode(''); setError(''); setStage(token ? 'waiting' : 'request') }} className="w-full text-xs text-cyan-300">Back to recovery desk</button>
+      </form>}
+      {stage === 'done' && <div className="space-y-5 text-center"><CheckCircle2 className="mx-auto h-10 w-10 text-emerald-300"/><Button asChild className="w-full"><Link href={loginHref}>Return to your entrance</Link></Button></div>}
+    </CardContent>
+  </Card>
 }

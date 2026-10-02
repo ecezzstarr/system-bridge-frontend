@@ -11,6 +11,7 @@ export async function GET() {
       environment: process.env.NODE_ENV,
       releaseSha: process.env.WEAVE_RELEASE_SHA || null,
       passwordRecoveryProvider: passwordRecoveryEmailProvider(),
+      passwordRecoveryDesk: Boolean(process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET),
     })
   } catch (error) {
     return NextResponse.json(

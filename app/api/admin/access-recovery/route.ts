@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { handleRecoveryRequest, listRecoveryRequests } from '@/lib/access-recovery-requests'
 import {
   ensureAdminAccessRecoverySchema,
   issueAdminRecoveryGrant,
@@ -57,7 +58,9 @@ export async function GET(request:NextRequest){
         canIssue:user.role!=='admin'||String(user.id)===String(admin.id),
       })),
       recent:recent.rows,
-    })
+      requests:await listRecoveryRequests(),
+      adminId:admin.id,
+    }, {headers:{'Cache-Control':'private, no-store'}})
   }catch(error){
     console.error('[admin-access-recovery] GET failed',error)
     return NextResponse.json({error:'Access Recovery Desk is unavailable'},{status:500})
@@ -73,6 +76,12 @@ export async function POST(request:NextRequest){
   try{
     const body=await request.json()
     const action=String(body.action||'issue')
+    if(action==='approve-request'||action==='deny-request'){
+      const requestId=String(body.requestId||'')
+      if(!/^[0-9a-f-]{36}$/i.test(requestId))return NextResponse.json({error:'Select a recovery request'},{status:400})
+      const result=await handleRecoveryRequest({adminId:admin.id,requestId,reason:String(body.reason||'').trim(),approve:action==='approve-request'})
+      return NextResponse.json(result,{headers:{'Cache-Control':'private, no-store'}})
+    }
 
     if(action==='issue'){
       const targetUserId=String(body.targetUserId||'').trim()
@@ -91,7 +100,7 @@ export async function POST(request:NextRequest){
         success:true,
         grant,
         message:'One-time recovery access issued. The code is visible only in this response.',
-      })
+      }, {headers:{'Cache-Control':'private, no-store'}})
     }
 
     if(action==='revoke'){
