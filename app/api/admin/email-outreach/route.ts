@@ -48,10 +48,12 @@ export async function GET(request: NextRequest) {
     ),
     pool.query(
       `SELECT o.id,o.mode,o.subject,o.status,o.provider_message_id,o.failure_reason,o.sent_at,o.replied_at,o.created_at,
-              l.lead_code,l.name,l.email,u.name AS actor_name,u.role AS actor_role
+              l.lead_code,l.name,l.email,u.name AS actor_name,u.role AS actor_role,
+              s.reply_email AS source_email
        FROM weave_email_outreach o
        JOIN weave_email_prospect_leads l ON l.id=o.lead_id
        JOIN users u ON u.id=o.actor_id
+       LEFT JOIN weave_email_senders s ON s.id=o.sender_id
        ORDER BY o.created_at DESC
        LIMIT 120`,
     ),
