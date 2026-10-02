@@ -123,6 +123,23 @@ export async function GET(request: NextRequest) {
     const store = await ensureClientBusinessStore(sql,client.id,client.file_number,client.business_name||client.name,workshop.workshop_type==='crypto_exchange')
     const items=store?await sql`SELECT id,name,description,price,currency,offer_type,enabled FROM client_store_items WHERE store_id=${store.id}::uuid ORDER BY created_at DESC`:[]
     const orders=store?await sql`SELECT id,item_id,customer_name,customer_contact,customer_wallet,payment_reference,amount,currency,status,payment_status,created_at FROM client_store_orders WHERE store_id=${store.id}::uuid ORDER BY created_at DESC LIMIT 20`:[]
+    const customerDoorSystems=store?await sql`
+      SELECT
+        s.id AS system_id,s.system_type,s.title,s.status,
+        COALESCE(p.public_label,s.title) AS public_label,
+        p.public_summary,
+        COALESCE(p.enabled,false) AS public_enabled,
+        p.published_at
+      FROM client_built_systems s
+      LEFT JOIN client_customer_door_systems p
+        ON p.system_id=s.id
+       AND p.store_id=${store.id}::uuid
+      WHERE s.client_id=${client.id}::uuid
+        AND s.file_number=${client.file_number}
+        AND s.status='active'
+        AND s.system_type<>'customer_door'
+      ORDER BY COALESCE(p.enabled,false) DESC,s.activated_at DESC
+    `:[]
     const internationalPayments=await ensureClientInternationalPaymentProfile(sql,client.id)
     const withdrawals=await sql`SELECT id,amount,currency,destination,status,created_at FROM client_vault_withdrawals WHERE client_id=${client.id}::uuid ORDER BY created_at DESC LIMIT 20`
     const enterpriseState=await getEnterpriseDream(sql,client.id)
@@ -172,7 +189,7 @@ export async function GET(request: NextRequest) {
         modules
       },
       enterprise,
-      business_store:store?{...store,items,orders,public_url:`/market/${store.public_slug}`} : null,
+      business_store:store?{...store,items,orders,customer_door_systems:customerDoorSystems,public_url:`/market/${store.public_slug}`} : null,
       international_payments:internationalPayments,
       bridge:bridge||null,
       approved_agents:agents,
