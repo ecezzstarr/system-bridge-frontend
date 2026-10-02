@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { visiblePoll } from '@/lib/visible-poll'
 import {
   ArrowLeft,
@@ -48,8 +48,8 @@ export function DepartmentEntryTicketGate({
 }) {
   const [entered, setEntered] = useState(false)
   const [entering, setEntering] = useState(false)
-  const [musicUrl, setMusicUrl] = useState<string | null>(null)
-  const [musicTitle, setMusicTitle] = useState<string | null>(null)
+  const [musicTitle, setMusicTitle] = useState('WEAVE Live Broadcast')
+  const [musicPlaying, setMusicPlaying] = useState(false)
   const [ticket, setTicket] = useState<EntryTicket | null>(null)
   const [accessToken, setAccessToken] = useState('')
   const [error, setError] = useState('')
@@ -62,79 +62,48 @@ export function DepartmentEntryTicketGate({
     paymentReference: '',
   })
 
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const synthTimerRef = useRef<number | null>(null)
-
-  const storageKey = `weave_department_entry_${department}`
-
   useEffect(() => {
-    fetch('/api/department-entry/music')
-      .then(res => res.json())
-      .then(data => {
-        if (data?.track?.fileUrl) {
-          setMusicUrl(data.track.fileUrl)
-          setMusicTitle(data.track.title || 'WEAVE Entry')
-        }
-      })
-      .catch(() => {})
-  }, [])
+    const onDjState = (event: Event) => {
+      const detail = (event as CustomEvent<{ playing?: boolean }>).detail
+      setMusicPlaying(Boolean(detail?.playing))
+    }
+    const onPlaybackResult = (event: Event) => {
+      const detail = (event as CustomEvent<{ playing?: boolean; title?: string }>).detail
+      setMusicPlaying(Boolean(detail?.playing))
+      if (detail?.title) setMusicTitle(detail.title)
+    }
 
-  useEffect(() => {
+    window.addEventListener('weave:dj-audio-state', onDjState as EventListener)
+    window.addEventListener('weave:dj-playback-result', onPlaybackResult as EventListener)
     return () => {
-      audioRef.current?.pause()
-      if (synthTimerRef.current) window.clearInterval(synthTimerRef.current)
-      audioContextRef.current?.close().catch(() => {})
+      window.removeEventListener('weave:dj-audio-state', onDjState as EventListener)
+      window.removeEventListener('weave:dj-playback-result', onPlaybackResult as EventListener)
     }
   }, [])
-
-  const playSynthPhrase = (ctx: AudioContext) => {
-    const now = ctx.currentTime
-    const notes = [261.63, 329.63, 392, 523.25]
-    notes.forEach((frequency, index) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.value = frequency
-      gain.gain.setValueAtTime(0.0001, now + index * 0.32)
-      gain.gain.exponentialRampToValueAtTime(0.075, now + index * 0.32 + 0.04)
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.32 + 0.28)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now + index * 0.32)
-      osc.stop(now + index * 0.32 + 0.3)
-    })
-  }
-
-  const startFallbackMusic = async () => {
-    const AudioContextCtor = window.AudioContext || (window as any).webkitAudioContext
-    if (!AudioContextCtor) return false
-
-    const ctx = new AudioContextCtor()
-    audioContextRef.current = ctx
-    await ctx.resume()
-    if (ctx.state !== 'running') return false
-
-    playSynthPhrase(ctx)
-    synthTimerRef.current = window.setInterval(() => playSynthPhrase(ctx), 1800)
-    setMusicTitle('WEAVE Entry Signal')
-    return true
-  }
 
   const startRequiredMusic = async () => {
-    if (musicUrl) {
-      try {
-        const audio = new Audio(musicUrl)
-        audio.loop = true
-        audio.volume = 0.5
-        audioRef.current = audio
-        await audio.play()
-        return true
-      } catch {
-        // Browser or media failure: use a user-gesture WebAudio fallback.
+    return new Promise<boolean>(resolve => {
+      let settled = false
+      const finish = (playing: boolean, title?: string) => {
+        if (settled) return
+        settled = true
+        window.clearTimeout(timeout)
+        window.removeEventListener('weave:dj-playback-result', onResult as EventListener)
+        setMusicPlaying(playing)
+        if (title) setMusicTitle(title)
+        resolve(playing)
       }
-    }
-    return startFallbackMusic()
+      const onResult = (event: Event) => {
+        const detail = (event as CustomEvent<{ playing?: boolean; title?: string }>).detail
+        finish(Boolean(detail?.playing), detail?.title)
+      }
+      const timeout = window.setTimeout(() => finish(false), 2500)
+
+      window.addEventListener('weave:dj-playback-result', onResult as EventListener, { once: true })
+      window.dispatchEvent(new CustomEvent('weave:dj-request-play', {
+        detail: { source: 'department-entry' },
+      }))
+    })
   }
 
   const loadTicket = async (token: string) => {
@@ -304,10 +273,12 @@ export function DepartmentEntryTicketGate({
           <Volume2 className="h-4 w-4 text-cyan-300" />
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300">Entry Music</p>
-            <p className="text-xs text-white">{musicTitle || 'WEAVE Entry Sound'}</p>
+            <p className="text-xs text-white">{musicTitle}</p>
           </div>
         </div>
-        <span className="text-[9px] font-black uppercase tracking-widest text-green-400">Playing</span>
+        <span className={`text-[9px] font-black uppercase tracking-widest ${musicPlaying?'text-green-400':'text-amber-300'}`}>
+          {musicPlaying?'Playing':'Ready'}
+        </span>
       </div>
 
       <div className="rounded-2xl border border-amber-400/25 bg-gradient-to-b from-amber-400/10 to-slate-950 p-5">
