@@ -52,17 +52,59 @@ async function verifyBridgeRadiancePurchase({
     SELECT *
     FROM file_folder_purchases
     WHERE id=${purchaseId}::uuid
-      AND status='pending_admin_confirmation'
     LIMIT 1
   `
 
   if (!purchase) {
-    return NextResponse.json({ error: 'Bridge Radiance File Folder purchase not found or already processed' }, { status: 404 })
+    return NextResponse.json({ error: 'Bridge Radiance File Folder purchase not found' }, { status: 404 })
   }
 
   const fileFolderTier = getFileFolderTier(Number(purchase.amount_trx))
   if (!fileFolderTier) {
     return NextResponse.json({ error: 'Stored File Folder amount is outside the current Standard/Premium pricing rules' }, { status: 409 })
+  }
+
+  if (purchase.status === 'confirmed') {
+    if (status !== 'approved' || !purchase.file_number) {
+      return NextResponse.json({ error: 'This File Folder approval is already complete' }, { status: 409 })
+    }
+
+    let commissionMovement = null
+    if (purchase.bridger_id) {
+      commissionMovement = await creditBridgerActivityCommission({
+        bridgerId: String(purchase.bridger_id),
+        activity: 'client_deposit',
+        baseAmount: Number(purchase.amount_trx),
+        sourceId: String(purchase.id),
+        description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${purchase.file_number}`,
+      })
+      if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
+        return NextResponse.json({
+          error: 'File Folder is approved, but one or more required role shares are not yet recoverable. Verify the Bridger and attached Agent primary wallets, then retry this approval.',
+        }, { status: 503 })
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      status: 'approved',
+      source: 'file_folder_purchase',
+      replayed: true,
+      purchaseId: purchase.id,
+      fileNumber: purchase.file_number,
+      bridgerId: purchase.bridger_id || null,
+      amount: Number(purchase.amount_trx),
+      fileFolderTier,
+      currency: 'Flame Coin',
+      commissionMovement,
+      registerUrl: `/client/register?fileNumber=${encodeURIComponent(purchase.file_number)}`,
+      systemSwitchUrl: '/client/system-switch',
+      message: 'Existing File Folder approval verified and commission movement reconciled.',
+    })
+  }
+
+  if (purchase.status !== 'pending_admin_confirmation') {
+    return NextResponse.json({ error: 'Bridge Radiance File Folder purchase is no longer pending' }, { status: 409 })
   }
 
   if (status === 'rejected') {
@@ -72,6 +114,18 @@ async function verifyBridgeRadiancePurchase({
       WHERE id=${purchaseId}::uuid
         AND status='pending_admin_confirmation'
     `
+
+    if (purchase.bridger_id) {
+      await notifyUser(String(purchase.bridger_id), {
+        type: 'client_deposit_rejected',
+        title: 'Public movement File Folder payment rejected',
+        content: `Administration rejected ${purchase.buyer_name || purchase.buyer_email || 'a Prospect'}'s ${Number(purchase.amount_trx).toLocaleString()} Flame Coin File Folder payment. No File Number was issued.`,
+        link: '/bridger/presence',
+        fromUserId: admin.id,
+        fromUserName: 'WEAVE Administration',
+      })
+    }
+
     return NextResponse.json({
       success: true,
       status: 'rejected',
@@ -82,8 +136,9 @@ async function verifyBridgeRadiancePurchase({
 
   const prospectName = String(purchase.buyer_name || purchase.buyer_email || 'Bridge Radiance Prospect').trim().slice(0, 255)
   const prospectPhone = String(purchase.buyer_phone || '').trim().slice(0, 80)
+  const bridgerId = purchase.bridger_id ? String(purchase.bridger_id) : null
 
-  const fileFolder = await generateFileNumber(null, {
+  const fileFolder = await generateFileNumber(bridgerId, {
     name: prospectName,
     phone: prospectPhone,
     bridgeCode: purchase.bridge_code || null,
@@ -92,6 +147,7 @@ async function verifyBridgeRadiancePurchase({
     amountTrx: Number(purchase.amount_trx),
     providerName: purchase.provider_name || null,
     flameName: purchase.flame_name || null,
+    movementCode: purchase.movement_code || null,
   })
   const fileNumber = fileFolder.file_number
 
@@ -133,6 +189,31 @@ async function verifyBridgeRadiancePurchase({
     flameName: confirmed.flame_name,
   })
 
+  let commissionMovement = null
+  if (bridgerId) {
+    commissionMovement = await creditBridgerActivityCommission({
+      bridgerId,
+      activity: 'client_deposit',
+      baseAmount: Number(confirmed.amount_trx),
+      sourceId: String(confirmed.id),
+      description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`,
+    })
+    if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
+      return NextResponse.json({
+        error: 'File Folder is approved, but one or more required role shares are not yet recoverable. Verify the Bridger and attached Agent primary wallets, then retry this approval.',
+      }, { status: 503 })
+    }
+
+    await notifyUser(bridgerId, {
+      type: 'client_deposit_approved',
+      title: 'Public movement Client crossed',
+      content: `Administration approved ${prospectName}'s ${Number(confirmed.amount_trx).toLocaleString()} Flame Coin ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder. File Number ${fileNumber} was issued.`,
+      link: '/bridger/presence',
+      fromUserId: admin.id,
+      fromUserName: 'WEAVE Administration',
+    })
+  }
+
   await recordSystemEvent({
     eventType: 'file_number_issued',
     actorId: admin.id,
@@ -143,6 +224,8 @@ async function verifyBridgeRadiancePurchase({
     payload: {
       purchaseId,
       bridgeCode: confirmed.bridge_code || null,
+      movementCode: confirmed.movement_code || null,
+      bridgerId,
       amountFlameCoin: Number(confirmed.amount_trx),
       fileFolderTier,
     },
@@ -154,12 +237,14 @@ async function verifyBridgeRadiancePurchase({
     source: 'file_folder_purchase',
     purchaseId,
     fileNumber,
+    bridgerId,
     amount: Number(confirmed.amount_trx),
     fileFolderTier,
     currency: 'Flame Coin',
     registerUrl: `/client/register?fileNumber=${encodeURIComponent(fileNumber)}`,
     systemSwitchUrl: '/client/system-switch',
     aiProviderAllocation: allocation?.allocation || null,
+    commissionMovement,
     message: 'File Folder approved. File Number issued. Prospect can now register as Client and cross into System Switch.',
   })
 }
