@@ -591,8 +591,8 @@ const clientStoreIdentitySource = read('lib/client-business-store.ts')
 const customerDoorWorldSource = read('components/public/client-market-environment.tsx')
 const customerDoorControlSource = read('components/system-switch/client-customer-door-panel.tsx')
 assert.ok(clientStoreIdentitySource.includes('platformName: string')&&clientStoreIdentitySource.includes('logoUrl: string'),'Client territory persists platform name and logo in its Customer Door environment')
-assert.ok(customerDoorWorldSource.includes('Lord/Lady Territory')&&customerDoorWorldSource.includes('Built on WEAVE'),'public Customer Door presents the Client enterprise as primary identity while retaining WEAVE infrastructure attribution')
-assert.ok(customerDoorControlSource.includes('Platform / territory name')&&customerDoorControlSource.includes('Logo URL'),'Lord/Lady can define public territory identity from the construction HUD')
+assert.ok(customerDoorWorldSource.includes('Customer Door · {config.sign}')&&customerDoorWorldSource.includes('Built on WEAVE'),'public Customer Door presents the Client business as primary identity while retaining WEAVE infrastructure attribution')
+assert.ok(customerDoorControlSource.includes('Public business name')&&customerDoorControlSource.includes('Logo URL'),'Client can define public business identity from the Customer Door control surface')
 
 const privateTerritorySource = read('components/system-switch/file-folder-open-world.tsx')
 const staffTerritorySource = read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
@@ -605,6 +605,11 @@ assert.ok(publicInternetWorldSource.includes('The open internet meets Client-bui
 assert.ok(publicInternetWorldSource.includes('Visitors arrive here from the WEAVE homepage')&&publicInternetWorldSource.includes('Client-shared Customer Door link'),'Visitors reach Customer Doors through the public homepage path or a Client-shared direct link')
 assert.ok(publicInternetWorldSource.includes("const doorName=config.platformName || store.name || 'Customer Door'"),'public market names the Client Door from the Client platform/company identity')
 assert.ok(customerDoorWorldSource.includes('No WEAVE account required')&&customerDoorWorldSource.includes('Enter ${doorName}'),'Client-named Customer Door is directly usable by non-WEAVE visitors')
+assert.ok(clientStoreIdentitySource.includes('client_customer_door_systems'),'Customer Door schema persists Client-authorized system publication separately from private File Folder systems')
+assert.ok(customerDoorControlSource.includes('data-customer-door-system-boundary="client-authorized"')&&customerDoorControlSource.includes('Connect to Customer Door')&&customerDoorControlSource.includes('Keep private'),'Client explicitly decides which completed systems cross the Customer Door boundary')
+assert.ok(customerDoorWorldSource.includes('Systems this Client connected to the Door')&&customerDoorWorldSource.includes('connectedSystems.length'),'public Customer Door shows only Client-connected systems')
+assert.ok(read('app/market/[slug]/page.tsx').includes('client_customer_door_systems')&&read('app/market/[slug]/page.tsx').includes('p.enabled=true'),'public Customer Door query filters to explicitly enabled Client system connections')
+assert.ok(fs.existsSync(path.join(root,'db/migrations/20261002_client_owned_business_formation.sql')),'Client-owned business formation and Customer Door boundary migration exists')
 
 
 const bridgeVisitorSource=read('components/legacy-bridge-page.tsx')
