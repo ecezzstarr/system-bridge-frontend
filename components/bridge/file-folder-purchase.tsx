@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
@@ -45,6 +46,8 @@ export default function FileFolderPurchase({
   providerName?: string
   flameName?: string
 }) {
+  const router = useRouter()
+  const purchaseStorageKey = bridgeCode ? `weave:bridge-purchase:${bridgeCode}` : ''
   const [selectedTier, setSelectedTier] = useState<'standard' | 'premium'>('standard')
   const [standardPrice, setStandardPrice] = useState(String(STANDARD_MIN))
   const [name, setName] = useState('')
@@ -68,7 +71,7 @@ export default function FileFolderPurchase({
 
   const crossingStage = useMemo(() => {
     if (purchase?.status === 'confirmed' && purchase.fileNumber) return 5
-    if (purchase?.status === 'rejected') return 3
+    if (purchase?.status === 'rejected' || purchase?.status === 'verification_failed') return 3
     if (purchase) return 4
     if (reference.trim()) return 3
     if (validPrice && name.trim() && phone.trim()) return 2
@@ -82,6 +85,29 @@ export default function FileFolderPurchase({
       .catch(() => setWallet(''))
       .finally(() => setLoadingWallet(false))
   }, [])
+
+  useEffect(() => {
+    if (!purchaseStorageKey || purchase) return
+    try {
+      const storedPurchaseId = window.sessionStorage.getItem(purchaseStorageKey)
+      if (storedPurchaseId) {
+        setPurchase({ id: storedPurchaseId, status: 'pending_admin_confirmation' })
+        setMessage('Restoring your File Folder payment verification…')
+      }
+    } catch {
+      // Session storage is optional; the active crossing still works without it.
+    }
+  }, [purchaseStorageKey, purchase])
+
+  const advanceToClientRegistration = (url: string, fileNumber?: string | null) => {
+    if (!url) return
+    setRegisterUrl(url)
+    if (purchaseStorageKey) {
+      try { window.sessionStorage.removeItem(purchaseStorageKey) } catch {}
+    }
+    setMessage(`Payment verified. File Number ${fileNumber || ''} is ready. Opening the Client crossing…`)
+    window.setTimeout(() => router.replace(url), 900)
+  }
 
   useEffect(() => {
     if (!purchase?.id || !bridgeCode || purchase.status !== 'pending_admin_confirmation') return
@@ -108,8 +134,12 @@ export default function FileFolderPurchase({
         setPurchase(next)
 
         if (body.crossing?.ready && body.crossing?.registerUrl) {
-          setRegisterUrl(body.crossing.registerUrl)
-          setMessage(`Administration verified the File Folder. File Number ${next.fileNumber} is ready. Continue as Client to open System Switch.`)
+          advanceToClientRegistration(body.crossing.registerUrl, next.fileNumber)
+          return
+        }
+
+        if (next.status === 'verification_failed') {
+          setMessage(body.verification?.reason || 'This TRX transaction could not be verified for the selected File Folder.')
           return
         }
 
@@ -167,13 +197,31 @@ export default function FileFolderPurchase({
       const body = await res.json()
       if (!res.ok) throw new Error(body.error || 'Unable to record payment')
 
-      setPurchase(body.purchase || null)
-      setMessage(body.message || 'File Folder payment recorded. Administration verification is now open.')
+      const nextPurchase = body.purchase || null
+      setPurchase(nextPurchase)
+      if (nextPurchase?.id && purchaseStorageKey) {
+        try { window.sessionStorage.setItem(purchaseStorageKey, String(nextPurchase.id)) } catch {}
+      }
+      setMessage(body.message || 'File Folder payment recorded. WEAVE is verifying the TRX transaction.')
+
+      if (body.crossing?.ready && body.crossing?.registerUrl) {
+        advanceToClientRegistration(body.crossing.registerUrl, nextPurchase?.fileNumber)
+      }
     } catch (error: any) {
       setMessage(error.message || 'Unable to record payment')
     } finally {
       setBusy(false)
     }
+  }
+
+  const retryPaymentVerification = () => {
+    if (purchaseStorageKey) {
+      try { window.sessionStorage.removeItem(purchaseStorageKey) } catch {}
+    }
+    setPurchase(null)
+    setReference('')
+    setRegisterUrl('')
+    setMessage('Enter the correct TRX transaction hash and confirm the payment again.')
   }
 
   return (
@@ -213,12 +261,14 @@ export default function FileFolderPurchase({
                 : purchase?.status === 'rejected'
                   ? WEAVE_WRITING.fileFolderCrossing.rejectedTitle
                   : purchase
-                    ? WEAVE_WRITING.fileFolderCrossing.administration
+                    ? purchase.status === 'verification_failed'
+                      ? 'Payment needs correction'
+                      : WEAVE_WRITING.fileFolderCrossing.administration
                     : WEAVE_WRITING.fileFolderCrossing.recognition}
             </p>
             {purchase?.status === 'pending_admin_confirmation' && (
               <p className="mt-1 inline-flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-[.14em] text-amber-200">
-                <Radio className="h-3 w-3" /> {checking ? 'Checking movement' : 'Awaiting Administration'}
+                <Radio className="h-3 w-3" /> {checking ? 'Verifying TRON movement' : 'Waiting for TRON confirmation'}
               </p>
             )}
           </div>
@@ -376,7 +426,7 @@ export default function FileFolderPurchase({
             {!purchase && (
               <>
                 <p className="mt-4 text-xs leading-6 text-stone-400">
-                  After you send the exact TRX amount, record the transaction here. Administration verifies the real movement before WEAVE issues a File Number.
+                  After you send the exact TRX amount, confirm the transaction here. WEAVE verifies the solidified TRON movement against the company wallet and selected File Folder value before issuing the File Number.
                 </p>
                 <button
                   type="button"
@@ -395,8 +445,8 @@ export default function FileFolderPurchase({
                   <ShieldCheck className="h-6 w-6 text-amber-200" />
                 </div>
                 <h3 className="mt-4 text-xl font-black text-white">{WEAVE_WRITING.fileFolderCrossing.pendingTitle}</h3>
-                <p className="mt-2 text-xs leading-6 text-stone-400">{WEAVE_WRITING.fileFolderCrossing.pendingDetail}</p>
-                <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{checking ? 'Reading verification state…' : 'Awaiting verified movement'}</p>
+                <p className="mt-2 text-xs leading-6 text-stone-400">WEAVE is checking that this transaction is a solidified native TRX transfer to the company wallet for the exact selected File Folder value. Administration remains available as a fallback if the network verifier is temporarily unavailable.</p>
+                <p className="mt-4 text-[8px] font-black uppercase tracking-[.16em] text-amber-200">{checking ? 'Reading solidified TRON state…' : 'Waiting for solidified TRON confirmation'}</p>
               </div>
             )}
 
@@ -421,6 +471,20 @@ export default function FileFolderPurchase({
               <div className="mt-4 border-l-2 border-red-300/40 pl-4">
                 <p className="text-sm font-black text-red-100">{WEAVE_WRITING.fileFolderCrossing.rejectedTitle}</p>
                 <p className="mt-2 text-xs leading-5 text-stone-400">{WEAVE_WRITING.fileFolderCrossing.rejectedDetail}</p>
+              </div>
+            )}
+
+            {purchase?.status === 'verification_failed' && (
+              <div className="mt-4 border-l-2 border-red-300/40 pl-4">
+                <p className="text-sm font-black text-red-100">TRX payment could not be verified</p>
+                <p className="mt-2 text-xs leading-5 text-stone-400">The transaction must be a solidified native TRX transfer to the WEAVE company wallet for the exact selected File Folder amount.</p>
+                <button
+                  type="button"
+                  onClick={retryPaymentVerification}
+                  className="mt-4 rounded-full border border-red-200/20 px-4 py-2 text-[9px] font-black uppercase tracking-[.14em] text-red-100"
+                >
+                  Use another transaction hash
+                </button>
               </div>
             )}
           </div>
