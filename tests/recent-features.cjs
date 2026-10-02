@@ -528,7 +528,7 @@ assert.ok(roleHas('admin','/admin/control-center'),'Administration exposes one c
 assert.ok(!getRolePlaces('admin').some(place=>place.href.startsWith('/admin/control-center#')),'Administration catalog exposes no Control Center hash aliases as places')
 const adminBaseRoutes=getRolePlaces('admin').map(place=>place.href.split(/[?#]/)[0])
 assert.equal(new Set(adminBaseRoutes).size,adminBaseRoutes.length,'Administration catalog contains no repeated base routes')
-for(const href of ['/admin/control-center','/admin/file-number-engine','/admin/origin-systems','/admin/infrastructure','/admin/loop-workshop','/admin/dj-workshop','/admin/ad-workshop','/admin/development-agents','/admin/bridger-numbers','/admin/client-build-catalog','/authority/workshops','/admin/dev-workshop','/admin/visual-systems','/admin/environment-organizer']) assert.ok(roleHas('admin',href),href)
+for(const href of ['/admin/control-center','/admin/access-recovery','/admin/file-number-engine','/admin/origin-systems','/admin/infrastructure','/admin/loop-workshop','/admin/dj-workshop','/admin/ad-workshop','/admin/development-agents','/admin/bridger-numbers','/admin/client-build-catalog','/authority/workshops','/admin/dev-workshop','/admin/visual-systems','/admin/environment-organizer']) assert.ok(roleHas('admin',href),href)
 assert.ok(roleHas('admin','/admin/email-outreach'),'Administration world exposes Email Outreach')
 assert.ok(roleHas('bridger','/bridger/email-outreach'),'Bridger world exposes Email Outreach')
 assert.ok(compactWorldSource.includes('full-height-travel-field')&&compactWorldSource.includes("role==='admin'?'position':null"),'Shared role world fills the mobile viewport and removes duplicate Admin Control travel')
