@@ -188,11 +188,10 @@ body {
 }
 
 
-/* Fixed sound controls reserve their own dock instead of covering an operating
-   environment. Ads/dialogs are the only intentional full-surface overlays. */
-.weave-app-shell,
-.weave-client-shell {
-  padding-bottom: var(--weave-dj-dock-height, 0px);
+/* Live DJ is a compact floating mirror. It must not resize or push any role
+   world; operating environments keep their full viewport height underneath. */
+[data-weave-dj-mirror="true"] {
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
 }
 
 
