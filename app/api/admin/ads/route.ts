@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import {
+  buildPublicMovementCode,
   ensureWeaveAdsSchema,
   normalizeAdFrequency,
   normalizeAdPlacements,
   normalizeAdRoles,
   normalizeAdStatus,
   normalizeMediaType,
+  normalizePublicFlamePlatforms,
+  normalizePublicMovementDestination,
 } from '@/lib/weave-ads'
 
 export const dynamic = 'force-dynamic'
@@ -30,6 +33,21 @@ function asIso(value: unknown, fallback: string) {
   return Number.isNaN(parsed.getTime()) ? fallback : parsed.toISOString()
 }
 
+async function normalizeReferralCode(value: unknown) {
+  const requested = nullableText(value)
+  if (!requested) return null
+  const [owner] = await sql`
+    SELECT referral_code
+    FROM users
+    WHERE UPPER(referral_code) = UPPER(${requested})
+      AND role IN ('agent','bridger','client')
+      AND is_active = true
+    LIMIT 1
+  `
+  if (!owner?.referral_code) throw new Error('Referral code does not belong to an active Agent, Bridger or Client')
+  return String(owner.referral_code)
+}
+
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin(request)
   if (auth.error) return auth.error
@@ -37,12 +55,25 @@ export async function GET(request: NextRequest) {
   try {
     await ensureWeaveAdsSchema()
     const ads = await sql`
-      SELECT *
-      FROM weave_ads
+      SELECT
+        a.*,
+        COALESCE((
+          SELECT COUNT(*)::int FROM weave_public_movement_events e
+          WHERE e.ad_id=a.id AND e.event_type='entrance'
+        ),0)::int AS public_entrances,
+        COALESCE((
+          SELECT COUNT(*)::int FROM weave_public_movement_events e
+          WHERE e.ad_id=a.id AND e.event_type='registration'
+        ),0)::int AS public_registrations,
+        COALESCE((
+          SELECT COUNT(*)::int FROM weave_public_movement_events e
+          WHERE e.ad_id=a.id AND e.event_type='file_folder_purchase'
+        ),0)::int AS public_file_folder_purchases
+      FROM weave_ads a
       ORDER BY
-        CASE status WHEN 'published' THEN 0 WHEN 'draft' THEN 1 WHEN 'paused' THEN 2 ELSE 3 END,
-        priority DESC,
-        updated_at DESC
+        CASE a.status WHEN 'published' THEN 0 WHEN 'draft' THEN 1 WHEN 'paused' THEN 2 ELSE 3 END,
+        a.priority DESC,
+        a.updated_at DESC
     `
     return NextResponse.json({ success: true, ads }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error: any) {
@@ -75,12 +106,18 @@ export async function POST(request: NextRequest) {
     const frequency = normalizeAdFrequency(input.frequency)
     const mediaType = normalizeMediaType(input.mediaType)
     const priority = Number.isFinite(Number(input.priority)) ? Math.trunc(Number(input.priority)) : 0
+    const publicMovement = Boolean(input.publicMovement)
+    const movementCode = publicMovement ? buildPublicMovementCode() : null
+    const publicPlatforms = normalizePublicFlamePlatforms(input.publicPlatforms)
+    const referralCode = publicMovement ? await normalizeReferralCode(input.referralCode) : null
+    const movementDestination = normalizePublicMovementDestination(input.movementDestination || input.actionUrl)
 
     const rows = await sql`
       INSERT INTO weave_ads (
         title, body, media_url, media_type, target_roles, placements,
         action_label, action_url, event_key, start_at, end_at,
-        frequency, priority, status, created_by, published_at
+        frequency, priority, status, created_by, published_at,
+        public_movement, movement_code, public_platforms, referral_code, movement_destination
       )
       VALUES (
         ${title},
@@ -98,7 +135,12 @@ export async function POST(request: NextRequest) {
         ${priority},
         ${status},
         ${auth.user.id}::uuid,
-        CASE WHEN ${status} = 'published' THEN NOW() ELSE NULL END
+        CASE WHEN ${status} = 'published' THEN NOW() ELSE NULL END,
+        ${publicMovement},
+        ${movementCode},
+        ${publicPlatforms}::text[],
+        ${referralCode},
+        ${movementDestination}
       )
       RETURNING *
     `
@@ -106,7 +148,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, ad: rows[0] }, { status: 201 })
   } catch (error: any) {
     console.error('[Admin Ads] create error:', error)
-    return NextResponse.json({ success: false, error: error.message || 'Failed to create ad' }, { status: 500 })
+    const status = String(error?.message || '').startsWith('Referral code') ? 400 : 500
+    return NextResponse.json({ success: false, error: error.message || 'Failed to create ad' }, { status })
   }
 }
 
@@ -150,6 +193,17 @@ export async function PATCH(request: NextRequest) {
     const priority = input.priority === undefined
       ? current.priority
       : (Number.isFinite(Number(input.priority)) ? Math.trunc(Number(input.priority)) : 0)
+    const publicMovement = input.publicMovement === undefined ? Boolean(current.public_movement) : Boolean(input.publicMovement)
+    const movementCode = publicMovement ? (current.movement_code || buildPublicMovementCode()) : current.movement_code
+    const publicPlatforms = input.publicPlatforms === undefined
+      ? (current.public_platforms || ['direct'])
+      : normalizePublicFlamePlatforms(input.publicPlatforms)
+    const referralCode = input.referralCode === undefined
+      ? current.referral_code
+      : (publicMovement ? await normalizeReferralCode(input.referralCode) : null)
+    const movementDestination = input.movementDestination === undefined
+      ? normalizePublicMovementDestination(current.movement_destination)
+      : normalizePublicMovementDestination(input.movementDestination)
 
     const rows = await sql`
       UPDATE weave_ads
@@ -168,6 +222,11 @@ export async function PATCH(request: NextRequest) {
         frequency = ${frequency},
         priority = ${priority},
         status = ${status},
+        public_movement = ${publicMovement},
+        movement_code = ${movementCode},
+        public_platforms = ${publicPlatforms}::text[],
+        referral_code = ${referralCode},
+        movement_destination = ${movementDestination},
         published_at = CASE
           WHEN ${status} = 'published' AND published_at IS NULL THEN NOW()
           ELSE published_at
@@ -180,7 +239,8 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: true, ad: rows[0] })
   } catch (error: any) {
     console.error('[Admin Ads] update error:', error)
-    return NextResponse.json({ success: false, error: error.message || 'Failed to update ad' }, { status: 500 })
+    const status = String(error?.message || '').startsWith('Referral code') ? 400 : 500
+    return NextResponse.json({ success: false, error: error.message || 'Failed to update ad' }, { status })
   }
 }
 

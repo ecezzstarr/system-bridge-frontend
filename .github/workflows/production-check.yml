@@ -29,6 +29,7 @@ jobs:
       - name: Regression checks
         run: |
           node tests/recent-features.cjs
+          node tests/file-folder-sales-manager-regression.cjs
           node tests/wiring.cjs
           node tests/environment-grade.cjs
           node tests/adaptive-runtime.cjs
