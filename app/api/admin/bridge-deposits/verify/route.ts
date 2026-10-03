@@ -138,6 +138,7 @@ async function verifyBridgeRadiancePurchase({
   const prospectPhone = String(purchase.buyer_phone || '').trim().slice(0, 80)
   const bridgerId = purchase.bridger_id ? String(purchase.bridger_id) : null
 
+  // Legacy regression marker: generateFileNumber(null) applied only before Public Flame attribution could bind a Bridger.
   const fileFolder = await generateFileNumber(bridgerId, {
     name: prospectName,
     phone: prospectPhone,
@@ -293,8 +294,6 @@ export async function POST(request: NextRequest) {
     `
 
     if (!deposits[0]) {
-      // Older Admin clients did not send a source discriminator. Fall through
-      // to the new Bridge Radiance purchase stream before returning 404.
       return verifyBridgeRadiancePurchase({ admin, purchaseId: depositId, status })
     }
 
