@@ -5,7 +5,6 @@ import { SOURCE_ADMIN_ID } from '@/lib/core/originTruthLedger'
 import { getInfrastructureRegistry } from '@/lib/weave-infrastructure'
 import { getRegistryStatus } from '@/lib/core/systemRegistry'
 import { getWalletBalance, sendTRX } from '@/lib/tron-wallet'
-import { updateUserBalance, getUserByUsername, getUserByEmail } from '@/lib/mock-db'
 
 export async function POST(request: NextRequest) {
   try {

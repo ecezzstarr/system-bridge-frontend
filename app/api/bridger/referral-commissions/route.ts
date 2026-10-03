@@ -9,6 +9,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
+  if (authUser.role !== 'bridger') {
+    return NextResponse.json({ success: false, error: 'Bridger access required' }, { status: 403 })
+  }
+
   try {
     await ensureBridgerReferralColumns()
     const profiles = await sql`
