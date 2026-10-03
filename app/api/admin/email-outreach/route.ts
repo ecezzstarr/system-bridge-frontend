@@ -6,7 +6,7 @@ import {
   EMAIL_OUTREACH_ADMIN_DAILY_LIMIT,
   deliverOutreachEmail,
   emailLeadCode,
-  emailOutreachProviderConfigured,
+  emailOutreachProviderConfiguredForUser,
   ensureEmailOutreachSchema,
   normalizeOutreachEmail,
   runAdminEmailOutreach,
@@ -23,56 +23,57 @@ export async function GET(request: NextRequest) {
   try {
     await ensureEmailOutreachSchema()
     const pool = getPool()
-    const [sender, automation, counts, leads, recent] = await Promise.all([
-    senderForUser(user.id),
-    pool.query(
-      `SELECT enabled,daily_limit,subject_template,message_template,updated_at
-       FROM weave_email_outreach_automation
-       WHERE user_id=$1::uuid
-       LIMIT 1`,
-      [user.id],
-    ),
-    pool.query(
-      `SELECT
-         COUNT(*) FILTER (WHERE status='available' AND contactable=true)::int AS available,
-         COUNT(*) FILTER (WHERE status='contacted')::int AS contacted,
-         COUNT(*) FILTER (WHERE status='acquired')::int AS acquired,
-         COUNT(*) FILTER (WHERE contactable=false)::int AS blocked
-       FROM weave_email_prospect_leads`,
-    ),
-    pool.query(
-      `SELECT id,lead_code,name,email,source,consent_basis,contactable,status,owned_by,created_at
-       FROM weave_email_prospect_leads
-       ORDER BY created_at DESC
-       LIMIT 100`,
-    ),
-    pool.query(
-      `SELECT o.id,o.mode,o.subject,o.status,o.provider_message_id,o.failure_reason,o.sent_at,o.replied_at,o.created_at,
-              l.lead_code,l.name,l.email,u.name AS actor_name,u.role AS actor_role,
-              s.reply_email AS source_email
-       FROM weave_email_outreach o
-       JOIN weave_email_prospect_leads l ON l.id=o.lead_id
-       JOIN users u ON u.id=o.actor_id
-       LEFT JOIN weave_email_senders s ON s.id=o.sender_id
-       ORDER BY o.created_at DESC
-       LIMIT 120`,
-    ),
-  ])
+    const [sender, automation, counts, leads, recent, providerConfigured] = await Promise.all([
+      senderForUser(user.id),
+      pool.query(
+        `SELECT enabled,daily_limit,subject_template,message_template,updated_at
+         FROM weave_email_outreach_automation
+         WHERE user_id=$1::uuid
+         LIMIT 1`,
+        [user.id],
+      ),
+      pool.query(
+        `SELECT
+           COUNT(*) FILTER (WHERE status='available' AND contactable=true)::int AS available,
+           COUNT(*) FILTER (WHERE status='contacted')::int AS contacted,
+           COUNT(*) FILTER (WHERE status='acquired')::int AS acquired,
+           COUNT(*) FILTER (WHERE contactable=false)::int AS blocked
+         FROM weave_email_prospect_leads`,
+      ),
+      pool.query(
+        `SELECT id,lead_code,name,email,source,consent_basis,contactable,status,owned_by,created_at
+         FROM weave_email_prospect_leads
+         ORDER BY created_at DESC
+         LIMIT 100`,
+      ),
+      pool.query(
+        `SELECT o.id,o.mode,o.subject,o.status,o.provider_message_id,o.failure_reason,o.sent_at,o.replied_at,o.created_at,
+                l.lead_code,l.name,l.email,u.name AS actor_name,u.role AS actor_role,
+                s.reply_email AS source_email
+         FROM weave_email_outreach o
+         JOIN weave_email_prospect_leads l ON l.id=o.lead_id
+         JOIN users u ON u.id=o.actor_id
+         LEFT JOIN weave_email_senders s ON s.id=o.sender_id
+         ORDER BY o.created_at DESC
+         LIMIT 120`,
+      ),
+      emailOutreachProviderConfiguredForUser(user.id),
+    ])
 
     return NextResponse.json({
-    success: true,
-    providerConfigured: emailOutreachProviderConfigured(),
-    sender,
-    accountEmail: user.email,
-    automation: automation.rows[0] || {
-      enabled: false,
-      daily_limit: EMAIL_OUTREACH_ADMIN_DAILY_LIMIT,
-      subject_template: 'A place to build what you are already moving',
-      message_template: 'Hello {{name}}, I am reaching out from WEAVE. We work with people around something they are already trying to build, sell, organize or move forward. If that matches something you are carrying, reply and we can open the right path.',
-    },
-    counts: counts.rows[0] || {},
-    leads: leads.rows,
-    recent: recent.rows,
+      success: true,
+      providerConfigured,
+      sender,
+      accountEmail: user.email,
+      automation: automation.rows[0] || {
+        enabled: false,
+        daily_limit: EMAIL_OUTREACH_ADMIN_DAILY_LIMIT,
+        subject_template: 'A place to build what you are already moving',
+        message_template: 'Hello {{name}}, I am reaching out from WEAVE. We work with people around something they are already trying to build, sell, organize or move forward. If that matches something you are carrying, reply and we can open the right path.',
+      },
+      counts: counts.rows[0] || {},
+      leads: leads.rows,
+      recent: recent.rows,
     })
   } catch (error) {
     console.error('[admin-email-outreach] GET failed', error)

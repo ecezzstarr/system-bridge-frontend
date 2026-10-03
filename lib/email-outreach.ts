@@ -1,6 +1,8 @@
 import crypto from 'node:crypto'
 
 import { getPool } from '@/lib/db'
+import { getConnectedMailboxCredential, getMailboxSummary, markMailboxSent } from '@/lib/weave-mailbox'
+import { sendAuthenticatedGoogleMail } from '@/lib/weave-mail'
 
 export const EMAIL_PROSPECT_PRICE_FLAME_COIN = 0.55
 export const EMAIL_OUTREACH_ADMIN_DAILY_LIMIT = 120
@@ -20,6 +22,16 @@ export function emailLeadCode() {
 
 export function emailOutreachProviderConfigured() {
   return Boolean(process.env.RESEND_API_KEY && (process.env.WEAVE_OUTREACH_EMAIL_FROM || process.env.PASSWORD_RECOVERY_EMAIL_FROM))
+}
+
+export async function emailOutreachProviderConfiguredForUser(userId: string) {
+  try {
+    const mailbox = await getMailboxSummary(userId)
+    if (mailbox?.status === 'connected') return true
+  } catch (error) {
+    console.error('[email-outreach] mailbox status lookup failed', error)
+  }
+  return emailOutreachProviderConfigured()
 }
 
 let emailOutreachSchemaPromise:Promise<void>|null=null
@@ -133,6 +145,10 @@ function mergeTemplate(template: string, input: { name?: string | null; leadCode
     .replaceAll('{{lead_code}}', input.leadCode)
 }
 
+function escapeHtml(value: string) {
+  return value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+}
+
 export async function deliverOutreachEmail(input: {
   actorId: string
   actorRole: 'admin' | 'bridger'
@@ -142,15 +158,24 @@ export async function deliverOutreachEmail(input: {
   mode: 'manual' | 'automatic'
 }) {
   await ensureEmailOutreachSchema()
-  if (!emailOutreachProviderConfigured()) throw new Error('WEAVE email transport is not configured')
 
   const sender = await senderForUser(input.actorId)
   if (!sender) throw new Error('Set an active source email before sending')
 
-  const apiKey = process.env.RESEND_API_KEY!
-  const from = process.env.WEAVE_OUTREACH_EMAIL_FROM || process.env.PASSWORD_RECOVERY_EMAIL_FROM!
+  let mailbox = null
+  try {
+    mailbox = await getConnectedMailboxCredential(input.actorId)
+  } catch (error) {
+    console.error('[email-outreach] connected mailbox lookup failed', error)
+  }
+  if (!mailbox && !emailOutreachProviderConfigured()) {
+    throw new Error('Authenticate a Google mailbox or configure the WEAVE fallback mail transport before sending')
+  }
+
   const subject = mergeTemplate(input.subject, { name: input.lead.name, leadCode: input.lead.lead_code })
   const message = mergeTemplate(input.message, { name: input.lead.name, leadCode: input.lead.lead_code })
+  const text = `${message}\n\nLead reference: ${input.lead.lead_code}\nWEAVE of Presence · System Switch · Bridge Radiance`
+  const html = `<div style="font-family:Arial,sans-serif;background:#04101a;color:#e7f5ff;padding:28px"><div style="max-width:560px;margin:auto;border-top:1px solid #27485a;border-bottom:1px solid #27485a;padding:28px 0"><div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8edffc">WEAVE · Bridge Radiance</div><p style="line-height:1.8;color:#d9e7f0">${escapeHtml(message)}</p><div style="margin-top:24px;font-size:11px;color:#7890a0">Reference ${escapeHtml(input.lead.lead_code)}</div></div></div>`
 
   const outreachId = crypto.randomUUID()
   await getPool().query(
@@ -161,31 +186,48 @@ export async function deliverOutreachEmail(input: {
   )
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from,
-        to: [input.lead.email],
-        reply_to: sender.reply_email,
+    let providerMessageId = ''
+    if (mailbox) {
+      const delivery = await sendAuthenticatedGoogleMail({
+        credential: mailbox,
+        to: input.lead.email,
         subject,
-        text: `${message}\n\nLead reference: ${input.lead.lead_code}\nWEAVE of Presence · System Switch · Bridge Radiance`,
-        html: `<div style="font-family:Arial,sans-serif;background:#04101a;color:#e7f5ff;padding:28px"><div style="max-width:560px;margin:auto;border-top:1px solid #27485a;border-bottom:1px solid #27485a;padding:28px 0"><div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8edffc">WEAVE · Bridge Radiance</div><p style="line-height:1.8;color:#d9e7f0">${message.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}</p><div style="margin-top:24px;font-size:11px;color:#7890a0">Reference ${input.lead.lead_code}</div></div></div>`,
-      }),
-      cache: 'no-store',
-    })
+        text,
+        html,
+        replyTo: mailbox.email,
+      })
+      providerMessageId = delivery.messageId
+      await markMailboxSent(mailbox.id)
+    } else {
+      const apiKey = process.env.RESEND_API_KEY!
+      const from = process.env.WEAVE_OUTREACH_EMAIL_FROM || process.env.PASSWORD_RECOVERY_EMAIL_FROM!
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from,
+          to: [input.lead.email],
+          reply_to: sender.reply_email,
+          subject,
+          text,
+          html,
+        }),
+        cache: 'no-store',
+      })
 
-    const body = await response.json().catch(() => ({} as any))
-    if (!response.ok) throw new Error(String(body?.message || body?.error || `Email provider rejected ${response.status}`))
+      const body = await response.json().catch(() => ({} as any))
+      if (!response.ok) throw new Error(String(body?.message || body?.error || `Email provider rejected ${response.status}`))
+      providerMessageId = String(body?.id || '')
+    }
 
     await getPool().query(
       `UPDATE weave_email_outreach
        SET status='sent',provider_message_id=$1,sent_at=NOW(),updated_at=NOW()
        WHERE id=$2::uuid`,
-      [String(body?.id || ''), outreachId],
+      [providerMessageId, outreachId],
     )
     await getPool().query(
       `UPDATE weave_email_prospect_leads
@@ -194,7 +236,7 @@ export async function deliverOutreachEmail(input: {
       [input.lead.id],
     )
 
-    return { outreachId, providerMessageId: String(body?.id || '') }
+    return { outreachId, providerMessageId, transport: mailbox ? 'gmail' : 'resend' }
   } catch (error: any) {
     await getPool().query(
       `UPDATE weave_email_outreach
