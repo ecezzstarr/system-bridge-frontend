@@ -156,3 +156,145 @@ export async function runEchoAnalysis(activity: EchoActivityRow[]): Promise<Echo
     return []
   }
 }
+
+
+export type EchoSalesCandidate = {
+  key: string
+  channel: 'email' | 'whatsapp' | 'admin' | 'bridger'
+  stage: string
+  ownerRole: 'admin' | 'bridger'
+  ownerId?: string | null
+  targetRef?: string | null
+  ageHours?: number | null
+  evidence: string
+}
+
+export type EchoSalesAction = {
+  key: string
+  priority: 'urgent' | 'high' | 'normal'
+  channel: 'email' | 'whatsapp' | 'admin' | 'bridger'
+  actionType: 'follow_up' | 'respond' | 'verify_purchase' | 'reengage' | 'review'
+  ownerRole: 'admin' | 'bridger'
+  ownerId?: string | null
+  targetRef?: string | null
+  reason: string
+  instruction: string
+}
+
+export type EchoSalesCoordination = {
+  summary: string
+  actions: EchoSalesAction[]
+}
+
+const ECHO_SALES_MANAGER_PROMPT = `You are Echo acting as WEAVE's active File Folder sales coordination manager.
+
+Your task is operational coordination, not hype. WEAVE has a weekly File Folder sales target. You receive current funnel metrics plus bounded real candidate records that already exist inside WEAVE.
+
+Rules:
+- Never claim a sale is guaranteed.
+- Never invent prospects, replies, purchases, identities, urgency, or metrics.
+- Do not recommend contacting people who are not already represented in the supplied candidate records.
+- Respect the channel already associated with each candidate.
+- Prefer warm movement: replied/responded prospects, opened outreach, pending purchases, and stale existing conversations before cold expansion.
+- Preserve human agency. No deceptive pressure, false scarcity, fabricated testimonials, or coercive wording.
+- Echo coordinates follow-up and handoff. EIGHT handles higher-level intelligence.
+- Return no more than 12 actions.
+- Every action key must exactly match one supplied candidate key.
+- Keep instructions concise and executable by the assigned WEAVE role.
+
+Return ONLY valid JSON:
+{
+  "summary": "short operational state",
+  "actions": [{
+    "key": "candidate key",
+    "priority": "urgent|high|normal",
+    "channel": "email|whatsapp|admin|bridger",
+    "actionType": "follow_up|respond|verify_purchase|reengage|review",
+    "ownerRole": "admin|bridger",
+    "ownerId": "uuid or null",
+    "targetRef": "reference or null",
+    "reason": "why this movement matters now",
+    "instruction": "specific next movement"
+  }]
+}`
+
+export async function runEchoSalesCoordination(input: {
+  weeklyTarget: number
+  confirmedSales: number
+  remainingSales: number
+  daysRemaining: number
+  metrics: Record<string, unknown>
+  candidates: EchoSalesCandidate[]
+}): Promise<EchoSalesCoordination> {
+  if (!input.candidates.length) {
+    return {
+      summary: input.remainingSales > 0
+        ? 'No warm follow-up candidates are currently available. Keep acquisition engines active and inspect the funnel for missing supply.'
+        : 'Weekly File Folder target is already met; preserve service quality and continue measured prospect movement.',
+      actions: [],
+    }
+  }
+
+  try {
+    const model = vertexAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: { role: 'system', parts: [{ text: ECHO_SALES_MANAGER_PROMPT }] },
+    })
+    const result = await model.generateContent({
+      contents: [{
+        role: 'user',
+        parts: [{
+          text: JSON.stringify({
+            weeklyTarget: input.weeklyTarget,
+            confirmedSales: input.confirmedSales,
+            remainingSales: input.remainingSales,
+            daysRemaining: input.daysRemaining,
+            metrics: input.metrics,
+            candidates: input.candidates,
+          }),
+        }],
+      }],
+      generationConfig: { maxOutputTokens: 3500, temperature: 0.25 },
+    })
+
+    const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text
+    if (!text) return { summary: 'Echo returned no sales coordination output.', actions: [] }
+
+    const parsed = JSON.parse(text.replace(/\`\`\`json|\`\`\`/g, '').trim()) as EchoSalesCoordination
+    const candidateMap = new Map(input.candidates.map(candidate => [candidate.key, candidate]))
+    const actions = Array.isArray(parsed.actions)
+      ? parsed.actions
+          .filter(action => candidateMap.has(String(action?.key || '')))
+          .slice(0, 12)
+          .map(action => {
+            const source = candidateMap.get(action.key)!
+            const priority = action.priority === 'urgent' || action.priority === 'high' ? action.priority : 'normal'
+            const actionType = ['follow_up','respond','verify_purchase','reengage','review'].includes(action.actionType)
+              ? action.actionType
+              : 'review'
+            return {
+              key: source.key,
+              priority,
+              channel: source.channel,
+              actionType,
+              ownerRole: source.ownerRole,
+              ownerId: source.ownerId || null,
+              targetRef: source.targetRef || null,
+              reason: String(action.reason || source.evidence).slice(0, 1200),
+              instruction: String(action.instruction || 'Review this active prospect movement and take the next appropriate step.').slice(0, 1600),
+            } as EchoSalesAction
+          })
+      : []
+
+    return {
+      summary: String(parsed.summary || 'Echo coordinated the current File Folder funnel.').slice(0, 1600),
+      actions,
+    }
+  } catch (error) {
+    console.error('Echo sales coordination error:', error)
+    return {
+      summary: 'Echo sales coordination could not complete this pass. Existing funnel data remains available to Administration.',
+      actions: [],
+    }
+  }
+}
