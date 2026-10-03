@@ -15,6 +15,7 @@ export default function AdminEmailOutreachPage(){
   const [notice,setNotice]=useState('')
   const [sourceEmail,setSourceEmail]=useState('')
   const [displayName,setDisplayName]=useState('')
+  const [appPassword,setAppPassword]=useState('')
   const [importText,setImportText]=useState('')
   const [enabled,setEnabled]=useState(false)
   const [dailyLimit,setDailyLimit]=useState(120)
@@ -61,11 +62,12 @@ export default function AdminEmailOutreachPage(){
     setBusy('sender');setError('');setNotice('')
     try{
       const response=await fetch('/api/email-outreach/sender',{
-        method:'POST',headers:getAuthHeaders(),body:JSON.stringify({sourceEmail,displayName}),
+        method:'POST',headers:getAuthHeaders(),body:JSON.stringify({sourceEmail,displayName,appPassword}),
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Unable to save Administration email')
-      setNotice('Administration source email saved and active for outreach.')
+      setAppPassword('')
+      setNotice(body.mailbox?.status==='connected'?'Administration Google mailbox authenticated and active for outreach.':'Administration source email saved and active through the WEAVE fallback transport.')
       await load()
     }catch(e:any){setError(e?.message||'Unable to save Administration email')}
     finally{setBusy('')}
@@ -145,10 +147,11 @@ export default function AdminEmailOutreachPage(){
       <section className="mt-7 grid gap-6 lg:grid-cols-3">
         <div className="border-y border-white/10 py-5">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">Email Source Engine</p>
-          <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="source@example.com"/>
-          <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="WEAVE Administration"/>
-          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='sender'?'Activating…':'Activate source'}</button>
-          <p className="mt-3 text-[10px] leading-5 text-slate-500">WEAVE uses this as the active Administration source identity. Delivery uses the configured WEAVE mail transport; replies return to this source mailbox.</p>
+          <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="weavebridge@gmail.com"/>
+          <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="WeaveBridge · WEAVE Administration"/>
+          <input type="password" value={appPassword} onChange={e=>setAppPassword(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="Google app password · only needed to authenticate/change mailbox" autoComplete="new-password"/>
+          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='sender'?'Authenticating…':'Authenticate source'}</button>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">For Gmail, use a Google app password rather than the normal account password. WEAVE encrypts the credential before storage. If the fallback mail provider is configured, the source email can remain reply-only.</p>
         </div>
 
         <div className="border-y border-white/10 py-5 lg:col-span-2">

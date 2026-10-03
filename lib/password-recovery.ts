@@ -1,5 +1,12 @@
 import crypto from 'node:crypto'
+
 import { sql } from '@/lib/db'
+import {
+  normalizeMailAddress,
+  sendAuthenticatedGoogleMail,
+  systemGoogleMailbox,
+} from '@/lib/weave-mail'
+import { getAdministrationGoogleMailboxCredential } from '@/lib/weave-mailbox'
 
 export const PASSWORD_RECOVERY_CODE_TTL_MINUTES = 15
 export const PASSWORD_RECOVERY_MAX_ATTEMPTS = 5
@@ -7,20 +14,26 @@ export const PASSWORD_RECOVERY_RESEND_SECONDS = 60
 export const PASSWORD_RECOVERY_MAX_REQUESTS_PER_HOUR = 5
 
 export function normalizeRecoveryEmail(value: unknown) {
-  return String(value || '').trim().toLowerCase()
+  return normalizeMailAddress(value)
 }
 
 export function recoveryCodeHash(challengeId: string, code: string) {
   return crypto.createHash('sha256').update(`${challengeId}:${code}`).digest('hex')
 }
 
-export function passwordRecoveryEmailProvider(): 'resend' | 'none' {
+export async function passwordRecoveryEmailProvider(): Promise<'gmail' | 'resend' | 'none'> {
+  if (systemGoogleMailbox()) return 'gmail'
+  try {
+    if (await getAdministrationGoogleMailboxCredential()) return 'gmail'
+  } catch (error) {
+    console.error('[password-recovery] Administration Google mailbox lookup failed', error)
+  }
   if (process.env.RESEND_API_KEY && process.env.PASSWORD_RECOVERY_EMAIL_FROM) return 'resend'
   return 'none'
 }
 
-export function passwordRecoveryEmailConfigured() {
-  return passwordRecoveryEmailProvider() !== 'none'
+export async function passwordRecoveryEmailConfigured() {
+  return (await passwordRecoveryEmailProvider()) !== 'none'
 }
 
 function escapeHtml(value: string) {
@@ -41,7 +54,7 @@ async function sendResendFallback(input: {
 }) {
   const apiKey = process.env.RESEND_API_KEY
   const from = process.env.PASSWORD_RECOVERY_EMAIL_FROM
-  if (!apiKey || !from) throw new Error('Password recovery mail transport is not configured')
+  if (!apiKey || !from) throw new Error('Fallback mail transport is not configured')
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -62,7 +75,7 @@ async function sendResendFallback(input: {
 
   if (!response.ok) {
     const providerMessage = await response.text().catch(() => '')
-    console.error('[password-recovery] password recovery email provider rejected delivery', response.status, providerMessage.slice(0, 240))
+    console.error('[password-recovery] fallback email provider rejected delivery', response.status, providerMessage.slice(0, 240))
     throw new Error('Password recovery email delivery failed')
   }
 }
@@ -96,7 +109,7 @@ export async function sendPasswordRecoveryCode(input: {
   name?: string | null
   code: string
 }) {
-  const provider = passwordRecoveryEmailProvider()
+  const provider = await passwordRecoveryEmailProvider()
   if (provider === 'none') {
     throw new Error('Password recovery email transport is not configured')
   }
@@ -104,7 +117,7 @@ export async function sendPasswordRecoveryCode(input: {
   const name = String(input.name || 'WEAVE user').trim() || 'WEAVE user'
   const safeName = escapeHtml(name)
   const safeCode = escapeHtml(input.code)
-  const replyTo = process.env.PASSWORD_RECOVERY_REPLY_TO || null
+  const replyTo = process.env.PASSWORD_RECOVERY_REPLY_TO || process.env.PASSWORD_RECOVERY_GMAIL_USER || null
   const subject = 'WEAVE access recovery code'
   const text = `Hello ${name},
 
@@ -123,6 +136,20 @@ WEAVE of Presence · System Switch · Bridge Radiance`
           <div style="margin-top:28px;font-size:11px;color:#657585">WEAVE of Presence · System Switch · Bridge Radiance</div>
         </div>
       </div>`
+
+  if (provider === 'gmail') {
+    const credential=systemGoogleMailbox()||await getAdministrationGoogleMailboxCredential()
+    if(!credential)throw new Error('Google password recovery mailbox is not configured')
+    await sendAuthenticatedGoogleMail({
+      credential,
+      to: input.email,
+      subject,
+      text,
+      html,
+      replyTo,
+    })
+    return
+  }
 
   await sendResendFallback({
     email: input.email,

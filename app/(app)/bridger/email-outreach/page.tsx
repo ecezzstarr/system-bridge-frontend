@@ -38,6 +38,7 @@ export default function BridgerEmailOutreachPage(){
   const [notice,setNotice]=useState('')
   const [sourceEmail,setSourceEmail]=useState('')
   const [displayName,setDisplayName]=useState('')
+  const [appPassword,setAppPassword]=useState('')
   const [subject,setSubject]=useState('')
   const [message,setMessage]=useState('')
 
@@ -73,11 +74,12 @@ export default function BridgerEmailOutreachPage(){
     try{
       const response=await fetch('/api/email-outreach/sender',{
         method:'POST',headers:getAuthHeaders(),
-        body:JSON.stringify({sourceEmail,displayName}),
+        body:JSON.stringify({sourceEmail,displayName,appPassword}),
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Unable to save outreach email')
-      setNotice('Source email saved and active. Replies return to this mailbox.')
+      setAppPassword('')
+      setNotice(body.mailbox?.status==='connected'?'Google source mailbox authenticated. Emails now leave from this mailbox.':'Source email saved through the WEAVE fallback mail transport.')
       await load()
     }catch(e:any){setError(e?.message||'Unable to save outreach email')}
     finally{setBusy('')}
@@ -146,12 +148,14 @@ export default function BridgerEmailOutreachPage(){
       <section className="mt-7 grid gap-5 md:grid-cols-[1fr_1fr]">
         <div className="border-y border-white/10 py-5">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">01 · Email Source</p>
-          <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Your source email</label>
-          <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="you@example.com"/>
+          <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Your Google source email</label>
+          <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="you@gmail.com"/>
           <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Display name</label>
           <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="Your name · WEAVE Bridger"/>
-          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-sky-100 disabled:opacity-40">{busy==='sender'?'Saving…':'Activate source email'}</button>
-          <p className="mt-3 text-[10px] leading-5 text-slate-500">This is your Bridger source identity. WEAVE sends through its configured mail transport and Prospect replies return to this source mailbox.</p>
+          <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Google app password</label>
+          <input type="password" value={appPassword} onChange={e=>setAppPassword(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="16-character app password" autoComplete="new-password"/>
+          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-sky-100 disabled:opacity-40">{busy==='sender'?'Authenticating…':'Authenticate source email'}</button>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">Use a Google app password, not your normal Google password. WEAVE verifies the mailbox and encrypts the credential before storing it.</p>
         </div>
 
         <div className="border-y border-white/10 py-5">
@@ -190,7 +194,7 @@ export default function BridgerEmailOutreachPage(){
               <p className="mt-1 truncate text-sm font-black">{lead.name||'Email Prospect'} · {lead.email}</p>
               <p className="mt-1 text-[10px] text-slate-500">{lead.source} · {lead.consent_basis}</p>
             </div>
-            <button onClick={()=>sendLead(lead)} disabled={sentLeadIds.has(lead.id)||busy==='send:'+lead.id||!data.providerConfigured||!data.sender} className="flex items-center justify-center gap-2 border border-white/10 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-35">
+            <button onClick={()=>sendLead(lead)} disabled={sentLeadIds.has(lead.id)||busy==='send:'+lead.id||!data.sender} className="flex items-center justify-center gap-2 border border-white/10 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-35">
               <Send className="h-3.5 w-3.5"/>{sentLeadIds.has(lead.id)?'Sent':busy==='send:'+lead.id?'Sending…':'Send email'}
             </button>
           </div>)}
