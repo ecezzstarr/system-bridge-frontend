@@ -150,8 +150,8 @@ export default function AdminEmailOutreachPage(){
           <input value={sourceEmail} onChange={e=>setSourceEmail(e.target.value)} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="weavebridge@gmail.com"/>
           <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="WeaveBridge · WEAVE Administration"/>
           <input type="password" value={appPassword} onChange={e=>setAppPassword(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="Google app password · only needed to authenticate/change mailbox" autoComplete="new-password"/>
-          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='sender'?'Authenticating…':'Authenticate source'}</button>
-          <p className="mt-3 text-[10px] leading-5 text-slate-500">For Gmail, use a Google app password rather than the normal account password. WEAVE encrypts the credential before storage. If the fallback mail provider is configured, the source email can remain reply-only.</p>
+          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='sender'?'Authenticating…':'Activate source'}</button>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">For Gmail, use a Google app password rather than the normal account password. WEAVE verifies and encrypts the credential before storage. If the fallback mail provider is configured, the source email can remain reply-only.</p>
         </div>
 
         <div className="border-y border-white/10 py-5 lg:col-span-2">

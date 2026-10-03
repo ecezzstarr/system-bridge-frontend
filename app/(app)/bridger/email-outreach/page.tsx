@@ -154,7 +154,7 @@ export default function BridgerEmailOutreachPage(){
           <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="Your name · WEAVE Bridger"/>
           <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Google app password</label>
           <input type="password" value={appPassword} onChange={e=>setAppPassword(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="16-character app password" autoComplete="new-password"/>
-          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-sky-100 disabled:opacity-40">{busy==='sender'?'Authenticating…':'Authenticate source email'}</button>
+          <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-sky-100 disabled:opacity-40">{busy==='sender'?'Authenticating…':'Activate source email'}</button>
           <p className="mt-3 text-[10px] leading-5 text-slate-500">Use a Google app password, not your normal Google password. WEAVE verifies the mailbox and encrypts the credential before storing it.</p>
         </div>
 
