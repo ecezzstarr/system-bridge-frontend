@@ -7,6 +7,7 @@ import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { buildUserReferralCode } from '@/lib/user-referral'
+import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 
 export async function POST(request: NextRequest) {
   try {
@@ -106,6 +107,18 @@ export async function POST(request: NextRequest) {
       INSERT INTO sessions (id, user_id, token, created_at, expires_at)
       VALUES (gen_random_uuid(), ${user.id}::uuid, ${token}, NOW(), NOW() + INTERVAL '7 days')
     `
+
+    try {
+      await recordPublicFlameMovementEvent({
+        movementCode: publicFlameMovementCodeFromRequest(request),
+        eventType: 'registration',
+        userId: user.id,
+        subjectId: String(fileNumber),
+        metadata: { role: 'client' },
+      })
+    } catch (movementError) {
+      console.error('[Public Flame Movement] Client registration attribution failed:', movementError)
+    }
 
     return NextResponse.json({
       success: true,

@@ -13,6 +13,8 @@ async function ensurePurchaseSchema() {
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS provider_name varchar(255)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_name varchar(120)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_external_id varchar(255)`
+  await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS bridger_id uuid`
+  await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS movement_code varchar(40)`
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_file_folder_purchases_payment_reference ON file_folder_purchases(payment_reference)`
   await sql`CREATE INDEX IF NOT EXISTS idx_file_folder_purchases_file_number ON file_folder_purchases(file_number)`
 }

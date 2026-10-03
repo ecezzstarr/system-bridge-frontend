@@ -38,8 +38,12 @@ export async function GET(request: NextRequest) {
         p.bridge_code,
         p.provider_name,
         p.flame_name,
+        p.bridger_id,
+        p.movement_code,
+        u.name AS public_bridger_name,
         p.created_at
       FROM file_folder_purchases p
+      LEFT JOIN users u ON u.id = p.bridger_id
       WHERE p.status = 'pending_admin_confirmation'
       ORDER BY p.created_at ASC
     `
@@ -60,7 +64,9 @@ export async function GET(request: NextRequest) {
         status: purchase.status,
         file_number: purchase.file_number,
         bridge_code: purchase.bridge_code,
-        bridger_name: purchase.provider_name || purchase.flame_name || 'Bridge Radiance',
+        bridger_id: purchase.bridger_id || null,
+        bridger_name: purchase.public_bridger_name || purchase.provider_name || purchase.flame_name || 'Bridge Radiance',
+        movement_code: purchase.movement_code || null,
         provider_name: purchase.provider_name || null,
         flame_name: purchase.flame_name || null,
         created_at: purchase.created_at,
