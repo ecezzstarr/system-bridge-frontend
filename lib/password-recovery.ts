@@ -117,7 +117,7 @@ export async function sendPasswordRecoveryCode(input: {
   const name = String(input.name || 'WEAVE user').trim() || 'WEAVE user'
   const safeName = escapeHtml(name)
   const safeCode = escapeHtml(input.code)
-  const replyTo = process.env.PASSWORD_RECOVERY_REPLY_TO || process.env.PASSWORD_RECOVERY_GMAIL_USER || null
+  const configuredReplyTo = process.env.PASSWORD_RECOVERY_REPLY_TO || null
   const subject = 'WEAVE access recovery code'
   const text = `Hello ${name},
 
@@ -138,15 +138,15 @@ WEAVE of Presence · System Switch · Bridge Radiance`
       </div>`
 
   if (provider === 'gmail') {
-    const credential=systemGoogleMailbox()||await getAdministrationGoogleMailboxCredential()
-    if(!credential)throw new Error('Google password recovery mailbox is not configured')
+    const credential = systemGoogleMailbox() || await getAdministrationGoogleMailboxCredential()
+    if (!credential) throw new Error('Google password recovery mailbox is not configured')
     await sendAuthenticatedGoogleMail({
       credential,
       to: input.email,
       subject,
       text,
       html,
-      replyTo,
+      replyTo: configuredReplyTo || credential.email,
     })
     return
   }
@@ -156,6 +156,6 @@ WEAVE of Presence · System Switch · Bridge Radiance`
     subject,
     text,
     html,
-    replyTo,
+    replyTo: configuredReplyTo,
   })
 }
