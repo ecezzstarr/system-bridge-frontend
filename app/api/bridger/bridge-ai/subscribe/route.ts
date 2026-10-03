@@ -8,6 +8,9 @@ export async function GET(request: NextRequest) {
   if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  if (authUser.role !== 'bridger') {
+    return NextResponse.json({ error: 'Bridger access required' }, { status: 403 })
+  }
   const subscription = await getBridgeAiContinuance(authUser.id)
   return NextResponse.json({ subscription })
 }
@@ -18,8 +21,8 @@ export async function POST(request: NextRequest) {
   if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  if (authUser.role !== 'bridger' && authUser.role !== 'admin') {
-    return NextResponse.json({ error: 'Bridger only' }, { status: 403 })
+  if (authUser.role !== 'bridger') {
+    return NextResponse.json({ error: 'Bridger access required' }, { status: 403 })
   }
 
   const result = await subscribeToBridgeAi(authUser.id)

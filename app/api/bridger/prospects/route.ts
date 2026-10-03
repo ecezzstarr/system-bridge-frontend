@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
   if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  if (authUser.role !== 'bridger') {
+    return NextResponse.json({ error: 'Bridger access required' }, { status: 403 })
+  }
 
   try {
     const rows = await sql`
@@ -65,6 +68,9 @@ export async function PATCH(request: NextRequest) {
   const authUser = await getAuthUser(request)
   if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  if (authUser.role !== 'bridger') {
+    return NextResponse.json({ error: 'Bridger access required' }, { status: 403 })
   }
 
   try {

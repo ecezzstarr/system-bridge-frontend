@@ -71,34 +71,40 @@ export async function getBridgerSubscription(userId: string) {
 
 export async function payContinuance(userId: string, amount: number, reference: string) {
   await ensureContinuanceTables()
-  
-  const now = new Date()
-  const nextExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-  
-  // Start transaction
-  await sql`BEGIN`
+
+  const client = await getPool().connect()
   try {
-    // 1. Record payment
-    await sql`
-      INSERT INTO subscription_payments (user_id, amount, transaction_reference, period_start, period_end)
-      VALUES (${userId}, ${amount}, ${reference}, ${now}, ${nextExpiry})
-    `
-    
-    // 2. Update user status
-    await sql`
-      UPDATE users 
-      SET subscription_status = 'active', 
-          subscription_expiry = ${nextExpiry},
-          subscription_last_paid_at = ${now}
-      WHERE id = ${userId}
-    `
-    
-    await sql`COMMIT`
+    await client.query('BEGIN')
+
+    const now = new Date()
+    const nextExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+
+    await client.query(
+      `INSERT INTO subscription_payments
+        (user_id,amount,transaction_reference,status,period_start,period_end)
+       VALUES ($1::uuid,$2,$3,'success',$4,$5)`,
+      [userId, amount, reference, now, nextExpiry],
+    )
+
+    const updated = await client.query(
+      `UPDATE users
+       SET subscription_status='active',
+           subscription_expiry=$2,
+           subscription_last_paid_at=$3
+       WHERE id=$1::uuid AND role='bridger'
+       RETURNING id`,
+      [userId, nextExpiry, now],
+    )
+    if (updated.rows.length !== 1) throw new Error('Bridger not found')
+
+    await client.query('COMMIT')
     return true
   } catch (error) {
-    await sql`ROLLBACK`
-    console.error('Failed to process continuance payment:', error)
+    try { await client.query('ROLLBACK') } catch {}
+    console.error('Failed to process Continuance payment:', error)
     return false
+  } finally {
+    client.release()
   }
 }
 
@@ -146,35 +152,58 @@ export async function getPendingContinuancePayments() {
 export async function approveContinuancePayment(paymentId: string) {
   await ensureContinuanceTables()
 
-  const rows = await sql`
-    SELECT user_id, amount FROM subscription_payments WHERE id = ${paymentId} AND status = 'pending'
-  `
-  if (rows.length === 0) return false
-
-  const { user_id, amount } = rows[0]
-  const now = new Date()
-  const nextExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-
-  await sql`BEGIN`
+  const client = await getPool().connect()
   try {
-    await sql`
-      UPDATE subscription_payments
-      SET status = 'success', period_start = ${now}, period_end = ${nextExpiry}
-      WHERE id = ${paymentId}
-    `
-    await sql`
-      UPDATE users
-      SET subscription_status = 'active',
-          subscription_expiry = ${nextExpiry},
-          subscription_last_paid_at = ${now}
-      WHERE id = ${user_id}
-    `
-    await sql`COMMIT`
+    await client.query('BEGIN')
+
+    const paymentResult = await client.query(
+      `SELECT id,user_id,amount
+       FROM subscription_payments
+       WHERE id=$1::uuid AND status='pending'
+       FOR UPDATE`,
+      [paymentId],
+    )
+    const payment = paymentResult.rows[0]
+    if (!payment) {
+      await client.query('ROLLBACK')
+      return false
+    }
+
+    const now = new Date()
+    const nextExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+
+    const userResult = await client.query(
+      `SELECT id
+       FROM users
+       WHERE id=$1::uuid AND role='bridger'
+       FOR UPDATE`,
+      [payment.user_id],
+    )
+    if (!userResult.rows[0]) throw new Error('Bridger not found')
+
+    await client.query(
+      `UPDATE subscription_payments
+       SET status='success',period_start=$2,period_end=$3
+       WHERE id=$1::uuid AND status='pending'`,
+      [paymentId, now, nextExpiry],
+    )
+    await client.query(
+      `UPDATE users
+       SET subscription_status='active',
+           subscription_expiry=$2,
+           subscription_last_paid_at=$3
+       WHERE id=$1::uuid`,
+      [payment.user_id, nextExpiry, now],
+    )
+
+    await client.query('COMMIT')
     return true
   } catch (error) {
-    await sql`ROLLBACK`
-    console.error('Failed to approve continuance payment:', error)
+    try { await client.query('ROLLBACK') } catch {}
+    console.error('Failed to approve Continuance payment:', error)
     return false
+  } finally {
+    client.release()
   }
 }
 

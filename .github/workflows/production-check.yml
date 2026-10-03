@@ -31,6 +31,7 @@ jobs:
           node tests/recent-features.cjs
           node tests/file-folder-sales-manager-regression.cjs
           node tests/public-flame-movement-regression.cjs
+          node tests/core-hardening-regression.cjs
           node tests/wiring.cjs
           node tests/environment-grade.cjs
           node tests/adaptive-runtime.cjs
