@@ -83,6 +83,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-dj-workshop', label:'DJ Workshop', kind:'district', route:'/admin/dj-workshop', area:'Administration', scope:'admin', defaultOrder:210 },
   { key:'admin-ad-workshop', label:'Ad Workshop', kind:'district', route:'/admin/ad-workshop', area:'Administration', scope:'admin', defaultOrder:220 },
   { key:'admin-video-ad-studio', label:'Video Ad Studio', kind:'district', route:'/admin/video-ad-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:225 },
+  { key:'admin-distribution-studio', label:'Distribution Studio', kind:'district', route:'/admin/distribution-studio', area:'Administration', scope:'admin', protected:true, defaultOrder:227 },
   { key:'admin-visual-systems', label:'Visual Systems · Interaction in Motion', kind:'district', route:'/admin/visual-systems', area:'Administration', scope:'admin', defaultOrder:230 },
   { key:'admin-flame-event', label:'Flame Event Control', kind:'district', route:'/admin/flame-event', area:'Administration', scope:'admin', defaultOrder:240 },
 ]
