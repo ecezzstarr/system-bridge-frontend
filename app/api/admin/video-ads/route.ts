@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
 function sanitizeStoryboard(value: unknown): VideoAdScene[] | null {
   if (!Array.isArray(value) || value.length < 1 || value.length > 24) return null
-  return value.map((scene: any, index) => ({
+  return value.map((scene: any, index): VideoAdScene => ({
     id: String(scene?.id || `scene-${index + 1}`).slice(0, 48),
     order: index + 1,
     durationSeconds: Math.max(1, Math.min(90, Math.round(Number(scene?.durationSeconds || 1)))),
@@ -88,9 +88,11 @@ export async function PATCH(request: NextRequest) {
     const current = await pool.query('SELECT * FROM admin_video_ad_projects WHERE id=$1::uuid', [id])
     if (!current.rows.length) return NextResponse.json({ success: false, error: 'Video ad project not found' }, { status: 404 })
 
-    const storyboard = body.storyboard === undefined ? current.rows[0].storyboard : sanitizeStoryboard(body.storyboard)
+    const storyboard: VideoAdScene[] | null = body.storyboard === undefined
+      ? (Array.isArray(current.rows[0].storyboard) ? current.rows[0].storyboard as VideoAdScene[] : null)
+      : sanitizeStoryboard(body.storyboard)
     if (!storyboard) return NextResponse.json({ success: false, error: 'Storyboard is invalid' }, { status: 400 })
-    const total = storyboard.reduce((sum, scene) => sum + Number(scene.durationSeconds || 0), 0)
+    const total = storyboard.reduce((sum: number, scene: VideoAdScene) => sum + Number(scene.durationSeconds || 0), 0)
     if (total !== Number(current.rows[0].duration_seconds)) {
       return NextResponse.json({ success: false, error: `Scene timing must total ${current.rows[0].duration_seconds} seconds` }, { status: 400 })
     }
