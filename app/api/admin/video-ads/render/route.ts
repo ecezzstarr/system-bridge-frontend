@@ -3,9 +3,10 @@ import { Storage } from '@google-cloud/storage'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { ensureVideoAdWorkshopSchema, mapVideoAdProject, type VideoAdScene } from '@/lib/video-ad-workshop'
+import { ensureVideoAdStudioSchema } from '@/lib/video-ad-studio'
 import { spawn } from 'node:child_process'
 import { createReadStream } from 'node:fs'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
@@ -19,9 +20,10 @@ const FONT_PATH = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 const storage = new Storage()
 
 function gcsObjectName(url: string) {
-  if (!url.startsWith(PUBLIC_PREFIX)) throw new Error('Video Ad Workshop only renders media uploaded to the WEAVE media bucket')
+  if (!url.startsWith(PUBLIC_PREFIX)) throw new Error('Video Ad Studio only renders media held by the WEAVE media bucket')
   const name = decodeURIComponent(url.slice(PUBLIC_PREFIX.length))
-  if (!name.startsWith('video-ads/assets/')) throw new Error('Unrecognized Video Ad Workshop media path')
+  const allowed = name.startsWith('video-ads/assets/') || name.startsWith('video-ads/customer-assets/')
+  if (!allowed) throw new Error('Unrecognized Video Ad Studio media path')
   return name
 }
 
@@ -29,14 +31,9 @@ async function runFfmpeg(args: string[]) {
   await new Promise<void>((resolve, reject) => {
     const child = spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] })
     let stderr = ''
-    child.stderr.on('data', chunk => {
-      stderr = (stderr + chunk.toString()).slice(-16000)
-    })
+    child.stderr.on('data', chunk => { stderr = (stderr + chunk.toString()).slice(-16000) })
     child.on('error', reject)
-    child.on('close', code => {
-      if (code === 0) resolve()
-      else reject(new Error(`Video renderer exited with code ${code}: ${stderr.slice(-3000)}`))
-    })
+    child.on('close', code => code === 0 ? resolve() : reject(new Error(`Video renderer exited with code ${code}: ${stderr.slice(-3000)}`)))
   })
 }
 
@@ -45,8 +42,7 @@ function safeConcatPath(filePath: string) {
 }
 
 async function downloadAsset(url: string, destination: string) {
-  const objectName = gcsObjectName(url)
-  await storage.bucket(BUCKET_NAME).file(objectName).download({ destination })
+  await storage.bucket(BUCKET_NAME).file(gcsObjectName(url)).download({ destination })
 }
 
 function extFor(url: string, fallback: string) {
@@ -71,18 +67,17 @@ export async function POST(request: NextRequest) {
     if (!projectId) return NextResponse.json({ success: false, error: 'Project id is required' }, { status: 400 })
 
     await ensureVideoAdWorkshopSchema()
+    await ensureVideoAdStudioSchema()
     const pool = getPool()
-    const current = await pool.query('SELECT * FROM admin_video_ad_projects WHERE id=$1::uuid FOR UPDATE', [projectId])
+    const current = await pool.query('SELECT * FROM admin_video_ad_projects WHERE id=$1::uuid', [projectId])
     const row = current.rows[0]
-    if (!row) return NextResponse.json({ success: false, error: 'Video ad project not found' }, { status: 404 })
-    if (row.status === 'rendering') return NextResponse.json({ success: false, error: 'This video ad is already rendering' }, { status: 409 })
+    if (!row) return NextResponse.json({ success: false, error: 'Video production not found' }, { status: 404 })
+    if (row.status === 'rendering') return NextResponse.json({ success: false, error: 'This video is already rendering' }, { status: 409 })
 
     const scenes = (Array.isArray(row.storyboard) ? row.storyboard : []) as VideoAdScene[]
     if (!scenes.length) return NextResponse.json({ success: false, error: 'Storyboard has no scenes' }, { status: 400 })
     const total = scenes.reduce((sum, scene) => sum + Number(scene.durationSeconds || 0), 0)
-    if (total !== Number(row.duration_seconds)) {
-      return NextResponse.json({ success: false, error: `Scene timing must total ${row.duration_seconds} seconds before rendering` }, { status: 400 })
-    }
+    if (total !== Number(row.duration_seconds)) return NextResponse.json({ success: false, error: `Scene timing must total ${row.duration_seconds} seconds before rendering` }, { status: 400 })
     const missing = scenes.find(scene => !scene.assetUrl || !scene.assetType)
     if (missing) return NextResponse.json({ success: false, error: `Scene ${missing.order} needs an image or video before rendering` }, { status: 400 })
 
@@ -109,24 +104,10 @@ export async function POST(request: NextRequest) {
         'fade=t=in:st=0:d=0.25',
         `fade=t=out:st=${Math.max(0, duration - 0.25)}:d=0.25`,
       ].join(',')
-
       const inputArgs = scene.assetType === 'image'
         ? ['-loop', '1', '-framerate', '30', '-i', inputPath]
         : ['-stream_loop', '-1', '-i', inputPath]
-      await runFfmpeg([
-        '-y',
-        ...inputArgs,
-        '-t', String(duration),
-        '-vf', visualFilter,
-        '-an',
-        '-r', '30',
-        '-c:v', 'libx264',
-        '-preset', 'veryfast',
-        '-crf', '24',
-        '-pix_fmt', 'yuv420p',
-        '-movflags', '+faststart',
-        segmentPath,
-      ])
+      await runFfmpeg(['-y', ...inputArgs, '-t', String(duration), '-vf', visualFilter, '-an', '-r', '30', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '24', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', segmentPath])
       segments.push(segmentPath)
     }
 
@@ -140,40 +121,20 @@ export async function POST(request: NextRequest) {
       const soundtrackPath = path.join(workDir, `soundtrack${extFor(row.soundtrack_url, '.mp3')}`)
       await downloadAsset(row.soundtrack_url, soundtrackPath)
       finalPath = path.join(workDir, 'final.mp4')
-      await runFfmpeg([
-        '-y',
-        '-i', silentPath,
-        '-stream_loop', '-1',
-        '-i', soundtrackPath,
-        '-t', String(row.duration_seconds),
-        '-map', '0:v:0',
-        '-map', '1:a:0',
-        '-c:v', 'copy',
-        '-c:a', 'aac',
-        '-b:a', '160k',
-        '-shortest',
-        '-movflags', '+faststart',
-        finalPath,
-      ])
+      await runFfmpeg(['-y', '-i', silentPath, '-stream_loop', '-1', '-i', soundtrackPath, '-t', String(row.duration_seconds), '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', finalPath])
     }
 
     const outputObject = `video-ads/renders/${new Date().toISOString().slice(0, 10)}/${projectId}.mp4`
     const blob = storage.bucket(BUCKET_NAME).file(outputObject)
-    await pipeline(
-      createReadStream(finalPath),
-      blob.createWriteStream({
-        resumable: false,
-        metadata: { contentType: 'video/mp4', cacheControl: 'public, max-age=31536000' },
-      })
-    )
+    await pipeline(createReadStream(finalPath), blob.createWriteStream({ resumable: false, metadata: { contentType: 'video/mp4', cacheControl: 'public, max-age=31536000' } }))
     const outputUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${outputObject}`
-    const updated = await pool.query(
-      "UPDATE admin_video_ad_projects SET status='ready',output_url=$2,error_message=NULL,updated_at=NOW() WHERE id=$1::uuid RETURNING *",
-      [projectId, outputUrl]
-    )
+    const updated = await pool.query("UPDATE admin_video_ad_projects SET status='ready',output_url=$2,error_message=NULL,updated_at=NOW() WHERE id=$1::uuid RETURNING *", [projectId, outputUrl])
+    if (row.order_id) {
+      await pool.query("UPDATE video_ad_studio_orders SET status='ready',output_url=$2,updated_at=NOW() WHERE id=$1::uuid", [row.order_id, outputUrl])
+    }
     return NextResponse.json({ success: true, project: mapVideoAdProject(updated.rows[0]) })
   } catch (error: any) {
-    console.error('[Video Ad Workshop] render failed:', error)
+    console.error('[Video Ad Studio] render failed:', error)
     if (projectId) {
       try {
         const pool = getPool()
