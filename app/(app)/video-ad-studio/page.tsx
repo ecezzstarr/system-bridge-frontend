@@ -37,7 +37,7 @@ export default function VideoAdStudioPage(){
   useEffect(()=>{
     if(!user)return
     if(user.role==='admin'){router.replace('/admin/video-ad-workshop');return}
-    if(!['agent','bridger','client'].includes(user.role)){router.replace('/dashboard')}
+    if(!['agent','bridger','client'].includes(user.role || '')){router.replace('/dashboard')}
   },[user,router])
 
   const load=async()=>{
@@ -52,7 +52,7 @@ export default function VideoAdStudioPage(){
     }catch(error:any){setMessage(error.message||'Unable to load Video Ad Studio')}finally{setLoading(false)}
   }
 
-  useEffect(()=>{if(user&&['agent','bridger','client'].includes(user.role))void load()},[user?.role])
+  useEffect(()=>{if(user&&['agent','bridger','client'].includes(user.role || ''))void load()},[user?.role])
 
   const canBuy=useMemo(()=>Boolean(selected&&form.businessName.trim()&&form.subject.trim()&&form.objective.trim()&&form.audience.trim()),[selected,form])
 
@@ -84,7 +84,7 @@ export default function VideoAdStudioPage(){
     }catch(error:any){setMessage(error.message||'Video order could not be created')}finally{setBuying(false)}
   }
 
-  if(!user||!['agent','bridger','client'].includes(user.role))return null
+  if(!user||!['agent','bridger','client'].includes(user.role || ''))return null
 
   return <main className="mx-auto max-w-7xl space-y-6 pb-16">
     <section className="overflow-hidden rounded-3xl border border-fuchsia-300/15 bg-[radial-gradient(circle_at_15%_0%,rgba(217,70,239,.15),transparent_34%),linear-gradient(140deg,#090b12,#05070c)] p-6 sm:p-8">
