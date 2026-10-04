@@ -4,6 +4,7 @@ import Link from 'next/link'
 import {
   Building2,
   CircleUserRound,
+  Clapperboard,
   Landmark,
   Network,
   Route,
@@ -75,6 +76,7 @@ export function WeaveDashboardWorld({
   const copy=COPY[role]
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const hasRolePresence=role==='agent'||role==='bridger'||role==='client'
+  const hasVideoStudio=role!=='admin'&&isVisible('/video-ad-studio')
 
   const districts=getRoleDistricts(role)
     .map(district=>({
@@ -110,7 +112,6 @@ export function WeaveDashboardWorld({
       </div>
     </header>
 
-
     <div className="relative z-20 mx-3 mt-4 flex min-h-[calc(100svh-13rem)] flex-col pb-[max(.75rem,env(safe-area-inset-bottom))] sm:hidden" data-mobile-role-world="full-height-travel-field">
       <Link
         href={copy.centerHref}
@@ -125,6 +126,20 @@ export function WeaveDashboardWorld({
           <span className="mt-1 block text-[9px] leading-4 text-slate-400">{hasRolePresence?'Understand your position before movement':'Enter institutional control'}</span>
         </span>
       </Link>
+
+      {hasVideoStudio&&<Link
+        href="/video-ad-studio"
+        data-shared-video-ad-studio={role}
+        className="group mb-2 flex min-h-16 w-full items-center gap-3 rounded-2xl border border-fuchsia-300/15 bg-fuchsia-300/[0.04] px-4 py-3 backdrop-blur-xl"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-fuchsia-300/20 bg-fuchsia-300/[0.05]">
+          <Clapperboard className="h-4 w-4 text-fuchsia-200"/>
+        </span>
+        <span className="min-w-0 flex-1 text-left">
+          <span className="block text-[10px] font-black uppercase tracking-[.1em] text-white">Video Ad Studio</span>
+          <span className="mt-1 block text-[9px] leading-4 text-slate-400">Commission quality video content for your business with Flame Coin.</span>
+        </span>
+      </Link>}
 
       <div className="my-2 border-y border-white/[.07] py-2">
         <p className="px-1 text-[8px] font-black uppercase tracking-[.14em] text-sky-300">District travel</p>
@@ -170,6 +185,15 @@ export function WeaveDashboardWorld({
       <span className="mt-2 block text-[10px] font-black uppercase tracking-[.12em] text-white">{hasRolePresence?'Presence':'Operating Center'}</span>
       <span className="mt-1 block text-[8px] text-slate-500">{hasRolePresence?'Understand your position':'Enter institutional control'}</span>
     </Link>
+
+    {hasVideoStudio&&<Link
+      href="/video-ad-studio"
+      data-shared-video-ad-studio={role}
+      className="group absolute bottom-[7%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-fuchsia-300/15 bg-black/30 px-4 py-2.5 backdrop-blur-xl sm:flex"
+    >
+      <Clapperboard className="h-4 w-4 text-fuchsia-200"/>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">Video Ad Studio</span><span className="mt-0.5 block text-[8px] text-slate-500">Business video production · Flame Coin</span></span>
+    </Link>}
 
     <div className="absolute inset-0 z-10 hidden sm:block">
       {movementDistricts.map((district,index)=>{
