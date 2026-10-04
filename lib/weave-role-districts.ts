@@ -223,6 +223,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'DJ Workshop',href:'/admin/dj-workshop',detail:'System sound and live atmosphere.'},
         {label:'Ad Workshop',href:'/admin/ad-workshop',detail:'Role-targeted communication without deployment.'},
         {label:'Video Ad Studio',href:'/admin/video-ad-workshop',detail:'Set Studio prices, receive paid customer orders, form and render 30-second to 6-minute videos, and publish Administration video ads inside WEAVE.'},
+        {label:'Distribution Studio',href:'/admin/distribution-studio',detail:'Form, schedule, carry and measure company movement across WEAVE-native channels and connected external outlets.',daily:true},
       ],
     },
     {
