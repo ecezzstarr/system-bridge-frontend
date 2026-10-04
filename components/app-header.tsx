@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Search, Wallet, Settings, LogOut } from "lucide-react"
+import { Search, Wallet, Settings, LogOut, Radio } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PresenceIndicator } from "@/components/presence-indicator"
@@ -24,6 +24,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar || undefined } : undefined)
   const [accountOpen, setAccountOpen] = useState(false)
   const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
+  const [carrierOpen, setCarrierOpen] = useState(false)
 
   useEffect(() => {
     if (!authUser?.id) return
@@ -34,6 +35,14 @@ export function AppHeader({ user }: AppHeaderProps) {
       .then(res => res.json())
       .then(data => { if (data.success) setFlameCoinBalance(data.flameCoinBalance) })
       .catch(() => {})
+
+    fetch('/api/carrier/access', {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      cache: 'no-store',
+    })
+      .then(res => res.json())
+      .then(data => setCarrierOpen(Boolean(data?.access?.active)))
+      .catch(() => setCarrierOpen(false))
   }, [authUser?.id])
 
   if (!effectiveUser) return null
@@ -121,6 +130,15 @@ export function AppHeader({ user }: AppHeaderProps) {
                   <p className="truncate text-[10px] font-black text-white">{effectiveUser.name}</p>
                   <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{effectiveUser.role} position</p>
                 </div>
+                {carrierOpen && (
+                  <button
+                    type="button"
+                    onClick={() => { setAccountOpen(false); router.push('/weave/carrier') }}
+                    className="mt-1 flex w-full items-center gap-3 rounded-xl border border-yellow-300/10 bg-yellow-300/[.04] px-3 py-2.5 text-left text-[10px] font-black text-yellow-100 hover:bg-yellow-300/[.08] hover:text-white"
+                  >
+                    <Radio className="h-4 w-4 text-yellow-300" />Carrier · Enter as Ace
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => { setAccountOpen(false); router.push(effectiveUser.role === 'client' ? '/client/settings' : '/settings') }}
