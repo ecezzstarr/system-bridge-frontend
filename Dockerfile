@@ -1,6 +1,11 @@
 # Use glibc to match the locked native Next.js dependency
 FROM node:22-bookworm-slim AS base
 
+# Video Ad Workshop runtime: ffmpeg assembles scene media into the final vertical MP4.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies only when needed
 FROM base AS deps
 
@@ -37,6 +42,7 @@ RUN node tests/adaptive-runtime.cjs
 RUN node tests/communication-security.cjs
 RUN node tests/recovery-desk.cjs
 RUN node tests/commerce-ledger-regression.cjs
+RUN node tests/video-ad-workshop.cjs
 RUN npx tsc --noEmit
 RUN npm run build
 
