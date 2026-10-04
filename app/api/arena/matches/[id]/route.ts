@@ -123,9 +123,7 @@ export async function PATCH(
             [after, participant.user_id]
           )
           await client.query(
-            `INSERT INTO ledger_entries
-              (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-             VALUES (gen_random_uuid(),$1::uuid,'arena_refund',$2,'Flame Coin',$3,$4,$5,NOW())`,
+            `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'earning', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','arena_refund'))`,
             [participant.user_id, entryFee, `Arena cancellation refund: ${match.title}`, before, after]
           )
         }
@@ -170,9 +168,7 @@ export async function PATCH(
           [after, winnerId]
         )
         await client.query(
-          `INSERT INTO ledger_entries
-            (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-           VALUES (gen_random_uuid(),$1::uuid,'arena_win',$2,'Flame Coin',$3,$4,$5,NOW())`,
+          `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'earning', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','arena_win'))`,
           [winnerId, winnerPayout, `Arena match win: ${match.title} (70% of prize pool)`, before, after]
         )
       }
@@ -183,9 +179,7 @@ export async function PATCH(
           [platformFee, PLATFORM_WALLET_USER_ID]
         )
         await client.query(
-          `INSERT INTO ledger_entries
-            (id,user_id,entry_type,amount,currency,description,created_at)
-           VALUES (gen_random_uuid(),$1::uuid,'arena_platform_fee',$2,'Flame Coin',$3,NOW())`,
+          `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'earning', $2, 'Flame Coin', $3, NOW(), jsonb_build_object('commerce_type','arena_platform_fee'))`,
           [PLATFORM_WALLET_USER_ID, platformFee, `Arena platform share: ${match.title} (30% of prize pool)`]
         )
       }

@@ -245,12 +245,7 @@ export async function PATCH(request:NextRequest){
       `,[after,wallet.id])
 
       await client.query(`
-        INSERT INTO ledger_entries(
-          id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at
-        )
-        VALUES(
-          gen_random_uuid(),$1::uuid,'whatsapp_number_order_refund',$2,'Flame Coin',$3,$4,$5,NOW()
-        )
+        INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'earning', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','whatsapp_number_order_refund'))
       `,[
         order.bridger_id,
         refund,

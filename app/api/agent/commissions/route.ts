@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       SELECT amount, description, created_at
       FROM ledger_entries
       WHERE user_id = ${agent.id}::uuid
-        AND entry_type = 'agent_commission'
+        AND (entry_type = 'agent_commission' OR metadata->>'commerce_type'='agent_commission')
       ORDER BY created_at DESC
       LIMIT 20
     `

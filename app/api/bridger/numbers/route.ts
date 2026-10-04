@@ -198,12 +198,7 @@ export async function POST(request:NextRequest){
       `,[user.id,offer.country,price,Number(offer.delivery_minutes)||30])).rows[0]
 
       await client.query(`
-        INSERT INTO ledger_entries(
-          id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at
-        )
-        VALUES(
-          gen_random_uuid(),$1::uuid,'whatsapp_number_order',$2,'Flame Coin',$3,$4,$5,NOW()
-        )
+        INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','whatsapp_number_order'))
       `,[
         user.id,
         price,
@@ -348,12 +343,7 @@ export async function POST(request:NextRequest){
     const after=Number(debited.balance_trx)||0
 
     await client.query(`
-      INSERT INTO ledger_entries(
-        id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at
-      )
-      VALUES(
-        gen_random_uuid(),$1::uuid,'whatsapp_number_purchase',$2,'Flame Coin',$3,$4,$5,NOW()
-      )
+      INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','whatsapp_number_purchase'))
     `,[
       user.id,
       price,

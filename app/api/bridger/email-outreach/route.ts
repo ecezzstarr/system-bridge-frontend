@@ -161,10 +161,7 @@ export async function POST(request: NextRequest) {
         [user.id, lead.id],
       )
       await client.query(
-        `INSERT INTO ledger_entries
-          (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-         VALUES
-          (gen_random_uuid(),$1::uuid,'email_prospect_purchase',$2,'Flame Coin',$3,$4,$5,NOW())`,
+        `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','email_prospect_purchase'))`,
         [
           user.id,
           EMAIL_PROSPECT_PRICE_FLAME_COIN,
