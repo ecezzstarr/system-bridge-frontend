@@ -35,6 +35,7 @@ jobs:
           node tests/core-hardening-regression.cjs
           node tests/commerce-ledger-regression.cjs
           node tests/email-mailbox-regression.cjs
+          node tests/video-ad-workshop.cjs
           node tests/wiring.cjs
           node tests/environment-grade.cjs
           node tests/adaptive-runtime.cjs
