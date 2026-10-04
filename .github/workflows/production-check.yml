@@ -32,6 +32,7 @@ jobs:
           node tests/recent-features.cjs
           node tests/file-folder-sales-manager-regression.cjs
           node tests/public-flame-movement-regression.cjs
+          node tests/carrier-ace-regression.cjs
           node tests/core-hardening-regression.cjs
           node tests/commerce-ledger-regression.cjs
           node tests/email-mailbox-regression.cjs
