@@ -22,6 +22,7 @@ type AccessState = {
 
 export default function WeaveLifestylesPage() {
   const [access, setAccess] = useState<AccessState | null>(null)
+  const [carrierOpen, setCarrierOpen] = useState(false)
   const [monthlyPrice, setMonthlyPrice] = useState(0)
   const [loading, setLoading] = useState(true)
   const [subscribing, setSubscribing] = useState(false)
@@ -29,11 +30,17 @@ export default function WeaveLifestylesPage() {
   const load = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/weave/lifestyles/access', { headers: authHeaders(), cache: 'no-store' })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Could not read Subscribed WEAVE access')
+      const headers = authHeaders()
+      const [lifestyleResponse, carrierResponse] = await Promise.all([
+        fetch('/api/weave/lifestyles/access', { headers, cache: 'no-store' }),
+        fetch('/api/carrier/access', { headers, cache: 'no-store' }),
+      ])
+      const data = await lifestyleResponse.json()
+      const carrierData = await carrierResponse.json().catch(() => ({}))
+      if (!lifestyleResponse.ok) throw new Error(data.error || 'Could not read Subscribed WEAVE access')
       setAccess(data.access)
       setMonthlyPrice(Number(data.monthlyPrice || 0))
+      setCarrierOpen(Boolean(carrierResponse.ok && carrierData?.access?.active))
     } catch (error: any) {
       toast.error(error.message || 'Could not read Subscribed WEAVE access')
     } finally {
@@ -55,6 +62,7 @@ export default function WeaveLifestylesPage() {
       if (!response.ok) throw new Error(data.error || 'Could not open Subscribed WEAVE')
       setAccess(data.access)
       toast.success('Subscribed WEAVE is open')
+      await load()
     } catch (error: any) {
       toast.error(error.message || 'Could not open Subscribed WEAVE')
     } finally {
@@ -105,28 +113,30 @@ export default function WeaveLifestylesPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.22em] text-yellow-300">Weave Arena</p>
-                    <h2 className="mt-1 text-xl font-black text-white">ACE</h2>
-                    <p className="mt-2 text-xs leading-5 text-slate-400">Choose a supported online game, stream it through Weave, carry a seasonal Ace record and enter the live Arena ground.</p>
+                    <h2 className="mt-1 text-xl font-black text-white">WATCH THE ACES</h2>
+                    <p className="mt-2 text-xs leading-5 text-slate-400">Every Weave role can enter the live ground to watch. Playing as Ace is governed by the Carrier entrance attached to your position.</p>
                   </div>
                   <Gamepad2 className="h-8 w-8 shrink-0 text-yellow-400" />
                 </div>
               </Link>
 
-              <Link href="/weave/carrier" className="group border-y border-sky-300/15 bg-sky-400/[0.03] px-4 py-5 transition hover:bg-sky-400/[0.07] sm:border">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.22em] text-sky-300">Carrier</p>
-                    <h2 className="mt-1 text-xl font-black text-white">ACE PUBLISHING</h2>
-                    <p className="mt-2 text-xs leading-5 text-slate-400">Publish each Ace game into a direct public Carrier, send it through WhatsApp or the web, and see who enters, supports and carries it onward.</p>
+              {carrierOpen && (
+                <Link href="/weave/carrier" className="group border-y border-sky-300/15 bg-sky-400/[0.03] px-4 py-5 transition hover:bg-sky-400/[0.07] sm:border">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-sky-300">Carrier Entrance</p>
+                      <h2 className="mt-1 text-xl font-black text-white">ENTER AS ACE</h2>
+                      <p className="mt-2 text-xs leading-5 text-slate-400">Your position has opened Carrier. Inside the environment you are Ace; Arena play and public activity publishing continue from there.</p>
+                    </div>
+                    <Megaphone className="h-8 w-8 shrink-0 text-sky-300" />
                   </div>
-                  <Megaphone className="h-8 w-8 shrink-0 text-sky-300" />
-                </div>
-              </Link>
+                </Link>
+              )}
 
               <div className="border-y border-white/10 px-4 py-5 sm:border">
                 <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">More lifestyles</p>
                 <h2 className="mt-1 text-xl font-black text-white">FORMING</h2>
-                <p className="mt-2 text-xs leading-5 text-slate-500">Subscribed WEAVE is the layer. Arena is one lifestyle inside it, and Carrier moves those activities beyond the logged-in world.</p>
+                <p className="mt-2 text-xs leading-5 text-slate-500">Subscribed WEAVE is a broader layer. Carrier uses its own role-based entrance rules and only appears when that entrance has opened.</p>
               </div>
             </div>
           </section>
