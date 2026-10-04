@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowRight, Radio, ShieldCheck } from 'lucide-react'
+import { Radio } from 'lucide-react'
 import { getArenaCarrier } from '@/lib/arena-carrier'
 
 export const dynamic = 'force-dynamic'
@@ -22,13 +21,13 @@ export async function generateMetadata(
   if (!carrier) {
     return {
       title: 'Weave Carrier',
-      description: 'A public entrance carried from Weave.',
+      description: 'A public watching entrance carried from Weave.',
     }
   }
 
   return {
     title: `${carrier.aceName} · Weave Carrier`,
-    description: `Ace ${carrier.aceName} — ${carrier.goal}`,
+    description: carrier.goal,
     openGraph: {
       title: `${carrier.aceName} · Weave Arena`,
       description: carrier.goal,
@@ -47,48 +46,57 @@ export default async function CarrierPage({ params }: { params: Promise<{ id: st
       <main className="min-h-screen bg-[#070a10] px-5 py-16 text-white">
         <div className="mx-auto max-w-xl border-y border-white/10 py-10">
           <p className="text-[10px] font-black uppercase tracking-[0.32em] text-slate-500">WEAVE · CARRIER</p>
-          <h1 className="mt-3 text-3xl font-black">THIS CARRIER IS NOT ACTIVE</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-400">The entrance may have been withdrawn or the stream is no longer available through this Carrier.</p>
-          <Link href="/" className="mt-7 inline-flex items-center gap-2 border border-white/15 px-4 py-3 text-xs font-black uppercase tracking-widest text-white">Enter Weave <ArrowRight className="h-4 w-4" /></Link>
+          <h1 className="mt-3 text-3xl font-black">CARRIER CLOSED</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-400">This Ace stream is no longer being carried here.</p>
         </div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-[#070a10] px-4 py-10 text-white sm:px-6 sm:py-16">
-      <section className="mx-auto max-w-2xl overflow-hidden border-y border-yellow-300/20 bg-black/15 sm:border">
-        <header className="border-b border-white/10 px-5 py-6 sm:px-8">
+    <main className="min-h-screen bg-[#070a10] text-white">
+      <section className="mx-auto min-h-screen max-w-5xl overflow-hidden bg-black/10">
+        <header className="border-b border-white/10 px-4 py-4 sm:px-7">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.34em] text-yellow-300/70">WEAVE · CARRIER</p>
-              <p className="mt-2 text-xs font-bold text-slate-500">A public entrance carried from an Ace stream</p>
+              <h1 className="mt-1 text-xl font-black">{carrier.aceName}</h1>
             </div>
-            <Radio className="h-6 w-6 text-red-400" />
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <Radio className={carrier.status === 'live' ? 'h-4 w-4 text-red-400' : 'h-4 w-4 text-slate-500'} />
+              {statusLabel(carrier.status)}
+            </div>
           </div>
         </header>
 
-        <div className="px-5 py-7 sm:px-8 sm:py-10">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="border border-yellow-300/20 bg-yellow-300/[0.06] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-yellow-200">ACE</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{statusLabel(carrier.status)}</span>
-          </div>
-
-          <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">{carrier.aceName}</h1>
-          <p className="mt-2 text-sm font-bold text-slate-400">{carrier.title}</p>
-
-          <div className="mt-8 border-y border-white/10 py-6">
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500">Trying to achieve</p>
-            <p className="mt-3 text-2xl font-black leading-tight text-white sm:text-3xl">{carrier.goal}</p>
-          </div>
-
-          <p className="mt-6 text-sm leading-6 text-slate-400">This Carrier came from Weave Arena. Join Weave to enter the Arena ground, follow the stream and participate from inside the subscribed Weave world.</p>
-
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            <Link href={`/register?carrier=${encodeURIComponent(carrier.id)}`} className="inline-flex items-center justify-center gap-2 bg-yellow-400 px-4 py-4 text-xs font-black uppercase tracking-wider text-black hover:bg-yellow-300">Join Weave · Enter Arena <ArrowRight className="h-4 w-4" /></Link>
-            <Link href="/login" className="inline-flex items-center justify-center gap-2 border border-white/15 px-4 py-4 text-xs font-black uppercase tracking-wider text-white hover:bg-white/[0.04]">Already in Weave <ShieldCheck className="h-4 w-4" /></Link>
-          </div>
+        <div className="px-4 py-5 sm:px-7">
+          <p className="text-[9px] font-black uppercase tracking-[0.28em] text-slate-600">Trying to achieve</p>
+          <p className="mt-2 text-xl font-black leading-tight sm:text-2xl">{carrier.goal}</p>
         </div>
+
+        {carrier.streamUrl ? (
+          <div className="aspect-video w-full bg-black">
+            <iframe
+              src={carrier.streamUrl}
+              title={`${carrier.aceName} — ${carrier.title}`}
+              className="h-full w-full"
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <div className="flex aspect-video w-full items-center justify-center bg-black px-6 text-center">
+            <div>
+              <Radio className="mx-auto h-8 w-8 text-slate-700" />
+              <p className="mt-3 text-sm font-black text-slate-400">STREAM OPENS HERE</p>
+              <p className="mt-1 text-xs text-slate-600">No account or registration is required to watch.</p>
+            </div>
+          </div>
+        )}
+
+        <footer className="border-t border-white/10 px-4 py-4 text-[9px] font-black uppercase tracking-[0.25em] text-slate-600 sm:px-7">
+          Weave Arena · Carrier
+        </footer>
       </section>
     </main>
   )
