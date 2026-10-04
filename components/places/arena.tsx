@@ -1,448 +1,237 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
+import { Flame, Gamepad2, Loader2, Play, Plus, Radio, ShieldCheck, Swords, Trophy, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Gamepad2, Users, Zap, Trophy, Plus, X, Loader2, Calendar, Play, Target, Swords, Search, Flame, TrendingUp } from 'lucide-react'
 import { useArenaMatches } from '@/lib/hooks'
 import { useAuth } from '@/lib/auth-provider'
 import { toast } from 'sonner'
-import api from '@/lib/api'
 
-const CATEGORIES = [
-  { id: 'all', name: 'All', icon: Target },
+const GAMES = [
+  { id: 'efootball', name: 'eFootball', icon: Trophy },
   { id: 'football', name: 'Football', icon: Trophy },
-  { id: 'ufc', name: 'UFC', icon: Swords },
-  { id: 'esports', name: 'Esports', icon: Gamepad2 },
   { id: 'racing', name: 'Racing', icon: Flame },
+  { id: 'fighting', name: 'Fighting', icon: Swords },
+  { id: 'esports', name: 'Online Games', icon: Gamepad2 },
 ]
+
+function localHeaders() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('ssb_auth_token') : null
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
+async function patchGame(matchId: string, body: Record<string, unknown>) {
+  const response = await fetch(`/api/arena/matches/${matchId}`, {
+    method: 'PATCH',
+    headers: localHeaders(),
+    body: JSON.stringify(body),
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.error || 'Arena movement failed')
+  return data
+}
 
 export default function Arena({ user: propUser }: { user?: any }) {
   const { user: authUser } = useAuth()
   const user = propUser || authUser
-  const [activeCategory, setActiveCategory] = useState('all')
-  const { data: matchesData, isLoading, mutate } = useArenaMatches({ limit: 20 })
-  const [showCreateModal, setShowCreateModal] = useState(false)
+  const { data: matchesData, isLoading, mutate } = useArenaMatches({ limit: 50 })
+  const [activeGame, setActiveGame] = useState('all')
+  const [showCreate, setShowCreate] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [joining, setJoining] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'all' | 'curated' | 'admin'>('all')
-  const [curatingMatch, setCuratingMatch] = useState<string | null>(null)
-  
-  const [newMatch, setNewMatch] = useState({
-    title: '',
-    description: '',
-    entryFee: 10,
-    maxParticipants: 100,
-    category: 'football_curated',
+  const [moving, setMoving] = useState<string | null>(null)
+  const [predicting, setPredicting] = useState<string | null>(null)
+  const [lifestyleActive, setLifestyleActive] = useState(false)
+  const [newGame, setNewGame] = useState({
+    title: 'eFootball Division League',
+    description: 'Flame Event seasonal Ace run',
+    category: 'efootball',
+    gameKey: 'efootball-division-league',
+    streamUrl: '',
     startsAt: '',
   })
 
   const matches = matchesData?.matches || []
-  
-  const filteredMatches = matches.filter((m: any) => {
-    if (activeTab === 'curated') return m.category === 'football_curated' || m.category === 'football'
-    if (activeTab === 'admin') return user?.role === 'admin'
-    if (activeCategory === 'all') return true
-    return m.category === activeCategory
-  })
+  const visible = useMemo(() => (
+    activeGame === 'all' ? matches : matches.filter((match: any) => match.category === activeGame || match.gameKey === activeGame)
+  ), [matches, activeGame])
 
-  const handleJoinMatch = async (matchId: string, prediction?: string) => {
+  useEffect(() => {
     if (!user?.id) return
-    setJoining(matchId)
-    try {
-      await api.joinArenaMatch(matchId, user.id, prediction)
-      mutate()
-      toast.success("You've entered the contest")
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't enter the contest")
-    }
-    setJoining(null)
-  }
+    fetch('/api/weave/lifestyles/access', { headers: localHeaders(), cache: 'no-store' })
+      .then(async response => ({ response, data: await response.json().catch(() => ({})) }))
+      .then(({ response, data }) => {
+        if (response.ok) setLifestyleActive(Boolean(data.access?.active))
+      })
+      .catch(() => {})
+  }, [user?.id])
 
-  const handleAction = async (matchId: string, action: 'start' | 'end' | 'cancel', winnerId?: string) => {
-    if (!user?.id) return
+  const move = async (matchId: string, body: Record<string, unknown>, success: string) => {
+    setMoving(matchId)
     try {
-      if (action === 'start') {
-        await api.startArenaMatch(matchId, user.id)
-        toast.success('The contest has begun')
-      } else if (action === 'end') {
-        await api.endArenaMatch(matchId, user.id, winnerId || '')
-        toast.success('The contest has settled')
-      } else if (action === 'cancel') {
-        // We'll add a cancel method to api or use end with no winner
-        const token = localStorage.getItem('ssb_auth_token')
-        const response = await fetch(`/api/arena/matches/${matchId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ action: 'cancel' }),
-        })
-        if (!response.ok) {
-          const data = await response.json().catch(() => ({}))
-          throw new Error(data.error || 'Failed to cancel match')
-        }
-        toast.success('The contest was called off — your entry has returned')
-      }
-      mutate()
-    } catch (e: any) {
-      toast.error(e.message || `Failed to ${action} match`)
+      await patchGame(matchId, body)
+      await mutate()
+      toast.success(success)
+    } catch (error: any) {
+      toast.error(error.message || 'Arena movement failed')
+    } finally {
+      setMoving(null)
     }
   }
 
-  const handleCreateMatch = async () => {
-    if (!user?.id || !newMatch.title || !newMatch.startsAt) return
+  const predict = async (matchId: string, prediction: 'ACE_WIN' | 'ACE_LOSE') => {
+    setPredicting(matchId)
+    try {
+      const response = await fetch(`/api/arena/matches/${matchId}/predict`, {
+        method: 'POST',
+        headers: localHeaders(),
+        body: JSON.stringify({ prediction }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Prediction could not be recorded')
+      await mutate()
+      toast.success(prediction === 'ACE_WIN' ? 'You called an Ace win' : 'You called an Ace fall')
+    } catch (error: any) {
+      toast.error(error.message || 'Prediction could not be recorded')
+    } finally {
+      setPredicting(null)
+    }
+  }
+
+  const createGame = async () => {
+    if (!newGame.title || !newGame.startsAt) return
     setCreating(true)
     try {
-      await api.createArenaMatch({
-        ...newMatch,
-        hostId: user.id,
+      const response = await fetch('/api/arena/matches', {
+        method: 'POST',
+        headers: localHeaders(),
+        body: JSON.stringify(newGame),
       })
-      mutate()
-      setShowCreateModal(false)
-      setNewMatch({
-        title: '',
-        description: '',
-        entryFee: 10,
-        maxParticipants: 100,
-        category: 'football_curated',
-        startsAt: '',
-      })
-      toast.success('The contest is set')
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't set the contest")
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Could not enter as Ace')
+      setShowCreate(false)
+      await mutate()
+      toast.success('Ace game entered')
+    } catch (error: any) {
+      toast.error(error.message || 'Could not enter as Ace')
+    } finally {
+      setCreating(false)
     }
-    setCreating(false)
   }
 
   return (
-    <section className="weave-operating-environment overflow-hidden border-y border-yellow-300/15 bg-[#080b12]/72 sm:rounded-[2rem] sm:border" data-arena-environment>
-      {/* Dynamic Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+    <section className="weave-operating-environment min-h-[75vh] overflow-hidden border-y border-yellow-300/15 bg-[#070a10]/80 sm:rounded-[2rem] sm:border" data-arena-environment>
+      <header className="border-b border-white/10 px-4 py-5 sm:px-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-white flex items-center gap-2 tracking-tighter">
-              <Swords className="h-6 w-6 text-yellow-500" />
-              ARENA
-            </h1>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Shared Contest · Participant Movement</p>
+            <div className="flex items-center gap-2"><Radio className="h-5 w-5 text-red-400" /><p className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-300/75">Flame Event · Live Ground</p></div>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-white">WEAVE ARENA</h1>
+            <p className="mt-1 max-w-xl text-xs leading-5 text-slate-400">Subscribed Aces choose online games, stream their run and carry a seasonal record while every Weave role can watch and call the live outcome.</p>
           </div>
-          <div className="flex gap-2">
-            {user?.role === 'admin' && (
-              <Button size="icon" variant="ghost" className="rounded-full bg-slate-900 border border-slate-800" onClick={() => {
-                setShowCreateModal(true)
-              }}>
-                <Plus className="h-4 w-4 text-yellow-500" />
-              </Button>
-            )}
-            <Button size="icon" variant="ghost" className="rounded-full bg-slate-900 border border-slate-800">
-              <Search className="h-4 w-4 text-slate-400" />
-            </Button>
-          </div>
-        </div>
-
-        {/* View Tabs */}
-        <div className="flex gap-0 border-y border-slate-800 bg-slate-950/40">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`flex-1 border-r border-slate-800 py-3 text-[10px] font-black uppercase tracking-widest transition-all last:border-r-0 ${
-              activeTab === 'all' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            All Games
-          </button>
-          <button
-            onClick={() => setActiveTab('curated')}
-            className={`flex-1 border-r border-slate-800 py-3 text-[10px] font-black uppercase tracking-widest transition-all last:border-r-0 ${
-              activeTab === 'curated' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            Curated
-          </button>
-          {user?.role === 'admin' && (
-            <button
-              onClick={() => setActiveTab('admin')}
-              className={`flex-1 border-r border-slate-800 py-3 text-[10px] font-black uppercase tracking-widest transition-all last:border-r-0 ${
-                activeTab === 'admin' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              Control
-            </button>
+          {lifestyleActive ? (
+            <Button onClick={() => setShowCreate(true)} className="bg-yellow-400 font-black text-slate-950 hover:bg-yellow-300"><Plus className="mr-2 h-4 w-4" />ENTER AS ACE</Button>
+          ) : (
+            <Button asChild variant="outline" className="border-yellow-300/30 text-yellow-200"><Link href="/weave/lifestyles">OPEN SUBSCRIBED WEAVE</Link></Button>
           )}
         </div>
 
-        {/* Category Scroll */}
-        {activeTab !== 'admin' && (
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`flex items-center gap-2 border-b px-4 py-2 whitespace-nowrap text-xs font-bold transition-all ${
-                  activeCategory === cat.id
-                    ? 'border-yellow-400 bg-yellow-500/[0.12] text-yellow-200'
-                    : 'border-slate-800 text-slate-400 hover:border-slate-600'
-                }`}
-              >
-                <cat.icon className="h-3 w-3" />
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+        <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+          <button onClick={() => setActiveGame('all')} className={`whitespace-nowrap border-b px-3 py-2 text-[10px] font-black uppercase tracking-widest ${activeGame === 'all' ? 'border-yellow-300 text-white' : 'border-white/10 text-slate-500'}`}>All live games</button>
+          {GAMES.map(game => (
+            <button key={game.id} onClick={() => setActiveGame(game.id)} className={`flex items-center gap-2 whitespace-nowrap border-b px-3 py-2 text-[10px] font-black uppercase tracking-widest ${activeGame === game.id ? 'border-yellow-300 text-white' : 'border-white/10 text-slate-500'}`}>
+              <game.icon className="h-3 w-3" />{game.name}
+            </button>
+          ))}
+        </div>
+      </header>
 
-      {/* Content */}
-      <div className="space-y-4">
+      <div className="px-3 py-5 sm:px-6">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-yellow-500" />
-            <p className="text-xs text-slate-500 mt-4 font-bold tracking-widest uppercase">Syncing Arena...</p>
+          <div className="flex min-h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-yellow-400" /></div>
+        ) : visible.length === 0 ? (
+          <div className="flex min-h-64 flex-col items-center justify-center border-y border-dashed border-white/10 text-center">
+            <Gamepad2 className="h-10 w-10 text-slate-700" />
+            <p className="mt-3 text-sm font-black text-slate-400">NO ACE IS LIVE HERE</p>
+            <p className="mt-1 text-xs text-slate-600">The ground opens when an Ace schedules a streamed game.</p>
           </div>
         ) : (
-          <>
-            {filteredMatches.length === 0 ? (
-              <div className="flex flex-col items-center justify-center border-y border-dashed border-slate-800 bg-slate-900/10 py-20 text-center">
-                <Target className="h-12 w-12 text-slate-800 mb-4" />
-                <h3 className="text-slate-400 font-bold">No Matches Found</h3>
-                <p className="text-slate-600 text-xs mt-2 max-w-[200px]">Create a match or check back later.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredMatches.map((match: any) => {
-                  const isLive = match.status === 'live' || match.status === 'ongoing'
-                  const isUpcoming = match.status === 'upcoming'
-                  const isAdmin = user?.role === 'admin'
-                  
-                  return (
-                    <div
-                      key={match.id}
-                      data-arena-lane={match.id}
-                      className={`relative overflow-hidden border-b bg-slate-900/20 px-1 py-5 transition-all hover:bg-yellow-500/[0.025] sm:px-4 ${
-                        isLive ? 'border-yellow-500/25' : 'border-slate-800/80'
-                      }`}
-                    >
-                      {/* Live Indicator */}
-                      {isLive && (
-                        <div className="absolute top-0 right-0">
-                          <div className="bg-red-500 text-[8px] font-black text-white px-3 py-1 rounded-bl-xl flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                            LIVE
-                          </div>
-                        </div>
-                      )}
+          <div className="space-y-5">
+            {visible.map((match: any) => {
+              const live = match.status === 'live'
+              const upcoming = match.status === 'upcoming'
+              const settling = match.status === 'settling'
+              const complete = match.status === 'completed' || match.status === 'cancelled'
+              const isAce = String(match.host?.id || '') === String(user?.id || '')
+              const canControl = user?.role === 'admin' || isAce
+              const settleReady = match.settlementAvailableAt ? new Date(match.settlementAvailableAt).getTime() <= Date.now() : false
 
-                      <div className="flex flex-col gap-4">
-                        {/* Event Info */}
-                        <div className="flex items-start justify-between min-w-0">
-                          <div className="min-w-0">
-                            <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">{match.category}</span>
-                            <h3 className="text-lg font-black text-white leading-tight mt-0.5 truncate">{match.title}</h3>
-                            <div className="flex items-center gap-3 mt-2">
-                               <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold">
-                                  <Calendar className="h-3 w-3" />
-                                  {new Date(match.scheduledAt).toLocaleDateString()}
-                               </div>
-                               <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold">
-                                  <Play className="h-3 w-3" />
-                                  {new Date(match.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                               </div>
-                            </div>
-                          </div>
-                          
-                          {/* Admin Controls Badge */}
-                          {isAdmin && (
-                            <div className="flex gap-1">
-                              {isUpcoming && (
-                                <Button size="sm" className="h-7 text-[8px] font-black bg-green-600 hover:bg-green-700" onClick={() => handleAction(match.id, 'start')}>
-                                  START
-                                </Button>
-                              )}
-                              {isLive && (
-                                <Button size="sm" className="h-7 text-[8px] font-black bg-blue-600 hover:bg-blue-700" onClick={() => setCuratingMatch(match.id)}>
-                                  SETTLE
-                                </Button>
-                              )}
-                              {match.status !== 'completed' && (
-                                <Button size="sm" variant="destructive" className="h-7 text-[8px] font-black" onClick={() => handleAction(match.id, 'cancel')}>
-                                  CANCEL
-                                </Button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Settle Modal/Panel Overlay */}
-                        {curatingMatch === match.id && (
-                          <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4 animate-in slide-in-from-bottom-2 duration-300">
-                             <h4 className="text-sm font-black text-white mb-4 uppercase tracking-widest">Settle Winner</h4>
-                             <div className="flex flex-wrap gap-2 justify-center">
-                               {match.participants?.map((p: any) => (
-                                 <Button 
-                                  key={p.id}
-                                  size="sm" 
-                                  variant="outline"
-                                  className="h-8 text-[8px] font-black border-slate-700 hover:bg-yellow-500 hover:text-slate-950"
-                                  onClick={() => {
-                                    handleAction(match.id, 'end', p.id)
-                                    setCuratingMatch(null)
-                                  }}
-                                 >
-                                   {p.displayName || p.username}
-                                 </Button>
-                               ))}
-                               {(!match.participants || match.participants.length === 0) && (
-                                 <p className="text-xs text-slate-500 italic">No participants found</p>
-                               )}
-                             </div>
-                             <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="mt-6 text-[8px] font-black text-slate-500"
-                              onClick={() => setCuratingMatch(null)}
-                             >
-                               CLOSE
-                             </Button>
-                          </div>
-                        )}
-
-                        {/* Prediction Stats */}
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="bg-slate-950/20 p-2 text-center">
-                            <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Pool</p>
-                            <p className="text-sm font-black text-white">{match.prizePool || 0} Flame Coin</p>
-                          </div>
-                          <div className="bg-slate-950/20 p-2 text-center">
-                            <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Entry</p>
-                            <p className="text-sm font-black text-yellow-500">{match.entryFee || 0} Flame Coin</p>
-                          </div>
-                          <div className="bg-slate-950/20 p-2 text-center">
-                            <p className="text-[8px] text-slate-500 font-bold uppercase mb-1">Players</p>
-                            <p className="text-sm font-black text-cyan-500">{match.participantCount || 0}</p>
-                          </div>
-                        </div>
-
-                        {/* Prediction Choices (User View) */}
-                        {isUpcoming && !isAdmin && (
-                          <div className="grid grid-cols-3 gap-2 mt-2">
-                             <Button 
-                              variant="outline" 
-                              className="bg-slate-950 border-slate-800 text-[8px] font-black hover:bg-yellow-500 hover:text-slate-950 hover:border-yellow-400 py-1"
-                              onClick={() => handleJoinMatch(match.id, 'HOME')}
-                              disabled={joining === match.id}
-                            >
-                               HOME (2.0x)
-                             </Button>
-                             <Button 
-                              variant="outline" 
-                              className="bg-slate-950 border-slate-800 text-[8px] font-black hover:bg-yellow-500 hover:text-slate-950 hover:border-yellow-400 py-1"
-                              onClick={() => handleJoinMatch(match.id, 'DRAW')}
-                              disabled={joining === match.id}
-                            >
-                               DRAW (3.2x)
-                             </Button>
-                             <Button 
-                              variant="outline" 
-                              className="bg-slate-950 border-slate-800 text-[8px] font-black hover:bg-yellow-500 hover:text-slate-950 hover:border-yellow-400 py-1"
-                              onClick={() => handleJoinMatch(match.id, 'AWAY')}
-                              disabled={joining === match.id}
-                            >
-                               AWAY (2.5x)
-                             </Button>
-                          </div>
-                        )}
-
-                        {match.status === 'completed' && (
-                           <div className="flex items-center justify-between border-y border-slate-700/50 bg-slate-800/20 p-3">
-                             <div className="flex items-center gap-2">
-                               <Trophy className="h-4 w-4 text-yellow-500" />
-                               <span className="text-xs font-bold text-slate-300">Ended</span>
-                             </div>
-                             <span className="text-xs font-black text-white">Winner Settled</span>
-                           </div>
-                        )}
+              return (
+                <article key={match.id} data-arena-lane={match.id} className="overflow-hidden border-y border-white/10 bg-black/15 sm:border">
+                  <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 px-4 py-4">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {live && <span className="inline-flex items-center gap-1 bg-red-500 px-2 py-1 text-[8px] font-black text-white"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />LIVE</span>}
+                        {settling && <span className="bg-yellow-400/10 px-2 py-1 text-[8px] font-black text-yellow-300">20-MINUTE VERIFY</span>}
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">{match.gameKey || match.category}</span>
                       </div>
+                      <h2 className="mt-2 text-xl font-black text-white">{match.title}</h2>
+                      <p className="mt-1 text-xs text-slate-400">ACE · <strong className="text-yellow-200">{match.aceName || match.host?.displayName || 'Ace'}</strong></p>
                     </div>
-                  )
-                })}
-              </div>
-            )}
-          </>
+                    <div className="text-right"><p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Live calls</p><p className="text-xl font-black text-white">{Number(match.predictionCount || 0)}</p></div>
+                  </div>
+
+                  {match.streamUrl && (live || settling || complete) && (
+                    <div className="aspect-video w-full bg-black"><iframe src={match.streamUrl} title={`${match.title} live stream`} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /></div>
+                  )}
+
+                  <div className="grid grid-cols-3 border-y border-white/10 text-center">
+                    <div className="px-2 py-3"><p className="text-[8px] font-black uppercase tracking-widest text-slate-600">Ace wins</p><p className="mt-1 text-sm font-black text-emerald-300">{Number(match.aceWinPredictions || 0)}</p></div>
+                    <div className="border-x border-white/10 px-2 py-3"><p className="text-[8px] font-black uppercase tracking-widest text-slate-600">Ace falls</p><p className="mt-1 text-sm font-black text-red-300">{Number(match.aceLosePredictions || 0)}</p></div>
+                    <div className="px-2 py-3"><p className="text-[8px] font-black uppercase tracking-widest text-slate-600">Status</p><p className="mt-1 text-sm font-black text-white">{String(match.status || '').toUpperCase()}</p></div>
+                  </div>
+
+                  {live && !isAce && (
+                    <div className="flex flex-wrap gap-2 px-4 py-4">
+                      <Button disabled={predicting === match.id} onClick={() => predict(match.id, 'ACE_WIN')} className="bg-emerald-500 font-black text-black hover:bg-emerald-400">ACE WINS</Button>
+                      <Button disabled={predicting === match.id} onClick={() => predict(match.id, 'ACE_LOSE')} variant="outline" className="border-red-400/30 font-black text-red-300">ACE FALLS</Button>
+                      <p className="w-full text-[10px] leading-4 text-slate-500">Calls remain open while the game is live and resolve after the 20-minute verification window.</p>
+                    </div>
+                  )}
+
+                  {canControl && (
+                    <div className="flex flex-wrap gap-2 border-t border-white/10 px-4 py-4">
+                      {upcoming && <Button disabled={moving === match.id} onClick={() => move(match.id, { action: 'start' }, 'Arena game is live')} className="bg-emerald-500 font-black text-black hover:bg-emerald-400"><Play className="mr-2 h-4 w-4" />START STREAMED GAME</Button>}
+                      {live && <>
+                        <Button disabled={moving === match.id} onClick={() => move(match.id, { action: 'end', aceWon: true }, 'Game locked. Verification opens in 20 minutes.')} className="bg-yellow-400 font-black text-black hover:bg-yellow-300"><Trophy className="mr-2 h-4 w-4" />ACE WON</Button>
+                        <Button disabled={moving === match.id} onClick={() => move(match.id, { action: 'end', aceWon: false }, 'Game locked. Ace loss recorded after verification.')} variant="outline" className="border-red-400/30 font-black text-red-300">ACE LOST</Button>
+                      </>}
+                      {settling && <Button disabled={moving === match.id || !settleReady} onClick={() => move(match.id, { action: 'settle' }, 'Arena result resolved')} className="bg-cyan-400 font-black text-black hover:bg-cyan-300"><ShieldCheck className="mr-2 h-4 w-4" />{settleReady ? 'RESOLVE RESULT' : 'WAITING 20 MINUTES'}</Button>}
+                    </div>
+                  )}
+
+                  {complete && <div className="border-t border-white/10 px-4 py-3 text-xs font-bold text-slate-400">{match.settlementReason || (match.status === 'cancelled' ? 'Game cancelled.' : 'Game resolved.')}</div>}
+                </article>
+              )
+            })}
+          </div>
         )}
       </div>
 
-      {/* Create Match Modal (Community) */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <h2 className="text-xl font-black text-white tracking-tighter">LAUNCH MATCH</h2>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-500 hover:text-white transition">
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Category</label>
-                <select 
-                  value={newMatch.category}
-                  onChange={(e) => setNewMatch({ ...newMatch, category: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-sm focus:ring-yellow-500"
-                >
-                  <option value="football_curated">Football (Curated)</option>
-                  <option value="football">Football (Community)</option>
-                  <option value="ufc">UFC</option>
-                  <option value="esports">Esports</option>
-                  <option value="racing">Racing</option>
-                  <option value="general">General</option>
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Title</label>
-                <Input
-                  value={newMatch.title}
-                  onChange={(e) => setNewMatch({ ...newMatch, title: e.target.value })}
-                  placeholder="e.g. Manchester City vs Real Madrid"
-                  className="bg-slate-950 border-slate-800 text-white rounded-xl focus:ring-yellow-500"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Entry (Flame Coin)</label>
-                  <Input
-                    type="number"
-                    value={newMatch.entryFee}
-                    onChange={(e) => setNewMatch({ ...newMatch, entryFee: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-800 text-white rounded-xl focus:ring-yellow-500"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Max Players</label>
-                  <Input
-                    type="number"
-                    value={newMatch.maxParticipants}
-                    onChange={(e) => setNewMatch({ ...newMatch, maxParticipants: Number(e.target.value) })}
-                    className="bg-slate-950 border-slate-800 text-white rounded-xl focus:ring-yellow-500"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Start Time</label>
-                <Input
-                  type="datetime-local"
-                  value={newMatch.startsAt}
-                  onChange={(e) => setNewMatch({ ...newMatch, startsAt: e.target.value })}
-                  className="bg-slate-950 border-slate-800 text-white rounded-xl focus:ring-yellow-500"
-                />
-              </div>
-              <Button 
-                className="w-full h-12 bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-black mt-4 rounded-xl shadow-lg shadow-yellow-900/20" 
-                onClick={handleCreateMatch}
-                disabled={creating || !newMatch.title || !newMatch.startsAt}
-              >
-                {creating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'LAUNCH MATCH'}
-              </Button>
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
+          <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto border border-yellow-300/20 bg-[#0b0f17] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><div><p className="text-[9px] font-black uppercase tracking-[0.25em] text-yellow-300">Ace Entry</p><h2 className="text-xl font-black text-white">CHOOSE GAME · OPEN STREAM</h2></div><button onClick={() => setShowCreate(false)}><X className="h-5 w-5 text-slate-500" /></button></div>
+            <div className="space-y-4 p-5">
+              <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Game</label><select value={newGame.category} onChange={event => setNewGame(current => ({ ...current, category: event.target.value, gameKey: event.target.value }))} className="mt-1 w-full border border-white/10 bg-black/30 px-3 py-2 text-sm text-white">{GAMES.map(game => <option key={game.id} value={game.id}>{game.name}</option>)}</select></div>
+              <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Arena title</label><Input value={newGame.title} onChange={event => setNewGame(current => ({ ...current, title: event.target.value }))} className="mt-1 border-white/10 bg-black/30 text-white" /></div>
+              <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Start</label><Input type="datetime-local" value={newGame.startsAt} onChange={event => setNewGame(current => ({ ...current, startsAt: event.target.value }))} className="mt-1 border-white/10 bg-black/30 text-white" /></div>
+              <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Stream URL</label><Input value={newGame.streamUrl} onChange={event => setNewGame(current => ({ ...current, streamUrl: event.target.value }))} placeholder="Live stream / embed URL" className="mt-1 border-white/10 bg-black/30 text-white" /></div>
+              <div className="border-y border-white/10 py-3 text-xs leading-5 text-slate-400">Your main Weave role remains unchanged. Ace is the identity carried inside the Arena lifestyle, and the result joins your seasonal Ace record.</div>
+              <Button disabled={creating || !newGame.startsAt} onClick={createGame} className="w-full bg-yellow-400 font-black text-black hover:bg-yellow-300">{creating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'ENTER AS ACE'}</Button>
             </div>
           </div>
         </div>
