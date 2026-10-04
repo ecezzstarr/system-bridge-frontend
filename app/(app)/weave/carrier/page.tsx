@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Clipboard, ExternalLink, Flame, Loader2, Megaphone, Pause, Play, Radio, RefreshCw, Share2, Users } from 'lucide-react'
+import { Clipboard, ExternalLink, Flame, Gamepad2, Loader2, Megaphone, Pause, Play, Radio, RefreshCw, Share2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -35,6 +35,14 @@ type CarrierGame = {
 }
 
 type Draft = { headline: string; message: string }
+type CarrierAccess = {
+  active: boolean
+  role?: string
+  gate?: 'administration' | 'agent_subscription' | 'bridger_continuance' | 'lord_lady' | 'unsupported'
+  reason?: string
+  position?: 'Ace' | null
+  qualifyingState?: string | null
+}
 
 function authHeaders() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('ssb_auth_token') : null
@@ -49,7 +57,7 @@ export default function AceCarrierConsolePage() {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({})
   const [loading, setLoading] = useState(true)
   const [moving, setMoving] = useState<string | null>(null)
-  const [needsSubscription, setNeedsSubscription] = useState(false)
+  const [access, setAccess] = useState<CarrierAccess | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -57,14 +65,14 @@ export default function AceCarrierConsolePage() {
       const response = await fetch('/api/carrier/ace', { headers: authHeaders(), cache: 'no-store' })
       const data = await response.json().catch(() => ({}))
       if (response.status === 403) {
-        setNeedsSubscription(true)
+        setAccess(data.access || { active: false, reason: data.error })
         setGames([])
         return
       }
       if (!response.ok) throw new Error(data.error || 'Carrier could not open')
       const nextGames: CarrierGame[] = data.games || []
       setGames(nextGames)
-      setNeedsSubscription(false)
+      setAccess(data.access || { active: true, position: 'Ace' })
       setDrafts(current => {
         const next = { ...current }
         for (const game of nextGames) {
@@ -89,6 +97,30 @@ export default function AceCarrierConsolePage() {
   const publishedCount = useMemo(() => games.filter(game => game.carrier?.status === 'published').length, [games])
   const totalReach = useMemo(() => games.reduce((sum, game) => sum + Number(game.carrier?.uniqueViews || 0), 0), [games])
   const totalSupport = useMemo(() => games.reduce((sum, game) => sum + Number(game.carrier?.supports || 0), 0), [games])
+
+  const gateHref = access?.gate === 'agent_subscription'
+    ? '/weave/lifestyles'
+    : access?.gate === 'bridger_continuance'
+      ? '/bridger/subscription'
+      : access?.gate === 'lord_lady'
+        ? '/client/system-switch#enterprise'
+        : '/'
+
+  const gateLabel = access?.gate === 'agent_subscription'
+    ? 'OPEN MONTHLY WEAVE'
+    : access?.gate === 'bridger_continuance'
+      ? 'OPEN CONTINUANCE'
+      : access?.gate === 'lord_lady'
+        ? 'ENTER ENTERPRISE DREAM'
+        : 'RETURN TO WEAVE'
+
+  const gateTitle = access?.gate === 'agent_subscription'
+    ? 'CARRIER OPENS AFTER AGENT SUBSCRIPTION'
+    : access?.gate === 'bridger_continuance'
+      ? 'CARRIER OPENS WITH ACTIVE CONTINUANCE'
+      : access?.gate === 'lord_lady'
+        ? 'CARRIER OPENS WHEN THE CLIENT BECOMES LORD OR LADY'
+        : 'CARRIER ENTRANCE IS CLOSED'
 
   const publish = async (game: CarrierGame) => {
     setMoving(game.id)
@@ -165,12 +197,22 @@ export default function AceCarrierConsolePage() {
       <header className="border-b border-white/10 px-4 py-6 sm:px-7">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-yellow-300" /><p className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-300/75">Carrier · Ace Movement</p></div>
-            <h1 className="mt-2 text-3xl font-black tracking-tight">PUBLISH THE ACE</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Turn each Arena game into one public Carrier. Send it through WhatsApp or the web. The person receiving it enters the activity directly, watches and supports without registration.</p>
+            <div className="flex items-center gap-2"><Radio className="h-5 w-5 text-yellow-300" /><p className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-300/75">Carrier · Position</p></div>
+            <h1 className="mt-2 text-3xl font-black tracking-tight">CARRIER</h1>
+            <p className="mt-1 text-xs font-black uppercase tracking-[0.24em] text-sky-200">Inside Carrier · You are Ace</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">Your main Weave role remains outside this environment. Inside Carrier every admitted Admin, Agent, Bridger, Lord or Lady carries the same Ace identity. Arena is where the Ace plays; Carrier is where the Ace carries each activity outward for people to enter, watch and support.</p>
           </div>
-          <Button onClick={() => void load()} variant="outline" className="border-white/15 text-slate-200"><RefreshCw className="mr-2 h-4 w-4" />REFRESH</Button>
+          <div className="flex flex-wrap gap-2">
+            {access?.active && <Button asChild className="bg-yellow-400 font-black text-slate-950 hover:bg-yellow-300"><Link href="/arena"><Gamepad2 className="mr-2 h-4 w-4" />ENTER ARENA</Link></Button>}
+            <Button onClick={() => void load()} variant="outline" className="border-white/15 text-slate-200"><RefreshCw className="mr-2 h-4 w-4" />REFRESH</Button>
+          </div>
         </div>
+
+        {access?.active && (
+          <div className="mt-5 border-y border-yellow-300/10 bg-yellow-300/[0.025] px-4 py-3 text-xs leading-5 text-slate-400">
+            Entrance carried by <strong className="text-yellow-200">{access.gate === 'administration' ? 'Administration' : access.gate === 'agent_subscription' ? 'Agent subscription' : access.gate === 'bridger_continuance' ? 'Bridger Continuance' : 'Lord / Lady elevation'}</strong>. Position inside Carrier: <strong className="text-white">ACE</strong>.
+          </div>
+        )}
 
         <div className="mt-6 grid grid-cols-3 border-y border-white/10 text-center">
           <div className="px-2 py-4"><Radio className="mx-auto h-4 w-4 text-red-300" /><p className="mt-2 text-xl font-black">{publishedCount}</p><p className="mt-1 text-[8px] font-black uppercase tracking-widest text-slate-600">Public Carriers</p></div>
@@ -181,20 +223,25 @@ export default function AceCarrierConsolePage() {
 
       {loading ? (
         <div className="flex min-h-72 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-yellow-300" /></div>
-      ) : needsSubscription ? (
+      ) : access && !access.active ? (
         <section className="px-5 py-14 text-center">
-          <h2 className="text-xl font-black">CARRIER OPENS WITH SUBSCRIBED WEAVE</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">Carrier is not the subscription. It is one system available to Aces inside the subscribed Weave layer.</p>
-          <Button asChild className="mt-5 bg-yellow-400 font-black text-slate-950 hover:bg-yellow-300"><Link href="/weave/lifestyles">OPEN SUBSCRIBED WEAVE</Link></Button>
+          <h2 className="text-xl font-black">{gateTitle}</h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">{access.reason || 'Complete the movement that opens your Carrier entrance.'}</p>
+          <Button asChild className="mt-5 bg-yellow-400 font-black text-slate-950 hover:bg-yellow-300"><Link href={gateHref}>{gateLabel}</Link></Button>
         </section>
       ) : games.length === 0 ? (
         <section className="px-5 py-14 text-center">
-          <h2 className="text-xl font-black">NO ACE ACTIVITY TO CARRY YET</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">Schedule a streamed game in Weave Arena first. Carrier will then make that activity publishable outside Weave.</p>
-          <Button asChild className="mt-5 bg-yellow-400 font-black text-slate-950 hover:bg-yellow-300"><Link href="/arena">ENTER ARENA</Link></Button>
+          <h2 className="text-xl font-black">ACE IS INSIDE CARRIER</h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">No game has been formed yet. Enter Arena as Ace, choose the online game and stream; the activity returns here ready to publish through Carrier.</p>
+          <Button asChild className="mt-5 bg-yellow-400 font-black text-slate-950 hover:bg-yellow-300"><Link href="/arena">ENTER ARENA AS ACE</Link></Button>
         </section>
       ) : (
         <section className="space-y-5 px-3 py-5 sm:px-6">
+          <div className="border-y border-white/10 px-4 py-4">
+            <div className="flex items-center gap-2"><Megaphone className="h-4 w-4 text-sky-300" /><p className="text-[9px] font-black uppercase tracking-[0.24em] text-sky-200">Ace Publishing System</p></div>
+            <p className="mt-2 text-xs leading-5 text-slate-500">Turn each Arena game into one public Carrier. Send it through WhatsApp or the web. The recipient enters the activity directly, watches and supports without registration.</p>
+          </div>
+
           {games.map(game => {
             const draft = drafts[game.id] || { headline: `${game.aceName} · ${game.title}`, message: '' }
             const isPublished = game.carrier?.status === 'published'
