@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query as dbQuery, getPool } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
-import { ensureAceAccount, ensureWeaveLifestyleSchema, requireLifestyleAccess } from '@/lib/weave-lifestyle'
+import { ensureWeaveLifestyleSchema } from '@/lib/weave-lifestyle'
+import { requireCarrierAccess } from '@/lib/carrier-access'
 
 export async function GET(request: NextRequest) {
   try {
@@ -76,9 +77,9 @@ export async function POST(request: NextRequest) {
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    await requireLifestyleAccess(authUser.id)
+    await requireCarrierAccess(authUser)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.status || 403 })
+    return NextResponse.json({ error: error.message, access: error.carrierAccess || null }, { status: error.status || 403 })
   }
 
   const pool = getPool()
@@ -100,7 +101,6 @@ export async function POST(request: NextRequest) {
     }
 
     await ensureWeaveLifestyleSchema()
-    await ensureAceAccount(authUser.id, authUser.name || authUser.username || 'Ace')
 
     const id = `match_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
     await client.query(
@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      identity: 'Ace',
       match: { id, title, status: 'upcoming', gameKey, streamUrl: streamUrl || null },
     })
   } catch (error) {

@@ -45,7 +45,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
   const [creating, setCreating] = useState(false)
   const [moving, setMoving] = useState<string | null>(null)
   const [predicting, setPredicting] = useState<string | null>(null)
-  const [lifestyleActive, setLifestyleActive] = useState(false)
+  const [carrierAccess, setCarrierAccess] = useState<{ active: boolean; reason?: string; gate?: string }>({ active: false })
   const [newGame, setNewGame] = useState({
     title: 'eFootball Division League',
     description: 'Flame Event seasonal Ace run',
@@ -62,13 +62,29 @@ export default function Arena({ user: propUser }: { user?: any }) {
 
   useEffect(() => {
     if (!user?.id) return
-    fetch('/api/weave/lifestyles/access', { headers: localHeaders(), cache: 'no-store' })
+    fetch('/api/carrier/access', { headers: localHeaders(), cache: 'no-store' })
       .then(async response => ({ response, data: await response.json().catch(() => ({})) }))
       .then(({ response, data }) => {
-        if (response.ok) setLifestyleActive(Boolean(data.access?.active))
+        if (response.ok) setCarrierAccess({ active: Boolean(data.access?.active), reason: data.access?.reason, gate: data.access?.gate })
       })
       .catch(() => {})
   }, [user?.id])
+
+  const gateHref = user?.role === 'agent'
+    ? '/weave/lifestyles'
+    : user?.role === 'bridger'
+      ? '/bridger/subscription'
+      : user?.role === 'client'
+        ? '/client/system-switch#enterprise'
+        : '/weave/carrier'
+
+  const gateLabel = user?.role === 'agent'
+    ? 'OPEN MONTHLY WEAVE'
+    : user?.role === 'bridger'
+      ? 'RESTORE CONTINUANCE'
+      : user?.role === 'client'
+        ? 'BECOME LORD / LADY'
+        : 'OPEN CARRIER'
 
   const move = async (matchId: string, body: Record<string, unknown>, success: string) => {
     setMoving(matchId)
@@ -128,14 +144,17 @@ export default function Arena({ user: propUser }: { user?: any }) {
       <header className="border-b border-white/10 px-4 py-5 sm:px-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2"><Radio className="h-5 w-5 text-red-400" /><p className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-300/75">Flame Event · Live Ground</p></div>
+            <div className="flex items-center gap-2"><Radio className="h-5 w-5 text-red-400" /><p className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-300/75">Carrier · Flame Event · Live Ground</p></div>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-white">WEAVE ARENA</h1>
-            <p className="mt-1 max-w-xl text-xs leading-5 text-slate-400">Subscribed Aces choose online games, stream their run and carry a seasonal record while every Weave role can watch and call the live outcome.</p>
+            <p className="mt-1 max-w-xl text-xs leading-5 text-slate-400">Inside Carrier every qualified participant is an Ace. Aces choose online games, stream their run and carry a seasonal record while every Weave role can watch and call the live outcome.</p>
           </div>
-          {lifestyleActive ? (
+          {carrierAccess.active ? (
             <Button onClick={() => setShowCreate(true)} className="bg-yellow-400 font-black text-slate-950 hover:bg-yellow-300"><Plus className="mr-2 h-4 w-4" />ENTER AS ACE</Button>
           ) : (
-            <Button asChild variant="outline" className="border-yellow-300/30 text-yellow-200"><Link href="/weave/lifestyles">OPEN SUBSCRIBED WEAVE</Link></Button>
+            <div className="max-w-xs text-right">
+              <Button asChild variant="outline" className="border-yellow-300/30 text-yellow-200"><Link href={gateHref}>{gateLabel}</Link></Button>
+              {carrierAccess.reason && <p className="mt-2 text-[9px] leading-4 text-slate-600">{carrierAccess.reason}</p>}
+            </div>
           )}
         </div>
 
@@ -224,13 +243,13 @@ export default function Arena({ user: propUser }: { user?: any }) {
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
           <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto border border-yellow-300/20 bg-[#0b0f17] shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><div><p className="text-[9px] font-black uppercase tracking-[0.25em] text-yellow-300">Ace Entry</p><h2 className="text-xl font-black text-white">CHOOSE GAME · OPEN STREAM</h2></div><button onClick={() => setShowCreate(false)}><X className="h-5 w-5 text-slate-500" /></button></div>
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><div><p className="text-[9px] font-black uppercase tracking-[0.25em] text-yellow-300">Carrier · Ace Entry</p><h2 className="text-xl font-black text-white">CHOOSE GAME · OPEN STREAM</h2></div><button onClick={() => setShowCreate(false)}><X className="h-5 w-5 text-slate-500" /></button></div>
             <div className="space-y-4 p-5">
               <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Game</label><select value={newGame.category} onChange={event => setNewGame(current => ({ ...current, category: event.target.value, gameKey: event.target.value }))} className="mt-1 w-full border border-white/10 bg-black/30 px-3 py-2 text-sm text-white">{GAMES.map(game => <option key={game.id} value={game.id}>{game.name}</option>)}</select></div>
               <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Arena title</label><Input value={newGame.title} onChange={event => setNewGame(current => ({ ...current, title: event.target.value }))} className="mt-1 border-white/10 bg-black/30 text-white" /></div>
               <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Start</label><Input type="datetime-local" value={newGame.startsAt} onChange={event => setNewGame(current => ({ ...current, startsAt: event.target.value }))} className="mt-1 border-white/10 bg-black/30 text-white" /></div>
               <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Stream URL</label><Input value={newGame.streamUrl} onChange={event => setNewGame(current => ({ ...current, streamUrl: event.target.value }))} placeholder="Live stream / embed URL" className="mt-1 border-white/10 bg-black/30 text-white" /></div>
-              <div className="border-y border-white/10 py-3 text-xs leading-5 text-slate-400">Your main Weave role remains unchanged. Ace is the identity carried inside the Arena lifestyle, and the result joins your seasonal Ace record.</div>
+              <div className="border-y border-white/10 py-3 text-xs leading-5 text-slate-400">Your main Weave role remains unchanged outside Carrier. Inside Carrier your identity is Ace, and each result joins your seasonal Ace record.</div>
               <Button disabled={creating || !newGame.startsAt} onClick={createGame} className="w-full bg-yellow-400 font-black text-black hover:bg-yellow-300">{creating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'ENTER AS ACE'}</Button>
             </div>
           </div>
