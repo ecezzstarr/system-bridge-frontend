@@ -26,6 +26,8 @@ export type CarrierAcePublication = {
   aceLoseCalls: number
 }
 
+let carrierSchemaPromise: Promise<void> | null = null
+
 export function getAceCarrierPath(matchId: string) {
   return `/carrier/ace/${encodeURIComponent(matchId)}`
 }
@@ -45,7 +47,7 @@ export function buildAceCarrierShareText(input: {
   return `${lead}\n\nWatch and support live through Carrier:\n${input.url}`
 }
 
-export async function ensureCarrierSchema() {
+async function initializeCarrierSchema() {
   const pool = getPool()
   const client = await pool.connect()
   try {
@@ -84,6 +86,16 @@ export async function ensureCarrierSchema() {
   } finally {
     client.release()
   }
+}
+
+export function ensureCarrierSchema() {
+  if (!carrierSchemaPromise) {
+    carrierSchemaPromise = initializeCarrierSchema().catch(error => {
+      carrierSchemaPromise = null
+      throw error
+    })
+  }
+  return carrierSchemaPromise
 }
 
 export async function getPublicAceCarrier(matchId: string): Promise<CarrierAcePublication | null> {
