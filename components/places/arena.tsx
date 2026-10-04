@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Flame, Gamepad2, Loader2, Play, Plus, Radio, ShieldCheck, Swords, Trophy, X } from 'lucide-react'
+import { Flame, Gamepad2, Loader2, Play, Plus, Radio, Share2, ShieldCheck, Swords, Trophy, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useArenaMatches } from '@/lib/hooks'
@@ -45,10 +45,11 @@ export default function Arena({ user: propUser }: { user?: any }) {
   const [creating, setCreating] = useState(false)
   const [moving, setMoving] = useState<string | null>(null)
   const [predicting, setPredicting] = useState<string | null>(null)
+  const [carrying, setCarrying] = useState<string | null>(null)
   const [lifestyleActive, setLifestyleActive] = useState(false)
   const [newGame, setNewGame] = useState({
     title: 'eFootball Division League',
-    description: 'Flame Event seasonal Ace run',
+    description: '',
     category: 'efootball',
     gameKey: 'efootball-division-league',
     streamUrl: '',
@@ -102,8 +103,41 @@ export default function Arena({ user: propUser }: { user?: any }) {
     }
   }
 
+  const carry = async (matchId: string) => {
+    setCarrying(matchId)
+    try {
+      const response = await fetch(`/api/arena/matches/${matchId}/carrier`, {
+        method: 'POST',
+        headers: localHeaders(),
+        body: '{}',
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Carrier could not be formed')
+      const carrier = data.carrier
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          await navigator.share({
+            title: `${carrier.aceName} · Weave Arena`,
+            text: `${carrier.aceName}\n${carrier.goal}`,
+            url: carrier.url,
+          })
+          toast.success('Carrier opened for sharing')
+          return
+        } catch (error: any) {
+          if (error?.name === 'AbortError') return
+        }
+      }
+      await navigator.clipboard.writeText(carrier.message)
+      toast.success('Carrier copied. Paste it into WhatsApp or anywhere on the web.')
+    } catch (error: any) {
+      toast.error(error.message || 'Carrier could not be formed')
+    } finally {
+      setCarrying(null)
+    }
+  }
+
   const createGame = async () => {
-    if (!newGame.title || !newGame.startsAt) return
+    if (!newGame.title || !newGame.description.trim() || !newGame.startsAt) return
     setCreating(true)
     try {
       const response = await fetch('/api/arena/matches', {
@@ -114,6 +148,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.error || 'Could not enter as Ace')
       setShowCreate(false)
+      setNewGame(current => ({ ...current, description: '', streamUrl: '', startsAt: '' }))
       await mutate()
       toast.success('Ace game entered')
     } catch (error: any) {
@@ -180,6 +215,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
                       </div>
                       <h2 className="mt-2 text-xl font-black text-white">{match.title}</h2>
                       <p className="mt-1 text-xs text-slate-400">ACE · <strong className="text-yellow-200">{match.aceName || match.host?.displayName || 'Ace'}</strong></p>
+                      {match.description && <p className="mt-2 max-w-xl text-xs leading-5 text-slate-500">{match.description}</p>}
                     </div>
                     <div className="text-right"><p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Live calls</p><p className="text-xl font-black text-white">{Number(match.predictionCount || 0)}</p></div>
                   </div>
@@ -204,6 +240,11 @@ export default function Arena({ user: propUser }: { user?: any }) {
 
                   {canControl && (
                     <div className="flex flex-wrap gap-2 border-t border-white/10 px-4 py-4">
+                      {isAce && match.status !== 'cancelled' && (
+                        <Button disabled={carrying === match.id} onClick={() => carry(match.id)} variant="outline" className="border-yellow-300/25 font-black text-yellow-200">
+                          {carrying === match.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Share2 className="mr-2 h-4 w-4" />}CARRIER
+                        </Button>
+                      )}
                       {upcoming && <Button disabled={moving === match.id} onClick={() => move(match.id, { action: 'start' }, 'Arena game is live')} className="bg-emerald-500 font-black text-black hover:bg-emerald-400"><Play className="mr-2 h-4 w-4" />START STREAMED GAME</Button>}
                       {live && <>
                         <Button disabled={moving === match.id} onClick={() => move(match.id, { action: 'end', aceWon: true }, 'Game locked. Verification opens in 20 minutes.')} className="bg-yellow-400 font-black text-black hover:bg-yellow-300"><Trophy className="mr-2 h-4 w-4" />ACE WON</Button>
@@ -228,10 +269,11 @@ export default function Arena({ user: propUser }: { user?: any }) {
             <div className="space-y-4 p-5">
               <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Game</label><select value={newGame.category} onChange={event => setNewGame(current => ({ ...current, category: event.target.value, gameKey: event.target.value }))} className="mt-1 w-full border border-white/10 bg-black/30 px-3 py-2 text-sm text-white">{GAMES.map(game => <option key={game.id} value={game.id}>{game.name}</option>)}</select></div>
               <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Arena title</label><Input value={newGame.title} onChange={event => setNewGame(current => ({ ...current, title: event.target.value }))} className="mt-1 border-white/10 bg-black/30 text-white" /></div>
+              <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">What are you trying to achieve?</label><Input value={newGame.description} onChange={event => setNewGame(current => ({ ...current, description: event.target.value }))} placeholder="Example: Reach Division 1 in this stream" className="mt-1 border-white/10 bg-black/30 text-white" /></div>
               <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Start</label><Input type="datetime-local" value={newGame.startsAt} onChange={event => setNewGame(current => ({ ...current, startsAt: event.target.value }))} className="mt-1 border-white/10 bg-black/30 text-white" /></div>
               <div><label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Stream URL</label><Input value={newGame.streamUrl} onChange={event => setNewGame(current => ({ ...current, streamUrl: event.target.value }))} placeholder="Live stream / embed URL" className="mt-1 border-white/10 bg-black/30 text-white" /></div>
-              <div className="border-y border-white/10 py-3 text-xs leading-5 text-slate-400">Your main Weave role remains unchanged. Ace is the identity carried inside the Arena lifestyle, and the result joins your seasonal Ace record.</div>
-              <Button disabled={creating || !newGame.startsAt} onClick={createGame} className="w-full bg-yellow-400 font-black text-black hover:bg-yellow-300">{creating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'ENTER AS ACE'}</Button>
+              <div className="border-y border-white/10 py-3 text-xs leading-5 text-slate-400">Carrier sends your Ace name, what you are trying to achieve and one public watching link. Outsiders open it and watch. No registration.</div>
+              <Button disabled={creating || !newGame.description.trim() || !newGame.startsAt} onClick={createGame} className="w-full bg-yellow-400 font-black text-black hover:bg-yellow-300">{creating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'ENTER AS ACE'}</Button>
             </div>
           </div>
         </div>
