@@ -1,6 +1,9 @@
 'use client'
 
-import { ReactNode, useEffect } from 'react'
+import Link from 'next/link'
+import type { ReactNode } from 'react'
+import { useEffect } from 'react'
+import { Clapperboard } from 'lucide-react'
 
 export default function AdWorkshopLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -41,5 +44,14 @@ export default function AdWorkshopLayout({ children }: { children: ReactNode }) 
     }).catch(() => {})
   }, [])
 
-  return children
+  return (
+    <>
+      <div className="mx-auto mb-4 flex max-w-7xl justify-end px-1">
+        <Link href="/admin/video-ad-workshop" className="inline-flex items-center gap-2 border border-fuchsia-300/20 bg-fuchsia-300/[0.05] px-3 py-2 text-[10px] font-black uppercase tracking-widest text-fuchsia-100 hover:bg-fuchsia-300/[0.09]">
+          <Clapperboard className="h-3.5 w-3.5" /> Video Ad Workshop
+        </Link>
+      </div>
+      {children}
+    </>
+  )
 }
