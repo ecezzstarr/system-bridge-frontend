@@ -170,7 +170,7 @@ export default function Arena({ user: propUser }: { user?: any }) {
               const settleReady = match.settlementAvailableAt ? new Date(match.settlementAvailableAt).getTime() <= Date.now() : false
 
               return (
-                <article key={match.id} className="overflow-hidden border-y border-white/10 bg-black/15 sm:border">
+                <article key={match.id} data-arena-lane={match.id} className="overflow-hidden border-y border-white/10 bg-black/15 sm:border">
                   <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 px-4 py-4">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
