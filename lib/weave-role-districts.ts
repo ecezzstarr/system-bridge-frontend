@@ -41,7 +41,6 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Agility',href:'/agility',detail:'Order, receive, distribute and record Agility movement.',daily:true},
         {label:'Commissions',href:'/agent/commissions',detail:'See Prospect purchase shares and verified Client File Folder shares generated through attached Bridgers.',daily:true},
-        {label:'Video Ad Studio',href:'/video-ad-studio',detail:'Buy a professional video production for your business with Flame Coin and receive the finished video inside WEAVE.'},
       ],
     },
     {
@@ -92,7 +91,6 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       accent:'#a78bfa',
       places:[
         {label:'Deposit & Withdrawal',href:'/wallet/deposit-withdraw',detail:'Deposit Flame Coin value or request withdrawal.',daily:true},
-        {label:'Video Ad Studio',href:'/video-ad-studio',detail:'Buy a professional video production for your business or outreach identity with Flame Coin.'},
         {label:'Direct Communication',href:'/communications',detail:'Message your assigned Agent, Prospect conversations and referred Clients from one authorized place.',daily:true},
         {label:'Company Guidance',href:'/company-chat',detail:'Get company guidance for Prospect and Client movement, subscriptions, Number Bay, Bridge AI and the current Loop.'},
         {label:'Presences',href:'/profiles',detail:'See people and active Presences inside WEAVE.'},
@@ -120,7 +118,6 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'File Folder',href:'/client/system-switch',detail:'Build and operate systems, your store and Customer Door.',daily:true},
         {label:'Enterprise Systems',href:'/marketplace',detail:'Explore enterprise-scale systems for your work.'},
-        {label:'Video Ad Studio',href:'/video-ad-studio',detail:'Commission quality video content for your business, product, store or Customer Door.'},
         {label:'Settings',href:'/client/settings',detail:'Manage your Client identity and account.'},
       ],
     },
@@ -225,7 +222,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Loop Workshop',href:'/admin/loop-workshop',detail:'Create and publish Company Loops.'},
         {label:'DJ Workshop',href:'/admin/dj-workshop',detail:'System sound and live atmosphere.'},
         {label:'Ad Workshop',href:'/admin/ad-workshop',detail:'Role-targeted communication without deployment.'},
-        {label:'Video Ad Studio',href:'/admin/video-ad-workshop',detail:'Set Studio prices, receive paid customer orders, and form and render 30-second to 6-minute business videos.'},
+        {label:'Video Ad Studio',href:'/admin/video-ad-workshop',detail:'Set Studio prices, receive paid customer orders, form and render 30-second to 6-minute videos, and publish Administration video ads inside WEAVE.'},
       ],
     },
     {
