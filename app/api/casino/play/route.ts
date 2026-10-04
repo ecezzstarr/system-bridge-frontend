@@ -97,9 +97,7 @@ export async function POST(request: NextRequest) {
     )
 
     await client.query(
-      `INSERT INTO ledger_entries
-        (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,$2,$3,'Flame Coin',$4,$5,$6,NOW())`,
+      `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, CASE WHEN $2='casino_win' THEN 'earning' ELSE 'fee' END, $3, 'Flame Coin', $4, $5, $6, NOW(), jsonb_build_object('commerce_type',$2))`,
       [
         user.id,
         outcome === 'win' ? 'casino_win' : outcome === 'push' ? 'casino_push' : 'casino_loss',
@@ -119,7 +117,7 @@ export async function POST(request: NextRequest) {
 
     const week = await client.query(
       `SELECT date_trunc('week', NOW())::date AS week_start,
-              COALESCE(SUM(ABS(amount)) FILTER (WHERE entry_type='casino_loss' AND amount<0),0)::numeric AS losses
+              COALESCE(SUM(ABS(amount)) FILTER (WHERE COALESCE(metadata->>'commerce_type',entry_type)='casino_loss' AND amount<0),0)::numeric AS losses
        FROM ledger_entries
        WHERE user_id=$1::uuid
          AND created_at>=date_trunc('week',NOW())
@@ -154,9 +152,7 @@ export async function POST(request: NextRequest) {
             [user.id, weekStart, weeklyLosses, lossReturn]
           )
           await client.query(
-            `INSERT INTO ledger_entries
-              (id,user_id,entry_type,amount,currency,description,balance_after,created_at)
-             VALUES (gen_random_uuid(),$1::uuid,'casino_loss_return',$2,'Flame Coin',$3,$4,NOW())`,
+            `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'earning', $2, 'Flame Coin', $3, $4, NOW(), jsonb_build_object('commerce_type','casino_loss_return'))`,
             [user.id, lossReturn, '30% weekly Casino loss return after threshold', newBalance]
           )
         }
@@ -203,10 +199,10 @@ export async function GET(request: NextRequest) {
   try {
     const limit = Math.min(50, Math.max(1, Number(request.nextUrl.searchParams.get('limit') || 10)))
     const history = await client.query(
-      `SELECT id,entry_type AS type,amount,description,created_at
+      `SELECT id,COALESCE(metadata->>'commerce_type',entry_type) AS type,amount,description,created_at
        FROM ledger_entries
        WHERE user_id=$1::uuid
-         AND entry_type IN ('casino_win','casino_loss','casino_push','casino_loss_return')
+         AND COALESCE(metadata->>'commerce_type',entry_type) IN ('casino_win','casino_loss','casino_push','casino_loss_return')
        ORDER BY created_at DESC LIMIT $2`,
       [user.id, limit]
     )

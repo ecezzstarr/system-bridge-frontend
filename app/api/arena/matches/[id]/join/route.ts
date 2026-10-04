@@ -66,9 +66,7 @@ export async function POST(
         [balanceAfter, user.id]
       )
       await client.query(
-        `INSERT INTO ledger_entries
-          (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-         VALUES (gen_random_uuid(),$1::uuid,'arena_entry_fee',$2,'Flame Coin',$3,$4,$5,NOW())`,
+        `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','arena_entry_fee'))`,
         [user.id, -entryFee, `Arena entry fee: ${match.title}`, balanceBefore, balanceAfter]
       )
     }

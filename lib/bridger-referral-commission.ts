@@ -84,8 +84,7 @@ export async function creditBridgerReferralCommission(params: {
     }
 
     await sql`
-      INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at)
-      VALUES (gen_random_uuid(), ${referrerId}::uuid, 'bridger_referral_commission', ${commissionAmount}, 'Flame Coin', ${description}, NOW())
+      INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at, metadata) VALUES (gen_random_uuid(), ${referrerId}::uuid, 'earning', ${commissionAmount}, 'Flame Coin', ${description}, NOW(), jsonb_build_object('commerce_type','bridger_referral_commission'))
     `
 
     await sql`

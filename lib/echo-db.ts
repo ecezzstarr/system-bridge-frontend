@@ -122,10 +122,7 @@ export async function subscribeToEcho(userId: string) {
     )
 
     await client.query(
-      `INSERT INTO ledger_entries
-        (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-       VALUES
-        (gen_random_uuid(),$1::uuid,'subscription',$2,'Flame Coin','Echo Continuance',$3,$4,$5::jsonb,NOW())`,
+      `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, metadata, created_at) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', 'Echo Continuance', $3, $4, ($5::jsonb) || jsonb_build_object('commerce_type','subscription'), NOW())`,
       [
         userId,
         ECHO_SUBSCRIPTION_FEE_FLAME_COIN,

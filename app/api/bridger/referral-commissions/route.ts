@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const recent = await sql`
       SELECT amount, description, created_at
       FROM ledger_entries
-      WHERE user_id = ${authUser.id}::uuid AND entry_type = 'bridger_referral_commission'
+      WHERE user_id = ${authUser.id}::uuid AND (entry_type = 'bridger_referral_commission' OR metadata->>'commerce_type'='bridger_referral_commission')
       ORDER BY created_at DESC
       LIMIT 10
     `

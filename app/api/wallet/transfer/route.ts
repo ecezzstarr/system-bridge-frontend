@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
     )
     await client.query(
       `INSERT INTO ledger_entries
-        (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,$2,$3,'Flame Coin',$4,$5,$6,NOW())`,
+        (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,created_at,metadata)
+       VALUES (gen_random_uuid(),$1::uuid,'transfer',$3,'Flame Coin',$4,$5,$6,NOW(),jsonb_build_object('commerce_type',$2::text))`,
       [
         user.id,
         direction === 'to_play' ? 'transfer_to_play' : 'transfer_to_core',

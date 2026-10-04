@@ -41,7 +41,7 @@ export async function creditBridgerCommission(params: {
       `SELECT id
        FROM ledger_entries
        WHERE user_id=$1::uuid
-         AND entry_type='bridger_commission'
+         AND (entry_type='bridger_commission' OR metadata->>'commerce_type'='bridger_commission')
          AND metadata->>'source_key'=$2
        LIMIT 1`,
       [bridgerId, sourceKey],
@@ -62,10 +62,7 @@ export async function creditBridgerCommission(params: {
     const after = Number(updated.rows[0]?.balance_trx || before + commissionAmount)
 
     await client.query(
-      `INSERT INTO ledger_entries
-       (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-       VALUES
-       (gen_random_uuid(),$1::uuid,'bridger_commission',$2,'Flame Coin',$3,$4,$5,$6::jsonb,NOW())`,
+      `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, metadata, created_at) VALUES (gen_random_uuid(), $1::uuid, 'earning', $2, 'Flame Coin', $3, $4, $5, ($6::jsonb) || jsonb_build_object('commerce_type','bridger_commission'), NOW())`,
       [
         bridgerId,
         commissionAmount,
