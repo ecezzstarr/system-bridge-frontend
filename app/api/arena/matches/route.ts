@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query as dbQuery, getPool } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
+import { ensureAceAccount, ensureWeaveLifestyleSchema, requireLifestyleAccess } from '@/lib/weave-lifestyle'
 
-const WINNER_PERCENTAGE = 0.70
-
-// GET /api/arena/matches - List matches. Match metadata is not account-private.
 export async function GET(request: NextRequest) {
   try {
+    await ensureWeaveLifestyleSchema()
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const category = searchParams.get('category')
@@ -17,9 +16,13 @@ export async function GET(request: NextRequest) {
         u.name as host_name,
         u.username as host_username,
         u.avatar_url as host_avatar,
-        (SELECT COUNT(*) FROM arena_participants WHERE match_id = m.id) as participant_count
+        COALESCE(a.ace_name,u.name,u.username,'Ace') as ace_name,
+        (SELECT COUNT(*) FROM arena_live_predictions WHERE match_id=m.id) as prediction_count,
+        (SELECT COUNT(*) FROM arena_live_predictions WHERE match_id=m.id AND prediction='ACE_WIN') as ace_win_predictions,
+        (SELECT COUNT(*) FROM arena_live_predictions WHERE match_id=m.id AND prediction='ACE_LOSE') as ace_lose_predictions
       FROM arena_matches m
       LEFT JOIN users u ON m.host_id = u.id::text
+      LEFT JOIN arena_ace_accounts a ON a.user_id::text = m.host_id
       WHERE 1=1
     `
     const params: any[] = []
@@ -30,50 +33,53 @@ export async function GET(request: NextRequest) {
       params.push(status)
       paramIndex++
     }
-
     if (category) {
       queryString += ` AND m.category = $${paramIndex}`
       params.push(category)
       paramIndex++
     }
 
-    queryString += ' ORDER BY m.scheduled_at ASC LIMIT 50'
+    queryString += ' ORDER BY m.scheduled_at DESC NULLS LAST LIMIT 50'
     const matches = await dbQuery(queryString, params)
 
     return NextResponse.json({
-      matches: matches.map((m: any) => {
-        let outcomes: any[] = []
-        if (m.category === 'football_curated' || m.category === 'football') {
-          try { outcomes = JSON.parse(m.description || '[]') } catch {}
-        }
-        return {
-          id: m.id,
-          title: m.title,
-          description: m.description,
-          outcomes,
-          host: { id: m.host_id, displayName: m.host_name, avatar: m.host_avatar },
-          entryFee: Number(m.entry_fee) || 0,
-          prizePool: Number(m.prize_pool) || 0,
-          maxParticipants: m.max_participants,
-          participantCount: Number(m.participant_count) || 0,
-          category: m.category,
-          status: m.status,
-          scheduledAt: m.scheduled_at,
-          startedAt: m.started_at,
-          endedAt: m.ended_at,
-        }
-      }),
+      matches: matches.map((m: any) => ({
+        id: m.id,
+        title: m.title,
+        description: m.description,
+        host: { id: m.host_id, displayName: m.host_name, avatar: m.host_avatar },
+        aceName: m.ace_name,
+        category: m.category,
+        gameKey: m.game_key || m.category,
+        streamUrl: m.stream_url || null,
+        status: m.status,
+        aceResult: m.ace_result || null,
+        settlementStatus: m.settlement_status || 'open',
+        settlementAvailableAt: m.settlement_available_at || null,
+        settlementReason: m.settlement_reason || null,
+        predictionCount: Number(m.prediction_count) || 0,
+        aceWinPredictions: Number(m.ace_win_predictions) || 0,
+        aceLosePredictions: Number(m.ace_lose_predictions) || 0,
+        scheduledAt: m.scheduled_at,
+        startedAt: m.started_at,
+        endedAt: m.ended_at,
+      })),
     })
   } catch (error) {
-    console.error('Error fetching matches:', error)
-    return NextResponse.json({ error: 'Failed to fetch matches', matches: [] }, { status: 500 })
+    console.error('Error fetching Arena streams:', error)
+    return NextResponse.json({ error: 'Failed to fetch Arena streams', matches: [] }, { status: 500 })
   }
 }
 
-// POST /api/arena/matches - Create a match. Host identity always comes from the session.
 export async function POST(request: NextRequest) {
   const authUser = await getAuthUser(request)
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  try {
+    await requireLifestyleAccess(authUser.id)
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: error.status || 403 })
+  }
 
   const pool = getPool()
   const client = await pool.connect()
@@ -81,80 +87,36 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const title = String(body.title || '').trim()
     const description = typeof body.description === 'string' ? body.description : ''
-    const fee = Number(body.entryFee || 0)
-    const maxParticipants = Math.min(1000, Math.max(2, Number(body.maxParticipants || 10)))
-    const category = String(body.category || 'general')
+    const category = String(body.category || 'online-game').slice(0, 80)
+    const gameKey = String(body.gameKey || category).slice(0, 80)
+    const streamUrl = typeof body.streamUrl === 'string' ? body.streamUrl.trim().slice(0, 2000) : ''
     const startsAt = body.startsAt
 
     if (!title || !startsAt) {
-      return NextResponse.json({ error: 'Title and start time are required' }, { status: 400 })
-    }
-    if (!Number.isFinite(fee) || fee < 0) {
-      return NextResponse.json({ error: 'Entry fee must be zero or greater' }, { status: 400 })
+      return NextResponse.json({ error: 'Game title and start time are required' }, { status: 400 })
     }
     if (Number.isNaN(new Date(startsAt).getTime())) {
       return NextResponse.json({ error: 'Invalid start time' }, { status: 400 })
     }
 
-    await client.query('BEGIN')
-
-    if (fee > 0) {
-      const wallet = await client.query(
-        'SELECT balance_trx FROM wallets WHERE user_id = $1::uuid AND is_primary = true FOR UPDATE',
-        [authUser.id]
-      )
-      const balance = Number(wallet.rows[0]?.balance_trx || 0)
-      if (balance < fee) {
-        await client.query('ROLLBACK')
-        return NextResponse.json({ error: 'Insufficient Flame Coin balance', required: fee, available: balance }, { status: 400 })
-      }
-    }
+    await ensureWeaveLifestyleSchema()
+    await ensureAceAccount(authUser.id, authUser.name || authUser.username || 'Ace')
 
     const id = `match_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
     await client.query(
       `INSERT INTO arena_matches
-        (id, title, description, host_id, entry_fee, prize_pool, max_participants, category, scheduled_at, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'upcoming')`,
-      [id, title, description, authUser.id, fee, fee, maxParticipants, category, startsAt]
-    )
-    await client.query(
-      'INSERT INTO arena_participants (id, match_id, user_id) VALUES ($1,$2,$3)',
-      [`part_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`, id, authUser.id]
+        (id,title,description,host_id,entry_fee,prize_pool,max_participants,category,game_key,stream_url,scheduled_at,status,settlement_status)
+       VALUES ($1,$2,$3,$4,0,0,100000,$5,$6,$7,$8,'upcoming','open')`,
+      [id, title, description, authUser.id, category, gameKey, streamUrl || null, startsAt]
     )
 
-    if (fee > 0) {
-      const before = await client.query(
-        'SELECT balance_trx FROM wallets WHERE user_id = $1::uuid AND is_primary = true FOR UPDATE',
-        [authUser.id]
-      )
-      const balanceBefore = Number(before.rows[0]?.balance_trx || 0)
-      const balanceAfter = balanceBefore - fee
-      await client.query(
-        'UPDATE wallets SET balance_trx=$1, updated_at=NOW() WHERE user_id=$2::uuid AND is_primary=true',
-        [balanceAfter, authUser.id]
-      )
-      await client.query(
-        `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, created_at, metadata) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', $3, $4, $5, NOW(), jsonb_build_object('commerce_type','arena_entry_fee'))`,
-        [authUser.id, -fee, `Arena entry fee (host): ${title}`, balanceBefore, balanceAfter]
-      )
-    }
-
-    await client.query('COMMIT')
     return NextResponse.json({
       success: true,
-      match: {
-        id,
-        title,
-        status: 'upcoming',
-        prizePool: fee,
-        entryFee: fee,
-        potentialWinnings: fee * WINNER_PERCENTAGE,
-      },
+      match: { id, title, status: 'upcoming', gameKey, streamUrl: streamUrl || null },
     })
   } catch (error) {
-    try { await client.query('ROLLBACK') } catch {}
-    console.error('Error creating match:', error)
-    return NextResponse.json({ error: 'Failed to create match' }, { status: 500 })
+    console.error('Error creating Arena stream:', error)
+    return NextResponse.json({ error: 'Failed to create Arena stream' }, { status: 500 })
   } finally {
     client.release()
   }
