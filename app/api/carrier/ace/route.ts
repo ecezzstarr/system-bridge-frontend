@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
-import { ensureAceAccount, requireLifestyleAccess } from '@/lib/weave-lifestyle'
+import { requireCarrierAccess } from '@/lib/carrier-access'
 import {
   buildAceCarrierShareText,
   ensureCarrierSchema,
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    await requireLifestyleAccess(user.id)
+    const { access } = await requireCarrierAccess(user)
     await ensureCarrierSchema()
     const pool = getPool()
     const result = await pool.query(
@@ -49,6 +49,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      access,
+      identityInsideCarrier: 'Ace',
       games: result.rows.map((row: any) => ({
         id: row.id,
         title: row.title,
@@ -75,7 +77,10 @@ export async function GET(request: NextRequest) {
       })),
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Carrier could not open' }, { status: error.status || 500 })
+    return NextResponse.json({
+      error: error.message || 'Carrier could not open',
+      access: error.carrierAccess || null,
+    }, { status: error.status || 500 })
   }
 }
 
@@ -84,7 +89,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    await requireLifestyleAccess(user.id)
+    const { ace } = await requireCarrierAccess(user)
     await ensureCarrierSchema()
     const body = await request.json().catch(() => ({}))
     const matchId = String(body.matchId || '').trim()
@@ -101,7 +106,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only the Ace playing this game can publish its Carrier' }, { status: 403 })
     }
 
-    const ace = await ensureAceAccount(user.id, user.name || user.username || 'Ace')
     const aceName = String(ace?.ace_name || user.name || user.username || 'Ace')
     const headline = String(body.headline || `${aceName} · ${match.title}`).trim().slice(0, 180)
     const message = String(body.message || `${aceName} is playing ${match.title} in Weave Arena.`).trim().slice(0, 1200)
@@ -133,7 +137,10 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Carrier could not publish' }, { status: error.status || 500 })
+    return NextResponse.json({
+      error: error.message || 'Carrier could not publish',
+      access: error.carrierAccess || null,
+    }, { status: error.status || 500 })
   }
 }
 
@@ -142,7 +149,7 @@ export async function PATCH(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    await requireLifestyleAccess(user.id)
+    await requireCarrierAccess(user)
     await ensureCarrierSchema()
     const body = await request.json().catch(() => ({}))
     const matchId = String(body.matchId || '').trim()
@@ -168,6 +175,9 @@ export async function PATCH(request: NextRequest) {
     }
     return NextResponse.json({ success: true, matchId, status })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Carrier could not change' }, { status: error.status || 500 })
+    return NextResponse.json({
+      error: error.message || 'Carrier could not change',
+      access: error.carrierAccess || null,
+    }, { status: error.status || 500 })
   }
 }
