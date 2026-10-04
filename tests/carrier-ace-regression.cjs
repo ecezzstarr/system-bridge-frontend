@@ -1,0 +1,26 @@
+const fs=require('node:fs')
+const path=require('node:path')
+const assert=require('node:assert/strict')
+
+const root=path.resolve(__dirname,'..')
+const read=relative=>fs.readFileSync(path.join(root,relative),'utf8')
+
+const carrier=read('lib/carrier.ts')
+const carrierConsole=read('app/(app)/weave/carrier/page.tsx')
+const carrierApi=read('app/api/carrier/ace/route.ts')
+const publicApi=read('app/api/carrier/ace/[matchId]/route.ts')
+const engageApi=read('app/api/carrier/ace/[matchId]/engage/route.ts')
+const publicPage=read('components/carrier/ace-carrier-public.tsx')
+const lifestyle=read('app/(app)/weave/lifestyles/page.tsx')
+
+assert.ok(carrier.includes('carrier_ace_publications')&&carrier.includes('carrier_ace_visitors')&&carrier.includes('carrier_ace_shares'),'Carrier persists publications, unique public reach, support and sharing')
+assert.ok(carrier.includes('carrierSchemaPromise')&&carrier.includes('initializeCarrierSchema'),'Carrier schema setup is cached per runtime instead of running DDL on every public poll')
+assert.ok(carrierApi.includes('requireLifestyleAccess')&&carrierApi.includes("String(match.host_id) !== String(user.id)"),'Only a subscribed Ace can publish its own Arena activity')
+assert.ok(carrierApi.includes('getAceCarrierUrl')&&carrierApi.includes('shareText'),'Ace publishing returns a direct public Carrier and ready-to-send marketing copy')
+assert.ok(!publicApi.includes('getAuthUser')&&publicApi.includes('getPublicAceCarrier'),'Public Carrier read has no account wall')
+assert.ok(engageApi.includes("['view', 'support', 'share']")&&engageApi.includes('carrier_ace_visitors'),'Outsiders can enter, support and carry the activity onward without registration')
+assert.ok(publicPage.includes('No WEAVE account is required')&&publicPage.includes('https://wa.me/')&&publicPage.includes('<iframe'),'Carrier is a direct public watch surface with WhatsApp distribution')
+assert.ok(carrierConsole.includes('PUBLISH THE ACE')&&carrierConsole.includes('PUBLISH CARRIER')&&carrierConsole.includes('WHATSAPP'),'Ace has a dedicated Carrier marketing console')
+assert.ok(lifestyle.includes('href="/weave/carrier"')&&lifestyle.includes('ACE PUBLISHING'),'Subscribed WEAVE exposes Carrier beside the Arena lifestyle')
+
+console.log('Ace Carrier regression checks passed')
