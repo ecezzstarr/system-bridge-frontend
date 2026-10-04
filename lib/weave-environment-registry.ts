@@ -61,7 +61,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-control-center', label:'Administration Control Center', kind:'district', route:'/admin/control-center', area:'Administration', scope:'admin', protected:true, defaultOrder:30 },
   { key:'admin-environment-organizer', label:'Environment Organizer', kind:'district', route:'/admin/environment-organizer', area:'Administration', scope:'admin', protected:true, defaultOrder:40 },
   { key:'admin-prospect-engine', label:'Prospect Engine', kind:'district', route:'/admin/prospect-engine', area:'Administration', scope:'admin', defaultOrder:60 },
-    { key:'admin-access-recovery', label:'Access Recovery Desk', kind:'district', route:'/admin/access-recovery', area:'Administration', scope:'admin', protected:true, defaultOrder:62 },
+  { key:'admin-access-recovery', label:'Access Recovery Desk', kind:'district', route:'/admin/access-recovery', area:'Administration', scope:'admin', protected:true, defaultOrder:62 },
   { key:'admin-email-outreach', label:'Email Outreach', kind:'district', route:'/admin/email-outreach', area:'Administration', scope:'admin', protected:true, defaultOrder:65 },
   { key:'admin-number-engine', label:'Number Bay Engine', kind:'district', route:'/admin/bridger-numbers', area:'Administration', scope:'admin', defaultOrder:70 },
   { key:'admin-bridge-templates', label:'Bridge Templates', kind:'district', route:'/admin/bridge-templates', area:'Administration', scope:'admin', defaultOrder:80 },
@@ -81,6 +81,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-integrity-engine', label:'WEAVE Integrity Engine', kind:'district', route:'/admin/dev-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:205 },
   { key:'admin-dj-workshop', label:'DJ Workshop', kind:'district', route:'/admin/dj-workshop', area:'Administration', scope:'admin', defaultOrder:210 },
   { key:'admin-ad-workshop', label:'Ad Workshop', kind:'district', route:'/admin/ad-workshop', area:'Administration', scope:'admin', defaultOrder:220 },
+  { key:'admin-video-ad-workshop', label:'Video Ad Workshop', kind:'district', route:'/admin/video-ad-workshop', area:'Administration', scope:'admin', defaultOrder:225 },
   { key:'admin-visual-systems', label:'Visual Systems · Interaction in Motion', kind:'district', route:'/admin/visual-systems', area:'Administration', scope:'admin', defaultOrder:230 },
   { key:'admin-flame-event', label:'Flame Event Control', kind:'district', route:'/admin/flame-event', area:'Administration', scope:'admin', defaultOrder:240 },
 ]
