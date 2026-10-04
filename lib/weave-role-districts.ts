@@ -222,6 +222,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Loop Workshop',href:'/admin/loop-workshop',detail:'Create and publish Company Loops.'},
         {label:'DJ Workshop',href:'/admin/dj-workshop',detail:'System sound and live atmosphere.'},
         {label:'Ad Workshop',href:'/admin/ad-workshop',detail:'Role-targeted communication without deployment.'},
+        {label:'Video Ad Workshop',href:'/admin/video-ad-workshop',detail:'Form and render 30-second to 6-minute WEAVE video advertisements, then hand finished video into the Ad Workshop.'},
       ],
     },
     {
