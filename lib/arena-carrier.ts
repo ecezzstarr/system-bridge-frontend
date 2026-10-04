@@ -10,6 +10,7 @@ export type ArenaCarrier = {
   goal: string
   title: string
   gameKey: string
+  streamUrl: string | null
   status: string
   scheduledAt: string | null
   startedAt: string | null
@@ -41,7 +42,7 @@ function buildCarrier(row: any): ArenaCarrier {
   const aceName = String(row.ace_name || 'Ace').trim() || 'Ace'
   const goal = String(row.goal || '').trim()
   const url = `${getWeavePublicOrigin()}/carrier/${id}`
-  const message = `WEAVE CARRIER\nAce: ${aceName}\nTrying to achieve: ${goal}\n${url}`
+  const message = `${aceName}\n${goal}\n${url}`
 
   return {
     id,
@@ -50,6 +51,7 @@ function buildCarrier(row: any): ArenaCarrier {
     goal,
     title: String(row.title || 'Weave Arena stream'),
     gameKey: String(row.game_key || row.category || 'arena'),
+    streamUrl: row.stream_url || null,
     status: String(row.match_status || 'upcoming'),
     scheduledAt: row.scheduled_at || null,
     startedAt: row.started_at || null,
@@ -70,6 +72,7 @@ export async function createOrGetArenaCarrier(matchId: string, aceUserId: string
        m.description AS goal,
        m.category,
        m.game_key,
+       m.stream_url,
        m.status AS match_status,
        m.scheduled_at,
        m.started_at,
@@ -130,6 +133,7 @@ export async function getArenaCarrier(publicId: string, trackOpen = false) {
        m.description AS goal,
        m.category,
        m.game_key,
+       m.stream_url,
        m.status AS match_status,
        m.scheduled_at,
        m.started_at,
