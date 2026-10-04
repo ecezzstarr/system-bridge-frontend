@@ -19,6 +19,7 @@ export type VideoAdScene = {
 
 export type VideoAdProject = {
   id: string
+  orderId: string | null
   title: string
   subject: string
   objective: string
@@ -83,10 +84,10 @@ function fallbackStoryboard(title: string, subject: string, objective: string, d
     { beat: 'HUMAN SITUATION', text: '', visualDirection: `Show the person inside the ordinary friction around ${subject}. Keep it observational, not promotional.`, voiceover: `There is a point where the old way starts taking more than it gives.` },
     { beat: 'TENSION', text: 'Too many steps.', visualDirection: 'Cut faster. Show fragmentation, delay or missed movement. One short line only.', voiceover: '' },
     { beat: 'TURN', text: 'What if it had one place?', visualDirection: 'Slow the pace for one beat. Create contrast before the reveal.', voiceover: '' },
-    { beat: 'WEAVE REVEAL', text: 'WEAVE', visualDirection: `Reveal the actual Weave environment connected to ${subject}. Show the product functioning, not a poster.`, voiceover: '' },
+    { beat: 'WEAVE REVEAL', text: 'WEAVE', visualDirection: `Reveal the actual environment connected to ${subject}. Show the product functioning, not a poster.`, voiceover: '' },
     { beat: 'PROOF', text: '', visualDirection: `Demonstrate the real movement that proves ${objective}. Use interface, environment, people or operation.`, voiceover: '' },
     { beat: 'CONSEQUENCE', text: '', visualDirection: 'Return to a human consequence. Show what is now possible because the system is working.', voiceover: '' },
-    { beat: 'FINAL LINE', text: title.toUpperCase(), visualDirection: 'End with one memorable line and WEAVE identity. No paragraph and no crowded call-to-action.', voiceover: '' },
+    { beat: 'FINAL LINE', text: title.toUpperCase(), visualDirection: 'End with one memorable line. No paragraph and no crowded call-to-action.', voiceover: '' },
   ]
   const expanded = Array.from({ length: count }, (_, index) => beats[Math.min(Math.floor(index * beats.length / count), beats.length - 1)])
   return normalizeScenes(expanded, durationSeconds)
@@ -98,6 +99,7 @@ export async function ensureVideoAdWorkshopSchema() {
     CREATE TABLE IF NOT EXISTS admin_video_ad_projects (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       created_by uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      order_id uuid,
       title varchar(160) NOT NULL,
       subject text NOT NULL,
       objective text NOT NULL,
@@ -113,6 +115,8 @@ export async function ensureVideoAdWorkshopSchema() {
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `)
+  await pool.query('ALTER TABLE admin_video_ad_projects ADD COLUMN IF NOT EXISTS order_id uuid')
+  await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS admin_video_ad_projects_order_idx ON admin_video_ad_projects(order_id) WHERE order_id IS NOT NULL')
   await pool.query('CREATE INDEX IF NOT EXISTS admin_video_ad_projects_created_idx ON admin_video_ad_projects(created_at DESC)')
 }
 
@@ -136,47 +140,42 @@ export async function generateVideoAdStoryboard(input: {
     const ai = new GoogleGenerativeAI(key)
     const model = ai.getGenerativeModel({
       model: process.env.VIDEO_AD_MODEL || process.env.EIGHT_MODEL || 'gemini-1.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-        maxOutputTokens: 7000,
-        temperature: 0.7,
-      },
+      generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 7000, temperature: 0.7 },
     })
     const count = sceneCountForDuration(durationSeconds)
-    const prompt = `You are forming a WEAVE video advertisement storyboard. Return JSON only in this shape: {"scenes":[{"beat":"HOOK","text":"","visualDirection":"","voiceover":""}]}.
+    const prompt = `You are forming a WEAVE Video Ad Studio storyboard. Return JSON only in this shape: {"scenes":[{"beat":"HOOK","text":"","visualDirection":"","voiceover":""}]}.
 
-WEAVE ADVERTISING GRAMMAR:
+WEAVE VIDEO GRAMMAR:
 - It must not feel like an advertisement at the beginning.
-- Open immediately with a human problem, question, tension, curiosity or visual contradiction. Do not open with a WEAVE logo.
+- Open immediately with a human problem, question, tension, curiosity or visual contradiction. Do not open with a logo.
 - Use one short sentence at a time. Avoid explanatory paragraphs on screen.
 - Visuals should keep changing and should feel like real content: human moments, movement, close-ups, environments, demonstrations and cinematic product detail.
 - Let the viewer understand the problem before the product appears.
-- Treat the WEAVE reveal as an event.
+- Treat the product reveal as an event.
 - Prove the function visually instead of explaining it with marketing copy.
 - Return to human consequence after the proof.
-- End with one simple memorable line and WEAVE identity.
+- End with one simple memorable line and the correct business identity.
 - Do not invent guarantees, statistics, customers or outcomes.
 - Each scene must be materially different from the previous scene.
 
 PROJECT:
 Title: ${title}
 Subject/product/environment: ${subject}
-What the ad must achieve: ${objective}
+What the video must achieve: ${objective}
 Audience: ${audience}
 Duration: ${durationSeconds} seconds
 Aspect ratio: ${VIDEO_AD_ASPECT_RATIO}
 Scene count: exactly ${count}
 
 Keep on-screen text short enough for mobile viewing. visualDirection must describe what should actually be seen. voiceover may be empty when silence or sound design is stronger.`
-
     const result = await model.generateContent(prompt)
-    const text = result.response.text().replace(/^```json\s*/i, '').replace(/```$/i, '').trim()
-    const parsed = JSON.parse(text)
+    const resultText = result.response.text().replace(/^```json\s*/i, '').replace(/```$/i, '').trim()
+    const parsed = JSON.parse(resultText)
     const scenes = Array.isArray(parsed?.scenes) ? parsed.scenes : []
     if (!scenes.length) return { scenes: fallback, provider: 'fallback' as const }
     return { scenes: normalizeScenes(scenes, durationSeconds), provider: 'gemini' as const }
   } catch (error) {
-    console.error('[Video Ad Workshop] storyboard generation failed:', error)
+    console.error('[Video Ad Studio] storyboard generation failed:', error)
     return { scenes: fallback, provider: 'fallback' as const }
   }
 }
@@ -184,6 +183,7 @@ Keep on-screen text short enough for mobile viewing. visualDirection must descri
 export function mapVideoAdProject(row: any): VideoAdProject {
   return {
     id: String(row.id),
+    orderId: row.order_id ? String(row.order_id) : null,
     title: String(row.title || ''),
     subject: String(row.subject || ''),
     objective: String(row.objective || ''),
