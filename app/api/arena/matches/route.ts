@@ -86,14 +86,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const title = String(body.title || '').trim()
-    const description = typeof body.description === 'string' ? body.description : ''
+    const description = typeof body.description === 'string' ? body.description.trim().slice(0, 1000) : ''
     const category = String(body.category || 'online-game').slice(0, 80)
     const gameKey = String(body.gameKey || category).slice(0, 80)
     const streamUrl = typeof body.streamUrl === 'string' ? body.streamUrl.trim().slice(0, 2000) : ''
     const startsAt = body.startsAt
 
-    if (!title || !startsAt) {
-      return NextResponse.json({ error: 'Game title and start time are required' }, { status: 400 })
+    if (!title || !description || !startsAt) {
+      return NextResponse.json({ error: 'Game title, stream purpose and start time are required' }, { status: 400 })
     }
     if (Number.isNaN(new Date(startsAt).getTime())) {
       return NextResponse.json({ error: 'Invalid start time' }, { status: 400 })
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      match: { id, title, status: 'upcoming', gameKey, streamUrl: streamUrl || null },
+      match: { id, title, description, status: 'upcoming', gameKey, streamUrl: streamUrl || null },
     })
   } catch (error) {
     console.error('Error creating Arena stream:', error)
