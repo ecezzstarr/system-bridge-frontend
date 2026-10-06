@@ -13,7 +13,7 @@ const arenaDetail=read('app/api/arena/matches/[id]/route.ts')
 assert.ok(lifestyle.includes("AGENTIC_BRIDGER_EARNING_RATE = 0.45"),'Agentic-Bridger canonical earning rate is 45%')
 assert.ok(lifestyle.includes("AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger'"),'Agentic-Bridger is a named Ace lifestyle')
 assert.ok(lifestyle.includes("String(role || '').toLowerCase() === 'bridger'"),'Only the Bridger role is formed into Agentic-Bridger')
-assert.ok(lifestyle.includes("a.lifestyle === AGENTIC_BRIDGER_LIFESTYLE")&&lifestyle.includes('continuanceActive'),'Agentic-Bridger requires the Ace lifestyle and active Bridger Continuance')
+assert.ok(lifestyle.includes("row?.lifestyle === AGENTIC_BRIDGER_LIFESTYLE")&&lifestyle.includes('continuanceActive'),'Agentic-Bridger requires the Ace lifestyle and active Bridger Continuance')
 assert.ok(carrierAccess.includes("ensureAceAccount(user.id, user.name || user.username || 'Ace', user.role)"),'Carrier passes the real company role into Ace formation')
 assert.ok(carrierApi.includes("lifestyleInsideAce")&&carrierApi.includes("eligible_sales_and_activities"),'Carrier exposes Agentic-Bridger as a lifestyle inside Ace')
 
