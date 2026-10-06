@@ -41,6 +41,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Agility',href:'/agility',detail:'Order, receive, distribute and record Agility movement.',daily:true},
         {label:'Commissions',href:'/agent/commissions',detail:'See Prospect purchase shares and verified Client File Folder shares generated through attached Bridgers.',daily:true},
+        {label:'Social Presence',href:'/distribution-studio',detail:'Connect your own social outlets, form public content and grow an Agent presence through WEAVE.',daily:true},
       ],
     },
     {
@@ -78,6 +79,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Crossing Notebook',href:'/bridger/crossing-notebook',detail:'Read the Prospect → Bridge → File Folder → Client crossing one manual step at a time before carrying real outreach.',daily:true},
         {label:'Prospect Market',href:'/weave/market/prospects',detail:'Claim the daily Prospect or purchase Prospect movement.',daily:true},
         {label:'Email Outreach',href:'/bridger/email-outreach',detail:'Acquire lower-cost email Prospects, send from your configured reply identity and inspect movement reports.',daily:true},
+        {label:'Social Presence',href:'/distribution-studio',detail:'Connect your own social outlets, build trust publicly and carry people toward the right Prospect or WEAVE entrance.',daily:true},
         {label:'Number Bay',href:'/bridger/numbers',detail:'Purchase authenticated numbers and follow delivery and verification.',daily:true},
         {label:'Bridge AI',href:'/bridger/bridge-ai',detail:'Use and maintain the Bridge AI crossing path.',daily:true},
         {label:'Echo',href:'/echo',detail:'Operate authorized AI-assisted outreach and amplification.'},
@@ -118,6 +120,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'File Folder',href:'/client/system-switch',detail:'Build and operate systems, your store and Customer Door.',daily:true},
         {label:'Enterprise Systems',href:'/marketplace',detail:'Explore enterprise-scale systems for your work.'},
+        {label:'Social Presence',href:'/distribution-studio',detail:'Connect your own social outlets and grow the public presence of your business toward your Customer Door or chosen Client destination.',daily:true},
         {label:'Settings',href:'/client/settings',detail:'Manage your Client identity and account.'},
       ],
     },
