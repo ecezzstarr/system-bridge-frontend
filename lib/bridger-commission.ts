@@ -1,16 +1,19 @@
 import { getPool, sql } from '@/lib/db'
 import { WORLD_RULES } from './world/constants'
+import { getAgenticBridgerState } from './weave-lifestyle'
 
 export async function creditBridgerCommission(params: {
   bridgerId: string
   baseAmount: number
   description: string
   sourceId: string
-}): Promise<{ commissionAmount: number; credited: boolean } | null> {
+}): Promise<{ commissionAmount: number; credited: boolean; rate: number; lifestyle: string | null } | null> {
   const { bridgerId, baseAmount, description, sourceId } = params
   if (!bridgerId || !sourceId || !Number.isFinite(baseAmount) || baseAmount <= 0) return null
 
-  const rate = WORLD_RULES.BRIDGER_YIELD_RATE
+  const agentic = await getAgenticBridgerState(bridgerId)
+  const rate = agentic.active ? agentic.earningRate : WORLD_RULES.BRIDGER_YIELD_RATE
+  const lifestyle = agentic.active ? agentic.lifestyle : null
   const commissionAmount = Math.round(baseAmount * rate * 1e6) / 1e6
   if (commissionAmount <= 0) return null
 
@@ -48,7 +51,7 @@ export async function creditBridgerCommission(params: {
     )
     if (existing.rows.length) {
       await client.query('COMMIT')
-      return { commissionAmount, credited: false }
+      return { commissionAmount, credited: false, rate, lifestyle }
     }
 
     const before = Number(wallet.balance_trx || 0)
@@ -74,6 +77,7 @@ export async function creditBridgerCommission(params: {
           source_id: sourceId,
           activity: 'client_deposit',
           rate,
+          lifestyle,
         }),
       ],
     )
@@ -104,8 +108,8 @@ export async function creditBridgerCommission(params: {
         VALUES (
           ${bridgerId}::uuid,
           'commission',
-          'A File Folder return has come to you',
-          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin (${(rate * 100).toFixed(0)}%) from a verified Client File Folder purchase.`},
+          ${lifestyle === 'agentic_bridger' ? 'Agentic-Bridger return has come to you' : 'A File Folder return has come to you'},
+          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin (${(rate * 100).toFixed(0)}%) from a verified Client File Folder purchase${lifestyle === 'agentic_bridger' ? ' through your Agentic-Bridger lifestyle.' : '.'}`},
           'WEAVE',
           '/wallet'
         )
@@ -115,5 +119,5 @@ export async function creditBridgerCommission(params: {
     }
   }
 
-  return { commissionAmount, credited }
+  return { commissionAmount, credited, rate, lifestyle }
 }

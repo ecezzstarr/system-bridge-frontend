@@ -5,6 +5,7 @@ import { sql } from './db'
 // Commission routing follows the role Presence economics:
 // - qualifying Bridger Prospect purchase -> attached Agent share
 // - verified Client File Folder purchase -> Bridger share + attached Agent share
+// Agentic-Bridger is a Bridger-only Ace lifestyle and receives the 50% Bridger share.
 export async function creditBridgerActivityCommission(params: {
   bridgerId: string
   activity: CommissionActivity
@@ -18,7 +19,7 @@ export async function creditBridgerActivityCommission(params: {
     ? await creditBridgerCommission({
         bridgerId,
         baseAmount,
-        description: `30% File Folder share: ${description}`,
+        description: `File Folder share: ${description}`,
         sourceId,
       })
     : null

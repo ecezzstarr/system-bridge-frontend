@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db'
+import { getAgenticBridgerState } from '@/lib/weave-lifestyle'
 
 // Activities a referring Bridger earns on — everything except a referred
 // Bridger's own client_deposit activity (that stays Agent-only, per spec).
@@ -8,12 +9,6 @@ const BRIDGER_REFERRAL_RATE = 0.30
 
 let columnsConfirmed = false
 
-// Checks whether the required columns already exist, without ever
-// attempting ALTER TABLE at runtime — the app's DB role does not have
-// schema-alteration (ownership) rights, only read/write. If columns are
-// genuinely missing, this throws a clear error instead of a raw
-// permissions crash, so an admin knows to run the one-time migration
-// manually with an owner-level DB user.
 export async function ensureBridgerReferralColumns() {
   if (columnsConfirmed) return
 
@@ -49,18 +44,12 @@ export async function getBridgerReferrer(bridgerId: string): Promise<string | nu
   return rows[0]?.referred_by_bridger_id ?? null
 }
 
-/**
- * Resolves the referring Bridger (A) for a given Bridger (B) and credits
- * A 20% commission on B's eligible activity. Silently no-ops if B has no
- * Bridger referrer. Best-effort — never throws, matches creditAgentCommission's
- * pattern so it can't break the primary transaction it's called from.
- */
 export async function creditBridgerReferralCommission(params: {
   bridgerId: string
   activity: BridgerReferralActivity
   baseAmount: number
   description: string
-}): Promise<{ referrerId: string; commissionAmount: number } | null> {
+}): Promise<{ referrerId: string; commissionAmount: number; rate: number; lifestyle: string | null } | null> {
   const { bridgerId, activity, baseAmount, description } = params
 
   if (!bridgerId || !baseAmount || baseAmount <= 0) return null
@@ -69,7 +58,10 @@ export async function creditBridgerReferralCommission(params: {
     const referrerId = await getBridgerReferrer(bridgerId)
     if (!referrerId) return null
 
-    const commissionAmount = Math.round(baseAmount * BRIDGER_REFERRAL_RATE * 1e6) / 1e6
+    const agentic = await getAgenticBridgerState(referrerId)
+    const rate = agentic.active ? agentic.earningRate : BRIDGER_REFERRAL_RATE
+    const lifestyle = agentic.active ? agentic.lifestyle : null
+    const commissionAmount = Math.round(baseAmount * rate * 1e6) / 1e6
     if (commissionAmount <= 0) return null
 
     const walletResult = await sql`
@@ -84,7 +76,22 @@ export async function creditBridgerReferralCommission(params: {
     }
 
     await sql`
-      INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at, metadata) VALUES (gen_random_uuid(), ${referrerId}::uuid, 'earning', ${commissionAmount}, 'Flame Coin', ${description}, NOW(), jsonb_build_object('commerce_type','bridger_referral_commission'))
+      INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, created_at, metadata)
+      VALUES (
+        gen_random_uuid(),
+        ${referrerId}::uuid,
+        'earning',
+        ${commissionAmount},
+        'Flame Coin',
+        ${description},
+        NOW(),
+        jsonb_build_object(
+          'commerce_type','bridger_referral_commission',
+          'activity',${activity},
+          'rate',${rate},
+          'lifestyle',${lifestyle}
+        )
+      )
     `
 
     await sql`
@@ -99,8 +106,8 @@ export async function creditBridgerReferralCommission(params: {
         VALUES (
           ${referrerId}::uuid,
           'commission',
-          'A return has come to you',
-          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin referral commission (30%) from a Bridger you referred.`},
+          ${lifestyle === 'agentic_bridger' ? 'Agentic-Bridger return has come to you' : 'A return has come to you'},
+          ${`You earned ${commissionAmount.toFixed(2)} Flame Coin (${(rate * 100).toFixed(0)}%) from ${activity.replaceAll('_',' ')}${lifestyle === 'agentic_bridger' ? ' through Agentic-Bridger.' : '.'}`},
           'WEAVE'
         )
       `
@@ -108,7 +115,7 @@ export async function creditBridgerReferralCommission(params: {
       console.error('[bridger-referral-commission] notification failed:', notifyErr)
     }
 
-    return { referrerId, commissionAmount }
+    return { referrerId, commissionAmount, rate, lifestyle }
   } catch (error) {
     console.error(`[bridger-referral-commission] Failed for bridger ${bridgerId}, activity ${activity}:`, error)
     return null

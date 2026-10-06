@@ -73,8 +73,6 @@ export async function getClientBuildEconomy(
     initialAmount = Math.max(initialAmount, positive(purchaseAmount?.amount))
   }
 
-  // Only verified Client wallet funding after the File Folder was established
-  // contributes to later build power. Pending deposits never count.
   const [additional] = await sql`
     SELECT COALESCE(SUM(amount_trx),0) AS amount
     FROM deposits
@@ -86,9 +84,6 @@ export async function getClientBuildEconomy(
   const additionalVerifiedFlameCoin = positive(additional?.amount)
   const fundingKnown = initialAmount > 0
 
-  // Existing legacy Clients whose original File Folder price cannot be proven are
-  // grandfathered so this new progression rule never unexpectedly closes an
-  // already-operating Customer Door.
   if (!fundingKnown) {
     return {
       fundingKnown: false,
@@ -104,16 +99,13 @@ export async function getClientBuildEconomy(
   }
 
   const totalParticipationFlameCoin = initialAmount + additionalVerifiedFlameCoin
-  const publicDoorUnlocked =
-    totalParticipationFlameCoin >= CLIENT_PUBLIC_DOOR_THRESHOLD_FLAME_COIN
-  const requiredToOpenPublicDoorFlameCoin = Math.max(
-    0,
-    CLIENT_PUBLIC_DOOR_THRESHOLD_FLAME_COIN - totalParticipationFlameCoin,
-  )
 
-  // Strategy-builder progression:
-  // half Premium = 1x, Premium = 2x, 2x Premium = 4x (cap).
-  // Very small Standard folders still build, but at a slower floor.
+  // A verified File Folder purchase now commissions a working Customer Door immediately.
+  // Participation level still controls the speed/capacity of later Client builds, but it
+  // never closes the public Customer Door that belongs to the purchased File Folder.
+  const publicDoorUnlocked = true
+  const requiredToOpenPublicDoorFlameCoin = 0
+
   const buildSpeedMultiplier = Math.min(
     CLIENT_BUILD_SPEED_MAX,
     Math.max(

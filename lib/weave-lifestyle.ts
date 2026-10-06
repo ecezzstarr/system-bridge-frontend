@@ -1,6 +1,9 @@
 import { getPool } from '@/lib/db'
 
 export const ARENA_SETTLEMENT_DELAY_MINUTES = 20
+export const AGENTIC_BRIDGER_EARNING_RATE = 0.45
+export const ACE_STANDARD_EARNING_RATE = 0.30
+export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger'
 
 export function getWeaveLifestyleMonthlyPrice() {
   const configured = Number(process.env.WEAVE_LIFESTYLE_MONTHLY_FLAME_COIN || 0)
@@ -25,6 +28,7 @@ export async function ensureWeaveLifestyleSchema() {
         user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
         ace_name varchar(80) NOT NULL,
         status varchar(20) NOT NULL DEFAULT 'active',
+        lifestyle varchar(40) NOT NULL DEFAULT 'ace',
         games_played integer NOT NULL DEFAULT 0,
         wins integer NOT NULL DEFAULT 0,
         losses integer NOT NULL DEFAULT 0,
@@ -32,6 +36,7 @@ export async function ensureWeaveLifestyleSchema() {
         updated_at timestamptz NOT NULL DEFAULT NOW()
       )
     `)
+    await client.query(`ALTER TABLE arena_ace_accounts ADD COLUMN IF NOT EXISTS lifestyle varchar(40) NOT NULL DEFAULT 'ace'`)
     await client.query(`
       CREATE TABLE IF NOT EXISTS arena_live_predictions (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -52,6 +57,8 @@ export async function ensureWeaveLifestyleSchema() {
     await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS settlement_status varchar(20) NOT NULL DEFAULT 'open'`)
     await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS settlement_available_at timestamptz`)
     await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS settlement_reason text`)
+    await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS ace_lifestyle varchar(40) NOT NULL DEFAULT 'ace'`)
+    await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS ace_earning_rate numeric(6,5) NOT NULL DEFAULT 0.30`)
   } finally {
     client.release()
   }
@@ -79,16 +86,50 @@ export async function requireLifestyleAccess(userId: string) {
   return access
 }
 
-export async function ensureAceAccount(userId: string, fallbackName: string) {
+export async function ensureAceAccount(userId: string, fallbackName: string, role?: string | null) {
   await ensureWeaveLifestyleSchema()
   const pool = getPool()
   const safeName = String(fallbackName || 'Ace').trim().slice(0, 80) || 'Ace'
+  const lifestyle = String(role || '').toLowerCase() === 'bridger' ? AGENTIC_BRIDGER_LIFESTYLE : 'ace'
   await pool.query(
-    `INSERT INTO arena_ace_accounts (user_id,ace_name)
-     VALUES ($1::uuid,$2)
-     ON CONFLICT (user_id) DO NOTHING`,
-    [userId, safeName]
+    `INSERT INTO arena_ace_accounts (user_id,ace_name,lifestyle)
+     VALUES ($1::uuid,$2,$3)
+     ON CONFLICT (user_id) DO UPDATE SET lifestyle=EXCLUDED.lifestyle,updated_at=NOW()`,
+    [userId, safeName, lifestyle]
   )
   const result = await pool.query('SELECT * FROM arena_ace_accounts WHERE user_id=$1::uuid', [userId])
   return result.rows[0]
+}
+
+export async function getAgenticBridgerState(userId: string) {
+  await ensureWeaveLifestyleSchema()
+  const pool = getPool()
+  const result = await pool.query(
+    `SELECT
+       u.role,
+       u.subscription_status,
+       u.subscription_expiry,
+       u.is_subscription_exempt,
+       a.status AS ace_status,
+       a.lifestyle
+     FROM users u
+     LEFT JOIN arena_ace_accounts a ON a.user_id=u.id
+     WHERE u.id=$1::uuid
+     LIMIT 1`,
+    [userId]
+  )
+  const row = result.rows[0]
+  const expiry = row?.subscription_expiry ? new Date(row.subscription_expiry).getTime() : null
+  const continuanceActive = Boolean(row?.is_subscription_exempt) || (row?.subscription_status === 'active' && (!expiry || expiry > Date.now()))
+  const active = row?.role === 'bridger'
+    && row?.ace_status === 'active'
+    && row?.lifestyle === AGENTIC_BRIDGER_LIFESTYLE
+    && continuanceActive
+
+  return {
+    active,
+    lifestyle: active ? AGENTIC_BRIDGER_LIFESTYLE : null,
+    earningRate: active ? AGENTIC_BRIDGER_EARNING_RATE : ACE_STANDARD_EARNING_RATE,
+    continuanceActive,
+  }
 }

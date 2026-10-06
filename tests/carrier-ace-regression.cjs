@@ -28,7 +28,8 @@ assert.ok(carrierAccess.includes("role === 'client'")&&carrierAccess.includes("p
 assert.ok(carrierAccess.includes("position: 'Ace'")&&carrierAccess.includes('ensureAceAccount'),'Every admitted Carrier user receives the Ace identity')
 assert.ok(carrierAccessApi.includes("identityInsideCarrier: access.active ? 'Ace' : null"),'Carrier access API exposes Ace as the environment identity')
 
-assert.ok(carrierApi.includes('requireCarrierAccess')&&!carrierApi.includes('requireLifestyleAccess')&&carrierApi.includes("String(match.host_id) !== String(user.id)"),'Carrier publishing follows role-qualified entrance and stays owned by the playing Ace')
+const carrierOwnershipCheck=carrierApi.includes("String(match.host_id) !== String(user.id)")||carrierApi.includes("String(match.host_id)!==String(user.id)")
+assert.ok(carrierApi.includes('requireCarrierAccess')&&!carrierApi.includes('requireLifestyleAccess')&&carrierOwnershipCheck,'Carrier publishing follows role-qualified entrance and stays owned by the playing Ace')
 assert.ok(carrierApi.includes('getAceCarrierUrl')&&carrierApi.includes('shareText'),'Ace publishing returns a direct public Carrier and ready-to-send marketing copy')
 assert.ok(arenaApi.includes('requireCarrierAccess(authUser)')&&arenaApi.includes("identity: 'Ace'"),'Playing in Arena is gated by Carrier eligibility rather than one generic subscription')
 assert.ok(arena.includes("fetch('/api/carrier/access'")&&arena.includes('Inside Carrier every qualified participant is an Ace'),'Arena presents the Carrier Ace identity and entrance rules')
