@@ -3,7 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { ensureCarrierSchema } from '@/lib/carrier'
 import { ensureWeaveAdsSchema } from '@/lib/weave-ads'
-import { listDistributionChannels } from '@/lib/weave-distribution'
+import { ensureWeaveDistributionSchema, listDistributionChannels } from '@/lib/weave-distribution'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   if (auth.error) return auth.error
 
   try {
-    await Promise.all([ensureWeaveAdsSchema(), ensureCarrierSchema()])
+    await Promise.all([ensureWeaveAdsSchema(), ensureCarrierSchema(), ensureWeaveDistributionSchema()])
     const channels = await listDistributionChannels()
 
     const [movement] = await sql`
@@ -41,6 +41,46 @@ export async function GET(request: NextRequest) {
         COALESCE((SELECT COUNT(*) FROM carrier_ace_visitors WHERE supported_at IS NOT NULL),0)::int AS support,
         COALESCE((SELECT COUNT(*) FROM carrier_ace_shares),0)::int AS shares
       FROM carrier_ace_publications p
+    `
+
+    const [participant] = await sql`
+      SELECT
+        COALESCE((SELECT COUNT(*) FROM weave_distribution_profiles WHERE role IN ('agent','bridger','client')),0)::int AS active_profiles,
+        COALESCE((SELECT COUNT(*) FROM weave_distribution_accounts WHERE status='ready'),0)::int AS connected_accounts,
+        COALESCE((SELECT COUNT(*) FROM weave_distribution_accounts WHERE status='pending'),0)::int AS pending_connections,
+        COALESCE((SELECT COUNT(*) FROM weave_distribution_content WHERE status='scheduled'),0)::int AS scheduled_content,
+        COALESCE((SELECT COUNT(*) FROM weave_distribution_deliveries WHERE status='published'),0)::int AS published_deliveries,
+        COALESCE((SELECT SUM(reach) FROM weave_distribution_metrics),0)::int AS social_reach,
+        COALESCE((SELECT SUM(clicks) FROM weave_distribution_metrics),0)::int AS social_clicks,
+        COALESCE((SELECT SUM(follows) FROM weave_distribution_metrics),0)::int AS social_follows
+    `
+
+    const participantRoles = await sql`
+      SELECT
+        role,
+        COUNT(*)::int AS profiles,
+        COALESCE((SELECT COUNT(*) FROM weave_distribution_content c WHERE c.role=p.role),0)::int AS content,
+        COALESCE((SELECT COUNT(*) FROM weave_distribution_content c WHERE c.role=p.role AND c.status='scheduled'),0)::int AS scheduled
+      FROM weave_distribution_profiles p
+      WHERE role IN ('agent','bridger','client')
+      GROUP BY role
+      ORDER BY role
+    `
+
+    const pendingConnections = await sql`
+      SELECT
+        a.user_id,
+        u.name,
+        u.username,
+        u.role,
+        a.channel_key,
+        a.account_label,
+        a.updated_at
+      FROM weave_distribution_accounts a
+      JOIN users u ON u.id=a.user_id
+      WHERE a.status='pending'
+      ORDER BY a.updated_at DESC
+      LIMIT 40
     `
 
     const campaigns = await sql`
@@ -98,6 +138,18 @@ export async function GET(request: NextRequest) {
         carrierSupport: Number(carrier?.support) || 0,
         carrierShares: Number(carrier?.shares) || 0,
       },
+      participantSummary: {
+        activeProfiles: Number(participant?.active_profiles) || 0,
+        connectedAccounts: Number(participant?.connected_accounts) || 0,
+        pendingConnections: Number(participant?.pending_connections) || 0,
+        scheduledContent: Number(participant?.scheduled_content) || 0,
+        publishedDeliveries: Number(participant?.published_deliveries) || 0,
+        socialReach: Number(participant?.social_reach) || 0,
+        socialClicks: Number(participant?.social_clicks) || 0,
+        socialFollows: Number(participant?.social_follows) || 0,
+      },
+      participantRoles,
+      pendingConnections,
       campaigns,
       platformRecord,
     }, { headers: { 'Cache-Control': 'no-store' } })
