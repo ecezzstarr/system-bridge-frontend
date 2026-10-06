@@ -36,6 +36,7 @@ jobs:
           node tests/agentic-bridger-regression.cjs
           node tests/file-folder-customer-door-purchase-regression.cjs
           node tests/distribution-studio-regression.cjs
+          node tests/bridger-subscribe-all-regression.cjs
           node tests/core-hardening-regression.cjs
           node tests/commerce-ledger-regression.cjs
           node tests/email-mailbox-regression.cjs
