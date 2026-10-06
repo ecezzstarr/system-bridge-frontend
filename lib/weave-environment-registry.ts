@@ -22,6 +22,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'shared-settings', label:'Settings', kind:'district', route:'/settings', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:58 },
   { key:'shared-marketplace', label:'Enterprise Systems', kind:'district', route:'/marketplace', area:'Shared WEAVE', scope:'shared', defaultOrder:70 },
   { key:'shared-video-ad-studio', label:'Video Ad Studio', kind:'district', route:'/video-ad-studio', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:75 },
+  { key:'shared-distribution-studio', label:'Social Presence', kind:'district', route:'/distribution-studio', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:77 },
   { key:'shared-echo', label:'Echo', kind:'district', route:'/echo', area:'Shared WEAVE', scope:'shared', defaultOrder:80 },
   { key:'shared-arena', label:'Arena', kind:'district', route:'/arena', area:'Shared WEAVE', scope:'shared', defaultOrder:90 },
   { key:'shared-casino', label:'Casino', kind:'district', route:'/casino', area:'Shared WEAVE', scope:'shared', defaultOrder:100 },
