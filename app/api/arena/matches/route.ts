@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query as dbQuery, getPool } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
-import { ensureWeaveLifestyleSchema } from '@/lib/weave-lifestyle'
+import { AGENTIC_BRIDGER_EARNING_RATE, ACE_STANDARD_EARNING_RATE, ensureWeaveLifestyleSchema } from '@/lib/weave-lifestyle'
 import { requireCarrierAccess } from '@/lib/carrier-access'
 
 export async function GET(request: NextRequest) {
@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
         u.username as host_username,
         u.avatar_url as host_avatar,
         COALESCE(a.ace_name,u.name,u.username,'Ace') as ace_name,
+        COALESCE(m.ace_lifestyle,a.lifestyle,'ace') as resolved_ace_lifestyle,
+        COALESCE(m.ace_earning_rate,0.30) as resolved_ace_earning_rate,
         (SELECT COUNT(*) FROM arena_live_predictions WHERE match_id=m.id) as prediction_count,
         (SELECT COUNT(*) FROM arena_live_predictions WHERE match_id=m.id AND prediction='ACE_WIN') as ace_win_predictions,
         (SELECT COUNT(*) FROM arena_live_predictions WHERE match_id=m.id AND prediction='ACE_LOSE') as ace_lose_predictions
@@ -50,6 +52,8 @@ export async function GET(request: NextRequest) {
         description: m.description,
         host: { id: m.host_id, displayName: m.host_name, avatar: m.host_avatar },
         aceName: m.ace_name,
+        aceLifestyle: m.resolved_ace_lifestyle,
+        aceEarningRate: Number(m.resolved_ace_earning_rate || ACE_STANDARD_EARNING_RATE),
         category: m.category,
         gameKey: m.game_key || m.category,
         streamUrl: m.stream_url || null,
@@ -76,8 +80,10 @@ export async function POST(request: NextRequest) {
   const authUser = await getAuthUser(request)
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  let ace: any
   try {
-    await requireCarrierAccess(authUser)
+    const access = await requireCarrierAccess(authUser)
+    ace = access.ace
   } catch (error: any) {
     return NextResponse.json({ error: error.message, access: error.carrierAccess || null }, { status: error.status || 403 })
   }
@@ -102,17 +108,23 @@ export async function POST(request: NextRequest) {
 
     await ensureWeaveLifestyleSchema()
 
+    const aceLifestyle = String(ace?.lifestyle || 'ace')
+    const aceEarningRate = aceLifestyle === 'agentic_bridger'
+      ? AGENTIC_BRIDGER_EARNING_RATE
+      : ACE_STANDARD_EARNING_RATE
     const id = `match_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
     await client.query(
       `INSERT INTO arena_matches
-        (id,title,description,host_id,entry_fee,prize_pool,max_participants,category,game_key,stream_url,scheduled_at,status,settlement_status)
-       VALUES ($1,$2,$3,$4,0,0,100000,$5,$6,$7,$8,'upcoming','open')`,
-      [id, title, description, authUser.id, category, gameKey, streamUrl || null, startsAt]
+        (id,title,description,host_id,entry_fee,prize_pool,max_participants,category,game_key,stream_url,scheduled_at,status,settlement_status,ace_lifestyle,ace_earning_rate)
+       VALUES ($1,$2,$3,$4,0,0,100000,$5,$6,$7,$8,'upcoming','open',$9,$10)`,
+      [id, title, description, authUser.id, category, gameKey, streamUrl || null, startsAt, aceLifestyle, aceEarningRate]
     )
 
     return NextResponse.json({
       success: true,
       identity: 'Ace',
+      lifestyle: aceLifestyle,
+      earningRate: aceEarningRate,
       match: { id, title, status: 'upcoming', gameKey, streamUrl: streamUrl || null },
     })
   } catch (error) {
