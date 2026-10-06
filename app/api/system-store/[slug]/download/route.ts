@@ -8,13 +8,16 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{slug:str
   const sql=getFileFolderDb()
   await ensureWeaveSystemStoreSchema(sql)
   const [row]=await sql`
-    SELECT p.id AS publication_id,p.current_version_id,v.package_url,v.storage_object,v.package_name
+    SELECT p.id AS publication_id,p.current_version_id,p.price,p.currency,v.package_url,v.storage_object,v.package_name
     FROM weave_system_store_publications p
     JOIN weave_system_store_versions v ON v.id=p.current_version_id
     WHERE p.public_slug=${slug} AND p.status='approved' AND v.review_status='approved'
     LIMIT 1
   `
   if(!row)return NextResponse.json({error:'Published system not found'},{status:404})
+  if(Number(row.price||0)>0){
+    return NextResponse.json({error:'Purchase entitlement is required before downloading this paid system. Continue through the publisher Customer Door.',price:Number(row.price),currency:row.currency},{status:402})
+  }
 
   let destination:string|null=null
   if(row.storage_object){
