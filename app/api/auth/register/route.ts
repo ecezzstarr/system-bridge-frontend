@@ -5,6 +5,7 @@ import { ensureBridgerReferralColumns } from '@/lib/bridger-referral-commission'
 import { validateDepartmentalCode, useDepartmentalCode, Department } from '@/lib/departmental-codes'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-referral'
+import { queueReferralSignupBonus } from '@/lib/referral-bonus'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 
 export async function POST(request: NextRequest) {
@@ -13,17 +14,17 @@ export async function POST(request: NextRequest) {
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
     const body = await request.json()
-    const { 
-      email, 
-      username, 
-      name, 
-      password, 
-      role, 
-      department, 
-      termsAccepted, 
-      fullNameConfirmed, 
+    const {
+      email,
+      username,
+      name,
+      password,
+      role,
+      department,
+      termsAccepted,
+      fullNameConfirmed,
       referredByBridgerId,
-      departmentalCode 
+      departmentalCode
     } = body
 
     if (!termsAccepted || !fullNameConfirmed) {
@@ -33,23 +34,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validation
     if (!email || !username || !name || !password || !role || !department) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Validate role
     if (!['agent', 'bridger'].includes(role)) {
-      return NextResponse.json(
-        { error: 'Invalid role. Must be agent or bridger.' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid role. Must be agent or bridger.' }, { status: 400 })
     }
 
-    // Departmental Code Validation (Mandatory for Agent/Bridger)
     if (!departmentalCode) {
       return NextResponse.json(
         { error: 'A departmental registration code is required for this role.' },
@@ -59,7 +51,6 @@ export async function POST(request: NextRequest) {
 
     const dept = role.toUpperCase() as Department
     const validation = await validateDepartmentalCode(departmentalCode, dept)
-    
     if (!validation.valid) {
       return NextResponse.json(
         { error: validation.error || 'Invalid departmental code.' },
@@ -67,29 +58,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if email already exists
     const existingEmail = await sql`SELECT id FROM users WHERE email = ${email}`
-    if (existingEmail.length > 0) {
-      return NextResponse.json(
-        { error: 'Email already registered' },
-        { status: 400 }
-      )
-    }
+    if (existingEmail.length > 0) return NextResponse.json({ error: 'Email already registered' }, { status: 400 })
 
-    // Check if username already exists
     const existingUsername = await sql`SELECT id FROM users WHERE username = ${username}`
-    if (existingUsername.length > 0) {
-      return NextResponse.json(
-        { error: 'Username already taken' },
-        { status: 400 }
-      )
-    }
+    if (existingUsername.length > 0) return NextResponse.json({ error: 'Username already taken' }, { status: 400 })
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 10)
 
-    // Referral input is a real shareable code. UUID links from older WEAVE
-    // builds remain accepted so existing outreach does not break.
     let referralOwner: any = null
     if (referredByBridgerId) {
       referralOwner = await resolveReferralOwnerByCode(String(referredByBridgerId))
@@ -112,10 +88,6 @@ export async function POST(request: NextRequest) {
 
     if (bridgerReferrerId) await ensureBridgerReferralColumns()
 
-    // Claim the code BEFORE creating anything. This atomic UPDATE is the
-    // real concurrency gate -- two simultaneous registrations against the
-    // same code will only have one succeed here, so the account below is
-    // only ever created for the request that actually won the claim.
     const userId = crypto.randomUUID()
     const claimed = await useDepartmentalCode(departmentalCode, userId)
     if (!claimed) {
@@ -144,7 +116,6 @@ export async function POST(request: NextRequest) {
 
     const user = userResult[0]
 
-    // Record attribution without changing the role-specific commission rules.
     if (genericReferrerId) {
       try {
         await sql`
@@ -162,7 +133,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Log terms acceptance (WEAVE Terms of Service v1)
     try {
       await sql`
         INSERT INTO terms_acceptance_log (user_id, role, terms_version, full_name_confirmed)
@@ -173,13 +143,11 @@ export async function POST(request: NextRequest) {
       console.error('Failed to log terms acceptance:', termsError)
     }
 
-    // Create wallet for user (using actual column names from schema)
     await sql`
       INSERT INTO wallets (id, user_id, balance_trx, balance_usdt, is_primary, is_eight_engine_controlled, created_at, updated_at)
       VALUES (gen_random_uuid(), ${userId}::uuid, 0, 0, true, true, NOW(), NOW())
     `
 
-    // Create role-specific profile
     if (role === 'agent') {
       await sql`
         INSERT INTO agent_profiles (id, user_id, agent_type, status, rating, total_earnings, matches_completed, commission_rate, created_at, updated_at)
@@ -198,10 +166,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate token
+    // Fixed staff referral bonus: Agents and Bridgers receive ₦500 for a
+    // verified Agent/Bridger registration attributed to their referral code.
+    // The award is idempotent and converts ₦500 to Flame Coin at settlement.
+    if (genericReferrerId && ['agent','bridger'].includes(String(referralOwner?.role || ''))) {
+      try {
+        await queueReferralSignupBonus({
+          referrerId: genericReferrerId,
+          referredUserId: userId,
+          referralCode: referralOwner?.referral_code || String(referredByBridgerId || ''),
+        })
+      } catch (bonusError) {
+        // Registration is already valid. A pending referral award can settle
+        // from the referrer's live Referral Movement when rates recover.
+        console.error('[referral-bonus] registration payout deferred:', bonusError)
+      }
+    }
+
     const token = `ssb_${userId}_${Date.now()}`
 
-    // Create session
     await sql`
       INSERT INTO sessions (id, user_id, token, created_at, expires_at)
       VALUES (gen_random_uuid(), ${userId}::uuid, ${token}, NOW(), NOW() + INTERVAL '7 days')
