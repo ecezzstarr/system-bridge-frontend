@@ -7,13 +7,16 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{slug:str
   const sql=getFileFolderDb()
   await ensureWeaveSystemStoreSchema(sql)
   const [row]=await sql`
-    SELECT p.id AS publication_id,p.current_version_id,v.entry_url
+    SELECT p.id AS publication_id,p.current_version_id,p.price,p.currency,v.entry_url
     FROM weave_system_store_publications p
     JOIN weave_system_store_versions v ON v.id=p.current_version_id
     WHERE p.public_slug=${slug} AND p.status='approved' AND v.review_status='approved'
     LIMIT 1
   `
   if(!row)return NextResponse.json({error:'Published system not found'},{status:404})
+  if(Number(row.price||0)>0){
+    return NextResponse.json({error:'Purchase entitlement is required before opening this paid system. Continue through the publisher Customer Door.',price:Number(row.price),currency:row.currency},{status:402})
+  }
   if(!row.entry_url||!isSafeStoreDeliveryUrl(String(row.entry_url)))return NextResponse.json({error:'This system version has no live entry'},{status:409})
 
   await sql`UPDATE weave_system_store_publications SET open_count=open_count+1,updated_at=NOW() WHERE id=${row.publication_id}::uuid`
