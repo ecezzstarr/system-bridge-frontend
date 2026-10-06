@@ -3,7 +3,7 @@ import { Storage } from '@google-cloud/storage'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { ensureVideoAdWorkshopSchema, mapVideoAdProject, type VideoAdScene } from '@/lib/video-ad-workshop'
-import { ensureVideoAdStudioSchema } from '@/lib/video-ad-studio'
+import { ensureVideoAdStudioSchema, VIDEO_STUDIO_CUSTOMER_ROLES } from '@/lib/video-ad-studio'
 import { spawn } from 'node:child_process'
 import { createReadStream } from 'node:fs'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
@@ -57,7 +57,8 @@ function extFor(url: string, fallback: string) {
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-  if (user.role !== 'admin') return NextResponse.json({ success: false, error: 'Administration access required' }, { status: 403 })
+  const isAdmin = user.role === 'admin'
+  if (!isAdmin && !VIDEO_STUDIO_CUSTOMER_ROLES.has(user.role || '')) return NextResponse.json({ success: false, error: 'Video Studio access required' }, { status: 403 })
 
   let projectId = ''
   let workDir = ''
@@ -72,6 +73,12 @@ export async function POST(request: NextRequest) {
     const current = await pool.query('SELECT * FROM admin_video_ad_projects WHERE id=$1::uuid', [projectId])
     const row = current.rows[0]
     if (!row) return NextResponse.json({ success: false, error: 'Video production not found' }, { status: 404 })
+
+    if (!isAdmin) {
+      if (String(row.created_by) !== String(user.id) || !row.order_id) return NextResponse.json({ success:false, error:'You can render only your own paid Video Studio production' },{status:403})
+      const paid = await pool.query(`SELECT id FROM video_ad_studio_orders WHERE id=$1::uuid AND user_id=$2::uuid AND project_id=$3::uuid AND price_flame_coin>=0 LIMIT 1`,[row.order_id,user.id,projectId])
+      if (!paid.rows[0]) return NextResponse.json({ success:false, error:'A paid Studio order is required before rendering' },{status:403})
+    }
     if (row.status === 'rendering') return NextResponse.json({ success: false, error: 'This video is already rendering' }, { status: 409 })
 
     const scenes = (Array.isArray(row.storyboard) ? row.storyboard : []) as VideoAdScene[]
@@ -131,6 +138,7 @@ export async function POST(request: NextRequest) {
     const updated = await pool.query("UPDATE admin_video_ad_projects SET status='ready',output_url=$2,error_message=NULL,updated_at=NOW() WHERE id=$1::uuid RETURNING *", [projectId, outputUrl])
     if (row.order_id) {
       await pool.query("UPDATE video_ad_studio_orders SET status='ready',output_url=$2,updated_at=NOW() WHERE id=$1::uuid", [row.order_id, outputUrl])
+      await pool.query("UPDATE video_ad_service_orders SET status='ready',output_url=$2,updated_at=NOW() WHERE studio_order_id=$1::uuid",[row.order_id,outputUrl])
     }
     return NextResponse.json({ success: true, project: mapVideoAdProject(updated.rows[0]) })
   } catch (error: any) {
