@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FolderOpen, Orbit } from 'lucide-react'
+import { ArrowLeft, FolderOpen, Orbit, PackageOpen } from 'lucide-react'
 import ClientFileFolderGate from '@/components/system-switch/client-file-folder-gate'
 import ClientFileFolderOperatingEnvironment from '@/components/system-switch/client-file-folder-operating-environment'
 import { FileFolderEnvironmentLoader } from '@/components/system-switch/file-folder-environment-loader'
@@ -99,6 +99,13 @@ export default function ClientSystemSwitchPage() {
         className="fixed bottom-4 left-4 z-50 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#030914]/88 px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-slate-300 backdrop-blur-xl hover:text-white"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> Client World
+      </Link>
+      <Link
+        href="/client/system-store"
+        data-file-folder-publish-system="true"
+        className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-[#06140f]/92 px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-emerald-200 backdrop-blur-xl hover:text-white"
+      >
+        <PackageOpen className="h-3.5 w-3.5" /> Publish System
       </Link>
     </main>
   )
