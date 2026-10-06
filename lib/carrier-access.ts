@@ -64,7 +64,7 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
       role,
       gate: 'bridger_continuance',
       reason: active
-        ? 'Your active Bridger Continuance has opened Carrier.'
+        ? 'Your active Bridger Continuance has opened Carrier and Agentic-Bridger inside Ace.'
         : 'Bridgers enter Carrier when Continuance is active.',
       position: active ? 'Ace' : null,
       qualifyingState: row?.is_subscription_exempt ? 'exempt' : row?.subscription_status || 'inactive',
@@ -114,6 +114,6 @@ export async function requireCarrierAccess(user: CarrierAccessUser) {
     throw error
   }
 
-  const ace = await ensureAceAccount(user.id, user.name || user.username || 'Ace')
+  const ace = await ensureAceAccount(user.id, user.name || user.username || 'Ace', user.role)
   return { access, ace }
 }
