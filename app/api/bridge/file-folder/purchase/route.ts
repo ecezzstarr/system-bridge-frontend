@@ -8,6 +8,7 @@ import { requireApiUser } from '@/lib/api-auth'
 import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { getPublicFlameMovementAttribution, publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
+import { provisionPurchasedFileFolderCustomerDoor } from '@/lib/client-customer-door-provisioning'
 
 const sql = neon(process.env.DATABASE_URL!)
 function validPrice(value: unknown) { const amount = Number(value); return isValidFileFolderAmount(amount) && amount <= 100000000 }
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     await ensureClientFileFolderSchema(sql); await ensurePurchaseSchema()
     const body = await request.json()
     const fileNumber = typeof body.fileNumber === 'string' && body.fileNumber.trim() ? body.fileNumber.trim().toUpperCase() : null
-    const rawAmount = body.amountFlameCoin ?? body.amountTrx // amountTrx kept only for legacy clients
+    const rawAmount = body.amountFlameCoin ?? body.amountTrx
     const amountFlameCoin = rawAmount == null || rawAmount === '' ? FILE_FOLDER_PRICING.standardMinimumFlameCoin : Number(rawAmount)
     const fileFolderTier = getFileFolderTier(amountFlameCoin)
     const paymentMethod = 'trx'
@@ -159,7 +160,7 @@ export async function POST(request: NextRequest) {
       receipt,
       fileFolderTier,
       crossing: { ready: false },
-      message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration will verify the payment, issue the File Number, and open the Client registration crossing.`,
+      message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration will verify the payment, issue the File Number, activate the Client File Folder and commission its working Customer Door.`,
     }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
@@ -185,10 +186,19 @@ export async function PATCH(request: NextRequest) {
     if (folder.client_id && String(folder.client_id) !== String(clientId)) return NextResponse.json({ error: 'File Folder is already assigned' }, { status: 409 })
     const [claimed] = await sql`UPDATE client_file_folders SET client_id=${clientId}::uuid,client_name=${clientName},status='active',claimed_at=COALESCE(claimed_at,NOW()),updated_at=NOW() WHERE file_number=${fileNumber} AND (client_id IS NULL OR client_id=${clientId}::uuid) RETURNING *`
     if (!claimed) return NextResponse.json({ error: 'File Folder could not be activated' }, { status: 409 })
+
+    const customerDoor = await provisionPurchasedFileFolderCustomerDoor({
+      sql,
+      clientId,
+      fileNumber,
+      clientName,
+    })
+
     const [confirmed] = await sql`UPDATE file_folder_purchases SET file_number=${fileNumber},client_id=${clientId}::uuid,status='confirmed',confirmed_at=NOW(),confirmed_by=${auth.session.user.id}::uuid WHERE id=${purchaseId}::uuid RETURNING *`
     const allocation = await accrueAiProviderAllocation({ sql, purchaseId: String(confirmed.id), fileNumber, grossAmount: Number(confirmed.amount_trx), bridgeCode: confirmed.bridge_code, providerKey: confirmed.provider_key, providerName: confirmed.provider_name, flameExternalId: confirmed.flame_external_id, flameName: confirmed.flame_name })
     await recordSystemEvent({ eventType: 'file_number_issued', actorId: auth.session.user.id, actorRole: 'admin', subjectType: 'client_file_folder', subjectId: fileNumber, source: 'admin-file-folder', payload: { purchaseId, clientId } })
     await recordSystemEvent({ eventType: 'client_registered', actorId: clientId, actorRole: 'client', subjectType: 'client_file_folder', subjectId: fileNumber, source: 'bridge-file-folder', payload: { purchaseId } })
-    return NextResponse.json({ success: true, folder: claimed, purchase: confirmed, aiProviderAllocation: allocation?.allocation || null })
+    await recordSystemEvent({ eventType: 'customer_door_commissioned', actorId: clientId, actorRole: 'client', subjectType: 'customer_door', subjectId: customerDoor.systemId, source: 'file-folder-purchase', payload: { purchaseId, fileNumber, publicPath: customerDoor.publicPath, parts: customerDoor.parts } })
+    return NextResponse.json({ success: true, folder: claimed, purchase: confirmed, customerDoor, aiProviderAllocation: allocation?.allocation || null })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to confirm File Folder purchase' }, { status: 500 }) }
 }
