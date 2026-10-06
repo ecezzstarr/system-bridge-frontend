@@ -57,11 +57,11 @@ export default function BridgerContinuancePage() {
       setLoading(false)
       return
     }
-    void fetchState()
-    return visiblePoll(signal => fetchState(true, signal), 30000, false)
+    void fetchContinuance()
+    return visiblePoll(signal=>fetchContinuance(true,signal),30000,false)
   }, [userId, token])
 
-  async function fetchState(silent = false, signal?: AbortSignal) {
+  async function fetchContinuance(silent = false, signal?: AbortSignal) {
     if (!silent) setLoading(true)
     try {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
@@ -95,7 +95,7 @@ export default function BridgerContinuancePage() {
       const data = await res.json()
       if (data.success) {
         setMessage(data.renewed ? 'Continuance subscribed for 30 days.' : 'Continuance is already current.')
-        await fetchState(true)
+        await fetchContinuance(true)
       } else if (data.reason === 'insufficient_balance') {
         setError(`Continuance needs ${Number(data.requiredFlameCoin || 0).toLocaleString()} Flame Coin; available balance is ${Number(data.availableFlameCoin || 0).toLocaleString()}.`)
       } else {
@@ -121,7 +121,7 @@ export default function BridgerContinuancePage() {
       const data = await res.json()
       if (data.success) {
         setMessage(data.renewed ? `Subscribed ${Number(data.services?.length || 0)} due Bridger service${Number(data.services?.length || 0) === 1 ? '' : 's'} together.` : 'All Bridger essentials are already current.')
-        await fetchState(true)
+        await fetchContinuance(true)
       } else if (data.reason === 'insufficient_balance') {
         setError(`Subscribe All needs ${Number(data.requiredFlameCoin || 0).toLocaleString()} Flame Coin; available balance is ${Number(data.availableFlameCoin || 0).toLocaleString()}. Nothing was charged.`)
       } else if (data.reason === 'rate_unavailable') {
@@ -207,6 +207,7 @@ export default function BridgerContinuancePage() {
           <p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Continuance only</p>
           <h3 className="mt-1 text-lg font-black text-white">₦{SUBSCRIPTION_AMOUNT.toLocaleString()} / 30 days</h3>
           <p className="mt-2 text-xs leading-5 text-slate-400">Subscribe or renew Continuance personally without buying Bridge AI or Echo.</p>
+          <p className="mt-2 text-[10px] leading-4 text-slate-500">Automatic Continuance remains active at renewal time. Retry automatic wallet renewal personally with this control whenever needed.</p>
           <button type="button" onClick={() => void handleContinuanceOnly()} disabled={continuanceRenewing} className="mt-4 w-full rounded-xl bg-emerald-300 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-950 disabled:opacity-40">{continuanceRenewing ? 'Subscribing Continuance…' : 'Subscribe / Renew Continuance'}</button>
         </section>}
 
@@ -235,7 +236,7 @@ export default function BridgerContinuancePage() {
 
   const right = <>
     <section className="rounded-3xl border border-amber-300/15 bg-amber-400/[.035] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Continuance</p><p className="mt-2 text-2xl font-black text-white">₦{SUBSCRIPTION_AMOUNT.toLocaleString()}</p><p className="mt-2 text-xs leading-5 text-slate-400">Continuance can always be subscribed independently. When active, it opens Ace and Agentic-Bridger for the Bridger.</p></section>
-    <section className="rounded-3xl border border-cyan-300/15 bg-cyan-400/[.035] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-cyan-300">Other essentials</p><p className="mt-2 text-sm font-black text-white">Bridge AI · {WORLD_RULES.BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin</p><p className="mt-1 text-sm font-black text-white">Echo · 7 Flame Coin</p><p className="mt-2 text-xs leading-5 text-slate-400">Each remains independently usable, while Subscribe All removes repeated renewal steps.</p></section>
+    <section className="rounded-3xl border border-cyan-300/15 bg-cyan-400/[.035] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-cyan-300">Other essentials</p><p className="mt-2 text-sm font-black text-white">Bridge AI · {WORLD_RULES.BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin</p><p className="mt-1 text-sm font-black text-white">Echo · 7 Flame Coin</p><p className="mt-2 text-xs leading-5 text-slate-400">Each remains independently usable, while Subscribe All removes repeated renewal steps.</p><Link href="/bridger/bridge-ai" className="mt-3 flex items-center justify-between rounded-xl border border-cyan-300/15 bg-cyan-400/[.04] px-3 py-2 text-[10px] font-black uppercase tracking-wider text-cyan-100"><span>Subscribe to Bridge AI</span><span>→</span></Link><Link href="/echo" className="mt-2 flex items-center justify-between rounded-xl border border-white/10 bg-white/[.03] px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white"><span>Open Echo</span><span>→</span></Link></section>
     <Link href="/bridger/dashboard" className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[.025] px-4 py-3 text-xs font-black text-white"><span className="inline-flex items-center gap-2"><ArrowLeft className="h-4 w-4 text-emerald-300" />Bridger Operating Room</span></Link>
   </>
 
