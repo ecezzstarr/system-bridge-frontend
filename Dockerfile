@@ -24,6 +24,7 @@ ENV NODE_ENV=production
 # Production acceptance gate — keep Cloud Build aligned with GitHub CI.
 RUN node tests/recent-features.cjs
 RUN node tests/agentic-bridger-regression.cjs
+RUN node tests/file-folder-customer-door-purchase-regression.cjs
 RUN node tests/wiring.cjs
 RUN node tests/environment-grade.cjs
 RUN node tests/adaptive-runtime.cjs
