@@ -12,18 +12,18 @@ export const WEAVE_ARCHITECTURE = {
   subject: {
     name: 'The Weave of Presence: System Switch — Bridge Radiance',
     description:
-      'The fixed subject through which Presence becomes organized interaction, work, value, participation, and continuation.',
+      'The fixed subject through which people can recognize, organize, build and continue what they bring into WEAVE.',
   },
   topic: {
     singular: 'Topic',
     plural: 'Topics',
     description:
-      'A topic is whatever people and Weave are building, doing, discovering, solving, organizing, operating, or participating in during the current movement.',
+      'A topic is whatever the person and WEAVE are presently building, doing, discovering, solving, organizing or operating.',
   },
   systemSwitch:
-    'System Switch is the crossing that carries a person and their current topic into the subject.',
+    'System Switch is the Client crossing where what the person brings can become a working File Folder world.',
   bridgeRadiance:
-    'Bridge Radiance is the visible continuation of that topic as the movement continues through life, work, systems, and participation.',
+    'Bridge Radiance is where the human connection remains visible while a topic finds its next useful place in WEAVE.',
 } as const
 
 export function normalizeWeaveTopic(topic?: string | null) {
