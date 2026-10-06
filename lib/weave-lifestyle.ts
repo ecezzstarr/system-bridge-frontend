@@ -1,7 +1,7 @@
 import { getPool } from '@/lib/db'
 
 export const ARENA_SETTLEMENT_DELAY_MINUTES = 20
-export const AGENTIC_BRIDGER_EARNING_RATE = 0.50
+export const AGENTIC_BRIDGER_EARNING_RATE = 0.45
 export const ACE_STANDARD_EARNING_RATE = 0.30
 export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger'
 
