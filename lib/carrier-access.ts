@@ -1,5 +1,5 @@
 import { getPool } from '@/lib/db'
-import { ensureAceAccount, getLifestyleAccess } from '@/lib/weave-lifestyle'
+import { deactivateBridgerAceForExpiredContinuance, ensureAceAccount, getLifestyleAccess } from '@/lib/weave-lifestyle'
 
 export type CarrierAccessUser = {
   id: string
@@ -59,15 +59,20 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
     const expiry = row?.subscription_expiry ? new Date(row.subscription_expiry).getTime() : null
     const current = !expiry || expiry > Date.now()
     const active = Boolean(row?.is_subscription_exempt) || (row?.subscription_status === 'active' && current)
+
+    if (!active) {
+      await deactivateBridgerAceForExpiredContinuance(user.id)
+    }
+
     return {
       active,
       role,
       gate: 'bridger_continuance',
       reason: active
         ? 'Your active Bridger Continuance has opened Carrier and Agentic-Bridger inside Ace.'
-        : 'Bridgers enter Carrier when Continuance is active.',
+        : 'Continuance is inactive or expired. You are operating as a normal Bridger; renew Continuance to enter Ace again.',
       position: active ? 'Ace' : null,
-      qualifyingState: row?.is_subscription_exempt ? 'exempt' : row?.subscription_status || 'inactive',
+      qualifyingState: row?.is_subscription_exempt ? 'exempt' : active ? 'active' : 'inactive',
     }
   }
 
