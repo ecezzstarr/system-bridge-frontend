@@ -17,6 +17,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'shared-human-cadences', label:'Human Cadences', kind:'district', route:'/search', area:'Shared WEAVE', scope:'shared', defaultOrder:20 },
   { key:'shared-presences', label:'Presences', kind:'district', route:'/profiles', area:'Shared WEAVE', scope:'shared', defaultOrder:30 },
   { key:'shared-company-guidance', label:'Company Guidance', kind:'district', route:'/company-chat', area:'Agent + Bridger', scope:'agent-bridger', defaultOrder:50 },
+  { key:'shared-referral-movement', label:'Referral Movement', kind:'district', route:'/referrals', area:'Agent + Bridger', scope:'agent-bridger', protected:true, defaultOrder:52 },
   { key:'shared-direct-communication', label:'Direct Communication', kind:'district', route:'/communications', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:55 },
   { key:'shared-flame-event', label:'Flame Event · Loop 1', kind:'district', route:'/event', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:57 },
   { key:'shared-settings', label:'Settings', kind:'district', route:'/settings', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:58 },
