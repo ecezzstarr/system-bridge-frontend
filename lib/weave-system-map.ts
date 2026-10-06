@@ -4,16 +4,16 @@ export const WEAVE_SYSTEM_MAP = {
     subject: 'The Weave of Presence: System Switch — Bridge Radiance',
     movement: 'Interaction in Motion',
     publicDescription:
-      'An interactional company that turns human participation into organized work, value, systems and opportunity.',
+      'An interactional company where human participation can become organized work, value, systems and opportunity.',
   },
   principle: {
     source: 'The human is the source.',
-    space: 'Presence is the space.',
-    movement: 'Interaction is the movement.',
-    work: 'What the human makes becomes work.',
-    value: 'What works becomes value.',
-    participation: 'Value becomes participation.',
-    livelihood: 'Participation can become livelihood.',
+    space: 'Presence is where WEAVE begins.',
+    movement: 'Interaction carries what is present into action.',
+    work: 'What is made can become work.',
+    value: 'What works can become value.',
+    participation: 'Value can open further participation.',
+    livelihood: 'Participation can become a means to live.',
   },
   aiParticipation: {
     principle: 'AI participates inside human movement; it does not replace the human source.',
