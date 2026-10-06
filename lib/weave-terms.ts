@@ -13,7 +13,7 @@ const BRIDGER_30_NGN = (FILE_FOLDER_FLAME_COIN * WORLD_RULES.BRIDGER_YIELD_RATE 
 export const AGENT_CONTENT = {
   positionTitle: 'YOUR POSITION IN WEAVE',
   positionSummary:
-    "Weave is an interactional company. This whole platform is an interaction in motion real life gaming operating system for human presence. We create services, instruments, and systems that turn human participation into organized work, value, and opportunity. Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value. As an Agent, you have a place inside that movement as a Weave employee.",
+    "WEAVE gives the Agent a working position inside the company. Your daily function is Agility and the value movement connected to the Bridgers attached to you.",
   role: 'Your role is to move Agility and receive commissions when assigned Bridgers make qualifying Prospect purchases through Weave.',
   earningMovements: [
     `You earn ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% whenever an attached Bridger makes a qualifying Prospect purchase through the Prospect Market.`,
@@ -27,14 +27,14 @@ export const AGENT_CONTENT = {
     `Agent File Folder share: ${(WORLD_RULES.AGENT_CROSSING_YIELD_RATE * 100).toFixed(0)}% of the verified File Folder value (5% of WEAVE's 40% company share).`,
     `Ordinary Bridger File Folder share outside Agentic-Bridger: ${(WORLD_RULES.BRIDGER_YIELD_RATE * 100).toFixed(0)}% of the verified File Folder value.`,
   ],
-  movement: 'Presence → Agility + attached Bridger Prospect movement → Prospect commission → verified File Folder crossing → File Folder share → record.',
+  movement: 'Agility + attached Bridger activity → qualifying share → verified File Folder crossing → File Folder share → record.',
   folderWork: 'The Agent account does not own or operate a Client File Folder. Presence explains the Agent position; Agility and Commissions are the Agent working environments.',
 }
 
 export const BRIDGER_CONTENT = {
   positionTitle: 'YOUR POSITION IN WEAVE',
   positionSummary:
-    'Weave is an interactional company. This whole platform is an interaction in motion real life gaming operating system for human presence. We create services, instruments, and systems that turn human participation into organized work, value, and opportunity. Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value. As a Bridger, you have a place within that movement as a partner working with Weave.',
+    'WEAVE gives the Bridger a working position at the human crossing. Meet the person, recognize what is already present, and carry the relationship toward the part of WEAVE that can actually serve it.',
   role: 'Your role is to take a prospect provided through Weave, make the human connection, introduce the person to Weave and guide the interaction toward participation.',
   action: `You acquire Prospects through the Prospect Market and use the authorized outreach system to contact them. A prospect may enter through a Standard File Folder from ${STANDARD_FILE_FOLDER_MIN.toLocaleString()} Flame Coin up to anything below ${FILE_FOLDER_FLAME_COIN.toLocaleString()}, or through the Premium File Folder at ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin. Once the File Folder is verified, that prospect becomes a Client of Weave and their included Customer Door construction begins automatically with all required functional Door parts already supplied. Flame Coin is the internal wrapper for TRX value; OPay funding is converted using the current TRX/NGN rate.`,
   earnings: [
@@ -50,7 +50,7 @@ export const BRIDGER_CONTENT = {
 export const FILE_FOLDER_CONTENT = {
   title: 'THE FILE FOLDER',
   subtitle: 'Your place inside System Switch',
-  body: `A File Folder is the persistent open-world workshop created for one Client through System Switch. It is where the Client's movement becomes a continuing topic inside ${WEAVE_ARCHITECTURE.subject.name} and meets real blueprints, timed builds, inventory, completed systems, learning districts, people, AI technologies, company functions, records, and supports of Weave. One Client. One File Folder. One continuing environment.`,
+  body: `One Client. One File Folder. It is the Client-owned world inside System Switch where a thought, need, business or possibility can meet blueprints, materials, builds, systems, people, AI support, records and company functions without starting again on every visit.`,
   establishment: `When a Prospect purchases either a Standard or Premium File Folder and the payment is verified, their place in System Switch is established and the included Customer Door construction begins automatically. The Door receives its foundation, Client identity, customer intake, service interface, fulfilment interface and public commissioning parts from the File Folder purchase, but construction time remains real. The Client can allow that construction to finish naturally or apply compatible boosts to reduce the remaining time. The public Door opens after construction completes. Standard begins at ${STANDARD_FILE_FOLDER_MIN.toLocaleString()} Flame Coin and can be any value below the ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin Premium price. File Folder value establishes starting Build Power for later construction; higher verified participation can increase later construction speed and capacity, but it does not determine whether the purchased Customer Door is included. The Folder then carries the Client’s enterprise, decisions, actions, support, learning, further builds and continuing systems.`,
 }
 
@@ -62,7 +62,7 @@ export const CUSTOMER_MARKET_CONTENT = {
 
 export const MOVEMENT_CONTENT = {
   title: 'THE MOVEMENT',
-  body: 'A Client does not come into the File Folder merely to look around. Something is moving. A thought becomes a word. A word becomes an interaction. An interaction becomes an action. An action creates a result. The result creates another movement. That continuing movement is the Client\'s current topic. The File Folder keeps the topic inside a persistent environment where the appropriate people, functions, AI, and systems can participate.',
+  body: 'The Client enters with something already present: a need, thought, business, dream, problem or work. The File Folder keeps what matters available while the right people, functions, AI and systems can meet it. The next interaction does not have to begin from zero.',
   footer: 'Interaction in Motion.',
 }
 
