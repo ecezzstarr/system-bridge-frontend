@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, CircleUserRound, Globe2, Route, Sparkles } from 'lucide-react'
+import { ArrowRight, CircleUserRound, Globe2, Route, Share2, Sparkles } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { getRoleDistricts } from '@/lib/weave-role-districts'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
@@ -20,15 +20,15 @@ const COPY:Record<PresenceRole,{
   agent:{
     eyebrow:'Agent Presence',
     title:'Know the position before movement.',
-    detail:'The Agent position stays intentionally small. Presence gives orientation; Agility carries real distribution; Commissions records the Agent share from qualifying Prospect purchases by attached Bridgers and the Agent share when those Bridgers convert Clients through verified File Folder purchases.',
-    loop:'Presence → Agility + Bridger Prospect movement → File Folder crossing → Commission record',
+    detail:'The Agent position stays intentionally small. Presence gives orientation; Agility carries real distribution; Referral Movement carries qualified people into WEAVE; Commissions records the Agent share from qualifying Prospect purchases by attached Bridgers and the Agent share when those Bridgers convert Clients through verified File Folder purchases.',
+    loop:'Presence → Agility + Referral Movement + Bridger movement → File Folder crossing → Commission record',
     worldHref:'/agent/dashboard',
   },
   bridger:{
     eyebrow:'Bridger Presence',
     title:'Carry connection without carrying clutter.',
-    detail:'The Bridger position acquires Prospects, operates Bridge AI and Number Bay, uses Echo and Presences for authorized movement, and earns the Bridger share when a guided Prospect completes a verified Client File Folder purchase.',
-    loop:'Presence → Prospect → outreach → File Folder crossing → Bridger share → Client continuity',
+    detail:'The Bridger position acquires Prospects, carries Referral Movement, operates Bridge AI and Number Bay, uses Echo and Presences for authorized movement, and earns the Bridger share when a guided Prospect completes a verified Client File Folder purchase.',
+    loop:'Presence → Referral + Prospect → outreach → File Folder crossing → Bridger share → Client continuity',
     worldHref:'/bridger/dashboard',
   },
   client:{
@@ -53,6 +53,7 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
   const router=useRouter()
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const copy=COPY[role]
+  const hasReferralMovement=role==='agent'||role==='bridger'
 
   useEffect(()=>{
     if(!isInitialized||isLoading||!user)return
@@ -91,11 +92,21 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
         <p className="mt-4 text-[10px] font-black uppercase tracking-[.12em] text-emerald-200">{copy.loop}</p>
       </header>
 
-      <div className="mx-auto mt-10 flex max-w-3xl items-center justify-center gap-3">
+      <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-3">
         <Link href={copy.worldHref} data-presence-output={'Open '+role+' WEAVE world'} className="inline-flex items-center gap-2 border-y border-sky-200/15 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-sky-100 transition hover:border-sky-200/35">
           <Globe2 className="h-4 w-4"/>Open WEAVE World<ArrowRight className="h-3.5 w-3.5"/>
         </Link>
+        {hasReferralMovement&&<Link href="/referrals" data-presence-output="Open Referral Movement" className="inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/[.06] px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 transition hover:bg-emerald-400/[.1]">
+          <Share2 className="h-4 w-4"/>Referral Movement · ₦500<ArrowRight className="h-3.5 w-3.5"/>
+        </Link>}
       </div>
+
+      {hasReferralMovement&&<section className="mx-auto mt-7 max-w-3xl border-y border-emerald-300/15 bg-emerald-400/[.025] px-4 py-4" data-core-function="referral-movement">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div><p className="text-[8px] font-black uppercase tracking-[.18em] text-emerald-300">Core function</p><p className="mt-1 text-sm font-black text-white">Carry people into WEAVE through your referral identity.</p></div>
+          <p className="text-xs font-black text-emerald-200">₦500 / verified Agent or Bridger</p>
+        </div>
+      </section>}
 
       <section className="mx-auto mt-12 max-w-5xl" aria-label={role+' movement districts'}>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
@@ -113,7 +124,7 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
             </div>
             <div className="relative">
               <div className="pointer-events-none absolute left-[11px] top-3 bottom-3 w-px bg-gradient-to-b from-sky-300/25 via-white/10 to-transparent"/>
-              {district.places.map((place,placeIndex)=><Link key={place.href} href={place.href} data-presence-station={place.label} className="group relative grid grid-cols-[24px_minmax(0,1fr)_20px] items-center gap-3 py-3 pl-0 pr-1">
+              {district.places.map((place)=><Link key={place.href} href={place.href} data-presence-station={place.label} className="group relative grid grid-cols-[24px_minmax(0,1fr)_20px] items-center gap-3 py-3 pl-0 pr-1">
                 <span className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full border border-sky-200/20 bg-[#07111a]"><span className="h-1.5 w-1.5 rounded-full bg-sky-200"/></span>
                 <span className="min-w-0">
                   <span className="flex flex-wrap items-center gap-2"><span className="text-sm font-black text-white">{place.label}</span>{place.daily&&<span className="text-[7px] font-black uppercase tracking-[.12em] text-emerald-300">Daily</span>}</span>
