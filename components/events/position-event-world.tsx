@@ -78,26 +78,26 @@ export default function PositionEventWorld({
   const flow = [
     {
       key: 'air',
-      label: 'AIR · PRESENCE',
+      label: 'PRESENCE · HELD',
       detail: effectiveStatus === 'planned'
-        ? 'The ground is forming. Presence, sound and possibility remain available before opening.'
-        : 'Presence holds the open field: your position, available movement and the living WEAVE around it.',
+        ? 'The ground is forming. What is present remains available before movement opens.'
+        : 'You do not enter empty. What has already lived remains present in the current.',
       icon: Wind,
     },
     {
       key: 'fire',
-      label: 'FIRE · INTERACTION',
+      label: 'BURN · FORMATION',
       detail: effectiveStatus === 'planned'
-        ? 'Interaction ignites when Loop One opens.'
+        ? 'Ignition begins when Loop One opens.'
         : position.movement[flowIndex % position.movement.length] || 'Act from your position. The system recognizes movement as it happens.',
       icon: Flame,
     },
     {
       key: 'water',
-      label: 'WATER · CONTINUITY',
+      label: 'FLOW · CONTINUITY',
       detail: effectiveStatus === 'planned'
-        ? 'Results will return into the system as continuity.'
-        : 'Action becomes record, changed state, opportunity and the next available movement.',
+        ? 'What forms will be carried forward rather than beginning again.'
+        : 'What forms is carried. Movement remains available to the next moment.',
       icon: Waves,
     },
   ] as const
@@ -145,7 +145,7 @@ export default function PositionEventWorld({
               The River that Burns
             </p>
             <p className="mx-auto mt-3 max-w-2xl text-xs leading-5 text-stone-400 lg:mx-0">
-              Water as flame. Flow and transformation moving together as one living current through WEAVE.
+              WEAVE burns and flows so movement can compile as one. Flame forms; River carries; Presence continues.
             </p>
           </div>
 
@@ -211,7 +211,7 @@ export default function PositionEventWorld({
           </div>
 
           <div className="relative mx-auto mt-3 flex max-w-3xl items-center justify-center gap-2 text-[7px] font-black uppercase tracking-[.2em] text-white/28">
-            <span>Presence</span><ArrowRight className="h-3 w-3" /><span>Interaction</span><ArrowRight className="h-3 w-3" /><span>Record</span><ArrowRight className="h-3 w-3" /><span>Next movement</span>
+            <span>Presence</span><ArrowRight className="h-3 w-3" /><span>Burn</span><ArrowRight className="h-3 w-3" /><span>Flow</span><ArrowRight className="h-3 w-3" /><span>Compile</span>
           </div>
         </section>
 
