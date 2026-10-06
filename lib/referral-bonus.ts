@@ -86,6 +86,8 @@ export async function settleReferralSignupBonus(referredUserId: string) {
   }
 
   const client = await getPool().connect()
+  let notify: { userId: string; referredRole: string } | null = null
+  let balanceAfter = 0
   try {
     await client.query('BEGIN')
 
@@ -127,7 +129,7 @@ export async function settleReferralSignupBonus(referredUserId: string) {
        WHERE id=$2::uuid RETURNING balance_trx`,
       [flameCoinAmount, wallet.id],
     )
-    const balanceAfter = Number(walletUpdate.rows[0]?.balance_trx || balanceBefore + flameCoinAmount)
+    balanceAfter = Number(walletUpdate.rows[0]?.balance_trx || balanceBefore + flameCoinAmount)
 
     await client.query(
       `INSERT INTO ledger_entries
@@ -160,44 +162,54 @@ export async function settleReferralSignupBonus(referredUserId: string) {
 
     if (award.referrer_role === 'agent') {
       await client.query(
-        `UPDATE agent_profiles SET total_earnings=COALESCE(total_earnings,0)+$2,updated_at=NOW() WHERE user_id=$1::uuid`,
+        `UPDATE agent_profiles
+         SET total_earnings=COALESCE(total_earnings,0)+$2,updated_at=NOW()
+         WHERE user_id=$1::uuid`,
         [award.referrer_user_id, flameCoinAmount],
       )
     } else if (award.referrer_role === 'bridger') {
       await client.query(
         `UPDATE bridger_profiles
-         SET total_earnings=COALESCE(total_earnings,0)+$2,
-             referral_earnings=COALESCE(referral_earnings,0)+$2,
-             updated_at=NOW()
+         SET total_earnings=COALESCE(total_earnings,0)+$2,updated_at=NOW()
          WHERE user_id=$1::uuid`,
         [award.referrer_user_id, flameCoinAmount],
       )
     }
 
-    await client.query(
-      `INSERT INTO notifications (user_id,type,title,content,from_user_name)
-       VALUES ($1::uuid,'referral_bonus','₦500 referral bonus credited',$2,'WEAVE')`,
-      [
-        award.referrer_user_id,
-        `A verified ${award.referred_role} joined through your referral. ₦500 was converted at the current rate and credited as ${flameCoinAmount.toFixed(4)} Flame Coin.`,
-      ],
-    )
-
+    notify = { userId: String(award.referrer_user_id), referredRole: String(award.referred_role) }
     await client.query('COMMIT')
-    return {
-      success: true as const,
-      paid: true,
-      bonusNgn: STAFF_REFERRAL_BONUS_NGN,
-      bonusFlameCoin: flameCoinAmount,
-      rateNgnPerFlameCoin: rate,
-      newBalance: balanceAfter,
-    }
   } catch (error) {
     try { await client.query('ROLLBACK') } catch {}
     console.error('[referral-bonus] settlement failed:', error)
     return { success: false as const, reason: 'error' as const }
   } finally {
     client.release()
+  }
+
+  if (notify) {
+    try {
+      await sql`
+        INSERT INTO notifications (user_id,type,title,content,from_user_name)
+        VALUES (
+          ${notify.userId}::uuid,
+          'referral_bonus',
+          '₦500 referral bonus credited',
+          ${`A verified ${notify.referredRole} joined through your referral. ₦500 was converted at the current rate and credited as ${flameCoinAmount.toFixed(4)} Flame Coin.`},
+          'WEAVE'
+        )
+      `
+    } catch (error) {
+      console.error('[referral-bonus] notification failed:', error)
+    }
+  }
+
+  return {
+    success: true as const,
+    paid: true,
+    bonusNgn: STAFF_REFERRAL_BONUS_NGN,
+    bonusFlameCoin: flameCoinAmount,
+    rateNgnPerFlameCoin: rate,
+    newBalance: balanceAfter,
   }
 }
 
