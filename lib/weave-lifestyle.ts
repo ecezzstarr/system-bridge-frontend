@@ -57,6 +57,8 @@ export async function ensureWeaveLifestyleSchema() {
     await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS settlement_status varchar(20) NOT NULL DEFAULT 'open'`)
     await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS settlement_available_at timestamptz`)
     await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS settlement_reason text`)
+    await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS ace_lifestyle varchar(40) NOT NULL DEFAULT 'ace'`)
+    await client.query(`ALTER TABLE arena_matches ADD COLUMN IF NOT EXISTS ace_earning_rate numeric(6,5) NOT NULL DEFAULT 0.30`)
   } finally {
     client.release()
   }
