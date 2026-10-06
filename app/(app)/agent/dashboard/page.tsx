@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { AgilityAgentLoginAd, AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
 import { Loop1AgentLoginAd, LOOP1_AGENT_LOGIN_AD_KEY } from '@/components/agent/loop1-agent-login-ad'
+import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
 import { useRouter } from 'next/navigation'
 
 export default function AgentWorld() {
@@ -37,6 +38,7 @@ export default function AgentWorld() {
     />
     <AgilityAgentLoginAd open={showAgilityAd} onOpenChange={setShowAgilityAd} onBuy={()=>{setShowAgilityAd(false);router.push('/agility')}} />
     <WeaveDashboardWorld role="agent" userName={user.name} />
+    <ManagerLifestyleEntry />
     <Link href="/referrals" data-core-function="referral-movement" className="fixed bottom-24 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-[#071711]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 shadow-2xl backdrop-blur md:right-7">
       <Share2 className="h-4 w-4"/>Referral Movement · ₦500
     </Link>
