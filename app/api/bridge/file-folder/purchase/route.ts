@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
       receipt,
       fileFolderTier,
       crossing: { ready: false },
-      message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration will verify the payment, issue the File Number, activate the Client File Folder and commission its working Customer Door.`,
+      message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration will verify the payment, issue the File Number, activate the Client File Folder and start the included Customer Door construction.`,
     }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
@@ -198,7 +198,23 @@ export async function PATCH(request: NextRequest) {
     const allocation = await accrueAiProviderAllocation({ sql, purchaseId: String(confirmed.id), fileNumber, grossAmount: Number(confirmed.amount_trx), bridgeCode: confirmed.bridge_code, providerKey: confirmed.provider_key, providerName: confirmed.provider_name, flameExternalId: confirmed.flame_external_id, flameName: confirmed.flame_name })
     await recordSystemEvent({ eventType: 'file_number_issued', actorId: auth.session.user.id, actorRole: 'admin', subjectType: 'client_file_folder', subjectId: fileNumber, source: 'admin-file-folder', payload: { purchaseId, clientId } })
     await recordSystemEvent({ eventType: 'client_registered', actorId: clientId, actorRole: 'client', subjectType: 'client_file_folder', subjectId: fileNumber, source: 'bridge-file-folder', payload: { purchaseId } })
-    await recordSystemEvent({ eventType: 'customer_door_commissioned', actorId: clientId, actorRole: 'client', subjectType: 'customer_door', subjectId: customerDoor.systemId, source: 'file-folder-purchase', payload: { purchaseId, fileNumber, publicPath: customerDoor.publicPath, parts: customerDoor.parts } })
+    await recordSystemEvent({
+      eventType: 'customer_door_construction_started',
+      actorId: clientId,
+      actorRole: 'client',
+      subjectType: 'customer_door_build',
+      subjectId: customerDoor.buildId,
+      source: 'file-folder-purchase',
+      payload: {
+        purchaseId,
+        fileNumber,
+        publicPath: customerDoor.publicPath,
+        parts: customerDoor.parts,
+        completesAt: customerDoor.completesAt,
+        durationMinutes: customerDoor.durationMinutes,
+        boostOptional: customerDoor.boostOptional,
+      },
+    })
     return NextResponse.json({ success: true, folder: claimed, purchase: confirmed, customerDoor, aiProviderAllocation: allocation?.allocation || null })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to confirm File Folder purchase' }, { status: 500 }) }
 }
