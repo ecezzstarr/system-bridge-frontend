@@ -92,13 +92,29 @@ export async function ensureAceAccount(userId: string, fallbackName: string, rol
   const safeName = String(fallbackName || 'Ace').trim().slice(0, 80) || 'Ace'
   const lifestyle = String(role || '').toLowerCase() === 'bridger' ? AGENTIC_BRIDGER_LIFESTYLE : 'ace'
   await pool.query(
-    `INSERT INTO arena_ace_accounts (user_id,ace_name,lifestyle)
-     VALUES ($1::uuid,$2,$3)
-     ON CONFLICT (user_id) DO UPDATE SET lifestyle=EXCLUDED.lifestyle,updated_at=NOW()`,
+    `INSERT INTO arena_ace_accounts (user_id,ace_name,status,lifestyle)
+     VALUES ($1::uuid,$2,'active',$3)
+     ON CONFLICT (user_id) DO UPDATE SET
+       ace_name=EXCLUDED.ace_name,
+       status='active',
+       lifestyle=EXCLUDED.lifestyle,
+       updated_at=NOW()`,
     [userId, safeName, lifestyle]
   )
   const result = await pool.query('SELECT * FROM arena_ace_accounts WHERE user_id=$1::uuid', [userId])
   return result.rows[0]
+}
+
+export async function deactivateBridgerAceForExpiredContinuance(userId: string) {
+  await ensureWeaveLifestyleSchema()
+  const pool = getPool()
+  await pool.query(
+    `UPDATE arena_ace_accounts
+     SET status='inactive',lifestyle='none',updated_at=NOW()
+     WHERE user_id=$1::uuid
+       AND (status<>'inactive' OR lifestyle<>'none')`,
+    [userId]
+  )
 }
 
 export async function getAgenticBridgerState(userId: string) {
@@ -121,6 +137,17 @@ export async function getAgenticBridgerState(userId: string) {
   const row = result.rows[0]
   const expiry = row?.subscription_expiry ? new Date(row.subscription_expiry).getTime() : null
   const continuanceActive = Boolean(row?.is_subscription_exempt) || (row?.subscription_status === 'active' && (!expiry || expiry > Date.now()))
+
+  if (row?.role === 'bridger' && !continuanceActive) {
+    await deactivateBridgerAceForExpiredContinuance(userId)
+    return {
+      active: false,
+      lifestyle: null,
+      earningRate: ACE_STANDARD_EARNING_RATE,
+      continuanceActive: false,
+    }
+  }
+
   const active = row?.role === 'bridger'
     && row?.ace_status === 'active'
     && row?.lifestyle === AGENTIC_BRIDGER_LIFESTYLE

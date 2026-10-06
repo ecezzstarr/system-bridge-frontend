@@ -1,5 +1,6 @@
 import { ensureClientBusinessStore, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
 import { ensureFileFolderWorldSchema } from '@/lib/client-file-folder-world'
+import { effectiveBuildMinutes } from '@/lib/client-build-economy'
 
 const CUSTOMER_DOOR_PARTS = [
   'door_foundation_frame',
@@ -29,21 +30,30 @@ export async function provisionPurchasedFileFolderCustomerDoor(params: {
       ${fileNumber},
       ${clientName || 'Client Enterprise'},
       'Operate a Client-owned business through a public Customer Door.',
-      'People outside WEAVE can enter the Customer Door and interact with the Client business.',
+      'People outside WEAVE can enter the Customer Door after its construction completes.',
       'customer_door',
-      'active',
+      'forming',
       NOW(),
       NOW()
     )
     ON CONFLICT (client_id) DO UPDATE SET
       file_number=EXCLUDED.file_number,
       business_name=COALESCE(NULLIF(client_business_formations.business_name,''),EXCLUDED.business_name),
-      formation_state='active',
+      formation_state='forming',
       updated_at=NOW()
   `
 
+  const [doorBlueprint] = await sql`
+    SELECT build_hours
+    FROM weave_file_folder_blueprints
+    WHERE blueprint_key='customer_door'
+    LIMIT 1
+  `
+  const doorHours = Math.max(1, Number(doorBlueprint?.build_hours || 72))
+  const { baseMinutes, effectiveMinutes } = effectiveBuildMinutes(doorHours, 1)
+
   let [build] = await sql`
-    SELECT id,client_id,file_number,blueprint_key,status
+    SELECT id,client_id,file_number,blueprint_key,status,completes_at,duration_minutes
     FROM client_file_folder_builds
     WHERE client_id=${clientId}::uuid
       AND file_number=${fileNumber}
@@ -64,27 +74,13 @@ export async function provisionPurchasedFileFolderCustomerDoor(params: {
         ${fileNumber},
         'customer_door',
         'Customer Door',
-        'The public entrance commissioned with the Client File Folder purchase.',
+        'The public entrance supplied with the Client File Folder. Its required parts are present from formation, while the Client may let construction run naturally or apply boosts.',
         'customer_door',
-        'completed',
-        0,0,0,1,1,
-        NOW(),NOW(),NOW(),NOW(),NOW()
+        'building',
+        ${doorHours},${baseMinutes},${effectiveMinutes},1,1,
+        NOW(),NOW() + make_interval(mins => ${effectiveMinutes}),NULL,NOW(),NOW()
       )
-      RETURNING id,client_id,file_number,blueprint_key,status
-    `
-  } else if (build.status !== 'completed') {
-    ;[build] = await sql`
-      UPDATE client_file_folder_builds
-      SET
-        status='completed',
-        duration_hours=0,
-        base_duration_minutes=0,
-        duration_minutes=0,
-        completes_at=NOW(),
-        completed_at=COALESCE(completed_at,NOW()),
-        updated_at=NOW()
-      WHERE id=${build.id}::uuid
-      RETURNING id,client_id,file_number,blueprint_key,status
+      RETURNING id,client_id,file_number,blueprint_key,status,completes_at,duration_minutes
     `
   }
 
@@ -113,67 +109,29 @@ export async function provisionPurchasedFileFolderCustomerDoor(params: {
     `
   }
 
-  let [system] = await sql`
-    SELECT id,build_id,system_type,status
-    FROM client_built_systems
-    WHERE client_id=${clientId}::uuid
-      AND file_number=${fileNumber}
-      AND system_type='customer_door'
-    ORDER BY activated_at ASC
-    LIMIT 1
-  `
-
-  if (!system) {
-    ;[system] = await sql`
-      INSERT INTO client_built_systems (
-        build_id,client_id,file_number,system_type,title,configuration,status,activated_at,updated_at
-      )
-      VALUES (
-        ${build.id}::uuid,
-        ${clientId}::uuid,
-        ${fileNumber},
-        'customer_door',
-        'Customer Door',
-        ${JSON.stringify({
-          commissionedWithFileFolder: true,
-          parts: CUSTOMER_DOOR_PARTS,
-          publicBoundary: 'customer_door',
-        })}::jsonb,
-        'active',
-        NOW(),
-        NOW()
-      )
-      RETURNING id,build_id,system_type,status
-    `
-  } else if (system.status !== 'active') {
-    ;[system] = await sql`
-      UPDATE client_built_systems
-      SET status='active',updated_at=NOW()
-      WHERE id=${system.id}::uuid
-      RETURNING id,build_id,system_type,status
-    `
-  }
-
   const store = await ensureClientBusinessStore(sql, clientId, fileNumber, clientName || 'Client Enterprise', false)
-  const [openStore] = await sql`
+  const [formingStore] = await sql`
     UPDATE client_business_stores
     SET
       enabled=true,
-      formation_status='selling',
-      formation_due_at=NOW(),
-      public_opened_at=COALESCE(public_opened_at,NOW()),
+      formation_status='forming',
+      formation_due_at=${build.completes_at},
+      public_opened_at=NULL,
       updated_at=NOW()
     WHERE id=${store.id}::uuid
-    RETURNING id,client_id,file_number,public_slug,name,formation_status,public_opened_at
+    RETURNING id,client_id,file_number,public_slug,name,formation_status,formation_due_at,public_opened_at
   `
 
   return {
     buildId: String(build.id),
-    systemId: String(system.id),
+    systemId: null,
     parts: [...CUSTOMER_DOOR_PARTS],
-    storeId: String(openStore.id),
-    publicSlug: String(openStore.public_slug),
-    publicPath: `/market/${encodeURIComponent(String(openStore.public_slug))}`,
-    status: 'working',
+    storeId: String(formingStore.id),
+    publicSlug: String(formingStore.public_slug),
+    publicPath: `/market/${encodeURIComponent(String(formingStore.public_slug))}`,
+    status: 'building',
+    durationMinutes: Number(build.duration_minutes || effectiveMinutes),
+    completesAt: build.completes_at,
+    boostOptional: true,
   }
 }

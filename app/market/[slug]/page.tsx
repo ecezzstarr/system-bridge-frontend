@@ -30,7 +30,7 @@ export default async function PublicClientMarketStore({
     FROM client_business_stores
     WHERE public_slug=${slug}
       AND enabled=true
-      AND formation_status='selling'
+      AND (formation_status='selling' OR formation_status='ready_for_offer')
     LIMIT 1
   `
   if(!store)notFound()
