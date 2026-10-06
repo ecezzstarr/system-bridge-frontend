@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS manager_employment (
   source_role VARCHAR(20) NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'probation',
   document_version INTEGER NOT NULL DEFAULT 1,
+  accepted_name TEXT,
   document_accepted_at TIMESTAMPTZ NOT NULL,
   probation_started_at TIMESTAMPTZ NOT NULL,
   probation_ends_at TIMESTAMPTZ NOT NULL,
@@ -16,6 +17,8 @@ CREATE TABLE IF NOT EXISTS manager_employment (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   ended_at TIMESTAMPTZ
 );
+
+ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS accepted_name TEXT;
 
 CREATE INDEX IF NOT EXISTS manager_employment_status_idx
   ON manager_employment(status, probation_ends_at);
