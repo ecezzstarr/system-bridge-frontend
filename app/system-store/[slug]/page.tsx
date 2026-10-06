@@ -1,13 +1,17 @@
 import Link from 'next/link'
-import { ArrowLeft, Boxes, Download, ExternalLink, ShieldCheck, Store } from 'lucide-react'
+import { ArrowLeft, Boxes, Download, ExternalLink, Radio, ShieldCheck, Store } from 'lucide-react'
 import { notFound } from 'next/navigation'
+import { WeaveInstallButton } from '@/components/system-store/weave-install-button'
 import { getFileFolderDb } from '@/lib/client-file-folder'
+import { WEAVE_FIRST_PARTY_SYSTEM, getWeaveFirstPartyVersion } from '@/lib/weave-first-party-system'
 import { ensureWeaveSystemStoreSchema } from '@/lib/weave-system-store'
 
 export const dynamic='force-dynamic'
 
 export default async function SystemStoreDetailPage({params}:{params:Promise<{slug:string}>}){
   const {slug}=await params
+  if(slug===WEAVE_FIRST_PARTY_SYSTEM.publicSlug)return <OfficialWeaveRelease/>
+
   const sql=getFileFolderDb()
   await ensureWeaveSystemStoreSchema(sql)
   const [system]=await sql`
@@ -54,6 +58,29 @@ export default async function SystemStoreDetailPage({params}:{params:Promise<{sl
       </section>
 
       {screenshots.length>0&&<section className="mt-5 rounded-[1.7rem] border border-white/10 bg-white/[.02] p-5"><p className="text-[9px] font-black uppercase tracking-[.18em] text-cyan-300">Screens</p><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{screenshots.map((src:any)=><img key={String(src)} src={String(src)} alt="System screenshot" className="aspect-video w-full rounded-xl border border-white/10 object-cover"/>)}</div></section>}
+    </div>
+  </main>
+}
+
+function OfficialWeaveRelease(){
+  const version=getWeaveFirstPartyVersion()
+  return <main className="min-h-screen bg-[#030610] px-5 py-8 text-white md:px-8" data-weave-official-store-detail>
+    <div className="mx-auto max-w-6xl">
+      <Link href="/system-store" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-400"><ArrowLeft className="h-3.5 w-3.5"/>System Store</Link>
+      <section className="mt-6 overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-[radial-gradient(circle_at_15%_0%,rgba(34,211,238,.16),transparent_36%),radial-gradient(circle_at_84%_18%,rgba(251,146,60,.11),transparent_32%),linear-gradient(160deg,#071321,#030610)] p-6 md:p-9">
+        <div className="flex flex-wrap items-start justify-between gap-5">
+          <div className="flex items-start gap-4"><img src={WEAVE_FIRST_PARTY_SYSTEM.iconUrl} alt="WEAVE" className="h-20 w-20 rounded-[1.7rem] border border-white/10 bg-black/20 object-cover"/><div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full border border-emerald-300/20 bg-emerald-300/[.05] px-2.5 py-1 text-[8px] font-black uppercase tracking-wider text-emerald-300">Official WEAVE release</span><span className="text-[9px] font-black uppercase tracking-wider text-cyan-300">PWA · current live system</span></div><h1 className="mt-3 max-w-4xl text-4xl font-black tracking-tight md:text-6xl">{WEAVE_FIRST_PARTY_SYSTEM.systemName}</h1><p className="mt-2 text-sm text-slate-500">WEAVE System ID · {WEAVE_FIRST_PARTY_SYSTEM.weaveSystemId}</p></div></div>
+          <div className="rounded-2xl border border-emerald-300/15 bg-emerald-300/[.04] px-4 py-3"><p className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-wider text-emerald-300"><ShieldCheck className="h-4 w-4"/>Administration · first party</p><p className="mt-2 text-xs font-black text-slate-300">Release {version}</p></div>
+        </div>
+        <p className="mt-7 max-w-4xl text-base leading-8 text-slate-300">{WEAVE_FIRST_PARTY_SYSTEM.summary}</p>
+        <div className="mt-7"><WeaveInstallButton/></div>
+        <p className="mt-4 max-w-3xl text-xs leading-5 text-slate-500">This installation uses the official WEAVE web-app manifest and service worker. Navigation and authenticated worlds remain network-current, so a new WEAVE deployment becomes the installed app’s next live release without requiring users to fetch a new APK.</p>
+      </section>
+
+      <section className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
+        <div className="rounded-[1.7rem] border border-white/10 bg-white/[.02] p-5 md:p-6"><p className="text-[9px] font-black uppercase tracking-[.18em] text-violet-300">Release</p><dl className="mt-4 grid gap-4 sm:grid-cols-2"><Info label="Publisher" value={WEAVE_FIRST_PARTY_SYSTEM.publisherName}/><Info label="Version" value={version}/><Info label="Price" value="Free"/><Info label="Package" value="Installable PWA"/><Info label="Manifest" value={WEAVE_FIRST_PARTY_SYSTEM.manifestUrl}/><Info label="Delivery" value="Current WEAVE Cloud release"/></dl></div>
+        <div className="rounded-[1.7rem] border border-white/10 bg-white/[.02] p-5 md:p-6"><p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-300">What installs</p><div className="mt-4 space-y-3 text-sm leading-6 text-slate-400"><p className="flex gap-2"><Radio className="mt-1 h-4 w-4 shrink-0 text-cyan-300"/>Standalone WEAVE app window and official icon.</p><p className="flex gap-2"><Radio className="mt-1 h-4 w-4 shrink-0 text-cyan-300"/>The same live login, Agent, Bridger, Client, Manager lifestyle, File Folder and Store environments.</p><p className="flex gap-2"><Radio className="mt-1 h-4 w-4 shrink-0 text-cyan-300"/>Current release on each navigation instead of an old cached world.</p></div></div>
+      </section>
     </div>
   </main>
 }
