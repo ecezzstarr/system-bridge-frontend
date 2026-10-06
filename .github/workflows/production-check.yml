@@ -39,6 +39,7 @@ jobs:
           node tests/bridger-subscribe-all-regression.cjs
           node tests/referral-core-regression.cjs
           node tests/manager-employment-regression.cjs
+          node tests/system-store-regression.cjs
           node tests/core-hardening-regression.cjs
           node tests/commerce-ledger-regression.cjs
           node tests/email-mailbox-regression.cjs
