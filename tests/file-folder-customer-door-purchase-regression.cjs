@@ -7,8 +7,9 @@ const provisioning=read('lib/client-customer-door-provisioning.ts')
 const economy=read('lib/client-build-economy.ts')
 const publicDoor=read('app/market/[slug]/page.tsx')
 
-assert.ok(purchase.includes('provisionPurchasedFileFolderCustomerDoor'),'File Folder confirmation commissions the Client Customer Door')
-assert.ok(purchase.indexOf('provisionPurchasedFileFolderCustomerDoor') < purchase.lastIndexOf("status='confirmed'"),'Customer Door is provisioned before the purchase is finally marked confirmed')
+const commissioningCall='const customerDoor = await provisionPurchasedFileFolderCustomerDoor'
+assert.ok(purchase.includes(commissioningCall),'File Folder confirmation commissions the Client Customer Door')
+assert.ok(purchase.indexOf(commissioningCall) < purchase.lastIndexOf("status='confirmed'"),'Customer Door is provisioned before the purchase is finally marked confirmed')
 assert.ok(purchase.includes("eventType: 'customer_door_commissioned'"),'Customer Door commissioning is recorded as system movement')
 assert.ok(purchase.includes('customerDoor, aiProviderAllocation'),'Confirmed purchase returns the working Customer Door')
 
