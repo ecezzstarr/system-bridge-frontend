@@ -65,6 +65,9 @@ export async function ensureWeaveSystemStoreSchema(sql: any = getFileFolderDb())
       package_name VARCHAR(255),
       entry_url TEXT,
       package_url TEXT,
+      storage_object TEXT,
+      content_type VARCHAR(160),
+      package_size_bytes BIGINT,
       package_sha256 VARCHAR(64),
       permissions JSONB NOT NULL DEFAULT '[]'::jsonb,
       screenshots JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -79,6 +82,10 @@ export async function ensureWeaveSystemStoreSchema(sql: any = getFileFolderDb())
       UNIQUE(publication_id,version_code)
     )
   `
+
+  await sql`ALTER TABLE weave_system_store_versions ADD COLUMN IF NOT EXISTS storage_object TEXT`
+  await sql`ALTER TABLE weave_system_store_versions ADD COLUMN IF NOT EXISTS content_type VARCHAR(160)`
+  await sql`ALTER TABLE weave_system_store_versions ADD COLUMN IF NOT EXISTS package_size_bytes BIGINT`
 
   await sql`
     CREATE TABLE IF NOT EXISTS weave_system_store_events (
