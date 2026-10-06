@@ -25,6 +25,6 @@ assert.ok(provisioning.includes('publicPath: `/market/'),'Provisioning reserves 
 
 assert.ok(world.includes("status='building' AND completes_at <= NOW()")&&world.includes("system_type === 'customer_door'"),'Existing world finalizer activates Customer Door only after construction time completes')
 assert.ok(economy.includes('const publicDoorUnlocked = true')&&economy.includes('const requiredToOpenPublicDoorFlameCoin = 0'),'No funding threshold blocks the included Customer Door; timing and boosts govern formation')
-assert.ok(publicDoor.includes("formation_status IN ('ready_for_offer','selling')"),'Completed Customer Door can open publicly before the Client adds a first offer')
+assert.ok(publicDoor.includes("formation_status='selling' OR formation_status='ready_for_offer'"),'Completed Customer Door opens publicly after build completion, with or without a first offer')
 
 console.log('File Folder purchase includes all Customer Door parts while preserving construction time and optional boosts')
