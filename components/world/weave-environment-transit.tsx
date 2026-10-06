@@ -119,20 +119,20 @@ const PLATFORM_BRIEFS:LoadingBrief[]=[
   {
     eyebrow:'WEAVE of Presence',
     title:'Heaven and Earth as One',
-    body:'Presence is not separated from movement. Human source, environment, interaction and consequence remain connected inside one operating world.',
-    movement:'Presence · Interaction · Movement · Continuity',
+    body:'You arrived with more than you said. Presence carries what has already lived into the movement opening now.',
+    movement:'Presence · what remains · what can move',
   },
   {
     eyebrow:'INTERACTION IN MOTION',
     title:'People · Participation · Livelihood',
-    body:'Real people enter real functions. Participation becomes organized work, value, opportunity and a means to continue living.',
-    movement:'Be → interact → reveal → recognize → make → become',
+    body:'Complexity can remain underneath while participation stays simple. What is present can become work, value, opportunity and a means to continue living.',
+    movement:'Presence → participation → value → livelihood',
   },
   {
     eyebrow:'COMPANY LOOP 1 · FLAME EVENT',
     title:'Burning River',
-    body:'The River that Burns. Water and flame move together as one current—the visible signal of transformation and continuity through WEAVE.',
-    movement:'Burning River · The River that Burns',
+    body:'What burns can still flow. What flows does not have to lose its flame. WEAVE carries both until movement compiles as one.',
+    movement:'Burn · flow · compile · continue',
   },
 ]
 
@@ -144,20 +144,20 @@ const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
   {
     eyebrow:'FLAME EVENT',
     title:'Burning River',
-    body:'The River that Burns. Water and flame move together as one living current through WEAVE.',
+    body:'What burns can still flow. What flows does not have to lose its flame. The current is already open.',
     movement:'Company Loop 1 · FLAME EVENT LIVE',
   },
   {
     eyebrow:'BURNING RIVER',
-    title:'Water as flame.',
-    body:'The river keeps its flow. The flame keeps its transformation. Neither disappears; both move as one current.',
-    movement:'Water + Flame → one current → continuous change of state',
+    title:'Burn and flow.',
+    body:'Flame forms. River carries. Neither waits for the other to disappear; movement compiles while both remain present.',
+    movement:'Burn → flow → compile',
   },
   {
     eyebrow:'THE RIVER THAT BURNS',
-    title:'Enter the Burning River.',
-    body:'Presence enters motion. Interaction becomes living transformation. Move through WEAVE while the Flame Event is live.',
-    movement:'Flow · transformation · continuity',
+    title:'Compilation.',
+    body:'Days can arrive in seconds when what was lived remains present. The next movement does not have to begin from zero.',
+    movement:'Presence · ignition · warming · continuity',
   },
 ]
 
