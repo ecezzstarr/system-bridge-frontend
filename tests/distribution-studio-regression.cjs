@@ -57,11 +57,8 @@ assert.ok(oversight.includes('PARTICIPANT SOCIAL PRESENCE')&&oversight.includes(
 assert.ok(adminLayout.includes('DistributionParticipantOversight'),'Administration Distribution Studio mounts participant oversight in the same environment')
 
 assert.ok(registry.includes("route:'/admin/distribution-studio'"),'Environment registry contains Administration Distribution Studio')
-assert.ok(registry.includes("route:'/distribution-studio'")&&registry.includes("label:'Social Presence'"),'Environment registry exposes the shared Social Presence entrance')
+assert.ok(registry.includes("route:'/distribution-studio'")&&registry.includes("label:'Social Presence'")&&registry.includes("scope:'shared'"),'Environment registry exposes one shared Social Presence role-world gate')
 assert.ok(roleDistricts.includes("{label:'Distribution Studio',href:'/admin/distribution-studio'"),'Administration Workshops expose Distribution Studio as a canonical place')
-for(const roleMarker of ["name:'Agent Work'","name:'Prospect & Crossing'","name:'File Folder'"]){
-  const offset=roleDistricts.indexOf(roleMarker)
-  assert.ok(offset>=0&&roleDistricts.slice(offset,offset+2600).includes("{label:'Social Presence',href:'/distribution-studio'"),`${roleMarker} exposes Social Presence without a duplicate route`)
-}
+assert.ok(!roleDistricts.includes("{label:'Social Presence',href:'/distribution-studio'"),'Agent Bridger and Client role catalogs stay focused; Social Presence is exposed once through Shared WEAVE')
 
 console.log('Distribution Studio participant social-presence regression checks passed')
