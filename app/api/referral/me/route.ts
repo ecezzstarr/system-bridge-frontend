@@ -17,9 +17,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unable to resolve referral identity' }, { status: 404 })
     }
 
-    const core = ['agent','bridger'].includes(user.role)
-      ? await getReferralCoreState(user.id)
-      : null
+    let core = null
+    if (['agent','bridger'].includes(user.role)) {
+      try {
+        core = await getReferralCoreState(user.id)
+      } catch (coreError) {
+        console.error('[referral-me] referral core state unavailable:', coreError)
+      }
+    }
 
     return NextResponse.json({
       success: true,
