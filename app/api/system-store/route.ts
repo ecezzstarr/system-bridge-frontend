@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb } from '@/lib/client-file-folder'
+import { getWeaveFirstPartyVersion, WEAVE_FIRST_PARTY_SYSTEM } from '@/lib/weave-first-party-system'
 import { ensureWeaveSystemStoreSchema } from '@/lib/weave-system-store'
 
 export const dynamic = 'force-dynamic'
@@ -32,5 +33,38 @@ export async function GET(request: NextRequest) {
     LIMIT 240
   `
 
-  return NextResponse.json({ systems }, { headers: { 'Cache-Control':'public, max-age=60, stale-while-revalidate=300' } })
+  const officialSearch=`${WEAVE_FIRST_PARTY_SYSTEM.systemName} ${WEAVE_FIRST_PARTY_SYSTEM.shortName} ${WEAVE_FIRST_PARTY_SYSTEM.summary} ${WEAVE_FIRST_PARTY_SYSTEM.category} ${WEAVE_FIRST_PARTY_SYSTEM.packageType}`.toLowerCase()
+  const includeOfficial=(!q||officialSearch.includes(q))&&(!category||category===WEAVE_FIRST_PARTY_SYSTEM.category)&&(!packageType||packageType===WEAVE_FIRST_PARTY_SYSTEM.packageType)
+  const official=includeOfficial?[{
+    weave_system_id:WEAVE_FIRST_PARTY_SYSTEM.weaveSystemId,
+    public_slug:WEAVE_FIRST_PARTY_SYSTEM.publicSlug,
+    system_name:WEAVE_FIRST_PARTY_SYSTEM.systemName,
+    summary:WEAVE_FIRST_PARTY_SYSTEM.summary,
+    category:WEAVE_FIRST_PARTY_SYSTEM.category,
+    icon_url:WEAVE_FIRST_PARTY_SYSTEM.iconUrl,
+    price:0,
+    currency:WEAVE_FIRST_PARTY_SYSTEM.currency,
+    distribution_scope:'official',
+    download_count:null,
+    open_count:null,
+    approved_at:null,
+    version_id:'official-live',
+    version_name:getWeaveFirstPartyVersion(),
+    version_code:1,
+    package_type:WEAVE_FIRST_PARTY_SYSTEM.packageType,
+    package_name:'WEAVE PWA',
+    entry_url:WEAVE_FIRST_PARTY_SYSTEM.startUrl,
+    package_sha256:null,
+    permissions:[],
+    screenshots:[],
+    release_notes:'Official WEAVE first-party live release. Installed devices remain connected to the current Cloud release.',
+    version_approved_at:null,
+    publisher_name:WEAVE_FIRST_PARTY_SYSTEM.publisherName,
+    publisher_business:'WEAVE',
+    customer_door_slug:null,
+    first_party:true,
+    install_url:`/system-store/${WEAVE_FIRST_PARTY_SYSTEM.publicSlug}`,
+  }]:[]
+
+  return NextResponse.json({ systems:[...official,...systems] }, { headers: { 'Cache-Control':'public, max-age=60, stale-while-revalidate=300' } })
 }
