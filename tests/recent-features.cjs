@@ -771,7 +771,7 @@ assert.ok(publicCustomerDoorSource.includes('client_customer_door_systems')&&pub
 assert.ok(publicCustomerStoreApiSource.includes('connected_systems: connectedSystems')&&publicCustomerStoreApiSource.includes('p.enabled=true'),'public store API never exposes private Client systems')
 assert.ok(publicMarketEnvironmentSource.includes('Systems this Client connected to the Door')&&publicMarketEnvironmentSource.includes('Client-owned business · hosted and connected through WEAVE'),'public Customer Door explains both Client ownership and WEAVE hosting')
 assert.ok(fs.existsSync(path.join(root,'db/migrations/20261002_client_owned_business_formation.sql')),'Client ownership boundary has a deployable migration')
-assert.ok(fileFolderEnvironmentLoaderSource.includes('Loading your whole operating environment'),'Client sees a world-loading boot sequence before entry')
+assert.ok(fileFolderEnvironmentLoaderSource.includes('Your world is forming')&&fileFolderEnvironmentLoaderSource.includes('Complexity underneath · simplicity at Presence'),'Client sees a formation sequence before the File Folder world opens')
 assert.ok(fileFolderEnvironmentLoaderSource.includes('animate-spin'),'File Folder boot sequence visibly spins while environment data loads')
 assert.ok(fileFolderOperatingEnvironmentSource.includes('<ClientFileFolder3D'),'Client can see the File Folder as a 3D operating environment')
 assert.ok(fileFolder3dSource.includes("from '@react-three/fiber'"),'3D File Folder uses the real Three.js React renderer')
