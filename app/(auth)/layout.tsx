@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
+import { RegistrationReferralCapture } from '@/components/registration-referral-capture'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -19,6 +20,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   }
 
   return <div className="relative flex min-h-dvh items-start justify-center overflow-x-hidden overflow-y-auto bg-transparent px-4 py-8 sm:items-center">
-    <div className="w-full max-w-md relative z-10"><WeaveEnvironmentSurface compact>{children}</WeaveEnvironmentSurface></div>
+    <div className="w-full max-w-md relative z-10">
+      <RegistrationReferralCapture />
+      <WeaveEnvironmentSurface compact>{children}</WeaveEnvironmentSurface>
+    </div>
   </div>
 }
