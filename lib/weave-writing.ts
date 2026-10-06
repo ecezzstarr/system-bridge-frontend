@@ -1,5 +1,5 @@
 export const WEAVE_WRITING_STYLE = {
-  cadence: ['Place', 'Movement', 'State', 'Action', 'Continuation'],
+  cadence: ['Presence', 'Recognition', 'Function', 'Action', 'Continuation'],
   canonicalTerms: [
     'WEAVE',
     'The Weave of Presence',
@@ -27,11 +27,13 @@ export const WEAVE_WRITING_STYLE = {
   ],
   rules: [
     'Name the place before explaining it.',
-    'Describe what is moving, not what the interface resembles.',
-    'State the current condition before the available action.',
+    'Say what the person can recognize or do before explaining the system around it.',
+    'Keep complexity underneath when a simpler human sentence carries the same truth.',
     'Use direct verbs for actions.',
     'Keep institutional terms stable across roles and routes.',
     'Reserve technical words such as terminal and protocol for actual technical functions.',
+    'Do not use movement, continuity, state, presence or environment as filler words.',
+    'Do not explain WEAVE again when the place itself can demonstrate its function.',
   ],
 } as const
 
@@ -44,9 +46,9 @@ export const WEAVE_WRITING = {
 
   bridgeRadiance: {
     eyebrow: 'Bridge Radiance',
-    title: 'Connection becoming Client movement.',
+    title: 'Begin with what is already present.',
     detail:
-      'Bridge Radiance keeps the Prospect movement visible while company functions bring clarity, execution, confirmation and recognition into one crossing.',
+      'Speak from what is real now. Bridge AI and the Bridger can recognize what is already present and open the next useful part of WEAVE without forcing the crossing.',
     position: 'Prospect position',
     movement: 'Prospect movement',
     topic: 'Current topic',
