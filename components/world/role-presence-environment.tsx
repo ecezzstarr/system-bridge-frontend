@@ -27,7 +27,7 @@ const COPY:Record<PresenceRole,{
   bridger:{
     eyebrow:'Hope · Bridger Presence',
     title:'You are Hope working in the field.',
-    detail:'WEAVE builds systems, services and operating environments across the world. Hope is the Bridger Department working through unverified Prospect possibilities until real human response appears. The Bridger recognizes that response, carries the relationship toward Client crossing, and helps what WEAVE has built reach Client ownership and practical use.',
+    detail:'WEAVE builds systems, services and operating environments across the world. Hope is the Bridger Department working through unverified Prospect possibilities until real human response appears. The Bridger recognizes that response, carries the relationship toward Client crossing, and helps what WEAVE has built reach Client ownership and practical use. When that guided crossing completes through a verified File Folder purchase, the Bridger share is recorded without changing Hope into a sales-only function.',
     loop:'WEAVE builds → Hope farms Prospect possibilities → response → relationship → Client → ownership + use',
     worldHref:'/bridger/dashboard',
   },
