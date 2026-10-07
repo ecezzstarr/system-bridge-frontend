@@ -46,6 +46,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   }, [authUser?.id])
 
   if (!effectiveUser) return null
+  const positionLabel=effectiveUser.role==='bridger'?'Hope · Bridger':effectiveUser.role
 
   return (
     <header
@@ -128,7 +129,7 @@ export function AppHeader({ user }: AppHeaderProps) {
               <div className="absolute right-0 top-12 w-[min(14rem,calc(100vw-1rem))] overflow-hidden rounded-2xl border border-white/10 bg-[#030914]/96 p-2 shadow-2xl backdrop-blur-xl">
                 <div className="border-b border-white/[.07] px-3 py-2">
                   <p className="truncate text-[10px] font-black text-white">{effectiveUser.name}</p>
-                  <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{effectiveUser.role} position</p>
+                  <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{positionLabel} position</p>
                 </div>
                 {carrierOpen && (
                   <button
