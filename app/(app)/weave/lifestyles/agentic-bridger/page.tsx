@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth-provider'
 
 type AccessState={active:boolean;status:string;role:string}
 
-function authHeaders(){
+function authHeaders():Record<string,string>{
   const token=typeof window!=='undefined'?localStorage.getItem('ssb_auth_token'):null
   return token?{Authorization:`Bearer ${token}`}:{ }
 }
