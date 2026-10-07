@@ -136,6 +136,27 @@ const PLATFORM_BRIEFS:LoadingBrief[]=[
   },
 ]
 
+const HOPE_BRIEFS:LoadingBrief[]=[
+  {
+    eyebrow:'HOPE · BRIDGER DEPARTMENT',
+    title:'WEAVE builds across the world.',
+    body:'WEAVE forms systems, services and operating environments. Hope works outward through Prospect possibilities so what WEAVE builds can reach real human ownership and use.',
+    movement:'WEAVE builds → Hope searches → Prospect possibility',
+  },
+  {
+    eyebrow:'HOPE · PROSPECT MOVEMENT',
+    title:'A Prospect is where Hope begins.',
+    body:'Numbers, WhatsApp routes and email Prospects are farming tools and unverified candidates. The Bridger attempts the connection until a real response reveals what is actually there.',
+    movement:'Prospect tool → attempt → response → recognition → relationship',
+  },
+  {
+    eyebrow:'HOPE · CLIENT CROSSING',
+    title:'Carry possibility into ownership and use.',
+    body:'When a real Prospect responds and chooses to continue, Hope carries the crossing toward Client position, File Folder ownership and the practical use of WEAVE systems.',
+    movement:'Prospect → response → Client → ownership → use',
+  },
+]
+
 const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS
 
 const FLAME_REENTRY_LAST_ACTIVE_KEY='weave:flame-event:last-active-at'
@@ -315,17 +336,21 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     }
   },[])
 
+  const destinationPath=(requestedPath||pathname).split('?')[0]
+  const hopeDestination=destinationPath.startsWith('/bridger')||destinationPath==='/weave/market/prospects'
+  const showHopeBriefing=booting&&hopeDestination
   const showFlameBriefing=booting&&flameEventActive
+  const bootBriefs=showHopeBriefing?HOPE_BRIEFS:(showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS)
 
   useEffect(()=>{
     if(!covered)return
     setBriefIndex(0)
-    const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
+    const briefs=booting?bootBriefs:[bootBriefs[0]]
     const timers=briefs.slice(1).map((_,index)=>
       window.setTimeout(()=>setBriefIndex(index+1),(index+1)*LOADING_CARD_HOLD_MS)
     )
     return ()=>timers.forEach(timer=>window.clearTimeout(timer))
-  },[covered,sequenceId,showFlameBriefing])
+  },[covered,sequenceId,booting,bootBriefs])
 
   const requestedEnvironment=useMemo(
     ()=>requestedPath?resolveWeaveEnvironment(requestedPath.split('?')[0]):null,
@@ -333,25 +358,31 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   )
   const destinationEnvironment=requestedEnvironment||environment
   const transitBrief=useMemo<LoadingBrief>(()=>({
-    eyebrow:`${destinationEnvironment.district} · ${destinationEnvironment.layer}`,
+    eyebrow:hopeDestination?'Hope · Bridger Department':`${destinationEnvironment.district} · ${destinationEnvironment.layer}`,
     title:`Opening ${destinationEnvironment.title}`,
-    body:destinationEnvironment.purpose,
-    movement:destinationEnvironment.movement,
-  }),[destinationEnvironment])
-  const activeBriefs=booting
-    ? (showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS)
-    : [transitBrief]
+    body:hopeDestination
+      ? `WEAVE builds systems across the world. Hope works through Prospect possibilities so those systems can reach Client ownership and use. ${destinationEnvironment.purpose}`
+      : destinationEnvironment.purpose,
+    movement:hopeDestination
+      ? 'Prospect tool → attempt → response → relationship → Client → ownership + use'
+      : destinationEnvironment.movement,
+  }),[destinationEnvironment,hopeDestination])
+  const activeBriefs=booting?bootBriefs:[transitBrief]
   const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
-  const openingLabel=showFlameBriefing
-    ? 'Flame Event · Burning River'
-    : booting
-      ? 'Forming the living environment'
-      : `Opening ${destinationEnvironment.title}`
-  const statusLabel=showFlameBriefing
-    ? 'FLAME EVENT · BURNING RIVER · THE RIVER THAT BURNS'
-    : booting
-      ? 'Preparing WEAVE world · preserving continuity'
-      : `Moving through ${destinationEnvironment.district} · keeping your position intact`
+  const openingLabel=showHopeBriefing
+    ? 'Hope · forming the Bridger field'
+    : showFlameBriefing
+      ? 'Flame Event · Burning River'
+      : booting
+        ? 'Forming the living environment'
+        : `Opening ${destinationEnvironment.title}`
+  const statusLabel=showHopeBriefing||(!booting&&hopeDestination)
+    ? 'HOPE · WEAVE BUILDS → PROSPECT → CLIENT → OWNERSHIP + USE'
+    : showFlameBriefing
+      ? 'FLAME EVENT · BURNING RIVER · THE RIVER THAT BURNS'
+      : booting
+        ? 'Preparing WEAVE world · preserving continuity'
+        : `Moving through ${destinationEnvironment.district} · keeping your position intact`
 
   return <>
     <div
@@ -370,6 +401,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       data-environment-reveal-shell="continuous"
       data-flame-event-loader={showFlameBriefing?'burning-river':undefined}
       data-flame={showFlameBriefing?'true':'false'}
+      data-hope-loader={hopeDestination?'bridger-department':undefined}
     >
       <div className={showFlameBriefing
         ? "pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(14,165,233,.28),transparent_32%),radial-gradient(ellipse_at_42%_78%,rgba(249,115,22,.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(239,68,68,.16),transparent_24%),linear-gradient(180deg,#02050a_0%,#05070b_52%,#020914_100%)]"
@@ -396,10 +428,10 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           </div>
 
           <p className={'mt-4 text-[9px] font-black uppercase tracking-[.3em] '+(showFlameBriefing?'text-orange-200':'text-amber-200')}>
-            {showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
+            {showHopeBriefing?'HOPE · BRIDGER DEPARTMENT':showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
           </p>
           <p className={'mt-1 text-[8px] font-bold uppercase tracking-[.18em] '+(showFlameBriefing?'text-rose-200/70':'text-stone-500')}>
-            {showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
+            {showHopeBriefing?'WEAVE builds · Hope searches · Clients own and use':showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
           </p>
           <h1 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
         </div>
@@ -412,7 +444,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
             <span className="rounded-full border border-white/10 bg-white/[.035] px-2.5 py-1 text-[7px] font-black uppercase tracking-[.16em] text-stone-400">
-              {showFlameBriefing?'LIVE · LOOP 1':destinationEnvironment.district}
+              {showHopeBriefing?'HOPE':showFlameBriefing?'LIVE · LOOP 1':hopeDestination?'HOPE':destinationEnvironment.district}
             </span>
           </div>
           <h2 className="mt-2 text-lg font-black text-white sm:text-xl">{briefing.title}</h2>
