@@ -33,7 +33,7 @@ assert.ok(!authLayout.includes('Manager Entry')&&!authLayout.includes('Manager E
 assert.ok(managerLogin.includes("redirect('/login')")&&managerRegister.includes("redirect('/login')"),'Legacy Manager auth URLs return to normal WEAVE login')
 assert.ok(entry.includes('/weave/lifestyles')&&entry.includes('Lifestyle')&&!entry.includes('href="/manager/dashboard"'),'Role worlds enter the Lifestyle layer instead of bypassing it into Manager')
 assert.ok(agentDashboard.includes('ManagerLifestyleEntry')&&bridgerDashboard.includes('ManagerLifestyleEntry')&&clientDashboard.includes('LifestyleEntry'),'Agent Bridger and Client worlds expose the shared Lifestyle entrance')
-assert.ok(managerDashboard.includes('Continuance opens this lifestyle.')&&managerDashboard.includes('₦70,000/mo'),'Manager room still makes its current subscription gate and salary visible')
+assert.ok(managerDashboard.includes('monthly subscription opens Lifestyle')&&managerDashboard.includes('does not have a second subscription')&&managerDashboard.includes('₦70,000/mo'),'Manager room exposes the shared position subscription gate without implying a second Lifestyle fee')
 assert.ok(managerDashboard.includes('Accept · Begin Manager Lifestyle')&&managerDashboard.includes('one calendar month'),'Document acceptance remains Day 1 after subscription access')
 assert.ok(managerDashboard.includes('/distribution-studio')&&managerDashboard.includes('/video-ad-studio')&&managerDashboard.includes('/referrals'),'Manager lifestyle carries WEAVE marketing instruments')
 assert.ok(referral.includes('STAFF_REFERRAL_BONUS_NGN = 500'),'Manager keeps the underlying Agent/Bridger ₦500 referral bonus')
