@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { getLifestyleAccess, getWeaveLifestyleMonthlyPrice } from '@/lib/weave-lifestyle'
+import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
@@ -10,8 +10,9 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     success: true,
     access,
-    monthlyPrice: getWeaveLifestyleMonthlyPrice(),
-    currency: 'Flame Coin',
-    layer: 'Subscribed WEAVE',
+    layer: 'WEAVE Lifestyle',
+    entitlement: access.source,
+    separateLifestyleCharge: false,
+    rule: 'Your active monthly subscription covers Lifestyle access. Your WEAVE position determines which lifestyles and identities are available.',
   })
 }
