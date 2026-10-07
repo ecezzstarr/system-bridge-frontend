@@ -82,6 +82,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (referredByBridgerId && !referralOwner) {
+      return NextResponse.json({ error: 'Referral code was not found or is inactive. Check the code before registering.' }, { status: 400 })
+    }
+
     const genericReferrerId: string | null = referralOwner?.id || null
     const bridgerReferrerId: string | null =
       role === 'bridger' && referralOwner?.role === 'bridger' ? referralOwner.id : null

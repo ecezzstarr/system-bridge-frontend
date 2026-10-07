@@ -11,15 +11,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'messages required' }, { status: 400 })
     }
 
-    // Update outreach status if applicable
-    if (prospectId) {
-      sql`
-        UPDATE market_prospect_outreach
-        SET status = 'responded', last_activity_at = NOW()
-        WHERE id = ${prospectId}::uuid AND status IN ('sent', 'opened')
-      `.catch(err => console.error('[bridge chat outreach update] error:', err))
-    }
-
     const bridges = await sql`
       SELECT b.id, t.system_prompt, t.status as template_status
       FROM bridge_ais b
@@ -30,6 +21,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Bridge not found or inactive' }, { status: 404 })
     }
     const bridge = bridges[0]
+
+    if (sessionId) {
+      const sessions = await sql`SELECT id FROM bridge_sessions WHERE id=${sessionId}::uuid AND bridge_id=${bridge.id}::uuid LIMIT 1`
+      if (!sessions.length) return NextResponse.json({error:'Bridge session not found'}, {status:404})
+    }
+    if (prospectId) {
+      await sql`
+        UPDATE market_prospect_outreach
+        SET status='responded',last_activity_at=NOW()
+        WHERE id=${prospectId}::uuid AND bridge_ai_id=${bridge.id}::uuid AND status IN ('sent','opened')
+      `
+    }
 
     const rawResponse = await chatWithBridge(messages as BridgeMessage[], bridge.system_prompt)
       const match = rawResponse.match(/<<BUSINESS_CONCEPT:({[\s\S]*?})>>/)
@@ -53,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           SET messages = ${JSON.stringify(updatedMessages)}::jsonb,
               business_concept = COALESCE(${businessConcept ? JSON.stringify(businessConcept) : null}::jsonb, business_concept),
               last_active_at = NOW()
-          WHERE id = ${currentSessionId}::uuid
+          WHERE id = ${currentSessionId}::uuid AND bridge_id = ${bridge.id}::uuid
         `
       } else {
         const created = await sql`

@@ -108,7 +108,7 @@ export default function BridgerEmailOutreachPage(){
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Email outreach failed')
-      setNotice(`Email sent to ${lead.lead_code}. Delivery is recorded in your outreach report.`)
+      setNotice(`Email sent to ${lead.lead_code}. Provider acceptance is recorded in your outreach report.`)
       await load()
     }catch(e:any){setError(e?.message||'Email outreach failed')}
     finally{setBusy('')}
@@ -132,7 +132,9 @@ export default function BridgerEmailOutreachPage(){
 
   const leads:Lead[]=data?.leads||[]
   const outreach:Outreach[]=data?.outreach||[]
-  const sentLeadIds=new Set(outreach.filter(row=>row.status==='sent'||row.status==='replied').map(row=>row.lead_id))
+  const sentLeadIds=new Set(outreach.filter(row=>['pending','sent','replied','uncertain'].includes(row.status)).map(row=>row.lead_id))
+
+  if(!data)return <main className="px-4 py-16 text-white"><p role="alert">{error||'Email Outreach could not open.'}</p><button onClick={load} className="mt-4 border border-white/20 px-4 py-2">Retry Email Outreach</button></main>
 
   return <main className="relative px-4 pb-16 pt-12 text-white" data-bridger-email-outreach="true">
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(56,189,248,.12),transparent_26%),radial-gradient(circle_at_84%_62%,rgba(16,185,129,.08),transparent_30%)]"/>
@@ -145,6 +147,7 @@ export default function BridgerEmailOutreachPage(){
 
       {(error||notice)&&<div className={`mt-5 border-l-2 px-4 py-3 text-sm ${error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200'}`}>{error||notice}</div>}
 
+      <p className="mt-4 text-xs text-slate-300" role="status">{data.providerConfigured&&data.sender ? 'Source configured · provider acceptance is recorded after each send.' : 'Source not ready · activate your mailbox before sending.'}</p>
       <section className="mt-7 grid gap-5 md:grid-cols-[1fr_1fr]">
         <div className="border-y border-white/10 py-5">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">01 · Email Source</p>
@@ -155,6 +158,7 @@ export default function BridgerEmailOutreachPage(){
           <label className="mt-4 block text-[9px] font-black uppercase tracking-[.12em] text-slate-500">Google app password</label>
           <input type="password" value={appPassword} onChange={e=>setAppPassword(e.target.value)} className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50" placeholder="16-character app password" autoComplete="new-password"/>
           <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.14em] text-sky-100 disabled:opacity-40">{busy==='sender'?'Authenticating…':'Activate source email'}</button>
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="mt-3 block text-xs text-sky-300 underline">Open Google app passwords</a><p className="mt-2 text-xs text-slate-400">Enable Google 2-Step Verification first. Create an app password for the same mailbox entered above.</p>
           <p className="mt-3 text-[10px] leading-5 text-slate-500">Use a Google app password, not your normal Google password. WEAVE verifies the mailbox and encrypts the credential before storing it.</p>
         </div>
 
@@ -175,6 +179,11 @@ export default function BridgerEmailOutreachPage(){
         </div>
       </section>
 
+      <section className="mt-6 border-y border-white/10 py-4">
+        <p className="text-sm font-bold">Bridge follow-up</p>
+        <p className="mt-2 text-xs text-slate-400">After the Prospect replies and is ready, share your Bridge in the mailbox conversation. It preserves your Bridger ownership through the File Folder crossing.</p>
+        {data.bridgeUrl ? <input aria-label="Your Bridge link for email replies" readOnly value={data.bridgeUrl} onFocus={e=>e.target.select()} className="mt-3 w-full border border-white/10 bg-black/20 p-3 text-sm text-sky-200"/> : <a href="/bridger/bridge-ai" className="mt-3 inline-block text-xs text-sky-300 underline">Activate Bridge AI to open your Client crossing</a>}
+      </section>
       <section className="mt-8 border-t border-white/10 pt-6">
         <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">03 · Message</p>
         <input value={subject} onChange={e=>setSubject(e.target.value)} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none focus:border-sky-300/50"/>
@@ -194,8 +203,8 @@ export default function BridgerEmailOutreachPage(){
               <p className="mt-1 truncate text-sm font-black">{lead.name||'Email Prospect'} · {lead.email}</p>
               <p className="mt-1 text-[10px] text-slate-500">{lead.source} · {lead.consent_basis}</p>
             </div>
-            <button onClick={()=>sendLead(lead)} disabled={sentLeadIds.has(lead.id)||busy==='send:'+lead.id||!data.sender} className="flex items-center justify-center gap-2 border border-white/10 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-35">
-              <Send className="h-3.5 w-3.5"/>{sentLeadIds.has(lead.id)?'Sent':busy==='send:'+lead.id?'Sending…':'Send email'}
+            <button onClick={()=>sendLead(lead)} disabled={sentLeadIds.has(lead.id)||busy==='send:'+lead.id||!data.sender||!data.providerConfigured} className="flex items-center justify-center gap-2 border border-white/10 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-35">
+              <Send className="h-3.5 w-3.5"/>{sentLeadIds.has(lead.id)?'See report':busy==='send:'+lead.id?'Sending…':'Send email'}
             </button>
           </div>)}
           {!leads.length&&<p className="py-8 text-center text-xs text-slate-500">No email Prospects acquired yet.</p>}

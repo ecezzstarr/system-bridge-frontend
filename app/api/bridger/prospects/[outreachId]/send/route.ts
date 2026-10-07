@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 
-// POST - mark an outreach record as sent (Bridger just opened WhatsApp and sent the first message)
+// POST - mark an outreach record as sent (Bridger explicitly confirms sending the first WhatsApp message)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ outreachId: string }> }
 ) {
   const authUser = await getAuthUser(request)
-  if (!authUser) {
+  if (!authUser || authUser.role !== 'bridger') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const body = await request.json().catch(()=>null)
+  if (body?.confirmedSent !== true) return NextResponse.json({error:'Confirm that you sent the WhatsApp message'}, {status:400})
 
   const { outreachId } = await params
   if (!outreachId) {

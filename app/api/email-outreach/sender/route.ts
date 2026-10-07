@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { mailboxErrorResponse } from '@/lib/weave-mail'
 import {
   emailOutreachProviderConfigured,
   emailOutreachProviderConfiguredForUser,
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Enter a valid source email address' }, { status: 400 })
   }
 
+  try {
   let mailbox = await getMailboxSummary(user.id)
   if (appPassword) {
     try {
@@ -78,18 +80,16 @@ export async function POST(request: NextRequest) {
         appPassword,
       })
     } catch (error) {
-      console.error('[email-outreach-sender] Google mailbox authentication failed', error)
-      return NextResponse.json(
-        { error: 'Google mailbox authentication failed. Use the mailbox address and a Google app password.' },
-        { status: 400 },
-      )
+      const failure = mailboxErrorResponse(error)
+      console.error('[email-outreach-sender] mailbox setup failed', failure.code)
+      return NextResponse.json({ error: failure.error, code: failure.code }, { status: failure.status })
     }
   } else if (mailbox?.status === 'connected' && normalizeOutreachEmail(mailbox.email) !== sourceEmail) {
     return NextResponse.json(
       { error: 'Authenticate the new Google source email before replacing the connected mailbox.' },
       { status: 400 },
     )
-  } else if (!mailbox && !emailOutreachProviderConfigured()) {
+  } else if (mailbox?.status !== 'connected' && !emailOutreachProviderConfigured()) {
     return NextResponse.json(
       { error: 'Enter a Google app password to authenticate this source email.' },
       { status: 400 },
@@ -114,6 +114,11 @@ export async function POST(request: NextRequest) {
     mailbox: await getMailboxSummary(user.id),
     providerConfigured: await emailOutreachProviderConfiguredForUser(user.id),
   })
+  } catch (error) {
+    const failure = mailboxErrorResponse(error)
+    console.error('[email-outreach-sender] setup failed', failure.code)
+    return NextResponse.json({error:failure.error,code:failure.code},{status:failure.status})
+  }
 }
 
 export async function DELETE(request: NextRequest) {

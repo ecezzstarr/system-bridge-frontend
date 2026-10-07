@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { sql } from '@/lib/db'
+import { sql, getPool } from '@/lib/db'
 import { normalizeMailAddress, verifyGoogleMailbox } from '@/lib/weave-mail'
 
 function credentialKey(){
@@ -26,8 +26,14 @@ function decryptSecret(value:string){
   return Buffer.concat([decipher.update(Buffer.from(dataPart,'base64url')),decipher.final()]).toString('utf8')
 }
 
+let mailboxSchemaPromise:Promise<void>|null=null
 export async function ensureWeaveMailboxSchema(){
-  await sql`
+  if(!mailboxSchemaPromise)mailboxSchemaPromise=(async()=>{
+    const client=await getPool().connect()
+    try{
+      await client.query('BEGIN')
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',['weave_mailbox_schema_v1'])
+  await client.query(`
     CREATE TABLE IF NOT EXISTS weave_mailboxes (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       owner_user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -42,8 +48,15 @@ export async function ensureWeaveMailboxSchema(){
       updated_at timestamptz NOT NULL DEFAULT NOW(),
       UNIQUE(owner_user_id)
     )
-  `
-  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_weave_mailboxes_email ON weave_mailboxes(LOWER(email))`
+  `)
+  await client.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_weave_mailboxes_email ON weave_mailboxes(LOWER(email))`)
+      await client.query('COMMIT')
+    }catch(error){
+      await client.query('ROLLBACK').catch(()=>{})
+      throw error
+    }finally{client.release()}
+  })().catch(error=>{mailboxSchemaPromise=null;throw error})
+  return mailboxSchemaPromise
 }
 
 export async function connectGoogleMailbox(input:{
@@ -55,8 +68,8 @@ export async function connectGoogleMailbox(input:{
   await ensureWeaveMailboxSchema()
   const email=normalizeMailAddress(input.email)
   const appPassword=String(input.appPassword||'').replace(/\s+/g,'')
-  await verifyGoogleMailbox({email,appPassword,fromName:input.role==='admin'?'WeaveBridge - Weave of Presence':'WEAVE Bridger'})
   const encrypted=encryptSecret(appPassword)
+  await verifyGoogleMailbox({email,appPassword,fromName:input.role==='admin'?'WeaveBridge - Weave of Presence':'WEAVE Bridger'})
 
   const rows=await sql`
     INSERT INTO weave_mailboxes(owner_user_id,owner_role,email,credential_ciphertext,status,verified_at,updated_at)

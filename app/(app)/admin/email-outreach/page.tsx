@@ -112,7 +112,8 @@ export default function AdminEmailOutreachPage(){
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Email outreach run failed')
-      setNotice(`Run complete: ${body.result?.sent||0} sent, ${body.result?.failed||0} failed.`)
+      const reasons:Record<string,string>={disabled:'Save automation as enabled before running.',already_running:'A run is already in progress.',daily_limit:'Today’s email limit has been reached.',no_leads:'No contactable email Prospects are available. Import leads first.'}
+      setNotice(reasons[body.result?.reason]||`Run complete: ${body.result?.sent||0} accepted by provider, ${body.result?.failed||0} need attention.`)
       await load()
     }catch(e:any){setError(e?.message||'Email outreach run failed')}
     finally{setBusy('')}
@@ -133,6 +134,8 @@ export default function AdminEmailOutreachPage(){
 
   if(loading)return <main className="flex min-h-[55vh] items-center justify-center text-sm text-slate-400">Opening Administration Email Outreach…</main>
 
+  if(!data)return <main className="px-4 py-16 text-white"><p role="alert">{error||'Email Outreach could not open.'}</p><button onClick={load} className="mt-4 border border-white/20 px-4 py-2">Retry Email Outreach</button></main>
+
   return <main className="relative px-4 pb-16 pt-12 text-white" data-admin-email-outreach="true">
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_8%,rgba(56,189,248,.12),transparent_26%),radial-gradient(circle_at_84%_72%,rgba(249,115,22,.08),transparent_32%)]"/>
     <div className="relative mx-auto max-w-6xl">
@@ -144,6 +147,7 @@ export default function AdminEmailOutreachPage(){
 
       {(error||notice)&&<div className={`mt-5 border-l-2 px-4 py-3 text-sm ${error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200'}`}>{error||notice}</div>}
 
+      <p className="mt-4 text-xs text-slate-300" role="status">{data.providerConfigured&&data.sender ? 'Source configured · provider acceptance is recorded after each send.' : 'Source not ready · activate your mailbox before sending.'}</p>
       <section className="mt-7 grid gap-6 lg:grid-cols-3">
         <div className="border-y border-white/10 py-5">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">Email Source Engine</p>
@@ -151,6 +155,7 @@ export default function AdminEmailOutreachPage(){
           <input value={displayName} onChange={e=>setDisplayName(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="WeaveBridge · WEAVE Administration"/>
           <input type="password" value={appPassword} onChange={e=>setAppPassword(e.target.value)} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none" placeholder="Google app password · only needed to authenticate/change mailbox" autoComplete="new-password"/>
           <button onClick={saveSender} disabled={busy==='sender'} className="mt-4 flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='sender'?'Authenticating…':'Activate source'}</button>
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="mt-3 block text-xs text-sky-300 underline">Open Google app passwords</a><p className="mt-2 text-xs text-slate-400">Enable Google 2-Step Verification first. Create an app password for the same mailbox entered above.</p>
           <p className="mt-3 text-[10px] leading-5 text-slate-500">For Gmail, use a Google app password rather than the normal account password. WEAVE verifies and encrypts the credential before storage. If the fallback mail provider is configured, the source email can remain reply-only.</p>
         </div>
 
@@ -187,7 +192,7 @@ export default function AdminEmailOutreachPage(){
         <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={5} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 text-sm leading-6 outline-none"/>
         <div className="mt-4 flex flex-wrap gap-3">
           <button onClick={saveAutomation} disabled={busy==='automation'} className="flex items-center gap-2 border border-sky-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Save className="h-3.5 w-3.5"/>{busy==='automation'?'Saving…':'Save automation'}</button>
-          <button onClick={runNow} disabled={busy==='run'||!enabled||!data.providerConfigured||!data.sender} className="flex items-center gap-2 border border-amber-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] text-amber-100 disabled:opacity-35"><Play className="h-3.5 w-3.5"/>{busy==='run'?'Running…':'Run now'}</button>
+          <button onClick={runNow} disabled={Boolean(busy)||!data.automation?.enabled||!data.providerConfigured||!data.sender||!data.counts?.available} className="flex items-center gap-2 border border-amber-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] text-amber-100 disabled:opacity-35"><Play className="h-3.5 w-3.5"/>{busy==='run'?'Running…':'Run now'}</button>
         </div>
       </section>
 
@@ -206,7 +211,7 @@ export default function AdminEmailOutreachPage(){
             </div>
             {row.status==='sent'&&<button onClick={()=>markReplied(row.id)} disabled={busy==='reply:'+row.id} className="border border-emerald-300/20 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-emerald-200">Mark replied</button>}
           </div>)}
-          {!(data.recent||[]).length&&<p className="py-8 text-center text-xs text-slate-500">No email movement recorded yet.</p>}
+          {!(data.recent||[]).length&&<p className="py-8 text-center text-xs text-slate-500">No email movement recorded yet. Activate a source and import contactable leads to begin.</p>}
         </div>
       </section>
     </div>

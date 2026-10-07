@@ -56,6 +56,7 @@ export default function ProspectMarketPage() {
   const [numberInput, setNumberInput] = useState('')
   const [mineLoading, setMineLoading] = useState(true)
   const [savingNumber, setSavingNumber] = useState(false)
+  const [handoffId, setHandoffId] = useState<string | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [reportingId, setReportingId] = useState<string | null>(null)
 
@@ -166,19 +167,28 @@ export default function ProspectMarketPage() {
       toast.error('Add your WhatsApp number first')
       return
     }
+    const target = (p.prospectWhatsapp || p.phone || '').replace(/\D/g, '')
+    if (!/^[1-9]\d{6,14}$/.test(target)) {
+      toast.error('This Prospect needs a valid international WhatsApp number')
+      return
+    }
+    window.open(`https://wa.me/${target}?text=${encodeURIComponent(p.messageSent)}`, '_blank', 'noopener,noreferrer')
+    setHandoffId(p.outreachId)
+    toast.info('WhatsApp opened. Confirm below only after you send the message.')
+  }
+
+  const confirmSent = async (p: MyProspect) => {
     setSendingId(p.outreachId)
     try {
-      const target = (p.prospectWhatsapp || p.phone || '').replace(/[^\d+]/g, '')
-      const waUrl = `https://wa.me/${target.replace('+', '')}?text=${encodeURIComponent(p.messageSent)}`
-      window.open(waUrl, '_blank')
-
       const res = await fetch(`/api/bridger/prospects/${p.outreachId}/send`, {
         method: 'POST',
         headers: getAuthHeaders(),
+        body: JSON.stringify({ confirmedSent: true }),
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('Marked as sent')
+        setHandoffId(null)
+        toast.success('Your send confirmation was recorded')
         fetchMine()
       } else {
         toast.error(data.error || 'Failed to mark as sent')
@@ -200,10 +210,11 @@ export default function ProspectMarketPage() {
       toast.error('Create or activate Bridge AI before sending this prospect into the Bridge')
       return
     }
-    const target = (p.prospectWhatsapp || p.phone || '').replace(/[^\d+]/g, '')
+    const target = (p.prospectWhatsapp || p.phone || '').replace(/\D/g, '')
+    if (!/^[1-9]\d{6,14}$/.test(target)) { toast.error('This Prospect needs a valid international WhatsApp number'); return }
     const message = `I've opened your WEAVE Bridge. Enter with the movement we were discussing; you do not need to understand every part of WEAVE at once. ${p.bridgeUrl}`
     const waUrl = `https://wa.me/${target.replace('+', '')}?text=${encodeURIComponent(message)}`
-    window.open(waUrl, '_blank')
+    window.open(waUrl, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -372,8 +383,9 @@ export default function ProspectMarketPage() {
                             className="bg-blue-600 hover:bg-blue-700"
                           >
                             {sendingId === p.outreachId ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
-                            Send First Message
+                            Open First Message
                           </Button>
+                          {handoffId === p.outreachId && <Button size="sm" onClick={()=>confirmSent(p)} disabled={sendingId===p.outreachId} className="bg-emerald-700">I sent the message</Button>}
                           <Button
                             size="sm"
                             variant="outline"

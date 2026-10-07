@@ -5,7 +5,8 @@ import { getPool } from '@/lib/db'
 import {
   EMAIL_PROSPECT_PRICE_FLAME_COIN,
   deliverOutreachEmail,
-  emailOutreachProviderConfigured,
+  emailOutreachProviderConfiguredForUser,
+  emailOutreachBridgeUrl,
   ensureEmailOutreachSchema,
   senderForUser,
 } from '@/lib/email-outreach'
@@ -34,7 +35,8 @@ export async function GET(request: NextRequest) {
     pool.query(
       `SELECT COUNT(*)::int AS count
        FROM weave_email_prospect_leads
-       WHERE status='available' AND contactable=true AND owned_by IS NULL`,
+       WHERE status='available' AND contactable=true AND owned_by IS NULL
+       AND NOT EXISTS (SELECT 1 FROM weave_email_outreach o WHERE o.lead_id=weave_email_prospect_leads.id AND o.status IN ('pending','sent','replied','uncertain'))`,
     ),
     pool.query(
       `SELECT id,lead_code,name,email,source,consent_basis,status,acquired_at,created_at
@@ -59,7 +61,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
     success: true,
-    providerConfigured: emailOutreachProviderConfigured(),
+    providerConfigured: await emailOutreachProviderConfiguredForUser(user.id),
+    bridgeUrl: await emailOutreachBridgeUrl(user.id),
     sender,
     accountEmail: user.email,
     priceFlameCoin: EMAIL_PROSPECT_PRICE_FLAME_COIN,
@@ -138,6 +141,7 @@ export async function POST(request: NextRequest) {
         `SELECT *
          FROM weave_email_prospect_leads
          WHERE status='available' AND contactable=true AND owned_by IS NULL
+       AND NOT EXISTS (SELECT 1 FROM weave_email_outreach o WHERE o.lead_id=weave_email_prospect_leads.id AND o.status IN ('pending','sent','replied','uncertain'))
          ORDER BY created_at ASC
          FOR UPDATE SKIP LOCKED
          LIMIT 1`,
@@ -211,6 +215,7 @@ export async function POST(request: NextRequest) {
 
   if (action === 'send') {
     const leadId = String(body.leadId || '').trim()
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leadId)) return NextResponse.json({error:'Invalid email Prospect'}, {status:400})
     const subject = String(body.subject || DEFAULT_SUBJECT).trim().slice(0,240)
     const message = String(body.message || DEFAULT_MESSAGE).trim().slice(0,5000)
 
@@ -224,7 +229,7 @@ export async function POST(request: NextRequest) {
            SELECT 1 FROM weave_email_outreach o
            WHERE o.lead_id=l.id
              AND o.actor_id=$2::uuid
-             AND o.status IN ('sent','replied')
+             AND o.status IN ('pending','sent','replied','uncertain')
          )
        LIMIT 1`,
       [leadId, user.id],
@@ -254,7 +259,7 @@ export async function POST(request: NextRequest) {
     const result = await pool.query(
       `UPDATE weave_email_outreach
        SET status='replied',replied_at=COALESCE(replied_at,NOW()),updated_at=NOW()
-       WHERE id=$1::uuid AND actor_id=$2::uuid
+       WHERE id=$1::uuid AND actor_id=$2::uuid AND status='sent'
        RETURNING id,status,replied_at`,
       [outreachId, user.id],
     )

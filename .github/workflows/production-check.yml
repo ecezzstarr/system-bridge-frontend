@@ -43,6 +43,8 @@ jobs:
           node tests/core-hardening-regression.cjs
           node tests/commerce-ledger-regression.cjs
           node tests/email-mailbox-regression.cjs
+          node tests/outreach-transport-behavior.cjs
+          node tests/outreach-delivery-behavior.cjs
           node tests/video-ad-workshop.cjs
           node tests/wiring.cjs
           node tests/environment-grade.cjs

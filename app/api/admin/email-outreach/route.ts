@@ -138,9 +138,12 @@ export async function POST(request: NextRequest) {
 
   if (action === 'set_automation') {
     const enabled = Boolean(body.enabled)
-    const dailyLimit = Math.max(1, Math.min(EMAIL_OUTREACH_ADMIN_DAILY_LIMIT, Number(body.dailyLimit || 1)))
+    const rawLimit = Number(body.dailyLimit)
+    if (!Number.isInteger(rawLimit) || rawLimit < 1 || rawLimit > EMAIL_OUTREACH_ADMIN_DAILY_LIMIT) return NextResponse.json({error:'Daily limit must be a whole number from 1 to 120'}, {status:400})
+    const dailyLimit = rawLimit
     const subject = String(body.subject || '').trim().slice(0,240)
     const message = String(body.message || '').trim().slice(0,5000)
+    if (enabled && (!await senderForUser(user.id) || !await emailOutreachProviderConfiguredForUser(user.id))) return NextResponse.json({error:'Activate a source email before enabling daily outreach'}, {status:400})
     if (!subject || !message) return NextResponse.json({ error: 'Subject and message are required' }, { status: 400 })
 
     const result = await pool.query(
@@ -157,8 +160,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === 'run_now') {
-    const result = await runAdminEmailOutreach(user.id)
-    return NextResponse.json({ success: true, result })
+    try {
+      const result = await runAdminEmailOutreach(user.id)
+      return NextResponse.json({ success: true, result })
+    } catch (error:any) {
+      return NextResponse.json({error:error?.message || 'Email outreach could not start'}, {status:503})
+    }
   }
 
   if (action === 'send') {
@@ -176,6 +183,7 @@ export async function POST(request: NextRequest) {
     const lead = leadResult.rows[0]
     if (!lead) return NextResponse.json({ error: 'Email prospect is not available for outreach' }, { status: 404 })
 
+    try {
     const delivered = await deliverOutreachEmail({
       actorId: user.id,
       actorRole: 'admin',
@@ -185,6 +193,9 @@ export async function POST(request: NextRequest) {
       mode: 'manual',
     })
     return NextResponse.json({ success: true, delivered })
+    } catch (error:any) {
+      return NextResponse.json({error:error?.message || 'Email outreach failed'}, {status:503})
+    }
   }
 
   if (action === 'mark_replied') {
@@ -192,7 +203,7 @@ export async function POST(request: NextRequest) {
     const result = await pool.query(
       `UPDATE weave_email_outreach
        SET status='replied',replied_at=COALESCE(replied_at,NOW()),updated_at=NOW()
-       WHERE id=$1::uuid
+       WHERE id=$1::uuid AND status='sent'
        RETURNING id,status,replied_at`,
       [outreachId],
     )
