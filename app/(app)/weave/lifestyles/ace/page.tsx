@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Gamepad2, Loader2, LockKeyhole, Megaphone, Radio } from 'lucide-react'
 
-function authHeaders(){
+function authHeaders():Record<string,string>{
   const token=typeof window!=='undefined'?localStorage.getItem('ssb_auth_token'):null
   return token?{Authorization:`Bearer ${token}`}:{ }
 }
