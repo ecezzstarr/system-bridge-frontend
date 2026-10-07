@@ -31,8 +31,8 @@ const COPY:Record<WorldRole,{
   },
   bridger:{
     eyebrow:'Hope · Bridger Department',
-    title:'Connection moves through clear districts.',
-    subtitle:'Presence gives orientation. Bridge Movement carries Prospects and crossing. Value remains a separate support district.',
+    title:'Hope carries what WEAVE builds into human use.',
+    subtitle:'WEAVE builds systems across the world. Hope works through unverified Prospect possibilities until a real response can become a Client relationship, Client ownership and practical use of those systems.',
     centerHref:'/bridger/presence',
   },
   agent:{
