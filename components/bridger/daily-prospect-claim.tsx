@@ -148,7 +148,7 @@ export function DailyProspectClaim() {
               </div>
             </div>
             <p className="mt-3 text-xs text-slate-500">
-              Your daily free claim is used. The next free Prospect candidate becomes available on the next calendar day.
+              Your daily free claim is used. The next free prospect candidate becomes available on the next calendar day.
             </p>
           </div>
         )}
