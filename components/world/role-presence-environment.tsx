@@ -25,10 +25,10 @@ const COPY:Record<PresenceRole,{
     worldHref:'/agent/dashboard',
   },
   bridger:{
-    eyebrow:'Bridger Presence',
-    title:'Carry connection without carrying clutter.',
-    detail:'The Bridger position acquires Prospects, carries Referral Movement, operates Bridge AI and Number Bay, uses Echo and Presences for authorized movement, and earns the Bridger share when a guided Prospect completes a verified Client File Folder purchase.',
-    loop:'Presence → Referral + Prospect → outreach → File Folder crossing → Bridger share → Client continuity',
+    eyebrow:'Hope · Bridger Presence',
+    title:'You are Hope working in the field.',
+    detail:'WEAVE builds systems, services and operating environments across the world. Hope is the Bridger Department working through unverified Prospect possibilities until real human response appears. The Bridger recognizes that response, carries the relationship toward Client crossing, and helps what WEAVE has built reach Client ownership and practical use.',
+    loop:'WEAVE builds → Hope farms Prospect possibilities → response → relationship → Client → ownership + use',
     worldHref:'/bridger/dashboard',
   },
   client:{
@@ -64,7 +64,7 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
     return <div className="flex min-h-[520px] items-center justify-center" data-environment-pending="true">
       <div className="text-center">
         <div className="mx-auto h-9 w-9 animate-spin rounded-full border border-sky-200/15 border-t-sky-200 motion-reduce:animate-none"/>
-        <p className="mt-3 text-[9px] font-black uppercase tracking-[.18em] text-sky-200">Restoring Presence</p>
+        <p className="mt-3 text-[9px] font-black uppercase tracking-[.18em] text-sky-200">{role==='bridger'?'Hope · Restoring Bridger Presence':'Restoring Presence'}</p>
       </div>
     </div>
   }
