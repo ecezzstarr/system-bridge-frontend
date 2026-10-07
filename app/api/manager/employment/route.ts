@@ -9,6 +9,7 @@ import {
   MANAGER_PROBATION_TARGET,
   MANAGER_DOCUMENT_VERSION,
   MANAGER_CONTINUANCE_NGN,
+  POSITION_MONTHLY_SUBSCRIPTION_NGN,
 } from '@/lib/manager-employment'
 
 export async function GET(request: NextRequest) {
@@ -29,6 +30,8 @@ export async function GET(request: NextRequest) {
       probationMonths:1,
       documentVersion:MANAGER_DOCUMENT_VERSION,
       continuanceNgn:MANAGER_CONTINUANCE_NGN,
+      positionSubscriptionNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN,
+      subscriptionRule:'Manager is covered by the active Agent or Bridger monthly subscription. It has no second Manager-only subscription.',
       coreDuty:'Market WEAVE to prospective Agents and Bridgers and carry verified referral movement.',
     },
   }, { headers:{ 'Cache-Control':'private, no-store' } })
@@ -46,9 +49,9 @@ export async function POST(request: NextRequest) {
   if (body?.action === 'subscribe_continuance') {
     const result=await subscribeManagerContinuance(user.id)
     if(!result.success){
-      if(result.reason==='insufficient_balance') return NextResponse.json({...result,error:'Insufficient Flame Coin for Continuance.'},{status:402})
-      if(result.reason==='rate_unavailable') return NextResponse.json({success:false,error:'Continuance rate is temporarily unavailable.'},{status:503})
-      return NextResponse.json({success:false,error:'Continuance could not be activated.'},{status:500})
+      if(result.reason==='insufficient_balance') return NextResponse.json({...result,error:`Insufficient Flame Coin to renew the ${user.role === 'agent' ? 'Agent' : 'Bridger'} monthly subscription.`},{status:402})
+      if(result.reason==='rate_unavailable') return NextResponse.json({success:false,error:'Position subscription rate is temporarily unavailable.'},{status:503})
+      return NextResponse.json({success:false,error:'Position monthly subscription could not be activated.'},{status:500})
     }
     return NextResponse.json({success:true,result,state:await getManagerEmploymentState(user.id)})
   }
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
   const result = await acceptManagerEmploymentDocument(user.id, String(body?.signature || ''))
   if (!result.success) {
     if (result.reason === 'continuance_required') {
-      return NextResponse.json({ success:false, error:'Active Continuance is required before Manager lifestyle can begin.' }, { status:403 })
+      return NextResponse.json({ success:false, error:`An active ${user.role === 'agent' ? 'Agent' : 'Bridger'} monthly subscription is required before Manager lifestyle can begin.` }, { status:403 })
     }
     if (result.reason === 'positions_full') {
       return NextResponse.json({ success:false, error:`All ${MANAGER_EMPLOYMENT_LIMIT} Manager positions are currently occupied.` }, { status:409 })
