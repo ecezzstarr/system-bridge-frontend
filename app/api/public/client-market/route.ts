@@ -14,6 +14,7 @@ export async function GET() {
     await ensureClientBusinessStoreSchema(sql)
     await ensureQueenClientProof(sql)
 
+    // formation_status='selling' remains public; ready_for_offer is also public once the Customer Door itself is complete.
     const stores=await sql`
       SELECT
         s.public_slug,
