@@ -78,14 +78,15 @@ export function DailyProspectClaim() {
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-bold text-white">Daily Prospect Claim</h2>
+                <h2 className="text-xl font-bold text-white">Hope · Daily Prospect Claim</h2>
                 <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-300">
                   1 FREE / DAY
                 </span>
               </div>
               <p className="mt-1 text-sm text-slate-400">
-                Claim one free available prospect each day and move directly into Bridger outreach.
+                Claim one unverified Prospect candidate each day and farm for a real interaction through Bridger outreach.
               </p>
+              <p className="mt-1 text-[11px] leading-5 text-slate-500">A claim confirms your candidate assignment only. It does not verify the person, number, WhatsApp account, interest, response or conversion.</p>
             </div>
           </div>
 
@@ -119,12 +120,12 @@ export function DailyProspectClaim() {
               <div>
                 <div className="mb-1 flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  <span className="text-xs font-semibold uppercase tracking-wide text-emerald-400">Claimed for today</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-emerald-400">Candidate claimed for today</span>
                 </div>
                 <p className="text-lg font-semibold text-white">{name}</p>
                 {phone && <p className="text-sm text-slate-400">{phone}</p>}
                 <p className="mt-2 text-xs text-slate-500">
-                  This prospect is also in My Prospects with its WEAVE outreach record.
+                  This unverified candidate is also in My Prospects with its WEAVE outreach record. Real response is what begins verification.
                 </p>
               </div>
 
@@ -147,7 +148,7 @@ export function DailyProspectClaim() {
               </div>
             </div>
             <p className="mt-3 text-xs text-slate-500">
-              Your daily free claim is used. The next free prospect becomes available on the next calendar day.
+              Your daily free claim is used. The next free Prospect candidate becomes available on the next calendar day.
             </p>
           </div>
         )}
@@ -155,7 +156,7 @@ export function DailyProspectClaim() {
         {!loading && !claimed && !error && (
           <div className="mt-5 flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">
             <Phone className="h-4 w-4 text-emerald-400" />
-            Claim once each day, then take the prospect directly into your outreach.
+            Claim once each day, then take the unverified candidate directly into your outreach.
           </div>
         )}
       </div>
