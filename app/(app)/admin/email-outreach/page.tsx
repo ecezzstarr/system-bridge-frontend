@@ -16,6 +16,7 @@ export default function AdminEmailOutreachPage(){
   const [sourceEmail,setSourceEmail]=useState('')
   const [displayName,setDisplayName]=useState('')
   const [appPassword,setAppPassword]=useState('')
+  const [candidateDomains,setCandidateDomains]=useState('')
   const [importText,setImportText]=useState('')
   const [enabled,setEnabled]=useState(false)
   const [dailyLimit,setDailyLimit]=useState(120)
@@ -73,6 +74,22 @@ export default function AdminEmailOutreachPage(){
     finally{setBusy('')}
   }
 
+  const generateCandidates=async()=>{
+    setBusy('generate');setError('');setNotice('')
+    try{
+      const response=await fetch('/api/admin/email-outreach',{
+        method:'POST',headers:getAuthHeaders(),
+        body:JSON.stringify({action:'generate_candidates',domains:candidateDomains}),
+      })
+      const body=await response.json()
+      if(!response.ok)throw new Error(body.error||'Email Prospect candidate formation failed')
+      setNotice(`${body.inserted} unverified email Prospect candidates formed from ${body.domains} domain${body.domains===1?'':'s'}. ${body.skipped} duplicate candidate${body.skipped===1?'':'s'} skipped.`)
+      setCandidateDomains('')
+      await load()
+    }catch(e:any){setError(e?.message||'Email Prospect candidate formation failed')}
+    finally{setBusy('')}
+  }
+
   const importLeads=async()=>{
     setBusy('import');setError('');setNotice('')
     try{
@@ -82,7 +99,7 @@ export default function AdminEmailOutreachPage(){
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Email Prospect import failed')
-      setNotice(`${body.inserted} email Prospects entered the system. ${body.skipped} skipped.`)
+      setNotice(`${body.inserted} email Prospect candidates entered the system. ${body.skipped} skipped.`)
       setImportText('')
       await load()
     }catch(e:any){setError(e?.message||'Email Prospect import failed')}
@@ -112,7 +129,7 @@ export default function AdminEmailOutreachPage(){
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Email outreach run failed')
-      const reasons:Record<string,string>={disabled:'Save automation as enabled before running.',already_running:'A run is already in progress.',daily_limit:'Today’s email limit has been reached.',no_leads:'No contactable email Prospects are available. Import leads first.'}
+      const reasons:Record<string,string>={disabled:'Save automation as enabled before running.',already_running:'A run is already in progress.',daily_limit:'Today’s email limit has been reached.',no_leads:'No available email Prospect candidates are in the inventory. Form or load candidates first.'}
       setNotice(reasons[body.result?.reason]||`Run complete: ${body.result?.sent||0} accepted by provider, ${body.result?.failed||0} need attention.`)
       await load()
     }catch(e:any){setError(e?.message||'Email outreach run failed')}
@@ -142,12 +159,12 @@ export default function AdminEmailOutreachPage(){
       <header className="border-b border-white/10 pb-6">
         <div className="flex items-center gap-2 text-sky-300"><Mail className="h-4 w-4"/><span className="text-[9px] font-black uppercase tracking-[.2em]">Administration · Email Outreach</span></div>
         <h1 className="mt-3 text-3xl font-black">Email Prospect Engine</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Load contactable email Prospects, give each one a cryptographic WEAVE lead reference, control the daily Administration movement, and inspect Bridger/Admin send reports from one place.</p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Form or load unverified email Prospect candidates, give each one a cryptographic WEAVE lead reference, control daily Administration movement, and inspect Bridger/Admin send reports from one place.</p>
       </header>
 
       {(error||notice)&&<div className={`mt-5 border-l-2 px-4 py-3 text-sm ${error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200'}`}>{error||notice}</div>}
 
-      <p className="mt-4 text-xs text-slate-300" role="status">{data.providerConfigured&&data.sender ? 'Source configured · provider acceptance is recorded after each send.' : 'Source not ready · activate your mailbox before sending.'}</p>
+      <p className="mt-4 text-xs text-slate-300" role="status">{data.providerConfigured&&data.sender ? 'Source configured · provider acceptance is recorded after each send. Prospect identity and reachability remain unverified until real response.' : 'Source not ready · activate your mailbox before sending.'}</p>
       <section className="mt-7 grid gap-6 lg:grid-cols-3">
         <div className="border-y border-white/10 py-5">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">Email Source Engine</p>
@@ -161,18 +178,32 @@ export default function AdminEmailOutreachPage(){
 
         <div className="border-y border-white/10 py-5 lg:col-span-2">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-emerald-300">Email Prospect inventory</p>
-          <div className="mt-4 grid grid-cols-4 gap-3 text-center">
+          <div className="mt-4 grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
             {[
               ['Available',data.counts?.available||0],
+              ['Generated',data.counts?.generated||0],
               ['Acquired',data.counts?.acquired||0],
               ['Contacted',data.counts?.contacted||0],
               ['Blocked',data.counts?.blocked||0],
             ].map(([label,value])=><div key={String(label)} className="border border-white/[.07] px-2 py-3"><p className="text-xl font-black">{value}</p><p className="mt-1 text-[7px] uppercase tracking-[.12em] text-slate-500">{label}</p></div>)}
           </div>
-          <textarea value={importText} onChange={e=>setImportText(e.target.value)} rows={5} className="mt-4 w-full border border-white/10 bg-black/20 px-3 py-3 font-mono text-xs leading-5 outline-none" placeholder={"Name,email@example.com,source,consent basis\nAnother,email2@example.com,event signup,opt in"}/>
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <p className="text-[10px] text-slate-500">{rows.length} parsed row{rows.length===1?'':'s'} · max 200 per import</p>
-            <button onClick={importLeads} disabled={!rows.length||busy==='import'} className="flex items-center gap-2 border border-emerald-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Upload className="h-3.5 w-3.5"/>{busy==='import'?'Importing…':'Import leads'}</button>
+
+          <div className="mt-5 border-t border-white/[.07] pt-5">
+            <p className="text-[8px] font-black uppercase tracking-[.18em] text-amber-300">Candidate formation</p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">Enter business domains or websites. WEAVE forms generic role-address guesses such as hello@, contact@, sales@ and partnerships@. These are prospecting candidates only; the address, recipient and reachability are not verified until real outreach produces a response.</p>
+            <textarea value={candidateDomains} onChange={e=>setCandidateDomains(e.target.value)} rows={3} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 font-mono text-xs leading-5 outline-none" placeholder={"example.com\nanotherbusiness.ng\nhttps://company.co"}/>
+            <div className="mt-3 flex justify-end">
+              <button onClick={generateCandidates} disabled={!candidateDomains.trim()||busy==='generate'} className="border border-amber-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] text-amber-100 disabled:opacity-40">{busy==='generate'?'Forming…':'Form Prospect candidates'}</button>
+            </div>
+          </div>
+
+          <div className="mt-5 border-t border-white/[.07] pt-5">
+            <p className="text-[8px] font-black uppercase tracking-[.18em] text-emerald-300">Load supplied candidates</p>
+            <textarea value={importText} onChange={e=>setImportText(e.target.value)} rows={5} className="mt-3 w-full border border-white/10 bg-black/20 px-3 py-3 font-mono text-xs leading-5 outline-none" placeholder={"Name,email@example.com,source,consent basis\nAnother,email2@example.com,event signup,opt in"}/>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p className="text-[10px] text-slate-500">{rows.length} parsed row{rows.length===1?'':'s'} · max 200 per import</p>
+              <button onClick={importLeads} disabled={!rows.length||busy==='import'} className="flex items-center gap-2 border border-emerald-300/30 px-4 py-2.5 text-[9px] font-black uppercase tracking-[.12em] disabled:opacity-40"><Upload className="h-3.5 w-3.5"/>{busy==='import'?'Importing…':'Import candidates'}</button>
+            </div>
           </div>
         </div>
       </section>
@@ -181,7 +212,7 @@ export default function AdminEmailOutreachPage(){
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[8px] font-black uppercase tracking-[.18em] text-amber-300">Automatic daily movement</p>
-            <p className="mt-2 text-xs text-slate-500">Only available, contactable leads are used. A lead is not repeatedly messaged by the same daily run.</p>
+            <p className="mt-2 text-xs text-slate-500">Only available candidates are used. A candidate is not repeatedly messaged by the same daily run. Provider acceptance records delivery submission; it does not verify the recipient or guarantee a response.</p>
           </div>
           <label className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[.12em]"><input type="checkbox" checked={enabled} onChange={e=>setEnabled(e.target.checked)}/>Enabled</label>
         </div>
@@ -211,7 +242,7 @@ export default function AdminEmailOutreachPage(){
             </div>
             {row.status==='sent'&&<button onClick={()=>markReplied(row.id)} disabled={busy==='reply:'+row.id} className="border border-emerald-300/20 px-3 py-2 text-[8px] font-black uppercase tracking-[.12em] text-emerald-200">Mark replied</button>}
           </div>)}
-          {!(data.recent||[]).length&&<p className="py-8 text-center text-xs text-slate-500">No email movement recorded yet. Activate a source and import contactable leads to begin.</p>}
+          {!(data.recent||[]).length&&<p className="py-8 text-center text-xs text-slate-500">No email movement recorded yet. Form or load Prospect candidates, activate a source, and begin outreach.</p>}
         </div>
       </section>
     </div>
