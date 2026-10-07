@@ -10,13 +10,14 @@ import {
   MANAGER_DOCUMENT_VERSION,
   MANAGER_CONTINUANCE_NGN,
   POSITION_MONTHLY_SUBSCRIPTION_NGN,
+  DISTRIBUTION_MANAGER_CORE_DUTY,
 } from '@/lib/manager-employment'
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ success:false, error:'Unauthorized' }, { status:401 })
   if (!['agent','bridger'].includes(user.role)) {
-    return NextResponse.json({ success:false, error:'Manager lifestyle is available only to Agent or Bridger identities.' }, { status:403 })
+    return NextResponse.json({ success:false, error:'Distribution Manager Lifestyle is available only to Agent or Bridger identities.' }, { status:403 })
   }
 
   const state = await getManagerEmploymentState(user.id)
@@ -31,8 +32,8 @@ export async function GET(request: NextRequest) {
       documentVersion:MANAGER_DOCUMENT_VERSION,
       continuanceNgn:MANAGER_CONTINUANCE_NGN,
       positionSubscriptionNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN,
-      subscriptionRule:'Manager is covered by the active Agent or Bridger monthly subscription. It has no second Manager-only subscription.',
-      coreDuty:'Market WEAVE to prospective Agents and Bridgers and carry verified referral movement.',
+      subscriptionRule:'Distribution Manager is covered by the active Agent or Bridger monthly subscription. It has no second Distribution Manager-only subscription.',
+      coreDuty:DISTRIBUTION_MANAGER_CORE_DUTY,
     },
   }, { headers:{ 'Cache-Control':'private, no-store' } })
 }
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) return NextResponse.json({ success:false, error:'Unauthorized' }, { status:401 })
   if (!['agent','bridger'].includes(user.role)) {
-    return NextResponse.json({ success:false, error:'Manager lifestyle is available only to an Agent or Bridger.' }, { status:403 })
+    return NextResponse.json({ success:false, error:'Distribution Manager Lifestyle is available only to an Agent or Bridger.' }, { status:403 })
   }
 
   const body = await request.json().catch(() => ({}))
@@ -57,24 +58,24 @@ export async function POST(request: NextRequest) {
   }
 
   if (body?.action !== 'accept_document' || body?.documentVersion !== MANAGER_DOCUMENT_VERSION || body?.accepted !== true) {
-    return NextResponse.json({ success:false, error:'The current Manager lifestyle document must be accepted explicitly.' }, { status:400 })
+    return NextResponse.json({ success:false, error:'The current Distribution Manager Lifestyle document must be accepted explicitly.' }, { status:400 })
   }
 
   const result = await acceptManagerEmploymentDocument(user.id, String(body?.signature || ''))
   if (!result.success) {
     if (result.reason === 'continuance_required') {
-      return NextResponse.json({ success:false, error:`An active ${user.role === 'agent' ? 'Agent' : 'Bridger'} monthly subscription is required before Manager lifestyle can begin.` }, { status:403 })
+      return NextResponse.json({ success:false, error:`An active ${user.role === 'agent' ? 'Agent' : 'Bridger'} monthly subscription is required before Distribution Manager Lifestyle can begin.` }, { status:403 })
     }
     if (result.reason === 'positions_full') {
-      return NextResponse.json({ success:false, error:`All ${MANAGER_EMPLOYMENT_LIMIT} Manager positions are currently occupied.` }, { status:409 })
+      return NextResponse.json({ success:false, error:`All ${MANAGER_EMPLOYMENT_LIMIT} Distribution Manager positions are currently occupied.` }, { status:409 })
     }
     if (result.reason === 'signature_mismatch') {
       return NextResponse.json({ success:false, error:'The document signature must match the full name on the Agent/Bridger account.' }, { status:400 })
     }
     if (result.reason === 'error') {
-      return NextResponse.json({ success:false, error:'Manager lifestyle could not be recorded.' }, { status:500 })
+      return NextResponse.json({ success:false, error:'Distribution Manager Lifestyle could not be recorded.' }, { status:500 })
     }
-    return NextResponse.json({ success:false, error:'This account is not eligible for Manager lifestyle.' }, { status:403 })
+    return NextResponse.json({ success:false, error:'This account is not eligible for Distribution Manager Lifestyle.' }, { status:403 })
   }
 
   const state = await getManagerEmploymentState(user.id)
