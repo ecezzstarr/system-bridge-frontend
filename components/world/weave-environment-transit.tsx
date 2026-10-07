@@ -340,13 +340,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const hopeDestination=destinationPath.startsWith('/bridger')||destinationPath==='/weave/market/prospects'
   const showHopeBriefing=booting&&hopeDestination
   const showFlameBriefing=booting&&flameEventActive
-  const bootBriefs=showHopeBriefing?HOPE_BRIEFS:(showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS)
+  const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
+  const bootBriefs=showHopeBriefing?HOPE_BRIEFS:briefs
 
   useEffect(()=>{
     if(!covered)return
     setBriefIndex(0)
-    const briefs=booting?bootBriefs:[bootBriefs[0]]
-    const timers=briefs.slice(1).map((_,index)=>
+    const sequenceBriefs=booting?bootBriefs:[bootBriefs[0]]
+    const timers=sequenceBriefs.slice(1).map((_,index)=>
       window.setTimeout(()=>setBriefIndex(index+1),(index+1)*LOADING_CARD_HOLD_MS)
     )
     return ()=>timers.forEach(timer=>window.clearTimeout(timer))
