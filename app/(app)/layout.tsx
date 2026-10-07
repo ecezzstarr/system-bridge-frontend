@@ -28,6 +28,7 @@ export default function AppLayout({
   const pathname = usePathname()
   const [isRedirecting, setIsRedirecting] = useState(false)
   const routeAllowed = canAccessEnvironmentRoute(pathname, user?.role)
+  const restoringHope = user?.role === 'bridger' || pathname.startsWith('/bridger') || pathname === '/weave/market/prospects'
 
   useEffect(() => {
     if (isInitialized && !isLoading && isAuthenticated && !routeAllowed) {
@@ -113,8 +114,8 @@ export default function AppLayout({
       >
         <div className="max-w-sm">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border border-amber-200/15 border-t-amber-200 motion-reduce:animate-none" />
-          <p className="mt-4 text-[9px] font-black uppercase tracking-[.18em] text-amber-100">Opening WEAVE</p>
-          <p className="mt-2 text-xs leading-5 text-slate-400">Restoring your position and the current environment.</p>
+          <p className="mt-4 text-[9px] font-black uppercase tracking-[.18em] text-amber-100">{restoringHope ? 'Hope · Bridger Department' : 'Opening WEAVE'}</p>
+          <p className="mt-2 text-xs leading-5 text-slate-400">{restoringHope ? 'WEAVE builds across the world. Hope works through Prospect possibilities until real response can become Client ownership and use.' : 'Restoring your position and the current environment.'}</p>
         </div>
       </div>
     )
