@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowLeft, Bot, Gamepad2, Loader2, LockKeyhole, Mail, Megaphone, NotebookTabs, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 
@@ -42,7 +42,7 @@ export default function AgenticBridgerLifestylePage(){
     <header className="mt-5 border-b border-cyan-300/15 pb-7">
       <div className="flex items-center gap-2 text-cyan-300"><Bot className="h-5 w-5"/><p className="text-[10px] font-black uppercase tracking-[0.28em]">Inside Ace · Bridger only</p></div>
       <h1 className="mt-2 text-4xl font-black tracking-tight text-white sm:text-6xl">AGENTIC-BRIDGER</h1>
-      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-400">Agentic-Bridger is a Lifestyle specialization carried by a Bridger inside Ace. It does not replace the Bridger role. Active Bridger Continuance opens the specialization and its eligible 45% earning rule; expiry returns the person to ordinary Bridger operation and ordinary Bridger rates.</p>
+      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-400">Agentic-Bridger is the Bridger-only Lifestyle specialization carried by a Bridger inside Ace. It does not replace the Bridger role. Active Bridger Continuance opens the specialization and its eligible 45% earning rule; expiry returns the person to ordinary Bridger operation and ordinary Bridger rates.</p>
     </header>
 
     {!open?<section className="mt-7 border border-white/10 bg-black/20 p-6"><div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-slate-500"/><div><p className="text-sm font-black text-white">Agentic-Bridger is closed.</p><p className="mt-2 text-xs leading-5 text-slate-500">{!bridger?'This Lifestyle belongs only to the Bridger position.':error||'Active Bridger Continuance is required.'}</p></div></div></section>:<>
@@ -70,4 +70,4 @@ export default function AgenticBridgerLifestylePage(){
 }
 
 function Metric({label,value}:{label:string;value:string}){return <div className="border border-white/10 bg-black/20 p-4"><p className="text-[9px] font-black uppercase tracking-widest text-slate-600">{label}</p><p className="mt-2 text-xl font-black text-white">{value}</p></div>}
-function Tool({href,icon,title,detail}:{href:string;icon:React.ReactNode;title:string;detail:string}){return <Link href={href} className="group border border-white/10 bg-black/15 p-4 transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.035]"><div className="flex items-center gap-2 text-cyan-300">{icon}<p className="text-sm font-black text-white">{title}</p></div><p className="mt-2 text-[10px] leading-4 text-slate-500">{detail}</p></Link>}
+function Tool({href,icon,title,detail}:{href:string;icon:ReactNode;title:string;detail:string}){return <Link href={href} className="group border border-white/10 bg-black/15 p-4 transition hover:border-cyan-300/20 hover:bg-cyan-300/[0.035]"><div className="flex items-center gap-2 text-cyan-300">{icon}<p className="text-sm font-black text-white">{title}</p></div><p className="mt-2 text-[10px] leading-4 text-slate-500">{detail}</p></Link>}
