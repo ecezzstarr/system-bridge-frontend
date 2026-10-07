@@ -93,7 +93,7 @@ export default function BridgerEmailOutreachPage(){
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Unable to acquire email Prospect')
-      setNotice(`Email Prospect ${body.lead?.lead_code||''} acquired for ${data.priceFlameCoin} Flame Coin.`)
+      setNotice(`Email Prospect ${body.lead?.lead_code||''} acquired for ${data.priceFlameCoin} Flame Coin. It remains an unverified candidate until real outreach receives a response.`)
       await load()
     }catch(e:any){setError(e?.message||'Unable to acquire email Prospect')}
     finally{setBusy('')}
@@ -108,7 +108,7 @@ export default function BridgerEmailOutreachPage(){
       })
       const body=await response.json()
       if(!response.ok)throw new Error(body.error||'Email outreach failed')
-      setNotice(`Email sent to ${lead.lead_code}. Provider acceptance is recorded in your outreach report.`)
+      setNotice(`Email submitted for ${lead.lead_code}. Provider acceptance is recorded in your outreach report; it does not verify the recipient or guarantee a response.`)
       await load()
     }catch(e:any){setError(e?.message||'Email outreach failed')}
     finally{setBusy('')}
@@ -140,14 +140,14 @@ export default function BridgerEmailOutreachPage(){
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(56,189,248,.12),transparent_26%),radial-gradient(circle_at_84%_62%,rgba(16,185,129,.08),transparent_30%)]"/>
     <div className="relative mx-auto max-w-5xl">
       <header className="border-b border-white/10 pb-6">
-        <div className="flex items-center gap-2 text-sky-300"><Mail className="h-4 w-4"/><span className="text-[9px] font-black uppercase tracking-[.2em]">Bridger · Email Outreach</span></div>
+        <div className="flex items-center gap-2 text-sky-300"><Mail className="h-4 w-4"/><span className="text-[9px] font-black uppercase tracking-[.2em]">Hope · Bridger Department · Email Outreach</span></div>
         <h1 className="mt-3 text-3xl font-black">Email Prospect Movement</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Email Prospects cost half the normal Prospect reference: <b className="text-white">{data.priceFlameCoin} Flame Coin</b> each. Acquire one, send the human-first message, then record the response.</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Email Prospects cost half the normal Prospect reference: <b className="text-white">{data.priceFlameCoin} Flame Coin</b> each. A Prospect is an unverified candidate tool: acquire one, attempt the connection, and let real response establish what is actually there.</p>
       </header>
 
       {(error||notice)&&<div className={`mt-5 border-l-2 px-4 py-3 text-sm ${error?'border-rose-400 text-rose-200':'border-emerald-400 text-emerald-200'}`}>{error||notice}</div>}
 
-      <p className="mt-4 text-xs text-slate-300" role="status">{data.providerConfigured&&data.sender ? 'Source configured · provider acceptance is recorded after each send.' : 'Source not ready · activate your mailbox before sending.'}</p>
+      <p className="mt-4 text-xs text-slate-300" role="status">{data.providerConfigured&&data.sender ? 'Source configured · provider acceptance can be recorded after each send, but Prospect identity and reachability remain unverified until real response.' : 'Source not ready · activate your mailbox before sending.'}</p>
       <section className="mt-7 grid gap-5 md:grid-cols-[1fr_1fr]">
         <div className="border-y border-white/10 py-5">
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-sky-300">01 · Email Source</p>
@@ -167,7 +167,7 @@ export default function BridgerEmailOutreachPage(){
           <div className="mt-4 flex items-end justify-between gap-4">
             <div>
               <p className="text-3xl font-black">{data.availableCount}</p>
-              <p className="mt-1 text-[9px] uppercase tracking-[.12em] text-slate-500">email Prospects available</p>
+              <p className="mt-1 text-[9px] uppercase tracking-[.12em] text-slate-500">Prospect candidates available</p>
             </div>
             <div className="text-right">
               <p className="flex items-center justify-end gap-1 text-sm font-black"><WalletCards className="h-4 w-4"/>{Number(data.walletBalance||0).toFixed(2)}</p>
@@ -175,13 +175,13 @@ export default function BridgerEmailOutreachPage(){
             </div>
           </div>
           <button onClick={acquire} disabled={busy==='acquire'||!data.availableCount} className="mt-5 w-full border border-emerald-300/30 px-4 py-3 text-[10px] font-black uppercase tracking-[.14em] text-emerald-100 disabled:opacity-40">{busy==='acquire'?'Acquiring…':`Acquire Email Prospect · ${data.priceFlameCoin} Flame Coin`}</button>
-          <p className="mt-3 text-[10px] leading-5 text-slate-500">Only Administration-loaded, contactable email leads enter this market. Each acquisition is debited and receipted.</p>
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">Prospects may be Administration-loaded addresses or generated guesses. The fee buys the candidate movement and WEAVE reference, not a verified person, working address, reply, interest or conversion. Verification begins through real outreach and response. Each acquisition is debited and receipted.</p>
         </div>
       </section>
 
       <section className="mt-6 border-y border-white/10 py-4">
         <p className="text-sm font-bold">Bridge follow-up</p>
-        <p className="mt-2 text-xs text-slate-400">After the Prospect replies and is ready, share your Bridge in the mailbox conversation. It preserves your Bridger ownership through the File Folder crossing.</p>
+        <p className="mt-2 text-xs text-slate-400">After the Prospect replies and becomes a real interaction, share your Bridge in the mailbox conversation. It preserves your Bridger ownership through the File Folder crossing.</p>
         {data.bridgeUrl ? <input aria-label="Your Bridge link for email replies" readOnly value={data.bridgeUrl} onFocus={e=>e.target.select()} className="mt-3 w-full border border-white/10 bg-black/20 p-3 text-sm text-sky-200"/> : <a href="/bridger/bridge-ai" className="mt-3 inline-block text-xs text-sky-300 underline">Activate Bridge AI to open your Client crossing</a>}
       </section>
       <section className="mt-8 border-t border-white/10 pt-6">
@@ -199,7 +199,7 @@ export default function BridgerEmailOutreachPage(){
         <div className="divide-y divide-white/[.07]">
           {leads.map(lead=><div key={lead.id} className="grid gap-3 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[.12em] text-sky-300">{lead.lead_code}</p>
+              <p className="text-[9px] font-black uppercase tracking-[.12em] text-sky-300">{lead.lead_code} · unverified candidate</p>
               <p className="mt-1 truncate text-sm font-black">{lead.name||'Email Prospect'} · {lead.email}</p>
               <p className="mt-1 text-[10px] text-slate-500">{lead.source} · {lead.consent_basis}</p>
             </div>
