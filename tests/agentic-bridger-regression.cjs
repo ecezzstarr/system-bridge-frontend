@@ -18,7 +18,7 @@ assert.ok(lifestyle.includes("SET status='inactive',lifestyle='none'")||lifestyl
 assert.ok(lifestyle.includes("status='active',")&&lifestyle.includes('lifestyle=EXCLUDED.lifestyle'),'Renewed valid entrance reactivates Ace with the correct lifestyle')
 assert.ok(carrierAccess.includes('deactivateBridgerAceForExpiredContinuance(user.id)'),'Carrier access immediately removes expired Bridgers from Ace')
 assert.ok(carrierAccess.includes("position: subscription.active ? 'Ace' : null"),'Inactive Bridger subscription removes the Ace position')
-assert.ok(carrierAccess.includes('monthly Continuance')&&carrierAccess.includes('renew the Bridger monthly subscription'),'Carrier explains that Bridger Continuance is the underlying monthly Lifestyle subscription')
+assert.ok(carrierAccess.includes('monthly Continuance')&&carrierAccess.includes('Renew the Bridger monthly subscription'),'Carrier explains that Bridger Continuance is the underlying monthly Lifestyle subscription')
 assert.ok(carrierAccess.includes("ensureAceAccount(user.id, user.name || user.username || 'Ace', user.role)"),'Carrier passes the real company role into Ace formation')
 assert.ok(carrierApi.includes("lifestyleInsideAce")&&carrierApi.includes("eligible_sales_and_activities"),'Carrier exposes Agentic-Bridger as a lifestyle inside Ace')
 
