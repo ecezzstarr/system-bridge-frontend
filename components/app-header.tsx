@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Search, Wallet, Settings, LogOut, Radio } from "lucide-react"
+import { Search, Wallet, Settings, LogOut, Radio, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PresenceIndicator } from "@/components/presence-indicator"
@@ -47,6 +47,7 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   if (!effectiveUser) return null
   const positionLabel=effectiveUser.role==='bridger'?'Hope · Bridger':effectiveUser.role
+  const lifestyleVisible=['agent','bridger','client'].includes(effectiveUser.role)
 
   return (
     <header
@@ -131,13 +132,22 @@ export function AppHeader({ user }: AppHeaderProps) {
                   <p className="truncate text-[10px] font-black text-white">{effectiveUser.name}</p>
                   <p className="mt-0.5 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">{positionLabel} position</p>
                 </div>
+                {lifestyleVisible && (
+                  <button
+                    type="button"
+                    onClick={() => { setAccountOpen(false); router.push('/weave/lifestyles') }}
+                    className="mt-1 flex w-full items-center gap-3 rounded-xl border border-yellow-300/10 bg-yellow-300/[0.04] px-3 py-2.5 text-left text-[10px] font-black text-yellow-100 hover:bg-yellow-300/[0.08] hover:text-white"
+                  >
+                    <Sparkles className="h-4 w-4 text-yellow-300" />Lifestyle · Position Access
+                  </button>
+                )}
                 {carrierOpen && (
                   <button
                     type="button"
                     onClick={() => { setAccountOpen(false); router.push('/weave/carrier') }}
-                    className="mt-1 flex w-full items-center gap-3 rounded-xl border border-yellow-300/10 bg-yellow-300/[.04] px-3 py-2.5 text-left text-[10px] font-black text-yellow-100 hover:bg-yellow-300/[.08] hover:text-white"
+                    className="mt-1 flex w-full items-center gap-3 rounded-xl border border-sky-300/10 bg-sky-300/[0.04] px-3 py-2.5 text-left text-[10px] font-black text-sky-100 hover:bg-sky-300/[0.08] hover:text-white"
                   >
-                    <Radio className="h-4 w-4 text-yellow-300" />Carrier · Enter as Ace
+                    <Radio className="h-4 w-4 text-sky-300" />Carrier · Enter as Ace
                   </button>
                 )}
                 <button
