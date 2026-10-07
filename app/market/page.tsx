@@ -5,16 +5,19 @@ import {
   getBusinessDb,
   normalizeStoreEnvironmentConfig,
 } from '@/lib/client-business-store'
+import { ensureQueenClientProof } from '@/lib/queen-client-proof'
 
 export const dynamic='force-dynamic'
 
 export default async function PublicClientMarket(){
   const sql=getBusinessDb()
   await ensureClientBusinessStoreSchema(sql)
+  await ensureQueenClientProof(sql)
 
+  // formation_status='selling' remains an opened business; ready_for_offer is an opened Customer Door before its first offer.
   const stores=await sql`
     SELECT
-      s.public_slug,s.name,s.description,s.environment_config,s.public_opened_at,
+      s.public_slug,s.name,s.description,s.environment_config,s.public_opened_at,s.formation_status,
       (SELECT COUNT(*)::int FROM client_store_items i WHERE i.store_id=s.id AND i.enabled=true) AS offer_count,
       EXISTS(
         SELECT 1 FROM client_built_systems b
@@ -32,7 +35,7 @@ export default async function PublicClientMarket(){
       ) AS has_market_hall
     FROM client_business_stores s
     WHERE s.enabled=true
-      AND s.formation_status='selling'
+      AND s.formation_status IN ('selling','ready_for_offer')
     ORDER BY s.public_opened_at DESC NULLS LAST,s.created_at DESC
     LIMIT 120
   `
@@ -46,8 +49,8 @@ export default async function PublicClientMarket(){
         <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Each Client builds privately inside System Switch. When the Customer Door opens, the enterprise enters this public market. Visitors arrive here from the WEAVE homepage or from a Client-shared Customer Door link. No WEAVE account is required. Logged-in staff meet Client Customer Doors inside Flame Event instead of browsing the private Client path.</p>
         <div className="mt-7 flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-wider text-slate-400">
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Open internet access</span>
-          <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Client-owned stores</span>
-          <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Real orders</span>
+          <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Client-owned systems</span>
+          <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Public Customer Doors</span>
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Persistent construction</span>
         </div>
       </div>
@@ -63,15 +66,16 @@ export default async function PublicClientMarket(){
         <Building2 className="mx-auto h-8 w-8 text-slate-600"/>
         <p className="mt-4 text-sm text-slate-500">The first Client Customer Doors are still under construction.</p>
       </div>:<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {stores.map((store:any,index:number)=>{
+        {stores.map((store:any)=>{
           const config=normalizeStoreEnvironmentConfig(store.environment_config)
           const doorName=config.platformName || store.name || 'Customer Door'
           const level=store.has_market_hall?'Market Hall':store.has_storefront?'Store Building':doorName
+          const readyForOffer=store.formation_status==='ready_for_offer'
           return <Link key={store.public_slug} href={`/market/${store.public_slug}`} className="group relative min-h-[360px] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(155deg,rgba(14,165,233,.09),rgba(17,24,39,.88)_48%,rgba(88,28,135,.16))] p-5 shadow-[0_28px_80px_rgba(0,0,0,.28)] transition hover:-translate-y-1 hover:border-sky-200/20">
             <div className="absolute inset-x-5 bottom-4 h-6 rounded-[50%] bg-black/50 blur-lg"/>
             <div className="relative flex items-start justify-between gap-3">
               <span className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">{config.marketSection}</span>
-              <span className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 text-[8px] font-black uppercase text-slate-400">{level}</span>
+              <div className="flex items-center gap-2">{readyForOffer&&<span className="rounded-full border border-emerald-300/20 bg-emerald-400/[0.07] px-2.5 py-1 text-[8px] font-black uppercase text-emerald-200">Systems live</span>}<span className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 text-[8px] font-black uppercase text-slate-400">{level}</span></div>
             </div>
             <div aria-hidden="true" className="relative mx-auto mt-5 h-36 w-[88%]">
               <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 rounded-t-[2rem] border border-white/15 bg-white/[0.065] backdrop-blur-md ${store.has_market_hall?'h-[92%] w-[62%]':store.has_storefront?'h-[76%] w-[56%]':'h-[56%] w-[42%]'}`}>
@@ -84,7 +88,7 @@ export default async function PublicClientMarket(){
               <p className="text-[8px] font-black uppercase tracking-[0.18em] text-violet-300">{config.sign}</p>
               <div className="mt-2 flex items-center gap-3">{config.logoUrl&&<img src={config.logoUrl} alt={`${doorName} logo`} className="h-10 w-10 rounded-lg border border-white/10 bg-white/5 object-contain p-1"/>}<div><p className="text-[8px] font-black uppercase tracking-wider text-slate-500">Public Door</p><h3 className="text-2xl font-black">{doorName}</h3></div></div>
               <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-400">{store.description||config.tagline}</p>
-              <div className="mt-4 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>{store.offer_count} offer windows</span><span className="inline-flex items-center gap-1 text-sky-300">Enter <ArrowRight className="h-3.5 w-3.5"/></span></div>
+              <div className="mt-4 flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-500"><span>{readyForOffer?'Built systems open':`${store.offer_count} offer windows`}</span><span className="inline-flex items-center gap-1 text-sky-300">Enter <ArrowRight className="h-3.5 w-3.5"/></span></div>
             </div>
           </Link>
         })}
