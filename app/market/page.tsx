@@ -14,6 +14,7 @@ export default async function PublicClientMarket(){
   await ensureClientBusinessStoreSchema(sql)
   await ensureQueenClientProof(sql)
 
+  // formation_status='selling' remains an opened business; ready_for_offer is an opened Customer Door before its first offer.
   const stores=await sql`
     SELECT
       s.public_slug,s.name,s.description,s.environment_config,s.public_opened_at,s.formation_status,
