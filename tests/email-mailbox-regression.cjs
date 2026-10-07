@@ -13,6 +13,8 @@ const senderApi=read('app/api/email-outreach/sender/route.ts')
 const adminApi=read('app/api/admin/email-outreach/route.ts')
 const adminPage=read('app/(app)/admin/email-outreach/page.tsx')
 const bridgerPage=read('app/(app)/bridger/email-outreach/page.tsx')
+const prospectMarketPage=read('app/(app)/weave/market/prospects/page.tsx')
+const terms=read('lib/weave-terms.ts')
 const recovery=read('lib/password-recovery.ts')
 const forgot=read('app/api/auth/forgot-password/route.ts')
 
@@ -28,16 +30,25 @@ assert.ok(recovery.includes('systemGoogleMailbox')&&recovery.includes('getAdmini
 assert.ok(forgot.includes('await passwordRecoveryEmailConfigured()'),'Forgot-password waits for the live recovery transport check')
 assert.ok(!fs.existsSync(path.join(root,'lib/prospect-email-engine.ts')),'No second parallel Prospect email engine is introduced')
 
+assert.ok(adminApi.includes("action === 'generate_candidates'")&&adminApi.includes('EMAIL_CANDIDATE_PREFIXES')&&adminApi.includes("'email_candidate_engine'")&&adminApi.includes("verification: 'unverified'"),'Administration Email Prospect Engine forms clearly unverified business-domain candidates')
+assert.ok(adminPage.includes('Candidate formation')&&adminPage.includes('unverified email Prospect candidates'),'Administration UI distinguishes candidate formation from verified contact')
+assert.ok(bridgerPage.includes('Hope · Bridger Department · Email Outreach')&&bridgerPage.includes('unverified candidate'),'Bridger Email Outreach carries Hope identity and Prospect uncertainty')
+assert.ok(terms.includes('CURRENT_TERMS_VERSION = 11')&&terms.includes("title: '4. Prospect Nature'")&&terms.includes('unverified candidates'),'Terms require Bridgers to understand that Prospects are unverified candidates')
+assert.ok(prospectMarketPage.includes('Hope · Bridger Department')&&prospectMarketPage.includes('Unverified candidates'),'WhatsApp Prospect Market carries Hope candidate language')
+assert.ok(!prospectMarketPage.includes('Pre-qualified Interest'),'Prospect Market does not falsely claim pre-qualified interest')
+
 for(const file of [
   'lib/weave-mail.ts',
   'lib/weave-mailbox.ts',
   'lib/email-outreach.ts',
   'lib/password-recovery.ts',
+  'lib/weave-terms.ts',
   'app/api/email-outreach/sender/route.ts',
   'app/api/admin/email-outreach/route.ts',
   'app/api/auth/forgot-password/route.ts',
   'app/(app)/admin/email-outreach/page.tsx',
   'app/(app)/bridger/email-outreach/page.tsx',
+  'app/(app)/weave/market/prospects/page.tsx',
 ]){
   const source=read(file)
   const compiled=ts.transpileModule(source,{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,target:ts.ScriptTarget.ES2022}})
