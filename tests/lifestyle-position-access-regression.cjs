@@ -14,10 +14,11 @@ const carrierAccess=read('lib/carrier-access.ts')
 
 assert.ok(engine.includes('FROM users')&&engine.includes('subscription_status')&&engine.includes('subscription_expiry')&&engine.includes('is_subscription_exempt'),'Lifestyle reads the monthly subscription already attached to the WEAVE user position')
 assert.ok(engine.includes("['agent', 'bridger', 'client'].includes(role)"),'Agent Bridger and Client positions share the same monthly Lifestyle entitlement rule')
+assert.ok(engine.includes("source: 'role_monthly_subscription'"),'Lifestyle engine identifies the role monthly subscription as its entitlement source')
 assert.ok(!engine.includes('SELECT status,expires_at FROM weave_lifestyle_subscriptions'),'Legacy standalone Lifestyle subscription table no longer authorizes Lifestyle access')
 assert.ok(!engine.includes('WEAVE_LIFESTYLE_MONTHLY_FLAME_COIN'),'Lifestyle no longer depends on a second monthly price environment variable')
 
-assert.ok(accessApi.includes('separateLifestyleCharge: false')&&accessApi.includes('role_monthly_subscription'),'Lifestyle access API declares the position subscription as the entitlement and no second charge')
+assert.ok(accessApi.includes('separateLifestyleCharge: false')&&accessApi.includes('entitlement: access.source'),'Lifestyle access API returns the resolved position-subscription entitlement and no second charge')
 assert.ok(subscribeApi.includes('separateLifestyleCharge: false')&&!subscribeApi.includes('UPDATE wallets')&&!subscribeApi.includes('ledger_entries'),'Legacy Lifestyle subscribe endpoint cannot debit the wallet a second time')
 
 assert.ok(page.includes('There is no second Lifestyle subscription')&&page.includes('ONE SUBSCRIPTION · POSITION-SCOPED ACCESS'),'Lifestyle UI explains one subscription with position-scoped access')
