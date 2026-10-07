@@ -8,6 +8,7 @@ import {
 import { ensureClientInternationalPaymentProfile } from '@/lib/client-international-payments'
 import { ensureClientGrowthWorldSchema } from '@/lib/client-growth-world'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
+import { ensureQueenClientProof } from '@/lib/queen-client-proof'
 
 export default async function PublicClientMarketStore({
   params,
@@ -22,6 +23,7 @@ export default async function PublicClientMarketStore({
   await ensureClientBusinessStoreSchema(sql)
   await ensureClientGrowthWorldSchema(sql)
   await ensureEnterpriseDreamSchema(sql)
+  await ensureQueenClientProof(sql)
 
   const [store]=await sql`
     SELECT
