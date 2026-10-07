@@ -14,6 +14,19 @@ import {
   validOutreachEmail,
 } from '@/lib/email-outreach'
 
+const EMAIL_CANDIDATE_PREFIXES = ['hello','contact','sales','partnerships','business','info'] as const
+
+function normalizeCandidateDomain(value: unknown) {
+  let domain = String(value || '').trim().toLowerCase()
+  if (!domain) return ''
+  domain = domain.replace(/^mailto:/, '').replace(/^https?:\/\//, '')
+  domain = domain.split('/')[0].split('?')[0].split('#')[0]
+  if (domain.includes('@')) domain = domain.split('@').pop() || ''
+  domain = domain.replace(/^www\./, '').replace(/\.$/, '')
+  if (!/^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i.test(domain)) return ''
+  return domain
+}
+
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user || user.role !== 'admin') {
@@ -35,9 +48,10 @@ export async function GET(request: NextRequest) {
       pool.query(
         `SELECT
            COUNT(*) FILTER (WHERE status='available' AND contactable=true)::int AS available,
-           COUNT(*) FILTER (WHERE status='contacted')::int AS contacted,
            COUNT(*) FILTER (WHERE status='acquired')::int AS acquired,
-           COUNT(*) FILTER (WHERE contactable=false)::int AS blocked
+           COUNT(*) FILTER (WHERE status='contacted')::int AS contacted,
+           COUNT(*) FILTER (WHERE contactable=false)::int AS blocked,
+           COUNT(*) FILTER (WHERE source='email_candidate_engine')::int AS generated
          FROM weave_email_prospect_leads`,
       ),
       pool.query(
@@ -100,6 +114,51 @@ export async function POST(request: NextRequest) {
   await ensureEmailOutreachSchema()
   const pool = getPool()
   const action = String(body.action || '').trim()
+
+  if (action === 'generate_candidates') {
+    const sourceValues = Array.isArray(body.domains)
+      ? body.domains
+      : String(body.domains || '').split(/[\s,;]+/)
+    const domains = Array.from(new Set(sourceValues.map(normalizeCandidateDomain).filter(Boolean))).slice(0,25)
+    if (!domains.length) {
+      return NextResponse.json({ error: 'Enter at least one valid business domain or website' }, { status: 400 })
+    }
+
+    let inserted = 0
+    let skipped = 0
+    const formed: string[] = []
+    const consentBasis = 'Unverified role-address candidate generated from a business domain. Recipient identity and reachability are not verified until real outreach receives a response.'
+
+    for (const domain of domains) {
+      for (const prefix of EMAIL_CANDIDATE_PREFIXES) {
+        const email = `${prefix}@${domain}`
+        const result = await pool.query(
+          `INSERT INTO weave_email_prospect_leads
+            (lead_code,name,email,source,consent_basis,contactable,status,created_by)
+           VALUES ($1,NULL,$2,'email_candidate_engine',$3,true,'available',$4::uuid)
+           ON CONFLICT (email) DO NOTHING
+           RETURNING lead_code,email`,
+          [emailLeadCode(), email, consentBasis, user.id],
+        )
+        if (result.rowCount) {
+          inserted += 1
+          if (formed.length < 20) formed.push(result.rows[0].email)
+        } else {
+          skipped += 1
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      domains: domains.length,
+      attempted: domains.length * EMAIL_CANDIDATE_PREFIXES.length,
+      inserted,
+      skipped,
+      formed,
+      verification: 'unverified',
+    })
+  }
 
   if (action === 'import_leads') {
     const input = Array.isArray(body.leads) ? body.leads.slice(0,200) : []
