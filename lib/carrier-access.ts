@@ -25,7 +25,7 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
       active: true,
       role,
       gate: 'administration',
-      reason: 'Administration carries direct Carrier entrance.',
+      reason: 'Administration may enter Ace directly. Carrier is Ace’s outward distribution instrument.',
       position: 'Ace',
       qualifyingState: 'administration',
     }
@@ -38,8 +38,8 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
       role,
       gate: 'agent_subscription',
       reason: subscription.active
-        ? 'Your active Agent monthly subscription has opened the Agent Lifestyle catalog and Carrier entrance.'
-        : 'Renew the Agent monthly subscription to reopen Agent Lifestyle access.',
+        ? 'Your active Agent monthly subscription opens Ace. Carrier is one of the Ace instruments.'
+        : 'Renew the Agent monthly subscription to reopen Agent Lifestyle access and Ace.',
       position: subscription.active ? 'Ace' : null,
       qualifyingState: subscription.status,
     }
@@ -57,8 +57,8 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
       role,
       gate: 'bridger_continuance',
       reason: subscription.active
-        ? 'Your active Bridger monthly Continuance has opened the Bridger Lifestyle catalog, Carrier and Agentic-Bridger inside Ace.'
-        : 'Bridger Continuance is inactive or expired. Renew the Bridger monthly subscription to reopen its Lifestyle access.',
+        ? 'Your active Bridger monthly Continuance opens Ace. Agentic-Bridger is your Bridger-only specialization inside Ace, while Carrier remains Ace’s distribution instrument.'
+        : 'Bridger Continuance is inactive or expired. Renew the Bridger monthly subscription to reopen Lifestyle, Ace and Agentic-Bridger.',
       position: subscription.active ? 'Ace' : null,
       qualifyingState: subscription.status,
     }
@@ -94,8 +94,8 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
       role,
       gate: 'lord_lady',
       reason: elevated
-        ? `Your active Client monthly subscription covers Lifestyle, and ${position === 'lady' ? 'Lady' : 'Lord'} position opens Carrier.`
-        : 'Your Client monthly subscription covers Lifestyle. Carrier is a Lifestyle identity reserved for the Lord or Lady position.',
+        ? `Your active Client monthly subscription covers Lifestyle, and ${position === 'lady' ? 'Lady' : 'Lord'} position opens Ace. Carrier is one of the Ace instruments.`
+        : 'Your Client monthly subscription covers Lifestyle. Ace is reserved for an active Lord or Lady Client position; Carrier opens through Ace.',
       position: elevated ? 'Ace' : null,
       qualifyingState: position,
     }
@@ -105,7 +105,7 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
     active: false,
     role,
     gate: 'unsupported',
-    reason: 'This WEAVE position does not have a Carrier entrance.',
+    reason: 'This WEAVE position does not currently open Ace or Carrier.',
     position: null,
     qualifyingState: null,
   }

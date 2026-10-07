@@ -1,9 +1,14 @@
 import { getPool } from '@/lib/db'
+import {
+  ACE_LIFESTYLE,
+  AGENTIC_BRIDGER_LIFESTYLE,
+} from '@/lib/weave-lifestyle-catalog'
+
+export { ACE_LIFESTYLE, AGENTIC_BRIDGER_LIFESTYLE } from '@/lib/weave-lifestyle-catalog'
 
 export const ARENA_SETTLEMENT_DELAY_MINUTES = 20
 export const AGENTIC_BRIDGER_EARNING_RATE = 0.45
 export const ACE_STANDARD_EARNING_RATE = 0.30
-export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger'
 
 export type LifestyleAccessSource = 'role_monthly_subscription' | 'administration' | 'unsupported'
 
@@ -140,7 +145,9 @@ export async function ensureAceAccount(userId: string, fallbackName: string, rol
   await ensureWeaveLifestyleSchema()
   const pool = getPool()
   const safeName = String(fallbackName || 'Ace').trim().slice(0, 80) || 'Ace'
-  const lifestyle = String(role || '').toLowerCase() === 'bridger' ? AGENTIC_BRIDGER_LIFESTYLE : 'ace'
+  // Ace is the parent Lifestyle. Bridgers carry the Agentic-Bridger specialization
+  // inside Ace while their Bridger monthly Continuance remains active.
+  const lifestyle = String(role || '').toLowerCase() === 'bridger' ? AGENTIC_BRIDGER_LIFESTYLE : ACE_LIFESTYLE
   await pool.query(
     `INSERT INTO arena_ace_accounts (user_id,ace_name,status,lifestyle)
      VALUES ($1::uuid,$2,'active',$3)
@@ -184,20 +191,24 @@ export async function getAgenticBridgerState(userId: string) {
     await deactivateBridgerAceForExpiredContinuance(userId)
     return {
       active: false,
+      eligible: false,
       lifestyle: null,
+      parentLifestyle: ACE_LIFESTYLE,
       earningRate: ACE_STANDARD_EARNING_RATE,
       continuanceActive: false,
     }
   }
 
-  const active = subscription.role === 'bridger'
+  const eligible = subscription.role === 'bridger' && continuanceActive
+  const active = eligible
     && row?.ace_status === 'active'
     && row?.lifestyle === AGENTIC_BRIDGER_LIFESTYLE
-    && continuanceActive
 
   return {
     active,
+    eligible,
     lifestyle: active ? AGENTIC_BRIDGER_LIFESTYLE : null,
+    parentLifestyle: ACE_LIFESTYLE,
     earningRate: active ? AGENTIC_BRIDGER_EARNING_RATE : ACE_STANDARD_EARNING_RATE,
     continuanceActive,
   }

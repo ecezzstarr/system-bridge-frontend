@@ -5,14 +5,19 @@ import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
+import { DISTRIBUTION_MANAGER_LIFESTYLE as DISTRIBUTION_MANAGER_LIFESTYLE_KEY } from '@/lib/weave-lifestyle-catalog'
 
 export const MANAGER_EMPLOYMENT_LIMIT = 3
 export const MANAGER_MONTHLY_SALARY_NGN = 70_000
 export const MANAGER_PROBATION_TARGET = 300
 export const MANAGER_PROBATION_MONTHS = 1
 export const MANAGER_DOCUMENT_VERSION = 2
-export const MANAGER_LIFESTYLE = 'manager'
+export const DISTRIBUTION_MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE_KEY
+// Compatibility alias for existing Manager API paths and tables. The Lifestyle
+// itself is now named Distribution Manager; it remains an overlay on Agent/Bridger.
+export const MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE
 export const POSITION_MONTHLY_SUBSCRIPTION_NGN = WORLD_RULES.BRIDGER_CONTINUANCE_NGN
+export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.'
 // Compatibility alias for the existing Manager API/UI. This amount renews the
 // underlying Agent/Bridger monthly position subscription, not a Manager-only fee.
 export const MANAGER_CONTINUANCE_NGN = POSITION_MONTHLY_SUBSCRIPTION_NGN
@@ -51,7 +56,7 @@ export async function ensureManagerEmploymentTable() {
       probation_ends_at TIMESTAMPTZ NOT NULL,
       monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 70000,
       probation_target INTEGER NOT NULL DEFAULT 300,
-      core_duty TEXT NOT NULL DEFAULT 'Market WEAVE to prospective Agents and Bridgers and carry verified referral movement.',
+      core_duty TEXT NOT NULL DEFAULT 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.',
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       ended_at TIMESTAMPTZ
@@ -60,6 +65,7 @@ export async function ensureManagerEmploymentTable() {
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS accepted_name TEXT`
   await sql`ALTER TABLE manager_employment ALTER COLUMN monthly_salary_ngn SET DEFAULT 70000`
   await sql`UPDATE manager_employment SET monthly_salary_ngn=70000 WHERE monthly_salary_ngn=150000`
+  await sql`UPDATE manager_employment SET core_duty=${DISTRIBUTION_MANAGER_CORE_DUTY},updated_at=NOW() WHERE core_duty='Market WEAVE to prospective Agents and Bridgers and carry verified referral movement.'`
   await sql`CREATE INDEX IF NOT EXISTS manager_employment_status_idx ON manager_employment(status, probation_ends_at)`
 }
 
@@ -131,11 +137,11 @@ export async function subscribeManagerContinuance(userId:string){
     const payment=await client.query(`INSERT INTO subscription_payments (user_id,amount,currency,payment_method,transaction_reference,status,period_start,period_end) VALUES ($1::uuid,$2,'Flame Coin','flame_coin_wallet',$3,'success',$4,$5) RETURNING id`,[userId,flameCoinAmount,'ROLE-SUB-'+Date.now(),now,nextExpiry])
     paymentId=String(payment.rows[0]?.id||'')
     await client.query(`UPDATE users SET subscription_status='active',subscription_expiry=$2,subscription_last_paid_at=$3 WHERE id=$1::uuid`,[userId,nextExpiry,now])
-    await client.query(`INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin',$3,$4,$5,($6::jsonb)||jsonb_build_object('commerce_type','subscription'),NOW())`,[userId,flameCoinAmount,`${subscriptionRole} monthly subscription · Lifestyle access`,balance,balanceAfter,JSON.stringify({source:'position_monthly_subscription',requested_from:'manager_lifestyle',payment_id:paymentId,rate_ngn_per_flame_coin:rate,amount_ngn:POSITION_MONTHLY_SUBSCRIPTION_NGN})])
+    await client.query(`INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin',$3,$4,$5,($6::jsonb)||jsonb_build_object('commerce_type','subscription'),NOW())`,[userId,flameCoinAmount,`${subscriptionRole} monthly subscription · Lifestyle access`,balance,balanceAfter,JSON.stringify({source:'position_monthly_subscription',requested_from:'distribution_manager_lifestyle',payment_id:paymentId,rate_ngn_per_flame_coin:rate,amount_ngn:POSITION_MONTHLY_SUBSCRIPTION_NGN})])
     await client.query('COMMIT')
   }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[position-subscription] subscription failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
 
-  try{if(paymentId&&nextExpiry)await issueWeaveReceipt({userId,kind:'subscription',source:'position_monthly_subscription',sourceId:paymentId,amount:flameCoinAmount,currency:'Flame Coin',status:'paid',description:`${subscriptionRole} monthly subscription · Lifestyle access`,metadata:{requestedFrom:'manager_lifestyle',amountNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN,rateNgnPerFlameCoin:rate,nextExpiry:nextExpiry.toISOString(),balanceAfter}})}catch(error){console.error('[position-subscription] receipt failed',error)}
+  try{if(paymentId&&nextExpiry)await issueWeaveReceipt({userId,kind:'subscription',source:'position_monthly_subscription',sourceId:paymentId,amount:flameCoinAmount,currency:'Flame Coin',status:'paid',description:`${subscriptionRole} monthly subscription · Lifestyle access`,metadata:{requestedFrom:'distribution_manager_lifestyle',amountNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN,rateNgnPerFlameCoin:rate,nextExpiry:nextExpiry.toISOString(),balanceAfter}})}catch(error){console.error('[position-subscription] receipt failed',error)}
   return {success:true as const,renewed:true,flameCoinAmount,rate,nextExpiry,balanceAfter,access:await getManagerContinuanceAccess(userId)}
 }
 
@@ -171,9 +177,9 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
     await client.query("SELECT pg_advisory_xact_lock(hashtext('weave_manager_employment_capacity'))")
     const capacityResult=await client.query("SELECT COUNT(*)::int AS occupied FROM manager_employment WHERE status IN ('probation','active')")
     if(Number(capacityResult.rows[0]?.occupied||0)>=MANAGER_EMPLOYMENT_LIMIT){await client.query('ROLLBACK');return {success:false as const,reason:'positions_full' as const}}
-    const result=await client.query(`INSERT INTO manager_employment (user_id,source_role,status,document_version,accepted_name,document_accepted_at,probation_started_at,probation_ends_at,monthly_salary_ngn,probation_target,core_duty) VALUES ($1::uuid,$2,'probation',$3,$4,NOW(),NOW(),NOW()+INTERVAL '1 month',$5,$6,'Market WEAVE to prospective Agents and Bridgers and carry verified referral movement.') ON CONFLICT (user_id) DO UPDATE SET source_role=EXCLUDED.source_role,status='probation',document_version=EXCLUDED.document_version,accepted_name=EXCLUDED.accepted_name,document_accepted_at=NOW(),probation_started_at=NOW(),probation_ends_at=NOW()+INTERVAL '1 month',monthly_salary_ngn=EXCLUDED.monthly_salary_ngn,probation_target=EXCLUDED.probation_target,core_duty=EXCLUDED.core_duty,ended_at=NULL,updated_at=NOW() RETURNING *`,[userId,user.role,MANAGER_DOCUMENT_VERSION,acceptedName.trim(),MANAGER_MONTHLY_SALARY_NGN,MANAGER_PROBATION_TARGET])
+    const result=await client.query(`INSERT INTO manager_employment (user_id,source_role,status,document_version,accepted_name,document_accepted_at,probation_started_at,probation_ends_at,monthly_salary_ngn,probation_target,core_duty) VALUES ($1::uuid,$2,'probation',$3,$4,NOW(),NOW(),NOW()+INTERVAL '1 month',$5,$6,$7) ON CONFLICT (user_id) DO UPDATE SET source_role=EXCLUDED.source_role,status='probation',document_version=EXCLUDED.document_version,accepted_name=EXCLUDED.accepted_name,document_accepted_at=NOW(),probation_started_at=NOW(),probation_ends_at=NOW()+INTERVAL '1 month',monthly_salary_ngn=EXCLUDED.monthly_salary_ngn,probation_target=EXCLUDED.probation_target,core_duty=EXCLUDED.core_duty,ended_at=NULL,updated_at=NOW() RETURNING *`,[userId,user.role,MANAGER_DOCUMENT_VERSION,acceptedName.trim(),MANAGER_MONTHLY_SALARY_NGN,MANAGER_PROBATION_TARGET,DISTRIBUTION_MANAGER_CORE_DUTY])
     await client.query('COMMIT')
-    try{await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name) VALUES (${userId}::uuid,'manager_probation','Manager lifestyle probation has begun',${`Your one-month Manager probation begins today. Target: ${MANAGER_PROBATION_TARGET} verified Agent/Bridger referrals. Monthly salary term: ₦${MANAGER_MONTHLY_SALARY_NGN.toLocaleString('en-NG')}. Manager access continues while your underlying Agent or Bridger monthly subscription remains active.`},'WEAVE Administration')`}catch(error){console.error('[manager-employment] notification failed',error)}
+    try{await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name) VALUES (${userId}::uuid,'manager_probation','Distribution Manager Lifestyle probation has begun',${`Your one-month Distribution Manager probation begins today. Target: ${MANAGER_PROBATION_TARGET} verified Agent/Bridger registrations while carrying WEAVE distribution. Monthly salary term: ₦${MANAGER_MONTHLY_SALARY_NGN.toLocaleString('en-NG')}. Distribution Manager access continues while your underlying Agent or Bridger monthly subscription remains active.`},'WEAVE Administration')`}catch(error){console.error('[manager-employment] notification failed',error)}
     return {success:true as const,created:true,employment:result.rows[0]}
   }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[manager-employment] acceptance failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
 }
@@ -190,7 +196,7 @@ export async function getManagerEmploymentState(userId: string) {
   }
   const target=Number(employment?.probation_target||MANAGER_PROBATION_TARGET)
   return {
-    lifestyle:MANAGER_LIFESTYLE,
+    lifestyle:DISTRIBUTION_MANAGER_LIFESTYLE,
     managerAccess:Boolean(continuance.active&&employment&&employment.status!=='ended'),
     continuance,
     employment:employment||null,
