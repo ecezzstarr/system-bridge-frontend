@@ -33,10 +33,10 @@ interface MyProspect {
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Not Sent Yet', color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
-  sent: { label: 'Message Sent', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+  pending: { label: 'Unverified · Not Sent Yet', color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
+  sent: { label: 'Sent · Awaiting Response', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
   opened: { label: 'Opened Link', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
-  responded: { label: 'In System Switch', color: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' },
+  responded: { label: 'Responded · Real Interaction', color: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' },
   converted: { label: 'Converted — Client', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
   invalid_number: { label: 'Not on WhatsApp', color: 'bg-red-500/10 text-red-400 border-red-500/20' },
 }
@@ -226,8 +226,9 @@ export default function ProspectMarketPage() {
             <ShoppingCart className="h-8 w-8 text-white" />
           </div>
           <div>
+            <p className="text-[9px] font-black uppercase tracking-[.16em] text-sky-300">Hope · Bridger Department</p>
             <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic">Prospect Marketplace</h1>
-            <p className="text-slate-400 font-medium">Acquire Prospect candidates and begin truthful human outreach.</p>
+            <p className="text-slate-400 font-medium">Acquire unverified Prospect candidates and farm for real human interaction through truthful outreach.</p>
           </div>
         </div>
 
@@ -275,7 +276,7 @@ export default function ProspectMarketPage() {
                   <Card key={pkg.id} className="border-slate-700 bg-slate-900/50 backdrop-blur-xl flex flex-col hover:border-blue-500/50 transition-colors">
                     <CardHeader>
                       <div className="flex justify-between items-start mb-2">
-                        <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 uppercase text-[9px] font-black">Available</Badge>
+                        <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 uppercase text-[9px] font-black">Unverified candidates</Badge>
                         <span className="text-[10px] text-slate-500 font-mono">{new Date(pkg.created_at).toLocaleDateString()}</span>
                       </div>
                       <CardTitle className="text-xl font-black text-white italic">{pkg.title}</CardTitle>
@@ -284,12 +285,12 @@ export default function ProspectMarketPage() {
                     <CardContent className="flex-1 space-y-4">
                       <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
                         <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle2 className="h-3 w-3 text-green-500" />
-                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Prospect Contact Numbers</span>
+                          <AlertCircle className="h-3 w-3 text-amber-400" />
+                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Candidate contact numbers</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-3 w-3 text-green-500" />
-                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Pre-qualified Interest</span>
+                          <AlertCircle className="h-3 w-3 text-amber-400" />
+                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Reachability and interest not verified</span>
                         </div>
                       </div>
 
@@ -323,7 +324,7 @@ export default function ProspectMarketPage() {
             <div className="space-y-1">
               <p className="text-sm font-bold text-blue-400 uppercase tracking-tight">Purchase Agreement</p>
               <p className="text-xs text-slate-400 leading-relaxed">
-                By purchasing a prospect package, you agree to the WEAVE Outreach Mandate. Begin with human contact and recognition. Send the system-approved Bridge only after the prospect understands why the next step is relevant and agrees to continue. Misuse of prospect contact information may result in Bridger status suspension.
+                By purchasing a Prospect package, you are buying access to candidate contact movement, not verified people or guaranteed leads. A candidate number may be guessed, unavailable, not on WhatsApp, uninterested, or may never respond. Verification begins only when real outreach produces a real response. Begin with human contact and recognition. Send the system-approved Bridge only after the person understands why the next step is relevant and agrees to continue. Misuse of Prospect contact information may result in Bridger status suspension.
               </p>
             </div>
           </div>
@@ -331,8 +332,8 @@ export default function ProspectMarketPage() {
       ) : (
         <div className="space-y-6">
           <div className="border-y border-amber-300/15 bg-amber-300/[.035] px-4 py-4 sm:px-5">
-            <p className="text-[9px] font-black uppercase tracking-[.16em] text-amber-200">Before outreach</p>
-            <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-400">Read the Crossing Notebook one page at a time. First contact is human-first. The Bridge is a separate action only after recognition and permission.</p>
+            <p className="text-[9px] font-black uppercase tracking-[.16em] text-amber-200">Hope · before outreach</p>
+            <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-400">The Prospect in front of you is a candidate, not a verified person or guaranteed contact. Read the Crossing Notebook one page at a time. First contact is human-first. The Bridge is a separate action only after recognition, response and permission.</p>
             <Link href="/bridger/crossing-notebook" className="mt-3 inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[.12em] text-amber-100">
               <BookOpen className="h-3.5 w-3.5" /> Open Crossing Notebook
             </Link>
