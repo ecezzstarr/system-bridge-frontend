@@ -4,6 +4,7 @@ import { WORLD_RULES } from '@/lib/world/constants'
 import { ngnToFlameCoin } from '@/lib/flame-coin'
 import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
+import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 
 export const MANAGER_EMPLOYMENT_LIMIT = 3
 export const MANAGER_MONTHLY_SALARY_NGN = 70_000
@@ -11,7 +12,10 @@ export const MANAGER_PROBATION_TARGET = 300
 export const MANAGER_PROBATION_MONTHS = 1
 export const MANAGER_DOCUMENT_VERSION = 2
 export const MANAGER_LIFESTYLE = 'manager'
-export const MANAGER_CONTINUANCE_NGN = WORLD_RULES.BRIDGER_CONTINUANCE_NGN
+export const POSITION_MONTHLY_SUBSCRIPTION_NGN = WORLD_RULES.BRIDGER_CONTINUANCE_NGN
+// Compatibility alias for the existing Manager API/UI. This amount renews the
+// underlying Agent/Bridger monthly position subscription, not a Manager-only fee.
+export const MANAGER_CONTINUANCE_NGN = POSITION_MONTHLY_SUBSCRIPTION_NGN
 
 export type ManagerEmploymentStatus = 'probation' | 'active' | 'ended'
 
@@ -68,19 +72,19 @@ export async function getManagerContinuanceAccess(userId: string) {
     LIMIT 1
   `
   const row=rows[0]
-  if(!row) return {active:false,eligible:false,role:null,expiresAt:null,lastPaidAt:null,isExempt:false}
-  const expiry=row.subscription_expiry?new Date(row.subscription_expiry):null
-  const paid=Boolean(row.subscription_last_paid_at)
-  const active=Boolean(row.is_subscription_exempt) || (row.subscription_status==='active' && paid && Boolean(expiry&&expiry.getTime()>Date.now()))
+  if(!row) return {active:false,eligible:false,role:null,status:'unsupported',expiresAt:null,lastPaidAt:null,isExempt:false,amountNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN}
+
+  const lifestyleAccess=await getLifestyleAccess(userId)
   return {
-    active,
+    active:lifestyleAccess.active,
     eligible:true,
     role:String(row.role),
-    status:String(row.subscription_status||'due'),
-    expiresAt:row.subscription_expiry||null,
+    status:lifestyleAccess.status,
+    expiresAt:lifestyleAccess.expiresAt,
     lastPaidAt:row.subscription_last_paid_at||null,
     isExempt:Boolean(row.is_subscription_exempt),
-    amountNgn:MANAGER_CONTINUANCE_NGN,
+    amountNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN,
+    source:'role_monthly_subscription',
   }
 }
 
@@ -91,24 +95,26 @@ export async function subscribeManagerContinuance(userId:string){
   if(current.active)return {success:true as const,renewed:false,reason:'not_due' as const,access:current}
 
   let rate=0
-  try{const quote=await getTrxPaymentNgnRate();rate=Number(quote.rateNgnPerTrx||0)}catch(error){console.error('[manager-continuance] rate lookup failed',error)}
+  try{const quote=await getTrxPaymentNgnRate();rate=Number(quote.rateNgnPerTrx||0)}catch(error){console.error('[position-subscription] rate lookup failed',error)}
   if(!Number.isFinite(rate)||rate<=0)return {success:false as const,reason:'rate_unavailable' as const}
-  const flameCoinAmount=ngnToFlameCoin(MANAGER_CONTINUANCE_NGN,rate)
+  const flameCoinAmount=ngnToFlameCoin(POSITION_MONTHLY_SUBSCRIPTION_NGN,rate)
   if(!Number.isFinite(flameCoinAmount)||flameCoinAmount<=0)return {success:false as const,reason:'rate_unavailable' as const}
 
   const client=await getPool().connect()
   let paymentId=''
   let balanceAfter=0
   let nextExpiry:Date|null=null
+  let subscriptionRole='WEAVE'
   try{
     await client.query('BEGIN')
     const userResult=await client.query(`SELECT id,role,is_subscription_exempt,subscription_status,subscription_expiry,subscription_last_paid_at FROM users WHERE id=$1::uuid AND role IN ('agent','bridger') AND is_active=true FOR UPDATE`,[userId])
     const user=userResult.rows[0]
     if(!user){await client.query('ROLLBACK');return {success:false as const,reason:'not_eligible' as const}}
+    subscriptionRole=String(user.role||'WEAVE').toLowerCase()==='agent'?'Agent':'Bridger'
     if(user.is_subscription_exempt){await client.query(`UPDATE users SET subscription_status='active' WHERE id=$1::uuid`,[userId]);await client.query('COMMIT');return {success:true as const,renewed:false,reason:'exempt' as const,access:await getManagerContinuanceAccess(userId)}}
 
     const expiry=user.subscription_expiry?new Date(user.subscription_expiry):null
-    if(user.subscription_status==='active'&&user.subscription_last_paid_at&&expiry&&expiry.getTime()>Date.now()){
+    if(user.subscription_status==='active'&&(!expiry||expiry.getTime()>Date.now())){
       await client.query('COMMIT')
       return {success:true as const,renewed:false,reason:'not_due' as const,access:await getManagerContinuanceAccess(userId)}
     }
@@ -119,17 +125,17 @@ export async function subscribeManagerContinuance(userId:string){
     if(!wallet||balance<flameCoinAmount){await client.query('ROLLBACK');return {success:false as const,reason:'insufficient_balance' as const,requiredFlameCoin:flameCoinAmount,availableFlameCoin:balance,rate}}
 
     const debit=await client.query(`UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid AND balance_trx >= $1 RETURNING balance_trx`,[flameCoinAmount,wallet.id])
-    if(debit.rows.length!==1)throw new Error('Continuance wallet debit lost concurrency race')
+    if(debit.rows.length!==1)throw new Error('Position subscription wallet debit lost concurrency race')
     balanceAfter=Number(debit.rows[0].balance_trx||0)
     const now=new Date();nextExpiry=new Date(now.getTime()+30*24*60*60*1000)
-    const payment=await client.query(`INSERT INTO subscription_payments (user_id,amount,currency,payment_method,transaction_reference,status,period_start,period_end) VALUES ($1::uuid,$2,'Flame Coin','flame_coin_wallet',$3,'success',$4,$5) RETURNING id`,[userId,flameCoinAmount,'MANAGER-CONT-'+Date.now(),now,nextExpiry])
+    const payment=await client.query(`INSERT INTO subscription_payments (user_id,amount,currency,payment_method,transaction_reference,status,period_start,period_end) VALUES ($1::uuid,$2,'Flame Coin','flame_coin_wallet',$3,'success',$4,$5) RETURNING id`,[userId,flameCoinAmount,'ROLE-SUB-'+Date.now(),now,nextExpiry])
     paymentId=String(payment.rows[0]?.id||'')
     await client.query(`UPDATE users SET subscription_status='active',subscription_expiry=$2,subscription_last_paid_at=$3 WHERE id=$1::uuid`,[userId,nextExpiry,now])
-    await client.query(`INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin','Continuance · Manager lifestyle access',$3,$4,($5::jsonb)||jsonb_build_object('commerce_type','subscription'),NOW())`,[userId,flameCoinAmount,balance,balanceAfter,JSON.stringify({source:'manager_lifestyle_continuance',payment_id:paymentId,rate_ngn_per_flame_coin:rate,amount_ngn:MANAGER_CONTINUANCE_NGN})])
+    await client.query(`INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin',$3,$4,$5,($6::jsonb)||jsonb_build_object('commerce_type','subscription'),NOW())`,[userId,flameCoinAmount,`${subscriptionRole} monthly subscription · Lifestyle access`,balance,balanceAfter,JSON.stringify({source:'position_monthly_subscription',requested_from:'manager_lifestyle',payment_id:paymentId,rate_ngn_per_flame_coin:rate,amount_ngn:POSITION_MONTHLY_SUBSCRIPTION_NGN})])
     await client.query('COMMIT')
-  }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[manager-continuance] subscription failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
+  }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[position-subscription] subscription failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
 
-  try{if(paymentId&&nextExpiry)await issueWeaveReceipt({userId,kind:'subscription',source:'manager_lifestyle_continuance',sourceId:paymentId,amount:flameCoinAmount,currency:'Flame Coin',status:'paid',description:'Continuance · Manager lifestyle access',metadata:{amountNgn:MANAGER_CONTINUANCE_NGN,rateNgnPerFlameCoin:rate,nextExpiry:nextExpiry.toISOString(),balanceAfter}})}catch(error){console.error('[manager-continuance] receipt failed',error)}
+  try{if(paymentId&&nextExpiry)await issueWeaveReceipt({userId,kind:'subscription',source:'position_monthly_subscription',sourceId:paymentId,amount:flameCoinAmount,currency:'Flame Coin',status:'paid',description:`${subscriptionRole} monthly subscription · Lifestyle access`,metadata:{requestedFrom:'manager_lifestyle',amountNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN,rateNgnPerFlameCoin:rate,nextExpiry:nextExpiry.toISOString(),balanceAfter}})}catch(error){console.error('[position-subscription] receipt failed',error)}
   return {success:true as const,renewed:true,flameCoinAmount,rate,nextExpiry,balanceAfter,access:await getManagerContinuanceAccess(userId)}
 }
 
@@ -167,7 +173,7 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
     if(Number(capacityResult.rows[0]?.occupied||0)>=MANAGER_EMPLOYMENT_LIMIT){await client.query('ROLLBACK');return {success:false as const,reason:'positions_full' as const}}
     const result=await client.query(`INSERT INTO manager_employment (user_id,source_role,status,document_version,accepted_name,document_accepted_at,probation_started_at,probation_ends_at,monthly_salary_ngn,probation_target,core_duty) VALUES ($1::uuid,$2,'probation',$3,$4,NOW(),NOW(),NOW()+INTERVAL '1 month',$5,$6,'Market WEAVE to prospective Agents and Bridgers and carry verified referral movement.') ON CONFLICT (user_id) DO UPDATE SET source_role=EXCLUDED.source_role,status='probation',document_version=EXCLUDED.document_version,accepted_name=EXCLUDED.accepted_name,document_accepted_at=NOW(),probation_started_at=NOW(),probation_ends_at=NOW()+INTERVAL '1 month',monthly_salary_ngn=EXCLUDED.monthly_salary_ngn,probation_target=EXCLUDED.probation_target,core_duty=EXCLUDED.core_duty,ended_at=NULL,updated_at=NOW() RETURNING *`,[userId,user.role,MANAGER_DOCUMENT_VERSION,acceptedName.trim(),MANAGER_MONTHLY_SALARY_NGN,MANAGER_PROBATION_TARGET])
     await client.query('COMMIT')
-    try{await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name) VALUES (${userId}::uuid,'manager_probation','Manager lifestyle probation has begun',${`Your one-month Manager probation begins today. Target: ${MANAGER_PROBATION_TARGET} verified Agent/Bridger referrals. Monthly salary term: ₦${MANAGER_MONTHLY_SALARY_NGN.toLocaleString('en-NG')}. Manager access continues only while Continuance is active.`},'WEAVE Administration')`}catch(error){console.error('[manager-employment] notification failed',error)}
+    try{await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name) VALUES (${userId}::uuid,'manager_probation','Manager lifestyle probation has begun',${`Your one-month Manager probation begins today. Target: ${MANAGER_PROBATION_TARGET} verified Agent/Bridger referrals. Monthly salary term: ₦${MANAGER_MONTHLY_SALARY_NGN.toLocaleString('en-NG')}. Manager access continues while your underlying Agent or Bridger monthly subscription remains active.`},'WEAVE Administration')`}catch(error){console.error('[manager-employment] notification failed',error)}
     return {success:true as const,created:true,employment:result.rows[0]}
   }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[manager-employment] acceptance failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
 }
