@@ -358,16 +358,21 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     [requestedPath],
   )
   const destinationEnvironment=requestedEnvironment||environment
-  const transitBrief=useMemo<LoadingBrief>(()=>({
-    eyebrow:hopeDestination?'Hope · Bridger Department':`${destinationEnvironment.district} · ${destinationEnvironment.layer}`,
-    title:`Opening ${destinationEnvironment.title}`,
-    body:hopeDestination
-      ? `WEAVE builds systems across the world. Hope works through Prospect possibilities so those systems can reach Client ownership and use. ${destinationEnvironment.purpose}`
-      : destinationEnvironment.purpose,
-    movement:hopeDestination
-      ? 'Prospect tool → attempt → response → relationship → Client → ownership + use'
-      : destinationEnvironment.movement,
-  }),[destinationEnvironment,hopeDestination])
+  const transitBrief=useMemo<LoadingBrief>(()=>{
+    const baseBrief:LoadingBrief={
+      eyebrow:`${destinationEnvironment.district} · ${destinationEnvironment.layer}`,
+      title:`Opening ${destinationEnvironment.title}`,
+      body:destinationEnvironment.purpose,
+      movement:destinationEnvironment.movement,
+    }
+    if(!hopeDestination)return baseBrief
+    return {
+      ...baseBrief,
+      eyebrow:'Hope · Bridger Department',
+      body:`WEAVE builds systems across the world. Hope works through Prospect possibilities so those systems can reach Client ownership and use. ${destinationEnvironment.purpose}`,
+      movement:'Prospect tool → attempt → response → relationship → Client → ownership + use',
+    }
+  },[destinationEnvironment,hopeDestination])
   const activeBriefs=booting?bootBriefs:[transitBrief]
   const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
   const openingLabel=showHopeBriefing
