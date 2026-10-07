@@ -5,24 +5,29 @@ export const AGENTIC_BRIDGER_EARNING_RATE = 0.45
 export const ACE_STANDARD_EARNING_RATE = 0.30
 export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger'
 
-export function getWeaveLifestyleMonthlyPrice() {
-  const configured = Number(process.env.WEAVE_LIFESTYLE_MONTHLY_FLAME_COIN || 0)
-  return Number.isFinite(configured) && configured > 0 ? configured : 0
+export type LifestyleAccessSource = 'role_monthly_subscription' | 'administration' | 'unsupported'
+
+export type LifestyleAccess = {
+  active: boolean
+  status: string
+  expiresAt: string | null
+  role: string
+  source: LifestyleAccessSource
+  positionScoped: true
 }
 
 export async function ensureWeaveLifestyleSchema() {
   const pool = getPool()
   const client = await pool.connect()
   try {
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS weave_lifestyle_subscriptions (
-        user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-        status varchar(20) NOT NULL DEFAULT 'inactive',
-        expires_at timestamptz,
-        created_at timestamptz NOT NULL DEFAULT NOW(),
-        updated_at timestamptz NOT NULL DEFAULT NOW()
-      )
-    `)
+    // Lifestyle is not a second subscription. Agent, Bridger and Client access
+    // follows the monthly subscription already attached to the user's WEAVE
+    // position. Keep the legacy lifestyle table out of authorization decisions.
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status varchar(20) DEFAULT 'active'`)
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expiry timestamptz`)
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_subscription_exempt boolean DEFAULT false`)
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_last_paid_at timestamptz`)
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS arena_ace_accounts (
         user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
@@ -64,23 +69,68 @@ export async function ensureWeaveLifestyleSchema() {
   }
 }
 
-export async function getLifestyleAccess(userId: string) {
+export async function getLifestyleAccess(userId: string): Promise<LifestyleAccess> {
   await ensureWeaveLifestyleSchema()
   const pool = getPool()
   const result = await pool.query(
-    `SELECT status,expires_at FROM weave_lifestyle_subscriptions WHERE user_id=$1::uuid`,
+    `SELECT role,subscription_status,subscription_expiry,is_subscription_exempt,is_active
+     FROM users
+     WHERE id=$1::uuid
+     LIMIT 1`,
     [userId]
   )
   const row = result.rows[0]
-  const active = row?.status === 'active' && (!row.expires_at || new Date(row.expires_at).getTime() > Date.now())
-  return { active, status: row?.status || 'inactive', expiresAt: row?.expires_at || null }
+  const role = String(row?.role || '').toLowerCase()
+
+  if (role === 'admin') {
+    return {
+      active: true,
+      status: 'active',
+      expiresAt: null,
+      role,
+      source: 'administration',
+      positionScoped: true,
+    }
+  }
+
+  if (!['agent', 'bridger', 'client'].includes(role)) {
+    return {
+      active: false,
+      status: 'unsupported',
+      expiresAt: null,
+      role,
+      source: 'unsupported',
+      positionScoped: true,
+    }
+  }
+
+  const expiry = row?.subscription_expiry ? new Date(row.subscription_expiry) : null
+  const current = !expiry || expiry.getTime() > Date.now()
+  const enabled = row?.is_active !== false
+  const active = enabled && (Boolean(row?.is_subscription_exempt) || (row?.subscription_status === 'active' && current))
+  const status = active
+    ? 'active'
+    : row?.subscription_status === 'active' && !current
+      ? 'expired'
+      : String(row?.subscription_status || 'inactive')
+
+  return {
+    active,
+    status,
+    expiresAt: expiry?.toISOString() || null,
+    role,
+    source: 'role_monthly_subscription',
+    positionScoped: true,
+  }
 }
 
 export async function requireLifestyleAccess(userId: string) {
   const access = await getLifestyleAccess(userId)
   if (!access.active) {
-    const error = new Error('Monthly Weave subscription is required to enter this lifestyle') as Error & { status?: number }
+    const position = access.role ? `${access.role[0]?.toUpperCase()}${access.role.slice(1)}` : 'WEAVE'
+    const error = new Error(`${position} monthly subscription is required to enter Lifestyle`) as Error & { status?: number; lifestyleAccess?: LifestyleAccess }
     error.status = 403
+    error.lifestyleAccess = access
     throw error
   }
   return access
@@ -118,27 +168,19 @@ export async function deactivateBridgerAceForExpiredContinuance(userId: string) 
 }
 
 export async function getAgenticBridgerState(userId: string) {
-  await ensureWeaveLifestyleSchema()
+  const subscription = await getLifestyleAccess(userId)
   const pool = getPool()
   const result = await pool.query(
-    `SELECT
-       u.role,
-       u.subscription_status,
-       u.subscription_expiry,
-       u.is_subscription_exempt,
-       a.status AS ace_status,
-       a.lifestyle
-     FROM users u
-     LEFT JOIN arena_ace_accounts a ON a.user_id=u.id
-     WHERE u.id=$1::uuid
+    `SELECT a.status AS ace_status,a.lifestyle
+     FROM arena_ace_accounts a
+     WHERE a.user_id=$1::uuid
      LIMIT 1`,
     [userId]
   )
   const row = result.rows[0]
-  const expiry = row?.subscription_expiry ? new Date(row.subscription_expiry).getTime() : null
-  const continuanceActive = Boolean(row?.is_subscription_exempt) || (row?.subscription_status === 'active' && (!expiry || expiry > Date.now()))
+  const continuanceActive = subscription.role === 'bridger' && subscription.active
 
-  if (row?.role === 'bridger' && !continuanceActive) {
+  if (subscription.role === 'bridger' && !continuanceActive) {
     await deactivateBridgerAceForExpiredContinuance(userId)
     return {
       active: false,
@@ -148,7 +190,7 @@ export async function getAgenticBridgerState(userId: string) {
     }
   }
 
-  const active = row?.role === 'bridger'
+  const active = subscription.role === 'bridger'
     && row?.ace_status === 'active'
     && row?.lifestyle === AGENTIC_BRIDGER_LIFESTYLE
     && continuanceActive
