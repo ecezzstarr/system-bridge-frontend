@@ -10,3 +10,4 @@ __pycache__/
 =
 screenshot-main.png
 *.failed-backup
+deploy/vps/private/

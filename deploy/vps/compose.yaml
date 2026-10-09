@@ -1,0 +1,84 @@
+name: weave
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    # Match the source PostgreSQL major version before restoring its dump.
+    image: postgres:${POSTGRES_MAJOR:?Set the verified source PostgreSQL major version}-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: weave
+      POSTGRES_PASSWORD: ${WEAVE_DB_ADMIN_PASSWORD:?Set a strong database admin password}
+      WEAVE_DB_PASSWORD: ${WEAVE_DB_PASSWORD:?Set a different strong app database password}
+    volumes:
+      - database:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/10-weave.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d weave"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [database]
+    logging: *logging
+
+  app:
+    image: ${WEAVE_IMAGE:?Set the tested immutable commit image}
+    restart: unless-stopped
+    env_file:
+      - path: ./private/app.env
+        format: raw
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      # Preserve the existing adapter, explicitly switch it from Google sockets
+      # to the private PostgreSQL container, and override stale exported URLs.
+      CLOUD_SQL_CONNECTION_NAME: ""
+      DATABASE_URL: ""
+      POSTGRES_URL: ""
+      CLOUD_SQL_HOST: db
+      CLOUD_SQL_PORT: "5432"
+      CLOUD_SQL_USER: weave
+      CLOUD_SQL_DATABASE: weave
+      CLOUD_SQL_PASSWORD: ${WEAVE_DB_PASSWORD:?Set the app database password}
+      WEAVE_RELEASE_SHA: ${WEAVE_RELEASE_SHA:?Set the tested source commit SHA}
+    volumes:
+      - ./private/credentials:/run/weave-credentials:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    # Loopback only for staging checks and SSH tunnels; Caddy serves the public app.
+    ports: ["127.0.0.1:3000:3000"]
+    networks: [database, web]
+    logging: *logging
+
+  https:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      WEAVE_DOMAIN: ${WEAVE_DOMAIN:?Set the staging or production hostname}
+      TLS_EMAIL: ${TLS_EMAIL:?Set the TLS contact email}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - certificates:/data
+      - caddy_config:/config
+    depends_on: [app]
+    networks: [web]
+    logging: *logging
+
+networks:
+  database:
+    internal: true
+  web:
+
+volumes:
+  database:
+  certificates:
+  caddy_config:
