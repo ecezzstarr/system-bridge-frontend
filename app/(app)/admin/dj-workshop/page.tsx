@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import { Radio, Upload, Play, Square, SkipForward, Loader2, Music, Mic, Megaphone } from 'lucide-react'
 import { visiblePoll } from '@/lib/visible-poll'
+import { AdminMusicArtists } from '@/components/admin-music-artists'
 
 type Track = {
   id: string
@@ -271,6 +272,8 @@ export default function DJWorkshopPage() {
           </div>
         </div>
       </div>
+
+      <AdminMusicArtists />
 
       {/* Upload */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">

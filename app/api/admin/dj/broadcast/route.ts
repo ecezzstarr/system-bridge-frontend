@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
+import { getLiveArtistPerformance, stopLiveArtistPerformance } from '@/lib/music-artist'
 import {
   ensureDjSchema,
   getFlameEventBroadcastContext,
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
     await ensureDjSchema()
     const { playlistId } = await request.json()
     if (!playlistId) return NextResponse.json({ success: false, error: 'playlistId required' }, { status: 400 })
+    if (await getLiveArtistPerformance()) return NextResponse.json({ success: false, error: 'End the current artist performance before starting a playlist.' }, { status: 409 })
 
     const firstTrack = await sql`
       SELECT pt.track_id
@@ -71,6 +73,7 @@ export async function PATCH(request: NextRequest) {
     const { action, trackId, announcementText } = await request.json()
 
     if (action === 'stop') {
+      await stopLiveArtistPerformance()
       const { event, active } = await getFlameEventBroadcastContext()
       await sql`
         UPDATE dj_broadcast_state
@@ -84,6 +87,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (action === 'skip' && trackId) {
+      if (await getLiveArtistPerformance()) return NextResponse.json({ success: false, error: 'End the current artist performance before changing the DJ track.' }, { status: 409 })
       const [state] = await sql`SELECT playlist_id FROM dj_broadcast_state WHERE id=1`
       if (state?.playlist_id) {
         const valid = await sql`

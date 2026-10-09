@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { GripVertical, Music2, Play, Pause, Volume2 } from 'lucide-react'
 import { useFloatingPanel } from '@/components/use-floating-panel'
@@ -18,6 +19,8 @@ export function DJBroadcastPlayer() {
   const runtimeBudget = useAdaptiveRuntime()
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const currentUrlRef = useRef<string | null>(null)
+  const currentTrackRef = useRef<string | null>(null)
+  const liveStreamRef = useRef(false)
   const autoplayAttemptedRef = useRef(false)
   const syncInFlightRef = useRef(false)
   const userPausedRef = useRef(false)
@@ -32,6 +35,7 @@ export function DJBroadcastPlayer() {
   const [trackTitle, setTrackTitle] = useState<string | null>(null)
   const [trackArtist, setTrackArtist] = useState<string | null>(null)
   const [announcement, setAnnouncement] = useState<string | null>(null)
+  const [performanceEndsAt, setPerformanceEndsAt] = useState<string | null>(null)
   const [joined, setJoined] = useState(false)
   const [userPaused, setUserPaused] = useState(false)
   const [personalDjActive, setPersonalDjActive] = useState(false)
@@ -90,6 +94,7 @@ export function DJBroadcastPlayer() {
     if (
       typeof window === 'undefined' ||
       runtimeBudget.level === 0 ||
+      liveStreamRef.current ||
       trackTypeRef.current !== 'music' ||
       userPausedRef.current
     ) return
@@ -276,6 +281,8 @@ export function DJBroadcastPlayer() {
         setTrackTitle(null)
         setTrackArtist(null)
         setAnnouncement(null)
+        setPerformanceEndsAt(null)
+        liveStreamRef.current = false
         if (audio && !audio.paused) audio.pause()
         emitDjAudioState(false)
         stopHarmonyAudience()
@@ -286,9 +293,11 @@ export function DJBroadcastPlayer() {
       setTrackTitle(data.track.title || null)
       setTrackArtist(data.track.artist || null)
       setAnnouncement(data.announcementText || null)
+      setPerformanceEndsAt(data.performance?.endsAt || null)
+      liveStreamRef.current = Boolean(data.track.isLiveStream)
       trackTypeRef.current = data.track.type || 'music'
       if (audio && !audio.paused) emitDjAudioState(true)
-      if (trackTypeRef.current !== 'music') stopHarmonyAudience()
+      if (trackTypeRef.current !== 'music' || liveStreamRef.current) stopHarmonyAudience()
 
       if (!audio) return
 
@@ -302,11 +311,12 @@ export function DJBroadcastPlayer() {
       }
 
       const desiredSeconds = Math.max(0, Number(data.elapsedSeconds || 0))
-      const isNewTrack = currentUrlRef.current !== data.track.fileUrl
+      const isNewTrack = currentUrlRef.current !== data.track.fileUrl || currentTrackRef.current !== data.track.id || Boolean(audio.error)
 
       const seekAndRespectListener = async () => {
+        if (currentTrackRef.current !== data.track.id) return
         try {
-          if (Number.isFinite(desiredSeconds)) audio.currentTime = desiredSeconds
+          if (!data.track.isLiveStream && Number.isFinite(desiredSeconds)) audio.currentTime = desiredSeconds
         } catch {}
 
         if (userPausedRef.current) {
@@ -324,16 +334,17 @@ export function DJBroadcastPlayer() {
 
       if (isNewTrack) {
         currentUrlRef.current = data.track.fileUrl
+        currentTrackRef.current = data.track.id
         audio.src = data.track.fileUrl
         audio.load()
 
-        if (audio.readyState >= 1) {
+        if (data.track.isLiveStream || audio.readyState >= 1) {
           await seekAndRespectListener()
         } else {
           audio.addEventListener('loadedmetadata', () => { void seekAndRespectListener() }, { once: true })
         }
       } else {
-        if (audio.readyState >= 1 && Math.abs(audio.currentTime - desiredSeconds) > 2.5) {
+        if (!data.track.isLiveStream && audio.readyState >= 1 && Math.abs(audio.currentTime - desiredSeconds) > 2.5) {
           try { audio.currentTime = desiredSeconds } catch {}
         }
 
@@ -349,6 +360,18 @@ export function DJBroadcastPlayer() {
       syncInFlightRef.current = false
     }
   }, [joined, beginPlayback, applyPersonalPause, emitDjAudioState, stopHarmonyAudience])
+
+  useEffect(() => {
+    if (!performanceEndsAt) return
+    const delay = new Date(performanceEndsAt).getTime() - Date.now()
+    if (!Number.isFinite(delay)) return
+    const timer = window.setTimeout(() => {
+      audioRef.current?.pause()
+      stopHarmonyAudience()
+      void syncBroadcast()
+    }, Math.max(0, delay))
+    return () => window.clearTimeout(timer)
+  }, [performanceEndsAt, syncBroadcast, stopHarmonyAudience])
 
   useEffect(() => {
     const onPersonalDj = (event: Event) => {
@@ -395,7 +418,7 @@ export function DJBroadcastPlayer() {
   }, [beginPlayback])
 
   useEffect(() => {
-    if (!publicSoundEligible) return
+    if (!eligibleAudience) return
 
     const onPublicPlayRequest = () => {
       void (async () => {
@@ -420,7 +443,7 @@ export function DJBroadcastPlayer() {
 
     window.addEventListener('weave:dj-request-play', onPublicPlayRequest)
     return () => window.removeEventListener('weave:dj-request-play', onPublicPlayRequest)
-  }, [publicSoundEligible, handleJoin, syncBroadcast, trackTitle])
+  }, [eligibleAudience, handleJoin, syncBroadcast, trackTitle])
 
   const handlePause = () => {
     userPausedRef.current = true
@@ -440,7 +463,11 @@ export function DJBroadcastPlayer() {
     try { localStorage.removeItem(USER_PAUSED_KEY) } catch {}
 
     const audio = audioRef.current
-    if (audio) audio.muted = false
+    if (audio) {
+      audio.muted = false
+      // Reconnect a paused live source to its current edge, not buffered history.
+      if (liveStreamRef.current) audio.load()
+    }
     await beginPlayback(false, true)
     void syncBroadcast()
   }
@@ -508,12 +535,13 @@ export function DJBroadcastPlayer() {
 
             <div className="min-w-0 flex-1">
               <p className="text-[8px] font-black uppercase tracking-[0.14em] text-white/55">
-                {flameEventLive ? 'Flame Event · Live DJ' : 'WEAVE · Live DJ'}
+                {performanceEndsAt ? 'WEAVE · Artist Live' : flameEventLive ? 'Flame Event · Live DJ' : 'WEAVE · Live DJ'}
               </p>
               <p className="truncate text-[10px] font-medium text-white/90" data-allow-truncate="true">
                 {userPaused ? 'Paused by you' : announcement || trackTitle || 'Broadcasting'}
               </p>
               {!userPaused && !announcement && trackArtist && <p className="truncate text-[8px] text-white/35" data-allow-truncate="true">{trackArtist}</p>}
+              {eligibleRole && <Link href={user?.role === 'admin' ? '/admin/dj-workshop' : '/weave/lifestyles/music-artist'} className="text-[9px] text-white/60 underline">Artist timetable</Link>}
             </div>
 
             {!joined ? (

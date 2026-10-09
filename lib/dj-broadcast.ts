@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db'
 import { getFlameEvent } from '@/lib/weave-event-store'
+import { getLiveArtistPerformance } from '@/lib/music-artist'
 
 export type DjBroadcastState = {
   id: number
@@ -16,6 +17,9 @@ export type DjBroadcastState = {
   track_file_url?: string | null
   duration_seconds?: number | null
   track_type?: 'music' | 'voice' | 'announcement' | null
+  source_type?: 'artist_live'
+  performance_id?: string
+  performance_ends_at?: string | Date
 }
 
 export async function ensureDjSchema() {
@@ -108,6 +112,20 @@ function msSince(value: string | Date | null | undefined) {
 }
 
 export async function resolveDjBroadcastState() {
+  const performance = await getLiveArtistPerformance()
+  if (performance?.stream_url) {
+    const state: DjBroadcastState = {
+      id: 1, is_live: true, playlist_id: null, current_track_id: performance.id,
+      track_started_at: performance.started_at, announcement_text: null, manual_stop_event_key: null,
+      updated_by: performance.artist_id, updated_at: performance.started_at,
+      track_title: performance.title, track_artist: performance.stage_name,
+      track_file_url: performance.stream_url, duration_seconds: 0, track_type: 'music',
+      source_type: 'artist_live', performance_id: performance.id, performance_ends_at: performance.ends_at,
+    }
+    // A live source stays at its live edge. The underlying programme continues
+    // on its own clock and resumes after the artist finishes or the slot expires.
+    return { state, elapsedSeconds: 0 }
+  }
   let state = await readDjBroadcastState()
   if (!state || !state.is_live || !state.current_track_id || !state.track_file_url) {
     return { state, elapsedSeconds: 0 }

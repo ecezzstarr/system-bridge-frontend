@@ -1,13 +1,25 @@
 export const ACE_LIFESTYLE = 'ace' as const
 export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger' as const
 export const DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager' as const
+export const MUSIC_ARTIST_LIFESTYLE = 'music_artist' as const
 
 export type WeaveLifestyleKey =
   | typeof ACE_LIFESTYLE
   | typeof AGENTIC_BRIDGER_LIFESTYLE
   | typeof DISTRIBUTION_MANAGER_LIFESTYLE
+  | typeof MUSIC_ARTIST_LIFESTYLE
 
 export const WEAVE_LIFESTYLE_CATALOG = {
+  [MUSIC_ARTIST_LIFESTYLE]: {
+    key: MUSIC_ARTIST_LIFESTYLE,
+    label: 'Music Artist',
+    route: '/weave/lifestyles/music-artist',
+    roles: ['agent', 'bridger', 'client'],
+    summary: 'Established and upcoming artists apply for WEAVE employment and perform live in assigned daily DJ broadcast slots.',
+    environments: [
+      { label: 'Performance Desk', href: '/weave/lifestyles/music-artist', purpose: 'Apply, accept employment terms and operate your scheduled live performances.' },
+    ],
+  },
   [ACE_LIFESTYLE]: {
     key: ACE_LIFESTYLE,
     label: 'Ace',
