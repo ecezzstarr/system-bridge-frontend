@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, Sparkles } from 'lucide-react'
+import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, Mic2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 function authHeaders() {
@@ -154,6 +154,19 @@ export default function WeaveLifestylesPage() {
                   tools={[{icon:<Megaphone className="h-3.5 w-3.5"/>,label:'Distribution Studio'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'WEAVE employment'}]}
                 />
               )}
+
+              {['agent', 'bridger', 'client'].includes(access?.role || '') && <LifestyleGround
+                tone="cyan"
+                icon={<Mic2 className="h-8 w-8" />}
+                eyebrow="WEAVE employment Lifestyle"
+                title="MUSIC ARTIST"
+                detail="Established and upcoming music artists can apply from their Client, Bridger or Agent account. Accept an employment offer, receive daily time slots and perform live through WEAVE DJ broadcasting."
+                open={Boolean(access?.active)}
+                reason={`Renew the ${roleLabel} monthly subscription to enter Music Artist.`}
+                href="/weave/lifestyles/music-artist"
+                action="Enter Music Artist"
+                tools={[{ icon: <Mic2 className="h-3.5 w-3.5" />, label: 'Live performance' }, { icon: <BriefcaseBusiness className="h-3.5 w-3.5" />, label: 'Artist employment' }]}
+              />}
 
               <div className="border-y border-white/10 px-4 py-5 sm:border" data-lifestyle-position-rule="true">
                 <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Position rule</p>
