@@ -36,6 +36,7 @@ jobs:
           node tests/lifestyle-position-access-regression.cjs
           node tests/agentic-bridger-regression.cjs
           node tests/file-folder-customer-door-purchase-regression.cjs
+          node tests/queen-client-proof-regression.cjs
           node tests/distribution-studio-regression.cjs
           node tests/bridger-subscribe-all-regression.cjs
           node tests/referral-core-regression.cjs

@@ -4,6 +4,7 @@ import {
   getBusinessDb,
   normalizeStoreEnvironmentConfig,
 } from '@/lib/client-business-store'
+import { ensureQueenClientProof } from '@/lib/queen-client-proof'
 
 export const dynamic='force-dynamic'
 
@@ -11,7 +12,9 @@ export async function GET() {
   try {
     const sql=getBusinessDb()
     await ensureClientBusinessStoreSchema(sql)
+    await ensureQueenClientProof(sql)
 
+    // formation_status='selling' remains public; ready_for_offer is also public once the Customer Door itself is complete.
     const stores=await sql`
       SELECT
         s.public_slug,
@@ -19,6 +22,7 @@ export async function GET() {
         s.description,
         s.environment_config,
         s.public_opened_at,
+        s.formation_status,
         (SELECT COUNT(*)::int FROM client_store_items i WHERE i.store_id=s.id AND i.enabled=true) AS offer_count,
         EXISTS(
           SELECT 1 FROM client_built_systems b
@@ -36,7 +40,7 @@ export async function GET() {
         ) AS has_market_hall
       FROM client_business_stores s
       WHERE s.enabled=true
-        AND s.formation_status='selling'
+        AND s.formation_status IN ('selling','ready_for_offer')
       ORDER BY s.public_opened_at DESC NULLS LAST,s.created_at DESC
       LIMIT 24
     `
@@ -51,6 +55,7 @@ export async function GET() {
         market_section:config.marketSection,
         level:store.has_market_hall?'market_hall':store.has_storefront?'storefront':'door',
         offer_count:Number(store.offer_count||0),
+        formation_status:String(store.formation_status||''),
         public_opened_at:store.public_opened_at||null,
       }
     })

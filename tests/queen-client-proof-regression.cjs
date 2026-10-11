@@ -1,0 +1,22 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict')
+const root=path.resolve(__dirname,'..')
+const read=file=>fs.readFileSync(path.join(root,file),'utf8')
+
+const proof=read('lib/queen-client-proof.ts')
+const market=read('app/market/page.tsx')
+const marketApi=read('app/api/public/client-market/route.ts')
+const publicStore=read('app/api/public/store/[slug]/route.ts')
+const publicDoor=read('app/market/[slug]/page.tsx')
+
+assert.ok(proof.includes("LOWER(TRIM(COALESCE(name,'')))='queen'")&&proof.includes("role='client'"),'Queen proof formation targets the existing Client Queen instead of inventing a fifth role or fake public identity')
+assert.ok(proof.includes("weaveProof:QUEEN_CLIENT_PROOF_KEY")&&proof.includes("commissionedBy:'WEAVE Administration'")&&proof.includes("owner:'client'"),'Proof systems are transparently marked as Administration-commissioned Client systems')
+for(const type of ['customer_door','commerce_storefront','ai_service_desk','service_workflow','payments_gateway'])assert.ok(proof.includes(`systemType:'${type}'`),`${type} belongs to Queen proof formation`)
+assert.ok(proof.includes('client_file_folder_builds')&&proof.includes('client_built_systems')&&proof.includes('client_customer_door_systems'),'Queen proof uses the real File Folder build, active system and public Customer Door records')
+assert.ok(!proof.includes('client_store_items'),'Proof formation does not fabricate a paid offer or fake Queen purchase')
+assert.ok(proof.includes("formation_status=CASE WHEN first_offer_published_at IS NOT NULL THEN 'selling' ELSE 'ready_for_offer' END"),'Queen Customer Door can open publicly before a sales offer exists')
+assert.ok(market.includes('ensureQueenClientProof(sql)')&&market.includes("s.formation_status IN ('selling','ready_for_offer')"),'Public Customer Market materializes Queen proof and includes completed Doors before first offer')
+assert.ok(marketApi.includes('ensureQueenClientProof(sql)')&&marketApi.includes("s.formation_status IN ('selling','ready_for_offer')"),'Public market API matches visible Customer Door access')
+assert.ok(publicStore.includes("formation_status IN ('selling','ready_for_offer')"),'Public store API accepts an open Customer Door before an offer exists')
+assert.ok(publicDoor.includes('ensureQueenClientProof(sql)'),'Direct Queen Customer Door entry can materialize the proof without first visiting the market index')
+
+console.log('Queen Client proof regression checks passed')

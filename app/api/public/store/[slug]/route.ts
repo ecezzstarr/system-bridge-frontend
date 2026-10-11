@@ -5,7 +5,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const { slug } = await params
   const sql = getBusinessDb()
   await ensureClientBusinessStoreSchema(sql)
-  const [store] = await sql`SELECT id,name,description,public_slug FROM client_business_stores WHERE public_slug=${slug} AND enabled=true AND formation_status='selling' LIMIT 1`
+  const [store] = await sql`SELECT id,name,description,public_slug,formation_status FROM client_business_stores WHERE public_slug=${slug} AND enabled=true AND formation_status IN ('selling','ready_for_offer') LIMIT 1`
   if (!store) return NextResponse.json({ error: 'Store not found' }, { status: 404 })
   const items = await sql`SELECT id,name,description,price,currency,offer_type FROM client_store_items WHERE store_id=${store.id}::uuid AND enabled=true ORDER BY created_at DESC`
   const connectedSystems = await sql`
@@ -13,7 +13,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       p.system_id,
       s.system_type,
       COALESCE(p.public_label,s.title) AS public_label,
-      p.public_summary
+      p.public_summary,
+      s.configuration
     FROM client_customer_door_systems p
     JOIN client_built_systems s ON s.id=p.system_id
     WHERE p.store_id=${store.id}::uuid
