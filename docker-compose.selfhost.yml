@@ -1,0 +1,40 @@
+services:
+  weave:
+    build:
+      context: .
+      dockerfile: Dockerfile.selfhost
+    container_name: weave-app
+    restart: unless-stopped
+    env_file:
+      - selfhost/.env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/api/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - weave-net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: weave-tunnel
+    restart: unless-stopped
+    env_file:
+      - selfhost/.env
+    command: tunnel --no-autoupdate run
+    depends_on:
+      weave:
+        condition: service_healthy
+    networks:
+      - weave-net
+
+networks:
+  weave-net:
+    name: weave-net
