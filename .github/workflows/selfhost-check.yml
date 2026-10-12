@@ -1,0 +1,48 @@
+name: Self-Host Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Dockerfile.selfhost'
+      - 'docker-compose.selfhost.yml'
+      - 'selfhost/**'
+      - '.github/workflows/selfhost-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile.selfhost'
+      - 'docker-compose.selfhost.yml'
+      - 'selfhost/**'
+      - '.github/workflows/selfhost-check.yml'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Compose stack
+        run: |
+          cp selfhost/.env.example selfhost/.env
+          docker compose -f docker-compose.selfhost.yml config >/dev/null
+          rm selfhost/.env
+
+      - name: Validate Caddy edge
+        run: |
+          docker run --rm \
+            -e WEAVE_DOMAIN=weavingsystem.online \
+            -v "$PWD/selfhost/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine \
+            caddy validate --config /etc/caddy/Caddyfile
+
+      - name: Validate self-host dependency image
+        run: |
+          docker build \
+            --progress=plain \
+            --target deps \
+            -f Dockerfile.selfhost \
+            -t weave-selfhost-deps-check .
