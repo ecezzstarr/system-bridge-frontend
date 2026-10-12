@@ -22,19 +22,32 @@ services:
     networks:
       - weave-net
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: weave-tunnel
+  caddy:
+    image: caddy:2-alpine
+    container_name: weave-edge
     restart: unless-stopped
     env_file:
       - selfhost/.env
-    command: tunnel --no-autoupdate run
     depends_on:
       weave:
         condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./selfhost/Caddyfile:/etc/caddy/Caddyfile:ro
+      - weave-caddy-data:/data
+      - weave-caddy-config:/config
     networks:
       - weave-net
 
 networks:
   weave-net:
     name: weave-net
+
+volumes:
+  weave-caddy-data:
+    name: weave-caddy-data
+  weave-caddy-config:
+    name: weave-caddy-config
