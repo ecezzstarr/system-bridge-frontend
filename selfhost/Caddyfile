@@ -1,0 +1,16 @@
+{$WEAVE_DOMAIN:weavingsystem.online} {
+    encode zstd gzip
+
+    reverse_proxy weave:3000
+
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}
