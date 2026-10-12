@@ -1,0 +1,68 @@
+# Weave self-hosted runtime. Builds natively on linux/amd64 or linux/arm64.
+FROM node:22-bookworm-slim AS base
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+
+# The production package currently pins the x86_64 SWC binary explicitly.
+# Remove that host-specific pin inside the image so npm/Next can select the
+# correct native optional dependency for the machine building Weave.
+RUN node - <<'NODE'
+const fs = require('fs')
+const path = 'package.json'
+const pkg = JSON.parse(fs.readFileSync(path, 'utf8'))
+if (pkg.dependencies) delete pkg.dependencies['@next/swc-linux-x64-gnu']
+fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n')
+NODE
+RUN npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Keep the same acceptance gate used by the current production Docker image.
+RUN node tests/recent-features.cjs
+RUN node tests/agentic-bridger-regression.cjs
+RUN node tests/file-folder-customer-door-purchase-regression.cjs
+RUN node tests/wiring.cjs
+RUN node tests/environment-grade.cjs
+RUN node tests/adaptive-runtime.cjs
+RUN node tests/communication-security.cjs
+RUN node tests/recovery-desk.cjs
+RUN node tests/commerce-ledger-regression.cjs
+RUN node tests/video-ad-workshop.cjs
+RUN npx tsc --noEmit
+RUN npm run build
+
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD node -e "require('http').get('http://127.0.0.1:3000/api/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+
+CMD ["node", "server.js"]
