@@ -5,6 +5,7 @@ import './weave-theme.css'
 import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
+import { PublicAppDownloadEntry } from '@/components/public-app-download-entry'
 import { DJBroadcastPlayer } from '@/components/dj-broadcast-player'
 import { WEAVE_PUBLIC_ORIGIN } from '@/lib/weave-origin'
 import { PresenceCameraProvider, PresenceCameraRootViewport } from '@/components/world/presence-camera'
@@ -51,6 +52,7 @@ export default function RootLayout({
               <WeaveWorldEnvironment />
               <InteractionMotionLayer />
               <PWARegister />
+              <PublicAppDownloadEntry />
               <WeaveEnvironmentTransit>
                 <DivineShieldGate>
                   <PresenceCameraRootViewport>{children}</PresenceCameraRootViewport>
