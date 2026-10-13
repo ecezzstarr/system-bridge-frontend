@@ -1,0 +1,25 @@
+const fs = require('fs')
+const path = require('path')
+const assert = require('assert')
+
+const root = path.join(__dirname, '..')
+const read = (file) => fs.readFileSync(path.join(root, file), 'utf8')
+
+const layout = read('app/layout.tsx')
+const download = read('app/download/page.tsx')
+const entry = read('components/public-app-download-entry.tsx')
+const install = read('components/system-store/weave-install-button.tsx')
+const manifest = read('app/manifest.ts')
+const worker = read('public/sw.js')
+
+assert.ok(layout.includes('<PublicAppDownloadEntry />'), 'Root layout exposes the public app download entry')
+assert.ok(entry.includes("'/'") && entry.includes("'/login'") && entry.includes("'/register'"), 'Public home and account entry routes expose app installation')
+assert.ok(entry.includes("href=\"/download\"") && entry.includes('Download / Install'), 'Public app entry leads to the official download floor')
+assert.ok(entry.includes("display-mode: standalone") && entry.includes('appinstalled'), 'Download entry gets out of the way after installation')
+assert.ok(download.includes('<WeaveInstallButton />') && download.includes('Sign In and Start Work'), 'Download floor connects installation directly to work entry')
+assert.ok(download.includes('Android / Chrome') && download.includes('iPhone / iPad'), 'Download floor covers the primary mobile installation paths')
+assert.ok(install.includes('beforeinstallprompt') && install.includes('deferredPrompt'), 'Installation control uses the browser PWA lifecycle')
+assert.ok(manifest.includes("display: 'standalone'") && manifest.includes("start_url: '/'"), 'WEAVE manifest remains standalone and starts from the public entrance')
+assert.ok(worker.includes("navigator") === false && worker.includes("event.request.mode === 'navigate'"), 'Service worker keeps route navigation network-current')
+
+console.log('public app download regression: ok')
