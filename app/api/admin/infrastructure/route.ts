@@ -4,10 +4,8 @@ import {
   ensureWeaveInfrastructureSchema,
   getDivineShieldState,
   getInfrastructureRegistry,
-  recentDeploymentRequests,
-  recordDeploymentRequest,
 } from '@/lib/weave-infrastructure'
-import { cloudBuildControlStatus, triggerWeaveCloudBuild } from '@/lib/weave-cloud-control'
+import { listWeaveDeploymentRecords } from '@/lib/weave-deployment-records'
 import { safePublicWebRead } from '@/lib/eight-web'
 
 export const dynamic='force-dynamic'
@@ -42,7 +40,7 @@ export async function GET(request:NextRequest){
     const [registry,shield,deployments]=await Promise.all([
       getInfrastructureRegistry(),
       getDivineShieldState(),
-      recentDeploymentRequests(12),
+      listWeaveDeploymentRecords(20),
     ])
     const systems=await Promise.all(registry.map(async(system:any)=>({
       ...system,
@@ -52,7 +50,15 @@ export async function GET(request:NextRequest){
     })))
     return NextResponse.json({
       success:true,
-      cloud:cloudBuildControlStatus(),
+      runtime:{
+        mode:'selfhost',
+        domain:process.env.WEAVE_DOMAIN || 'weavingsystem.online',
+        serverKey:process.env.WEAVE_DEPLOYMENT_SERVER || 'weave-selfhost',
+        releaseSha:process.env.WEAVE_RELEASE_SHA || null,
+        edge:'caddy',
+        application:'docker-compose',
+        deployAuthority:'verified-main-to-selfhost',
+      },
       shield,
       systems,
       deployments,
@@ -66,7 +72,6 @@ export async function GET(request:NextRequest){
 export async function POST(request:NextRequest){
   const auth=await requireAdmin(request)
   if(auth.response) return auth.response
-  const user=auth.user!
   try{
     const body=await request.json()
     const action=body?.action
@@ -77,36 +82,10 @@ export async function POST(request:NextRequest){
       return NextResponse.json({success:true,result})
     }
 
-    if(action==='deploy_preview' || action==='deploy_promote'){
-      const expected=action==='deploy_preview'?'DEPLOY_PREVIEW':'PROMOTE_PRODUCTION'
-      if(body.confirm!==expected){
-        return NextResponse.json({success:false,error:`Confirmation "${expected}" required`},{status:409})
-      }
-      const cloudAction=action==='deploy_preview'?'preview':'promote'
-      try{
-        const result=await triggerWeaveCloudBuild(cloudAction)
-        const deployment=await recordDeploymentRequest({
-          action:cloudAction,
-          sourceRef:result.sourceRef,
-          externalId:result.operationName,
-          status:'requested',
-          adminId:user.id,
-          details:{triggerId:result.triggerId},
-        })
-        return NextResponse.json({success:true,result,deployment})
-      }catch(error){
-        await recordDeploymentRequest({
-          action:cloudAction,
-          sourceRef:'main',
-          status:'failed_to_start',
-          adminId:user.id,
-          details:{error:error instanceof Error?error.message:'Cloud Build request failed'},
-        }).catch(()=>null)
-        throw error
-      }
-    }
-
-    return NextResponse.json({success:false,error:'Unknown infrastructure action'},{status:400})
+    return NextResponse.json({
+      success:false,
+      error:'Production deployment is controlled by the verified main → WEAVE self-host deployment path. Cloud deployment actions are retired.',
+    },{status:400})
   }catch(error){
     console.error('[Infrastructure] action error:',error)
     return NextResponse.json({success:false,error:error instanceof Error?error.message:'Infrastructure action failed'},{status:500})
