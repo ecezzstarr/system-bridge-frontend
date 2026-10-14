@@ -8,13 +8,14 @@ import {
 import { ensureClientInternationalPaymentProfile } from '@/lib/client-international-payments'
 import { ensureClientGrowthWorldSchema } from '@/lib/client-growth-world'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
+import { ensureLegionCommerceSchema } from '@/lib/legion-commerce'
 
 export default async function PublicClientMarketStore({
   params,
   searchParams,
 }:{
   params:Promise<{slug:string}>
-  searchParams:Promise<{order?:string}>
+  searchParams:Promise<{order?:string;legion?:string}>
 }){
   const {slug}=await params
   const query=await searchParams
@@ -22,6 +23,7 @@ export default async function PublicClientMarketStore({
   await ensureClientBusinessStoreSchema(sql)
   await ensureClientGrowthWorldSchema(sql)
   await ensureEnterpriseDreamSchema(sql)
+  await ensureLegionCommerceSchema(sql)
 
   const [store]=await sql`
     SELECT
@@ -102,17 +104,34 @@ export default async function PublicClientMarketStore({
       )
     LIMIT 1
   `
+  const carrierCode=String(query.legion||'').trim().slice(0,80)
+  const [legion]=carrierCode
+    ? await sql`
+        SELECT name,function_title,sales_code
+        FROM enterprise_legions
+        WHERE client_id=${store.client_id}::uuid
+          AND sales_code=${carrierCode}
+          AND active=true
+          AND sales_enabled=true
+        LIMIT 1
+      `
+    : [null]
 
-  return <ClientMarketEnvironment
-    slug={slug}
-    store={store}
-    offers={offers}
-    connectedSystems={connectedSystems}
-    payments={payments}
-    config={normalizeStoreEnvironmentConfig(store.environment_config)}
-    level={level}
-    orderRef={query.order||null}
-    streamUrl={channel?.public_slug?'/stream/'+channel.public_slug:null}
-    enterpriseUrl={enterprise?.public_slug?'/enterprise/'+enterprise.public_slug:null}
-  />
+  return <>
+    {legion&&<div className="border-b border-violet-300/15 bg-violet-400/[0.06] px-5 py-3 text-center text-xs text-violet-100">
+      <span className="font-black">Legion Carrier:</span> {legion.name} · {legion.function_title}. This Client-owned Customer Door remains the business destination; this Legion carried you here.
+    </div>}
+    <ClientMarketEnvironment
+      slug={slug}
+      store={store}
+      offers={offers}
+      connectedSystems={connectedSystems}
+      payments={payments}
+      config={normalizeStoreEnvironmentConfig(store.environment_config)}
+      level={level}
+      orderRef={query.order||null}
+      streamUrl={channel?.public_slug?'/stream/'+channel.public_slug:null}
+      enterpriseUrl={enterprise?.public_slug?'/enterprise/'+enterprise.public_slug:null}
+    />
+  </>
 }

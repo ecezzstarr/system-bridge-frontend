@@ -3,6 +3,8 @@ import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
+import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { ensureLegionCommerceSchema, legionCarrierPath } from '@/lib/legion-commerce'
 import { publicGrowthSlug } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
@@ -25,6 +27,8 @@ export async function GET(request: NextRequest) {
     await ensureClientFileFolderSchema(sql)
     await ensureClientWorkshopSchema(sql)
     await ensureEnterpriseDreamSchema(sql)
+    await ensureClientBusinessStoreSchema(sql)
+    await ensureLegionCommerceSchema(sql)
 
     const [folder] = await sql`
       SELECT file_number,weave_position,enterprise_status,enterprise_name,enterprise_sector,workshop_type
@@ -33,6 +37,36 @@ export async function GET(request: NextRequest) {
       LIMIT 1
     `
     const enterprise = await getEnterpriseDream(sql, clientId)
+    const [store] = await sql`
+      SELECT public_slug
+      FROM client_business_stores
+      WHERE client_id=${clientId}::uuid
+        AND enabled=true
+      LIMIT 1
+    `
+    const legions = enterprise.application?.status === 'approved'
+      ? await sql`
+          SELECT
+            l.id,l.name,l.contact,l.function_title,l.livelihood_role,l.profit_participation,
+            l.active,l.sales_code,l.sales_enabled,l.created_at,
+            COUNT(o.id)::int AS attributed_orders,
+            COUNT(o.id) FILTER (WHERE o.payment_status='received')::int AS paid_orders,
+            COALESCE(SUM(o.amount) FILTER (WHERE o.payment_status='received'),0)::numeric AS attributed_revenue
+          FROM enterprise_legions l
+          LEFT JOIN client_store_orders o ON o.legion_id=l.id
+          WHERE l.client_id=${clientId}::uuid
+            AND l.active=true
+          GROUP BY l.id
+          ORDER BY l.created_at ASC
+        `
+      : []
+    const storeSlug = store?.public_slug ? String(store.public_slug) : null
+    const legionMovement = legions.map((legion: any) => ({
+      ...legion,
+      carrier_path: storeSlug && legion.sales_code && legion.sales_enabled
+        ? legionCarrierPath(storeSlug, String(legion.sales_code))
+        : null,
+    }))
 
     return NextResponse.json({
       success: true,
@@ -42,7 +76,8 @@ export async function GET(request: NextRequest) {
       enterprise_name: folder?.enterprise_name || enterprise.application?.enterprise_name || null,
       sector: folder?.enterprise_sector || enterprise.application?.sector || null,
       application: enterprise.application,
-      legions: enterprise.legions,
+      store_public_slug: storeSlug,
+      legions: legionMovement,
     }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Unable to load Enterprise Dream state' }, { status: 500 })

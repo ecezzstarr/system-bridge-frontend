@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
+import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { ensureLegionCommerceSchema, legionCarrierPath } from '@/lib/legion-commerce'
 import { recordSystemEvent } from '@/lib/system-events'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 
@@ -17,6 +19,9 @@ export async function POST(request: NextRequest) {
 
   try {
     await ensureEnterpriseDreamSchema(sql)
+    await ensureClientBusinessStoreSchema(sql)
+    await ensureLegionCommerceSchema(sql)
+
     const [application] = await sql`
       SELECT id,file_number,requested_position,enterprise_name,status
       FROM enterprise_applications
@@ -67,7 +72,7 @@ export async function POST(request: NextRequest) {
     const profitParticipation = clean(body.profitParticipation, 4000) || null
     if (!name || !functionTitle) return NextResponse.json({ error: 'Legion name and enterprise function are required.' }, { status: 400 })
 
-    const [legion] = await sql`
+    const [created] = await sql`
       INSERT INTO enterprise_legions (
         enterprise_application_id,client_id,file_number,name,contact,function_title,livelihood_role,profit_participation
       )
@@ -77,6 +82,24 @@ export async function POST(request: NextRequest) {
       )
       RETURNING *
     `
+    const [legion] = await sql`
+      UPDATE enterprise_legions
+      SET sales_code=COALESCE(NULLIF(sales_code,''),'LG-' || UPPER(REPLACE(id::text,'-',''))),
+          sales_enabled=true,
+          updated_at=NOW()
+      WHERE id=${created.id}::uuid
+      RETURNING *
+    `
+    const [store] = await sql`
+      SELECT public_slug
+      FROM client_business_stores
+      WHERE client_id=${clientId}::uuid
+        AND enabled=true
+      LIMIT 1
+    `
+    const carrierPath = store?.public_slug && legion?.sales_code
+      ? legionCarrierPath(String(store.public_slug), String(legion.sales_code))
+      : null
 
     await recordSystemEvent({
       eventType: 'enterprise_legion_added',
@@ -85,10 +108,17 @@ export async function POST(request: NextRequest) {
       subjectType: 'enterprise_legion',
       subjectId: String(legion.id),
       source: 'enterprise-dream',
-      payload: { fileNumber: application.file_number, enterpriseName: application.enterprise_name, legionName: name, functionTitle },
+      payload: {
+        fileNumber: application.file_number,
+        enterpriseName: application.enterprise_name,
+        legionName: name,
+        functionTitle,
+        salesCode: legion.sales_code,
+        carrierPath,
+      },
     })
 
-    return NextResponse.json({ success: true, legion }, { status: 201 })
+    return NextResponse.json({ success: true, legion: { ...legion, carrier_path: carrierPath } }, { status: 201 })
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Unable to add Legion' }, { status: 500 })
   }

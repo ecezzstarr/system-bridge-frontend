@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getBusinessDb, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
+import { ensureLegionCommerceSchema } from '@/lib/legion-commerce'
+
+function carrierCodeFromRequest(request: NextRequest) {
+  const direct = new URL(request.url).searchParams.get('legion')?.trim()
+  if (direct) return direct.slice(0, 80)
+  const referer = request.headers.get('referer')
+  if (!referer) return ''
+  try {
+    return (new URL(referer).searchParams.get('legion') || '').trim().slice(0, 80)
+  } catch {
+    return ''
+  }
+}
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const sql = getBusinessDb()
   await ensureClientBusinessStoreSchema(sql)
+  await ensureEnterpriseDreamSchema(sql)
+  await ensureLegionCommerceSchema(sql)
 
   const [store] = await sql`
-    SELECT id,customer_wallet_required
+    SELECT id,client_id,customer_wallet_required
     FROM client_business_stores
     WHERE public_slug=${slug}
       AND enabled=true
@@ -41,10 +57,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   `
   if (!item) return NextResponse.json({ error: 'Offer not found' }, { status: 404 })
 
+  const carrierCode = carrierCodeFromRequest(request)
+  const [legion] = carrierCode
+    ? await sql`
+        SELECT id,sales_code
+        FROM enterprise_legions
+        WHERE client_id=${store.client_id}::uuid
+          AND sales_code=${carrierCode}
+          AND active=true
+          AND sales_enabled=true
+        LIMIT 1
+      `
+    : [null]
+
   const [order] = await sql`
     INSERT INTO client_store_orders (
       store_id,item_id,customer_name,customer_contact,customer_wallet,
-      payment_reference,customer_note,amount,currency,status,payment_status
+      payment_reference,customer_note,amount,currency,status,payment_status,
+      legion_id,legion_sales_code,legion_attributed_at
     )
     VALUES (
       ${store.id}::uuid,
@@ -57,12 +87,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       ${item.price || 0},
       ${item.currency},
       'requested',
-      'awaiting_payment'
+      'awaiting_payment',
+      ${legion?.id || null}::uuid,
+      ${legion?.sales_code || null},
+      ${legion ? new Date().toISOString() : null}::timestamptz
     )
-    RETURNING id,status,payment_status
+    RETURNING id,status,payment_status,legion_id,legion_sales_code
   `
 
   const destination = new URL(`/market/${encodeURIComponent(slug)}`, request.url)
   destination.searchParams.set('order', String(order.id))
+  if (legion?.sales_code) destination.searchParams.set('legion', String(legion.sales_code))
   return NextResponse.redirect(destination, 303)
 }

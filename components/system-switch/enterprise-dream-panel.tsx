@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BriefcaseBusiness, Crown, Plus, ShieldCheck, Users } from 'lucide-react'
+import { BriefcaseBusiness, Crown, ExternalLink, Plus, ShieldCheck, Users } from 'lucide-react'
 import { getClientToken } from '@/lib/client-auth'
 
 type EnterpriseState = {
@@ -10,6 +10,7 @@ type EnterpriseState = {
   workshop_type: string
   enterprise_name?: string | null
   sector?: string | null
+  store_public_slug?: string | null
   application?: any
   legions?: any[]
 }
@@ -32,10 +33,10 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
   })
   const [legion,setLegion]=useState({name:'',contact:'',functionTitle:'',livelihoodRole:'',profitParticipation:''})
 
-  const load=async()=>{
+  const load=async(silent=false)=>{
     const token=getClientToken()
     if(!token)return
-    setLoading(true)
+    if(!silent)setLoading(true)
     try{
       const res=await fetch('/api/client/enterprise',{headers:{Authorization:`Bearer ${token}`}})
       const body=await res.json()
@@ -53,10 +54,10 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
         projectedMonthlyCosts:body.application.projected_monthly_costs??'',
       })
     }catch(e:any){setMessage(e.message||'Unable to load Enterprise Dream')}
-    finally{setLoading(false)}
+    finally{if(!silent)setLoading(false)}
   }
 
-  useEffect(()=>{ if(!initialState)load() },[])
+  useEffect(()=>{ load(Boolean(initialState)) },[])
 
   const submit=async()=>{
     const token=getClientToken(); if(!token)return
@@ -66,7 +67,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       const body=await res.json()
       if(!res.ok)throw new Error(body.error||'Unable to submit enterprise plan')
       setMessage('Business plan submitted to Administration for Lord/Lady elevation review.')
-      await load()
+      await load(true)
     }catch(e:any){setMessage(e.message||'Unable to submit enterprise plan')}
     finally{setBusy(false)}
   }
@@ -79,8 +80,8 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       const body=await res.json()
       if(!res.ok)throw new Error(body.error||'Unable to add Legion')
       setLegion({name:'',contact:'',functionTitle:'',livelihoodRole:'',profitParticipation:''})
-      setMessage('Legion added to the Enterprise Dream Workshop.')
-      await load()
+      setMessage('Legion added. Its sales Carrier is now connected to this Client enterprise.')
+      await load(true)
     }catch(e:any){setMessage(e.message||'Unable to add Legion')}
     finally{setBusy(false)}
   }
@@ -116,7 +117,14 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
 
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
         <div className="flex items-center gap-2"><Users className="h-4 w-4 text-violet-300"/><h3 className="text-sm font-semibold">{legionCount===1?'Legion':'Legions'} · {legionCount}{legionQuartersOpen?' / '+legionCapacity:''}</h3></div>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">{state?.legions?.map((l:any)=><div key={l.id} className="rounded-xl border border-white/10 bg-black/30 p-4"><p className="text-sm font-semibold">{l.name}</p><p className="mt-1 text-xs text-violet-300">{l.function_title}</p>{l.livelihood_role&&<p className="mt-2 text-xs leading-5 text-slate-500">{l.livelihood_role}</p>}{l.profit_participation&&<p className="mt-2 text-[10px] leading-5 text-slate-600">Profit participation: {l.profit_participation}</p>}</div>)}</div>
+        <p className="mt-2 max-w-3xl text-xs leading-5 text-slate-500">Every active Legion can carry the Client&apos;s public products and services into the open world. The Client keeps ownership of the business and Customer Door; each Legion Carrier preserves who brought the customer and attributes resulting orders back to that Legion.</p>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">{state?.legions?.map((l:any)=><div key={l.id} className="rounded-xl border border-white/10 bg-black/30 p-4">
+          <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-semibold">{l.name}</p><p className="mt-1 text-xs text-violet-300">{l.function_title}</p></div>{l.sales_code&&<span className="rounded-full border border-violet-300/15 bg-violet-400/5 px-2 py-1 text-[8px] font-black tracking-wider text-violet-200">{l.sales_code}</span>}</div>
+          {l.livelihood_role&&<p className="mt-2 text-xs leading-5 text-slate-500">{l.livelihood_role}</p>}
+          {l.profit_participation&&<p className="mt-2 text-[10px] leading-5 text-slate-600">Profit participation: {l.profit_participation}</p>}
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center"><div className="rounded-lg border border-white/5 bg-black/25 p-2"><p className="text-[7px] uppercase tracking-wider text-slate-600">Orders</p><p className="mt-1 text-sm font-black">{Number(l.attributed_orders||0)}</p></div><div className="rounded-lg border border-white/5 bg-black/25 p-2"><p className="text-[7px] uppercase tracking-wider text-slate-600">Paid</p><p className="mt-1 text-sm font-black">{Number(l.paid_orders||0)}</p></div><div className="rounded-lg border border-white/5 bg-black/25 p-2"><p className="text-[7px] uppercase tracking-wider text-slate-600">Movement</p><p className="mt-1 text-sm font-black">{Number(l.attributed_revenue||0).toLocaleString()}</p></div></div>
+          {l.carrier_path?<a href={l.carrier_path} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[0.07] px-3 py-2 text-[9px] font-black uppercase tracking-wider text-violet-100"><ExternalLink className="h-3.5 w-3.5"/>Open Legion Carrier</a>:<p className="mt-3 text-[10px] leading-5 text-slate-600">Build and open the Client Customer Door to activate this Legion&apos;s public Carrier.</p>}
+        </div>)}</div>
         {!legionQuartersOpen ? <div className="mt-5 rounded-xl border border-amber-300/15 bg-amber-400/5 p-4 text-xs leading-5 text-amber-100">Construct Legion Quarters in the File Folder before adding enterprise Legions. Capacity begins at 3 and can be expanded by installing Legion Capacity Modules during compatible enterprise builds.</div> : legionCount>=legionCapacity ? <div className="mt-5 rounded-xl border border-violet-300/15 bg-violet-400/5 p-4 text-xs leading-5 text-violet-100">Legion capacity is full ({legionCount}/{legionCapacity}). Install Legion Capacity Modules during enterprise construction to create more operating positions.</div> : <>
           <div className="mt-5 grid gap-3 md:grid-cols-2"><input value={legion.name} onChange={e=>setLegion({...legion,name:e.target.value})} placeholder="Legion name" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm"/><input value={legion.contact} onChange={e=>setLegion({...legion,contact:e.target.value})} placeholder="Contact" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm"/><input value={legion.functionTitle} onChange={e=>setLegion({...legion,functionTitle:e.target.value})} placeholder="Enterprise function" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm"/><input value={legion.profitParticipation} onChange={e=>setLegion({...legion,profitParticipation:e.target.value})} placeholder="Profit participation" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm"/><textarea value={legion.livelihoodRole} onChange={e=>setLegion({...legion,livelihoodRole:e.target.value})} placeholder="How this function participates in and is sustained by the enterprise" rows={3} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm md:col-span-2"/></div>
           <button disabled={busy||!legion.name.trim()||!legion.functionTitle.trim()} onClick={addLegion} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-600 px-5 py-2.5 text-xs font-semibold disabled:opacity-40"><Plus className="h-4 w-4"/>Add Legion</button>
