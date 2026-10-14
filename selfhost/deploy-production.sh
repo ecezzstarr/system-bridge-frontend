@@ -6,10 +6,10 @@ cd "$ROOT"
 
 COMPOSE=(docker compose -f docker-compose.selfhost.yml)
 ENV_FILE="$ROOT/selfhost/.env"
+JOURNAL_FILE="$ROOT/selfhost/deployment-history.log"
 DEFAULT_DOMAIN="weavingsystem.online"
 DEPLOY_SOURCE="selfhost-deploy"
 DEPLOY_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-START_RECORDED=0
 ROLLING_BACK=0
 
 log() { printf '[WEAVE deploy] %s\n' "$*"; }
@@ -117,26 +117,67 @@ fi
 
 ROLLBACK_PATH="git reset --hard ${PREVIOUS_SHA} && WEAVE_RELEASE_SHA=${PREVIOUS_SHA} docker compose -f docker-compose.selfhost.yml build weave && WEAVE_RELEASE_SHA=${PREVIOUS_SHA} docker compose -f docker-compose.selfhost.yml up -d --remove-orphans"
 
-post_record() {
+build_record_payload() {
   local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-{}}"
-  local payload
-  payload="$(python3 - "$status" "$release_sha" "$previous_sha" "$SERVER_KEY" "$DEPLOY_SOURCE" "$verification" "$ROLLBACK_PATH" "$details" <<'PY'
-import json,sys
+  python3 - "$status" "$release_sha" "$previous_sha" "$SERVER_KEY" "$DEPLOY_SOURCE" "$verification" "$ROLLBACK_PATH" "$details" <<'PY'
+import json,sys,datetime,uuid
 status,release,previous,server,source,verification,rollback,details=sys.argv[1:]
 try: detail_obj=json.loads(details)
 except Exception: detail_obj={'note':details}
+detail_obj=dict(detail_obj)
+detail_obj.setdefault('hostJournalEventId',str(uuid.uuid4()))
+detail_obj.setdefault('hostJournaledAt',datetime.datetime.now(datetime.timezone.utc).isoformat())
 print(json.dumps({
  'status':status,'releaseSha':release,'previousSha':previous or None,
  'serverKey':server,'source':source,'verification':verification or None,
  'rollbackPath':rollback,'details':detail_obj,
-}))
+},separators=(',',':')))
 PY
-)"
+}
+
+spool_record() {
+  local payload="$1"
+  printf '%s\n' "$payload" >> "$JOURNAL_FILE"
+}
+
+send_record_payload() {
+  local payload="$1"
   curl -fsS --max-time 15 \
     -H "Authorization: Bearer ${DEPLOY_TOKEN}" \
     -H 'Content-Type: application/json' \
     -d "$payload" \
     http://127.0.0.1:3000/api/system/deployment-record >/dev/null
+}
+
+post_record() {
+  local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-{}}"
+  local payload
+  payload="$(build_record_payload "$status" "$release_sha" "$previous_sha" "$verification" "$details")"
+  if send_record_payload "$payload"; then
+    return 0
+  fi
+  spool_record "$payload"
+  return 1
+}
+
+replay_journal() {
+  [[ -s "$JOURNAL_FILE" ]] || return 0
+  local pending="${JOURNAL_FILE}.pending.$$"
+  : > "$pending"
+  local payload
+  while IFS= read -r payload || [[ -n "$payload" ]]; do
+    [[ -n "$payload" ]] || continue
+    if ! send_record_payload "$payload"; then
+      printf '%s\n' "$payload" >> "$pending"
+    fi
+  done < "$JOURNAL_FILE"
+  mv "$pending" "$JOURNAL_FILE"
+  if [[ -s "$JOURNAL_FILE" ]]; then
+    log "Some host deployment records remain queued for replay."
+    return 1
+  fi
+  log "Host deployment journal replayed into Sovereign + Flame records."
+  return 0
 }
 
 health_matches() {
@@ -174,10 +215,8 @@ rollback() {
   set +e
   log "Deployment failed at line $line. Restoring $PREVIOUS_SHA"
 
-  if health_matches http://127.0.0.1:3000/api/health "$TARGET_SHA"; then
-    post_record failed "$TARGET_SHA" "$PREVIOUS_SHA" "Deployment failed before final verification at line $line" "{\"failedLine\":\"$line\"}" || true
-    post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started" "{\"failedLine\":\"$line\"}" || true
-  fi
+  post_record failed "$TARGET_SHA" "$PREVIOUS_SHA" "Deployment failed before final verification at line $line" "{\"failedLine\":\"$line\"}" || true
+  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started" "{\"failedLine\":\"$line\"}" || true
 
   git reset --hard "$PREVIOUS_SHA"
   set_env_value WEAVE_RELEASE_SHA "$PREVIOUS_SHA"
@@ -186,6 +225,7 @@ rollback() {
   "${COMPOSE[@]}" up -d --remove-orphans
   wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" || true
   post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback restored previous release after failure at line $line" "{\"failedRelease\":\"$TARGET_SHA\"}" || true
+  replay_journal || true
 
   exit "$exit_code"
 }
@@ -194,12 +234,10 @@ trap 'rollback $? $LINENO' ERR
 log "Previous release: $PREVIOUS_SHA"
 log "Verified target release: $TARGET_SHA"
 
-# On later releases the existing app already knows this endpoint, so the start
-# movement is captured before any source or container change. The first rollout
-# replays it after the record endpoint itself becomes live.
-if post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" 2>/dev/null; then
-  START_RECORDED=1
-fi
+# Every movement is attempted against the current WEAVE runtime. On the first
+# rollout, or during an outage, a failed record write is appended to the host
+# journal and replayed after a healthy runtime returns.
+post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" || true
 
 git reset --hard "$TARGET_SHA"
 set_env_value WEAVE_RELEASE_SHA "$TARGET_SHA"
@@ -212,17 +250,15 @@ BUILD_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 RESTARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 wait_for_health http://127.0.0.1:3000/api/health "$TARGET_SHA" "Local WEAVE"
-
-if [[ "$START_RECORDED" != "1" ]]; then
-  post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\",\"replayedAfterRecordEndpointBecameLive\":true}"
-fi
-post_record built "$TARGET_SHA" "$PREVIOUS_SHA" "Self-host image built successfully" "{\"buildStartedAt\":\"$BUILD_STARTED_AT\",\"buildFinishedAt\":\"$BUILD_FINISHED_AT\"}"
-post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WEAVE and Caddy without orphaned services" "{\"restartedAt\":\"$RESTARTED_AT\"}"
+replay_journal || true
+post_record built "$TARGET_SHA" "$PREVIOUS_SHA" "Self-host image built successfully" "{\"buildStartedAt\":\"$BUILD_STARTED_AT\",\"buildFinishedAt\":\"$BUILD_FINISHED_AT\"}" || true
+post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WEAVE and Caddy without orphaned services" "{\"restartedAt\":\"$RESTARTED_AT\"}" || true
 
 wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
 
 VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}"
+post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}" || true
+replay_journal || true
 
 "${COMPOSE[@]}" ps
 "${COMPOSE[@]}" logs --tail=80 weave || true
