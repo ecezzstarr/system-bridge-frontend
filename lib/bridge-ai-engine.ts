@@ -1,27 +1,32 @@
 "use server"
 
 import { VertexAI } from '@google-cloud/vertexai'
+import OpenAI from 'openai'
 
 const vertexAI = new VertexAI({
   project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
   location: 'us-central1',
 })
 
+function getOpenAI() {
+  const apiKey = process.env.OPENAI_API_KEY
+  return apiKey ? new OpenAI({ apiKey }) : null
+}
+
+function canUseVertex() {
+  return Boolean(process.env.GOOGLE_CLOUD_PROJECT || process.env.GOOGLE_APPLICATION_CREDENTIALS)
+}
+
 export interface BridgeMessage {
   role: 'user' | 'assistant'
   content: string
 }
 
-// Runs the Bridge AI continuity using a template's system prompt.
-// Bridge AI begins at the crossing and continues as the Client's AI support
-// after the person becomes a Client. The Bridger opens the path; the support
-// continuity belongs to the Client movement, not to a sales funnel.
 export async function chatWithBridge(
   messages: BridgeMessage[],
   systemPrompt: string
 ): Promise<string> {
-  try {
-    const fullSystemPrompt = `
+  const fullSystemPrompt = `
 # BRIDGE AI MANDATE: CROSSING → CLIENT CONTINUITY
 
 You are Bridge AI of Weave of Presence: System Switch – Bridge Radiance.
@@ -55,13 +60,6 @@ Your first and primary function is PRESENT PARTICIPATION and practical continuit
 
 ## INTERACTION STYLE
 - Use simple questions that anchor the interaction in the prospect's actual life.
-- Example: 
-  Prospect: "I need money."
-  Bridge (Do NOT give 10 ways): "What do you do for a living?"
-  Prospect: "I sell shoes."
-  Bridge: "Do you already have somewhere people can see and buy them?"
-  Prospect: "I sell through WhatsApp."
-  Bridge: "You already have something working. We can look at how to give it more room."
 - Objective: Maximum usefulness per interaction (3–6 replies should be enough).
 - The user should feel: "This understands what I am actually trying to do."
 - The user should NOT feel: "This system is trying to sell me something."
@@ -85,27 +83,42 @@ If, and only if, the visitor has clearly named or described a specific business,
 ${systemPrompt}
 `.trim()
 
-    const contents = messages.map(msg => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }]
-    }))
-
-    if (contents.length > 0 && contents[0].role === 'model') {
-      contents.shift()
+  try {
+    const openai = getOpenAI()
+    if (openai) {
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: fullSystemPrompt },
+          ...messages.map(message => ({ role: message.role, content: message.content } as const)),
+        ],
+        temperature: 0.8,
+        max_tokens: 300,
+      })
+      const text = completion.choices[0]?.message?.content?.trim()
+      if (text) return text
     }
 
-    const model = vertexAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: { role: 'system', parts: [{ text: fullSystemPrompt }] },
-    })
+    if (canUseVertex()) {
+      const contents = messages.map(msg => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content }]
+      }))
+      if (contents.length > 0 && contents[0].role === 'model') contents.shift()
 
-    const result = await model.generateContent({
-      contents,
-      generationConfig: { maxOutputTokens: 300, temperature: 0.8 },
-    })
+      const model = vertexAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        systemInstruction: { role: 'system', parts: [{ text: fullSystemPrompt }] },
+      })
+      const result = await model.generateContent({
+        contents,
+        generationConfig: { maxOutputTokens: 300, temperature: 0.8 },
+      })
+      return result.response.candidates?.[0]?.content?.parts?.[0]?.text
+        || "I'm listening — tell me more about what you're looking for."
+    }
 
-    return result.response.candidates?.[0]?.content?.parts?.[0]?.text
-      || "I'm listening — tell me more about what you're looking for."
+    return 'Bridge AI is not configured on this server yet.'
   } catch (error) {
     console.error('Bridge AI engine error:', error)
     return "I'm having trouble connecting right now. Please try again in a moment."
