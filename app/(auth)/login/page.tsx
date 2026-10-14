@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '@/lib/auth-provider'
+import { useAuth, type WeaveAuthError } from '@/lib/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -70,6 +70,13 @@ export default function LoginPage() {
         router.push('/weave')
       }
     } catch (err) {
+      const authError = err as WeaveAuthError
+      if (authError?.code === 'PASSWORD_SETUP_REQUIRED') {
+        const params = new URLSearchParams({ email: email.trim().toLowerCase() })
+        if (administrationPortal) params.set('portal', 'admin')
+        router.push(`/forgot-password?${params.toString()}`)
+        return
+      }
       setError(err instanceof Error ? err.message : 'Login failed')
       setIsSubmitting(false)
     }
