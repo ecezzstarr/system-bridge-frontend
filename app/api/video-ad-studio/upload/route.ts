@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Storage } from '@google-cloud/storage'
 import { randomUUID } from 'node:crypto'
 import { getAuthUser } from '@/lib/auth-api'
 import { VIDEO_STUDIO_CUSTOMER_ROLES } from '@/lib/video-ad-studio'
+import { saveMediaObject } from '@/lib/weave-media-storage'
 
-const storage = new Storage()
-const BUCKET_NAME = 'ssbnow-status-feed-media'
 const MAX_SIZE_BYTES = 150 * 1024 * 1024
 const EXT_BY_MIME: Record<string,string> = {
   'image/jpeg':'jpg',
@@ -30,12 +28,11 @@ export async function POST(request: NextRequest) {
     if (file.size > MAX_SIZE_BYTES) return NextResponse.json({ success:false, error:'File too large (max 150MB)' }, { status:400 })
 
     const objectName = `video-ads/customer-assets/${user.id}/${new Date().toISOString().slice(0,10)}/${randomUUID()}.${ext}`
-    const blob = storage.bucket(BUCKET_NAME).file(objectName)
-    await blob.save(Buffer.from(await file.arrayBuffer()), {
+    const url = await saveMediaObject(objectName, Buffer.from(await file.arrayBuffer()), {
       contentType:file.type,
-      metadata:{ cacheControl:'private, max-age=3600' },
+      cacheControl:'private, max-age=3600',
     })
-    return NextResponse.json({ success:true, url:`https://storage.googleapis.com/${BUCKET_NAME}/${objectName}`, mediaType:file.type.startsWith('video/')?'video':'image' })
+    return NextResponse.json({ success:true, url, mediaType:file.type.startsWith('video/')?'video':'image' })
   } catch (error:any) {
     console.error('[Video Ad Studio] asset upload failed:', error)
     return NextResponse.json({ success:false, error:error.message || 'Asset upload failed' }, { status:500 })
