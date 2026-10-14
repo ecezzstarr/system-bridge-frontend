@@ -1,0 +1,160 @@
+/* WEAVE mobile-fit layer.
+   This file is intentionally loaded after the shared theme/readability layers so
+   phone constraints win over route-local desktop sizing without flattening the
+   spatial environments on larger screens. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:where(
+  .weave-app-shell,
+  .weave-client-shell,
+  [data-weave-world-runtime],
+  [data-public-weave-world],
+  [data-weave-environment],
+  [data-weave-room],
+  [data-weave-room-stage]
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+:where(
+  .weave-app-shell,
+  .weave-client-shell,
+  [data-weave-world-runtime],
+  [data-public-weave-world]
+) :where(main,section,article,header,footer,nav,aside,form,fieldset,div) {
+  min-width: 0;
+}
+
+:where(
+  .weave-app-shell,
+  .weave-client-shell,
+  [data-weave-world-runtime],
+  [data-public-weave-world]
+) :where(img,video,iframe,svg,canvas) {
+  max-width: 100%;
+}
+
+:where(
+  .weave-app-shell,
+  .weave-client-shell,
+  [data-weave-world-runtime],
+  [data-public-weave-world]
+) :where(input,textarea,select) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  :where(
+    .weave-app-shell,
+    .weave-client-shell,
+    [data-weave-world-runtime],
+    [data-public-weave-world]
+  ) {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: clip;
+  }
+
+  /* Old administrative and campaign surfaces occasionally carry 240/260/280px
+     hard minimums. On phones they must shrink with their parent instead of
+     widening the entire route. Horizontal strips with smaller intentional snap
+     widths remain untouched. */
+  :where(
+    .weave-app-shell,
+    .weave-client-shell,
+    [data-weave-world-runtime]
+  ) [class*="min-w-[2"] {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  :where(
+    .weave-app-shell,
+    .weave-client-shell,
+    [data-weave-world-runtime],
+    [data-public-weave-world]
+  ) :where(pre) {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :where(
+    .weave-app-shell,
+    .weave-client-shell,
+    [data-weave-world-runtime]
+  ) :where(table) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :where([data-slot="dialog-content"],[role="dialog"]) {
+    max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100dvh - 1rem);
+    overflow-y: auto;
+  }
+
+  :where([data-slot="sheet-content"]) {
+    max-width: min(92vw, 24rem) !important;
+  }
+
+  /* Live DJ on phones becomes a tiny glass/mirror control beside the header.
+     It never reserves layout height, never becomes a bottom dock, and saved
+     desktop drag coordinates cannot move it across mobile content. */
+  [data-weave-dj-mirror="true"] {
+    left: auto !important;
+    right: max(.5rem, env(safe-area-inset-right)) !important;
+    top: calc(env(safe-area-inset-top) + 4rem) !important;
+    width: auto !important;
+    max-width: 5.25rem !important;
+    border-radius: 9999px !important;
+    border-color: rgba(255,255,255,.12) !important;
+    background: rgba(5, 15, 28, .34) !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.10) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(155%) !important;
+    backdrop-filter: blur(24px) saturate(155%) !important;
+  }
+
+  [data-weave-dj-mirror="true"] > div {
+    min-height: 2.5rem !important;
+    gap: .2rem !important;
+    padding: .22rem !important;
+  }
+
+  [data-weave-dj-mirror="true"] > div > button:first-child,
+  [data-weave-dj-mirror="true"] > div > div:nth-child(3) {
+    display: none !important;
+  }
+
+  [data-weave-dj-mirror="true"] > div > div:nth-child(2),
+  [data-weave-dj-mirror="true"] > div > button:last-child {
+    width: 2rem !important;
+    height: 2rem !important;
+    min-width: 2rem !important;
+    min-height: 2rem !important;
+    flex: 0 0 2rem !important;
+  }
+
+  [data-weave-dj-mirror="true"] > div > div:nth-child(2) svg,
+  [data-weave-dj-mirror="true"] > div > button:last-child svg {
+    width: .9rem !important;
+    height: .9rem !important;
+  }
+}
