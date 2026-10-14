@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const wallet = await getWalletByUserId(user.id)
-    if (!wallet) {
+    if (!wallet?.tron_address) {
       return NextResponse.json({
         wallet: { address: null, trx: 0, usdt: 0 },
         transactions: [],
