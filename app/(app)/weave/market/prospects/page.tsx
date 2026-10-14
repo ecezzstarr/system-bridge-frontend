@@ -56,7 +56,6 @@ export default function ProspectMarketPage() {
   const [numberInput, setNumberInput] = useState('')
   const [mineLoading, setMineLoading] = useState(true)
   const [savingNumber, setSavingNumber] = useState(false)
-  const [handoffId, setHandoffId] = useState<string | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [reportingId, setReportingId] = useState<string | null>(null)
 
@@ -172,13 +171,13 @@ export default function ProspectMarketPage() {
       toast.error('This Prospect needs a valid international WhatsApp number')
       return
     }
-    window.open(`https://wa.me/${target}?text=${encodeURIComponent(p.messageSent)}`, '_blank', 'noopener,noreferrer')
-    setHandoffId(p.outreachId)
-    toast.info('WhatsApp opened. Confirm below only after you send the message.')
-  }
 
-  const confirmSent = async (p: MyProspect) => {
+    // The Bridger's click is the WEAVE send confirmation. Open WhatsApp first
+    // with the prepared message, then record the outreach as sent without a
+    // second confirmation gate. The Bridger still performs the final send in WhatsApp.
+    window.open(`https://wa.me/${target}?text=${encodeURIComponent(p.messageSent)}`, '_blank', 'noopener,noreferrer')
     setSendingId(p.outreachId)
+
     try {
       const res = await fetch(`/api/bridger/prospects/${p.outreachId}/send`, {
         method: 'POST',
@@ -187,19 +186,17 @@ export default function ProspectMarketPage() {
       })
       const data = await res.json()
       if (data.success) {
-        setHandoffId(null)
-        toast.success('Your send confirmation was recorded')
-        fetchMine()
+        toast.success('WhatsApp opened · Prospect recorded as sent')
+        await fetchMine()
       } else {
-        toast.error(data.error || 'Failed to mark as sent')
+        toast.error(data.error || 'WhatsApp opened, but WEAVE could not record the send')
       }
     } catch (error) {
-      toast.error('Failed to send')
+      toast.error('WhatsApp opened, but WEAVE could not record the send')
     } finally {
       setSendingId(null)
     }
   }
-
 
   const handleSendBridge = (p: MyProspect) => {
     if (!whatsappNumber) {
@@ -384,9 +381,8 @@ export default function ProspectMarketPage() {
                             className="bg-blue-600 hover:bg-blue-700"
                           >
                             {sendingId === p.outreachId ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
-                            Open First Message
+                            Send First Message
                           </Button>
-                          {handoffId === p.outreachId && <Button size="sm" onClick={()=>confirmSent(p)} disabled={sendingId===p.outreachId} className="bg-emerald-700">I sent the message</Button>}
                           <Button
                             size="sm"
                             variant="outline"
