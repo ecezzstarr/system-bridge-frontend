@@ -1,3 +1,5 @@
+import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { ensureLegionCommerceSchema, legionCarrierPath } from '@/lib/legion-commerce'
 
 export type LegionEmploymentState = {
@@ -5,16 +7,18 @@ export type LegionEmploymentState = {
   legionId?: string
   clientId?: string
   enterpriseApplicationId?: string
-  enterpriseName?: string
-  clientName?: string
-  sourceRole?: string
-  functionTitle?: string
+  enterpriseName?: string | null
+  clientName?: string | null
+  sourceRole?: string | null
+  functionTitle?: string | null
   profitParticipation?: string | null
   salesCode?: string | null
   carrierPath?: string | null
 }
 
 export async function ensureLegionEmploymentSchema(sql: any) {
+  await ensureEnterpriseDreamSchema(sql)
+  await ensureClientBusinessStoreSchema(sql)
   await ensureLegionCommerceSchema(sql)
   await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS source_user_id uuid`
   await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS source_role varchar(20)`
