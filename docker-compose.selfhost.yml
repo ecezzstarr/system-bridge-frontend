@@ -12,6 +12,8 @@ services:
       PORT: 3000
       HOSTNAME: 0.0.0.0
       WEAVE_MEDIA_ROOT: /var/lib/weave/media
+      WEAVE_RELEASE_SHA: ${WEAVE_RELEASE_SHA:-selfhost}
+      WEAVE_DEPLOYMENT_SERVER: ${WEAVE_DEPLOYMENT_SERVER:-weave-selfhost}
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
