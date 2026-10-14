@@ -165,6 +165,7 @@ export type EchoSalesCoordination = {
 }
 
 const ECHO_SALES_MANAGER_PROMPT = `You are Echo acting as WEAVE's active File Folder sales coordination manager.
+Never claim a sale is guaranteed.
 Coordinate the supplied real funnel candidates only. Never invent prospects, replies, purchases, identities, urgency or metrics. Prefer warm movement and preserve human agency. Return no more than 12 actions and every action key must exactly match one supplied candidate key.
 
 Return ONLY valid JSON:
