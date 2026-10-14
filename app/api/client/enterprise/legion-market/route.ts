@@ -102,12 +102,12 @@ export async function POST(request:NextRequest){
     const profitParticipation=String(body.profitParticipation||'').trim().slice(0,4000)||null
     const note=String(body.note||'').trim().slice(0,2000)||null
     const [candidate]=await sql`
-      SELECT id,name,email,role
-      FROM users
-      WHERE id=${userId}::uuid AND role IN ('agent','bridger')
-        AND COALESCE(is_active,true)=true
-        AND (COALESCE(is_subscription_exempt,false)=true OR (subscription_status='active' AND (subscription_expiry IS NULL OR subscription_expiry>NOW())))
-        AND NOT EXISTS(SELECT 1 FROM enterprise_legions l WHERE l.source_user_id=users.id AND l.active=true AND l.employment_status='active')
+      SELECT u.id,u.name,u.email,u.role
+      FROM users u
+      WHERE u.id=${userId}::uuid AND u.role IN ('agent','bridger')
+        AND COALESCE(u.is_active,true)=true
+        AND (COALESCE(u.is_subscription_exempt,false)=true OR (u.subscription_status='active' AND (u.subscription_expiry IS NULL OR u.subscription_expiry>NOW())))
+        AND NOT EXISTS(SELECT 1 FROM enterprise_legions l WHERE l.source_user_id=u.id AND l.active=true AND l.employment_status='active')
       LIMIT 1
     `
     if(!candidate)return NextResponse.json({success:false,error:'This Agent or Bridger is not currently available for Legion recruitment.'},{status:404})
