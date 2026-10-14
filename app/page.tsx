@@ -24,6 +24,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { WeaveLogo } from '@/components/weave-logo'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { FLAME_EVENT, resolveEventStatus } from '@/lib/weave-event'
+import { ProFileFolderPreview } from '@/components/public/pro-file-folder-preview'
 
 const WeaveHero3D = dynamic(
   () => import('@/components/weave-hero-3d').then(m => m.WeaveHero3D),
@@ -220,6 +221,10 @@ export default function Home() {
               ))}
             </div>
           </section>
+
+          <div className="mt-3">
+            <ProFileFolderPreview />
+          </div>
 
           <section className="mt-3 grid gap-3 md:grid-cols-[1.15fr_.85fr]">
             <div className="rounded-[1.6rem] border border-white/10 bg-[#020713]/54 p-4 backdrop-blur-md sm:p-5">
