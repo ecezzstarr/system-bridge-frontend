@@ -45,6 +45,7 @@ jobs:
         shell: bash
         env:
           WEAVE_ROOT: ${{ steps.locate.outputs.root }}
+          VERIFIED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
           cd "$WEAVE_ROOT"
@@ -53,6 +54,9 @@ jobs:
             *github.com/ecezzstarr/system-bridge-frontend.git|*github.com/ecezzstarr/system-bridge-frontend) ;;
             *) echo "Refusing deployment from unexpected origin: $remote" >&2; exit 1 ;;
           esac
+          if [ -n "${VERIFIED_SHA:-}" ]; then
+            export WEAVE_DEPLOY_TARGET_SHA="$VERIFIED_SHA"
+          fi
           bash selfhost/deploy-production.sh
 
       - name: Return production identity
