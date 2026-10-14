@@ -61,14 +61,22 @@ export default function ClientSystemStorePublisher(){
       let sizeBytes:number|null=null
       let sha256:string|null=null
       if(file){
-        const prep=await fetch('/api/client/system-store',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({action:'prepare_upload',system_id:selected.id,package_type:form.package_type,file_name:file.name,content_type:file.type||'application/octet-stream',size_bytes:file.size})})
-        const prepBody=await prep.json()
-        if(!prep.ok)throw new Error(prepBody.error||'Unable to prepare package upload')
-        const upload=await fetch(prepBody.uploadUrl,{method:'PUT',headers:{'Content-Type':prepBody.contentType},body:file})
-        if(!upload.ok)throw new Error('Google Cloud package upload failed')
-        storageObject=prepBody.storageObject
-        contentType=prepBody.contentType
-        sizeBytes=file.size
+        const uploadParams=new URLSearchParams({
+          systemId:String(selected.id),
+          packageType:form.package_type,
+          fileName:file.name,
+          size:String(file.size),
+        })
+        const upload=await fetch(`/api/client/system-store/package-upload?${uploadParams.toString()}`,{
+          method:'PUT',
+          headers:{Authorization:`Bearer ${token}`,'Content-Type':file.type||'application/octet-stream'},
+          body:file,
+        })
+        const uploadBody=await upload.json()
+        if(!upload.ok)throw new Error(uploadBody.error||'WEAVE package upload failed')
+        storageObject=uploadBody.storageObject
+        contentType=uploadBody.contentType
+        sizeBytes=uploadBody.sizeBytes||file.size
         if(file.size<=100_000_000){
           const digest=await crypto.subtle.digest('SHA-256',await file.arrayBuffer())
           sha256=Array.from(new Uint8Array(digest)).map(byte=>byte.toString(16).padStart(2,'0')).join('')
