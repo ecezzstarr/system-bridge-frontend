@@ -1,12 +1,36 @@
 /* WEAVE mobile-fit layer.
-   This file is intentionally loaded after the shared theme/readability layers so
-   phone constraints win over route-local desktop sizing without flattening the
-   spatial environments on larger screens. */
+   Loaded after theme/readability so phone constraints win over route-local
+   desktop sizing without flattening the spatial environments on larger screens. */
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html,
+body {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Every route participates, including public login/purchase/crossing pages that
+   do not mount the authenticated WEAVE environment data attributes. */
+body :where(main,section,article,header,footer,nav,aside,form,fieldset,div) {
+  min-width: 0;
+}
+
+body :where(img,video,iframe,svg,canvas) {
+  max-width: 100%;
+}
+
+body :where(input,textarea,select) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body :where(p,li,dd,dt,label,a,button) {
+  overflow-wrap: anywhere;
 }
 
 :where(
@@ -22,34 +46,6 @@
   max-width: 100%;
 }
 
-:where(
-  .weave-app-shell,
-  .weave-client-shell,
-  [data-weave-world-runtime],
-  [data-public-weave-world]
-) :where(main,section,article,header,footer,nav,aside,form,fieldset,div) {
-  min-width: 0;
-}
-
-:where(
-  .weave-app-shell,
-  .weave-client-shell,
-  [data-weave-world-runtime],
-  [data-public-weave-world]
-) :where(img,video,iframe,svg,canvas) {
-  max-width: 100%;
-}
-
-:where(
-  .weave-app-shell,
-  .weave-client-shell,
-  [data-weave-world-runtime],
-  [data-public-weave-world]
-) :where(input,textarea,select) {
-  min-width: 0;
-  max-width: 100%;
-}
-
 @media (max-width: 767px) {
   html,
   body {
@@ -58,46 +54,40 @@
     overflow-x: clip;
   }
 
+  body {
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
   :where(
     .weave-app-shell,
     .weave-client-shell,
     [data-weave-world-runtime],
-    [data-public-weave-world]
+    [data-public-weave-world],
+    [data-weave-environment]
   ) {
     width: 100%;
     max-width: 100vw;
     overflow-x: clip;
   }
 
-  /* Old administrative and campaign surfaces occasionally carry 240/260/280px
-     hard minimums. On phones they must shrink with their parent instead of
-     widening the entire route. Horizontal strips with smaller intentional snap
-     widths remain untouched. */
-  :where(
-    .weave-app-shell,
-    .weave-client-shell,
-    [data-weave-world-runtime]
-  ) [class*="min-w-[2"] {
+  /* Old administrative, campaign and login surfaces occasionally carry
+     240/260/280px hard minimums. On phones they must be allowed to contract
+     with the viewport. Small intentional snap-strip widths remain untouched. */
+  body [class*="min-w-[2"] {
     min-width: 0 !important;
     max-width: 100% !important;
   }
 
-  :where(
-    .weave-app-shell,
-    .weave-client-shell,
-    [data-weave-world-runtime],
-    [data-public-weave-world]
-  ) :where(pre) {
+  body :where(pre) {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  :where(
-    .weave-app-shell,
-    .weave-client-shell,
-    [data-weave-world-runtime]
-  ) :where(table) {
+  /* Dense operational tables keep every column accessible by local horizontal
+     scroll instead of making the full page wider than the phone. */
+  body :where(table) {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -105,14 +95,18 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  :where([data-slot="dialog-content"],[role="dialog"]) {
+  body :where([data-slot="dialog-content"],[role="dialog"]) {
     max-width: calc(100vw - 1rem) !important;
     max-height: calc(100dvh - 1rem);
     overflow-y: auto;
   }
 
-  :where([data-slot="sheet-content"]) {
+  body :where([data-slot="sheet-content"]) {
     max-width: min(92vw, 24rem) !important;
+  }
+
+  body :where([data-slot="popover-content"],[data-slot="dropdown-menu-content"],[data-slot="select-content"]) {
+    max-width: calc(100vw - 1rem) !important;
   }
 
   /* Live DJ on phones becomes a tiny glass/mirror control beside the header.
