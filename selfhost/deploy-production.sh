@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+COMPOSE=(docker compose -f docker-compose.selfhost.yml)
+ENV_FILE="$ROOT/selfhost/.env"
+DEFAULT_DOMAIN="weavingsystem.online"
+DEPLOY_SOURCE="selfhost-deploy"
+DEPLOY_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+START_RECORDED=0
+ROLLING_BACK=0
+
+log() { printf '[WEAVE deploy] %s\n' "$*"; }
+
+read_env_value() {
+  local key="$1"
+  python3 - "$ENV_FILE" "$key" <<'PY'
+import pathlib, sys
+path=pathlib.Path(sys.argv[1]); key=sys.argv[2]
+if not path.exists(): raise SystemExit(0)
+for raw in path.read_text().splitlines():
+    line=raw.strip()
+    if not line or line.startswith('#') or '=' not in line: continue
+    k,v=line.split('=',1)
+    if k.strip()==key:
+        print(v.strip().strip('"').strip("'"))
+        break
+PY
+}
+
+ensure_env_value() {
+  local key="$1" value="$2"
+  local existing
+  existing="$(read_env_value "$key")"
+  if [[ -n "$existing" ]]; then
+    printf '%s' "$existing"
+    return 0
+  fi
+  printf '\n%s=%s\n' "$key" "$value" >> "$ENV_FILE"
+  printf '%s' "$value"
+}
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Missing selfhost/.env. The server runtime must already have its private environment." >&2
+  exit 2
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Server checkout has uncommitted source changes. Deployment stopped to preserve them." >&2
+  exit 3
+fi
+
+CURRENT_BRANCH="$(git branch --show-current)"
+if [[ "$CURRENT_BRANCH" != "main" ]]; then
+  git checkout main
+fi
+
+git fetch origin main
+PREVIOUS_SHA="$(git rev-parse HEAD)"
+TARGET_SHA="$(git rev-parse origin/main)"
+DOMAIN="$(read_env_value WEAVE_DOMAIN)"
+DOMAIN="${DOMAIN:-$DEFAULT_DOMAIN}"
+SERVER_KEY="$(ensure_env_value WEAVE_DEPLOYMENT_SERVER weave-selfhost)"
+DEPLOY_TOKEN="$(read_env_value WEAVE_DEPLOY_RECORD_TOKEN)"
+if [[ -z "$DEPLOY_TOKEN" ]]; then
+  DEPLOY_TOKEN="$(python3 - <<'PY'
+import secrets
+print(secrets.token_hex(32))
+PY
+)"
+  printf '\nWEAVE_DEPLOY_RECORD_TOKEN=%s\n' "$DEPLOY_TOKEN" >> "$ENV_FILE"
+fi
+
+ROLLBACK_PATH="git reset --hard ${PREVIOUS_SHA} && WEAVE_RELEASE_SHA=${PREVIOUS_SHA} docker compose -f docker-compose.selfhost.yml build weave && WEAVE_RELEASE_SHA=${PREVIOUS_SHA} docker compose -f docker-compose.selfhost.yml up -d --remove-orphans"
+
+post_record() {
+  local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-{}}"
+  local payload
+  payload="$(python3 - "$status" "$release_sha" "$previous_sha" "$SERVER_KEY" "$DEPLOY_SOURCE" "$verification" "$ROLLBACK_PATH" "$details" <<'PY'
+import json,sys
+status,release,previous,server,source,verification,rollback,details=sys.argv[1:]
+try: detail_obj=json.loads(details)
+except Exception: detail_obj={'note':details}
+print(json.dumps({
+ 'status':status,'releaseSha':release,'previousSha':previous or None,
+ 'serverKey':server,'source':source,'verification':verification or None,
+ 'rollbackPath':rollback,'details':detail_obj,
+}))
+PY
+)"
+  curl -fsS --max-time 15 \
+    -H "Authorization: Bearer ${DEPLOY_TOKEN}" \
+    -H 'Content-Type: application/json' \
+    -d "$payload" \
+    http://127.0.0.1:3000/api/system/deployment-record >/dev/null
+}
+
+health_matches() {
+  local url="$1" expected="$2"
+  local body
+  body="$(curl -fsS --max-time 15 "$url")" || return 1
+  python3 - "$expected" "$body" <<'PY'
+import json,sys
+expected=sys.argv[1]
+try: data=json.loads(sys.argv[2])
+except Exception: raise SystemExit(1)
+raise SystemExit(0 if data.get('status')=='healthy' and data.get('releaseSha')==expected else 1)
+PY
+}
+
+wait_for_health() {
+  local url="$1" expected="$2" label="$3"
+  local attempt
+  for attempt in $(seq 1 36); do
+    if health_matches "$url" "$expected"; then
+      log "$label verified at $expected"
+      return 0
+    fi
+    sleep 5
+  done
+  echo "$label did not become healthy for release $expected" >&2
+  return 1
+}
+
+rollback() {
+  local exit_code="${1:-1}" line="${2:-unknown}"
+  if [[ "$ROLLING_BACK" == "1" ]]; then exit "$exit_code"; fi
+  ROLLING_BACK=1
+  trap - ERR
+  set +e
+  log "Deployment failed at line $line. Restoring $PREVIOUS_SHA"
+
+  if health_matches http://127.0.0.1:3000/api/health "$TARGET_SHA"; then
+    post_record failed "$TARGET_SHA" "$PREVIOUS_SHA" "Deployment failed before final verification at line $line" "{\"failedLine\":\"$line\"}" || true
+    post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started" "{\"failedLine\":\"$line\"}" || true
+  fi
+
+  git reset --hard "$PREVIOUS_SHA"
+  export WEAVE_RELEASE_SHA="$PREVIOUS_SHA"
+  "${COMPOSE[@]}" build weave
+  "${COMPOSE[@]}" up -d --remove-orphans
+  wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" || true
+  post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback restored previous release after failure at line $line" "{\"failedRelease\":\"$TARGET_SHA\"}" || true
+
+  exit "$exit_code"
+}
+trap 'rollback $? $LINENO' ERR
+
+log "Previous release: $PREVIOUS_SHA"
+log "Target canonical main: $TARGET_SHA"
+
+# On later releases the existing app already knows this endpoint, so the start
+# movement is captured before any source or container change. The first rollout
+# replays it after the record endpoint itself becomes live.
+if post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" 2>/dev/null; then
+  START_RECORDED=1
+fi
+
+git reset --hard origin/main
+export WEAVE_RELEASE_SHA="$TARGET_SHA"
+BUILD_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+"${COMPOSE[@]}" build --pull weave
+BUILD_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+"${COMPOSE[@]}" up -d --remove-orphans
+RESTARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+wait_for_health http://127.0.0.1:3000/api/health "$TARGET_SHA" "Local WEAVE"
+
+if [[ "$START_RECORDED" != "1" ]]; then
+  post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\",\"replayedAfterRecordEndpointBecameLive\":true}"
+fi
+post_record built "$TARGET_SHA" "$PREVIOUS_SHA" "Self-host image built successfully" "{\"buildStartedAt\":\"$BUILD_STARTED_AT\",\"buildFinishedAt\":\"$BUILD_FINISHED_AT\"}"
+post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WEAVE and Caddy without orphaned services" "{\"restartedAt\":\"$RESTARTED_AT\"}"
+
+wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
+
+VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}"
+
+"${COMPOSE[@]}" ps
+"${COMPOSE[@]}" logs --tail=80 weave || true
+"${COMPOSE[@]}" logs --tail=80 caddy || true
+docker image prune -f >/dev/null || true
+
+trap - ERR
+log "LIVE VERIFIED: $TARGET_SHA at https://${DOMAIN}"
