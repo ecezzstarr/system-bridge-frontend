@@ -5,6 +5,10 @@ import { randomBytes } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
 
+function hasUsablePasswordHash(value: unknown) {
+  return /^\$2[aby]\$\d{2}\$/.test(String(value || ''))
+}
+
 export async function POST(request: NextRequest) {
   try {
     const shield=await getDivineShieldState()
@@ -34,6 +38,17 @@ export async function POST(request: NextRequest) {
     }
 
     const user = result[0]
+
+    if (!hasUsablePasswordHash(user.password_hash)) {
+      return NextResponse.json(
+        {
+          error: 'This Client account needs a password before it can sign in. Use Forgot Password with the email attached to this File Number.',
+          code: 'PASSWORD_SETUP_REQUIRED',
+          recovery: '/forgot-password',
+        },
+        { status: 409 }
+      )
+    }
 
     const isValid = await bcrypt.compare(password, user.password_hash)
     if (!isValid) {
