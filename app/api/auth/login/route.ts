@@ -14,6 +14,10 @@ const PLATFORM_ADMIN = {
   role: 'admin',
 }
 
+function hasUsablePasswordHash(value: unknown) {
+  return /^\$2[aby]\$\d{2}\$/.test(String(value || ''))
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -67,7 +71,7 @@ export async function POST(request: NextRequest) {
       SELECT u.*, w.balance_trx as platform_wallet_balance, w.tron_address as wallet_address
       FROM users u
       LEFT JOIN wallets w ON w.user_id = u.id AND w.is_primary = true
-      WHERE u.email = ${email} AND u.is_active = true
+      WHERE LOWER(u.email) = LOWER(${email}) AND u.is_active = true
     `
 
     if (users.length === 0) {
@@ -78,6 +82,20 @@ export async function POST(request: NextRequest) {
     }
 
     const user = users[0]
+
+    // A WEAVE account is never duplicated just because its password hash is
+    // absent. Send the existing identity through the verified recovery path,
+    // which writes a fresh bcrypt hash and invalidates old sessions.
+    if (!hasUsablePasswordHash(user.password_hash)) {
+      return NextResponse.json(
+        {
+          error: 'This WEAVE account needs a password before it can sign in. Use Forgot Password to set one.',
+          code: 'PASSWORD_SETUP_REQUIRED',
+          recovery: '/forgot-password',
+        },
+        { status: 409 }
+      )
+    }
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash)
