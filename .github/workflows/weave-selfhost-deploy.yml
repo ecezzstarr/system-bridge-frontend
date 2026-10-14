@@ -4,7 +4,6 @@ on:
   workflow_run:
     workflows: ["Production Check"]
     types: [completed]
-  workflow_dispatch:
 
 concurrency:
   group: weave-selfhost-production
@@ -13,8 +12,8 @@ concurrency:
 jobs:
   deploy:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
     runs-on: [self-hosted, linux]
     timeout-minutes: 60
     permissions:
@@ -54,9 +53,11 @@ jobs:
             *github.com/ecezzstarr/system-bridge-frontend.git|*github.com/ecezzstarr/system-bridge-frontend) ;;
             *) echo "Refusing deployment from unexpected origin: $remote" >&2; exit 1 ;;
           esac
-          if [ -n "${VERIFIED_SHA:-}" ]; then
-            export WEAVE_DEPLOY_TARGET_SHA="$VERIFIED_SHA"
+          if [ -z "${VERIFIED_SHA:-}" ]; then
+            echo "Production deployment requires the exact SHA from a successful Production Check." >&2
+            exit 1
           fi
+          export WEAVE_DEPLOY_TARGET_SHA="$VERIFIED_SHA"
           bash selfhost/deploy-production.sh
 
       - name: Return production identity
