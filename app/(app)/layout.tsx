@@ -27,6 +27,8 @@ export default function AppLayout({
   const router = useRouter()
   const pathname = usePathname()
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const [legionEmployment, setLegionEmployment] = useState<any>(null)
+  const [legionChecked, setLegionChecked] = useState(false)
   const routeAllowed = canAccessEnvironmentRoute(pathname, user?.role)
   const restoringHope = user?.role === 'bridger' || pathname.startsWith('/bridger') || pathname === '/weave/market/prospects'
 
@@ -37,18 +39,47 @@ export default function AppLayout({
   }, [isInitialized, isLoading, isAuthenticated, routeAllowed, user?.role, router])
 
   useEffect(() => {
-    // Only redirect if we've finished loading and confirmed not authenticated
     if (isInitialized && !isLoading && !isAuthenticated && !isRedirecting) {
       setIsRedirecting(true)
-      // Use replace to avoid back button issues
       router.replace('/login')
     }
   }, [isInitialized, isLoading, isAuthenticated, isRedirecting, router])
 
-  // Continuance enforcement for Bridgers
+  // Legion is an exclusive Client employment Lifestyle. The underlying account
+  // remains Agent/Bridger, but once accepted the person no longer operates that
+  // normal position until the Legion employment ends.
+  useEffect(() => {
+    const checkLegion = async () => {
+      if (!user?.id || !['agent', 'bridger'].includes(user.role || '')) {
+        setLegionEmployment(null)
+        setLegionChecked(true)
+        return
+      }
+      try {
+        const token = localStorage.getItem('ssb_auth_token')
+        const res = await fetch('/api/weave/lifestyles/legion', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          cache: 'no-store',
+        })
+        const data = await res.json().catch(() => ({}))
+        const employment = data?.employment?.active ? data.employment : null
+        setLegionEmployment(employment)
+        if (employment && !pathname.startsWith('/weave/lifestyles/legion')) {
+          router.replace('/weave/lifestyles/legion')
+        }
+      } catch (e) {
+        console.error('Legion position check error:', e)
+      } finally {
+        setLegionChecked(true)
+      }
+    }
+    if (isAuthenticated && user?.id) void checkLegion()
+  }, [isAuthenticated, user?.id, user?.role, pathname, router])
+
+  // Continuance enforcement for Bridgers who are still operating as Bridgers.
   useEffect(() => {
     const checkSub = async () => {
-      if (user?.role === 'bridger' && pathname !== '/bridger/subscription') {
+      if (user?.role === 'bridger' && !legionEmployment?.active && pathname !== '/bridger/subscription') {
         try {
           const token = localStorage.getItem('ssb_auth_token')
           const res = await fetch('/api/bridger/subscription', {
@@ -65,18 +96,19 @@ export default function AppLayout({
         }
       }
     }
-    
-    if (isAuthenticated && user?.role === 'bridger') {
-      checkSub()
-    }
-  }, [user, pathname, isAuthenticated, router])
+    if (isAuthenticated && user?.role === 'bridger' && legionChecked) void checkSub()
+  }, [user, pathname, isAuthenticated, router, legionEmployment, legionChecked])
 
-  // Terms acceptance gate for Agents and Bridgers
   const [termsNeeded, setTermsNeeded] = useState(false)
   const [termsChecked, setTermsChecked] = useState(false)
 
   useEffect(() => {
     const checkTerms = async () => {
+      if (legionEmployment?.active) {
+        setTermsNeeded(false)
+        setTermsChecked(true)
+        return
+      }
       if (!user?.id || !['agent', 'bridger'].includes(user.role || '')) {
         setTermsChecked(true)
         return
@@ -87,9 +119,7 @@ export default function AppLayout({
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         })
         const data = await res.json()
-        if (data.success) {
-          setTermsNeeded(data.needsAcceptance)
-        }
+        if (data.success) setTermsNeeded(data.needsAcceptance)
       } catch (e) {
         console.error('Terms check error:', e)
       } finally {
@@ -97,14 +127,11 @@ export default function AppLayout({
       }
     }
 
-    if (isAuthenticated && user?.id) {
-      checkTerms()
-    }
-  }, [isAuthenticated, user?.id, user?.role])
+    if (isAuthenticated && user?.id && legionChecked) void checkTerms()
+  }, [isAuthenticated, user?.id, user?.role, legionEmployment, legionChecked])
 
-  // The global environment transit owns the visible loading experience.
-  // This marker keeps the destination covered until auth has resolved.
-  if (!isInitialized || isLoading || (isRedirecting && !isAuthenticated)) {
+  const legionPositionPending = Boolean(user?.role && ['agent','bridger'].includes(user.role) && !legionChecked)
+  if (!isInitialized || isLoading || legionPositionPending || (isRedirecting && !isAuthenticated)) {
     return (
       <div
         className="flex min-h-dvh items-center justify-center bg-transparent px-4 text-center"
@@ -121,32 +148,21 @@ export default function AppLayout({
     )
   }
 
-  // Only render children if authenticated
-  if (!isAuthenticated) {
-    return null
-  }
-
+  if (!isAuthenticated) return null
   if (!routeAllowed) return null
+  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion')) return null
 
   return (
     <EnvironmentOrganizerProvider>
-    <div className="weave-app-shell relative min-h-dvh overflow-hidden bg-transparent" data-weave-world-runtime="persistent">
+    <div className="weave-app-shell relative min-h-dvh overflow-hidden bg-transparent" data-weave-world-runtime="persistent" data-legion-exclusive={legionEmployment?.active ? 'true' : 'false'}>
       <div className="relative z-10 flex min-h-dvh min-w-0 flex-col">
         <AppHeader user={user as any} />
         <FlameEventAd />
         <main className="relative min-w-0 flex-1 overflow-x-clip" data-weave-world-interior="route">
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
-              <FlameEventRoleAtmosphere
-                userRole={user?.role}
-                userName={user?.name}
-                pathname={pathname}
-              >
-                <NormalWeaveRoleAtmosphere
-                  userRole={user?.role}
-                  userName={user?.name}
-                  pathname={pathname}
-                >
+              <FlameEventRoleAtmosphere userRole={user?.role} userName={user?.name} pathname={pathname}>
+                <NormalWeaveRoleAtmosphere userRole={user?.role} userName={user?.name} pathname={pathname}>
                   <EnvironmentPageGuard>{children}</EnvironmentPageGuard>
                 </NormalWeaveRoleAtmosphere>
               </FlameEventRoleAtmosphere>
@@ -157,12 +173,8 @@ export default function AppLayout({
       <Toaster position="top-center" richColors />
       <LiveAdSurface />
       <PresenceCameraSignal />
-      {termsChecked && termsNeeded && user?.role && ['agent', 'bridger'].includes(user.role) && (
-        <TermsAcceptanceModal
-          role={user.role as 'agent' | 'bridger'}
-          userName={user.name}
-          onAccepted={() => setTermsNeeded(false)}
-        />
+      {termsChecked && termsNeeded && !legionEmployment?.active && user?.role && ['agent', 'bridger'].includes(user.role) && (
+        <TermsAcceptanceModal role={user.role as 'agent' | 'bridger'} userName={user.name} onAccepted={() => setTermsNeeded(false)} />
       )}
     </div>
     </EnvironmentOrganizerProvider>

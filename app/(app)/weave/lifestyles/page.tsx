@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, Sparkles } from 'lucide-react'
+import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, Sparkles, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 function authHeaders() {
@@ -66,6 +66,8 @@ export default function WeaveLifestylesPage() {
   const agenticOpen = Boolean(agenticAvailable && aceOpen)
   const distributionManagerAvailable = access?.role === 'agent' || access?.role === 'bridger'
   const distributionManagerOpen = Boolean(distributionManagerAvailable && access?.active)
+  const legionAvailable = access?.role === 'agent' || access?.role === 'bridger'
+  const legionOpen = Boolean(legionAvailable && access?.active)
 
   return (
     <main className="weave-operating-environment min-h-[70vh] overflow-hidden border-y border-yellow-300/15 bg-[#080b12]/78 px-4 py-6 sm:rounded-[2rem] sm:border sm:px-7" data-weave-lifestyle-catalog="canonical">
@@ -74,7 +76,7 @@ export default function WeaveLifestylesPage() {
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">LIFESTYLE</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Lifestyle is a layer carried by your existing WEAVE position. There is no second Lifestyle subscription. Core roles remain Administration, Agent, Bridger and Client; Lifestyle changes how an eligible person operates without creating another core role.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Lifestyle is a layer carried by your existing WEAVE position. There is no second Lifestyle subscription. Core roles remain Administration, Agent, Bridger and Client; some Lifestyle identities add temporary operating commitments without rewriting the underlying account role.</p>
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
@@ -155,10 +157,25 @@ export default function WeaveLifestylesPage() {
                 />
               )}
 
+              {legionAvailable && (
+                <LifestyleGround
+                  tone="violet"
+                  icon={<Users className="h-8 w-8" />}
+                  eyebrow="Client enterprise employment"
+                  title="LEGION"
+                  detail="Legion is exclusive employment inside a Client enterprise. Subscribed Agents and Bridgers can apply to open Client Legion Quarters or accept a Client invitation. Once accepted, normal Agent/Bridger functions close and the person works only for that Client inside Weave until Legion employment ends."
+                  open={legionOpen}
+                  reason={access?.active ? 'Legion employment is available from your current position.' : `Renew the ${roleLabel} monthly subscription before applying.`}
+                  href="/weave/lifestyles/legion"
+                  action="Enter Legion Market"
+                  tools={[{icon:<Users className="h-3.5 w-3.5"/>,label:'Client recruitment'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Exclusive employment'}]}
+                />
+              )}
+
               <div className="border-y border-white/10 px-4 py-5 sm:border" data-lifestyle-position-rule="true">
                 <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Position rule</p>
                 <h2 className="mt-1 text-xl font-black text-white">ONE SUBSCRIPTION · POSITION-SCOPED ACCESS</h2>
-                <p className="mt-2 text-xs leading-5 text-slate-500">A Lifestyle never replaces your core WEAVE role. Your position determines what identities can open; each identity then contains the environments and instruments that belong to that way of operating.</p>
+                <p className="mt-2 text-xs leading-5 text-slate-500">Your core account role remains Administration, Agent, Bridger or Client. Legion is the exclusive-employment exception: the underlying Agent/Bridger identity is preserved, but its normal work functions are suspended while the person serves a Client as Legion.</p>
               </div>
             </div>
           </section>
@@ -181,9 +198,9 @@ function LifestyleGround({
   action:string
   tools:{icon:React.ReactNode;label:string}[]
   nested?:boolean
-  tone:'yellow'|'cyan'|'amber'
+  tone:'yellow'|'cyan'|'amber'|'violet'
 }){
-  const toneClass=tone==='cyan'?'text-cyan-300 border-cyan-300/20 bg-cyan-300/[0.035]':tone==='amber'?'text-amber-300 border-amber-300/20 bg-amber-300/[0.035]':'text-yellow-300 border-yellow-300/20 bg-yellow-300/[0.035]'
+  const toneClass=tone==='cyan'?'text-cyan-300 border-cyan-300/20 bg-cyan-300/[0.035]':tone==='amber'?'text-amber-300 border-amber-300/20 bg-amber-300/[0.035]':tone==='violet'?'text-violet-300 border-violet-300/20 bg-violet-300/[0.035]':'text-yellow-300 border-yellow-300/20 bg-yellow-300/[0.035]'
   return <div className={`${nested?'ml-3 border-l-2 pl-4 sm:ml-8':'p-5 sm:p-6'} ${nested?'border-cyan-300/20':'border'} ${nested?'':'rounded-[1.5rem]'} ${nested?'':' '+toneClass.split(' ').filter(item=>item.startsWith('border-')||item.startsWith('bg-')).join(' ')}`} data-lifestyle={title.toLowerCase().replaceAll(' ','_')}>
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="max-w-3xl">

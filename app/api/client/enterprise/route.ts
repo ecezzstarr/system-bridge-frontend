@@ -4,7 +4,8 @@ import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
 import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
-import { ensureLegionCommerceSchema, legionCarrierPath } from '@/lib/legion-commerce'
+import { legionCarrierPath } from '@/lib/legion-commerce'
+import { ensureLegionEmploymentSchema } from '@/lib/legion-employment'
 import { publicGrowthSlug } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
     await ensureClientWorkshopSchema(sql)
     await ensureEnterpriseDreamSchema(sql)
     await ensureClientBusinessStoreSchema(sql)
-    await ensureLegionCommerceSchema(sql)
+    await ensureLegionEmploymentSchema(sql)
 
     const [folder] = await sql`
       SELECT file_number,weave_position,enterprise_status,enterprise_name,enterprise_sector,workshop_type
@@ -48,7 +49,8 @@ export async function GET(request: NextRequest) {
       ? await sql`
           SELECT
             l.id,l.name,l.contact,l.function_title,l.livelihood_role,l.profit_participation,
-            l.active,l.sales_code,l.sales_enabled,l.created_at,
+            l.active,l.sales_code,l.sales_enabled,l.created_at,l.source_user_id,l.source_role,
+            l.employment_status,l.accepted_at,
             COUNT(o.id)::int AS attributed_orders,
             COUNT(o.id) FILTER (WHERE o.payment_status='received')::int AS paid_orders,
             COALESCE(SUM(o.amount) FILTER (WHERE o.payment_status='received'),0)::numeric AS attributed_revenue
