@@ -1,31 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Storage } from '@google-cloud/storage'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { ensureVideoAdWorkshopSchema, mapVideoAdProject, type VideoAdScene } from '@/lib/video-ad-workshop'
 import { ensureVideoAdStudioSchema, VIDEO_STUDIO_CUSTOMER_ROLES } from '@/lib/video-ad-studio'
 import { spawn } from 'node:child_process'
-import { createReadStream } from 'node:fs'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { createWriteStream } from 'node:fs'
+import { copyFile, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
+import { mediaObjectNameFromUrl, mediaObjectPath, saveMediaFile } from '@/lib/weave-media-storage'
 
 export const runtime = 'nodejs'
 export const maxDuration = 900
 
-const BUCKET_NAME = 'ssbnow-status-feed-media'
-const PUBLIC_PREFIX = `https://storage.googleapis.com/${BUCKET_NAME}/`
+const LEGACY_GCS_PREFIX = 'https://storage.googleapis.com/ssbnow-status-feed-media/'
 const FONT_PATH = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-const storage = new Storage()
-
-function gcsObjectName(url: string) {
-  if (!url.startsWith(PUBLIC_PREFIX)) throw new Error('Video Ad Studio only renders media held by the WEAVE media bucket')
-  const name = decodeURIComponent(url.slice(PUBLIC_PREFIX.length))
-  const allowed = name.startsWith('video-ads/assets/') || name.startsWith('video-ads/customer-assets/')
-  if (!allowed) throw new Error('Unrecognized Video Ad Studio media path')
-  return name
-}
 
 async function runFfmpeg(args: string[]) {
   await new Promise<void>((resolve, reject) => {
@@ -42,12 +33,33 @@ function safeConcatPath(filePath: string) {
 }
 
 async function downloadAsset(url: string, destination: string) {
-  await storage.bucket(BUCKET_NAME).file(gcsObjectName(url)).download({ destination })
+  const localObject = mediaObjectNameFromUrl(url)
+  if (localObject) {
+    const allowed = localObject.startsWith('video-ads/assets/') || localObject.startsWith('video-ads/customer-assets/')
+    if (!allowed) throw new Error('Unrecognized Video Ad Studio media path')
+    await copyFile(mediaObjectPath(localObject), destination)
+    return
+  }
+
+  // Preserve existing projects created before self-hosting. Public legacy GCS
+  // URLs can still be read over HTTPS without requiring a Google SDK credential.
+  if (url.startsWith(LEGACY_GCS_PREFIX)) {
+    const objectName = decodeURIComponent(url.slice(LEGACY_GCS_PREFIX.length))
+    const allowed = objectName.startsWith('video-ads/assets/') || objectName.startsWith('video-ads/customer-assets/')
+    if (!allowed) throw new Error('Unrecognized legacy Video Ad Studio media path')
+    const response = await fetch(url, { cache: 'no-store' })
+    if (!response.ok || !response.body) throw new Error(`Legacy media fetch failed (${response.status})`)
+    await pipeline(Readable.fromWeb(response.body as any), createWriteStream(destination))
+    return
+  }
+
+  throw new Error('Video Ad Studio only renders media held by WEAVE storage')
 }
 
 function extFor(url: string, fallback: string) {
   try {
-    const ext = path.extname(new URL(url).pathname).slice(0, 8)
+    const parsed = new URL(url, 'https://weavingsystem.online')
+    const ext = path.extname(parsed.pathname).slice(0, 8)
     return ext || fallback
   } catch {
     return fallback
@@ -132,9 +144,10 @@ export async function POST(request: NextRequest) {
     }
 
     const outputObject = `video-ads/renders/${new Date().toISOString().slice(0, 10)}/${projectId}.mp4`
-    const blob = storage.bucket(BUCKET_NAME).file(outputObject)
-    await pipeline(createReadStream(finalPath), blob.createWriteStream({ resumable: false, metadata: { contentType: 'video/mp4', cacheControl: 'public, max-age=31536000' } }))
-    const outputUrl = `https://storage.googleapis.com/${BUCKET_NAME}/${outputObject}`
+    const outputUrl = await saveMediaFile(outputObject, finalPath, {
+      contentType: 'video/mp4',
+      cacheControl: 'public, max-age=31536000, immutable',
+    })
     const updated = await pool.query("UPDATE admin_video_ad_projects SET status='ready',output_url=$2,error_message=NULL,updated_at=NOW() WHERE id=$1::uuid RETURNING *", [projectId, outputUrl])
     if (row.order_id) {
       await pool.query("UPDATE video_ad_studio_orders SET status='ready',output_url=$2,updated_at=NOW() WHERE id=$1::uuid", [row.order_id, outputUrl])
