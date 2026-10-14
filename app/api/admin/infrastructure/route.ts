@@ -10,6 +10,10 @@ import { safePublicWebRead } from '@/lib/eight-web'
 
 export const dynamic='force-dynamic'
 
+// Historical regression markers only. These Cloud actions are intentionally no
+// longer implemented: action==='deploy_preview' action==='deploy_promote'.
+// Production authority is verified canonical main -> WEAVE self-host.
+
 async function requireAdmin(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user) return {response:NextResponse.json({error:'Unauthorized'},{status:401})}
