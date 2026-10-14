@@ -48,6 +48,9 @@ export default function ClientLoginPage() {
         toast.success('Welcome back')
         setSession(result.token, result.user)
         router.push('/client/dashboard')
+      } else if (result.code === 'PASSWORD_SETUP_REQUIRED') {
+        toast.message('Set a password for this Client account to continue.')
+        router.push('/forgot-password?portal=client')
       } else {
         toast.error(result.error || "That didn't match. Try again.")
       }
