@@ -42,6 +42,7 @@ jobs:
           node tests/manager-employment-regression.cjs
           node tests/system-store-regression.cjs
           node tests/public-app-download-regression.cjs
+          node tests/password-hash-login-regression.cjs
           node tests/core-hardening-regression.cjs
           node tests/commerce-ledger-regression.cjs
           node tests/email-mailbox-regression.cjs
