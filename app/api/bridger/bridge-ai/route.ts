@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import crypto from 'crypto'
 import { hasActiveBridgeAiContinuance } from '@/lib/bridge-ai-subscription'
+import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
@@ -22,7 +23,14 @@ export async function GET(request: NextRequest) {
       WHERE b.bridger_id = ${user.id}::uuid
       ORDER BY b.created_at DESC
     `
-    return NextResponse.json({ success: true, bridges })
+    const bridgeOrigin = getWeaveBridgeOrigin()
+    return NextResponse.json({
+      success: true,
+      bridges: bridges.map((bridge: any) => ({
+        ...bridge,
+        public_url: `${bridgeOrigin}/bridge/${bridge.bridge_code}`,
+      })),
+    })
   } catch (error: any) {
     console.error('[bridger bridge-ai GET] error:', error)
     return NextResponse.json({ error: 'Failed to load Bridge AIs' }, { status: 500 })
@@ -75,7 +83,13 @@ export async function POST(request: NextRequest) {
       RETURNING id, bridge_code, status, created_at
     `
 
-    return NextResponse.json({ success: true, bridge: result[0] })
+    return NextResponse.json({
+      success: true,
+      bridge: {
+        ...result[0],
+        public_url: `${getWeaveBridgeOrigin()}/bridge/${result[0].bridge_code}`,
+      },
+    })
   } catch (error: any) {
     console.error('[bridger bridge-ai POST] error:', error)
     return NextResponse.json({ error: 'Failed to create Bridge AI' }, { status: 500 })
