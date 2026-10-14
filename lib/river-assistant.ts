@@ -1,6 +1,7 @@
 "use server"
 
 // River - voice to a system-making platform
+import OpenAI from 'openai'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { WEAVE_ARCHITECTURE_PROMPT } from '@/lib/weave-architecture'
 
@@ -73,38 +74,66 @@ function buildSystemMessage(context?: RiverContext): string {
     : `${RIVER_SYSTEM_PROMPT}${agilityContext}`
 }
 
-function getAI(): GoogleGenerativeAI | null {
+function getOpenAI(): OpenAI | null {
+  const key = process.env.OPENAI_API_KEY
+  return key ? new OpenAI({ apiKey: key }) : null
+}
+
+function getGemini(): GoogleGenerativeAI | null {
   const key = process.env.GOOGLE_AI_KEY || process.env.GEMINI_API_KEY
   return key ? new GoogleGenerativeAI(key) : null
 }
 
+async function chatWithOpenAI(messages: RiverMessage[], userContext?: RiverContext): Promise<string | null> {
+  const ai = getOpenAI()
+  if (!ai) return null
+  const latestMessages = messages
+    .slice(-12)
+    .filter(message => message?.content)
+    .map(message => ({ role: message.role, content: String(message.content).slice(0, 12000) } as const))
+  if (!latestMessages.length) return 'I am River. How can I help?'
+  const completion = await ai.chat.completions.create({
+    model: process.env.RIVER_OPENAI_MODEL || 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: buildSystemMessage(userContext) },
+      ...latestMessages,
+    ],
+    max_tokens: 300,
+    temperature: 0.7,
+  })
+  return completion.choices[0]?.message?.content?.trim() || null
+}
+
+async function chatWithGemini(messages: RiverMessage[], userContext?: RiverContext): Promise<string | null> {
+  const ai = getGemini()
+  if (!ai) return null
+  const model = ai.getGenerativeModel({
+    model: process.env.RIVER_MODEL || process.env.EIGHT_MODEL || 'gemini-1.5-flash',
+    systemInstruction: buildSystemMessage(userContext),
+  })
+  const history = messages
+    .slice(-12, -1)
+    .filter(message => message?.content)
+    .map(message => ({
+      role: message.role === 'assistant' ? 'model' as const : 'user' as const,
+      parts: [{ text: String(message.content).slice(0, 12000) }],
+    }))
+  const latest = messages[messages.length - 1]
+  if (!latest?.content) return 'I am River. How can I help?'
+  const chat = model.startChat({ history, generationConfig: { maxOutputTokens: 300, temperature: 0.7 } })
+  const result = await chat.sendMessage(String(latest.content).slice(0, 12000))
+  return result.response.text() || null
+}
+
 export async function chatWithRiver(messages: RiverMessage[], userContext?: RiverContext): Promise<string> {
   try {
-    const ai = getAI()
-    if (!ai) return 'I am River. The connection is not configured yet.'
+    const openaiResponse = await chatWithOpenAI(messages, userContext)
+    if (openaiResponse) return openaiResponse
 
-    const model = ai.getGenerativeModel({
-      model: process.env.RIVER_MODEL || process.env.EIGHT_MODEL || 'gemini-1.5-flash',
-      systemInstruction: buildSystemMessage(userContext),
-    })
-    const history = messages
-      .slice(-12, -1)
-      .filter(message => message?.content)
-      .map(message => ({
-        role: message.role === 'assistant' ? 'model' as const : 'user' as const,
-        parts: [{ text: String(message.content).slice(0, 12000) }],
-      }))
+    const geminiResponse = await chatWithGemini(messages, userContext)
+    if (geminiResponse) return geminiResponse
 
-    const chat = model.startChat({
-      history,
-      generationConfig: { maxOutputTokens: 300, temperature: 0.7 },
-    })
-
-    const latest = messages[messages.length - 1]
-    if (!latest?.content) return 'I am River. How can I help?'
-
-    const result = await chat.sendMessage(String(latest.content).slice(0, 12000))
-    return result.response.text() || 'I am River. How can I help?'
+    return 'I am River. The AI connection is not configured on this server yet.'
   } catch (error) {
     console.error('River assistant error:', error)
     return 'I am having trouble connecting. Please try again.'
