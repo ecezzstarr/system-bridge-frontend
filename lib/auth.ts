@@ -36,6 +36,10 @@ declare module 'next-auth/jwt' {
   }
 }
 
+function hasUsablePasswordHash(value: unknown) {
+  return /^\$2[aby]\$\d{2}\$/.test(String(value || ''))
+}
+
 // Username and Password Authentication
 const providers: NextAuthOptions['providers'] = [
   CredentialsProvider({
@@ -54,7 +58,7 @@ const providers: NextAuthOptions['providers'] = [
           return null
         }
 
-        // Get user from Neon database
+        // Get user from current WEAVE database
         console.log('[WEAVE] Looking up user in database...')
         const user = await getUserByUsername(credentials.username)
         console.log('[WEAVE] User found:', user ? 'yes' : 'no')
@@ -64,8 +68,8 @@ const providers: NextAuthOptions['providers'] = [
           return null
         }
 
-        if (!user.password_hash) {
-          console.log('[WEAVE] User has no password')
+        if (!hasUsablePasswordHash(user.password_hash)) {
+          console.log('[WEAVE] User requires password setup/recovery')
           return null
         }
 
@@ -134,9 +138,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      // Allows callback URLs on the same origin
+      if (url.startsWith('/')) return `${baseUrl}${url}`
       else if (new URL(url).origin === baseUrl) return url
       return baseUrl
     },
@@ -150,13 +152,13 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
 
   jwt: {
     secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
 
   secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production',
