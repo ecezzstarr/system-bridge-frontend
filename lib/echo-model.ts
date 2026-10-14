@@ -1,16 +1,6 @@
 "use server"
 
-// Echo's analysis engine - reuses the same Vertex AI setup as eight-engine.ts
-// (authenticates via the Cloud Run service account / ADC, no API key to manage).
-// Distinct from Eight (admin/ops) and River (user support): Echo only ever
-// looks at one user's own history and returns evidence-linked insights.
-//
-// Discovery Mode, as three explicit steps, run synchronously every call —
-// never a passive wait for insights to accumulate:
-//   collect()  - format the user's own bounded activity slice
-//   research() - grounded web search for current public/trend context
-//   reason()   - single reasoning pass producing Truth-Engine-shaped insights
-
+import OpenAI from 'openai'
 import { VertexAI } from '@google-cloud/vertexai'
 import { WEAVE_ARCHITECTURE_PROMPT } from '@/lib/weave-architecture'
 
@@ -18,6 +8,15 @@ const vertexAI = new VertexAI({
   project: process.env.GOOGLE_CLOUD_PROJECT || 'ssbr-495208',
   location: 'us-central1',
 })
+
+function getOpenAI() {
+  const apiKey = process.env.OPENAI_API_KEY
+  return apiKey ? new OpenAI({ apiKey }) : null
+}
+
+function canUseVertex() {
+  return Boolean(process.env.GOOGLE_CLOUD_PROJECT || process.env.GOOGLE_APPLICATION_CREDENTIALS)
+}
 
 export interface EchoActivityRow {
   id: number
@@ -43,44 +42,28 @@ export interface EchoInsightResult {
 }
 
 function collect(activity: EchoActivityRow[]): string {
-  return JSON.stringify(
-    activity.map(a => ({
-      id: a.id,
-      source: a.source,
-      type: a.activity_type,
-      content: a.content,
-      metadata: a.metadata,
-      occurredAt: a.occurred_at,
-    }))
-  )
+  return JSON.stringify(activity.map(a => ({
+    id: a.id,
+    source: a.source,
+    type: a.activity_type,
+    content: a.content,
+    metadata: a.metadata,
+    occurredAt: a.occurred_at,
+  })))
 }
 
-// Pulls a short, current, grounded public-context brief relevant to the
-// activity via Vertex AI's Google Search grounding tool. Best-effort: if
-// grounding fails or finds nothing, analysis proceeds on internal activity
-// alone rather than blocking the whole request.
 async function research(activityText: string): Promise<string> {
+  if (!canUseVertex()) return ''
   try {
     const model = vertexAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
       tools: [{ googleSearchRetrieval: {} } as any],
     })
-
-    const prompt = `Based on this user's recent activity, identify 1-3 short, current,
-public research questions worth checking (e.g. platform trend shifts, competitor
-moves, timing/seasonality) — then answer them using search. Return a short
-plain-text brief (max ~150 words) of what you actually found, with no speculation
-beyond what search surfaced. If nothing relevant surfaces, return exactly:
-NO_RESEARCH_FINDINGS
-
-Activity:
-${activityText}`
-
+    const prompt = `Based on this user's recent activity, identify 1-3 short, current public research questions worth checking, then answer them using search. Return a short plain-text brief (max ~150 words). If nothing relevant surfaces, return exactly NO_RESEARCH_FINDINGS.\n\nActivity:\n${activityText}`
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: { maxOutputTokens: 500, temperature: 0.3 },
     })
-
     const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
     if (!text || text.includes('NO_RESEARCH_FINDINGS')) return ''
     return text
@@ -90,62 +73,58 @@ ${activityText}`
   }
 }
 
-const REASON_SYSTEM_PROMPT = `You are Echo, the institutional participation layer and continuity engine of Weave of Presence. 
+const REASON_SYSTEM_PROMPT = `You are Echo, the institutional participation layer and continuity engine of Weave of Presence.
 You govern how different intelligences participate with different humans and systems.
 
-Your concern is not just reflection, but coordination across the whole institutional movement:
-- Continuity: Preserve the memory of the institution so it does not forget itself across locations.
-- Context & State: Recognize the user's current institutional role and timing.
-- Movement & Handoff: Facilitate the natural next movement between humans, AI, and systems.
-- Participation: Ensure every interaction is a useful placement in the larger movement.
+Your concern is coordination across the whole institutional movement:
+- Continuity: preserve institutional memory across locations.
+- Context & State: recognize the user's current institutional role and timing.
+- Movement & Handoff: facilitate the natural next movement between humans, AI, and systems.
+- Participation: ensure every interaction is a useful placement in the larger movement.
 
-You are given a bounded slice of a user's historical activity and an optional grounded research brief.
-Identify the Truth-Engine-shaped insights that help the user recognize their placement.
-
-For each insight you produce:
-- summary: one clear sentence, the insight or state recognition.
-- reasoning: 1-3 sentences on WHY, tied to specific evidence or institutional movement.
-- recommendedAction: the natural next movement the user could take.
-- evidenceType: "fact" | "inference" | "hypothesis" | "opinion" | "unknown".
-- confidence: number 0.00-1.00.
-- confidenceLabel: "high", "medium", or "low".
-- evidenceIds: activity row id(s) that support this insight.
+For each insight return summary, category, reasoning, recommendedAction, evidenceType, confidence, confidenceLabel and evidenceIds. Never fabricate certainty.
 
 ${WEAVE_ARCHITECTURE_PROMPT}
 
-Treat each observed human movement as a possible topic inside the fixed Weave subject. Use continuity to recognize when a topic changes, deepens, hands off to another function, or becomes work/value/participation.
-
-Never fabricate certainty. Be calm. Be the institutional memory.
-
 Respond ONLY with valid JSON:
-{ "insights": [{ "summary": string, "category": string, "reasoning": string,
-"recommendedAction": string, "evidenceType": string, "confidence": number,
-"confidenceLabel": string, "evidenceIds": number[] }] }`
+{ "insights": [{ "summary": string, "category": string, "reasoning": string, "recommendedAction": string, "evidenceType": string, "confidence": number, "confidenceLabel": string, "evidenceIds": number[] }] }`
 
 async function reason(activityText: string, researchBrief: string): Promise<EchoInsightResult[]> {
+  const userContent = researchBrief
+    ? `ACTIVITY:\n${activityText}\n\nRESEARCH BRIEF:\n${researchBrief}`
+    : `ACTIVITY:\n${activityText}\n\n(No external research findings for this pass.)`
+
+  const openai = getOpenAI()
+  if (openai) {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: REASON_SYSTEM_PROMPT },
+        { role: 'user', content: userContent },
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 4000,
+      temperature: 0.4,
+    })
+    const text = completion.choices[0]?.message?.content
+    if (!text) return []
+    return (JSON.parse(text).insights ?? []) as EchoInsightResult[]
+  }
+
+  if (!canUseVertex()) return []
   const model = vertexAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
     systemInstruction: { role: 'system', parts: [{ text: REASON_SYSTEM_PROMPT }] },
   })
-
-  const userContent = researchBrief
-    ? `ACTIVITY:\n${activityText}\n\nRESEARCH BRIEF (grounded, from public web search):\n${researchBrief}`
-    : `ACTIVITY:\n${activityText}\n\n(No external research findings for this pass.)`
-
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: userContent }] }],
     generationConfig: { maxOutputTokens: 4000, temperature: 0.4 },
   })
-
   const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text
   if (!text) return []
-
-  const cleaned = text.replace(/```json|```/g, '').trim()
-  const parsed = JSON.parse(cleaned)
-  return parsed.insights ?? []
+  return (JSON.parse(text.replace(/```json|```/g, '').trim()).insights ?? []) as EchoInsightResult[]
 }
 
-// Discovery Mode: collect -> research -> reason, synchronously, every call.
 export async function runEchoAnalysis(activity: EchoActivityRow[]): Promise<EchoInsightResult[]> {
   try {
     const activityText = collect(activity)
@@ -156,7 +135,6 @@ export async function runEchoAnalysis(activity: EchoActivityRow[]): Promise<Echo
     return []
   }
 }
-
 
 export type EchoSalesCandidate = {
   key: string
@@ -187,20 +165,7 @@ export type EchoSalesCoordination = {
 }
 
 const ECHO_SALES_MANAGER_PROMPT = `You are Echo acting as WEAVE's active File Folder sales coordination manager.
-
-Your task is operational coordination, not hype. WEAVE has a weekly File Folder sales target. You receive current funnel metrics plus bounded real candidate records that already exist inside WEAVE.
-
-Rules:
-- Never claim a sale is guaranteed.
-- Never invent prospects, replies, purchases, identities, urgency, or metrics.
-- Do not recommend contacting people who are not already represented in the supplied candidate records.
-- Respect the channel already associated with each candidate.
-- Prefer warm movement: replied/responded prospects, opened outreach, pending purchases, and stale existing conversations before cold expansion.
-- Preserve human agency. No deceptive pressure, false scarcity, fabricated testimonials, or coercive wording.
-- Echo coordinates follow-up and handoff. EIGHT handles higher-level intelligence.
-- Return no more than 12 actions.
-- Every action key must exactly match one supplied candidate key.
-- Keep instructions concise and executable by the assigned WEAVE role.
+Coordinate the supplied real funnel candidates only. Never invent prospects, replies, purchases, identities, urgency or metrics. Prefer warm movement and preserve human agency. Return no more than 12 actions and every action key must exactly match one supplied candidate key.
 
 Return ONLY valid JSON:
 {
@@ -217,6 +182,36 @@ Return ONLY valid JSON:
     "instruction": "specific next movement"
   }]
 }`
+
+async function salesModel(input: Record<string, unknown>): Promise<EchoSalesCoordination | null> {
+  const openai = getOpenAI()
+  if (openai) {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: ECHO_SALES_MANAGER_PROMPT },
+        { role: 'user', content: JSON.stringify(input) },
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 3500,
+      temperature: 0.25,
+    })
+    const text = completion.choices[0]?.message?.content
+    return text ? JSON.parse(text) as EchoSalesCoordination : null
+  }
+
+  if (!canUseVertex()) return null
+  const model = vertexAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    systemInstruction: { role: 'system', parts: [{ text: ECHO_SALES_MANAGER_PROMPT }] },
+  })
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: JSON.stringify(input) }] }],
+    generationConfig: { maxOutputTokens: 3500, temperature: 0.25 },
+  })
+  const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text
+  return text ? JSON.parse(text.replace(/```json|```/g, '').trim()) as EchoSalesCoordination : null
+}
 
 export async function runEchoSalesCoordination(input: {
   weeklyTarget: number
@@ -236,31 +231,16 @@ export async function runEchoSalesCoordination(input: {
   }
 
   try {
-    const model = vertexAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: { role: 'system', parts: [{ text: ECHO_SALES_MANAGER_PROMPT }] },
+    const parsed = await salesModel({
+      weeklyTarget: input.weeklyTarget,
+      confirmedSales: input.confirmedSales,
+      remainingSales: input.remainingSales,
+      daysRemaining: input.daysRemaining,
+      metrics: input.metrics,
+      candidates: input.candidates,
     })
-    const result = await model.generateContent({
-      contents: [{
-        role: 'user',
-        parts: [{
-          text: JSON.stringify({
-            weeklyTarget: input.weeklyTarget,
-            confirmedSales: input.confirmedSales,
-            remainingSales: input.remainingSales,
-            daysRemaining: input.daysRemaining,
-            metrics: input.metrics,
-            candidates: input.candidates,
-          }),
-        }],
-      }],
-      generationConfig: { maxOutputTokens: 3500, temperature: 0.25 },
-    })
+    if (!parsed) return { summary: 'Echo AI provider is not configured on this server.', actions: [] }
 
-    const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!text) return { summary: 'Echo returned no sales coordination output.', actions: [] }
-
-    const parsed = JSON.parse(text.replace(/\`\`\`json|\`\`\`/g, '').trim()) as EchoSalesCoordination
     const candidateMap = new Map(input.candidates.map(candidate => [candidate.key, candidate]))
     const actions = Array.isArray(parsed.actions)
       ? parsed.actions
