@@ -209,8 +209,8 @@ export function ProFileFolderPreview({ standalone = false }: { standalone?: bool
           <p className="text-[8px] font-black uppercase tracking-[.18em] text-cyan-200">Recognize → Preview → Build → Activate → Operate</p>
           <p className="mt-1 text-[10px] text-slate-500">A real Client File Folder becomes the Client's persistent operating environment inside WEAVE.</p>
         </div>
-        <Link href="/register">
-          <Button className="bg-white text-[#020812] hover:bg-slate-100">Enter WEAVE <ArrowRight className="ml-2 h-4 w-4" /></Button>
+        <Link href="/file-folder">
+          <Button className="bg-white text-[#020812] hover:bg-slate-100">Purchase File Folder <ArrowRight className="ml-2 h-4 w-4" /></Button>
         </Link>
       </footer>
     </section>
