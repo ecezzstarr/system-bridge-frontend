@@ -2,19 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Activity, Cloud, Globe2, Loader2, RefreshCw, Rocket, Shield, ShieldCheck, TerminalSquare } from 'lucide-react'
+import Link from 'next/link'
+import { Activity, Flame, Globe2, Loader2, RefreshCw, ScrollText, Server, Shield, ShieldCheck, TerminalSquare } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 
 type Snapshot={
-  cloud:{
-    project:string
-    region:string
-    service:string
-    previewConfigured:boolean
-    promoteConfigured:boolean
+  runtime:{
+    mode:string
+    domain:string
+    serverKey:string
+    releaseSha:string|null
+    edge:string
+    application:string
+    deployAuthority:string
   }
   shield:{active:boolean;title:string;message:string;updatedAt:string|null}
   systems:Array<any>
@@ -28,7 +31,6 @@ export default function InfrastructureWorkshop(){
   const [loading,setLoading]=useState(true)
   const [shieldBusy,setShieldBusy]=useState(false)
   const [webBusy,setWebBusy]=useState(false)
-  const [deployBusy,setDeployBusy]=useState<string|null>(null)
   const [webUrl,setWebUrl]=useState('https://weavingsystem.online')
   const [webResult,setWebResult]=useState<any>(null)
 
@@ -40,7 +42,7 @@ export default function InfrastructureWorkshop(){
 
   const headers=()=>({
     'Content-Type':'application/json',
-    ...(token?{Authorization:`Bearer ${token}`}:{}),
+    ...(token?{Authorization:`Bearer ${token}`}:{})
   })
 
   async function refresh(){
@@ -96,29 +98,6 @@ export default function InfrastructureWorkshop(){
     finally{setWebBusy(false)}
   }
 
-  async function deploy(action:'preview'|'promote'){
-    if(!data) return
-    const configured=action==='preview'?data.cloud.previewConfigured:data.cloud.promoteConfigured
-    if(!configured){toast.error(`${action==='preview'?'Preview':'Promote'} Cloud Build trigger is not configured`);return}
-    const label=action==='preview'?'DEPLOY_PREVIEW':'PROMOTE_PRODUCTION'
-    const warning=action==='preview'
-      ? 'Request a verified main preview build through Google Cloud Build?'
-      : 'Promote the verified WEAVE candidate to production traffic?'
-    if(!window.confirm(warning)) return
-    setDeployBusy(action)
-    try{
-      const response=await fetch('/api/admin/infrastructure',{
-        method:'POST',headers:headers(),
-        body:JSON.stringify({action:action==='preview'?'deploy_preview':'deploy_promote',confirm:label}),
-      })
-      const body=await response.json()
-      if(!response.ok || !body.success) throw new Error(body.error || 'Cloud Build request failed')
-      toast.success(action==='preview'?'Preview deployment requested':'Production promotion requested')
-      await refresh()
-    }catch(error){toast.error(error instanceof Error?error.message:'Cloud Build request failed')}
-    finally{setDeployBusy(null)}
-  }
-
   if(!isInitialized || !user || user.role!=='admin') return null
 
   return (
@@ -128,7 +107,7 @@ export default function InfrastructureWorkshop(){
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.28em] text-cyan-300">Administration · Infrastructure</p>
             <h1 className="mt-2 text-3xl font-black text-white md:text-5xl">WEAVE Infrastructure Workshop</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Origin registry, Cloud Run runtime, EIGHT web access, deployment authority and Divine Shield in one operating surface.</p>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Self-host runtime, Caddy edge, Sovereign + Flame deployment records, EIGHT web access and Divine Shield in one operating surface.</p>
           </div>
           <Button onClick={()=>void refresh()} disabled={loading} variant="outline" className="border-cyan-300/20">
             <RefreshCw className={`mr-2 h-4 w-4 ${loading?'animate-spin':''}`} /> Refresh
@@ -156,19 +135,28 @@ export default function InfrastructureWorkshop(){
 
         <section className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
           <div className="rounded-[2rem] border border-white/10 bg-black/25 p-6">
-            <div className="flex items-center gap-3"><Cloud className="h-5 w-5 text-sky-300"/><div><p className="text-xs font-bold text-white">Google Cloud Runtime</p><p className="text-[10px] text-slate-500">{data.cloud.project} · {data.cloud.region} · {data.cloud.service}</p></div></div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <button onClick={()=>void deploy('preview')} className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.04] p-4 text-left disabled:opacity-50" disabled={deployBusy!==null}>
-                <Rocket className="h-5 w-5 text-sky-300"/>
-                <p className="mt-3 text-sm font-bold text-white">Deploy Preview</p>
-                <p className="mt-1 text-[10px] leading-4 text-slate-500">{data.cloud.previewConfigured?'Cloud Build trigger ready':'Set WEAVE_CLOUD_BUILD_PREVIEW_TRIGGER_ID'}</p>
-              </button>
-              <button onClick={()=>void deploy('promote')} className="rounded-2xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4 text-left disabled:opacity-50" disabled={deployBusy!==null}>
-                <Activity className="h-5 w-5 text-emerald-300"/>
-                <p className="mt-3 text-sm font-bold text-white">Promote Candidate</p>
-                <p className="mt-1 text-[10px] leading-4 text-slate-500">{data.cloud.promoteConfigured?'Cloud Build trigger ready':'Set WEAVE_CLOUD_BUILD_PROMOTE_TRIGGER_ID'}</p>
-              </button>
+            <div className="flex items-start gap-3">
+              <Server className="mt-0.5 h-5 w-5 text-emerald-300"/>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white">WEAVE Self-Host Production</p>
+                <p className="mt-1 break-all text-[10px] text-slate-500">{data.runtime.domain} · {data.runtime.serverKey}</p>
+              </div>
             </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/[0.04] p-4">
+                <Activity className="h-5 w-5 text-emerald-300"/>
+                <p className="mt-3 text-sm font-bold text-white">Verified main → production</p>
+                <p className="mt-1 text-[10px] leading-4 text-slate-500">Production Check must pass before the self-host deploy path accepts a release.</p>
+              </div>
+              <div className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.04] p-4">
+                <TerminalSquare className="h-5 w-5 text-sky-300"/>
+                <p className="mt-3 text-sm font-bold text-white">Docker + Caddy</p>
+                <p className="mt-1 break-all text-[10px] leading-4 text-slate-500">Release {data.runtime.releaseSha || 'not reported yet'} · edge {data.runtime.edge}</p>
+              </div>
+            </div>
+            <Link href="/admin/deployment-records" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl border border-orange-300/15 bg-orange-300/[0.04] px-4 text-xs font-black text-orange-100 hover:bg-orange-300/[0.08]">
+              <ScrollText className="h-4 w-4"/> Sovereign + Flame Record
+            </Link>
           </div>
 
           <div className="rounded-[2rem] border border-white/10 bg-black/25 p-6">
@@ -190,8 +178,8 @@ export default function InfrastructureWorkshop(){
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-black/25 p-6">
-          <h2 className="text-sm font-bold text-white">Deployment Record</h2>
-          <div className="mt-4 space-y-2">{data.deployments.length===0?<p className="text-xs text-slate-500">No infrastructure deployment requests recorded yet.</p>:data.deployments.map(item=><div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3 text-[10px]"><span className="font-bold uppercase text-slate-300">{item.action}</span><span className="text-slate-500">{item.status} · {new Date(item.created_at).toLocaleString()}</span></div>)}</div>
+          <div className="flex items-center gap-2"><Flame className="h-4 w-4 text-orange-300"/><h2 className="text-sm font-bold text-white">Latest Production Movement</h2></div>
+          <div className="mt-4 space-y-2">{data.deployments.length===0?<p className="text-xs text-slate-500">No self-host deployment movement recorded yet.</p>:data.deployments.slice(0,8).map(item=><div key={item.id} className="grid gap-2 rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3 text-[10px] sm:grid-cols-[100px_minmax(0,1fr)_auto]"><span className="font-bold uppercase text-orange-200">{String(item.status).replaceAll('_',' ')}</span><span className="break-all font-mono text-slate-300">{item.release_sha}</span><span className="text-slate-500">{new Date(item.created_at).toLocaleString()}</span></div>)}</div>
         </section>
       </>}
     </main>
