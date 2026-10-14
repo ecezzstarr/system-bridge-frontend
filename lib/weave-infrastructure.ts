@@ -8,15 +8,14 @@ export type DivineShieldState = {
 }
 
 const SYSTEM_SEED = [
-  ['weave-public','WEAVINGSYSTEM.ONLINE · WEAVE Public App','application','https://weavingsystem.online','/api/health',{role:'public'}],
-  ['weave-admin','SSBNOW.ONLINE · Administration Workshop','application','https://ssbnow.online','/api/health',{role:'administration'}],
-  ['weave-client','SSBNOW.SHOP · Client Service Portal','application','https://ssbnow.shop','/api/health',{role:'client-service'}],
-  ['system-bridge-frontend','System Bridge Frontend · Cloud Run Runtime','runtime','https://system-bridge-frontend-823579957639.us-central1.run.app','/api/health',{project:'ssbr-495208',region:'us-central1',service:'system-bridge-frontend'}],
-  ['api-server','API Server','service','https://api-server-823579957639.us-central1.run.app','/health',{legacy:true}],
-  ['ssbnow-core','SSBNOW Core','service','https://ssbnow-core-823579957639.us-central1.run.app','/health',{legacy:true}],
-  ['ssbnowshop-service','SSBNOW Shop Service','service','https://ssbnowshop-823579957639.us-central1.run.app','/health',{legacy:true}],
-  ['eight-runtime','EIGHT · Infrastructure Operator','intelligence',null,'/api/health',{scope:'administration',web:'read-only',deploy:'cloud-build-trigger'}],
+  ['weave-public','WEAVINGSYSTEM.ONLINE · WEAVE Public App','application','https://weavingsystem.online','/api/health',{role:'public',server:'weave-selfhost'}],
+  ['weave-admin','SSBNOW.ONLINE · Administration Workshop','application','https://ssbnow.online','/api/health',{role:'administration',server:'weave-selfhost'}],
+  ['weave-client','SSBNOW.SHOP · Client Service Portal','application','https://ssbnow.shop','/api/health',{role:'client-service',server:'weave-selfhost'}],
+  ['system-bridge-frontend','System Bridge Frontend · WEAVE Self-Host Runtime','runtime','https://weavingsystem.online','/api/health',{serverKey:'weave-selfhost',runtime:'docker-compose',edge:'caddy',appPort:'127.0.0.1:3000'}],
+  ['eight-runtime','EIGHT · Infrastructure Operator','intelligence',null,'/api/health',{scope:'administration',web:'read-only',deploy:'verified-main-to-selfhost'}],
 ] as const
+
+const RETIRED_GOOGLE_SYSTEMS = ['api-server','ssbnow-core','ssbnowshop-service'] as const
 
 let schemaReady:Promise<void>|null=null
 let shieldCache:{value:DivineShieldState;expires:number}|null=null
@@ -30,7 +29,7 @@ export async function ensureWeaveInfrastructureSchema() {
       system_key VARCHAR(80) NOT NULL UNIQUE,
       name VARCHAR(255) NOT NULL,
       kind VARCHAR(40) NOT NULL DEFAULT 'service',
-      deployment_target VARCHAR(40) NOT NULL DEFAULT 'cloudrun',
+      deployment_target VARCHAR(40) NOT NULL DEFAULT 'selfhost',
       public_url TEXT,
       health_path VARCHAR(255) NOT NULL DEFAULT '/api/health',
       enabled BOOLEAN NOT NULL DEFAULT TRUE,
@@ -39,6 +38,7 @@ export async function ensureWeaveInfrastructureSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `)
+  await query(`ALTER TABLE weave_infrastructure_systems ALTER COLUMN deployment_target SET DEFAULT 'selfhost'`)
   await query(`
     CREATE TABLE IF NOT EXISTS weave_platform_controls (
       control_key VARCHAR(80) PRIMARY KEY,
@@ -54,7 +54,7 @@ export async function ensureWeaveInfrastructureSchema() {
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       action VARCHAR(40) NOT NULL,
       source_ref VARCHAR(255),
-      provider VARCHAR(40) NOT NULL DEFAULT 'google-cloud-build',
+      provider VARCHAR(40) NOT NULL DEFAULT 'weave-selfhost',
       external_id VARCHAR(255),
       status VARCHAR(40) NOT NULL DEFAULT 'requested',
       requested_by UUID,
@@ -63,6 +63,7 @@ export async function ensureWeaveInfrastructureSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `)
+  await query(`ALTER TABLE weave_deployment_requests ALTER COLUMN provider SET DEFAULT 'weave-selfhost'`)
   await sql`
     INSERT INTO weave_platform_controls(control_key,enabled,title,message)
     VALUES(
@@ -76,16 +77,25 @@ export async function ensureWeaveInfrastructureSchema() {
   for (const [key,name,kind,url,healthPath,metadata] of SYSTEM_SEED) {
     await sql`
       INSERT INTO weave_infrastructure_systems(system_key,name,kind,deployment_target,public_url,health_path,metadata)
-      VALUES(${key},${name},${kind},'cloudrun',${url},${healthPath},${JSON.stringify(metadata)}::jsonb)
+      VALUES(${key},${name},${kind},'selfhost',${url},${healthPath},${JSON.stringify(metadata)}::jsonb)
       ON CONFLICT(system_key) DO UPDATE SET
         name=EXCLUDED.name,
         kind=EXCLUDED.kind,
+        deployment_target='selfhost',
         public_url=EXCLUDED.public_url,
         health_path=EXCLUDED.health_path,
+        enabled=TRUE,
         metadata=weave_infrastructure_systems.metadata || EXCLUDED.metadata,
         updated_at=NOW()
     `
   }
+  await sql`
+    UPDATE weave_infrastructure_systems
+    SET enabled=FALSE,
+        metadata=metadata || ${JSON.stringify({retired:true,reason:'Google runtime retired; WEAVE self-host is production authority'})}::jsonb,
+        updated_at=NOW()
+    WHERE system_key = ANY(${[...RETIRED_GOOGLE_SYSTEMS]})
+  `
   })()
   try{ await schemaReady }
   catch(error){ schemaReady=null; throw error }
