@@ -127,8 +127,8 @@ export async function getFileFolderSalesManagerConfig(): Promise<SalesManagerCon
 async function salesClock() {
   const result = await getPool().query(
     `SELECT
-       date_trunc('week', timezone($1,now()))::date AS week_start,
-       (date_trunc('week', timezone($1,now()))::date + 6) AS week_end,
+       to_char(date_trunc('week', timezone($1,now())), 'YYYY-MM-DD') AS week_start,
+       to_char(date_trunc('week', timezone($1,now())) + interval '6 days', 'YYYY-MM-DD') AS week_end,
        GREATEST(0,((date_trunc('week', timezone($1,now()))::date + 6) - timezone($1,now())::date))::int AS days_remaining`,
     [FILE_FOLDER_SALES_MANAGER_TIMEZONE],
   )
