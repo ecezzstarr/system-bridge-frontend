@@ -3,7 +3,7 @@ export async function ensureLegionCommerceSchema(sql: any) {
   await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS sales_enabled boolean NOT NULL DEFAULT true`
   await sql`
     UPDATE enterprise_legions
-    SET sales_code='LG-' || UPPER(SUBSTRING(REPLACE(id::text,'-','') FROM 1 FOR 10))
+    SET sales_code='LG-' || UPPER(REPLACE(id::text,'-',''))
     WHERE sales_code IS NULL OR sales_code=''
   `
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_enterprise_legions_sales_code ON enterprise_legions(sales_code) WHERE sales_code IS NOT NULL`
