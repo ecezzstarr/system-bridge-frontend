@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     `
     const [legion] = await sql`
       UPDATE enterprise_legions
-      SET sales_code=COALESCE(NULLIF(sales_code,''),'LG-' || UPPER(SUBSTRING(REPLACE(id::text,'-','') FROM 1 FOR 10))),
+      SET sales_code=COALESCE(NULLIF(sales_code,''),'LG-' || UPPER(REPLACE(id::text,'-',''))),
           sales_enabled=true,
           updated_at=NOW()
       WHERE id=${created.id}::uuid
