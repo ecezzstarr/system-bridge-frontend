@@ -59,6 +59,14 @@ body :where(p,li,dd,dt,label,a,button) {
     min-height: 100dvh;
   }
 
+  body :where(main,section,article,header,footer,nav,aside,form,fieldset,div) {
+    max-width: 100%;
+  }
+
+  body :where(button,a,[role="button"]) {
+    max-width: 100%;
+  }
+
   :where(
     .weave-app-shell,
     .weave-client-shell,
@@ -76,6 +84,12 @@ body :where(p,li,dd,dt,label,a,button) {
      with the viewport. Small intentional snap-strip widths remain untouched. */
   body [class*="min-w-[2"] {
     min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Arbitrary desktop width utilities may size a local instrument, but may not
+     force its route beyond the physical phone. */
+  body [class*="w-["] {
     max-width: 100% !important;
   }
 
