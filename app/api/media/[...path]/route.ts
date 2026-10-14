@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const objectName = normalizeMediaObjectName((resolved.path || []).join('/'))
 
     // System Store packages are delivered only through the entitlement/download route.
-    if (objectName.startsWith('system-store/')) {
+    if (objectName.startsWith('system-store/') || objectName.startsWith('clients/')) {
       return new Response('Not found', { status: 404 })
     }
 
