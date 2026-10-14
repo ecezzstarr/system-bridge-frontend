@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Copy, QrCode, Eye, MessageSquare, UserPlus, Loader2, Code2, Sparkles, ShieldCheck } from 'lucide-react'
+import { Plus, Copy, QrCode, Eye, MessageSquare, UserPlus, Loader2, Code2, Sparkles, ShieldCheck, ExternalLink } from 'lucide-react'
 import { RiverChat } from '@/components/river-chat'
 import { WORLD_RULES } from '@/lib/world/constants'
 
@@ -18,6 +18,7 @@ interface Bridge {
   id: string; bridge_code: string; status: string; created_at: string
   template_name: string; custom_welcome_message: string | null
   views: number; conversations: number; registrations: number
+  public_url: string
 }
 
 const BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN = WORLD_RULES.BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN
@@ -37,9 +38,8 @@ function colorFor(key: string) {
   return PALETTE[hash % PALETTE.length]
 }
 
-function bridgeUrl(code: string) {
-  if (typeof window === 'undefined') return ''
-  return `${window.location.origin}/bridge/${code}`
+function bridgeUrl(bridge: Bridge) {
+  return bridge.public_url || `https://weavingsystem.online/bridge/${bridge.bridge_code}`
 }
 
 export default function BridgerWorkshopPage() {
@@ -135,13 +135,13 @@ export default function BridgerWorkshopPage() {
   }
 
   const handleCopy = (bridge: Bridge) => {
-    navigator.clipboard.writeText(bridgeUrl(bridge.bridge_code))
+    navigator.clipboard.writeText(bridgeUrl(bridge))
     setCopiedId(bridge.id)
     setTimeout(() => setCopiedId(null), 1500)
   }
 
-  const embedSnippet = (code: string) =>
-    `<a href="${bridgeUrl(code)}" target="_blank" rel="noopener">Chat with us</a>`
+  const embedSnippet = (bridge: Bridge) =>
+    `<a href="${bridgeUrl(bridge)}" target="_blank" rel="noopener">Chat with us</a>`
 
   if (loading) {
     return (
@@ -278,7 +278,7 @@ export default function BridgerWorkshopPage() {
                   <p className="truncate text-sm font-black text-white">{bridge.template_name}</p>
                   <Badge variant={bridge.status === 'active' ? 'default' : 'secondary'}>{bridge.status}</Badge>
                 </div>
-                <p className="mt-1 truncate font-mono text-[10px] text-slate-500">/bridge/{bridge.bridge_code}</p>
+                <p className="mt-1 truncate font-mono text-[10px] text-slate-500">{bridgeUrl(bridge)}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-4 text-[10px] text-slate-500">
                   <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> {bridge.views} views</span>
                   <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> {bridge.conversations} conversations</span>
@@ -286,7 +286,12 @@ export default function BridgerWorkshopPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 md:border-l md:border-white/10 md:pl-4">
+              <div className="flex flex-wrap items-center gap-2 md:border-l md:border-white/10 md:pl-4">
+                <Button size="sm" variant="outline" asChild>
+                  <a href={bridgeUrl(bridge)} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Open client link
+                  </a>
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => handleCopy(bridge)}>
                   <Copy className="h-3.5 w-3.5 mr-1.5" /> {copiedId === bridge.id ? 'Copied' : 'Copy link'}
                 </Button>
@@ -306,7 +311,7 @@ export default function BridgerWorkshopPage() {
             <div className="space-y-4">
               <div className="flex justify-center bg-white p-4 rounded-lg">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(bridgeUrl(qrBridge.bridge_code))}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(bridgeUrl(qrBridge))}`}
                   alt="QR code"
                   width={220}
                   height={220}
@@ -316,7 +321,7 @@ export default function BridgerWorkshopPage() {
                 <label className="text-xs font-medium mb-1 flex items-center gap-1" style={{ color: 'var(--muted-foreground)' }}>
                   <Code2 className="h-3 w-3" /> Embed snippet
                 </label>
-                <Textarea readOnly rows={2} value={embedSnippet(qrBridge.bridge_code)} className="font-mono text-xs" />
+                <Textarea readOnly rows={2} value={embedSnippet(qrBridge)} className="font-mono text-xs" />
               </div>
             </div>
           )}
