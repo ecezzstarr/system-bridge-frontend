@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Storage } from '@google-cloud/storage'
 import { randomUUID } from 'crypto'
 import { getAuthUser } from '@/lib/auth-api'
+import { saveMediaObject } from '@/lib/weave-media-storage'
 
-const storage = new Storage()
-const BUCKET_NAME = 'ssbnow-status-feed-media'
 const MAX_SIZE_BYTES = 250 * 1024 * 1024
 
 const EXT_BY_MIME: Record<string, string> = {
@@ -37,18 +35,12 @@ export async function POST(request: NextRequest) {
 
     const mediaType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'image'
     const objectName = `video-ads/assets/${new Date().toISOString().slice(0, 10)}/${randomUUID()}.${ext}`
-    const buffer = Buffer.from(await file.arrayBuffer())
-    const blob = storage.bucket(BUCKET_NAME).file(objectName)
-    await blob.save(buffer, {
+    const url = await saveMediaObject(objectName, Buffer.from(await file.arrayBuffer()), {
       contentType: file.type,
-      metadata: { cacheControl: 'public, max-age=31536000' },
+      cacheControl: 'public, max-age=31536000, immutable',
     })
 
-    return NextResponse.json({
-      success: true,
-      url: `https://storage.googleapis.com/${BUCKET_NAME}/${objectName}`,
-      mediaType,
-    })
+    return NextResponse.json({ success: true, url, mediaType })
   } catch (error: any) {
     console.error('[Video Ad Workshop] media upload failed:', error)
     return NextResponse.json({ success: false, error: error.message || 'Upload failed' }, { status: 500 })
