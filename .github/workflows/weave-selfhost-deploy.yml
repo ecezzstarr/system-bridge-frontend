@@ -1,0 +1,69 @@
+name: WEAVE Self-Host Production Deploy
+
+on:
+  workflow_run:
+    workflows: ["Production Check"]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: weave-selfhost-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - name: Locate canonical WEAVE server checkout
+        id: locate
+        shell: bash
+        env:
+          CONFIGURED_ROOT: ${{ vars.WEAVE_SERVER_REPO }}
+        run: |
+          set -euo pipefail
+          candidates=()
+          if [ -n "${CONFIGURED_ROOT:-}" ]; then candidates+=("$CONFIGURED_ROOT"); fi
+          candidates+=("$HOME/system-bridge-frontend" "/opt/weave/system-bridge-frontend" "/srv/weave/system-bridge-frontend")
+          for root in "${candidates[@]}"; do
+            if [ -d "$root/.git" ] && [ -f "$root/docker-compose.selfhost.yml" ]; then
+              echo "root=$root" >> "$GITHUB_OUTPUT"
+              echo "WEAVE production checkout: $root"
+              exit 0
+            fi
+          done
+          echo "No canonical WEAVE self-host checkout was found on this runner." >&2
+          echo "Set repository variable WEAVE_SERVER_REPO only if the server checkout lives outside the standard paths." >&2
+          exit 1
+
+      - name: Deploy verified canonical main
+        shell: bash
+        env:
+          WEAVE_ROOT: ${{ steps.locate.outputs.root }}
+        run: |
+          set -euo pipefail
+          cd "$WEAVE_ROOT"
+          remote="$(git remote get-url origin)"
+          case "$remote" in
+            *github.com/ecezzstarr/system-bridge-frontend.git|*github.com/ecezzstarr/system-bridge-frontend) ;;
+            *) echo "Refusing deployment from unexpected origin: $remote" >&2; exit 1 ;;
+          esac
+          bash selfhost/deploy-production.sh
+
+      - name: Return production identity
+        if: always()
+        shell: bash
+        env:
+          WEAVE_ROOT: ${{ steps.locate.outputs.root }}
+        run: |
+          if [ -n "${WEAVE_ROOT:-}" ] && [ -d "$WEAVE_ROOT/.git" ]; then
+            cd "$WEAVE_ROOT"
+            echo "Server checkout: $(git rev-parse HEAD)"
+            docker compose -f docker-compose.selfhost.yml ps || true
+            curl -fsS --max-time 15 http://127.0.0.1:3000/api/health || true
+          fi
