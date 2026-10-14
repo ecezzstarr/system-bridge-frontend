@@ -30,6 +30,28 @@ for raw in path.read_text().splitlines():
 PY
 }
 
+set_env_value() {
+  local key="$1" value="$2"
+  python3 - "$ENV_FILE" "$key" "$value" <<'PY'
+import pathlib, sys
+path=pathlib.Path(sys.argv[1]); key=sys.argv[2]; value=sys.argv[3]
+lines=path.read_text().splitlines() if path.exists() else []
+out=[]; replaced=False
+for raw in lines:
+    if raw.strip() and not raw.lstrip().startswith('#') and '=' in raw:
+        k=raw.split('=',1)[0].strip()
+        if k==key:
+            if not replaced: out.append(f'{key}={value}')
+            replaced=True
+            continue
+    out.append(raw)
+if not replaced:
+    if out and out[-1] != '': out.append('')
+    out.append(f'{key}={value}')
+path.write_text('\n'.join(out).rstrip()+'\n')
+PY
+}
+
 ensure_env_value() {
   local key="$1" value="$2"
   local existing
@@ -38,7 +60,7 @@ ensure_env_value() {
     printf '%s' "$existing"
     return 0
   fi
-  printf '\n%s=%s\n' "$key" "$value" >> "$ENV_FILE"
+  set_env_value "$key" "$value"
   printf '%s' "$value"
 }
 
@@ -59,7 +81,27 @@ fi
 
 git fetch origin main
 PREVIOUS_SHA="$(git rev-parse HEAD)"
-TARGET_SHA="$(git rev-parse origin/main)"
+ORIGIN_MAIN_SHA="$(git rev-parse origin/main)"
+REQUESTED_SHA="${WEAVE_DEPLOY_TARGET_SHA:-}"
+
+if [[ -n "$REQUESTED_SHA" ]]; then
+  if [[ ! "$REQUESTED_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+    echo "WEAVE_DEPLOY_TARGET_SHA must be a full Git commit SHA." >&2
+    exit 4
+  fi
+  if ! git cat-file -e "${REQUESTED_SHA}^{commit}" 2>/dev/null; then
+    echo "Verified deployment SHA is not present in the server checkout: $REQUESTED_SHA" >&2
+    exit 5
+  fi
+  if [[ "$REQUESTED_SHA" != "$ORIGIN_MAIN_SHA" ]]; then
+    log "Verified release $REQUESTED_SHA was superseded by canonical main $ORIGIN_MAIN_SHA. No deployment performed."
+    exit 0
+  fi
+  TARGET_SHA="$REQUESTED_SHA"
+else
+  TARGET_SHA="$ORIGIN_MAIN_SHA"
+fi
+
 DOMAIN="$(read_env_value WEAVE_DOMAIN)"
 DOMAIN="${DOMAIN:-$DEFAULT_DOMAIN}"
 SERVER_KEY="$(ensure_env_value WEAVE_DEPLOYMENT_SERVER weave-selfhost)"
@@ -70,7 +112,7 @@ import secrets
 print(secrets.token_hex(32))
 PY
 )"
-  printf '\nWEAVE_DEPLOY_RECORD_TOKEN=%s\n' "$DEPLOY_TOKEN" >> "$ENV_FILE"
+  set_env_value WEAVE_DEPLOY_RECORD_TOKEN "$DEPLOY_TOKEN"
 fi
 
 ROLLBACK_PATH="git reset --hard ${PREVIOUS_SHA} && WEAVE_RELEASE_SHA=${PREVIOUS_SHA} docker compose -f docker-compose.selfhost.yml build weave && WEAVE_RELEASE_SHA=${PREVIOUS_SHA} docker compose -f docker-compose.selfhost.yml up -d --remove-orphans"
@@ -138,6 +180,7 @@ rollback() {
   fi
 
   git reset --hard "$PREVIOUS_SHA"
+  set_env_value WEAVE_RELEASE_SHA "$PREVIOUS_SHA"
   export WEAVE_RELEASE_SHA="$PREVIOUS_SHA"
   "${COMPOSE[@]}" build weave
   "${COMPOSE[@]}" up -d --remove-orphans
@@ -149,16 +192,17 @@ rollback() {
 trap 'rollback $? $LINENO' ERR
 
 log "Previous release: $PREVIOUS_SHA"
-log "Target canonical main: $TARGET_SHA"
+log "Verified target release: $TARGET_SHA"
 
 # On later releases the existing app already knows this endpoint, so the start
 # movement is captured before any source or container change. The first rollout
 # replays it after the record endpoint itself becomes live.
-if post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" 2>/dev/null; then
+if post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" 2>/dev/null; then
   START_RECORDED=1
 fi
 
-git reset --hard origin/main
+git reset --hard "$TARGET_SHA"
+set_env_value WEAVE_RELEASE_SHA "$TARGET_SHA"
 export WEAVE_RELEASE_SHA="$TARGET_SHA"
 BUILD_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 "${COMPOSE[@]}" build --pull weave
@@ -170,7 +214,7 @@ RESTARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 wait_for_health http://127.0.0.1:3000/api/health "$TARGET_SHA" "Local WEAVE"
 
 if [[ "$START_RECORDED" != "1" ]]; then
-  post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\",\"replayedAfterRecordEndpointBecameLive\":true}"
+  post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\",\"replayedAfterRecordEndpointBecameLive\":true}"
 fi
 post_record built "$TARGET_SHA" "$PREVIOUS_SHA" "Self-host image built successfully" "{\"buildStartedAt\":\"$BUILD_STARTED_AT\",\"buildFinishedAt\":\"$BUILD_FINISHED_AT\"}"
 post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WEAVE and Caddy without orphaned services" "{\"restartedAt\":\"$RESTARTED_AT\"}"
@@ -178,7 +222,7 @@ post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WE
 wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
 
 VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}"
+post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}"
 
 "${COMPOSE[@]}" ps
 "${COMPOSE[@]}" logs --tail=80 weave || true
