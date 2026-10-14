@@ -7,6 +7,8 @@ import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 const TOKEN_KEY = 'ssb_auth_token'
 const USER_KEY = 'ssb_auth_user'
 
+export type WeaveAuthError = Error & { code?: string; recovery?: string }
+
 interface User {
   id: string
   email: string
@@ -50,41 +52,29 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<User>
   logout: () => void
   setSession: (token: string, user: User) => void
-    updateBalance: (newBalance: number) => void
-    isInitialized: boolean
+  updateBalance: (newBalance: number) => void
+  isInitialized: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Helper functions for local storage
 function saveToken(token: string) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(TOKEN_KEY, token)
-  }
+  if (typeof window !== 'undefined') localStorage.setItem(TOKEN_KEY, token)
 }
 
 function saveUser(user: User) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(USER_KEY, JSON.stringify(user))
-  }
+  if (typeof window !== 'undefined') localStorage.setItem(USER_KEY, JSON.stringify(user))
 }
 
 function getToken(): string | null {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(TOKEN_KEY)
-  }
-  return null
+  return typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null
 }
 
 function getUser(): User | null {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(USER_KEY)
     if (stored) {
-      try {
-        return JSON.parse(stored)
-      } catch {
-        return null
-      }
+      try { return JSON.parse(stored) } catch { return null }
     }
   }
   return null
@@ -98,18 +88,15 @@ function clearAuth() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Initialize state to null to match server-side rendering
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Sync state on mount (for SSR hydration)
   useEffect(() => {
     const existingToken = getToken()
     const existingUser = getUser()
-    
     if (existingToken && existingUser) {
       setToken(existingToken)
       setUser(existingUser)
@@ -118,18 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true)
   }, [])
 
-  // Register - uses local API connected to Neon database
   const register = async (data: { 
-    email: string; 
-    password: string; 
-    name: string; 
-    username: string; 
-    role: 'agent' | 'bridger'; 
-    department: string; 
-    referredBy?: string; 
-    termsAccepted: boolean; 
-    fullNameConfirmed: string;
-    departmentalCode?: string;
+    email: string; password: string; name: string; username: string; role: 'agent' | 'bridger'; department: string;
+    referredBy?: string; termsAccepted: boolean; fullNameConfirmed: string; departmentalCode?: string;
   }) => {
     setIsLoading(true)
     try {
@@ -149,14 +127,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           departmentalCode: data.departmentalCode,
         }),
       })
-
       const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Registration failed')
-      }
-
-      // Save auth data
+      if (!response.ok) throw new Error(result.error || 'Registration failed')
       if (result.token && result.user) {
         saveToken(result.token)
         saveUser(result.user)
@@ -169,7 +141,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Login - uses local API connected to Neon database
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
@@ -182,7 +153,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Login failed')
+        const authError = new Error(result.error || 'Login failed') as WeaveAuthError
+        authError.code = result.code
+        authError.recovery = result.recovery
+        throw authError
       }
 
       if (result.token && result.user) {
@@ -207,16 +181,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(result.token)
         setUser(userData)
         setIsAuthenticated(true)
-        setIsLoading(false)
         return userData
-      } else {
-        throw new Error('Login failed')
       }
-    } catch (error) {
+      throw new Error('Login failed')
+    } finally {
       setIsLoading(false)
-      throw error
     }
-    setIsLoading(false)
   }
 
   const logout = () => {
@@ -226,8 +196,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
   }
 
-  // Used by non-password auth flows (e.g. File Number login/register) to
-  // establish a session using the same storage/state as normal login.
   const setSession = (newToken: string, newUser: User) => {
     saveToken(newToken)
     saveUser(newUser)
@@ -236,8 +204,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(true)
   }
 
-  // Push a fresh balance into context + localStorage immediately after
-  // a purchase/deposit, without requiring a full re-login.
   const updateBalance = (newBalance: number) => {
     setUser(prev => {
       if (!prev) return prev
@@ -248,17 +214,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      token, 
-      isLoading, 
-      isAuthenticated, 
-      isInitialized,
-      register, 
-      login, 
-      logout,
-      setSession,
-      updateBalance,
+    <AuthContext.Provider value={{
+      user, token, isLoading, isAuthenticated, isInitialized, register, login, logout, setSession, updateBalance,
     }}>
       {children}
     </AuthContext.Provider>
@@ -267,8 +224,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider')
   return context
 }
