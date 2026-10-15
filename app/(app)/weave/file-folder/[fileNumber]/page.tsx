@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function RetiredPrivateFileFolderSupportRoute(){
-  redirect('/event')
+  redirect('/system-switch')
 }
