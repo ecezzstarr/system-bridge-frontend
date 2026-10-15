@@ -16,6 +16,17 @@ async function ensurePurchaseSchema() {
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS flame_external_id varchar(255)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS bridger_id uuid`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS movement_code varchar(40)`
+  await sql`
+    UPDATE file_folder_purchases
+    SET file_folder_tier = CASE
+      WHEN amount_trx = 35800 THEN 'premium'
+      WHEN amount_trx = 3000 AND bridge_code IS NOT NULL THEN 'pro'
+      WHEN amount_trx > 3000 AND amount_trx < 35800 THEN 'pro'
+      WHEN amount_trx >= 180 AND amount_trx <= 3000 THEN 'standard'
+      ELSE file_folder_tier
+    END
+    WHERE file_folder_tier IS NULL
+  `
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_file_folder_purchases_payment_reference ON file_folder_purchases(payment_reference)`
   await sql`CREATE INDEX IF NOT EXISTS idx_file_folder_purchases_file_number ON file_folder_purchases(file_number)`
 }
