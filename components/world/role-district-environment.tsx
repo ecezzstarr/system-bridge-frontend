@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { getRoleDistrict, type WeaveRole } from '@/lib/weave-role-districts'
+import { placeThroughSystemSwitch } from '@/lib/system-switch-role-place'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 const districtIcons={
@@ -90,6 +91,7 @@ export function RoleDistrictEnvironment({
   }
 
   const places=district.places
+    .map(place=>placeThroughSystemSwitch((role||'client') as WeaveRole,place))
     .filter(place=>isVisible(place.href))
     .sort((a,b)=>{
       if(Boolean(a.daily)!==Boolean(b.daily))return a.daily?-1:1
