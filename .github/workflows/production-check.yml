@@ -38,6 +38,7 @@ jobs:
           node tests/lifestyle-position-access-regression.cjs
           node tests/agentic-bridger-regression.cjs
           node tests/file-folder-customer-door-purchase-regression.cjs
+          node tests/system-switch-file-folder-boundary-regression.cjs
           node tests/file-folder-pricing-contract-regression.cjs
           node tests/legion-commerce-regression.cjs
           node tests/legion-lifestyle-employment-regression.cjs
