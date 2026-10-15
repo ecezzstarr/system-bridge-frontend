@@ -1,4 +1,5 @@
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
+import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { provisionPurchasedFileFolderCustomerDoor } from '@/lib/client-customer-door-provisioning'
 
 function normalizedPhone(value: unknown) {
@@ -56,6 +57,7 @@ export async function activatePurchasedFileFolderForClient(params: {
 }) {
   const { sql, clientId, fileNumber, purchaseId } = params
   await ensureClientFileFolderSchema(sql)
+  await ensureClientWorkshopSchema(sql)
 
   const [client] = await sql`
     SELECT id,name,file_number
@@ -91,7 +93,42 @@ export async function activatePurchasedFileFolderForClient(params: {
     throw new Error(`Client account is already attached to File Folder ${client.file_number}`)
   }
 
+  const [workshopByFile] = await sql`
+    SELECT id,client_id,file_number
+    FROM client_system_workshops
+    WHERE file_number=${fileNumber}
+    LIMIT 1
+  `
+  if (workshopByFile?.client_id && String(workshopByFile.client_id) !== String(clientId)) {
+    throw new Error('Issued File Folder workshop is already assigned to another Client')
+  }
+
   const clientName = String(params.clientName || client.name || 'Client').trim().slice(0, 255) || 'Client'
+
+  // A verified purchase opens the Client's File Folder at System Switch. The
+  // first persistent place is the System Formation Workshop; it is not a
+  // finished business template. The Client continues forming real systems from
+  // their own movement inside the open File Folder.
+  const [workshop] = await sql`
+    INSERT INTO client_system_workshops (
+      client_id,
+      file_number,
+      workshop_type,
+      title,
+      description
+    )
+    VALUES (
+      ${clientId}::uuid,
+      ${fileNumber},
+      'system_formation',
+      'System Formation Workshop',
+      ${`${clientName}'s first File Folder workshop for recognizing, forming, building and activating the systems they choose to operate.`}
+    )
+    ON CONFLICT (client_id) DO UPDATE SET
+      file_number=EXCLUDED.file_number,
+      updated_at=NOW()
+    RETURNING *
+  `
 
   const [folder] = await sql`
     INSERT INTO client_file_folders (
@@ -106,17 +143,14 @@ export async function activatePurchasedFileFolderForClient(params: {
       ${clientId}::uuid,
       ${fileNumber},
       ${clientName},
-      'pending_personalization',
+      ${workshop.workshop_type},
       'active',
       NOW()
     )
     ON CONFLICT (file_number) DO UPDATE SET
       client_id=${clientId}::uuid,
       client_name=COALESCE(NULLIF(client_file_folders.client_name,''), EXCLUDED.client_name),
-      workshop_type=CASE
-        WHEN client_file_folders.workshop_type='formation' THEN 'pending_personalization'
-        ELSE client_file_folders.workshop_type
-      END,
+      workshop_type=${workshop.workshop_type},
       status='active',
       claimed_at=COALESCE(client_file_folders.claimed_at,NOW()),
       updated_at=NOW()
@@ -153,5 +187,5 @@ export async function activatePurchasedFileFolderForClient(params: {
     clientName,
   })
 
-  return { folder, client, customerDoor }
+  return { folder, workshop, client, customerDoor }
 }
