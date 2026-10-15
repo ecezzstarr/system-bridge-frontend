@@ -47,7 +47,7 @@ export default function PublicFileFolderPurchasePage() {
   const [registerUrl, setRegisterUrl] = useState('')
 
   const amount = tier === 'premium' ? FILE_FOLDER_PRICING.premiumFlameCoin : Number(standardAmount)
-  const amountTier = getFileFolderTier(amount)
+  const amountTier = getFileFolderTier(amount, tier)
   const validAmount = amountTier === tier
 
   const stage = useMemo(() => {
@@ -249,11 +249,11 @@ export default function PublicFileFolderPurchasePage() {
             <section className="p-5 lg:p-8">
               <div className="flex items-center gap-2 text-orange-200"><FolderOpen className="h-4 w-4" /><p className="text-[9px] font-black uppercase tracking-[.18em]">Choose File Folder</p></div>
               <div className="mt-4 grid overflow-hidden rounded-2xl border border-white/10 sm:grid-cols-2">
-                <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('standard')} className={`min-h-36 border-b border-white/10 p-4 text-left sm:border-b-0 sm:border-r ${tier==='standard'?'bg-sky-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Standard</span></div><p className="mt-5 text-2xl font-black">From {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()}</p><p className="mt-1 text-[9px] text-stone-500">Flame Coin · same amount in TRX</p></button>
+                <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('standard')} className={`min-h-36 border-b border-white/10 p-4 text-left sm:border-b-0 sm:border-r ${tier==='standard'?'bg-sky-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Standard</span></div><p className="mt-5 text-2xl font-black">{FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()}–{FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</p><p className="mt-1 text-[9px] text-stone-500">Flame Coin · building power</p></button>
                 <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('premium')} className={`min-h-36 p-4 text-left ${tier==='premium'?'bg-orange-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Crown className="h-4 w-4 text-orange-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Premium</span></div><p className="mt-5 text-2xl font-black">{FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()}</p><p className="mt-1 text-[9px] text-stone-500">Flame Coin · fixed · same amount in TRX</p></button>
               </div>
 
-              {tier === 'standard' && <label className="mt-4 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Standard amount · {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to below {FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()}</span><input inputMode="decimal" value={standardAmount} onChange={e=>setStandardAmount(e.target.value)} disabled={Boolean(purchase)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" /></label>}
+              {tier === 'standard' && <label className="mt-4 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Standard amount · {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to {FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</span><input inputMode="decimal" type="number" min={FILE_FOLDER_PRICING.standardMinimumFlameCoin} max={FILE_FOLDER_PRICING.standardMaximumFlameCoin} value={standardAmount} onChange={e=>setStandardAmount(e.target.value)} disabled={Boolean(purchase)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" /></label>}
 
               <div className="mt-5 rounded-2xl border border-emerald-300/10 bg-emerald-300/[.035] p-4">
                 <p className="text-[8px] font-black uppercase tracking-[.16em] text-emerald-200">WEAVE company TRX wallet</p>
