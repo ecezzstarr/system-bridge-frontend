@@ -9,6 +9,10 @@ import { notifyUser } from '@/lib/deposit-notifications'
 import { ensureFlameSchema } from '@/lib/flame-schema'
 import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 import { recordSystemEvent } from '@/lib/system-events'
+import {
+  activatePurchasedFileFolderForClient,
+  resolveExistingClientForFileFolderPurchase,
+} from '@/lib/file-folder-purchase-activation'
 
 function bridgeSaleTier(amount: number) {
   if (amount === FILE_FOLDER_PRICING.premiumFlameCoin) return getFileFolderTier(amount, 'premium')
@@ -81,6 +85,18 @@ async function verifyBridgeRadiancePurchase({
       return NextResponse.json({ error: 'This File Folder approval is already complete' }, { status: 409 })
     }
 
+    const existingClient = await resolveExistingClientForFileFolderPurchase(sql, purchase)
+    let activation = null
+    if (existingClient) {
+      activation = await activatePurchasedFileFolderForClient({
+        sql,
+        clientId: String(existingClient.id),
+        fileNumber: String(purchase.file_number),
+        clientName: existingClient.name || purchase.buyer_name || 'Client',
+        purchaseId: String(purchase.id),
+      })
+    }
+
     let commissionMovement = null
     if (purchase.bridger_id) {
       commissionMovement = await creditBridgerActivityCommission({
@@ -104,14 +120,18 @@ async function verifyBridgeRadiancePurchase({
       replayed: true,
       purchaseId: purchase.id,
       fileNumber: purchase.file_number,
+      clientId: existingClient?.id || null,
+      clientActivated: Boolean(activation),
       bridgerId: purchase.bridger_id || null,
       amount: Number(purchase.amount_trx),
       fileFolderTier,
       currency: 'Flame Coin',
       commissionMovement,
-      registerUrl: `/client/register?fileNumber=${encodeURIComponent(purchase.file_number)}`,
-      systemSwitchUrl: '/client/system-switch',
-      message: 'Existing File Folder approval verified and commission movement reconciled.',
+      registerUrl: existingClient ? null : `/client/register?fileNumber=${encodeURIComponent(purchase.file_number)}`,
+      systemSwitchUrl: existingClient ? '/client/system-switch' : null,
+      message: existingClient
+        ? 'Existing File Folder approval reconciled and the Client operating environment is active.'
+        : 'Existing File Folder approval verified and commission movement reconciled.',
     })
   }
 
@@ -149,6 +169,8 @@ async function verifyBridgeRadiancePurchase({
   const prospectName = String(purchase.buyer_name || purchase.buyer_email || 'Bridge Radiance Prospect').trim().slice(0, 255)
   const prospectPhone = String(purchase.buyer_phone || '').trim().slice(0, 80)
   const bridgerId = purchase.bridger_id ? String(purchase.bridger_id) : null
+  const existingClient = await resolveExistingClientForFileFolderPurchase(sql, purchase)
+  const existingClientId = existingClient ? String(existingClient.id) : null
 
   // Legacy regression marker: generateFileNumber(null) applied only before Public Flame attribution could bind a Bridger.
   const fileFolder = await generateFileNumber(bridgerId, {
@@ -164,12 +186,24 @@ async function verifyBridgeRadiancePurchase({
   })
   const fileNumber = fileFolder.file_number
 
-  await provisionPersistentFolder(fileNumber, prospectName)
+  let activation = null
+  if (existingClientId) {
+    activation = await activatePurchasedFileFolderForClient({
+      sql,
+      clientId: existingClientId,
+      fileNumber,
+      clientName: existingClient.name || prospectName,
+      purchaseId: String(purchase.id),
+    })
+  } else {
+    await provisionPersistentFolder(fileNumber, prospectName)
+  }
 
   const [confirmed] = await sql`
     UPDATE file_folder_purchases
     SET
       file_number=${fileNumber},
+      client_id=COALESCE(client_id, ${existingClientId}::uuid),
       status='confirmed',
       confirmed_at=NOW(),
       confirmed_by=${admin.id}::uuid
@@ -227,6 +261,26 @@ async function verifyBridgeRadiancePurchase({
     })
   }
 
+  if (activation?.customerDoor && existingClientId) {
+    await recordSystemEvent({
+      eventType: 'customer_door_construction_started',
+      actorId: existingClientId,
+      actorRole: 'client',
+      subjectType: 'customer_door_build',
+      subjectId: activation.customerDoor.buildId,
+      source: 'file-folder-purchase-verification',
+      payload: {
+        purchaseId,
+        fileNumber,
+        publicPath: activation.customerDoor.publicPath,
+        parts: activation.customerDoor.parts,
+        completesAt: activation.customerDoor.completesAt,
+        durationMinutes: activation.customerDoor.durationMinutes,
+        boostOptional: activation.customerDoor.boostOptional,
+      },
+    })
+  }
+
   await recordSystemEvent({
     eventType: 'file_number_issued',
     actorId: admin.id,
@@ -239,6 +293,7 @@ async function verifyBridgeRadiancePurchase({
       bridgeCode: confirmed.bridge_code || null,
       movementCode: confirmed.movement_code || null,
       bridgerId,
+      clientId: existingClientId,
       amountFlameCoin: Number(confirmed.amount_trx),
       fileFolderTier,
     },
@@ -250,15 +305,20 @@ async function verifyBridgeRadiancePurchase({
     source: 'file_folder_purchase',
     purchaseId,
     fileNumber,
+    clientId: existingClientId,
+    clientActivated: Boolean(activation),
     bridgerId,
     amount: Number(confirmed.amount_trx),
     fileFolderTier,
     currency: 'Flame Coin',
-    registerUrl: `/client/register?fileNumber=${encodeURIComponent(fileNumber)}`,
-    systemSwitchUrl: '/client/system-switch',
+    registerUrl: existingClientId ? null : `/client/register?fileNumber=${encodeURIComponent(fileNumber)}`,
+    systemSwitchUrl: existingClientId ? '/client/system-switch' : null,
     aiProviderAllocation: allocation?.allocation || null,
     commissionMovement,
-    message: 'File Folder approved. File Number issued. Prospect can now register as Client and cross into System Switch.',
+    customerDoor: activation?.customerDoor || null,
+    message: existingClientId
+      ? 'File Folder approved, attached to the Client account, and the included Customer Door formation started.'
+      : 'File Folder approved. File Number issued. Prospect can now register as Client and cross into System Switch.',
   })
 }
 
