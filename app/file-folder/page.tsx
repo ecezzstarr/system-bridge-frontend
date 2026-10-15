@@ -30,6 +30,14 @@ interface PendingPurchase {
   amountFlameCoin?: number
 }
 
+function authHeaders(json = false): Record<string, string> {
+  const token = typeof window !== 'undefined' ? window.localStorage.getItem('ssb_auth_token') : null
+  return {
+    ...(json ? { 'Content-Type': 'application/json' } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
 export default function PublicFileFolderPurchasePage() {
   const [tier, setTier] = useState<'standard' | 'premium'>('standard')
   const [standardAmount, setStandardAmount] = useState(String(FILE_FOLDER_PRICING.standardMinimumFlameCoin))
@@ -49,6 +57,7 @@ export default function PublicFileFolderPurchasePage() {
   const amount = tier === 'premium' ? FILE_FOLDER_PRICING.premiumFlameCoin : Number(standardAmount)
   const amountTier = getFileFolderTier(amount, tier)
   const validAmount = amountTier === tier
+  const returningClient = registerUrl.startsWith('/client/system-switch')
 
   const stage = useMemo(() => {
     if (purchase?.status === 'confirmed' && purchase.fileNumber) return 5
@@ -97,10 +106,18 @@ export default function PublicFileFolderPurchasePage() {
 
       setChecking(true)
       try {
-        const response = await fetch(
-          `/api/public/file-folder/purchase?purchaseId=${encodeURIComponent(purchase.id)}&accessToken=${encodeURIComponent(purchase.accessToken)}`,
-          { cache: 'no-store' },
-        )
+        const token = window.localStorage.getItem('ssb_auth_token')
+        const response = token
+          ? await fetch('/api/public/file-folder/purchase', {
+              method: 'PATCH',
+              headers: authHeaders(true),
+              body: JSON.stringify({ purchaseId: purchase.id, accessToken: purchase.accessToken }),
+              cache: 'no-store',
+            })
+          : await fetch(
+              `/api/public/file-folder/purchase?purchaseId=${encodeURIComponent(purchase.id)}&accessToken=${encodeURIComponent(purchase.accessToken)}`,
+              { cache: 'no-store' },
+            )
         const body = await response.json()
         if (!response.ok) throw new Error(body.error || 'Unable to read purchase status')
 
@@ -111,9 +128,14 @@ export default function PublicFileFolderPurchasePage() {
         }
         setPurchase(next)
 
-        if (body.crossing?.ready && body.crossing?.registerUrl) {
-          setRegisterUrl(body.crossing.registerUrl)
-          setMessage(`Administration verified your payment and issued File Number ${body.purchase.fileNumber}. You can now create your Client account.`)
+        if (body.crossing?.ready) {
+          const nextUrl = body.crossing.systemSwitchUrl || body.crossing.registerUrl || ''
+          setRegisterUrl(nextUrl)
+          setMessage(
+            body.crossing.systemSwitchUrl
+              ? `Administration verified your payment and File Number ${body.purchase.fileNumber} is now attached to your Client File Folder.`
+              : `Administration verified your payment and issued File Number ${body.purchase.fileNumber}. You can now create your Client account.`
+          )
           try { window.localStorage.removeItem(STORAGE_KEY) } catch {}
           return
         }
@@ -154,7 +176,7 @@ export default function PublicFileFolderPurchasePage() {
     try {
       const response = await fetch('/api/public/file-folder/purchase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(true),
         body: JSON.stringify({
           amountFlameCoin: amount,
           fileFolderTier: tier,
@@ -242,7 +264,7 @@ export default function PublicFileFolderPurchasePage() {
 
               <div className="mt-8 rounded-2xl border border-cyan-300/10 bg-cyan-300/[.035] p-4">
                 <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-cyan-200" /><p className="text-[9px] font-black uppercase tracking-[.15em] text-cyan-100">What happens after approval</p></div>
-                <p className="mt-3 text-xs leading-5 text-slate-400">Administration issues your File Number. This page then opens the Client registration route with that File Number. After registration, the File Folder becomes your Client operating environment.</p>
+                <p className="mt-3 text-xs leading-5 text-slate-400">Administration issues your File Number. Existing Clients are attached directly to the verified File Folder; new visitors continue once through Client registration and then enter the same operating environment.</p>
               </div>
             </section>
 
@@ -267,7 +289,7 @@ export default function PublicFileFolderPurchasePage() {
 
               {message && <div className={`mt-5 rounded-2xl border p-4 text-xs leading-5 ${purchase?.status==='confirmed'?'border-emerald-300/20 bg-emerald-300/[.06] text-emerald-100':purchase?.status==='rejected'?'border-rose-300/20 bg-rose-300/[.05] text-rose-100':'border-amber-300/15 bg-amber-300/[.04] text-amber-100'}`}>{message}</div>}
 
-              {registerUrl && purchase?.fileNumber && <div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/[.06] p-5"><CheckCircle2 className="h-7 w-7 text-emerald-300" /><p className="mt-3 text-lg font-black">File Number {purchase.fileNumber}</p><p className="mt-2 text-xs leading-5 text-slate-300">Your File Folder has been verified. Create your Client account with the issued File Number to enter your System Switch environment.</p><Link href={registerUrl}><Button className="mt-4 w-full bg-emerald-300 font-black text-[#02110b] hover:bg-emerald-200">Become a Client <ArrowRight className="ml-2 h-4 w-4" /></Button></Link></div>}
+              {registerUrl && purchase?.fileNumber && <div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/[.06] p-5"><CheckCircle2 className="h-7 w-7 text-emerald-300" /><p className="mt-3 text-lg font-black">File Number {purchase.fileNumber}</p><p className="mt-2 text-xs leading-5 text-slate-300">{returningClient ? 'Your verified File Folder is attached to your Client account and its included Customer Door formation has started.' : 'Your File Folder has been verified. Create your Client account with the issued File Number to enter your System Switch environment.'}</p><Link href={registerUrl}><Button className="mt-4 w-full bg-emerald-300 font-black text-[#02110b] hover:bg-emerald-200">{returningClient ? 'Enter File Folder' : 'Become a Client'} <ArrowRight className="ml-2 h-4 w-4" /></Button></Link></div>}
 
               {purchase?.status==='rejected' && <Button variant="outline" onClick={resetRejected} className="mt-4 w-full border-white/10">Start a new purchase</Button>}
             </section>
