@@ -69,7 +69,9 @@ body :where(p,li,dd,dt,label,a,button) {
     min-height: 100dvh;
   }
 
-  body :where(main,section,article,header,footer,nav,aside,form,fieldset,div) {
+  /* Fit route content, not floating chrome. A header menu must size from the
+     viewport rather than from its 32px avatar/button containing block. */
+  body :where(main,section,article,footer,nav,aside,form,fieldset) {
     max-width: 100%;
   }
 
@@ -92,15 +94,29 @@ body :where(p,li,dd,dt,label,a,button) {
   /* Old administrative, campaign and login surfaces occasionally carry
      240/260/280px hard minimums. On phones they must be allowed to contract
      with the viewport. Small intentional snap-strip widths remain untouched. */
-  body [class*="min-w-[2"] {
+  body :where(main,section,article,form,fieldset) [class*="min-w-[2"] {
     min-width: 0 !important;
     max-width: 100% !important;
   }
 
-  /* Arbitrary desktop width utilities may size a local instrument, but may not
-     force its route beyond the physical phone. */
-  body [class*="w-["] {
+  /* Arbitrary desktop width utilities are constrained only inside route content.
+     Floating top-bar menus and mirrors keep their own viewport-safe dimensions. */
+  body :where(main,section,article,form,fieldset) [class*="w-["] {
     max-width: 100% !important;
+  }
+
+  .weave-header {
+    max-width: none;
+    overflow: visible;
+  }
+
+  .weave-header [data-weave-floating-ui="true"] {
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  .weave-header .w-80 {
+    width: min(20rem, calc(100vw - 1rem)) !important;
+    max-width: calc(100vw - 1rem) !important;
   }
 
   body :where(pre) {
