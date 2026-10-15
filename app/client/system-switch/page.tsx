@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FolderOpen, Orbit, PackageOpen } from 'lucide-react'
+import { ArrowLeft, Flame, FolderOpen, Orbit, PackageOpen } from 'lucide-react'
 import ClientFileFolderGate from '@/components/system-switch/client-file-folder-gate'
 import ClientFileFolderOperatingEnvironment from '@/components/system-switch/client-file-folder-operating-environment'
 import { FileFolderEnvironmentLoader } from '@/components/system-switch/file-folder-environment-loader'
@@ -88,10 +88,10 @@ export default function ClientSystemSwitchPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-transparent text-white" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-flame-event="burning-river">
+    <main className="min-h-dvh bg-transparent text-white" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-weave-world="file-folder">
       <div className="pointer-events-none fixed left-1/2 top-20 z-40 -translate-x-1/2 text-center">
         <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-cyan-200/20 bg-[#020914]/72 backdrop-blur-md"><Orbit className="h-4 w-4 text-cyan-200" /></div>
-        <p className="mt-2 text-[7px] font-black uppercase tracking-[.2em] text-cyan-200/70">Crossing complete · File Folder open world</p>
+        <p className="mt-2 text-[7px] font-black uppercase tracking-[.2em] text-cyan-200/70">System Switch crossed · File Folder open world</p>
       </div>
       <ClientFileFolderOperatingEnvironment data={data} />
       <Link
@@ -99,6 +99,13 @@ export default function ClientSystemSwitchPage() {
         className="fixed bottom-4 left-4 z-50 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#030914]/88 px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-slate-300 backdrop-blur-xl hover:text-white"
       >
         <ArrowLeft className="h-3.5 w-3.5" /> Client World
+      </Link>
+      <Link
+        href="/client/system-switch/flame-event"
+        data-file-folder-flame-event="inside"
+        className="fixed bottom-16 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-[#1b0b05]/92 px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-orange-200 backdrop-blur-xl hover:text-white"
+      >
+        <Flame className="h-3.5 w-3.5" /> Flame Event
       </Link>
       <Link
         href="/client/system-store"
