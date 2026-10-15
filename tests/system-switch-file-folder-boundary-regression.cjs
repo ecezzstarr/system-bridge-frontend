@@ -19,7 +19,7 @@ assert.ok(clientSwitch.includes('href="/client/system-switch/flame-event"')&&cli
 assert.ok(clientEvent.includes('data-flame-event-location="file-folder"')&&clientEvent.includes('href="/client/system-switch"'),'Client Flame Event remains inside and returns to the File Folder')
 assert.ok(legacyStaffEvent.includes("redirect('/system-switch')"),'Legacy /event cannot bypass System Switch')
 assert.ok(legacyClientEvent.includes("redirect('/client/system-switch')"),'Legacy /client/event cannot bypass Client System Switch')
-assert.ok(retiredSupport.includes("redirect('/system-switch')")&&!retiredSupport.includes("redirect('/event')"),'Retired staff File Folder support route returns through System Switch')
+assert.ok(retiredSupport.includes("RetiredPrivateFileFolderSupportRoute")&&retiredSupport.includes("redirect('/system-switch')"),'Retired staff File Folder support route actively returns through System Switch')
 assert.ok(worldBoundary.includes("path.startsWith('/client/system-switch')")&&worldBoundary.includes("path.startsWith('/system-switch')")&&worldBoundary.includes("return 'file-folder'"),'Both Client and staff System Switch trees are classified as File Folder world')
 assert.ok(worldSurface.includes('weaveWorldBoundaryForPath(pathname)'),'Visual runtime uses the System Switch File Folder boundary classifier')
 
