@@ -17,14 +17,13 @@ import {
   Waves,
 } from 'lucide-react'
 import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
-import { WORLD_RULES } from '@/lib/world/constants'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 
 const {
   premiumFlameCoin: PREMIUM_PRICE,
-  standardMinimumFlameCoin: STANDARD_MIN,
+  proNegotiatedMinimumFlameCoin: PRO_NEGOTIATED_MIN,
+  proStartingFlameCoin: PRO_STARTING_PRICE,
 } = FILE_FOLDER_PRICING
-const PUBLIC_DOOR_THRESHOLD = WORLD_RULES.FILE_FOLDER_PUBLIC_DOOR_THRESHOLD_FLAME_COIN
 
 type PurchaseState = {
   id: string
@@ -48,8 +47,8 @@ export default function FileFolderPurchase({
 }) {
   const router = useRouter()
   const purchaseStorageKey = bridgeCode ? `weave:bridge-purchase:${bridgeCode}` : ''
-  const [selectedTier, setSelectedTier] = useState<'standard' | 'premium'>('standard')
-  const [standardPrice, setStandardPrice] = useState(String(STANDARD_MIN))
+  const [selectedTier, setSelectedTier] = useState<'pro' | 'premium'>('pro')
+  const [proPrice, setProPrice] = useState(String(PRO_STARTING_PRICE))
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -63,11 +62,9 @@ export default function FileFolderPurchase({
   const [registerUrl, setRegisterUrl] = useState('')
   const [checking, setChecking] = useState(false)
 
-  const selectedPrice = selectedTier === 'premium' ? PREMIUM_PRICE : Number(standardPrice)
-  const resolvedTier = getFileFolderTier(selectedPrice)
-  const validPrice =
-    resolvedTier === selectedTier &&
-    (selectedTier !== 'standard' || selectedPrice < PREMIUM_PRICE)
+  const selectedPrice = selectedTier === 'premium' ? PREMIUM_PRICE : Number(proPrice)
+  const resolvedTier = getFileFolderTier(selectedPrice, selectedTier)
+  const validPrice = resolvedTier === selectedTier
 
   const crossingStage = useMemo(() => {
     if (purchase?.status === 'confirmed' && purchase.fileNumber) return 5
@@ -313,12 +310,12 @@ export default function FileFolderPurchase({
               <button
                 type="button"
                 disabled={Boolean(purchase)}
-                onClick={() => setSelectedTier('standard')}
-                className={`min-h-36 border-b border-white/8 p-4 text-left transition sm:border-b-0 sm:border-r ${selectedTier === 'standard' ? 'bg-sky-300/[.06]' : 'bg-transparent'}`}
+                onClick={() => setSelectedTier('pro')}
+                className={`min-h-36 border-b border-white/8 p-4 text-left transition sm:border-b-0 sm:border-r ${selectedTier === 'pro' ? 'bg-sky-300/[.06]' : 'bg-transparent'}`}
               >
-                <div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-200" /><p className="text-[9px] font-black uppercase tracking-[.14em]">Standard</p></div>
-                <p className="mt-4 text-2xl font-black text-sky-100">From {STANDARD_MIN.toLocaleString()}</p>
-                <p className="mt-1 text-[9px] text-stone-500">Flame Coin · same amount in TRX</p>
+                <div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-200" /><p className="text-[9px] font-black uppercase tracking-[.14em]">Pro File Folder</p></div>
+                <p className="mt-4 text-2xl font-black text-sky-100">From {PRO_STARTING_PRICE.toLocaleString()}</p>
+                <p className="mt-1 text-[9px] text-stone-500">Flame Coin · negotiable to {PRO_NEGOTIATED_MIN.toLocaleString()}</p>
               </button>
               <button
                 type="button"
@@ -332,29 +329,28 @@ export default function FileFolderPurchase({
               </button>
             </div>
 
-            {selectedTier === 'standard' && !purchase && (
+            {selectedTier === 'pro' && !purchase && (
               <div className="mt-5">
-                <label htmlFor="standard-folder-price" className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Set Standard value</label>
+                <label htmlFor="pro-folder-price" className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Negotiated Pro value</label>
                 <div className="mt-2 flex items-end gap-3 border-b border-white/12 pb-2">
                   <input
-                    id="standard-folder-price"
+                    id="pro-folder-price"
                     type="number"
-                    min={STANDARD_MIN}
+                    min={PRO_NEGOTIATED_MIN}
                     max={PREMIUM_PRICE - 0.000001}
                     step="0.000001"
-                    value={standardPrice}
-                    onChange={event => setStandardPrice(event.target.value)}
+                    value={proPrice}
+                    onChange={event => setProPrice(event.target.value)}
                     className="min-w-0 flex-1 bg-transparent text-2xl font-black text-white outline-none"
                   />
                   <span className="pb-1 text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Flame Coin</span>
                 </div>
+                <p className="mt-2 text-[9px] leading-4 text-stone-500">Normal Pro starting value is {PRO_STARTING_PRICE.toLocaleString()} Flame Coin. Administration may approve a negotiated Pro sale down to {PRO_NEGOTIATED_MIN.toLocaleString()}.</p>
               </div>
             )}
 
             <p className="mt-4 text-[10px] leading-5 text-stone-500">
-              {validPrice && selectedPrice < PUBLIC_DOOR_THRESHOLD
-                ? `You can cross and begin building after verification. The first public Customer Door remains gated until verified participation reaches ${PUBLIC_DOOR_THRESHOLD.toLocaleString()} Flame Coin.`
-                : 'File Folder value establishes starting Build Power. Verified Flame Coin can increase construction capacity later.'}
+              File Folder value establishes starting Build Power. After verification, the purchased File Folder begins with its included Customer Door construction; later verified participation can increase construction capacity.
             </p>
           </div>
         </section>
