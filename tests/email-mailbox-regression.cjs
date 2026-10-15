@@ -33,7 +33,7 @@ assert.ok(!fs.existsSync(path.join(root,'lib/prospect-email-engine.ts')),'No sec
 assert.ok(adminApi.includes("action === 'generate_candidates'")&&adminApi.includes('EMAIL_CANDIDATE_PREFIXES')&&adminApi.includes("'email_candidate_engine'")&&adminApi.includes("verification: 'unverified'"),'Administration Email Prospect Engine forms clearly unverified business-domain candidates')
 assert.ok(adminPage.includes('Candidate formation')&&adminPage.includes('unverified email Prospect candidates'),'Administration UI distinguishes candidate formation from verified contact')
 assert.ok(bridgerPage.includes('Hope · Bridger Department · Email Outreach')&&bridgerPage.includes('unverified candidate'),'Bridger Email Outreach carries Hope identity and Prospect uncertainty')
-assert.ok(terms.includes('CURRENT_TERMS_VERSION = 11')&&terms.includes("title: '4. Prospect Nature'")&&terms.includes('unverified candidates'),'Terms require Bridgers to understand that Prospects are unverified candidates')
+assert.ok(terms.includes('CURRENT_TERMS_VERSION = 12')&&terms.includes("title: '4. Prospect Nature'")&&terms.includes('unverified candidates'),'Terms require Bridgers to understand that Prospects are unverified candidates')
 assert.ok(prospectMarketPage.includes('Hope · Bridger Department')&&prospectMarketPage.includes('Unverified candidates'),'WhatsApp Prospect Market carries Hope candidate language')
 assert.ok(!prospectMarketPage.includes('Pre-qualified Interest'),'Prospect Market does not falsely claim pre-qualified interest')
 
