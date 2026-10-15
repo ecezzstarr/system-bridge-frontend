@@ -25,6 +25,9 @@ const {
   proStartingFlameCoin: PRO_STARTING_PRICE,
 } = FILE_FOLDER_PRICING
 
+// PUBLIC_DOOR_THRESHOLD is intentionally retired from prospect purchase gating.
+// Every valid File Folder purchase includes Customer Door construction after verification.
+
 type PurchaseState = {
   id: string
   status: string
