@@ -161,57 +161,61 @@ export default function ProspectMarketPage() {
     }
   }
 
+  const normalizeWhatsAppTarget = (p: MyProspect) =>
+    (p.prospectWhatsapp || p.phone || '').replace(/\D/g, '')
+
+  const openWhatsApp = (target: string, message: string) => {
+    const waUrl = `https://wa.me/${target}?text=${encodeURIComponent(message)}`
+    // Same-tab navigation is deliberate: Android/PWA webviews can suppress
+    // window.open popups, while a direct navigation reliably hands off to
+    // WhatsApp and returns the Bridger to WEAVE through normal app history.
+    window.location.assign(waUrl)
+  }
+
   const handleSend = async (p: MyProspect) => {
-    if (!whatsappNumber) {
-      toast.error('Add your WhatsApp number first')
-      return
-    }
-    const target = (p.prospectWhatsapp || p.phone || '').replace(/\D/g, '')
+    const target = normalizeWhatsAppTarget(p)
     if (!/^[1-9]\d{6,14}$/.test(target)) {
       toast.error('This Prospect needs a valid international WhatsApp number')
       return
     }
 
-    // The Bridger's click is the WEAVE send confirmation. Open WhatsApp first
-    // with the prepared message, then record the outreach as sent without a
-    // second confirmation gate. The Bridger still performs the final send in WhatsApp.
-    window.open(`https://wa.me/${target}?text=${encodeURIComponent(p.messageSent)}`, '_blank', 'noopener,noreferrer')
     setSendingId(p.outreachId)
-
     try {
+      // The Bridger's button click is the WEAVE confirmation. Record it first,
+      // then perform a direct mobile-safe WhatsApp handoff. The Bridger's own
+      // saved WhatsApp number is not required to open the prospect conversation.
       const res = await fetch(`/api/bridger/prospects/${p.outreachId}/send`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ confirmedSent: true }),
+        keepalive: true,
       })
       const data = await res.json()
-      if (data.success) {
-        toast.success('WhatsApp opened · Prospect recorded as sent')
-        await fetchMine()
-      } else {
-        toast.error(data.error || 'WhatsApp opened, but WEAVE could not record the send')
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'WEAVE could not record the send')
+        return
       }
+
+      openWhatsApp(target, p.messageSent)
     } catch (error) {
-      toast.error('WhatsApp opened, but WEAVE could not record the send')
+      toast.error('WEAVE could not open this Prospect movement')
     } finally {
       setSendingId(null)
     }
   }
 
   const handleSendBridge = (p: MyProspect) => {
-    if (!whatsappNumber) {
-      toast.error('Add your WhatsApp number first')
-      return
-    }
     if (!p.bridgeUrl) {
       toast.error('Create or activate Bridge AI before sending this prospect into the Bridge')
       return
     }
-    const target = (p.prospectWhatsapp || p.phone || '').replace(/\D/g, '')
-    if (!/^[1-9]\d{6,14}$/.test(target)) { toast.error('This Prospect needs a valid international WhatsApp number'); return }
+    const target = normalizeWhatsAppTarget(p)
+    if (!/^[1-9]\d{6,14}$/.test(target)) {
+      toast.error('This Prospect needs a valid international WhatsApp number')
+      return
+    }
     const message = `I've opened your WEAVE Bridge. Enter with the movement we were discussing; you do not need to understand every part of WEAVE at once. ${p.bridgeUrl}`
-    const waUrl = `https://wa.me/${target.replace('+', '')}?text=${encodeURIComponent(message)}`
-    window.open(waUrl, '_blank', 'noopener,noreferrer')
+    openWhatsApp(target, message)
   }
 
   return (
@@ -339,7 +343,7 @@ export default function ProspectMarketPage() {
           <Card className="border-slate-700 bg-slate-900/50">
             <CardHeader>
               <CardTitle className="text-sm">Your WhatsApp Number</CardTitle>
-              <CardDescription className="text-xs">Used to send your first message to each purchased prospect.</CardDescription>
+              <CardDescription className="text-xs">Optional contact identity for your Bridger profile. Sending a Prospect no longer depends on this field.</CardDescription>
             </CardHeader>
             <CardContent className="flex gap-2">
               <Input
@@ -376,7 +380,7 @@ export default function ProspectMarketPage() {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            disabled={sendingId === p.outreachId || !whatsappNumber}
+                            disabled={sendingId === p.outreachId}
                             onClick={() => handleSend(p)}
                             className="bg-blue-600 hover:bg-blue-700"
                           >
@@ -399,7 +403,7 @@ export default function ProspectMarketPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={!p.bridgeUrl || !whatsappNumber}
+                          disabled={!p.bridgeUrl}
                           onClick={() => handleSendBridge(p)}
                           className="border-amber-300/30 text-amber-200 hover:bg-amber-300/10"
                         >
