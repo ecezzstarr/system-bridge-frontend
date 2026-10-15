@@ -3,11 +3,11 @@ import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { randomBytes, randomUUID } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
-import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { buildUserReferralCode } from '@/lib/user-referral'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
+import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,20 +87,15 @@ export async function POST(request: NextRequest) {
     // account entered outside the normal Bridge path.
     await ensureClientMoneyEnvironment(sql, user.id)
 
-    // A Client login does not create a File Folder by itself.
-    // It may only claim a File Folder that the Bridge/company movement already provisioned.
-    await ensureClientFileFolderSchema(sql)
-    await sql`
-      UPDATE client_file_folders
-      SET
-        client_id = ${user.id}::uuid,
-        client_name = ${name},
-        status = 'active',
-        claimed_at = COALESCE(claimed_at, NOW()),
-        updated_at = NOW()
-      WHERE file_number = ${fileNumber}
-        AND client_id IS NULL
-    `
+    // The File Number was issued by Administration before registration. Claim
+    // that exact persistent folder, attach the purchase to the new Client, and
+    // start the included Customer Door formation in one idempotent movement.
+    const activation = await activatePurchasedFileFolderForClient({
+      sql,
+      clientId: String(user.id),
+      fileNumber: String(fileNumber),
+      clientName: name,
+    })
 
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
@@ -123,6 +118,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       token,
+      customerDoor: activation.customerDoor,
       user: {
         id: user.id,
         email: user.email,
