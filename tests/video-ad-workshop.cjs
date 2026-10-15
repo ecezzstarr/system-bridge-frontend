@@ -42,6 +42,7 @@ assert.ok(customerPage.includes('YOUR VIDEO SERVICE DOOR'),'Participants receive
 assert.ok(customerPage.includes('PERSONAL + BUSINESS'),'Participants price personal and business work separately')
 assert.ok(customerPage.includes('PAY ADMIN')&&customerPage.includes('ENTER STUDIO'),'Outside job pays Administration before production starts')
 assert.ok(customerPage.includes('RECORD CUSTOMER PAYMENT RECEIVED'),'Outside payment is recorded as provider evidence rather than falsely processed by WEAVE')
+assert.ok(customerPage.includes("currency:'Flame Coin'")&&!customerPage.includes("currency:'NGN'")&&!customerPage.includes('placeholder="NGN"'),'Participant Video Ad Studio presents selling prices in Flame Coin, not NGN')
 assert.ok(customerApi.includes('VIDEO_STUDIO_CUSTOMER_ROLES'),'Studio use is restricted to Agent Bridger Client')
 assert.ok(customerApi.includes("action === 'activate_service_order'"),'Outside orders have an explicit paid Studio activation')
 assert.ok(customerApi.includes("customer_payment_status !== 'received'"),'Provider must record customer payment before using Studio for an outside order')
