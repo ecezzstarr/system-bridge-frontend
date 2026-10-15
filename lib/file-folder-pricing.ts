@@ -54,13 +54,8 @@ export function getFileFolderTier(
     amount <= FILE_FOLDER_PRICING.standardMaximumFlameCoin
   ) return 'standard'
 
-  // Pro normally begins at 6,500 Flame Coin. Values from 3,000 up to 6,499
-  // are valid only when the sale is explicitly marked as a negotiated Pro sale.
-  if (
-    amount >= FILE_FOLDER_PRICING.proStartingFlameCoin &&
-    amount < FILE_FOLDER_PRICING.proMaximumExclusiveFlameCoin
-  ) return 'pro'
-
+  // Pro is a negotiated/external sale and must be explicitly marked as Pro.
+  // This preserves the 3,000 overlap without misclassifying a normal Standard purchase.
   return null
 }
 
