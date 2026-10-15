@@ -54,9 +54,28 @@ export function getFileFolderTier(
     amount <= FILE_FOLDER_PRICING.standardMaximumFlameCoin
   ) return 'standard'
 
-  // Pro is a negotiated/external sale and must be explicitly marked as Pro.
+  // New Pro sales are negotiated/external sales and must be explicitly marked Pro.
   // This preserves the 3,000 overlap without misclassifying a normal Standard purchase.
   return null
+}
+
+export function getLegacyFileFolderTier(
+  amount: number,
+  externalSale = false,
+): FileFolderTier | null {
+  if (!Number.isFinite(amount)) return null
+  if (amount === FILE_FOLDER_PRICING.premiumFlameCoin) return 'premium'
+  if (amount < FILE_FOLDER_PRICING.standardMinimumFlameCoin || amount >= FILE_FOLDER_PRICING.premiumFlameCoin) return null
+
+  if (amount === FILE_FOLDER_PRICING.standardMaximumFlameCoin) {
+    return externalSale ? 'pro' : 'standard'
+  }
+
+  if (amount < FILE_FOLDER_PRICING.standardMaximumFlameCoin) return 'standard'
+
+  // Historical purchases above the new Standard maximum are retained as Pro so
+  // clients and pending Administration verifications do not become stranded.
+  return 'pro'
 }
 
 export function isValidFileFolderAmount(
