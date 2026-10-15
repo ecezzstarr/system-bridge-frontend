@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowRight, CircleUserRound, Globe2, Route, Share2, Sparkles } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { getRoleDistricts } from '@/lib/weave-role-districts'
+import { placeThroughSystemSwitch } from '@/lib/system-switch-role-place'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
 type PresenceRole='agent'|'bridger'|'client'
@@ -35,7 +36,7 @@ const COPY:Record<PresenceRole,{
     eyebrow:'Client Presence',
     title:'Your File Folder is the center of your Client world.',
     detail:'The Client position owns its operating environment. System Switch opens the File Folder; funds and records support the work; human support helps the Client continue without taking ownership of the Client world.',
-    loop:'Presence → File Folder → build → activate → operate',
+    loop:'Presence → System Switch → File Folder → build → activate → operate',
     worldHref:'/client/dashboard',
   },
 }
@@ -73,7 +74,10 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
     .filter(district=>district.key!=='presence')
     .map(district=>({
       ...district,
-      places:district.places.filter(place=>isVisible(place.href)).sort((a,b)=>orderFor(a.href)-orderFor(b.href)),
+      places:district.places
+        .map(place=>placeThroughSystemSwitch(role,place))
+        .filter(place=>isVisible(place.href))
+        .sort((a,b)=>orderFor(a.href)-orderFor(b.href)),
     }))
     .filter(district=>district.places.length>0)
 
