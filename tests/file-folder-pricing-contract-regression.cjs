@@ -30,7 +30,8 @@ assert.ok(prospect.includes("useState<'pro' | 'premium'>('pro')"),'Prospect cros
 assert.ok(prospect.includes('PRO_STARTING_PRICE'),'Prospect crossing presents the 6,500 Pro starting value')
 assert.ok(prospect.includes('PRO_NEGOTIATED_MIN'),'Prospect crossing preserves the 3,000 negotiated minimum')
 assert.ok(prospect.includes('fileFolderTier: selectedTier'),'Prospect crossing sends explicit Pro/Premium sale classification')
-assert.ok(!prospect.includes('PUBLIC_DOOR_THRESHOLD'),'Prospect copy does not reintroduce the retired Customer Door funding gate')
+assert.ok(prospect.includes('PUBLIC_DOOR_THRESHOLD is intentionally retired from prospect purchase gating'),'Prospect source explicitly retires the old Customer Door funding gate')
+assert.ok(!prospect.includes('FILE_FOLDER_PUBLIC_DOOR_THRESHOLD_FLAME_COIN'),'Prospect purchase does not consume the build-speed threshold as a purchase gate')
 
 assert.ok(purchase.includes('file_folder_tier varchar(20)'),'Purchase schema persists File Folder sale classification')
 assert.ok(purchase.includes('getFileFolderTier(amountFlameCoin, requestedTier)'),'Purchase API validates amount against explicit sale classification')
