@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
-import { getFileFolderTier } from '@/lib/file-folder-pricing'
+import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
 import { ensureFlameSchema } from '@/lib/flame-schema'
+
+function bridgeSaleTier(amount: number) {
+  if (amount === FILE_FOLDER_PRICING.premiumFlameCoin) return getFileFolderTier(amount, 'premium')
+  if (amount >= FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin && amount < FILE_FOLDER_PRICING.premiumFlameCoin) {
+    return getFileFolderTier(amount, 'pro')
+  }
+  return getFileFolderTier(amount, 'standard')
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,6 +40,7 @@ export async function GET(request: NextRequest) {
         p.buyer_email,
         p.buyer_phone,
         p.amount_trx,
+        p.file_folder_tier,
         p.payment_reference,
         p.status,
         p.file_number,
@@ -52,7 +61,7 @@ export async function GET(request: NextRequest) {
       ...deposits.map((deposit: any) => ({
         ...deposit,
         source: 'bridge_deposit',
-        fileFolderTier: getFileFolderTier(Number(deposit.tier_trx)),
+        fileFolderTier: bridgeSaleTier(Number(deposit.tier_trx)),
       })),
       ...purchases.map((purchase: any) => ({
         id: purchase.id,
@@ -70,7 +79,9 @@ export async function GET(request: NextRequest) {
         provider_name: purchase.provider_name || null,
         flame_name: purchase.flame_name || null,
         created_at: purchase.created_at,
-        fileFolderTier: getFileFolderTier(Number(purchase.amount_trx)),
+        fileFolderTier:
+          getFileFolderTier(Number(purchase.amount_trx), purchase.file_folder_tier) ||
+          (purchase.bridge_code ? bridgeSaleTier(Number(purchase.amount_trx)) : getFileFolderTier(Number(purchase.amount_trx))),
       })),
     ].sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
 

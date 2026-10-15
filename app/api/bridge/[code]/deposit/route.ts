@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 
 import { WORLD_RULES } from '@/lib/world/constants'
-import { getFileFolderTier } from '@/lib/file-folder-pricing'
+import { FILE_FOLDER_PRICING, fileFolderTierLabel, getFileFolderTier } from '@/lib/file-folder-pricing'
 import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
 
 const COMPANY_TRX_WALLET = WORLD_RULES.COMPANY_TRX_WALLET
@@ -40,14 +40,17 @@ export async function POST(
     }
 
     const submittedAmount = Number(amountFlameCoin ?? tierTrx)
-    const fileFolderTier = getFileFolderTier(submittedAmount)
+    const fileFolderTier = submittedAmount === FILE_FOLDER_PRICING.premiumFlameCoin
+      ? getFileFolderTier(submittedAmount, 'premium')
+      : getFileFolderTier(submittedAmount, 'pro')
 
     if (!fileFolderTier) {
       return NextResponse.json(
         {
-          error: 'Invalid File Folder amount',
-          standardMinimum: WORLD_RULES.FILE_FOLDER_STANDARD_MIN_FLAME_COIN,
-          premiumPrice: WORLD_RULES.FILE_FOLDER_PREMIUM_PRICE_FLAME_COIN,
+          error: 'Invalid Pro or Premium File Folder amount',
+          proNegotiatedMinimum: FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin,
+          proStartingPrice: FILE_FOLDER_PRICING.proStartingFlameCoin,
+          premiumPrice: FILE_FOLDER_PRICING.premiumFlameCoin,
           currency: 'Flame Coin',
           peg: '1 Flame Coin = 1 TRX',
         },
@@ -76,9 +79,9 @@ export async function POST(
     const bridge = bridges[0]
 
     /*
-     * Store the verified selected File Folder value.
-     * Standard: 180 Flame Coin up to anything below Premium.
-     * Premium: exactly 35,800 Flame Coin.
+     * Bridge prospect sales are Pro or Premium.
+     * Pro normally starts at 6,500 Flame Coin and may be negotiated down to 3,000.
+     * Premium is exactly 35,800 Flame Coin.
      */
     const result = await sql`
       INSERT INTO bridge_deposits (
@@ -114,6 +117,7 @@ export async function POST(
       RETURNING id
     `
 
+    const tierLabel = fileFolderTierLabel(fileFolderTier)
     await notifyDepositSubmitted({
       depositorId: null,
       depositorName: name.trim(),
@@ -121,7 +125,7 @@ export async function POST(
       depositId: result[0].id,
       rail: 'BRIDGE_TRX',
       amountLabel: `${submittedAmount.toLocaleString()} TRX`,
-      secondaryLabel: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder`,
+      secondaryLabel: `${tierLabel} File Folder`,
       adminLink: '/admin/control-center#bridge',
     })
 
@@ -136,7 +140,7 @@ export async function POST(
       status: 'pending',
       companyWallet: COMPANY_TRX_WALLET,
       message:
-        `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} TRX File Folder payment submitted for administrator verification. Verified TRX is recognized 1:1 as Flame Coin.`,
+        `${tierLabel} TRX File Folder payment submitted for administrator verification. Verified TRX is recognized 1:1 as Flame Coin.`,
     })
   } catch (error: any) {
     console.error('[bridge deposit] error:', error)

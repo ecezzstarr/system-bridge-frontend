@@ -34,6 +34,7 @@ ENV NODE_ENV=production
 RUN node tests/recent-features.cjs
 RUN node tests/agentic-bridger-regression.cjs
 RUN node tests/file-folder-customer-door-purchase-regression.cjs
+RUN node tests/file-folder-pricing-contract-regression.cjs
 RUN node tests/wiring.cjs
 RUN node tests/environment-grade.cjs
 RUN node tests/adaptive-runtime.cjs

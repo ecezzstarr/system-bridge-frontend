@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-import { getFileFolderTier } from '@/lib/file-folder-pricing'
+import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
+
+function bridgeSaleTier(amount: number) {
+  if (amount === FILE_FOLDER_PRICING.premiumFlameCoin) return getFileFolderTier(amount, 'premium')
+  return getFileFolderTier(amount, 'pro')
+}
 
 export async function GET(
   request: NextRequest,
@@ -50,7 +55,7 @@ export async function GET(
         id: d.id,
         status: d.status,
         amount: Number(d.tier_trx),
-        fileFolderTier: getFileFolderTier(Number(d.tier_trx)),
+        fileFolderTier: bridgeSaleTier(Number(d.tier_trx)),
         currency: 'Flame Coin',
         companyWallet: d.company_wallet,
         fileNumber: d.file_number,

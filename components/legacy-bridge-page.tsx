@@ -1,30 +1,21 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { HUD } from '@/components/system-switch/HUD'
+import { LegacyFileFolderSale } from '@/components/bridge/legacy-file-folder-sale'
 
 const SystemSwitchScene = dynamic(() => import('@/components/system-switch/SystemSwitchScene'), { ssr: false })
 
 interface Message { role: 'user' | 'assistant'; content: string }
-
-interface Bridger {
-  id: string
-  name: string
-  username: string | null
-}
-
-const SUPPORT_POSITIONS = [
-  { id: 'bridger', name: 'My Bridger' },
-  { id: 'mandate', name: 'Mandate' },
-  { id: 'lawyer', name: 'Attorney' },
-  { id: 'forensic', name: 'Forensic' },
-  { id: 'admin', name: 'Administration' },
-]
-
+interface Bridger { id: string; name: string; username: string | null }
 interface SupportMessage { id: string; senderType: 'visitor' | 'staff'; content: string; createdAt: string }
+
+type DepositStatus = 'idle' | 'pending' | 'approved' | 'rejected'
+
+const BRIDGE_PROSPECT_POSITIONS = [{ id: 'bridger', name: 'My Bridger' }] as const
 
 function getFingerprint(code: string) {
   if (typeof window === 'undefined') return 'server'
@@ -37,14 +28,14 @@ function getFingerprint(code: string) {
   return fp
 }
 
-function getStoredSystemSwitchSession(code: string): string | null {
+function getStoredDepositId(code: string): string | null {
   if (typeof window === 'undefined') return null
   return localStorage.getItem(`bridge_ss_session_${code}`)
 }
 
-function storeSystemSwitchSession(code: string, sessionId: string) {
+function storeDepositId(code: string, depositId: string) {
   if (typeof window === 'undefined') return
-  localStorage.setItem(`bridge_ss_session_${code}`, sessionId)
+  localStorage.setItem(`bridge_ss_session_${code}`, depositId)
 }
 
 export default function BridgePage() {
@@ -52,17 +43,7 @@ export default function BridgePage() {
   const router = useRouter()
   const code = params.code as string
 
-  // Track prospect ID from URL
   const [prospectId, setProspectId] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search)
-      const pid = urlParams.get('pid')
-      if (pid) setProspectId(pid)
-    }
-  }, [])
-
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [bridger, setBridger] = useState<Bridger | null>(null)
@@ -71,28 +52,19 @@ export default function BridgePage() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
 
-  // Spatial State
   const [activeStation, setActiveStation] = useState<string | null>(null)
-  const [playerPos, setPlayerPos] = useState<any>(null)
-  const [moveDir, setMoveDir] = useState<{ x: number, z: number }>({ x: 0, z: 0 })
+  const [moveDir] = useState<{ x: number, z: number }>({ x: 0, z: 0 })
 
-  // System Switch entry gate
-  const [ssGate, setSsGate] = useState<'na' | 'choose' | 'entered'>('na')
-  const [ssExistingState, setSsExistingState] = useState<any>(null)
-
-  // Deposit flow state
-  const [understood, setUnderstood] = useState(false)
   const [showDeposit, setShowDeposit] = useState(false)
   const [selectedTier, setSelectedTier] = useState<number | null>(null)
   const [prospectName, setProspectName] = useState('')
   const [prospectPhone, setProspectPhone] = useState('')
   const [txHash, setTxHash] = useState('')
   const [depositId, setDepositId] = useState<string | null>(null)
-  const [depositStatus, setDepositStatus] = useState<'idle' | 'pending' | 'approved' | 'rejected'>('idle')
+  const [depositStatus, setDepositStatus] = useState<DepositStatus>('idle')
   const [fileNumber, setFileNumber] = useState<string | null>(null)
   const [submittingDeposit, setSubmittingDeposit] = useState(false)
 
-  // Support panel state
   const [supportOpen, setSupportOpen] = useState(false)
   const [supportPosition, setSupportPosition] = useState<string | null>(null)
   const [supportMessages, setSupportMessages] = useState<SupportMessage[]>([])
@@ -101,45 +73,56 @@ export default function BridgePage() {
   const [supportLoading, setSupportLoading] = useState(false)
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    const urlParams = new URLSearchParams(window.location.search)
+    const pid = urlParams.get('pid')
+    if (pid) setProspectId(pid)
+  }, [])
+
+  useEffect(() => {
     fetch(`/api/bridge/${code}`)
       .then(r => r.json())
       .then(data => {
         if (!data.success) {
           setNotFound(true)
-        } else {
-          setMessages([{ role: 'assistant', content: data.welcomeMessage }])
-          setBridger(data.bridger || null)
+          return
+        }
 
-          // Check for existing session
-          const storedSessionId = getStoredSystemSwitchSession(code)
-          if (storedSessionId) {
-            setSessionId(storedSessionId)
-            setDepositId(storedSessionId)
-            setDepositStatus('pending')
-            setSsGate('entered')
-          }
+        setMessages([{ role: 'assistant', content: data.welcomeMessage }])
+        setBridger(data.bridger || null)
+
+        const storedDepositId = getStoredDepositId(code)
+        if (storedDepositId) {
+          setDepositId(storedDepositId)
+          setDepositStatus('pending')
         }
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
   }, [code])
 
-  // Poll for admin approval
   useEffect(() => {
     if (!depositId || depositStatus !== 'pending') return
-    const interval = setInterval(async () => {
+
+    const readStatus = async () => {
       try {
-        const res = await fetch(`/api/bridge/${code}/deposit/${depositId}`)
+        const res = await fetch(`/api/bridge/${code}/deposit/${depositId}`, { cache: 'no-store' })
         const data = await res.json()
-        if (data.success && data.status !== 'pending') {
-          setDepositStatus(data.status)
-          if (data.status === 'approved' && data.fileNumber) {
-            setFileNumber(data.fileNumber)
-          }
+        const deposit = data.deposit || data
+        if (!data.success || !deposit?.status || deposit.status === 'pending') return
+
+        const nextStatus = deposit.status as DepositStatus
+        setDepositStatus(nextStatus)
+        if (nextStatus === 'approved' && deposit.fileNumber) {
+          setFileNumber(deposit.fileNumber)
+          try { localStorage.removeItem(`bridge_ss_session_${code}`) } catch {}
         }
       } catch {}
-    }, 5000)
-    return () => clearInterval(interval)
+    }
+
+    readStatus()
+    const interval = window.setInterval(readStatus, 5000)
+    return () => window.clearInterval(interval)
   }, [depositId, depositStatus, code])
 
   const sendMessage = async () => {
@@ -168,13 +151,15 @@ export default function BridgePage() {
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection hiccup — try again?' }])
+    } finally {
+      setSending(false)
     }
-    setSending(false)
   }
 
   const handleSubmitDeposit = async () => {
     if (!selectedTier || !prospectName.trim() || !prospectPhone.trim() || !txHash.trim()) return
     setSubmittingDeposit(true)
+
     try {
       const res = await fetch(`/api/bridge/${code}/deposit`, {
         method: 'POST',
@@ -185,7 +170,7 @@ export default function BridgePage() {
           name: prospectName.trim(),
           phone: prospectPhone.trim(),
           amountFlameCoin: selectedTier,
-          tierTrx: selectedTier, // legacy API compatibility
+          tierTrx: selectedTier,
           txHash: txHash.trim(),
         }),
       })
@@ -193,25 +178,18 @@ export default function BridgePage() {
       if (data.success) {
         setDepositId(data.depositId)
         setDepositStatus('pending')
-        setSsGate('entered')
-        storeSystemSwitchSession(code, data.depositId)
+        setShowDeposit(false)
+        storeDepositId(code, data.depositId)
       }
-    } catch {}
-    setSubmittingDeposit(false)
+    } catch {
+      // Keep the sales panel open so the prospect can retry the same movement.
+    } finally {
+      setSubmittingDeposit(false)
+    }
   }
 
   const handleGoToRegister = () => {
     router.push(`/client/register?fileNumber=${encodeURIComponent(fileNumber || '')}`)
-  }
-
-  const handleStartFresh = () => {
-    localStorage.removeItem(`bridge_ss_session_${code}`)
-    setSsExistingState(null)
-    setSsGate('na')
-  }
-
-  const handleContinue = () => {
-    setSsGate('entered')
   }
 
   const fetchSupportMessages = async (position: string, sid?: string) => {
@@ -222,8 +200,9 @@ export default function BridgePage() {
       const res = await fetch(`/api/bridge/${code}/support?sessionId=${activeSessionId}&position=${position}`)
       const data = await res.json()
       if (data.success) setSupportMessages(data.messages)
-    } catch {}
-    setSupportLoading(false)
+    } catch {} finally {
+      setSupportLoading(false)
+    }
   }
 
   const ensureSession = async (): Promise<string | null> => {
@@ -249,10 +228,11 @@ export default function BridgePage() {
   }
 
   const handleOpenSupport = async (positionId: string) => {
-    setSupportPosition(positionId)
+    const activePositionId = positionId || BRIDGE_PROSPECT_POSITIONS[0].id
+    setSupportPosition(activePositionId)
     setSupportOpen(true)
     const sid = await ensureSession()
-    if (sid) fetchSupportMessages(positionId, sid)
+    if (sid) fetchSupportMessages(activePositionId, sid)
   }
 
   const handleSendSupportMessage = async () => {
@@ -270,15 +250,16 @@ export default function BridgePage() {
       })
       const data = await res.json()
       if (data.success) setSupportMessages(prev => [...prev, data.message])
-    } catch {}
-    setSupportSending(false)
+    } catch {} finally {
+      setSupportSending(false)
+    }
   }
 
   useEffect(() => {
     if (!supportOpen || !supportPosition) return
-    const interval = setInterval(() => fetchSupportMessages(supportPosition), 5000)
-    return () => clearInterval(interval)
-  }, [supportOpen, supportPosition])
+    const interval = window.setInterval(() => fetchSupportMessages(supportPosition), 5000)
+    return () => window.clearInterval(interval)
+  }, [supportOpen, supportPosition, sessionId])
 
   if (loading) {
     return (
@@ -302,7 +283,7 @@ export default function BridgePage() {
         <SystemSwitchScene
           activeStation={activeStation}
           onStationChange={setActiveStation}
-          onPlayerMove={setPlayerPos}
+          onPlayerMove={() => {}}
           externalDir={moveDir}
         />
       </div>
@@ -317,7 +298,9 @@ export default function BridgePage() {
         onSendMessage={sendMessage}
         sending={sending}
         depositFlow={{
-          isOpen: showDeposit,
+          // The embedded HUD purchase form is legacy pricing. Keep it closed and
+          // route the button into the aligned Pro/Premium panel below.
+          isOpen: false,
           status: depositStatus,
           tier: selectedTier,
           setTier: setSelectedTier,
@@ -325,12 +308,12 @@ export default function BridgePage() {
           setName: setProspectName,
           phone: prospectPhone,
           setPhone: setProspectPhone,
-          txHash: txHash,
-          setTxHash: setTxHash,
+          txHash,
+          setTxHash,
           onSubmit: handleSubmitDeposit,
           submitting: submittingDeposit,
-          onConfirmUnderstanding: () => setShowDeposit(!showDeposit),
-          understood: understood
+          onConfirmUnderstanding: () => setShowDeposit(value => !value),
+          understood: true,
         }}
         support={{
           isOpen: supportOpen,
@@ -343,9 +326,25 @@ export default function BridgePage() {
           loading: supportLoading,
           position: supportPosition,
           setPosition: setSupportPosition,
-          onOpenSupport: handleOpenSupport
+          onOpenSupport: handleOpenSupport,
         }}
         onGoToRegister={handleGoToRegister}
+      />
+
+      <LegacyFileFolderSale
+        open={showDeposit}
+        status={depositStatus}
+        amount={selectedTier}
+        setAmount={setSelectedTier}
+        name={prospectName}
+        setName={setProspectName}
+        phone={prospectPhone}
+        setPhone={setProspectPhone}
+        txHash={txHash}
+        setTxHash={setTxHash}
+        submitting={submittingDeposit}
+        onSubmit={handleSubmitDeposit}
+        onClose={() => setShowDeposit(false)}
       />
     </div>
   )

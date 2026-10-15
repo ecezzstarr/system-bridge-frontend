@@ -4,11 +4,19 @@ import { sql } from '@/lib/db'
 import { generateFileNumber } from '@/lib/fne'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { creditBridgerActivityCommission } from '@/lib/bridger-commission-router'
-import { getFileFolderTier } from '@/lib/file-folder-pricing'
+import { FILE_FOLDER_PRICING, fileFolderTierLabel, getFileFolderTier } from '@/lib/file-folder-pricing'
 import { notifyUser } from '@/lib/deposit-notifications'
 import { ensureFlameSchema } from '@/lib/flame-schema'
 import { accrueAiProviderAllocation } from '@/lib/ai-provider-settlement'
 import { recordSystemEvent } from '@/lib/system-events'
+
+function bridgeSaleTier(amount: number) {
+  if (amount === FILE_FOLDER_PRICING.premiumFlameCoin) return getFileFolderTier(amount, 'premium')
+  if (amount >= FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin && amount < FILE_FOLDER_PRICING.premiumFlameCoin) {
+    return getFileFolderTier(amount, 'pro')
+  }
+  return getFileFolderTier(amount, 'standard')
+}
 
 async function provisionPersistentFolder(fileNumber: string, clientName: string) {
   await ensureClientFileFolderSchema(sql)
@@ -59,10 +67,14 @@ async function verifyBridgeRadiancePurchase({
     return NextResponse.json({ error: 'Bridge Radiance File Folder purchase not found' }, { status: 404 })
   }
 
-  const fileFolderTier = getFileFolderTier(Number(purchase.amount_trx))
+  const purchaseAmount = Number(purchase.amount_trx)
+  const fileFolderTier =
+    getFileFolderTier(purchaseAmount, purchase.file_folder_tier) ||
+    (purchase.bridge_code ? bridgeSaleTier(purchaseAmount) : getFileFolderTier(purchaseAmount))
   if (!fileFolderTier) {
-    return NextResponse.json({ error: 'Stored File Folder amount is outside the current Standard/Premium pricing rules' }, { status: 409 })
+    return NextResponse.json({ error: 'Stored File Folder amount is outside the current Standard, Pro and Premium pricing rules' }, { status: 409 })
   }
+  const tierLabel = fileFolderTierLabel(fileFolderTier)
 
   if (purchase.status === 'confirmed') {
     if (status !== 'approved' || !purchase.file_number) {
@@ -76,7 +88,7 @@ async function verifyBridgeRadiancePurchase({
         activity: 'client_deposit',
         baseAmount: Number(purchase.amount_trx),
         sourceId: String(purchase.id),
-        description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${purchase.file_number}`,
+        description: `${tierLabel} File Folder purchase: ${purchase.file_number}`,
       })
       if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
         return NextResponse.json({
@@ -197,7 +209,7 @@ async function verifyBridgeRadiancePurchase({
       activity: 'client_deposit',
       baseAmount: Number(confirmed.amount_trx),
       sourceId: String(confirmed.id),
-      description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`,
+      description: `${tierLabel} File Folder purchase: ${fileNumber}`,
     })
     if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
       return NextResponse.json({
@@ -208,7 +220,7 @@ async function verifyBridgeRadiancePurchase({
     await notifyUser(bridgerId, {
       type: 'client_deposit_approved',
       title: 'Public movement Client crossed',
-      content: `Administration approved ${prospectName}'s ${Number(confirmed.amount_trx).toLocaleString()} Flame Coin ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder. File Number ${fileNumber} was issued.`,
+      content: `Administration approved ${prospectName}'s ${Number(confirmed.amount_trx).toLocaleString()} Flame Coin ${tierLabel} File Folder. File Number ${fileNumber} was issued.`,
       link: '/bridger/presence',
       fromUserId: admin.id,
       fromUserName: 'WEAVE Administration',
@@ -298,14 +310,15 @@ export async function POST(request: NextRequest) {
     }
 
     const deposit = deposits[0]
-    const fileFolderTier = getFileFolderTier(Number(deposit.tier_trx))
+    const fileFolderTier = bridgeSaleTier(Number(deposit.tier_trx))
 
     if (!fileFolderTier) {
       return NextResponse.json(
-        { error: 'Stored File Folder amount is outside the current Standard/Premium pricing rules' },
+        { error: 'Stored Bridge File Folder amount is outside the current Pro/Premium sales rules' },
         { status: 409 }
       )
     }
+    const tierLabel = fileFolderTierLabel(fileFolderTier)
 
     if (deposit.status === 'approved') {
       if (status !== 'approved' || !deposit.file_number) {
@@ -319,7 +332,7 @@ export async function POST(request: NextRequest) {
           activity: 'client_deposit',
           baseAmount: Number(deposit.tier_trx),
           sourceId: String(deposit.id),
-          description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${deposit.file_number}`
+          description: `${tierLabel} File Folder purchase: ${deposit.file_number}`
         })
         if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
           return NextResponse.json({
@@ -429,7 +442,7 @@ export async function POST(request: NextRequest) {
         activity: 'client_deposit',
         baseAmount: Number(deposit.tier_trx),
         sourceId: String(deposit.id),
-        description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase: ${fileNumber}`
+        description: `${tierLabel} File Folder purchase: ${fileNumber}`
       })
       if (!commissionMovement.bridgerShare || (commissionMovement.agentExpected && !commissionMovement.agentShare)) {
         throw new Error('File Folder approved but a required Bridger/Agent share could not be credited; retry approval after wallet verification')
@@ -438,7 +451,7 @@ export async function POST(request: NextRequest) {
       await notifyUser(deposit.bridger_id, {
         type: 'client_deposit_approved',
         title: 'Client File Folder payment approved',
-        content: `Administration approved ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX ${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment. File Number ${fileNumber} was issued.`,
+        content: `Administration approved ${deposit.prospect_name}'s ${Number(deposit.tier_trx).toLocaleString()} TRX ${tierLabel} File Folder payment. File Number ${fileNumber} was issued.`,
         link: '/bridger/presence',
         fromUserId: admin.id,
         fromUserName: 'WEAVE Administration',
