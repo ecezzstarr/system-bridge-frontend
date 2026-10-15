@@ -2,7 +2,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 const root=path.resolve(__dirname,'..')
 const read=p=>fs.readFileSync(path.join(root,p),'utf8')
 
-const staffGate=read('app/(app)/system-switch/page.tsx')
+const staffGate=read('app/system-switch/page.tsx')
 const staffEvent=read('app/(app)/system-switch/flame-event/page.tsx')
 const legacyStaffEvent=read('app/(app)/event/page.tsx')
 const clientSwitch=read('app/client/system-switch/page.tsx')
@@ -16,6 +16,7 @@ const roleDistrict=read('components/world/role-district-environment.tsx')
 const rolePresence=read('components/world/role-presence-environment.tsx')
 
 assert.ok(staffGate.includes("['admin', 'agent', 'bridger']") || staffGate.includes("['agent', 'bridger', 'admin']"),'Admin, Agent and Bridger share the staff System Switch gate')
+assert.ok(staffGate.includes("redirect('/client/system-switch')"),'Client entering the shared System Switch resolves into the owned Client File Folder gate')
 assert.ok(staffGate.includes('data-system-switch-gate="file-folder"')&&staffGate.includes('href="/system-switch/flame-event"'),'Staff System Switch is the gate into the File Folder layer before Flame Event')
 assert.ok(staffEvent.includes('data-flame-event-location="file-folder"')&&staffEvent.includes('data-system-switch-crossed="true"'),'Staff Flame Event exists inside the File Folder after System Switch')
 assert.ok(clientSwitch.includes('href="/client/system-switch/flame-event"')&&clientSwitch.includes('data-file-folder-flame-event="inside"'),'Client File Folder exposes Flame Event from inside the File Folder')
