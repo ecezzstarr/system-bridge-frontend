@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
-import { FILE_FOLDER_PRICING, getFileFolderTier, isValidFileFolderAmount } from '@/lib/file-folder-pricing'
+import { FILE_FOLDER_PRICING, fileFolderTierLabel, getFileFolderTier, isValidFileFolderAmount } from '@/lib/file-folder-pricing'
 import { requireWorkshopAuthorization } from '@/lib/workshop-auth'
 import { recordSystemEvent } from '@/lib/system-events'
 import { requireApiUser } from '@/lib/api-auth'
@@ -11,14 +11,15 @@ import { getPublicFlameMovementAttribution, publicFlameMovementCodeFromRequest, 
 import { provisionPurchasedFileFolderCustomerDoor } from '@/lib/client-customer-door-provisioning'
 
 const sql = neon(process.env.DATABASE_URL!)
-function validPrice(value: unknown) { const amount = Number(value); return isValidFileFolderAmount(amount) && amount <= 100000000 }
+function validPrice(value: unknown, tier?: string | null) { const amount = Number(value); return isValidFileFolderAmount(amount, tier) && amount <= 100000000 }
 async function ensurePurchaseSchema() {
-  await sql`CREATE TABLE IF NOT EXISTS file_folder_purchases (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),file_number varchar(120),client_id uuid,buyer_name varchar(255),buyer_email varchar(255),buyer_phone varchar(80),amount_trx numeric(30,8) NOT NULL,payment_method varchar(40) NOT NULL,payment_reference varchar(255) NOT NULL,status varchar(40) NOT NULL DEFAULT 'pending_admin_confirmation',created_at timestamptz NOT NULL DEFAULT NOW(),confirmed_at timestamptz,confirmed_by uuid)`
+  await sql`CREATE TABLE IF NOT EXISTS file_folder_purchases (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),file_number varchar(120),client_id uuid,buyer_name varchar(255),buyer_email varchar(255),buyer_phone varchar(80),amount_trx numeric(30,8) NOT NULL,file_folder_tier varchar(20),payment_method varchar(40) NOT NULL,payment_reference varchar(255) NOT NULL,status varchar(40) NOT NULL DEFAULT 'pending_admin_confirmation',created_at timestamptz NOT NULL DEFAULT NOW(),confirmed_at timestamptz,confirmed_by uuid)`
   await sql`ALTER TABLE file_folder_purchases ALTER COLUMN file_number DROP NOT NULL`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS client_id uuid`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS buyer_name varchar(255)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS buyer_email varchar(255)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS buyer_phone varchar(80)`
+  await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS file_folder_tier varchar(20)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS confirmed_by uuid`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS bridge_code varchar(32)`
   await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS provider_key varchar(120)`
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
     if (!purchaseId) return NextResponse.json({ error: 'purchaseId is required' }, { status: 400 })
 
     const [purchase] = await sql`
-      SELECT id,file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,status,bridge_code,created_at,confirmed_at
+      SELECT id,file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,file_folder_tier,status,bridge_code,created_at,confirmed_at
       FROM file_folder_purchases
       WHERE id=${purchaseId}::uuid
       LIMIT 1
@@ -59,6 +60,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const amountFlameCoin = Number(purchase.amount_trx || 0)
+    const fileFolderTier = getFileFolderTier(amountFlameCoin, purchase.file_folder_tier) || getFileFolderTier(amountFlameCoin)
     const confirmed = purchase.status === 'confirmed' && Boolean(purchase.file_number)
     return NextResponse.json({
       success: true,
@@ -66,7 +69,8 @@ export async function GET(request: NextRequest) {
         id: purchase.id,
         status: purchase.status,
         fileNumber: purchase.file_number || null,
-        amountFlameCoin: Number(purchase.amount_trx || 0),
+        amountFlameCoin,
+        fileFolderTier,
         confirmedAt: purchase.confirmed_at || null,
       },
       crossing: confirmed ? {
@@ -89,7 +93,8 @@ export async function POST(request: NextRequest) {
     const fileNumber = typeof body.fileNumber === 'string' && body.fileNumber.trim() ? body.fileNumber.trim().toUpperCase() : null
     const rawAmount = body.amountFlameCoin ?? body.amountTrx
     const amountFlameCoin = rawAmount == null || rawAmount === '' ? FILE_FOLDER_PRICING.standardMinimumFlameCoin : Number(rawAmount)
-    const fileFolderTier = getFileFolderTier(amountFlameCoin)
+    const requestedTier = typeof body.fileFolderTier === 'string' ? body.fileFolderTier.trim().toLowerCase() : null
+    const fileFolderTier = getFileFolderTier(amountFlameCoin, requestedTier)
     const paymentMethod = 'trx'
     const paymentReference = typeof body.paymentReference === 'string' ? body.paymentReference.trim() : ''
     const buyerName = typeof body.buyerName === 'string' ? body.buyerName.trim() : null
@@ -125,7 +130,11 @@ export async function POST(request: NextRequest) {
       flameName = trustedCrossing.flame_name || null
       flameExternalId = trustedCrossing.flame_external_id || null
     }
-    if (!validPrice(amountFlameCoin) || !fileFolderTier) return NextResponse.json({ error: `Standard File Folder must be from ${FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} Flame Coin up to anything below ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()}, or choose Premium at exactly ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin.` }, { status: 400 })
+    if (!validPrice(amountFlameCoin, requestedTier) || !fileFolderTier) {
+      return NextResponse.json({
+        error: `Choose Standard from ${FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to ${FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()} Flame Coin, an explicitly negotiated Pro sale from ${FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} up to below ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin (normal Pro starting value ${FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()}), or Premium at exactly ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin.`,
+      }, { status: 400 })
+    }
     if (!paymentReference) return NextResponse.json({ error: 'TRX transaction hash is required.' }, { status: 400 })
     if (fileNumber) {
       const [folder] = await sql`SELECT * FROM client_file_folders WHERE file_number=${fileNumber} LIMIT 1`
@@ -134,9 +143,10 @@ export async function POST(request: NextRequest) {
     }
     const [existing] = await sql`SELECT id FROM file_folder_purchases WHERE payment_reference=${paymentReference} LIMIT 1`
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
-    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${movementBridgerId}::uuid,${movementAttribution?.movement_code || null}) RETURNING *`
+    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,file_folder_tier,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${fileFolderTier},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${movementBridgerId}::uuid,${movementAttribution?.movement_code || null}) RETURNING *`
+    const tierLabel = fileFolderTierLabel(fileFolderTier)
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
-    const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
+    const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${tierLabel} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
     try {
       await recordPublicFlameMovementEvent({
         movementCode,
@@ -160,7 +170,7 @@ export async function POST(request: NextRequest) {
       receipt,
       fileFolderTier,
       crossing: { ready: false },
-      message: `${fileFolderTier === 'premium' ? 'Premium' : 'Standard'} File Folder payment recorded. Administration will verify the payment, issue the File Number, activate the Client File Folder and start the included Customer Door construction.`,
+      message: `${tierLabel} File Folder payment recorded. Administration will verify the payment, issue the File Number, activate the Client File Folder and start the included Customer Door construction.`,
     }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
