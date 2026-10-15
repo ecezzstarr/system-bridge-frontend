@@ -3,6 +3,12 @@ const root=path.resolve(__dirname,'..')
 const read=p=>fs.readFileSync(path.join(root,p),'utf8')
 
 const purchase=read('app/api/bridge/file-folder/purchase/route.ts')
+const publicPage=read('app/file-folder/page.tsx')
+const publicPurchase=read('app/api/public/file-folder/purchase/route.ts')
+const adminVerify=read('app/api/admin/bridge-deposits/verify/route.ts')
+const registration=read('app/api/client/weave-register/route.ts')
+const entry=read('app/api/client/file-folder-entry/route.ts')
+const activation=read('lib/file-folder-purchase-activation.ts')
 const provisioning=read('lib/client-customer-door-provisioning.ts')
 const economy=read('lib/client-build-economy.ts')
 const publicDoor=read('app/market/[slug]/page.tsx')
@@ -13,6 +19,16 @@ assert.ok(purchase.includes(commissioningCall),'File Folder confirmation starts 
 assert.ok(purchase.indexOf(commissioningCall) < purchase.lastIndexOf("status='confirmed'"),'Customer Door formation is attached before purchase confirmation completes')
 assert.ok(purchase.includes("eventType: 'customer_door_construction_started'"),'Customer Door start is recorded as construction movement')
 assert.ok(purchase.includes('customerDoor, aiProviderAllocation'),'Confirmed purchase returns the Customer Door build state')
+
+assert.ok(publicPage.includes("localStorage.getItem('ssb_auth_token')")&&publicPage.includes('Authorization: `Bearer ${token}`'),'Homepage File Folder purchase carries the logged-in Client bearer identity')
+assert.ok(publicPage.includes("method: 'PATCH'")&&publicPage.includes('purchaseId: purchase.id, accessToken: purchase.accessToken'),'Homepage crossing reconciles an existing Client purchase while Administration verification completes')
+assert.ok(publicPurchase.includes('activatePurchasedFileFolderForClient')&&publicPurchase.includes('clientActive: true'),'Public purchase status activates and returns System Switch only for the owning Client')
+assert.ok(publicPurchase.includes("registerUrl: `/client/register?fileNumber=")&&publicPurchase.includes("systemSwitchUrl: '/client/system-switch'"),'Public purchase crossing separates visitor registration from existing Client entry')
+assert.ok(adminVerify.includes('resolveExistingClientForFileFolderPurchase')&&adminVerify.includes('activatePurchasedFileFolderForClient'),'Administration verification resolves and activates an existing Client instead of leaving only a File Folder shell')
+assert.ok(adminVerify.includes("eventType: 'customer_door_construction_started'"),'Administration activation records the included Customer Door construction movement')
+assert.ok(registration.includes('activatePurchasedFileFolderForClient'),'Visitor registration activates the Administration-issued persistent File Folder and Customer Door')
+assert.ok(entry.includes('Recovery for the old homepage bug')&&entry.includes("status='confirmed'")&&entry.includes('activatePurchasedFileFolderForClient'),'Client File Folder entry repairs an unambiguous confirmed homepage purchase created before the fix')
+assert.ok(activation.includes('UPDATE users')&&activation.includes('SET file_number=${fileNumber}')&&activation.includes('provisionPurchasedFileFolderCustomerDoor'),'Shared activation binds users.file_number and starts the included Customer Door')
 
 for(const part of ['door_foundation_frame','door_identity_facade','door_customer_intake','door_service_interface','door_fulfilment_interface','door_public_commissioning']){
   assert.ok(provisioning.includes(part),`Automatic Customer Door includes ${part}`)
@@ -27,4 +43,4 @@ assert.ok(world.includes("status='building' AND completes_at <= NOW()")&&world.i
 assert.ok(economy.includes('const publicDoorUnlocked = true')&&economy.includes('const requiredToOpenPublicDoorFlameCoin = 0'),'No funding threshold blocks the included Customer Door; timing and boosts govern formation')
 assert.ok(publicDoor.includes("formation_status='selling' OR formation_status='ready_for_offer'"),'Completed Customer Door opens publicly after build completion, with or without a first offer')
 
-console.log('File Folder purchase includes all Customer Door parts while preserving construction time and optional boosts')
+console.log('File Folder purchase forms the Client environment and included Customer Door across homepage, Administration and registration paths')
