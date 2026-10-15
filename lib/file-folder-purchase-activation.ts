@@ -164,20 +164,59 @@ export async function activatePurchasedFileFolderForClient(params: {
       AND role='client'
   `
 
-  if (purchaseId) {
-    await sql`
-      UPDATE file_folder_purchases
-      SET client_id=${clientId}::uuid
-      WHERE id=${purchaseId}::uuid
-        AND (client_id IS NULL OR client_id=${clientId}::uuid)
-    `
-  } else {
-    await sql`
-      UPDATE file_folder_purchases
-      SET client_id=${clientId}::uuid
+  // Keep the File Number Engine ownership aligned with the Client environment.
+  // Older verified existing-Client flows could bind users.file_number while the
+  // FNE row remained pending/unclaimed, which later made the same File Folder
+  // look unfinished even though Administration had already issued it.
+  const [{ fne_table }] = await sql`
+    SELECT to_regclass('public.file_folders')::text AS fne_table
+  `
+  if (fne_table) {
+    const [fneFolder] = await sql`
+      SELECT id,client_id,status
+      FROM file_folders
       WHERE file_number=${fileNumber}
-        AND (client_id IS NULL OR client_id=${clientId}::uuid)
+      LIMIT 1
     `
+    if (fneFolder?.client_id && String(fneFolder.client_id) !== String(clientId)) {
+      throw new Error('Issued File Number is already registered to another Client')
+    }
+    if (fneFolder) {
+      await sql`
+        UPDATE file_folders
+        SET
+          client_id=${clientId}::uuid,
+          status=CASE WHEN status='pending' THEN 'registered' ELSE status END,
+          registered_at=CASE WHEN status='pending' THEN COALESCE(registered_at,NOW()) ELSE registered_at END,
+          updated_at=NOW()
+        WHERE id=${fneFolder.id}::uuid
+          AND (client_id IS NULL OR client_id=${clientId}::uuid)
+      `
+    }
+  }
+
+  // Legacy Clients may legitimately own a File Number created before the
+  // purchase table existed. Activation must remain idempotent for those Clients
+  // rather than crashing while trying to reconcile an optional purchase row.
+  const [{ purchase_table }] = await sql`
+    SELECT to_regclass('public.file_folder_purchases')::text AS purchase_table
+  `
+  if (purchase_table) {
+    if (purchaseId) {
+      await sql`
+        UPDATE file_folder_purchases
+        SET client_id=${clientId}::uuid
+        WHERE id=${purchaseId}::uuid
+          AND (client_id IS NULL OR client_id=${clientId}::uuid)
+      `
+    } else {
+      await sql`
+        UPDATE file_folder_purchases
+        SET client_id=${clientId}::uuid
+        WHERE file_number=${fileNumber}
+          AND (client_id IS NULL OR client_id=${clientId}::uuid)
+      `
+    }
   }
 
   const customerDoor = await provisionPurchasedFileFolderCustomerDoor({
