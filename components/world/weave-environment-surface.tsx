@@ -2,7 +2,8 @@
 
 import { useMemo, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
-import { resolveWeaveEnvironment, weaveWorldForPath } from '@/lib/weave-environments'
+import { resolveWeaveEnvironment } from '@/lib/weave-environments'
+import { weaveWorldBoundaryForPath } from '@/lib/weave-world-boundary'
 
 export function WeaveEnvironmentSurface({
   children,
@@ -14,7 +15,7 @@ export function WeaveEnvironmentSurface({
 }) {
   const pathname = usePathname() || '/'
   const environment = useMemo(() => resolveWeaveEnvironment(pathname), [pathname])
-  const worldLayer = weaveWorldForPath(pathname)
+  const worldLayer = weaveWorldBoundaryForPath(pathname)
 
   return (
     <section
