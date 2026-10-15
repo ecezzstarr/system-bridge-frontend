@@ -112,7 +112,11 @@ export function WeaveDashboardWorld({
       </div>
     </header>
 
-    <div className="relative z-20 mx-3 mt-4 flex min-h-[calc(100svh-13rem)] flex-col pb-[max(.75rem,env(safe-area-inset-bottom))] sm:hidden" data-mobile-role-world="full-height-travel-field">
+    <div
+      className="relative z-20 mx-3 mt-4 flex min-h-[calc(100svh-13rem)] flex-col pb-[max(.75rem,env(safe-area-inset-bottom))] sm:hidden"
+      data-mobile-role-world="full-height-travel-field"
+      data-mobile-world-order="presence-district-place-service"
+    >
       <Link
         href={copy.centerHref}
         data-role-presence-gate={role}
@@ -127,22 +131,8 @@ export function WeaveDashboardWorld({
         </span>
       </Link>
 
-      {hasVideoStudio&&<Link
-        href="/video-ad-studio"
-        data-shared-video-ad-studio={role}
-        className="group mb-2 flex min-h-16 w-full items-center gap-3 rounded-2xl border border-fuchsia-300/15 bg-fuchsia-300/[0.04] px-4 py-3 backdrop-blur-xl"
-      >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-fuchsia-300/20 bg-fuchsia-300/[0.05]">
-          <Clapperboard className="h-4 w-4 text-fuchsia-200"/>
-        </span>
-        <span className="min-w-0 flex-1 text-left">
-          <span className="block text-[10px] font-black uppercase tracking-[.1em] text-white">Video Ad Studio</span>
-          <span className="mt-1 block text-[9px] leading-4 text-slate-400">Commission quality video content for your business with Flame Coin.</span>
-        </span>
-      </Link>}
-
       <div className="my-2 border-y border-white/[.07] py-2">
-        <p className="px-1 text-[8px] font-black uppercase tracking-[.14em] text-sky-300">District travel</p>
+        <p className="px-1 text-[8px] font-black uppercase tracking-[.14em] text-sky-300">Presence → District → Place</p>
       </div>
 
       {movementDistricts.map((district,index)=>{
@@ -167,6 +157,25 @@ export function WeaveDashboardWorld({
           <span className="shrink-0 text-[10px] font-black text-cyan-200/70">{String(index+1).padStart(2,'0')}</span>
         </Link>
       })}
+
+      {hasVideoStudio&&<div className="mt-3" data-mobile-world-service="after-movement">
+        <div className="mb-2 border-y border-white/[.07] py-2">
+          <p className="px-1 text-[8px] font-black uppercase tracking-[.14em] text-slate-500">Available after your position movement</p>
+        </div>
+        <Link
+          href="/video-ad-studio"
+          data-shared-video-ad-studio={role}
+          className="group flex min-h-16 w-full items-center gap-3 rounded-2xl border border-fuchsia-300/15 bg-fuchsia-300/[0.04] px-4 py-3 backdrop-blur-xl"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-fuchsia-300/20 bg-fuchsia-300/[0.05]">
+            <Clapperboard className="h-4 w-4 text-fuchsia-200"/>
+          </span>
+          <span className="min-w-0 flex-1 text-left">
+            <span className="block text-[10px] font-black uppercase tracking-[.1em] text-white">Video Ad Studio</span>
+            <span className="mt-1 block text-[9px] leading-4 text-slate-400">Commission quality video content for your business with Flame Coin.</span>
+          </span>
+        </Link>
+      </div>}
     </div>
 
     <svg className="pointer-events-none absolute inset-0 hidden h-full w-full opacity-35 sm:block" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
