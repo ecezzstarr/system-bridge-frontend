@@ -7,7 +7,9 @@ on:
 
 concurrency:
   group: weave-selfhost-production
-  cancel-in-progress: false
+  # Production follows the newest fully verified main release. A stale queued
+  # self-host job must not hold every later verified release behind it.
+  cancel-in-progress: true
 
 jobs:
   deploy:
