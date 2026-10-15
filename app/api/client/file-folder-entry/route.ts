@@ -3,6 +3,7 @@ import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
+import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
 
 type GateStage =
   | 'bridge_file_folder'
@@ -45,6 +46,60 @@ export async function GET(request: NextRequest) {
 
     const money = await ensureClientMoneyEnvironment(sql, client.id)
 
+    const [{ purchase_table }] = await sql`
+      SELECT to_regclass('public.file_folder_purchases')::text AS purchase_table
+    `
+
+    // Recovery for the old homepage bug: a logged-in Client purchase could be
+    // recorded without client_id, Administration would issue a File Number,
+    // and the account would remain stranded at the File Folder Gate. Prefer an
+    // explicit owned purchase; otherwise recover only one unambiguous confirmed
+    // purchase matching this Client's email or normalized phone.
+    if (!client.file_number && purchase_table) {
+      let [recoverablePurchase] = await sql`
+        SELECT *
+        FROM file_folder_purchases
+        WHERE client_id=${client.id}::uuid
+          AND status='confirmed'
+          AND file_number IS NOT NULL
+        ORDER BY confirmed_at DESC NULLS LAST, created_at DESC
+        LIMIT 1
+      `
+
+      if (!recoverablePurchase) {
+        const clientPhone = String(client.phone || '').replace(/\D/g, '')
+        const phoneMatch = clientPhone.length >= 7 ? clientPhone : null
+        const candidates = await sql`
+          SELECT *
+          FROM file_folder_purchases
+          WHERE client_id IS NULL
+            AND status='confirmed'
+            AND file_number IS NOT NULL
+            AND (
+              (buyer_email IS NOT NULL AND lower(buyer_email)=lower(${client.email || ''}))
+              OR (
+                ${phoneMatch} IS NOT NULL
+                AND regexp_replace(COALESCE(buyer_phone,''), '[^0-9]', '', 'g')=${phoneMatch}
+              )
+            )
+          ORDER BY confirmed_at DESC NULLS LAST, created_at DESC
+          LIMIT 2
+        `
+        if (candidates.length === 1) recoverablePurchase = candidates[0]
+      }
+
+      if (recoverablePurchase?.file_number) {
+        await activatePurchasedFileFolderForClient({
+          sql,
+          clientId: String(client.id),
+          fileNumber: String(recoverablePurchase.file_number),
+          clientName: client.name || recoverablePurchase.buyer_name || 'Client',
+          purchaseId: String(recoverablePurchase.id),
+        })
+        client.file_number = recoverablePurchase.file_number
+      }
+    }
+
     const [bridger] = client.bridger_id
       ? await sql`
           SELECT id, name, username
@@ -63,7 +118,7 @@ export async function GET(request: NextRequest) {
         gate: {
           stage: 'bridge_file_folder' as GateStage,
           title: 'File Folder Gate',
-          detail: 'This Client account exists, but no File Folder has been established through the Bridge. Continue with your Bridger before System Switch can open.',
+          detail: 'This Client account exists, but no verified File Folder is attached yet. Complete the File Folder purchase and Administration verification before System Switch can open.',
         },
         client: { id: client.id, name: client.name, file_number: null },
         bridger: bridger || null,
@@ -94,9 +149,6 @@ export async function GET(request: NextRequest) {
       LIMIT 1
     `
 
-    const [{ purchase_table }] = await sql`
-      SELECT to_regclass('public.file_folder_purchases')::text AS purchase_table
-    `
     const [purchase] = purchase_table
       ? await sql`
           SELECT id, status, amount_trx, payment_reference, bridge_code, created_at, confirmed_at
