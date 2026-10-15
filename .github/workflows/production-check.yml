@@ -31,6 +31,7 @@ jobs:
         run: |
           node tests/recent-features.cjs
           node tests/selfhost-deployment-regression.cjs
+          node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/file-folder-sales-manager-regression.cjs
           node tests/public-flame-movement-regression.cjs
           node tests/carrier-ace-regression.cjs
