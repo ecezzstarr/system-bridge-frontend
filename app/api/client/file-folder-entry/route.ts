@@ -66,26 +66,36 @@ export async function GET(request: NextRequest) {
         LIMIT 1
       `
 
-      if (!recoverablePurchase) {
-        const clientPhone = String(client.phone || '').replace(/\D/g, '')
-        const phoneMatch = clientPhone.length >= 7 ? clientPhone : null
+      if (!recoverablePurchase && client.email) {
         const candidates = await sql`
           SELECT *
           FROM file_folder_purchases
           WHERE client_id IS NULL
             AND status='confirmed'
             AND file_number IS NOT NULL
-            AND (
-              (buyer_email IS NOT NULL AND lower(buyer_email)=lower(${client.email || ''}))
-              OR (
-                ${phoneMatch} IS NOT NULL
-                AND regexp_replace(COALESCE(buyer_phone,''), '[^0-9]', '', 'g')=${phoneMatch}
-              )
-            )
+            AND buyer_email IS NOT NULL
+            AND lower(buyer_email)=lower(${client.email})
           ORDER BY confirmed_at DESC NULLS LAST, created_at DESC
           LIMIT 2
         `
         if (candidates.length === 1) recoverablePurchase = candidates[0]
+      }
+
+      if (!recoverablePurchase) {
+        const clientPhone = String(client.phone || '').replace(/\D/g, '')
+        if (clientPhone.length >= 7) {
+          const candidates = await sql`
+            SELECT *
+            FROM file_folder_purchases
+            WHERE client_id IS NULL
+              AND status='confirmed'
+              AND file_number IS NOT NULL
+              AND regexp_replace(COALESCE(buyer_phone,''), '[^0-9]', '', 'g')=${clientPhone}
+            ORDER BY confirmed_at DESC NULLS LAST, created_at DESC
+            LIMIT 2
+          `
+          if (candidates.length === 1) recoverablePurchase = candidates[0]
+        }
       }
 
       if (recoverablePurchase?.file_number) {
