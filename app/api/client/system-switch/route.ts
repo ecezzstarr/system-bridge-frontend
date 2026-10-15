@@ -8,7 +8,7 @@ import { ensureClientInternationalPaymentProfile } from '@/lib/client-internatio
 import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterprise-dream'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
-import { getFileFolderTier } from '@/lib/file-folder-pricing'
+import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
 
 export async function GET(request: NextRequest) {
   try {
@@ -144,7 +144,45 @@ export async function GET(request: NextRequest) {
     const withdrawals=await sql`SELECT id,amount,currency,destination,status,created_at FROM client_vault_withdrawals WHERE client_id=${client.id}::uuid ORDER BY created_at DESC LIMIT 20`
     const enterpriseState=await getEnterpriseDream(sql,client.id)
     const fileFolderWorld=await getFileFolderWorldSnapshot(sql,client.id,client.file_number)
-    const fileFolderTier=getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'legacy'
+
+    const [purchaseTable] = await sql`SELECT to_regclass('public.file_folder_purchases') AS table_name`
+    let persistedTier: string | null = null
+    if (purchaseTable?.table_name) {
+      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS file_folder_tier varchar(20)`
+      const [purchaseTier] = await sql`
+        SELECT amount_trx,file_folder_tier
+        FROM file_folder_purchases
+        WHERE (client_id=${client.id}::uuid OR file_number=${client.file_number})
+          AND status IN ('confirmed','approved','paid_pending_folder')
+        ORDER BY COALESCE(confirmed_at,created_at) DESC
+        LIMIT 1
+      `
+      if (purchaseTier) {
+        persistedTier = getFileFolderTier(Number(purchaseTier.amount_trx), purchaseTier.file_folder_tier)
+      }
+    }
+
+    if (!persistedTier) {
+      const [bridgeDepositTable] = await sql`SELECT to_regclass('public.bridge_deposits') AS table_name`
+      if (bridgeDepositTable?.table_name) {
+        const [bridgeDeposit] = await sql`
+          SELECT tier_trx
+          FROM bridge_deposits
+          WHERE file_number=${client.file_number}
+            AND status='approved'
+          ORDER BY COALESCE(verified_at,created_at) DESC
+          LIMIT 1
+        `
+        if (bridgeDeposit) {
+          const amount = Number(bridgeDeposit.tier_trx)
+          persistedTier = amount === FILE_FOLDER_PRICING.premiumFlameCoin
+            ? getFileFolderTier(amount, 'premium')
+            : getFileFolderTier(amount, 'pro')
+        }
+      }
+    }
+
+    const fileFolderTier = persistedTier || getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'legacy'
 
     const workshopType=workshop.workshop_type
     const isCrypto=workshopType==='crypto_exchange'
