@@ -20,7 +20,7 @@ assert.ok(pricing.includes('proStartingFlameCoin: 6500'),'Pro normal starting va
 assert.ok(pricing.includes('premiumFlameCoin: 35800'),'Premium is fixed at 35,800 Flame Coin')
 assert.ok(pricing.includes("export type FileFolderTier = 'standard' | 'pro' | 'premium'"),'Pricing contract has Standard, Pro and Premium')
 assert.ok(pricing.includes("if (requested === 'pro')"),'Pro classification requires explicit sale context')
-assert.ok(pricing.includes('Pro is a negotiated/external sale and must be explicitly marked as Pro'),'Amount-only inference cannot silently turn the 3,000 overlap into Pro')
+assert.ok(pricing.includes('New Pro sales are negotiated/external sales and must be explicitly marked Pro.'),'Amount-only inference cannot silently turn the 3,000 overlap into Pro')
 
 assert.ok(publicPage.includes("useState<'standard' | 'premium'>('standard')"),'Normal public WEAVE purchase exposes Standard and Premium, not self-selected Pro')
 assert.ok(publicPage.includes('standardMaximumFlameCoin'),'Normal Standard purchase is capped at the Standard building-power maximum')
