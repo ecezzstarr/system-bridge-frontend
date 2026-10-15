@@ -15,6 +15,8 @@ interface SupportMessage { id: string; senderType: 'visitor' | 'staff'; content:
 
 type DepositStatus = 'idle' | 'pending' | 'approved' | 'rejected'
 
+const BRIDGE_PROSPECT_POSITIONS = [{ id: 'bridger', name: 'My Bridger' }] as const
+
 function getFingerprint(code: string) {
   if (typeof window === 'undefined') return 'server'
   const key = `bridge_fp_${code}`
@@ -226,10 +228,11 @@ export default function BridgePage() {
   }
 
   const handleOpenSupport = async (positionId: string) => {
-    setSupportPosition(positionId)
+    const activePositionId = positionId || BRIDGE_PROSPECT_POSITIONS[0].id
+    setSupportPosition(activePositionId)
     setSupportOpen(true)
     const sid = await ensureSession()
-    if (sid) fetchSupportMessages(positionId, sid)
+    if (sid) fetchSupportMessages(activePositionId, sid)
   }
 
   const handleSendSupportMessage = async () => {
