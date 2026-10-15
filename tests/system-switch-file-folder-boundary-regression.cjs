@@ -11,6 +11,9 @@ const legacyClientEvent=read('app/client/event/page.tsx')
 const retiredSupport=read('app/(app)/weave/file-folder/[fileNumber]/page.tsx')
 const worldBoundary=read('lib/weave-world-boundary.ts')
 const worldSurface=read('components/world/weave-environment-surface.tsx')
+const rolePlace=read('lib/system-switch-role-place.ts')
+const roleDistrict=read('components/world/role-district-environment.tsx')
+const rolePresence=read('components/world/role-presence-environment.tsx')
 
 assert.ok(staffGate.includes("['admin', 'agent', 'bridger']") || staffGate.includes("['agent', 'bridger', 'admin']"),'Admin, Agent and Bridger share the staff System Switch gate')
 assert.ok(staffGate.includes('data-system-switch-gate="file-folder"')&&staffGate.includes('href="/system-switch/flame-event"'),'Staff System Switch is the gate into the File Folder layer before Flame Event')
@@ -22,5 +25,7 @@ assert.ok(legacyClientEvent.includes("redirect('/client/system-switch')"),'Legac
 assert.ok(retiredSupport.includes("RetiredPrivateFileFolderSupportRoute")&&retiredSupport.includes("redirect('/system-switch')"),'Retired staff File Folder support route actively returns through System Switch')
 assert.ok(worldBoundary.includes("path.startsWith('/client/system-switch')")&&worldBoundary.includes("path.startsWith('/system-switch')")&&worldBoundary.includes("return 'file-folder'"),'Both Client and staff System Switch trees are classified as File Folder world')
 assert.ok(worldSurface.includes('weaveWorldBoundaryForPath(pathname)'),'Visual runtime uses the System Switch File Folder boundary classifier')
+assert.ok(rolePlace.includes("label: 'System Switch'")&&rolePlace.includes("'/client/system-switch'")&&rolePlace.includes("'/system-switch'"),'Legacy event places are presented as the System Switch gate for every role')
+assert.ok(roleDistrict.includes('placeThroughSystemSwitch')&&rolePresence.includes('placeThroughSystemSwitch'),'Role districts and Presence movement show System Switch rather than top-level Flame Event')
 
 console.log('System Switch is the shared File Folder gate and Flame Event stays inside the File Folder boundary')
