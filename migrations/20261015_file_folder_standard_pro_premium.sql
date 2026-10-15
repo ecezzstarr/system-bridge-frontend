@@ -20,7 +20,8 @@ SET
 WHERE id = 1;
 
 ALTER TABLE file_folder_purchases
-  ADD COLUMN IF NOT EXISTS file_folder_tier VARCHAR(20);
+  ADD COLUMN IF NOT EXISTS file_folder_tier VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS bridge_code VARCHAR(32);
 
 -- Preserve existing purchases created before sale classification was stored.
 -- At the 3,000 overlap, an old Bridge sale is retained as Pro while a normal
