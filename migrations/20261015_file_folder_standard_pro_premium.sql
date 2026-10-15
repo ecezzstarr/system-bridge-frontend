@@ -22,6 +22,20 @@ WHERE id = 1;
 ALTER TABLE file_folder_purchases
   ADD COLUMN IF NOT EXISTS file_folder_tier VARCHAR(20);
 
+-- Preserve existing purchases created before sale classification was stored.
+-- At the 3,000 overlap, an old Bridge sale is retained as Pro while a normal
+-- WEAVE purchase remains Standard. Historical values above the new Standard
+-- maximum remain usable by being classified as Pro.
+UPDATE file_folder_purchases
+SET file_folder_tier = CASE
+  WHEN amount_trx = 35800 THEN 'premium'
+  WHEN amount_trx = 3000 AND bridge_code IS NOT NULL THEN 'pro'
+  WHEN amount_trx > 3000 AND amount_trx < 35800 THEN 'pro'
+  WHEN amount_trx >= 180 AND amount_trx <= 3000 THEN 'standard'
+  ELSE file_folder_tier
+END
+WHERE file_folder_tier IS NULL;
+
 COMMENT ON COLUMN file_folder_pricing.standard_min_flame_coin IS
   'Minimum Standard File Folder building-power value: 180 Flame Coin.';
 
