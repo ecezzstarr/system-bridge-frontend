@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
 import { POST as submitFileFolderPurchase } from '@/app/api/bridge/file-folder/purchase/route'
+import { getFileFolderTier } from '@/lib/file-folder-pricing'
 
 const sql = neon(process.env.DATABASE_URL!)
 
@@ -84,13 +85,15 @@ export async function GET(request: NextRequest) {
     if (!access) return NextResponse.json({ error: 'Purchase access denied' }, { status: 403 })
 
     const [purchase] = await sql`
-      SELECT id,file_number,amount_trx,status,created_at,confirmed_at
+      SELECT id,file_number,amount_trx,file_folder_tier,status,created_at,confirmed_at
       FROM file_folder_purchases
       WHERE id=${purchaseId}::uuid
       LIMIT 1
     `
     if (!purchase) return NextResponse.json({ error: 'File Folder purchase not found' }, { status: 404 })
 
+    const amountFlameCoin = Number(purchase.amount_trx || 0)
+    const fileFolderTier = getFileFolderTier(amountFlameCoin, purchase.file_folder_tier) || getFileFolderTier(amountFlameCoin)
     const confirmed = purchase.status === 'confirmed' && Boolean(purchase.file_number)
     return NextResponse.json({
       success: true,
@@ -98,7 +101,8 @@ export async function GET(request: NextRequest) {
         id: purchase.id,
         status: purchase.status,
         fileNumber: purchase.file_number || null,
-        amountFlameCoin: Number(purchase.amount_trx || 0),
+        amountFlameCoin,
+        fileFolderTier,
         confirmedAt: purchase.confirmed_at || null,
       },
       crossing: confirmed ? {
