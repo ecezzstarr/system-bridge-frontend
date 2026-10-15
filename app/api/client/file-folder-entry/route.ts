@@ -17,6 +17,10 @@ function isUuid(value: unknown): value is string {
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 }
 
+function sameId(left: unknown, right: unknown) {
+  return Boolean(left && right && String(left) === String(right))
+}
+
 export async function GET(request: NextRequest) {
   try {
     const sql = getFileFolderDb()
@@ -60,7 +64,7 @@ export async function GET(request: NextRequest) {
         SELECT *
         FROM file_folder_purchases
         WHERE client_id=${client.id}::uuid
-          AND status='confirmed'
+          AND status IN ('confirmed','approved','folder_issued','paid_pending_folder')
           AND file_number IS NOT NULL
         ORDER BY confirmed_at DESC NULLS LAST, created_at DESC
         LIMIT 1
@@ -71,7 +75,7 @@ export async function GET(request: NextRequest) {
           SELECT *
           FROM file_folder_purchases
           WHERE client_id IS NULL
-            AND status='confirmed'
+            AND status IN ('confirmed','approved','folder_issued','paid_pending_folder')
             AND file_number IS NOT NULL
             AND buyer_email IS NOT NULL
             AND lower(buyer_email)=lower(${client.email})
@@ -88,7 +92,7 @@ export async function GET(request: NextRequest) {
             SELECT *
             FROM file_folder_purchases
             WHERE client_id IS NULL
-              AND status='confirmed'
+              AND status IN ('confirmed','approved','folder_issued','paid_pending_folder')
               AND file_number IS NOT NULL
               AND regexp_replace(COALESCE(buyer_phone,''), '[^0-9]', '', 'g')=${clientPhone}
             ORDER BY confirmed_at DESC NULLS LAST, created_at DESC
@@ -136,7 +140,7 @@ export async function GET(request: NextRequest) {
       }, { headers: { 'Cache-Control': 'private, no-store' } })
     }
 
-    const [folder] = await sql`
+    let [folder] = await sql`
       SELECT *
       FROM client_file_folders
       WHERE client_id = ${client.id}::uuid
@@ -145,23 +149,95 @@ export async function GET(request: NextRequest) {
       LIMIT 1
     `
 
-    const [workshop] = await sql`
-      SELECT id, workshop_type, title, description
+    let [workshop] = await sql`
+      SELECT id, client_id, file_number, workshop_type, title, description
       FROM client_system_workshops
       WHERE client_id = ${client.id}::uuid
       LIMIT 1
     `
 
-    const [fneFolder] = await sql`
-      SELECT id, status, identity_data
+    let [fneFolder] = await sql`
+      SELECT id, client_id, status, identity_data
       FROM file_folders
       WHERE file_number = ${client.file_number}
       LIMIT 1
     `
 
+    // Existing-Client self-heal. Older flows could already have users.file_number
+    // while client_file_folders remained waiting_for_login, the first workshop
+    // was missing/pending_personalization, or the FNE row was never claimed.
+    // A Client must not be told to buy/establish the same owned File Folder again.
+    let repairPurchase: any = null
+    if (purchase_table) {
+      ;[repairPurchase] = await sql`
+        SELECT *
+        FROM file_folder_purchases
+        WHERE file_number=${client.file_number}
+          AND status IN ('confirmed','approved','folder_issued','paid_pending_folder')
+          AND (client_id IS NULL OR client_id=${client.id}::uuid)
+        ORDER BY confirmed_at DESC NULLS LAST, created_at DESC
+        LIMIT 1
+      `
+    }
+
+    const folderConflict = Boolean(folder?.client_id && !sameId(folder.client_id, client.id))
+    const fneConflict = Boolean(fneFolder?.client_id && !sameId(fneFolder.client_id, client.id))
+    const folderEvidence = Boolean(folder && String(folder.file_number) === String(client.file_number))
+    const fneEvidence = Boolean(fneFolder)
+    const workshopEvidence = Boolean(workshop && String(workshop.file_number) === String(client.file_number))
+    const ownershipEvidence = Boolean(
+      repairPurchase ||
+      (folderEvidence && (!folder.client_id || sameId(folder.client_id, client.id))) ||
+      (fneEvidence && (!fneFolder.client_id || sameId(fneFolder.client_id, client.id))) ||
+      workshopEvidence
+    )
+    const needsEnvironmentRepair = Boolean(
+      !folder ||
+      folder.status !== 'active' ||
+      !folder.client_id ||
+      !sameId(folder.client_id, client.id) ||
+      !workshop ||
+      folder.workshop_type === 'pending_personalization'
+    )
+
+    if (needsEnvironmentRepair && ownershipEvidence && !folderConflict && !fneConflict) {
+      try {
+        await activatePurchasedFileFolderForClient({
+          sql,
+          clientId: String(client.id),
+          fileNumber: String(client.file_number),
+          clientName: client.name || repairPurchase?.buyer_name || folder?.client_name || 'Client',
+          purchaseId: repairPurchase?.id ? String(repairPurchase.id) : null,
+        })
+      } catch (repairError) {
+        console.warn('[client/file-folder-entry] existing Client File Folder repair:', repairError)
+      }
+
+      ;[folder] = await sql`
+        SELECT *
+        FROM client_file_folders
+        WHERE client_id = ${client.id}::uuid
+           OR file_number = ${client.file_number}
+        ORDER BY CASE WHEN client_id = ${client.id}::uuid THEN 0 ELSE 1 END
+        LIMIT 1
+      `
+      ;[workshop] = await sql`
+        SELECT id, client_id, file_number, workshop_type, title, description
+        FROM client_system_workshops
+        WHERE client_id = ${client.id}::uuid
+        LIMIT 1
+      `
+      ;[fneFolder] = await sql`
+        SELECT id, client_id, status, identity_data
+        FROM file_folders
+        WHERE file_number = ${client.file_number}
+        LIMIT 1
+      `
+    }
+
     const [purchase] = purchase_table
       ? await sql`
-          SELECT id, status, amount_trx, payment_reference, bridge_code, created_at, confirmed_at
+          SELECT id, status, amount_trx, payment_reference, bridge_code, file_number, created_at, confirmed_at
           FROM file_folder_purchases
           WHERE client_id = ${client.id}::uuid
              OR file_number = ${client.file_number}
@@ -170,7 +246,9 @@ export async function GET(request: NextRequest) {
                AND buyer_email IS NOT NULL
                AND lower(buyer_email) = lower(${client.email})
              )
-          ORDER BY created_at DESC
+          ORDER BY
+            CASE WHEN file_number=${client.file_number} THEN 0 ELSE 1 END,
+            created_at DESC
           LIMIT 1
         `
       : []
@@ -209,14 +287,30 @@ export async function GET(request: NextRequest) {
     )
     const bridgePending = bridgeDeposit?.status === 'pending'
     const paymentConfirmed = Boolean(
-      purchase && ['confirmed', 'folder_issued', 'paid_pending_folder'].includes(String(purchase.status))
+      purchase && ['confirmed', 'approved', 'folder_issued', 'paid_pending_folder'].includes(String(purchase.status))
     ) || bridgeDeposit?.status === 'approved'
+
+    const environmentReady = Boolean(
+      folder &&
+      folder.status === 'active' &&
+      folder.client_id &&
+      sameId(folder.client_id, client.id) &&
+      workshop &&
+      folder.workshop_type !== 'pending_personalization'
+    )
 
     let stage: GateStage = 'active'
     let title = 'File Folder'
     let detail = 'Your personalized File Folder is active.'
 
-    if (purchasePending || bridgePending) {
+    // A real, already-active Client File Folder wins over any later duplicate or
+    // still-pending purchase/deposit movement. New pending evidence must never
+    // close an environment the Client already owns and can operate.
+    if (environmentReady) {
+      stage = 'active'
+      title = 'File Folder'
+      detail = 'Your File Folder is active and System Switch is open.'
+    } else if (purchasePending || bridgePending) {
       stage = 'forensics'
       title = 'Forensics Gate'
       detail = 'Your File Folder payment evidence has been submitted. Forensics must confirm that the movement is real before Administration can open System Switch.'
@@ -230,7 +324,7 @@ export async function GET(request: NextRequest) {
         title = 'File Folder Gate'
         detail = 'This Client account exists outside the normal Bridge path. Return to the Bridge with your Bridger and establish the File Folder before System Switch.'
       }
-    } else if (folder.status !== 'active') {
+    } else if (folder.status !== 'active' || !folder.client_id || !sameId(folder.client_id, client.id)) {
       stage = paymentConfirmed ? 'administration' : 'forensics'
       title = paymentConfirmed ? 'System Switch Gate' : 'Forensics Gate'
       detail = paymentConfirmed
@@ -239,7 +333,7 @@ export async function GET(request: NextRequest) {
     } else if (!workshop || folder.workshop_type === 'pending_personalization') {
       stage = 'personalization'
       title = 'Workshop Formation Gate'
-      detail = 'Your crossing is recognized. Your first workshop is formed from your own interaction; WEAVE will not replace it with a generic workshop.'
+      detail = 'Your crossing is recognized. Your first workshop is being repaired from the established File Folder movement.'
     }
 
     return NextResponse.json({
