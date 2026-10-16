@@ -17,6 +17,23 @@ export type WeaveFoodVariantEconomics = {
   customerPriceLocked: boolean
 }
 
+export const WEAVE_FOOD_MIN_CARTON_ORDER = 0.5
+export const WEAVE_FOOD_MAX_CARTON_ORDER = 50
+export const WEAVE_FOOD_CARTON_STEP = 0.5
+
+export function isValidWeaveFoodCartonQuantity(cartonCount: number) {
+  return (
+    Number.isFinite(cartonCount) &&
+    cartonCount >= WEAVE_FOOD_MIN_CARTON_ORDER &&
+    cartonCount <= WEAVE_FOOD_MAX_CARTON_ORDER &&
+    Number.isInteger(cartonCount / WEAVE_FOOD_CARTON_STEP)
+  )
+}
+
+export function formatWeaveFoodCartonQuantity(cartonCount: number) {
+  return cartonCount === 0.5 ? 'half carton' : `${cartonCount} carton${cartonCount === 1 ? '' : 's'}`
+}
+
 export function getWeaveFoodVariantEconomics(variantId: string): WeaveFoodVariantEconomics | null {
   const variant = AGILITY_VARIANTS.find(item => item.id === variantId)
   if (!variant) return null
@@ -42,9 +59,11 @@ export function getWeaveFoodVariantEconomics(variantId: string): WeaveFoodVarian
 
 export function getWeaveFoodStockTotals(variantId: string, boxCount: number) {
   const economics = getWeaveFoodVariantEconomics(variantId)
-  if (!economics) return null
+  if (!economics || !isValidWeaveFoodCartonQuantity(boxCount)) return null
 
   const packageCount = boxCount * economics.packagesPerBox
+  if (!Number.isInteger(packageCount)) return null
+
   const agentPayableNgn = boxCount * economics.agentBoxPriceNgn
   const retailValueNgn = boxCount * economics.retailBoxValueNgn
   const agentExpectedGrossProfitNgn = boxCount * economics.agentGrossProfitPerBoxNgn
