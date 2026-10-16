@@ -5,11 +5,7 @@ export const AGILITY_PACKAGES_PER_BOX = 10
 export const AGILITY_RETAIL_BOX_VALUE_NGN = AGILITY_RETAIL_UNIT_PRICE_NGN * AGILITY_PACKAGES_PER_BOX
 export const AGILITY_WHOLESALE_BOX_SELL_PRICE_NGN = AGILITY_RETAIL_BOX_VALUE_NGN
 
-// Agent economics.
-// WEAVE sells one 10-package box to an Agent for ₦28,000.
-// A wholesaler resells the full box for ₦30,000.
-// A retailer sells the 10 individual packages at ₦3,000 each.
-// Either route produces a ₦2,000 gross spread per completed box before the Agent's own expenses.
+// Agility Agent economics remain unchanged.
 export const AGILITY_AGENT_BOX_PRICE_NGN = 28000
 export const AGILITY_AGENT_UNIT_COST_NGN = AGILITY_AGENT_BOX_PRICE_NGN / AGILITY_PACKAGES_PER_BOX
 export const AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN =
@@ -17,10 +13,7 @@ export const AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN =
 export const AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN =
   AGILITY_RETAIL_BOX_VALUE_NGN - AGILITY_AGENT_BOX_PRICE_NGN
 
-// Company economics.
-// Standard preparation cost is ₦21,000 per box.
-// WEAVE sells that box to the Agent for ₦28,000, giving the company a ₦7,000
-// gross profit per box before broader company overhead.
+// Company preparation standard currently used by the Agility fulfillment desk.
 export const AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN = 21000
 export const AGILITY_COMPANY_COST_CEILING_PER_BOX_NGN =
   AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
@@ -39,6 +32,10 @@ export type AgilityVariant = {
   drink: string
   water: string
   note: string
+  packagesPerBox?: number
+  agentBuyUnitPriceNgn?: number
+  agentSellingUnitPriceNgn?: number
+  customerPriceLocked?: boolean
 }
 
 export const AGILITY_VARIANTS: AgilityVariant[] = [
@@ -62,7 +59,7 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
     fruit: 'Pear / avocado',
     drink: 'Milk',
     water: 'Water',
-    note: 'Pear or avocado is added while the package remains under the same company retail standard.',
+    note: 'Pear or avocado is added while the package remains under the same Agility company standard.',
   },
   {
     id: 'meat',
@@ -73,7 +70,7 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
     fruit: 'Apple',
     drink: 'Milk',
     water: 'Water',
-    note: 'A meat-based Agility using the same retail and Agent-box economics.',
+    note: 'A meat-based Agility under the same Agility carton economics.',
   },
   {
     id: 'fish',
@@ -88,14 +85,33 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
   },
   {
     id: 'electrolyte',
-    name: 'Electrolyte',
-    accent: 'Fresh sliced meal',
+    name: 'Electrolyte · Small Bowl',
+    accent: 'Small fresh sliced bowl',
     foods: ['Cucumber', 'Fresh coconut pieces', 'Carrot strips', 'Sweet corn', 'Fresh greens'],
     protein: 'Seasoned beef + fried fish + boiled egg',
     fruit: 'Avocado',
     drink: 'Fresh coconut water',
     water: 'Water',
-    note: 'A rich sliced Weave food packed as a complete bowl or takeaway pack. No apple. Electrolyte launches through the same Agent box, OPay, fulfillment and sales movement as Agility.',
+    packagesPerBox: 10,
+    agentBuyUnitPriceNgn: 3000,
+    agentSellingUnitPriceNgn: 4000,
+    customerPriceLocked: true,
+    note: 'Small Electrolyte bowl. Agent buys from WEAVE at ₦3,000 per bowl and sells to the customer at ₦4,000.',
+  },
+  {
+    id: 'electrolyte-medium',
+    name: 'Electrolyte · Medium Bowl',
+    accent: 'Medium fresh sliced bowl',
+    foods: ['Cucumber', 'Fresh coconut pieces', 'Carrot strips', 'Sweet corn', 'Fresh greens'],
+    protein: 'Seasoned beef + fried fish + boiled egg',
+    fruit: 'Avocado',
+    drink: 'Fresh coconut water',
+    water: 'Water',
+    packagesPerBox: 10,
+    agentBuyUnitPriceNgn: 5000,
+    agentSellingUnitPriceNgn: 6000,
+    customerPriceLocked: true,
+    note: 'Medium Electrolyte bowl. Agent buys from WEAVE at ₦5,000 per bowl and sells to the customer at ₦6,000.',
   },
 ]
 
@@ -114,7 +130,7 @@ export type AgilityFulfillmentStage = (typeof AGILITY_FULFILLMENT_STAGES)[number
 export const AGILITY_PROCESS = [
   {
     stage: 'Order',
-    detail: `The Agent orders company boxes at ₦${AGILITY_AGENT_BOX_PRICE_NGN.toLocaleString()} each. Every box contains ${AGILITY_PACKAGES_PER_BOX} complete Agility packages.`,
+    detail: `The Agent orders approved WEAVE food cartons. Agility keeps its ₦${AGILITY_AGENT_BOX_PRICE_NGN.toLocaleString()} carton standard; other WEAVE foods can carry their own carton economics.`,
   },
   {
     stage: 'OPay',
@@ -126,14 +142,14 @@ export const AGILITY_PROCESS = [
   },
   {
     stage: 'Prepare',
-    detail: `The company standard preparation cost is ₦${AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN.toLocaleString()} per box. At the ₦${AGILITY_AGENT_BOX_PRICE_NGN.toLocaleString()} Agent price, WEAVE targets ₦${AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN.toLocaleString()} gross profit per box.`,
+    detail: `The Agility company preparation standard remains ₦${AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN.toLocaleString()} per box.`,
   },
   {
     stage: 'Pack',
-    detail: `${AGILITY_PACKAGES_PER_BOX} complete morning packages are sealed and placed into one Agility company box, then dispatched to the Agent Store.`,
+    detail: 'Complete food packages are sealed, boxed, dispatched and received by the Agent before they can be distributed.',
   },
   {
     stage: 'Sell',
-    detail: `A wholesaler can move the full box at ₦${AGILITY_WHOLESALE_BOX_SELL_PRICE_NGN.toLocaleString()}, while a retailer sells the individual packages at ₦${AGILITY_RETAIL_UNIT_PRICE_NGN.toLocaleString()} each and builds direct consumer patronage.`,
+    detail: 'The Agent moves paid WEAVE stock through local outlets and Carrier. Product selling economics are captured on each stock order.',
   },
 ] as const

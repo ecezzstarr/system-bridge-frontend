@@ -25,12 +25,15 @@ CREATE TABLE IF NOT EXISTS carrier_food_orders (
   variant_id varchar(80) NOT NULL,
   quantity_packages integer NOT NULL,
   unit_price_ngn numeric(14,2) NOT NULL,
+  food_subtotal_ngn numeric(14,2) NOT NULL,
+  waybill_fee_ngn numeric(14,2) NOT NULL DEFAULT 0,
   total_ngn numeric(14,2) NOT NULL,
   weave_unit_price_ngn numeric(14,2),
   agent_unit_cost_ngn numeric(14,2),
   agent_margin_ngn numeric(14,2),
   customer_name varchar(180) NOT NULL,
   customer_phone varchar(60) NOT NULL,
+  delivery_mode varchar(30) NOT NULL DEFAULT 'local',
   delivery_location text NOT NULL,
   customer_note text,
   status varchar(40) NOT NULL DEFAULT 'awaiting_customer_payment',
@@ -53,11 +56,17 @@ CREATE TABLE IF NOT EXISTS carrier_food_orders (
   updated_at timestamptz NOT NULL DEFAULT NOW(),
   CHECK (quantity_packages > 0),
   CHECK (unit_price_ngn > 0),
+  CHECK (food_subtotal_ngn > 0),
+  CHECK (waybill_fee_ngn >= 0),
   CHECK (total_ngn > 0),
+  CHECK (delivery_mode IN ('local','waybill')),
   CHECK (status IN ('awaiting_customer_payment','awaiting_payment_verification','requested','fulfilled','cancelled')),
   CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'))
 );
 
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS food_subtotal_ngn numeric(14,2);
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS waybill_fee_ngn numeric(14,2) NOT NULL DEFAULT 0;
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS delivery_mode varchar(30) NOT NULL DEFAULT 'local';
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS weave_unit_price_ngn numeric(14,2);
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_unit_cost_ngn numeric(14,2);
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_margin_ngn numeric(14,2);
@@ -74,8 +83,14 @@ ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_by uui
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz;
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_rejected_at timestamptz;
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_admin_note text;
-ALTER TABLE carrier_food_orders ALTER COLUMN payment_status SET DEFAULT 'awaiting_payment';
-ALTER TABLE carrier_food_orders ALTER COLUMN payment_method SET DEFAULT 'bank_transfer';
+
+UPDATE carrier_food_orders
+SET food_subtotal_ngn=GREATEST(1,total_ngn-COALESCE(waybill_fee_ngn,0))
+WHERE food_subtotal_ngn IS NULL;
+
+UPDATE carrier_food_orders
+SET delivery_mode='local'
+WHERE delivery_mode IS NULL OR delivery_mode NOT IN ('local','waybill');
 
 ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_status_check;
 ALTER TABLE carrier_food_orders
@@ -85,6 +100,10 @@ ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_pa
 ALTER TABLE carrier_food_orders
   ADD CONSTRAINT carrier_food_orders_payment_status_check
   CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'));
+ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_delivery_mode_check;
+ALTER TABLE carrier_food_orders
+  ADD CONSTRAINT carrier_food_orders_delivery_mode_check
+  CHECK (delivery_mode IN ('local','waybill'));
 
 UPDATE carrier_food_orders
 SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW(),

@@ -3,6 +3,7 @@ import type { PoolClient } from 'pg'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { requireCarrierAccess } from '@/lib/carrier-access'
+import { getWeaveFoodVariantEconomics } from '@/lib/weave-food-economics'
 import {
   buildCarrierFoodShareText,
   ensureCarrierFoodSchema,
@@ -38,8 +39,9 @@ export async function GET(request: NextRequest) {
     const pool = getPool()
     const [ordersResult, statsResult, availability, paymentAccount] = await Promise.all([
       pool.query(
-        `SELECT id,variant_id,quantity_packages,unit_price_ngn,total_ngn,weave_unit_price_ngn,agent_unit_cost_ngn,
-                agent_margin_ngn,customer_name,customer_phone,delivery_location,customer_note,status,
+        `SELECT id,variant_id,quantity_packages,unit_price_ngn,food_subtotal_ngn,waybill_fee_ngn,total_ngn,
+                weave_unit_price_ngn,agent_unit_cost_ngn,agent_margin_ngn,
+                customer_name,customer_phone,delivery_mode,delivery_location,customer_note,status,
                 payment_method,payment_bank_name,payment_account_number,payment_account_name,payment_reference,
                 opay_transaction_reference,payment_status,payment_proof_submitted_at,payment_verified_at,
                 payment_admin_note,fulfilled_at,cancelled_at,created_at
@@ -56,7 +58,9 @@ export async function GET(request: NextRequest) {
            (SELECT COUNT(*) FROM carrier_food_shares WHERE agent_id=$1::uuid)::int AS shares,
            (SELECT COUNT(*) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='awaiting_payment_verification')::int AS payment_verification,
            (SELECT COUNT(*) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='requested' AND payment_status='paid')::int AS open_orders,
-           COALESCE((SELECT SUM(total_ngn) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled' AND payment_status='paid'),0)::numeric AS fulfilled_revenue_ngn,
+           COALESCE((SELECT SUM(food_subtotal_ngn) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled' AND payment_status='paid'),0)::numeric AS fulfilled_food_revenue_ngn,
+           COALESCE((SELECT SUM(total_ngn) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled' AND payment_status='paid'),0)::numeric AS fulfilled_customer_paid_ngn,
+           COALESCE((SELECT SUM(waybill_fee_ngn) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled' AND payment_status='paid'),0)::numeric AS fulfilled_waybill_fees_ngn,
            COALESCE((SELECT SUM(agent_margin_ngn) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled' AND payment_status='paid'),0)::numeric AS fulfilled_margin_ngn,
            COALESCE((SELECT SUM(quantity_packages) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled' AND payment_status='paid'),0)::int AS fulfilled_packages`,
         [user.id]
@@ -129,12 +133,20 @@ export async function PATCH(request: NextRequest) {
     if (action === 'set_price') {
       const variantId = String(body.variantId || '').trim()
       const sellingUnitPriceNgn = Number(body.sellingUnitPriceNgn)
+      const canonical = getWeaveFoodVariantEconomics(variantId)
+      if (!canonical) return NextResponse.json({ error: 'Choose a valid WEAVE food product.' }, { status: 404 })
+      if (canonical.customerPriceLocked) {
+        return NextResponse.json({
+          error: `WEAVE fixed ${variantId === 'electrolyte' ? 'Small Bowl' : 'Medium Bowl'} customer price is ₦${canonical.agentSellingUnitPriceNgn.toLocaleString()}.`,
+          fixedPriceNgn: canonical.agentSellingUnitPriceNgn,
+        }, { status: 409 })
+      }
       const availability = await getCarrierFoodProductAvailability(String(user.id))
       const item = availability.find(row => row.variantId === variantId)
       if (!item) return NextResponse.json({ error: 'Choose stock currently available in your Carrier.' }, { status: 404 })
-      if (!Number.isFinite(sellingUnitPriceNgn) || sellingUnitPriceNgn < Number(item.weaveRetailUnitPriceNgn)) {
+      if (!Number.isFinite(sellingUnitPriceNgn) || sellingUnitPriceNgn < canonical.agentSellingUnitPriceNgn) {
         return NextResponse.json({
-          error: `Agent selling price cannot be below WEAVE's current public retail reference of ₦${Number(item.weaveRetailUnitPriceNgn).toLocaleString()}.`,
+          error: `Agent selling price cannot be below WEAVE's current public reference of ₦${canonical.agentSellingUnitPriceNgn.toLocaleString()}.`,
         }, { status: 400 })
       }
       await getPool().query(
@@ -192,7 +204,7 @@ export async function PATCH(request: NextRequest) {
         [user.id, note || null, orderId]
       )
       await db.query('COMMIT')
-      return NextResponse.json({ success: true, status: 'requested', message: 'Customer payment verified. The order is ready for delivery or pickup.' })
+      return NextResponse.json({ success: true, status: 'requested', message: 'Customer payment verified. The order is ready for delivery, pickup or waybill dispatch.' })
     }
 
     const orderId = String(body.orderId || '').trim()
@@ -227,7 +239,8 @@ export async function PATCH(request: NextRequest) {
     const quantity = Number(order.quantity_packages)
     const sellingUnitPriceNgn = Number(order.unit_price_ngn)
     const agentUnitCostNgn = Number(order.agent_unit_cost_ngn || 0)
-    const totalRevenueNgn = Number(order.total_ngn)
+    const foodRevenueNgn = Number(order.food_subtotal_ngn || sellingUnitPriceNgn * quantity)
+    const customerPaidNgn = Number(order.total_ngn)
     const gross = Number(order.agent_margin_ngn || Math.max(0, quantity * (sellingUnitPriceNgn - agentUnitCostNgn)))
 
     const soldResult = await db.query(
@@ -259,7 +272,7 @@ export async function PATCH(request: NextRequest) {
         order_id,agent_id,quantity_packages,sale_mode,box_quantity,unit_price_ngn,total_ngn,
         retail_unit_price_ngn,agent_unit_cost_ngn,total_revenue_ngn,agent_gross_profit_ngn
        ) VALUES ($1::uuid,$2::uuid,$3,'retail_package',0,$4,$5,$4,$6,$5,$7)`,
-      [order.stock_order_id, user.id, quantity, sellingUnitPriceNgn, totalRevenueNgn, agentUnitCostNgn, gross]
+      [order.stock_order_id, user.id, quantity, sellingUnitPriceNgn, foodRevenueNgn, agentUnitCostNgn, gross]
     )
     await db.query(
       `UPDATE carrier_food_orders
@@ -268,7 +281,14 @@ export async function PATCH(request: NextRequest) {
       [orderId, user.id]
     )
     await db.query('COMMIT')
-    return NextResponse.json({ success: true, status: 'fulfilled', revenueNgn: totalRevenueNgn, agentGrossProfitNgn: gross })
+    return NextResponse.json({
+      success: true,
+      status: 'fulfilled',
+      customerPaidNgn,
+      foodRevenueNgn,
+      waybillFeeNgn: Number(order.waybill_fee_ngn || 0),
+      agentGrossProfitNgn: gross,
+    })
   } catch (error: any) {
     if (db) await db.query('ROLLBACK').catch(() => {})
     return NextResponse.json(

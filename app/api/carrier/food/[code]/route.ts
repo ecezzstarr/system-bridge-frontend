@@ -4,6 +4,7 @@ import type { PoolClient } from 'pg'
 import { getPool } from '@/lib/db'
 import { getCarrierAccess } from '@/lib/carrier-access'
 import { AGILITY_VARIANTS } from '@/lib/agility-catalog'
+import { getWeaveFoodVariantEconomics } from '@/lib/weave-food-economics'
 import {
   CARRIER_FOOD_PAYMENT_WINDOW_MINUTES,
   ensureCarrierFoodSchema,
@@ -77,6 +78,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cod
       agent: {
         name: agent.name || agent.username || 'WEAVE Agent',
         referralCode: agent.referral_code,
+        whatsappNumber: agent.whatsapp_number || null,
       },
       products,
       customerPaymentReady: Boolean(paymentAccount),
@@ -90,7 +92,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cod
       } : null,
       bridgerInfoUrl: getCarrierFoodBridgerInfoUrl(String(agent.referral_code)),
       bridgerJoinUrl: getCarrierFoodBridgerJoinUrl(String(agent.referral_code)),
-      movement: 'Agent pays WEAVE for stock → Agent sets selling price → customer pays Agent → Agent verifies → order moves',
+      movement: 'Agent pays WEAVE for stock → Agent sells → customer pays Agent before order → far customer adds waybill → Agent verifies → product moves',
     })
   } catch (error) {
     console.error('[carrier/food/public] GET failed', error)
@@ -174,7 +176,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
              payment_proof_submitted_at=NOW(),
              updated_at=NOW()
          WHERE id=$2::uuid
-         RETURNING id,variant_id,quantity_packages,total_ngn,payment_reference,payment_status,status,created_at`,
+         RETURNING id,variant_id,quantity_packages,food_subtotal_ngn,waybill_fee_ngn,total_ngn,
+                   payment_reference,payment_status,status,created_at`,
         [transactionReference, orderId]
       )
       await db.query('COMMIT')
@@ -182,10 +185,13 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
       db = undefined
 
       try {
+        const waybillText = Number(order.waybill_fee_ngn || 0) > 0
+          ? ` Waybill: ₦${Number(order.waybill_fee_ngn).toLocaleString()}.`
+          : ''
         await getPool().query(
           `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
            VALUES ($1::uuid,'carrier_customer_payment','Customer payment waiting for you',$2,'WEAVE Carrier','/weave/carrier/food')`,
-          [agent.id, `${order.customer_name} submitted payment reference ${transactionReference} for ₦${Number(order.total_ngn).toLocaleString()} to your Agent receiving account.`]
+          [agent.id, `${order.customer_name} submitted payment reference ${transactionReference} for ₦${Number(order.total_ngn).toLocaleString()} to your Agent receiving account.${waybillText}`]
         )
       } catch (notifyError) {
         console.error('[carrier/food/public] Agent payment notification failed', notifyError)
@@ -194,7 +200,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
       return NextResponse.json({
         success: true,
         order: updatedResult.rows[0],
-        message: `Payment reference sent to ${agent.name || agent.username || 'the Agent'}. The Agent verifies the customer payment before delivery or pickup.`,
+        message: `Payment reference sent to ${agent.name || agent.username || 'the Agent'}. The Agent verifies the customer payment before delivery, pickup or waybill dispatch.`,
       })
     }
 
@@ -208,15 +214,23 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
     const customerPhone = String(body.customerPhone || '').trim().slice(0, 60)
     const deliveryLocation = String(body.deliveryLocation || '').trim().slice(0, 600)
     const customerNote = String(body.customerNote || '').trim().slice(0, 600)
+    const deliveryMode = String(body.deliveryMode || 'local').trim().toLowerCase()
+    const waybillFeeNgn = deliveryMode === 'waybill' ? Number(body.waybillFeeNgn) : 0
 
     if (!AGILITY_VARIANTS.some(item => item.id === variantId)) {
       return NextResponse.json({ error: 'Choose an available WEAVE food product' }, { status: 400 })
     }
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
-      return NextResponse.json({ error: 'Choose between 1 and 10 packs' }, { status: 400 })
+      return NextResponse.json({ error: 'Choose between 1 and 10 packs or bowls' }, { status: 400 })
     }
     if (customerName.length < 2 || customerPhone.replace(/\D/g, '').length < 7 || deliveryLocation.length < 3) {
       return NextResponse.json({ error: 'Name, reachable phone number and delivery/pickup location are required before payment' }, { status: 400 })
+    }
+    if (!['local','waybill'].includes(deliveryMode)) {
+      return NextResponse.json({ error: 'Choose local delivery/pickup or far-location waybill' }, { status: 400 })
+    }
+    if (deliveryMode === 'waybill' && (!Number.isFinite(waybillFeeNgn) || waybillFeeNgn <= 0 || waybillFeeNgn > 250000)) {
+      return NextResponse.json({ error: 'Far-location orders require the waybill fee quoted by the Agent before payment.' }, { status: 400 })
     }
 
     const paymentAccount = await getCarrierFoodAgentPaymentAccount(String(agent.id))
@@ -253,7 +267,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
           [stock.id]
         ),
       ])
-      const available = Number(stock.package_count) - Number(soldResult.rows[0]?.n || 0) - Number(outletResult.rows[0]?.n || 0) - Number(reserveResult.rows[0]?.n || 0)
+      const available = Number(stock.package_count)
+        - Number(soldResult.rows[0]?.n || 0)
+        - Number(outletResult.rows[0]?.n || 0)
+        - Number(reserveResult.rows[0]?.n || 0)
       if (available >= quantity) {
         selected = stock
         break
@@ -265,32 +282,41 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
       return NextResponse.json({ error: 'This Agent does not currently have enough paid and received WEAVE stock free for this order.' }, { status: 409 })
     }
 
+    const canonical = getWeaveFoodVariantEconomics(variantId)
+    if (!canonical) {
+      await db.query('ROLLBACK')
+      return NextResponse.json({ error: 'Product economics are unavailable' }, { status: 409 })
+    }
     const priceResult = await db.query(
       `SELECT selling_unit_price_ngn FROM carrier_food_agent_prices
        WHERE agent_id=$1::uuid AND variant_id=$2
        LIMIT 1`,
       [agent.id, variantId]
     )
-    const weaveRetailUnitPriceNgn = Number(selected.retail_unit_price_ngn)
-    const agentUnitCostNgn = Number(selected.agent_unit_cost_ngn)
-    const unitPrice = Math.max(weaveRetailUnitPriceNgn, Number(priceResult.rows[0]?.selling_unit_price_ngn || weaveRetailUnitPriceNgn))
-    const total = unitPrice * quantity
-    const agentMargin = Math.max(0, (unitPrice - agentUnitCostNgn) * quantity)
+    const configuredPrice = Number(priceResult.rows[0]?.selling_unit_price_ngn || canonical.agentSellingUnitPriceNgn)
+    const unitPrice = canonical.customerPriceLocked
+      ? canonical.agentSellingUnitPriceNgn
+      : Math.max(canonical.agentSellingUnitPriceNgn, configuredPrice)
+    const actualAgentUnitCostNgn = Number(selected.agent_unit_cost_ngn || canonical.agentBuyUnitPriceNgn)
+    const foodSubtotalNgn = unitPrice * quantity
+    const totalNgn = foodSubtotalNgn + waybillFeeNgn
+    const agentMarginNgn = Math.max(0, (unitPrice - actualAgentUnitCostNgn) * quantity)
     const paymentReference = carrierPaymentReference()
 
     const orderResult = await db.query(
       `INSERT INTO carrier_food_orders (
-        agent_id,referral_code,stock_order_id,variant_id,quantity_packages,unit_price_ngn,total_ngn,
-        weave_unit_price_ngn,agent_unit_cost_ngn,agent_margin_ngn,
-        customer_name,customer_phone,delivery_location,customer_note,status,
+        agent_id,referral_code,stock_order_id,variant_id,quantity_packages,unit_price_ngn,
+        food_subtotal_ngn,waybill_fee_ngn,total_ngn,weave_unit_price_ngn,agent_unit_cost_ngn,agent_margin_ngn,
+        customer_name,customer_phone,delivery_mode,delivery_location,customer_note,status,
         payment_method,payment_bank_name,payment_account_number,payment_account_name,payment_reference,
         payment_status,payment_expires_at
        ) VALUES (
-        $1::uuid,$2,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
-        'awaiting_customer_payment','bank_transfer',$15,$16,$17,$18,'awaiting_payment',NOW()+($19::text||' minutes')::interval
+        $1::uuid,$2,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,
+        'awaiting_customer_payment','bank_transfer',$18,$19,$20,$21,'awaiting_payment',NOW()+($22::text||' minutes')::interval
        )
-       RETURNING id,variant_id,quantity_packages,unit_price_ngn,total_ngn,weave_unit_price_ngn,agent_unit_cost_ngn,
-                 agent_margin_ngn,status,payment_method,payment_bank_name,payment_account_number,payment_account_name,
+       RETURNING id,variant_id,quantity_packages,unit_price_ngn,food_subtotal_ngn,waybill_fee_ngn,total_ngn,
+                 weave_unit_price_ngn,agent_unit_cost_ngn,agent_margin_ngn,status,delivery_mode,
+                 payment_method,payment_bank_name,payment_account_number,payment_account_name,
                  payment_reference,payment_status,payment_expires_at,created_at`,
       [
         agent.id,
@@ -299,12 +325,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
         variantId,
         quantity,
         unitPrice,
-        total,
-        weaveRetailUnitPriceNgn,
-        agentUnitCostNgn,
-        agentMargin,
+        foodSubtotalNgn,
+        waybillFeeNgn,
+        totalNgn,
+        canonical.agentBuyUnitPriceNgn,
+        actualAgentUnitCostNgn,
+        agentMarginNgn,
         customerName,
         customerPhone,
+        deliveryMode,
         deliveryLocation,
         customerNote || null,
         paymentAccount.bank_name,
@@ -323,7 +352,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
       payment: orderResult.rows[0],
       product: product?.name || variantId,
       agentName: agent.name || agent.username || 'WEAVE Agent',
-      message: `Pay the exact customer price to ${agent.name || agent.username || 'the Agent'} before sending the order. The reserved payment window is ${CARRIER_FOOD_PAYMENT_WINDOW_MINUTES} minutes.`,
+      message: deliveryMode === 'waybill'
+        ? `Pay the food and waybill total to ${agent.name || agent.username || 'the Agent'} before sending the order. The reserved payment window is ${CARRIER_FOOD_PAYMENT_WINDOW_MINUTES} minutes.`
+        : `Pay the exact customer price to ${agent.name || agent.username || 'the Agent'} before sending the order. The reserved payment window is ${CARRIER_FOOD_PAYMENT_WINDOW_MINUTES} minutes.`,
     }, { status: 201 })
   } catch (error) {
     if (db) await db.query('ROLLBACK').catch(() => {})

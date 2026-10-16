@@ -3,6 +3,7 @@ import { getWeavePublicOrigin } from '@/lib/weave-origin'
 import { ensureAgilitySchema } from '@/lib/agility'
 import { ensureAgentDistributionSchema } from '@/lib/agent-distribution'
 import { ensureUserReferralCode } from '@/lib/user-referral'
+import { getWeaveFoodVariantEconomics } from '@/lib/weave-food-economics'
 
 export const CARRIER_FOOD_ORDER_STATUSES = [
   'awaiting_customer_payment',
@@ -56,12 +57,15 @@ async function initializeCarrierFoodSchema() {
         variant_id varchar(80) NOT NULL,
         quantity_packages integer NOT NULL,
         unit_price_ngn numeric(14,2) NOT NULL,
+        food_subtotal_ngn numeric(14,2) NOT NULL,
+        waybill_fee_ngn numeric(14,2) NOT NULL DEFAULT 0,
         total_ngn numeric(14,2) NOT NULL,
         weave_unit_price_ngn numeric(14,2),
         agent_unit_cost_ngn numeric(14,2),
         agent_margin_ngn numeric(14,2),
         customer_name varchar(180) NOT NULL,
         customer_phone varchar(60) NOT NULL,
+        delivery_mode varchar(30) NOT NULL DEFAULT 'local',
         delivery_location text NOT NULL,
         customer_note text,
         status varchar(40) NOT NULL DEFAULT 'awaiting_customer_payment',
@@ -84,15 +88,21 @@ async function initializeCarrierFoodSchema() {
         updated_at timestamptz NOT NULL DEFAULT NOW(),
         CHECK (quantity_packages > 0),
         CHECK (unit_price_ngn > 0),
+        CHECK (food_subtotal_ngn > 0),
+        CHECK (waybill_fee_ngn >= 0),
         CHECK (total_ngn > 0),
+        CHECK (delivery_mode IN ('local','waybill')),
         CHECK (status IN ('awaiting_customer_payment','awaiting_payment_verification','requested','fulfilled','cancelled')),
         CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'))
       )
     `)
 
-    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS weave_unit_price_ngn numeric(14,2)")
-    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_unit_cost_ngn numeric(14,2)")
-    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_margin_ngn numeric(14,2)")
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS food_subtotal_ngn numeric(14,2)')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS waybill_fee_ngn numeric(14,2) NOT NULL DEFAULT 0')
+    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS delivery_mode varchar(30) NOT NULL DEFAULT 'local'")
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS weave_unit_price_ngn numeric(14,2)')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_unit_cost_ngn numeric(14,2)')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_margin_ngn numeric(14,2)')
     await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_method varchar(40) NOT NULL DEFAULT 'bank_transfer'")
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_bank_name varchar(120)')
     await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_account_number varchar(40) NOT NULL DEFAULT ''")
@@ -106,6 +116,8 @@ async function initializeCarrierFoodSchema() {
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_rejected_at timestamptz')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_admin_note text')
+    await client.query("UPDATE carrier_food_orders SET food_subtotal_ngn=GREATEST(1,total_ngn-COALESCE(waybill_fee_ngn,0)) WHERE food_subtotal_ngn IS NULL")
+    await client.query("UPDATE carrier_food_orders SET delivery_mode='local' WHERE delivery_mode IS NULL OR delivery_mode NOT IN ('local','waybill')")
     await client.query("ALTER TABLE carrier_food_orders ALTER COLUMN payment_status SET DEFAULT 'awaiting_payment'")
     await client.query("ALTER TABLE carrier_food_orders ALTER COLUMN payment_method SET DEFAULT 'bank_transfer'")
 
@@ -113,9 +125,10 @@ async function initializeCarrierFoodSchema() {
     await client.query("ALTER TABLE carrier_food_orders ADD CONSTRAINT carrier_food_orders_status_check CHECK (status IN ('awaiting_customer_payment','awaiting_payment_verification','requested','fulfilled','cancelled'))")
     await client.query('ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_payment_status_check')
     await client.query("ALTER TABLE carrier_food_orders ADD CONSTRAINT carrier_food_orders_payment_status_check CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'))")
+    await client.query('ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_delivery_mode_check')
+    await client.query("ALTER TABLE carrier_food_orders ADD CONSTRAINT carrier_food_orders_delivery_mode_check CHECK (delivery_mode IN ('local','waybill'))")
 
-    // Cancel only unpaid checkout intents from the earlier incorrect customer→WEAVE rail.
-    // Paid or historical rows are never rewritten here.
+    // Retire unpaid customer→WEAVE checkout intents from the earlier payment rail.
     await client.query(`
       UPDATE carrier_food_orders
       SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW(),
@@ -166,11 +179,10 @@ export function ensureCarrierFoodSchema() {
 
 export async function expireCarrierFoodPaymentIntents(agentId?: string | null) {
   await ensureCarrierFoodSchema()
-  const pool = getPool()
   const values: unknown[] = []
   const agentClause = agentId ? 'AND agent_id=$1::uuid' : ''
   if (agentId) values.push(agentId)
-  await pool.query(
+  await getPool().query(
     `UPDATE carrier_food_orders
      SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW()
      WHERE status='awaiting_customer_payment'
@@ -245,7 +257,7 @@ export function getCarrierFoodBridgerJoinUrl(referralCode: string) {
 }
 
 export function buildCarrierFoodShareText(input: { agentName: string; url: string }) {
-  return `WEAVE Food through ${input.agentName}\n\nAgility + Electrolyte are available through my Carrier Door. Customers pay my Agent receiving account. Open the link to order, or understand the Bridger position before entering WEAVE as my Bridger.\n\n${input.url}`
+  return `WEAVE Food through ${input.agentName}\n\nAgility + Electrolyte are available through my Carrier Door. Customers pay my Agent receiving account before the order moves. Far-location orders include waybill. Open the link to order, or understand the Bridger position before entering WEAVE as my Bridger.\n\n${input.url}`
 }
 
 export async function getCarrierFoodAvailableStock(agentId: string) {
@@ -307,26 +319,34 @@ export async function getCarrierFoodProductAvailability(agentId: string) {
   const byProduct = new Map<string, {
     variantId: string
     availablePackages: number
-    weaveRetailUnitPriceNgn: number
+    weaveAgentUnitPriceNgn: number
     agentUnitCostNgn: number
     agentSellingUnitPriceNgn: number
     retailUnitPriceNgn: number
+    weaveRetailUnitPriceNgn: number
     agentMarginPerPackageNgn: number
+    customerPriceLocked: boolean
   }>()
 
   for (const row of stock) {
     const variantId = String(row.variant_id)
-    const weaveRetail = Number(row.retail_unit_price_ngn || 0)
-    const agentCost = Number(row.agent_unit_cost_ngn || 0)
-    const selling = Math.max(weaveRetail, Number(priceMap.get(variantId) || weaveRetail))
+    const canonical = getWeaveFoodVariantEconomics(variantId)
+    if (!canonical) continue
+    const actualAgentCost = Number(row.agent_unit_cost_ngn || canonical.agentBuyUnitPriceNgn)
+    const configured = Number(priceMap.get(variantId) || canonical.agentSellingUnitPriceNgn)
+    const selling = canonical.customerPriceLocked
+      ? canonical.agentSellingUnitPriceNgn
+      : Math.max(canonical.agentSellingUnitPriceNgn, configured)
     const current = byProduct.get(variantId) || {
       variantId,
       availablePackages: 0,
-      weaveRetailUnitPriceNgn: weaveRetail,
-      agentUnitCostNgn: agentCost,
+      weaveAgentUnitPriceNgn: canonical.agentBuyUnitPriceNgn,
+      agentUnitCostNgn: actualAgentCost,
       agentSellingUnitPriceNgn: selling,
       retailUnitPriceNgn: selling,
-      agentMarginPerPackageNgn: Math.max(0, selling - agentCost),
+      weaveRetailUnitPriceNgn: canonical.agentSellingUnitPriceNgn,
+      agentMarginPerPackageNgn: Math.max(0, selling - actualAgentCost),
+      customerPriceLocked: canonical.customerPriceLocked,
     }
     current.availablePackages += Number(row.available_packages || 0)
     byProduct.set(variantId, current)
@@ -350,8 +370,9 @@ export async function recordCarrierFoodView(agentId: string, visitorKey?: string
 
 export async function recordCarrierFoodShare(agentId: string, channel?: string | null) {
   await ensureCarrierFoodSchema()
+  const safe = String(channel || 'share').trim().slice(0, 40) || 'share'
   await getPool().query(
     `INSERT INTO carrier_food_shares (agent_id,channel) VALUES ($1::uuid,$2)`,
-    [agentId, String(channel || 'share').trim().slice(0, 40) || 'share']
+    [agentId, safe]
   )
 }

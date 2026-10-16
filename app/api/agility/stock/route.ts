@@ -10,9 +10,9 @@ import {
   AGILITY_RETAIL_BOX_VALUE_NGN,
   AGILITY_RETAIL_UNIT_PRICE_NGN,
   ensureAgilitySchema,
-  getAgilityTotals,
   getAgilityVariant,
 } from '@/lib/agility'
+import { getWeaveFoodStockTotals } from '@/lib/weave-food-economics'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function GET(request: NextRequest) {
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('[agility/stock] GET failed', error)
-    return NextResponse.json({ success: false, error: 'Unable to load Weave Store orders' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to load WEAVE food stock orders' }, { status: 500 })
   }
 }
 
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     const variant = getAgilityVariant(variantId)
 
     if (!variant) {
-      return NextResponse.json({ success: false, error: 'Choose a valid Weave food product' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Choose a valid WEAVE food product' }, { status: 400 })
     }
     if (!['wholesaler', 'retailer'].includes(distributionMode)) {
       return NextResponse.json({ success: false, error: 'Choose wholesaler or retailer distribution' }, { status: 400 })
@@ -98,64 +98,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Choose between 1 and 50 cartons' }, { status: 400 })
     }
     if (deliveryAddress.length < 5) {
-      return NextResponse.json({ success: false, error: 'Enter the Agent Store delivery address' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Enter where WEAVE should deliver the cartons to you' }, { status: 400 })
     }
     if (deliveryPhone.replace(/\D/g, '').length < 7) {
-      return NextResponse.json({ success: false, error: 'Enter a valid delivery phone number' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Enter a valid receiving phone number' }, { status: 400 })
     }
 
     await ensureAgilitySchema()
-    const totals = getAgilityTotals(boxCount)
-    const paymentReference = `AGILITY-${user.id.slice(0, 8)}-${Date.now()}`
+    const totals = getWeaveFoodStockTotals(variant.id, boxCount)
+    if (!totals) {
+      return NextResponse.json({ success: false, error: 'WEAVE food economics are unavailable for this product' }, { status: 409 })
+    }
+    const paymentReference = `FOOD-${user.id.slice(0, 8)}-${Date.now()}`
 
     const [order] = await sql`
       INSERT INTO agility_stock_orders (
-        agent_id,
-        variant_id,
-        distribution_mode,
-        box_count,
-        packages_per_box,
-        package_count,
-        unit_price_ngn,
-        box_price_ngn,
-        retail_unit_price_ngn,
-        retail_box_value_ngn,
-        agent_box_price_ngn,
-        agent_unit_cost_ngn,
-        total_ngn,
-        agent_expected_gross_profit_ngn,
-        payment_reference,
-        payment_method,
-        opay_account_number,
-        payment_status,
-        fulfillment_status,
-        delivery_address,
-        delivery_phone,
-        agent_note
+        agent_id,variant_id,distribution_mode,box_count,packages_per_box,package_count,
+        unit_price_ngn,box_price_ngn,retail_unit_price_ngn,retail_box_value_ngn,
+        agent_box_price_ngn,agent_unit_cost_ngn,total_ngn,agent_expected_gross_profit_ngn,
+        payment_reference,payment_method,opay_account_number,payment_status,fulfillment_status,
+        delivery_address,delivery_phone,agent_note
       )
       VALUES (
-        ${user.id}::uuid,
-        ${variant.id},
-        ${distributionMode},
-        ${totals.boxCount},
-        ${totals.packagesPerBox},
-        ${totals.packageCount},
-        ${totals.retailUnitPriceNgn},
-        ${totals.agentBoxPriceNgn},
-        ${totals.retailUnitPriceNgn},
-        ${totals.retailBoxValueNgn},
-        ${totals.agentBoxPriceNgn},
-        ${totals.agentUnitCostNgn},
-        ${totals.agentPayableNgn},
-        ${totals.agentExpectedGrossProfitNgn},
-        ${paymentReference},
-        'OPay',
-        ${AGILITY_OPAY_ACCOUNT_NUMBER},
-        'pending',
-        'awaiting_payment',
-        ${deliveryAddress},
-        ${deliveryPhone},
-        ${agentNote || null}
+        ${user.id}::uuid,${variant.id},${distributionMode},${totals.boxCount},${totals.packagesPerBox},${totals.packageCount},
+        ${totals.agentSellingUnitPriceNgn},${totals.agentBoxPriceNgn},${totals.agentSellingUnitPriceNgn},${totals.retailBoxValueNgn},
+        ${totals.agentBoxPriceNgn},${totals.agentBuyUnitPriceNgn},${totals.agentPayableNgn},${totals.agentExpectedGrossProfitNgn},
+        ${paymentReference},'OPay',${AGILITY_OPAY_ACCOUNT_NUMBER},'pending','awaiting_payment',
+        ${deliveryAddress},${deliveryPhone},${agentNote || null}
       )
       RETURNING *
     `
@@ -168,8 +137,16 @@ export async function POST(request: NextRequest) {
       amount: totals.agentPayableNgn,
       currency: 'NGN',
       status: 'awaiting_payment',
-      description: `${variant.name} Store stock · ${totals.boxCount} carton${totals.boxCount === 1 ? '' : 's'}`,
-      metadata: { variantId: variant.id, productName: variant.name, distributionMode, paymentReference, boxCount: totals.boxCount },
+      description: `${variant.name} distribution stock · ${totals.boxCount} carton${totals.boxCount === 1 ? '' : 's'}`,
+      metadata: {
+        variantId: variant.id,
+        productName: variant.name,
+        distributionMode,
+        paymentReference,
+        boxCount: totals.boxCount,
+        agentBuyUnitPriceNgn: totals.agentBuyUnitPriceNgn,
+        agentSellingUnitPriceNgn: totals.agentSellingUnitPriceNgn,
+      },
     })
 
     return NextResponse.json({
@@ -185,14 +162,19 @@ export async function POST(request: NextRequest) {
         instruction: `Send exactly ₦${totals.agentPayableNgn.toLocaleString()} to OPay ${AGILITY_OPAY_ACCOUNT_NUMBER}, then submit the OPay transaction reference or receipt for Administration verification.`,
       },
       economics: {
+        packagesPerBox: totals.packagesPerBox,
+        agentBuyUnitPriceNgn: totals.agentBuyUnitPriceNgn,
+        agentSellingUnitPriceNgn: totals.agentSellingUnitPriceNgn,
+        agentBoxPriceNgn: totals.agentBoxPriceNgn,
         retailValueNgn: totals.retailValueNgn,
         agentPayableNgn: totals.agentPayableNgn,
         agentExpectedGrossProfitNgn: totals.agentExpectedGrossProfitNgn,
+        customerPriceLocked: totals.customerPriceLocked,
         distributionMode,
       },
     }, { status: 201 })
   } catch (error) {
     console.error('[agility/stock] POST failed', error)
-    return NextResponse.json({ success: false, error: 'Unable to create Weave Store order' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to create WEAVE food stock order' }, { status: 500 })
   }
 }
