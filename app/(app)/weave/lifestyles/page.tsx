@@ -18,7 +18,7 @@ type AccessState = {
   status: string
   expiresAt: string | null
   role: string
-  source: 'role_monthly_subscription' | 'administration' | 'unsupported'
+  source: 'role_monthly_subscription' | 'agent_position' | 'administration' | 'unsupported'
   positionScoped: true
 }
 
@@ -61,6 +61,7 @@ export default function WeaveLifestylesPage() {
     return role === 'bridger' ? 'Bridger' : role === 'agent' ? 'Agent' : role === 'client' ? 'Client' : role === 'admin' ? 'Administration' : 'WEAVE'
   }, [access?.role])
 
+  const agentFree = access?.role === 'agent'
   const aceOpen = Boolean(access?.active && carrier?.active && carrier?.position === 'Ace')
   const agenticAvailable = access?.role === 'bridger'
   const agenticOpen = Boolean(agenticAvailable && aceOpen)
@@ -76,7 +77,7 @@ export default function WeaveLifestylesPage() {
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">LIFESTYLE</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Lifestyle is a layer carried by your existing WEAVE position. There is no second Lifestyle subscription. Core roles remain Administration, Agent, Bridger and Client; some Lifestyle identities add temporary operating commitments without rewriting the underlying account role.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Lifestyle is a layer carried by your existing WEAVE position. Agents enter Lifestyle, Ace and Carrier as part of the Agent company position with no monthly subscription. Bridger and Client access continues to follow the rules of those positions.</p>
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
@@ -86,15 +87,15 @@ export default function WeaveLifestylesPage() {
         <div className="flex min-h-64 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-yellow-400" /></div>
       ) : (
         <>
-          <section className="mt-6 border-y border-white/10 py-4" data-lifestyle-entitlement="position-subscription">
+          <section className="mt-6 border-y border-white/10 py-4" data-lifestyle-entitlement={agentFree ? 'agent-position' : 'position-subscription'}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{roleLabel} monthly subscription</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{agentFree ? 'Agent position access' : `${roleLabel} monthly subscription`}</p>
                 <p className="mt-1 text-sm font-black text-white">{access?.active ? 'LIFESTYLE LAYER OPEN' : 'LIFESTYLE LAYER CLOSED'}</p>
-                <p className="mt-1 text-xs text-slate-500">One subscription → the Lifestyle identities allowed by your current position.</p>
-                {access?.expiresAt && <p className="mt-1 text-xs text-slate-500">Current period ends {new Date(access.expiresAt).toLocaleDateString()}</p>}
+                <p className="mt-1 text-xs text-slate-500">{agentFree ? 'Agent Lifestyle, Ace and Carrier are included with the Agent position. No monthly subscription is required.' : 'One position subscription → the Lifestyle identities allowed by your current position.'}</p>
+                {!agentFree && access?.expiresAt && <p className="mt-1 text-xs text-slate-500">Current period ends {new Date(access.expiresAt).toLocaleDateString()}</p>}
               </div>
-              {!access?.active && (
+              {!agentFree && !access?.active && (
                 <div className="max-w-sm border-l border-amber-300/20 pl-3 text-xs leading-5 text-amber-100/70">
                   <span className="inline-flex items-center gap-2 font-black text-amber-200"><LockKeyhole className="h-4 w-4" />Renew your {roleLabel} monthly subscription</span>
                   <p className="mt-1 text-slate-500">Lifestyle reopens automatically when the position subscription returns to active. No separate Lifestyle payment is taken.</p>
@@ -120,7 +121,7 @@ export default function WeaveLifestylesPage() {
                 title="ACE"
                 detail="Ace is the playing and outward-distribution identity. Arena is the Ace game ground. Carrier is the Ace distribution instrument. They are not separate Lifestyles."
                 open={aceOpen}
-                reason={carrier?.reason || (access?.active ? 'Your current position has not opened Ace.' : `Renew the ${roleLabel} monthly subscription first.`)}
+                reason={carrier?.reason || (access?.active ? 'Your current position has not opened Ace.' : agentFree ? 'An active Agent account is required.' : `Renew the ${roleLabel} monthly subscription first.`)}
                 href="/weave/lifestyles/ace"
                 action="Enter Ace"
                 tools={[{icon:<Gamepad2 className="h-3.5 w-3.5"/>,label:'Arena'},{icon:<Megaphone className="h-3.5 w-3.5"/>,label:'Carrier'}]}
@@ -150,7 +151,7 @@ export default function WeaveLifestylesPage() {
                   title="DISTRIBUTION MANAGER"
                   detail="Distribution Manager is an actual WEAVE distribution position carried by an existing Agent or Bridger: public distribution, campaign movement, Agent/Bridger acquisition, coordination and reporting back to Administration."
                   open={distributionManagerOpen}
-                  reason={access?.active ? 'Distribution Manager entry is available from your current position.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
+                  reason={access?.active ? 'Distribution Manager entry is available from your current position.' : agentFree ? 'An active Agent account is required.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
                   href="/manager/dashboard"
                   action="Enter Distribution Manager"
                   tools={[{icon:<Megaphone className="h-3.5 w-3.5"/>,label:'Distribution Studio'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'WEAVE employment'}]}
@@ -163,9 +164,9 @@ export default function WeaveLifestylesPage() {
                   icon={<Users className="h-8 w-8" />}
                   eyebrow="Client enterprise employment"
                   title="LEGION"
-                  detail="Legion is exclusive employment inside a Client enterprise. Subscribed Agents and Bridgers can apply to open Client Legion Quarters or accept a Client invitation. Once accepted, normal Agent/Bridger functions close and the person works only for that Client inside Weave until Legion employment ends."
+                  detail="Legion is exclusive employment inside a Client enterprise. Agents and subscribed Bridgers can apply to open Client Legion Quarters or accept a Client invitation. Once accepted, normal Agent/Bridger functions close and the person works only for that Client inside Weave until Legion employment ends."
                   open={legionOpen}
-                  reason={access?.active ? 'Legion employment is available from your current position.' : `Renew the ${roleLabel} monthly subscription before applying.`}
+                  reason={access?.active ? 'Legion employment is available from your current position.' : agentFree ? 'An active Agent account is required.' : `Renew the ${roleLabel} monthly subscription before applying.`}
                   href="/weave/lifestyles/legion"
                   action="Enter Legion Market"
                   tools={[{icon:<Users className="h-3.5 w-3.5"/>,label:'Client recruitment'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Exclusive employment'}]}
@@ -174,8 +175,8 @@ export default function WeaveLifestylesPage() {
 
               <div className="border-y border-white/10 px-4 py-5 sm:border" data-lifestyle-position-rule="true">
                 <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Position rule</p>
-                <h2 className="mt-1 text-xl font-black text-white">ONE SUBSCRIPTION · POSITION-SCOPED ACCESS</h2>
-                <p className="mt-2 text-xs leading-5 text-slate-500">Your core account role remains Administration, Agent, Bridger or Client. Legion is the exclusive-employment exception: the underlying Agent/Bridger identity is preserved, but its normal work functions are suspended while the person serves a Client as Legion.</p>
+                <h2 className="mt-1 text-xl font-black text-white">{agentFree ? 'AGENT POSITION · FREE LIFESTYLE ACCESS' : 'ONE SUBSCRIPTION · POSITION-SCOPED ACCESS'}</h2>
+                <p className="mt-2 text-xs leading-5 text-slate-500">{agentFree ? 'The Agent position itself opens Lifestyle and Ace. No Agent monthly subscription is required. Legion remains the exclusive-employment exception: normal Agent functions pause while the Agent serves a Client as Legion.' : 'Your core account role remains Administration, Agent, Bridger or Client. Legion is the exclusive-employment exception: the underlying Agent/Bridger identity is preserved, but its normal work functions are suspended while the person serves a Client as Legion.'}</p>
               </div>
             </div>
           </section>
