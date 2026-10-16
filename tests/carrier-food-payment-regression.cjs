@@ -24,7 +24,7 @@ assert.ok(publicApi.includes('getCarrierFoodAgentPaymentAccount'),'public checko
 assert.ok(publicApi.includes("payment_method,payment_bank_name,payment_account_number,payment_account_name"),'new customer order snapshots the Agent receiving destination')
 assert.ok(publicApi.includes("VALUES ($1::uuid,'carrier_customer_payment'")&&publicApi.includes("'/weave/carrier/food'"),'customer payment submission notifies the Agent')
 assert.ok(!publicApi.includes("'/admin/carrier-food-payments'"),'customer payment no longer routes to Administration')
-assert.ok(publicDoor.includes('PAY THE AGENT')&&publicDoor.includes('I PAID THE AGENT — SEND ORDER'),'public UI makes customer→Agent payment explicit')
+assert.ok(publicDoor.includes('This payment goes to the Agent receiving account')&&publicDoor.includes('I PAID THE AGENT — SEND ORDER'),'public UI makes customer→Agent payment explicit')
 assert.ok(publicDoor.includes('not to WEAVE'),'public UI prevents customer payment to the company account')
 assert.ok(agentApi.includes("action === 'save_payment_account'")&&agentApi.includes("action === 'set_price'"),'Agent can configure receiving account and customer selling price')
 assert.ok(agentApi.includes("action === 'verify_payment'")&&agentApi.includes("payment_verified_by=$1::uuid"),'Agent verifies money paid to the Agent account')
