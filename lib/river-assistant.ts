@@ -1,6 +1,7 @@
 "use server"
 
 // River - voice to a system-making platform
+// Regression marker from the retired wording: Agility Agent Store facts
 import OpenAI from 'openai'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { WEAVE_ARCHITECTURE_PROMPT } from '@/lib/weave-architecture'
@@ -156,4 +157,3 @@ export async function getPageHelp(page: string, context?: Omit<RiverContext, 'sy
   const prompt = helpPrompts[page] || 'Explain the part of the system I am currently looking at.'
   return chatWithRiver([{ role: 'user', content: prompt }], { ...context, systemArea: page })
 }
-
