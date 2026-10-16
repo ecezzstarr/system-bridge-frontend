@@ -12,7 +12,7 @@ export async function GET() {
       releaseSha: process.env.WEAVE_RELEASE_SHA || null,
       passwordRecoveryProvider: passwordRecoveryEmailProvider(),
       passwordRecoveryDesk: Boolean(process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET),
-    })
+    }, { headers: { 'Cache-Control': 'no-store, max-age=0' } })
   } catch (error) {
     return NextResponse.json(
       { status: 'unhealthy', error: 'Health check failed' },

@@ -49,7 +49,7 @@ assert.ok(publicStore.includes('/system-store/weave')&&publicStore.includes('Cur
 assert.ok(publicApi.includes('first_party:true')&&publicApi.includes('WEAVE_FIRST_PARTY_SYSTEM'),'System Store API includes the official WEAVE first-party release')
 assert.ok(detail.includes('OfficialWeaveRelease')&&detail.includes('<WeaveInstallButton/>')&&detail.includes('data-weave-official-store-detail'),'Official Store detail exposes the actual install movement')
 assert.ok(installButton.includes('deferredPrompt')&&installButton.includes('beforeinstallprompt')&&installButton.includes('appinstalled'),'Install control uses the browser PWA installation lifecycle')
-assert.ok(pwaRegister.includes("navigator.serviceWorker.register('/sw.js')")&&manifest.includes("display: 'standalone'")&&manifest.includes("start_url: '/'"),'Official WEAVE release is backed by the existing standalone manifest and registered service worker')
+assert.ok(pwaRegister.includes("navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })")&&manifest.includes("display: 'standalone'")&&manifest.includes("start_url: '/'"),'Official WEAVE release is backed by the existing standalone manifest and registered service worker')
 assert.ok(serviceWorker.includes("event.request.mode === 'navigate'")&&serviceWorker.includes('fetch(event.request)'),'Installed WEAVE navigations remain network-current instead of serving an old cached application shell')
 
 console.log('WEAVE System Store publisher, self-hosted package storage, verification and distribution regression checks passed')

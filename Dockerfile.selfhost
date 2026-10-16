@@ -29,6 +29,8 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ARG WEAVE_RELEASE_SHA
+ENV WEAVE_RELEASE_SHA=$WEAVE_RELEASE_SHA
 
 # Keep the same acceptance gate used by the current production Docker image.
 RUN node tests/recent-features.cjs
