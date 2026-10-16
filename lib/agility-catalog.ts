@@ -86,6 +86,17 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
     water: 'Water',
     note: 'A fish variation under the same Agility company standard.',
   },
+  {
+    id: 'electrolyte',
+    name: 'Electrolyte',
+    accent: 'Fresh sliced meal',
+    foods: ['Cucumber', 'Fresh coconut pieces', 'Carrot strips', 'Sweet corn', 'Fresh greens'],
+    protein: 'Seasoned beef + fried fish + boiled egg',
+    fruit: 'Avocado',
+    drink: 'Fresh coconut water',
+    water: 'Water',
+    note: 'A rich sliced Weave food packed as a complete bowl or takeaway pack. No apple. Electrolyte launches through the same Agent box, OPay, fulfillment and sales movement as Agility.',
+  },
 ]
 
 export const AGILITY_FULFILLMENT_STAGES = [
