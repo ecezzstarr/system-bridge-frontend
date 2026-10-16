@@ -10,6 +10,7 @@ import {
   ensureAgilitySchema,
 } from '@/lib/agility'
 import { ensureAgentDistributionSchema } from '@/lib/agent-distribution'
+import { ensureCarrierFoodSchema } from '@/lib/carrier-food'
 import type { PoolClient } from 'pg'
 
 export async function POST(request: NextRequest) {
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
 
   await ensureAgilitySchema()
   await ensureAgentDistributionSchema()
+  await ensureCarrierFoodSchema()
   let db: PoolClient | undefined
 
   try {
@@ -62,9 +64,16 @@ export async function POST(request: NextRequest) {
        WHERE order_id=$1::uuid`,
       [orderId]
     )
+    const carrierReservedResult = await db.query(
+      `SELECT COALESCE(SUM(quantity_packages),0)::int AS reserved
+       FROM carrier_food_orders
+       WHERE stock_order_id=$1::uuid AND status='requested'`,
+      [orderId]
+    )
     const sold = Number(soldResult.rows[0]?.sold || 0)
     const allocated = Number(allocatedResult.rows[0]?.allocated || 0)
-    const available = Math.max(0, Number(order.package_count) - sold - allocated)
+    const carrierReserved = Number(carrierReservedResult.rows[0]?.reserved || 0)
+    const available = Math.max(0, Number(order.package_count) - sold - allocated - carrierReserved)
     const isWholesaler = order.distribution_mode === 'wholesaler'
     const saleMode = isWholesaler ? 'wholesale_box' : 'retail_package'
     const packagesPerBox = Number(order.packages_per_box || AGILITY_PACKAGES_PER_BOX)
@@ -76,8 +85,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: isWholesaler
-          ? `Only ${Math.floor(available / packagesPerBox)} complete carton${Math.floor(available / packagesPerBox) === 1 ? '' : 's'} remain unassigned. Stock already placed with an outlet cannot be sold again.`
-          : `Only ${available} package${available === 1 ? '' : 's'} remain unassigned. Stock already placed with an outlet cannot be sold again.`,
+          ? `Only ${Math.floor(available / packagesPerBox)} complete carton${Math.floor(available / packagesPerBox) === 1 ? '' : 's'} remain free. Outlet stock and open Carrier customer orders cannot be sold again.`
+          : `Only ${available} package${available === 1 ? '' : 's'} remain free. Outlet stock and open Carrier customer orders cannot be sold again.`,
       }, { status: 409 })
     }
 
@@ -145,6 +154,7 @@ export async function POST(request: NextRequest) {
       inventory: {
         packageCount: Number(order.package_count),
         allocatedPackages: allocated,
+        carrierReservedPackages: carrierReserved,
         soldPackages: sold + packageQuantity,
         availablePackages: available - packageQuantity,
       },
