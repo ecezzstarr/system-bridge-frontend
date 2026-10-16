@@ -37,6 +37,9 @@ type StoreOrder = {
   sold_packages:number
   recorded_revenue_ngn?:number|string
   realized_agent_gross_profit_ngn?:number|string
+  sold_today_packages?:number|string
+  today_revenue_ngn?:number|string
+  today_gross_profit_ngn?:number|string
   delivery_address?:string|null
   delivery_phone?:string|null
   created_at:string
@@ -83,8 +86,8 @@ export default function AgentStorePage(){
 
   const todayOrders=useMemo(()=>orders.filter(order=>orderDay(order.created_at)===todayKey()),[orders])
   const todayCartons=todayOrders.reduce((sum,order)=>sum+Number(order.box_count||0),0)
-  const todayRevenue=todayOrders.reduce((sum,order)=>sum+Number(order.recorded_revenue_ngn||0),0)
-  const todayGross=todayOrders.reduce((sum,order)=>sum+Number(order.realized_agent_gross_profit_ngn||0),0)
+  const todayRevenue=orders.reduce((sum,order)=>sum+Number(order.today_revenue_ngn||0),0)
+  const todayGross=orders.reduce((sum,order)=>sum+Number(order.today_gross_profit_ngn||0),0)
   const availablePacks=orders.reduce((sum,order)=>{
     if(order.fulfillment_status!=='received')return sum
     return sum+Math.max(0,Number(order.package_count)-Number(order.sold_packages||0))
@@ -94,11 +97,8 @@ export default function AgentStorePage(){
     const productOrders=orders.filter(order=>order.variant_id===product.id)
     const received=productOrders.filter(order=>order.fulfillment_status==='received')
     const available=received.reduce((sum,order)=>sum+Math.max(0,Number(order.package_count)-Number(order.sold_packages||0)),0)
-    const soldToday=productOrders
-      .filter(order=>orderDay(order.created_at)===todayKey())
-      .reduce((sum,order)=>sum+Number(order.sold_packages||0),0)
-    const openOrder=productOrders.find(order=>order.payment_status!=='paid'||!['received'].includes(order.fulfillment_status))
-    return {product,available,soldToday,openOrder,received}
+    const soldToday=productOrders.reduce((sum,order)=>sum+Number(order.sold_today_packages||0),0)
+    return {product,available,soldToday}
   }),[orders])
 
   const orderCartons=async(product:AgilityVariant)=>{
@@ -201,7 +201,7 @@ export default function AgentStorePage(){
       {[
         ['Cartons ordered today',String(todayCartons),Box],
         ['Packs on shelf',String(availablePacks),PackageCheck],
-        ['Recorded sales',money(todayRevenue),TrendingUp],
+        ['Recorded sales today',money(todayRevenue),TrendingUp],
         ['Agent gross today',money(todayGross),Store],
       ].map(([label,value,Icon]:any)=><div key={label} className="rounded-2xl border border-white/10 bg-white/[.025] p-5">
         <Icon className="h-5 w-5 text-emerald-300"/>
@@ -247,7 +247,7 @@ export default function AgentStorePage(){
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2 text-center">
             <div className="rounded-xl bg-white/[.04] p-3"><p className="text-[9px] uppercase text-slate-500">Shelf</p><p className="mt-1 font-black text-white">{available}</p></div>
-            <div className="rounded-xl bg-white/[.04] p-3"><p className="text-[9px] uppercase text-slate-500">Sold</p><p className="mt-1 font-black text-white">{soldToday}</p></div>
+            <div className="rounded-xl bg-white/[.04] p-3"><p className="text-[9px] uppercase text-slate-500">Sold today</p><p className="mt-1 font-black text-white">{soldToday}</p></div>
             <div className="rounded-xl bg-white/[.04] p-3"><p className="text-[9px] uppercase text-slate-500">Retail</p><p className="mt-1 font-black text-white">{money(AGILITY_RETAIL_UNIT_PRICE_NGN)}</p></div>
           </div>
           <div className="mt-5 rounded-xl border border-white/10 bg-white/[.025] p-4">
