@@ -92,7 +92,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
   const share=async()=>{
     const url=window.location.href
     const text=`WEAVE Food · Agility + Electrolyte\nOrder through ${data?.agent?.name||'this Agent'}'s Carrier Door.`
-    const nativeShare=(navigator as Navigator & {share?:NativeShare}).share
+    const nativeShare=(navigator as unknown as {share?:NativeShare}).share
     void fetch(`/api/carrier/food/${encodeURIComponent(referralCode)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'share',channel:nativeShare?'native':'copy'})}).catch(()=>{})
     if(nativeShare){
       try{await nativeShare.call(navigator,{title:'WEAVE Food Carrier',text,url});return}catch{}
