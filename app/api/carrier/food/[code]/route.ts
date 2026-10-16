@@ -92,7 +92,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cod
       } : null,
       bridgerInfoUrl: getCarrierFoodBridgerInfoUrl(String(agent.referral_code)),
       bridgerJoinUrl: getCarrierFoodBridgerJoinUrl(String(agent.referral_code)),
-      movement: 'Agent pays WEAVE for stock → Agent sells → customer pays Agent before order → far customer adds waybill → Agent verifies → product moves',
+      movement: 'Agent pays WEAVE for stock → Agent sells by package/bowl → customer chooses 1 or more units → customer pays Agent before order → far customer adds waybill → Agent verifies → product moves',
     })
   } catch (error) {
     console.error('[carrier/food/public] GET failed', error)
@@ -220,8 +220,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
     if (!AGILITY_VARIANTS.some(item => item.id === variantId)) {
       return NextResponse.json({ error: 'Choose an available WEAVE food product' }, { status: 400 })
     }
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
-      return NextResponse.json({ error: 'Choose between 1 and 10 packs or bowls' }, { status: 400 })
+    if (!Number.isSafeInteger(quantity) || quantity < 1) {
+      return NextResponse.json({ error: 'Customers order by package or bowl. Choose 1 or more whole units.' }, { status: 400 })
     }
     if (customerName.length < 2 || customerPhone.replace(/\D/g, '').length < 7 || deliveryLocation.length < 3) {
       return NextResponse.json({ error: 'Name, reachable phone number and delivery/pickup location are required before payment' }, { status: 400 })
@@ -279,7 +279,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
 
     if (!selected) {
       await db.query('ROLLBACK')
-      return NextResponse.json({ error: 'This Agent does not currently have enough paid and received WEAVE stock free for this order.' }, { status: 409 })
+      return NextResponse.json({ error: 'This Agent does not currently have enough paid and received WEAVE stock free for this unit order.' }, { status: 409 })
     }
 
     const canonical = getWeaveFoodVariantEconomics(variantId)
