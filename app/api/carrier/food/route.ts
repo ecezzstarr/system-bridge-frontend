@@ -6,7 +6,9 @@ import { requireCarrierAccess } from '@/lib/carrier-access'
 import {
   buildCarrierFoodShareText,
   ensureCarrierFoodSchema,
+  expireCarrierFoodPaymentIntents,
   getAgentCarrierFoodIdentity,
+  getCarrierFoodBridgerInfoUrl,
   getCarrierFoodBridgerJoinUrl,
   getCarrierFoodProductAvailability,
   getCarrierFoodShareImageUrl,
@@ -28,6 +30,7 @@ export async function GET(request: NextRequest) {
   try {
     const { user, access } = await requireAgentCarrier(request)
     await ensureCarrierFoodSchema()
+    await expireCarrierFoodPaymentIntents(String(user.id))
     const identity = await getAgentCarrierFoodIdentity(String(user.id))
     if (!identity) return NextResponse.json({ error: 'Agent identity could not be formed' }, { status: 404 })
 
@@ -35,9 +38,12 @@ export async function GET(request: NextRequest) {
     const [ordersResult, statsResult, availability] = await Promise.all([
       pool.query(
         `SELECT id,variant_id,quantity_packages,unit_price_ngn,total_ngn,customer_name,customer_phone,
-                delivery_location,customer_note,status,fulfilled_at,cancelled_at,created_at
+                delivery_location,customer_note,status,payment_method,payment_account_number,payment_reference,
+                opay_transaction_reference,payment_status,payment_proof_submitted_at,payment_verified_at,
+                payment_admin_note,fulfilled_at,cancelled_at,created_at
          FROM carrier_food_orders
          WHERE agent_id=$1::uuid
+           AND status<>'awaiting_customer_payment'
          ORDER BY created_at DESC
          LIMIT 100`,
         [user.id]
@@ -46,9 +52,10 @@ export async function GET(request: NextRequest) {
         `SELECT
            (SELECT COUNT(*) FROM carrier_food_visitors WHERE agent_id=$1::uuid)::int AS unique_views,
            (SELECT COUNT(*) FROM carrier_food_shares WHERE agent_id=$1::uuid)::int AS shares,
-           (SELECT COUNT(*) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='requested')::int AS open_orders,
-           COALESCE((SELECT SUM(total_ngn) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled'),0)::numeric AS fulfilled_revenue_ngn,
-           COALESCE((SELECT SUM(quantity_packages) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled'),0)::int AS fulfilled_packages`,
+           (SELECT COUNT(*) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='awaiting_payment_verification')::int AS payment_verification,
+           (SELECT COUNT(*) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='requested' AND payment_status='paid')::int AS open_orders,
+           COALESCE((SELECT SUM(total_ngn) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled' AND payment_status='paid'),0)::numeric AS fulfilled_revenue_ngn,
+           COALESCE((SELECT SUM(quantity_packages) FROM carrier_food_orders WHERE agent_id=$1::uuid AND status='fulfilled' AND payment_status='paid'),0)::int AS fulfilled_packages`,
         [user.id]
       ),
       getCarrierFoodProductAvailability(String(user.id)),
@@ -65,6 +72,7 @@ export async function GET(request: NextRequest) {
         agentName: identity.name || identity.username || 'WEAVE Agent',
         publicUrl,
         shareImageUrl: getCarrierFoodShareImageUrl(referralCode),
+        bridgerInfoUrl: getCarrierFoodBridgerInfoUrl(referralCode),
         bridgerJoinUrl: getCarrierFoodBridgerJoinUrl(referralCode),
         shareText: buildCarrierFoodShareText({ agentName: identity.name || identity.username || 'WEAVE Agent', url: publicUrl }),
       },
@@ -94,8 +102,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const orderId = String(body.orderId || '').trim()
-    if (!orderId || !['fulfill','cancel'].includes(action)) {
-      return NextResponse.json({ error: 'Carrier order and valid action are required' }, { status: 400 })
+    if (!orderId || action !== 'fulfill') {
+      return NextResponse.json({ error: 'Only verified Carrier orders can be fulfilled by the Agent' }, { status: 400 })
     }
 
     db = await getPool().connect()
@@ -113,19 +121,13 @@ export async function PATCH(request: NextRequest) {
       await db.query('ROLLBACK')
       return NextResponse.json({ error: 'Carrier order not found' }, { status: 404 })
     }
+    if (order.payment_status !== 'paid' || !order.payment_verified_at) {
+      await db.query('ROLLBACK')
+      return NextResponse.json({ error: 'Administration must verify the customer payment before this order can be fulfilled.' }, { status: 409 })
+    }
     if (order.status !== 'requested') {
       await db.query('ROLLBACK')
       return NextResponse.json({ error: `This order is already ${order.status}` }, { status: 409 })
-    }
-
-    if (action === 'cancel') {
-      await db.query(
-        `UPDATE carrier_food_orders SET status='cancelled',cancelled_at=NOW(),updated_at=NOW()
-         WHERE id=$1::uuid AND agent_id=$2::uuid`,
-        [orderId, user.id]
-      )
-      await db.query('COMMIT')
-      return NextResponse.json({ success: true, status: 'cancelled' })
     }
 
     const retailUnitPriceNgn = Number(order.retail_unit_price_ngn)
@@ -147,13 +149,17 @@ export async function PATCH(request: NextRequest) {
     const reservedResult = await db.query(
       `SELECT COALESCE(SUM(quantity_packages),0)::int AS reserved
        FROM carrier_food_orders
-       WHERE stock_order_id=$1::uuid AND status='requested'`,
+       WHERE stock_order_id=$1::uuid
+         AND (
+           status IN ('awaiting_payment_verification','requested')
+           OR (status='awaiting_customer_payment' AND payment_expires_at>NOW())
+         )`,
       [order.stock_order_id]
     )
     const committed = Number(soldResult.rows[0]?.sold || 0) + Number(outletResult.rows[0]?.placed || 0) + Number(reservedResult.rows[0]?.reserved || 0)
     if (committed > Number(order.stock_package_count)) {
       await db.query('ROLLBACK')
-      return NextResponse.json({ error: 'This stock is over-committed. Cancel or reconcile another movement before fulfillment.' }, { status: 409 })
+      return NextResponse.json({ error: 'This stock is over-committed. Administration must reconcile the movement before fulfillment.' }, { status: 409 })
     }
 
     await db.query(
