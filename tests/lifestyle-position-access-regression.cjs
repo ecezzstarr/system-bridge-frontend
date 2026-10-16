@@ -15,9 +15,10 @@ const agenticPage=read('app/(app)/weave/lifestyles/agentic-bridger/page.tsx')
 const header=read('components/app-header.tsx')
 const carrierAccess=read('lib/carrier-access.ts')
 
-assert.ok(engine.includes('FROM users')&&engine.includes('subscription_status')&&engine.includes('subscription_expiry')&&engine.includes('is_subscription_exempt'),'Lifestyle reads the monthly subscription already attached to the WEAVE user position')
-assert.ok(engine.includes("['agent', 'bridger', 'client'].includes(role)"),'Agent Bridger and Client positions share the same monthly Lifestyle entitlement rule')
-assert.ok(engine.includes("source: 'role_monthly_subscription'"),'Lifestyle engine identifies the role monthly subscription as its entitlement source')
+assert.ok(engine.includes('FROM users')&&engine.includes('subscription_status')&&engine.includes('subscription_expiry')&&engine.includes('is_subscription_exempt'),'Lifestyle still reads position subscription fields for roles that require them')
+assert.ok(engine.includes("if (role === 'agent')")&&engine.includes("source: 'agent_position'")&&engine.includes('expiresAt: null'),'Agent Lifestyle access is carried free by the active Agent position')
+assert.ok(engine.includes("['bridger', 'client'].includes(role)"),'Bridger and Client continue to use monthly Lifestyle entitlement rules')
+assert.ok(engine.includes("source: 'role_monthly_subscription'"),'Subscription-gated positions keep the role monthly subscription entitlement source')
 assert.ok(!engine.includes('SELECT status,expires_at FROM weave_lifestyle_subscriptions'),'Legacy standalone Lifestyle subscription table no longer authorizes Lifestyle access')
 assert.ok(!engine.includes('WEAVE_LIFESTYLE_MONTHLY_FLAME_COIN'),'Lifestyle no longer depends on a second monthly price environment variable')
 
@@ -26,19 +27,21 @@ assert.ok(catalog.includes("parent: ACE_LIFESTYLE")&&catalog.includes("roles: ['
 assert.ok(catalog.includes("{ label: 'Arena', href: '/arena'")&&catalog.includes("{ label: 'Carrier', href: '/weave/carrier'"),'Ace owns Arena and Carrier as its operating environments')
 assert.ok(catalog.includes("label: 'Distribution Manager'")&&catalog.includes("'/distribution-studio'")&&catalog.includes("'/video-ad-studio'"),'Distribution Manager carries WEAVE distribution instruments')
 
-assert.ok(accessApi.includes('separateLifestyleCharge: false')&&accessApi.includes('entitlement: access.source'),'Lifestyle access API returns the resolved position-subscription entitlement and no second charge')
+assert.ok(accessApi.includes('separateLifestyleCharge: false')&&accessApi.includes('entitlement: access.source'),'Lifestyle access API returns the resolved position entitlement and no second charge')
 assert.ok(subscribeApi.includes('separateLifestyleCharge: false')&&!subscribeApi.includes('UPDATE wallets')&&!subscribeApi.includes('ledger_entries'),'Legacy Lifestyle subscribe endpoint cannot debit the wallet a second time')
 
-assert.ok(page.includes('There is no second Lifestyle subscription')&&page.includes('ONE SUBSCRIPTION · POSITION-SCOPED ACCESS'),'Lifestyle UI explains one subscription with position-scoped access')
+assert.ok(page.includes('Agents enter Lifestyle, Ace and Carrier as part of the Agent company position with no monthly subscription')&&page.includes('AGENT POSITION · FREE LIFESTYLE ACCESS'),'Lifestyle UI states that Agent Lifestyle and Ace access is free by position')
 assert.ok(page.includes('title="ACE"')&&page.includes('Arena is the Ace game ground')&&page.includes('Carrier is the Ace distribution instrument'),'Lifestyle UI presents Ace above Arena and Carrier instead of making them peer lifestyles')
 assert.ok(!page.includes('ARENA LIFESTYLE')&&!page.includes('Carrier Entrance'),'Arena and Carrier are no longer rendered as separate Lifestyle identities')
 assert.ok(page.includes('AGENTIC-BRIDGER')&&page.includes('Inside Ace · Bridger only'),'Agentic-Bridger is visible as a nested Bridger Lifestyle specialization')
 assert.ok(page.includes('DISTRIBUTION MANAGER')&&page.includes('/manager/dashboard'),'Agent and Bridger positions can reach the Distribution Manager Lifestyle')
+assert.ok(page.includes('Agents and subscribed Bridgers can apply'),'Legion copy no longer claims Agents need a subscription')
 assert.ok(acePage.includes('data-lifestyle-home="ace"')&&acePage.includes('data-ace-environment="arena"')&&acePage.includes('data-ace-environment="carrier"'),'Ace has one home that contains Arena and Carrier')
 assert.ok(agenticPage.includes('data-lifestyle-home="agentic-bridger"')&&agenticPage.includes('Eligible earning rate')&&agenticPage.includes('45%'),'Agentic-Bridger has a visible operating place with its current eligible rate')
 assert.ok(header.includes("['agent','bridger','client'].includes(effectiveUser.role)")&&header.includes("router.push('/weave/lifestyles')"),'Agent Bridger and Client users can reach Lifestyle from global position controls')
 
-assert.ok(carrierAccess.includes("role === 'agent'")&&carrierAccess.includes("role === 'bridger'")&&carrierAccess.includes("role === 'client'")&&carrierAccess.match(/getLifestyleAccess\(user\.id\)/g)?.length>=3,'Carrier checks the same position subscription for Agent Bridger and Client before applying position rules')
+assert.ok(carrierAccess.includes("role === 'agent'")&&carrierAccess.includes("gate: 'agent_position'")&&carrierAccess.includes('No monthly subscription is required for Agents.'),'Carrier opens Ace directly from the Agent position')
+assert.ok(carrierAccess.includes("role === 'bridger'")&&carrierAccess.includes("role === 'client'")&&carrierAccess.match(/getLifestyleAccess\(user\.id\)/g)?.length>=3,'Carrier continues to resolve role-specific entitlement state')
 assert.ok(carrierAccess.includes('Carrier is one of the Ace instruments')&&carrierAccess.includes('Carrier remains Ace’s distribution instrument'),'Carrier access describes Carrier as an Ace instrument rather than a Lifestyle identity')
 
 console.log('Lifestyle position access and identity hierarchy regression checks passed')
