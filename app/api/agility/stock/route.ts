@@ -28,7 +28,25 @@ export async function GET(request: NextRequest) {
         o.*,
         COALESCE((SELECT SUM(s.quantity_packages) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::int AS sold_packages,
         COALESCE((SELECT SUM(s.total_revenue_ngn) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::numeric AS recorded_revenue_ngn,
-        COALESCE((SELECT SUM(s.agent_gross_profit_ngn) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::numeric AS realized_agent_gross_profit_ngn
+        COALESCE((SELECT SUM(s.agent_gross_profit_ngn) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::numeric AS realized_agent_gross_profit_ngn,
+        COALESCE((
+          SELECT SUM(s.quantity_packages)
+          FROM agility_agent_sales s
+          WHERE s.order_id=o.id
+            AND (s.sold_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date
+        ),0)::int AS sold_today_packages,
+        COALESCE((
+          SELECT SUM(s.total_revenue_ngn)
+          FROM agility_agent_sales s
+          WHERE s.order_id=o.id
+            AND (s.sold_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date
+        ),0)::numeric AS today_revenue_ngn,
+        COALESCE((
+          SELECT SUM(s.agent_gross_profit_ngn)
+          FROM agility_agent_sales s
+          WHERE s.order_id=o.id
+            AND (s.sold_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date
+        ),0)::numeric AS today_gross_profit_ngn
       FROM agility_stock_orders o
       WHERE o.agent_id = ${user.id}::uuid
       ORDER BY o.created_at DESC
@@ -50,7 +68,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('[agility/stock] GET failed', error)
-    return NextResponse.json({ success: false, error: 'Unable to load Agility orders' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to load Weave Store orders' }, { status: 500 })
   }
 }
 
@@ -71,13 +89,13 @@ export async function POST(request: NextRequest) {
     const variant = getAgilityVariant(variantId)
 
     if (!variant) {
-      return NextResponse.json({ success: false, error: 'Choose a valid Agility package' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Choose a valid Weave food product' }, { status: 400 })
     }
     if (!['wholesaler', 'retailer'].includes(distributionMode)) {
       return NextResponse.json({ success: false, error: 'Choose wholesaler or retailer distribution' }, { status: 400 })
     }
     if (!Number.isInteger(boxCount) || boxCount < 1 || boxCount > 50) {
-      return NextResponse.json({ success: false, error: 'Choose between 1 and 50 Agility boxes' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Choose between 1 and 50 cartons' }, { status: 400 })
     }
     if (deliveryAddress.length < 5) {
       return NextResponse.json({ success: false, error: 'Enter the Agent Store delivery address' }, { status: 400 })
@@ -150,14 +168,15 @@ export async function POST(request: NextRequest) {
       amount: totals.agentPayableNgn,
       currency: 'NGN',
       status: 'awaiting_payment',
-      description: `Agility stock order · ${totals.boxCount} box${totals.boxCount === 1 ? '' : 'es'}`,
-      metadata: { variantId: variant.id, distributionMode, paymentReference, boxCount: totals.boxCount },
+      description: `${variant.name} Store stock · ${totals.boxCount} carton${totals.boxCount === 1 ? '' : 's'}`,
+      metadata: { variantId: variant.id, productName: variant.name, distributionMode, paymentReference, boxCount: totals.boxCount },
     })
 
     return NextResponse.json({
       success: true,
       order,
       receipt,
+      product: { id: variant.id, name: variant.name },
       payment: {
         method: 'OPay',
         accountNumber: AGILITY_OPAY_ACCOUNT_NUMBER,
@@ -174,6 +193,6 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
   } catch (error) {
     console.error('[agility/stock] POST failed', error)
-    return NextResponse.json({ success: false, error: 'Unable to create Agility order' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to create Weave Store order' }, { status: 500 })
   }
 }
