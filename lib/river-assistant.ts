@@ -19,23 +19,22 @@ export interface RiverContext {
   outreachPurpose?: string
 }
 
-const AGILITY_AGENT_CONTEXT = `
-Agility Agent Store facts:
-- Agility is WEAVE morning-food stock for Agent accounts.
-- One company box contains 10 complete Agility packages.
-- Current Agent box price is ₦28,000.
-- Current sell-out value is ₦30,000.
-- Retailer position: sell individual packages at ₦3,000 each.
-- Wholesaler position: sell the complete 10-package box at ₦30,000.
-- Base Agent gross profit is ₦2,000 per completed box before the Agent's own expenses.
-- WEAVE's standard preparation cost is ₦21,000 per box, giving WEAVE a planned ₦7,000 gross profit at the ₦28,000 Agent price.
-- Agent ordering requires the Agility variant, wholesaler/retailer position, box quantity, Agent Store delivery address, and delivery phone.
-- Payment uses the existing WEAVE OPay method. The Agent creates the order, sends the exact amount shown, and submits the OPay transaction reference or receipt.
-- Administration verifies the OPay proof before preparation begins.
+const AGENT_DISTRIBUTION_CONTEXT = `
+WEAVE Agent food-distribution facts:
+- The Agent is a distributor, not a shopkeeper and not the owner of a retail store.
+- The Agent buys approved WEAVE food cartons such as Agility and Electrolyte, receives the physical stock, and moves those cartons into existing shops and food outlets around them.
+- One current company carton contains 10 complete food packages.
+- Current Agent carton price is ₦28,000 and current WEAVE retail reference is ₦30,000 per full carton / ₦3,000 per package.
+- A nearby fruit shop, kiosk, mini-mart or food point can carry WEAVE stock without becoming an Agent.
+- Paid-now supply: the outlet pays the Agent the agreed amount when the cartons are supplied.
+- Pay-after-sale supply: if the outlet has customers but cannot fund cartons upfront, the Agent can place cartons with the outlet and collect the agreed amount as or after the outlet sells them.
+- Pay-after-sale stock must stay visible on the Agent distribution ledger: outlet, cartons placed, packages sold, agreed amount, amount collected and amount still outstanding.
+- Stock placed with an outlet is no longer free Agent stock and must not be allocated to another outlet at the same time.
+- Payment to WEAVE for Agent stock uses the existing OPay process. Administration verifies proof before preparation begins.
 - Company fulfillment moves sequentially: paid → preparation/heating → packed → boxed → dispatched → delivered.
-- The Agent confirms physical receipt after delivery. Only then does the stock become sellable Agent Store inventory.
-- Sales recorded in Agility reduce available inventory and record realized Agent gross profit.
-- If the Agent asks what to do next, use the visible/current Agility state when supplied; otherwise explain the relevant next step without claiming that a payment, delivery, or sale happened.
+- The Agent confirms physical receipt after delivery before the cartons can enter the distribution route.
+- The Agent position grows by moving WEAVE products through more working outlets, collecting settlement and restocking; the Agent does not become the retailer.
+- If the Agent asks what to do next, use the visible/current distribution state when supplied; otherwise explain the relevant next step without claiming that payment, delivery, outlet sales or settlement happened.
 `
 
 const RIVER_SYSTEM_PROMPT = `You are River.
@@ -67,11 +66,13 @@ function buildSystemMessage(context?: RiverContext): string {
   ].filter(Boolean)
 
   const area = String(context?.systemArea || '').toLowerCase()
-  const agilityContext = area.includes('agility') ? `\n\n${AGILITY_AGENT_CONTEXT}` : ''
+  const distributionContext = area.includes('agility') || area.includes('distribution')
+    ? `\n\n${AGENT_DISTRIBUTION_CONTEXT}`
+    : ''
 
   return contextLines.length > 0
-    ? `${RIVER_SYSTEM_PROMPT}${agilityContext}\n\nCurrent system context:\n${contextLines.join('\n')}`
-    : `${RIVER_SYSTEM_PROMPT}${agilityContext}`
+    ? `${RIVER_SYSTEM_PROMPT}${distributionContext}\n\nCurrent system context:\n${contextLines.join('\n')}`
+    : `${RIVER_SYSTEM_PROMPT}${distributionContext}`
 }
 
 function getOpenAI(): OpenAI | null {
@@ -155,3 +156,4 @@ export async function getPageHelp(page: string, context?: Omit<RiverContext, 'sy
   const prompt = helpPrompts[page] || 'Explain the part of the system I am currently looking at.'
   return chatWithRiver([{ role: 'user', content: prompt }], { ...context, systemArea: page })
 }
+
