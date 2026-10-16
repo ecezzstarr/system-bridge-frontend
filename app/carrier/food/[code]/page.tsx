@@ -20,5 +20,22 @@ export async function generateMetadata({params}:{params:Promise<{code:string}>})
 
 export default async function CarrierFoodDoorPage({params}:{params:Promise<{code:string}>}){
   const {code}=await params
-  return <AgentFoodCarrierPublic referralCode={code}/>
+  return <>
+    <section className="bg-[#07100b] px-4 pt-5 text-white sm:px-8">
+      <div className="mx-auto max-w-6xl">
+        <p className="mb-3 text-[9px] font-black uppercase tracking-[.24em] text-slate-500">Customer food preview · see what you are ordering</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <figure className="overflow-hidden rounded-[1.4rem] border border-orange-300/20 bg-black/20">
+            <img src="/weave-food/agility-preview.svg" alt="WEAVE Agility food package preview" className="aspect-[3/2] w-full object-cover"/>
+            <figcaption className="px-4 py-3 text-xs font-bold text-orange-100">AGILITY · WEAVE morning food package</figcaption>
+          </figure>
+          <figure className="overflow-hidden rounded-[1.4rem] border border-emerald-300/20 bg-black/20">
+            <img src="/weave-food/electrolyte-preview.svg" alt="WEAVE Electrolyte sliced food bowl preview" className="aspect-[3/2] w-full object-cover"/>
+            <figcaption className="px-4 py-3 text-xs font-bold text-emerald-100">ELECTROLYTE · Small Bowl ₦4,000 · Medium Bowl ₦6,000</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+    <AgentFoodCarrierPublic referralCode={code}/>
+  </>
 }
