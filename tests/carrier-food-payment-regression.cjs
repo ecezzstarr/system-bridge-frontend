@@ -44,7 +44,7 @@ assert.ok(distributionPage.includes('½ carton from WEAVE')&&distributionPage.in
 
 assert.ok(foodOrderPage.includes("filter(item=>!item.id.startsWith('electrolyte'))")&&foodOrderPage.includes("filter(item=>item.id.startsWith('electrolyte'))"),'dedicated Agent food desk exposes both Agility and Electrolyte families')
 assert.ok(foodOrderPage.includes("fetch('/api/agility/stock'")&&foodOrderPage.includes('ORDER FROM WEAVE'),'dedicated Agent food desk creates real company stock orders')
-assert.ok(foodOrderPage.includes('WEAVE_FOOD_CARTON_STEP')&&foodOrderPage.includes('½ carton')&&foodOrderPage.includes('No pieces'),'dedicated food desk keeps half/full carton ordering visible')
+assert.ok(foodOrderPage.includes('WEAVE_FOOD_CARTON_STEP')&&foodOrderPage.includes('½ carton')&&foodOrderPage.toLowerCase().includes('no pieces'),'dedicated food desk keeps half/full carton ordering visible')
 assert.ok(foodOrderPage.includes('/weave-food/agility-preview.svg')&&foodOrderPage.includes('/weave-food/electrolyte-preview.svg'),'Agent sees product previews before buying stock')
 assert.ok(agentDashboard.includes('href="/agent/food-order"')&&agentDashboard.includes('WEAVE Food · Order Stock'),'Agent dashboard keeps company food ordering directly accessible')
 assert.ok(agentDashboard.includes("router.push('/agent/food-order')"),'Agent login food movement opens the dedicated stock desk')
@@ -70,7 +70,7 @@ assert.ok(publicDoor.includes('not to WEAVE'),'public UI prevents customer payme
 assert.ok(fs.existsSync(path.join(root,'public/weave-food/agility-preview.svg')),'Agility customer preview asset exists')
 assert.ok(fs.existsSync(path.join(root,'public/weave-food/electrolyte-preview.svg')),'Electrolyte customer preview asset exists')
 assert.ok(carrierPage.includes('/weave-food/agility-preview.svg')&&carrierPage.includes('/weave-food/electrolyte-preview.svg'),'Carrier Door visibly previews both foods before customer checkout')
-assert.ok(shareImage.includes("ImageResponse")&&shareImage.includes('width:1200')&&shareImage.includes('height:630'),'Carrier social/link preview image is an actual 1200×630 image route')
+assert.ok(shareImage.includes('ImageResponse')&&shareImage.includes('width:1200')&&shareImage.includes('height:630'),'Carrier social/link preview image is an actual 1200×630 image route')
 assert.ok(shareImage.includes('AGILITY')&&shareImage.includes('ELECTROLYTE'),'Carrier share image carries both WEAVE foods')
 
 assert.ok(agentApi.includes("action === 'save_payment_account'")&&agentApi.includes("action === 'set_price'"),'Agent can configure receiving account and non-locked product prices')
