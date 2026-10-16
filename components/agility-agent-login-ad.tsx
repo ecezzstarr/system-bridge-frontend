@@ -1,228 +1,57 @@
 'use client'
 
-import {
-  ArrowRight,
-  Boxes,
-  CheckCircle2,
-  PackageOpen,
-  ShoppingBag,
-  Sparkles,
-  Store,
-  TrendingUp,
-  Users,
-  X,
-} from 'lucide-react'
+import { ArrowRight, Boxes, CheckCircle2, HandCoins, MapPin, ShoppingBag, Sparkles, Truck, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import {
   AGILITY_AGENT_BOX_PRICE_NGN,
-  AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,
   AGILITY_PACKAGES_PER_BOX,
   AGILITY_RETAIL_BOX_VALUE_NGN,
-  AGILITY_RETAIL_UNIT_PRICE_NGN,
 } from '@/lib/agility-catalog'
 
-const naira = (value: number) =>
-  new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    maximumFractionDigits: 0,
-  }).format(value)
+const naira=(value:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(value)
 
-export const AGILITY_AGENT_LOGIN_AD_KEY = 'weave:show-agility-agent-ad'
+export const AGILITY_AGENT_LOGIN_AD_KEY='weave:show-agility-agent-ad'
 
-type Props = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onBuy: () => void
-}
+type Props={open:boolean;onOpenChange:(open:boolean)=>void;onBuy:()=>void}
 
-export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        className="max-h-[92vh] w-[calc(100%-1rem)] max-w-5xl overflow-y-auto border-orange-300/25 bg-[#100b07] p-0 text-white shadow-2xl shadow-orange-950/60"
-      >
-        <DialogTitle className="sr-only">WEAVE Food Agent Opportunity</DialogTitle>
-        <DialogDescription className="sr-only">
-          Buy Agility or Electrolyte from Weave as a wholesaler or retailer and earn from each completed box.
-        </DialogDescription>
+export function AgilityAgentLoginAd({open,onOpenChange,onBuy}:Props){
+  return <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent showCloseButton={false} className="max-h-[92vh] w-[calc(100%-1rem)] max-w-5xl overflow-y-auto border-cyan-300/20 bg-[#081014] p-0 text-white shadow-2xl">
+      <DialogTitle className="sr-only">WEAVE Agent Distribution</DialogTitle>
+      <DialogDescription className="sr-only">Agents buy WEAVE food cartons and distribute them through existing neighborhood outlets.</DialogDescription>
+      <div className="relative overflow-hidden rounded-lg">
+        <button type="button" aria-label="Close" onClick={()=>onOpenChange(false)} className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white"><X className="h-5 w-5"/></button>
 
-        <div className="relative overflow-hidden rounded-lg">
-          <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
-          <div className="absolute -right-24 top-40 h-80 w-80 rounded-full bg-amber-300/10 blur-3xl" />
+        <section className="border-b border-cyan-300/15 bg-gradient-to-br from-cyan-500/15 via-transparent to-emerald-500/10 px-5 pb-7 pt-9 sm:px-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[.24em] text-cyan-200"><Sparkles className="h-3.5 w-3.5"/>WEAVE · Agent Position</div>
+          <h2 className="mt-4 text-4xl font-black tracking-tight text-white sm:text-6xl">BUY. CARRY. SUPPLY.</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">The Agent does not run a shop. The Agent buys Agility, Electrolyte and other WEAVE products, carries the cartons into existing shops around them, and keeps the product moving through daily distribution.</p>
+          <div className="mt-6 grid gap-2 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><p className="text-[9px] uppercase tracking-[.16em] text-slate-500">Agent carton cost</p><p className="mt-1 text-xl font-black text-white">{naira(AGILITY_AGENT_BOX_PRICE_NGN)}</p></div>
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><p className="text-[9px] uppercase tracking-[.16em] text-slate-500">Packs / carton</p><p className="mt-1 text-xl font-black text-white">{AGILITY_PACKAGES_PER_BOX}</p></div>
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-4"><p className="text-[9px] uppercase tracking-[.16em] text-slate-500">Retail reference / carton</p><p className="mt-1 text-xl font-black text-white">{naira(AGILITY_RETAIL_BOX_VALUE_NGN)}</p></div>
+          </div>
+        </section>
 
-          <button
-            type="button"
-            aria-label="Close WEAVE food advertisement"
-            onClick={() => onOpenChange(false)}
-            className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white backdrop-blur transition hover:bg-black/70"
-          >
-            <X className="h-5 w-5" />
-          </button>
+        <section className="grid gap-4 p-5 sm:p-8 lg:grid-cols-2">
+          <div className="rounded-[1.5rem] border border-emerald-300/20 bg-emerald-300/[.05] p-5">
+            <div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-300/10 text-emerald-300"><Truck className="h-6 w-6"/></div><div><p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-300">Paid now</p><h3 className="text-xl font-black">Supply and collect.</h3></div></div>
+            <div className="mt-5 space-y-3 text-sm text-slate-300">{['Buy cartons from WEAVE','Take them to a nearby fruit shop, kiosk or mini-mart','The outlet pays the agreed amount when you supply','Return to WEAVE for more stock'].map(line=><div key={line} className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300"/><span>{line}</span></div>)}</div>
+          </div>
 
-          <section className="relative border-b border-orange-300/15 bg-gradient-to-br from-orange-500/20 via-amber-300/5 to-transparent px-5 pb-6 pt-8 sm:px-8 sm:pb-8">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-2xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-orange-300/25 bg-orange-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-orange-200">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  WEAVE · Agent Food Opportunity
-                </div>
-                <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] text-orange-300 sm:text-6xl">
-                  AGILITY + ELECTROLYTE
-                </h2>
-                <p className="mt-1 text-lg font-black uppercase tracking-[0.16em] text-amber-100 sm:text-2xl">
-                  Food in movement
-                </p>
-                <p className="mt-4 max-w-xl text-base font-semibold leading-7 text-white sm:text-xl">
-                  Buy from Weave. Sell fast. Earn from every completed box.
-                </p>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                  Agility carries the complete morning-food package. Electrolyte is the fresh sliced meal: cucumber,
-                  coconut, avocado, carrot, sweet corn and greens with seasoned beef, fried fish and boiled egg.
-                  Choose complete boxes as a wholesaler or individual packages as a retailer.
-                </p>
-              </div>
+          <div className="rounded-[1.5rem] border border-amber-300/20 bg-amber-300/[.05] p-5">
+            <div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-300/10 text-amber-300"><HandCoins className="h-6 w-6"/></div><div><p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-300">Pay after sale</p><h3 className="text-xl font-black">Place stock. Collect later.</h3></div></div>
+            <div className="mt-5 space-y-3 text-sm text-slate-300">{['Outlet has customers but cannot fund cartons upfront','Agent places WEAVE cartons at the outlet','Outlet sells the packs','Agent returns and collects the agreed money after sales'].map(line=><div key={line} className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-300"/><span>{line}</span></div>)}</div>
+          </div>
+        </section>
 
-              <div className="grid min-w-[280px] grid-cols-2 gap-2">
-                {[
-                  ['Agent buys', naira(AGILITY_AGENT_BOX_PRICE_NGN)],
-                  ['Sell-out value', naira(AGILITY_RETAIL_BOX_VALUE_NGN)],
-                  ['Packages / box', String(AGILITY_PACKAGES_PER_BOX)],
-                  ['Gross / box', naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-2xl border border-white/10 bg-black/30 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-500">{label}</p>
-                    <p className="mt-1 text-lg font-black text-white">{value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+        <section className="mx-5 mb-5 rounded-[1.5rem] border border-cyan-300/15 bg-cyan-300/[.04] p-5 sm:mx-8 sm:mb-8">
+          <div className="flex items-start gap-3"><MapPin className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300"/><div><p className="font-black text-white">Your route is the market around you.</p><p className="mt-1 text-sm leading-6 text-slate-400">One Agent can supply several existing outlets. WEAVE tracks the cartons placed, packs sold, money collected and money still outstanding so the Agent can keep moving without becoming the retailer.</p></div></div>
+        </section>
 
-          <section className="relative grid gap-4 p-5 sm:p-8 lg:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-orange-400/25 bg-gradient-to-br from-orange-400/10 to-transparent p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-300/10 text-orange-300">
-                  <Boxes className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">For Wholesalers</p>
-                  <h3 className="text-xl font-black text-white">Move volume faster.</h3>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-3 text-sm">
-                {[
-                  `Buy 1 box from WEAVE: ${naira(AGILITY_AGENT_BOX_PRICE_NGN)}`,
-                  `Sell 1 complete box: ${naira(AGILITY_RETAIL_BOX_VALUE_NGN)}`,
-                  `Gross profit: ${naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)} per box`,
-                  'Choose Agility or Electrolyte stock and sell complete boxes',
-                ].map((line) => (
-                  <div key={line} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-300" />
-                    <span className="text-slate-200">{line}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 rounded-xl border border-orange-300/15 bg-black/25 p-4">
-                <p className="text-xs text-slate-500">Wholesaler movement</p>
-                <p className="mt-1 font-bold text-white">More boxes moved → more ₦2,000 box profits.</p>
-              </div>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-emerald-400/25 bg-gradient-to-br from-emerald-400/10 to-transparent p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-300/10 text-emerald-300">
-                  <Store className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">For Retailers</p>
-                  <h3 className="text-xl font-black text-white">Own the customer relationship.</h3>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-3 text-sm">
-                {[
-                  `Buy 1 box from WEAVE: ${naira(AGILITY_AGENT_BOX_PRICE_NGN)}`,
-                  `${AGILITY_PACKAGES_PER_BOX} complete WEAVE food packages per box`,
-                  `Sell each package: ${naira(AGILITY_RETAIL_UNIT_PRICE_NGN)}`,
-                  `Gross profit after all 10 sell: ${naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)}`,
-                ].map((line) => (
-                  <div key={line} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
-                    <span className="text-slate-200">{line}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 rounded-xl border border-emerald-300/15 bg-black/25 p-4">
-                <p className="text-xs text-slate-500">Retailer advantage</p>
-                <p className="mt-1 font-bold text-white">
-                  Daily customers can return to your store again and again. Build patronage while the food moves.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className="relative mx-5 mb-5 overflow-hidden rounded-[1.5rem] border border-amber-300/20 bg-amber-300/[0.07] p-5 sm:mx-8 sm:mb-8 sm:p-6">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-amber-300">
-                  <TrendingUp className="h-5 w-5" />
-                  <p className="text-xs font-black uppercase tracking-[0.2em]">Scale your earnings</p>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-x-7 gap-y-2">
-                  <p className="text-xl font-black text-white">
-                    5 boxes = <span className="text-amber-300">₦10,000</span> gross
-                  </p>
-                  <p className="text-xl font-black text-white">
-                    10 boxes = <span className="text-amber-300">₦20,000</span> gross
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.14em]">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/25 px-3 py-2 text-slate-300">
-                  <Users className="h-3.5 w-3.5 text-orange-300" /> Affordable to consumers
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/25 px-3 py-2 text-slate-300">
-                  <PackageOpen className="h-3.5 w-3.5 text-orange-300" /> Food ready to move
-                </span>
-              </div>
-            </div>
-          </section>
-
-          <section className="relative border-t border-orange-300/15 bg-gradient-to-r from-orange-500/15 via-transparent to-emerald-500/10 p-5 sm:p-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xl font-black text-white sm:text-2xl">
-                  Agents, Agility and Electrolyte are ready to sell.
-                </p>
-                <p className="mt-1 text-sm text-slate-400">
-                  Order through WEAVE using OPay. Choose wholesaler or retailer and move the food through your Agent Store.
-                </p>
-              </div>
-              <Button
-                type="button"
-                onClick={onBuy}
-                className="h-12 shrink-0 bg-orange-500 px-6 font-black text-black hover:bg-orange-400"
-              >
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                Open Food Store
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </section>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
+        <section className="border-t border-white/10 p-5 sm:p-8"><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xl font-black">Agility + Electrolyte are distribution stock.</p><p className="mt-1 text-sm text-slate-400">Buy from WEAVE, supply the outlets around you, collect and restock.</p></div><Button type="button" onClick={onBuy} className="h-12 shrink-0 bg-cyan-400 px-6 font-black text-black hover:bg-cyan-300"><ShoppingBag className="mr-2 h-4 w-4"/>Open Distribution Route<ArrowRight className="ml-2 h-4 w-4"/></Button></div></section>
+      </div>
+    </DialogContent>
+  </Dialog>
 }
