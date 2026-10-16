@@ -10,7 +10,7 @@ import {
   ensureAgilitySchema,
 } from '@/lib/agility'
 import { ensureAgentDistributionSchema } from '@/lib/agent-distribution'
-import { ensureCarrierFoodSchema } from '@/lib/carrier-food'
+import { ensureCarrierFoodSchema, expireCarrierFoodPaymentIntents } from '@/lib/carrier-food'
 import type { PoolClient } from 'pg'
 
 export async function POST(request: NextRequest) {
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
   await ensureAgilitySchema()
   await ensureAgentDistributionSchema()
   await ensureCarrierFoodSchema()
+  await expireCarrierFoodPaymentIntents(String(user.id))
   let db: PoolClient | undefined
 
   try {
@@ -67,7 +68,11 @@ export async function POST(request: NextRequest) {
     const carrierReservedResult = await db.query(
       `SELECT COALESCE(SUM(quantity_packages),0)::int AS reserved
        FROM carrier_food_orders
-       WHERE stock_order_id=$1::uuid AND status='requested'`,
+       WHERE stock_order_id=$1::uuid
+         AND (
+           status IN ('awaiting_payment_verification','requested')
+           OR (status='awaiting_customer_payment' AND payment_expires_at>NOW())
+         )`,
       [orderId]
     )
     const sold = Number(soldResult.rows[0]?.sold || 0)
@@ -85,13 +90,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: isWholesaler
-          ? `Only ${Math.floor(available / packagesPerBox)} complete carton${Math.floor(available / packagesPerBox) === 1 ? '' : 's'} remain free. Outlet stock and open Carrier customer orders cannot be sold again.`
-          : `Only ${available} package${available === 1 ? '' : 's'} remain free. Outlet stock and open Carrier customer orders cannot be sold again.`,
+          ? `Only ${Math.floor(available / packagesPerBox)} complete carton${Math.floor(available / packagesPerBox) === 1 ? '' : 's'} remain free. Outlet stock and active Carrier payment/orders cannot be sold again.`
+          : `Only ${available} package${available === 1 ? '' : 's'} remain free. Outlet stock and active Carrier payment/orders cannot be sold again.`,
       }, { status: 409 })
     }
 
-    // Use the economics stored on the order so later catalog price changes do
-    // not rewrite the profit history of stock the Agent already bought.
     const retailUnitPriceNgn = Number(order.retail_unit_price_ngn)
     const retailBoxValueNgn = Number(order.retail_box_value_ngn)
     const agentUnitCostNgn = Number(order.agent_unit_cost_ngn)
