@@ -3,7 +3,6 @@ import { getWeavePublicOrigin } from '@/lib/weave-origin'
 import { ensureAgilitySchema } from '@/lib/agility'
 import { ensureAgentDistributionSchema } from '@/lib/agent-distribution'
 import { ensureUserReferralCode } from '@/lib/user-referral'
-import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 
 export const CARRIER_FOOD_ORDER_STATUSES = [
   'awaiting_customer_payment',
@@ -16,7 +15,6 @@ export type CarrierFoodOrderStatus = (typeof CARRIER_FOOD_ORDER_STATUSES)[number
 
 export const CARRIER_FOOD_PAYMENT_STATUSES = ['awaiting_payment','proof_submitted','paid','rejected'] as const
 export type CarrierFoodPaymentStatus = (typeof CARRIER_FOOD_PAYMENT_STATUSES)[number]
-
 export const CARRIER_FOOD_PAYMENT_WINDOW_MINUTES = 30
 
 let schemaPromise: Promise<void> | null = null
@@ -28,6 +26,28 @@ async function initializeCarrierFoodSchema() {
   const client = await pool.connect()
   try {
     await client.query(`
+      CREATE TABLE IF NOT EXISTS carrier_food_agent_payment_accounts (
+        agent_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        bank_name varchar(120) NOT NULL,
+        account_number varchar(40) NOT NULL,
+        account_name varchar(180) NOT NULL,
+        payment_note varchar(300),
+        created_at timestamptz NOT NULL DEFAULT NOW(),
+        updated_at timestamptz NOT NULL DEFAULT NOW()
+      )
+    `)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS carrier_food_agent_prices (
+        agent_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        variant_id varchar(80) NOT NULL,
+        selling_unit_price_ngn numeric(14,2) NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (agent_id, variant_id),
+        CHECK (selling_unit_price_ngn > 0)
+      )
+    `)
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS carrier_food_orders (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         agent_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -37,13 +57,18 @@ async function initializeCarrierFoodSchema() {
         quantity_packages integer NOT NULL,
         unit_price_ngn numeric(14,2) NOT NULL,
         total_ngn numeric(14,2) NOT NULL,
+        weave_unit_price_ngn numeric(14,2),
+        agent_unit_cost_ngn numeric(14,2),
+        agent_margin_ngn numeric(14,2),
         customer_name varchar(180) NOT NULL,
         customer_phone varchar(60) NOT NULL,
         delivery_location text NOT NULL,
         customer_note text,
         status varchar(40) NOT NULL DEFAULT 'awaiting_customer_payment',
-        payment_method varchar(40) NOT NULL DEFAULT 'OPay',
-        payment_account_number varchar(40) NOT NULL DEFAULT '${WEAVE_OPAY_ACCOUNT_NUMBER}',
+        payment_method varchar(40) NOT NULL DEFAULT 'bank_transfer',
+        payment_bank_name varchar(120),
+        payment_account_number varchar(40) NOT NULL,
+        payment_account_name varchar(180),
         payment_reference varchar(255),
         opay_transaction_reference varchar(255),
         payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment',
@@ -65,22 +90,40 @@ async function initializeCarrierFoodSchema() {
       )
     `)
 
-    await client.query(`ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_method varchar(40) NOT NULL DEFAULT 'OPay'`)
-    await client.query(`ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_account_number varchar(40) NOT NULL DEFAULT '${WEAVE_OPAY_ACCOUNT_NUMBER}'`)
+    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS weave_unit_price_ngn numeric(14,2)")
+    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_unit_cost_ngn numeric(14,2)")
+    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_margin_ngn numeric(14,2)")
+    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_method varchar(40) NOT NULL DEFAULT 'bank_transfer'")
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_bank_name varchar(120)')
+    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_account_number varchar(40) NOT NULL DEFAULT ''")
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_account_name varchar(180)')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_reference varchar(255)')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS opay_transaction_reference varchar(255)')
-    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_status varchar(40) NOT NULL DEFAULT 'paid'")
+    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment'")
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_expires_at timestamptz')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_proof_submitted_at timestamptz')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_by uuid REFERENCES users(id)')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_rejected_at timestamptz')
     await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_admin_note text')
+    await client.query("ALTER TABLE carrier_food_orders ALTER COLUMN payment_status SET DEFAULT 'awaiting_payment'")
+    await client.query("ALTER TABLE carrier_food_orders ALTER COLUMN payment_method SET DEFAULT 'bank_transfer'")
 
     await client.query('ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_status_check')
     await client.query("ALTER TABLE carrier_food_orders ADD CONSTRAINT carrier_food_orders_status_check CHECK (status IN ('awaiting_customer_payment','awaiting_payment_verification','requested','fulfilled','cancelled'))")
     await client.query('ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_payment_status_check')
     await client.query("ALTER TABLE carrier_food_orders ADD CONSTRAINT carrier_food_orders_payment_status_check CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'))")
+
+    // Cancel only unpaid checkout intents from the earlier incorrect customer→WEAVE rail.
+    // Paid or historical rows are never rewritten here.
+    await client.query(`
+      UPDATE carrier_food_orders
+      SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW(),
+          payment_admin_note=COALESCE(payment_admin_note,'Cancelled: customer payments now go to the Agent receiving account.')
+      WHERE status='awaiting_customer_payment'
+        AND payment_status='awaiting_payment'
+        AND payment_account_number='8136003459'
+    `)
 
     await client.query('CREATE INDEX IF NOT EXISTS carrier_food_orders_agent_idx ON carrier_food_orders(agent_id, created_at DESC)')
     await client.query('CREATE INDEX IF NOT EXISTS carrier_food_orders_stock_idx ON carrier_food_orders(stock_order_id, status)')
@@ -124,35 +167,38 @@ export function ensureCarrierFoodSchema() {
 export async function expireCarrierFoodPaymentIntents(agentId?: string | null) {
   await ensureCarrierFoodSchema()
   const pool = getPool()
-  if (agentId) {
-    await pool.query(
-      `UPDATE carrier_food_orders
-       SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW()
-       WHERE agent_id=$1::uuid
-         AND status='awaiting_customer_payment'
-         AND payment_status='awaiting_payment'
-         AND payment_expires_at IS NOT NULL
-         AND payment_expires_at<NOW()`,
-      [agentId]
-    )
-    return
-  }
-  await pool.query(`
-    UPDATE carrier_food_orders
-    SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW()
-    WHERE status='awaiting_customer_payment'
-      AND payment_status='awaiting_payment'
-      AND payment_expires_at IS NOT NULL
-      AND payment_expires_at<NOW()
-  `)
+  const values: unknown[] = []
+  const agentClause = agentId ? 'AND agent_id=$1::uuid' : ''
+  if (agentId) values.push(agentId)
+  await pool.query(
+    `UPDATE carrier_food_orders
+     SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW()
+     WHERE status='awaiting_customer_payment'
+       AND payment_status='awaiting_payment'
+       AND payment_expires_at IS NOT NULL
+       AND payment_expires_at<NOW()
+       ${agentClause}`,
+    values
+  )
+}
+
+export async function getCarrierFoodAgentPaymentAccount(agentId: string) {
+  await ensureCarrierFoodSchema()
+  const result = await getPool().query(
+    `SELECT bank_name,account_number,account_name,payment_note,updated_at
+     FROM carrier_food_agent_payment_accounts
+     WHERE agent_id=$1::uuid
+     LIMIT 1`,
+    [agentId]
+  )
+  return result.rows[0] || null
 }
 
 export async function getAgentCarrierFoodIdentity(agentId: string) {
   await ensureCarrierFoodSchema()
   const referralCode = await ensureUserReferralCode(agentId)
   if (!referralCode) return null
-  const pool = getPool()
-  const result = await pool.query(
+  const result = await getPool().query(
     `SELECT id,name,username,email,whatsapp_number,referral_code
      FROM users
      WHERE id=$1::uuid AND role='agent' AND is_active=true
@@ -168,8 +214,7 @@ export async function getAgentByCarrierFoodCode(code: string) {
   await ensureCarrierFoodSchema()
   const normalized = String(code || '').trim().toUpperCase()
   if (!normalized) return null
-  const pool = getPool()
-  const result = await pool.query(
+  const result = await getPool().query(
     `SELECT id,name,username,whatsapp_number,referral_code
      FROM users
      WHERE UPPER(referral_code)=$1 AND role='agent' AND is_active=true
@@ -200,20 +245,20 @@ export function getCarrierFoodBridgerJoinUrl(referralCode: string) {
 }
 
 export function buildCarrierFoodShareText(input: { agentName: string; url: string }) {
-  return `WEAVE Food through ${input.agentName}\n\nAgility + Electrolyte are available through my Carrier Door. Open the link to order, or understand the Bridger position before entering WEAVE as a Bridger attached to my Agent position.\n\n${input.url}`
+  return `WEAVE Food through ${input.agentName}\n\nAgility + Electrolyte are available through my Carrier Door. Customers pay my Agent receiving account. Open the link to order, or understand the Bridger position before entering WEAVE as my Bridger.\n\n${input.url}`
 }
 
 export async function getCarrierFoodAvailableStock(agentId: string) {
   await ensureCarrierFoodSchema()
   await expireCarrierFoodPaymentIntents(agentId)
-  const pool = getPool()
-  const result = await pool.query(
+  const result = await getPool().query(
     `SELECT
        s.id AS stock_order_id,
        s.variant_id,
        s.package_count,
        s.packages_per_box,
        s.retail_unit_price_ngn,
+       s.agent_unit_cost_ngn,
        COALESCE((SELECT SUM(a.quantity_packages) FROM agility_agent_sales a WHERE a.order_id=s.id),0)::int AS sold_packages,
        COALESCE((SELECT SUM(p.package_count) FROM agility_outlet_placements p WHERE p.order_id=s.id),0)::int AS outlet_packages,
        COALESCE((
@@ -252,12 +297,38 @@ export async function getCarrierFoodAvailableStock(agentId: string) {
 
 export async function getCarrierFoodProductAvailability(agentId: string) {
   const stock = await getCarrierFoodAvailableStock(agentId)
-  const byProduct = new Map<string, { variantId: string; availablePackages: number; retailUnitPriceNgn: number }>()
+  const priceResult = await getPool().query(
+    `SELECT variant_id,selling_unit_price_ngn
+     FROM carrier_food_agent_prices
+     WHERE agent_id=$1::uuid`,
+    [agentId]
+  )
+  const priceMap = new Map(priceResult.rows.map(row => [String(row.variant_id), Number(row.selling_unit_price_ngn)]))
+  const byProduct = new Map<string, {
+    variantId: string
+    availablePackages: number
+    weaveRetailUnitPriceNgn: number
+    agentUnitCostNgn: number
+    agentSellingUnitPriceNgn: number
+    retailUnitPriceNgn: number
+    agentMarginPerPackageNgn: number
+  }>()
+
   for (const row of stock) {
     const variantId = String(row.variant_id)
-    const current = byProduct.get(variantId) || { variantId, availablePackages: 0, retailUnitPriceNgn: Number(row.retail_unit_price_ngn || 0) }
+    const weaveRetail = Number(row.retail_unit_price_ngn || 0)
+    const agentCost = Number(row.agent_unit_cost_ngn || 0)
+    const selling = Math.max(weaveRetail, Number(priceMap.get(variantId) || weaveRetail))
+    const current = byProduct.get(variantId) || {
+      variantId,
+      availablePackages: 0,
+      weaveRetailUnitPriceNgn: weaveRetail,
+      agentUnitCostNgn: agentCost,
+      agentSellingUnitPriceNgn: selling,
+      retailUnitPriceNgn: selling,
+      agentMarginPerPackageNgn: Math.max(0, selling - agentCost),
+    }
     current.availablePackages += Number(row.available_packages || 0)
-    if (!current.retailUnitPriceNgn) current.retailUnitPriceNgn = Number(row.retail_unit_price_ngn || 0)
     byProduct.set(variantId, current)
   }
   return Array.from(byProduct.values())
@@ -268,8 +339,7 @@ export async function recordCarrierFoodView(agentId: string, visitorKey?: string
   await ensureCarrierFoodSchema()
   const safe = String(visitorKey).trim().slice(0, 120)
   if (!safe) return
-  const pool = getPool()
-  await pool.query(
+  await getPool().query(
     `INSERT INTO carrier_food_visitors (agent_id,visitor_key,first_seen_at,last_seen_at)
      VALUES ($1::uuid,$2,NOW(),NOW())
      ON CONFLICT (agent_id,visitor_key)
@@ -280,8 +350,7 @@ export async function recordCarrierFoodView(agentId: string, visitorKey?: string
 
 export async function recordCarrierFoodShare(agentId: string, channel?: string | null) {
   await ensureCarrierFoodSchema()
-  const pool = getPool()
-  await pool.query(
+  await getPool().query(
     `INSERT INTO carrier_food_shares (agent_id,channel) VALUES ($1::uuid,$2)`,
     [agentId, String(channel || 'share').trim().slice(0, 40) || 'share']
   )
