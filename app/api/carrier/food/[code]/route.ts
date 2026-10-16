@@ -53,13 +53,16 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cod
     const visitorKey = request.nextUrl.searchParams.get('visitor')
     await recordCarrierFoodView(String(agent.id), visitorKey)
     const availability = await getCarrierFoodProductAvailability(String(agent.id))
-    const products = availability
-      .map(item => ({
-        ...publicProduct(item.variantId),
-        availablePackages: item.availablePackages,
-        retailUnitPriceNgn: item.retailUnitPriceNgn,
-      }))
-      .filter(item => item.id)
+    const products = availability.flatMap(item => {
+      const product = publicProduct(item.variantId)
+      return product
+        ? [{
+            ...product,
+            availablePackages: item.availablePackages,
+            retailUnitPriceNgn: item.retailUnitPriceNgn,
+          }]
+        : []
+    })
 
     return NextResponse.json({
       success: true,
