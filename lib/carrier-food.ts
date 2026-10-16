@@ -118,7 +118,7 @@ export function getCarrierFoodUrl(referralCode: string) {
 }
 
 export function getCarrierFoodShareImageUrl(referralCode: string) {
-  return `${getWeavePublicOrigin()}/api/carrier/food/${encodeURIComponent(referralCode)}/share-image`
+  return `${getWeavePublicOrigin()}${getCarrierFoodPath(referralCode)}/opengraph-image`
 }
 
 export function getCarrierFoodBridgerJoinUrl(referralCode: string) {
