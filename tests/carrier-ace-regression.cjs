@@ -24,7 +24,7 @@ assert.ok(carrier.includes('carrier_ace_publications')&&carrier.includes('carrie
 assert.ok(carrier.includes('carrierSchemaPromise')&&carrier.includes('initializeCarrierSchema'),'Carrier schema setup is cached per runtime instead of running DDL on every public poll')
 
 assert.ok(carrierAccess.includes("role === 'admin'")&&carrierAccess.includes("gate: 'administration'")&&carrierAccess.includes('active: true'),'Administration has direct Ace/Carrier entrance')
-assert.ok(carrierAccess.includes("role === 'agent'")&&carrierAccess.includes('getLifestyleAccess(user.id)')&&carrierAccess.includes("gate: 'agent_subscription'"),'Agents enter Ace and Carrier through the Agent monthly subscription')
+assert.ok(carrierAccess.includes("role === 'agent'")&&carrierAccess.includes('getLifestyleAccess(user.id)')&&carrierAccess.includes("gate: 'agent_position'")&&carrierAccess.includes('No monthly subscription is required for Agents.'),'Agents enter Ace and Carrier directly through the Agent position without subscription')
 assert.ok(carrierAccess.includes("role === 'bridger'")&&carrierAccess.includes('getLifestyleAccess(user.id)')&&carrierAccess.includes("gate: 'bridger_continuance'"),'Bridgers enter Ace and Carrier through Bridger monthly Continuance')
 assert.ok(carrierAccess.includes("role === 'client'")&&carrierAccess.includes('getLifestyleAccess(user.id)')&&carrierAccess.includes("gate: 'client_subscription'")&&carrierAccess.includes("position === 'lord'")&&carrierAccess.includes("position === 'lady'")&&carrierAccess.includes("gate: 'lord_lady'"),'Clients require their monthly subscription first, then Client position determines whether Ace opens')
 assert.ok(carrierAccess.includes("position: 'Ace'")&&carrierAccess.includes('ensureAceAccount'),'Every admitted Carrier user receives the Ace identity')
@@ -40,7 +40,7 @@ assert.ok(arena.includes("fetch('/api/carrier/access'")&&arena.includes('Inside 
 assert.ok(appHeader.includes("fetch('/api/carrier/access'")&&appHeader.includes("router.push('/weave/lifestyles')")&&appHeader.includes('Lifestyle · Position Access'),'Agent Bridger and Client users can enter Lifestyle from global position controls')
 assert.ok(appHeader.includes('Carrier · Enter as Ace')&&appHeader.includes('carrierOpen &&'),'Qualified users may still reach Carrier quickly from global position controls')
 assert.ok(carrierConsole.includes('Inside Carrier · You are Ace')&&carrierConsole.includes('PUBLISH CARRIER')&&carrierConsole.includes('WHATSAPP'),'Carrier is an Ace instrument with its publishing system inside it')
-assert.ok(lifestyle.includes('ONE SUBSCRIPTION · POSITION-SCOPED ACCESS')&&lifestyle.includes('title="ACE"')&&lifestyle.includes('Carrier is the Ace distribution instrument'),'Lifestyle presents Carrier inside Ace rather than as a peer Lifestyle')
+assert.ok(lifestyle.includes('AGENT POSITION · FREE LIFESTYLE ACCESS')&&lifestyle.includes('title="ACE"')&&lifestyle.includes('Carrier is the Ace distribution instrument'),'Lifestyle presents free Agent access while keeping Carrier inside Ace')
 assert.ok(!lifestyle.includes('Carrier Entrance')&&!lifestyle.includes('ENTER AS ACE'),'Lifestyle catalog no longer presents Carrier itself as the Lifestyle identity')
 assert.ok(acePage.includes('data-lifestyle-home="ace"')&&acePage.includes('data-ace-environment="arena"')&&acePage.includes('data-ace-environment="carrier"'),'Ace home visibly contains both Arena and Carrier')
 
