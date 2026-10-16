@@ -89,6 +89,8 @@ export async function POST(request: NextRequest) {
     const genericReferrerId: string | null = referralOwner?.id || null
     const bridgerReferrerId: string | null =
       role === 'bridger' && referralOwner?.role === 'bridger' ? referralOwner.id : null
+    const assignedAgentId: string | null =
+      role === 'bridger' && referralOwner?.role === 'agent' ? referralOwner.id : null
 
     if (bridgerReferrerId) await ensureBridgerReferralColumns()
 
@@ -105,13 +107,13 @@ export async function POST(request: NextRequest) {
     const userResult = await sql`
       INSERT INTO users (
         id, email, username, name, password_hash, role, departmental_code,
-        referral_code, referred_by, referred_by_bridger_id, created_at, updated_at
+        referral_code, referred_by, referred_by_bridger_id, assigned_agent_id, created_at, updated_at
       )
       VALUES (
         ${userId}::uuid, ${email}, ${username}, ${name}, ${passwordHash}, ${role}, ${dept},
-        ${referralCode}, ${genericReferrerId}::uuid, ${bridgerReferrerId}::uuid, NOW(), NOW()
+        ${referralCode}, ${genericReferrerId}::uuid, ${bridgerReferrerId}::uuid, ${assignedAgentId}::uuid, NOW(), NOW()
       )
-      RETURNING id, email, username, name, role, departmental_code, referral_code
+      RETURNING id, email, username, name, role, departmental_code, referral_code, assigned_agent_id
     `
 
     if (!userResult || userResult.length === 0) {
@@ -122,13 +124,16 @@ export async function POST(request: NextRequest) {
 
     if (genericReferrerId) {
       try {
+        const referralContent = assignedAgentId
+          ? `${name} joined WEAVE as a Bridger through your Agent Carrier Door and is now attached to your Agent position.`
+          : `${name} joined WEAVE using your referral code.`
         await sql`
           INSERT INTO notifications (user_id, type, title, content, from_user_name)
           VALUES (
             ${genericReferrerId}::uuid,
             'referral_signup',
-            'Your referral joined WEAVE',
-            ${name + ' joined WEAVE using your referral code.'},
+            ${assignedAgentId ? 'Your Carrier Bridger joined WEAVE' : 'Your referral joined WEAVE'},
+            ${referralContent},
             'WEAVE'
           )
         `
@@ -200,7 +205,7 @@ export async function POST(request: NextRequest) {
         eventType: 'registration',
         userId,
         subjectId: role,
-        metadata: { role },
+        metadata: { role, assignedAgentId },
       })
     } catch (movementError) {
       console.error('[Public Flame Movement] Staff registration attribution failed:', movementError)
@@ -216,6 +221,7 @@ export async function POST(request: NextRequest) {
         role: user.role,
         departmental_code: user.departmental_code,
         referral_code: user.referral_code,
+        assigned_agent_id: user.assigned_agent_id || null,
         platform_wallet_balance: 0,
         escrow_balance: 0,
       },
