@@ -13,6 +13,8 @@ const adminApi=read('app/api/admin/carrier-food-payments/route.ts')
 const adminPage=read('app/(app)/admin/carrier-food-payments/page.tsx')
 const bridgerPage=read('app/carrier/food/[code]/bridger/page.tsx')
 const registerApi=read('app/api/auth/register/route.ts')
+const directSalesApi=read('app/api/agility/sales/route.ts')
+const distributionApi=read('app/api/agent/distribution/route.ts')
 
 assert.ok(schema.includes("awaiting_customer_payment")&&schema.includes("awaiting_payment_verification"),'Carrier schema has pre-payment and verification states')
 assert.ok(schema.includes('WEAVE_OPAY_ACCOUNT_NUMBER'),'Carrier food reuses WEAVE OPay rail')
@@ -26,5 +28,7 @@ assert.ok(adminPage.includes('FOOD PAYMENT VERIFICATION')&&adminPage.includes('V
 assert.ok(bridgerPage.includes('WHAT A BRIDGER IS')||bridgerPage.includes('What a Bridger is'),'Carrier has a Bridger explanation before registration')
 assert.ok(bridgerPage.includes('BRIDGER_YIELD_RATE')&&bridgerPage.includes('AGENT_LEAD_YIELD_RATE')&&bridgerPage.includes('AGENT_CROSSING_YIELD_RATE'),'Bridger explanation derives Bridger and Agent earnings from canonical rules')
 assert.ok(registerApi.includes('assigned_agent_id'),'Agent-referred Bridger registration keeps assigned Agent relationship')
+assert.ok(directSalesApi.includes("status IN ('awaiting_payment_verification','requested')")&&directSalesApi.includes("status='awaiting_customer_payment' AND payment_expires_at>NOW()"),'direct Agility sales protect active Carrier payment reservations')
+assert.ok(distributionApi.includes("status IN ('awaiting_payment_verification','requested')")&&distributionApi.includes("status='awaiting_customer_payment' AND payment_expires_at>NOW()"),'outlet placement protects active Carrier payment reservations')
 
-console.log('Carrier food payment-first checkout and Bridger explanation regression checks passed')
+console.log('Carrier food payment-first checkout, stock protection and Bridger explanation regression checks passed')
