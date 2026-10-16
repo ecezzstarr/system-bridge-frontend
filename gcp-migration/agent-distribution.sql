@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS agility_outlet_placements (
   outlet_id uuid NOT NULL REFERENCES agent_distribution_outlets(id),
   order_id uuid NOT NULL REFERENCES agility_stock_orders(id),
   variant_id varchar(80) NOT NULL,
-  carton_count integer NOT NULL,
+  carton_count numeric(6,1) NOT NULL,
   package_count integer NOT NULL,
   supply_mode varchar(40) NOT NULL,
   agreed_amount_ngn numeric(14,2) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS agility_outlet_placements (
   settled_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT NOW(),
   updated_at timestamptz NOT NULL DEFAULT NOW(),
-  CHECK (carton_count > 0),
+  CHECK (carton_count >= 0.5 AND carton_count <= 50 AND carton_count * 2 = trunc(carton_count * 2)),
   CHECK (package_count > 0),
   CHECK (agreed_amount_ngn > 0),
   CHECK (packages_reported_sold >= 0),
@@ -44,6 +44,21 @@ CREATE TABLE IF NOT EXISTS agility_outlet_placements (
   CHECK (supply_mode IN ('paid_now','pay_after_sale')),
   CHECK (status IN ('with_outlet','sold_out_awaiting_settlement','settled'))
 );
+
+ALTER TABLE agility_outlet_placements
+  ALTER COLUMN carton_count TYPE numeric(6,1) USING carton_count::numeric;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'agility_outlet_placements_carton_step_check'
+  ) THEN
+    ALTER TABLE agility_outlet_placements
+      ADD CONSTRAINT agility_outlet_placements_carton_step_check
+      CHECK (carton_count >= 0.5 AND carton_count <= 50 AND carton_count * 2 = trunc(carton_count * 2));
+  END IF;
+END
+$$;
 
 CREATE INDEX IF NOT EXISTS idx_agility_outlet_placements_agent
   ON agility_outlet_placements(agent_id, supplied_at DESC);
