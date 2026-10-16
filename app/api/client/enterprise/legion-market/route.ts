@@ -51,7 +51,11 @@ export async function GET(request:NextRequest){
     FROM users u
     WHERE u.role IN ('agent','bridger')
       AND COALESCE(u.is_active,true)=true
-      AND (COALESCE(u.is_subscription_exempt,false)=true OR (u.subscription_status='active' AND (u.subscription_expiry IS NULL OR u.subscription_expiry>NOW())))
+      AND (
+        u.role='agent'
+        OR COALESCE(u.is_subscription_exempt,false)=true
+        OR (u.subscription_status='active' AND (u.subscription_expiry IS NULL OR u.subscription_expiry>NOW()))
+      )
       AND NOT EXISTS(
         SELECT 1 FROM enterprise_legions l
         WHERE l.source_user_id=u.id AND l.active=true AND l.employment_status='active'
@@ -106,7 +110,11 @@ export async function POST(request:NextRequest){
       FROM users u
       WHERE u.id=${userId}::uuid AND u.role IN ('agent','bridger')
         AND COALESCE(u.is_active,true)=true
-        AND (COALESCE(u.is_subscription_exempt,false)=true OR (u.subscription_status='active' AND (u.subscription_expiry IS NULL OR u.subscription_expiry>NOW())))
+        AND (
+          u.role='agent'
+          OR COALESCE(u.is_subscription_exempt,false)=true
+          OR (u.subscription_status='active' AND (u.subscription_expiry IS NULL OR u.subscription_expiry>NOW()))
+        )
         AND NOT EXISTS(SELECT 1 FROM enterprise_legions l WHERE l.source_user_id=u.id AND l.active=true AND l.employment_status='active')
       LIMIT 1
     `
@@ -141,8 +149,8 @@ export async function POST(request:NextRequest){
       LIMIT 1
     `
     if(!application)return NextResponse.json({success:false,error:'Legion application not found.'},{status:404})
-    const subscriptionCurrent=Boolean(application.is_subscription_exempt)||(application.subscription_status==='active'&&(!application.subscription_expiry||new Date(application.subscription_expiry).getTime()>Date.now()))
-    if(!subscriptionCurrent)return NextResponse.json({success:false,error:'The applicant no longer has an active Agent or Bridger subscription.'},{status:409})
+    const accessCurrent=String(application.role)==='agent'||Boolean(application.is_subscription_exempt)||(application.subscription_status==='active'&&(!application.subscription_expiry||new Date(application.subscription_expiry).getTime()>Date.now()))
+    if(!accessCurrent)return NextResponse.json({success:false,error:'The Bridger applicant no longer has active Continuance.'},{status:409})
     const currentCapacity=await capacityState(clientId)
     if(currentCapacity.count>=currentCapacity.capacity)return NextResponse.json({success:false,error:'Legion Quarter capacity is full.'},{status:409})
     const legion=await activateLegionEmployment(sql,{
