@@ -10,7 +10,7 @@ export const ARENA_SETTLEMENT_DELAY_MINUTES = 20
 export const AGENTIC_BRIDGER_EARNING_RATE = 0.45
 export const ACE_STANDARD_EARNING_RATE = 0.30
 
-export type LifestyleAccessSource = 'role_monthly_subscription' | 'administration' | 'unsupported'
+export type LifestyleAccessSource = 'role_monthly_subscription' | 'agent_position' | 'administration' | 'unsupported'
 
 export type LifestyleAccess = {
   active: boolean
@@ -25,9 +25,9 @@ export async function ensureWeaveLifestyleSchema() {
   const pool = getPool()
   const client = await pool.connect()
   try {
-    // Lifestyle is not a second subscription. Agent, Bridger and Client access
-    // follows the monthly subscription already attached to the user's WEAVE
-    // position. Keep the legacy lifestyle table out of authorization decisions.
+    // Agents carry Lifestyle as part of the Agent company position with no monthly
+    // subscription. Bridger and Client Lifestyle access continues to follow the
+    // monthly subscription attached to those WEAVE positions.
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status varchar(20) DEFAULT 'active'`)
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expiry timestamptz`)
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_subscription_exempt boolean DEFAULT false`)
@@ -98,7 +98,19 @@ export async function getLifestyleAccess(userId: string): Promise<LifestyleAcces
     }
   }
 
-  if (!['agent', 'bridger', 'client'].includes(role)) {
+  if (role === 'agent') {
+    const active = row?.is_active !== false
+    return {
+      active,
+      status: active ? 'active' : 'inactive',
+      expiresAt: null,
+      role,
+      source: 'agent_position',
+      positionScoped: true,
+    }
+  }
+
+  if (!['bridger', 'client'].includes(role)) {
     return {
       active: false,
       status: 'unsupported',
@@ -133,7 +145,10 @@ export async function requireLifestyleAccess(userId: string) {
   const access = await getLifestyleAccess(userId)
   if (!access.active) {
     const position = access.role ? `${access.role[0]?.toUpperCase()}${access.role.slice(1)}` : 'WEAVE'
-    const error = new Error(`${position} monthly subscription is required to enter Lifestyle`) as Error & { status?: number; lifestyleAccess?: LifestyleAccess }
+    const reason = access.role === 'agent'
+      ? 'An active Agent account is required to enter Lifestyle'
+      : `${position} monthly subscription is required to enter Lifestyle`
+    const error = new Error(reason) as Error & { status?: number; lifestyleAccess?: LifestyleAccess }
     error.status = 403
     error.lifestyleAccess = access
     throw error
@@ -145,8 +160,9 @@ export async function ensureAceAccount(userId: string, fallbackName: string, rol
   await ensureWeaveLifestyleSchema()
   const pool = getPool()
   const safeName = String(fallbackName || 'Ace').trim().slice(0, 80) || 'Ace'
-  // Ace is the parent Lifestyle. Bridgers carry the Agentic-Bridger specialization
-  // inside Ace while their Bridger monthly Continuance remains active.
+  // Ace is the parent Lifestyle. Agents enter it directly as part of their free
+  // company position. Bridgers carry the Agentic-Bridger specialization while
+  // their Bridger monthly Continuance remains active.
   const lifestyle = String(role || '').toLowerCase() === 'bridger' ? AGENTIC_BRIDGER_LIFESTYLE : ACE_LIFESTYLE
   await pool.query(
     `INSERT INTO arena_ace_accounts (user_id,ace_name,status,lifestyle)
