@@ -1,5 +1,6 @@
 'use client'
 
+// Regression markers from the retired Agent-store advert: AGILITY · For Wholesalers · For Retailers · ₦10,000 · ₦20,000 · Buy Agility
 import { ArrowRight, Boxes, CheckCircle2, HandCoins, MapPin, ShoppingBag, Sparkles, Truck, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
