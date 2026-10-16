@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">WEAVE Agility Food Preview</title>
+  <desc id="desc">A clear visual preview of the WEAVE Agility morning food package.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2c1608"/>
+      <stop offset="0.55" stop-color="#8a3d0c"/>
+      <stop offset="1" stop-color="#f3a72f"/>
+    </linearGradient>
+    <linearGradient id="tray" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff7e4"/>
+      <stop offset="1" stop-color="#e7d5ac"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity=".28"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="800" rx="52" fill="url(#bg)"/>
+  <circle cx="1060" cy="110" r="170" fill="#ffd77c" opacity=".13"/>
+  <circle cx="80" cy="725" r="210" fill="#210d03" opacity=".25"/>
+
+  <g transform="translate(74 76)">
+    <text x="0" y="0" dominant-baseline="hanging" fill="#ffd77c" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="7">WEAVE FOOD</text>
+    <text x="0" y="66" dominant-baseline="hanging" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="88" font-weight="900">AGILITY</text>
+    <text x="2" y="166" dominant-baseline="hanging" fill="#ffe8bb" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="600">Morning food package · prepared for movement</text>
+  </g>
+
+  <g transform="translate(94 325)" filter="url(#shadow)">
+    <rect x="0" y="0" width="710" height="365" rx="54" fill="url(#tray)"/>
+    <ellipse cx="188" cy="181" rx="128" ry="126" fill="#fff" stroke="#d5bd8b" stroke-width="8"/>
+    <ellipse cx="188" cy="181" rx="70" ry="68" fill="#f7bf32"/>
+    <path d="M320 86 C365 54 435 66 454 110 C469 145 440 173 398 171 C350 169 304 135 320 86Z" fill="#b66a28"/>
+    <path d="M333 196 C382 165 444 177 462 220 C479 262 439 293 394 286 C350 279 314 242 333 196Z" fill="#d68c32"/>
+    <g fill="#7a3a1b">
+      <circle cx="531" cy="104" r="43"/><circle cx="603" cy="137" r="39"/><circle cx="548" cy="184" r="38"/>
+    </g>
+    <rect x="495" y="235" width="157" height="78" rx="30" fill="#f2d7a0"/>
+    <path d="M514 257 h119" stroke="#c9a062" stroke-width="8" stroke-linecap="round"/>
+    <path d="M514 281 h92" stroke="#c9a062" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(840 340)" filter="url(#shadow)">
+    <rect width="260" height="330" rx="46" fill="#fff7e4"/>
+    <circle cx="130" cy="104" r="66" fill="#ec3f35"/>
+    <path d="M130 43 C142 18 164 14 178 23 C159 31 148 46 143 61Z" fill="#4c8a3e"/>
+    <rect x="58" y="197" width="144" height="72" rx="28" fill="#f7fbff" stroke="#d8e4e8" stroke-width="6"/>
+    <path d="M83 220 h94 M83 244 h70" stroke="#9cb8c0" stroke-width="8" stroke-linecap="round"/>
+    <text x="130" y="306" text-anchor="middle" fill="#8a3d0c" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800">APPLE · MILK</text>
+  </g>
+
+  <text x="92" y="752" fill="#fff7e4" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700">Egg · Bread · Butter · Akara · Pap · Protein · Fruit · Milk · Water</text>
+</svg>
