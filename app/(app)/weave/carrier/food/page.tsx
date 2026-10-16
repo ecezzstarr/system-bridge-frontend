@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CheckCircle2, Clipboard, ExternalLink, Image as ImageIcon, Loader2, Package, RefreshCw, Share2, ShoppingBag, Users, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clipboard, ExternalLink, Image as ImageIcon, Loader2, Package, RefreshCw, Share2, ShoppingBag, Users, WalletCards } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 type Door = {
@@ -10,6 +10,7 @@ type Door = {
   agentName:string
   publicUrl:string
   shareImageUrl:string
+  bridgerInfoUrl:string
   bridgerJoinUrl:string
   shareText:string
 }
@@ -25,15 +26,23 @@ type CarrierOrder = {
   customer_phone:string
   delivery_location:string
   customer_note?:string|null
-  status:'requested'|'fulfilled'|'cancelled'
+  status:'awaiting_payment_verification'|'requested'|'fulfilled'|'cancelled'
+  payment_method:string
+  payment_reference?:string|null
+  opay_transaction_reference?:string|null
+  payment_status:'proof_submitted'|'paid'|'rejected'|string
+  payment_verified_at?:string|null
+  payment_admin_note?:string|null
   created_at:string
 }
 type FoodCarrierData = {
   door:Door
   availability:Availability[]
   orders:CarrierOrder[]
-  stats:{unique_views:number;shares:number;open_orders:number;fulfilled_revenue_ngn:number|string;fulfilled_packages:number}
+  stats:{unique_views:number;shares:number;payment_verification:number;open_orders:number;fulfilled_revenue_ngn:number|string;fulfilled_packages:number}
 }
+
+type NativeShare=(data:{title?:string;text?:string;url?:string})=>Promise<void>
 
 const money=(value:number|string)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(value||0))
 const productName=(id:string)=>id==='electrolyte'?'Electrolyte':id==='classic'?'Agility':`Agility · ${id.charAt(0).toUpperCase()+id.slice(1)}`
@@ -89,20 +98,21 @@ export default function AgentFoodCarrierConsole(){
 
   const shareNative=async()=>{
     if(!data)return
-    await recordShare('native')
-    if(navigator.share){
-      try{await navigator.share({title:'WEAVE Food Carrier',text:data.door.shareText,url:data.door.publicUrl});return}catch{}
+    const nativeShare=(navigator as unknown as {share?:NativeShare}).share
+    if(nativeShare){
+      await recordShare('native')
+      try{await nativeShare.call(navigator,{title:'WEAVE Food Carrier',text:data.door.shareText,url:data.door.publicUrl});return}catch{}
     }
     await copyDoor()
   }
 
-  const moveOrder=async(orderId:string,action:'fulfill'|'cancel')=>{
+  const fulfill=async(orderId:string)=>{
     setMoving(orderId);setError('');setMessage('')
     try{
-      const response=await fetch('/api/carrier/food',{method:'PATCH',headers:headers(),body:JSON.stringify({orderId,action})})
+      const response=await fetch('/api/carrier/food',{method:'PATCH',headers:headers(),body:JSON.stringify({orderId,action:'fulfill'})})
       const body=await response.json().catch(()=>({}))
       if(!response.ok)throw new Error(body.error||'Order could not move')
-      setMessage(action==='fulfill'?`Sale completed${body.revenueNgn?` · ${money(body.revenueNgn)}`:''}.`:'Order cancelled and stock released.')
+      setMessage(`Sale completed${body.revenueNgn?` · ${money(body.revenueNgn)}`:''}.`)
       await load()
     }catch(err){setError(err instanceof Error?err.message:'Order could not move')}
     finally{setMoving(null)}
@@ -120,7 +130,7 @@ export default function AgentFoodCarrierConsole(){
     <header className="mt-5 border-b border-emerald-300/15 pb-7">
       <p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">Ace · Carrier · Agent instrument</p>
       <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-6xl">FOOD CARRIER DOOR</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">This is your permanent outward door for WEAVE food. Share one link with the product image. People can order Agility or Electrolyte without creating an account, or enter WEAVE as a Bridger attached to your Agent position.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Share one permanent link for Agility and Electrolyte. Customers pay WEAVE first. Administration verifies the OPay payment before the order becomes actionable here. The same Door explains the Bridger position before registration.</p>
     </header>
 
     {message&&<div className="mt-5 border border-emerald-300/20 bg-emerald-300/[.06] px-4 py-3 text-sm text-emerald-100">{message}</div>}
@@ -139,7 +149,7 @@ export default function AgentFoodCarrierConsole(){
         </div>
         <div className="mt-5 border-t border-white/10 pt-5">
           <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Post with image</p>
-          <p className="mt-2 text-xs leading-5 text-slate-500">The Carrier link carries its own WhatsApp/social preview image showing Agility + Electrolyte. You can also open the share image directly and post it with the link.</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">The public link carries the Agility + Electrolyte social image. Customers can buy, or open the Bridger explanation from the same Door.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button asChild variant="outline" className="border-amber-300/20 text-amber-100"><a href={data?.door.shareImageUrl} target="_blank" rel="noreferrer"><ImageIcon className="mr-2 h-4 w-4"/>OPEN SHARE IMAGE</a></Button>
             <Button onClick={()=>void copyPost()} variant="outline" className="border-white/15 text-white"><Clipboard className="mr-2 h-4 w-4"/>COPY POST TEXT</Button>
@@ -150,8 +160,8 @@ export default function AgentFoodCarrierConsole(){
       <div className="grid grid-cols-2 border border-white/10 bg-black/20">
         <div className="border-b border-r border-white/10 p-4"><Users className="h-4 w-4 text-sky-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.unique_views||0)}</p><p className="mt-1 text-[8px] font-black uppercase tracking-wider text-slate-600">Door reach</p></div>
         <div className="border-b border-white/10 p-4"><Share2 className="h-4 w-4 text-violet-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.shares||0)}</p><p className="mt-1 text-[8px] font-black uppercase tracking-wider text-slate-600">Shares</p></div>
-        <div className="border-r border-white/10 p-4"><ShoppingBag className="h-4 w-4 text-amber-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.open_orders||0)}</p><p className="mt-1 text-[8px] font-black uppercase tracking-wider text-slate-600">Orders waiting</p></div>
-        <div className="p-4"><CheckCircle2 className="h-4 w-4 text-emerald-300"/><p className="mt-2 text-xl font-black">{money(data?.stats.fulfilled_revenue_ngn||0)}</p><p className="mt-1 text-[8px] font-black uppercase tracking-wider text-slate-600">Carrier sales</p></div>
+        <div className="border-r border-white/10 p-4"><WalletCards className="h-4 w-4 text-amber-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.payment_verification||0)}</p><p className="mt-1 text-[8px] font-black uppercase tracking-wider text-slate-600">Payment verification</p></div>
+        <div className="p-4"><ShoppingBag className="h-4 w-4 text-emerald-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.open_orders||0)}</p><p className="mt-1 text-[8px] font-black uppercase tracking-wider text-slate-600">Paid orders ready</p></div>
       </div>
     </section>
 
@@ -165,24 +175,39 @@ export default function AgentFoodCarrierConsole(){
     </section>
 
     <section className="mt-7">
-      <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.22em] text-amber-300">Carrier orders</p><h2 className="mt-1 text-2xl font-black">CUSTOMERS FROM YOUR LINK</h2></div><p className="text-xs text-slate-500">Confirm only after delivery/pickup and payment.</p></div>
+      <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.22em] text-amber-300">Carrier orders</p><h2 className="mt-1 text-2xl font-black">CUSTOMERS FROM YOUR LINK</h2></div><p className="max-w-xl text-xs leading-5 text-slate-500">A customer first pays WEAVE. Payment-proof orders remain locked while Administration verifies them. Only a verified paid order can be fulfilled.</p></div>
       <div className="mt-4 space-y-3">
-        {(data?.orders||[]).map(order=><article key={order.id} className="border border-white/10 bg-black/15 p-4 sm:p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div><div className="flex flex-wrap items-center gap-2"><p className="font-black">{productName(order.variant_id)} · {order.quantity_packages} pack{order.quantity_packages===1?'':'s'}</p><span className={`px-2 py-1 text-[8px] font-black uppercase ${order.status==='fulfilled'?'bg-emerald-300/10 text-emerald-300':order.status==='cancelled'?'bg-red-300/10 text-red-300':'bg-amber-300/10 text-amber-300'}`}>{order.status}</span></div><p className="mt-2 text-sm font-bold text-white">{order.customer_name} · {order.customer_phone}</p><p className="mt-1 text-xs text-slate-500">{order.delivery_location}</p>{order.customer_note&&<p className="mt-1 text-xs text-slate-600">{order.customer_note}</p>}</div>
-            <div className="text-right"><p className="text-xl font-black">{money(order.total_ngn)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">{new Date(order.created_at).toLocaleString()}</p></div>
-          </div>
-          {order.status==='requested'&&<div className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4"><Button onClick={()=>void moveOrder(order.id,'fulfill')} disabled={moving===order.id} className="bg-emerald-300 font-black text-slate-950 hover:bg-emerald-200"><CheckCircle2 className="mr-2 h-4 w-4"/>DELIVERED + PAID</Button><Button onClick={()=>void moveOrder(order.id,'cancel')} disabled={moving===order.id} variant="outline" className="border-red-300/20 text-red-200"><XCircle className="mr-2 h-4 w-4"/>CANCEL + RELEASE STOCK</Button></div>}
-        </article>)}
-        {!data?.orders?.length&&<div className="border border-dashed border-white/10 p-8 text-center text-sm text-slate-500">Share your Carrier Door. Customer orders will arrive here.</div>}
+        {(data?.orders||[]).map(order=>{
+          const waiting=order.status==='awaiting_payment_verification'
+          const ready=order.status==='requested'&&order.payment_status==='paid'
+          return <article key={order.id} className="border border-white/10 bg-black/15 p-4 sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2"><p className="font-black">{productName(order.variant_id)} · {order.quantity_packages} pack{order.quantity_packages===1?'':'s'}</p><span className={`px-2 py-1 text-[8px] font-black uppercase ${order.status==='fulfilled'?'bg-emerald-300/10 text-emerald-300':order.status==='cancelled'?'bg-red-300/10 text-red-300':waiting?'bg-amber-300/10 text-amber-300':'bg-sky-300/10 text-sky-300'}`}>{waiting?'payment verification':ready?'paid · ready':order.status}</span></div>
+                <p className="mt-2 text-sm font-bold text-white">{order.customer_name} · {order.customer_phone}</p>
+                <p className="mt-1 text-xs text-slate-500">{order.delivery_location}</p>
+                {order.customer_note&&<p className="mt-1 text-xs text-slate-600">{order.customer_note}</p>}
+                <div className="mt-3 grid gap-2 text-[10px] text-slate-500 sm:grid-cols-2">
+                  <p>WEAVE payment ref · <span className="text-slate-300">{order.payment_reference||'—'}</span></p>
+                  <p>Customer OPay ref · <span className="text-slate-300">{order.opay_transaction_reference||'—'}</span></p>
+                </div>
+                {waiting&&<p className="mt-3 text-xs text-amber-200">Administration is verifying this payment. Do not deliver yet.</p>}
+                {order.status==='cancelled'&&order.payment_admin_note&&<p className="mt-3 text-xs text-red-200">Administration note: {order.payment_admin_note}</p>}
+              </div>
+              <div className="text-right"><p className="text-xl font-black">{money(order.total_ngn)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">{new Date(order.created_at).toLocaleString()}</p></div>
+            </div>
+            {ready&&<div className="mt-4 border-t border-white/10 pt-4"><Button onClick={()=>void fulfill(order.id)} disabled={moving===order.id} className="bg-emerald-300 font-black text-slate-950 hover:bg-emerald-200"><CheckCircle2 className="mr-2 h-4 w-4"/>{moving===order.id?'MOVING…':'DELIVERED / PICKED UP'}</Button></div>}
+          </article>
+        })}
+        {!data?.orders?.length&&<div className="border border-dashed border-white/10 p-8 text-center text-sm text-slate-500">Share your Carrier Door. Paid customer orders will appear here.</div>}
       </div>
     </section>
 
     <section className="mt-8 border border-cyan-300/20 bg-cyan-300/[.035] p-6">
       <p className="text-[9px] font-black uppercase tracking-[.22em] text-cyan-300">Bridger formation through the same door</p>
-      <h2 className="mt-2 text-2xl font-black">YOUR CARRIER ALSO RECRUITS YOUR BRIDGERS</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">The public door has a separate Bridger entrance. It opens WEAVE registration as Bridger with your Agent referral already carried. After entry, WEAVE attaches that Bridger to your Agent position.</p>
-      <Button asChild variant="outline" className="mt-4 border-cyan-300/25 text-cyan-100"><a href={data?.door.bridgerJoinUrl} target="_blank" rel="noreferrer">TEST BRIDGER DOOR <ExternalLink className="ml-2 h-4 w-4"/></a></Button>
+      <h2 className="mt-2 text-2xl font-black">YOUR CARRIER EXPLAINS THE RELATIONSHIP BEFORE REGISTRATION</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">A person first sees what a Bridger is, how the Bridger earns, and how you earn as the attached Agent. Only after that explanation do they continue into Bridger registration with your referral identity carried.</p>
+      <Button asChild variant="outline" className="mt-4 border-cyan-300/25 text-cyan-100"><a href={data?.door.bridgerInfoUrl} target="_blank" rel="noreferrer">TEST BRIDGER EXPLANATION <ExternalLink className="ml-2 h-4 w-4"/></a></Button>
     </section>
   </main>
 }
