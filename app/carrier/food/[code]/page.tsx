@@ -31,11 +31,11 @@ export default async function CarrierFoodDoorPage({params}:{params:Promise<{code
         <p className="mb-3 text-[9px] font-black uppercase tracking-[.24em] text-slate-500">Customer food preview · see what you are ordering</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <figure className="overflow-hidden rounded-[1.4rem] border border-orange-300/20 bg-black/20">
-            <img src="/weave-food/agility-preview.svg" alt="WEAVE Agility food package preview" className="aspect-[3/2] w-full object-cover"/>
+            <a href="/weave-food/agility.jpeg" target="_blank" rel="noopener noreferrer" aria-label="Open Agility product image"><img src="/weave-food/agility.jpeg" alt="WEAVE Agility food package preview" className="h-auto max-h-[36rem] w-full bg-[#fffaf0] object-contain"/></a>
             <figcaption className="px-4 py-3 text-xs font-bold text-orange-100">AGILITY · WEAVE morning food package</figcaption>
           </figure>
           <figure className="overflow-hidden rounded-[1.4rem] border border-emerald-300/20 bg-black/20">
-            <img src="/weave-food/electrolyte-preview.svg" alt="WEAVE Electrolyte sliced food bowl preview" className="aspect-[3/2] w-full object-cover"/>
+            <a href="/weave-food/electrolyte.jpeg" target="_blank" rel="noopener noreferrer" aria-label="Open Electrolyte product image"><img src="/weave-food/electrolyte.jpeg" alt="WEAVE Electrolyte sliced food bowl preview" className="h-auto max-h-[36rem] w-full bg-[#fffaf0] object-contain"/></a>
             <figcaption className="px-4 py-3 text-xs font-bold text-emerald-100">ELECTROLYTE · Small Bowl ₦4,000 · Medium Bowl ₦6,000</figcaption>
           </figure>
         </div>

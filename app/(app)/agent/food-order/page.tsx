@@ -188,9 +188,9 @@ export default function AgentFoodOrderPage(){
     const economics=getWeaveFoodVariantEconomics(product.id)
     if(!economics)return null
     const current=Number(quantity[product.id]??0.5)
-    const preview=product.id.startsWith('electrolyte')?'/weave-food/electrolyte-preview.svg':'/weave-food/agility-preview.svg'
+    const preview=product.id.startsWith('electrolyte')?'/weave-food/electrolyte.jpeg':'/weave-food/agility.jpeg'
     return <article key={product.id} className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-black/25">
-      <img src={preview} alt={`${product.name} preview`} className="h-44 w-full object-cover"/>
+      <a href={preview} target="_blank" rel="noopener noreferrer" aria-label={`Open ${product.id.startsWith('electrolyte')?'Electrolyte':'Agility'} product image`}><img src={preview} alt={`WEAVE ${product.id.startsWith('electrolyte')?'Electrolyte':'Agility'} product image`} className="h-80 w-full bg-[#fffaf0] object-contain" loading="lazy"/></a>
       <div className="p-5">
         <p className="text-[9px] font-black uppercase tracking-[.2em] text-slate-500">{product.accent}</p>
         <h3 className="mt-1 text-xl font-black">{product.name}</h3>
