@@ -11,7 +11,7 @@ export type CarrierAccessUser = {
 export type CarrierAccess = {
   active: boolean
   role: string
-  gate: 'administration' | 'agent_subscription' | 'bridger_continuance' | 'client_subscription' | 'lord_lady' | 'unsupported'
+  gate: 'administration' | 'agent_position' | 'bridger_continuance' | 'client_subscription' | 'lord_lady' | 'unsupported'
   reason: string
   position: 'Ace' | null
   qualifyingState?: string | null
@@ -32,16 +32,16 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
   }
 
   if (role === 'agent') {
-    const subscription = await getLifestyleAccess(user.id)
+    const access = await getLifestyleAccess(user.id)
     return {
-      active: subscription.active,
+      active: access.active,
       role,
-      gate: 'agent_subscription',
-      reason: subscription.active
-        ? 'Your active Agent monthly subscription opens Ace. Carrier is one of the Ace instruments.'
-        : 'Renew the Agent monthly subscription to reopen Agent Lifestyle access and Ace.',
-      position: subscription.active ? 'Ace' : null,
-      qualifyingState: subscription.status,
+      gate: 'agent_position',
+      reason: access.active
+        ? 'The Agent position opens Lifestyle, Ace and Carrier directly. No monthly subscription is required for Agents.'
+        : 'This Agent account is inactive. An active Agent position is required to enter Ace and Carrier.',
+      position: access.active ? 'Ace' : null,
+      qualifyingState: access.status,
     }
   }
 
