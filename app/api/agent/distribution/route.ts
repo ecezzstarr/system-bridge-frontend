@@ -54,13 +54,29 @@ export async function GET(request: NextRequest) {
         s.*,
         COALESCE((SELECT SUM(a.quantity_packages) FROM agility_agent_sales a WHERE a.order_id=s.id),0)::int AS direct_sold_packages,
         COALESCE((SELECT SUM(p.package_count) FROM agility_outlet_placements p WHERE p.order_id=s.id),0)::int AS allocated_packages,
-        COALESCE((SELECT SUM(c.quantity_packages) FROM carrier_food_orders c WHERE c.stock_order_id=s.id AND c.status='requested'),0)::int AS carrier_reserved_packages,
+        COALESCE((
+          SELECT SUM(c.quantity_packages)
+          FROM carrier_food_orders c
+          WHERE c.stock_order_id=s.id
+            AND (
+              c.status IN ('awaiting_payment_verification','requested')
+              OR (c.status='awaiting_customer_payment' AND c.payment_expires_at>NOW())
+            )
+        ),0)::int AS carrier_reserved_packages,
         GREATEST(
           0,
           s.package_count
           - COALESCE((SELECT SUM(a.quantity_packages) FROM agility_agent_sales a WHERE a.order_id=s.id),0)
           - COALESCE((SELECT SUM(p.package_count) FROM agility_outlet_placements p WHERE p.order_id=s.id),0)
-          - COALESCE((SELECT SUM(c.quantity_packages) FROM carrier_food_orders c WHERE c.stock_order_id=s.id AND c.status='requested'),0)
+          - COALESCE((
+              SELECT SUM(c.quantity_packages)
+              FROM carrier_food_orders c
+              WHERE c.stock_order_id=s.id
+                AND (
+                  c.status IN ('awaiting_payment_verification','requested')
+                  OR (c.status='awaiting_customer_payment' AND c.payment_expires_at>NOW())
+                )
+            ),0)
         )::int AS available_packages
       FROM agility_stock_orders s
       WHERE s.agent_id=${user.id}::uuid
@@ -75,7 +91,15 @@ export async function GET(request: NextRequest) {
         COALESCE((SELECT SUM(agreed_amount_ngn - amount_collected_ngn) FROM agility_outlet_placements WHERE agent_id=${user.id}::uuid AND supply_mode='pay_after_sale' AND status<>'settled'),0)::numeric AS outstanding_ngn,
         COALESCE((SELECT SUM(amount_ngn) FROM agility_outlet_collections WHERE agent_id=${user.id}::uuid AND (collected_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date),0)::numeric AS collected_today_ngn,
         COALESCE((SELECT COUNT(*) FROM agent_distribution_outlets WHERE agent_id=${user.id}::uuid AND active=true),0)::int AS outlet_count,
-        COALESCE((SELECT SUM(quantity_packages) FROM carrier_food_orders WHERE agent_id=${user.id}::uuid AND status='requested'),0)::int AS carrier_reserved_packages
+        COALESCE((
+          SELECT SUM(quantity_packages)
+          FROM carrier_food_orders
+          WHERE agent_id=${user.id}::uuid
+            AND (
+              status IN ('awaiting_payment_verification','requested')
+              OR (status='awaiting_customer_payment' AND payment_expires_at>NOW())
+            )
+        ),0)::int AS carrier_reserved_packages
     `
 
     return NextResponse.json({ success: true, outlets, placements, stock, summary })
@@ -167,7 +191,13 @@ export async function POST(request: NextRequest) {
         [orderId]
       )
       const reservedResult = await db.query(
-        `SELECT COALESCE(SUM(quantity_packages),0)::int AS reserved FROM carrier_food_orders WHERE stock_order_id=$1::uuid AND status='requested'`,
+        `SELECT COALESCE(SUM(quantity_packages),0)::int AS reserved
+         FROM carrier_food_orders
+         WHERE stock_order_id=$1::uuid
+           AND (
+             status IN ('awaiting_payment_verification','requested')
+             OR (status='awaiting_customer_payment' AND payment_expires_at>NOW())
+           )`,
         [orderId]
       )
       const packageCount = cartonCount * Number(order.packages_per_box)
@@ -179,7 +209,7 @@ export async function POST(request: NextRequest) {
         await db.query('ROLLBACK')
         return NextResponse.json({
           success: false,
-          error: `Only ${Math.floor(Math.max(0, available) / Number(order.packages_per_box))} complete carton${Math.floor(Math.max(0, available) / Number(order.packages_per_box)) === 1 ? '' : 's'} remain free. Carrier customer orders are already reserved and cannot be placed with an outlet.`,
+          error: `Only ${Math.floor(Math.max(0, available) / Number(order.packages_per_box))} complete carton${Math.floor(Math.max(0, available) / Number(order.packages_per_box)) === 1 ? '' : 's'} remain free. Active Carrier payment/orders are already reserved and cannot be placed with an outlet.`,
         }, { status: 409 })
       }
 
