@@ -12,7 +12,11 @@ import {
   ensureAgilitySchema,
   getAgilityVariant,
 } from '@/lib/agility'
-import { getWeaveFoodStockTotals } from '@/lib/weave-food-economics'
+import {
+  formatWeaveFoodCartonQuantity,
+  getWeaveFoodStockTotals,
+  isValidWeaveFoodCartonQuantity,
+} from '@/lib/weave-food-economics'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function GET(request: NextRequest) {
@@ -94,8 +98,11 @@ export async function POST(request: NextRequest) {
     if (!['wholesaler', 'retailer'].includes(distributionMode)) {
       return NextResponse.json({ success: false, error: 'Choose wholesaler or retailer distribution' }, { status: 400 })
     }
-    if (!Number.isInteger(boxCount) || boxCount < 1 || boxCount > 50) {
-      return NextResponse.json({ success: false, error: 'Choose between 1 and 50 cartons' }, { status: 400 })
+    if (!isValidWeaveFoodCartonQuantity(boxCount)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Agents can order only half cartons or full cartons, in 0.5-carton steps. Individual pieces cannot be ordered from WEAVE.',
+      }, { status: 400 })
     }
     if (deliveryAddress.length < 5) {
       return NextResponse.json({ success: false, error: 'Enter where WEAVE should deliver the cartons to you' }, { status: 400 })
@@ -107,7 +114,7 @@ export async function POST(request: NextRequest) {
     await ensureAgilitySchema()
     const totals = getWeaveFoodStockTotals(variant.id, boxCount)
     if (!totals) {
-      return NextResponse.json({ success: false, error: 'WEAVE food economics are unavailable for this product' }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'WEAVE food economics are unavailable for this carton quantity' }, { status: 409 })
     }
     const paymentReference = `FOOD-${user.id.slice(0, 8)}-${Date.now()}`
 
@@ -129,6 +136,7 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `
 
+    const cartonDescription = formatWeaveFoodCartonQuantity(totals.boxCount)
     const receipt = await issueWeaveReceipt({
       userId: user.id,
       kind: 'purchase',
@@ -137,13 +145,14 @@ export async function POST(request: NextRequest) {
       amount: totals.agentPayableNgn,
       currency: 'NGN',
       status: 'awaiting_payment',
-      description: `${variant.name} distribution stock · ${totals.boxCount} carton${totals.boxCount === 1 ? '' : 's'}`,
+      description: `${variant.name} distribution stock · ${cartonDescription}`,
       metadata: {
         variantId: variant.id,
         productName: variant.name,
         distributionMode,
         paymentReference,
         boxCount: totals.boxCount,
+        packageCount: totals.packageCount,
         agentBuyUnitPriceNgn: totals.agentBuyUnitPriceNgn,
         agentSellingUnitPriceNgn: totals.agentSellingUnitPriceNgn,
       },
@@ -162,7 +171,10 @@ export async function POST(request: NextRequest) {
         instruction: `Send exactly ₦${totals.agentPayableNgn.toLocaleString()} to OPay ${AGILITY_OPAY_ACCOUNT_NUMBER}, then submit the OPay transaction reference or receipt for Administration verification.`,
       },
       economics: {
+        cartonQuantity: totals.boxCount,
+        cartonDescription,
         packagesPerBox: totals.packagesPerBox,
+        packageCount: totals.packageCount,
         agentBuyUnitPriceNgn: totals.agentBuyUnitPriceNgn,
         agentSellingUnitPriceNgn: totals.agentSellingUnitPriceNgn,
         agentBoxPriceNgn: totals.agentBoxPriceNgn,
