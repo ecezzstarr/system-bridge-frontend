@@ -13,10 +13,10 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Ace',
     route: '/weave/lifestyles/ace',
     roles: ['admin', 'agent', 'bridger', 'client'],
-    summary: 'Ace is the Lifestyle identity that operates Arena and Carrier. Arena is the game ground; Carrier is the outward distribution instrument.',
+    summary: 'Ace is the Lifestyle identity that operates Arena and Carrier. Arena is the game ground; Carrier is the outward distribution instrument. For Agents, Carrier also carries WEAVE food sales and Bridger formation through a permanent public door.',
     environments: [
       { label: 'Arena', href: '/arena', purpose: 'Play, stream and settle eligible Arena games as Ace.' },
-      { label: 'Carrier', href: '/weave/carrier', purpose: 'Carry the Ace stream outward through a direct public watch link.' },
+      { label: 'Carrier', href: '/weave/carrier', purpose: 'Carry Ace activity outward through public links; subscribed Agents also receive a permanent Food Carrier Door for WEAVE products and Bridger formation.' },
     ],
   },
   [AGENTIC_BRIDGER_LIFESTYLE]: {
