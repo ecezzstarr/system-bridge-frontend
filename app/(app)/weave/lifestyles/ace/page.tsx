@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Gamepad2, Loader2, LockKeyhole, Megaphone, Radio } from 'lucide-react'
+import { ArrowLeft, Gamepad2, Loader2, LockKeyhole, Megaphone, PackageOpen, Radio } from 'lucide-react'
 
 function authHeaders():Record<string,string>{
   const token=typeof window!=='undefined'?localStorage.getItem('ssb_auth_token'):null
@@ -37,7 +37,7 @@ export default function AceLifestylePage(){
     <header className="mt-5 border-b border-yellow-300/15 pb-7">
       <p className="text-[10px] font-black uppercase tracking-[0.28em] text-yellow-300">WEAVE Lifestyle</p>
       <h1 className="mt-2 text-4xl font-black tracking-tight text-white sm:text-6xl">ACE</h1>
-      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-400">Ace is the operating identity. Arena and Carrier belong inside Ace: Arena is where Ace plays and streams; Carrier is how Ace carries that stream to people outside WEAVE.</p>
+      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-400">Ace is the operating identity. Arena is the game ground; Carrier is the outward instrument. For an Agent, Carrier also carries WEAVE food outward through one permanent product door for Agility, Electrolyte and Bridger formation.</p>
     </header>
 
     {!access?.active?<section className="mt-7 border border-white/10 bg-black/20 p-6"><div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-slate-500"/><div><p className="text-sm font-black text-white">Ace is closed for this position.</p><p className="mt-2 text-xs leading-5 text-slate-500">{error||access?.reason||'Your current WEAVE position has not opened Ace.'}</p></div></div></section>:<>
@@ -50,9 +50,15 @@ export default function AceLifestylePage(){
 
         <Link href="/weave/carrier" className="group min-h-64 border border-sky-300/20 bg-sky-300/[0.035] p-6 transition hover:bg-sky-300/[0.07]" data-ace-environment="carrier">
           <div className="flex items-start justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[.22em] text-sky-300">Ace instrument</p><h2 className="mt-2 text-3xl font-black text-white">CARRIER</h2></div><Megaphone className="h-9 w-9 text-sky-300"/></div>
-          <p className="mt-5 text-sm leading-6 text-slate-400">Form the direct public stream link and message around the Ace name and stream goal. People outside WEAVE enter and watch without registration.</p>
+          <p className="mt-5 text-sm leading-6 text-slate-400">Carry Ace activity outward through direct public links. Outsiders can enter the Carrier surface without first creating a WEAVE account.</p>
           <p className="mt-6 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-sky-200">Open Carrier <Radio className="h-4 w-4"/></p>
         </Link>
+
+        {access.role==='agent'&&<Link href="/weave/carrier/food" className="group min-h-64 border border-emerald-300/20 bg-emerald-300/[0.035] p-6 transition hover:bg-emerald-300/[0.07]" data-ace-environment="agent-food-carrier">
+          <div className="flex items-start justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[.22em] text-emerald-300">Carrier · Agent instrument</p><h2 className="mt-2 text-3xl font-black text-white">FOOD CARRIER DOOR</h2></div><PackageOpen className="h-9 w-9 text-emerald-300"/></div>
+          <p className="mt-5 text-sm leading-6 text-slate-400">Share one permanent link and product image. People can buy Agility or Electrolyte through your Agent stock, or enter WEAVE as a Bridger attached to you.</p>
+          <p className="mt-6 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-emerald-200">Open product door <Radio className="h-4 w-4"/></p>
+        </Link>}
       </section>
 
       {access.role==='bridger'&&<section className="mt-5 border-l-2 border-cyan-300/20 pl-5" data-ace-specialization="agentic-bridger"><p className="text-[9px] font-black uppercase tracking-[.22em] text-cyan-300">Bridger specialization inside Ace</p><h2 className="mt-2 text-2xl font-black text-white">Agentic-Bridger</h2><p className="mt-2 max-w-3xl text-xs leading-5 text-slate-400">Your Bridger Continuance carries a Bridger-only Agentic-Bridger specialization inside Ace. It keeps the Bridger role while applying the eligible Agentic-Bridger earning rule.</p><Link href="/weave/lifestyles/agentic-bridger" className="mt-4 inline-flex text-[10px] font-black uppercase tracking-wider text-cyan-200">Open Agentic-Bridger →</Link></section>}
