@@ -4,12 +4,12 @@ import type { PoolClient } from 'pg'
 import { getPool } from '@/lib/db'
 import { getCarrierAccess } from '@/lib/carrier-access'
 import { AGILITY_VARIANTS } from '@/lib/agility-catalog'
-import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 import {
   CARRIER_FOOD_PAYMENT_WINDOW_MINUTES,
   ensureCarrierFoodSchema,
   expireCarrierFoodPaymentIntents,
   getAgentByCarrierFoodCode,
+  getCarrierFoodAgentPaymentAccount,
   getCarrierFoodBridgerInfoUrl,
   getCarrierFoodBridgerJoinUrl,
   getCarrierFoodProductAvailability,
@@ -62,16 +62,13 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cod
     await expireCarrierFoodPaymentIntents(String(agent.id))
     const visitorKey = request.nextUrl.searchParams.get('visitor')
     await recordCarrierFoodView(String(agent.id), visitorKey)
-    const availability = await getCarrierFoodProductAvailability(String(agent.id))
+    const [availability, paymentAccount] = await Promise.all([
+      getCarrierFoodProductAvailability(String(agent.id)),
+      getCarrierFoodAgentPaymentAccount(String(agent.id)),
+    ])
     const products = availability.flatMap(item => {
       const product = publicProduct(item.variantId)
-      return product
-        ? [{
-            ...product,
-            availablePackages: item.availablePackages,
-            retailUnitPriceNgn: item.retailUnitPriceNgn,
-          }]
-        : []
+      return product ? [{ ...product, ...item }] : []
     })
 
     return NextResponse.json({
@@ -82,14 +79,18 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cod
         referralCode: agent.referral_code,
       },
       products,
-      payment: {
-        method: 'OPay',
-        accountNumber: WEAVE_OPAY_ACCOUNT_NUMBER,
+      customerPaymentReady: Boolean(paymentAccount),
+      payment: paymentAccount ? {
+        method: 'bank_transfer',
+        bankName: paymentAccount.bank_name,
+        accountNumber: paymentAccount.account_number,
+        accountName: paymentAccount.account_name,
+        paymentNote: paymentAccount.payment_note || null,
         windowMinutes: CARRIER_FOOD_PAYMENT_WINDOW_MINUTES,
-      },
+      } : null,
       bridgerInfoUrl: getCarrierFoodBridgerInfoUrl(String(agent.referral_code)),
       bridgerJoinUrl: getCarrierFoodBridgerJoinUrl(String(agent.referral_code)),
-      movement: 'WEAVE → Agent → customer / local outlet',
+      movement: 'Agent pays WEAVE for stock → Agent sets selling price → customer pays Agent → Agent verifies → order moves',
     })
   } catch (error) {
     console.error('[carrier/food/public] GET failed', error)
@@ -132,16 +133,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
 
     if (action === 'submit_payment') {
       const orderId = String(body.orderId || '').trim()
-      const opayTransactionReference = String(body.opayTransactionReference || '').trim().slice(0, 255)
-      if (!orderId || opayTransactionReference.length < 4) {
-        return NextResponse.json({ error: 'Enter the OPay transaction reference from your completed payment' }, { status: 400 })
+      const transactionReference = String(body.transactionReference || body.opayTransactionReference || '').trim().slice(0, 255)
+      if (!orderId || transactionReference.length < 4) {
+        return NextResponse.json({ error: 'Enter the bank or OPay transaction reference from your completed payment' }, { status: 400 })
       }
 
       db = await getPool().connect()
       await db.query('BEGIN')
       const orderResult = await db.query(
-        `SELECT *
-         FROM carrier_food_orders
+        `SELECT * FROM carrier_food_orders
          WHERE id=$1::uuid AND agent_id=$2::uuid
          FOR UPDATE`,
         [orderId, agent.id]
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
              updated_at=NOW()
          WHERE id=$2::uuid
          RETURNING id,variant_id,quantity_packages,total_ngn,payment_reference,payment_status,status,created_at`,
-        [opayTransactionReference, orderId]
+        [transactionReference, orderId]
       )
       await db.query('COMMIT')
       db.release()
@@ -184,22 +184,17 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
       try {
         await getPool().query(
           `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
-           SELECT id,'carrier_food_payment','Carrier food payment waiting',
-             $1,
-             'WEAVE Carrier',
-             '/admin/carrier-food-payments'
-           FROM users
-           WHERE role='admin' AND is_active=true`,
-          [`${order.customer_name} submitted OPay reference ${opayTransactionReference} for ₦${Number(order.total_ngn).toLocaleString()} through ${agent.name || agent.username || 'an Agent'}'s Carrier Door.`]
+           VALUES ($1::uuid,'carrier_customer_payment','Customer payment waiting for you',$2,'WEAVE Carrier','/weave/carrier/food')`,
+          [agent.id, `${order.customer_name} submitted payment reference ${transactionReference} for ₦${Number(order.total_ngn).toLocaleString()} to your Agent receiving account.`]
         )
       } catch (notifyError) {
-        console.error('[carrier/food/public] admin payment notification failed', notifyError)
+        console.error('[carrier/food/public] Agent payment notification failed', notifyError)
       }
 
       return NextResponse.json({
         success: true,
         order: updatedResult.rows[0],
-        message: 'Payment submitted to WEAVE. Administration verifies the OPay payment before the order is released to the Agent.',
+        message: `Payment reference sent to ${agent.name || agent.username || 'the Agent'}. The Agent verifies the customer payment before delivery or pickup.`,
       })
     }
 
@@ -224,11 +219,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
       return NextResponse.json({ error: 'Name, reachable phone number and delivery/pickup location are required before payment' }, { status: 400 })
     }
 
+    const paymentAccount = await getCarrierFoodAgentPaymentAccount(String(agent.id))
+    if (!paymentAccount) {
+      return NextResponse.json({ error: 'This Agent has not configured a customer receiving account yet.' }, { status: 409 })
+    }
+
     db = await getPool().connect()
     await db.query('BEGIN')
     const stockResult = await db.query(
-      `SELECT *
-       FROM agility_stock_orders
+      `SELECT * FROM agility_stock_orders
        WHERE agent_id=$1::uuid
          AND variant_id=$2
          AND payment_status='paid'
@@ -263,23 +262,36 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
 
     if (!selected) {
       await db.query('ROLLBACK')
-      return NextResponse.json({ error: 'This Agent does not currently have enough of that product free for this order.' }, { status: 409 })
+      return NextResponse.json({ error: 'This Agent does not currently have enough paid and received WEAVE stock free for this order.' }, { status: 409 })
     }
 
-    const unitPrice = Number(selected.retail_unit_price_ngn)
+    const priceResult = await db.query(
+      `SELECT selling_unit_price_ngn FROM carrier_food_agent_prices
+       WHERE agent_id=$1::uuid AND variant_id=$2
+       LIMIT 1`,
+      [agent.id, variantId]
+    )
+    const weaveRetailUnitPriceNgn = Number(selected.retail_unit_price_ngn)
+    const agentUnitCostNgn = Number(selected.agent_unit_cost_ngn)
+    const unitPrice = Math.max(weaveRetailUnitPriceNgn, Number(priceResult.rows[0]?.selling_unit_price_ngn || weaveRetailUnitPriceNgn))
     const total = unitPrice * quantity
-    const weavePaymentReference = carrierPaymentReference()
+    const agentMargin = Math.max(0, (unitPrice - agentUnitCostNgn) * quantity)
+    const paymentReference = carrierPaymentReference()
+
     const orderResult = await db.query(
       `INSERT INTO carrier_food_orders (
         agent_id,referral_code,stock_order_id,variant_id,quantity_packages,unit_price_ngn,total_ngn,
+        weave_unit_price_ngn,agent_unit_cost_ngn,agent_margin_ngn,
         customer_name,customer_phone,delivery_location,customer_note,status,
-        payment_method,payment_account_number,payment_reference,payment_status,payment_expires_at
+        payment_method,payment_bank_name,payment_account_number,payment_account_name,payment_reference,
+        payment_status,payment_expires_at
        ) VALUES (
-        $1::uuid,$2,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,
-        'awaiting_customer_payment','OPay',$12,$13,'awaiting_payment',NOW()+($14::text||' minutes')::interval
+        $1::uuid,$2,$3::uuid,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
+        'awaiting_customer_payment','bank_transfer',$15,$16,$17,$18,'awaiting_payment',NOW()+($19::text||' minutes')::interval
        )
-       RETURNING id,variant_id,quantity_packages,unit_price_ngn,total_ngn,status,payment_method,
-                 payment_account_number,payment_reference,payment_status,payment_expires_at,created_at`,
+       RETURNING id,variant_id,quantity_packages,unit_price_ngn,total_ngn,weave_unit_price_ngn,agent_unit_cost_ngn,
+                 agent_margin_ngn,status,payment_method,payment_bank_name,payment_account_number,payment_account_name,
+                 payment_reference,payment_status,payment_expires_at,created_at`,
       [
         agent.id,
         agent.referral_code,
@@ -288,12 +300,17 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
         quantity,
         unitPrice,
         total,
+        weaveRetailUnitPriceNgn,
+        agentUnitCostNgn,
+        agentMargin,
         customerName,
         customerPhone,
         deliveryLocation,
         customerNote || null,
-        WEAVE_OPAY_ACCOUNT_NUMBER,
-        weavePaymentReference,
+        paymentAccount.bank_name,
+        paymentAccount.account_number,
+        paymentAccount.account_name,
+        paymentReference,
         CARRIER_FOOD_PAYMENT_WINDOW_MINUTES,
       ]
     )
@@ -306,7 +323,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
       payment: orderResult.rows[0],
       product: product?.name || variantId,
       agentName: agent.name || agent.username || 'WEAVE Agent',
-      message: `Pay the exact amount to WEAVE OPay before sending the order. The reserved payment window is ${CARRIER_FOOD_PAYMENT_WINDOW_MINUTES} minutes.`,
+      message: `Pay the exact customer price to ${agent.name || agent.username || 'the Agent'} before sending the order. The reserved payment window is ${CARRIER_FOOD_PAYMENT_WINDOW_MINUTES} minutes.`,
     }, { status: 201 })
   } catch (error) {
     if (db) await db.query('ROLLBACK').catch(() => {})
