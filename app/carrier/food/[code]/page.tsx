@@ -23,6 +23,11 @@ export default async function CarrierFoodDoorPage({params}:{params:Promise<{code
   return <>
     <section className="bg-[#07100b] px-4 pt-5 text-white sm:px-8">
       <div className="mx-auto max-w-6xl">
+        <div className="mb-4 rounded-[1.2rem] border border-sky-300/20 bg-sky-300/[.05] px-4 py-3">
+          <p className="text-[9px] font-black uppercase tracking-[.22em] text-sky-300">CUSTOMER ORDER UNIT</p>
+          <p className="mt-1 text-sm font-black text-white">1 PACKAGE / BOWL OR MORE · NO CARTON MINIMUM</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">Carton rules apply only when an Agent buys company stock from WEAVE. Customers order individual Agility packs or Electrolyte bowls through the Agent, subject to available stock.</p>
+        </div>
         <p className="mb-3 text-[9px] font-black uppercase tracking-[.24em] text-slate-500">Customer food preview · see what you are ordering</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <figure className="overflow-hidden rounded-[1.4rem] border border-orange-300/20 bg-black/20">
