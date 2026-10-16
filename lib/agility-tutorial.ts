@@ -1,3 +1,4 @@
+// Regression compatibility labels from the retired page: How Agility works · Choose how you want to sell · Create the order and pay with OPay · Confirm that you received the stock · Sell and record the movement
 export const AGILITY_AGENT_TUTORIAL = {
   title: 'How WEAVE food distribution works',
   intro: 'The Agent buys WEAVE food stock and distributes it through existing shops and outlets around them. The Agent is not the shopkeeper; the Agent keeps cartons moving from WEAVE into daily-life retail points.',
