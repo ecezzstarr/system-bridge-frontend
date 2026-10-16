@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS agility_stock_orders (
   agent_id uuid NOT NULL REFERENCES users(id),
   variant_id varchar(80) NOT NULL,
   distribution_mode varchar(40) NOT NULL DEFAULT 'retailer',
-  box_count integer NOT NULL,
+  box_count numeric(6,1) NOT NULL,
   packages_per_box integer NOT NULL,
   package_count integer NOT NULL,
   unit_price_ngn numeric(14,2),
@@ -47,11 +47,26 @@ CREATE TABLE IF NOT EXISTS agility_stock_orders (
   created_at timestamptz NOT NULL DEFAULT NOW(),
   updated_at timestamptz NOT NULL DEFAULT NOW(),
   CHECK (distribution_mode IN ('wholesaler','retailer')),
-  CHECK (box_count > 0),
+  CHECK (box_count >= 0.5 AND box_count <= 50 AND box_count * 2 = trunc(box_count * 2)),
   CHECK (packages_per_box > 0),
   CHECK (package_count > 0),
   CHECK (total_ngn > 0)
 );
+
+ALTER TABLE agility_stock_orders
+  ALTER COLUMN box_count TYPE numeric(6,1) USING box_count::numeric;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'agility_stock_orders_carton_step_check'
+  ) THEN
+    ALTER TABLE agility_stock_orders
+      ADD CONSTRAINT agility_stock_orders_carton_step_check
+      CHECK (box_count >= 0.5 AND box_count <= 50 AND box_count * 2 = trunc(box_count * 2));
+  END IF;
+END
+$$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_agility_orders_opay_proof
   ON agility_stock_orders(opay_proof_hash)
