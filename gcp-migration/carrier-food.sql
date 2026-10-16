@@ -1,3 +1,22 @@
+CREATE TABLE IF NOT EXISTS carrier_food_agent_payment_accounts (
+  agent_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  bank_name varchar(120) NOT NULL,
+  account_number varchar(40) NOT NULL,
+  account_name varchar(180) NOT NULL,
+  payment_note varchar(300),
+  created_at timestamptz NOT NULL DEFAULT NOW(),
+  updated_at timestamptz NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS carrier_food_agent_prices (
+  agent_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  variant_id varchar(80) NOT NULL,
+  selling_unit_price_ngn numeric(14,2) NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (agent_id, variant_id),
+  CHECK (selling_unit_price_ngn > 0)
+);
+
 CREATE TABLE IF NOT EXISTS carrier_food_orders (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   agent_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -7,13 +26,18 @@ CREATE TABLE IF NOT EXISTS carrier_food_orders (
   quantity_packages integer NOT NULL,
   unit_price_ngn numeric(14,2) NOT NULL,
   total_ngn numeric(14,2) NOT NULL,
+  weave_unit_price_ngn numeric(14,2),
+  agent_unit_cost_ngn numeric(14,2),
+  agent_margin_ngn numeric(14,2),
   customer_name varchar(180) NOT NULL,
   customer_phone varchar(60) NOT NULL,
   delivery_location text NOT NULL,
   customer_note text,
   status varchar(40) NOT NULL DEFAULT 'awaiting_customer_payment',
-  payment_method varchar(40) NOT NULL DEFAULT 'OPay',
-  payment_account_number varchar(40) NOT NULL DEFAULT '8136003459',
+  payment_method varchar(40) NOT NULL DEFAULT 'bank_transfer',
+  payment_bank_name varchar(120),
+  payment_account_number varchar(40) NOT NULL,
+  payment_account_name varchar(180),
   payment_reference varchar(255),
   opay_transaction_reference varchar(255),
   payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment',
@@ -34,17 +58,24 @@ CREATE TABLE IF NOT EXISTS carrier_food_orders (
   CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'))
 );
 
-ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_method varchar(40) NOT NULL DEFAULT 'OPay';
-ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_account_number varchar(40) NOT NULL DEFAULT '8136003459';
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS weave_unit_price_ngn numeric(14,2);
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_unit_cost_ngn numeric(14,2);
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS agent_margin_ngn numeric(14,2);
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_method varchar(40) NOT NULL DEFAULT 'bank_transfer';
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_bank_name varchar(120);
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_account_number varchar(40) NOT NULL DEFAULT '';
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_account_name varchar(180);
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_reference varchar(255);
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS opay_transaction_reference varchar(255);
-ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_status varchar(40) NOT NULL DEFAULT 'paid';
+ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment';
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_expires_at timestamptz;
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_proof_submitted_at timestamptz;
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_by uuid REFERENCES users(id);
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz;
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_rejected_at timestamptz;
 ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_admin_note text;
+ALTER TABLE carrier_food_orders ALTER COLUMN payment_status SET DEFAULT 'awaiting_payment';
+ALTER TABLE carrier_food_orders ALTER COLUMN payment_method SET DEFAULT 'bank_transfer';
 
 ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_status_check;
 ALTER TABLE carrier_food_orders
@@ -54,6 +85,13 @@ ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_pa
 ALTER TABLE carrier_food_orders
   ADD CONSTRAINT carrier_food_orders_payment_status_check
   CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'));
+
+UPDATE carrier_food_orders
+SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW(),
+    payment_admin_note=COALESCE(payment_admin_note,'Cancelled: customer payments now go to the Agent receiving account.')
+WHERE status='awaiting_customer_payment'
+  AND payment_status='awaiting_payment'
+  AND payment_account_number='8136003459';
 
 CREATE INDEX IF NOT EXISTS carrier_food_orders_agent_idx ON carrier_food_orders(agent_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS carrier_food_orders_stock_idx ON carrier_food_orders(stock_order_id, status);
