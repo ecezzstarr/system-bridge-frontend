@@ -3,9 +3,21 @@ import { getWeavePublicOrigin } from '@/lib/weave-origin'
 import { ensureAgilitySchema } from '@/lib/agility'
 import { ensureAgentDistributionSchema } from '@/lib/agent-distribution'
 import { ensureUserReferralCode } from '@/lib/user-referral'
+import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 
-export const CARRIER_FOOD_ORDER_STATUSES = ['requested','fulfilled','cancelled'] as const
+export const CARRIER_FOOD_ORDER_STATUSES = [
+  'awaiting_customer_payment',
+  'awaiting_payment_verification',
+  'requested',
+  'fulfilled',
+  'cancelled',
+] as const
 export type CarrierFoodOrderStatus = (typeof CARRIER_FOOD_ORDER_STATUSES)[number]
+
+export const CARRIER_FOOD_PAYMENT_STATUSES = ['awaiting_payment','proof_submitted','paid','rejected'] as const
+export type CarrierFoodPaymentStatus = (typeof CARRIER_FOOD_PAYMENT_STATUSES)[number]
+
+export const CARRIER_FOOD_PAYMENT_WINDOW_MINUTES = 30
 
 let schemaPromise: Promise<void> | null = null
 
@@ -29,7 +41,18 @@ async function initializeCarrierFoodSchema() {
         customer_phone varchar(60) NOT NULL,
         delivery_location text NOT NULL,
         customer_note text,
-        status varchar(30) NOT NULL DEFAULT 'requested',
+        status varchar(40) NOT NULL DEFAULT 'awaiting_customer_payment',
+        payment_method varchar(40) NOT NULL DEFAULT 'OPay',
+        payment_account_number varchar(40) NOT NULL DEFAULT '${WEAVE_OPAY_ACCOUNT_NUMBER}',
+        payment_reference varchar(255),
+        opay_transaction_reference varchar(255),
+        payment_status varchar(40) NOT NULL DEFAULT 'awaiting_payment',
+        payment_expires_at timestamptz,
+        payment_proof_submitted_at timestamptz,
+        payment_verified_by uuid REFERENCES users(id),
+        payment_verified_at timestamptz,
+        payment_rejected_at timestamptz,
+        payment_admin_note text,
         fulfilled_at timestamptz,
         cancelled_at timestamptz,
         created_at timestamptz NOT NULL DEFAULT NOW(),
@@ -37,12 +60,33 @@ async function initializeCarrierFoodSchema() {
         CHECK (quantity_packages > 0),
         CHECK (unit_price_ngn > 0),
         CHECK (total_ngn > 0),
-        CHECK (status IN ('requested','fulfilled','cancelled'))
+        CHECK (status IN ('awaiting_customer_payment','awaiting_payment_verification','requested','fulfilled','cancelled')),
+        CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'))
       )
     `)
+
+    await client.query(`ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_method varchar(40) NOT NULL DEFAULT 'OPay'`)
+    await client.query(`ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_account_number varchar(40) NOT NULL DEFAULT '${WEAVE_OPAY_ACCOUNT_NUMBER}'`)
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_reference varchar(255)')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS opay_transaction_reference varchar(255)')
+    await client.query("ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_status varchar(40) NOT NULL DEFAULT 'paid'")
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_expires_at timestamptz')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_proof_submitted_at timestamptz')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_by uuid REFERENCES users(id)')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_rejected_at timestamptz')
+    await client.query('ALTER TABLE carrier_food_orders ADD COLUMN IF NOT EXISTS payment_admin_note text')
+
+    await client.query('ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_status_check')
+    await client.query("ALTER TABLE carrier_food_orders ADD CONSTRAINT carrier_food_orders_status_check CHECK (status IN ('awaiting_customer_payment','awaiting_payment_verification','requested','fulfilled','cancelled'))")
+    await client.query('ALTER TABLE carrier_food_orders DROP CONSTRAINT IF EXISTS carrier_food_orders_payment_status_check')
+    await client.query("ALTER TABLE carrier_food_orders ADD CONSTRAINT carrier_food_orders_payment_status_check CHECK (payment_status IN ('awaiting_payment','proof_submitted','paid','rejected'))")
+
     await client.query('CREATE INDEX IF NOT EXISTS carrier_food_orders_agent_idx ON carrier_food_orders(agent_id, created_at DESC)')
     await client.query('CREATE INDEX IF NOT EXISTS carrier_food_orders_stock_idx ON carrier_food_orders(stock_order_id, status)')
     await client.query('CREATE INDEX IF NOT EXISTS carrier_food_orders_ref_idx ON carrier_food_orders(referral_code, created_at DESC)')
+    await client.query('CREATE INDEX IF NOT EXISTS carrier_food_orders_payment_status_idx ON carrier_food_orders(payment_status, created_at DESC)')
+    await client.query('CREATE UNIQUE INDEX IF NOT EXISTS carrier_food_orders_payment_ref_uidx ON carrier_food_orders(payment_reference) WHERE payment_reference IS NOT NULL')
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS carrier_food_visitors (
@@ -75,6 +119,32 @@ export function ensureCarrierFoodSchema() {
     })
   }
   return schemaPromise
+}
+
+export async function expireCarrierFoodPaymentIntents(agentId?: string | null) {
+  await ensureCarrierFoodSchema()
+  const pool = getPool()
+  if (agentId) {
+    await pool.query(
+      `UPDATE carrier_food_orders
+       SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW()
+       WHERE agent_id=$1::uuid
+         AND status='awaiting_customer_payment'
+         AND payment_status='awaiting_payment'
+         AND payment_expires_at IS NOT NULL
+         AND payment_expires_at<NOW()`,
+      [agentId]
+    )
+    return
+  }
+  await pool.query(`
+    UPDATE carrier_food_orders
+    SET status='cancelled',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW()
+    WHERE status='awaiting_customer_payment'
+      AND payment_status='awaiting_payment'
+      AND payment_expires_at IS NOT NULL
+      AND payment_expires_at<NOW()
+  `)
 }
 
 export async function getAgentCarrierFoodIdentity(agentId: string) {
@@ -121,16 +191,21 @@ export function getCarrierFoodShareImageUrl(referralCode: string) {
   return `${getWeavePublicOrigin()}${getCarrierFoodPath(referralCode)}/opengraph-image`
 }
 
+export function getCarrierFoodBridgerInfoUrl(referralCode: string) {
+  return `${getWeavePublicOrigin()}${getCarrierFoodPath(referralCode)}/bridger`
+}
+
 export function getCarrierFoodBridgerJoinUrl(referralCode: string) {
   return `${getWeavePublicOrigin()}/register?role=bridger&ref=${encodeURIComponent(referralCode)}&source=carrier-food`
 }
 
 export function buildCarrierFoodShareText(input: { agentName: string; url: string }) {
-  return `WEAVE Food through ${input.agentName}\n\nAgility + Electrolyte are available through my Carrier Door. Open the link to order, or enter WEAVE as a Bridger attached to my Agent position.\n\n${input.url}`
+  return `WEAVE Food through ${input.agentName}\n\nAgility + Electrolyte are available through my Carrier Door. Open the link to order, or understand the Bridger position before entering WEAVE as a Bridger attached to my Agent position.\n\n${input.url}`
 }
 
 export async function getCarrierFoodAvailableStock(agentId: string) {
   await ensureCarrierFoodSchema()
+  await expireCarrierFoodPaymentIntents(agentId)
   const pool = getPool()
   const result = await pool.query(
     `SELECT
@@ -141,13 +216,29 @@ export async function getCarrierFoodAvailableStock(agentId: string) {
        s.retail_unit_price_ngn,
        COALESCE((SELECT SUM(a.quantity_packages) FROM agility_agent_sales a WHERE a.order_id=s.id),0)::int AS sold_packages,
        COALESCE((SELECT SUM(p.package_count) FROM agility_outlet_placements p WHERE p.order_id=s.id),0)::int AS outlet_packages,
-       COALESCE((SELECT SUM(c.quantity_packages) FROM carrier_food_orders c WHERE c.stock_order_id=s.id AND c.status='requested'),0)::int AS reserved_packages,
+       COALESCE((
+         SELECT SUM(c.quantity_packages)
+         FROM carrier_food_orders c
+         WHERE c.stock_order_id=s.id
+           AND (
+             c.status IN ('awaiting_payment_verification','requested')
+             OR (c.status='awaiting_customer_payment' AND c.payment_expires_at>NOW())
+           )
+       ),0)::int AS reserved_packages,
        GREATEST(
          0,
          s.package_count
          - COALESCE((SELECT SUM(a.quantity_packages) FROM agility_agent_sales a WHERE a.order_id=s.id),0)
          - COALESCE((SELECT SUM(p.package_count) FROM agility_outlet_placements p WHERE p.order_id=s.id),0)
-         - COALESCE((SELECT SUM(c.quantity_packages) FROM carrier_food_orders c WHERE c.stock_order_id=s.id AND c.status='requested'),0)
+         - COALESCE((
+             SELECT SUM(c.quantity_packages)
+             FROM carrier_food_orders c
+             WHERE c.stock_order_id=s.id
+               AND (
+                 c.status IN ('awaiting_payment_verification','requested')
+                 OR (c.status='awaiting_customer_payment' AND c.payment_expires_at>NOW())
+               )
+           ),0)
        )::int AS available_packages
      FROM agility_stock_orders s
      WHERE s.agent_id=$1::uuid
