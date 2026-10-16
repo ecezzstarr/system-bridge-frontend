@@ -110,9 +110,19 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
   const agility=data?.products.filter(product=>!product.id.startsWith('electrolyte'))||[]
   const electrolyte=data?.products.filter(product=>product.id.startsWith('electrolyte'))||[]
   const agentWhatsApp=whatsAppNumber(data?.agent?.whatsappNumber)
+  const maxCustomerQuantity=Math.max(1,Number(selected?.availablePackages||1))
+
+  const chooseProduct=(product:Product)=>{
+    setSelected(product)
+    setQuantity(current=>Math.max(1,Math.min(Number.isInteger(current)?current:1,Math.max(1,product.availablePackages))))
+  }
 
   const preparePayment=async()=>{
     if(!selected)return
+    if(!Number.isSafeInteger(quantity)||quantity<1||quantity>selected.availablePackages){
+      setError(`Choose from 1 to ${selected.availablePackages} available ${selected.id.startsWith('electrolyte')?'bowl':'package'}${selected.availablePackages===1?'':'s'}. Customer orders are by unit, not by carton.`)
+      return
+    }
     if(deliveryMode==='waybill'&&waybill<=0){
       setError('Get the waybill fee from the Agent and enter it before payment.')
       return
@@ -190,7 +200,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
         <div>
           <p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">WEAVE · Carrier Door</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-6xl">FOOD IN MOVEMENT</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">Buy Agility or Electrolyte through <strong className="text-white">{data?.agent.name}</strong>. Pay the Agent first; then the order moves. No WEAVE account is required to buy.</p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">Buy one or more Agility packages or Electrolyte bowls through <strong className="text-white">{data?.agent.name}</strong>. Customer orders are by package/bowl, not by carton. Pay the Agent first; then the order moves. No WEAVE account is required to buy.</p>
         </div>
         <Button onClick={()=>void share()} variant="outline" className="border-white/15 bg-white/[.03] text-white"><Share2 className="mr-2 h-4 w-4"/>SHARE</Button>
       </div>
@@ -201,10 +211,10 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
         <article className="overflow-hidden border border-orange-300/25 bg-gradient-to-br from-orange-500/20 via-[#1b1008] to-[#0b0907]">
           <div className="border-b border-orange-300/15 px-5 py-5"><p className="text-[9px] font-black uppercase tracking-[.24em] text-orange-300">WEAVE Food · Morning</p><h2 className="mt-1 text-4xl font-black text-orange-300">AGILITY</h2></div>
           <div className="grid gap-3 p-5 sm:grid-cols-2">
-            {agility.length?agility.map(product=><button key={product.id} disabled={Boolean(paymentIntent)} onClick={()=>setSelected(product)} className={`text-left border p-4 transition disabled:opacity-60 ${selected?.id===product.id?'border-orange-300 bg-orange-300/10':'border-white/10 bg-black/15 hover:border-orange-300/40'}`}>
+            {agility.length?agility.map(product=><button key={product.id} disabled={Boolean(paymentIntent)} onClick={()=>chooseProduct(product)} className={`text-left border p-4 transition disabled:opacity-60 ${selected?.id===product.id?'border-orange-300 bg-orange-300/10':'border-white/10 bg-black/15 hover:border-orange-300/40'}`}>
               <div className="flex items-center justify-between gap-3"><h3 className="font-black">{product.name}</h3><span className="text-sm font-black text-orange-300">{money(product.agentSellingUnitPriceNgn)}</span></div>
               <p className="mt-2 text-xs leading-5 text-slate-400">{[...product.foods,product.protein,product.fruit,product.drink].join(' · ')}</p>
-              <p className="mt-3 text-[9px] font-black uppercase tracking-wider text-slate-500">{product.availablePackages} packs available</p>
+              <p className="mt-3 text-[9px] font-black uppercase tracking-wider text-slate-500">{product.availablePackages} packages available · order from 1</p>
             </button>):<p className="text-sm text-slate-500">This Agent has no free Agility stock at this moment.</p>}
           </div>
         </article>
@@ -212,11 +222,11 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
         <article className="overflow-hidden border border-emerald-300/25 bg-gradient-to-br from-emerald-500/18 via-[#0b1a11] to-[#07100b]">
           <div className="border-b border-emerald-300/15 px-5 py-5"><p className="text-[9px] font-black uppercase tracking-[.24em] text-emerald-300">WEAVE Food · Fresh sliced</p><h2 className="mt-1 text-4xl font-black text-emerald-200">ELECTROLYTE</h2><p className="mt-2 text-sm text-emerald-100/70">Nourish · Replenish · Stay Strong.</p></div>
           <div className="grid gap-3 p-5 sm:grid-cols-2">
-            {electrolyte.length?electrolyte.map(product=><button key={product.id} disabled={Boolean(paymentIntent)} onClick={()=>setSelected(product)} className={`text-left border p-5 transition disabled:opacity-60 ${selected?.id===product.id?'border-emerald-300 bg-emerald-300/10':'border-white/10 bg-black/15 hover:border-emerald-300/40'}`}>
+            {electrolyte.length?electrolyte.map(product=><button key={product.id} disabled={Boolean(paymentIntent)} onClick={()=>chooseProduct(product)} className={`text-left border p-5 transition disabled:opacity-60 ${selected?.id===product.id?'border-emerald-300 bg-emerald-300/10':'border-white/10 bg-black/15 hover:border-emerald-300/40'}`}>
               <p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">{product.id==='electrolyte'?'Small Bowl':'Medium Bowl'}</p>
               <div className="mt-1 flex items-center justify-between gap-3"><h3 className="text-lg font-black">{product.name}</h3><span className="text-xl font-black text-emerald-300">{money(product.agentSellingUnitPriceNgn)}</span></div>
               <p className="mt-3 text-xs leading-5 text-slate-300">{[...product.foods,product.protein,product.fruit].join(' · ')}</p>
-              <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-wider text-emerald-200"><Package className="h-4 w-4"/>{product.availablePackages} bowls available</div>
+              <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-wider text-emerald-200"><Package className="h-4 w-4"/>{product.availablePackages} bowls available · order from 1</div>
             </button>):<p className="text-sm text-slate-500">This Agent has no free Electrolyte stock at this moment.</p>}
           </div>
         </article>
@@ -224,7 +234,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
 
       {selected&&<section className="mt-7 border-y border-white/10 bg-white/[.025] py-6 sm:border sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div><p className="text-[9px] font-black uppercase tracking-[.22em] text-sky-300">Order from {data?.agent.name}</p><h2 className="mt-1 text-2xl font-black">{selected.name}</h2><p className="mt-1 text-xs text-slate-500">{money(selected.agentSellingUnitPriceNgn)} each · up to 10 per Carrier order.</p></div>
+          <div><p className="text-[9px] font-black uppercase tracking-[.22em] text-sky-300">Order from {data?.agent.name}</p><h2 className="mt-1 text-2xl font-black">{selected.name}</h2><p className="mt-1 text-xs text-slate-500">{money(selected.agentSellingUnitPriceNgn)} each · choose 1 or more · {selected.availablePackages} currently available.</p></div>
           <div className="text-right"><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Total to Agent</p><p className="mt-1 text-2xl font-black text-white">{money(paymentIntent?.total_ngn??total)}</p></div>
         </div>
 
@@ -235,9 +245,10 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
             <Input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" className="border-white/10 bg-black/25 text-white"/>
             <Input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Phone / WhatsApp" className="border-white/10 bg-black/25 text-white"/>
             <Input value={location} onChange={e=>setLocation(e.target.value)} placeholder="Delivery / pickup / waybill destination" className="border-white/10 bg-black/25 text-white md:col-span-2"/>
-            <Input type="number" min={1} max={Math.min(10,selected.availablePackages)} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(10,Number(e.target.value)||1)))} placeholder="Quantity" className="border-white/10 bg-black/25 text-white"/>
+            <Input type="number" min={1} max={maxCustomerQuantity} step={1} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(maxCustomerQuantity,Math.trunc(Number(e.target.value)||1))))} placeholder="Packages / bowls" className="border-white/10 bg-black/25 text-white"/>
             <Input value={note} onChange={e=>setNote(e.target.value)} placeholder="Note · optional" className="border-white/10 bg-black/25 text-white"/>
           </div>
+          <p className="mt-2 text-[10px] font-bold uppercase tracking-[.12em] text-sky-300">Customer quantity: 1, 2, 3, 4… packages/bowls. Carton rules apply only when the Agent buys stock from WEAVE.</p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <button onClick={()=>{setDeliveryMode('local');setWaybillFee('')}} className={`border p-4 text-left ${deliveryMode==='local'?'border-sky-300 bg-sky-300/10':'border-white/10 bg-black/20'}`}><MapPin className="h-5 w-5 text-sky-300"/><p className="mt-2 font-black">NEAR / PICKUP</p><p className="mt-1 text-xs text-slate-500">No waybill fee is added by Carrier.</p></button>
