@@ -49,9 +49,9 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
         showCloseButton={false}
         className="max-h-[92vh] w-[calc(100%-1rem)] max-w-5xl overflow-y-auto border-orange-300/25 bg-[#100b07] p-0 text-white shadow-2xl shadow-orange-950/60"
       >
-        <DialogTitle className="sr-only">Agility Agent Opportunity</DialogTitle>
+        <DialogTitle className="sr-only">WEAVE Food Agent Opportunity</DialogTitle>
         <DialogDescription className="sr-only">
-          Buy Agility from Weave as a wholesaler or retailer and earn from each completed box.
+          Buy Agility or Electrolyte from Weave as a wholesaler or retailer and earn from each completed box.
         </DialogDescription>
 
         <div className="relative overflow-hidden rounded-lg">
@@ -60,7 +60,7 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
 
           <button
             type="button"
-            aria-label="Close Agility advertisement"
+            aria-label="Close WEAVE food advertisement"
             onClick={() => onOpenChange(false)}
             className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white backdrop-blur transition hover:bg-black/70"
           >
@@ -72,20 +72,21 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
               <div className="max-w-2xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-orange-300/25 bg-orange-300/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-orange-200">
                   <Sparkles className="h-3.5 w-3.5" />
-                  WEAVE · Agent Opportunity
+                  WEAVE · Agent Food Opportunity
                 </div>
-                <h2 className="mt-4 text-5xl font-black tracking-[-0.04em] text-orange-300 sm:text-7xl">
-                  AGILITY
+                <h2 className="mt-4 text-4xl font-black tracking-[-0.04em] text-orange-300 sm:text-6xl">
+                  AGILITY + ELECTROLYTE
                 </h2>
                 <p className="mt-1 text-lg font-black uppercase tracking-[0.16em] text-amber-100 sm:text-2xl">
-                  Intelligence in Action
+                  Food in movement
                 </p>
                 <p className="mt-4 max-w-xl text-base font-semibold leading-7 text-white sm:text-xl">
                   Buy from Weave. Sell fast. Earn from every completed box.
                 </p>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                  Morning food already organized into a product people can buy every day. Choose how you want to move it:
-                  complete boxes as a wholesaler, or individual packages as a retailer.
+                  Agility carries the complete morning-food package. Electrolyte is the fresh sliced meal: cucumber,
+                  coconut, avocado, carrot, sweet corn and greens with seasoned beef, fried fish and boiled egg.
+                  Choose complete boxes as a wholesaler or individual packages as a retailer.
                 </p>
               </div>
 
@@ -122,7 +123,7 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
                   `Buy 1 box from WEAVE: ${naira(AGILITY_AGENT_BOX_PRICE_NGN)}`,
                   `Sell 1 complete box: ${naira(AGILITY_RETAIL_BOX_VALUE_NGN)}`,
                   `Gross profit: ${naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)} per box`,
-                  'Sell complete boxes instead of breaking them into units',
+                  'Choose Agility or Electrolyte stock and sell complete boxes',
                 ].map((line) => (
                   <div key={line} className="flex items-start gap-2">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-300" />
@@ -151,7 +152,7 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
               <div className="mt-5 space-y-3 text-sm">
                 {[
                   `Buy 1 box from WEAVE: ${naira(AGILITY_AGENT_BOX_PRICE_NGN)}`,
-                  `${AGILITY_PACKAGES_PER_BOX} complete Agility packages per box`,
+                  `${AGILITY_PACKAGES_PER_BOX} complete WEAVE food packages per box`,
                   `Sell each package: ${naira(AGILITY_RETAIL_UNIT_PRICE_NGN)}`,
                   `Gross profit after all 10 sell: ${naira(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN)}`,
                 ].map((line) => (
@@ -165,7 +166,7 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
               <div className="mt-5 rounded-xl border border-emerald-300/15 bg-black/25 p-4">
                 <p className="text-xs text-slate-500">Retailer advantage</p>
                 <p className="mt-1 font-bold text-white">
-                  Daily customers can return to your store again and again. Build patronage while the product moves.
+                  Daily customers can return to your store again and again. Build patronage while the food moves.
                 </p>
               </div>
             </div>
@@ -193,7 +194,7 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
                   <Users className="h-3.5 w-3.5 text-orange-300" /> Affordable to consumers
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/25 px-3 py-2 text-slate-300">
-                  <PackageOpen className="h-3.5 w-3.5 text-orange-300" /> Morning food ready to move
+                  <PackageOpen className="h-3.5 w-3.5 text-orange-300" /> Food ready to move
                 </span>
               </div>
             </div>
@@ -203,10 +204,10 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xl font-black text-white sm:text-2xl">
-                  Agents, buy Agility from Weave and sell.
+                  Agents, Agility and Electrolyte are ready to sell.
                 </p>
                 <p className="mt-1 text-sm text-slate-400">
-                  Order through WEAVE using OPay. Choose wholesaler or retailer and move Agility your way.
+                  Order through WEAVE using OPay. Choose wholesaler or retailer and move the food through your Agent Store.
                 </p>
               </div>
               <Button
@@ -215,7 +216,7 @@ export function AgilityAgentLoginAd({ open, onOpenChange, onBuy }: Props) {
                 className="h-12 shrink-0 bg-orange-500 px-6 font-black text-black hover:bg-orange-400"
               >
                 <ShoppingBag className="mr-2 h-4 w-4" />
-                Buy Agility
+                Open Food Store
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
