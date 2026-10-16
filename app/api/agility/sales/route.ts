@@ -9,6 +9,7 @@ import {
   AGILITY_RETAIL_UNIT_PRICE_NGN,
   ensureAgilitySchema,
 } from '@/lib/agility'
+import { ensureAgentDistributionSchema } from '@/lib/agent-distribution'
 import type { PoolClient } from 'pg'
 
 export async function POST(request: NextRequest) {
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   await ensureAgilitySchema()
+  await ensureAgentDistributionSchema()
   let db: PoolClient | undefined
 
   try {
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest) {
       await db.query('ROLLBACK')
       return NextResponse.json({
         success: false,
-        error: 'Agility can be sold only after paid stock is delivered and received by the Agent',
+        error: 'WEAVE stock can be moved only after paid stock is delivered and received by the Agent',
       }, { status: 409 })
     }
 
@@ -54,11 +56,19 @@ export async function POST(request: NextRequest) {
        WHERE order_id=$1::uuid`,
       [orderId]
     )
+    const allocatedResult = await db.query(
+      `SELECT COALESCE(SUM(package_count),0)::int AS allocated
+       FROM agility_outlet_placements
+       WHERE order_id=$1::uuid`,
+      [orderId]
+    )
     const sold = Number(soldResult.rows[0]?.sold || 0)
-    const available = Number(order.package_count) - sold
+    const allocated = Number(allocatedResult.rows[0]?.allocated || 0)
+    const available = Math.max(0, Number(order.package_count) - sold - allocated)
     const isWholesaler = order.distribution_mode === 'wholesaler'
     const saleMode = isWholesaler ? 'wholesale_box' : 'retail_package'
-    const packageQuantity = isWholesaler ? quantity * AGILITY_PACKAGES_PER_BOX : quantity
+    const packagesPerBox = Number(order.packages_per_box || AGILITY_PACKAGES_PER_BOX)
+    const packageQuantity = isWholesaler ? quantity * packagesPerBox : quantity
     const boxQuantity = isWholesaler ? quantity : 0
 
     if (packageQuantity > available) {
@@ -66,8 +76,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: isWholesaler
-          ? `Only ${Math.floor(available / AGILITY_PACKAGES_PER_BOX)} complete Agility box${Math.floor(available / AGILITY_PACKAGES_PER_BOX) === 1 ? '' : 'es'} remain in this order`
-          : `Only ${available} Agility package${available === 1 ? '' : 's'} remain in this order`,
+          ? `Only ${Math.floor(available / packagesPerBox)} complete carton${Math.floor(available / packagesPerBox) === 1 ? '' : 's'} remain unassigned. Stock already placed with an outlet cannot be sold again.`
+          : `Only ${available} package${available === 1 ? '' : 's'} remain unassigned. Stock already placed with an outlet cannot be sold again.`,
       }, { status: 409 })
     }
 
@@ -134,6 +144,7 @@ export async function POST(request: NextRequest) {
       },
       inventory: {
         packageCount: Number(order.package_count),
+        allocatedPackages: allocated,
         soldPackages: sold + packageQuantity,
         availablePackages: available - packageQuantity,
       },
@@ -141,7 +152,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[agility/sales] failed', error)
     if (db) await db.query('ROLLBACK').catch(() => {})
-    return NextResponse.json({ success: false, error: 'Unable to record Agility sale' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to record WEAVE stock movement' }, { status: 500 })
   } finally {
     db?.release()
   }
