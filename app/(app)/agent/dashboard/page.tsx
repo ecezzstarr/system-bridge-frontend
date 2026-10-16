@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Share2, Truck } from 'lucide-react'
+import { PackagePlus, Share2, Truck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { AgilityAgentLoginAd, AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
@@ -36,9 +36,12 @@ export default function AgentWorld() {
       onOpenChange={open=>{setShowLoop1Ad(open);if(!open&&agilityQueued){setAgilityQueued(false);setShowAgilityAd(true)}}}
       onOpenContinuance={()=>{setShowLoop1Ad(false);router.push('/agent/commissions')}}
     />
-    <AgilityAgentLoginAd open={showAgilityAd} onOpenChange={setShowAgilityAd} onBuy={()=>{setShowAgilityAd(false);router.push('/agent/distribution')}} />
+    <AgilityAgentLoginAd open={showAgilityAd} onOpenChange={setShowAgilityAd} onBuy={()=>{setShowAgilityAd(false);router.push('/agent/food-order')}} />
     <WeaveDashboardWorld role="agent" userName={user.name} />
     <ManagerLifestyleEntry />
+    <Link href="/agent/food-order" data-core-function="agent-food-stock" className="fixed bottom-56 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-orange-300/25 bg-[#1c1008]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-orange-100 shadow-2xl backdrop-blur md:right-7">
+      <PackagePlus className="h-4 w-4"/>WEAVE Food · Order Stock
+    </Link>
     <Link href="/agent/distribution" data-core-function="agent-distribution" className="fixed bottom-40 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-[#07141a]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-2xl backdrop-blur md:right-7">
       <Truck className="h-4 w-4"/>Distribution Route · Supply Outlets
     </Link>
