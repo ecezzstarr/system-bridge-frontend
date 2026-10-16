@@ -27,6 +27,8 @@ type DoorData = {
   movement:string
 }
 
+type NativeShare = (data:{title?:string;text?:string;url?:string})=>Promise<void>
+
 const money=(value:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(value)
 
 function visitorKey(){
@@ -90,9 +92,10 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
   const share=async()=>{
     const url=window.location.href
     const text=`WEAVE Food · Agility + Electrolyte\nOrder through ${data?.agent?.name||'this Agent'}'s Carrier Door.`
-    void fetch(`/api/carrier/food/${encodeURIComponent(referralCode)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'share',channel:navigator.share?'native':'copy'})}).catch(()=>{})
-    if(navigator.share){
-      try{await navigator.share({title:'WEAVE Food Carrier',text,url});return}catch{}
+    const nativeShare=(navigator as Navigator & {share?:NativeShare}).share
+    void fetch(`/api/carrier/food/${encodeURIComponent(referralCode)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'share',channel:nativeShare?'native':'copy'})}).catch(()=>{})
+    if(nativeShare){
+      try{await nativeShare.call(navigator,{title:'WEAVE Food Carrier',text,url});return}catch{}
     }
     await navigator.clipboard.writeText(url)
   }
