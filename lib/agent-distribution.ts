@@ -1,6 +1,8 @@
 import { sql } from '@/lib/db'
 
-export async function ensureAgentDistributionSchema() {
+let distributionSchemaPromise: Promise<void> | null = null
+
+async function initializeAgentDistributionSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS agent_distribution_outlets (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -24,7 +26,7 @@ export async function ensureAgentDistributionSchema() {
       outlet_id uuid NOT NULL REFERENCES agent_distribution_outlets(id),
       order_id uuid NOT NULL REFERENCES agility_stock_orders(id),
       variant_id varchar(80) NOT NULL,
-      carton_count integer NOT NULL,
+      carton_count numeric(6,1) NOT NULL,
       package_count integer NOT NULL,
       supply_mode varchar(40) NOT NULL,
       agreed_amount_ngn numeric(14,2) NOT NULL,
@@ -36,7 +38,7 @@ export async function ensureAgentDistributionSchema() {
       settled_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW(),
-      CHECK (carton_count > 0),
+      CHECK (carton_count >= 0.5 AND carton_count <= 50 AND carton_count * 2 = trunc(carton_count * 2)),
       CHECK (package_count > 0),
       CHECK (agreed_amount_ngn > 0),
       CHECK (packages_reported_sold >= 0),
@@ -44,6 +46,20 @@ export async function ensureAgentDistributionSchema() {
       CHECK (supply_mode IN ('paid_now','pay_after_sale')),
       CHECK (status IN ('with_outlet','sold_out_awaiting_settlement','settled'))
     )
+  `
+  await sql`ALTER TABLE agility_outlet_placements ALTER COLUMN carton_count TYPE numeric(6,1) USING carton_count::numeric`
+  await sql`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'agility_outlet_placements_carton_step_check'
+      ) THEN
+        ALTER TABLE agility_outlet_placements
+          ADD CONSTRAINT agility_outlet_placements_carton_step_check
+          CHECK (carton_count >= 0.5 AND carton_count <= 50 AND carton_count * 2 = trunc(carton_count * 2));
+      END IF;
+    END
+    $$
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_outlet_placements_agent ON agility_outlet_placements(agent_id, supplied_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_outlet_placements_outlet ON agility_outlet_placements(outlet_id, supplied_at DESC)`
@@ -63,4 +79,14 @@ export async function ensureAgentDistributionSchema() {
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_outlet_collections_agent ON agility_outlet_collections(agent_id, collected_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_agility_outlet_collections_placement ON agility_outlet_collections(placement_id, collected_at DESC)`
+}
+
+export function ensureAgentDistributionSchema() {
+  if (!distributionSchemaPromise) {
+    distributionSchemaPromise = initializeAgentDistributionSchema().catch(error => {
+      distributionSchemaPromise = null
+      throw error
+    })
+  }
+  return distributionSchemaPromise
 }
