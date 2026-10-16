@@ -60,7 +60,7 @@ export default function AgentDistributionPage(){
 
   const load=async()=>{
     if(!token||!isAgent)return
-    setWorking('load')
+    setWorking(current=>current||'load')
     try{
       const [distributionResponse,ordersResponse]=await Promise.all([
         fetch('/api/agent/distribution',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),
@@ -76,7 +76,7 @@ export default function AgentDistributionPage(){
         setMessage(String(orderData.error))
       }
     }catch(error){setMessage(error instanceof Error?error.message:'Unable to load Agent distribution')}
-    finally{setWorking(null)}
+    finally{setWorking(current=>current==='load'?null:current)}
   }
   useEffect(()=>{void load()},[token,isAgent])
 
