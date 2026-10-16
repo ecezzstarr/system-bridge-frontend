@@ -4,12 +4,59 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool, sql } from '@/lib/db'
 import { ensureAgilitySchema } from '@/lib/agility'
 import { ensureAgentDistributionSchema } from '@/lib/agent-distribution'
-import { ensureCarrierFoodSchema } from '@/lib/carrier-food'
+import { formatWeaveFoodCartonQuantity, isValidWeaveFoodCartonQuantity } from '@/lib/weave-food-economics'
 
-async function prepare() {
+async function prepareDistribution() {
   await ensureAgilitySchema()
   await ensureAgentDistributionSchema()
-  await ensureCarrierFoodSchema()
+}
+
+function isMissingCarrierSchema(error: unknown) {
+  const code = String((error as { code?: string } | null)?.code || '')
+  return code === '42P01' || code === '42703'
+}
+
+async function carrierReservationsForAgent(agentId: string) {
+  try {
+    const relation = await getPool().query(`SELECT to_regclass('public.carrier_food_orders') AS relation`)
+    if (!relation.rows[0]?.relation) return new Map<string, number>()
+    const result = await getPool().query(
+      `SELECT stock_order_id,COALESCE(SUM(quantity_packages),0)::int AS reserved
+       FROM carrier_food_orders
+       WHERE agent_id=$1::uuid
+         AND (
+           status IN ('awaiting_payment_verification','requested')
+           OR (status='awaiting_customer_payment' AND payment_expires_at>NOW())
+         )
+       GROUP BY stock_order_id`,
+      [agentId]
+    )
+    return new Map(result.rows.map(row => [String(row.stock_order_id), Number(row.reserved || 0)]))
+  } catch (error) {
+    if (isMissingCarrierSchema(error)) return new Map<string, number>()
+    throw error
+  }
+}
+
+async function carrierReservedForOrder(db: PoolClient, orderId: string) {
+  try {
+    const relation = await db.query(`SELECT to_regclass('public.carrier_food_orders') AS relation`)
+    if (!relation.rows[0]?.relation) return 0
+    const result = await db.query(
+      `SELECT COALESCE(SUM(quantity_packages),0)::int AS reserved
+       FROM carrier_food_orders
+       WHERE stock_order_id=$1::uuid
+         AND (
+           status IN ('awaiting_payment_verification','requested')
+           OR (status='awaiting_customer_payment' AND payment_expires_at>NOW())
+         )`,
+      [orderId]
+    )
+    return Number(result.rows[0]?.reserved || 0)
+  } catch (error) {
+    if (isMissingCarrierSchema(error)) return 0
+    throw error
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -19,88 +66,75 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await prepare()
+    await prepareDistribution()
 
-    const outlets = await sql`
-      SELECT *
-      FROM agent_distribution_outlets
-      WHERE agent_id=${user.id}::uuid AND active=true
-      ORDER BY created_at DESC
-    `
+    const [outlets, placements, stockBase, summaryRows, carrierReservations] = await Promise.all([
+      sql`
+        SELECT *
+        FROM agent_distribution_outlets
+        WHERE agent_id=${user.id}::uuid AND active=true
+        ORDER BY created_at DESC
+      `,
+      sql`
+        SELECT
+          p.*,
+          o.name AS outlet_name,
+          o.address AS outlet_address,
+          o.phone AS outlet_phone,
+          s.packages_per_box,
+          s.agent_unit_cost_ngn,
+          s.retail_unit_price_ngn,
+          (p.agreed_amount_ngn - p.amount_collected_ngn)::numeric AS outstanding_ngn,
+          (p.package_count * s.agent_unit_cost_ngn)::numeric AS agent_cost_basis_ngn,
+          (p.agreed_amount_ngn - (p.package_count * s.agent_unit_cost_ngn))::numeric AS expected_agent_margin_ngn,
+          ((p.package_count * s.retail_unit_price_ngn) - p.agreed_amount_ngn)::numeric AS outlet_margin_at_weave_retail_ngn
+        FROM agility_outlet_placements p
+        JOIN agent_distribution_outlets o ON o.id=p.outlet_id
+        JOIN agility_stock_orders s ON s.id=p.order_id
+        WHERE p.agent_id=${user.id}::uuid
+        ORDER BY p.supplied_at DESC
+        LIMIT 200
+      `,
+      sql`
+        SELECT
+          s.*,
+          COALESCE((SELECT SUM(a.quantity_packages) FROM agility_agent_sales a WHERE a.order_id=s.id),0)::int AS direct_sold_packages,
+          COALESCE((SELECT SUM(p.package_count) FROM agility_outlet_placements p WHERE p.order_id=s.id),0)::int AS allocated_packages
+        FROM agility_stock_orders s
+        WHERE s.agent_id=${user.id}::uuid
+          AND s.payment_status='paid'
+          AND s.fulfillment_status='received'
+        ORDER BY s.received_at DESC NULLS LAST, s.created_at DESC
+      `,
+      sql`
+        SELECT
+          COALESCE((SELECT SUM(package_count - packages_reported_sold) FROM agility_outlet_placements WHERE agent_id=${user.id}::uuid AND supply_mode='pay_after_sale' AND status<>'settled'),0)::int AS packages_still_with_outlets,
+          COALESCE((SELECT SUM(agreed_amount_ngn - amount_collected_ngn) FROM agility_outlet_placements WHERE agent_id=${user.id}::uuid AND supply_mode='pay_after_sale' AND status<>'settled'),0)::numeric AS outstanding_ngn,
+          COALESCE((SELECT SUM(amount_ngn) FROM agility_outlet_collections WHERE agent_id=${user.id}::uuid AND (collected_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date),0)::numeric AS collected_today_ngn,
+          COALESCE((SELECT COUNT(*) FROM agent_distribution_outlets WHERE agent_id=${user.id}::uuid AND active=true),0)::int AS outlet_count
+      `,
+      carrierReservationsForAgent(String(user.id)),
+    ])
 
-    const placements = await sql`
-      SELECT
-        p.*,
-        o.name AS outlet_name,
-        o.address AS outlet_address,
-        o.phone AS outlet_phone,
-        s.packages_per_box,
-        s.agent_unit_cost_ngn,
-        s.retail_unit_price_ngn,
-        (p.agreed_amount_ngn - p.amount_collected_ngn)::numeric AS outstanding_ngn,
-        (p.package_count * s.agent_unit_cost_ngn)::numeric AS agent_cost_basis_ngn,
-        (p.agreed_amount_ngn - (p.package_count * s.agent_unit_cost_ngn))::numeric AS expected_agent_margin_ngn,
-        ((p.package_count * s.retail_unit_price_ngn) - p.agreed_amount_ngn)::numeric AS outlet_margin_at_weave_retail_ngn
-      FROM agility_outlet_placements p
-      JOIN agent_distribution_outlets o ON o.id=p.outlet_id
-      JOIN agility_stock_orders s ON s.id=p.order_id
-      WHERE p.agent_id=${user.id}::uuid
-      ORDER BY p.supplied_at DESC
-      LIMIT 200
-    `
+    const stock = stockBase.map(row => {
+      const carrierReserved = Number(carrierReservations.get(String(row.id)) || 0)
+      const available = Math.max(
+        0,
+        Number(row.package_count || 0)
+          - Number(row.direct_sold_packages || 0)
+          - Number(row.allocated_packages || 0)
+          - carrierReserved
+      )
+      return {
+        ...row,
+        carrier_reserved_packages: carrierReserved,
+        available_packages: available,
+      }
+    })
 
-    const stock = await sql`
-      SELECT
-        s.*,
-        COALESCE((SELECT SUM(a.quantity_packages) FROM agility_agent_sales a WHERE a.order_id=s.id),0)::int AS direct_sold_packages,
-        COALESCE((SELECT SUM(p.package_count) FROM agility_outlet_placements p WHERE p.order_id=s.id),0)::int AS allocated_packages,
-        COALESCE((
-          SELECT SUM(c.quantity_packages)
-          FROM carrier_food_orders c
-          WHERE c.stock_order_id=s.id
-            AND (
-              c.status IN ('awaiting_payment_verification','requested')
-              OR (c.status='awaiting_customer_payment' AND c.payment_expires_at>NOW())
-            )
-        ),0)::int AS carrier_reserved_packages,
-        GREATEST(
-          0,
-          s.package_count
-          - COALESCE((SELECT SUM(a.quantity_packages) FROM agility_agent_sales a WHERE a.order_id=s.id),0)
-          - COALESCE((SELECT SUM(p.package_count) FROM agility_outlet_placements p WHERE p.order_id=s.id),0)
-          - COALESCE((
-              SELECT SUM(c.quantity_packages)
-              FROM carrier_food_orders c
-              WHERE c.stock_order_id=s.id
-                AND (
-                  c.status IN ('awaiting_payment_verification','requested')
-                  OR (c.status='awaiting_customer_payment' AND c.payment_expires_at>NOW())
-                )
-            ),0)
-        )::int AS available_packages
-      FROM agility_stock_orders s
-      WHERE s.agent_id=${user.id}::uuid
-        AND s.payment_status='paid'
-        AND s.fulfillment_status='received'
-      ORDER BY s.received_at DESC NULLS LAST, s.created_at DESC
-    `
-
-    const [summary] = await sql`
-      SELECT
-        COALESCE((SELECT SUM(package_count - packages_reported_sold) FROM agility_outlet_placements WHERE agent_id=${user.id}::uuid AND supply_mode='pay_after_sale' AND status<>'settled'),0)::int AS packages_still_with_outlets,
-        COALESCE((SELECT SUM(agreed_amount_ngn - amount_collected_ngn) FROM agility_outlet_placements WHERE agent_id=${user.id}::uuid AND supply_mode='pay_after_sale' AND status<>'settled'),0)::numeric AS outstanding_ngn,
-        COALESCE((SELECT SUM(amount_ngn) FROM agility_outlet_collections WHERE agent_id=${user.id}::uuid AND (collected_at AT TIME ZONE 'Africa/Lagos')::date=(NOW() AT TIME ZONE 'Africa/Lagos')::date),0)::numeric AS collected_today_ngn,
-        COALESCE((SELECT COUNT(*) FROM agent_distribution_outlets WHERE agent_id=${user.id}::uuid AND active=true),0)::int AS outlet_count,
-        COALESCE((
-          SELECT SUM(quantity_packages)
-          FROM carrier_food_orders
-          WHERE agent_id=${user.id}::uuid
-            AND (
-              status IN ('awaiting_payment_verification','requested')
-              OR (status='awaiting_customer_payment' AND payment_expires_at>NOW())
-            )
-        ),0)::int AS carrier_reserved_packages
-    `
+    const summaryBase = summaryRows[0] || {}
+    const carrierReservedPackages = Array.from(carrierReservations.values()).reduce((sum, value) => sum + Number(value || 0), 0)
+    const summary = { ...summaryBase, carrier_reserved_packages: carrierReservedPackages }
 
     return NextResponse.json({ success: true, outlets, placements, stock, summary })
   } catch (error) {
@@ -115,9 +149,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Agent account required' }, { status: 403 })
   }
 
-  const body = await request.json()
+  const body = await request.json().catch(() => ({}))
   const action = String(body.action || '').trim()
-  await prepare()
+
+  try {
+    await prepareDistribution()
+  } catch (error) {
+    console.error('[agent/distribution] schema preparation failed', error)
+    return NextResponse.json({ success: false, error: 'Agent distribution is temporarily unavailable while company stock tables are being prepared' }, { status: 503 })
+  }
 
   if (action === 'create_outlet') {
     const name = String(body.name || '').trim().slice(0, 180)
@@ -146,8 +186,8 @@ export async function POST(request: NextRequest) {
     const agreedAmountNgn = Number(body.agreedAmountNgn)
     const note = String(body.note || '').trim().slice(0, 500)
 
-    if (!outletId || !orderId || !Number.isInteger(cartonCount) || cartonCount < 1 || cartonCount > 50) {
-      return NextResponse.json({ success: false, error: 'Choose an outlet, stock order and valid carton quantity' }, { status: 400 })
+    if (!outletId || !orderId || !isValidWeaveFoodCartonQuantity(cartonCount)) {
+      return NextResponse.json({ success: false, error: 'Choose an outlet and supply ½ carton or more in ½-carton steps' }, { status: 400 })
     }
     if (!['paid_now','pay_after_sale'].includes(supplyMode)) {
       return NextResponse.json({ success: false, error: 'Choose Paid now or Pay after sale' }, { status: 400 })
@@ -182,34 +222,36 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Only paid, received WEAVE stock can be supplied to an outlet' }, { status: 409 })
       }
 
-      const soldResult = await db.query(
-        `SELECT COALESCE(SUM(quantity_packages),0)::int AS sold FROM agility_agent_sales WHERE order_id=$1::uuid`,
-        [orderId]
-      )
-      const allocatedResult = await db.query(
-        `SELECT COALESCE(SUM(package_count),0)::int AS allocated FROM agility_outlet_placements WHERE order_id=$1::uuid`,
-        [orderId]
-      )
-      const reservedResult = await db.query(
-        `SELECT COALESCE(SUM(quantity_packages),0)::int AS reserved
-         FROM carrier_food_orders
-         WHERE stock_order_id=$1::uuid
-           AND (
-             status IN ('awaiting_payment_verification','requested')
-             OR (status='awaiting_customer_payment' AND payment_expires_at>NOW())
-           )`,
-        [orderId]
-      )
-      const packageCount = cartonCount * Number(order.packages_per_box)
+      const [soldResult, allocatedResult, carrierReserved] = await Promise.all([
+        db.query(
+          `SELECT COALESCE(SUM(quantity_packages),0)::int AS sold FROM agility_agent_sales WHERE order_id=$1::uuid`,
+          [orderId]
+        ),
+        db.query(
+          `SELECT COALESCE(SUM(package_count),0)::int AS allocated FROM agility_outlet_placements WHERE order_id=$1::uuid`,
+          [orderId]
+        ),
+        carrierReservedForOrder(db, orderId),
+      ])
+
+      const packagesPerBox = Number(order.packages_per_box || 0)
+      const packageCount = cartonCount * packagesPerBox
+      if (!Number.isInteger(packageCount) || packageCount < 1) {
+        await db.query('ROLLBACK')
+        return NextResponse.json({ success: false, error: 'This carton quantity does not form a whole number of packages' }, { status: 400 })
+      }
+
       const available = Number(order.package_count)
         - Number(soldResult.rows[0]?.sold || 0)
         - Number(allocatedResult.rows[0]?.allocated || 0)
-        - Number(reservedResult.rows[0]?.reserved || 0)
+        - Number(carrierReserved || 0)
+
       if (packageCount > available) {
         await db.query('ROLLBACK')
+        const freeHalfStep = Math.floor((Math.max(0, available) / Math.max(1, packagesPerBox)) * 2) / 2
         return NextResponse.json({
           success: false,
-          error: `Only ${Math.floor(Math.max(0, available) / Number(order.packages_per_box))} complete carton${Math.floor(Math.max(0, available) / Number(order.packages_per_box)) === 1 ? '' : 's'} remain free. Active Carrier payment/orders are already reserved and cannot be placed with an outlet.`,
+          error: `${formatWeaveFoodCartonQuantity(freeHalfStep)} remains free for outlet supply. Carrier reservations and earlier outlet placements cannot be supplied again.`,
         }, { status: 409 })
       }
 
