@@ -61,11 +61,18 @@ assert.ok(publicApi.includes('foodSubtotalNgn + waybillFeeNgn'),'customer total 
 assert.ok(publicApi.includes('getCarrierFoodAgentPaymentAccount'),'public checkout reads the Agent receiving account')
 assert.ok(publicApi.includes("VALUES ($1::uuid,'carrier_customer_payment'")&&publicApi.includes("'/weave/carrier/food'"),'customer payment submission notifies the Agent')
 assert.ok(!publicApi.includes("'/admin/carrier-food-payments'"),'customer payment no longer routes to Administration')
+assert.ok(publicApi.includes('Number.isSafeInteger(quantity)')&&publicApi.includes('quantity < 1'),'customer Carrier API accepts whole-unit orders beginning at one package/bowl')
+assert.ok(!publicApi.includes('quantity > 10'),'customer Carrier API no longer imposes the old ten-unit/carton-size ceiling')
+assert.ok(publicApi.includes('Customers order by package or bowl. Choose 1 or more whole units.'),'customer API states unit ordering separately from Agent carton ordering')
 
 assert.ok(publicDoor.includes('Small Bowl')&&publicDoor.includes('Medium Bowl'),'public Carrier visibly separates the two Electrolyte bowl sizes')
 assert.ok(publicDoor.includes('FAR LOCATION · WAYBILL')&&publicDoor.includes('GET WAYBILL FEE FROM AGENT'),'far customer is explicitly routed through a waybill quote')
 assert.ok(publicDoor.includes('PAY THE AGENT')&&publicDoor.includes('I PAID THE AGENT — SEND ORDER'),'public UI makes customer→Agent payment explicit')
 assert.ok(publicDoor.includes('not to WEAVE'),'public UI prevents customer payment to the company account')
+assert.ok(publicDoor.includes('maxCustomerQuantity')&&publicDoor.includes('max={maxCustomerQuantity}'),'customer quantity is limited by Agent available stock, not a carton-size ceiling')
+assert.ok(publicDoor.includes('Customer quantity: 1, 2, 3, 4… packages/bowls'),'Carrier tells customers they can buy one or more individual packages/bowls')
+assert.ok(publicDoor.includes('Carton rules apply only when the Agent buys stock from WEAVE.'),'Carrier clearly separates customer unit ordering from Agent stock cartons')
+assert.ok(!publicDoor.includes('up to 10 per Carrier order'),'old ten-unit customer ceiling is removed from the Carrier UI')
 
 assert.ok(fs.existsSync(path.join(root,'public/weave-food/agility-preview.svg')),'Agility customer preview asset exists')
 assert.ok(fs.existsSync(path.join(root,'public/weave-food/electrolyte-preview.svg')),'Electrolyte customer preview asset exists')
@@ -87,4 +94,4 @@ assert.ok(registerApi.includes('assigned_agent_id'),'Agent-referred Bridger regi
 assert.ok(directSalesApi.includes("status IN ('awaiting_payment_verification','requested')")&&directSalesApi.includes("status='awaiting_customer_payment' AND payment_expires_at>NOW()"),'direct sales protect active Carrier payment reservations')
 assert.ok(distributionApi.includes("status IN ('awaiting_payment_verification','requested')")&&distributionApi.includes("status='awaiting_customer_payment' AND payment_expires_at>NOW()"),'outlet placement protects active Carrier payment reservations')
 
-console.log('WEAVE Food ordering, customer previews, carton-only stock, customer→Agent payment, waybill, stock protection and Bridger explanation regression checks passed')
+console.log('WEAVE Food ordering, customer unit quantities, customer previews, carton-only Agent stock, customer→Agent payment, waybill, stock protection and Bridger explanation regression checks passed')
