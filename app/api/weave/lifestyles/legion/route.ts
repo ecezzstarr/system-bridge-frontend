@@ -17,7 +17,7 @@ export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return NextResponse.json({success:false,error:'Unauthorized'},{status:401})
   const baseRole=String(user.baseRole||user.role||'').toLowerCase()
-  if(!['agent','bridger'].includes(baseRole))return NextResponse.json({success:false,error:'Legion Lifestyle is available to subscribed Agents and Bridgers.'},{status:403})
+  if(!['agent','bridger'].includes(baseRole))return NextResponse.json({success:false,error:'Legion Lifestyle is available to Agents and subscribed Bridgers.'},{status:403})
 
   await ensureLegionEmploymentSchema(sql)
   const access=await getLifestyleAccess(user.id)
@@ -67,7 +67,12 @@ export async function POST(request:NextRequest){
 
   await ensureLegionEmploymentSchema(sql)
   const access=await getLifestyleAccess(user.id)
-  if(!access.active)return NextResponse.json({success:false,error:'An active Agent or Bridger subscription is required before applying to become a Legion.'},{status:403})
+  if(!access.active){
+    const error=baseRole==='agent'
+      ? 'An active Agent account is required before applying to become a Legion.'
+      : 'Active Bridger Continuance is required before applying to become a Legion.'
+    return NextResponse.json({success:false,error},{status:403})
+  }
   const current=await getActiveLegionEmployment(sql,user.id)
   if(current.active)return NextResponse.json({success:false,error:'You are already an active Legion and can only work for your Client inside Weave.'},{status:409})
 
