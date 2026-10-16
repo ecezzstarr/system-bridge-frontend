@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AGILITY_PACKAGES_PER_BOX, AGILITY_VARIANTS, type AgilityVariant } from '@/lib/agility-catalog'
@@ -44,16 +45,22 @@ export default function AgentDistributionPage(){
   const [placementForm,setPlacementForm]=useState<Record<string,PlacementForm>>({})
   const [soldReport,setSoldReport]=useState<Record<string,string>>({})
   const [collection,setCollection]=useState<Record<string,string>>({})
+  const [orderFeedback,setOrderFeedback]=useState<{productId:string;text:string}|null>(null)
+  const addressInput=useRef<HTMLInputElement>(null)
+  const phoneInput=useRef<HTMLInputElement>(null)
+  const orderInFlight=useRef(false)
 
   useEffect(()=>{
     if(typeof window==='undefined')return
-    setReceivingAddress(localStorage.getItem('weave:agent-receiving-address')||'')
-    setReceivingPhone(localStorage.getItem('weave:agent-receiving-phone')||'')
+    try{
+      setReceivingAddress(localStorage.getItem('weave:agent-receiving-address')||'')
+      setReceivingPhone(localStorage.getItem('weave:agent-receiving-phone')||'')
+    }catch{/* Delivery details can be entered without browser storage. */}
   },[])
 
   const load=async()=>{
     if(!token||!isAgent)return
-    setWorking('load')
+    setWorking(current=>current||'load')
     try{
       const [distributionResponse,ordersResponse]=await Promise.all([
         fetch('/api/agent/distribution',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),
@@ -69,29 +76,41 @@ export default function AgentDistributionPage(){
         setMessage(String(orderData.error))
       }
     }catch(error){setMessage(error instanceof Error?error.message:'Unable to load Agent distribution')}
-    finally{setWorking(null)}
+    finally{setWorking(current=>current==='load'?null:current)}
   }
   useEffect(()=>{void load()},[token,isAgent])
 
   const buyFromWeave=async(product:AgilityVariant)=>{
-    if(!token)return
+    if(orderInFlight.current)return
+    const feedback=(text:string)=>{setOrderFeedback({productId:product.id,text});setMessage(text)}
+    if(!token){feedback('Your session is unavailable. Sign in again to order food.');return}
     const boxCount=Number(cartons[product.id]??5)
     if(!isValidWeaveFoodCartonQuantity(boxCount)){
-      setMessage('Agents order WEAVE food only by half carton or full-carton steps: ½, 1, 1½, 2 cartons and upward. Individual pieces cannot be ordered from WEAVE.')
+      feedback('Agents order WEAVE food only by half carton or full-carton steps: ½, 1, 1½, 2 cartons and upward. Individual pieces cannot be ordered from WEAVE.')
       return
     }
-    if(receivingAddress.trim().length<5||receivingPhone.replace(/\D/g,'').length<7){setMessage('Enter where WEAVE should deliver the cartons and your receiving phone number.');return}
-    localStorage.setItem('weave:agent-receiving-address',receivingAddress.trim())
-    localStorage.setItem('weave:agent-receiving-phone',receivingPhone.trim())
+    if(receivingAddress.trim().length<5||receivingPhone.replace(/\D/g,'').length<7){
+      feedback('Enter where WEAVE should deliver the cartons and your receiving phone number.')
+      const field=receivingAddress.trim().length<5?addressInput.current:phoneInput.current
+      field?.scrollIntoView({behavior:'smooth',block:'center'})
+      field?.focus({preventScroll:true})
+      return
+    }
+    try{
+      localStorage.setItem('weave:agent-receiving-address',receivingAddress.trim())
+      localStorage.setItem('weave:agent-receiving-phone',receivingPhone.trim())
+    }catch{/* Saving delivery details must not block stock ordering. */}
+    orderInFlight.current=true
+    setOrderFeedback(null)
     setWorking(`buy:${product.id}`);setMessage('')
     try{
-      const response=await fetch('/api/agility/stock',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({variantId:product.id,boxCount,distributionMode:'wholesaler',deliveryAddress:receivingAddress,deliveryPhone:receivingPhone,note:'Agent neighborhood distribution stock'})})
+      const response=await fetchWithTimeout('/api/agility/stock',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({variantId:product.id,boxCount,distributionMode:'wholesaler',deliveryAddress:receivingAddress,deliveryPhone:receivingPhone,note:'Agent neighborhood distribution stock'})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to order WEAVE stock')
-      setMessage(`${product.name}: ${formatWeaveFoodCartonQuantity(boxCount)} ordered. Pay ${money(result.payment.amountNgn)} to OPay ${result.payment.accountNumber}, then submit the payment reference below.`)
+      feedback(`${product.name}: ${formatWeaveFoodCartonQuantity(boxCount)} ordered. Pay ${money(result.payment.amountNgn)} to OPay ${result.payment.accountNumber}. Order reference: ${result.payment.reference}. Submit your payment proof below for Administration verification.`)
       await load()
-    }catch(error){setMessage(error instanceof Error?error.message:'Unable to order WEAVE stock')}
-    finally{setWorking(null)}
+    }catch(error){feedback(error instanceof Error?error.message:'Unable to order WEAVE stock')}
+    finally{orderInFlight.current=false;setWorking(null)}
   }
 
   const submitProof=async(order:StockOrder)=>{
@@ -172,13 +191,14 @@ export default function AgentDistributionPage(){
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{[['Outlets',String(data.summary.outlet_count),MapPin],['Cartons in hand',String(cartonsAvailable),Boxes],['Packs with outlets',String(data.summary.packages_still_with_outlets||0),Store],['Carrier reserved',String(data.summary.carrier_reserved_packages||0),PackageCheck],['Money outstanding',money(data.summary.outstanding_ngn),HandCoins]].map(([label,value,Icon]:any)=><div key={label} className="rounded-2xl border border-white/10 bg-black/20 p-4"><Icon className="h-5 w-5 text-cyan-300"/><p className="mt-3 text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{label}</p><p className="mt-1 text-xl font-black">{value}</p></div>)}</div><p className="mt-4 text-xs text-emerald-300">Collected from outlets today: {money(data.summary.collected_today_ngn)}</p>
     </section>
 
-    {message&&<div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[.06] px-5 py-4 text-sm leading-6 text-cyan-50">{message}</div>}
+    {message&&<div role="status" className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[.06] px-5 py-4 text-sm leading-6 text-cyan-50">{message}</div>}
 
     <section className="rounded-[2rem] border border-white/10 bg-white/[.02] p-5 md:p-7">
       <div className="flex items-center justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[.22em] text-orange-300">01 · Buy from WEAVE</p><h2 className="mt-1 text-2xl font-black">Load cartons for your route</h2><p className="mt-2 text-xs text-slate-500">Agent stock is carton-only: order ½ carton or full-carton steps. No individual pieces can be ordered from WEAVE.</p></div><Truck className="h-7 w-7 text-orange-300"/></div>
-      <div className="mt-5 grid gap-3 md:grid-cols-2"><Input value={receivingAddress} onChange={e=>setReceivingAddress(e.target.value)} placeholder="Where WEAVE should deliver your cartons"/><Input value={receivingPhone} onChange={e=>setReceivingPhone(e.target.value)} placeholder="Receiving phone"/></div>
+      <p className="mt-4 text-xs text-slate-400">Enter both delivery details before choosing a food order.</p>
+      <div className="mt-5 grid gap-3 md:grid-cols-2"><Input ref={addressInput} aria-label="Where WEAVE should deliver your cartons" required value={receivingAddress} onChange={e=>setReceivingAddress(e.target.value)} placeholder="Where WEAVE should deliver your cartons"/><Input ref={phoneInput} aria-label="Receiving phone" required type="tel" value={receivingPhone} onChange={e=>setReceivingPhone(e.target.value)} placeholder="Receiving phone"/></div>
       <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {AGILITY_VARIANTS.map(product=>{const economics=getWeaveFoodVariantEconomics(product.id);if(!economics)return null;return <article key={product.id} className={`rounded-2xl border p-5 ${product.id.startsWith('electrolyte')?'border-emerald-300/20 bg-emerald-300/[.03]':'border-white/10 bg-black/20'}`}><p className={`text-[10px] font-black uppercase tracking-[.18em] ${product.id.startsWith('electrolyte')?'text-emerald-300':'text-orange-300'}`}>{product.accent}</p><h3 className="mt-1 text-xl font-black">{product.name}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{product.note}</p><div className="mt-4 grid grid-cols-2 gap-2 text-xs"><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">½ carton from WEAVE</span><p className="font-black">{money(economics.agentBoxPriceNgn/2)}</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Full carton from WEAVE</span><p className="font-black">{money(economics.agentBoxPriceNgn)}</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Agent → Customer</span><p className="font-black text-emerald-200">{money(economics.agentSellingUnitPriceNgn)} / unit</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Units / carton</span><p className="font-black">{economics.packagesPerBox} · half = {economics.packagesPerBox/2}</p></div></div><div className="mt-4 flex gap-2"><Input className="w-24 text-center" type="number" min={WEAVE_FOOD_MIN_CARTON_ORDER} max={WEAVE_FOOD_MAX_CARTON_ORDER} step={WEAVE_FOOD_CARTON_STEP} value={cartons[product.id]??5} onChange={e=>setCartons(c=>({...c,[product.id]:Number(e.target.value)}))}/><Button className="flex-1" onClick={()=>buyFromWeave(product)} disabled={working===`buy:${product.id}`}><Boxes className="mr-2 h-4 w-4"/>Buy cartons</Button></div><p className="mt-2 text-[10px] uppercase tracking-[.12em] text-slate-600">½ · 1 · 1½ · 2 · 2½ … cartons only</p></article>})}
+        {AGILITY_VARIANTS.map(product=>{const economics=getWeaveFoodVariantEconomics(product.id);if(!economics)return null;return <article key={product.id} className={`rounded-2xl border p-5 ${product.id.startsWith('electrolyte')?'border-emerald-300/20 bg-emerald-300/[.03]':'border-white/10 bg-black/20'}`}><p className={`text-[10px] font-black uppercase tracking-[.18em] ${product.id.startsWith('electrolyte')?'text-emerald-300':'text-orange-300'}`}>{product.accent}</p><h3 className="mt-1 text-xl font-black">{product.name}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{product.note}</p><div className="mt-4 grid grid-cols-2 gap-2 text-xs"><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">½ carton from WEAVE</span><p className="font-black">{money(economics.agentBoxPriceNgn/2)}</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Full carton from WEAVE</span><p className="font-black">{money(economics.agentBoxPriceNgn)}</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Agent → Customer</span><p className="font-black text-emerald-200">{money(economics.agentSellingUnitPriceNgn)} / unit</p></div><div className="rounded-xl bg-white/[.04] p-3"><span className="text-slate-500">Units / carton</span><p className="font-black">{economics.packagesPerBox} · half = {economics.packagesPerBox/2}</p></div></div><div className="mt-4 flex gap-2"><Input aria-label={`${product.name} carton quantity`} className="w-24 text-center" type="number" min={WEAVE_FOOD_MIN_CARTON_ORDER} max={WEAVE_FOOD_MAX_CARTON_ORDER} step={WEAVE_FOOD_CARTON_STEP} value={cartons[product.id]??5} onChange={e=>setCartons(c=>({...c,[product.id]:Number(e.target.value)}))}/><Button type="button" className="flex-1" onClick={()=>void buyFromWeave(product)} disabled={working?.startsWith('buy:')}><Boxes className="mr-2 h-4 w-4"/>{working===`buy:${product.id}`?'ORDERING…':'Buy cartons'}</Button></div>{orderFeedback?.productId===product.id&&<p role="alert" className="mt-3 text-sm leading-6 text-amber-200">{orderFeedback.text}</p>}<p className="mt-2 text-[10px] uppercase tracking-[.12em] text-slate-600">½ · 1 · 1½ · 2 · 2½ … cartons only</p></article>})}
       </div>
 
       {pendingOrders.length>0&&<div className="mt-7 border-t border-white/10 pt-5"><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Orders moving from WEAVE to you</p><div className="mt-3 space-y-3">{pendingOrders.map(order=><article key={order.id} className="rounded-2xl border border-white/10 bg-black/20 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-black">{productName(order.variant_id)} · {formatWeaveFoodCartonQuantity(Number(order.box_count))}</p><p className="mt-1 text-xs text-slate-500">{order.package_count} units · {order.payment_status} · {order.fulfillment_status} · {order.payment_reference}</p></div><p className="font-black">{money(order.total_ngn)}</p></div>{order.payment_status==='pending'&&<div className="mt-3 flex gap-2"><Input value={proof[order.id]||''} onChange={e=>setProof(p=>({...p,[order.id]:e.target.value}))} placeholder="OPay transaction reference / receipt"/><Button onClick={()=>submitProof(order)} disabled={working===`proof:${order.id}`}>SEND PROOF</Button></div>}{order.fulfillment_status==='delivered'&&<Button className="mt-3" onClick={()=>confirmReceipt(order.id)} disabled={working===`receive:${order.id}`}><CheckCircle2 className="mr-2 h-4 w-4"/>CONFIRM RECEIVED</Button>}</article>)}</div></div>}

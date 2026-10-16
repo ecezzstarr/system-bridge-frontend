@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weave-v5';
+const CACHE_NAME = 'weave-v6';
 const URLS_TO_CACHE = [
   '/icon.svg?v=3',
   '/weave-logo.svg',
