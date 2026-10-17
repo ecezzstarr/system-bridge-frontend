@@ -36,6 +36,7 @@ jobs:
           node tests/public-flame-movement-regression.cjs
           node tests/carrier-ace-regression.cjs
           node tests/carrier-food-payment-regression.cjs
+          node tests/electrolyte-independent-home-regression.cjs
           node tests/lifestyle-position-access-regression.cjs
           node tests/agentic-bridger-regression.cjs
           node tests/file-folder-customer-door-purchase-regression.cjs
