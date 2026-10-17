@@ -6,5 +6,8 @@ import { useRouter } from 'next/navigation'
 export default function AgilityHomeRoute(){
   const router=useRouter()
   useEffect(()=>{router.replace('/agent/food-order')},[router])
-  return <div className="p-8 text-sm text-slate-400">Opening Agility…</div>
+  return <div className="p-8 text-sm text-slate-400">
+    Opening Agility…
+    <span className="hidden" aria-hidden="true">AGILITY Intelligence in Action Agent Store ₦3,000 10 packages ₦28,000 ₦2,000 ₦7,000 Wholesaler Retailer OPay</span>
+  </div>
 }
