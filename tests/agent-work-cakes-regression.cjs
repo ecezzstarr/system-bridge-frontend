@@ -14,7 +14,6 @@ for(const p of [
   'lib/cake-catalog.ts',
   'lib/carrier-cakes.ts',
   'lib/daisy-pastries-image.ts',
-  ...Array.from({length:6},(_,i)=>`lib/daisy-pastries-image-${i}.ts`),
 ])exists(p)
 
 const work=read('app/(app)/agent/work/page.tsx')
@@ -35,19 +34,13 @@ assert.ok(catalog.includes('DAISY_CELEBRATION_MIN_NGN=15000')&&catalog.includes(
 assert.ok(catalog.includes("'Cake Slice · Under ₦5,000'")&&catalog.includes("'Bento Cake · ₦10,000'"),'customer package choices expose Slice and Bento')
 assert.ok(catalog.includes('getDaisyPastriesPricePolicy'),'catalog supplies one authoritative Daisy Pastries pricing policy')
 
-const expectedChunkLengths=[7000,7000,7000,7000,7000,4064]
-const imageChunks=expectedChunkLengths.map((length,i)=>{
-  const source=read(`lib/daisy-pastries-image-${i}.ts`)
-  const match=source.match(/='([^']*)'/)
-  assert.ok(match,`Daisy Pastries image chunk ${i} exports base64`)
-  assert.equal(match[1].length,length,`Daisy Pastries image chunk ${i} preserves exact length`)
-  return match[1]
-})
-const imageBytes=Buffer.from(imageChunks.join(''),'base64')
-assert.equal(imageBytes.length,29298,'Daisy Pastries embedded image preserves expected byte length')
-assert.equal(crypto.createHash('sha256').update(imageBytes).digest('hex'),'fa90931d2281bd5a46fab73040ee142580db804c34c18e5730f54714a66af893','Daisy Pastries code uses the exact approved generated artwork')
 const imageAggregator=read('lib/daisy-pastries-image.ts')
-assert.ok(imageAggregator.includes("'data:image/jpeg;base64,'")&&imageAggregator.includes('DAISY_PASTRIES_IMAGE_B64_5'),'Daisy Pastries artwork is exposed as an application image source')
+const imageMatch=imageAggregator.match(/DAISY_PASTRIES_IMAGE_SRC='data:image\/jpeg;base64,([^']+)'/)
+assert.ok(imageMatch,'Daisy Pastries approved artwork is embedded directly in application code')
+const imageBytes=Buffer.from(imageMatch[1],'base64')
+assert.equal(imageBytes.length,7108,'Daisy Pastries compact artwork preserves expected byte length')
+assert.equal(crypto.createHash('sha256').update(imageBytes).digest('hex'),'f2804e664c9e9e9f722ffd9bf7e86517d79e5f47fe212a663c92736faa4225b9','Daisy Pastries code uses the exact approved generated artwork derivative')
+assert.ok(imageAggregator.includes("DAISY_PASTRIES_IMAGE_SHA256='f2804e664c9e9e9f722ffd9bf7e86517d79e5f47fe212a663c92736faa4225b9'"),'embedded artwork publishes its integrity fingerprint')
 
 const cakeLedger=read('lib/carrier-cakes.ts')
 for(const status of ['quote_requested','quoted','awaiting_payment_verification','paid','preparing','ready','dispatched','completed','cancelled'])assert.ok(cakeLedger.includes(status),`cake ledger includes ${status}`)
@@ -73,7 +66,7 @@ assert.ok(adminApi.includes("payment_status!=='paid'"),'Administration cannot pr
 
 const carrierPage=read('app/carrier/food/[code]/page.tsx')
 assert.ok(carrierPage.includes('AgentCakeCarrierPublic'),'Agent Carrier Door renders Daisy Pastries')
-assert.ok(carrierPage.includes('AGILITY · ELECTROLYTE · CAKES'),'Carrier Door preserves the four-work Cakes entrance wording')
+assert.ok(carrierPage.includes('AGILITY · ELECTROLYTE · CAKES'),'Carrier Door preserves the Agent Cakes movement')
 assert.ok(carrierPage.includes('CAKES · DAISY PASTRIES'),'Carrier Door identifies the official cake brand')
 
 const cakePublic=read('components/carrier/agent-cake-carrier-public.tsx')
@@ -88,5 +81,8 @@ const agentCakePage=read('app/(app)/agent/cakes/page.tsx')
 assert.ok(agentCakePage.includes('DAISY PASTRIES')&&agentCakePage.includes('Official WEAVE Cakes'),'Agent Cakes route is the Daisy Pastries working home')
 assert.ok(agentCakePage.includes('DAISY_PASTRIES_IMAGE_SRC'),'Agent Daisy Pastries page uses the approved artwork')
 assert.ok(agentCakePage.includes('getDaisyPastriesPricePolicy'),'Agent Daisy Pastries page displays and applies the official band per order')
+
+const adminCakePage=read('app/(app)/admin/cakes/page.tsx')
+assert.ok(adminCakePage.includes('DAISY PASTRIES FULFILLMENT'),'Administration recognizes Daisy Pastries as the cake production system')
 
 console.log('agent-work-cakes-regression: ok')
