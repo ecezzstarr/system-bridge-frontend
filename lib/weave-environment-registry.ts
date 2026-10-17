@@ -37,8 +37,11 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'bridger-value', label:'Deposit & Withdrawal', kind:'district', route:'/wallet/deposit-withdraw', area:'Bridger', scope:'bridger', defaultOrder:50 },
 
   { key:'agent-presence', label:'Agent Presence', kind:'district', route:'/agent/presence', area:'Agent', scope:'agent', protected:true, defaultOrder:5 },
-  { key:'agent-agility', label:'Agility', kind:'district', route:'/agility', area:'Agent', scope:'agent', defaultOrder:20 },
-  { key:'agent-commissions', label:'Commissions', kind:'district', route:'/agent/commissions', area:'Agent', scope:'agent', defaultOrder:30 },
+  { key:'agent-work', label:'Agent Work', kind:'district', route:'/agent/work', area:'Agent', scope:'agent', protected:true, defaultOrder:10 },
+  { key:'agent-agility', label:'Agility', kind:'district', route:'/agility', area:'Agent Work', scope:'agent', defaultOrder:20 },
+  { key:'agent-electrolyte', label:'Electrolyte', kind:'district', route:'/electrolyte', area:'Agent Work', scope:'agent', defaultOrder:25 },
+  { key:'agent-commissions', label:'Commissions', kind:'district', route:'/agent/commissions', area:'Agent Work', scope:'agent', defaultOrder:30 },
+  { key:'agent-cakes', label:'Cakes', kind:'district', route:'/agent/cakes', area:'Agent Work', scope:'agent', defaultOrder:35 },
 
   { key:'client-presence', label:'Client Presence', kind:'district', route:'/client/presence', area:'Client', scope:'client', protected:true, defaultOrder:5 },
   { key:'client-dashboard', label:'Client World', kind:'district', route:'/client/dashboard', area:'Client', scope:'client', protected:true, defaultOrder:10 },
@@ -75,6 +78,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-client-vault', label:'Client Vaults', kind:'district', route:'/admin/client-vault', area:'Administration', scope:'admin', defaultOrder:130 },
   { key:'admin-enterprise-systems', label:'Enterprise Systems', kind:'district', route:'/admin/enterprise-systems', area:'Administration', scope:'admin', defaultOrder:140 },
   { key:'admin-agility', label:'Agility Fulfillment', kind:'district', route:'/admin/agility', area:'Administration', scope:'admin', defaultOrder:150 },
+  { key:'admin-cakes', label:'Cakes Fulfillment', kind:'district', route:'/admin/cakes', area:'Administration', scope:'admin', defaultOrder:155 },
   { key:'admin-enterprise-dream', label:'Enterprise Dream', kind:'district', route:'/admin/enterprise-dream', area:'Administration', scope:'admin', defaultOrder:160 },
   { key:'admin-client-build-catalog', label:'Client Build Catalog', kind:'district', route:'/admin/client-build-catalog', area:'Administration', scope:'admin', defaultOrder:170 },
   { key:'admin-loop-workshop', label:'Loop Workshop', kind:'district', route:'/admin/loop-workshop', area:'Administration', scope:'admin', defaultOrder:180 },
