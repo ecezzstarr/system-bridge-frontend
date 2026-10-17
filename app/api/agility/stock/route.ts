@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
         ),0)::numeric AS today_gross_profit_ngn
       FROM agility_stock_orders o
       WHERE o.agent_id = ${user.id}::uuid
+        AND o.variant_id NOT IN ('electrolyte','electrolyte-medium')
       ORDER BY o.created_at DESC
       LIMIT 100
     `
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('[agility/stock] GET failed', error)
-    return NextResponse.json({ success: false, error: 'Unable to load WEAVE food stock orders' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to load Agility stock orders' }, { status: 500 })
   }
 }
 
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
     const variant = getAgilityVariant(variantId)
 
     if (!variant) {
-      return NextResponse.json({ success: false, error: 'Choose a valid WEAVE food product' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Choose a valid Agility product' }, { status: 400 })
     }
     if (!['wholesaler', 'retailer'].includes(distributionMode)) {
       return NextResponse.json({ success: false, error: 'Choose wholesaler or retailer distribution' }, { status: 400 })
@@ -114,9 +115,9 @@ export async function POST(request: NextRequest) {
     await ensureAgilitySchema()
     const totals = getWeaveFoodStockTotals(variant.id, boxCount)
     if (!totals) {
-      return NextResponse.json({ success: false, error: 'WEAVE food economics are unavailable for this carton quantity' }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'Agility economics are unavailable for this carton quantity' }, { status: 409 })
     }
-    const paymentReference = `FOOD-${user.id.slice(0, 8)}-${Date.now()}`
+    const paymentReference = `AGILITY-${user.id.slice(0, 8)}-${Date.now()}`
 
     const [order] = await sql`
       INSERT INTO agility_stock_orders (
@@ -187,6 +188,6 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
   } catch (error) {
     console.error('[agility/stock] POST failed', error)
-    return NextResponse.json({ success: false, error: 'Unable to create WEAVE food stock order' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to create Agility stock order' }, { status: 500 })
   }
 }
