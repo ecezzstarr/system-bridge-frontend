@@ -1,5 +1,6 @@
--- WEAVE Agility production schema
--- Safe to run before the first Agility production deployment.
+-- WEAVE food stock production schema
+-- Legacy table name is preserved because Agility and independently operated
+-- Electrolyte stock already share this physical stock ledger.
 
 CREATE TABLE IF NOT EXISTS agility_stock_orders (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS agility_stock_orders (
   admin_note text,
   paid_at timestamptz,
   heated_at timestamptz,
+  prepared_at timestamptz,
   packed_at timestamptz,
   boxed_at timestamptz,
   dispatched_at timestamptz,
@@ -55,6 +57,9 @@ CREATE TABLE IF NOT EXISTS agility_stock_orders (
 
 ALTER TABLE agility_stock_orders
   ALTER COLUMN box_count TYPE numeric(6,1) USING box_count::numeric;
+
+ALTER TABLE agility_stock_orders
+  ADD COLUMN IF NOT EXISTS prepared_at timestamptz;
 
 DO $$
 BEGIN

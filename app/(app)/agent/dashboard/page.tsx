@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { PackagePlus, Share2, Truck } from 'lucide-react'
+import { PackagePlus, Salad, Share2, Truck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { AgilityAgentLoginAd, AGILITY_AGENT_LOGIN_AD_KEY } from '@/components/agility-agent-login-ad'
@@ -36,11 +36,14 @@ export default function AgentWorld() {
       onOpenChange={open=>{setShowLoop1Ad(open);if(!open&&agilityQueued){setAgilityQueued(false);setShowAgilityAd(true)}}}
       onOpenContinuance={()=>{setShowLoop1Ad(false);router.push('/agent/commissions')}}
     />
-    <AgilityAgentLoginAd open={showAgilityAd} onOpenChange={setShowAgilityAd} onBuy={()=>{setShowAgilityAd(false);router.push('/agent/food-order')}} />
+    <AgilityAgentLoginAd open={showAgilityAd} onOpenChange={setShowAgilityAd} onBuy={()=>{setShowAgilityAd(false);router.push('/agility')}} />
     <WeaveDashboardWorld role="agent" userName={user.name} />
     <ManagerLifestyleEntry />
-    <Link href="/agent/food-order" data-core-function="agent-food-stock" className="fixed bottom-56 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-orange-300/25 bg-[#1c1008]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-orange-100 shadow-2xl backdrop-blur md:right-7">
-      <PackagePlus className="h-4 w-4"/>WEAVE Food · Order Stock
+    <Link href="/agility" data-core-function="agent-agility-home" className="fixed bottom-[19rem] right-4 z-30 inline-flex items-center gap-2 rounded-full border border-orange-300/25 bg-[#1c1008]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-orange-100 shadow-2xl backdrop-blur md:right-7">
+      <PackagePlus className="h-4 w-4"/>Agility · Order Stock
+    </Link>
+    <Link href="/electrolyte" data-core-function="agent-electrolyte-home" className="fixed bottom-60 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-[#071711]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-emerald-100 shadow-2xl backdrop-blur md:right-7">
+      <Salad className="h-4 w-4"/>Electrolyte · Order / Restock
     </Link>
     <Link href="/agent/distribution" data-core-function="agent-distribution" className="fixed bottom-40 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-[#07141a]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-2xl backdrop-blur md:right-7">
       <Truck className="h-4 w-4"/>Distribution Route · Supply Outlets

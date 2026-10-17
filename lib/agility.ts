@@ -73,6 +73,7 @@ export async function ensureAgilitySchema() {
       admin_note text,
       paid_at timestamptz,
       heated_at timestamptz,
+      prepared_at timestamptz,
       packed_at timestamptz,
       boxed_at timestamptz,
       dispatched_at timestamptz,
@@ -112,6 +113,7 @@ export async function ensureAgilitySchema() {
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS payment_verified_at timestamptz`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS delivery_address text`
   await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS delivery_phone varchar(40)`
+  await sql`ALTER TABLE agility_stock_orders ADD COLUMN IF NOT EXISTS prepared_at timestamptz`
   await sql`
     DO $$
     BEGIN
@@ -165,7 +167,7 @@ export async function ensureAgilitySchema() {
 }
 
 export function getAgilityVariant(id: string) {
-  return AGILITY_VARIANTS.find((variant) => variant.id === id) || null
+  return AGILITY_VARIANTS.find((variant) => variant.id === id && variant.family === 'agility') || null
 }
 
 export function getAgilityTotals(boxCount: number) {

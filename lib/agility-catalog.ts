@@ -1,4 +1,6 @@
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
+import type { WeaveFoodVariant } from '@/lib/weave-food-types'
+import { ELECTROLYTE_VARIANTS } from '@/lib/electrolyte-catalog'
 
 export const AGILITY_RETAIL_UNIT_PRICE_NGN = 3000
 export const AGILITY_PACKAGES_PER_BOX = 10
@@ -22,27 +24,15 @@ export const AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN =
 
 export const AGILITY_OPAY_ACCOUNT_NUMBER = WEAVE_OPAY_ACCOUNT_NUMBER
 
-export type AgilityVariant = {
-  id: string
-  name: string
-  accent: string
-  foods: string[]
-  protein: string
-  fruit: string
-  drink: string
-  water: string
-  note: string
-  packagesPerBox?: number
-  agentBuyUnitPriceNgn?: number
-  agentSellingUnitPriceNgn?: number
-  customerPriceLocked?: boolean
-}
+// Compatibility alias for existing Agility-only UI imports.
+export type AgilityVariant = WeaveFoodVariant
 
-export const AGILITY_VARIANTS: AgilityVariant[] = [
+export const AGILITY_PRODUCT_VARIANTS: AgilityVariant[] = [
   {
     id: 'classic',
     name: 'Agility Classic',
     accent: 'Morning standard',
+    family: 'agility',
     foods: ['Fried egg', 'Bread', 'Butter', 'Akara', 'Pap'],
     protein: 'Sardines',
     fruit: 'Apple',
@@ -54,6 +44,7 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
     id: 'pear',
     name: 'Agility Pear',
     accent: 'Pear + butter',
+    family: 'agility',
     foods: ['Fried egg', 'Bread', 'Butter', 'Akara', 'Pap'],
     protein: 'Sardines',
     fruit: 'Pear / avocado',
@@ -65,17 +56,19 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
     id: 'meat',
     name: 'Agility Meat',
     accent: 'Meat morning',
+    family: 'agility',
     foods: ['Fried egg', 'Bread', 'Butter', 'Akara', 'Pap'],
     protein: 'Prepared meat',
     fruit: 'Apple',
     drink: 'Milk',
     water: 'Water',
-    note: 'A meat-based Agility under the same Agility carton economics.',
+    note: 'A meat-based Agility under the same Agility company standard.',
   },
   {
     id: 'fish',
     name: 'Agility Fish',
     accent: 'Fish morning',
+    family: 'agility',
     foods: ['Fried egg', 'Bread', 'Butter', 'Akara', 'Pap'],
     protein: 'Prepared fish',
     fruit: 'Seasonal fruit',
@@ -83,36 +76,16 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
     water: 'Water',
     note: 'A fish variation under the same Agility company standard.',
   },
-  {
-    id: 'electrolyte',
-    name: 'Electrolyte · Small Bowl',
-    accent: 'Small fresh sliced bowl',
-    foods: ['Cucumber', 'Fresh coconut pieces', 'Carrot strips', 'Sweet corn', 'Fresh greens'],
-    protein: 'Seasoned beef + fried fish + boiled egg',
-    fruit: 'Avocado',
-    drink: 'Fresh coconut water',
-    water: 'Water',
-    packagesPerBox: 10,
-    agentBuyUnitPriceNgn: 3000,
-    agentSellingUnitPriceNgn: 4000,
-    customerPriceLocked: true,
-    note: 'Small Electrolyte bowl. Agent buys from WEAVE at ₦3,000 per bowl and sells to the customer at ₦4,000.',
-  },
-  {
-    id: 'electrolyte-medium',
-    name: 'Electrolyte · Medium Bowl',
-    accent: 'Medium fresh sliced bowl',
-    foods: ['Cucumber', 'Fresh coconut pieces', 'Carrot strips', 'Sweet corn', 'Fresh greens'],
-    protein: 'Seasoned beef + fried fish + boiled egg',
-    fruit: 'Avocado',
-    drink: 'Fresh coconut water',
-    water: 'Water',
-    packagesPerBox: 10,
-    agentBuyUnitPriceNgn: 5000,
-    agentSellingUnitPriceNgn: 6000,
-    customerPriceLocked: true,
-    note: 'Medium Electrolyte bowl. Agent buys from WEAVE at ₦5,000 per bowl and sells to the customer at ₦6,000.',
-  },
+]
+
+/**
+ * Legacy all-WEAVE-food alias. Electrolyte is defined and operated in its own
+ * catalog/home/API; this export remains only so older shared Carrier and
+ * Distribution surfaces keep seeing all stock until those callers migrate.
+ */
+export const AGILITY_VARIANTS: AgilityVariant[] = [
+  ...AGILITY_PRODUCT_VARIANTS,
+  ...ELECTROLYTE_VARIANTS,
 ]
 
 export const AGILITY_FULFILLMENT_STAGES = [
@@ -130,7 +103,7 @@ export type AgilityFulfillmentStage = (typeof AGILITY_FULFILLMENT_STAGES)[number
 export const AGILITY_PROCESS = [
   {
     stage: 'Order',
-    detail: `The Agent orders approved WEAVE food cartons. Agility keeps its ₦${AGILITY_AGENT_BOX_PRICE_NGN.toLocaleString()} carton standard; other WEAVE foods can carry their own carton economics.`,
+    detail: `The Agent orders Agility cartons from WEAVE at the ₦${AGILITY_AGENT_BOX_PRICE_NGN.toLocaleString()} carton standard.`,
   },
   {
     stage: 'OPay',
@@ -146,10 +119,10 @@ export const AGILITY_PROCESS = [
   },
   {
     stage: 'Pack',
-    detail: 'Complete food packages are sealed, boxed, dispatched and received by the Agent before they can be distributed.',
+    detail: 'Complete Agility packages are sealed, boxed, dispatched and received by the Agent before they can be distributed.',
   },
   {
     stage: 'Sell',
-    detail: 'The Agent moves paid WEAVE stock through local outlets and Carrier. Product selling economics are captured on each stock order.',
+    detail: 'The Agent moves paid Agility stock through local outlets and Carrier.',
   },
 ] as const

@@ -2,8 +2,8 @@ import {
   AGILITY_AGENT_UNIT_COST_NGN,
   AGILITY_PACKAGES_PER_BOX,
   AGILITY_RETAIL_UNIT_PRICE_NGN,
-  AGILITY_VARIANTS,
 } from '@/lib/agility-catalog'
+import { getWeaveFoodVariant } from '@/lib/weave-food-catalog'
 
 export type WeaveFoodVariantEconomics = {
   variantId: string
@@ -35,7 +35,7 @@ export function formatWeaveFoodCartonQuantity(cartonCount: number) {
 }
 
 export function getWeaveFoodVariantEconomics(variantId: string): WeaveFoodVariantEconomics | null {
-  const variant = AGILITY_VARIANTS.find(item => item.id === variantId)
+  const variant = getWeaveFoodVariant(variantId)
   if (!variant) return null
 
   const packagesPerBox = Number(variant.packagesPerBox || AGILITY_PACKAGES_PER_BOX)

@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
   const adminNote = String(body.adminNote || '').trim().slice(0, 500)
 
   if (!orderId || !['approved', 'rejected'].includes(status)) {
-    return NextResponse.json({
-      success: false,
-      error: 'Order and valid payment decision are required',
-    }, { status: 400 })
+    return NextResponse.json({ success: false, error: 'Order and valid payment decision are required' }, { status: 400 })
   }
 
   await ensureAgilitySchema()
@@ -31,7 +28,10 @@ export async function POST(request: NextRequest) {
     await db.query('BEGIN')
 
     const result = await db.query(
-      `SELECT * FROM agility_stock_orders WHERE id=$1::uuid FOR UPDATE`,
+      `SELECT * FROM agility_stock_orders
+       WHERE id=$1::uuid
+         AND variant_id NOT IN ('electrolyte','electrolyte-medium')
+       FOR UPDATE`,
       [orderId]
     )
     const order = result.rows[0]
@@ -46,67 +46,41 @@ export async function POST(request: NextRequest) {
     }
     if (!order.opay_receipt_data || order.payment_status !== 'proof_submitted') {
       await db.query('ROLLBACK')
-      return NextResponse.json({
-        success: false,
-        error: 'The Agent must submit OPay payment proof before Administration can verify this order',
-      }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'The Agent must submit OPay payment proof before Administration can verify this Agility order' }, { status: 409 })
     }
 
     if (status === 'rejected') {
       const rejected = await db.query(
         `UPDATE agility_stock_orders
-         SET payment_status='rejected',
-             payment_verified_by=$1::uuid,
-             payment_verified_at=NOW(),
-             admin_note=$2,
-             updated_at=NOW()
+         SET payment_status='rejected',payment_verified_by=$1::uuid,payment_verified_at=NOW(),admin_note=$2,updated_at=NOW()
          WHERE id=$3::uuid
          RETURNING *`,
         [admin.id, adminNote || null, orderId]
       )
-
       await db.query('COMMIT')
       committed = true
       const rejectedOrder = rejected.rows[0]
-
       try {
         await db.query(
           `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
            VALUES ($1::uuid,'agility_stock','Agility OPay proof rejected',$2,'WEAVE','/agility')`,
-          [
-            rejectedOrder.agent_id,
-            'Administration could not verify the submitted OPay proof. Open the Agility order and submit the correct transaction reference or receipt.',
-          ]
+          [rejectedOrder.agent_id, 'Administration could not verify the submitted Agility OPay proof. Open Agility and submit the correct transaction reference or receipt.']
         )
       } catch (notificationError) {
         console.error('[admin/agility/opay] rejection notification failed', notificationError)
       }
-
-      return NextResponse.json({
-        success: true,
-        order: rejectedOrder,
-        message: 'OPay proof rejected. The Agent can submit a corrected payment reference or receipt.',
-      })
+      return NextResponse.json({ success: true, order: rejectedOrder, message: 'Agility OPay proof rejected. The Agent can submit a corrected proof.' })
     }
 
     const approved = await db.query(
       `UPDATE agility_stock_orders
-       SET payment_status='paid',
-           fulfillment_status='paid',
-           payment_verified_by=$1::uuid,
-           payment_verified_at=NOW(),
-           paid_at=NOW(),
-           admin_note=$2,
-           updated_at=NOW()
+       SET payment_status='paid',fulfillment_status='paid',payment_verified_by=$1::uuid,
+           payment_verified_at=NOW(),paid_at=NOW(),admin_note=$2,updated_at=NOW()
        WHERE id=$3::uuid
        RETURNING *`,
       [admin.id, adminNote || null, orderId]
     )
     const paidOrder = approved.rows[0]
-
-    // The payment state is the critical company record. Commit it before
-    // best-effort ledger/notification writes so a secondary table failure
-    // can never roll back a verified OPay payment.
     await db.query('COMMIT')
     committed = true
 
@@ -116,23 +90,16 @@ export async function POST(request: NextRequest) {
           user_id,type,amount,currency,tx_hash,description,metadata,status,completed_at
         )
         SELECT $1::uuid,'payment',$2,'NGN',$3,$4,$5::jsonb,'completed',NOW()
-        WHERE NOT EXISTS (
-          SELECT 1 FROM transactions WHERE tx_hash=$3 AND type='payment'
-        )`,
+        WHERE NOT EXISTS (SELECT 1 FROM transactions WHERE tx_hash=$3 AND type='payment')`,
         [
           paidOrder.agent_id,
           Number(paidOrder.total_ngn),
           `OPAY-AGILITY-${paidOrder.id}`,
           `Agility Agent stock purchase · ${paidOrder.box_count} box${Number(paidOrder.box_count) === 1 ? '' : 'es'}`,
           JSON.stringify({
-            source: 'agility',
-            paymentMethod: 'OPay',
-            orderId: paidOrder.id,
-            paymentReference: paidOrder.payment_reference,
-            opayReceipt: paidOrder.opay_receipt_data,
-            boxCount: Number(paidOrder.box_count),
-            packageCount: Number(paidOrder.package_count),
-            approvedBy: admin.id,
+            source: 'agility', paymentMethod: 'OPay', orderId: paidOrder.id,
+            paymentReference: paidOrder.payment_reference, boxCount: Number(paidOrder.box_count),
+            packageCount: Number(paidOrder.package_count), approvedBy: admin.id,
           }),
         ]
       )
@@ -144,20 +111,13 @@ export async function POST(request: NextRequest) {
       await db.query(
         `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
          VALUES ($1::uuid,'agility_stock','Agility OPay payment approved',$2,'WEAVE','/agility')`,
-        [
-          paidOrder.agent_id,
-          `Your OPay payment of ₦${Number(paidOrder.total_ngn).toLocaleString()} was approved. The Agility order is now in company fulfillment.`,
-        ]
+        [paidOrder.agent_id, `Your OPay payment of ₦${Number(paidOrder.total_ngn).toLocaleString()} was approved. The Agility order is now in company fulfillment.`]
       )
     } catch (notificationError) {
       console.error('[admin/agility/opay] approval notification failed after payment commit', notificationError)
     }
 
-    return NextResponse.json({
-      success: true,
-      order: paidOrder,
-      message: 'OPay payment approved. Agility fulfillment is now open.',
-    })
+    return NextResponse.json({ success: true, order: paidOrder, message: 'OPay payment approved. Agility fulfillment is now open.' })
   } catch (error) {
     console.error('[admin/agility/opay] verification failed', error)
     if (db && !committed) await db.query('ROLLBACK').catch(() => {})

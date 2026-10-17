@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
+import { AGILITY_PRODUCT_VARIANTS } from '@/lib/agility-catalog'
 import {
   AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
   AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
-  AGILITY_VARIANTS,
   ensureAgilitySchema,
   getAgilityCompanyEconomics,
   nextAgilityAdminStage,
@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         COALESCE((SELECT SUM(s.agent_gross_profit_ngn) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::numeric AS realized_agent_gross_profit_ngn
       FROM agility_stock_orders o
       LEFT JOIN users u ON u.id=o.agent_id
+      WHERE o.variant_id NOT IN ('electrolyte','electrolyte-medium')
       ORDER BY
         CASE o.payment_status
           WHEN 'proof_submitted' THEN 1
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      variants: AGILITY_VARIANTS,
+      variants: AGILITY_PRODUCT_VARIANTS,
       economics: {
         companyStandardPreparationCostPerBoxNgn: AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
         companyTargetGrossProfitPerBoxNgn: AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
@@ -93,6 +94,7 @@ export async function PATCH(request: NextRequest) {
       SELECT *
       FROM agility_stock_orders
       WHERE id=${orderId}::uuid
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
       LIMIT 1
     `
 
@@ -174,6 +176,7 @@ export async function PATCH(request: NextRequest) {
         delivered_at=CASE WHEN ${nextStatus}='delivered' THEN COALESCE(delivered_at,NOW()) ELSE delivered_at END,
         updated_at=NOW()
       WHERE id=${orderId}::uuid
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
         AND payment_status='paid'
         AND fulfillment_status=${current.fulfillment_status}
       RETURNING *

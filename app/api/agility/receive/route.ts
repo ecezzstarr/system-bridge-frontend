@@ -12,26 +12,33 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const orderId = String(body.orderId || '').trim()
-    if (!orderId) {
-      return NextResponse.json({ success: false, error: 'Order is required' }, { status: 400 })
-    }
+    if (!orderId) return NextResponse.json({ success: false, error: 'Order is required' }, { status: 400 })
 
     await ensureAgilitySchema()
+    const [identity] = await sql`
+      SELECT variant_id
+      FROM agility_stock_orders
+      WHERE id=${orderId}::uuid AND agent_id=${user.id}::uuid
+      LIMIT 1
+    `
+    if (!identity) return NextResponse.json({ success: false, error: 'WEAVE food order not found' }, { status: 404 })
+    if (['electrolyte','electrolyte-medium'].includes(String(identity.variant_id))) {
+      return NextResponse.redirect(new URL('/api/electrolyte/receive', request.url), 307)
+    }
+
     const [updated] = await sql`
       UPDATE agility_stock_orders
       SET fulfillment_status='received', received_at=COALESCE(received_at,NOW()), updated_at=NOW()
       WHERE id=${orderId}::uuid
         AND agent_id=${user.id}::uuid
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
         AND payment_status='paid'
         AND fulfillment_status='delivered'
       RETURNING *
     `
 
     if (!updated) {
-      return NextResponse.json({
-        success: false,
-        error: 'Only a paid Agility order marked delivered by Administration can be received',
-      }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'Only a paid Agility order marked delivered by Administration can be received' }, { status: 409 })
     }
 
     try {
