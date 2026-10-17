@@ -15,17 +15,17 @@ for(const p of [
   'lib/cake-catalog.ts',
   'lib/carrier-cakes.ts',
   'lib/daisy-pastries-image.ts',
-  'public/weave-food/daisy-pastries.jpg',
+  'public/weave-food/daisy-pastries-original.png',
 ])exists(p)
 
 const work=read('app/(app)/agent/work/page.tsx')
-for(const label of ['Agility','Electrolyte','Commission','Cakes'])assert.ok(work.includes(label),`Agent Work carries ${label}`)
+for(const label of ['Agility','Electrolyte','Commission','Daisy Pastries'])assert.ok(work.includes(label),`Agent Work carries ${label}`)
 for(const href of ['/agility','/electrolyte','/agent/commissions','/agent/cakes'])assert.ok(work.includes(href),`Agent Work links ${href}`)
 assert.ok(work.includes('Daisy Pastries · official WEAVE cakes'),'Agent Work identifies Cakes as Daisy Pastries')
 
 const dashboard=read('app/(app)/agent/dashboard/page.tsx')
 assert.ok(dashboard.includes('href="/agent/work"'),'Agent dashboard opens Agent Work')
-assert.ok(dashboard.includes('Agility · Electrolyte · Commission · Cakes'),'Agent dashboard names the four work movements')
+assert.ok(dashboard.includes('Agility · Electrolyte · Commission · Daisy Pastries'),'Agent dashboard names the four work movements')
 
 const catalog=read('lib/cake-catalog.ts')
 for(const id of ['birthday','wedding','anniversary','traditional','baby','graduation','corporate','custom'])assert.ok(catalog.includes(`id:'${id}'`),`cake catalog includes ${id}`)
@@ -36,12 +36,14 @@ assert.ok(catalog.includes('DAISY_CELEBRATION_MIN_NGN=15000')&&catalog.includes(
 assert.ok(catalog.includes("'Cake Slice · Under ₦5,000'")&&catalog.includes("'Bento Cake · ₦10,000'"),'customer package choices expose Slice and Bento')
 assert.ok(catalog.includes('getDaisyPastriesPricePolicy'),'catalog supplies one authoritative Daisy Pastries pricing policy')
 
-const imageBytes=fs.readFileSync(path.join(root,'public/weave-food/daisy-pastries.jpg'))
-assert.equal(imageBytes.length,7108,'Daisy Pastries real image asset preserves expected byte length')
-assert.equal(crypto.createHash('sha256').update(imageBytes).digest('hex'),'f2804e664c9e9e9f722ffd9bf7e86517d79e5f47fe212a663c92736faa4225b9','Daisy Pastries code uses the exact approved generated artwork derivative')
+const imageBytes=fs.readFileSync(path.join(root,'public/weave-food/daisy-pastries-original.png'))
+assert.equal(imageBytes.length,2256034,'Daisy Pastries preserves the original PNG bytes')
+assert.equal(imageBytes.readUInt32BE(16),1122,'Original artwork is full resolution')
+assert.equal(imageBytes.readUInt32BE(20),1402,'Original artwork height is preserved')
+assert.equal(crypto.createHash('sha256').update(imageBytes).digest('hex'),'701cba65328129fa5403d67016da4480bdd40d6c444245c2df40a25675b47516','Daisy Pastries code uses the exact approved full-resolution original')
 const imageModule=read('lib/daisy-pastries-image.ts')
-assert.ok(imageModule.includes("DAISY_PASTRIES_IMAGE_SRC='/weave-food/daisy-pastries.jpg'"),'Daisy Pastries pages use the real public image asset')
-assert.ok(imageModule.includes("DAISY_PASTRIES_IMAGE_SHA256='f2804e664c9e9e9f722ffd9bf7e86517d79e5f47fe212a663c92736faa4225b9'"),'approved artwork integrity fingerprint is preserved')
+assert.ok(imageModule.includes("DAISY_PASTRIES_IMAGE_SRC='/weave-food/daisy-pastries-original.png'"),'Daisy Pastries pages use the real public image asset')
+assert.ok(imageModule.includes("DAISY_PASTRIES_IMAGE_SHA256='701cba65328129fa5403d67016da4480bdd40d6c444245c2df40a25675b47516'"),'approved artwork integrity fingerprint is preserved')
 
 const cakeLedger=read('lib/carrier-cakes.ts')
 for(const status of ['quote_requested','quoted','awaiting_payment_verification','paid','preparing','ready','dispatched','completed','cancelled'])assert.ok(cakeLedger.includes(status),`cake ledger includes ${status}`)
@@ -92,9 +94,10 @@ assert.ok(agentCakePage.includes("action:'record_payment'"),'Agent can attach pa
 assert.ok(agentCakePage.includes('getDaisyPastriesPricePolicy'),'Agent Daisy Pastries page displays and applies the official band per order')
 
 const foodOrderPage=read('app/(app)/agent/food-order/page.tsx')
-assert.ok(foodOrderPage.includes('OPEN DAISY PASTRIES'),'Agility order ground links into Daisy Pastries')
-assert.ok(foodOrderPage.includes('DAISY_PASTRIES_IMAGE_SRC'),'Agent product ordering ground visibly shows the Daisy image')
-assert.ok(foodOrderPage.includes('data-daisy-pastries-entry="true"'),'Daisy has a dedicated product entry beside existing food movement')
+assert.ok(!foodOrderPage.includes('href="/electrolyte"')&&!foodOrderPage.includes('href="/agent/cakes"'),'Agility does not host sibling product entrances')
+assert.ok(!foodOrderPage.includes('DAISY_PASTRIES_IMAGE_SRC'),'Daisy artwork is not hosted inside Agility')
+assert.ok(work.includes("name:'Daisy Pastries'")&&work.includes('DAISY_PASTRIES_IMAGE_SRC'),'Agent Work directly hosts the named Daisy Pastries entry and artwork')
+assert.ok(foodOrderPage.includes('href="/agent/work"'),'Agility returns to the parent Agent Work space')
 
 const adminCakePage=read('app/(app)/admin/cakes/page.tsx')
 assert.ok(adminCakePage.includes('DAISY PASTRIES FULFILLMENT'),'Administration recognizes Daisy Pastries as the cake production system')

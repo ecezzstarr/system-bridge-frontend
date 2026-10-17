@@ -44,7 +44,7 @@ export default function AgentWorld() {
       <Link href="/electrolyte">Electrolyte home</Link>
     </div>
     <Link href="/agent/work" data-core-function="agent-work" className="fixed bottom-60 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-pink-300/25 bg-[#160b11]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-pink-100 shadow-2xl backdrop-blur md:right-7">
-      <BriefcaseBusiness className="h-4 w-4"/>Agent Work · Agility · Electrolyte · Commission · Cakes
+      <BriefcaseBusiness className="h-4 w-4"/>Agent Work · Agility · Electrolyte · Commission · Daisy Pastries
     </Link>
     <Link href="/agent/distribution" data-core-function="agent-distribution" className="fixed bottom-40 right-4 z-30 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-[#07141a]/95 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-cyan-100 shadow-2xl backdrop-blur md:right-7">
       <Truck className="h-4 w-4"/>Distribution Route · Supply Outlets

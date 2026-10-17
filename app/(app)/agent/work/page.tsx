@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import { DAISY_PASTRIES_IMAGE_SRC } from '@/lib/daisy-pastries-image'
 import { CakeSlice,CircleDollarSign,PackagePlus,Salad,ShoppingBag,Truck } from 'lucide-react'
 
 const functions=[
   {name:'Agility',href:'/agility',detail:'Order and restock Agility, receive company stock and move it through customers and outlets.',accent:'border-orange-300/25 bg-orange-300/[.04] text-orange-200',icon:PackagePlus},
   {name:'Electrolyte',href:'/electrolyte',detail:'Order Small Bowl or Medium Bowl stock, receive it and keep restocking while earlier stock is still moving.',accent:'border-emerald-300/25 bg-emerald-300/[.04] text-emerald-200',icon:Salad},
   {name:'Commission',href:'/agent/commissions',detail:'See qualifying Agent commission movement from attached Bridger and Client activity.',accent:'border-violet-300/25 bg-violet-300/[.04] text-violet-200',icon:CircleDollarSign},
-  {name:'Cakes',href:'/agent/cakes',detail:'Daisy Pastries · official WEAVE cakes. Receive slice, Bento and celebration cake requests through your Carrier Door and move each order into production.',accent:'border-amber-300/25 bg-amber-300/[.04] text-amber-200',icon:CakeSlice},
+  {name:'Daisy Pastries',href:'/agent/cakes',detail:'Daisy Pastries · official WEAVE cakes. Receive slice, Bento and celebration cake requests through your Carrier Door and move each order into production.',accent:'border-amber-300/25 bg-amber-300/[.04] text-amber-200',icon:CakeSlice},
 ]
 
 export default function AgentWorkPage(){
@@ -15,14 +16,14 @@ export default function AgentWorkPage(){
     <header className="border-b border-white/10 pb-7">
       <p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">Agent · Stability · Company work</p>
       <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-6xl">AGENT WORK</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Four working movements sit here: Agility, Electrolyte, Commission and Cakes. Food stock moves physically. Commission records value movement. Cakes operate as Daisy Pastries, the official WEAVE cake brand, through the Agent Carrier Door.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Four working movements sit here: Agility, Electrolyte, Commission and Daisy Pastries. Food stock moves physically. Commission records value movement. Daisy Pastries is the official WEAVE cake brand. Each product opens its own ordering space directly from Agent Work.</p>
     </header>
 
     <section className="grid gap-4 md:grid-cols-2">
       {functions.map(item=>{const Icon=item.icon;return <Link key={item.name} href={item.href} className={`group border p-6 transition hover:-translate-y-0.5 ${item.accent}`}>
         <Icon className="h-7 w-7"/>
         <h2 className="mt-5 text-3xl font-black text-white">{item.name.toUpperCase()}</h2>
-        {item.name==='Cakes'&&<p className="mt-1 text-[10px] font-black uppercase tracking-[.2em] text-amber-300">DAISY PASTRIES</p>}
+        {item.name==='Daisy Pastries'&&<img src={DAISY_PASTRIES_IMAGE_SRC} alt="Daisy Pastries WEAVE cakes" width={1122} height={1402} className="mt-4 h-auto w-full max-w-[280px] rounded-lg object-contain"/>}
         <p className="mt-3 text-sm leading-6 text-slate-400">{item.detail}</p>
         <p className="mt-5 text-[10px] font-black uppercase tracking-[.2em]">OPEN {item.name}</p>
       </Link>})}
