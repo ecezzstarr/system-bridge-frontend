@@ -2,7 +2,7 @@ import { NextRequest,NextResponse } from 'next/server'
 import { getPool } from '@/lib/db'
 import { getCarrierAccess } from '@/lib/carrier-access'
 import { getAgentByCarrierFoodCode,getCarrierFoodAgentPaymentAccount } from '@/lib/carrier-food'
-import { WEAVE_CAKE_FLAVORS,WEAVE_CAKE_SIZES,WEAVE_CAKE_TYPES,getWeaveCakeType } from '@/lib/cake-catalog'
+import { DAISY_PASTRIES_BRAND,DAISY_PASTRIES_PRICE_BANDS,WEAVE_CAKE_FLAVORS,WEAVE_CAKE_SIZES,WEAVE_CAKE_TYPES,getWeaveCakeType } from '@/lib/cake-catalog'
 import { createCakePublicToken,ensureCarrierCakeSchema,getCarrierCakeOrder } from '@/lib/carrier-cakes'
 
 async function openDoor(code:string){
@@ -35,12 +35,14 @@ export async function GET(request:NextRequest,context:{params:Promise<{code:stri
     const order=orderToken?await getCarrierCakeOrder(String(agent.id),orderToken):null
     return NextResponse.json({
       success:true,
+      brand:DAISY_PASTRIES_BRAND,
+      priceBands:DAISY_PASTRIES_PRICE_BANDS,
       agent:{name:agent.name||agent.username||'WEAVE Agent',referralCode:agent.referral_code,whatsappNumber:agent.whatsapp_number||null},
       cakeTypes:WEAVE_CAKE_TYPES,flavors:WEAVE_CAKE_FLAVORS,sizes:WEAVE_CAKE_SIZES,
       order:safeOrder(order),
-      movement:'Choose occasion cake → send event details → Agent quotes cake and delivery → customer pays Agent → Agent verifies → WEAVE prepares and moves the cake.',
+      movement:'Choose Daisy Pastries package and occasion → send event details → Agent quotes within the official price band plus delivery → customer pays Agent → Agent verifies → WEAVE prepares and moves the cake.',
     })
-  }catch(error){console.error('[carrier/cakes/public] GET failed',error);return NextResponse.json({error:'Cake ordering could not open'},{status:500})}
+  }catch(error){console.error('[carrier/cakes/public] GET failed',error);return NextResponse.json({error:'Daisy Pastries ordering could not open'},{status:500})}
 }
 
 export async function POST(request:NextRequest,context:{params:Promise<{code:string}>}){
@@ -66,8 +68,8 @@ export async function POST(request:NextRequest,context:{params:Promise<{code:str
       const customerPhone=String(body.customerPhone||'').trim().slice(0,60)
       const deliveryMode=String(body.deliveryMode||'local').trim().toLowerCase()
       const deliveryLocation=String(body.deliveryLocation||'').trim().slice(0,600)
-      if(!type)return NextResponse.json({error:'Choose a cake type for the occasion'},{status:400})
-      if(!WEAVE_CAKE_SIZES.includes(sizeOption as any))return NextResponse.json({error:'Choose a cake size'},{status:400})
+      if(!type)return NextResponse.json({error:'Choose a Daisy Pastries cake type for the occasion'},{status:400})
+      if(!WEAVE_CAKE_SIZES.includes(sizeOption as any))return NextResponse.json({error:'Choose a Daisy Pastries package or cake size'},{status:400})
       if(!WEAVE_CAKE_FLAVORS.includes(flavor as any))return NextResponse.json({error:'Choose a cake flavor'},{status:400})
       if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)||Number.isNaN(Date.parse(`${eventDate}T00:00:00`)))return NextResponse.json({error:'Choose the event date'},{status:400})
       if(customerName.length<2||customerPhone.replace(/\D/g,'').length<7||deliveryLocation.length<3)return NextResponse.json({error:'Name, reachable phone and event delivery/pickup location are required'},{status:400})
@@ -83,20 +85,20 @@ export async function POST(request:NextRequest,context:{params:Promise<{code:str
       try{
         await getPool().query(
           `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
-           VALUES ($1::uuid,'carrier_cake_order','New cake order to quote',$2,'WEAVE Carrier','/agent/cakes')`,
-          [agent.id,`${customerName} requested ${type.name} for ${eventDate}. Quote the cake from Agent Work → Cakes.`]
+           VALUES ($1::uuid,'carrier_cake_order','New Daisy Pastries order to quote',$2,'WEAVE Carrier','/agent/cakes')`,
+          [agent.id,`${customerName} requested ${type.name} · ${sizeOption} for ${eventDate}. Quote it from Agent Work → Cakes.`]
         )
       }catch{}
-      return NextResponse.json({success:true,order:safeOrder(result.rows[0]),message:'Cake request sent to the Agent. Keep this Carrier Door open or return later; the quote will appear here.'},{status:201})
+      return NextResponse.json({success:true,order:safeOrder(result.rows[0]),message:'Daisy Pastries request sent to the Agent. Keep this Carrier Door open or return later; the quote will appear here.'},{status:201})
     }
 
     if(action==='submit_payment'){
       const publicToken=String(body.publicToken||'').trim()
       const transactionReference=String(body.transactionReference||'').trim().slice(0,255)
-      if(!publicToken||transactionReference.length<4)return NextResponse.json({error:'Cake order and payment transaction reference are required'},{status:400})
+      if(!publicToken||transactionReference.length<4)return NextResponse.json({error:'Daisy Pastries order and payment transaction reference are required'},{status:400})
       const current=await getCarrierCakeOrder(String(agent.id),publicToken)
-      if(!current)return NextResponse.json({error:'Cake order not found'},{status:404})
-      if(current.status!=='quoted'||current.payment_status!=='awaiting_payment')return NextResponse.json({error:'This cake order is not waiting for payment'},{status:409})
+      if(!current)return NextResponse.json({error:'Daisy Pastries order not found'},{status:404})
+      if(current.status!=='quoted'||current.payment_status!=='awaiting_payment')return NextResponse.json({error:'This Daisy Pastries order is not waiting for payment'},{status:409})
       const payment=await getCarrierFoodAgentPaymentAccount(String(agent.id))
       if(!payment)return NextResponse.json({error:'This Agent has not configured a customer receiving account yet'},{status:409})
       const result=await getPool().query(
@@ -104,12 +106,12 @@ export async function POST(request:NextRequest,context:{params:Promise<{code:str
          WHERE agent_id=$2::uuid AND public_token=$3 AND status='quoted' AND payment_status='awaiting_payment' RETURNING *`,
         [transactionReference,agent.id,publicToken]
       )
-      if(!result.rows[0])return NextResponse.json({error:'Cake payment state changed. Reload the order.'},{status:409})
+      if(!result.rows[0])return NextResponse.json({error:'Daisy Pastries payment state changed. Reload the order.'},{status:409})
       try{
         await getPool().query(
           `INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
-           VALUES ($1::uuid,'carrier_cake_payment','Cake payment waiting for verification',$2,'WEAVE Carrier','/agent/cakes')`,
-          [agent.id,`${current.customer_name} submitted ${transactionReference} for the quoted cake order. Verify the payment before production moves.`]
+           VALUES ($1::uuid,'carrier_cake_payment','Daisy Pastries payment waiting for verification',$2,'WEAVE Carrier','/agent/cakes')`,
+          [agent.id,`${current.customer_name} submitted ${transactionReference} for the quoted Daisy Pastries order. Verify the payment before production moves.`]
         )
       }catch{}
       return NextResponse.json({success:true,order:safeOrder(result.rows[0]),message:'Payment reference sent to the Agent for verification.'})
@@ -125,6 +127,6 @@ export async function POST(request:NextRequest,context:{params:Promise<{code:str
       return NextResponse.json({success:true,order:safeOrder(result.rows[0]||null)})
     }
 
-    return NextResponse.json({error:'Unknown cake Carrier action'},{status:400})
-  }catch(error){console.error('[carrier/cakes/public] POST failed',error);return NextResponse.json({error:'Cake order could not move'},{status:500})}
+    return NextResponse.json({error:'Unknown Daisy Pastries Carrier action'},{status:400})
+  }catch(error){console.error('[carrier/cakes/public] POST failed',error);return NextResponse.json({error:'Daisy Pastries order could not move'},{status:500})}
 }
