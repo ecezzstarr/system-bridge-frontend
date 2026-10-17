@@ -503,7 +503,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
   return (
     <section
-      className="weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-hidden"
+      className="weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-clip"
       data-file-folder-world="persistent-territory-interface"
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
@@ -568,6 +568,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           md:inset-y-[7.75rem] md:left-auto md:right-0 md:bottom-auto md:w-[min(43rem,48vw)] md:max-h-none
           ${panelOpen ? 'translate-y-0 opacity-100 md:translate-x-0' : 'pointer-events-none translate-y-[115%] opacity-0 md:translate-y-0 md:translate-x-[110%]'}`}
         aria-hidden={!panelOpen}
+        inert={!panelOpen}
       >
         <div className="flex h-full max-h-[56dvh] flex-col overflow-hidden border border-cyan-100/12 bg-[#040a12]/92 shadow-[0_30px_100px_rgba(0,0,0,.62)] backdrop-blur-2xl md:max-h-[calc(100dvh-9rem)] md:border-y md:border-l md:border-r-0">
           <div className="flex shrink-0 items-center justify-between gap-3 border-b border-cyan-100/10 bg-[#06101b]/92 px-4 py-3">

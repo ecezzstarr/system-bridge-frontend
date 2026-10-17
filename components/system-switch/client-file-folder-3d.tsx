@@ -594,7 +594,7 @@ export function ClientFileFolder3D({
       onBlur={()=>{input.current.active=false;input.current.keys.clear()}}
       onKeyDown={e=>{if(!navigationEnabled)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();input.current.active=true;input.current.keys.add(k);if(k==='e'&&!e.repeat)input.current.enter=true}}}
       onKeyUp={e=>input.current.keys.delete(e.key.toLowerCase())}
-      onPointerDown={e=>e.currentTarget.focus()}
+      onPointerDown={e=>e.currentTarget.focus({preventScroll:true})}
       className={territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"}>
       <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:46}} dpr={[1,1.5]}>
         <Scene
