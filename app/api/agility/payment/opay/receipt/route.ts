@@ -20,6 +20,17 @@ export async function POST(request: NextRequest) {
     }
 
     await ensureAgilitySchema()
+    const [identity] = await sql`
+      SELECT variant_id
+      FROM agility_stock_orders
+      WHERE id=${orderId}::uuid AND agent_id=${user.id}::uuid
+      LIMIT 1
+    `
+    if (!identity) return NextResponse.json({ success: false, error: 'WEAVE food order not found' }, { status: 404 })
+    if (['electrolyte','electrolyte-medium'].includes(String(identity.variant_id))) {
+      return NextResponse.redirect(new URL('/api/electrolyte/payment/opay/receipt', request.url), 307)
+    }
+
     const normalizedReceipt = receipt.toLowerCase().replace(/\s+/g, ' ').trim()
     const proofHash = createHash('sha256').update(normalizedReceipt).digest('hex')
 
