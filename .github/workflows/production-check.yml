@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: File Folder world runtime regression
+        run: node tests/file-folder-world-runtime-regression.cjs
+
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
 
