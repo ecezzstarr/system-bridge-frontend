@@ -59,3 +59,5 @@ let approach={x:0,z:3,yaw:0}
 for(let i=0;i<40;i++)approach=world.movePresence(approach,1,0,.05,[{x:0,z:0,radius:world.DISTRICT_BODY_RADIUS}])
 assert(approach.z>=1.8,'Presence stays outside the central hall wall')
 assert(world.canEnter(approach,[0,0,0]),'Door remains reachable outside the collision boundary')
+assert(env.includes('inert={!panelOpen}'),'Closed workspaces cannot retain keyboard focus')
+assert(scene.includes('focus({preventScroll:true})'),'World focus does not scroll the territory')
