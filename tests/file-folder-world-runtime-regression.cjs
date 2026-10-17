@@ -54,3 +54,8 @@ for(const [type,dest] of [['commerce_storefront','business'],['route_station','e
 const searchTree=ui.BuiltSystemRuntime({system:{id:'data',system_type:'data_room',status:'active',entries},onNavigate(){},onToggle(){},busy:false})
 assert(elements(searchTree).some(e=>e.type==='input'&&e.props['aria-label']==='Search this system'))
 console.log('Capability controls: task completion, Customer Door, authorized-route workspace and search rendering passed')
+
+let approach={x:0,z:3,yaw:0}
+for(let i=0;i<40;i++)approach=world.movePresence(approach,1,0,.05,[{x:0,z:0,radius:world.DISTRICT_BODY_RADIUS}])
+assert(approach.z>=1.8,'Presence stays outside the central hall wall')
+assert(world.canEnter(approach,[0,0,0]),'Door remains reachable outside the collision boundary')
