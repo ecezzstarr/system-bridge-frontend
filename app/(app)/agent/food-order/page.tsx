@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { Boxes, CheckCircle2, CreditCard, Loader2, PackageCheck, RefreshCcw, Truck } from 'lucide-react'
+import { Boxes, CakeSlice, CheckCircle2, CreditCard, Loader2, PackageCheck, RefreshCcw, Truck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AGILITY_PRODUCT_VARIANTS, type AgilityVariant } from '@/lib/agility-catalog'
+import { DAISY_PASTRIES_IMAGE_SRC } from '@/lib/daisy-pastries-image'
 import {
   WEAVE_FOOD_CARTON_STEP,
   WEAVE_FOOD_MAX_CARTON_ORDER,
@@ -102,7 +103,9 @@ export default function AgentAgilityOrderPage(){
   if(!isAgent)return <main className="p-8 text-sm text-slate-300">Agent account required.</main>
 
   return <main className="mx-auto max-w-7xl space-y-7 pb-20 text-white" data-agility-home="independent">
-    <section className="rounded-[2rem] border border-orange-300/20 bg-gradient-to-br from-orange-500/10 via-slate-950 to-amber-500/10 p-6 md:p-9"><p className="text-[10px] font-black uppercase tracking-[.3em] text-orange-300">Agent Department · Agility</p><h1 className="mt-2 text-5xl font-black md:text-7xl">AGILITY</h1><p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300 md:text-base">Agility is its own WEAVE food ground. Order Agility cartons from WEAVE, pay through OPay, wait for Administration verification and company fulfillment, then receive and move the stock through your Distribution Route or Carrier.</p><div className="mt-5 flex flex-wrap gap-2"><Link href="/agent/distribution"><Button variant="outline" className="border-white/15 text-white"><Truck className="mr-2 h-4 w-4"/>DISTRIBUTION ROUTE</Button></Link><Link href="/electrolyte"><Button variant="outline" className="border-emerald-300/20 text-emerald-100">OPEN ELECTROLYTE</Button></Link><Button variant="outline" className="border-white/15 text-white" onClick={()=>void load()}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div></section>
+    <section className="rounded-[2rem] border border-orange-300/20 bg-gradient-to-br from-orange-500/10 via-slate-950 to-amber-500/10 p-6 md:p-9"><p className="text-[10px] font-black uppercase tracking-[.3em] text-orange-300">Agent Department · Agility</p><h1 className="mt-2 text-5xl font-black md:text-7xl">AGILITY</h1><p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300 md:text-base">Agility is its own WEAVE food ground. Order Agility cartons from WEAVE, pay through OPay, wait for Administration verification and company fulfillment, then receive and move the stock through your Distribution Route or Carrier.</p><div className="mt-5 flex flex-wrap gap-2"><Link href="/agent/distribution"><Button variant="outline" className="border-white/15 text-white"><Truck className="mr-2 h-4 w-4"/>DISTRIBUTION ROUTE</Button></Link><Link href="/electrolyte"><Button variant="outline" className="border-emerald-300/20 text-emerald-100">OPEN ELECTROLYTE</Button></Link><Link href="/agent/cakes"><Button variant="outline" className="border-amber-300/20 text-amber-100"><CakeSlice className="mr-2 h-4 w-4"/>OPEN DAISY PASTRIES</Button></Link><Button variant="outline" className="border-white/15 text-white" onClick={()=>void load()}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div></section>
+
+    <section className="grid overflow-hidden rounded-[1.6rem] border border-amber-300/20 bg-amber-300/[.025] md:grid-cols-[280px_1fr]" data-daisy-pastries-entry="true"><div className="bg-[#f8f0df]"><img src={DAISY_PASTRIES_IMAGE_SRC} alt="Daisy Pastries WEAVE cakes" className="h-full min-h-[240px] w-full object-contain"/></div><div className="p-5 md:p-7"><p className="text-[10px] font-black uppercase tracking-[.22em] text-amber-300">WEAVE food & occasions</p><h2 className="mt-1 text-3xl font-black">DAISY PASTRIES</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">Agents can order Daisy Pastries directly, or customers can order from the Agent Carrier Door. Cake Slice is under ₦5,000, Bento Cake is ₦10,000, and celebration cakes run from ₦15,000 to ₦60,000.</p><Link href="/agent/cakes"><Button className="mt-5 bg-amber-300 font-black text-slate-950 hover:bg-amber-200"><CakeSlice className="mr-2 h-4 w-4"/>ORDER DAISY PASTRIES</Button></Link></div></section>
 
     <section className="rounded-[1.5rem] border border-white/10 bg-white/[.025] p-5"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Where WEAVE sends your Agility stock</p><div className="mt-3 grid gap-3 md:grid-cols-2"><Input value={address} onChange={event=>setAddress(event.target.value)} placeholder="Receiving location / address" className="border-white/10 bg-black/25"/><Input value={phone} onChange={event=>setPhone(event.target.value)} placeholder="Receiving phone" className="border-white/10 bg-black/25"/></div></section>
     {message&&<div role="status" className="rounded-2xl border border-orange-300/20 bg-orange-300/[.06] px-5 py-4 text-sm leading-6 text-orange-50">{message}</div>}
