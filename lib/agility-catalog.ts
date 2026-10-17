@@ -1,5 +1,6 @@
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 import type { WeaveFoodVariant } from '@/lib/weave-food-types'
+import { ELECTROLYTE_VARIANTS } from '@/lib/electrolyte-catalog'
 
 export const AGILITY_RETAIL_UNIT_PRICE_NGN = 3000
 export const AGILITY_PACKAGES_PER_BOX = 10
@@ -26,7 +27,7 @@ export const AGILITY_OPAY_ACCOUNT_NUMBER = WEAVE_OPAY_ACCOUNT_NUMBER
 // Compatibility alias for existing Agility-only UI imports.
 export type AgilityVariant = WeaveFoodVariant
 
-export const AGILITY_VARIANTS: AgilityVariant[] = [
+export const AGILITY_PRODUCT_VARIANTS: AgilityVariant[] = [
   {
     id: 'classic',
     name: 'Agility Classic',
@@ -61,7 +62,7 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
     fruit: 'Apple',
     drink: 'Milk',
     water: 'Water',
-    note: 'A meat-based Agility under the same Agility carton economics.',
+    note: 'A meat-based Agility under the same Agility company standard.',
   },
   {
     id: 'fish',
@@ -75,6 +76,16 @@ export const AGILITY_VARIANTS: AgilityVariant[] = [
     water: 'Water',
     note: 'A fish variation under the same Agility company standard.',
   },
+]
+
+/**
+ * Legacy all-WEAVE-food alias. Electrolyte is defined and operated in its own
+ * catalog/home/API; this export remains only so older shared Carrier and
+ * Distribution surfaces keep seeing all stock until those callers migrate.
+ */
+export const AGILITY_VARIANTS: AgilityVariant[] = [
+  ...AGILITY_PRODUCT_VARIANTS,
+  ...ELECTROLYTE_VARIANTS,
 ]
 
 export const AGILITY_FULFILLMENT_STAGES = [
