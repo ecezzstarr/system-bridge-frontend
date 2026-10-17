@@ -6,7 +6,7 @@ import { useFrame } from '@react-three/fiber'
 import { ContactShadows,Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
-import { systemWorldPosition, type Presence } from '@/lib/file-folder-world-runtime'
+import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
@@ -504,7 +504,7 @@ function Scene({
     <ContactShadows frames={1} resolution={256} position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
     <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby}
       obstacles={[
-        ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:1.15})),
+        ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:DISTRICT_BODY_RADIUS})),
         ...liveSystems.slice(0,12).map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[

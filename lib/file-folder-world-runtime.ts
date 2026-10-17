@@ -1,3 +1,4 @@
+export const DISTRICT_BODY_RADIUS = 1.6
 export type Presence = { x: number; z: number; yaw: number }
 export type WorldObstacle = { x: number; z: number; radius: number }
 
