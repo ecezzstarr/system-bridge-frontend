@@ -27,16 +27,21 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Regression checks
+      - name: Core recent-feature regression
+        run: node tests/recent-features.cjs
+
+      - name: WEAVE food regressions
         run: |
-          node tests/recent-features.cjs
+          node tests/carrier-food-payment-regression.cjs
+          node tests/electrolyte-independent-home-regression.cjs
+
+      - name: Remaining regression checks
+        run: |
           node tests/selfhost-deployment-regression.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/file-folder-sales-manager-regression.cjs
           node tests/public-flame-movement-regression.cjs
           node tests/carrier-ace-regression.cjs
-          node tests/carrier-food-payment-regression.cjs
-          node tests/electrolyte-independent-home-regression.cjs
           node tests/lifestyle-position-access-regression.cjs
           node tests/agentic-bridger-regression.cjs
           node tests/file-folder-customer-door-purchase-regression.cjs
