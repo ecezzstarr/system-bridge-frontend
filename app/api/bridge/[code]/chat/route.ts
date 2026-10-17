@@ -12,12 +12,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const bridges = await sql`
-      SELECT b.id, t.system_prompt, t.status as template_status
+      SELECT b.id, t.system_prompt
       FROM bridge_ais b
       JOIN bridge_templates t ON t.id = b.template_id
       WHERE b.bridge_code = ${code} AND b.status = 'active'
     `
-    if (bridges.length === 0 || bridges[0].template_status !== 'published') {
+    if (bridges.length === 0) {
       return NextResponse.json({ error: 'Bridge not found or inactive' }, { status: 404 })
     }
     const bridge = bridges[0]
