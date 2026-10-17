@@ -557,7 +557,7 @@ assert.ok(roleDistrictEnvironmentSource.includes('districtScenes')&&roleDistrict
 assert.equal(getRoleDistricts('admin')[0].name,'Control','Administration starts with one control district')
 assert.deepEqual(
  getRolePlaces('agent').map(place=>place.href),
- ['/agent/presence','/settings','/agility','/agent/commissions','/communications','/company-chat','/event'],
+ ['/agent/presence','/settings','/agility','/electrolyte','/agent/cakes','/agent/commissions','/communications','/company-chat','/event'],
  'Agent account keeps focused districts with Company Guidance inside Connection & Event'
 )
 assert.deepEqual(
