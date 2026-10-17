@@ -14,6 +14,7 @@ for(const p of [
   'lib/cake-catalog.ts',
   'lib/carrier-cakes.ts',
   'lib/daisy-pastries-image.ts',
+  'public/weave-food/daisy-pastries.jpg',
 ])exists(p)
 
 const work=read('app/(app)/agent/work/page.tsx')
@@ -34,13 +35,12 @@ assert.ok(catalog.includes('DAISY_CELEBRATION_MIN_NGN=15000')&&catalog.includes(
 assert.ok(catalog.includes("'Cake Slice · Under ₦5,000'")&&catalog.includes("'Bento Cake · ₦10,000'"),'customer package choices expose Slice and Bento')
 assert.ok(catalog.includes('getDaisyPastriesPricePolicy'),'catalog supplies one authoritative Daisy Pastries pricing policy')
 
-const imageAggregator=read('lib/daisy-pastries-image.ts')
-const imageMatch=imageAggregator.match(/DAISY_PASTRIES_IMAGE_SRC='data:image\/jpeg;base64,([^']+)'/)
-assert.ok(imageMatch,'Daisy Pastries approved artwork is embedded directly in application code')
-const imageBytes=Buffer.from(imageMatch[1],'base64')
-assert.equal(imageBytes.length,7108,'Daisy Pastries compact artwork preserves expected byte length')
+const imageBytes=fs.readFileSync(path.join(root,'public/weave-food/daisy-pastries.jpg'))
+assert.equal(imageBytes.length,7108,'Daisy Pastries real image asset preserves expected byte length')
 assert.equal(crypto.createHash('sha256').update(imageBytes).digest('hex'),'f2804e664c9e9e9f722ffd9bf7e86517d79e5f47fe212a663c92736faa4225b9','Daisy Pastries code uses the exact approved generated artwork derivative')
-assert.ok(imageAggregator.includes("DAISY_PASTRIES_IMAGE_SHA256='f2804e664c9e9e9f722ffd9bf7e86517d79e5f47fe212a663c92736faa4225b9'"),'embedded artwork publishes its integrity fingerprint')
+const imageModule=read('lib/daisy-pastries-image.ts')
+assert.ok(imageModule.includes("DAISY_PASTRIES_IMAGE_SRC='/weave-food/daisy-pastries.jpg'"),'Daisy Pastries pages use the real public image asset')
+assert.ok(imageModule.includes("DAISY_PASTRIES_IMAGE_SHA256='f2804e664c9e9e9f722ffd9bf7e86517d79e5f47fe212a663c92736faa4225b9'"),'approved artwork integrity fingerprint is preserved')
 
 const cakeLedger=read('lib/carrier-cakes.ts')
 for(const status of ['quote_requested','quoted','awaiting_payment_verification','paid','preparing','ready','dispatched','completed','cancelled'])assert.ok(cakeLedger.includes(status),`cake ledger includes ${status}`)
