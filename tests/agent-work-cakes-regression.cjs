@@ -6,6 +6,7 @@ const exists=p=>assert.ok(fs.existsSync(path.join(root,p)),`${p} exists`)
 for(const p of [
   'app/(app)/agent/work/page.tsx',
   'app/(app)/agent/cakes/page.tsx',
+  'app/(app)/agent/food-order/page.tsx',
   'app/(app)/admin/cakes/page.tsx',
   'app/api/agent/cakes/route.ts',
   'app/api/admin/cakes/route.ts',
@@ -54,9 +55,14 @@ assert.ok(publicApi.includes("'quote_requested'"),'Daisy Pastries starts as quot
 assert.ok(publicApi.includes('DAISY_PASTRIES_PRICE_BANDS'),'Carrier API publishes official Daisy Pastries pricing')
 
 const agentApi=read('app/api/agent/cakes/route.ts')
+assert.ok(agentApi.includes('export async function POST'),'Agent Daisy Pastries API accepts direct Agent orders')
+assert.ok(agentApi.includes("action!=='request_order'"),'Agent direct order endpoint is constrained to Daisy order creation')
+assert.ok(agentApi.includes('getAgentCarrierFoodIdentity'),'Agent direct Daisy order remains attached to the Agent Carrier identity')
 assert.ok(agentApi.includes("action==='set_quote'"),'Agent can quote Daisy Pastries order')
 assert.ok(agentApi.includes('getDaisyPastriesPricePolicy'),'Agent quote API enforces official Daisy Pastries price policy')
 assert.ok(agentApi.includes('requestedCakePrice<policy.minNgn||requestedCakePrice>policy.maxNgn'),'Agent cannot quote outside the official Daisy Pastries band')
+assert.ok(agentApi.includes("action==='record_payment'"),'Agent can attach a payment reference to a direct or assisted Daisy order')
+assert.ok(agentApi.includes("payment_status='proof_submitted'"),'recorded Daisy payment still requires verification')
 assert.ok(agentApi.includes("action==='verify_payment'"),'Agent verifies customer Daisy Pastries payment')
 assert.ok(agentApi.includes("status='paid'"),'verified Daisy Pastries payment enters paid state')
 
@@ -80,7 +86,15 @@ assert.ok(cakePublic.includes('I PAID THE AGENT'),'customer payment follows Cust
 const agentCakePage=read('app/(app)/agent/cakes/page.tsx')
 assert.ok(agentCakePage.includes('DAISY PASTRIES')&&agentCakePage.includes('Official WEAVE Cakes'),'Agent Cakes route is the Daisy Pastries working home')
 assert.ok(agentCakePage.includes('DAISY_PASTRIES_IMAGE_SRC'),'Agent Daisy Pastries page uses the approved artwork')
+assert.ok(agentCakePage.includes('ORDER DAISY PASTRIES'),'Agent has a direct Daisy Pastries order action')
+assert.ok(agentCakePage.includes("method:'POST'")&&agentCakePage.includes("action:'request_order'"),'Agent direct Daisy order is sent to the Agent cake API')
+assert.ok(agentCakePage.includes("action:'record_payment'"),'Agent can attach payment reference without leaving Daisy Pastries')
 assert.ok(agentCakePage.includes('getDaisyPastriesPricePolicy'),'Agent Daisy Pastries page displays and applies the official band per order')
+
+const foodOrderPage=read('app/(app)/agent/food-order/page.tsx')
+assert.ok(foodOrderPage.includes('OPEN DAISY PASTRIES'),'Agility order ground links into Daisy Pastries')
+assert.ok(foodOrderPage.includes('DAISY_PASTRIES_IMAGE_SRC'),'Agent product ordering ground visibly shows the Daisy image')
+assert.ok(foodOrderPage.includes('data-daisy-pastries-entry="true"'),'Daisy has a dedicated product entry beside existing food movement')
 
 const adminCakePage=read('app/(app)/admin/cakes/page.tsx')
 assert.ok(adminCakePage.includes('DAISY PASTRIES FULFILLMENT'),'Administration recognizes Daisy Pastries as the cake production system')
