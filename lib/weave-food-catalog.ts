@@ -1,9 +1,9 @@
-import { AGILITY_VARIANTS } from '@/lib/agility-catalog'
+import { AGILITY_PRODUCT_VARIANTS } from '@/lib/agility-catalog'
 import { ELECTROLYTE_VARIANTS, isElectrolyteVariant } from '@/lib/electrolyte-catalog'
 import type { WeaveFoodVariant } from '@/lib/weave-food-types'
 
 export const WEAVE_FOOD_VARIANTS: WeaveFoodVariant[] = [
-  ...AGILITY_VARIANTS,
+  ...AGILITY_PRODUCT_VARIANTS,
   ...ELECTROLYTE_VARIANTS,
 ]
 
