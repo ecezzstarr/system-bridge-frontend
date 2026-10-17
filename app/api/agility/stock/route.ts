@@ -12,6 +12,7 @@ import {
   ensureAgilitySchema,
   getAgilityVariant,
 } from '@/lib/agility'
+import { getElectrolyteVariant } from '@/lib/electrolyte-catalog'
 import {
   formatWeaveFoodCartonQuantity,
   getWeaveFoodStockTotals,
@@ -27,6 +28,9 @@ export async function GET(request: NextRequest) {
 
   try {
     await ensureAgilitySchema()
+    // Legacy combined read is kept for Agent Distribution Route continuity.
+    // Product homes filter their own family; Electrolyte mutations are redirected
+    // to the independent Electrolyte APIs below.
     const orders = await sql`
       SELECT
         o.*,
@@ -53,13 +57,13 @@ export async function GET(request: NextRequest) {
         ),0)::numeric AS today_gross_profit_ngn
       FROM agility_stock_orders o
       WHERE o.agent_id = ${user.id}::uuid
-        AND o.variant_id NOT IN ('electrolyte','electrolyte-medium')
       ORDER BY o.created_at DESC
       LIMIT 100
     `
 
     return NextResponse.json({
       success: true,
+      legacyCombinedRead: true,
       companyStandard: {
         retailUnitPriceNgn: AGILITY_RETAIL_UNIT_PRICE_NGN,
         packagesPerBox: AGILITY_PACKAGES_PER_BOX,
@@ -73,7 +77,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('[agility/stock] GET failed', error)
-    return NextResponse.json({ success: false, error: 'Unable to load Agility stock orders' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Unable to load WEAVE food stock orders' }, { status: 500 })
   }
 }
 
@@ -86,6 +90,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const variantId = String(body.variantId || '').trim()
+    if (getElectrolyteVariant(variantId)) {
+      return NextResponse.redirect(new URL('/api/electrolyte/stock', request.url), 307)
+    }
+
     const boxCount = Number(body.boxCount)
     const distributionMode = String(body.distributionMode || 'retailer').trim()
     const deliveryAddress = String(body.deliveryAddress || '').trim().slice(0, 500)
@@ -100,23 +108,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Choose wholesaler or retailer distribution' }, { status: 400 })
     }
     if (!isValidWeaveFoodCartonQuantity(boxCount)) {
-      return NextResponse.json({
-        success: false,
-        error: 'Agents can order only half cartons or full cartons, in 0.5-carton steps. Individual pieces cannot be ordered from WEAVE.',
-      }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Agents can order only half cartons or full cartons, in 0.5-carton steps. Individual pieces cannot be ordered from WEAVE.' }, { status: 400 })
     }
-    if (deliveryAddress.length < 5) {
-      return NextResponse.json({ success: false, error: 'Enter where WEAVE should deliver the cartons to you' }, { status: 400 })
-    }
-    if (deliveryPhone.replace(/\D/g, '').length < 7) {
-      return NextResponse.json({ success: false, error: 'Enter a valid receiving phone number' }, { status: 400 })
-    }
+    if (deliveryAddress.length < 5) return NextResponse.json({ success: false, error: 'Enter where WEAVE should deliver the cartons to you' }, { status: 400 })
+    if (deliveryPhone.replace(/\D/g, '').length < 7) return NextResponse.json({ success: false, error: 'Enter a valid receiving phone number' }, { status: 400 })
 
     await ensureAgilitySchema()
     const totals = getWeaveFoodStockTotals(variant.id, boxCount)
-    if (!totals) {
-      return NextResponse.json({ success: false, error: 'Agility economics are unavailable for this carton quantity' }, { status: 409 })
-    }
+    if (!totals) return NextResponse.json({ success: false, error: 'Agility economics are unavailable for this carton quantity' }, { status: 409 })
     const paymentReference = `AGILITY-${user.id.slice(0, 8)}-${Date.now()}`
 
     const [order] = await sql`
@@ -126,66 +125,27 @@ export async function POST(request: NextRequest) {
         agent_box_price_ngn,agent_unit_cost_ngn,total_ngn,agent_expected_gross_profit_ngn,
         payment_reference,payment_method,opay_account_number,payment_status,fulfillment_status,
         delivery_address,delivery_phone,agent_note
-      )
-      VALUES (
+      ) VALUES (
         ${user.id}::uuid,${variant.id},${distributionMode},${totals.boxCount},${totals.packagesPerBox},${totals.packageCount},
         ${totals.agentSellingUnitPriceNgn},${totals.agentBoxPriceNgn},${totals.agentSellingUnitPriceNgn},${totals.retailBoxValueNgn},
         ${totals.agentBoxPriceNgn},${totals.agentBuyUnitPriceNgn},${totals.agentPayableNgn},${totals.agentExpectedGrossProfitNgn},
         ${paymentReference},'OPay',${AGILITY_OPAY_ACCOUNT_NUMBER},'pending','awaiting_payment',
         ${deliveryAddress},${deliveryPhone},${agentNote || null}
-      )
-      RETURNING *
+      ) RETURNING *
     `
 
     const cartonDescription = formatWeaveFoodCartonQuantity(totals.boxCount)
     const receipt = await issueWeaveReceipt({
-      userId: user.id,
-      kind: 'purchase',
-      source: 'agility_stock_order',
-      sourceId: String(order.id),
-      amount: totals.agentPayableNgn,
-      currency: 'NGN',
-      status: 'awaiting_payment',
-      description: `${variant.name} distribution stock · ${cartonDescription}`,
-      metadata: {
-        variantId: variant.id,
-        productName: variant.name,
-        distributionMode,
-        paymentReference,
-        boxCount: totals.boxCount,
-        packageCount: totals.packageCount,
-        agentBuyUnitPriceNgn: totals.agentBuyUnitPriceNgn,
-        agentSellingUnitPriceNgn: totals.agentSellingUnitPriceNgn,
-      },
+      userId:user.id,kind:'purchase',source:'agility_stock_order',sourceId:String(order.id),amount:totals.agentPayableNgn,currency:'NGN',status:'awaiting_payment',
+      description:`${variant.name} distribution stock · ${cartonDescription}`,
+      metadata:{variantId:variant.id,productName:variant.name,distributionMode,paymentReference,boxCount:totals.boxCount,packageCount:totals.packageCount,agentBuyUnitPriceNgn:totals.agentBuyUnitPriceNgn,agentSellingUnitPriceNgn:totals.agentSellingUnitPriceNgn},
     })
 
     return NextResponse.json({
-      success: true,
-      order,
-      receipt,
-      product: { id: variant.id, name: variant.name },
-      payment: {
-        method: 'OPay',
-        accountNumber: AGILITY_OPAY_ACCOUNT_NUMBER,
-        amountNgn: totals.agentPayableNgn,
-        reference: paymentReference,
-        instruction: `Send exactly ₦${totals.agentPayableNgn.toLocaleString()} to OPay ${AGILITY_OPAY_ACCOUNT_NUMBER}, then submit the OPay transaction reference or receipt for Administration verification.`,
-      },
-      economics: {
-        cartonQuantity: totals.boxCount,
-        cartonDescription,
-        packagesPerBox: totals.packagesPerBox,
-        packageCount: totals.packageCount,
-        agentBuyUnitPriceNgn: totals.agentBuyUnitPriceNgn,
-        agentSellingUnitPriceNgn: totals.agentSellingUnitPriceNgn,
-        agentBoxPriceNgn: totals.agentBoxPriceNgn,
-        retailValueNgn: totals.retailValueNgn,
-        agentPayableNgn: totals.agentPayableNgn,
-        agentExpectedGrossProfitNgn: totals.agentExpectedGrossProfitNgn,
-        customerPriceLocked: totals.customerPriceLocked,
-        distributionMode,
-      },
-    }, { status: 201 })
+      success:true,order,receipt,product:{id:variant.id,name:variant.name},
+      payment:{method:'OPay',accountNumber:AGILITY_OPAY_ACCOUNT_NUMBER,amountNgn:totals.agentPayableNgn,reference:paymentReference,instruction:`Send exactly ₦${totals.agentPayableNgn.toLocaleString()} to OPay ${AGILITY_OPAY_ACCOUNT_NUMBER}, then submit the OPay transaction reference or receipt for Administration verification.`},
+      economics:{cartonQuantity:totals.boxCount,cartonDescription,packagesPerBox:totals.packagesPerBox,packageCount:totals.packageCount,agentBuyUnitPriceNgn:totals.agentBuyUnitPriceNgn,agentSellingUnitPriceNgn:totals.agentSellingUnitPriceNgn,agentBoxPriceNgn:totals.agentBoxPriceNgn,retailValueNgn:totals.retailValueNgn,agentPayableNgn:totals.agentPayableNgn,agentExpectedGrossProfitNgn:totals.agentExpectedGrossProfitNgn,customerPriceLocked:totals.customerPriceLocked,distributionMode},
+    },{status:201})
   } catch (error) {
     console.error('[agility/stock] POST failed', error)
     return NextResponse.json({ success: false, error: 'Unable to create Agility stock order' }, { status: 500 })
