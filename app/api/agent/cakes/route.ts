@@ -1,9 +1,9 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
-import { DAISY_PASTRIES_BRAND,DAISY_PASTRIES_PRICE_BANDS,WEAVE_CAKE_FLAVORS,WEAVE_CAKE_SIZES,WEAVE_CAKE_TYPES,getDaisyPastriesPricePolicy } from '@/lib/cake-catalog'
-import { ensureCarrierCakeSchema } from '@/lib/carrier-cakes'
-import { getCarrierFoodAgentPaymentAccount } from '@/lib/carrier-food'
+import { DAISY_PASTRIES_BRAND,DAISY_PASTRIES_PRICE_BANDS,WEAVE_CAKE_FLAVORS,WEAVE_CAKE_SIZES,WEAVE_CAKE_TYPES,getDaisyPastriesPricePolicy,getWeaveCakeType } from '@/lib/cake-catalog'
+import { createCakePublicToken,ensureCarrierCakeSchema } from '@/lib/carrier-cakes'
+import { getAgentCarrierFoodIdentity,getCarrierFoodAgentPaymentAccount } from '@/lib/carrier-food'
 
 export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
@@ -16,6 +16,50 @@ export async function GET(request:NextRequest){
     ])
     return NextResponse.json({success:true,brand:DAISY_PASTRIES_BRAND,priceBands:DAISY_PASTRIES_PRICE_BANDS,cakeTypes:WEAVE_CAKE_TYPES,flavors:WEAVE_CAKE_FLAVORS,sizes:WEAVE_CAKE_SIZES,paymentAccount,orders:orders.rows})
   }catch(error){console.error('[agent/cakes] GET failed',error);return NextResponse.json({error:'Unable to load Daisy Pastries orders'},{status:500})}
+}
+
+export async function POST(request:NextRequest){
+  const user=await getAuthUser(request)
+  if(!user||user.role!=='agent')return NextResponse.json({error:'Agent account required'},{status:403})
+  try{
+    await ensureCarrierCakeSchema()
+    const body=await request.json().catch(()=>({}))
+    const action=String(body.action||'request_order').trim().toLowerCase()
+    if(action!=='request_order')return NextResponse.json({error:'Unknown Agent Daisy Pastries action'},{status:400})
+
+    const cakeType=String(body.cakeType||'').trim()
+    const type=getWeaveCakeType(cakeType)
+    const occasion=String(body.occasion||type?.occasion||'').trim().slice(0,180)
+    const sizeOption=String(body.sizeOption||'').trim().slice(0,80)
+    const flavor=String(body.flavor||'').trim().slice(0,120)
+    const inscription=String(body.inscription||'').trim().slice(0,300)
+    const designNote=String(body.designNote||'').trim().slice(0,1200)
+    const eventDate=String(body.eventDate||'').trim()
+    const customerName=String(body.customerName||user.name||user.username||'').trim().slice(0,180)
+    const customerPhone=String(body.customerPhone||'').trim().slice(0,60)
+    const deliveryMode=String(body.deliveryMode||'local').trim().toLowerCase()
+    const deliveryLocation=String(body.deliveryLocation||'').trim().slice(0,600)
+
+    if(!type)return NextResponse.json({error:'Choose a Daisy Pastries cake type for the occasion'},{status:400})
+    if(!WEAVE_CAKE_SIZES.includes(sizeOption as any))return NextResponse.json({error:'Choose a Daisy Pastries package or cake size'},{status:400})
+    if(!WEAVE_CAKE_FLAVORS.includes(flavor as any))return NextResponse.json({error:'Choose a cake flavor'},{status:400})
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)||Number.isNaN(Date.parse(`${eventDate}T00:00:00`)))return NextResponse.json({error:'Choose the event date'},{status:400})
+    if(customerName.length<2||customerPhone.replace(/\D/g,'').length<7||deliveryLocation.length<3)return NextResponse.json({error:'Name, reachable phone and event delivery/pickup location are required'},{status:400})
+    if(!['local','waybill'].includes(deliveryMode))return NextResponse.json({error:'Choose local delivery/pickup or far-location waybill'},{status:400})
+
+    const identity=await getAgentCarrierFoodIdentity(String(user.id))
+    const referralCode=String(identity?.referral_code||'').trim()
+    if(!referralCode)return NextResponse.json({error:'Your Agent Carrier identity is not ready yet. Open Carrier once, then retry Daisy Pastries.'},{status:409})
+    const publicToken=createCakePublicToken()
+    const result=await getPool().query(
+      `INSERT INTO carrier_cake_orders (
+        agent_id,referral_code,public_token,cake_type,occasion,size_option,flavor,inscription,design_note,event_date,
+        customer_name,customer_phone,delivery_mode,delivery_location,status,payment_status
+      ) VALUES ($1::uuid,$2,$3,$4,$5,$6,$7,$8,$9,$10::date,$11,$12,$13,$14,'quote_requested','not_ready') RETURNING *`,
+      [user.id,referralCode,publicToken,cakeType,occasion,sizeOption,flavor,inscription||null,designNote||null,eventDate,customerName,customerPhone,deliveryMode,deliveryLocation]
+    )
+    return NextResponse.json({success:true,order:result.rows[0],message:'Daisy Pastries order created. Set the official quote below, then move payment and Administration production through the same order.'},{status:201})
+  }catch(error){console.error('[agent/cakes] POST failed',error);return NextResponse.json({error:'Unable to create Daisy Pastries order'},{status:500})}
 }
 
 export async function PATCH(request:NextRequest){
@@ -53,6 +97,18 @@ export async function PATCH(request:NextRequest){
       )
       if(!result.rows[0])return NextResponse.json({error:'This Daisy Pastries order can no longer be quoted'},{status:409})
       return NextResponse.json({success:true,order:result.rows[0],message:'Daisy Pastries quote is now visible to the customer through your Carrier Door.'})
+    }
+
+    if(action==='record_payment'){
+      const transactionReference=String(body.transactionReference||'').trim().slice(0,255)
+      if(transactionReference.length<4)return NextResponse.json({error:'Enter the bank or OPay transaction reference'},{status:400})
+      const result=await getPool().query(
+        `UPDATE carrier_cake_orders SET payment_reference=$1,payment_status='proof_submitted',status='awaiting_payment_verification',updated_at=NOW()
+         WHERE id=$2::uuid AND agent_id=$3::uuid AND status='quoted' AND payment_status='awaiting_payment' RETURNING *`,
+        [transactionReference,orderId,user.id]
+      )
+      if(!result.rows[0])return NextResponse.json({error:'This Daisy Pastries order is not waiting for a payment reference'},{status:409})
+      return NextResponse.json({success:true,order:result.rows[0],message:'Payment reference attached. Verify the payment before Administration production starts.'})
     }
 
     if(action==='verify_payment'){
