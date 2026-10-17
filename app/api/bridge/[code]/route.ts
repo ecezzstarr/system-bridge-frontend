@@ -7,7 +7,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const bridges = await sql`
       SELECT b.id, b.bridge_code, b.custom_welcome_message, b.status,
              t.name as template_name, t.welcome_message as template_welcome_message,
-             t.system_prompt, t.status as template_status, t.experience_type,
+             t.system_prompt, t.experience_type,
              u.id as bridger_id, u.name as bridger_name, u.username as bridger_username
       FROM bridge_ais b
       JOIN bridge_templates t ON t.id = b.template_id
@@ -18,10 +18,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Bridge not found or inactive' }, { status: 404 })
     }
     const bridge = bridges[0]
-    if (bridge.template_status !== 'published') {
-      return NextResponse.json({ error: 'This Bridge is not currently active' }, { status: 404 })
-    }
-    // Fire-and-forget view event
+
+    // Template publication controls creation of new Bridge AI paths. Once a
+    // Bridger has created an active path, that visitor link remains live until
+    // the path itself is explicitly deactivated.
     sql`
       INSERT INTO bridge_events (bridge_id, event_type)
       VALUES (${bridge.id}::uuid, 'view')
