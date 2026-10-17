@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
+import { AGILITY_PRODUCT_VARIANTS } from '@/lib/agility-catalog'
 import {
   AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,
   AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
-  AGILITY_PRODUCT_VARIANTS,
   ensureAgilitySchema,
   getAgilityCompanyEconomics,
   nextAgilityAdminStage,
