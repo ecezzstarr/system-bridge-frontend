@@ -12,9 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const orderId = String(body.orderId || '').trim()
-    if (!orderId) {
-      return NextResponse.json({ success: false, error: 'Order is required' }, { status: 400 })
-    }
+    if (!orderId) return NextResponse.json({ success: false, error: 'Order is required' }, { status: 400 })
 
     await ensureAgilitySchema()
     const [updated] = await sql`
@@ -22,16 +20,14 @@ export async function POST(request: NextRequest) {
       SET fulfillment_status='received', received_at=COALESCE(received_at,NOW()), updated_at=NOW()
       WHERE id=${orderId}::uuid
         AND agent_id=${user.id}::uuid
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
         AND payment_status='paid'
         AND fulfillment_status='delivered'
       RETURNING *
     `
 
     if (!updated) {
-      return NextResponse.json({
-        success: false,
-        error: 'Only a paid Agility order marked delivered by Administration can be received',
-      }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'Only a paid Agility order marked delivered by Administration can be received' }, { status: 409 })
     }
 
     try {
