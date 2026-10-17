@@ -103,3 +103,14 @@ const adminCakePage=read('app/(app)/admin/cakes/page.tsx')
 assert.ok(adminCakePage.includes('DAISY PASTRIES FULFILLMENT'),'Administration recognizes Daisy Pastries as the cake production system')
 
 console.log('agent-work-cakes-regression: ok')
+
+// Exercise the same role catalog consumed by the Agent dashboard and district page.
+const ts=require('typescript'),Module=require('node:module')
+const roleCatalog=new Module(path.join(root,'lib/weave-role-districts.ts'),module)
+roleCatalog._compile(ts.transpileModule(read('lib/weave-role-districts.ts'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,path.join(root,'lib/weave-role-districts.ts'))
+const agentWork=roleCatalog.exports.getRoleDistricts('agent').find(d=>d.name==='Agent Work')
+assert.ok(agentWork,'Agent account exposes its Work district')
+for(const [label,href] of [['Agility','/agility'],['Electrolyte','/electrolyte'],['Daisy Pastries','/agent/cakes'],['Commissions','/agent/commissions']]){
+ assert.ok(agentWork.places.some(p=>p.label===label&&p.href===href),`Agent Work district directly opens ${label}`)
+}
+assert.equal(new Set(agentWork.places.map(p=>p.href)).size,agentWork.places.length,'No duplicated Agent Work destinations')

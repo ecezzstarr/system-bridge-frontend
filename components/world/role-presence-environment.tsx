@@ -21,8 +21,8 @@ const COPY:Record<PresenceRole,{
   agent:{
     eyebrow:'Agent Presence',
     title:'Know the position before movement.',
-    detail:'The Agent position stays intentionally small. Presence gives orientation; Agility carries real distribution; Referral Movement carries qualified people into WEAVE; Commissions records the Agent share from qualifying Prospect purchases by attached Bridgers and the Agent share when those Bridgers convert Clients through verified File Folder purchases.',
-    loop:'Presence → Agility + Referral Movement + Bridger movement → File Folder crossing → Commission record',
+    detail:'The Agent position stays intentionally small. Presence gives orientation; Agent Work opens Agility, Electrolyte and Daisy Pastries; Referral Movement carries qualified people into WEAVE; Commissions records the Agent share from qualifying Prospect purchases by attached Bridgers and the Agent share when those Bridgers convert Clients through verified File Folder purchases.',
+    loop:'Presence → Agent Work + Referral Movement + Bridger movement → File Folder crossing → Commission record',
     worldHref:'/agent/dashboard',
   },
   bridger:{

@@ -38,7 +38,7 @@ const COPY:Record<WorldRole,{
   agent:{
     eyebrow:'Stability · Agent Department',
     title:'A small position inside one open world.',
-    subtitle:'Presence gives orientation. Agent Movement contains Agility and Commissions. Nothing else needs to crowd the account.',
+    subtitle:'Presence gives orientation. Agent Work contains Agility, Electrolyte, Commission and Daisy Pastries.',
     centerHref:'/agent/presence',
   },
   admin:{
