@@ -1,0 +1,2 @@
+export const DAISY_PASTRIES_IMAGE_SHA256='f2804e664c9e9e9f722ffd9bf7e86517d79e5f47fe212a663c92736faa4225b9'
+export const DAISY_PASTRIES_IMAGE_SRC='/weave-food/daisy-pastries.jpg'
