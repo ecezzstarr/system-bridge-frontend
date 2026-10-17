@@ -28,7 +28,7 @@ export default async function CarrierFoodDoorPage({params}:{params:Promise<{code
           <p className="text-[9px] font-black uppercase tracking-[.22em] text-sky-300">CUSTOMER ORDER UNIT</p>
           <p className="mt-1 text-sm font-black text-white">AGILITY · ELECTROLYTE · CAKES</p>
           <p className="mt-1 text-sm font-black text-sky-100">1 PACKAGE / BOWL OR MORE · NO CARTON MINIMUM</p>
-          <p className="mt-1 text-xs leading-5 text-slate-400">Carton rules apply only when the Agent buys company stock from WEAVE. Agility and Electrolyte customers order individual packages or bowls from the Agent's received stock. Cakes are made to order for events and occasions: choose the cake, send the event details, receive the Agent quote, then pay the Agent before production moves.</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">Carton rules apply only when an Agent buys company stock from WEAVE. Agility and Electrolyte customers order individual packages or bowls from the Agent's received stock. Cakes are made to order for events and occasions: choose the cake, send the event details, receive the Agent quote, then pay the Agent before production moves.</p>
         </div>
         <p className="mb-3 text-[9px] font-black uppercase tracking-[.24em] text-slate-500">Customer food preview · see what you are ordering</p>
         <div className="grid gap-3 sm:grid-cols-2">
