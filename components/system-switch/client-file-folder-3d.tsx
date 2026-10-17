@@ -1,10 +1,12 @@
 'use client'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
-import { useEffect,useMemo,useRef } from 'react'
-import { useFrame,useThree } from '@react-three/fiber'
-import { ContactShadows,OrbitControls,Text } from '@react-three/drei'
+import { useEffect,useMemo,useRef,useState } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { ContactShadows,Text } from '@react-three/drei'
 import * as THREE from 'three'
+import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
+import { systemWorldPosition, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
@@ -251,11 +253,9 @@ function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position
   </group>
 }
 
-function LiveBuilding({system,index,total,emergence}:{system:LiveSystem;index:number;total:number;emergence:number}){
+function LiveBuilding({system,index,total,emergence,onEnter}:{system:LiveSystem;index:number;total:number;emergence:number;onEnter?:()=>void}){
   const angle=(index/Math.max(1,total))*Math.PI*2
-  const radius=7.05+(index%2)*.42
-  const x=Math.cos(angle)*radius
-  const z=Math.sin(angle)*radius
+  const [x,,z]=systemWorldPosition(index,total)
   const type=String(system.systemType||'')
   const activity=(.16+Math.min(.28,Number(system.activity||0)/36))*(.55+Math.min(1.45,emergence)*.45)
   const isMarket=/customer|commerce|marketplace|payment/.test(type)
@@ -264,7 +264,7 @@ function LiveBuilding({system,index,total,emergence}:{system:LiveSystem;index:nu
   const isIntelligence=/intelligence|research|ai_|data_room/.test(type)
   const isNetwork=/route|integration|network/.test(type)
 
-  return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]}>
+  return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]} onClick={event=>{event.stopPropagation();onEnter?.()}}>
     <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial color="#121d26" roughness={.86}/></mesh>
 
     {isMarket&&<group>
@@ -375,52 +375,6 @@ function DistrictPlot({
   </group>
 }
 
-function FileFolderCamera({activeSurface}:{activeSurface:DistrictKey}){
-  const controls=useRef<any>(null)
-  const {camera}=useThree()
-  const travel=useRef(1)
-  const target=useMemo(()=>{
-    const [x,,z]=POSITIONS[activeSurface]
-    return new THREE.Vector3(x*.78,.72,z*.78)
-  },[activeSurface])
-  const cameraDestination=useMemo(()=>{
-    if(activeSurface==='command')return new THREE.Vector3(0,10.5,14.6)
-    const [x,,z]=POSITIONS[activeSurface]
-    const outward=new THREE.Vector3(x,0,z).normalize()
-    return new THREE.Vector3(
-      x+outward.x*5.6,
-      6.8,
-      z+outward.z*5.6,
-    )
-  },[activeSurface])
-
-  useEffect(()=>{travel.current=1},[activeSurface])
-
-  useFrame((_,delta)=>{
-    if(!controls.current)return
-    const step=1-Math.pow(.91,Math.min(delta,.05)*60)
-    controls.current.target.lerp(target,step)
-    if(travel.current>.01){
-      camera.position.lerp(cameraDestination,1-Math.pow(.88,Math.min(delta,.05)*60))
-      travel.current*=Math.pow(.82,Math.min(delta,.05)*60)
-    }
-    controls.current.update()
-  })
-
-  return <OrbitControls
-    ref={controls}
-    enablePan={false}
-    minDistance={6.8}
-    maxDistance={19}
-    minPolarAngle={.58}
-    maxPolarAngle={1.31}
-    target={[0,.45,0]}
-    dampingFactor={.08}
-    enableDamping
-  />
-}
-
-
 function WeavingCurrent({from,to,strength=1}:{from:[number,number,number];to:[number,number,number];strength?:number}){
   const pulse=useRef<THREE.MeshBasicMaterial>(null)
   const dx=to[0]-from[0],dz=to[2]-from[2]
@@ -433,18 +387,12 @@ function WeavingCurrent({from,to,strength=1}:{from:[number,number,number];to:[nu
   </mesh>
 }
 
-function liveSystemPosition(index:number,total:number):[number,number,number]{
-  const radius=7.05+(index%2)*.42
-  const angle=(index/Math.max(1,total))*Math.PI*2
-  return [Math.cos(angle)*radius,0,Math.sin(angle)*radius]
-}
-
 function PersistedSystemWeave({weave,liveSystems,currentStrength}:{weave:SystemWeave;liveSystems:LiveSystem[];currentStrength:number}){
   const sourceIndex=liveSystems.findIndex(system=>String(system.id)===String(weave.source_system_id))
   const targetIndex=liveSystems.findIndex(system=>String(system.id)===String(weave.target_system_id))
   if(sourceIndex<0||targetIndex<0)return null
-  const from=liveSystemPosition(sourceIndex,liveSystems.length)
-  const to=liveSystemPosition(targetIndex,liveSystems.length)
+  const from=systemWorldPosition(sourceIndex,liveSystems.length)
+  const to=systemWorldPosition(targetIndex,liveSystems.length)
   const activeMovements=Math.max(0,Number(weave.movement_count||0))
   const strength=Math.min(2,currentStrength*(activeMovements>0?1.35:.72))
   return <group data-weave-route={String(weave.id||'')}>
@@ -486,7 +434,7 @@ function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -506,6 +454,10 @@ function Scene({
   aiTerritories:AiTerritory[]
   emergence:number
   routeCurrent:number
+  input:React.MutableRefObject<WorldInput>
+  presence:React.MutableRefObject<Presence>
+  onNearby:(label:string)=>void
+  onSystemEnter?:(id:string)=>void
 }){
   return <>
     <color attach="background" args={['#070b10']}/>
@@ -538,7 +490,7 @@ function Scene({
       emergence={emergence}
     />)}
 
-    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence}/>)}
+    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence} onEnter={()=>system.id&&onSystemEnter?.(system.id)}/>)}
     {systemWeaves.map((weave)=><PersistedSystemWeave key={String(weave.id)} weave={weave} liveSystems={liveSystems.slice(0,12)} currentStrength={routeCurrent}/>)}
     {aiTerritories.slice(0,8).map((territory,index,visible)=><AiTerritoryOutpost key={territory.territoryId} territory={territory} index={index} total={visible.length}/>)}
     <StreamingTower level={streamLevel}/>
@@ -550,12 +502,21 @@ function Scene({
     <FlameBeacon position={[7.7,.02,5.9]} scale={.55}/>
 
     <ContactShadows frames={1} resolution={256} position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
-    <FileFolderCamera activeSurface={activeSurface}/>
+    <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby}
+      obstacles={[
+        ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:1.15})),
+        ...liveSystems.slice(0,12).map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
+      ]}
+      entrances={[
+        ...districts.map(d=>({id:d.key,label:d.label,position:POSITIONS[d.key],enter:()=>onSurfaceChange(d.key)})),
+        ...liveSystems.slice(0,12).filter(s=>s.id).map((s,i,all)=>({id:s.id!,label:s.title||'Built system',position:systemWorldPosition(i,all.length),enter:()=>onSystemEnter?.(s.id!)})),
+      ]}
+    />
   </>
 }
 
 export function ClientFileFolder3D({
-  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,
+  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,navigationEnabled=true,
   marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
 }:{
   activeSurface:DistrictKey
@@ -563,6 +524,8 @@ export function ClientFileFolder3D({
   activeBuilds:ActiveBuild[]
   liveSystems:LiveSystem[]
   premiumSound:boolean
+  onSystemEnter?:(id:string)=>void
+  navigationEnabled?:boolean
   visibleSurfaceKeys?:DistrictKey[]
   marketLevel?:number
   marketBuildProgress?:number
@@ -579,6 +542,16 @@ export function ClientFileFolder3D({
   businessSector?:string|null
   territoryMode?:boolean
 }){
+  const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false})
+  const presence=useRef<Presence>({x:0,z:3,yaw:0})
+  const [nearby,setNearby]=useState('')
+  useEffect(()=>{if(!navigationEnabled){input.current.keys.clear();input.current.active=false;input.current.enter=false}},[navigationEnabled])
+  useEffect(()=>{
+    const release=()=>{input.current.keys.clear();input.current.enter=false;input.current.active=false}
+    window.addEventListener('blur',release)
+    document.addEventListener('visibilitychange',release)
+    return ()=>{window.removeEventListener('blur',release);document.removeEventListener('visibilitychange',release)}
+  },[])
   const {config:visualRuntime}=useVisualRuntime()
   const emergence=Math.max(0,Math.min(2,visualRuntime.world.emergence))
   const routeCurrent=Math.max(0,Math.min(2,visualRuntime.world.routeCurrent))
@@ -616,7 +589,13 @@ export function ClientFileFolder3D({
       <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Formation state</p><p className="text-sm font-black text-white">{average}%</p></div><div className="rounded-xl border border-cyan-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Connections</p><p className="text-sm font-black text-cyan-100">{Math.max(routeCount,completed>1?completed:0)}</p></div>
     </div>
 
-    <div className={territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"}>
+    <div tabIndex={0} aria-label="Walk through File Folder. W S to walk, A D to turn, E to enter a nearby structure."
+      onFocus={()=>{input.current.active=navigationEnabled}}
+      onBlur={()=>{input.current.active=false;input.current.keys.clear()}}
+      onKeyDown={e=>{if(!navigationEnabled)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();input.current.active=true;input.current.keys.add(k);if(k==='e'&&!e.repeat)input.current.enter=true}}}
+      onKeyUp={e=>input.current.keys.delete(e.key.toLowerCase())}
+      onPointerDown={e=>e.currentTarget.focus()}
+      className={territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"}>
       <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:46}} dpr={[1,1.5]}>
         <Scene
           districts={districts}
@@ -637,10 +616,21 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter}
         />
       </AdaptiveCanvas>
     </div>
 
+    <div className="absolute left-3 bottom-20 z-20 rounded-xl bg-black/80 p-2 text-xs text-white" aria-label="World movement controls">
+      <p aria-live="polite">{nearby ? `Nearby: ${nearby}` : 'Walk to a structure'} · W/S walk · A/D turn</p>
+      <div className="mt-2 flex gap-2">
+        {[['a','Turn left'],['w','Walk forward'],['s','Walk back'],['d','Turn right']].map(([key,label])=><button key={key} disabled={!navigationEnabled}
+          onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);input.current.active=true;input.current.keys.add(key)}}
+          onPointerUp={()=>input.current.keys.delete(key)} onPointerCancel={()=>input.current.keys.delete(key)} onLostPointerCapture={()=>input.current.keys.delete(key)}
+          className="touch-none rounded border border-white/30 px-3 py-2" aria-label={label}>{key.toUpperCase()}</button>)}
+        <button disabled={!nearby||!navigationEnabled} onClick={()=>{input.current.active=true;input.current.enter=true}} className="rounded border border-emerald-300/40 px-3 py-2">Enter</button>
+      </div>
+    </div>
     <div className={territoryMode
       ? "absolute inset-x-2 bottom-3 z-20 flex snap-x snap-mandatory justify-start gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:justify-center sm:gap-2"
       : "absolute inset-x-2 bottom-2 z-10 flex snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2"

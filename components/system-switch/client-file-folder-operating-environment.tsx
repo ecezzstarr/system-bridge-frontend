@@ -1,4 +1,5 @@
 'use client'
+import { BuiltSystemRuntime } from './built-system-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -211,10 +212,12 @@ function HostedSystem({
   system,
   onClose,
   onWorldChange,
+  onNavigate,
 }: {
   system: any
   onClose: () => void
   onWorldChange: (world: any) => void
+  onNavigate: (surface: 'business' | 'enterprise') => void
 }) {
   const modules = systemModules(system.system_type)
   const [moduleKey,setModuleKey]=useState(modules[0] || 'Operation')
@@ -280,6 +283,8 @@ function HostedSystem({
         </div>
       </header>
 
+      <BuiltSystemRuntime key={system.id} system={system} onNavigate={onNavigate} busy={Boolean(busy)}
+        onToggle={entry=>void act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} />
       <div className="grid lg:grid-cols-[240px_1fr]">
         <aside className="border-b border-white/10 bg-black/20 p-3 lg:border-b-0 lg:border-r">
           <p className="px-2 pb-2 text-[8px] font-black uppercase tracking-[0.18em] text-slate-500">System functions</p>
@@ -524,13 +529,15 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         <ClientFileFolder3D
           activeSurface={current.key}
           onSurfaceChange={(next) => enterSurface(next)}
+          navigationEnabled={!panelOpen && !formationOpen}
+          onSystemEnter={id=>{if(!systems.some((s:any)=>s.id===id&&s.status==='active'))return;setSelectedSystemId(id);setSurface('builds');setFormationOpen(false);setPanelOpen(true)}}
           activeBuilds={activeBuilds.map((build:any)=>({
             id:build.id,
             title:build.title,
             systemType:build.system_type,
             progress:buildProgress(build,now),
           }))}
-          liveSystems={systems.map((system:any)=>({
+          liveSystems={systems.filter((system:any)=>system.status==='active').map((system:any)=>({
             id:system.id,
             title:system.title,
             systemType:system.system_type,
@@ -737,7 +744,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         {surface === 'builds' && (
           <div className="space-y-4">
             {selectedSystem ? (
-              <HostedSystem system={selectedSystem} onClose={()=>setSelectedSystemId('')} onWorldChange={setWorld} />
+              <HostedSystem key={selectedSystem.id} onNavigate={next=>{setSelectedSystemId('');setSurface(next)}} system={selectedSystem} onClose={()=>setSelectedSystemId('')} onWorldChange={setWorld} />
             ) : (
               <>
                 <div className="flex flex-col gap-3 border-y border-cyan-100/10 bg-[#06101b]/62 px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
