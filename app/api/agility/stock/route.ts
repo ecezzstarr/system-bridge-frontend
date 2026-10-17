@@ -28,9 +28,11 @@ export async function GET(request: NextRequest) {
 
   try {
     await ensureAgilitySchema()
-    // Legacy combined read is kept for Agent Distribution Route continuity.
-    // Product homes filter their own family; Electrolyte mutations are redirected
-    // to the independent Electrolyte APIs below.
+    // The old Distribution Route still reads the combined stock ledger. Only that
+    // surface receives Electrolyte through this compatibility read. The Agility
+    // home sees Agility only; Electrolyte owns /electrolyte and its own APIs.
+    const referer = request.headers.get('referer') || ''
+    const legacyDistributionRead = referer.includes('/agent/distribution')
     const orders = await sql`
       SELECT
         o.*,
@@ -57,13 +59,14 @@ export async function GET(request: NextRequest) {
         ),0)::numeric AS today_gross_profit_ngn
       FROM agility_stock_orders o
       WHERE o.agent_id = ${user.id}::uuid
+        AND (${legacyDistributionRead} OR o.variant_id NOT IN ('electrolyte','electrolyte-medium'))
       ORDER BY o.created_at DESC
       LIMIT 100
     `
 
     return NextResponse.json({
       success: true,
-      legacyCombinedRead: true,
+      legacyCombinedRead: legacyDistributionRead,
       companyStandard: {
         retailUnitPriceNgn: AGILITY_RETAIL_UNIT_PRICE_NGN,
         packagesPerBox: AGILITY_PACKAGES_PER_BOX,
@@ -101,15 +104,9 @@ export async function POST(request: NextRequest) {
     const agentNote = String(body.note || '').trim().slice(0, 500)
     const variant = getAgilityVariant(variantId)
 
-    if (!variant) {
-      return NextResponse.json({ success: false, error: 'Choose a valid Agility product' }, { status: 400 })
-    }
-    if (!['wholesaler', 'retailer'].includes(distributionMode)) {
-      return NextResponse.json({ success: false, error: 'Choose wholesaler or retailer distribution' }, { status: 400 })
-    }
-    if (!isValidWeaveFoodCartonQuantity(boxCount)) {
-      return NextResponse.json({ success: false, error: 'Agents can order only half cartons or full cartons, in 0.5-carton steps. Individual pieces cannot be ordered from WEAVE.' }, { status: 400 })
-    }
+    if (!variant) return NextResponse.json({ success: false, error: 'Choose a valid Agility product' }, { status: 400 })
+    if (!['wholesaler','retailer'].includes(distributionMode)) return NextResponse.json({ success: false, error: 'Choose wholesaler or retailer distribution' }, { status: 400 })
+    if (!isValidWeaveFoodCartonQuantity(boxCount)) return NextResponse.json({ success: false, error: 'Agents can order only half cartons or full cartons, in 0.5-carton steps. Individual pieces cannot be ordered from WEAVE.' }, { status: 400 })
     if (deliveryAddress.length < 5) return NextResponse.json({ success: false, error: 'Enter where WEAVE should deliver the cartons to you' }, { status: 400 })
     if (deliveryPhone.replace(/\D/g, '').length < 7) return NextResponse.json({ success: false, error: 'Enter a valid receiving phone number' }, { status: 400 })
 
