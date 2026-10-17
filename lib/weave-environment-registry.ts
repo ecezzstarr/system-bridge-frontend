@@ -41,7 +41,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'agent-agility', label:'Agility', kind:'district', route:'/agility', area:'Agent Work', scope:'agent', defaultOrder:20 },
   { key:'agent-electrolyte', label:'Electrolyte', kind:'district', route:'/electrolyte', area:'Agent Work', scope:'agent', defaultOrder:25 },
   { key:'agent-commissions', label:'Commissions', kind:'district', route:'/agent/commissions', area:'Agent Work', scope:'agent', defaultOrder:30 },
-  { key:'agent-cakes', label:'Cakes', kind:'district', route:'/agent/cakes', area:'Agent Work', scope:'agent', defaultOrder:35 },
+  { key:'agent-cakes', label:'Daisy Pastries', kind:'district', route:'/agent/cakes', area:'Agent Work', scope:'agent', defaultOrder:35 },
 
   { key:'client-presence', label:'Client Presence', kind:'district', route:'/client/presence', area:'Client', scope:'client', protected:true, defaultOrder:5 },
   { key:'client-dashboard', label:'Client World', kind:'district', route:'/client/dashboard', area:'Client', scope:'client', protected:true, defaultOrder:10 },
