@@ -69,6 +69,23 @@ const previewModules: Record<string, string[]> = {
   enterprise_treasury: ['Budgets', 'Allocations', 'Revenue records', 'Controls'],
   distribution_network: ['Routes', 'Distribution', 'Destinations', 'Movement records'],
   enterprise_operating_system: ['Functions', 'Participants', 'Approvals', 'Institutional records'],
+
+  clinic_operations: ['Non-clinical request intake','Administrative schedule plans','Room and staff coordination','Action records'],
+  hospital_operations_hub: ['Administration departments','Maintenance work orders','Operational review','Institutional records'],
+  public_health_coordination: ['Program planning','Service demand summaries','Human approvals','Reporting drafts'],
+  medicine_supply_planning: ['Supply inventory plans','Replenishment tasks','Supplier review','Approval records'],
+  public_services_portal: ['Public service request plans','Casework queues','Review and response','Publication approval'],
+  municipal_operations: ['Departments','Local service queues','Resource coordination','Decision log'],
+  national_systems_architecture: ['Agency architecture plans','Responsibilities','Access boundary reviews','Integration contracts'],
+  public_audit_office: ['Accountability checklists','Evidence reviews','Public report drafts','Human sign-off'],
+  municipal_market_hall: ['Vendor space plans','Market operations','Service complaints','Stall inventory'],
+  agriculture_supply_network: ['Farm activity plans','Supply inventory','Distribution schedules','Work reports'],
+  transport_coordination: ['Route plans','Fleet checklists','Work orders','Safety review records'],
+  education_campus_system: ['Campus administration','Timetable plans','Staff work queues','Learning program records'],
+  utility_service_operations: ['Asset inventory plans','Maintenance queues','Inspections','Outage drill plans'],
+  emergency_preparedness_centre: ['Exercise planning','Resource checklists','Human escalation','After-action reviews'],
+  civic_identity_architecture: ['Identity design','Access policy planning','Consent reviews','Security assessment'],
+
 }
 
 function systemModules(systemType?: string) {
