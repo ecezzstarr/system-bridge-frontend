@@ -445,6 +445,17 @@ export function DJBroadcastPlayer() {
     void syncBroadcast()
   }
 
+  useEffect(()=>{
+    const toggle=()=>{
+      if(!eligibleAudience||!live||personalDjActive)return
+      if(!joined)void handleJoin()
+      else if(userPaused)void handleResume()
+      else handlePause()
+    }
+    window.addEventListener('weave:toggle-live-sound',toggle)
+    return()=>window.removeEventListener('weave:toggle-live-sound',toggle)
+  },[eligibleAudience,live,personalDjActive,joined,userPaused])
+
   const canShow = eligibleAudience && live && !personalDjActive
   const floatingPanel = useFloatingPanel(canShow, 'weave_dj_panel_position:' + (user?.id || 'public'))
 

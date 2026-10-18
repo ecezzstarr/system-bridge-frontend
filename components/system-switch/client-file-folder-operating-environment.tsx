@@ -505,11 +505,12 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
   return (
     <section
-      className="weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-clip"
+      className="ff-environment weave-system-depth relative h-[calc(100svh-4.5rem)] min-h-[560px] overflow-x-clip overflow-y-auto border-y border-cyan-200/10 bg-[#070b10] shadow-[0_34px_110px_rgba(0,0,0,.42)] sm:h-[calc(100dvh-5.5rem)] sm:min-h-[720px] sm:overflow-clip"
       data-file-folder-world="persistent-territory-interface"
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
+      <header className="ff-environment-header pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
+        <div className="ff-phone-identity"><span>FILE FOLDER</span><h1>{territoryName}</h1><p>{activeBuilds.length} building <span aria-hidden="true">�</span> {systems.length} live systems</p></div>
         <div className="flex items-start gap-3 md:gap-4">
           <div className="hidden rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3 sm:block">
             <FolderOpen className="h-6 w-6 text-sky-300" />
@@ -527,7 +528,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         </div>
       </header>
 
-      <div className="absolute inset-0">
+      <div className="ff-scene absolute inset-0">
         <ClientFileFolder3D
           activeSurface={current.key}
           onSurfaceChange={(next) => enterSurface(next)}
@@ -591,17 +592,17 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       </div>
 
       <div
-        className={`absolute z-40 transition-all duration-500 ease-out
+        className={`ff-workspace absolute z-40 transition-all duration-500 ease-out
           inset-x-2 bottom-[4.75rem] max-h-[56dvh]
           md:inset-y-[7.75rem] md:left-auto md:right-0 md:bottom-auto md:w-[min(43rem,48vw)] md:max-h-none
           ${panelOpen ? 'translate-y-0 opacity-100 md:translate-x-0' : 'pointer-events-none translate-y-[115%] opacity-0 md:translate-y-0 md:translate-x-[110%]'}`}
         aria-hidden={!panelOpen}
         inert={!panelOpen}
       >
-        <div className="flex h-full max-h-[56dvh] flex-col overflow-hidden border border-cyan-100/12 bg-[#040a12]/92 shadow-[0_30px_100px_rgba(0,0,0,.62)] backdrop-blur-2xl md:max-h-[calc(100dvh-9rem)] md:border-y md:border-l md:border-r-0">
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-cyan-100/10 bg-[#06101b]/92 px-4 py-3">
+        <div className="ff-workspace-frame flex h-full max-h-[56dvh] flex-col overflow-hidden border border-cyan-100/12 bg-[#040a12]/92 shadow-[0_30px_100px_rgba(0,0,0,.62)] backdrop-blur-2xl md:max-h-[calc(100dvh-9rem)] md:border-y md:border-l md:border-r-0">
+          <div className="ff-workspace-heading flex shrink-0 items-center justify-between gap-3 border-b border-cyan-100/10 bg-[#06101b]/92 px-4 py-3">
             <div className="min-w-0">
-              <p className="text-[7px] font-black uppercase tracking-[.18em] text-amber-200">Inside the territory</p>
+              <p className="ff-workspace-eyebrow text-[7px] font-black uppercase tracking-[.18em] text-amber-200">Inside the territory</p>
               <div className="mt-1 flex items-center gap-2">
                 <CurrentIcon className={`h-3.5 w-3.5 ${surfaceTone[current.tone]?.icon || 'text-sky-300'}`} />
                 <p className="truncate text-[10px] font-black uppercase tracking-[.12em] text-white">{current.label}</p>
@@ -616,8 +617,8 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               <X className="h-4 w-4"/>
             </button>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-5">
-        <section aria-label="Construction sequence" className="border-y border-cyan-100/10 bg-[#06101b]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
+          <div className="ff-workspace-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-5">
+        <section aria-label="Construction sequence" className="ff-build-sequence border-y border-cyan-100/10 bg-[#06101b]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
           <div className="flex items-center gap-3">
             <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-cyan-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">
               <Hammer className="h-3.5 w-3.5"/>Build
@@ -840,7 +841,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       </div>
 
       {!panelOpen && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-[4.7rem] z-30 flex justify-center px-4">
+        <div className="ff-world-hint pointer-events-none absolute inset-x-0 bottom-[4.7rem] z-30 flex justify-center px-4">
           <div className="rounded-full border border-cyan-100/10 bg-[#070b10]/72 px-4 py-2 text-center text-[8px] font-black uppercase tracking-[.14em] text-stone-300 backdrop-blur-xl">
             {travelingTo
               ? `Moving to ${surfaces.find(item=>item.key===travelingTo)?.label || 'structure'}`

@@ -298,6 +298,8 @@ export default function FileFolderOpenWorld({
 
   return (
     <section className="overflow-clip rounded-[1.35rem] border border-amber-200/10 bg-[#02080d] shadow-[0_30px_100px_rgba(0,0,0,.42)] md:rounded-[2rem]" data-construction-workspace="progressive-site">
+      <details className="ff-construction-overview">
+        <summary>Territory overview <span>Identity, network &amp; resources</span></summary>
       <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(2,8,13,.02))] px-4 py-4 md:p-8">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -356,10 +358,12 @@ export default function FileFolderOpenWorld({
           </div>
         )}
       </header>
+      </details>
 
       <div className="min-h-[520px] sm:min-h-[650px]">
         <nav aria-label="Walk the build site" className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
-          <div className="flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
+          <div className="ff-workspace-picker"><label htmlFor="ff-build-district">Build workspace</label><select id="ff-build-district" aria-label="Choose build workspace" value={district} onChange={e=>{setDistrict(e.target.value);recordOutput({type:'action',label:`File Folder district: ${e.target.value}`,toScene:'file-folder'})}}>{visibleDistricts.map(item=><option key={item.key} value={item.key}>{item.label}</option>)}</select></div>
+          <div className="ff-build-rail flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
             <div className="min-w-0 shrink-0 border-r border-amber-100/10 pr-3">
               <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">Build site</p>
               <p className="mt-0.5 max-w-[112px] truncate text-[9px] font-black uppercase tracking-[.08em] text-amber-100">
