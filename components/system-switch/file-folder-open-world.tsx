@@ -1,3 +1,4 @@
+import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 'use client'
 import { visiblePoll } from '@/lib/visible-poll'
 
@@ -86,10 +87,7 @@ function customerDoorFormation(progress:number){
 }
 
 function buildProgress(build:any,now:number){
-  const completesAt=new Date(build?.completes_at||now).getTime()
-  const totalSeconds=Math.max(1,Number(build?.duration_minutes||Number(build?.duration_hours||1)*60)*60)
-  const remainingSeconds=Math.max(0,(completesAt-now)/1000)
-  return Math.min(100,Math.max(0,((totalSeconds-remainingSeconds)/totalSeconds)*100))
+  return buildFormationProgress(build,now)
 }
 
 function operatingEffect(item: any) {
