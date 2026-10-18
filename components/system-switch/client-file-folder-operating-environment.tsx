@@ -356,6 +356,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     data.file_folder_world?.blueprints?.[0]?.blueprint_key || '',
   )
   const [selectedSystemId,setSelectedSystemId]=useState('')
+  const [selectedBuildId,setSelectedBuildId]=useState('')
 
   useEffect(() => {
     const tick = visiblePoll(() => setNow(Date.now()), 5000)
@@ -387,12 +388,14 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }, [])
 
   const openFormation = (district: string) => {
+    setSelectedBuildId('')
     setFormationDistrict(district)
     setFormationOpen(true)
     setPanelOpen(true)
   }
 
   const travelToStudio = (district: string) => {
+    setSelectedBuildId('')
     setSurface('builds')
     setSelectedSystemId('')
     setFormationDistrict(district)
@@ -404,6 +407,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     if (travelTimer.current) window.clearTimeout(travelTimer.current)
     setSurface(next)
     setSelectedSystemId('')
+    setSelectedBuildId('')
     if (next === 'builds') setFormationDistrict('workshop_core')
     setPanelOpen(false)
     setTravelingTo(next)
@@ -530,7 +534,16 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           activeSurface={current.key}
           onSurfaceChange={(next) => enterSurface(next)}
           navigationEnabled={!panelOpen && !formationOpen}
-          onSystemEnter={id=>{if(!systems.some((s:any)=>s.id===id&&s.status==='active'))return;setSelectedSystemId(id);setSurface('builds');setFormationOpen(false);setPanelOpen(true)}}
+          onSystemEnter={id=>{if(!systems.some((s:any)=>s.id===id&&s.status==='active'))return;setSelectedSystemId(id);setSelectedBuildId('');setSurface('builds');setFormationOpen(false);setPanelOpen(true)}}
+          onBuildEnter={id=>{
+            if(!activeBuilds.some((build:any)=>build.id===id))return
+            setSelectedBuildId(id)
+            setSelectedSystemId('')
+            setFormationDistrict('formation_yard')
+            setSurface('builds')
+            setFormationOpen(true)
+            setPanelOpen(true)
+          }}
           activeBuilds={activeBuilds.map((build:any)=>({
             id:build.id,
             title:build.title,
@@ -774,7 +787,6 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   </div>
                 </div>
                 <FileFolderOpenWorld
-                  key={formationDistrict}
                   clientName={data.client.name}
                   fileNumber={data.client.file_number}
                   workshopTitle={data.workshop.title}
@@ -782,6 +794,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   initialWorld={world}
                   onWorldChange={setWorld}
                   initialDistrict={formationDistrict || 'workshop_core'}
+                  initialBuildId={selectedBuildId}
                   initialAiFileFolders={aiFileFolders}
                   pollWorld={false}
                   pollAi={false}
