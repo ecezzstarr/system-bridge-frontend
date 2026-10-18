@@ -109,12 +109,17 @@ export async function POST(request: NextRequest) {
       if(Number(project_count)>=10){
         return NextResponse.json({error:'This File Folder has reached the limit of ten platform plans. Continue the existing projects before creating another.'},{status:409})
       }
-      await ctx.sql`
+      const created=await ctx.sql`
         INSERT INTO client_file_folder_platform_projects(client_id,file_number,kind,title,purpose)
         VALUES(
           ${ctx.client.id}::uuid,${ctx.client.file_number},${kind},${title},${purpose||null}
         )
+        ON CONFLICT DO NOTHING
+        RETURNING id
       `
+      if(!created.length){
+        return NextResponse.json({error:'You already own a platform project with that name.'},{status:409})
+      }
     } else if (action === 'set_business_formation') {
       await ensureClientBusinessStoreSchema(ctx.sql)
       const businessName = clean(body.business_name, 220)
