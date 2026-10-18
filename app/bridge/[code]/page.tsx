@@ -25,7 +25,7 @@ export default async function BridgePage({
       JOIN users u ON u.id=b.bridger_id
       WHERE b.bridge_code=${code}
         AND b.status='active'
-        AND u.role='bridger'
+        AND u.role IN ('bridger','admin')
         AND u.is_active=true
       LIMIT 1
     `
