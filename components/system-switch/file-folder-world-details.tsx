@@ -2,6 +2,7 @@
 
 import { Text } from '@react-three/drei'
 import { useFileFolderMaterialTextures } from './file-folder-material-textures'
+import * as THREE from 'three'
 
 /** Static architectural scenery, kept separate from financial/project data.
  *  Every structural mesh uses real tileable material textures for phone-sized
@@ -54,7 +55,12 @@ function ConstructionVehicle({x,z,index}:{x:number;z:number;index:number}){
 }
 
 export function FileFolderWorldDetails(){
+  const tex=useFileFolderMaterialTextures()
   return <group>
+    <mesh renderOrder={-100}>
+      <sphereGeometry args={[48,32,16]}/>
+      <meshBasicMaterial map={tex.sky} side={THREE.BackSide} fog={false} depthWrite={false}/>
+    </mesh>
     {/* Distant skyline is physically behind the Client's buildings. */}
     {Array.from({length:10},(_,i)=>{
       const x=-9.5+i*2.05
