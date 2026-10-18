@@ -2,29 +2,42 @@ import { sql } from '@/lib/db'
 import { ensureFlameSchema } from '@/lib/flame-schema'
 import LegacyBridgePage from '@/components/legacy-bridge-page'
 import ChatGptBridgeArrival from '@/components/bridge/chatgpt-bridge-arrival'
+import BridgerBridgeRadianceArrival from '@/components/bridge/bridger-bridge-radiance-arrival'
 
 export const dynamic = 'force-dynamic'
 
 export default async function BridgePage({
-  params,
+  params,searchParams,
 }: {
   params: Promise<{ code: string }>
+  searchParams?: Promise<{chat?:string}>
 }) {
   const { code } = await params
+  const query=await searchParams
 
   // Bridger Bridge AI links own /bridge/:code too. Resolve them first so a
   // visitor can enter System Switch — Bridge of Radiance without depending on
   // the separate ChatGPT/Flame bridge schema being available.
   try {
     const [bridgerBridge] = await sql`
-      SELECT id
-      FROM bridge_ais
-      WHERE bridge_code=${code}
-        AND status='active'
+      SELECT b.id,b.custom_welcome_message,u.name AS bridger_name
+      FROM bridge_ais b
+      JOIN users u ON u.id=b.bridger_id
+      WHERE b.bridge_code=${code}
+        AND b.status='active'
+        AND u.role IN ('bridger','admin')
+        AND u.is_active=true
       LIMIT 1
     `
 
-    if (bridgerBridge) return <LegacyBridgePage />
+    if (bridgerBridge) {
+      if(query?.chat==='1') return <LegacyBridgePage/>
+      return <BridgerBridgeRadianceArrival
+        code={code}
+        bridgerName={String(bridgerBridge.bridger_name||'My Bridger')}
+        welcomeMessage={bridgerBridge.custom_welcome_message||null}
+      />
+    }
   } catch (error) {
     console.error('[bridge page] Bridger Bridge AI lookup failed:', error)
   }

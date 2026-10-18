@@ -41,6 +41,7 @@ jobs:
 
       - name: Remaining regression checks
         run: |
+          node tests/bridger-bridge-radiance-purchase-regression.cjs
           node tests/selfhost-deployment-regression.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/file-folder-sales-manager-regression.cjs

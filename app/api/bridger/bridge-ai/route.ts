@@ -3,7 +3,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import crypto from 'crypto'
 import { hasActiveBridgeAiContinuance } from '@/lib/bridge-ai-subscription'
-import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
+import { getWeavePublicOrigin } from '@/lib/weave-origin'
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       WHERE b.bridger_id = ${user.id}::uuid
       ORDER BY b.created_at DESC
     `
-    const bridgeOrigin = getWeaveBridgeOrigin()
+    const bridgeOrigin = getWeavePublicOrigin()
     return NextResponse.json({
       success: true,
       bridges: bridges.map((bridge: any) => ({
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       success: true,
       bridge: {
         ...result[0],
-        public_url: `${getWeaveBridgeOrigin()}/bridge/${result[0].bridge_code}`,
+        public_url: `${getWeavePublicOrigin()}/bridge/${result[0].bridge_code}`,
       },
     })
   } catch (error: any) {
