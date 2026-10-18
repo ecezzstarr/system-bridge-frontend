@@ -19,12 +19,13 @@ export function useFileFolderMaterialTextures(){
     base+'construction-hologram.svg',
     base+'workshop-windows.svg',
     base+'water-flow.svg',
+    base+'twilight-sky.svg',
   ])
   return useMemo(()=>{
-    const tile=[[2,2],[4,4],[2,3],[3,3],[1,4],[2,2],[2,2],[2,3]]
+    const tile=[[2,2],[4,4],[2,3],[3,3],[1,4],[2,2],[2,2],[2,3],[1,1]]
     loaded.forEach((tex,index)=>{
-      tex.wrapS=THREE.RepeatWrapping
-      tex.wrapT=THREE.RepeatWrapping
+      tex.wrapS=index===8?THREE.ClampToEdgeWrapping:THREE.RepeatWrapping
+      tex.wrapT=index===8?THREE.ClampToEdgeWrapping:THREE.RepeatWrapping
       tex.repeat.set(tile[index][0],tile[index][1])
       tex.anisotropy=4
       tex.colorSpace=THREE.SRGBColorSpace
@@ -39,6 +40,7 @@ export function useFileFolderMaterialTextures(){
       hologram:loaded[5],
       windows:loaded[6],
       water:loaded[7],
+      sky:loaded[8],
     }
   },[loaded])
 }
