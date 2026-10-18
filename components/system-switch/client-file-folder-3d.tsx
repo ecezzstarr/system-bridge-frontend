@@ -2,7 +2,7 @@
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { ContactShadows,Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
@@ -466,6 +466,28 @@ function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
   </group>
 }
 
+/**
+ * On-demand image export of the exact currently rendered 3D Client territory.
+ * A synchronous render/read avoids preserving the framebuffer on every
+ * mobile frame (which would increase phone memory use).
+ */
+function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>void)|null>}){
+  const {gl,scene,camera}=useThree()
+  useEffect(()=>{
+    captureRef.current=()=>{
+      gl.render(scene,camera)
+      const image=gl.domElement.toDataURL('image/png')
+      if(!image.startsWith('data:image/png'))return
+      const link=document.createElement('a')
+      link.href=image
+      link.download='WEAVE-File-Folder-world.png'
+      link.click()
+    }
+    return ()=>{captureRef.current=null}
+  },[gl,scene,camera,captureRef])
+  return null
+}
+
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
   marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,
@@ -585,6 +607,7 @@ export function ClientFileFolder3D({
   const touchPoints=useRef(new Map<number,{x:number;y:number}>())
   const joystickPointer=useRef<number|null>(null)
   const joystickThumb=useRef<HTMLSpanElement>(null)
+  const captureWorldRef=useRef<(()=>void)|null>(null)
   const resetTouchMovement=()=>{
     input.current.analogForward=0
     input.current.analogStrafe=0
@@ -703,6 +726,7 @@ export function ClientFileFolder3D({
       onPointerCancelCapture={e=>touchPoints.current.delete(e.pointerId)}
       className={territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"} style={{touchAction:"none"}}>
       <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:65}} dpr={[1,1.5]}>
+        <WorldImageCapture captureRef={captureWorldRef}/>
         <Scene
           districts={districts}
           activeSurface={activeSurface}
@@ -727,6 +751,10 @@ export function ClientFileFolder3D({
       </AdaptiveCanvas>
     </div>
 
+    <button type="button" onClick={()=>captureWorldRef.current?.()} aria-label="Save exact image of this File Folder world"
+      className="absolute right-3 top-[13.4rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:top-[11rem]">
+      Save world image
+    </button>
     <div className="absolute bottom-24 left-3 z-20 hidden select-none items-center gap-3 [@media(pointer:coarse)]:flex" aria-label="Phone movement controls">
       <button type="button" aria-label="Move through the File Folder using your thumb"
         className="relative flex h-28 w-28 touch-none items-center justify-center rounded-full border border-cyan-300/40 bg-[#071721]/75 shadow-lg backdrop-blur-sm"
