@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
+import { useFileFolderMaterialTextures } from './file-folder-material-textures'
 
 
 /**
@@ -55,6 +56,7 @@ export const FILE_FOLDER_STATION_POSITIONS:Record<FormationStation,[number,numbe
 const asset='/weave/file-folder/assets/'
 
 function StoneCliffs(){
+  const material=useFileFolderMaterialTextures()
   // Stable deterministic terrain silhouettes; geometry never changes between
   // Client visits. No animated wallpaper or inaccessible remote media.
   const silhouettes=useMemo(()=>Array.from({length:28},(_,index)=>{
@@ -67,30 +69,32 @@ function StoneCliffs(){
     {silhouettes.map((rock,index)=><group key={index} position={[rock.x,-.85,rock.z]}>
       <mesh receiveShadow castShadow={index%3===0} rotation={[0,index*.4,.05]} scale={[rock.width*.72,rock.height*.82,rock.width*.68]}>
         <icosahedronGeometry args={[1,0]}/>
-        <meshStandardMaterial color={index%3===0?'#384d51':index%3===1?'#30444a':'#475252'} metalness={.04} roughness={.92}/>
+        <meshStandardMaterial map={material.stone} color={index%3===0?'#c1bcc0':index%3===1?'#b7b9c4':'#ffffff'} metalness={.04} roughness={.9}/>
       </mesh>
       <mesh position={[0,-.5,0]} scale={[rock.width,rock.height,rock.width*.78]}>
         <dodecahedronGeometry args={[1,0]}/>
-        <meshStandardMaterial color={index%2?'#273b42':'#465353'} roughness={.94}/>
+        <meshStandardMaterial map={material.stone} color={index%2?'#899da3':'#d0d3d2'} roughness={.94}/>
       </mesh>
     </group>)}
   </group>
 }
 
 function CanyonRidge(){
+  const material=useFileFolderMaterialTextures()
   return <group>
     {[-1,1].map(side=><group key={side} position={[side*13,-1,-12]} scale={[2.2,6,3.8]}>
-      <mesh castShadow receiveShadow><dodecahedronGeometry args={[1,0]}/><meshStandardMaterial color="#536068" roughness={.94}/></mesh>
-      <mesh position={[side*.4,-.18,1]} scale={[.75,.78,.8]}><dodecahedronGeometry args={[1,0]}/><meshStandardMaterial color="#263d40" roughness={.95}/></mesh>
+      <mesh castShadow receiveShadow><dodecahedronGeometry args={[1,0]}/><meshStandardMaterial map={material.stone} color="#c1cad2" roughness={.94}/></mesh>
+      <mesh position={[side*.4,-.18,1]} scale={[.75,.78,.8]}><dodecahedronGeometry args={[1,0]}/><meshStandardMaterial map={material.stone} color="#9bb9b5" roughness={.95}/></mesh>
     </group>)}
     <mesh position={[0,-.8,-17]} scale={[8.6,4.2,3.2]}>
       <dodecahedronGeometry args={[1,0]}/>
-      <meshStandardMaterial color="#43505e" roughness={.95}/>
+      <meshStandardMaterial map={material.stone} color="#b6c3d0" roughness={.95}/>
     </mesh>
   </group>
 }
 
 function Waterfall({position,width=1.45,height=4}:{position:[number,number,number];width?:number;height?:number}){
+  const material=useFileFolderMaterialTextures()
   const shimmer=useRef<THREE.Group>(null)
   useFrame(({clock})=>{
     if(shimmer.current)shimmer.current.position.y=-Math.abs(Math.sin(clock.elapsedTime*1.8))*.12
@@ -100,7 +104,7 @@ function Waterfall({position,width=1.45,height=4}:{position:[number,number,numbe
     <group ref={shimmer}>
       {Array.from({length:5},(_,i)=><mesh key={i} position={[-width*.4+i*width*.2,height*.47,.02+i*.016]}>
         <planeGeometry args={[width*.19,height]}/>
-        <meshBasicMaterial color={i%2?'#baf3fa':'#76d7ea'} transparent opacity={i%2?.25:.37} side={THREE.DoubleSide} depthWrite={false}/>
+        <meshBasicMaterial map={material.water} color={i%2?'#baf3fa':'#76d7ea'} transparent opacity={i%2?.38:.55} side={THREE.DoubleSide} depthWrite={false}/>
       </mesh>)}
     </group>
     <mesh position={[0,0,.18]} scale={[1,.2,1]}><sphereGeometry args={[width*.66,12,6]}/><meshBasicMaterial color="#d1fbff" transparent opacity={.34}/></mesh>
@@ -147,12 +151,15 @@ export function FileFolderScenery({formationCount=0}:{formationCount?:number}){
 function IndustrialStation({label,texture,accent,position,onEnter}:{
   label:string;texture:THREE.Texture;accent:string;position:[number,number,number];onEnter?:()=>void
 }){
+  const material=useFileFolderMaterialTextures()
   return <group position={position} onClick={e=>{e.stopPropagation();onEnter?.()}}>
-    <mesh castShadow receiveShadow position={[0,.12,0]}><boxGeometry args={[1.55,.24,1.28]}/><meshStandardMaterial color="#1b2932" metalness={.12} roughness={.72}/></mesh>
-    <mesh castShadow position={[0,.72,-.16]}><boxGeometry args={[1.35,1.18,.86]}/><meshStandardMaterial color="#243946" roughness={.48} metalness={.26}/></mesh>
-    {[-.51,.51].map((x,i)=><mesh key={i} position={[x,.76,.31]}><boxGeometry args={[.12,.94,.12]}/><meshStandardMaterial color="#66818b" metalness={.72} roughness={.26}/></mesh>)}
-    <mesh position={[0,1.5,.16]}><boxGeometry args={[1.69,.12,.95]}/><meshStandardMaterial color="#435561" metalness={.58} roughness={.26}/></mesh>
-    <mesh position={[0,.71,.36]}><planeGeometry args={[.83,.74]}/><meshStandardMaterial color="#17333f" emissive={accent} emissiveIntensity={.2} metalness={.45} roughness={.26} side={THREE.DoubleSide}/></mesh>
+    <mesh castShadow receiveShadow position={[0,.12,0]}><boxGeometry args={[1.55,.24,1.28]}/><meshStandardMaterial map={material.concrete} color="#cbd1d0" metalness={.08} roughness={.8}/></mesh>
+    <mesh castShadow position={[0,.72,-.16]}><boxGeometry args={[1.35,1.18,.86]}/><meshStandardMaterial map={material.windows} color="#cfecf5" roughness={.3} metalness={.25}/></mesh>
+    {[-.51,.51].map((x,i)=><mesh key={i} position={[x,.76,.31]}><boxGeometry args={[.12,.94,.12]}/><meshStandardMaterial map={material.steel} color="#b0c2ca" metalness={.72} roughness={.26}/></mesh>)}
+    <mesh position={[0,1.5,.16]}><boxGeometry args={[1.69,.12,.95]}/><meshStandardMaterial map={material.steel} color="#c6d1db" metalness={.58} roughness={.26}/></mesh>
+    <mesh position={[0,.71,.36]}><planeGeometry args={[.83,.74]}/><meshStandardMaterial map={material.glass} color="#b6ebfa" emissive={accent} emissiveIntensity={.14} metalness={.4} roughness={.24} side={THREE.DoubleSide}/></mesh>
+    {[-.68,.68].map(x=><mesh key={x} position={[x,.8,.3]}><boxGeometry args={[.035,1.18,.055]}/><meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={.44}/></mesh>)}
+    <mesh position={[0,.18,.62]}><boxGeometry args={[1.45,.04,.06]}/><meshStandardMaterial color="#e9c485" emissive="#f6c875" emissiveIntensity={.42}/></mesh>
     <mesh position={[0,1.65,.41]}><planeGeometry args={[1.73,.82]}/><meshBasicMaterial map={texture} transparent side={THREE.DoubleSide} toneMapped={false}/></mesh>
     <Text position={[0,.16,.69]} color="#b6dfe9" fontSize={.09} maxWidth={1.4} anchorX="center">{label.toUpperCase()}</Text>
   </group>
