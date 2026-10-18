@@ -1,4 +1,6 @@
 'use client'
+import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
+import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -32,6 +34,7 @@ type Props = {
   initialWorld: any
   onWorldChange?: (world: any) => void
   initialDistrict?: string
+  initialBuildId?: string
   initialAiFileFolders?: AiFileFolderIdentity[]
   pollWorld?: boolean
   pollAi?: boolean
@@ -85,10 +88,7 @@ function customerDoorFormation(progress:number){
 }
 
 function buildProgress(build:any,now:number){
-  const completesAt=new Date(build?.completes_at||now).getTime()
-  const totalSeconds=Math.max(1,Number(build?.duration_minutes||Number(build?.duration_hours||1)*60)*60)
-  const remainingSeconds=Math.max(0,(completesAt-now)/1000)
-  return Math.min(100,Math.max(0,((totalSeconds-remainingSeconds)/totalSeconds)*100))
+  return buildFormationProgress(build,now)
 }
 
 function operatingEffect(item: any) {
@@ -114,6 +114,7 @@ export default function FileFolderOpenWorld({
   initialWorld,
   onWorldChange,
   initialDistrict = 'workshop_core',
+  initialBuildId = '',
   initialAiFileFolders,
   pollWorld = true,
   pollAi = true,
@@ -147,6 +148,12 @@ export default function FileFolderOpenWorld({
   useEffect(()=>{
     setWorld(initialWorld)
   },[initialWorld])
+
+  // A physical site tap enters its matching persistent construction record.
+  // Keep this panel mounted when navigating so drafts and inventory do not reset.
+  useEffect(()=>{
+    setDistrict(initialBuildId ? 'formation_yard' : initialDistrict)
+  },[initialBuildId,initialDistrict])
 
   useEffect(()=>{
     if(initialAiFileFolders)setAiFileFolders(initialAiFileFolders)
@@ -266,6 +273,9 @@ export default function FileFolderOpenWorld({
   },[district,isVisible])
 
   const activeBuilds = (world?.builds || []).filter((build: any) => build.status === 'building')
+  const orderedBuilds = initialBuildId
+    ? [...activeBuilds].sort((a:any,b:any)=>Number(b.id===initialBuildId)-Number(a.id===initialBuildId))
+    : activeBuilds
   const buildFunding = world?.buildFunding || null
   const fundingGateLocked = Boolean(buildFunding && !buildFunding.publicDoorUnlocked && world?.customerDoor?.formation_status === 'funding_gate')
   const completedBuilds = (world?.builds || []).filter((build: any) => build.status === 'complete')
@@ -428,12 +438,12 @@ export default function FileFolderOpenWorld({
               <h3 className="mt-2 text-2xl font-black">Construction continues while you are away.</h3>
               <div className="mt-5 space-y-3">
                 {activeBuilds.length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">Nothing is constructing yet. Travel to Blueprint Foundry to choose the next system, then supply it through Materials Depot.</p>}
-                {activeBuilds.map((build:any) => {
+                {orderedBuilds.map((build:any) => {
+                  const compatibleBuildItems=availableBuildItems.filter((item:any)=>isBuildPartCompatible(String(item.build_effect||'component'),String(build.system_type||'')))
                   const remaining = Math.max(0, Math.floor((new Date(build.completes_at).getTime() - now) / 1000))
-                  const total = Math.max(1, Number(build.duration_minutes || (Number(build.duration_hours || 1) * 60)) * 60)
-                  const progress = Math.min(100, Math.max(0, ((total - remaining) / total) * 100))
-                  return <div key={build.id} className="rounded-2xl border border-amber-300/15 bg-amber-400/[0.04] p-5">
-                    <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold text-white">{build.title}</p><p className="mt-1 text-[10px] text-slate-500">{build.system_type.replaceAll('_',' ')}</p></div><div className="flex items-center gap-1 text-[10px] text-amber-300"><Clock3 className="h-3.5 w-3.5"/>{duration(remaining)}</div></div>
+                  const progress = buildProgress(build,now)
+                  return <div key={build.id} data-file-folder-active-build={build.id} className={`rounded-2xl border p-5 ${initialBuildId===build.id?'border-amber-200/60 bg-amber-400/[0.09]':'border-amber-300/15 bg-amber-400/[0.04]'}`}>
+                    <div className="flex items-start justify-between gap-4"><div>{initialBuildId===build.id&&<p className="mb-2 text-[9px] font-black uppercase tracking-wide text-amber-200">Structure selected from your world</p>}<p className="text-xs font-bold text-white">{build.title}</p><p className="mt-1 text-[10px] text-slate-500">{build.system_type.replaceAll('_',' ')}</p></div><div className="flex items-center gap-1 text-[10px] text-amber-300"><Clock3 className="h-3.5 w-3.5"/>{duration(remaining)}</div></div>
                     <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/40"><div className="h-full rounded-full bg-amber-300/80" style={{width:`${progress}%`}} /></div>
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-[9px]">
                       <span className="rounded-full border border-amber-300/15 bg-amber-400/5 px-2.5 py-1 font-black uppercase tracking-wider text-amber-200">Live speed ×{Number(build.speed_multiplier || 1).toFixed(2)}</span>
@@ -451,8 +461,12 @@ export default function FileFolderOpenWorld({
                         <div className="mt-3 grid gap-2 sm:grid-cols-2">{customerDoorFormation(buildProgress(build,now)).map(part=><div key={part.label} className="border-l border-emerald-300/15 pl-3"><p className={`text-[9px] font-black ${part.state==='formed'?'text-emerald-200':part.state==='forming'?'text-amber-200':'text-slate-600'}`}>{part.label} · {part.state}</p><p className="mt-1 text-[8px] leading-4 text-slate-500">{part.detail}</p></div>)}</div>
                       </div>}
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {availableBuildItems.length === 0 && <span className="text-[9px] text-slate-600">No purchased build items are waiting in inventory.</span>}
-                        {availableBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
+                        {compatibleBuildItems.length === 0 && <span className="text-[9px] text-slate-400">No compatible purchased parts or boosts for this build. Purchase the correct item, then install it here.</span>}
+                        {compatibleBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button type="button" onClick={()=>setDistrict('parts_workshop')} className="rounded-full border border-sky-300/20 px-3 py-2 text-[10px] font-black text-sky-200">Purchase parts</button>
+                        <button type="button" onClick={()=>setDistrict('boost_bay')} className="rounded-full border border-amber-300/20 px-3 py-2 text-[10px] font-black text-amber-200">Purchase boost</button>
                       </div>
                     </div>
                   </div>

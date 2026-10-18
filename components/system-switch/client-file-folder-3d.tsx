@@ -2,7 +2,7 @@
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { ContactShadows,Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
@@ -181,12 +181,13 @@ function SoundPavilion({active}:{active:boolean}){
   </group>
 }
 
-function ConstructionYard({activeBuilds,emergence}:{activeBuilds:ActiveBuild[];emergence:number}){
+function ConstructionYard({activeBuilds,emergence,onBuildEnter}:{activeBuilds:ActiveBuild[];emergence:number;onBuildEnter?:(id:string)=>void}){
   const shown=activeBuilds.slice(0,6)
   return <group>
     <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[4.25,.16,3.05]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
     <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#5f7884" metalness={.45} roughness={.45}/></mesh>
     <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">FORMATION YARD</Text>
+    {activeBuilds.length>shown.length&&<Text position={[0,.38,-1.55]} fontSize={.1} color="#fcd34d" anchorX="center">+{activeBuilds.length-shown.length} MORE · ENTER YARD</Text>}
     {shown.length===0?<>
       <mesh position={[0,.22,-.1]} receiveShadow><boxGeometry args={[1.5,.15,1.0]}/><meshStandardMaterial color="#1b2a34" roughness={.85}/></mesh>
       <Text position={[0,.48,.35]} fontSize={.1} color="#8f7c66" anchorX="center">WAITING FOR BLUEPRINT</Text>
@@ -195,7 +196,7 @@ function ConstructionYard({activeBuilds,emergence}:{activeBuilds:ActiveBuild[];e
       const row=Math.floor(index/3)
       const x=-1.15+col*1.15
       const z=-.65+row*1.3
-      return <ConstructionSite key={build.id||index} build={build} position={[x,.15,z]} emergence={emergence}/>
+      return <ConstructionSite key={build.id||index} build={build} position={[x,.15,z]} emergence={emergence} onEnter={()=>build.id&&onBuildEnter?.(build.id)}/>
     })}
   </group>
 }
@@ -245,7 +246,7 @@ function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY
   </group>
 }
 
-function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position:[number,number,number];emergence:number}){
+function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;position:[number,number,number];emergence:number;onEnter?:()=>void}){
   const pulse=useRef<THREE.MeshBasicMaterial>(null)
   const progress=Math.max(0,Math.min(100,build.progress||0))
   const phase=progress<15?'FOUNDATION':progress<42?'FRAME':progress<70?'STRUCTURE':progress<92?'INTEGRATION':'COMMISSIONING'
@@ -259,7 +260,7 @@ function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position
     const wave=.35+Math.sin(clock.getElapsedTime()*2.1+progress*.03)*.18
     pulse.current.opacity=Math.max(.04,wave*Math.min(1.4,emergence)*(.35+progress/160))
   })
-  return <group position={position}>
+  return <group position={position} onClick={event=>{event.stopPropagation();onEnter?.()}}>
     <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#1c2c37" roughness={.86}/></mesh>
     {progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
     {walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
@@ -280,6 +281,7 @@ function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position
       <Crane height={2.2} speed={speed}/>
     )}
     <Text position={[0,Math.max(1.1,height+.45),.48]} fontSize={.075} color="#f5d49d" anchorX="center">{speed>1.01?`${phase} · ×${speed.toFixed(2)}`:phase}</Text>
+    <Text position={[0,Math.max(1.24,height+.63),.48]} fontSize={.068} maxWidth={1.05} color="#ffffff" anchorX="center">{(build.title||'BUILD').slice(0,30)}</Text>
   </group>
 }
 
@@ -368,11 +370,12 @@ function RouteNetwork({count,vitality,currentStrength}:{count:number;vitality:nu
 }
 
 function DistrictPlot({
-  district,active,onSelect,marketLevel,marketBuildProgress,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,activeBuilds,emergence,
+  district,active,onSelect,onBuildEnter,marketLevel,marketBuildProgress,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,activeBuilds,emergence,
 }:{
   district:District
   active:boolean
   onSelect:()=>void
+  onBuildEnter?:(id:string)=>void
   marketLevel:number
   marketBuildProgress:number
   enterpriseLevel:number
@@ -397,7 +400,7 @@ function DistrictPlot({
   return <group position={position}>
     {clickable}
     {district.key==='command'&&<CommandHall active={active}/>}
-    {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence}/>} 
+    {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence} onBuildEnter={onBuildEnter}/>} 
     {district.key==='business'&&<MarketDistrict level={marketLevel} buildProgress={marketBuildProgress} active={active}/>}
     {district.key==='enterprise'&&<EnterpriseKeep level={enterpriseLevel} active={active} position={enterprisePosition} approved={enterpriseApproved} enterpriseName={enterpriseName}/>}
     {district.key==='sound'&&<SoundPavilion active={active}/>}
@@ -463,9 +466,31 @@ function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
   </group>
 }
 
+/**
+ * On-demand image export of the exact currently rendered 3D Client territory.
+ * A synchronous render/read avoids preserving the framebuffer on every
+ * mobile frame (which would increase phone memory use).
+ */
+function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>void)|null>}){
+  const {gl,scene,camera}=useThree()
+  useEffect(()=>{
+    captureRef.current=()=>{
+      gl.render(scene,camera)
+      const image=gl.domElement.toDataURL('image/png')
+      if(!image.startsWith('data:image/png'))return
+      const link=document.createElement('a')
+      link.href=image
+      link.download='WEAVE-File-Folder-world.png'
+      link.click()
+    }
+    return ()=>{captureRef.current=null}
+  },[gl,scene,camera,captureRef])
+  return null
+}
+
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -489,6 +514,7 @@ function Scene({
   presence:React.MutableRefObject<Presence>
   onNearby:(label:string)=>void
   onSystemEnter?:(id:string)=>void
+  onBuildEnter?:(id:string)=>void
 }){
   return <>
     <color attach="background" args={['#070b10']}/>
@@ -511,6 +537,7 @@ function Scene({
       district={d}
       active={d.key===activeSurface}
       onSelect={()=>onSurfaceChange(d.key)}
+      onBuildEnter={onBuildEnter}
       marketLevel={marketLevel}
       marketBuildProgress={marketBuildProgress}
       enterpriseLevel={enterpriseLevel}
@@ -547,7 +574,7 @@ function Scene({
 }
 
 export function ClientFileFolder3D({
-  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,navigationEnabled=true,
+  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,navigationEnabled=true,presenceKey='',
   marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
 }:{
   activeSurface:DistrictKey
@@ -556,7 +583,9 @@ export function ClientFileFolder3D({
   liveSystems:LiveSystem[]
   premiumSound:boolean
   onSystemEnter?:(id:string)=>void
+  onBuildEnter?:(id:string)=>void
   navigationEnabled?:boolean
+  presenceKey?:string
   visibleSurfaceKeys?:DistrictKey[]
   marketLevel?:number
   marketBuildProgress?:number
@@ -573,15 +602,17 @@ export function ClientFileFolder3D({
   businessSector?:string|null
   territoryMode?:boolean
 }){
-  const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,zoomDelta:0})
+  const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,lookPitchDelta:0,zoomDelta:0})
   const presence=useRef<Presence>({x:0,z:3,yaw:0})
   const touchPoints=useRef(new Map<number,{x:number;y:number}>())
   const joystickPointer=useRef<number|null>(null)
   const joystickThumb=useRef<HTMLSpanElement>(null)
+  const captureWorldRef=useRef<(()=>void)|null>(null)
   const resetTouchMovement=()=>{
     input.current.analogForward=0
     input.current.analogStrafe=0
     input.current.lookDelta=0
+    input.current.lookPitchDelta=0
     input.current.zoomDelta=0
     touchPoints.current.clear()
     joystickPointer.current=null
@@ -599,6 +630,27 @@ export function ClientFileFolder3D({
     if(joystickThumb.current)joystickThumb.current.style.transform=`translate(${walkX*range}px,${walkY*range}px)`
   }
   const [nearby,setNearby]=useState('')
+  useEffect(()=>{
+    if(!presenceKey)return
+    const storageKey='weave:file-folder:presence:'+presenceKey
+    try {
+      const saved=window.sessionStorage.getItem(storageKey)
+      if(saved){
+        const next=JSON.parse(saved)
+        if([next.x,next.z,next.yaw].every((n:unknown)=>typeof n==='number'&&Number.isFinite(n))&&Math.hypot(next.x,next.z)<=9){
+          presence.current={x:next.x,z:next.z,yaw:next.yaw}
+        }
+      }
+    }catch{
+      // A blocked storage API must not stop a Client entering the world.
+    }
+    const persist=()=>{
+      try{window.sessionStorage.setItem(storageKey,JSON.stringify(presence.current))}catch{}
+    }
+    const interval=window.setInterval(persist,5000)
+    window.addEventListener('pagehide',persist)
+    return ()=>{persist();window.clearInterval(interval);window.removeEventListener('pagehide',persist)}
+  },[presenceKey])
   useEffect(()=>{if(!navigationEnabled){input.current.keys.clear();input.current.active=false;input.current.enter=false;resetTouchMovement()}},[navigationEnabled])
   useEffect(()=>{
     const release=()=>{input.current.keys.clear();input.current.enter=false;input.current.active=false;resetTouchMovement()}
@@ -666,6 +718,7 @@ export function ClientFileFolder3D({
           input.current.zoomDelta=(input.current.zoomDelta||0)+(newDistance-oldDistance)
         }else{
           input.current.lookDelta=(input.current.lookDelta||0)+(e.clientX-before.x)
+          input.current.lookPitchDelta=(input.current.lookPitchDelta||0)+(e.clientY-before.y)
         }
         touchPoints.current.set(e.pointerId,{x:e.clientX,y:e.clientY})
       }}
@@ -673,6 +726,7 @@ export function ClientFileFolder3D({
       onPointerCancelCapture={e=>touchPoints.current.delete(e.pointerId)}
       className={territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"} style={{touchAction:"none"}}>
       <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:65}} dpr={[1,1.5]}>
+        <WorldImageCapture captureRef={captureWorldRef}/>
         <Scene
           districts={districts}
           activeSurface={activeSurface}
@@ -692,11 +746,15 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter}
         />
       </AdaptiveCanvas>
     </div>
 
+    <button type="button" onClick={()=>captureWorldRef.current?.()} aria-label="Save exact image of this File Folder world"
+      className="absolute right-3 top-[13.4rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:top-[11rem]">
+      Save world image
+    </button>
     <div className="absolute bottom-24 left-3 z-20 hidden select-none items-center gap-3 [@media(pointer:coarse)]:flex" aria-label="Phone movement controls">
       <button type="button" aria-label="Move through the File Folder using your thumb"
         className="relative flex h-28 w-28 touch-none items-center justify-center rounded-full border border-cyan-300/40 bg-[#071721]/75 shadow-lg backdrop-blur-sm"

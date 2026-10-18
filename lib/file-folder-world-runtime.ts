@@ -23,3 +23,20 @@ export function systemWorldPosition(index: number, total: number): [number, numb
 export function canEnter(p: Presence, position: [number, number, number]) {
   return Math.hypot(p.x-position[0],p.z-position[2]) <= 2
 }
+
+/**
+ * One authoritative visual progress function for both 3D construction and the
+ * touch build console. Purchased acceleration changes the stored completion
+ * date; the two surfaces must never show different construction percentages.
+ */
+export function buildFormationProgress(build: {
+  started_at?: string | number | Date | null;
+  created_at?: string | number | Date | null;
+  completes_at?: string | number | Date | null;
+}, now: number): number {
+  const started = new Date(build.started_at || build.created_at || now).getTime()
+  const completed = new Date(build.completes_at || now).getTime()
+  if (!Number.isFinite(started) || !Number.isFinite(completed)) return 0
+  if (completed <= started) return now >= completed ? 100 : 0
+  return Math.max(0, Math.min(100, ((now - started) / (completed - started)) * 100))
+}
