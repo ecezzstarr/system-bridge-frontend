@@ -573,12 +573,35 @@ export function ClientFileFolder3D({
   businessSector?:string|null
   territoryMode?:boolean
 }){
-  const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false})
+  const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,zoomDelta:0})
   const presence=useRef<Presence>({x:0,z:3,yaw:0})
+  const touchPoints=useRef(new Map<number,{x:number;y:number}>())
+  const joystickPointer=useRef<number|null>(null)
+  const joystickThumb=useRef<HTMLSpanElement>(null)
+  const resetTouchMovement=()=>{
+    input.current.analogForward=0
+    input.current.analogStrafe=0
+    input.current.lookDelta=0
+    input.current.zoomDelta=0
+    touchPoints.current.clear()
+    joystickPointer.current=null
+    if(joystickThumb.current)joystickThumb.current.style.transform='translate(0px,0px)'
+  }
+  const updateJoystick=(x:number,y:number,bounds:DOMRect)=>{
+    const dx=x-(bounds.left+bounds.width/2)
+    const dy=y-(bounds.top+bounds.height/2)
+    const range=Math.min(bounds.width,bounds.height)*.36
+    const scale=Math.min(1,range/Math.max(1,Math.hypot(dx,dy)))
+    const walkX=dx*scale/range
+    const walkY=dy*scale/range
+    input.current.analogForward=-walkY
+    input.current.analogStrafe=walkX
+    if(joystickThumb.current)joystickThumb.current.style.transform=`translate(${walkX*range}px,${walkY*range}px)`
+  }
   const [nearby,setNearby]=useState('')
-  useEffect(()=>{if(!navigationEnabled){input.current.keys.clear();input.current.active=false;input.current.enter=false}},[navigationEnabled])
+  useEffect(()=>{if(!navigationEnabled){input.current.keys.clear();input.current.active=false;input.current.enter=false;resetTouchMovement()}},[navigationEnabled])
   useEffect(()=>{
-    const release=()=>{input.current.keys.clear();input.current.enter=false;input.current.active=false}
+    const release=()=>{input.current.keys.clear();input.current.enter=false;input.current.active=false;resetTouchMovement()}
     window.addEventListener('blur',release)
     document.addEventListener('visibilitychange',release)
     return ()=>{window.removeEventListener('blur',release);document.removeEventListener('visibilitychange',release)}
@@ -620,14 +643,36 @@ export function ClientFileFolder3D({
       <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Formation state</p><p className="text-sm font-black text-white">{average}%</p></div><div className="rounded-xl border border-cyan-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Connections</p><p className="text-sm font-black text-cyan-100">{Math.max(routeCount,completed>1?completed:0)}</p></div>
     </div>
 
-    <div tabIndex={0} aria-label="Walk through File Folder. W S to walk, A D to turn, E to enter a nearby structure."
+    <div tabIndex={0} aria-label="Walk through File Folder. Use phone joystick to walk, drag to look, pinch to zoom, and tap Enter near structures. Keyboard W A S D and E also work."
       onFocus={()=>{input.current.active=navigationEnabled}}
       onBlur={()=>{input.current.active=false;input.current.keys.clear()}}
       onKeyDown={e=>{if(!navigationEnabled)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();input.current.active=true;input.current.keys.add(k);if(k==='e'&&!e.repeat)input.current.enter=true}}}
       onKeyUp={e=>input.current.keys.delete(e.key.toLowerCase())}
       onPointerDown={e=>e.currentTarget.focus({preventScroll:true})}
-      className={territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"}>
-      <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:46}} dpr={[1,1.5]}>
+      onPointerDownCapture={e=>{
+        if(!navigationEnabled||e.pointerType!=='touch')return
+        touchPoints.current.set(e.pointerId,{x:e.clientX,y:e.clientY})
+        input.current.active=true
+      }}
+      onPointerMoveCapture={e=>{
+        if(!navigationEnabled||e.pointerType!=='touch')return
+        const before=touchPoints.current.get(e.pointerId)
+        if(!before)return
+        const others=Array.from(touchPoints.current.entries()).filter(([id])=>id!==e.pointerId)
+        if(others.length){
+          const other=others[0][1]
+          const oldDistance=Math.hypot(before.x-other.x,before.y-other.y)
+          const newDistance=Math.hypot(e.clientX-other.x,e.clientY-other.y)
+          input.current.zoomDelta=(input.current.zoomDelta||0)+(newDistance-oldDistance)
+        }else{
+          input.current.lookDelta=(input.current.lookDelta||0)+(e.clientX-before.x)
+        }
+        touchPoints.current.set(e.pointerId,{x:e.clientX,y:e.clientY})
+      }}
+      onPointerUpCapture={e=>touchPoints.current.delete(e.pointerId)}
+      onPointerCancelCapture={e=>touchPoints.current.delete(e.pointerId)}
+      className={territoryMode ? "h-full min-h-[540px] touch-none sm:min-h-[680px]" : "h-[390px] touch-none sm:h-[500px] lg:h-[590px]"}>
+      <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:65}} dpr={[1,1.5]}>
         <Scene
           districts={districts}
           activeSurface={activeSurface}
