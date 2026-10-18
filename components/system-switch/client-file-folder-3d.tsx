@@ -644,6 +644,14 @@ export function ClientFileFolder3D({
     if(joystickThumb.current)joystickThumb.current.style.transform=`translate(${walkX*range}px,${walkY*range}px)`
   }
   const [nearby,setNearby]=useState('')
+  const [mapPresence,setMapPresence]=useState<Presence>({x:0,z:3,yaw:0})
+  useEffect(()=>{
+    const interval=window.setInterval(()=>{
+      const p=presence.current
+      setMapPresence(previous=>previous.x===p.x&&previous.z===p.z&&previous.yaw===p.yaw?previous:{...p})
+    },350)
+    return ()=>window.clearInterval(interval)
+  },[])
   useEffect(()=>{
     if(!presenceKey)return
     const storageKey='weave:file-folder:presence:'+presenceKey
@@ -765,10 +773,42 @@ export function ClientFileFolder3D({
       </AdaptiveCanvas>
     </div>
 
+    <div className="absolute right-3 top-[12.8rem] z-20 w-[118px] rounded-2xl border border-cyan-200/30 bg-[#051420]/85 p-2 shadow-[0_12px_28px_rgba(0,0,0,.45)] backdrop-blur-md sm:right-5 sm:top-[10.5rem]" aria-label="Live File Folder territory map">
+      <div className="mb-1 flex items-center justify-between gap-1">
+        <span className="text-[8px] font-black uppercase tracking-[.15em] text-cyan-100">Territory</span>
+        <span className="text-[7px] text-amber-200">N ↑</span>
+      </div>
+      <div className="relative aspect-square w-full overflow-hidden rounded-full border border-cyan-100/25 bg-[radial-gradient(circle_at_center,#244451_0%,#0c2736_40%,#07131e_90%)]">
+        <div className="absolute inset-[8%] rounded-full border border-dashed border-cyan-100/15"/>
+        {districts.map(d=>{
+          const pos=POSITIONS[d.key]
+          return <button key={d.key} type="button" aria-label={'Enter '+d.label} title={d.label} disabled={!navigationEnabled}
+            onClick={()=>onSurfaceChange(d.key)}
+            className="absolute z-10 h-[8px] w-[8px] -translate-x-1/2 -translate-y-1/2 rounded-sm border border-white/50 disabled:opacity-40"
+            style={{left:(50+pos[0]*4.4)+'%',top:(50+pos[2]*4.4)+'%',backgroundColor:COLORS[d.tone]}}/>
+        })}
+        <span className="pointer-events-none absolute z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-amber-100 bg-amber-400 shadow-[0_0_8px_#fbbf24]"
+          style={{left:(50+mapPresence.x*4.4)+'%',top:(50+mapPresence.z*4.4)+'%',transform:'translate(-50%,-50%) rotate('+(-mapPresence.yaw)+'rad)'}}/>
+      </div>
+      <p className="mt-1 truncate text-center text-[7px] uppercase tracking-wider text-slate-300">{nearby||'Your location'}</p>
+    </div>
     <button type="button" onClick={()=>captureWorldRef.current?.()} aria-label="Save exact image of this File Folder world"
-      className="absolute right-3 top-[13.4rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:top-[11rem]">
+      className="absolute right-3 top-[22rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:right-5 sm:top-[19.5rem]">
       Save world image
     </button>
+    {activeBuilds.length>0&&<aside className="absolute left-3 top-[14.3rem] z-20 w-[min(215px,51vw)] rounded-xl border border-amber-200/30 bg-[#081725]/85 p-3 shadow-lg backdrop-blur-md sm:left-5 sm:top-[13.6rem]" aria-label="Live construction in your world">
+      <p className="text-[8px] font-black uppercase tracking-[.15em] text-amber-200">In formation · {activeBuilds.length} builds</p>
+      <p className="mt-1 truncate text-[10px] font-bold text-white">{activeBuilds[0].title||'Current build'}</p>
+      <div className="mt-2 flex items-center gap-2">
+        <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-cyan-300" style={{width:Math.max(0,Math.min(100,activeBuilds[0].progress))+'%'}}/></div>
+        <span className="text-[9px] font-black text-amber-100">{Math.round(activeBuilds[0].progress)}%</span>
+      </div>
+      <p className="mt-1 text-[8px] text-cyan-100/75">{activeBuilds[0].parts?.length||0} installed parts · speed ×{Number(activeBuilds[0].speedMultiplier||1).toFixed(2)}</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        <button type="button" disabled={!navigationEnabled} onClick={()=>onBuildEnter?.(activeBuilds[0].id||'')} className="rounded-md border border-cyan-200/40 px-2 py-1.5 text-[8px] font-black text-cyan-100 disabled:opacity-40">Install parts</button>
+        <button type="button" disabled={!navigationEnabled} onClick={()=>onStudioEnter?.('boost_bay')} className="rounded-md border border-amber-200/40 px-2 py-1.5 text-[8px] font-black text-amber-100 disabled:opacity-40">Apply boost</button>
+      </div>
+    </aside>}
     <div className="absolute bottom-24 left-3 z-20 hidden select-none items-center gap-3 [@media(pointer:coarse)]:flex" aria-label="Phone movement controls">
       <button type="button" aria-label="Move through the File Folder using your thumb"
         className="relative flex h-28 w-28 touch-none items-center justify-center rounded-full border border-cyan-300/40 bg-[#071721]/75 shadow-lg backdrop-blur-sm"
