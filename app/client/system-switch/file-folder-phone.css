@@ -107,3 +107,23 @@
  body:has(.weave-file-folder-page) [data-weave-world-header] > [data-weave-phone-order] { display:flex; }
  body:has(.weave-file-folder-page) [data-weave-world-header] > div:not([data-weave-phone-order]) { display:none; }
 }
+
+.ff-customer-areas { display:none; }
+@media (max-width:767px), (max-height:500px) and (max-width:1000px) {
+ .ff-business-body,.ff-business-operation { padding:0;border:0;border-radius:0;background:transparent; }
+ .ff-business-operation > div:first-child { padding:16px; }
+ [data-business-module="Business Store"] .ff-business-operation > div:first-child { display:none; }
+ .ff-door-operations { margin-top:0; }
+ .ff-customer-areas { display:block;padding:14px;background:#0d2130;border-block:1px solid #294352; }
+ .ff-customer-areas label { display:block;margin-bottom:6px;font-size:12px;color:#a1bdce; }
+ .ff-customer-areas select { padding:10px 12px;border:1px solid #426277;border-radius:12px;background:#122d40;color:#e8f3f9; }
+ .ff-customer-areas a { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding:8px 0;color:#8ce2ca; }
+ .ff-door-operations > section { border-radius:14px;padding:16px; }
+ .ff-door-operations > section[data-customer-section="overview"] { padding:0; }
+ .ff-door-operations > section[data-customer-section="overview"] > div > div { padding:16px; }
+ [data-customer-view="overview"] [data-customer-section]:not([data-customer-section="overview"]),
+ [data-customer-view="connections"] [data-customer-section]:not([data-customer-section="connections"]),
+ [data-customer-view="appearance"] [data-customer-section]:not([data-customer-section="appearance"]),
+ [data-customer-view="offer"] [data-customer-section]:not([data-customer-section="offer"]),
+ [data-customer-view="activity"] [data-customer-section]:not([data-customer-section="activity"]) { display:none; }
+}

@@ -142,6 +142,7 @@ export default function ClientCustomerDoorPanel({
   const hasMarketHall=hasSystem('marketplace_network')
   const level:'door'|'storefront'|'market_hall'=hasMarketHall?'market_hall':hasStorefront?'storefront':'door'
 
+  const [phoneArea,setPhoneArea]=useState('overview')
   const publicUrl=data.store?.public_url || (data.store?.public_slug?`/market/${data.store.public_slug}`:null)
   const doorBuild=activeBuild('customer_door')
   const storefrontBuild=activeBuild('commerce_storefront')
@@ -295,8 +296,9 @@ export default function ClientCustomerDoorPanel({
     },
   ]
 
-  return <div className="mt-6 space-y-5">
-    <section className="overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030914]/70">
+  return <div className="ff-door-operations mt-6 space-y-5" data-customer-view={phoneArea}>
+    <div className="ff-customer-areas"><label htmlFor="ff-customer-area">Customer Door area</label><select id="ff-customer-area" aria-label="Choose Customer Door area" value={phoneArea} onChange={e=>setPhoneArea(e.target.value)}><option value="overview">Door status &amp; construction</option><option value="connections">Connected systems</option><option value="appearance">Store identity &amp; design</option><option value="offer">Create an offer</option><option value="activity">Offers &amp; customer orders</option></select>{publicUrl&&<a href={publicUrl} target="_blank" rel="noreferrer">{hasDoor?'Open Customer Door':'Preview Customer Door'}<ExternalLink className="h-4 w-4"/></a>}</div>
+    <section data-customer-section="overview" className="overflow-hidden rounded-[2rem] border border-sky-300/15 bg-[#030914]/70">
       <div className="grid gap-0 xl:grid-cols-[1.2fr_.8fr]">
         <div className="p-5 md:p-6">
           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Client Market Construction</p>
@@ -321,7 +323,7 @@ export default function ClientCustomerDoorPanel({
       </div>
     </section>
 
-    {buildFunding&&<section className={`rounded-2xl border p-5 ${buildFunding.publicDoorUnlocked?'border-emerald-400/20 bg-emerald-400/5':'border-amber-400/20 bg-amber-400/5'}`}>
+    {buildFunding&&<section data-customer-section="overview" className={`rounded-2xl border p-5 ${buildFunding.publicDoorUnlocked?'border-emerald-400/20 bg-emerald-400/5':'border-amber-400/20 bg-amber-400/5'}`}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">File Folder Build Power</p>
@@ -338,7 +340,7 @@ export default function ClientCustomerDoorPanel({
       </div>
     </section>}
 
-    <section className="rounded-[2rem] border border-emerald-300/15 bg-emerald-400/[0.03] p-5 md:p-6" data-customer-door-system-boundary="client-authorized">
+    <section data-customer-section="connections" className="rounded-[2rem] border border-emerald-300/15 bg-emerald-400/[0.03] p-5 md:p-6" data-customer-door-system-boundary="client-authorized">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">Customer Door connections</p>
@@ -368,7 +370,7 @@ export default function ClientCustomerDoorPanel({
       </div>
     </section>
 
-    <section className="grid gap-5 xl:grid-cols-[1fr_1fr]">
+    <section data-customer-section="appearance" className="grid gap-5 xl:grid-cols-[1fr_1fr]">
       <div className="rounded-[2rem] border border-violet-300/15 bg-violet-400/[0.035] p-5 md:p-6">
         <div className="flex items-center gap-2"><Landmark className="h-4 w-4 text-violet-300"/><p className="text-[9px] font-black uppercase tracking-[0.2em] text-violet-300">Market architecture studio</p></div>
         <h4 className="mt-2 text-lg font-black text-white">Shape the public business customers recognize.</h4>
@@ -412,7 +414,7 @@ export default function ClientCustomerDoorPanel({
       </div>
     </section>
 
-    <section className="rounded-[2rem] border border-emerald-300/15 bg-emerald-400/[0.03] p-5 md:p-6">
+    <section data-customer-section="offer" className="rounded-[2rem] border border-emerald-300/15 bg-emerald-400/[0.03] p-5 md:p-6">
       <div className="flex items-center gap-2"><Plus className="h-4 w-4 text-emerald-300"/><p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">Build a store window</p></div>
       <h4 className="mt-2 text-lg font-black text-white">Offers become working windows inside the public building.</h4>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -426,7 +428,7 @@ export default function ClientCustomerDoorPanel({
       {message&&<p className="mt-3 text-xs text-emerald-200">{message}</p>}
     </section>
 
-    <section className="grid gap-4 md:grid-cols-2">
+    <section data-customer-section="activity" className="grid gap-4 md:grid-cols-2">
       <div className="rounded-[2rem] border border-white/10 bg-black/20 p-5">
         <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Public offer windows</p><p className="mt-2 text-2xl font-black">{data.items?.length||0}</p></div><Store className="h-5 w-5 text-sky-300"/></div>
         <div className="mt-4 space-y-2">{data.items?.slice(0,7).map((item:any)=><div key={item.id} className="rounded-xl border border-white/5 bg-white/[0.025] p-3"><div className="flex items-center justify-between gap-3"><p className="text-xs font-semibold text-white">{item.name}</p><p className="text-[10px] text-sky-300">{item.price} {item.currency}</p></div><p className="mt-1 text-[9px] uppercase tracking-wider text-slate-600">{item.offer_type||'product'}</p></div>)}</div>
