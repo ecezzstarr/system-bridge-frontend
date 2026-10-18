@@ -510,7 +510,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
       <header className="ff-environment-header pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
-        <div className="ff-phone-identity"><span>FILE FOLDER</span><h1>{territoryName}</h1><p>{activeBuilds.length} building <span aria-hidden="true">�</span> {systems.length} live systems</p></div>
+        <div className="ff-phone-identity"><span>FILE FOLDER</span><h1>{territoryName}</h1><p>{activeBuilds.length} building <span aria-hidden="true">·</span> {systems.length} live systems</p></div>
         <div className="flex items-start gap-3 md:gap-4">
           <div className="hidden rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3 sm:block">
             <FolderOpen className="h-6 w-6 text-sky-300" />
