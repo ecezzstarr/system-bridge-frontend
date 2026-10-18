@@ -418,6 +418,15 @@ export default function FileFolderOpenWorld({
                   <span className="text-[9px] text-slate-500">Ownership: Client · Host: WEAVE · Public boundary: Customer Door</span>
                 </div>
               </div>
+              <div className="rounded-2xl border border-cyan-200/20 bg-cyan-300/[.045] p-4" data-file-folder-platform-entry="client-projects">
+                <p className="text-[9px] font-black uppercase tracking-[.18em] text-cyan-200">Build your own technology platform</p>
+                <h4 className="mt-2 text-base font-black text-white">Your idea can begin here.</h4>
+                <p className="mt-2 text-xs leading-5 text-slate-300">Create your own video platform, social network, conversation service, marketplace or entirely new software project. Choose its name, build the underlying systems and keep its development inside your File Folder.</p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-[10px] text-cyan-100">{(world?.platformProjects||[]).length} owned platform projects</span>
+                  <button type="button" onClick={()=>setDistrict('blueprint_foundry')} className="rounded-lg border border-cyan-200/45 bg-cyan-200/10 px-3 py-2 text-[10px] font-black text-cyan-100">Start platform project →</button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-0 overflow-hidden border-y border-amber-100/10 md:grid-cols-4">
                 {[
                   ['Blueprints ready',world?.blueprints?.length||0,'DESIGN'],
