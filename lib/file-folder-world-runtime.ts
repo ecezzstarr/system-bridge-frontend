@@ -3,12 +3,13 @@ export type Presence = { x: number; z: number; yaw: number }
 export type WorldObstacle = { x: number; z: number; radius: number }
 
 // Session-local presence: never changes ownership, build state or wallet state.
-export function movePresence(p: Presence, forward: number, turn: number, seconds: number, obstacles: WorldObstacle[] = []): Presence {
+export function movePresence(p: Presence, forward: number, turn: number, seconds: number, obstacles: WorldObstacle[] = [], strafe = 0): Presence {
   const dt = Math.max(0, Math.min(.05, seconds))
   const yaw = p.yaw + Math.max(-1, Math.min(1, turn)) * dt * 2
   const distance = Math.max(-1, Math.min(1, forward)) * dt * 3
-  const x = p.x - Math.sin(yaw) * distance
-  const z = p.z - Math.cos(yaw) * distance
+  const lateral = Math.max(-1, Math.min(1, strafe)) * dt * 3
+  const x = p.x - Math.sin(yaw) * distance + Math.cos(yaw) * lateral
+  const z = p.z - Math.cos(yaw) * distance + Math.sin(yaw) * lateral
   const blocked = Math.hypot(x, z) > 9 || obstacles.some(o => Math.hypot(x-o.x,z-o.z) < o.radius + .2)
   return { x: blocked ? p.x : x, z: blocked ? p.z : z, yaw }
 }

@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import { movePresence, canEnter, type Presence, type WorldObstacle } from '@/lib/file-folder-world-runtime'
 
 export type WorldEntrance = { id: string; label: string; position: [number,number,number]; enter: () => void }
-export type WorldInput = { keys: Set<string>; enter: boolean; active: boolean }
+export type WorldInput = { keys: Set<string>; enter: boolean; active: boolean; analogForward?: number; analogStrafe?: number; lookDelta?: number; zoomDelta?: number }
 export function EmbodiedWorldRuntime({input,presence,entrances,obstacles,onNearby}: {
   input: MutableRefObject<WorldInput>; presence: MutableRefObject<Presence>;
   entrances: WorldEntrance[]; obstacles: WorldObstacle[]; onNearby: (label:string) => void;
@@ -13,9 +13,19 @@ export function EmbodiedWorldRuntime({input,presence,entrances,obstacles,onNearb
   useFrame(({camera},dt) => {
     const controls=input.current
     const keys=controls.keys
-    presence.current=movePresence(presence.current,
-      controls.active ? Number(keys.has('w')||keys.has('arrowup'))-Number(keys.has('s')||keys.has('arrowdown')) : 0,
-      controls.active ? Number(keys.has('a')||keys.has('arrowleft'))-Number(keys.has('d')||keys.has('arrowright')) : 0,dt,obstacles)
+    const lookDelta = controls.active ? Math.max(-120, Math.min(120, controls.lookDelta || 0)) : 0
+    controls.lookDelta = 0
+    const facing = {...presence.current, yaw:presence.current.yaw-lookDelta*.005}
+    presence.current=movePresence(facing,
+      controls.active ? Math.max(-1,Math.min(1,(controls.analogForward||0)+Number(keys.has('w')||keys.has('arrowup'))-Number(keys.has('s')||keys.has('arrowdown')))) : 0,
+      controls.active ? Number(keys.has('a')||keys.has('arrowleft'))-Number(keys.has('d')||keys.has('arrowright')) : 0,
+      dt,obstacles,controls.active ? controls.analogStrafe || 0 : 0)
+    const zoomDelta=controls.active ? Math.max(-150,Math.min(150,controls.zoomDelta||0)) : 0
+    controls.zoomDelta=0
+    if(zoomDelta && 'fov' in camera && typeof camera.fov==='number'){
+      camera.fov=Math.max(44,Math.min(84,camera.fov-zoomDelta*.07))
+      if('updateProjectionMatrix' in camera && typeof camera.updateProjectionMatrix==='function')camera.updateProjectionMatrix()
+    }
     const p=presence.current
     camera.position.set(p.x,1.25,p.z)
     camera.lookAt(p.x-Math.sin(p.yaw),1.25,p.z-Math.cos(p.yaw))

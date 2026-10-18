@@ -536,12 +536,27 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             title:build.title,
             systemType:build.system_type,
             progress:buildProgress(build,now),
+            speedMultiplier:Number(build.speed_multiplier||1),
+            parts:Array.isArray(build.applied_parts)?build.applied_parts.map((part:any)=>({
+              id:String(part.id||part.item_key||''),
+              itemKey:String(part.item_key||''),
+              name:String(part.name||''),
+              effectType:String(part.effect_type||'component'),
+              effectValue:Number(part.effect_value||0),
+            })):[],
           }))}
           liveSystems={systems.filter((system:any)=>system.status==='active').map((system:any)=>({
             id:system.id,
             title:system.title,
             systemType:system.system_type,
             activity:Array.isArray(system.entries)?system.entries.length:0,
+            parts:Array.isArray(system.configuration?.appliedParts)?system.configuration.appliedParts.map((part:any)=>({
+              id:String(part.id||part.item_key||''),
+              itemKey:String(part.item_key||''),
+              name:String(part.name||''),
+              effectType:String(part.effect_type||'component'),
+              effectValue:Number(part.effect_value||0),
+            })):[],
           }))}
           premiumSound={Boolean(data.premium_dj_enabled)}
           visibleSurfaceKeys={surfaces.map(item=>item.key)}
