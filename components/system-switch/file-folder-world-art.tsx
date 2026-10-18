@@ -5,6 +5,46 @@ import { useFrame } from '@react-three/fiber'
 import { Text, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
+
+/**
+ * The Client's visible body follows the same collision-limited world presence
+ * as first-person movement. No separate character state or false identity.
+ */
+export function FileFolderPresenceAvatar({presence}:{
+  presence:React.MutableRefObject<{x:number;z:number;yaw:number}>
+}){
+  const body=useRef<THREE.Group>(null)
+  const leftLeg=useRef<THREE.Mesh>(null)
+  const rightLeg=useRef<THREE.Mesh>(null)
+  const last=useRef({x:0,z:3})
+  useFrame(({clock})=>{
+    const p=presence.current
+    if(body.current){
+      body.current.position.set(p.x,0,p.z)
+      body.current.rotation.y=p.yaw
+    }
+    const walking=Math.hypot(p.x-last.current.x,p.z-last.current.z)>.001
+    const stride=walking?Math.sin(clock.elapsedTime*11)*.35:0
+    if(leftLeg.current)leftLeg.current.rotation.x=stride
+    if(rightLeg.current)rightLeg.current.rotation.x=-stride
+    last.current={x:p.x,z:p.z}
+  })
+  return <group ref={body}>
+    <mesh position={[0,.87,0]} castShadow><boxGeometry args={[.38,.3,.25]}/><meshStandardMaterial color="#16212b" roughness={.86}/></mesh>
+    <mesh position={[0,1.3,0]} castShadow><boxGeometry args={[.53,.65,.31]}/><meshStandardMaterial color="#172938" metalness={.22} roughness={.75}/></mesh>
+    <mesh position={[0,1.29,.20]}><boxGeometry args={[.42,.51,.18]}/><meshStandardMaterial color="#0b1722" metalness={.38} roughness={.5}/></mesh>
+    <Text position={[0,1.3,.302]} color="#67e8f9" fontSize={.17} anchorX="center">W</Text>
+    <mesh position={[0,1.82,0]} castShadow><sphereGeometry args={[.22,10,8]}/><meshStandardMaterial color="#96715f" roughness={.82}/></mesh>
+    <mesh position={[0,1.99,-.02]} castShadow><sphereGeometry args={[.2,10,8,0,Math.PI*2,0,Math.PI*.49]}/><meshStandardMaterial color="#141c23" roughness={.94}/></mesh>
+    {[-1,1].map(side=><mesh key={side} position={[side*.37,1.29,0]} castShadow>
+      <boxGeometry args={[.18,.6,.22]}/><meshStandardMaterial color="#14212c" roughness={.8}/>
+    </mesh>)}
+    <mesh ref={leftLeg} position={[-.13,.55,0]} castShadow><boxGeometry args={[.19,.7,.2]}/><meshStandardMaterial color="#111923" roughness={.9}/></mesh>
+    <mesh ref={rightLeg} position={[.13,.55,0]} castShadow><boxGeometry args={[.19,.7,.2]}/><meshStandardMaterial color="#111923" roughness={.9}/></mesh>
+    {[-.13,.13].map(x=><mesh key={x} position={[x,.13,-.055]} castShadow><boxGeometry args={[.22,.15,.34]}/><meshStandardMaterial color="#080f18" roughness={.8}/></mesh>)}
+  </group>
+}
+
 export type FormationStation='blueprint_foundry'|'parts_workshop'|'boost_bay'|'formation_yard'
 export const FILE_FOLDER_STATION_POSITIONS:Record<FormationStation,[number,number,number]>={
   blueprint_foundry:[-6.9,0,-.1],
