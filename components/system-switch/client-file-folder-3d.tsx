@@ -832,14 +832,14 @@ export function ClientFileFolder3D({
     </details>
     {(activeBuilds.length>6||liveSystems.length>12)&&<div className="absolute left-3 top-[11rem] z-20 flex max-w-[54%] flex-wrap gap-2 sm:left-5" aria-label="Navigate your File Folder construction sites and commissioned systems">
       {activeBuilds.length>6&&<div className="flex items-center gap-1 rounded-xl border border-amber-200/25 bg-[#081725]/80 px-2 py-1.5 text-[9px] text-amber-100">
-        <button type="button" aria-label="Previous construction site" onClick={()=>setConstructionPage(v=>(v+Math.ceil(activeBuilds.length/6)-1)%Math.ceil(activeBuilds.length/6))}>‹</button>
+        <button type="button" className="inline-flex min-h-11 min-w-11 items-center justify-center text-xl" aria-label="Previous construction site" onClick={()=>setConstructionPage(v=>(v+Math.ceil(activeBuilds.length/6)-1)%Math.ceil(activeBuilds.length/6))}>‹</button>
         <span>Build {Math.min(constructionPage,Math.ceil(activeBuilds.length/6)-1)+1}/{Math.ceil(activeBuilds.length/6)}</span>
-        <button type="button" aria-label="Next construction site" onClick={()=>setConstructionPage(v=>(v+1)%Math.ceil(activeBuilds.length/6))}>›</button>
+        <button type="button" className="inline-flex min-h-11 min-w-11 items-center justify-center text-xl" aria-label="Next construction site" onClick={()=>setConstructionPage(v=>(v+1)%Math.ceil(activeBuilds.length/6))}>›</button>
       </div>}
       {liveSystems.length>12&&<div className="flex items-center gap-1 rounded-xl border border-cyan-200/25 bg-[#081725]/80 px-2 py-1.5 text-[9px] text-cyan-100">
-        <button type="button" aria-label="Previous built systems district" onClick={()=>setSystemPage(v=>(v+Math.ceil(liveSystems.length/12)-1)%Math.ceil(liveSystems.length/12))}>‹</button>
+        <button type="button" className="inline-flex min-h-11 min-w-11 items-center justify-center text-xl" aria-label="Previous built systems district" onClick={()=>setSystemPage(v=>(v+Math.ceil(liveSystems.length/12)-1)%Math.ceil(liveSystems.length/12))}>‹</button>
         <span>Systems {Math.min(systemPage,Math.ceil(liveSystems.length/12)-1)+1}/{Math.ceil(liveSystems.length/12)}</span>
-        <button type="button" aria-label="Next built systems district" onClick={()=>setSystemPage(v=>(v+1)%Math.ceil(liveSystems.length/12))}>›</button>
+        <button type="button" className="inline-flex min-h-11 min-w-11 items-center justify-center text-xl" aria-label="Next built systems district" onClick={()=>setSystemPage(v=>(v+1)%Math.ceil(liveSystems.length/12))}>›</button>
       </div>}
     </div>}
     {activeBuilds.length>0&&<aside className="ff-build-hud absolute left-3 top-[14.3rem] z-20 w-[min(215px,51vw)] rounded-xl border border-amber-200/30 bg-[#081725]/85 p-3 shadow-lg backdrop-blur-md sm:left-5 sm:top-[13.6rem]" aria-label="Live construction in your world">
