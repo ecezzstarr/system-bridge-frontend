@@ -1,5 +1,5 @@
-import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 'use client'
+import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { BuiltSystemRuntime } from './built-system-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
 
