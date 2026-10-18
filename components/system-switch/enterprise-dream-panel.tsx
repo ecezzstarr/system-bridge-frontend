@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { BriefcaseBusiness, Crown, ExternalLink, ShieldCheck, Users } from 'lucide-react'
+import { useAuth } from '@/lib/auth-provider'
+import { clientTitle } from '@/lib/client-title'
 import { getClientToken } from '@/lib/client-auth'
 
 type EnterpriseState = {
@@ -17,6 +19,8 @@ type EnterpriseState = {
 }
 
 export default function EnterpriseDreamPanel({ initialState, growth }: { initialState?: EnterpriseState | null; growth?: any }) {
+  const {user}=useAuth()
+  const title=clientTitle(user?.gender)
   const [state,setState]=useState<EnterpriseState|null>(initialState || null)
   const [loading,setLoading]=useState(!initialState)
   const [message,setMessage]=useState('')
@@ -66,7 +70,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       const res=await fetch('/api/client/enterprise',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(plan)})
       const body=await res.json()
       if(!res.ok)throw new Error(body.error||'Unable to submit enterprise plan')
-      setMessage('Business plan submitted to Administration for Lord/Lady elevation review.')
+      setMessage('Business plan submitted to Administration for enterprise elevation review.')
       await load(true)
     }catch(e:any){setMessage(e.message||'Unable to submit enterprise plan')}
     finally{setBusy(false)}
@@ -86,11 +90,11 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       <div>
         <p className="text-[10px] uppercase tracking-[0.3em] text-amber-300">File Folder · Enterprise Elevation</p>
         <h2 className="mt-2 text-2xl font-semibold">{approved?'Enterprise Dream Workshop':'Carry your File Folder as an Enterprise'}</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">A Client becomes Lord or Lady only after Administration approves a business plan showing how enterprise profits can sustain life among its participants.</p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Your title follows your recorded gender. Enterprise access opens after Administration approves a business plan showing how profits can sustain its participants.</p>
       </div>
       <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-right">
         <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Position</p>
-        <p className="mt-1 text-lg font-semibold capitalize">{state?.position||'Client'}</p>
+        <p className="mt-1 text-lg font-semibold capitalize">{title}</p>
         <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">{state?.enterprise_status||'not submitted'}</p>
       </div>
     </div>
@@ -98,7 +102,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
     {approved ? <div className="mt-6 space-y-5">
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-5 md:col-span-2"><div className="flex items-center gap-3"><Crown className="h-5 w-5 text-amber-300"/><div><p className="text-[9px] uppercase tracking-[0.2em] text-amber-300">{state?.position}</p><h3 className="mt-1 text-xl font-semibold">{state?.enterprise_name}</h3></div></div><p className="mt-3 text-sm text-slate-400">{state?.sector}</p><p className="mt-4 text-xs leading-6 text-slate-500">{application?.sustainability_plan}</p></div>
-        <div className="rounded-2xl border border-white/10 bg-black/25 p-5"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Administration</p></div><p className="mt-3 text-sm font-semibold">Approved</p><p className="mt-2 text-xs text-slate-500">Elevation is approved. Legion participation opens through constructed Legion Quarters; the Client identity remains active underneath the Lord/Lady enterprise position.</p></div>
+        <div className="rounded-2xl border border-white/10 bg-black/25 p-5"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Administration</p></div><p className="mt-3 text-sm font-semibold">Approved</p><p className="mt-2 text-xs text-slate-500">Elevation is approved. Legion participation opens through constructed Legion Quarters; the Client identity remains active underneath the approved enterprise position.</p></div>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
@@ -117,7 +121,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
     </div> : pending ? <div className="mt-6 rounded-2xl border border-sky-400/20 bg-sky-400/5 p-5"><div className="flex items-center gap-3"><BriefcaseBusiness className="h-5 w-5 text-sky-300"/><div><p className="text-sm font-semibold">{application.enterprise_name}</p><p className="text-xs text-slate-500">{application.sector}</p></div></div><p className="mt-4 text-xs leading-6 text-slate-400">Your business plan is with Administration. The File Folder remains a Client System Formation Workshop until approval.</p></div> : <div className="mt-6 space-y-4">
       {application?.status==='rejected'&&<div className="rounded-xl border border-red-400/20 bg-red-400/5 p-4 text-xs text-red-200">Administration returned this plan. {application.admin_note||'Review the plan and submit again.'}</div>}
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="text-xs text-slate-400">Requested position<select value={plan.requestedPosition} onChange={e=>setPlan({...plan,requestedPosition:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="lord">Lord</option><option value="lady">Lady</option></select></label>
+        <div className="text-sm text-slate-300">Client title: {title}<p className="mt-2 text-xs text-slate-400">Female Clients are Lady; male Clients are Lord. <Link href="/client/settings" className="text-sky-200 underline">Update recorded gender in Client settings</Link>.</p></div>
         <label className="text-xs text-slate-400">Enterprise name<input value={plan.enterpriseName} onChange={e=>setPlan({...plan,enterpriseName:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
         <label className="text-xs text-slate-400 md:col-span-2">Business sector<input value={plan.sector} onChange={e=>setPlan({...plan,sector:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
         <label className="text-xs text-slate-400 md:col-span-2">Business plan<textarea value={plan.businessPlan} onChange={e=>setPlan({...plan,businessPlan:e.target.value})} rows={5} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white" placeholder="What the enterprise makes, sells or does; customers; operations; and how it grows."/></label>

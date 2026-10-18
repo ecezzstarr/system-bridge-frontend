@@ -1,3 +1,5 @@
+import { getClientGender } from '@/lib/client-gender'
+import { clientTitle } from '@/lib/client-title'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
@@ -97,7 +99,7 @@ export async function POST(request: NextRequest) {
     await ensureEnterpriseDreamSchema(sql)
 
     const body = await request.json()
-    const requestedPosition = cleanText(body.requestedPosition, 20).toLowerCase()
+    const requestedPosition = clientTitle(await getClientGender(sql, clientId)).toLowerCase()
     const enterpriseName = cleanText(body.enterpriseName, 255)
     const sector = cleanText(body.sector, 255)
     const businessPlan = cleanText(body.businessPlan)
@@ -108,7 +110,7 @@ export async function POST(request: NextRequest) {
     const projectedCosts = body.projectedMonthlyCosts === '' || body.projectedMonthlyCosts == null ? null : Number(body.projectedMonthlyCosts)
 
     if (!['lord', 'lady'].includes(requestedPosition)) {
-      return NextResponse.json({ error: 'Choose Lord or Lady as the requested enterprise position.' }, { status: 400 })
+      return NextResponse.json({ error: 'Record your gender in Client settings before submitting an enterprise plan.' }, { status: 400 })
     }
     if (!enterpriseName || !sector || !businessPlan || !profitModel || !participantModel || !sustainabilityPlan) {
       return NextResponse.json({ error: 'Enterprise name, sector, business plan, profit model, participant model and sustainability plan are required.' }, { status: 400 })

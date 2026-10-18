@@ -29,6 +29,7 @@ interface User {
   business_name?: string
   referred_by?: string
   referral_code?: string
+  gender?: 'female' | 'male' | null
   file_number?: string
 }
 
@@ -105,6 +106,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true)
   }, [])
 
+  // Refresh identity for existing sessions as well as fresh sign-ins.
+  useEffect(() => {
+    if (!token || !user?.id) return
+    const controller = new AbortController()
+    fetchWithTimeout('/api/auth/profile', { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(result => {
+        if (!result?.user || controller.signal.aborted) return
+        setUser(current => {
+          if (!current || current.id !== result.user.id) return current
+          const updated = { ...current, gender: result.user.gender ?? null }
+          saveUser(updated)
+          return updated
+        })
+      }).catch(() => {})
+    return () => controller.abort()
+  }, [token, user?.id])
+
   const register = async (data: { 
     email: string; password: string; name: string; username: string; role: 'agent' | 'bridger'; department: string;
     referredBy?: string; termsAccepted: boolean; fullNameConfirmed: string; departmentalCode?: string;
@@ -161,6 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (result.token && result.user) {
         const userData: User = {
+          gender: result.user.gender ?? null,
           id: result.user.id,
           email: result.user.email,
           username: result.user.username,

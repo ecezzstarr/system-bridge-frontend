@@ -15,6 +15,9 @@ import { WeaveLogo } from '@/components/weave-logo'
 import { getRoleDistricts, type WeaveDistrictKey } from '@/lib/weave-role-districts'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
+import { useAuth } from '@/lib/auth-provider'
+import { clientTitle } from '@/lib/client-title'
+
 export type WorldRole='client'|'bridger'|'agent'|'admin'
 
 const COPY:Record<WorldRole,{
@@ -24,7 +27,7 @@ const COPY:Record<WorldRole,{
   centerHref:string
 }> = {
   client:{
-    eyebrow:'Lord/Lady · Client Department',
+    eyebrow:'Client Department',
     title:'Your world. Your movement.',
     subtitle:'Presence is the arrival point. Districts organize the File Folder, value and human support without scattering every function across the world.',
     centerHref:'/client/presence',
@@ -73,7 +76,9 @@ export function WeaveDashboardWorld({
   role:WorldRole
   userName?:string|null
 }){
-  const copy=COPY[role]
+  const {user}=useAuth()
+  const title=clientTitle(user?.gender)
+  const copy=role==='client'?{...COPY.client,eyebrow:title==='Client'?'Client Department':`${title} · Client Department`}:COPY[role]
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const hasRolePresence=role==='agent'||role==='bridger'||role==='client'
   const hasVideoStudio=role!=='admin'&&isVisible('/video-ad-studio')

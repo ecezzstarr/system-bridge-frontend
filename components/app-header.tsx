@@ -9,10 +9,13 @@ import { NotificationBell } from "@/components/notification-bell"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-provider"
 
+import { clientTitle } from "@/lib/client-title"
+
 interface AppHeaderProps {
   user?: {
     name: string
     role: string
+    gender?: string | null
     avatar?: string
   }
 }
@@ -21,7 +24,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter()
   const [search, setSearch] = useState("")
   const { user: authUser, logout } = useAuth()
-  const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar || undefined } : undefined)
+  const effectiveUser = user || (authUser ? { name: authUser.name || 'WEAVE User', role: authUser.role || 'user', avatar: authUser.avatar || undefined, gender: authUser.gender } : undefined)
   const [accountOpen, setAccountOpen] = useState(false)
   const [flameCoinBalance, setFlameCoinBalance] = useState<number | null>(null)
   const [carrierOpen, setCarrierOpen] = useState(false)
@@ -47,12 +50,13 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   if (!effectiveUser) return null
 
+  const title = clientTitle(effectiveUser.gender ?? authUser?.gender)
   const positionLabel = effectiveUser.role === 'bridger'
     ? 'Hope · Bridger'
     : effectiveUser.role === 'agent'
       ? 'Stability · Agent'
       : effectiveUser.role === 'client'
-        ? 'Lord/Lady · Client'
+        ? (title === 'Client' ? 'Client' : `${title} · Client`)
         : effectiveUser.role === 'admin'
           ? 'A Cat · Administration'
           : effectiveUser.role
@@ -61,7 +65,7 @@ export function AppHeader({ user }: AppHeaderProps) {
     : effectiveUser.role === 'agent'
       ? 'Stability'
       : effectiveUser.role === 'client'
-        ? 'Lord/Lady'
+        ? title
         : effectiveUser.role === 'admin'
           ? 'A Cat'
           : 'Presence'

@@ -1,4 +1,6 @@
 'use client'
+import { useAuth } from '@/lib/auth-provider'
+import { clientTitle } from '@/lib/client-title'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
 import { BuiltSystemRuntime } from './built-system-runtime'
@@ -360,6 +362,7 @@ function HostedSystem({
 }
 
 export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
+  const {user}=useAuth()
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [surface, setSurface] = useState<Surface>('command')
   const [panelOpen, setPanelOpen] = useState(false)
@@ -475,7 +478,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   const routeCount=Number(world?.growth?.routes?.length||0)
   const vitalityScore=Number(world?.growth?.vitality?.score||0)
   const enterpriseApproved=Boolean(data.enterprise?.enterprise_status==='approved' && ['lord','lady'].includes(String(data.enterprise?.position||'').toLowerCase()))
-  const territoryPosition=enterpriseApproved ? String(data.enterprise.position).toUpperCase() : 'CLIENT'
+  const territoryPosition=clientTitle(user?.gender).toUpperCase()
   const businessFormation=world?.businessFormation||{}
   const territoryName=enterpriseApproved
     ? (data.enterprise?.enterprise_name || businessFormation.business_name || 'Enterprise Dream')
@@ -597,7 +600,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           marketBuildProgress={marketBuildProgress}
           streamLevel={streamLevel}
           enterpriseLevel={enterpriseLevel}
-          enterprisePosition={data.enterprise?.position || 'client'}
+          enterprisePosition={enterpriseApproved?clientTitle(user?.gender).toLowerCase():'client'}
           enterpriseApproved={enterpriseApproved}
           enterpriseName={data.enterprise?.enterprise_name || null}
           routeCount={routeCount}
