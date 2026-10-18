@@ -715,7 +715,7 @@ export function ClientFileFolder3D({
     data-file-folder-territory={territoryMode?'persistent-world':'embedded-world'}
   >
     <div className={territoryMode
-      ? "absolute left-3 top-[7.5rem] z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-5 sm:top-[8.5rem] sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
+      ? "absolute left-3 top-[7.5rem] z-10 hidden max-w-[72%] sm:block border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-5 sm:top-[8.5rem] sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
       : "absolute left-3 top-3 z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
     }>
       <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Client-owned Business World</p>
