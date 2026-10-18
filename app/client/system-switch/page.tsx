@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Flame, FolderOpen, Orbit, PackageOpen } from 'lucide-react'
+import { ArrowLeft, Flame, FolderOpen, Menu, PackageOpen, Volume2 } from 'lucide-react'
 import ClientFileFolderGate from '@/components/system-switch/client-file-folder-gate'
 import ClientFileFolderOperatingEnvironment from '@/components/system-switch/client-file-folder-operating-environment'
 import { FileFolderEnvironmentLoader } from '@/components/system-switch/file-folder-environment-loader'
 import { getClientToken, getClientUser } from '@/lib/client-auth'
+import './file-folder-phone.css'
 
 export default function ClientSystemSwitchPage() {
   const router = useRouter()
@@ -15,6 +16,16 @@ export default function ClientSystemSwitchPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [soundAvailable,setSoundAvailable]=useState(false)
+  const [soundPlaying,setSoundPlaying]=useState(false)
+  useEffect(()=>{
+    const availability=(event:Event)=>setSoundAvailable(Boolean((event as CustomEvent).detail?.available))
+    const playback=(event:Event)=>setSoundPlaying(Boolean((event as CustomEvent).detail?.playing))
+    window.addEventListener('weave:live-sound-availability',availability)
+    window.addEventListener('weave:dj-audio-state',playback)
+    window.dispatchEvent(new Event('weave:request-live-sound-state'))
+    return()=>{window.removeEventListener('weave:live-sound-availability',availability);window.removeEventListener('weave:dj-audio-state',playback)}
+  },[])
 
   useEffect(() => {
     const controller=new AbortController()
@@ -88,32 +99,18 @@ export default function ClientSystemSwitchPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
-      <div className="pointer-events-none fixed left-1/2 top-20 hidden sm:block z-40 -translate-x-1/2 text-center">
-        <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-cyan-200/20 bg-[#020914]/72 backdrop-blur-md"><Orbit className="h-4 w-4 text-cyan-200" /></div>
-        <p className="mt-2 text-[7px] font-black uppercase tracking-[.2em] text-cyan-200/70">System Switch crossed · File Folder open world</p>
-      </div>
+    <main className="weave-file-folder-page min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
       <ClientFileFolderOperatingEnvironment data={data} />
-      <Link
-        href="/client/dashboard"
-        className="fixed bottom-4 left-4 z-50 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#030914]/88 px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-slate-300 backdrop-blur-xl hover:text-white"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" /> Client World
-      </Link>
-      <Link
-        href="/client/system-switch/flame-event"
-        data-file-folder-flame-event="inside"
-        className="fixed bottom-16 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-orange-300/20 bg-[#1b0b05]/92 px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-orange-200 backdrop-blur-xl hover:text-white"
-      >
-        <Flame className="h-3.5 w-3.5" /> Flame Event
-      </Link>
-      <Link
-        href="/client/system-store"
-        data-file-folder-publish-system="true"
-        className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-[#06140f]/92 px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-emerald-200 backdrop-blur-xl hover:text-white"
-      >
-        <PackageOpen className="h-3.5 w-3.5" /> Publish System
-      </Link>
+      <details className="ff-page-actions">
+        <summary aria-label="File Folder menu"><Menu aria-hidden="true" className="h-5 w-5"/></summary>
+        <nav aria-label="File Folder actions">
+          <p>File Folder</p>
+          <Link href="/client/dashboard"><ArrowLeft className="h-4 w-4"/>Client World</Link>
+          <Link href="/client/system-store" data-file-folder-publish-system="true"><PackageOpen className="h-4 w-4"/>Publish System</Link>
+          <Link href="/client/system-switch/flame-event" data-file-folder-flame-event="inside"><Flame className="h-4 w-4"/>Flame Event</Link>
+          <button type="button" disabled={!soundAvailable} onClick={()=>window.dispatchEvent(new Event('weave:toggle-live-sound'))}><Volume2 className="h-4 w-4"/>{!soundAvailable?'Live sound is offline':soundPlaying?'Pause live sound':'Play live sound'}</button>
+        </nav>
+      </details>
     </main>
   )
 }

@@ -785,7 +785,10 @@ export function ClientFileFolder3D({
       </AdaptiveCanvas>
     </div>
 
-    <div className="absolute right-3 top-[12.8rem] z-20 w-[118px] rounded-2xl border border-cyan-200/30 bg-[#051420]/85 p-2 shadow-[0_12px_28px_rgba(0,0,0,.45)] backdrop-blur-md sm:right-5 sm:top-[10.5rem]" aria-label="Live File Folder territory map">
+    <details className="ff-world-tools" hidden={!navigationEnabled}>
+      <summary>World tools</summary>
+      <div className="ff-world-tools-content">
+    <div className="ff-territory-map absolute right-3 top-[12.8rem] z-20 w-[118px] rounded-2xl border border-cyan-200/30 bg-[#051420]/85 p-2 shadow-[0_12px_28px_rgba(0,0,0,.45)] backdrop-blur-md sm:right-5 sm:top-[10.5rem]" aria-label="Live File Folder territory map">
       <div className="mb-1 flex items-center justify-between gap-1">
         <span className="text-[8px] font-black uppercase tracking-[.15em] text-cyan-100">Territory</span>
         <span className="text-[7px] text-amber-200">N ↑</span>
@@ -794,8 +797,7 @@ export function ClientFileFolder3D({
         <div className="absolute inset-[8%] rounded-full border border-dashed border-cyan-100/15"/>
         {districts.map(d=>{
           const pos=POSITIONS[d.key]
-          return <button key={d.key} type="button" aria-label={'Enter '+d.label} title={d.label} disabled={!navigationEnabled}
-            onClick={()=>onSurfaceChange(d.key)}
+          return <span key={d.key} aria-hidden="true" title={d.label}
             className="absolute z-10 h-[8px] w-[8px] -translate-x-1/2 -translate-y-1/2 rounded-sm border border-white/50 disabled:opacity-40"
             style={{left:(50+pos[0]*4.4)+'%',top:(50+pos[2]*4.4)+'%',backgroundColor:COLORS[d.tone]}}/>
         })}
@@ -806,14 +808,16 @@ export function ClientFileFolder3D({
     </div>
     <button type="button" onClick={()=>setThirdPerson(current=>!current)} disabled={!navigationEnabled}
       aria-label={thirdPerson?'Change to first-person view':'Change to follow-camera view'}
-      className="absolute right-3 top-[20rem] z-20 rounded-full border border-cyan-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-cyan-100 shadow-lg backdrop-blur-sm disabled:opacity-40 sm:right-5 sm:top-[17.3rem]">
+      className="ff-camera-action absolute right-3 top-[20rem] z-20 rounded-full border border-cyan-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-cyan-100 shadow-lg backdrop-blur-sm disabled:opacity-40 sm:right-5 sm:top-[17.3rem]">
       {thirdPerson?'View · Follow':'View · Eye'}
     </button>
     <button type="button" onClick={()=>captureWorldRef.current?.()} aria-label="Save exact image of this File Folder world"
-      className="absolute right-3 top-[22rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:right-5 sm:top-[19.5rem]">
+      className="ff-capture-action absolute right-3 top-[22rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:right-5 sm:top-[19.5rem]">
       Save world image
     </button>
-    {activeBuilds.length>0&&<aside className="absolute left-3 top-[14.3rem] z-20 w-[min(215px,51vw)] rounded-xl border border-amber-200/30 bg-[#081725]/85 p-3 shadow-lg backdrop-blur-md sm:left-5 sm:top-[13.6rem]" aria-label="Live construction in your world">
+      </div>
+    </details>
+    {activeBuilds.length>0&&<aside className="ff-build-hud absolute left-3 top-[14.3rem] z-20 w-[min(215px,51vw)] rounded-xl border border-amber-200/30 bg-[#081725]/85 p-3 shadow-lg backdrop-blur-md sm:left-5 sm:top-[13.6rem]" aria-label="Live construction in your world">
       <p className="text-[8px] font-black uppercase tracking-[.15em] text-amber-200">In formation · {activeBuilds.length} builds</p>
       <p className="mt-1 truncate text-[10px] font-bold text-white">{activeBuilds[0].title||'Current build'}</p>
       <div className="mt-2 flex items-center gap-2">
@@ -826,7 +830,7 @@ export function ClientFileFolder3D({
         <button type="button" disabled={!navigationEnabled} onClick={()=>onStudioEnter?.('boost_bay')} className="rounded-md border border-amber-200/40 px-2 py-1.5 text-[8px] font-black text-amber-100 disabled:opacity-40">Apply boost</button>
       </div>
     </aside>}
-    <div className="absolute bottom-24 left-3 z-20 hidden select-none items-center gap-3 [@media(pointer:coarse)]:flex" aria-label="Phone movement controls">
+    <div className="ff-joystick absolute bottom-24 left-3 z-20 hidden select-none items-center gap-3 [@media(pointer:coarse)]:flex" aria-label="Phone movement controls">
       <button type="button" aria-label="Move through the File Folder using your thumb"
         className="relative flex h-28 w-28 touch-none items-center justify-center rounded-full border border-cyan-300/40 bg-[#071721]/75 shadow-lg backdrop-blur-sm"
         disabled={!navigationEnabled}
@@ -864,7 +868,7 @@ export function ClientFileFolder3D({
       <span className="max-w-20 text-[10px] text-cyan-100/80">Walk · drag to look · pinch to zoom</span>
     </div>
     <button type="button" disabled={!nearby||!navigationEnabled} onClick={()=>{input.current.active=true;input.current.enter=true}}
-      className="absolute bottom-28 right-3 z-20 hidden rounded-2xl border border-emerald-200/50 bg-emerald-950/80 px-5 py-4 text-sm font-bold text-emerald-100 shadow-lg disabled:opacity-35 [@media(pointer:coarse)]:block">
+      className="ff-enter-structure absolute bottom-28 right-3 z-20 hidden rounded-2xl border border-emerald-200/50 bg-emerald-950/80 px-5 py-4 text-sm font-bold text-emerald-100 shadow-lg disabled:opacity-35 [@media(pointer:coarse)]:block">
       {nearby?'Enter '+nearby:'Approach a structure'}
     </button>
     <div className="absolute left-3 bottom-20 z-20 rounded-xl bg-black/80 p-2 text-xs text-white [@media(pointer:coarse)]:hidden" aria-label="World movement controls">
@@ -877,8 +881,15 @@ export function ClientFileFolder3D({
         <button disabled={!nearby||!navigationEnabled} onClick={()=>{input.current.active=true;input.current.enter=true}} className="rounded border border-emerald-300/40 px-3 py-2">Enter</button>
       </div>
     </div>
+    <nav className="ff-phone-dock" aria-label="File Folder destinations" hidden={!navigationEnabled}>
+      <label htmlFor="ff-destination">Enter a place</label>
+      <select id="ff-destination" aria-label="Choose a File Folder destination" value="" onChange={e=>{if(e.target.value)onSurfaceChange(e.target.value as DistrictKey)}}>
+        <option value="" disabled>Where would you like to go?</option>
+        {districts.map(d=><option key={d.key} value={d.key}>{d.label}</option>)}
+      </select>
+    </nav>
     <div className={territoryMode
-      ? "absolute inset-x-2 bottom-3 z-20 flex snap-x snap-mandatory justify-start gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:justify-center sm:gap-2"
+      ? "ff-district-rail absolute inset-x-2 bottom-3 z-20 flex snap-x snap-mandatory justify-start gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:justify-center sm:gap-2"
       : "absolute inset-x-2 bottom-2 z-10 flex snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2"
     }>
       {districts.map(d=>{

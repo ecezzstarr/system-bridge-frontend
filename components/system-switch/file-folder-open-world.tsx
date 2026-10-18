@@ -298,6 +298,8 @@ export default function FileFolderOpenWorld({
 
   return (
     <section className="overflow-clip rounded-[1.35rem] border border-amber-200/10 bg-[#02080d] shadow-[0_30px_100px_rgba(0,0,0,.42)] md:rounded-[2rem]" data-construction-workspace="progressive-site">
+      <details className="ff-construction-overview">
+        <summary>Territory overview <span>Identity, network &amp; resources</span></summary>
       <header className="border-b border-amber-100/10 bg-[radial-gradient(circle_at_18%_0%,rgba(249,115,22,.11),transparent_30%),linear-gradient(180deg,rgba(73,45,24,.22),rgba(2,8,13,.02))] px-4 py-4 md:p-8">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -341,7 +343,7 @@ export default function FileFolderOpenWorld({
               : 'No buildable blueprint is currently published.'}
         </div>
 
-        {buildFunding && !buildFunding.grandfathered && (
+        {buildFunding && !buildFunding.grandfathered && !buildFunding.publicDoorUnlocked && (
           <div className={`mt-3 flex items-center justify-between gap-3 border-l-2 px-3 py-2 text-[9px] leading-4 md:rounded-xl md:border md:px-4 md:py-3 md:text-[10px] md:leading-5 ${buildFunding.publicDoorUnlocked ? 'border-emerald-300/25 bg-emerald-400/[.035] text-emerald-200' : 'border-amber-300/30 bg-amber-400/[.035] text-amber-100'}`}>
             <div className="min-w-0">
               <span className="font-black uppercase tracking-wider">Funding · </span>
@@ -356,10 +358,12 @@ export default function FileFolderOpenWorld({
           </div>
         )}
       </header>
+      </details>
 
       <div className="min-h-[520px] sm:min-h-[650px]">
         <nav aria-label="Walk the build site" className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
-          <div className="flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
+          <div className="ff-workspace-picker"><label htmlFor="ff-build-district">Build workspace</label><select id="ff-build-district" aria-label="Choose build workspace" value={district} onChange={e=>{setDistrict(e.target.value);recordOutput({type:'action',label:`File Folder district: ${e.target.value}`,toScene:'file-folder'})}}>{visibleDistricts.map(item=><option key={item.key} value={item.key}>{item.label}</option>)}</select></div>
+          <div className="ff-build-rail flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
             <div className="min-w-0 shrink-0 border-r border-amber-100/10 pr-3">
               <p className="text-[7px] font-black uppercase tracking-[.16em] text-stone-600">Build site</p>
               <p className="mt-0.5 max-w-[112px] truncate text-[9px] font-black uppercase tracking-[.08em] text-amber-100">
@@ -390,7 +394,7 @@ export default function FileFolderOpenWorld({
         </nav>
 
         <div className="p-3 sm:p-4 md:p-6">
-          {message && <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-300">{message}</div>}
+          {message && <div role="status" aria-live="polite" className="mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-300">{message}</div>}
 
           {district==='workshop_core'&&(
             <div className="space-y-5">
@@ -481,6 +485,7 @@ export default function FileFolderOpenWorld({
               <h3 className="mt-2 text-2xl font-black">Choose the technology your business needs.</h3>
               <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">WEAVE provides buildable technology. You choose the system, name it for your business, define what it should do, and start formation. Your choices determine what this File Folder becomes.</p>
               <input value={blueprintSearch} onChange={event=>setBlueprintSearch(event.target.value)} className="mt-4 w-full rounded-xl border border-violet-300/15 bg-black/25 px-4 py-3 text-sm text-white outline-none" placeholder="Search store, payments, AI, streaming, operations, marketplace…"/>
+              {filteredBlueprints.length===0&&<p role="status" className="mt-5 rounded-xl border border-white/10 p-4 text-sm text-slate-300">No blueprints match this search. <button type="button" onClick={()=>setBlueprintSearch('')} className="mt-2 block text-sky-200">Clear search</button></p>}
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {filteredBlueprints.map((blueprint:any) => {
                   const owned = Number(inventory.get(blueprint.required_item_key) || 0)
@@ -500,7 +505,7 @@ export default function FileFolderOpenWorld({
                       <input value={buildDrafts[blueprint.blueprint_key]?.title||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:event.target.value,purpose:current[blueprint.blueprint_key]?.purpose||''}}))} className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder={`Business name for this system · ${blueprint.name}`}/>
                       <textarea value={buildDrafts[blueprint.blueprint_key]?.purpose||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:current[blueprint.blueprint_key]?.title||'',purpose:event.target.value}}))} rows={2} className="resize-none rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder="How should this system serve your business?"/>
                     </div>
-                    <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key,title:buildDrafts[blueprint.blueprint_key]?.title||'',purpose:buildDrafts[blueprint.blueprint_key]?.purpose||''},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Build this system':'Acquire Component'}</button>
+                    {fundingGateLocked ? <Link href="/client/deposit" className="mt-4 inline-flex items-center rounded-full bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950">Add Flame Credits</Link> : !hasComponents ? <button type="button" onClick={()=>{setDistrict('build_market');setMessage(`Required material: ${blueprint.required_item_name}. Acquire it here, then return to Blueprint Foundry. Your system name and purpose are kept.`)}} className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-300/40 px-4 py-3 text-sm text-violet-100"><Store className="h-4 w-4"/>Get required material</button> : <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key,title:buildDrafts[blueprint.blueprint_key]?.title||'',purpose:buildDrafts[blueprint.blueprint_key]?.purpose||''},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Build this system':'Acquire Component'}</button>}
                   </div>
                 })}
               </div>
@@ -570,7 +575,7 @@ export default function FileFolderOpenWorld({
                 {(world?.systems || []).map((system:any) => <div key={system.id} className="rounded-2xl border border-sky-300/15 bg-sky-400/[0.035] p-5">
                   <div className="flex items-center justify-between gap-3"><div><p className="text-[9px] uppercase tracking-wider text-sky-300">{system.system_type.replaceAll('_',' ')}</p><h4 className="mt-1 font-bold text-white">{system.title}</h4></div><CheckCircle2 className="h-5 w-5 text-emerald-300"/></div>
                   <div className="mt-4 space-y-2">{(system.entries || []).map((entry:any)=><div key={entry.id} className="flex items-start gap-3 rounded-xl border border-white/5 bg-black/20 p-3"><button onClick={()=>act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} className={`mt-0.5 h-4 w-4 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-600'}`}/><div><p className={`text-xs font-semibold ${entry.status==='done'?'text-slate-500 line-through':'text-slate-200'}`}>{entry.title}</p>{entry.body&&<p className="mt-1 text-[10px] leading-4 text-slate-500">{entry.body}</p>}{entry.evidence_type&&entry.evidence_type!=='internal'&&<p className="mt-1 text-[8px] font-black uppercase tracking-wider text-emerald-300/70">Field evidence · {String(entry.evidence_type).replaceAll('_',' ')}</p>}</div></div>)}</div>
-                  <div className="mt-4 flex gap-2"><input value={systemDrafts[system.id]||''} onChange={e=>setSystemDrafts({...systemDrafts,[system.id]:e.target.value})} placeholder="Record the next real operation…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"/><select value={systemEvidence[system.id]||'internal'} onChange={e=>setSystemEvidence({...systemEvidence,[system.id]:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 px-2 text-[9px] font-black uppercase text-slate-300"><option value="internal">Internal</option><option value="customer_use">Customer use</option><option value="visitor_use">Visitor use</option><option value="fulfilment">Fulfilment</option><option value="delivery">Delivery</option><option value="service">Service</option><option value="revenue">Revenue</option></select><button disabled={!systemDrafts[system.id]?.trim() || busy===system.id} onClick={async()=>{await act({action:'add_system_entry',system_id:system.id,title:systemDrafts[system.id],evidence_type:systemEvidence[system.id]||'internal'},system.id);setSystemDrafts({...systemDrafts,[system.id]:''})}} className="rounded-xl bg-sky-500 px-3 text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/></button></div>
+                  <div className="ff-record-entry mt-4 flex gap-2"><input value={systemDrafts[system.id]||''} onChange={e=>setSystemDrafts({...systemDrafts,[system.id]:e.target.value})} placeholder="Record the next real operation…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"/><select value={systemEvidence[system.id]||'internal'} onChange={e=>setSystemEvidence({...systemEvidence,[system.id]:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 px-2 text-[9px] font-black uppercase text-slate-300"><option value="internal">Internal</option><option value="customer_use">Customer use</option><option value="visitor_use">Visitor use</option><option value="fulfilment">Fulfilment</option><option value="delivery">Delivery</option><option value="service">Service</option><option value="revenue">Revenue</option></select><button disabled={!systemDrafts[system.id]?.trim() || busy===system.id} onClick={async()=>{await act({action:'add_system_entry',system_id:system.id,title:systemDrafts[system.id],evidence_type:systemEvidence[system.id]||'internal'},system.id);setSystemDrafts({...systemDrafts,[system.id]:''})}} className="rounded-xl bg-sky-500 px-3 text-slate-950 disabled:opacity-40"><Plus className="h-4 w-4"/></button></div>
                 </div>)}
               </div>
             </div>

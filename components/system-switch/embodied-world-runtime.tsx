@@ -32,7 +32,9 @@ export function EmbodiedWorldRuntime({input,presence,entrances,obstacles,onNearb
     }
     const p=presence.current
     if(thirdPerson){
-      camera.position.set(p.x+Math.sin(p.yaw)*2.15,2.5,p.z+Math.cos(p.yaw)*2.15)
+      const portrait='aspect' in camera && Number(camera.aspect)<1
+      const distance=portrait?3.4:2.15
+      camera.position.set(p.x+Math.sin(p.yaw)*distance,portrait?3.2:2.5,p.z+Math.cos(p.yaw)*distance)
       camera.lookAt(p.x-Math.sin(p.yaw)*1.6,1.35+Math.sin(pitch.current),p.z-Math.cos(p.yaw)*1.6)
     }else{
       camera.position.set(p.x,1.25,p.z)
