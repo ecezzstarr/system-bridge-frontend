@@ -14,7 +14,7 @@
 .ff-territory-map [title] { min-width:0;min-height:0; }
 .ff-construction-overview > summary { display:flex;justify-content:space-between;gap:12px;padding:16px;cursor:pointer;color:#cde2ef; }
 .ff-construction-overview > summary span { font-size:12px;color:#8ba9bb; }
-@media (max-width:767px) {
+@media (max-width:767px), (max-height:500px) and (max-width:1000px) {
   body:has(.weave-file-folder-page) { overflow:hidden;overscroll-behavior:none; }
   .weave-file-folder-page { position:fixed;inset:0;z-index:20;height:100dvh;min-height:0;padding:calc(env(safe-area-inset-top,0px) + 68px) 0 0;overflow:hidden;background:#07131e;font-size:14px;font-weight:450;text-shadow:none; }
   .weave-file-folder-page :where(p,span,label,li,td,th,h1,h2,h3,h4,a,button) { text-shadow:none;text-wrap:wrap; }
@@ -88,13 +88,22 @@
  .ff-phone-dock { grid-template-columns:minmax(0,1fr); }
  .ff-joystick > button { width:82px;height:82px;min-width:82px; }
 }
-@media (max-width:767px) {
+@media (max-width:767px), (max-height:500px) and (max-width:1000px) {
  .ff-page-actions nav { max-height:calc(100dvh - 150px);overflow-y:auto;overscroll-behavior:contain; }
 }
 
-@media (max-width:767px) {
+@media (max-width:767px), (max-height:500px) and (max-width:1000px) {
  .ff-build-intro,.ff-customer-workspace > :first-child,.ff-workshop-functions { display:none; }
  .ff-customer-workspace { border-radius:14px;box-shadow:none; }
  .ff-page-actions button:disabled { color:#7e98aa;cursor:default; }
  .ff-workspace-scroll [data-construction-workspace] { border-radius:14px;box-shadow:none; }
+}
+
+@media (max-width:767px), (max-height:500px) and (max-width:1000px) {
+ .ff-record-entry { flex-direction:column; }
+ .ff-workspace-scroll .ff-record-entry :is(input,select,button) { width:100%; }
+}
+@media (max-height:500px) and (min-width:768px) and (max-width:1000px) {
+ body:has(.weave-file-folder-page) [data-weave-world-header] > [data-weave-phone-order] { display:flex; }
+ body:has(.weave-file-folder-page) [data-weave-world-header] > div:not([data-weave-phone-order]) { display:none; }
 }

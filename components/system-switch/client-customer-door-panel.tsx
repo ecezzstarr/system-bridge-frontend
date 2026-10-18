@@ -326,7 +326,7 @@ export default function ClientCustomerDoorPanel({
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">File Folder Build Power</p>
           <p className="mt-2 text-2xl font-black text-white">{Number(buildFunding.totalParticipationFlameCoin||0).toLocaleString()} Flame Coin</p>
-          <p className="mt-1 text-[10px] text-slate-500">Construction speed ×{Number(buildFunding.buildSpeedMultiplier||1).toFixed(2)} · Public Door threshold {Number(buildFunding.publicDoorThresholdFlameCoin||0).toLocaleString()}</p>
+          <p className="mt-1 text-[10px] text-slate-500">Construction speed ×{Number(buildFunding.buildSpeedMultiplier||1).toFixed(2)}{!buildFunding.publicDoorUnlocked&&<> · Public Door threshold {Number(buildFunding.publicDoorThresholdFlameCoin||0).toLocaleString()}</>}</p>
         </div>
         <div className="text-right">
           {buildFunding.publicDoorUnlocked?<p className="text-xs font-black uppercase tracking-wider text-emerald-300">Public funding gate cleared</p>:<>
