@@ -1,3 +1,4 @@
+import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 'use client'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -438,6 +439,7 @@ export default function FileFolderOpenWorld({
               <div className="mt-5 space-y-3">
                 {activeBuilds.length === 0 && <p className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">Nothing is constructing yet. Travel to Blueprint Foundry to choose the next system, then supply it through Materials Depot.</p>}
                 {orderedBuilds.map((build:any) => {
+                  const compatibleBuildItems=availableBuildItems.filter((item:any)=>isBuildPartCompatible(String(item.build_effect||'component'),String(build.system_type||'')))
                   const remaining = Math.max(0, Math.floor((new Date(build.completes_at).getTime() - now) / 1000))
                   const progress = buildProgress(build,now)
                   return <div key={build.id} data-file-folder-active-build={build.id} className={`rounded-2xl border p-5 ${initialBuildId===build.id?'border-amber-200/60 bg-amber-400/[0.09]':'border-amber-300/15 bg-amber-400/[0.04]'}`}>
@@ -459,8 +461,8 @@ export default function FileFolderOpenWorld({
                         <div className="mt-3 grid gap-2 sm:grid-cols-2">{customerDoorFormation(buildProgress(build,now)).map(part=><div key={part.label} className="border-l border-emerald-300/15 pl-3"><p className={`text-[9px] font-black ${part.state==='formed'?'text-emerald-200':part.state==='forming'?'text-amber-200':'text-slate-600'}`}>{part.label} · {part.state}</p><p className="mt-1 text-[8px] leading-4 text-slate-500">{part.detail}</p></div>)}</div>
                       </div>}
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {availableBuildItems.length === 0 && <span className="text-[9px] text-slate-400">No purchased items in inventory. Acquire a part or boost, then return to this structure.</span>}
-                        {availableBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
+                        {compatibleBuildItems.length === 0 && <span className="text-[9px] text-slate-400">No compatible purchased parts or boosts for this build. Purchase the correct item, then install it here.</span>}
+                        {compatibleBuildItems.map((item:any)=>{const actionKey=`apply:${build.id}:${item.item_key}`;return <button key={item.item_key} disabled={busy===actionKey} onClick={()=>act({action:'apply_build_item',build_id:build.id,item_key:item.item_key},actionKey)} className="rounded-full border border-sky-300/15 bg-sky-400/5 px-3 py-1.5 text-[9px] font-black text-sky-100 disabled:opacity-40">{busy===actionKey?'Applying…':`${item.name} ×${item.quantity}`}</button>})}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button type="button" onClick={()=>setDistrict('parts_workshop')} className="rounded-full border border-sky-300/20 px-3 py-2 text-[10px] font-black text-sky-200">Purchase parts</button>
