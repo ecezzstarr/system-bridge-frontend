@@ -73,7 +73,7 @@ export const FILE_FOLDER_PLATFORM_TEMPLATES = {
   transportation_network: {
     name:'Transport and mobility platform', example:'Routes, fleets and logistics',
     description:'Create fleet and transport administration software and connect it to distribution and work scheduling.',
-    stages:['customer_door','transport_coordination','route_station','distribution_network'],
+    stages:['customer_door','transport_coordination','route_station','integration_network'],
     productionGap:'Vehicle tracking, real-time dispatch, safety-critical routing and transport authority require external live integrations and validation.',
   },
   utility_infrastructure: {
