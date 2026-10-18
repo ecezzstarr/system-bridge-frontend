@@ -584,6 +584,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           aiTerritories={aiFileFolders.map(aiFileFolderTerritory)}
           businessName={businessFormation.business_name || territoryName}
           businessSector={businessFormation.sector || null}
+          presenceKey={String(data.client.file_number||'')}
           territoryMode
         />
       </div>
