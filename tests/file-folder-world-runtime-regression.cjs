@@ -10,7 +10,7 @@ const base={started_at:'2026-10-18T10:00:00Z',completes_at:'2026-10-18T12:00:00Z
 assert.equal(world.buildFormationProgress(base,Date.parse('2026-10-18T10:00:00Z')),0)
 assert.equal(world.buildFormationProgress(base,Date.parse('2026-10-18T11:00:00Z')),50)
 assert.equal(world.buildFormationProgress(base,Date.parse('2026-10-18T12:00:00Z')),100)
-assert.equal(world.buildFormationProgress({...base,completes_at:'2026-10-18T11:30:00Z'},Date.parse('2026-10-18T11:00:00Z')),100*2/3)
+assert(Math.abs(world.buildFormationProgress({...base,completes_at:'2026-10-18T11:30:00Z'},Date.parse('2026-10-18T11:00:00Z'))-(2/3)*100)<1e-9)
 assert.equal(world.buildFormationProgress({...base,completes_at:'2026-10-18T09:00:00Z'},Date.parse('2026-10-18T11:00:00Z')),100,'A fully accelerated build cannot revert to zero')
 const compatibility=load('lib/file-folder-build-compatibility.ts')
 assert(compatibility.isBuildPartCompatible('ai_node','ai_service_desk'))
