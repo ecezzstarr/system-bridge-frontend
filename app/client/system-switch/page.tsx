@@ -88,8 +88,8 @@ export default function ClientSystemSwitchPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-transparent text-white" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
-      <div className="pointer-events-none fixed left-1/2 top-20 z-40 -translate-x-1/2 text-center">
+    <main className="min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
+      <div className="pointer-events-none fixed left-1/2 top-20 hidden sm:block z-40 -translate-x-1/2 text-center">
         <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-cyan-200/20 bg-[#020914]/72 backdrop-blur-md"><Orbit className="h-4 w-4 text-cyan-200" /></div>
         <p className="mt-2 text-[7px] font-black uppercase tracking-[.2em] text-cyan-200/70">System Switch crossed · File Folder open world</p>
       </div>
