@@ -8,7 +8,7 @@ import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
 import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
-import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
+import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,FORMATION_WORKSHOP_POSITION,type FormationStation } from './file-folder-world-art'
 import { useFileFolderMaterialTextures } from './file-folder-material-textures'
 import { FileFolderCentralSpire } from './file-folder-central-spire'
 import { FileFolderWorldDetails } from './file-folder-world-details'
@@ -600,6 +600,7 @@ function Scene({
       obstacles={[
         ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:DISTRICT_BODY_RADIUS})),
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({x:FILE_FOLDER_STATION_POSITIONS[key][0],z:FILE_FOLDER_STATION_POSITIONS[key][2],radius:.74})),
+        {x:FORMATION_WORKSHOP_POSITION[0],z:FORMATION_WORKSHOP_POSITION[2],radius:.75},
         ...visibleSystems.map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[
@@ -607,6 +608,7 @@ function Scene({
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({
           id:key,label:key.replaceAll('_',' '),position:FILE_FOLDER_STATION_POSITIONS[key],enter:()=>onStudioEnter?.(key)
         })),
+        {id:'formation_workshop',label:'System Formation Workshop',position:FORMATION_WORKSHOP_POSITION,enter:()=>onStudioEnter?.('formation_yard')},
         ...visibleSystems.filter(s=>s.id).map((s,i,all)=>({id:s.id!,label:s.title||'Built system',position:systemWorldPosition(i,all.length),enter:()=>onSystemEnter?.(s.id!)})),
       ]}
     />
