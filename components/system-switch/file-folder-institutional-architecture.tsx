@@ -2,6 +2,7 @@
 
 import { Text } from '@react-three/drei'
 import { institutionalArchetype,INSTITUTIONAL_VISUAL_THEME } from '@/lib/file-folder-institutional-visual'
+import { useFileFolderMaterialTextures } from './file-folder-material-textures'
 
 type PhysicalPart={id?:string;itemKey?:string;name?:string;effectType?:string;effectValue?:number}
 type Props={
@@ -16,6 +17,7 @@ type Props={
  * to an actual attached part. It is NOT a real hospital/civic deployment.
  */
 export function InstitutionalArchitecture({systemType,progress,parts=[],compact=false}:Props){
+  const tex=useFileFolderMaterialTextures()
   const archetype=institutionalArchetype(systemType)
   if(!archetype)return null
   const theme=INSTITUTIONAL_VISUAL_THEME[archetype]
@@ -29,19 +31,19 @@ export function InstitutionalArchitecture({systemType,progress,parts=[],compact=
   return <group>
     <mesh receiveShadow position={[0,.11,0]}>
       <boxGeometry args={[1.28,.15,1.08]}/>
-      <meshStandardMaterial color="#26323a" roughness={.9}/>
+      <meshStandardMaterial map={tex.concrete} color="#c4c3b8" roughness={.9}/>
     </mesh>
     <mesh position={[0,.2,0]}>
       <boxGeometry args={[1.13,.1,.96]}/>
-      <meshStandardMaterial color={theme.base} metalness={.17} roughness={.7}/>
+      <meshStandardMaterial map={tex.concrete} color={theme.base} metalness={.17} roughness={.7}/>
     </mesh>
     {stage>=12&&[-.43,.43].flatMap(x=>[-.34,.34].map(z=><mesh key={x+':'+z} position={[x,.2+height*.45,z]} castShadow>
       <boxGeometry args={[.07,Math.max(.2,height*.86),.07]}/>
-      <meshStandardMaterial color="#9ca6b2" metalness={.43} roughness={.5}/>
+      <meshStandardMaterial map={tex.steel} color="#cbd3dc" metalness={.55} roughness={.38}/>
     </mesh>))}
     {facade&&<mesh position={[0,.16+height*.48,0]} castShadow>
       <boxGeometry args={[.91,Math.max(.2,height*.86),.75]}/>
-      <meshStandardMaterial color={theme.base} roughness={.49} metalness={.24}/>
+      <meshStandardMaterial map={tex.windows} color={theme.base} roughness={.39} metalness={.24}/>
     </mesh>}
     {facade&&[-.25,0,.25].map(x=><mesh key={x} position={[x,.28+height*.42,.39]}>
       <boxGeometry args={[.14,.28,.026]}/>
@@ -49,7 +51,7 @@ export function InstitutionalArchitecture({systemType,progress,parts=[],compact=
     </mesh>)}
     {roof&&<mesh position={[0,height+.22,0]}>
       <boxGeometry args={[1.08,.12,.92]}/>
-      <meshStandardMaterial color="#8793a1" metalness={.32} roughness={.53}/>
+      <meshStandardMaterial map={tex.steel} color="#d9dee1" metalness={.6} roughness={.36}/>
     </mesh>}
     {wings&&<group>
       {[-.67,.67].map(x=><mesh key={x} position={[x,height*.37,0]} castShadow>

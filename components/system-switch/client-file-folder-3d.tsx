@@ -8,7 +8,10 @@ import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
 import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
-import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
+import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,FORMATION_WORKSHOP_POSITION,type FormationStation } from './file-folder-world-art'
+import { useFileFolderMaterialTextures } from './file-folder-material-textures'
+import { FileFolderCentralSpire } from './file-folder-central-spire'
+import { FileFolderWorldDetails } from './file-folder-world-details'
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
 import { InstitutionalArchitecture } from './file-folder-institutional-architecture'
 
@@ -37,18 +40,19 @@ const POSITIONS:Record<DistrictKey,[number,number,number]>={
 }
 
 function StoneGround(){
+  const tex=useFileFolderMaterialTextures()
   return <group>
     <mesh position={[0,-.52,0]} receiveShadow>
       <cylinderGeometry args={[10.4,10.8,.42,80]}/>
-      <meshStandardMaterial color="#090d12" roughness={.88} metalness={.04}/>
+      <meshStandardMaterial map={tex.stone} color="#b9c6c7" roughness={.88} metalness={.04}/>
     </mesh>
     <mesh position={[0,-.28,0]} receiveShadow>
       <cylinderGeometry args={[9.65,10.05,.08,80]}/>
-      <meshStandardMaterial color="#111923" roughness={.82} metalness={.06}/>
+      <meshStandardMaterial map={tex.concrete} color="#e2e4e2" roughness={.82} metalness={.06}/>
     </mesh>
     <mesh position={[0,-.235,0]} rotation={[-Math.PI/2,0,0]} receiveShadow>
       <ringGeometry args={[3.25,8.9,96]}/>
-      <meshStandardMaterial color="#0d141d" roughness={.9}/>
+      <meshStandardMaterial map={tex.concrete} color="#a9b8c5" roughness={.9}/>
     </mesh>
     <mesh position={[0,-.21,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[7.95,8.08,96]}/>
@@ -58,6 +62,7 @@ function StoneGround(){
 }
 
 function PavedRoad({from,to,width=.72}:{from:[number,number,number];to:[number,number,number];width?:number}){
+  const tex=useFileFolderMaterialTextures()
   const dx=to[0]-from[0]
   const dz=to[2]-from[2]
   const length=Math.sqrt(dx*dx+dz*dz)
@@ -65,7 +70,7 @@ function PavedRoad({from,to,width=.72}:{from:[number,number,number];to:[number,n
   return <group position={[(from[0]+to[0])/2,-.16,(from[2]+to[2])/2]} rotation={[0,angle,0]}>
     <mesh receiveShadow>
       <boxGeometry args={[width,.08,length]}/>
-      <meshStandardMaterial color="#111820" roughness={.94}/>
+      <meshStandardMaterial map={tex.asphalt} color="#c2cad1" roughness={.94}/>
     </mesh>
     <mesh position={[-width*.41,.055,0]}>
       <boxGeometry args={[.035,.025,length]}/>
@@ -79,6 +84,7 @@ function PavedRoad({from,to,width=.72}:{from:[number,number,number];to:[number,n
 }
 
 function WaterChannel({position,rotation=0,length=5}:{position:[number,number,number];rotation?:number;length?:number}){
+  const tex=useFileFolderMaterialTextures()
   return <group position={position} rotation={[0,rotation,0]}>
     <mesh position={[0,-.12,0]} receiveShadow>
       <boxGeometry args={[.78,.12,length]}/>
@@ -86,7 +92,7 @@ function WaterChannel({position,rotation=0,length=5}:{position:[number,number,nu
     </mesh>
     <mesh position={[0,-.045,0]}>
       <boxGeometry args={[.56,.035,length-.18]}/>
-      <meshStandardMaterial color="#315d63" transparent opacity={.55} roughness={.16} metalness={.04}/>
+      <meshStandardMaterial map={tex.water} color="#a5eef2" transparent opacity={.7} roughness={.16} metalness={.05}/>
     </mesh>
   </group>
 }
@@ -111,35 +117,24 @@ function FlameBeacon({position,scale=.75}:{position:[number,number,number];scale
 
 function CommandHall({active}:{active:boolean}){
   return <group>
-    <mesh position={[0,.55,0]} castShadow receiveShadow>
-      <cylinderGeometry args={[1.34,1.65,1.1,8]}/>
-      <meshStandardMaterial color="#17232d" roughness={.68} metalness={.16}/>
-    </mesh>
-    <mesh position={[0,1.42,0]} castShadow>
-      <coneGeometry args={[1.42,.9,8]}/>
-      <meshStandardMaterial color="#334b59" metalness={.34} roughness={.5}/>
-    </mesh>
-    <mesh position={[0,.62,1.38]}>
-      <boxGeometry args={[.64,.95,.14]}/>
-      <meshStandardMaterial color="#071016" emissive="#f59e0b" emissiveIntensity={active ? .16:.06}/>
-    </mesh>
-    <Text position={[0,.8,1.48]} fontSize={.14} color="#fef3c7" anchorX="center">FORMATION INTELLIGENCE</Text>
-    <FlameBeacon position={[-1.4,.02,.95]} scale={.55}/>
-    <FlameBeacon position={[1.4,.02,.95]} scale={.55}/>
+    <FileFolderCentralSpire active={active}/>
+    <FlameBeacon position={[-1.55,.02,1.1]} scale={.4}/>
+    <FlameBeacon position={[1.55,.02,1.1]} scale={.4}/>
   </group>
 }
 
 function MarketDistrict({level,buildProgress,active}:{level:number;buildProgress:number;active:boolean}){
+  const tex=useFileFolderMaterialTextures()
   const floors=level>=3?3:level>=2?2:level>=1?1:0
   return <group>
-    <mesh position={[0,.12,0]} receiveShadow><boxGeometry args={[3.0,.24,2.3]}/><meshStandardMaterial color="#111b23" roughness={.82}/></mesh>
+    <mesh position={[0,.12,0]} receiveShadow><boxGeometry args={[3.0,.24,2.3]}/><meshStandardMaterial map={tex.concrete} color="#d6d1c8" roughness={.82}/></mesh>
     {floors===0?<>
-      <mesh position={[0,.18,0]} receiveShadow><boxGeometry args={[2.0,.12,1.5]}/><meshStandardMaterial color="#1b2b35" roughness={.85}/></mesh>
+      <mesh position={[0,.18,0]} receiveShadow><boxGeometry args={[2.0,.12,1.5]}/><meshStandardMaterial map={tex.concrete} color="#b4bec5" roughness={.85}/></mesh>
       <Text position={[0,.42,.82]} fontSize={.12} color="#a79075">MARKET PLOT</Text>
     </>:<>
-      <mesh position={[0,.56,0]} castShadow><boxGeometry args={[2.3,.9,1.65]}/><meshStandardMaterial color="#1b2b35" roughness={.68}/></mesh>
-      {floors>=2&&<mesh position={[0,1.23,0]} castShadow><boxGeometry args={[1.95,.48,1.42]}/><meshStandardMaterial color="#243b47" roughness={.62}/></mesh>}
-      {floors>=3&&<mesh position={[0,1.76,0]} castShadow><boxGeometry args={[1.5,.55,1.15]}/><meshStandardMaterial color="#315160" metalness={.15} roughness={.58}/></mesh>}
+      <mesh position={[0,.56,0]} castShadow><boxGeometry args={[2.3,.9,1.65]}/><meshStandardMaterial map={tex.windows} color="#b2d8df" roughness={.31} metalness={.29}/></mesh>
+      {floors>=2&&<mesh position={[0,1.23,0]} castShadow><boxGeometry args={[1.95,.48,1.42]}/><meshStandardMaterial map={tex.glass} color="#d5dfe5" roughness={.28} metalness={.36}/></mesh>}
+      {floors>=3&&<mesh position={[0,1.76,0]} castShadow><boxGeometry args={[1.5,.55,1.15]}/><meshStandardMaterial map={tex.glass} color="#b7d9e3" metalness={.35} roughness={.3}/></mesh>}
       {[-.72,0,.72].map(x=><mesh key={x} position={[x,.6,.84]}><boxGeometry args={[.32,.48,.09]}/><meshStandardMaterial color="#18241d" emissive="#34d399" emissiveIntensity={active ? .24:.1}/></mesh>)}
       <Text position={[0,.34,.9]} fontSize={.12} color="#d6f5e4">CUSTOMER MARKET</Text>
     </>}
@@ -185,9 +180,10 @@ function SoundPavilion({active}:{active:boolean}){
 }
 
 function ConstructionYard({activeBuilds,emergence,onBuildEnter,page=0}:{activeBuilds:ActiveBuild[];emergence:number;onBuildEnter?:(id:string)=>void;page?:number}){
+  const tex=useFileFolderMaterialTextures()
   const shown=activeBuilds.slice(page*6,page*6+6)
   return <group>
-    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[4.25,.16,3.05]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
+    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[4.25,.16,3.05]}/><meshStandardMaterial map={tex.concrete} color="#d8ddd9" roughness={.84}/></mesh>
     <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#5f7884" metalness={.45} roughness={.45}/></mesh>
     <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">FORMATION YARD</Text>
     {activeBuilds.length>6&&<Text position={[0,.38,-1.55]} fontSize={.1} color="#fcd34d" anchorX="center">SITE {page+1} OF {Math.ceil(activeBuilds.length/6)}</Text>}
@@ -205,23 +201,25 @@ function ConstructionYard({activeBuilds,emergence,onBuildEnter,page=0}:{activeBu
 }
 
 function ScaffoldEnvelope({width,depth,height,progress}:{width:number;depth:number;height:number;progress:number}){
+  const tex=useFileFolderMaterialTextures()
   const opacity=.2+Math.min(.34,progress/240)
   return <group>
-    {[-1,1].flatMap(x=>[-1,1].map(z=><mesh key={x+':'+z} position={[x*width/2,height/2,z*depth/2]}><boxGeometry args={[.055,height,.055]}/><meshBasicMaterial color="#d9b77e" transparent opacity={opacity}/></mesh>))}
+    {[-1,1].flatMap(x=>[-1,1].map(z=><mesh key={x+':'+z} position={[x*width/2,height/2,z*depth/2]}><boxGeometry args={[.055,height,.055]}/><meshStandardMaterial map={tex.steel} color="#f5dcb9" metalness={.62} transparent opacity={opacity+.2} roughness={.32}/></mesh>))}
     {[.3,.7,1].filter(v=>v*height<height+.01).map((fraction,index)=><group key={index} position={[0,height*fraction,0]}>
-      <mesh><boxGeometry args={[width,.045,.045]}/><meshBasicMaterial color="#f5d49d" transparent opacity={opacity}/></mesh>
+      <mesh><boxGeometry args={[width,.045,.045]}/><meshStandardMaterial map={tex.steel} color="#f5d49d" metalness={.58} transparent opacity={opacity+.22} roughness={.34}/></mesh>
       <mesh rotation={[0,Math.PI/2,0]}><boxGeometry args={[depth,.045,.045]}/><meshBasicMaterial color="#f5d49d" transparent opacity={opacity}/></mesh>
     </group>)}
   </group>
 }
 
 function Crane({height=2.6,speed=1}:{height?:number;speed?:number}){
+  const tex=useFileFolderMaterialTextures()
   const arm=useRef<THREE.Group>(null)
   useFrame(({clock})=>{if(arm.current)arm.current.rotation.y=Math.sin(clock.getElapsedTime()*.18*Math.min(4,Math.max(1,speed)))*.4})
   return <group position={[1.3,.02,-.95]}>
-    <mesh position={[0,height/2,0]}><boxGeometry args={[.09,height,.09]}/><meshStandardMaterial color="#a97835" metalness={.55} roughness={.42}/></mesh>
+    <mesh position={[0,height/2,0]}><boxGeometry args={[.09,height,.09]}/><meshStandardMaterial map={tex.steel} color="#ebbc6f" metalness={.55} roughness={.42}/></mesh>
     <group ref={arm} position={[0,height,0]}>
-      <mesh position={[.7,0,0]}><boxGeometry args={[1.45,.07,.07]}/><meshStandardMaterial color="#d3a45b" metalness={.52} roughness={.38}/></mesh>
+      <mesh position={[.7,0,0]}><boxGeometry args={[1.45,.07,.07]}/><meshStandardMaterial map={tex.steel} color="#ffe09e" metalness={.52} roughness={.38}/></mesh>
       <mesh position={[1.35,-.45,0]}><boxGeometry args={[.02,.9,.02]}/><meshBasicMaterial color="#3e3328"/></mesh>
     </group>
   </group>
@@ -259,6 +257,7 @@ function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY
 }
 
 function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;position:[number,number,number];emergence:number;onEnter?:()=>void}){
+  const tex=useFileFolderMaterialTextures()
   const pulse=useRef<THREE.MeshBasicMaterial>(null)
   const progress=Math.max(0,Math.min(100,build.progress||0))
   const phase=progress<15?'FOUNDATION':progress<42?'FRAME':progress<70?'STRUCTURE':progress<92?'INTEGRATION':'COMMISSIONING'
@@ -274,10 +273,14 @@ function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;
     pulse.current.opacity=Math.max(.04,wave*Math.min(1.4,emergence)*(.35+progress/160))
   })
   return <group position={position} onClick={event=>{event.stopPropagation();onEnter?.()}}>
-    <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#1c2c37" roughness={.86}/></mesh>
-    {!institutional&&progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
-    {!institutional&&walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
-    {!institutional&&roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#315160" roughness={.5} metalness={.16}/></mesh>}
+    <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial map={tex.concrete} color="#d7d6c9" roughness={.86}/></mesh>
+    {!institutional&&progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial map={tex.steel} color="#9fe0f0" metalness={.55} roughness={.36}/></mesh>))}
+    {!institutional&&walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial map={tex.glass} color="#c8ecff" metalness={.38} transparent opacity={.75} roughness={.26}/></mesh>}
+    {!institutional&&roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial map={tex.steel} color="#b7c8cf" roughness={.45} metalness={.55}/></mesh>}
+    {!institutional&&progress>=15&&progress<100&&<mesh position={[0,Math.max(.19,height*.54),.342]}>
+      <planeGeometry args={[.85,Math.max(.24,height*.7)]}/>
+      <meshStandardMaterial map={tex.hologram} transparent opacity={Math.min(.72,.23+progress/170)} emissive="#2be4f1" emissiveIntensity={.32} side={THREE.DoubleSide} depthWrite={false}/>
+    </mesh>}
     {institutional&&<InstitutionalArchitecture systemType={String(build.systemType||"")} progress={progress} parts={parts} compact/>}
     {!institutional&&parts.slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={height*.58}/>)}
     {speed>1.01&&<group>
@@ -300,6 +303,7 @@ function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;
 }
 
 function LiveBuilding({system,index,total,emergence,onEnter}:{system:LiveSystem;index:number;total:number;emergence:number;onEnter?:()=>void}){
+  const tex=useFileFolderMaterialTextures()
   const angle=(index/Math.max(1,total))*Math.PI*2
   const [x,,z]=systemWorldPosition(index,total)
   const type=String(system.systemType||'')
@@ -312,30 +316,30 @@ function LiveBuilding({system,index,total,emergence,onEnter}:{system:LiveSystem;
   const isNetwork=/route|integration|network/.test(type)
 
   return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]} onClick={event=>{event.stopPropagation();onEnter?.()}}>
-    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial color="#121d26" roughness={.86}/></mesh>
+    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial map={tex.concrete} color="#d7d9d8" roughness={.86}/></mesh>
 
     {institutional&&<InstitutionalArchitecture systemType={type} progress={100} parts={system.parts||[]}/>}
     {!institutional&&isMarket&&<group>
-      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.0,1.25,.72]}/><meshStandardMaterial color="#1c303b" roughness={.62}/></mesh>
-      <mesh position={[0,1.42,0]} castShadow><boxGeometry args={[1.12,.16,.82]}/><meshStandardMaterial color="#315160" metalness={.18} roughness={.48}/></mesh>
+      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.0,1.25,.72]}/><meshStandardMaterial map={tex.windows} color="#c9e8f4" metalness={.42} roughness={.26}/></mesh>
+      <mesh position={[0,1.42,0]} castShadow><boxGeometry args={[1.12,.16,.82]}/><meshStandardMaterial map={tex.steel} color="#b8cbd3" metalness={.55} roughness={.4}/></mesh>
       {[-.3,.3].map(v=><mesh key={v} position={[v,.68,.38]}><boxGeometry args={[.22,.42,.05]}/><meshStandardMaterial color="#14241b" emissive="#34d399" emissiveIntensity={activity}/></mesh>)}
     </group>}
 
     {!institutional&&isMedia&&<group>
-      <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.32,.5,1.9,10]}/><meshStandardMaterial color="#1c2b37" roughness={.54} metalness={.2}/></mesh>
+      <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.32,.5,1.9,10]}/><meshStandardMaterial map={tex.glass} color="#b6d8e6" roughness={.3} metalness={.4}/></mesh>
       <mesh position={[0,2.12,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[.46,.045,10,40]}/><meshStandardMaterial color="#916b61" emissive="#fb7185" emissiveIntensity={activity}/></mesh>
       <mesh position={[0,2.58,0]}><sphereGeometry args={[.12,14,14]}/><meshBasicMaterial color="#fda4af"/></mesh>
     </group>}
 
     {!institutional&&isEnterprise&&<group>
-      <mesh position={[0,1.15,0]} castShadow><cylinderGeometry args={[.48,.68,2.05,8]}/><meshStandardMaterial color="#203542" roughness={.56} metalness={.18}/></mesh>
+      <mesh position={[0,1.15,0]} castShadow><cylinderGeometry args={[.48,.68,2.05,8]}/><meshStandardMaterial map={tex.glass} color="#c5dbe1" roughness={.26} metalness={.45}/></mesh>
       {[-.62,.62].map(v=><mesh key={v} position={[v,.7,0]} castShadow><cylinderGeometry args={[.14,.2,1.18,8]}/><meshStandardMaterial color="#2a4653" roughness={.58}/></mesh>)}
       <mesh position={[0,2.48,0]}><coneGeometry args={[.46,.76,8]}/><meshStandardMaterial color="#355564" metalness={.3} roughness={.45}/></mesh>
       <pointLight position={[0,2.0,.45]} intensity={2.5} distance={2.4} color="#fbbf24"/>
     </group>}
 
     {!institutional&&isIntelligence&&<group>
-      <mesh position={[0,.72,0]} castShadow><cylinderGeometry args={[.64,.72,1.18,12]}/><meshStandardMaterial color="#403b36" roughness={.58} metalness={.2}/></mesh>
+      <mesh position={[0,.72,0]} castShadow><cylinderGeometry args={[.64,.72,1.18,12]}/><meshStandardMaterial map={tex.steel} color="#b5b2af" roughness={.44} metalness={.35}/></mesh>
       <mesh position={[0,1.48,0]} scale={[1,.62,1]}><sphereGeometry args={[.62,24,16,0,Math.PI*2,0,Math.PI/2]}/><meshStandardMaterial color="#433c43" emissive="#a78bfa" emissiveIntensity={activity*.55} roughness={.36}/></mesh>
       <mesh position={[0,1.9,0]}><cylinderGeometry args={[.03,.03,.65,8]}/><meshStandardMaterial color="#bca8d8" metalness={.65} roughness={.3}/></mesh>
     </group>}
@@ -549,6 +553,7 @@ function Scene({
 
     <StoneGround/>
     <FileFolderScenery formationCount={activeBuilds.length}/>
+    <FileFolderWorldDetails/>
     <FileFolderFacilities
       marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
       enterpriseReady={enterpriseApproved}
@@ -595,6 +600,7 @@ function Scene({
       obstacles={[
         ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:DISTRICT_BODY_RADIUS})),
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({x:FILE_FOLDER_STATION_POSITIONS[key][0],z:FILE_FOLDER_STATION_POSITIONS[key][2],radius:.74})),
+        {x:FORMATION_WORKSHOP_POSITION[0],z:FORMATION_WORKSHOP_POSITION[2],radius:.75},
         ...visibleSystems.map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[
@@ -602,6 +608,7 @@ function Scene({
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({
           id:key,label:key.replaceAll('_',' '),position:FILE_FOLDER_STATION_POSITIONS[key],enter:()=>onStudioEnter?.(key)
         })),
+        {id:'formation_workshop',label:'System Formation Workshop',position:FORMATION_WORKSHOP_POSITION,enter:()=>onStudioEnter?.('formation_yard')},
         ...visibleSystems.filter(s=>s.id).map((s,i,all)=>({id:s.id!,label:s.title||'Built system',position:systemWorldPosition(i,all.length),enter:()=>onSystemEnter?.(s.id!)})),
       ]}
     />
@@ -842,7 +849,7 @@ export function ClientFileFolder3D({
         <button type="button" style={{minWidth:44,width:44,height:44,flexShrink:0}} className="inline-flex items-center justify-center text-xl" aria-label="Next built systems district" onClick={()=>setSystemPage(v=>(v+1)%Math.ceil(liveSystems.length/12))}>›</button>
       </div>}
     </div>}
-    {activeBuilds.length>0&&<aside className="ff-build-hud absolute left-3 top-[14.3rem] z-20 w-[min(215px,51vw)] rounded-xl border border-amber-200/30 bg-[#081725]/85 p-3 shadow-lg backdrop-blur-md sm:left-5 sm:top-[13.6rem]" aria-label="Live construction in your world">
+    {activeBuilds.length>0&&<aside className="ff-build-hud absolute bottom-[13.5rem] right-3 z-20 w-[min(235px,58vw)] rounded-xl border border-amber-200/35 bg-[#081725]/93 p-3 shadow-lg backdrop-blur-md sm:right-5 sm:bottom-[13rem]" aria-label="Live construction in your world">
       <p className="text-[8px] font-black uppercase tracking-[.15em] text-amber-200">In formation · {activeBuilds.length} builds</p>
       <p className="mt-1 truncate text-[10px] font-bold text-white">{activeBuilds[0].title||'Current build'}</p>
       <div className="mt-2 flex items-center gap-2">
@@ -850,6 +857,13 @@ export function ClientFileFolder3D({
         <span className="text-[9px] font-black text-amber-100">{Math.round(activeBuilds[0].progress)}%</span>
       </div>
       <p className="mt-1 text-[8px] text-cyan-100/75">{activeBuilds[0].parts?.length||0} installed parts · speed ×{Number(activeBuilds[0].speedMultiplier||1).toFixed(2)}</p>
+      <div className="mt-2 space-y-1 border-t border-cyan-200/15 pt-2" aria-label="Actual installed software modules">
+        {(activeBuilds[0].parts||[]).slice(0,3).map((part,index)=><div key={part.id||part.itemKey||index} className="flex min-h-5 items-center justify-between gap-2">
+          <span className="min-w-0 truncate text-[9px] text-cyan-100">{part.name||part.itemKey||'Installed module'}</span>
+          <span className="shrink-0 text-[8px] text-emerald-300">Installed</span>
+        </div>)}
+        {(!activeBuilds[0].parts||activeBuilds[0].parts.length===0)&&<p className="text-[9px] text-stone-400">Modules available from Parts Workshop</p>}
+      </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
         <button type="button" disabled={!navigationEnabled} onClick={()=>onBuildEnter?.(activeBuilds[0].id||'')} className="rounded-md border border-cyan-200/40 px-2 py-1.5 text-[8px] font-black text-cyan-100 disabled:opacity-40">Install parts</button>
         <button type="button" disabled={!navigationEnabled} onClick={()=>onStudioEnter?.('boost_bay')} className="rounded-md border border-amber-200/40 px-2 py-1.5 text-[8px] font-black text-amber-100 disabled:opacity-40">Apply boost</button>
@@ -914,22 +928,22 @@ export function ClientFileFolder3D({
       </select>
     </nav>
     <div className={territoryMode
-      ? "ff-district-rail absolute inset-x-2 bottom-3 z-20 flex snap-x snap-mandatory justify-start gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:justify-center sm:gap-2"
-      : "absolute inset-x-2 bottom-2 z-10 flex snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2"
-    }>
-      {districts.map(d=>{
-        const active=d.key===activeSurface
-        const color=COLORS[d.tone]
-        return <button
-          key={d.key}
-          onClick={()=>onSurfaceChange(d.key)}
-          className="min-w-[104px] snap-start rounded-lg border bg-[#080d13]/88 px-2.5 py-2 text-left backdrop-blur-md sm:min-w-[135px] sm:rounded-xl sm:px-3"
-          style={{borderColor:active?color:'rgba(255,255,255,.09)'}}
-        >
-          <span className="block text-[8px] font-black uppercase tracking-[.08em]" style={{color}}>{d.label}</span>
-          <span className="mt-1 block text-[8px] text-stone-400">{active?'You are here':'Enter territory'}</span>
-        </button>
-      })}
+      ? "ff-district-rail absolute inset-x-2 bottom-3 z-20 flex justify-between gap-1 rounded-xl border border-slate-600/30 bg-[#06101b]/95 px-1.5 py-2 backdrop-blur-md sm:inset-x-5 sm:bottom-5"
+      : "absolute inset-x-2 bottom-2 z-20 flex justify-between gap-1 rounded-xl border border-slate-600/30 bg-[#06101b]/95 px-1.5 py-2 backdrop-blur-md"}
+      aria-label="Client File Folder operating destinations">
+      {([
+        {label:'Build',symbol:'▥',selected:activeSurface==='builds',go:()=>onSurfaceChange('builds')},
+        {label:'Parts',symbol:'⬡',selected:false,go:()=>onStudioEnter?.('parts_workshop')},
+        {label:'Blueprints',symbol:'▤',selected:false,go:()=>onStudioEnter?.('blueprint_foundry')},
+        {label:'Boosts',symbol:'ϟ',selected:false,go:()=>onStudioEnter?.('boost_bay')},
+        {label:'People',symbol:'♧',selected:activeSurface==='enterprise',go:()=>onSurfaceChange('enterprise')},
+      ]).map(tab=><button key={tab.label} type="button" disabled={!navigationEnabled}
+          onClick={tab.go}
+          className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center rounded-lg px-1.5 py-1 text-center disabled:opacity-40 ${tab.selected?'border border-amber-200/35 bg-amber-300/10':'border border-transparent'}`}
+          aria-label={tab.label==='People'?'Enter enterprise people and legions':'Open '+tab.label}>
+          <span className={`text-xl leading-6 ${tab.selected?'text-amber-200':'text-cyan-100/70'}`} aria-hidden="true">{tab.symbol}</span>
+          <span className={`mt-1 text-[10px] font-semibold ${tab.selected?'text-amber-100':'text-slate-300'}`}>{tab.label}</span>
+        </button>)}
     </div>
   </section>
 }
