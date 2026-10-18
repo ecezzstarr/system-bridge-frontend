@@ -92,6 +92,7 @@ export async function ensureFileFolderWorldSchema(sql: any) {
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_client_platform_projects_owner ON client_file_folder_platform_projects(client_id,file_number,created_at DESC)`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_client_platform_projects_unique_name ON client_file_folder_platform_projects(client_id,lower(title))`
 
   await sql`
     CREATE TABLE IF NOT EXISTS client_file_folder_inventory (
