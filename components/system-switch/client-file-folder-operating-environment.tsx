@@ -314,7 +314,7 @@ function HostedSystem({
               <button
                 onClick={()=>void act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)}
                 disabled={busy===entry.id}
-                className={`mt-0.5 h-5 w-5 min-h-0 min-w-0 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-500'}`}
+                className={`ff-entry-toggle mt-0.5 h-5 w-5 min-h-0 min-w-0 rounded-full border ${entry.status==='done'?'border-emerald-300 bg-emerald-300':'border-slate-500'}`}
                 aria-label={entry.status==='done'?'Reopen record':'Mark record complete'}
               />
               <div className="min-w-0">
