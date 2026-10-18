@@ -531,7 +531,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
         <ClientFileFolder3D
           activeSurface={current.key}
           onSurfaceChange={(next) => enterSurface(next)}
-          navigationEnabled={!panelOpen && !formationOpen}
+          navigationEnabled={!panelOpen}
           onSystemEnter={id=>{if(!systems.some((s:any)=>s.id===id&&s.status==='active'))return;setSelectedSystemId(id);setSelectedBuildId('');setSurface('builds');setFormationOpen(false);setPanelOpen(true)}}
           onBuildEnter={id=>{
             if(!activeBuilds.some((build:any)=>build.id===id))return
