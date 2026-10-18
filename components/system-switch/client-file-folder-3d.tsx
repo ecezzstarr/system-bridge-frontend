@@ -8,7 +8,7 @@ import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
 import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
-import { FileFolderScenery,FileFolderFacilities,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
+import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
 type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber'|'rose'}
@@ -500,7 +500,7 @@ function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -526,6 +526,7 @@ function Scene({
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
   onStudioEnter?:(key:FormationStation)=>void
+  thirdPerson:boolean
 }){
   return <>
     <color attach="background" args={['#101d29']}/>
@@ -578,7 +579,8 @@ function Scene({
     <FlameBeacon position={[7.7,.02,5.9]} scale={.55}/>
 
     <ContactShadows frames={1} resolution={256} position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
-    <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby}
+    {thirdPerson&&<FileFolderPresenceAvatar presence={presence}/>}
+    <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby} thirdPerson={thirdPerson}
       obstacles={[
         ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:DISTRICT_BODY_RADIUS})),
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({x:FILE_FOLDER_STATION_POSITIONS[key][0],z:FILE_FOLDER_STATION_POSITIONS[key][2],radius:.74})),
@@ -653,6 +655,7 @@ export function ClientFileFolder3D({
     if(joystickThumb.current)joystickThumb.current.style.transform=`translate(${walkX*range}px,${walkY*range}px)`
   }
   const [nearby,setNearby]=useState('')
+  const [thirdPerson,setThirdPerson]=useState(true)
   const [mapPresence,setMapPresence]=useState<Presence>({x:0,z:3,yaw:0})
   useEffect(()=>{
     const interval=window.setInterval(()=>{
@@ -777,7 +780,7 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} thirdPerson={thirdPerson}
         />
       </AdaptiveCanvas>
     </div>
@@ -801,6 +804,11 @@ export function ClientFileFolder3D({
       </div>
       <p className="mt-1 truncate text-center text-[7px] uppercase tracking-wider text-slate-300">{nearby||'Your location'}</p>
     </div>
+    <button type="button" onClick={()=>setThirdPerson(current=>!current)} disabled={!navigationEnabled}
+      aria-label={thirdPerson?'Change to first-person view':'Change to follow-camera view'}
+      className="absolute right-3 top-[20rem] z-20 rounded-full border border-cyan-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-cyan-100 shadow-lg backdrop-blur-sm disabled:opacity-40 sm:right-5 sm:top-[17.3rem]">
+      {thirdPerson?'View · Follow':'View · Eye'}
+    </button>
     <button type="button" onClick={()=>captureWorldRef.current?.()} aria-label="Save exact image of this File Folder world"
       className="absolute right-3 top-[22rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:right-5 sm:top-[19.5rem]">
       Save world image
