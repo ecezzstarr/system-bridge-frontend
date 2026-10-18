@@ -777,7 +777,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
               <HostedSystem key={selectedSystem.id} onNavigate={next=>{setSelectedSystemId('');setSurface(next)}} system={selectedSystem} onClose={()=>setSelectedSystemId('')} onWorldChange={setWorld} />
             ) : (
               <>
-                <div className="flex flex-col gap-3 border-y border-cyan-100/10 bg-[#06101b]/62 px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="ff-build-intro flex flex-col gap-3 border-y border-cyan-100/10 bg-[#06101b]/62 px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">Construction territory active</p>
                     <p className="mt-1 text-[11px] leading-5 text-stone-400">Blueprint Foundry, Materials Depot, Parts Workshop, Formation Yard, Acceleration Bay and Systems in Motion are one continuous site. Move through the site instead of opening separate dashboard pages.</p>
@@ -807,6 +807,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
         {surface === 'business' && (
           <ClientWorkshopWorld
+            initialModule="Business Store"
             client={data.client}
             folder={data.file_folder}
             vault={data.vault}

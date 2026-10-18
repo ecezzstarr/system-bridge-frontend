@@ -452,8 +452,14 @@ export function DJBroadcastPlayer() {
       else if(userPaused)void handleResume()
       else handlePause()
     }
+    const announce=()=>{
+      window.dispatchEvent(new CustomEvent('weave:live-sound-availability',{detail:{available:eligibleAudience&&live&&!personalDjActive}}))
+      emitDjAudioState(Boolean(audioRef.current&&!audioRef.current.paused))
+    }
+    announce()
+    window.addEventListener('weave:request-live-sound-state',announce)
     window.addEventListener('weave:toggle-live-sound',toggle)
-    return()=>window.removeEventListener('weave:toggle-live-sound',toggle)
+    return()=>{window.removeEventListener('weave:toggle-live-sound',toggle);window.removeEventListener('weave:request-live-sound-state',announce)}
   },[eligibleAudience,live,personalDjActive,joined,userPaused])
 
   const canShow = eligibleAudience && live && !personalDjActive

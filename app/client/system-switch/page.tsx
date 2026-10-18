@@ -16,6 +16,16 @@ export default function ClientSystemSwitchPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [soundAvailable,setSoundAvailable]=useState(false)
+  const [soundPlaying,setSoundPlaying]=useState(false)
+  useEffect(()=>{
+    const availability=(event:Event)=>setSoundAvailable(Boolean((event as CustomEvent).detail?.available))
+    const playback=(event:Event)=>setSoundPlaying(Boolean((event as CustomEvent).detail?.playing))
+    window.addEventListener('weave:live-sound-availability',availability)
+    window.addEventListener('weave:dj-audio-state',playback)
+    window.dispatchEvent(new Event('weave:request-live-sound-state'))
+    return()=>{window.removeEventListener('weave:live-sound-availability',availability);window.removeEventListener('weave:dj-audio-state',playback)}
+  },[])
 
   useEffect(() => {
     const controller=new AbortController()
@@ -98,7 +108,7 @@ export default function ClientSystemSwitchPage() {
           <Link href="/client/dashboard"><ArrowLeft className="h-4 w-4"/>Client World</Link>
           <Link href="/client/system-store" data-file-folder-publish-system="true"><PackageOpen className="h-4 w-4"/>Publish a system</Link>
           <Link href="/client/system-switch/flame-event" data-file-folder-flame-event="inside"><Flame className="h-4 w-4"/>Flame Event</Link>
-          <button type="button" onClick={()=>window.dispatchEvent(new Event('weave:toggle-live-sound'))}><Volume2 className="h-4 w-4"/>Play / pause live sound</button>
+          <button type="button" disabled={!soundAvailable} onClick={()=>window.dispatchEvent(new Event('weave:toggle-live-sound'))}><Volume2 className="h-4 w-4"/>{!soundAvailable?'Live sound is offline':soundPlaying?'Pause live sound':'Play live sound'}</button>
         </nav>
       </details>
     </main>

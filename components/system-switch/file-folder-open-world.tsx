@@ -343,7 +343,7 @@ export default function FileFolderOpenWorld({
               : 'No buildable blueprint is currently published.'}
         </div>
 
-        {buildFunding && !buildFunding.grandfathered && (
+        {buildFunding && !buildFunding.grandfathered && !buildFunding.publicDoorUnlocked && (
           <div className={`mt-3 flex items-center justify-between gap-3 border-l-2 px-3 py-2 text-[9px] leading-4 md:rounded-xl md:border md:px-4 md:py-3 md:text-[10px] md:leading-5 ${buildFunding.publicDoorUnlocked ? 'border-emerald-300/25 bg-emerald-400/[.035] text-emerald-200' : 'border-amber-300/30 bg-amber-400/[.035] text-amber-100'}`}>
             <div className="min-w-0">
               <span className="font-black uppercase tracking-wider">Funding · </span>
