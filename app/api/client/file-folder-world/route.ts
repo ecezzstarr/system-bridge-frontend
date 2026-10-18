@@ -1,3 +1,4 @@
+import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import { allowedBuildPartSystems } from '@/lib/file-folder-build-compatibility'
 import { NextRequest, NextResponse } from 'next/server'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
@@ -89,7 +90,37 @@ export async function POST(request: NextRequest) {
     const action = clean(body.action, 80)
     let receipt = null as Awaited<ReturnType<typeof issueWeaveReceipt>> | null
 
-    if (action === 'set_business_formation') {
+    if (action === 'create_platform_project') {
+      const kind=clean(body.kind,80)
+      const title=clean(body.title,220)
+      const purpose=clean(body.purpose,2000)
+      if(!isFileFolderPlatformKind(kind)){
+        return NextResponse.json({error:'Choose a supported platform direction.'},{status:400})
+      }
+      if(title.length<3){
+        return NextResponse.json({error:'Name the platform you want to build (at least 3 characters).'},{status:400})
+      }
+      const [{project_count}]=await ctx.sql`
+        SELECT COUNT(*)::int AS project_count
+        FROM client_file_folder_platform_projects
+        WHERE client_id=${ctx.client.id}::uuid
+          AND file_number=${ctx.client.file_number}
+      `
+      if(Number(project_count)>=10){
+        return NextResponse.json({error:'This File Folder has reached the limit of ten platform plans. Continue the existing projects before creating another.'},{status:409})
+      }
+      const created=await ctx.sql`
+        INSERT INTO client_file_folder_platform_projects(client_id,file_number,kind,title,purpose)
+        VALUES(
+          ${ctx.client.id}::uuid,${ctx.client.file_number},${kind},${title},${purpose||null}
+        )
+        ON CONFLICT DO NOTHING
+        RETURNING id
+      `
+      if(!created.length){
+        return NextResponse.json({error:'You already own a platform project with that name.'},{status:409})
+      }
+    } else if (action === 'set_business_formation') {
       await ensureClientBusinessStoreSchema(ctx.sql)
       const businessName = clean(body.business_name, 220)
       const sector = clean(body.sector, 160)

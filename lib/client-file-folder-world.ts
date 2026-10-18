@@ -1,4 +1,5 @@
 import { ensureClientBusinessStore, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { platformProjectProgress,FILE_FOLDER_PLATFORM_TEMPLATES,type FileFolderPlatformProject } from '@/lib/file-folder-platform-projects'
 import { CLIENT_BUILD_SPEED_MAX, effectiveBuildMinutes, getClientBuildEconomy, type ClientBuildEconomy } from '@/lib/client-build-economy'
 import { getClientGrowthSnapshot, type ClientGrowthSnapshot } from '@/lib/client-growth-world'
 
@@ -11,6 +12,8 @@ export type FileFolderWorldSnapshot = {
   library: any[]
   customerDoor: any | null
   businessFormation: any
+  platformProjects: Array<FileFolderPlatformProject & ReturnType<typeof platformProjectProgress>>
+  platformTemplates: typeof FILE_FOLDER_PLATFORM_TEMPLATES
   integration: {
     owner: 'client'
     host: 'WEAVE'
@@ -74,6 +77,22 @@ export async function ensureFileFolderWorldSchema(sql: any) {
     )
   `
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_client_business_formations_file_number ON client_business_formations(file_number)`
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS client_file_folder_platform_projects (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      client_id uuid NOT NULL,
+      file_number varchar(120) NOT NULL,
+      kind varchar(80) NOT NULL,
+      title varchar(220) NOT NULL,
+      purpose text,
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      updated_at timestamptz NOT NULL DEFAULT NOW(),
+      CONSTRAINT client_platform_kind_nonempty CHECK (char_length(kind)>0)
+    )
+  `
+  await sql`CREATE INDEX IF NOT EXISTS idx_client_platform_projects_owner ON client_file_folder_platform_projects(client_id,file_number,created_at DESC)`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_client_platform_projects_unique_name ON client_file_folder_platform_projects(client_id,lower(title))`
 
   await sql`
     CREATE TABLE IF NOT EXISTS client_file_folder_inventory (
@@ -834,6 +853,17 @@ export async function getFileFolderWorldSnapshot(
     LIMIT 1
   `
 
+  const storedPlatformProjects = await sql`
+    SELECT id,client_id,file_number,kind,title,purpose,created_at,updated_at
+    FROM client_file_folder_platform_projects
+    WHERE client_id=${clientId}::uuid AND file_number=${fileNumber}
+    ORDER BY created_at DESC
+    LIMIT 30
+  `
+  const platformProjects=(storedPlatformProjects as FileFolderPlatformProject[])
+    .filter(project=>Object.hasOwn(FILE_FOLDER_PLATFORM_TEMPLATES,project.kind))
+    .map(project=>({...project,...platformProjectProgress(project,builds,systems,blueprints)}))
+
   const growth = await getClientGrowthSnapshot(
     sql,
     clientId,
@@ -867,6 +897,8 @@ export async function getFileFolderWorldSnapshot(
     systems,
     library,
     customerDoor: customerDoor || null,
+    platformProjects,
+    platformTemplates: FILE_FOLDER_PLATFORM_TEMPLATES,
     businessFormation: businessFormation || {
       business_name: clientIdentity?.business_name || clientIdentity?.name || 'Client Business',
       sector: null,

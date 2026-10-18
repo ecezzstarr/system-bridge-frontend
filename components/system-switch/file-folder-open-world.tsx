@@ -1,5 +1,7 @@
 'use client'
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
+import FileFolderPlatformProjectStudio from './file-folder-platform-project-studio'
+import { type FileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
 
@@ -416,6 +418,15 @@ export default function FileFolderOpenWorld({
                   <span className="text-[9px] text-slate-500">Ownership: Client · Host: WEAVE · Public boundary: Customer Door</span>
                 </div>
               </div>
+              <div className="rounded-2xl border border-cyan-200/20 bg-cyan-300/[.045] p-4" data-file-folder-platform-entry="client-projects">
+                <p className="text-[9px] font-black uppercase tracking-[.18em] text-cyan-200">Build your own technology platform</p>
+                <h4 className="mt-2 text-base font-black text-white">Your idea can begin here.</h4>
+                <p className="mt-2 text-xs leading-5 text-slate-300">Create your own video platform, social network, conversation service, marketplace or entirely new software project. Choose its name, build the underlying systems and keep its development inside your File Folder.</p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-[10px] text-cyan-100">{(world?.platformProjects||[]).length} owned platform projects</span>
+                  <button type="button" onClick={()=>setDistrict('blueprint_foundry')} className="rounded-lg border border-cyan-200/45 bg-cyan-200/10 px-3 py-2 text-[10px] font-black text-cyan-100">Start platform project →</button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-0 overflow-hidden border-y border-amber-100/10 md:grid-cols-4">
                 {[
                   ['Blueprints ready',world?.blueprints?.length||0,'DESIGN'],
@@ -484,6 +495,15 @@ export default function FileFolderOpenWorld({
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Blueprint Foundry</p>
               <h3 className="mt-2 text-2xl font-black">Choose the technology your business needs.</h3>
               <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">WEAVE provides buildable technology. You choose the system, name it for your business, define what it should do, and start formation. Your choices determine what this File Folder becomes.</p>
+              <div className="mt-5">
+                <FileFolderPlatformProjectStudio
+                  projects={world?.platformProjects||[]}
+                  blueprints={world?.blueprints||[]}
+                  busy={busy==='create_platform_project'}
+                  onCreate={(kind:FileFolderPlatformKind,title:string,purpose:string)=>act({action:'create_platform_project',kind,title,purpose},'create_platform_project')}
+                  onChooseBlueprint={key=>setBlueprintSearch(key)}
+                />
+              </div>
               <input value={blueprintSearch} onChange={event=>setBlueprintSearch(event.target.value)} className="mt-4 w-full rounded-xl border border-violet-300/15 bg-black/25 px-4 py-3 text-sm text-white outline-none" placeholder="Search store, payments, AI, streaming, operations, marketplace…"/>
               {filteredBlueprints.length===0&&<p role="status" className="mt-5 rounded-xl border border-white/10 p-4 text-sm text-slate-300">No blueprints match this search. <button type="button" onClick={()=>setBlueprintSearch('')} className="mt-2 block text-sky-200">Clear search</button></p>}
               <div className="mt-5 grid gap-3 md:grid-cols-2">
