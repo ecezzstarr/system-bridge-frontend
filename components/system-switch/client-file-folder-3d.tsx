@@ -3,7 +3,7 @@ import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ContactShadows,Text } from '@react-three/drei'
+import { ContactShadows,Text,useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
 import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
@@ -227,7 +227,15 @@ function Crane({height=2.6,speed=1}:{height?:number;speed?:number}){
 
 
 function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY:number}){
+  const [ai,finance,operations,network]=useTexture([
+    '/weave/file-folder/assets/ai-automation.svg',
+    '/weave/file-folder/assets/payments-module.svg',
+    '/weave/file-folder/assets/operations-module.svg',
+    '/weave/file-folder/assets/network-module.svg',
+  ])
   const kind=String(part.effectType||'component')
+  const icon=kind==='ai_node'?ai:kind==='verification'?finance:
+    ['route_capacity','stream_capacity','audience_capacity'].includes(kind)?network:operations
   if(kind==='speed_boost')return null
   const colors:Record<string,string>={
     ai_node:'#a78bfa',automation:'#22d3ee',route_capacity:'#34d399',legion_capacity:'#fbbf24',
@@ -237,7 +245,8 @@ function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY
   const x=-.36+(index%3)*.36
   const z=index<3?.39:-.39
   return <group position={[x,Math.max(.45,baseY),z]}>
-    <mesh castShadow><boxGeometry args={[.24,.3,.2]}/><meshStandardMaterial color="#263745" emissive={color} emissiveIntensity={.28} metalness={.35} roughness={.42}/></mesh>
+    <mesh castShadow><boxGeometry args={[.31,.32,.23]}/><meshStandardMaterial color="#263745" emissive={color} emissiveIntensity={.28} metalness={.35} roughness={.42}/></mesh>
+    <mesh position={[0,.035,.123]}><planeGeometry args={[.32,.18]}/><meshBasicMaterial map={icon} toneMapped={false} transparent side={THREE.DoubleSide}/></mesh>
     {kind==='ai_node'&&<mesh position={[0,.24,0]}><icosahedronGeometry args={[.15,0]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={.55}/></mesh>}
     {(kind==='stream_capacity'||kind==='audience_capacity'||kind==='route_capacity')&&<mesh position={[0,.25,0]} rotation={[Math.PI/2,0,0]}><torusGeometry args={[.15,.035,6,12]}/><meshBasicMaterial color={color}/></mesh>}
     {kind==='automation'&&<mesh position={[0,.26,0]}><cylinderGeometry args={[.1,.1,.24,6]}/><meshStandardMaterial color={color} metalness={.6}/></mesh>}
