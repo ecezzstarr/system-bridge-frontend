@@ -3,11 +3,12 @@ import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ContactShadows,Text } from '@react-three/drei'
+import { ContactShadows,Text,useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
 import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
+import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
 type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber'|'rose'}
@@ -226,7 +227,15 @@ function Crane({height=2.6,speed=1}:{height?:number;speed?:number}){
 
 
 function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY:number}){
+  const [ai,finance,operations,network]=useTexture([
+    '/weave/file-folder/assets/ai-automation.svg',
+    '/weave/file-folder/assets/payments-module.svg',
+    '/weave/file-folder/assets/operations-module.svg',
+    '/weave/file-folder/assets/network-module.svg',
+  ])
   const kind=String(part.effectType||'component')
+  const icon=kind==='ai_node'?ai:kind==='verification'?finance:
+    ['route_capacity','stream_capacity','audience_capacity'].includes(kind)?network:operations
   if(kind==='speed_boost')return null
   const colors:Record<string,string>={
     ai_node:'#a78bfa',automation:'#22d3ee',route_capacity:'#34d399',legion_capacity:'#fbbf24',
@@ -236,7 +245,8 @@ function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY
   const x=-.36+(index%3)*.36
   const z=index<3?.39:-.39
   return <group position={[x,Math.max(.45,baseY),z]}>
-    <mesh castShadow><boxGeometry args={[.24,.3,.2]}/><meshStandardMaterial color="#263745" emissive={color} emissiveIntensity={.28} metalness={.35} roughness={.42}/></mesh>
+    <mesh castShadow><boxGeometry args={[.31,.32,.23]}/><meshStandardMaterial color="#263745" emissive={color} emissiveIntensity={.28} metalness={.35} roughness={.42}/></mesh>
+    <mesh position={[0,.035,.123]}><planeGeometry args={[.32,.18]}/><meshBasicMaterial map={icon} toneMapped={false} transparent side={THREE.DoubleSide}/></mesh>
     {kind==='ai_node'&&<mesh position={[0,.24,0]}><icosahedronGeometry args={[.15,0]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={.55}/></mesh>}
     {(kind==='stream_capacity'||kind==='audience_capacity'||kind==='route_capacity')&&<mesh position={[0,.25,0]} rotation={[Math.PI/2,0,0]}><torusGeometry args={[.15,.035,6,12]}/><meshBasicMaterial color={color}/></mesh>}
     {kind==='automation'&&<mesh position={[0,.26,0]}><cylinderGeometry args={[.1,.1,.24,6]}/><meshStandardMaterial color={color} metalness={.6}/></mesh>}
@@ -490,7 +500,7 @@ function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -515,16 +525,25 @@ function Scene({
   onNearby:(label:string)=>void
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
+  onStudioEnter?:(key:FormationStation)=>void
+  thirdPerson:boolean
 }){
   return <>
-    <color attach="background" args={['#070b10']}/>
-    <fog attach="fog" args={['#070b10',14,29]}/>
-    <ambientLight intensity={.52} color="#ccecff"/>
+    <color attach="background" args={['#101d29']}/>
+    <fog attach="fog" args={['#101d29',21,52]}/>
+    <ambientLight intensity={.68} color="#ccecff"/>
+    <hemisphereLight args={["#b6d7ee","#16312b",1.18]}/>
     <directionalLight position={[5,11,6]} intensity={3.2} color="#e0f2fe" castShadow/>
     <pointLight position={[-6,4,-4]} intensity={7} color="#fb923c" distance={12}/>
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
     <StoneGround/>
+    <FileFolderScenery formationCount={activeBuilds.length}/>
+    <FileFolderFacilities
+      marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
+      enterpriseReady={enterpriseApproved}
+      onStudioEnter={onStudioEnter}
+    />
     <WaterChannel position={[0,-.05,-5.5]} rotation={Math.PI/2} length={10.5}/>
     <WaterChannel position={[0,-.05,5.55]} rotation={Math.PI/2} length={9.5}/>
 
@@ -560,13 +579,18 @@ function Scene({
     <FlameBeacon position={[7.7,.02,5.9]} scale={.55}/>
 
     <ContactShadows frames={1} resolution={256} position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
-    <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby}
+    {thirdPerson&&<FileFolderPresenceAvatar presence={presence}/>}
+    <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby} thirdPerson={thirdPerson}
       obstacles={[
         ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:DISTRICT_BODY_RADIUS})),
+        ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({x:FILE_FOLDER_STATION_POSITIONS[key][0],z:FILE_FOLDER_STATION_POSITIONS[key][2],radius:.74})),
         ...liveSystems.slice(0,12).map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[
         ...districts.map(d=>({id:d.key,label:d.label,position:POSITIONS[d.key],enter:()=>onSurfaceChange(d.key)})),
+        ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({
+          id:key,label:key.replaceAll('_',' '),position:FILE_FOLDER_STATION_POSITIONS[key],enter:()=>onStudioEnter?.(key)
+        })),
         ...liveSystems.slice(0,12).filter(s=>s.id).map((s,i,all)=>({id:s.id!,label:s.title||'Built system',position:systemWorldPosition(i,all.length),enter:()=>onSystemEnter?.(s.id!)})),
       ]}
     />
@@ -574,7 +598,7 @@ function Scene({
 }
 
 export function ClientFileFolder3D({
-  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,navigationEnabled=true,presenceKey='',
+  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,onStudioEnter,navigationEnabled=true,presenceKey='',
   marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
 }:{
   activeSurface:DistrictKey
@@ -584,6 +608,7 @@ export function ClientFileFolder3D({
   premiumSound:boolean
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
+  onStudioEnter?:(key:FormationStation)=>void
   navigationEnabled?:boolean
   presenceKey?:string
   visibleSurfaceKeys?:DistrictKey[]
@@ -630,6 +655,15 @@ export function ClientFileFolder3D({
     if(joystickThumb.current)joystickThumb.current.style.transform=`translate(${walkX*range}px,${walkY*range}px)`
   }
   const [nearby,setNearby]=useState('')
+  const [thirdPerson,setThirdPerson]=useState(true)
+  const [mapPresence,setMapPresence]=useState<Presence>({x:0,z:3,yaw:0})
+  useEffect(()=>{
+    const interval=window.setInterval(()=>{
+      const p=presence.current
+      setMapPresence(previous=>previous.x===p.x&&previous.z===p.z&&previous.yaw===p.yaw?previous:{...p})
+    },350)
+    return ()=>window.clearInterval(interval)
+  },[])
   useEffect(()=>{
     if(!presenceKey)return
     const storageKey='weave:file-folder:presence:'+presenceKey
@@ -746,15 +780,52 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} thirdPerson={thirdPerson}
         />
       </AdaptiveCanvas>
     </div>
 
+    <div className="absolute right-3 top-[12.8rem] z-20 w-[118px] rounded-2xl border border-cyan-200/30 bg-[#051420]/85 p-2 shadow-[0_12px_28px_rgba(0,0,0,.45)] backdrop-blur-md sm:right-5 sm:top-[10.5rem]" aria-label="Live File Folder territory map">
+      <div className="mb-1 flex items-center justify-between gap-1">
+        <span className="text-[8px] font-black uppercase tracking-[.15em] text-cyan-100">Territory</span>
+        <span className="text-[7px] text-amber-200">N ↑</span>
+      </div>
+      <div className="relative aspect-square w-full overflow-hidden rounded-full border border-cyan-100/25 bg-[radial-gradient(circle_at_center,#244451_0%,#0c2736_40%,#07131e_90%)]">
+        <div className="absolute inset-[8%] rounded-full border border-dashed border-cyan-100/15"/>
+        {districts.map(d=>{
+          const pos=POSITIONS[d.key]
+          return <button key={d.key} type="button" aria-label={'Enter '+d.label} title={d.label} disabled={!navigationEnabled}
+            onClick={()=>onSurfaceChange(d.key)}
+            className="absolute z-10 h-[8px] w-[8px] -translate-x-1/2 -translate-y-1/2 rounded-sm border border-white/50 disabled:opacity-40"
+            style={{left:(50+pos[0]*4.4)+'%',top:(50+pos[2]*4.4)+'%',backgroundColor:COLORS[d.tone]}}/>
+        })}
+        <span className="pointer-events-none absolute z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-amber-100 bg-amber-400 shadow-[0_0_8px_#fbbf24]"
+          style={{left:(50+mapPresence.x*4.4)+'%',top:(50+mapPresence.z*4.4)+'%',transform:'translate(-50%,-50%) rotate('+(-mapPresence.yaw)+'rad)'}}/>
+      </div>
+      <p className="mt-1 truncate text-center text-[7px] uppercase tracking-wider text-slate-300">{nearby||'Your location'}</p>
+    </div>
+    <button type="button" onClick={()=>setThirdPerson(current=>!current)} disabled={!navigationEnabled}
+      aria-label={thirdPerson?'Change to first-person view':'Change to follow-camera view'}
+      className="absolute right-3 top-[20rem] z-20 rounded-full border border-cyan-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-cyan-100 shadow-lg backdrop-blur-sm disabled:opacity-40 sm:right-5 sm:top-[17.3rem]">
+      {thirdPerson?'View · Follow':'View · Eye'}
+    </button>
     <button type="button" onClick={()=>captureWorldRef.current?.()} aria-label="Save exact image of this File Folder world"
-      className="absolute right-3 top-[13.4rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:top-[11rem]">
+      className="absolute right-3 top-[22rem] z-20 rounded-full border border-sky-200/35 bg-[#051723]/90 px-3 py-2 text-[10px] font-black text-sky-100 shadow-lg backdrop-blur-sm sm:right-5 sm:top-[19.5rem]">
       Save world image
     </button>
+    {activeBuilds.length>0&&<aside className="absolute left-3 top-[14.3rem] z-20 w-[min(215px,51vw)] rounded-xl border border-amber-200/30 bg-[#081725]/85 p-3 shadow-lg backdrop-blur-md sm:left-5 sm:top-[13.6rem]" aria-label="Live construction in your world">
+      <p className="text-[8px] font-black uppercase tracking-[.15em] text-amber-200">In formation · {activeBuilds.length} builds</p>
+      <p className="mt-1 truncate text-[10px] font-bold text-white">{activeBuilds[0].title||'Current build'}</p>
+      <div className="mt-2 flex items-center gap-2">
+        <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-cyan-300" style={{width:Math.max(0,Math.min(100,activeBuilds[0].progress))+'%'}}/></div>
+        <span className="text-[9px] font-black text-amber-100">{Math.round(activeBuilds[0].progress)}%</span>
+      </div>
+      <p className="mt-1 text-[8px] text-cyan-100/75">{activeBuilds[0].parts?.length||0} installed parts · speed ×{Number(activeBuilds[0].speedMultiplier||1).toFixed(2)}</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        <button type="button" disabled={!navigationEnabled} onClick={()=>onBuildEnter?.(activeBuilds[0].id||'')} className="rounded-md border border-cyan-200/40 px-2 py-1.5 text-[8px] font-black text-cyan-100 disabled:opacity-40">Install parts</button>
+        <button type="button" disabled={!navigationEnabled} onClick={()=>onStudioEnter?.('boost_bay')} className="rounded-md border border-amber-200/40 px-2 py-1.5 text-[8px] font-black text-amber-100 disabled:opacity-40">Apply boost</button>
+      </div>
+    </aside>}
     <div className="absolute bottom-24 left-3 z-20 hidden select-none items-center gap-3 [@media(pointer:coarse)]:flex" aria-label="Phone movement controls">
       <button type="button" aria-label="Move through the File Folder using your thumb"
         className="relative flex h-28 w-28 touch-none items-center justify-center rounded-full border border-cyan-300/40 bg-[#071721]/75 shadow-lg backdrop-blur-sm"
