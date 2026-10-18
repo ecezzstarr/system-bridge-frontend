@@ -386,7 +386,7 @@ function RouteNetwork({count,vitality,currentStrength}:{count:number;vitality:nu
 }
 
 function DistrictPlot({
-  district,active,onSelect,onBuildEnter,marketLevel,marketBuildProgress,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,activeBuilds,emergence,
+  district,active,onSelect,onBuildEnter,marketLevel,marketBuildProgress,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,activeBuilds,emergence,constructionPage,
 }:{
   district:District
   active:boolean
@@ -400,6 +400,7 @@ function DistrictPlot({
   enterpriseName?:string|null
   activeBuilds:ActiveBuild[]
   emergence:number
+  constructionPage:number
 }){
   const position=POSITIONS[district.key]
   const color=COLORS[district.tone]
@@ -416,7 +417,7 @@ function DistrictPlot({
   return <group position={position}>
     {clickable}
     {district.key==='command'&&<CommandHall active={active}/>}
-    {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence} onBuildEnter={onBuildEnter}/>} 
+    {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence} onBuildEnter={onBuildEnter} page={constructionPage}/>} 
     {district.key==='business'&&<MarketDistrict level={marketLevel} buildProgress={marketBuildProgress} active={active}/>}
     {district.key==='enterprise'&&<EnterpriseKeep level={enterpriseLevel} active={active} position={enterprisePosition} approved={enterpriseApproved} enterpriseName={enterpriseName}/>}
     {district.key==='sound'&&<SoundPavilion active={active}/>}
@@ -506,7 +507,7 @@ function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,constructionPage,systemPage,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -533,7 +534,10 @@ function Scene({
   onBuildEnter?:(id:string)=>void
   onStudioEnter?:(key:FormationStation)=>void
   thirdPerson:boolean
+  constructionPage:number
+  systemPage:number
 }){
+  const visibleSystems=liveSystems.slice(systemPage*12,systemPage*12+12)
   return <>
     <color attach="background" args={['#101d29']}/>
     <fog attach="fog" args={['#101d29',21,52]}/>
@@ -571,10 +575,11 @@ function Scene({
       enterpriseName={enterpriseName}
       activeBuilds={activeBuilds}
       emergence={emergence}
+      constructionPage={constructionPage}
     />)}
 
-    {liveSystems.slice(0,12).map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence} onEnter={()=>system.id&&onSystemEnter?.(system.id)}/>)}
-    {systemWeaves.map((weave)=><PersistedSystemWeave key={String(weave.id)} weave={weave} liveSystems={liveSystems.slice(0,12)} currentStrength={routeCurrent}/>)}
+    {visibleSystems.map((system,index,visible)=><LiveBuilding key={system.id||index} system={system} index={index} total={visible.length} emergence={emergence} onEnter={()=>system.id&&onSystemEnter?.(system.id)}/>)}
+    {systemWeaves.map((weave)=><PersistedSystemWeave key={String(weave.id)} weave={weave} liveSystems={visibleSystems} currentStrength={routeCurrent}/>)}
     {aiTerritories.slice(0,8).map((territory,index,visible)=><AiTerritoryOutpost key={territory.territoryId} territory={territory} index={index} total={visible.length}/>)}
     <StreamingTower level={streamLevel}/>
     <RouteNetwork count={Math.max(routeCount,liveSystems.length>1?liveSystems.length:0)} vitality={vitalityScore} currentStrength={routeCurrent}/>
@@ -590,14 +595,14 @@ function Scene({
       obstacles={[
         ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:DISTRICT_BODY_RADIUS})),
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({x:FILE_FOLDER_STATION_POSITIONS[key][0],z:FILE_FOLDER_STATION_POSITIONS[key][2],radius:.74})),
-        ...liveSystems.slice(0,12).map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
+        ...visibleSystems.map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[
         ...districts.map(d=>({id:d.key,label:d.label,position:POSITIONS[d.key],enter:()=>onSurfaceChange(d.key)})),
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({
           id:key,label:key.replaceAll('_',' '),position:FILE_FOLDER_STATION_POSITIONS[key],enter:()=>onStudioEnter?.(key)
         })),
-        ...liveSystems.slice(0,12).filter(s=>s.id).map((s,i,all)=>({id:s.id!,label:s.title||'Built system',position:systemWorldPosition(i,all.length),enter:()=>onSystemEnter?.(s.id!)})),
+        ...visibleSystems.filter(s=>s.id).map((s,i,all)=>({id:s.id!,label:s.title||'Built system',position:systemWorldPosition(i,all.length),enter:()=>onSystemEnter?.(s.id!)})),
       ]}
     />
   </>
@@ -662,6 +667,8 @@ export function ClientFileFolder3D({
   }
   const [nearby,setNearby]=useState('')
   const [thirdPerson,setThirdPerson]=useState(true)
+  const [constructionPage,setConstructionPage]=useState(0)
+  const [systemPage,setSystemPage]=useState(0)
   const [mapPresence,setMapPresence]=useState<Presence>({x:0,z:3,yaw:0})
   useEffect(()=>{
     const interval=window.setInterval(()=>{
@@ -786,7 +793,7 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} thirdPerson={thirdPerson}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} thirdPerson={thirdPerson} constructionPage={Math.min(constructionPage,Math.max(0,Math.ceil(activeBuilds.length/6)-1))} systemPage={Math.min(systemPage,Math.max(0,Math.ceil(liveSystems.length/12)-1))}
         />
       </AdaptiveCanvas>
     </div>
@@ -823,6 +830,18 @@ export function ClientFileFolder3D({
     </button>
       </div>
     </details>
+    {(activeBuilds.length>6||liveSystems.length>12)&&<div className="absolute left-3 top-[11rem] z-20 flex max-w-[54%] flex-wrap gap-2 sm:left-5" aria-label="Navigate your File Folder construction sites and commissioned systems">
+      {activeBuilds.length>6&&<div className="flex items-center gap-1 rounded-xl border border-amber-200/25 bg-[#081725]/80 px-2 py-1.5 text-[9px] text-amber-100">
+        <button type="button" aria-label="Previous construction site" onClick={()=>setConstructionPage(v=>(v+Math.ceil(activeBuilds.length/6)-1)%Math.ceil(activeBuilds.length/6))}>‹</button>
+        <span>Build {Math.min(constructionPage,Math.ceil(activeBuilds.length/6)-1)+1}/{Math.ceil(activeBuilds.length/6)}</span>
+        <button type="button" aria-label="Next construction site" onClick={()=>setConstructionPage(v=>(v+1)%Math.ceil(activeBuilds.length/6))}>›</button>
+      </div>}
+      {liveSystems.length>12&&<div className="flex items-center gap-1 rounded-xl border border-cyan-200/25 bg-[#081725]/80 px-2 py-1.5 text-[9px] text-cyan-100">
+        <button type="button" aria-label="Previous built systems district" onClick={()=>setSystemPage(v=>(v+Math.ceil(liveSystems.length/12)-1)%Math.ceil(liveSystems.length/12))}>‹</button>
+        <span>Systems {Math.min(systemPage,Math.ceil(liveSystems.length/12)-1)+1}/{Math.ceil(liveSystems.length/12)}</span>
+        <button type="button" aria-label="Next built systems district" onClick={()=>setSystemPage(v=>(v+1)%Math.ceil(liveSystems.length/12))}>›</button>
+      </div>}
+    </div>}
     {activeBuilds.length>0&&<aside className="ff-build-hud absolute left-3 top-[14.3rem] z-20 w-[min(215px,51vw)] rounded-xl border border-amber-200/30 bg-[#081725]/85 p-3 shadow-lg backdrop-blur-md sm:left-5 sm:top-[13.6rem]" aria-label="Live construction in your world">
       <p className="text-[8px] font-black uppercase tracking-[.15em] text-amber-200">In formation · {activeBuilds.length} builds</p>
       <p className="mt-1 truncate text-[10px] font-bold text-white">{activeBuilds[0].title||'Current build'}</p>
