@@ -1,5 +1,7 @@
 'use client'
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
+import FileFolderPlatformProjectStudio from './file-folder-platform-project-studio'
+import { type FileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
 
@@ -484,6 +486,15 @@ export default function FileFolderOpenWorld({
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-violet-300">Blueprint Foundry</p>
               <h3 className="mt-2 text-2xl font-black">Choose the technology your business needs.</h3>
               <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">WEAVE provides buildable technology. You choose the system, name it for your business, define what it should do, and start formation. Your choices determine what this File Folder becomes.</p>
+              <div className="mt-5">
+                <FileFolderPlatformProjectStudio
+                  projects={world?.platformProjects||[]}
+                  blueprints={world?.blueprints||[]}
+                  busy={busy==='create_platform_project'}
+                  onCreate={(kind:FileFolderPlatformKind,title:string,purpose:string)=>act({action:'create_platform_project',kind,title,purpose},'create_platform_project')}
+                  onChooseBlueprint={key=>setBlueprintSearch(key)}
+                />
+              </div>
               <input value={blueprintSearch} onChange={event=>setBlueprintSearch(event.target.value)} className="mt-4 w-full rounded-xl border border-violet-300/15 bg-black/25 px-4 py-3 text-sm text-white outline-none" placeholder="Search store, payments, AI, streaming, operations, marketplace…"/>
               {filteredBlueprints.length===0&&<p role="status" className="mt-5 rounded-xl border border-white/10 p-4 text-sm text-slate-300">No blueprints match this search. <button type="button" onClick={()=>setBlueprintSearch('')} className="mt-2 block text-sky-200">Clear search</button></p>}
               <div className="mt-5 grid gap-3 md:grid-cols-2">
