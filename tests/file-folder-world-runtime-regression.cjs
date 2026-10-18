@@ -5,6 +5,37 @@ function load(file,dependencies={}) {
  return exports
 }
 const world=load('lib/file-folder-world-runtime.ts'),graph=load('lib/file-folder-capability-graph.ts')
+const platform=load('lib/file-folder-platform-projects.ts')
+assert.equal(Object.keys(platform.FILE_FOLDER_PLATFORM_TEMPLATES).length,6,'Client can start six kinds of owned platform projects')
+for(const kind of ['short_video','microblog','social_community','video_channel','commerce_platform','custom_platform']){
+ assert(platform.isFileFolderPlatformKind(kind),'Platform kind must be recognized: '+kind)
+ assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].stages.includes('customer_door'),'Public boundary remains a Client Customer Door')
+ assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].productionGap.length>60,'Unimplemented product capabilities are disclosed to the Client')
+}
+assert(!platform.isFileFolderPlatformKind('fake_kind'))
+assert(!platform.isFileFolderPlatformKind('__proto__'),'Prototype keys must not be accepted as valid projects')
+const shortVideo=platform.platformProjectProgress({kind:'short_video'},[
+ {blueprint_key:'creator_booth',id:'starting',status:'building'},
+ {blueprint_key:'creator_booth',id:'older',status:'complete'},
+],[
+ {id:'door',system_type:'customer_door',status:'active',configuration:{blueprintKey:'customer_door'}},
+ {id:'video',system_type:'streaming_gate',status:'pending'},
+])
+assert.equal(shortVideo.total,7)
+assert.equal(shortVideo.completed,1,'Only actually operating systems are counted as commissioned')
+assert.equal(shortVideo.stages.find(s=>s.blueprintKey==='creator_booth').status,'building')
+assert.equal(shortVideo.stages.find(s=>s.blueprintKey==='streaming_gate').status,'not_started','Pending is not a live system')
+assert.equal(shortVideo.technicalLaunchVerified,false,'Blueprint commissioning is not proof of a deployed social app')
+const projectDb=fs.readFileSync('lib/client-file-folder-world.ts','utf8')
+const projectApi=fs.readFileSync('app/api/client/file-folder-world/route.ts','utf8')
+const projectUI=fs.readFileSync('components/system-switch/file-folder-platform-project-studio.tsx','utf8')
+assert(projectDb.includes('client_file_folder_platform_projects'),'Platform project ownership is persisted')
+assert(projectDb.includes('platformProjectProgress(project,builds,systems,blueprints)'),'Roadmap derives from actual Client-owned builds')
+assert(projectApi.includes("action === 'create_platform_project'"),'Creation goes through existing Client-authenticated File Folder API')
+assert(projectApi.includes('isFileFolderPlatformKind(kind)'),'Server validates template kind, not just UI selection')
+assert(projectUI.includes('technicalLaunchVerified')===false||projectUI.includes('productionGap'),'Public launch cannot be presented as automatically verified')
+assert(projectUI.includes('WEAVE does not claim'),'Incomplete social functionality is explained in the Client interface')
+assert(fs.readFileSync('components/system-switch/file-folder-open-world.tsx','utf8').includes('data-file-folder-platform-entry="client-projects"'),'Command Core offers platform-building entry')
 const p={x:0,z:3,yaw:0}
 const base={started_at:'2026-10-18T10:00:00Z',completes_at:'2026-10-18T12:00:00Z'}
 assert.equal(world.buildFormationProgress(base,Date.parse('2026-10-18T10:00:00Z')),0)
