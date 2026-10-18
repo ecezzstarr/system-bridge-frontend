@@ -23,7 +23,11 @@ for(const blueprint of sectorCatalog.INSTITUTIONAL_BLUEPRINTS){
  assert(kitKeys.has(blueprint[6]),'Every institutional blueprint has purchasable construction material: '+blueprint[0])
  assert.equal(blueprint[0],blueprint[3],'Blueprints must map to the exact persisted system type')
  assert(sectorVisual.institutionalArchetype(blueprint[3]),'Every sector structure has a distinct 3D archetype: '+blueprint[3])
- assert(/not|plan|admin|architecture|record|workflow|system|coordination|approval|work|queue|service|compliance|authoriz|valid|review/i.test(blueprint[4]),'Descriptions distinguish record plans and construction from real authority')
+ assert(blueprint[4].length>75,'Every institutional blueprint must explain its scope and limitations')
+}
+for(const regulated of ['clinic_operations','hospital_operations_hub','public_health_coordination','medicine_supply_planning','national_systems_architecture','emergency_preparedness_centre','civic_identity_architecture']){
+ const detail=sectorCatalog.INSTITUTIONAL_BLUEPRINTS.find(blueprint=>blueprint[0]===regulated)[4]
+ assert(/not|no |without /i.test(detail),'Restricted institutional blueprint must explain what it does not authorize: '+regulated)
 }
 for(const key of ['hospital_system','public_administration','market_infrastructure','agricultural_network','education_network','transportation_network','utility_infrastructure','emergency_coordination']){
  assert(platform.isFileFolderPlatformKind(key),'New sector project template exists: '+key)
