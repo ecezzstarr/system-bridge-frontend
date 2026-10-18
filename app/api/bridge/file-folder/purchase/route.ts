@@ -118,17 +118,40 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
     const bridgeCode = typeof body.bridgeCode === 'string' ? body.bridgeCode.trim().slice(0,32) : null
+    let directBridgerId: string | null = null
     let providerKey: string | null = null
     let providerName: string | null = null
     let flameName: string | null = null
     let flameExternalId: string | null = null
     if (bridgeCode) {
-      const [trustedCrossing] = await sql`SELECT provider_key,provider_name,flame_name,flame_external_id FROM chatgpt_bridge_sessions WHERE code=${bridgeCode} AND expires_at > NOW() LIMIT 1`
-      if (!trustedCrossing) return NextResponse.json({ error: 'Bridge crossing not found or expired' }, { status: 400 })
-      providerKey = trustedCrossing.provider_key || null
-      providerName = trustedCrossing.provider_name || null
-      flameName = trustedCrossing.flame_name || null
-      flameExternalId = trustedCrossing.flame_external_id || null
+      // Both native Bridger Bridge AI paths and ChatGPT/Flame crossings must
+      // validate against their actual database owner before purchase. Never
+      // infer the Bridger from an Agent referral code or a URL shape.
+      const [bridgerPath] = await sql`
+        SELECT b.bridger_id
+        FROM bridge_ais b
+        JOIN users u ON u.id=b.bridger_id
+        WHERE b.bridge_code=${bridgeCode}
+          AND b.status='active'
+          AND u.role='bridger'
+          AND u.is_active=true
+        LIMIT 1
+      `
+      if(bridgerPath){
+        directBridgerId=String(bridgerPath.bridger_id)
+      }else{
+        const [trustedCrossing] = await sql`
+          SELECT provider_key,provider_name,flame_name,flame_external_id
+          FROM chatgpt_bridge_sessions
+          WHERE code=${bridgeCode} AND expires_at>NOW()
+          LIMIT 1
+        `
+        if(!trustedCrossing) return NextResponse.json({error:'Bridge crossing not found or inactive'},{status:400})
+        providerKey=trustedCrossing.provider_key||null
+        providerName=trustedCrossing.provider_name||null
+        flameName=trustedCrossing.flame_name||null
+        flameExternalId=trustedCrossing.flame_external_id||null
+      }
     }
     if (!validPrice(amountFlameCoin, requestedTier) || !fileFolderTier) {
       return NextResponse.json({
@@ -143,7 +166,7 @@ export async function POST(request: NextRequest) {
     }
     const [existing] = await sql`SELECT id FROM file_folder_purchases WHERE payment_reference=${paymentReference} LIMIT 1`
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
-    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,file_folder_tier,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${fileFolderTier},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${movementBridgerId}::uuid,${movementAttribution?.movement_code || null}) RETURNING *`
+    const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,file_folder_tier,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${fileFolderTier},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${directBridgerId || movementBridgerId}::uuid,${movementAttribution?.movement_code || null}) RETURNING *`
     const tierLabel = fileFolderTierLabel(fileFolderTier)
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
     const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${tierLabel} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
@@ -153,7 +176,7 @@ export async function POST(request: NextRequest) {
         eventType: 'file_folder_purchase',
         userId: clientId,
         subjectId: String(record.id),
-        metadata: { amountFlameCoin, fileFolderTier, bridgerId: movementBridgerId },
+        metadata: { amountFlameCoin, fileFolderTier, bridgerId: directBridgerId || movementBridgerId },
       })
     } catch (movementError) {
       console.error('[Public Flame Movement] File Folder attribution failed:', movementError)
