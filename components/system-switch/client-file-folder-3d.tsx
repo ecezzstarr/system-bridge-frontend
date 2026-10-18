@@ -552,7 +552,7 @@ function Scene({
 }
 
 export function ClientFileFolder3D({
-  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,navigationEnabled=true,
+  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,navigationEnabled=true,presenceKey='',
   marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
 }:{
   activeSurface:DistrictKey
@@ -563,6 +563,7 @@ export function ClientFileFolder3D({
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
   navigationEnabled?:boolean
+  presenceKey?:string
   visibleSurfaceKeys?:DistrictKey[]
   marketLevel?:number
   marketBuildProgress?:number
@@ -606,6 +607,27 @@ export function ClientFileFolder3D({
     if(joystickThumb.current)joystickThumb.current.style.transform=`translate(${walkX*range}px,${walkY*range}px)`
   }
   const [nearby,setNearby]=useState('')
+  useEffect(()=>{
+    if(!presenceKey)return
+    const storageKey='weave:file-folder:presence:'+presenceKey
+    try {
+      const saved=window.sessionStorage.getItem(storageKey)
+      if(saved){
+        const next=JSON.parse(saved)
+        if([next.x,next.z,next.yaw].every((n:unknown)=>typeof n==='number'&&Number.isFinite(n))&&Math.hypot(next.x,next.z)<=9){
+          presence.current={x:next.x,z:next.z,yaw:next.yaw}
+        }
+      }
+    }catch{
+      // A blocked storage API must not stop a Client entering the world.
+    }
+    const persist=()=>{
+      try{window.sessionStorage.setItem(storageKey,JSON.stringify(presence.current))}catch{}
+    }
+    const interval=window.setInterval(persist,5000)
+    window.addEventListener('pagehide',persist)
+    return ()=>{persist();window.clearInterval(interval);window.removeEventListener('pagehide',persist)}
+  },[presenceKey])
   useEffect(()=>{if(!navigationEnabled){input.current.keys.clear();input.current.active=false;input.current.enter=false;resetTouchMovement()}},[navigationEnabled])
   useEffect(()=>{
     const release=()=>{input.current.keys.clear();input.current.enter=false;input.current.active=false;resetTouchMovement()}
