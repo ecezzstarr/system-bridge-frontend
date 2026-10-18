@@ -671,7 +671,7 @@ export function ClientFileFolder3D({
       }}
       onPointerUpCapture={e=>touchPoints.current.delete(e.pointerId)}
       onPointerCancelCapture={e=>touchPoints.current.delete(e.pointerId)}
-      className={territoryMode ? "h-full min-h-[540px] touch-none sm:min-h-[680px]" : "h-[390px] touch-none sm:h-[500px] lg:h-[590px]"}>
+      className={territoryMode ? "h-full min-h-[540px] touch-none sm:min-h-[680px]" : "touch-none h-[390px] sm:h-[500px] lg:h-[590px]"}>
       <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:65}} dpr={[1,1.5]}>
         <Scene
           districts={districts}
