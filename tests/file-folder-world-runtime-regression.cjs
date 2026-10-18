@@ -97,6 +97,11 @@ assert(scene.includes('marketReady={liveSystems.some(system=>system.systemType==
 assert(scene.includes('enterpriseReady={enterpriseApproved}'),'Enterprise architecture respects actual approval')
 assert(scene.includes("asset")===false||art.includes("asset"),'Facades are owned WEAVE image assets')
 assert(scene.includes('Live File Folder territory map'),'Phone mini-map is present in the live world')
+assert(art.includes('FileFolderPresenceAvatar'),'Real Client movement has a visible 3D avatar')
+assert(scene.includes('{thirdPerson&&<FileFolderPresenceAvatar presence={presence}/>}'),'Avatar is visible only when follow-camera is selected')
+assert(scene.includes('setThirdPerson(current=>!current)'),'Client can switch phone camera modes')
+assert(fs.readFileSync('components/system-switch/embodied-world-runtime.tsx','utf8').includes('if(thirdPerson){'),'Follow camera tracks the authoritative walking position')
+
 assert(scene.includes('left:(50+mapPresence.x*4.4)'),'Map position follows the real Client presence')
 assert(scene.includes('activeBuilds[0].parts?.length'),'World construction HUD uses real installed parts')
 assert(scene.includes('activeBuilds[0].progress'),'World HUD uses the current build progress')
