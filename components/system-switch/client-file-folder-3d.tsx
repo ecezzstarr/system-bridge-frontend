@@ -9,6 +9,8 @@ import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
 import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
+import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
+import { InstitutionalArchitecture } from './file-folder-institutional-architecture'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
 type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber'|'rose'}
@@ -182,13 +184,13 @@ function SoundPavilion({active}:{active:boolean}){
   </group>
 }
 
-function ConstructionYard({activeBuilds,emergence,onBuildEnter}:{activeBuilds:ActiveBuild[];emergence:number;onBuildEnter?:(id:string)=>void}){
-  const shown=activeBuilds.slice(0,6)
+function ConstructionYard({activeBuilds,emergence,onBuildEnter,page=0}:{activeBuilds:ActiveBuild[];emergence:number;onBuildEnter?:(id:string)=>void;page?:number}){
+  const shown=activeBuilds.slice(page*6,page*6+6)
   return <group>
     <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[4.25,.16,3.05]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
     <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#5f7884" metalness={.45} roughness={.45}/></mesh>
     <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">FORMATION YARD</Text>
-    {activeBuilds.length>shown.length&&<Text position={[0,.38,-1.55]} fontSize={.1} color="#fcd34d" anchorX="center">+{activeBuilds.length-shown.length} MORE · ENTER YARD</Text>}
+    {activeBuilds.length>6&&<Text position={[0,.38,-1.55]} fontSize={.1} color="#fcd34d" anchorX="center">SITE {page+1} OF {Math.ceil(activeBuilds.length/6)}</Text>}
     {shown.length===0?<>
       <mesh position={[0,.22,-.1]} receiveShadow><boxGeometry args={[1.5,.15,1.0]}/><meshStandardMaterial color="#1b2a34" roughness={.85}/></mesh>
       <Text position={[0,.48,.35]} fontSize={.1} color="#8f7c66" anchorX="center">WAITING FOR BLUEPRINT</Text>
@@ -265,6 +267,7 @@ function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;
   const parts=(build.parts||[]).filter(part=>part.effectType!=='speed_boost')
   const walls=progress>=42
   const roof=progress>=78
+  const institutional=Boolean(institutionalArchetype(String(build.systemType||'')))
   useFrame(({clock})=>{
     if(!pulse.current)return
     const wave=.35+Math.sin(clock.getElapsedTime()*2.1+progress*.03)*.18
@@ -272,10 +275,11 @@ function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;
   })
   return <group position={position} onClick={event=>{event.stopPropagation();onEnter?.()}}>
     <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#1c2c37" roughness={.86}/></mesh>
-    {progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
-    {walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
-    {roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#315160" roughness={.5} metalness={.16}/></mesh>}
-    {parts.slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={height*.58}/>)}
+    {!institutional&&progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
+    {!institutional&&walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
+    {!institutional&&roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#315160" roughness={.5} metalness={.16}/></mesh>}
+    {institutional&&<InstitutionalArchitecture systemType={String(build.systemType||"")} progress={progress} parts={parts} compact/>}
+    {!institutional&&parts.slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={height*.58}/>)}
     {speed>1.01&&<group>
       <mesh rotation={[-Math.PI/2,0,0]} position={[0,.13,0]}><torusGeometry args={[.84,.035,6,36]}/><meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={Math.min(2,.45+(speed-1)*.8)}/></mesh>
       <mesh position={[0,height+.32,0]}><octahedronGeometry args={[.13,0]}/><meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={Math.min(2,speed*.3)}/></mesh>
@@ -300,6 +304,7 @@ function LiveBuilding({system,index,total,emergence,onEnter}:{system:LiveSystem;
   const [x,,z]=systemWorldPosition(index,total)
   const type=String(system.systemType||'')
   const activity=(.16+Math.min(.28,Number(system.activity||0)/36))*(.55+Math.min(1.45,emergence)*.45)
+  const institutional=Boolean(institutionalArchetype(type))
   const isMarket=/customer|commerce|marketplace|payment/.test(type)
   const isMedia=/creator|broadcast|stream|media/.test(type)
   const isEnterprise=/enterprise|operations_command|treasury|distribution/.test(type)
@@ -309,43 +314,44 @@ function LiveBuilding({system,index,total,emergence,onEnter}:{system:LiveSystem;
   return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]} onClick={event=>{event.stopPropagation();onEnter?.()}}>
     <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial color="#121d26" roughness={.86}/></mesh>
 
-    {isMarket&&<group>
+    {institutional&&<InstitutionalArchitecture systemType={type} progress={100} parts={system.parts||[]}/>}
+    {!institutional&&isMarket&&<group>
       <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.0,1.25,.72]}/><meshStandardMaterial color="#1c303b" roughness={.62}/></mesh>
       <mesh position={[0,1.42,0]} castShadow><boxGeometry args={[1.12,.16,.82]}/><meshStandardMaterial color="#315160" metalness={.18} roughness={.48}/></mesh>
       {[-.3,.3].map(v=><mesh key={v} position={[v,.68,.38]}><boxGeometry args={[.22,.42,.05]}/><meshStandardMaterial color="#14241b" emissive="#34d399" emissiveIntensity={activity}/></mesh>)}
     </group>}
 
-    {isMedia&&<group>
+    {!institutional&&isMedia&&<group>
       <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.32,.5,1.9,10]}/><meshStandardMaterial color="#1c2b37" roughness={.54} metalness={.2}/></mesh>
       <mesh position={[0,2.12,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[.46,.045,10,40]}/><meshStandardMaterial color="#916b61" emissive="#fb7185" emissiveIntensity={activity}/></mesh>
       <mesh position={[0,2.58,0]}><sphereGeometry args={[.12,14,14]}/><meshBasicMaterial color="#fda4af"/></mesh>
     </group>}
 
-    {isEnterprise&&<group>
+    {!institutional&&isEnterprise&&<group>
       <mesh position={[0,1.15,0]} castShadow><cylinderGeometry args={[.48,.68,2.05,8]}/><meshStandardMaterial color="#203542" roughness={.56} metalness={.18}/></mesh>
       {[-.62,.62].map(v=><mesh key={v} position={[v,.7,0]} castShadow><cylinderGeometry args={[.14,.2,1.18,8]}/><meshStandardMaterial color="#2a4653" roughness={.58}/></mesh>)}
       <mesh position={[0,2.48,0]}><coneGeometry args={[.46,.76,8]}/><meshStandardMaterial color="#355564" metalness={.3} roughness={.45}/></mesh>
       <pointLight position={[0,2.0,.45]} intensity={2.5} distance={2.4} color="#fbbf24"/>
     </group>}
 
-    {isIntelligence&&<group>
+    {!institutional&&isIntelligence&&<group>
       <mesh position={[0,.72,0]} castShadow><cylinderGeometry args={[.64,.72,1.18,12]}/><meshStandardMaterial color="#403b36" roughness={.58} metalness={.2}/></mesh>
       <mesh position={[0,1.48,0]} scale={[1,.62,1]}><sphereGeometry args={[.62,24,16,0,Math.PI*2,0,Math.PI/2]}/><meshStandardMaterial color="#433c43" emissive="#a78bfa" emissiveIntensity={activity*.55} roughness={.36}/></mesh>
       <mesh position={[0,1.9,0]}><cylinderGeometry args={[.03,.03,.65,8]}/><meshStandardMaterial color="#bca8d8" metalness={.65} roughness={.3}/></mesh>
     </group>}
 
-    {isNetwork&&<group>
+    {!institutional&&isNetwork&&<group>
       <mesh position={[0,.58,0]} castShadow><boxGeometry args={[.9,.98,.72]}/><meshStandardMaterial color="#3d403b" roughness={.64}/></mesh>
       <mesh position={[0,1.28,0]} rotation={[0,0,Math.PI/2]}><torusGeometry args={[.44,.08,10,30,Math.PI]}/><meshStandardMaterial color="#54706c" emissive="#22d3ee" emissiveIntensity={activity*.5}/></mesh>
       <mesh position={[0,.6,.38]}><boxGeometry args={[.44,.24,.04]}/><meshStandardMaterial color="#122526" emissive="#67e8f9" emissiveIntensity={activity*.65}/></mesh>
     </group>}
 
-    {!isMarket&&!isMedia&&!isEnterprise&&!isIntelligence&&!isNetwork&&<group>
+    {!institutional&&!isMarket&&!isMedia&&!isEnterprise&&!isIntelligence&&!isNetwork&&<group>
       <mesh position={[0,.72,0]} castShadow><boxGeometry args={[.78,1.2,.64]}/><meshStandardMaterial color="#1c303b" roughness={.62} metalness={.12}/></mesh>
       <mesh position={[0,.72,.34]}><boxGeometry args={[.4,.42,.04]}/><meshStandardMaterial color="#12221b" emissive="#34d399" emissiveIntensity={activity}/></mesh>
       <mesh position={[0,1.55,0]}><coneGeometry args={[.3,.54,6]}/><meshStandardMaterial color="#6e4a2b" metalness={.28} roughness={.5}/></mesh>
     </group>}
-    {(system.parts||[]).filter(part=>part.effectType!=='speed_boost').slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={1.05}/>) }
+    {!institutional&&(system.parts||[]).filter(part=>part.effectType!=='speed_boost').slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={1.05}/>) }
   </group>
 }
 
