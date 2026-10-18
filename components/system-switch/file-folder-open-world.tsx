@@ -1,6 +1,6 @@
+'use client'
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
-'use client'
 import { visiblePoll } from '@/lib/visible-poll'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
