@@ -180,9 +180,10 @@ function SoundPavilion({active}:{active:boolean}){
 }
 
 function ConstructionYard({activeBuilds,emergence,onBuildEnter,page=0}:{activeBuilds:ActiveBuild[];emergence:number;onBuildEnter?:(id:string)=>void;page?:number}){
+  const tex=useFileFolderMaterialTextures()
   const shown=activeBuilds.slice(page*6,page*6+6)
   return <group>
-    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[4.25,.16,3.05]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
+    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[4.25,.16,3.05]}/><meshStandardMaterial map={tex.concrete} color="#d8ddd9" roughness={.84}/></mesh>
     <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#5f7884" metalness={.45} roughness={.45}/></mesh>
     <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">FORMATION YARD</Text>
     {activeBuilds.length>6&&<Text position={[0,.38,-1.55]} fontSize={.1} color="#fcd34d" anchorX="center">SITE {page+1} OF {Math.ceil(activeBuilds.length/6)}</Text>}
@@ -200,23 +201,25 @@ function ConstructionYard({activeBuilds,emergence,onBuildEnter,page=0}:{activeBu
 }
 
 function ScaffoldEnvelope({width,depth,height,progress}:{width:number;depth:number;height:number;progress:number}){
+  const tex=useFileFolderMaterialTextures()
   const opacity=.2+Math.min(.34,progress/240)
   return <group>
-    {[-1,1].flatMap(x=>[-1,1].map(z=><mesh key={x+':'+z} position={[x*width/2,height/2,z*depth/2]}><boxGeometry args={[.055,height,.055]}/><meshBasicMaterial color="#d9b77e" transparent opacity={opacity}/></mesh>))}
+    {[-1,1].flatMap(x=>[-1,1].map(z=><mesh key={x+':'+z} position={[x*width/2,height/2,z*depth/2]}><boxGeometry args={[.055,height,.055]}/><meshStandardMaterial map={tex.steel} color="#f5dcb9" metalness={.62} transparent opacity={opacity+.2} roughness={.32}/></mesh>))}
     {[.3,.7,1].filter(v=>v*height<height+.01).map((fraction,index)=><group key={index} position={[0,height*fraction,0]}>
-      <mesh><boxGeometry args={[width,.045,.045]}/><meshBasicMaterial color="#f5d49d" transparent opacity={opacity}/></mesh>
+      <mesh><boxGeometry args={[width,.045,.045]}/><meshStandardMaterial map={tex.steel} color="#f5d49d" metalness={.58} transparent opacity={opacity+.22} roughness={.34}/></mesh>
       <mesh rotation={[0,Math.PI/2,0]}><boxGeometry args={[depth,.045,.045]}/><meshBasicMaterial color="#f5d49d" transparent opacity={opacity}/></mesh>
     </group>)}
   </group>
 }
 
 function Crane({height=2.6,speed=1}:{height?:number;speed?:number}){
+  const tex=useFileFolderMaterialTextures()
   const arm=useRef<THREE.Group>(null)
   useFrame(({clock})=>{if(arm.current)arm.current.rotation.y=Math.sin(clock.getElapsedTime()*.18*Math.min(4,Math.max(1,speed)))*.4})
   return <group position={[1.3,.02,-.95]}>
-    <mesh position={[0,height/2,0]}><boxGeometry args={[.09,height,.09]}/><meshStandardMaterial color="#a97835" metalness={.55} roughness={.42}/></mesh>
+    <mesh position={[0,height/2,0]}><boxGeometry args={[.09,height,.09]}/><meshStandardMaterial map={tex.steel} color="#ebbc6f" metalness={.55} roughness={.42}/></mesh>
     <group ref={arm} position={[0,height,0]}>
-      <mesh position={[.7,0,0]}><boxGeometry args={[1.45,.07,.07]}/><meshStandardMaterial color="#d3a45b" metalness={.52} roughness={.38}/></mesh>
+      <mesh position={[.7,0,0]}><boxGeometry args={[1.45,.07,.07]}/><meshStandardMaterial map={tex.steel} color="#ffe09e" metalness={.52} roughness={.38}/></mesh>
       <mesh position={[1.35,-.45,0]}><boxGeometry args={[.02,.9,.02]}/><meshBasicMaterial color="#3e3328"/></mesh>
     </group>
   </group>
@@ -254,6 +257,7 @@ function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY
 }
 
 function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;position:[number,number,number];emergence:number;onEnter?:()=>void}){
+  const tex=useFileFolderMaterialTextures()
   const pulse=useRef<THREE.MeshBasicMaterial>(null)
   const progress=Math.max(0,Math.min(100,build.progress||0))
   const phase=progress<15?'FOUNDATION':progress<42?'FRAME':progress<70?'STRUCTURE':progress<92?'INTEGRATION':'COMMISSIONING'
@@ -269,10 +273,14 @@ function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;
     pulse.current.opacity=Math.max(.04,wave*Math.min(1.4,emergence)*(.35+progress/160))
   })
   return <group position={position} onClick={event=>{event.stopPropagation();onEnter?.()}}>
-    <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#1c2c37" roughness={.86}/></mesh>
-    {!institutional&&progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
-    {!institutional&&walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
-    {!institutional&&roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#315160" roughness={.5} metalness={.16}/></mesh>}
+    <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial map={tex.concrete} color="#d7d6c9" roughness={.86}/></mesh>
+    {!institutional&&progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial map={tex.steel} color="#9fe0f0" metalness={.55} roughness={.36}/></mesh>))}
+    {!institutional&&walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial map={tex.glass} color="#c8ecff" metalness={.38} transparent opacity={.75} roughness={.26}/></mesh>}
+    {!institutional&&roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial map={tex.steel} color="#b7c8cf" roughness={.45} metalness={.55}/></mesh>}
+    {!institutional&&progress>=15&&progress<100&&<mesh position={[0,Math.max(.19,height*.54),.342]}>
+      <planeGeometry args={[.85,Math.max(.24,height*.7)]}/>
+      <meshStandardMaterial map={tex.hologram} transparent opacity={Math.min(.72,.23+progress/170)} emissive="#2be4f1" emissiveIntensity={.32} side={THREE.DoubleSide} depthWrite={false}/>
+    </mesh>}
     {institutional&&<InstitutionalArchitecture systemType={String(build.systemType||"")} progress={progress} parts={parts} compact/>}
     {!institutional&&parts.slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={height*.58}/>)}
     {speed>1.01&&<group>
@@ -295,6 +303,7 @@ function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;
 }
 
 function LiveBuilding({system,index,total,emergence,onEnter}:{system:LiveSystem;index:number;total:number;emergence:number;onEnter?:()=>void}){
+  const tex=useFileFolderMaterialTextures()
   const angle=(index/Math.max(1,total))*Math.PI*2
   const [x,,z]=systemWorldPosition(index,total)
   const type=String(system.systemType||'')
@@ -307,30 +316,30 @@ function LiveBuilding({system,index,total,emergence,onEnter}:{system:LiveSystem;
   const isNetwork=/route|integration|network/.test(type)
 
   return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]} onClick={event=>{event.stopPropagation();onEnter?.()}}>
-    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial color="#121d26" roughness={.86}/></mesh>
+    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[1.16,.16,.94]}/><meshStandardMaterial map={tex.concrete} color="#d7d9d8" roughness={.86}/></mesh>
 
     {institutional&&<InstitutionalArchitecture systemType={type} progress={100} parts={system.parts||[]}/>}
     {!institutional&&isMarket&&<group>
-      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.0,1.25,.72]}/><meshStandardMaterial color="#1c303b" roughness={.62}/></mesh>
-      <mesh position={[0,1.42,0]} castShadow><boxGeometry args={[1.12,.16,.82]}/><meshStandardMaterial color="#315160" metalness={.18} roughness={.48}/></mesh>
+      <mesh position={[0,.72,0]} castShadow><boxGeometry args={[1.0,1.25,.72]}/><meshStandardMaterial map={tex.windows} color="#c9e8f4" metalness={.42} roughness={.26}/></mesh>
+      <mesh position={[0,1.42,0]} castShadow><boxGeometry args={[1.12,.16,.82]}/><meshStandardMaterial map={tex.steel} color="#b8cbd3" metalness={.55} roughness={.4}/></mesh>
       {[-.3,.3].map(v=><mesh key={v} position={[v,.68,.38]}><boxGeometry args={[.22,.42,.05]}/><meshStandardMaterial color="#14241b" emissive="#34d399" emissiveIntensity={activity}/></mesh>)}
     </group>}
 
     {!institutional&&isMedia&&<group>
-      <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.32,.5,1.9,10]}/><meshStandardMaterial color="#1c2b37" roughness={.54} metalness={.2}/></mesh>
+      <mesh position={[0,1.05,0]} castShadow><cylinderGeometry args={[.32,.5,1.9,10]}/><meshStandardMaterial map={tex.glass} color="#b6d8e6" roughness={.3} metalness={.4}/></mesh>
       <mesh position={[0,2.12,0]} rotation={[-Math.PI/2,0,0]}><torusGeometry args={[.46,.045,10,40]}/><meshStandardMaterial color="#916b61" emissive="#fb7185" emissiveIntensity={activity}/></mesh>
       <mesh position={[0,2.58,0]}><sphereGeometry args={[.12,14,14]}/><meshBasicMaterial color="#fda4af"/></mesh>
     </group>}
 
     {!institutional&&isEnterprise&&<group>
-      <mesh position={[0,1.15,0]} castShadow><cylinderGeometry args={[.48,.68,2.05,8]}/><meshStandardMaterial color="#203542" roughness={.56} metalness={.18}/></mesh>
+      <mesh position={[0,1.15,0]} castShadow><cylinderGeometry args={[.48,.68,2.05,8]}/><meshStandardMaterial map={tex.glass} color="#c5dbe1" roughness={.26} metalness={.45}/></mesh>
       {[-.62,.62].map(v=><mesh key={v} position={[v,.7,0]} castShadow><cylinderGeometry args={[.14,.2,1.18,8]}/><meshStandardMaterial color="#2a4653" roughness={.58}/></mesh>)}
       <mesh position={[0,2.48,0]}><coneGeometry args={[.46,.76,8]}/><meshStandardMaterial color="#355564" metalness={.3} roughness={.45}/></mesh>
       <pointLight position={[0,2.0,.45]} intensity={2.5} distance={2.4} color="#fbbf24"/>
     </group>}
 
     {!institutional&&isIntelligence&&<group>
-      <mesh position={[0,.72,0]} castShadow><cylinderGeometry args={[.64,.72,1.18,12]}/><meshStandardMaterial color="#403b36" roughness={.58} metalness={.2}/></mesh>
+      <mesh position={[0,.72,0]} castShadow><cylinderGeometry args={[.64,.72,1.18,12]}/><meshStandardMaterial map={tex.steel} color="#b5b2af" roughness={.44} metalness={.35}/></mesh>
       <mesh position={[0,1.48,0]} scale={[1,.62,1]}><sphereGeometry args={[.62,24,16,0,Math.PI*2,0,Math.PI/2]}/><meshStandardMaterial color="#433c43" emissive="#a78bfa" emissiveIntensity={activity*.55} roughness={.36}/></mesh>
       <mesh position={[0,1.9,0]}><cylinderGeometry args={[.03,.03,.65,8]}/><meshStandardMaterial color="#bca8d8" metalness={.65} roughness={.3}/></mesh>
     </group>}
