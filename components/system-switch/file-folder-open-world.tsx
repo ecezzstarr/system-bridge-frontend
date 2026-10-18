@@ -285,7 +285,7 @@ export default function FileFolderOpenWorld({
   const isCapabilityPart=(item:any)=>{
     const category=String(item?.category||'')
     const effect=String(item?.build_effect||'component')
-    return category==='accessible_part'||category==='build_part'||category.endsWith('_upgrade')||
+    return category==='accessible_part'||category==='build_part'||category==='institution_part'||category==='health_part'||category==='civic_part'||category.endsWith('_upgrade')||
       ['route_capacity','legion_capacity','stream_capacity','audience_capacity','ai_node','automation','verification'].includes(effect)
   }
   const buildPartItems = (world?.items || []).filter((item:any)=>item.build_effect!=='speed_boost'&&isCapabilityPart(item))

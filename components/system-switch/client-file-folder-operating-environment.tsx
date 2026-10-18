@@ -1,5 +1,6 @@
 'use client'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
+import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
 import { BuiltSystemRuntime } from './built-system-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
 
@@ -69,6 +70,23 @@ const previewModules: Record<string, string[]> = {
   enterprise_treasury: ['Budgets', 'Allocations', 'Revenue records', 'Controls'],
   distribution_network: ['Routes', 'Distribution', 'Destinations', 'Movement records'],
   enterprise_operating_system: ['Functions', 'Participants', 'Approvals', 'Institutional records'],
+
+  clinic_operations: ['Non-clinical request intake','Administrative schedule plans','Room and staff coordination','Action records'],
+  hospital_operations_hub: ['Administration departments','Maintenance work orders','Operational review','Institutional records'],
+  public_health_coordination: ['Program planning','Service demand summaries','Human approvals','Reporting drafts'],
+  medicine_supply_planning: ['Supply inventory plans','Replenishment tasks','Supplier review','Approval records'],
+  public_services_portal: ['Public service request plans','Casework queues','Review and response','Publication approval'],
+  municipal_operations: ['Departments','Local service queues','Resource coordination','Decision log'],
+  national_systems_architecture: ['Agency architecture plans','Responsibilities','Access boundary reviews','Integration contracts'],
+  public_audit_office: ['Accountability checklists','Evidence reviews','Public report drafts','Human sign-off'],
+  municipal_market_hall: ['Vendor space plans','Market operations','Service complaints','Stall inventory'],
+  agriculture_supply_network: ['Farm activity plans','Supply inventory','Distribution schedules','Work reports'],
+  transport_coordination: ['Route plans','Fleet checklists','Work orders','Safety review records'],
+  education_campus_system: ['Campus administration','Timetable plans','Staff work queues','Learning program records'],
+  utility_service_operations: ['Asset inventory plans','Maintenance queues','Inspections','Outage drill plans'],
+  emergency_preparedness_centre: ['Exercise planning','Resource checklists','Human escalation','After-action reviews'],
+  civic_identity_architecture: ['Identity design','Access policy planning','Consent reviews','Security assessment'],
+
 }
 
 function systemModules(systemType?: string) {
@@ -218,6 +236,7 @@ function HostedSystem({
   onNavigate: (surface: 'business' | 'enterprise') => void
 }) {
   const modules = systemModules(system.system_type)
+  const institution=Boolean(institutionalArchetype(String(system.system_type||'')))
   const [moduleKey,setModuleKey]=useState(modules[0] || 'Operation')
   const [title,setTitle]=useState('')
   const [body,setBody]=useState('')
@@ -270,17 +289,18 @@ function HostedSystem({
         <button onClick={onClose} className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-300"><ChevronLeft className="h-3.5 w-3.5"/>Build + Systems</button>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Hosted live inside this File Folder</p>
+            <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">{institution?'Institutional planning system · Client-owned':'Hosted live inside this File Folder'}</p>
             <h2 className="mt-2 text-2xl font-black text-white">{system.title}</h2>
             <p className="mt-2 text-xs uppercase tracking-[0.12em] text-slate-400">{String(system.system_type||'system').replaceAll('_',' ')} · activated {formatDate(system.activated_at)}</p>
           </div>
           <div className="rounded-2xl border border-emerald-300/15 bg-emerald-400/5 px-4 py-3 text-right">
             <p className="text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">Runtime</p>
-            <p className="mt-1 text-sm font-black text-white">Live · {entries.length} records</p>
+            <p className="mt-1 text-sm font-black text-white">{institution?'Planning': 'Live'} · {entries.length} records</p>
           </div>
         </div>
       </header>
 
+      {institution&&<p role="note" className="border-b border-amber-300/15 bg-amber-300/[.045] px-5 py-3 text-[11px] leading-5 text-amber-100">This is a Client-owned administrative planning and records workspace. Do not enter patient details, identity credentials, emergency calls or other sensitive operational data. A constructed blueprint is not official authorization, clinical certification or production deployment.</p>}
       <BuiltSystemRuntime key={system.id} system={system} onNavigate={onNavigate} busy={Boolean(busy)}
         onToggle={entry=>void act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} />
       <div className="grid lg:grid-cols-[240px_1fr]">

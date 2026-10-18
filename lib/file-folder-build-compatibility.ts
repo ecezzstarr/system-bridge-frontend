@@ -10,6 +10,13 @@ export const FILE_FOLDER_PART_COMPATIBILITY: Record<string, readonly string[]> =
   ai_node:['ai_service_desk','intelligence_lab','operations_command','media_network','enterprise_operating_system'],
   automation:['service_workflow','operations_suite','operations_command','distribution_network','enterprise_operating_system'],
   verification:['payments_gateway','crypto_exchange_workshop','operations_command','enterprise_treasury','enterprise_operating_system'],
+  clinical_safety_review:['clinic_operations','hospital_operations_hub','public_health_coordination','medicine_supply_planning'],
+  civic_oversight:['public_services_portal','municipal_operations','national_systems_architecture','public_audit_office','emergency_preparedness_centre','civic_identity_architecture'],
+  supply_planning:['medicine_supply_planning','hospital_operations_hub','municipal_market_hall','agriculture_supply_network','transport_coordination','commerce_storefront','marketplace_network'],
+  mapping:['public_services_portal','municipal_operations','national_systems_architecture','agriculture_supply_network','transport_coordination','utility_service_operations','emergency_preparedness_centre'],
+  // General-purpose architecture parts intentionally work in any sector.
+  // No visual module is itself a certified clinical, governmental or security service.
+
 }
 
 export function allowedBuildPartSystems(effectType: string): readonly string[] | undefined {

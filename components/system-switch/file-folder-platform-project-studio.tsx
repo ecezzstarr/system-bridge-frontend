@@ -40,6 +40,7 @@ export default function FileFolderPlatformProjectStudio({projects,blueprints,bus
     }finally{setCreating(false)}
   }
   return <section className="mb-5 rounded-2xl border border-cyan-300/20 bg-[linear-gradient(145deg,rgba(15,39,58,.75),rgba(8,14,26,.86))] p-4 sm:p-5" data-file-folder-platform-projects="client-owned">
+    <style>{`.ff-platform-direction{display:none}@media(max-width:767px),(max-height:500px) and (max-width:1000px){.ff-platform-direction{display:block}.ff-platform-directions{display:none}}`}</style>
     <div className="flex items-start gap-3">
       <Boxes className="mt-1 h-5 w-5 shrink-0 text-cyan-200"/>
       <div>
@@ -51,7 +52,12 @@ export default function FileFolderPlatformProjectStudio({projects,blueprints,bus
         </p>
       </div>
     </div>
-    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+    <label className="ff-platform-direction mt-4 block text-sm text-cyan-100">Choose your project direction
+      <select value={kind} onChange={event=>setKind(event.target.value as FileFolderPlatformKind)} className="mt-2 block w-full rounded-xl border border-cyan-100/20 bg-[#102333] p-3 text-base text-white">
+        {Object.entries(FILE_FOLDER_PLATFORM_TEMPLATES).map(([key,item])=><option key={key} value={key}>{item.name}</option>)}
+      </select>
+    </label>
+    <div className="ff-platform-directions mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
       {(Object.entries(FILE_FOLDER_PLATFORM_TEMPLATES) as Array<[FileFolderPlatformKind,(typeof FILE_FOLDER_PLATFORM_TEMPLATES)[FileFolderPlatformKind]]>).map(([key,item])=>
         <button key={key} type="button" aria-pressed={kind===key} onClick={()=>setKind(key)}
           className={`min-h-[75px] rounded-xl border p-3 text-left ${kind===key?'border-cyan-200/70 bg-cyan-200/10':'border-white/10 bg-black/20'}`}>

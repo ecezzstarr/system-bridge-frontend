@@ -14,6 +14,23 @@ export const SYSTEM_CAPABILITIES: Record<string, readonly Capability[]> = {
   campaign_system: ['work_queue'], mobile_service_app: ['work_queue'], enterprise_shell: ['work_queue'],
   enterprise_hall: ['work_queue'], legion_quarters: ['work_queue'], enterprise_treasury: ['record_search'],
   payments_gateway: ['record_search'], crypto_exchange_workshop: ['record_search'],
+  // Institutional capabilities are record/queue projections only. They do not
+  // enable medical treatment, official government authority or live dispatch.
+  clinic_operations: ['work_queue','record_search'],
+  hospital_operations_hub: ['work_queue','record_search'],
+  public_health_coordination: ['work_queue','record_search'],
+  medicine_supply_planning: ['work_queue','record_search'],
+  public_services_portal: ['work_queue','record_search'],
+  municipal_operations: ['work_queue','record_search'],
+  national_systems_architecture: ['work_queue','record_search'],
+  public_audit_office: ['work_queue','record_search'],
+  municipal_market_hall: ['work_queue','record_search'],
+  agriculture_supply_network: ['work_queue','record_search'],
+  transport_coordination: ['work_queue','record_search'],
+  education_campus_system: ['work_queue','record_search'],
+  utility_service_operations: ['work_queue','record_search'],
+  emergency_preparedness_centre: ['work_queue','record_search'],
+  civic_identity_architecture: ['work_queue','record_search'],
 }
 
 export function capabilityGraph(systems: BuiltRuntimeSystem[], routes: any[] = []) {

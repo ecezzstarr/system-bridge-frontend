@@ -1,4 +1,5 @@
 import { ensureClientBusinessStore, ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { INSTITUTIONAL_KITS, INSTITUTIONAL_BLUEPRINTS, INSTITUTIONAL_PARTS } from '@/lib/file-folder-institutional-catalog'
 import { platformProjectProgress,FILE_FOLDER_PLATFORM_TEMPLATES,type FileFolderPlatformProject } from '@/lib/file-folder-platform-projects'
 import { CLIENT_BUILD_SPEED_MAX, effectiveBuildMinutes, getClientBuildEconomy, type ClientBuildEconomy } from '@/lib/client-build-economy'
 import { getClientGrowthSnapshot, type ClientGrowthSnapshot } from '@/lib/client-growth-world'
@@ -408,6 +409,33 @@ async function seedFileFolderWorld(sql: any) {
       ON CONFLICT (blueprint_key) DO NOTHING
     `
   }
+
+
+  // Batch the sector catalog into three idempotent inserts. Administration may
+  // adjust prices, availability and build durations without seed overwrite.
+  await sql`
+    INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,published)
+    SELECT s.key,s.name,s.category,s.description,s.price,true
+    FROM jsonb_to_recordset(${JSON.stringify(INSTITUTIONAL_KITS.map(([key,name,category,description,price])=>({key,name,category,description,price})))}::jsonb)
+      AS s(key text,name text,category text,description text,price numeric)
+    ON CONFLICT(item_key) DO NOTHING
+  `
+  await sql`
+    INSERT INTO weave_file_folder_items(item_key,name,category,description,price_flame_coin,build_effect,effect_value,published)
+    SELECT s.key,s.name,s.category,s.description,s.price,s.effect,s.effect_value,true
+    FROM jsonb_to_recordset(${JSON.stringify(INSTITUTIONAL_PARTS.map(([key,name,category,description,price,effect,effect_value])=>({key,name,category,description,price,effect,effect_value})))}::jsonb)
+      AS s(key text,name text,category text,description text,price numeric,effect text,effect_value numeric)
+    ON CONFLICT(item_key) DO NOTHING
+  `
+  await sql`
+    INSERT INTO weave_file_folder_blueprints(
+      blueprint_key,name,district,system_type,description,build_hours,required_item_key,required_item_quantity,published
+    )
+    SELECT s.key,s.name,s.district,s.system_type,s.description,s.build_hours,s.required_kit,s.required_quantity,true
+    FROM jsonb_to_recordset(${JSON.stringify(INSTITUTIONAL_BLUEPRINTS.map(([key,name,district,system_type,description,build_hours,required_kit,required_quantity])=>({key,name,district,system_type,description,build_hours,required_kit,required_quantity})))}::jsonb)
+      AS s(key text,name text,district text,system_type text,description text,build_hours integer,required_kit text,required_quantity integer)
+    ON CONFLICT(blueprint_key) DO NOTHING
+  `
 
   // Major systems keep long construction horizons. These upgrades only touch the former shipped defaults,
   // so an Administration-customized duration is preserved.

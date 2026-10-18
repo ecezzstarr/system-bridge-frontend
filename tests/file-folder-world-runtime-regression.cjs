@@ -6,12 +6,49 @@ function load(file,dependencies={}) {
 }
 const world=load('lib/file-folder-world-runtime.ts'),graph=load('lib/file-folder-capability-graph.ts')
 const platform=load('lib/file-folder-platform-projects.ts')
-assert.equal(Object.keys(platform.FILE_FOLDER_PLATFORM_TEMPLATES).length,6,'Client can start six kinds of owned platform projects')
+assert.equal(Object.keys(platform.FILE_FOLDER_PLATFORM_TEMPLATES).length,14,'Client can start social, institutional, public service and original platform projects')
 for(const kind of ['short_video','microblog','social_community','video_channel','commerce_platform','custom_platform']){
  assert(platform.isFileFolderPlatformKind(kind),'Platform kind must be recognized: '+kind)
  assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].stages.includes('customer_door'),'Public boundary remains a Client Customer Door')
  assert(platform.FILE_FOLDER_PLATFORM_TEMPLATES[kind].productionGap.length>60,'Unimplemented product capabilities are disclosed to the Client')
 }
+const sectorCatalog=load('lib/file-folder-institutional-catalog.ts')
+const sectorVisual=load('lib/file-folder-institutional-visual.ts')
+assert.equal(sectorCatalog.INSTITUTIONAL_BLUEPRINTS.length,15,'Broad-sector WEAVE institutions are buildable from catalog')
+assert.equal(sectorCatalog.INSTITUTIONAL_KITS.length,15,'Every institution has a construction kit')
+assert(sectorCatalog.INSTITUTIONAL_PARTS.length>=16,'Reusable institution modules are available')
+const kitKeys=new Set(sectorCatalog.INSTITUTIONAL_KITS.map(k=>k[0]))
+const allBlueKeys=new Set(sectorCatalog.INSTITUTIONAL_BLUEPRINTS.map(b=>b[0]))
+for(const blueprint of sectorCatalog.INSTITUTIONAL_BLUEPRINTS){
+ assert(kitKeys.has(blueprint[6]),'Every institutional blueprint has purchasable construction material: '+blueprint[0])
+ assert.equal(blueprint[0],blueprint[3],'Blueprints must map to the exact persisted system type')
+ assert(sectorVisual.institutionalArchetype(blueprint[3]),'Every sector structure has a distinct 3D archetype: '+blueprint[3])
+ assert(blueprint[4].length>75,'Every institutional blueprint must explain its scope and limitations')
+}
+for(const regulated of ['clinic_operations','hospital_operations_hub','public_health_coordination','medicine_supply_planning','national_systems_architecture','emergency_preparedness_centre','civic_identity_architecture']){
+ const detail=sectorCatalog.INSTITUTIONAL_BLUEPRINTS.find(blueprint=>blueprint[0]===regulated)[4]
+ assert(/not|no |without |never /i.test(detail),'Restricted institutional blueprint must explain what it does not authorize: '+regulated)
+}
+for(const key of ['hospital_system','public_administration','market_infrastructure','agricultural_network','education_network','transportation_network','utility_infrastructure','emergency_coordination']){
+ assert(platform.isFileFolderPlatformKind(key),'New sector project template exists: '+key)
+ const project=platform.FILE_FOLDER_PLATFORM_TEMPLATES[key]
+ assert(project.stages.some(stage=>allBlueKeys.has(stage)),'Institution project must use its new 3D blueprint: '+key)
+ assert(project.productionGap.length>75,'Regulated public-service limitations must be declared')
+}
+assert.equal(sectorVisual.institutionalArchetype('ordinary_blog'),null,'Unrelated platforms retain original 3D architecture')
+assert.equal(sectorVisual.institutionalArchetype('hospital_operations_hub'),'health')
+assert.equal(sectorVisual.institutionalArchetype('national_systems_architecture'),'civic')
+const art3d=fs.readFileSync('components/system-switch/file-folder-institutional-architecture.tsx','utf8')
+assert(art3d.includes('installed.map('),'Installed institution modules must physically appear in the Client territory')
+assert(art3d.includes('stage>=60')&&art3d.includes('roof=stage>=78'),'Institutional buildings grow through construction progress')
+const folderScene=fs.readFileSync('components/system-switch/client-file-folder-3d.tsx','utf8')
+assert(folderScene.includes('<InstitutionalArchitecture systemType={String(build.systemType'), 'Construction sites render their sector-specific building')
+assert(folderScene.includes('<InstitutionalArchitecture systemType={type} progress={100}'), 'Completed sector buildings are rendered')
+assert(folderScene.includes('slice(page*6,page*6+6)'), 'Every group of active sites remains accessible by page')
+assert(folderScene.includes('slice(systemPage*12,systemPage*12+12)'), 'Every commissioned system remains visible by page')
+const sectorSeed=fs.readFileSync('lib/client-file-folder-world.ts','utf8')
+assert(sectorSeed.includes('INSTITUTIONAL_BLUEPRINTS.map(')&&sectorSeed.includes('INSTITUTIONAL_PARTS.map('),'New kits and modules are persisted in existing WEAVE SQL catalog')
+assert(sectorSeed.includes('ON CONFLICT(blueprint_key) DO NOTHING'),'Administration-customized institution blueprints are preserved')
 assert(!platform.isFileFolderPlatformKind('fake_kind'))
 assert(!platform.isFileFolderPlatformKind('__proto__'),'Prototype keys must not be accepted as valid projects')
 const shortVideo=platform.platformProjectProgress({kind:'short_video'},[
@@ -47,6 +84,12 @@ const compatibility=load('lib/file-folder-build-compatibility.ts')
 assert(compatibility.isBuildPartCompatible('ai_node','ai_service_desk'))
 assert(!compatibility.isBuildPartCompatible('legion_capacity','customer_door'))
 assert(compatibility.isBuildPartCompatible('speed_boost','customer_door'))
+assert(compatibility.isBuildPartCompatible('clinical_safety_review','hospital_operations_hub'))
+assert(!compatibility.isBuildPartCompatible('clinical_safety_review','municipal_market_hall'))
+assert(compatibility.isBuildPartCompatible('civic_oversight','national_systems_architecture'))
+assert(!compatibility.isBuildPartCompatible('civic_oversight','clinic_operations'))
+assert(compatibility.isBuildPartCompatible('supply_planning','agriculture_supply_network'))
+assert(compatibility.isBuildPartCompatible('privacy_review','education_campus_system'))
 assert(world.movePresence(p,1,0,.05).z<p.z)
 assert(world.movePresence(p,-1,0,.05).z>p.z)
 assert(world.movePresence(p,0,1,.05).yaw>p.yaw)
