@@ -1,3 +1,4 @@
+import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 'use client'
 import { BuiltSystemRuntime } from './built-system-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -82,10 +83,7 @@ function formatDate(value?: string | null) {
 }
 
 function buildProgress(build: any, now: number) {
-  const start = new Date(build.started_at || build.created_at || now).getTime()
-  const end = new Date(build.completes_at || now).getTime()
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0
-  return Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100))
+  return buildFormationProgress(build,now)
 }
 
 function buildDepth(progress: number) {
