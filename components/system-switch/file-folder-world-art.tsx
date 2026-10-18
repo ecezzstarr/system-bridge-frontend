@@ -25,10 +25,9 @@ function StoneCliffs(){
   }),[])
   return <group>
     {silhouettes.map((rock,index)=><group key={index} position={[rock.x,-.85,rock.z]}>
-      <mesh receiveShadow castShadow={index%3===0} rotation={[0,index*.4,.05]}>
+      <mesh receiveShadow castShadow={index%3===0} rotation={[0,index*.4,.05]} scale={[rock.width*.72,rock.height*.82,rock.width*.68]}>
         <icosahedronGeometry args={[1,0]}/>
         <meshStandardMaterial color={index%3===0?'#384d51':index%3===1?'#30444a':'#475252'} metalness={.04} roughness={.92}/>
-        <group scale={[rock.width,rock.height,rock.width*.78]}/>
       </mesh>
       <mesh position={[0,-.5,0]} scale={[rock.width,rock.height,rock.width*.78]}>
         <dodecahedronGeometry args={[1,0]}/>
