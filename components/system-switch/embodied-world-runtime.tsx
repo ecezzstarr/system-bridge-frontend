@@ -5,9 +5,9 @@ import { movePresence, canEnter, type Presence, type WorldObstacle } from '@/lib
 
 export type WorldEntrance = { id: string; label: string; position: [number,number,number]; enter: () => void }
 export type WorldInput = { keys: Set<string>; enter: boolean; active: boolean; analogForward?: number; analogStrafe?: number; lookDelta?: number; lookPitchDelta?: number; zoomDelta?: number }
-export function EmbodiedWorldRuntime({input,presence,entrances,obstacles,onNearby}: {
+export function EmbodiedWorldRuntime({input,presence,entrances,obstacles,onNearby,thirdPerson=false}: {
   input: MutableRefObject<WorldInput>; presence: MutableRefObject<Presence>;
-  entrances: WorldEntrance[]; obstacles: WorldObstacle[]; onNearby: (label:string) => void;
+  entrances: WorldEntrance[]; obstacles: WorldObstacle[]; onNearby: (label:string) => void; thirdPerson?:boolean;
 }) {
   const label = useRef('')
   const pitch = useRef(0)
@@ -31,8 +31,13 @@ export function EmbodiedWorldRuntime({input,presence,entrances,obstacles,onNearb
       if('updateProjectionMatrix' in camera && typeof camera.updateProjectionMatrix==='function')camera.updateProjectionMatrix()
     }
     const p=presence.current
-    camera.position.set(p.x,1.25,p.z)
-    camera.lookAt(p.x-Math.sin(p.yaw)*Math.cos(pitch.current),1.25+Math.sin(pitch.current),p.z-Math.cos(p.yaw)*Math.cos(pitch.current))
+    if(thirdPerson){
+      camera.position.set(p.x+Math.sin(p.yaw)*2.15,2.5,p.z+Math.cos(p.yaw)*2.15)
+      camera.lookAt(p.x-Math.sin(p.yaw)*1.6,1.35+Math.sin(pitch.current),p.z-Math.cos(p.yaw)*1.6)
+    }else{
+      camera.position.set(p.x,1.25,p.z)
+      camera.lookAt(p.x-Math.sin(p.yaw)*Math.cos(pitch.current),1.25+Math.sin(pitch.current),p.z-Math.cos(p.yaw)*Math.cos(pitch.current))
+    }
     const nearest=entrances.filter(e=>canEnter(p,e.position)).sort((a,b)=>
       Math.hypot(p.x-a.position[0],p.z-a.position[2])-Math.hypot(p.x-b.position[0],p.z-b.position[2]))[0]
     const next=nearest?.label||''
