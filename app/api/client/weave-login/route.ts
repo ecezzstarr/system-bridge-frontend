@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { getClientGender } from '@/lib/client-gender'
 import { randomBytes } from 'node:crypto'
 import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { ensureUserReferralCode } from '@/lib/user-referral'
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         username: user.email?.split('@')[0] || 'client',
         role: user.role,
+        gender: await getClientGender(sql, String(user.id)),
         file_number: user.file_number,
         business_name: user.business_name,
         referral_code: referralCode,

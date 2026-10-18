@@ -8,12 +8,14 @@ import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { clientTitle } from '@/lib/client-title'
 import { ReferralCodePanel } from '@/components/referral-code-panel'
 
 export default function ClientSettings() {
   const router = useRouter()
-  const { user, token, logout } = useAuth()
+  const { user, token, logout, setSession } = useAuth()
   const [name, setName] = useState('')
+  const [gender,setGender] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -27,6 +29,7 @@ export default function ClientSettings() {
 
   useEffect(() => {
     setName(user?.name || '')
+    setGender(user?.gender || '')
     try {
       const savedSettings = localStorage.getItem('user_feature_settings')
       if (savedSettings) setSettings({ ...settings, ...JSON.parse(savedSettings) })
@@ -34,7 +37,7 @@ export default function ClientSettings() {
       // Local display preferences must not block the Client settings surface.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id])
+  }, [user?.id, user?.gender])
 
   const toggleSetting = (key: keyof typeof settings) => {
     const next = { ...settings, [key]: !settings[key] }
@@ -57,7 +60,8 @@ export default function ClientSettings() {
     }
 
     const changedName = name.trim() && name.trim() !== user.name ? name.trim() : undefined
-    if (!changedName && !password) {
+    const changedGender = (gender || null) !== (user.gender || null)
+    if (!changedName && !password && !changedGender) {
       setMessage('Your Client identity is already current. Display preferences save immediately.')
       return
     }
@@ -72,12 +76,14 @@ export default function ClientSettings() {
         },
         body: JSON.stringify({
           name: changedName,
+          ...(changedGender ? {gender:gender || null} : {}),
           newPassword: password || undefined,
           confirmPassword: password ? confirmPassword : undefined,
         }),
       })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'Unable to update Client identity')
+      setSession(token, {...user,...result.user})
       setPassword('')
       setConfirmPassword('')
       setMessage('Client identity updated in the live WEAVE account record.')
@@ -118,6 +124,12 @@ export default function ClientSettings() {
                   <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.1em] text-slate-400">Client name</label>
                   <Input value={name} onChange={event=>setName(event.target.value)} className="border-white/10 bg-black/25 text-white"/>
                 </div>
+                <label className="block text-sm text-slate-300">Gender
+                  <select value={gender} onChange={event=>setGender(event.target.value)} className="mt-2 min-h-11 w-full rounded-xl border border-white/15 bg-slate-900 p-3 text-base text-white">
+                    <option value="">Not set</option><option value="female">Female · Lady</option><option value="male">Male · Lord</option>
+                  </select>
+                  <span className="mt-2 block text-xs text-slate-400">Your title: {clientTitle(gender)}. Save to update your WEAVE identity.</span>
+                </label>
               </div>
             </div>
 

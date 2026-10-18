@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql, getSessionByToken } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { getClientGender, saveClientGender } from '@/lib/client-gender'
+import { normalizeClientGender } from '@/lib/client-title'
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -19,8 +21,13 @@ export async function PATCH(request: NextRequest) {
     const userId = session.user_id
     const body = await request.json()
     const { name, newPassword, confirmPassword } = body
+    const hasGender = Object.prototype.hasOwnProperty.call(body, 'gender')
+    const gender = normalizeClientGender(body.gender)
+    if (hasGender && body.gender !== null && body.gender !== '' && !gender) {
+      return NextResponse.json({ error: 'Choose female, male, or leave gender unset.' }, { status: 400 })
+    }
 
-    if (!name && !newPassword) {
+    if (!name && !newPassword && !hasGender) {
       return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
     }
 
@@ -53,7 +60,7 @@ export async function PATCH(request: NextRequest) {
         WHERE id = ${userId}::uuid
         RETURNING id, email, username, name, role, departmental_code
       `
-    } else {
+    } else if (newPassword) {
       const passwordHash = await bcrypt.hash(newPassword, 10)
       updated = await sql`
         UPDATE users
@@ -63,16 +70,34 @@ export async function PATCH(request: NextRequest) {
       `
     }
 
+    if (!name && !newPassword) {
+      updated = await sql`SELECT id,email,username,name,role,departmental_code FROM users WHERE id=${userId}::uuid`
+    }
     if (!updated || updated.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, user: updated[0] })
+    if (hasGender) await saveClientGender(sql, String(userId), gender)
+    return NextResponse.json({ success: true, user: { ...updated[0], gender: await getClientGender(sql, String(userId)) } })
   } catch (error) {
     console.error('[profile] update error:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Update failed' },
       { status: 500 }
     )
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim()
+    if (!token) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    const session = await getSessionByToken(token)
+    if (!session) return NextResponse.json({ error: 'Session expired or invalid' }, { status: 401 })
+    const [user] = await sql`SELECT id,name,role FROM users WHERE id=${session.user_id}::uuid`
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    return NextResponse.json({ user: { ...user, gender: await getClientGender(sql, String(user.id)) } }, { headers: { 'Cache-Control': 'no-store' } })
+  } catch {
+    return NextResponse.json({ error: 'Unable to load account identity' }, { status: 500 })
   }
 }

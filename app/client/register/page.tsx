@@ -35,7 +35,8 @@ function ClientRegisterContent() {
     email: '',
     password: '',
     confirmPassword: '',
-    businessName: ''
+    businessName: '',
+    gender: ''
   })
 
   const runValidate = async (fn: string) => {
@@ -90,7 +91,8 @@ function ClientRegisterContent() {
           fileNumber,
           email: formData.email,
           password: formData.password,
-          businessName: formData.businessName
+          businessName: formData.businessName,
+          gender: formData.gender || null
         })
       })
 
@@ -185,6 +187,11 @@ function ClientRegisterContent() {
               </div>
 
               <div className="space-y-3 pt-2">
+                <label className="block text-sm text-slate-300">Gender
+                  <select value={formData.gender} onChange={event=>setFormData({...formData,gender:event.target.value})} className="mt-2 min-h-11 w-full rounded-xl border border-slate-700 bg-slate-800 p-3 text-base text-white">
+                    <option value="">Not set</option><option value="female">Female · Lady</option><option value="male">Male · Lord</option>
+                  </select>
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input

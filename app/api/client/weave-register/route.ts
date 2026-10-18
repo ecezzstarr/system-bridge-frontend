@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { saveClientGender } from '@/lib/client-gender'
+import { normalizeClientGender } from '@/lib/client-title'
 import { randomBytes, randomUUID } from 'node:crypto'
 import { validateFileNumber } from '@/lib/fne'
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
@@ -14,7 +16,7 @@ export async function POST(request: NextRequest) {
     const shield=await getDivineShieldState()
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
-    const { fileNumber, email, password, businessName } = await request.json()
+    const { fileNumber, email, password, businessName, gender } = await request.json()
 
     if (!fileNumber || !email || !password) {
       return NextResponse.json(
@@ -22,6 +24,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const recordedGender = normalizeClientGender(gender)
+    if (gender != null && gender !== '' && !recordedGender) return NextResponse.json({ error: 'Choose female, male, or leave gender unset.' }, { status: 400 })
 
     const folder = await validateFileNumber(fileNumber)
     if (!folder) {
@@ -76,6 +81,7 @@ export async function POST(request: NextRequest) {
     `
 
     const user = newUser[0]
+    await saveClientGender(sql, String(user.id), recordedGender)
 
     await sql`
       UPDATE file_folders
@@ -125,6 +131,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         username: user.email?.split('@')[0] || 'client',
         role: user.role,
+        gender: recordedGender,
         file_number: user.file_number,
         business_name: user.business_name,
         referral_code: user.referral_code,
