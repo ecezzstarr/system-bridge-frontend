@@ -9,6 +9,9 @@ const p={x:0,z:3,yaw:0}
 assert(world.movePresence(p,1,0,.05).z<p.z)
 assert(world.movePresence(p,-1,0,.05).z>p.z)
 assert(world.movePresence(p,0,1,.05).yaw>p.yaw)
+assert(world.movePresence(p,0,0,.05,[],1).x>p.x,'Mobile thumb right strafes in world')
+assert(world.movePresence(p,0,0,.05,[],-1).x<p.x,'Mobile thumb left strafes in world')
+assert.equal(world.movePresence(p,0,0,.05,[{x:.15,z:3,radius:.5}],1).x,p.x,'Mobile movement still collides with buildings')
 assert.equal(world.movePresence(p,1,0,10).z,world.movePresence(p,1,0,.05).z,'Long frames are capped')
 assert.equal(world.movePresence({x:0,z:8.99,yaw:0},-1,0,.05).z,8.99,'Territory boundary')
 assert.equal(world.movePresence(p,1,0,.05,[{x:0,z:2.85,radius:.5}]).z,3,'Structure collision')
@@ -19,8 +22,20 @@ const runtime=load('components/system-switch/embodied-world-runtime.tsx',{
  react:{useRef:v=>({current:v})},'@react-three/fiber':{useFrame:f=>frame=f},'@/lib/file-folder-world-runtime':world
 })
 runtime.EmbodiedWorldRuntime({input,presence,obstacles:[],entrances:[{id:'one',label:'Operations',position:[0,0,2],enter:()=>entered++}],onNearby:v=>nearby=v})
-const camera={position:{set(){}},lookAt(){}}
+const camera={position:{set(){}},lookAt(){},fov:65,updateProjectionMatrix(){}}
 frame({camera},.05);assert(presence.current.z<3);assert.equal(nearby,'Operations')
+input.current.lookDelta=40
+const oldYaw=presence.current.yaw
+frame({camera},.05)
+assert(presence.current.yaw<oldYaw,'Touch swipe turns the camera')
+input.current.zoomDelta=100
+frame({camera},.05)
+assert(camera.fov<65,'Pinch changes field of view')
+input.current.analogStrafe=1
+const beforeStrafe=presence.current.x
+frame({camera},.05)
+assert(presence.current.x>beforeStrafe,'Analog joystick movement reaches the world runtime')
+input.current.analogStrafe=0
 input.current.enter=true;frame({camera},.05);frame({camera},.05);assert.equal(entered,1,'Entry fires once')
 input.current.active=false;const before=presence.current.z;input.current.enter=true;frame({camera},.05);assert.equal(presence.current.z,before);assert.equal(entered,1,'Panels stop input')
 const systems=[{id:'a',system_type:'operations_board',status:'active'},{id:'b',system_type:'data_room',status:'active'},{id:'c',system_type:'commerce_storefront',status:'building'}]
@@ -32,6 +47,14 @@ assert.equal(graph.searchRuntimeEntries(entries,' FLOUR ')[0].id,'2');assert.equ
 assert.equal(entries[0].status,'open','Runtime projections do not mutate stored entries')
 const env=fs.readFileSync('components/system-switch/client-file-folder-operating-environment.tsx','utf8'),scene=fs.readFileSync('components/system-switch/client-file-folder-3d.tsx','utf8'),host=fs.readFileSync('components/system-switch/built-system-runtime.tsx','utf8')
 assert(scene.includes('<EmbodiedWorldRuntime'));assert(!scene.includes('OrbitControls'))
+assert(scene.includes('touchPoints.current.set('),'Phone touch gestures feed the world')
+assert(scene.includes('input.current.analogStrafe=walkX'),'Thumb joystick sends analog movement')
+assert(scene.includes('joystickThumb'),'Thumb feedback moves with touch')
+assert(scene.includes('<CapabilityFixture'),'Installed parts physically appear on the world structures')
+assert(scene.includes('speed={speed}'),'Purchased acceleration changes construction animation')
+assert(env.includes('speedMultiplier:Number(build.speed_multiplier||1)'),'World receives persisted construction boost')
+assert(env.includes('Array.isArray(build.applied_parts)'),'World receives the purchased installed parts')
+assert(env.includes('system.configuration?.appliedParts'),'Installed parts persist on completed systems')
 assert(env.includes('onSystemEnter={id=>'));assert(env.includes('<BuiltSystemRuntime'))
 for(const capability of ['work_queue','record_search','customer_door','system_routes'])assert(host.includes(`selected==='${capability}'`))
 assert(env.includes("action:'toggle_system_entry'"),'Work queue retains authenticated API')
