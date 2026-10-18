@@ -579,7 +579,7 @@ export function ClientFileFolder3D({
   businessSector?:string|null
   territoryMode?:boolean
 }){
-  const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,zoomDelta:0})
+  const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,lookPitchDelta:0,zoomDelta:0})
   const presence=useRef<Presence>({x:0,z:3,yaw:0})
   const touchPoints=useRef(new Map<number,{x:number;y:number}>())
   const joystickPointer=useRef<number|null>(null)
@@ -588,6 +588,7 @@ export function ClientFileFolder3D({
     input.current.analogForward=0
     input.current.analogStrafe=0
     input.current.lookDelta=0
+    input.current.lookPitchDelta=0
     input.current.zoomDelta=0
     touchPoints.current.clear()
     joystickPointer.current=null
@@ -672,6 +673,7 @@ export function ClientFileFolder3D({
           input.current.zoomDelta=(input.current.zoomDelta||0)+(newDistance-oldDistance)
         }else{
           input.current.lookDelta=(input.current.lookDelta||0)+(e.clientX-before.x)
+          input.current.lookPitchDelta=(input.current.lookPitchDelta||0)+(e.clientY-before.y)
         }
         touchPoints.current.set(e.pointerId,{x:e.clientX,y:e.clientY})
       }}
