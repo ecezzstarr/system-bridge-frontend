@@ -697,7 +697,48 @@ export function ClientFileFolder3D({
       </AdaptiveCanvas>
     </div>
 
-    <div className="absolute left-3 bottom-20 z-20 rounded-xl bg-black/80 p-2 text-xs text-white" aria-label="World movement controls">
+    <div className="absolute bottom-24 left-3 z-20 hidden select-none items-center gap-3 [@media(pointer:coarse)]:flex" aria-label="Phone movement controls">
+      <button type="button" aria-label="Move through the File Folder using your thumb"
+        className="relative flex h-28 w-28 touch-none items-center justify-center rounded-full border border-cyan-300/40 bg-[#071721]/75 shadow-lg backdrop-blur-sm"
+        disabled={!navigationEnabled}
+        onPointerDown={e=>{
+          e.preventDefault();e.stopPropagation()
+          joystickPointer.current=e.pointerId
+          e.currentTarget.setPointerCapture(e.pointerId)
+          input.current.active=true
+          updateJoystick(e.clientX,e.clientY,e.currentTarget.getBoundingClientRect())
+        }}
+        onPointerMove={e=>{
+          if(joystickPointer.current!==e.pointerId)return
+          updateJoystick(e.clientX,e.clientY,e.currentTarget.getBoundingClientRect())
+        }}
+        onPointerUp={e=>{
+          if(joystickPointer.current!==e.pointerId)return
+          joystickPointer.current=null
+          input.current.analogForward=0;input.current.analogStrafe=0
+          if(joystickThumb.current)joystickThumb.current.style.transform='translate(0px,0px)'
+        }}
+        onPointerCancel={e=>{
+          if(joystickPointer.current!==e.pointerId)return
+          joystickPointer.current=null
+          input.current.analogForward=0;input.current.analogStrafe=0
+          if(joystickThumb.current)joystickThumb.current.style.transform='translate(0px,0px)'
+        }}
+        onLostPointerCapture={()=>{
+          joystickPointer.current=null
+          input.current.analogForward=0;input.current.analogStrafe=0
+          if(joystickThumb.current)joystickThumb.current.style.transform='translate(0px,0px)'
+        }}>
+        <span className="absolute inset-3 rounded-full border border-dashed border-cyan-100/20"/>
+        <span ref={joystickThumb} className="h-11 w-11 rounded-full border border-cyan-200/65 bg-cyan-200/25 shadow-[0_0_18px_rgba(103,232,249,.18)]"/>
+      </button>
+      <span className="max-w-20 text-[10px] text-cyan-100/80">Walk · drag to look · pinch to zoom</span>
+    </div>
+    <button type="button" disabled={!nearby||!navigationEnabled} onClick={()=>{input.current.active=true;input.current.enter=true}}
+      className="absolute bottom-28 right-3 z-20 hidden rounded-2xl border border-emerald-200/50 bg-emerald-950/80 px-5 py-4 text-sm font-bold text-emerald-100 shadow-lg disabled:opacity-35 [@media(pointer:coarse)]:block">
+      {nearby?'Enter '+nearby:'Approach a structure'}
+    </button>
+    <div className="absolute left-3 bottom-20 z-20 rounded-xl bg-black/80 p-2 text-xs text-white [@media(pointer:coarse)]:hidden" aria-label="World movement controls">
       <p aria-live="polite">{nearby ? `Nearby: ${nearby}` : 'Walk to a structure'} · W/S walk · A/D turn</p>
       <div className="mt-2 flex gap-2">
         {[['a','Turn left'],['w','Walk forward'],['s','Walk back'],['d','Turn right']].map(([key,label])=><button key={key} disabled={!navigationEnabled}
