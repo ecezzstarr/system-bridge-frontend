@@ -53,6 +53,7 @@ export const FILE_FOLDER_STATION_POSITIONS:Record<FormationStation,[number,numbe
   boost_bay:[-2.8,0,-4.9],
   formation_yard:[-5.1,0,-2.15],
 }
+export const FORMATION_WORKSHOP_POSITION:[number,number,number]=[2.1,0,-3.8]
 const asset='/weave/file-folder/assets/'
 
 function StoneCliffs(){
@@ -177,7 +178,7 @@ export function FileFolderFacilities({marketReady=false,enterpriseReady=false,on
     asset+'enterprise-expansion.svg',
   ])
   return <group>
-    <mesh position={[0,2.65,1.08]}><planeGeometry args={[2.65,1.24]}/><meshBasicMaterial map={system} transparent toneMapped={false} side={THREE.DoubleSide}/></mesh>
+    <IndustrialStation label="System Formation Workshop" texture={system} accent="#f7d39f" position={FORMATION_WORKSHOP_POSITION} onEnter={()=>onStudioEnter?.('formation_yard')}/>
     <mesh position={[-5.1,1.48,-.34]}><planeGeometry args={[2.8,1.31]}/><meshBasicMaterial map={yard} transparent toneMapped={false} side={THREE.DoubleSide}/></mesh>
     {marketReady&&<mesh position={[5.2,2.19,-.75]}><planeGeometry args={[2.7,1.26]}/><meshBasicMaterial map={door} transparent toneMapped={false} side={THREE.DoubleSide}/></mesh>}
     {enterpriseReady&&<mesh position={[-3.6,3.7,4.15]}><planeGeometry args={[2.4,1.13]}/><meshBasicMaterial map={expansion} transparent toneMapped={false} side={THREE.DoubleSide}/></mesh>}
