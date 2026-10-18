@@ -6,6 +6,16 @@ function load(file,dependencies={}) {
 }
 const world=load('lib/file-folder-world-runtime.ts'),graph=load('lib/file-folder-capability-graph.ts')
 const p={x:0,z:3,yaw:0}
+const base={started_at:'2026-10-18T10:00:00Z',completes_at:'2026-10-18T12:00:00Z'}
+assert.equal(world.buildFormationProgress(base,Date.parse('2026-10-18T10:00:00Z')),0)
+assert.equal(world.buildFormationProgress(base,Date.parse('2026-10-18T11:00:00Z')),50)
+assert.equal(world.buildFormationProgress(base,Date.parse('2026-10-18T12:00:00Z')),100)
+assert.equal(world.buildFormationProgress({...base,completes_at:'2026-10-18T11:30:00Z'},Date.parse('2026-10-18T11:00:00Z')),100*2/3)
+assert.equal(world.buildFormationProgress({...base,completes_at:'2026-10-18T09:00:00Z'},Date.parse('2026-10-18T11:00:00Z')),100,'A fully accelerated build cannot revert to zero')
+const compatibility=load('lib/file-folder-build-compatibility.ts')
+assert(compatibility.isBuildPartCompatible('ai_node','ai_service_desk'))
+assert(!compatibility.isBuildPartCompatible('legion_capacity','customer_door'))
+assert(compatibility.isBuildPartCompatible('speed_boost','customer_door'))
 assert(world.movePresence(p,1,0,.05).z<p.z)
 assert(world.movePresence(p,-1,0,.05).z>p.z)
 assert(world.movePresence(p,0,1,.05).yaw>p.yaw)
@@ -22,12 +32,16 @@ const runtime=load('components/system-switch/embodied-world-runtime.tsx',{
  react:{useRef:v=>({current:v})},'@react-three/fiber':{useFrame:f=>frame=f},'@/lib/file-folder-world-runtime':world
 })
 runtime.EmbodiedWorldRuntime({input,presence,obstacles:[],entrances:[{id:'one',label:'Operations',position:[0,0,2],enter:()=>entered++}],onNearby:v=>nearby=v})
-const camera={position:{set(){}},lookAt(){},fov:65,updateProjectionMatrix(){}}
+let cameraLookY=1.25
+const camera={position:{set(){}},lookAt(_x,y){cameraLookY=y},fov:65,updateProjectionMatrix(){}}
 frame({camera},.05);assert(presence.current.z<3);assert.equal(nearby,'Operations')
 input.current.lookDelta=40
 const oldYaw=presence.current.yaw
 frame({camera},.05)
 assert(presence.current.yaw<oldYaw,'Touch swipe turns the camera')
+input.current.lookPitchDelta=35
+frame({camera},.05)
+assert(cameraLookY<1.25,'Vertical finger drag changes first-person gaze')
 input.current.zoomDelta=100
 frame({camera},.05)
 assert(camera.fov<65,'Pinch changes field of view')
@@ -50,6 +64,19 @@ assert(scene.includes('<EmbodiedWorldRuntime'));assert(!scene.includes('OrbitCon
 assert(scene.includes('touchPoints.current.set('),'Phone touch gestures feed the world')
 assert(scene.includes('input.current.analogStrafe=walkX'),'Thumb joystick sends analog movement')
 assert(scene.includes('joystickThumb'),'Thumb feedback moves with touch')
+assert(scene.includes('onBuildEnter={onBuildEnter}'),'Each physical construction site can open its build')
+assert(scene.includes('presenceKey'),'Client world supports returning to their own virtual location')
+assert(scene.includes('sessionStorage'),'Virtual location persists for the phone session')
+assert(env.includes('navigationEnabled={!panelOpen}'),'Closing a build workspace restores phone movement')
+assert(env.includes('onBuildEnter={id=>'),'World taps select a particular active construction record')
+assert(env.includes('initialBuildId={selectedBuildId}'),'Selected site reaches the purchase and installation workspace')
+const studio=fs.readFileSync('components/system-switch/file-folder-open-world.tsx','utf8')
+assert(studio.includes('orderedBuilds.map'),'Tapped structure rises to the top of its construction controls')
+assert(studio.includes('isBuildPartCompatible'),'Only installable parts are offered at the active structure')
+assert(studio.includes('return buildFormationProgress(build,now)'),'Touch console uses the same build percentage as 3D')
+assert(env.includes('return buildFormationProgress(build,now)'),'3D uses shared boosted formation percentage')
+const api=fs.readFileSync('app/api/client/file-folder-world/route.ts','utf8')
+assert(api.includes('allowedBuildPartSystems(effectType)'),'API enforces the same part compatibility source')
 assert(scene.includes('<CapabilityFixture'),'Installed parts physically appear on the world structures')
 assert(scene.includes('speed={speed}'),'Purchased acceleration changes construction animation')
 assert(env.includes('speedMultiplier:Number(build.speed_multiplier||1)'),'World receives persisted construction boost')
