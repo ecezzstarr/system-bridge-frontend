@@ -11,8 +11,9 @@ import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
 type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber'|'rose'}
-type ActiveBuild={id?:string;title?:string;systemType?:string;progress:number}
-type LiveSystem={id?:string;title?:string;systemType?:string;activity?:number}
+type BuildPart={id?:string;itemKey?:string;name?:string;effectType?:string;effectValue?:number}
+type ActiveBuild={id?:string;title?:string;systemType?:string;progress:number;speedMultiplier?:number;parts?:BuildPart[]}
+type LiveSystem={id?:string;title?:string;systemType?:string;activity?:number;parts?:BuildPart[]}
 type SystemWeave={id?:string;source_system_id?:string;target_system_id?:string;source_output?:string;target_input?:string;integration_type?:string;authority_state?:string;movement_count?:number}
 type AiTerritory={territoryId:string;publicName:string;fileNumber:string;operatorLabel?:string;activity?:string;products?:string[];generatedSalesFlameCoin?:number}
 
@@ -181,19 +182,19 @@ function SoundPavilion({active}:{active:boolean}){
 }
 
 function ConstructionYard({activeBuilds,emergence}:{activeBuilds:ActiveBuild[];emergence:number}){
-  const shown=activeBuilds.slice(0,4)
+  const shown=activeBuilds.slice(0,6)
   return <group>
-    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[3.5,.16,2.85]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
+    <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[4.25,.16,3.05]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
     <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#5f7884" metalness={.45} roughness={.45}/></mesh>
     <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">FORMATION YARD</Text>
     {shown.length===0?<>
       <mesh position={[0,.22,-.1]} receiveShadow><boxGeometry args={[1.5,.15,1.0]}/><meshStandardMaterial color="#1b2a34" roughness={.85}/></mesh>
       <Text position={[0,.48,.35]} fontSize={.1} color="#8f7c66" anchorX="center">WAITING FOR BLUEPRINT</Text>
     </>:shown.map((build,index)=>{
-      const col=index%2
-      const row=Math.floor(index/2)
-      const x=-.8+col*1.6
-      const z=-.6+row*1.2
+      const col=index%3
+      const row=Math.floor(index/3)
+      const x=-1.15+col*1.15
+      const z=-.65+row*1.3
       return <ConstructionSite key={build.id||index} build={build} position={[x,.15,z]} emergence={emergence}/>
     })}
   </group>
@@ -210,9 +211,9 @@ function ScaffoldEnvelope({width,depth,height,progress}:{width:number;depth:numb
   </group>
 }
 
-function Crane({height=2.6}:{height?:number}){
+function Crane({height=2.6,speed=1}:{height?:number;speed?:number}){
   const arm=useRef<THREE.Group>(null)
-  useFrame(({clock})=>{if(arm.current)arm.current.rotation.y=Math.sin(clock.getElapsedTime()*.18)*.4})
+  useFrame(({clock})=>{if(arm.current)arm.current.rotation.y=Math.sin(clock.getElapsedTime()*.18*Math.min(4,Math.max(1,speed)))*.4})
   return <group position={[1.3,.02,-.95]}>
     <mesh position={[0,height/2,0]}><boxGeometry args={[.09,height,.09]}/><meshStandardMaterial color="#a97835" metalness={.55} roughness={.42}/></mesh>
     <group ref={arm} position={[0,height,0]}>
@@ -222,11 +223,35 @@ function Crane({height=2.6}:{height?:number}){
   </group>
 }
 
+
+function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY:number}){
+  const kind=String(part.effectType||'component')
+  if(kind==='speed_boost')return null
+  const colors:Record<string,string>={
+    ai_node:'#a78bfa',automation:'#22d3ee',route_capacity:'#34d399',legion_capacity:'#fbbf24',
+    stream_capacity:'#fb7185',audience_capacity:'#f472b6',verification:'#93c5fd',
+  }
+  const color=colors[kind]||'#cbd5e1'
+  const x=-.36+(index%3)*.36
+  const z=index<3?.39:-.39
+  return <group position={[x,Math.max(.45,baseY),z]}>
+    <mesh castShadow><boxGeometry args={[.24,.3,.2]}/><meshStandardMaterial color="#263745" emissive={color} emissiveIntensity={.28} metalness={.35} roughness={.42}/></mesh>
+    {kind==='ai_node'&&<mesh position={[0,.24,0]}><icosahedronGeometry args={[.15,0]}/><meshStandardMaterial color={color} emissive={color} emissiveIntensity={.55}/></mesh>}
+    {(kind==='stream_capacity'||kind==='audience_capacity'||kind==='route_capacity')&&<mesh position={[0,.25,0]} rotation={[Math.PI/2,0,0]}><torusGeometry args={[.15,.035,6,12]}/><meshBasicMaterial color={color}/></mesh>}
+    {kind==='automation'&&<mesh position={[0,.26,0]}><cylinderGeometry args={[.1,.1,.24,6]}/><meshStandardMaterial color={color} metalness={.6}/></mesh>}
+    {kind==='verification'&&<mesh position={[0,.25,0]}><octahedronGeometry args={[.15]}/><meshStandardMaterial color={color} metalness={.4}/></mesh>}
+    {kind==='legion_capacity'&&<mesh position={[0,.28,0]}><coneGeometry args={[.14,.25,6]}/><meshStandardMaterial color={color}/></mesh>}
+    {!colors[kind]&&<mesh position={[0,.25,0]}><sphereGeometry args={[.12,8,8]}/><meshStandardMaterial color={color}/></mesh>}
+  </group>
+}
+
 function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position:[number,number,number];emergence:number}){
   const pulse=useRef<THREE.MeshBasicMaterial>(null)
   const progress=Math.max(0,Math.min(100,build.progress||0))
   const phase=progress<15?'FOUNDATION':progress<42?'FRAME':progress<70?'STRUCTURE':progress<92?'INTEGRATION':'COMMISSIONING'
   const height=.28+(progress/100)*1.75
+  const speed=Math.max(1,Number(build.speedMultiplier||1))
+  const parts=(build.parts||[]).filter(part=>part.effectType!=='speed_boost')
   const walls=progress>=42
   const roof=progress>=78
   useFrame(({clock})=>{
@@ -239,6 +264,11 @@ function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position
     {progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
     {walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
     {roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#315160" roughness={.5} metalness={.16}/></mesh>}
+    {parts.slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={height*.58}/>)}
+    {speed>1.01&&<group>
+      <mesh rotation={[-Math.PI/2,0,0]} position={[0,.13,0]}><torusGeometry args={[.84,.035,6,36]}/><meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={Math.min(2,.45+(speed-1)*.8)}/></mesh>
+      <mesh position={[0,height+.32,0]}><octahedronGeometry args={[.13,0]}/><meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={Math.min(2,speed*.3)}/></mesh>
+    </group>}
     <mesh position={[0,.09,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[.58,.72,32]}/>
       <meshBasicMaterial ref={pulse} color="#f59e0b" transparent opacity={.12}/>
@@ -247,9 +277,9 @@ function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position
       <ScaffoldEnvelope width={1.22} depth={.94} height={Math.max(.55,height+.28)} progress={progress}/>
     )}
     {progress < 78 && (
-      <Crane height={2.2}/>
+      <Crane height={2.2} speed={speed}/>
     )}
-    <Text position={[0,Math.max(1.1,height+.45),.48]} fontSize={.075} color="#f5d49d" anchorX="center">{phase}</Text>
+    <Text position={[0,Math.max(1.1,height+.45),.48]} fontSize={.075} color="#f5d49d" anchorX="center">{speed>1.01?`${phase} · ×${speed.toFixed(2)}`:phase}</Text>
   </group>
 }
 
@@ -303,6 +333,7 @@ function LiveBuilding({system,index,total,emergence,onEnter}:{system:LiveSystem;
       <mesh position={[0,.72,.34]}><boxGeometry args={[.4,.42,.04]}/><meshStandardMaterial color="#12221b" emissive="#34d399" emissiveIntensity={activity}/></mesh>
       <mesh position={[0,1.55,0]}><coneGeometry args={[.3,.54,6]}/><meshStandardMaterial color="#6e4a2b" metalness={.28} roughness={.5}/></mesh>
     </group>}
+    {(system.parts||[]).filter(part=>part.effectType!=='speed_boost').slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={1.05}/>) }
   </group>
 }
 
