@@ -847,7 +847,7 @@ export function ClientFileFolder3D({
         <button type="button" style={{minWidth:44,width:44,height:44,flexShrink:0}} className="inline-flex items-center justify-center text-xl" aria-label="Next built systems district" onClick={()=>setSystemPage(v=>(v+1)%Math.ceil(liveSystems.length/12))}>›</button>
       </div>}
     </div>}
-    {activeBuilds.length>0&&<aside className="ff-build-hud absolute left-3 top-[14.3rem] z-20 w-[min(215px,51vw)] rounded-xl border border-amber-200/30 bg-[#081725]/85 p-3 shadow-lg backdrop-blur-md sm:left-5 sm:top-[13.6rem]" aria-label="Live construction in your world">
+    {activeBuilds.length>0&&<aside className="ff-build-hud absolute bottom-[13.5rem] right-3 z-20 w-[min(235px,58vw)] rounded-xl border border-amber-200/35 bg-[#081725]/93 p-3 shadow-lg backdrop-blur-md sm:right-5 sm:bottom-[13rem]" aria-label="Live construction in your world">
       <p className="text-[8px] font-black uppercase tracking-[.15em] text-amber-200">In formation · {activeBuilds.length} builds</p>
       <p className="mt-1 truncate text-[10px] font-bold text-white">{activeBuilds[0].title||'Current build'}</p>
       <div className="mt-2 flex items-center gap-2">
@@ -855,6 +855,13 @@ export function ClientFileFolder3D({
         <span className="text-[9px] font-black text-amber-100">{Math.round(activeBuilds[0].progress)}%</span>
       </div>
       <p className="mt-1 text-[8px] text-cyan-100/75">{activeBuilds[0].parts?.length||0} installed parts · speed ×{Number(activeBuilds[0].speedMultiplier||1).toFixed(2)}</p>
+      <div className="mt-2 space-y-1 border-t border-cyan-200/15 pt-2" aria-label="Actual installed software modules">
+        {(activeBuilds[0].parts||[]).slice(0,3).map((part,index)=><div key={part.id||part.itemKey||index} className="flex min-h-5 items-center justify-between gap-2">
+          <span className="min-w-0 truncate text-[9px] text-cyan-100">{part.name||part.itemKey||'Installed module'}</span>
+          <span className="shrink-0 text-[8px] text-emerald-300">Installed</span>
+        </div>)}
+        {(!activeBuilds[0].parts||activeBuilds[0].parts.length===0)&&<p className="text-[9px] text-stone-400">Modules available from Parts Workshop</p>}
+      </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
         <button type="button" disabled={!navigationEnabled} onClick={()=>onBuildEnter?.(activeBuilds[0].id||'')} className="rounded-md border border-cyan-200/40 px-2 py-1.5 text-[8px] font-black text-cyan-100 disabled:opacity-40">Install parts</button>
         <button type="button" disabled={!navigationEnabled} onClick={()=>onStudioEnter?.('boost_bay')} className="rounded-md border border-amber-200/40 px-2 py-1.5 text-[8px] font-black text-amber-100 disabled:opacity-40">Apply boost</button>
@@ -919,22 +926,22 @@ export function ClientFileFolder3D({
       </select>
     </nav>
     <div className={territoryMode
-      ? "ff-district-rail absolute inset-x-2 bottom-3 z-20 flex snap-x snap-mandatory justify-start gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:justify-center sm:gap-2"
-      : "absolute inset-x-2 bottom-2 z-10 flex snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-3 sm:bottom-3 sm:gap-2"
-    }>
-      {districts.map(d=>{
-        const active=d.key===activeSurface
-        const color=COLORS[d.tone]
-        return <button
-          key={d.key}
-          onClick={()=>onSurfaceChange(d.key)}
-          className="min-w-[104px] snap-start rounded-lg border bg-[#080d13]/88 px-2.5 py-2 text-left backdrop-blur-md sm:min-w-[135px] sm:rounded-xl sm:px-3"
-          style={{borderColor:active?color:'rgba(255,255,255,.09)'}}
-        >
-          <span className="block text-[8px] font-black uppercase tracking-[.08em]" style={{color}}>{d.label}</span>
-          <span className="mt-1 block text-[8px] text-stone-400">{active?'You are here':'Enter territory'}</span>
-        </button>
-      })}
+      ? "ff-district-rail absolute inset-x-2 bottom-3 z-20 flex justify-between gap-1 rounded-xl border border-slate-600/30 bg-[#06101b]/95 px-1.5 py-2 backdrop-blur-md sm:inset-x-5 sm:bottom-5"
+      : "absolute inset-x-2 bottom-2 z-20 flex justify-between gap-1 rounded-xl border border-slate-600/30 bg-[#06101b]/95 px-1.5 py-2 backdrop-blur-md"}
+      aria-label="Client File Folder operating destinations">
+      {([
+        {label:'Build',symbol:'▥',selected:activeSurface==='builds',go:()=>onSurfaceChange('builds')},
+        {label:'Parts',symbol:'⬡',selected:false,go:()=>onStudioEnter?.('parts_workshop')},
+        {label:'Blueprints',symbol:'▤',selected:false,go:()=>onStudioEnter?.('blueprint_foundry')},
+        {label:'Boosts',symbol:'ϟ',selected:false,go:()=>onStudioEnter?.('boost_bay')},
+        {label:'People',symbol:'♧',selected:activeSurface==='enterprise',go:()=>onSurfaceChange('enterprise')},
+      ]).map(tab=><button key={tab.label} type="button" disabled={!navigationEnabled}
+          onClick={tab.go}
+          className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center rounded-lg px-1.5 py-1 text-center disabled:opacity-40 ${tab.selected?'border border-amber-200/35 bg-amber-300/10':'border border-transparent'}`}
+          aria-label={tab.label==='People'?'Enter enterprise people and legions':'Open '+tab.label}>
+          <span className={`text-xl leading-6 ${tab.selected?'text-amber-200':'text-cyan-100/70'}`} aria-hidden="true">{tab.symbol}</span>
+          <span className={`mt-1 text-[10px] font-semibold ${tab.selected?'text-amber-100':'text-slate-300'}`}>{tab.label}</span>
+        </button>)}
     </div>
   </section>
 }
