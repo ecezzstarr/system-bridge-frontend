@@ -181,12 +181,13 @@ function SoundPavilion({active}:{active:boolean}){
   </group>
 }
 
-function ConstructionYard({activeBuilds,emergence}:{activeBuilds:ActiveBuild[];emergence:number}){
+function ConstructionYard({activeBuilds,emergence,onBuildEnter}:{activeBuilds:ActiveBuild[];emergence:number;onBuildEnter?:(id:string)=>void}){
   const shown=activeBuilds.slice(0,6)
   return <group>
     <mesh position={[0,.08,0]} receiveShadow><boxGeometry args={[4.25,.16,3.05]}/><meshStandardMaterial color="#101922" roughness={.92}/></mesh>
     <mesh position={[-1.45,.12,0]}><boxGeometry args={[.08,.18,2.65]}/><meshStandardMaterial color="#5f7884" metalness={.45} roughness={.45}/></mesh>
     <Text position={[0,.3,1.54]} fontSize={.13} color="#eed8bc" anchorX="center">FORMATION YARD</Text>
+    {activeBuilds.length>shown.length&&<Text position={[0,.38,-1.55]} fontSize={.1} color="#fcd34d" anchorX="center">+{activeBuilds.length-shown.length} MORE · ENTER YARD</Text>}
     {shown.length===0?<>
       <mesh position={[0,.22,-.1]} receiveShadow><boxGeometry args={[1.5,.15,1.0]}/><meshStandardMaterial color="#1b2a34" roughness={.85}/></mesh>
       <Text position={[0,.48,.35]} fontSize={.1} color="#8f7c66" anchorX="center">WAITING FOR BLUEPRINT</Text>
@@ -195,7 +196,7 @@ function ConstructionYard({activeBuilds,emergence}:{activeBuilds:ActiveBuild[];e
       const row=Math.floor(index/3)
       const x=-1.15+col*1.15
       const z=-.65+row*1.3
-      return <ConstructionSite key={build.id||index} build={build} position={[x,.15,z]} emergence={emergence}/>
+      return <ConstructionSite key={build.id||index} build={build} position={[x,.15,z]} emergence={emergence} onEnter={()=>build.id&&onBuildEnter?.(build.id)}/>
     })}
   </group>
 }
@@ -245,7 +246,7 @@ function CapabilityFixture({part,index,baseY}:{part:BuildPart;index:number;baseY
   </group>
 }
 
-function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position:[number,number,number];emergence:number}){
+function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;position:[number,number,number];emergence:number;onEnter?:()=>void}){
   const pulse=useRef<THREE.MeshBasicMaterial>(null)
   const progress=Math.max(0,Math.min(100,build.progress||0))
   const phase=progress<15?'FOUNDATION':progress<42?'FRAME':progress<70?'STRUCTURE':progress<92?'INTEGRATION':'COMMISSIONING'
@@ -259,7 +260,7 @@ function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position
     const wave=.35+Math.sin(clock.getElapsedTime()*2.1+progress*.03)*.18
     pulse.current.opacity=Math.max(.04,wave*Math.min(1.4,emergence)*(.35+progress/160))
   })
-  return <group position={position}>
+  return <group position={position} onClick={event=>{event.stopPropagation();onEnter?.()}}>
     <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#1c2c37" roughness={.86}/></mesh>
     {progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
     {walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
@@ -280,6 +281,7 @@ function ConstructionSite({build,position,emergence}:{build:ActiveBuild;position
       <Crane height={2.2} speed={speed}/>
     )}
     <Text position={[0,Math.max(1.1,height+.45),.48]} fontSize={.075} color="#f5d49d" anchorX="center">{speed>1.01?`${phase} · ×${speed.toFixed(2)}`:phase}</Text>
+    <Text position={[0,Math.max(1.24,height+.63),.48]} fontSize={.068} maxWidth={1.05} color="#ffffff" anchorX="center">{(build.title||'BUILD').slice(0,30)}</Text>
   </group>
 }
 
@@ -368,11 +370,12 @@ function RouteNetwork({count,vitality,currentStrength}:{count:number;vitality:nu
 }
 
 function DistrictPlot({
-  district,active,onSelect,marketLevel,marketBuildProgress,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,activeBuilds,emergence,
+  district,active,onSelect,onBuildEnter,marketLevel,marketBuildProgress,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,activeBuilds,emergence,
 }:{
   district:District
   active:boolean
   onSelect:()=>void
+  onBuildEnter?:(id:string)=>void
   marketLevel:number
   marketBuildProgress:number
   enterpriseLevel:number
@@ -397,7 +400,7 @@ function DistrictPlot({
   return <group position={position}>
     {clickable}
     {district.key==='command'&&<CommandHall active={active}/>}
-    {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence}/>} 
+    {district.key==='builds'&&<ConstructionYard activeBuilds={activeBuilds} emergence={emergence} onBuildEnter={onBuildEnter}/>} 
     {district.key==='business'&&<MarketDistrict level={marketLevel} buildProgress={marketBuildProgress} active={active}/>}
     {district.key==='enterprise'&&<EnterpriseKeep level={enterpriseLevel} active={active} position={enterprisePosition} approved={enterpriseApproved} enterpriseName={enterpriseName}/>}
     {district.key==='sound'&&<SoundPavilion active={active}/>}
@@ -465,7 +468,7 @@ function FormationSupplyRing({activeBuilds}:{activeBuilds:ActiveBuild[]}){
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -489,6 +492,7 @@ function Scene({
   presence:React.MutableRefObject<Presence>
   onNearby:(label:string)=>void
   onSystemEnter?:(id:string)=>void
+  onBuildEnter?:(id:string)=>void
 }){
   return <>
     <color attach="background" args={['#070b10']}/>
@@ -511,6 +515,7 @@ function Scene({
       district={d}
       active={d.key===activeSurface}
       onSelect={()=>onSurfaceChange(d.key)}
+      onBuildEnter={onBuildEnter}
       marketLevel={marketLevel}
       marketBuildProgress={marketBuildProgress}
       enterpriseLevel={enterpriseLevel}
@@ -547,7 +552,7 @@ function Scene({
 }
 
 export function ClientFileFolder3D({
-  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,navigationEnabled=true,
+  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,navigationEnabled=true,
   marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
 }:{
   activeSurface:DistrictKey
@@ -556,6 +561,7 @@ export function ClientFileFolder3D({
   liveSystems:LiveSystem[]
   premiumSound:boolean
   onSystemEnter?:(id:string)=>void
+  onBuildEnter?:(id:string)=>void
   navigationEnabled?:boolean
   visibleSurfaceKeys?:DistrictKey[]
   marketLevel?:number
@@ -692,7 +698,7 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter}
         />
       </AdaptiveCanvas>
     </div>
