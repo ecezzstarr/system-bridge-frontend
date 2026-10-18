@@ -533,6 +533,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           onSurfaceChange={(next) => enterSurface(next)}
           navigationEnabled={!panelOpen}
           onSystemEnter={id=>{if(!systems.some((s:any)=>s.id===id&&s.status==='active'))return;setSelectedSystemId(id);setSelectedBuildId('');setSurface('builds');setFormationOpen(false);setPanelOpen(true)}}
+          onStudioEnter={district=>travelToStudio(district)}
           onBuildEnter={id=>{
             if(!activeBuilds.some((build:any)=>build.id===id))return
             setSelectedBuildId(id)
