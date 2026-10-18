@@ -27,7 +27,7 @@ for(const blueprint of sectorCatalog.INSTITUTIONAL_BLUEPRINTS){
 }
 for(const regulated of ['clinic_operations','hospital_operations_hub','public_health_coordination','medicine_supply_planning','national_systems_architecture','emergency_preparedness_centre','civic_identity_architecture']){
  const detail=sectorCatalog.INSTITUTIONAL_BLUEPRINTS.find(blueprint=>blueprint[0]===regulated)[4]
- assert(/not|no |without /i.test(detail),'Restricted institutional blueprint must explain what it does not authorize: '+regulated)
+ assert(/not|no |without |never /i.test(detail),'Restricted institutional blueprint must explain what it does not authorize: '+regulated)
 }
 for(const key of ['hospital_system','public_administration','market_infrastructure','agricultural_network','education_network','transportation_network','utility_infrastructure','emergency_coordination']){
  assert(platform.isFileFolderPlatformKind(key),'New sector project template exists: '+key)
