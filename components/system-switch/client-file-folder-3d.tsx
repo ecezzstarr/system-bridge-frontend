@@ -8,6 +8,7 @@ import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
 import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
+import { FileFolderScenery,FileFolderFacilities,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
 type District={key:DistrictKey;label:string;tone:'sky'|'violet'|'emerald'|'amber'|'rose'}
@@ -490,7 +491,7 @@ function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -515,16 +516,24 @@ function Scene({
   onNearby:(label:string)=>void
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
+  onStudioEnter?:(key:FormationStation)=>void
 }){
   return <>
-    <color attach="background" args={['#070b10']}/>
-    <fog attach="fog" args={['#070b10',14,29]}/>
-    <ambientLight intensity={.52} color="#ccecff"/>
+    <color attach="background" args={['#101d29']}/>
+    <fog attach="fog" args={['#101d29',21,52]}/>
+    <ambientLight intensity={.68} color="#ccecff"/>
+    <hemisphereLight args={["#b6d7ee","#16312b",1.18]}/>
     <directionalLight position={[5,11,6]} intensity={3.2} color="#e0f2fe" castShadow/>
     <pointLight position={[-6,4,-4]} intensity={7} color="#fb923c" distance={12}/>
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
     <StoneGround/>
+    <FileFolderScenery formationCount={activeBuilds.length}/>
+    <FileFolderFacilities
+      marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
+      enterpriseReady={enterpriseApproved}
+      onStudioEnter={onStudioEnter}
+    />
     <WaterChannel position={[0,-.05,-5.5]} rotation={Math.PI/2} length={10.5}/>
     <WaterChannel position={[0,-.05,5.55]} rotation={Math.PI/2} length={9.5}/>
 
@@ -563,10 +572,14 @@ function Scene({
     <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby}
       obstacles={[
         ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:DISTRICT_BODY_RADIUS})),
+        ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({x:FILE_FOLDER_STATION_POSITIONS[key][0],z:FILE_FOLDER_STATION_POSITIONS[key][2],radius:.74})),
         ...liveSystems.slice(0,12).map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[
         ...districts.map(d=>({id:d.key,label:d.label,position:POSITIONS[d.key],enter:()=>onSurfaceChange(d.key)})),
+        ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({
+          id:key,label:key.replaceAll('_',' '),position:FILE_FOLDER_STATION_POSITIONS[key],enter:()=>onStudioEnter?.(key)
+        })),
         ...liveSystems.slice(0,12).filter(s=>s.id).map((s,i,all)=>({id:s.id!,label:s.title||'Built system',position:systemWorldPosition(i,all.length),enter:()=>onSystemEnter?.(s.id!)})),
       ]}
     />
@@ -574,7 +587,7 @@ function Scene({
 }
 
 export function ClientFileFolder3D({
-  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,navigationEnabled=true,presenceKey='',
+  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,onStudioEnter,navigationEnabled=true,presenceKey='',
   marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
 }:{
   activeSurface:DistrictKey
@@ -584,6 +597,7 @@ export function ClientFileFolder3D({
   premiumSound:boolean
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
+  onStudioEnter?:(key:FormationStation)=>void
   navigationEnabled?:boolean
   presenceKey?:string
   visibleSurfaceKeys?:DistrictKey[]
@@ -746,7 +760,7 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter}
         />
       </AdaptiveCanvas>
     </div>
