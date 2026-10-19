@@ -108,6 +108,7 @@ export async function POST(request:NextRequest){
     const userId=String(body.userId||'')
     const functionTitle=String(body.functionTitle||'Enterprise Legion').trim().slice(0,255)||'Enterprise Legion'
     const profitParticipation=String(body.profitParticipation||'').trim().slice(0,4000)||null
+    if(!profitParticipation||profitParticipation.length<5)return NextResponse.json({success:false,error:'Specify earnings, commission or profit participation terms before offering exclusive Legion employment.'},{status:400})
     const note=String(body.note||'').trim().slice(0,2000)||null
     const [candidate]=await sql`
       SELECT u.id,u.name,u.email,u.role
@@ -142,6 +143,7 @@ export async function POST(request:NextRequest){
     const applicationId=String(body.applicationId||'')
     const functionTitle=String(body.functionTitle||'Enterprise Legion').trim().slice(0,255)||'Enterprise Legion'
     const profitParticipation=String(body.profitParticipation||'').trim().slice(0,4000)||null
+    if(!profitParticipation||profitParticipation.length<5)return NextResponse.json({success:false,error:'Specify earnings, commission or profit participation terms before offering exclusive Legion employment.'},{status:400})
     const [application]=await sql`
       SELECT la.*,u.name,u.email,u.role,u.subscription_status,u.subscription_expiry,u.is_subscription_exempt
       FROM legion_lifestyle_applications la
