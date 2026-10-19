@@ -4,7 +4,6 @@ import { useCallback,useEffect,useRef,useState } from 'react'
 import { ArrowLeft, Send, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { visiblePoll } from '@/lib/visible-poll'
-import { useSearchParams } from 'next/navigation'
 
 type Department = 'mandate'|'forensic'|'lawyer'
 type Thread={requesterId:string;name:string;username:string;role:string;lastMessageAt:string;messageCount:number}
@@ -12,7 +11,6 @@ type Message={id:string;userId:string;sender:string;senderRole:string;content:st
 const names:Record<Department,string>={mandate:'Mandate',forensic:'Forensics',lawyer:'Attorney'}
 export default function MandateGuidanceInbox(){
   const {user,token,isInitialized}=useAuth()
-  const search=useSearchParams()
   const [departments,setDepartments]=useState<Department[]>([])
   const [department,setDepartment]=useState<Department>('mandate')
   const [threads,setThreads]=useState<Thread[]>([])
@@ -33,14 +31,14 @@ export default function MandateGuidanceInbox(){
         if(!mounted)return
         const next=(data.activeDepartments||[]) as Department[]
         setDepartments(next)
-        const preferred=search.get('department') as Department|null
+        const preferred=typeof window!=='undefined' ? new URLSearchParams(window.location.search).get('department') as Department|null : null
         if(preferred&&next.includes(preferred))setDepartment(preferred)
         else if(next.length)setDepartment(next[0])
         setLoading(false)
       })
       .catch(e=>{if(mounted){setError(String(e));setLoading(false)}})
     return()=>{mounted=false}
-  },[token,header,search])
+  },[token,header])
   const loadThreads=useCallback(async()=>{
     if(!token||!departments.includes(department))return
     try{
