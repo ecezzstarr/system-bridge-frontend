@@ -8,7 +8,7 @@ type Manager={
   name:string;username:string;email:string;is_active:boolean;role:string;monthly_salary_ngn:string
 }
 type Order={id:string;product:'agility'|'electrolyte'|'daisy';variant_id:string;stage:string;payment_status:string;
-  package_count:number;destination:string;buying_agent:string;manager_id:string|null;task_id:string|null}
+  package_count:number;destination:string;buying_agent:string;manager_id:string|null;task_id:string|null;preparation_released_at?:string|null}
 const productLabels={agility:'Agility',electrolyte:'Electrolyte',daisy:'Daisy Pastries'}
 export default function AdminFoodPreparationManagerPage(){
   const {user,token,isInitialized}=useAuth()
@@ -112,6 +112,7 @@ export default function AdminFoodPreparationManagerPage(){
             <h3 className="mt-2 font-black">{order.variant_id}</h3>
             <p className="mt-2 max-w-lg text-xs text-stone-400">To: {order.buying_agent||'Agent'} · {order.destination||'Destination on original order'}</p>
             {order.task_id&&<p className="mt-1 text-[10px] text-emerald-200">Already assigned · change Manager to reassign</p>}
+            {order.product==='daisy'&&!order.preparation_released_at&&<p className="mt-2 text-xs text-amber-200">Administration must confirm the Agent-reported cake payment first. <Link href="/admin/cakes" className="underline">Open Daisy Pastries verification</Link></p>}
           </div>
           <div className="flex flex-wrap items-end gap-2">
             <label className="text-xs text-stone-300">Manager
@@ -122,7 +123,7 @@ export default function AdminFoodPreparationManagerPage(){
                 {approved.map(person=><option value={person.id} key={person.id}>{person.name||person.username}</option>)}
               </select>
             </label>
-            <button type="button" disabled={busy===order.id||!(assignees[order.product+order.id]||order.manager_id)}
+            <button type="button" disabled={busy===order.id||!(assignees[order.product+order.id]||order.manager_id)||(order.product==='daisy'&&!order.preparation_released_at)}
               onClick={()=>void update({action:'assign',managerId:assignees[order.product+order.id]||order.manager_id,product:order.product,orderId:order.id},order.id,'Paid food order assigned to selected Manager.')}
               className="bg-amber-300 px-4 py-3 text-xs font-black text-black disabled:opacity-40">Assign order</button>
           </div>
