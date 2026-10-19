@@ -507,6 +507,22 @@ function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>
   return null
 }
 
+function CloudDevelopmentLevel(){
+  // A suspended sky-level Client construction island. These are part of the
+  // territory, not fabricated participants or active customer buildings.
+  return <group>
+    {Array.from({length:20},(_,i)=>{
+      const angle=i/20*Math.PI*2
+      const radius=10.2+(i%3)*.55
+      const x=Math.cos(angle)*radius,z=Math.sin(angle)*radius
+      return <mesh key={i} position={[x,-1.55-(i%3)*.16,z]} scale={[2.2+(i%3)*.3,.68,1.7+(i%2)*.4]}>
+        <sphereGeometry args={[1,10,8]}/>
+        <meshStandardMaterial color="#bedde6" emissive="#263d52" emissiveIntensity={.1} transparent opacity={.40} roughness={1} depthWrite={false}/>
+      </mesh>
+    })}
+  </group>
+}
+
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
   marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,constructionPage,systemPage,otherLords,
@@ -551,6 +567,7 @@ function Scene({
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
     <StoneGround/>
+    <CloudDevelopmentLevel/>
     <FileFolderScenery formationCount={activeBuilds.length}/>
     <FileFolderFacilities
       marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
@@ -736,7 +753,7 @@ export function ClientFileFolder3D({
       ? "absolute left-3 top-[7.5rem] z-10 hidden max-w-[72%] sm:block border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-5 sm:top-[8.5rem] sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
       : "absolute left-3 top-3 z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
     }>
-      <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Client-owned Business World</p>
+      <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Lord / Lady · Cloud File Folder Construction World</p>
       <p className="mt-1 text-xs font-black text-white">{businessName}</p>
       <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">{businessSector ? `${businessSector} · ` : ''}You decide what systems exist here. WEAVE hosts, organizes and connects them through your Customer Door.</p>
       <p className="mt-2 text-[9px] text-sky-200" data-client-cloud-live-presence>{cloudOnline?`Cloud multiplayer · ${otherLords.length+1} Lord/Lady avatar${otherLords.length===0?'':'s'} present`:'Cloud multiplayer reconnecting…'}</p>
