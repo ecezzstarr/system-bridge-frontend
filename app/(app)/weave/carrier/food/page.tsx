@@ -117,8 +117,8 @@ export default function AgentFoodCarrierConsole(){
     </section>
     <section className="mt-7 border border-white/10 bg-black/20 p-5 sm:p-6">
       <p className="text-[9px] font-black uppercase tracking-[.22em] text-emerald-300">Customer receiving account</p>
-      <h2 className="mt-1 text-2xl font-black">CUSTOMERS PAY YOU</h2>
-      <p className="mt-2 text-xs leading-5 text-slate-500">This is separate from the OPay account you use to buy WEAVE stock. Carrier shows this account to customers after they choose their order.</p>
+      <h2 className="mt-1 text-2xl font-black">WEAVE FOOD & DAISY CUSTOMERS PAY YOU</h2>
+      <p className="mt-2 text-xs leading-5 text-slate-500">This account is for Agility, Electrolyte and Daisy Pastries customer orders only. Farm-to-Family buyers pay WEAVE instead; Administration verifies and holds their payment and releases the seller payout after buyer receipt, deducting exactly one ₦1,000 seller fee per completed farm order. Never send a farm buyer to this Agent receiving account.</p>
       <div className="mt-4 grid gap-3 md:grid-cols-2"><Input value={bankName} onChange={e=>setBankName(e.target.value)} placeholder="Bank / OPay name"/><Input value={accountNumber} onChange={e=>setAccountNumber(e.target.value)} placeholder="Account number"/><Input value={accountName} onChange={e=>setAccountName(e.target.value)} placeholder="Account name"/><Input value={paymentNote} onChange={e=>setPaymentNote(e.target.value)} placeholder="Payment note · optional"/></div>
       <Button onClick={saveAccount} disabled={moving==='account'} className="mt-4 bg-emerald-300 font-black text-slate-950 hover:bg-emerald-200">SAVE CUSTOMER RECEIVING ACCOUNT</Button>
     </section>
