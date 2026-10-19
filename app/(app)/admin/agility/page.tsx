@@ -1,4 +1,5 @@
 'use client'
+import { AgentFoodPricingInfo } from '@/components/weave-food/food-program-info'
 
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
@@ -223,6 +224,7 @@ export default function AdminAgilityPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-7">
+      <AgentFoodPricingInfo product="agility"/>
       <div>
         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-300">Administration · Agility</p>
         <h1 className="mt-2 text-3xl font-black text-white">Morning Food Company Fulfillment</h1>
