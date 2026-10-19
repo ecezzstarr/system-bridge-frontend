@@ -9,6 +9,10 @@ const route = read('app/(app)/enterprise/legions-notebook/page.tsx')
 const recruitment = read('app/(app)/client/enterprise/legions/page.tsx')
 const lifestyle = read('app/(app)/weave/lifestyles/legion/page.tsx')
 const districts = read('lib/weave-role-districts.ts')
+const clientApi=read('app/api/client/enterprise/legion-market/route.ts')
+const workerApi=read('app/api/weave/lifestyles/legion/route.ts')
+const employment=read('lib/legion-employment.ts')
+
 const environments = read('lib/weave-environments.ts')
 
 for (const entry of ['The Lord or Lady Is the General', 'Build Legion Quarters', 'The Agent Enters Through Stability', 'The Bridger Enters Through Hope', 'Set the Terms Before Allegiance', 'Two Sides Confirm the Appointment', 'From Position to Exclusive Legion', 'Carry the Customer Door', 'Share the Value by Record', 'The Legion Returns From Service']) {
@@ -28,4 +32,12 @@ assert.ok(world.includes("['client', 'agent', 'bridger', 'admin']"), 'Authorized
 assert.ok(route.includes('EnterpriseLegionsNotebookWorld'), 'Notebook route renders real book')
 for (const surface of [recruitment, lifestyle, districts]) assert.ok(surface.includes('/enterprise/legions-notebook'), 'Missing entry link')
 assert.ok(environments.includes("key: 'enterprise-legions-notebook'"), 'Notebook needs environment registration')
+assert.ok(clientApi.includes("status='offered'")&&clientApi.includes("awaitingWorkerAcceptance:true"),'Client cannot unilaterally activate applicant without consent')
+assert.ok(!clientApi.includes("activateLegionEmployment(sql"),'Employer cannot bypass final worker agreement')
+assert.ok(workerApi.includes("action==='accept_offer'")&&workerApi.includes("expectedStatus=action==='accept_offer'?'offered':'pending'"),'Worker accepts actual Client offer')
+assert.ok(workerApi.includes('application.profit_participation'),'Worker must receive written compensation terms')
+assert.ok(employment.includes("status IN ('pending','offered')"),'Accepted offer is archived during activation')
+assert.ok(recruitment.includes('Employment offer sent · awaiting agreement'),'Client is shown offer-not-active state')
+assert.ok(lifestyle.includes('Accept these terms and become a Legion'),'Agent and Bridger can affirm final terms')
+assert.ok(recruitment.includes('/api/client/enterprise/legions/release')&&lifestyle.includes("action:'release_legion'"),'Both sides can terminate a recorded appointment')
 console.log('Enterprise Legions notebook static checks passed')
