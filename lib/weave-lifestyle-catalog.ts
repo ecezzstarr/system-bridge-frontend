@@ -1,11 +1,13 @@
 export const ACE_LIFESTYLE = 'ace' as const
 export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger' as const
 export const DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager' as const
+export const FARM_TO_FAMILY_LIFESTYLE = 'farm_to_family' as const
 
 export type WeaveLifestyleKey =
   | typeof ACE_LIFESTYLE
   | typeof AGENTIC_BRIDGER_LIFESTYLE
   | typeof DISTRIBUTION_MANAGER_LIFESTYLE
+  | typeof FARM_TO_FAMILY_LIFESTYLE
 
 export const WEAVE_LIFESTYLE_CATALOG = {
   [ACE_LIFESTYLE]: {
@@ -33,6 +35,17 @@ export const WEAVE_LIFESTYLE_CATALOG = {
       { label: 'Bridge AI', href: '/bridger/bridge-ai', purpose: 'Use Bridger assistance while preserving human authority.' },
       { label: 'Arena', href: '/arena', purpose: 'Enter the Ace game ground with Agentic-Bridger standing.' },
       { label: 'Carrier', href: '/weave/carrier', purpose: 'Distribute the Ace stream outward.' },
+    ],
+  },
+  [FARM_TO_FAMILY_LIFESTYLE]: {
+    key: FARM_TO_FAMILY_LIFESTYLE,
+    label: 'Farm to Family',
+    route: '/weave/lifestyles/food',
+    roles: ['agent', 'bridger'],
+    summary: 'Farmers use their Agent position to offer real surplus at farm prices. Agents and active Bridgers buy food directly for households across Nigerian states, with transport quoted before buyer acceptance.',
+    environments: [
+      { label: 'Farmer Food Exchange', href: '/weave/lifestyles/food', purpose: 'Browse live produce, request food, and carry accepted cross-state orders.' },
+      { label: 'My Farm', href: '/weave/lifestyles/food', purpose: 'Agents who farm list surplus and negotiate household delivery.' },
     ],
   },
   [DISTRIBUTION_MANAGER_LIFESTYLE]: {
