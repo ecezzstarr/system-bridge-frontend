@@ -30,7 +30,11 @@ export async function POST(request:NextRequest){
     const found=await db.query('SELECT * FROM weave_trx_sale_orders WHERE id=$1::uuid FOR UPDATE',[id])
     const sale=found.rows[0]
     if(!sale){await db.query('ROLLBACK');return NextResponse.json({error:'Sale not found'},{status:404})}
-    if(action==='quote'){\n      if(!compliantTrxSaleEnabled()||sale.payment_method!=='flutterwave'){\n        await db.query('ROLLBACK')\n        return NextResponse.json({error:'TRX sale bank quotes are disabled until Weave VASP authorization and explicit Flutterwave merchant approval are verified. Wise is not an allowed crypto sale payment rail.'},{status:403})\n      }
+    if(action==='quote'){
+      if(!compliantTrxSaleEnabled()||sale.payment_method!=='flutterwave'){
+        await db.query('ROLLBACK')
+        return NextResponse.json({error:'TRX sale bank quotes are disabled until Weave VASP authorization and explicit Flutterwave merchant approval are verified. Wise is not an allowed crypto sale payment rail.'},{status:403})
+      }
       const amount=Number(body.paymentAmount)
       const currency=String(body.paymentCurrency||'').trim().toUpperCase()
       const instructions=String(body.paymentInstructions||'').trim().slice(0,2000)
