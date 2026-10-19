@@ -12,7 +12,7 @@ export function PublicFlameEventMobile() {
   const [message,setMessage]=useState('')
   useEffect(()=>{
     let mounted=true
-    return visiblePoll(async signal=>{
+    const stop=visiblePoll(async signal=>{
       try {
         const response=await fetch('/api/public/client-market',{signal,cache:'no-store'})
         const body=await response.json()
@@ -25,6 +25,7 @@ export function PublicFlameEventMobile() {
         if(mounted&&!signal.aborted)setMessage('Public Customer Door updates are temporarily unavailable. Try again shortly.')
       }
     },12000,true)
+    return ()=>{mounted=false;stop()}
   },[])
   return <main className="min-h-dvh bg-[#05182a] text-white" data-public-flame-avatar-world>
     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-300/15 px-3 py-3">
