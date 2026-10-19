@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import type { PoolClient } from 'pg'
 import { getAuthUser } from '@/lib/auth-api'
@@ -288,6 +289,7 @@ export async function POST(request: NextRequest) {
       }
 
       await db.query('COMMIT')
+      await notifyAdminOrder({orderId:String(placement.id),event:'allocated',department:'agent',subject:'Agent outlet stock placement',detail:`${user.name||'Agent'} placed ${cartonCount} cartons of ${order.variant_id} with an outlet. Agreed ₦${agreedAmountNgn.toLocaleString()} (${supplyMode})`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||'Agent'})
       return NextResponse.json({ success: true, placement }, { status: 201 })
     } catch (error) {
       if (db) await db.query('ROLLBACK').catch(() => {})
