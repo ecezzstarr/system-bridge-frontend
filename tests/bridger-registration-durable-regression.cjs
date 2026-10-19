@@ -23,7 +23,7 @@ const compiled=ts.transpileModule(src,{compilerOptions:{
 }}).outputText
 const response=(body,opts={})=>({status:opts.status||200,body,async json(){return body}})
 const validId='12345678-1234-4234-9234-123456789abc'
-async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false}={}){
+async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,recover=false}={}){
   const commands=[]
   let released=0
   const client={
@@ -45,6 +45,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false}
   }
   const external=async (strings,...args)=>{
     const statement=strings.join('?')
+    if(recover&&statement.includes('JOIN users u ON u.id=dc.used_by'))return [{id:validId,email:'new@sample.test',username:'newmember',name:'New Member',role,departmental_code:role.toUpperCase(),referral_code:'WEAVE-CODE',password_hash:'$2a$10$hashed'}]
     if(statement.includes('SELECT id FROM users WHERE email')||
        statement.includes('SELECT id FROM users WHERE username'))return []
     return []
@@ -53,9 +54,9 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false}
     'next/server':{NextResponse:{json:response}},
     '@/lib/db':{sql:external,getPool:()=>({connect:async()=>client})},
     'node:crypto':require('node:crypto'),
-    'bcryptjs':{hash:async()=>'$2a$10$hashed'},
+    'bcryptjs':{hash:async()=>'$2a$10$hashed',compare:async(password,hash)=>password==='strongpassword'&&hash==='$2a$10$hashed'},
     '@/lib/bridger-referral-commission':{ensureBridgerReferralColumns:async()=>{}},
-    '@/lib/departmental-codes':{validateDepartmentalCode:async()=>({valid:true})},
+    '@/lib/departmental-codes':{validateDepartmentalCode:async()=>recover?{valid:false,error:'Code has already been used.'}:{valid:true}},
     '@/lib/weave-infrastructure':{getDivineShieldState:async()=>({active:false})},
     '@/lib/user-referral':{buildUserReferralCode:()=> 'WEAVE-CODE',resolveReferralOwnerByCode:async()=>null},
     '@/lib/referral-bonus':{queueReferralSignupBonus:async()=>{}},
@@ -107,6 +108,13 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false}
   assert.equal(duplicate.result.body.code,'ACCOUNT_ALREADY_EXISTS')
   assert(duplicate.commands.includes('ROLLBACK'))
   assert(!duplicate.commands.includes('COMMIT'))
+
+  const recovered=await runSignup({recover:true})
+  assert.equal(recovered.result.status,200)
+  assert.equal(recovered.result.body.recovered,true)
+  assert.equal(recovered.result.body.user.role,'bridger')
+  assert(!recovered.commands.some(x=>x.startsWith('UPDATE departmental_codes')),'Recovery must never consume or reassign the ticket')
+  assert(!recovered.commands.some(x=>x.startsWith('INSERT INTO users')),'Recovery must not create a second account')
 
   const agent=await runSignup({role:'agent'})
   assert.equal(agent.result.status,200)
