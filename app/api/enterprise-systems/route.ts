@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
@@ -77,14 +78,7 @@ export async function POST(request: NextRequest) {
       RETURNING id,status,quoted_price_gbp,quoted_flame_coin,gbp_per_flame_coin,rate_source,created_at
     `
 
-    await sql`
-      INSERT INTO notifications (user_id,type,title,content,from_user_name,link)
-      SELECT id,'enterprise_system_request','Enterprise system acquisition request',
-        ${`${user.name} requested ${system.name} through the Enterprise Systems Exchange.`},
-        'WEAVE Enterprise','/admin/enterprise-systems'
-      FROM users
-      WHERE role='admin' AND COALESCE(is_active,true)=true
-    `
+    await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'client',subject:'Enterprise system acquisition request',detail:`${user.name||'Client'} requested ${system.name} through the Enterprise Systems Exchange; GBP ${Number(system.price_gbp).toLocaleString()} quoted`,adminPath:'/admin/enterprise-systems',actorId:user.id,actorName:user.name||'Client'})
 
     return NextResponse.json({
       success: true,
