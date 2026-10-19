@@ -14,6 +14,8 @@ export type EnterpriseLegionPage = {
 
 export const ENTERPRISE_LEGION_RULES = [
   'The Client owns the enterprise, File Folder, Customer Door, pricing and products.',
+  'The Client monthly subscription is 600 Flame Coin. Registration gender assigns Lord for male and Lady for female when the paid month begins.',
+  'Real Client product sales fund expenses, agreed Legion compensation, operations and expansion; there is no guaranteed surplus.',
   'Lord or Lady is the Client title; General means enterprise leadership, never military authority.',
   'Only an approved enterprise with active Legion Quarters recruits Legions.',
   'Agents qualify through their active position; Bridgers require active subscribed Lifestyle standing.',
@@ -47,7 +49,7 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "audience": "client",
     "title": "The Lord or Lady Is the General",
     "story": "The field begins with its builder. The General gives the enterprise its direction, just as a leader once gave a camp its purpose.",
-    "meaning": "When Administration approves the enterprise, the Client takes the Lord or Lady position requested for their identity and automatically becomes the General of their own enterprise—the equivalent of its founder and CEO. They own the business, brand, products, pricing, and Customer Door; Legion workers do not become owners merely by working there.",
+    "meaning": "After the Client pays the 600 Flame Coin monthly subscription, registered male gender assigns Lord and registered female gender assigns Lady. The Client then stands as the General (CEO) of their own enterprise. Separate business-plan approval is required to open the Enterprise Dream Workshop and recruit Legions. They own the business, brand, products, pricing, and Customer Door; Legion workers do not become owners merely by working there.",
     "action": [
       "Name the enterprise and what it will produce or provide.",
       "Define what belongs to the Client and what work can be delegated."
@@ -63,8 +65,8 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "phase": "Client · Blueprint",
     "audience": "client",
     "title": "Draw the Blueprint",
-    "story": "No competent general marches without knowing the route. Here the route is a business plan, not a battlefield.",
-    "meaning": "List the product or service, customer, delivery method, costs, available stock, responsibilities, and how results will be recorded.",
+    "story": "No competent general marches without knowing the route. Here the route is a business plan, not a battlefield. A Client begins with their own product or service, not promised wealth.",
+    "meaning": "List the Client's own product or service, target customers, selling price, production and delivery costs, worker earnings, operating expenses, expected surplus, and how results will be recorded. Any excess from real sales may support the Client's livelihood, continued operation and WEAVE expansion.",
     "action": [
       "Write what the business sells and why customers need it.",
       "Set stock or service capacity, delivery plan, and customer support.",
@@ -296,7 +298,7 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "audience": "all",
     "title": "Serve the Customer",
     "story": "A banner matters only if people receive the value promised beneath it.",
-    "meaning": "Customer interest becomes a recorded order, with payment verification, fulfillment responsibility, status updates and support. The Client remains accountable for the product or service.",
+    "meaning": "Customer interest becomes a recorded order, with payment verification, fulfilment responsibility, status updates and support. The Client owns the products and enterprise earnings; they must pay actual costs and agreed Legion compensation before treating the remaining amount as operating surplus.",
     "action": [
       "Confirm the actual customer order and price.",
       "Verify payment status before treating an order as paid.",
@@ -332,7 +334,7 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "audience": "client",
     "title": "The General Watches the Work",
     "story": "The wise leader studies the field, not only the applause.",
-    "meaning": "The Client can review Legion posts, order counts, paid orders, productivity, customer issues and recruitment capacity within the tools actually available.",
+    "meaning": "The Client can review Legion posts, order counts, paid orders, expenses, worker earnings, operating surplus, customer issues and recruitment capacity within the tools actually available. WEAVE helps the Client use proceeds from their own products to maintain and expand the enterprise.",
     "action": [
       "Inspect active Legions and the work they have completed.",
       "Resolve customer and worker problems without guessing.",
