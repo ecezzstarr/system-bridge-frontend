@@ -29,7 +29,7 @@ export async function POST(request:NextRequest){
     if(!isFlameCoinPaymentMethod(paymentMethod))
       return NextResponse.json({error:'Choose bank, card, TRX, USDT or BTC to request Flame Coin'},{status:400})
     if(buyerName.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail)
-       ||!/^[1-9]\d{0,8}(?:\.\d{1,8})?$/.test(String(body.amountFlameCoin||''))||!validFlameCoinAmount(amount)){
+       ||!/^(?:[1-9]\d{0,8}|0)(?:\.\d{1,8})?$/.test(String(body.amountFlameCoin||''))||!validFlameCoinAmount(amount)){
       return NextResponse.json({error:'Name, valid email and a positive Flame Coin amount required'},{status:400})
     }
     const provider='manual_forensics'
