@@ -1,4 +1,5 @@
 'use client'
+import { FarmToFamilySettlementInfo } from '@/components/weave-food/food-program-info'
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ShieldCheck, RefreshCw } from 'lucide-react'
@@ -36,6 +37,7 @@ export default function AdministrationFoodBridge(){
   if(!isInitialized)return <main className="p-8 text-white">Opening Food Bridge verification…</main>
   if(user?.role!=='admin')return <main className="p-8 text-white">Administration required</main>
   return <main className="mx-auto max-w-6xl space-y-6 p-5 pb-16 text-white" data-food-admin-review>
+    <FarmToFamilySettlementInfo audience="admin"/>
     <header className="border-b border-amber-300/20 pb-6">
       <p className="flex items-center gap-2 text-xs text-amber-200"><ShieldCheck className="h-4 w-4"/> Administration · Flame Event</p>
       <h1 className="mt-3 text-3xl font-black">Farmer Supply Verification</h1>
