@@ -5,6 +5,7 @@ import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { ensureLegionEmploymentSchema, activateLegionEmployment } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
+import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
 
 async function resolveClient(request:NextRequest){
   const token=request.headers.get('authorization')?.replace(/^Bearer\s+/i,'').trim()||null
@@ -42,6 +43,7 @@ export async function GET(request:NextRequest){
   if(!enterprise)return NextResponse.json({success:false,error:'Build and activate Legion Quarters inside an approved enterprise before recruiting Legions.'},{status:409})
 
   const capacity=await capacityState(clientId)
+  const monthlyStanding=await getClientMonthlyStanding(clientId)
   const candidates=await sql`
     SELECT u.id,u.name,u.username,u.role,u.subscription_status,u.subscription_expiry,
            EXISTS(
@@ -84,7 +86,7 @@ export async function GET(request:NextRequest){
     ORDER BY l.accepted_at DESC NULLS LAST,l.created_at DESC
   `
 
-  return NextResponse.json({success:true,enterprise,capacity,candidates,applications,legions})
+  return NextResponse.json({success:true,enterprise,capacity,candidates,applications,legions,subscriptionActive:monthlyStanding.active})
 }
 
 export async function POST(request:NextRequest){
@@ -94,6 +96,8 @@ export async function POST(request:NextRequest){
   await ensureLegionEmploymentSchema(sql)
   const enterprise=await getEnterprise(clientId)
   if(!enterprise)return NextResponse.json({success:false,error:'Legion Quarters are required before recruitment.'},{status:409})
+  const monthlyStanding=await getClientMonthlyStanding(clientId)
+  if(!monthlyStanding.active)return NextResponse.json({success:false,error:'Renew your 600 Flame Coin Client monthly subscription before recruiting new Legions.'},{status:403})
   const capacity=await capacityState(clientId)
   if(capacity.count>=capacity.capacity)return NextResponse.json({success:false,error:'Legion Quarter capacity is full.'},{status:409})
 
