@@ -126,7 +126,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
         <button type="button" disabled={busy || !registrationGender} onClick={()=>void monthlyAction('complete_registration_gender')} className="mt-3 rounded-full border border-amber-300/30 px-4 py-2 text-xs font-black text-amber-100 disabled:opacity-40">Complete Registration Identity</button>
       </div>}
       {!subscriptionActive && state?.monthlyStanding?.gender && <button type="button" disabled={busy} onClick={()=>void monthlyAction('subscribe')} className="mt-3 rounded-full bg-amber-400 px-5 py-3 text-xs font-black text-slate-950 disabled:opacity-40">Subscribe · 600 Flame Coin / month</button>}
-      <p className="mt-3 text-xs text-slate-400">The enterprise earns from its own real products and services. After costs and agreed worker earnings, remaining funds can support operations and expansion. Sales and profits are not guaranteed.</p>
+      <p className="mt-3 text-xs text-slate-400">The enterprise earns from its own real products and services. After costs and agreed worker earnings, remaining funds can support operations and expansion. Sales and profits are not guaranteed. Customer Door orders are recorded separately and are not automatically credited to the Main Client Wallet; confirmed available wallet funds are required to pay the monthly fee.</p>
     </div>
 
     {!subscriptionActive ? <div className="mt-6 border border-amber-300/20 bg-black/20 p-5 text-sm text-amber-100">Activate the monthly Client subscription before requesting enterprise approval.</div> : approved ? <div className="mt-6 space-y-5">
@@ -160,6 +160,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
         <label className="text-xs text-slate-400 md:col-span-2">Life sustainability plan<textarea value={plan.sustainabilityPlan} onChange={e=>setPlan({...plan,sustainabilityPlan:e.target.value})} rows={5} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white" placeholder="Show how profits can sustain life among the participants rather than only the originating Client."/></label>
         <label className="text-xs text-slate-400">Projected monthly revenue<input type="number" min="0" value={plan.projectedMonthlyRevenue} onChange={e=>setPlan({...plan,projectedMonthlyRevenue:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
         <label className="text-xs text-slate-400">Projected monthly costs<input type="number" min="0" value={plan.projectedMonthlyCosts} onChange={e=>setPlan({...plan,projectedMonthlyCosts:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
+        {plan.projectedMonthlyRevenue!==''&&plan.projectedMonthlyCosts!==''&&<p className="text-xs text-amber-100">Projected monthly operating surplus: {(Number(plan.projectedMonthlyRevenue)-Number(plan.projectedMonthlyCosts)).toLocaleString()} (estimate only). Include product, delivery, Legion compensation, subscription and all operating costs.</p>}
       </div>
       <button disabled={busy} onClick={submit} className="rounded-full bg-amber-500 px-6 py-3 text-xs font-semibold text-black disabled:opacity-40">{busy?'Submitting…':'Submit to Administration'}</button>
     </div>}
