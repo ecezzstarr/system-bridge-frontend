@@ -5,6 +5,7 @@ import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { activateLegionEmployment, ensureLegionEmploymentSchema, getActiveLegionEmployment, releaseLegionEmployment } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
+import {notifyAdministrators} from '@/lib/deposit-notifications'
 import { getClientMonthlyStanding, ensureClientMonthlySchema } from '@/lib/client-monthly-subscription'
 
 async function enterpriseCapacity(clientId:string){
@@ -88,6 +89,11 @@ export async function POST(request:NextRequest){
       subjectType:'enterprise_legion',subjectId:employment.legionId,source:'lifestyle-legion',
       payload:{releasedBy:'worker',clientId:employment.clientId,pendingOrders:result.pendingOrders},
     }).catch(e=>console.error('[Legion release event]',e))
+    if(!result.alreadyReleased)await notifyAdministrators({
+      type:'legion_employment_released',title:'Worker ended exclusive Legion employment',
+      content:`${user.name||baseRole} returned to their underlying ${baseRole} position. ${result.pendingOrders||0} unfinished Client orders remain attached to the enterprise. Reason: ${String(body.reason||'').slice(0,180)}`,
+      link:'/admin/legion-releases',fromUserId:user.id,fromUserName:user.name||'Legion',
+    })
     return NextResponse.json(result)
   }
 
