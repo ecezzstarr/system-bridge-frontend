@@ -1,7 +1,7 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
-import { DAISY_PASTRIES_BRAND,DAISY_PASTRIES_PRICE_BANDS,WEAVE_CAKE_FLAVORS,WEAVE_CAKE_SIZES,WEAVE_CAKE_TYPES,getDaisyPastriesPricePolicy,getWeaveCakeType } from '@/lib/cake-catalog'
+import { DAISY_PASTRIES_BRAND,DAISY_PASTRIES_PRICE_BANDS,WEAVE_CAKE_FLAVORS,WEAVE_CAKE_SIZES,WEAVE_CAKE_TYPES,getDaisyPastriesPricePolicy,getDaisyPastriesAgentEarnings,getWeaveCakeType } from '@/lib/cake-catalog'
 import { createCakePublicToken,ensureCarrierCakeSchema } from '@/lib/carrier-cakes'
 import { getAgentCarrierFoodIdentity,getCarrierFoodAgentPaymentAccount } from '@/lib/carrier-food'
 
@@ -87,16 +87,18 @@ export async function PATCH(request:NextRequest){
       const cakePriceNgn=policy.fixed?policy.minNgn:requestedCakePrice
       const payment=await getCarrierFoodAgentPaymentAccount(user.id)
       if(!payment)return NextResponse.json({error:'Set your Carrier customer receiving account before quoting Daisy Pastries orders'},{status:409})
+      const economics=getDaisyPastriesAgentEarnings(cakePriceNgn)
       const totalNgn=cakePriceNgn+waybillFeeNgn
       const result=await getPool().query(
         `UPDATE carrier_cake_orders SET quoted_price_ngn=$1,waybill_fee_ngn=$2,total_ngn=$3,
+          agent_commission_ngn=$9,weave_share_ngn=$10,
           payment_method='bank_transfer',payment_bank_name=$4,payment_account_number=$5,payment_account_name=$6,
           payment_status='awaiting_payment',status='quoted',quoted_at=NOW(),updated_at=NOW()
          WHERE id=$7::uuid AND agent_id=$8::uuid AND status IN ('quote_requested','quoted') RETURNING *`,
-        [cakePriceNgn,waybillFeeNgn,totalNgn,payment.bank_name,payment.account_number,payment.account_name,orderId,user.id]
+        [cakePriceNgn,waybillFeeNgn,totalNgn,payment.bank_name,payment.account_number,payment.account_name,orderId,user.id,economics.agentCommissionNgn,economics.weaveShareNgn]
       )
       if(!result.rows[0])return NextResponse.json({error:'This Daisy Pastries order can no longer be quoted'},{status:409})
-      return NextResponse.json({success:true,order:result.rows[0],message:'Daisy Pastries quote is now visible to the customer through your Carrier Door.'})
+      return NextResponse.json({success:true,order:result.rows[0],message:'Daisy Pastries quote published. Your earning is ₦1,000 on completion of this paid cake sale; the remainder of the cake price is due to WEAVE, excluding delivery charges.'})
     }
 
     if(action==='record_payment'){
