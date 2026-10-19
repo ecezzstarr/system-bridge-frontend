@@ -32,7 +32,7 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
 }
 
 /** Keep scene/camera state mounted while suspending the render loop. */
-export function AdaptiveCanvas({children,shadows,...props}:ComponentProps<typeof Canvas>){
+export function AdaptiveCanvas({children,shadows,mobileGame=false,...props}:ComponentProps<typeof Canvas>&{mobileGame?:boolean}){
   const host=useRef<HTMLDivElement>(null)
   const readyRef=useRef(false)
   const [ready,setReady]=useState(false)
@@ -48,7 +48,7 @@ export function AdaptiveCanvas({children,shadows,...props}:ComponentProps<typeof
   const active=onscreen&&!budget.hidden&&(!budget.covered||!ready)
   return <div ref={host} style={{width:'100%',height:'100%'}} data-adaptive-canvas={budget.level} data-adaptive-canvas-ready={ready?'true':'false'}>
     <Canvas {...props} frameloop="never" dpr={budget.dpr} shadows={Boolean(shadows)&&budget.shadows}>
-      <FrameDriver active={active} fps={budget.fps} onFirstFrame={markReady}/>
+      <FrameDriver active={active} fps={mobileGame?(budget.level===2?32:budget.level===1?24:12):budget.fps} onFirstFrame={markReady}/>
       {children}
     </Canvas>
   </div>
