@@ -15,10 +15,10 @@ export async function POST(request: NextRequest) {
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
     const body = await request.json()
+    const email = String(body.email || '').trim().toLowerCase()
+    const username = String(body.username || '').trim()
+    const name = String(body.name || '').trim()
     const {
-      email,
-      username,
-      name,
       password,
       role,
       department,
@@ -37,6 +37,13 @@ export async function POST(request: NextRequest) {
 
     if (!email || !username || !name || !password || !role || !department) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || username.length < 3 || username.length > 100 || name.length < 2 || name.length > 255 || typeof password !== 'string' || password.length < 8) {
+      return NextResponse.json({
+        error: 'Enter a valid email, a username of 3–100 characters, a full name, and a password of at least 8 characters.',
+        code: 'INVALID_REGISTRATION_DETAILS',
+      }, { status: 400 })
     }
 
     if (!['agent', 'bridger'].includes(role)) {
@@ -250,7 +257,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[WEAVE] Register error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Registration failed' },
+      { error: 'Registration could not be completed. Your Entry Ticket remains valid if no account was created. Please retry or contact Administration.', code: 'REGISTRATION_UNAVAILABLE' },
       { status: 500 }
     )
   }
