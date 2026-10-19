@@ -13,6 +13,7 @@ import {
   Play,
   Radio,
   Save,
+  ShieldCheck,
   Square,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
@@ -174,6 +175,7 @@ export default function FlameEventWorkshopPage() {
           ['/event','Open Event Ground',Eye],
           ['/admin/dj-workshop','DJ Workshop',Music2],
           ['/admin/ad-workshop','Ad Workshop',Megaphone],
+          ['/admin/flame-frontier','Nigeria Frontier Review',ShieldCheck],
           ['/company/loops','Loop Registry',CalendarDays],
         ].map(([href,label,Icon])=>{
           const NavIcon=Icon as typeof Eye
