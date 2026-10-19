@@ -373,11 +373,11 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "meaning": "A Legion appointment can end by agreed release, termination or authorized administrative action, subject to recorded terms and applicable law. The original Agent/Bridger position should become available again only when the system records a complete release and the role is otherwise eligible.",
     "action": [
       "Record notice, effective date, reason and outstanding work.",
-      "Settle confirmed earnings and return Client materials or permissions.",
-      "End exclusive Legion access and verify role restoration."
+      "Preserve all earned commissions and receipts, reconcile unpaid work outside the release action, and return Client materials or permissions.",
+      "End exclusive Legion access, stop future Carrier attribution, and verify Agent/Bridger access under the original role requirements."
     ],
     "caution": [
-      "Do not present an unimplemented exit button as active.",
+      "Use the real Release Legion control: either the Client or worker may end the appointment with a recorded reason, even if a subscription has expired.",
       "Do not erase earned commissions or Client orders on departure."
     ],
     "moveWhen": "The employment is ended in the real system and all outstanding responsibilities are documented."
