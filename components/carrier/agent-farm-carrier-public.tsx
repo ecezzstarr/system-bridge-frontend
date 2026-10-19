@@ -203,6 +203,7 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
             {order.delivery_quote_ngn!==null&&<p className="flex justify-between text-sm"><strong>Total quoted</strong><strong>{money(Number(order.food_subtotal_ngn)+Number(order.delivery_quote_ngn))}</strong></p>}
           </div>
           {order.quote_note&&<p className="mt-3 text-xs text-stone-400">{order.quote_note}</p>}
+          {order.buyer_total_ngn!==null&&order.buyer_total_ngn!==undefined&&<p className="mt-2 text-xs text-emerald-200" data-farm-flat-seller-fee>Seller payout: {money(order.seller_payout_ngn)} after one ₦1,000 seller fee. Buyer pays no additional WEAVE charge.</p>}
           {order.farmer_contact&&<p className="mt-3 text-xs text-emerald-200">Farm contact: {order.farmer_contact}</p>}
           {order.status==='quoted'&&<button type="button" disabled={busy} onClick={()=>void orderAction('accept_quote')} className="mt-4 bg-emerald-300 px-4 py-3 text-xs font-black text-emerald-950"><CheckCircle2 className="mr-2 inline h-4 w-4"/> Accept full quote</button>}
           {order.status==='accepted'&&<div className="mt-4 border border-emerald-300/25 p-4" data-guest-farm-weave-payment>
