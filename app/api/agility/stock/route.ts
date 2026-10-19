@@ -133,13 +133,13 @@ export async function POST(request: NextRequest) {
     `
 
     const cartonDescription = formatWeaveFoodCartonQuantity(totals.boxCount)
+    await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'agent',subject:'Agility stock order',detail:`${user.name||user.username||'Agent'} requested ${cartonDescription} of ${variant.name} · ₦${totals.agentPayableNgn.toLocaleString()} awaiting payment`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||user.username})
+
     const receipt = await issueWeaveReceipt({
       userId:user.id,kind:'purchase',source:'agility_stock_order',sourceId:String(order.id),amount:totals.agentPayableNgn,currency:'NGN',status:'awaiting_payment',
       description:`${variant.name} distribution stock · ${cartonDescription}`,
       metadata:{variantId:variant.id,productName:variant.name,distributionMode,paymentReference,boxCount:totals.boxCount,packageCount:totals.packageCount,agentBuyUnitPriceNgn:totals.agentBuyUnitPriceNgn,agentSellingUnitPriceNgn:totals.agentSellingUnitPriceNgn},
     })
-
-    await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'agent',subject:'Agility stock order',detail:`${user.name||user.username||'Agent'} requested ${cartonDescription} of ${variant.name} · ₦${totals.agentPayableNgn.toLocaleString()} awaiting payment`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||user.username})
 
     return NextResponse.json({
       success:true,order,receipt,product:{id:variant.id,name:variant.name},
