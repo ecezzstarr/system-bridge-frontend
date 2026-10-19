@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb } from '@/lib/client-file-folder'
 import { resolveClientToken, ensureClientVaultSchema } from '@/lib/client-vault'
@@ -18,5 +19,6 @@ export async function POST(request: NextRequest) {
   if (!vault || Number(vault.balance) < amount) return NextResponse.json({ error: 'Insufficient available value' }, { status: 409 })
   const [requestRow] = await sql`INSERT INTO client_vault_withdrawals (client_id,amount,currency,destination,status) VALUES (${clientId}::uuid,${amount},${vault.currency},${destination},'pending_approval') RETURNING id,amount,currency,destination,status,created_at`
   const receipt = await issueWeaveReceipt({ userId: clientId, kind: 'withdrawal', source: 'client_vault_withdrawal', sourceId: String(requestRow.id), amount, currency: String(vault.currency), status: 'pending_approval', description: 'Client Vault withdrawal request', metadata: { destination }, sql })
+  await notifyAdminOrder({orderId:String(requestRow.id),event:'placed',department:'client',subject:'Client Vault withdrawal request',detail:`Client requested ${amount.toLocaleString()} ${vault.currency} withdrawal. Pending Administration approval`,adminPath:'/admin/client-vault',actorId:clientId,actorName:'Client'})
   return NextResponse.json({ success: true, withdrawal: requestRow, receipt })
 }
