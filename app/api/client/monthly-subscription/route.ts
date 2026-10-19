@@ -46,7 +46,7 @@ export async function POST(request:NextRequest) {
     await ensureEnterpriseDreamSchema(getFileFolderDb())
     const result=await subscribeClientMonthly(clientId)
     if(!result.success) {
-      return NextResponse.json({success:false,...result,error:
+      return NextResponse.json({...result,error:
         result.reason==='insufficient_balance'?'Your Main Client Wallet needs 600 Flame Coin.'
         :result.reason==='gender_missing'?'Complete the missing registration gender before subscribing.'
         :result.reason==='client_inactive'?'This Client account is not active.'
