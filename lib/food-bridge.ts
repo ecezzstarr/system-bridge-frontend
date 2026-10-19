@@ -1,21 +1,9 @@
 import crypto from 'node:crypto'
 import { getPool } from '@/lib/db'
+import { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS } from '@/lib/food-bridge-states'
+export { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS, validFoodState, validFoodUnit } from '@/lib/food-bridge-states'
+import { validFoodState, validFoodUnit } from '@/lib/food-bridge-states'
 
-export const FOOD_BRIDGE_STATES = [
-  'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River',
-  'Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina',
-  'Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo',
-  'Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT Abuja',
-] as const
-
-export const FOOD_BRIDGE_UNITS = ['kg','bag','basket','crate','tuber','bunch'] as const
-
-export function validFoodState(input: unknown): input is (typeof FOOD_BRIDGE_STATES)[number] {
-  return typeof input === 'string' && FOOD_BRIDGE_STATES.some(state => state === input)
-}
-export function validFoodUnit(input: unknown): input is (typeof FOOD_BRIDGE_UNITS)[number] {
-  return typeof input === 'string' && FOOD_BRIDGE_UNITS.some(unit => unit === input)
-}
 export function secretKey() { return crypto.randomBytes(32).toString('hex') }
 export function keyHash(input: string) { return crypto.createHash('sha256').update(input).digest('hex') }
 export function validKey(input: unknown) { return typeof input === 'string' && /^[a-f0-9]{64}$/.test(input) }
@@ -25,12 +13,12 @@ export function safeText(input: unknown, limit: number) {
 export function validPhone(input: string) { return /^[+0-9()\s-]{7,30}$/.test(input) }
 export function validQuantity(value: unknown, max = 100000) {
   const number = Number(value)
-  return Number.isFinite(number) && number > 0 && number <= max && Math.round(number * 100) === number * 100
+  return Number.isFinite(number) && number > 0 && number <= max && Math.abs(Math.round(number * 100)-number*100) < 1e-7
 }
 export function toNaira(value: unknown) {
   const number = Number(value)
   return Number.isFinite(number) && number >= 0 && number <= 100000000
-    && Math.round(number * 100) === number * 100
+    && Math.abs(Math.round(number * 100)-number*100) < 1e-7
 }
 let schemaPromise: Promise<void> | undefined
 async function establishSchema() {
