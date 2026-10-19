@@ -24,7 +24,7 @@ export async function GET(request:NextRequest) {
       getPool().query(`
         SELECT o.id,o.quantity,o.food_subtotal_ngn,o.delivery_quote_ngn,o.destination_state,
           o.destination_area,o.delivery_mode,o.status,o.created_at,l.produce,l.unit,
-          e.status AS escrow_status,e.buyer_total_ngn,e.seller_payout_ngn,e.verified_at,e.payout_recorded_at,
+          e.status AS escrow_status,e.buyer_total_ngn,e.weave_commission_ngn,e.seller_payout_ngn,e.verified_at,e.payout_recorded_at,
           CASE WHEN o.share_buyer_contact AND o.status NOT IN ('requested','rejected','expired','cancelled')
             THEN o.buyer_name ELSE NULL END AS buyer_name,
           CASE WHEN o.share_buyer_contact AND o.status NOT IN ('requested','rejected','expired','cancelled')
