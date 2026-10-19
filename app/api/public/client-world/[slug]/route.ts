@@ -26,7 +26,7 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{slug:str
       FROM client_business_stores s
       WHERE s.public_slug=${slug}
         AND s.enabled=true AND s.formation_status='selling'
-        AND ${staff}::boolean=CASE WHEN ${staff}::boolean THEN s.world_host_flame_event ELSE s.world_host_customer_market END
+        AND (CASE WHEN ${staff}::boolean THEN s.world_host_flame_event ELSE s.world_host_customer_market END)=true
         AND EXISTS(
           SELECT 1 FROM client_built_systems d
           WHERE d.client_id=s.client_id AND d.file_number=s.file_number
