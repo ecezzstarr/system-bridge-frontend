@@ -1,4 +1,5 @@
 import { ensureClientBusinessStoreSchema } from '@/lib/client-business-store'
+import { getPool } from '@/lib/db'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { ensureLegionCommerceSchema, legionCarrierPath } from '@/lib/legion-commerce'
 
@@ -24,6 +25,23 @@ export async function ensureLegionEmploymentSchema(sql: any) {
   await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS source_role varchar(20)`
   await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS employment_status varchar(30) NOT NULL DEFAULT 'active'`
   await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS accepted_at timestamptz`
+  await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS released_at timestamptz`
+  await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS released_by uuid`
+  await sql`ALTER TABLE enterprise_legions ADD COLUMN IF NOT EXISTS release_reason text`
+  await sql`
+    CREATE TABLE IF NOT EXISTS legion_employment_releases(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      legion_id uuid UNIQUE NOT NULL REFERENCES enterprise_legions(id),
+      client_id uuid NOT NULL,
+      source_user_id uuid,
+      actor_user_id uuid NOT NULL,
+      actor_position varchar(20) NOT NULL,
+      reason text NOT NULL,
+      pending_orders integer NOT NULL DEFAULT 0,
+      unpaid_orders integer NOT NULL DEFAULT 0,
+      released_at timestamptz NOT NULL DEFAULT NOW()
+    )
+  `
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_enterprise_legions_active_source_user ON enterprise_legions(source_user_id) WHERE source_user_id IS NOT NULL AND active=true AND employment_status='active'`
 
   await sql`
@@ -133,4 +151,93 @@ export async function activateLegionEmployment(sql: any, input: {
       AND status='pending'
   `
   return legion
+}
+
+/**
+ * Ends exclusivity without deleting the underlying Agent/Bridger account or
+ * historical commerce. Both the Client and the worker can end employment.
+ * An unfinished order stays with the Client who owns the Customer Door.
+ *
+ * PostgreSQL transaction prevents a half-ended position where a Legion can
+ * appear released but still retain a functioning sales Carrier.
+ */
+export async function releaseLegionEmployment(
+  sql: any,
+  input: {
+    legionId: string
+    actorUserId: string
+    actorPosition: 'client' | 'worker'
+    reason: string
+  },
+) {
+  await ensureLegionEmploymentSchema(sql)
+  const reason=String(input.reason||'').trim().slice(0,1200)
+  if(reason.length<5)throw new Error('Explain the reason for ending Legion employment.')
+  const pool=getPool()
+  const db=await pool.connect()
+  let committed=false
+  try {
+    await db.query('BEGIN')
+    const {rows}=await db.query(`
+      SELECT id,client_id,source_user_id,name,active,employment_status,
+        sales_enabled,source_role
+      FROM enterprise_legions WHERE id=$1::uuid FOR UPDATE
+    `,[input.legionId])
+    const legion=rows[0]
+    if(!legion) {
+      await db.query('ROLLBACK')
+      return {success:false as const,status:404,error:'Legion employment record not found'}
+    }
+    const permitted=input.actorPosition==='client'
+      ? String(legion.client_id)===input.actorUserId
+      : String(legion.source_user_id)===input.actorUserId
+    if(!permitted) {
+      await db.query('ROLLBACK')
+      return {success:false as const,status:403,error:'This position cannot release another Client’s Legion.'}
+    }
+    if(!legion.active || legion.employment_status!=='active') {
+      await db.query('COMMIT');committed=true
+      return {success:true as const,alreadyReleased:true,legionId:legion.id}
+    }
+    const {rows:activity}=await db.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE status NOT IN ('fulfilled','cancelled'))::int AS pending_orders,
+        COUNT(*) FILTER (WHERE payment_status<>'received' AND status<>'cancelled')::int AS unpaid_orders
+      FROM client_store_orders WHERE legion_id=$1::uuid
+    `,[input.legionId])
+    const pending=Number(activity[0]?.pending_orders||0)
+    const unpaid=Number(activity[0]?.unpaid_orders||0)
+    const released=await db.query(`
+      UPDATE enterprise_legions
+      SET active=false,employment_status='released',sales_enabled=false,
+          released_at=NOW(),released_by=$2::uuid,release_reason=$3,updated_at=NOW()
+      WHERE id=$1::uuid AND active=true AND employment_status='active'
+      RETURNING id,client_id,source_user_id
+    `,[input.legionId,input.actorUserId,reason])
+    if(!released.rows.length)throw Error('Legion release conflicted with concurrent position change')
+    await db.query(`
+      INSERT INTO legion_employment_releases
+        (legion_id,client_id,source_user_id,actor_user_id,actor_position,reason,pending_orders,unpaid_orders)
+      VALUES($1::uuid,$2::uuid,$3::uuid,$4::uuid,$5,$6,$7,$8)
+      ON CONFLICT (legion_id) DO NOTHING
+    `,[input.legionId,legion.client_id,legion.source_user_id,input.actorUserId,input.actorPosition,reason,pending,unpaid])
+    // The client owns open orders and their fulfillment duty. Leave every
+    // order, payment, attribution, commission and receipt untouched.
+    const notify=[
+      {id:legion.client_id,text:`Legion ${legion.name} was released. ${pending} unfinished Customer Door order(s) remain with your enterprise for fulfillment and settlement.`},
+      ...(legion.source_user_id?[{id:legion.source_user_id,text:`Your exclusive Legion employment has ended. Your original ${legion.source_role||'Agent/Bridger'} position is available subject to its normal access rules. Historical orders and earned compensation remain recorded.`}]:[]),
+    ]
+    for(const notice of notify)await db.query(`
+      INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+      VALUES($1::uuid,'legion_release','Legion employment ended',$2,'WEAVE Enterprise','/weave/lifestyles/legion')
+    `,[notice.id,notice.text])
+    await db.query('COMMIT');committed=true
+    return {success:true as const,legionId:legion.id,
+      clientId:legion.client_id,sourceUserId:legion.source_user_id,
+      pendingOrders:pending,unpaidOrders:unpaid,restoredPosition:legion.source_role}
+  } catch (error) {
+    if(!committed)await db.query('ROLLBACK').catch(()=>{})
+    console.error('[Legion employment release]',error)
+    return {success:false as const,status:500,error:'Unable to complete a secure Legion release'}
+  } finally {db.release()}
 }
