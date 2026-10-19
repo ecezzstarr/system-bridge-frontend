@@ -41,7 +41,7 @@ export async function GET(request:NextRequest){
       `),
       getPool().query(`
         SELECT c.id,c.cake_type AS variant_id,c.status AS stage,c.payment_status,
-          c.customer_name,c.delivery_location AS destination,c.event_date,
+          c.customer_name,c.delivery_location AS destination,c.event_date,c.preparation_released_at,
           'daisy'::text AS product,
           t.manager_id,t.id AS task_id,u.name AS buying_agent
         FROM carrier_cake_orders c
