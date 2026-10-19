@@ -6,6 +6,7 @@ import { ArrowLeft, CheckCircle2, Clipboard, ExternalLink, Image as ImageIcon, L
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AGILITY_VARIANTS } from '@/lib/agility-catalog'
+import Link from 'next/link'
 
 type Door={referralCode:string;agentName:string;publicUrl:string;shareImageUrl:string;bridgerInfoUrl:string;bridgerJoinUrl:string;shareText:string}
 type PaymentAccount={bank_name:string;account_number:string;account_name:string;payment_note?:string|null}
@@ -101,6 +102,13 @@ export default function AgentFoodCarrierConsole(){
       <div className="grid grid-cols-2 border border-white/10 bg-black/20"><div className="border-b border-r border-white/10 p-4"><Users className="h-4 w-4 text-sky-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.unique_views||0)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">Door reach</p></div><div className="border-b border-white/10 p-4"><Share2 className="h-4 w-4 text-violet-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.shares||0)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">Shares</p></div><div className="border-r border-white/10 p-4"><WalletCards className="h-4 w-4 text-amber-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.payment_verification||0)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">Payments to verify</p></div><div className="p-4"><ShoppingBag className="h-4 w-4 text-emerald-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.open_orders||0)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">Paid orders ready</p></div></div>
     </section>
 
+<section className="mt-7 border border-emerald-300/20 bg-emerald-300/[.035] p-5 sm:p-6" data-carrier-farm-supply>
+      <h2 className="text-xl font-black text-white">Your farm produce · Same Carrier Door</h2>
+      <p className="mt-2 text-xs leading-5 text-slate-400">
+        An Agent who farms manages surplus stock inside Lifestyle Farm to Family. Approved farm listings automatically appear on this exact public Carrier link along with Agility, Electrolyte and Daisy Pastries. Customers coming from WhatsApp can request farm produce without a WEAVE account.
+      </p>
+      <Link href="/weave/lifestyles/food" className="mt-4 inline-flex border border-emerald-300/25 px-4 py-3 text-[10px] font-black uppercase tracking-wide text-emerald-200">Manage my farm products in Lifestyle</Link>
+    </section>
     <section className="mt-7 border border-white/10 bg-black/20 p-5 sm:p-6">
       <p className="text-[9px] font-black uppercase tracking-[.22em] text-emerald-300">Customer receiving account</p>
       <h2 className="mt-1 text-2xl font-black">CUSTOMERS PAY YOU</h2>
