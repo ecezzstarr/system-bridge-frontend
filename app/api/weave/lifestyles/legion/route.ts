@@ -5,6 +5,7 @@ import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { activateLegionEmployment, ensureLegionEmploymentSchema, getActiveLegionEmployment } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
+import { getClientMonthlyStanding, ensureClientMonthlySchema } from '@/lib/client-monthly-subscription'
 
 async function enterpriseCapacity(clientId:string){
   const capability=await getInstalledCapabilityTotals(sql,clientId)
@@ -43,6 +44,7 @@ export async function GET(request:NextRequest){
     ORDER BY la.created_at DESC
   `
 
+  await ensureClientMonthlySchema()
   const enterprises=access.active ? await sql`
     SELECT a.id,a.client_id,a.file_number,a.enterprise_name,a.sector,owner.name AS client_name,
            COUNT(l.id) FILTER (WHERE l.active=true AND l.employment_status='active')::int AS legion_count
@@ -51,6 +53,7 @@ export async function GET(request:NextRequest){
     JOIN client_built_systems q ON q.client_id=a.client_id AND q.file_number=a.file_number AND q.system_type='legion_quarters' AND q.status='active'
     LEFT JOIN enterprise_legions l ON l.client_id=a.client_id
     WHERE a.status='approved'
+      AND EXISTS (SELECT 1 FROM client_monthly_subscriptions cms WHERE cms.client_id=a.client_id AND cms.payment_status='paid' AND cms.period_end>NOW())
     GROUP BY a.id,owner.name
     ORDER BY a.reviewed_at DESC NULLS LAST,a.submitted_at DESC
     LIMIT 100
@@ -90,6 +93,8 @@ export async function POST(request:NextRequest){
       LIMIT 1
     `
     if(!enterprise)return NextResponse.json({success:false,error:'This Client enterprise is not open for Legions.'},{status:404})
+    const clientStanding=await getClientMonthlyStanding(String(enterprise.client_id))
+    if(!clientStanding.active)return NextResponse.json({success:false,error:'This Client enterprise must renew its monthly subscription before accepting new Legions.'},{status:409})
     const capacity=await enterpriseCapacity(String(enterprise.client_id))
     if(capacity.count>=capacity.capacity)return NextResponse.json({success:false,error:'This Client Legion Quarter is currently full.'},{status:409})
     const [existing]=await sql`
@@ -121,6 +126,8 @@ export async function POST(request:NextRequest){
       LIMIT 1
     `
     if(!application)return NextResponse.json({success:false,error:'Legion invitation not found.'},{status:404})
+    const clientStanding=await getClientMonthlyStanding(String(application.client_id))
+    if(!clientStanding.active)return NextResponse.json({success:false,error:'This Client enterprise must renew its monthly subscription before activating new Legions.'},{status:409})
     const capacity=await enterpriseCapacity(String(application.client_id))
     if(capacity.count>=capacity.capacity)return NextResponse.json({success:false,error:'The Client Legion Quarter is now full.'},{status:409})
     const legion=await activateLegionEmployment(sql,{
