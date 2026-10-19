@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { ClientMarketEnvironment } from '@/components/public/client-market-environment'
+import CustomerDoorCheckout from '@/components/public/customer-door-checkout'
 import {
   ensureClientBusinessStoreSchema,
   getBusinessDb,
@@ -111,6 +112,12 @@ export default async function PublicClientMarketStore({
       )
     LIMIT 1
   `
+  const orderForCheckout=(query.order&&/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(query.order))?await sql`
+    SELECT o.id,o.amount,o.currency FROM client_store_orders o
+    WHERE o.id=${query.order}::uuid AND o.store_id=${store.id}::uuid LIMIT 1
+  `:[]
+  const checkoutOrder=orderForCheckout[0]||null
+
   const carrierCode=String(query.legion||'').trim().slice(0,80)
   const [legion]=carrierCode
     ? await sql`
@@ -128,6 +135,7 @@ export default async function PublicClientMarketStore({
     {legion&&<div className="border-b border-violet-300/15 bg-violet-400/[0.06] px-5 py-3 text-center text-xs text-violet-100">
       <span className="font-black">Legion Carrier:</span> {legion.name} · {legion.function_title}. This Client-owned Customer Door remains the business destination; this Legion carried you here.
     </div>}
+    {checkoutOrder&&<div className="mx-auto max-w-5xl px-5 py-4"><CustomerDoorCheckout orderId={String(checkoutOrder.id)} amount={Number(checkoutOrder.amount)} currency={String(checkoutOrder.currency)}/></div>}
     <ClientMarketEnvironment
       slug={slug}
       store={store}
