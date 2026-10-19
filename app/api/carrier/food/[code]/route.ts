@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import crypto from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import type { PoolClient } from 'pg'
@@ -197,6 +198,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
         console.error('[carrier/food/public] Agent payment notification failed', notifyError)
       }
 
+      await notifyAdminOrder({orderId:String(updatedResult.rows[0].id),event:'payment_submitted',department:'agent',subject:'Carrier food customer payment',detail:`${order.customer_name} submitted payment proof for ${order.variant_id} · ₦${Number(order.total_ngn).toLocaleString()}. Agent verification pending`,adminPath:'/admin/agility',actorId:String(agent.id),actorName:agent.name||'Agent'})
+
       return NextResponse.json({
         success: true,
         order: updatedResult.rows[0],
@@ -346,6 +349,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
     await db.query('COMMIT')
 
     const product = publicProduct(variantId)
+    await notifyAdminOrder({orderId:String(orderResult.rows[0].id),event:'placed',department:'agent',subject:'Carrier food customer order',detail:`${customerName} reserved ${quantity} × ${product?.name||variantId} from ${agent.name||'Agent'}; customer payment pending`,adminPath:'/admin/agility',actorId:String(agent.id),actorName:agent.name||'Agent'})
+
     return NextResponse.json({
       success: true,
       paymentRequired: true,
