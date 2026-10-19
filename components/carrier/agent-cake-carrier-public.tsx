@@ -97,7 +97,7 @@ export function AgentCakeCarrierPublic({referralCode}:{referralCode:string}){
           <h2 className="mt-2 text-5xl font-black text-[#fff5d6] sm:text-7xl">DAISY PASTRIES</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Birthday, wedding, anniversary, traditional marriage, baby shower, graduation, corporate events and custom occasions. Choose your Daisy Pastries package and occasion, then order through this Agent Carrier Door.</p>
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <div className="border border-amber-300/20 bg-amber-100/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Cake Slice</p><p className="mt-1 text-xl font-black">UNDER ₦5,000</p></div>
+            <div className="border border-amber-300/20 bg-amber-100/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Cake Slice</p><p className="mt-1 text-xl font-black">₦5,000</p></div>
             <div className="border border-amber-300/20 bg-amber-100/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Bento Cake</p><p className="mt-1 text-xl font-black">₦10,000</p></div>
             <div className="border border-amber-300/20 bg-amber-100/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Celebration Cakes</p><p className="mt-1 text-xl font-black">₦15,000–₦60,000</p></div>
           </div>
