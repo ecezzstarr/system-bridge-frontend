@@ -204,6 +204,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Prospect Engine',href:'/admin/prospect-engine',detail:'Create and organize Prospect movement.',daily:true},
         {label:'Email Outreach',href:'/admin/email-outreach',detail:'Load email Prospects, configure Administration outreach, run the daily engine and inspect Admin/Bridger reports.',daily:true},
         {label:'File Folder Sales Manager',href:'/admin/file-folder-sales-manager',detail:'Echo coordinates daily prospect follow-up while EIGHT diagnoses the weekly File Folder sales funnel and escalation state.',daily:true},
+        {label:'Enterprise Legion Changes',href:'/admin/legion-releases',detail:'Administration audit of Worker departures, Client releases and unfinished Client order obligations.',daily:true},
         {label:'System Store Workshop',href:'/admin/system-store',detail:'Verify Client-built system versions, approve public releases and inspect distribution movement.',daily:true},
         {label:'Number Bay Engine',href:'/admin/bridger-numbers',detail:'Number Bay stock, delivery and verification authority.',daily:true},
         {label:'Bridge AI',href:'/admin/bridge-ai',detail:'Review Bridge AI crossing and Client continuity.'},
