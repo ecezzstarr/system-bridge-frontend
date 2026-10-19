@@ -126,7 +126,7 @@ export async function PATCH(request: NextRequest) {
       if (economics.grossProfitPerBoxNgn !== AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN) {
         return NextResponse.json({
           success: false,
-          error: 'Agility company economics are out of alignment: ₦21,000 preparation cost must produce ₦7,000 company gross profit per box.',
+          error: 'Agility company economics are out of alignment: ₦21,000 preparation cost and ₦30,000 wholesale price must produce ₦9,000 company gross profit per box.',
         }, { status: 409 })
       }
     } else if (!current.planned_company_cost_per_box_ngn) {
