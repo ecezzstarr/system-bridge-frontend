@@ -9,6 +9,7 @@ import { ensureLegionEmploymentSchema } from '@/lib/legion-employment'
 import { publicGrowthSlug } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
+import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
 
 function cleanText(value: unknown, max = 10000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
       LIMIT 1
     `
     const enterprise = await getEnterpriseDream(sql, clientId)
+    const monthlyStanding = await getClientMonthlyStanding(clientId)
     const [store] = await sql`
       SELECT public_slug
       FROM client_business_stores
@@ -72,7 +74,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      position: folder?.weave_position || 'client',
+      monthlyStanding,
+      position: monthlyStanding.active ? monthlyStanding.title : 'client',
       enterprise_status: folder?.enterprise_status || 'none',
       workshop_type: folder?.workshop_type || 'formation',
       enterprise_name: folder?.enterprise_name || enterprise.application?.enterprise_name || null,
@@ -97,7 +100,9 @@ export async function POST(request: NextRequest) {
     await ensureEnterpriseDreamSchema(sql)
 
     const body = await request.json()
-    const requestedPosition = cleanText(body.requestedPosition, 20).toLowerCase()
+    const monthlyStanding = await getClientMonthlyStanding(clientId)
+    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Activate the 600 Flame Coin Client monthly subscription before enterprise elevation.'},{status:403})
+    const requestedPosition = monthlyStanding.title
     const enterpriseName = cleanText(body.enterpriseName, 255)
     const sector = cleanText(body.sector, 255)
     const businessPlan = cleanText(body.businessPlan)
@@ -122,13 +127,13 @@ export async function POST(request: NextRequest) {
     if (!client?.file_number) return NextResponse.json({ error: 'An active Client File Folder is required.' }, { status: 409 })
 
     const [folder] = await sql`
-      SELECT id,status,weave_position
+      SELECT id,status,weave_position,enterprise_status
       FROM client_file_folders
       WHERE client_id=${clientId}::uuid AND file_number=${client.file_number}
       LIMIT 1
     `
     if (!folder || folder.status !== 'active') return NextResponse.json({ error: 'Your File Folder must be active before enterprise elevation.' }, { status: 409 })
-    if (folder.weave_position === 'lord' || folder.weave_position === 'lady') {
+    if (folder.enterprise_status === 'approved') {
       return NextResponse.json({ error: 'This File Folder is already an approved enterprise.' }, { status: 409 })
     }
 
