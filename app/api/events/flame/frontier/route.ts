@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireApiUser } from '@/lib/api-auth'
+import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { FLAME_EVENT } from '@/lib/weave-event'
 import { getFlameEvent } from '@/lib/weave-event-store'
@@ -24,7 +25,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireApiUser(request)
-    if (!user || !POSITIONS.has(user.role)) {
+    const activePosition = await getAuthUser(request)
+    // An employed Legion cannot resume the underlying Agent/Bridger position.
+    if (!user || !activePosition || activePosition.role === 'legion' || !POSITIONS.has(user.role)) {
       return NextResponse.json({ success: false, error: 'Signed-in WEAVE position required' }, { status: 401 })
     }
     const event = await getFlameEvent()
