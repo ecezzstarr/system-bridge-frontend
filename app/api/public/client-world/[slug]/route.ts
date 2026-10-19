@@ -74,7 +74,7 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{slug:str
           currency:String(row.currency||'NGN'),
           offerType:String(row.offer_type||'product'),
         })),
-        shopUrl:'/market/'+encodeURIComponent(String(store.public_slug))+'#offers',
+        shopUrl:'/market/'+encodeURIComponent(String(store.public_slug))+'?checkout=1#offers',
       },
     },{headers:{'Cache-Control':'private, no-store','Vary':'Authorization'}})
   }catch(error){
