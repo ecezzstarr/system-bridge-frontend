@@ -32,9 +32,11 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
 }
 
 /** Keep scene/camera state mounted while suspending the render loop. */
-export function AdaptiveCanvas({children,shadows,mobileGame=false,...props}:ComponentProps<typeof Canvas>&{mobileGame?:boolean}){
+export function AdaptiveCanvas({children,shadows,mobileGame=false,onWorldReady,...props}:ComponentProps<typeof Canvas>&{mobileGame?:boolean;onWorldReady?:()=>void}){
   const host=useRef<HTMLDivElement>(null)
   const readyRef=useRef(false)
+  const worldReadyCallback=useRef(onWorldReady)
+  worldReadyCallback.current=onWorldReady
   const [ready,setReady]=useState(false)
   const onscreen=useOnscreen(host)
   const budget=useAdaptiveRuntime()
@@ -44,6 +46,7 @@ export function AdaptiveCanvas({children,shadows,mobileGame=false,...props}:Comp
     setReady(true)
     host.current?.setAttribute('data-adaptive-canvas-ready','true')
     window.dispatchEvent(new CustomEvent('weave:adaptive-canvas-ready'))
+    worldReadyCallback.current?.()
   }
   const active=onscreen&&!budget.hidden&&(!budget.covered||!ready)
   return <div ref={host} style={{width:'100%',height:'100%'}} data-adaptive-canvas={budget.level} data-adaptive-canvas-ready={ready?'true':'false'}>
