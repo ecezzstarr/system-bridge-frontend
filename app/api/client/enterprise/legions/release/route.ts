@@ -3,6 +3,7 @@ import { sql } from '@/lib/db'
 import { resolveClientToken } from '@/lib/client-vault'
 import { releaseLegionEmployment } from '@/lib/legion-employment'
 import { recordSystemEvent } from '@/lib/system-events'
+import {notifyAdministrators} from '@/lib/deposit-notifications'
 
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -29,5 +30,10 @@ export async function POST(request:NextRequest){
     subjectType:'enterprise_legion',subjectId:legionId,source:'enterprise-legion-quarters',
     payload:{releasedBy:'client',pendingOrders:result.pendingOrders,unpaidOrders:result.unpaidOrders},
   }).catch(e=>console.error('[Legion release event]',e))
+  if(!result.alreadyReleased)await notifyAdministrators({
+    type:'legion_employment_released',title:'Client released an enterprise Legion',
+    content:`Client released Legion ${legionId}. ${result.pendingOrders||0} unfinished orders remain assigned to the Client enterprise. Reason: ${reason.slice(0,180)}`,
+    link:'/admin/legion-releases',fromUserId:String(clientId),fromUserName:'Client',
+  })
   return NextResponse.json(result)
 }
