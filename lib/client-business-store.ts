@@ -62,6 +62,8 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
       public_opened_at timestamptz,
       first_offer_published_at timestamptz,
       customer_wallet_required boolean NOT NULL DEFAULT false,
+      world_host_flame_event boolean NOT NULL DEFAULT false,
+      world_host_customer_market boolean NOT NULL DEFAULT false,
       environment_config jsonb NOT NULL DEFAULT '{}'::jsonb,
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW()
@@ -72,6 +74,8 @@ export async function ensureClientBusinessStoreSchema(sql = getBusinessDb()) {
   await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS public_opened_at timestamptz`
   await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS first_offer_published_at timestamptz`
   await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS customer_wallet_required boolean NOT NULL DEFAULT false`
+  await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS world_host_flame_event boolean NOT NULL DEFAULT false`
+  await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS world_host_customer_market boolean NOT NULL DEFAULT false`
   await sql`ALTER TABLE client_business_stores ADD COLUMN IF NOT EXISTS environment_config jsonb NOT NULL DEFAULT '{}'::jsonb`
   await sql`
     UPDATE client_business_stores
