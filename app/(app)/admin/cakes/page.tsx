@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect,useState } from 'react'
+import Link from 'next/link'
 import { CakeSlice,Loader2,RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,7 +22,7 @@ export default function AdminCakesPage(){
   const move=async(order:Order)=>{const status=next(order.status);if(!status)return;setMoving(order.id);setError('');try{const r=await fetch('/api/admin/cakes',{method:'PATCH',headers:headers(),body:JSON.stringify({orderId:order.id,status,adminNote:notes[order.id]||''})});const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.error||'Unable to move Daisy Pastries order');await load()}catch(e){setError(e instanceof Error?e.message:'Unable to move Daisy Pastries order')}finally{setMoving(null)}}
   if(loading)return <main className="flex min-h-[520px] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-amber-300"/></main>
   return <main className="mx-auto max-w-7xl space-y-7 px-4 py-8 text-white md:px-7 md:py-12" data-admin-cakes="true" data-daisy-pastries="true">
-    <div className="flex items-center justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[.26em] text-amber-300">Administration · WEAVE Cakes</p><h1 className="mt-2 text-4xl font-black sm:text-6xl">DAISY PASTRIES FULFILLMENT</h1></div><Button onClick={()=>void load()} variant="outline" className="border-white/15 text-white"><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div>
+    <div className="flex items-center justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[.26em] text-amber-300">Administration · WEAVE Cakes</p><h1 className="mt-2 text-4xl font-black sm:text-6xl">DAISY PASTRIES FULFILLMENT</h1><Link href="/admin/food-preparation-manager" className="mt-4 inline-block text-xs font-bold text-amber-200">Food Preparation Manager assignments</Link></div><Button onClick={()=>void load()} variant="outline" className="border-white/15 text-white"><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div>
     <div className="grid gap-2 sm:grid-cols-3"><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-xs text-amber-200">Cake Slice</p><p className="font-black">Under ₦5,000</p></div><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-xs text-amber-200">Bento Cake</p><p className="font-black">₦10,000</p></div><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-xs text-amber-200">Celebration Cakes</p><p className="font-black">₦15,000 to ₦60,000</p></div></div>
     <p className="max-w-3xl text-sm leading-6 text-slate-400">Agents receive the Daisy Pastries request, quote within the official cake price band and verify customer payment. Administration only begins production after payment is verified, then moves the order through preparing → ready → dispatched → completed.</p>
     {error&&<div className="border border-red-300/20 bg-red-300/[.05] p-4 text-sm text-red-200">{error}</div>}
