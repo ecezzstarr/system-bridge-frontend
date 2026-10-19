@@ -1,5 +1,5 @@
 'use client'
-import { useCallback,useEffect,useRef,useState,type PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect,useRef,useState,type MutableRefObject } from 'react'
 import Link from 'next/link'
 import { Text } from '@react-three/drei'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
@@ -8,7 +8,7 @@ import { EmbodiedWorldRuntime,type WorldInput } from '@/components/system-switch
 import { SharedWorldAvatars } from '@/components/system-switch/shared-world-avatars'
 import { useWorldPresence } from '@/components/system-switch/use-world-presence'
 import { type Presence } from '@/lib/file-folder-world-runtime'
-import { ArrowLeft,ArrowRight,DoorOpen,Users,ShoppingBag,ShieldCheck } from 'lucide-react'
+import { ArrowLeft,ArrowRight,Users,ShoppingBag,ShieldCheck } from 'lucide-react'
 
 export type Door={slug:string;name:string;description:string;platform:string;entrance:'market'|'flame-event';offerCount:number}
 export type Hosted={publicSlug:string;name:string;description:string;environment:{platformName:string;tagline:string;sign:string;marketSection:string};entrance:string;
@@ -16,7 +16,7 @@ export type Hosted={publicSlug:string;name:string;description:string;environment
 type Landmark={id:string;name:string;kind:'door'|'offer'|'system';at:[number,number,number];click:()=>void;tag:string}
 const at=(i:number,n:number):[number,number,number]=>{
   const theta=i/Math.max(1,n)*Math.PI*2
-  return [Math.cos(theta)*6.25,0,Math.sin(theta)*6.25]
+  return [Math.cos(theta+Math.PI/2)*6.25,0,Math.sin(theta+Math.PI/2)*6.25]
 }
 function Building({place}:{place:Landmark}){
   return <group position={place.at} rotation={[0,Math.atan2(-place.at[0],-place.at[2]),0]}>
@@ -36,7 +36,7 @@ function Building({place}:{place:Landmark}){
     </mesh>
   </group>
 }
-function SpatialWorld({places,presence,input,others,onNearby}:{places:Landmark[];presence:React.MutableRefObject<Presence>;input:React.MutableRefObject<WorldInput>;
+function SpatialWorld({places,presence,input,others,onNearby}:{places:Landmark[];presence:MutableRefObject<Presence>;input:MutableRefObject<WorldInput>;
   others:ReturnType<typeof useWorldPresence>['others'];onNearby:(label:string)=>void}){
   return <AdaptiveCanvas shadows camera={{position:[0,3.8,7],fov:69,near:.1,far:80}}>
     <color attach="background" args={['#13212d']}/><fog attach="fog" args={['#13212d',18,44]}/>
@@ -64,7 +64,7 @@ function SpatialWorld({places,presence,input,others,onNearby}:{places:Landmark[]
       entrances={places.map(p=>({id:p.id,label:p.name,position:p.at,enter:p.click}))}/>
   </AdaptiveCanvas>
 }
-function Controls({input}:{input:React.MutableRefObject<WorldInput>}){
+function Controls({input}:{input:MutableRefObject<WorldInput>}){
   const hold=(key:string,on:boolean)=>{
     if(on)input.current.keys.add(key)
     else input.current.keys.delete(key)
@@ -81,7 +81,7 @@ function Controls({input}:{input:React.MutableRefObject<WorldInput>}){
   </div>
 }
 function useMovement(){
-  const presence=useRef<Presence>({x:0,z:4,yaw:0})
+  const presence=useRef<Presence>({x:0,z:4,yaw:Math.PI})
   const input=useRef<WorldInput>({keys:new Set(),enter:false,active:true})
   useEffect(()=>{
     const down=(e:KeyboardEvent)=>{
@@ -113,7 +113,10 @@ export function SystemSwitchDoorPlaza(){
           headers:token?{Authorization:'Bearer '+token}:{}})
         const data=await r.json()
         if(!r.ok)throw Error(data.error||'No Customer Door directory')
-        if(!done){setDoors(data.doors||[]);setPosition(data.position);setError('')}
+        if(!done){const selected=new URLSearchParams(window.location.search).get('door')
+          const list:Door[]=data.doors||[]
+          setDoors(selected?[...list].sort((a,b)=>Number(b.slug===selected)-Number(a.slug===selected)):list)
+          setPosition(data.position);setError('')}
       }catch(e){if(!done)setError(e instanceof Error?e.message:'Could not open doors')}
     }
     void load()
