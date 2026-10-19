@@ -193,10 +193,10 @@ export default function EnterpriseLegionsNotebookWorld() {
 
   useEffect(() => {
     if (!isInitialized || isLoading || !user) return
-    if (!['client', 'agent', 'bridger', 'admin'].includes(user.role)) router.replace(roleHome(user.role))
+    if (!['client', 'agent', 'bridger', 'admin'].includes(user.role || '')) router.replace(roleHome(user.role || 'client'))
   }, [isInitialized, isLoading, user, router])
 
-  if (!isInitialized || isLoading || !user || !['client', 'agent', 'bridger', 'admin'].includes(user.role)) {
+  if (!isInitialized || isLoading || !user || !['client', 'agent', 'bridger', 'admin'].includes(user.role || '')) {
     return (
       <div className="flex min-h-[520px] items-center justify-center bg-[#04070a]" data-enterprise-legions-pending="true">
         <div className="text-center">
