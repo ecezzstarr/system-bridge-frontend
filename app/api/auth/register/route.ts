@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql, getPool } from '@/lib/db'
 import { randomUUID } from 'node:crypto'
+import { normalizeRegisteredGender, ensureClientMonthlySchema } from '@/lib/client-monthly-subscription'
 import bcrypt from 'bcryptjs'
 import { ensureBridgerReferralColumns } from '@/lib/bridger-referral-commission'
 import { validateDepartmentalCode, Department } from '@/lib/departmental-codes'
@@ -53,6 +54,9 @@ export async function POST(request: NextRequest) {
     const email = String(body.email || '').trim().toLowerCase()
     const username = String(body.username || '').trim()
     const name = String(body.name || '').trim()
+    const gender=normalizeRegisteredGender(body.gender)
+    if(!gender)return NextResponse.json({error:'Choose Male or Female at registration.'},{status:400})
+    await ensureClientMonthlySchema()
     const {
       password,
       role,
@@ -159,14 +163,14 @@ export async function POST(request: NextRequest) {
       }
       const created = await tx`
         INSERT INTO users (
-          id, email, username, name, password_hash, role, departmental_code,
+          id, email, username, name, gender, password_hash, role, departmental_code,
           referral_code, referred_by, referred_by_bridger_id, assigned_agent_id, created_at, updated_at
         )
         VALUES (
-          ${userId}::uuid, ${email}, ${username}, ${name}, ${passwordHash}, ${role}, ${dept},
+          ${userId}::uuid, ${email}, ${username}, ${name}, ${gender}, ${passwordHash}, ${role}, ${dept},
           ${referralCode}, ${genericReferrerId}::uuid, ${bridgerReferrerId}::uuid, ${assignedAgentId}::uuid, NOW(), NOW()
         )
-        RETURNING id, email, username, name, role, departmental_code, referral_code, assigned_agent_id
+        RETURNING id, email, username, name, gender, role, departmental_code, referral_code, assigned_agent_id
       `
       if (!created.length) throw new Error('Unable to create user profile')
       user = created[0]
@@ -291,6 +295,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         username: user.username,
         name: user.name,
+        gender: user.gender,
         role: user.role,
         departmental_code: user.departmental_code,
         referral_code: user.referral_code,
