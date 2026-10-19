@@ -8,6 +8,7 @@ import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
 import type { FlameWorldCustomerDoor } from './flame-event-open-world'
+import { WeaveEmbodiedAvatar, type WeaveAvatarMotion, type WeaveAvatarPosition } from '@/components/world/weave-embodied-avatar'
 
 export type FlameMobileInput = {
   forward:number
@@ -152,100 +153,19 @@ function Portal({name,x,z,index}:{name:string;x:number;z:number;index:number}){
   </group>
 }
 
-function Piece({at,size,color}:{at:[number,number,number];size:[number,number,number];color:string}){
-  return <mesh position={at} scale={[size[0]*.6,size[1]*.55,size[2]*.65]} castShadow><sphereGeometry args={[1,12,10]}/><meshStandardMaterial color={color} roughness={.79}/></mesh>
-}
-
-function Avatar({position,heading,activity,crouch,height,role}:{
-  position:THREE.Vector3
-  heading:MutableRefObject<number>
-  activity:MutableRefObject<number>
-  crouch:MutableRefObject<boolean>
-  height:MutableRefObject<number>
-  role:string
-}){
-  const actor=useRef<THREE.Group>(null),torso=useRef<THREE.Group>(null)
-  const leftLeg=useRef<THREE.Group>(null),rightLeg=useRef<THREE.Group>(null)
-  const leftArm=useRef<THREE.Group>(null),rightArm=useRef<THREE.Group>(null)
-  const shirt=role==='client'?'#5c598c':role==='bridger'?'#ba8b50':role==='agent'?'#436d86':'#d0d1d7'
-  const skin='#aa724c',pants='#2e394b'
-  useFrame(({clock},delta)=>{
-    if(!actor.current||!torso.current||!leftLeg.current||!rightLeg.current||!leftArm.current||!rightArm.current)return
-    const dt=Math.min(.05,delta),power=activity.current
-    const cadence=Math.sin(clock.elapsedTime*(power>.65?12:8.3))
-    actor.current.position.copy(position)
-    actor.current.position.y+=height.current+(power>.01?Math.abs(cadence)*.028:0)
-    actor.current.rotation.y=THREE.MathUtils.lerp(actor.current.rotation.y,heading.current,Math.min(1,dt*12))
-    torso.current.position.y=THREE.MathUtils.lerp(torso.current.position.y,crouch.current?-.44:0,Math.min(1,dt*9))
-    torso.current.rotation.x=THREE.MathUtils.lerp(torso.current.rotation.x,power>.25?-.1:0,Math.min(1,dt*7))
-    const swing=cadence*power*.48
-    leftLeg.current.rotation.x=swing;rightLeg.current.rotation.x=-swing
-    leftArm.current.rotation.x=-swing*.86;rightArm.current.rotation.x=swing*.86
-  })
-  return <group ref={actor}>
-    <mesh position={[0,.017,0]} rotation={[-Math.PI/2,0,0]}><circleGeometry args={[.45,20]}/><meshBasicMaterial color="#082039" transparent opacity={.4} depthWrite={false}/></mesh>
-    <group ref={torso}>
-      <Piece at={[0,1.38,0]} size={[.64,.78,.37]} color={shirt}/>
-      <Piece at={[0,.84,0]} size={[.5,.26,.32]} color={pants}/>
-      <Piece at={[0,1.35,.27]} size={[.42,.5,.2]} color="#283348"/>
-      <mesh position={[0,1.36,.39]} castShadow>
-        <boxGeometry args={[.19,.34,.065]}/>
-        <meshStandardMaterial color="#1b293a" roughness={.83}/>
-      </mesh>
-      <mesh position={[.19,1.40,-.13]} rotation={[0,0,-.17]} castShadow>
-        <capsuleGeometry args={[.07,.52,4,8]}/>
-        <meshStandardMaterial color="#d7b783" roughness={.8}/>
-      </mesh>
-      <mesh position={[-.19,1.40,-.13]} rotation={[0,0,.17]} castShadow>
-        <capsuleGeometry args={[.07,.52,4,8]}/>
-        <meshStandardMaterial color="#d7b783" roughness={.8}/>
-      </mesh>
-      <Piece at={[0,1.86,0]} size={[.18,.2,.19]} color={skin}/>
-      <mesh position={[0,2.08,0]} castShadow><sphereGeometry args={[.23,12,10]}/><meshStandardMaterial color={skin} roughness={.87}/></mesh>
-      <mesh position={[0,2.22,0]} castShadow><sphereGeometry args={[.232,12,9,0,Math.PI*2,0,Math.PI*.48]}/><meshStandardMaterial color="#211e22" roughness={1}/></mesh>
-      {[-1,1].map(side=><group key={side}>
-        <mesh position={[side*.226,2.08,0]}><sphereGeometry args={[.054,8,8]}/><meshStandardMaterial color={skin}/></mesh>
-        <mesh position={[side*.087,2.11,-.218]}><sphereGeometry args={[.012,7,7]}/><meshBasicMaterial color="#1b1b23"/></mesh>
-      </group>)}
-      <group ref={leftArm} position={[-.41,1.68,0]}>
-        <mesh position={[0,-.28,0]} castShadow>
-          <capsuleGeometry args={[.13,.37,5,10]}/>
-          <meshStandardMaterial color={shirt} roughness={.87}/>
-        </mesh>
-        <Piece at={[0,-.62,0]} size={[.16,.2,.17]} color={skin}/>
-      </group>
-      <group ref={rightArm} position={[.41,1.68,0]}>
-        <Piece at={[0,-.27,0]} size={[.21,.55,.25]} color={shirt}/>
-        <Piece at={[0,-.62,0]} size={[.16,.2,.17]} color={skin}/>
-      </group>
-      <group ref={leftLeg} position={[-.18,.77,0]}>
-        <mesh position={[0,-.35,0]} castShadow>
-          <capsuleGeometry args={[.145,.46,5,10]}/>
-          <meshStandardMaterial color={pants} roughness={.91}/>
-        </mesh>
-        <mesh position={[0,-.68,-.09]} castShadow>
-          <capsuleGeometry args={[.15,.26,4,9]}/>
-          <meshStandardMaterial color="#1a2430" roughness={.82}/>
-        </mesh>
-      </group>
-      <group ref={rightLeg} position={[.18,.77,0]}>
-        <Piece at={[0,-.34,0]} size={[.24,.69,.27]} color={pants}/>
-        <Piece at={[0,-.68,-.085]} size={[.27,.16,.42]} color="#1b202d"/>
-      </group>
-    </group>
-  </group>
-}
-
-function Walker({inputRef,doors,role,onNearbyDoor}:{
+function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange}:{
   inputRef:MutableRefObject<FlameMobileInput>
   doors:{x:number;z:number}[]
   role:string
   onNearbyDoor:(index:number|null)=>void
+  onRegionChange:(region:FlameRegion)=>void
 }){
   const {camera}=useThree()
   const position=useRef(new THREE.Vector3(FLAME_EVENT_PLAYER_START.x,0,FLAME_EVENT_PLAYER_START.z))
   const velocity=useRef(new THREE.Vector3()),heading=useRef(0),activity=useRef(0)
   const crouch=useRef(false),height=useRef(0),vertical=useRef(0)
+  const motion=useRef<WeaveAvatarMotion>({x:FLAME_EVENT_PLAYER_START.x,z:FLAME_EVENT_PLAYER_START.z,yaw:0,speed:0,crouching:false,airborne:0})
+  const lastRegion=useRef<FlameRegion>('riverbank')
   const previousDoor=useRef<number|null>(null)
   const target=useRef(new THREE.Vector3()),look=useRef(new THREE.Vector3())
   useFrame((_,delta)=>{
@@ -272,20 +192,31 @@ function Walker({inputRef,doors,role,onNearbyDoor}:{
     if(height.current===0)vertical.current=0
     const closest=nearestFlameEventDoor(position.current.x,position.current.z,doors)
     if(closest!==previousDoor.current){previousDoor.current=closest;onNearbyDoor(closest)}
+    const region:FlameRegion=closest!==null?'customer-door':position.current.z>5?'riverbank':position.current.z>0?'burning-river':'system-switch'
+    if(region!==lastRegion.current){lastRegion.current=region;onRegionChange(region)}
+    motion.current.x=position.current.x
+    motion.current.z=position.current.z
+    motion.current.yaw=heading.current
+    motion.current.speed=actual
+    motion.current.crouching=crouch.current
+    motion.current.airborne=height.current
     const dist=data.crouch?3.8:data.run?5.3:4.5
     target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2,position.current.z+Math.cos(data.yaw)*dist)
     camera.position.lerp(target.current,1-Math.exp(-dt*7))
     look.current.set(position.current.x,1.28+height.current*.35,position.current.z)
     camera.lookAt(look.current)
   })
-  return <Avatar position={position.current} heading={heading} activity={activity} crouch={crouch} height={height} role={role}/>
+  return <WeaveEmbodiedAvatar motion={motion} role={role as WeaveAvatarPosition}/>
 }
 
-function World({enterprises,inputRef,role,onNearbyDoor}:{
+export type FlameRegion='riverbank'|'burning-river'|'system-switch'|'customer-door'
+
+function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
   enterprises:FlameWorldCustomerDoor[]
   inputRef:MutableRefObject<FlameMobileInput>
   role:string
   onNearbyDoor:(index:number|null)=>void
+  onRegionChange:(region:FlameRegion)=>void
 }){
   const budget=useAdaptiveRuntime()
   const doorPositions=useMemo(()=>flameEventDoorPositions(enterprises.length),[enterprises.length])
@@ -298,15 +229,17 @@ function World({enterprises,inputRef,role,onNearbyDoor}:{
     <RiverSurface quiet={budget.reducedMotion}/>
     <Terrain quality={budget.level}/>
     {enterprises.map((door,i)=><Portal key={door.public_slug} name={door.platform_name||door.name} index={i} x={doorPositions[i].x} z={doorPositions[i].z}/>)}
-    <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor}/>
+    <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
   </>
 }
 
-export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor}:{
+export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor,onRegionChange,onReady}:{
   enterprises:FlameWorldCustomerDoor[]
   inputRef:MutableRefObject<FlameMobileInput>
   role:string
   onNearbyDoor:(index:number|null)=>void
+  onRegionChange:(region:FlameRegion)=>void
+  onReady?:()=>void
 }){
   return <div className="absolute inset-0" data-flame-event-mobile-scene>
     <AdaptiveCanvas
@@ -314,8 +247,9 @@ export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor}:{
       camera={{fov:66,near:.1,far:125,position:[0,2.6,15]}}
       shadows
       mobileGame
+      onWorldReady={onReady}
     >
-      <World enterprises={enterprises} inputRef={inputRef} role={role} onNearbyDoor={onNearbyDoor}/>
+      <World enterprises={enterprises} inputRef={inputRef} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
     </AdaptiveCanvas>
   </div>
 }
