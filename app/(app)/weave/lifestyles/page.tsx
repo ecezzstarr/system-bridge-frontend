@@ -151,7 +151,7 @@ export default function WeaveLifestylesPage() {
                   icon={<Sprout className="h-8 w-8" />}
                   eyebrow="Flame Event · Everyday food"
                   title="FARM TO FAMILY"
-                  detail="Buy everyday food directly from an Agent farmer with surplus stock. Agents can publish farm produce; Agents and Bridgers can place household orders across Nigeria, receive transport quotes and arrange delivery. No extra Lifestyle charge."
+                  detail="Agent farmers list surplus at their own prices; Agents and Bridgers buy for households across Nigeria. Buyers pay the accepted farm and transport quote to WEAVE. After verified receipt and buyer delivery confirmation, WEAVE deducts a flat ₦1,000 fee from the farmer for each completed order, not per item. No extra Lifestyle access charge."
                   open={foodOpen}
                   reason={access?.active ? 'Agent or Bridger access required.' : 'Your Agent or Bridger Lifestyle must be active.'}
                   href="/weave/lifestyles/food"
