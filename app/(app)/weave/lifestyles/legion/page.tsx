@@ -66,7 +66,9 @@ export default function LegionLifestylePage(){
       if(!res.ok)throw new Error(result.error||'Unable to end Legion employment')
       toast.success('Legion appointment ended. Your original Agent/Bridger position is restored subject to its usual access requirements.')
       setReleaseReason('')
-      await load()
+      // Reload the account layout so its cached exclusive-role redirect is
+      // discarded. The underlying role is checked again from the server.
+      window.location.assign(result.restoredPosition==='bridger'?'/bridger/presence':'/agent/presence')
     }catch(error:any){toast.error(error.message||'Unable to release Legion employment')}
     finally{setBusy(null)}
   }
