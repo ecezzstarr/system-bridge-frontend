@@ -30,7 +30,7 @@ export default async function Image({params}:{params:Promise<{code:string}>}){
   const small=getWeaveFoodVariantEconomics('electrolyte')
   const medium=getWeaveFoodVariantEconomics('electrolyte-medium')
   const smallPrice=`₦${Number(small?.agentSellingUnitPriceNgn||4000).toLocaleString('en-NG')}`
-  const mediumPrice=`₦${Number(medium?.agentSellingUnitPriceNgn||6000).toLocaleString('en-NG')}`
+  const mediumPrice=`₦${Number(medium?.agentSellingUnitPriceNgn||4000).toLocaleString('en-NG')}`
 
   return new ImageResponse(
     <div style={{width:'1200px',height:'630px',display:'flex',flexDirection:'column',background:'#07100b',color:'white',fontFamily:'sans-serif'}}>
@@ -39,7 +39,7 @@ export default async function Image({params}:{params:Promise<{code:string}>}){
           <div style={{fontSize:24,fontWeight:900,letterSpacing:'4px'}}>WEAVE FOOD · FARM TO FAMILY</div>
           <div style={{fontSize:18,color:'#a7f3d0',marginTop:'5px'}}>Carrier Door · {agentName}</div>
         </div>
-        <div style={{display:'flex',background:'#ffffff',color:'#07100b',padding:'14px 24px',fontSize:22,fontWeight:900}}>AGENT CARRIER · ORDER ONLINE</div>
+        <div style={{display:'flex',background:'#ffffff',color:'#07100b',padding:'14px 24px',fontSize:22,fontWeight:900}}>₦4,000 EACH · AGENT EARNS ₦1,000</div>
       </div>
       <div style={{display:'flex',flex:1}}>
         <div style={{width:'50%',display:'flex',flexDirection:'column',justifyContent:'space-between',padding:'44px 48px',background:'linear-gradient(135deg,#6b2d08,#1a0d06)'}}>
