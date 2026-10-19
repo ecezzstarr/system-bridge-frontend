@@ -87,11 +87,17 @@ async function establishSchema() {
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_buyer ON weave_food_direct_orders(buyer_user_id,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_farmer ON weave_food_direct_orders(farmer_id,status,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_carrier ON weave_food_direct_orders(carrier_referral_code,status,created_at DESC);
-    ALTER TABLE weave_food_direct_orders
-      DROP CONSTRAINT IF EXISTS weave_food_orders_identity_check;
-    ALTER TABLE weave_food_direct_orders
-      ADD CONSTRAINT weave_food_orders_identity_check
-      CHECK (buyer_user_id IS NOT NULL OR guest_order_digest IS NOT NULL);
+    DO $
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conrelid='weave_food_direct_orders'::regclass
+          AND conname='weave_food_orders_identity_check'
+      ) THEN
+        ALTER TABLE weave_food_direct_orders
+          ADD CONSTRAINT weave_food_orders_identity_check
+          CHECK (buyer_user_id IS NOT NULL OR guest_order_digest IS NOT NULL);
+      END IF;
+    END $;
   `)
 }
 export async function ensureFoodBridgeSchema() {
