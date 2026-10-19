@@ -84,6 +84,11 @@ export async function subscribeClientMonthly(clientId: string) {
       await conn.query('ROLLBACK')
       return {success:false as const, reason:'client_inactive'}
     }
+    const folder=await conn.query("SELECT id,status FROM client_file_folders WHERE client_id=$1::uuid AND status='active' LIMIT 1 FOR UPDATE",[clientId])
+    if(!folder.rows.length) {
+      await conn.query('ROLLBACK')
+      return {success:false as const,reason:'file_folder_inactive'}
+    }
     title = clientEnterpriseTitle(user.gender)
     if (!title) {
       await conn.query('ROLLBACK')
