@@ -86,7 +86,7 @@ export async function POST(request:NextRequest){
         &&Math.round(quoted*100)/100===quoted&&['NGN','USD','GBP','EUR'].includes(quoteCurrency)
       const validCrypto=crypto&&Number.isFinite(quoted)&&quoted>0&&quoted<=1e12
         &&Math.round(quoted*1e8)/1e8===quoted&&Boolean(network&&address)
-      if(sale.status!=='awaiting_quote'||(!validFiat&&!validCrypto)||instructions.length<20){
+      if(sale.status!=='awaiting_quote'||(!validFiat&&!validCrypto)||(!crypto&&instructions.length<20)){
         await conn.query('ROLLBACK')
         return NextResponse.json({error:'Approved payment amount, correct currency/network, configured receiving destination and detailed instructions are required'},{status:400})
       }
@@ -114,6 +114,11 @@ export async function POST(request:NextRequest){
           return NextResponse.json({error:'The company receiving wallet is not configured for the chosen chain. Do not issue payment instructions.'},{status:409})
         }
       }
+      // Crypto payment instructions are server-authored to prevent an
+      // incorrect manual address appearing in an otherwise approved quote.
+      const approvedInstructions=crypto
+        ? `Pay exactly ${quoted} ${quoteCurrency} using ${network} only. Send to WEAVE address ${address}. Verify network and token before sending. Keep your 64-character transaction hash for Administration Forensics. Payments on the wrong chain may be unrecoverable.`
+        : instructions
       result=(await conn.query(`
         UPDATE weave_flame_coin_orders
         SET provider=$2,bank_amount=$3,bank_currency=$4,bank_instructions=$5,
@@ -122,7 +127,7 @@ export async function POST(request:NextRequest){
         WHERE id=$1::uuid
         RETURNING id,status,payment_method,bank_amount,bank_currency,payment_network,receiving_address
       `,[id,crypto?'manual_crypto_receipt':method==='card'?'approved_hosted_card':'approved_bank_transfer',
-          crypto?null:quoted,quoteCurrency,instructions,crypto?quoted:null,network,address])).rows[0]
+          crypto?null:quoted,quoteCurrency,approvedInstructions,crypto?quoted:null,network,address])).rows[0]
     }else if(action==='verify_payment'){
       if(!flameCoinMethodEnabled(method)){
         await conn.query('ROLLBACK')
