@@ -122,11 +122,20 @@ async function establishSchema() {
     -- The quote total remains the buyer's charge; the fee is deducted only from
     -- seller proceeds on successful completion. Full refunds restore buyer total.
     ALTER TABLE weave_food_escrow ALTER COLUMN weave_commission_ngn SET DEFAULT 1000;
-    ALTER TABLE weave_food_escrow DROP CONSTRAINT IF EXISTS weave_food_escrow_weave_commission_ngn_check;
-    ALTER TABLE weave_food_escrow ADD CONSTRAINT weave_food_escrow_weave_commission_ngn_check
+    DO $
+    DECLARE old_check text;
+    BEGIN
+      FOR old_check IN
+        SELECT c.conname FROM pg_constraint c
+        WHERE c.conrelid='weave_food_escrow'::regclass AND c.contype='c'
+          AND (pg_get_constraintdef(c.oid) LIKE '%weave_commission_ngn%'
+            OR pg_get_constraintdef(c.oid) LIKE '%seller_payout_ngn%')
+      LOOP
+        EXECUTE format('ALTER TABLE weave_food_escrow DROP CONSTRAINT %I',old_check);
+      END LOOP;
+    END $;
+    ALTER TABLE weave_food_escrow ADD CONSTRAINT weave_food_escrow_service_fee_check
       CHECK (weave_commission_ngn=1000);
-    ALTER TABLE weave_food_escrow DROP CONSTRAINT IF EXISTS weave_food_escrow_check;
-    ALTER TABLE weave_food_escrow DROP CONSTRAINT IF EXISTS weave_food_escrow_seller_payout_ngn_check;
     ALTER TABLE weave_food_escrow ADD CONSTRAINT weave_food_escrow_seller_payout_policy_check
       CHECK (seller_payout_ngn=buyer_total_ngn-weave_commission_ngn AND seller_payout_ngn>0);
     CREATE UNIQUE INDEX IF NOT EXISTS weave_food_escrow_bank_verification_uidx
