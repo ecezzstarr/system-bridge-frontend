@@ -3,6 +3,7 @@
 import { useRef, type MutableRefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 
 /**
  * The same physical body is used in the Burning River and the Client File
@@ -46,6 +47,7 @@ export function WeaveEmbodiedAvatar({
   motion:MutableRefObject<WeaveAvatarMotion>
   role?:WeaveAvatarPosition
 }){
+  const {reducedMotion}=useAdaptiveRuntime()
   const root=useRef<THREE.Group>(null)
   const spine=useRef<THREE.Group>(null)
   const head=useRef<THREE.Group>(null)
@@ -73,12 +75,12 @@ export function WeaveEmbodiedAvatar({
     action.current=THREE.MathUtils.damp(action.current,amount,9,dt)
     const turn=Math.atan2(Math.sin(state.yaw-bodyAngle.current),Math.cos(state.yaw-bodyAngle.current))
     bodyAngle.current+=turn*(1-Math.exp(-11*dt))
-    stride.current+=dt*(2.8+amount*11.8)
-    const step=Math.sin(stride.current)
+    if(!reducedMotion)stride.current+=dt*(2.8+amount*11.8)
+    const step=reducedMotion?0:Math.sin(stride.current)
     const bend=Math.max(0,step)
     const run=action.current
     const crouch=state.crouching?1:0
-    const breath=Math.sin(clock.elapsedTime*2.1)*.011
+    const breath=reducedMotion?0:Math.sin(clock.elapsedTime*2.1)*.011
 
     actor.position.set(state.x,Math.max(0,state.airborne)+Math.abs(step)*run*.025,state.z)
     actor.rotation.y=bodyAngle.current
@@ -87,7 +89,7 @@ export function WeaveEmbodiedAvatar({
     spine.current.rotation.z=Math.sin(stride.current*.5)*run*.021
     spine.current.scale.y=1+breath
     head.current.rotation.x=THREE.MathUtils.damp(head.current.rotation.x,-run*.03,7,dt)
-    head.current.rotation.y=Math.sin(clock.elapsedTime*.42)*.065*(1-run)
+    head.current.rotation.y=reducedMotion?0:Math.sin(clock.elapsedTime*.42)*.065*(1-run)
     const gait=run*.56
     leftLeg.current.rotation.x=step*gait-crouch*.48
     rightLeg.current.rotation.x=-step*gait-crouch*.48
