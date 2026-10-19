@@ -81,7 +81,14 @@ export function FlameEventOpenWorld({
   const beginCrossing=()=>{
     if(!webglAvailable){setShowDirectory(true);return}
     if(!ready)return
+    try{window.sessionStorage.setItem('weave:flame:entered:'+role,'yes')}catch{}
     setEntered(true)
+  }
+
+  const savePosition=()=>window.dispatchEvent(new Event('weave:flame-event:save-presence'))
+  const sceneReady=()=>{
+    setReady(true)
+    try{if(window.sessionStorage.getItem('weave:flame:entered:'+role)==='yes')setEntered(true)}catch{}
   }
 
   const nearDoor=nearby===null?null:enterprises[nearby]||null
@@ -227,7 +234,7 @@ export function FlameEventOpenWorld({
         style={{backgroundImage:"linear-gradient(0deg,rgba(7,22,41,.35),transparent 60%),url('/weave/flame-event/burning-river-world.svg')"}}
         aria-hidden="true"
       />
-      {webglAvailable&&<FlameEventMobileScene enterprises={enterprises} inputRef={controls} role={role} onNearbyDoor={changeNearby} onRegionChange={changeRegion} onReady={()=>setReady(true)}/>}
+      {webglAvailable&&<FlameEventMobileScene enterprises={enterprises} inputRef={controls} role={role} onNearbyDoor={changeNearby} onRegionChange={changeRegion} onReady={sceneReady}/>}
       <div className={"pointer-events-none absolute inset-0 z-[6] bg-[radial-gradient(ellipse_at_50%_43%,rgba(127,219,247,.16),transparent_55%)] transition-opacity duration-1000 motion-reduce:transition-none "+(crossed?"opacity-100":"opacity-0")} aria-hidden="true"/>
       <div className={"absolute inset-y-[13%] right-0 z-[7] w-[60%] "+(!entered?"pointer-events-none":"")} style={{touchAction:'none'}}
         onPointerDown={onLookDown} onPointerMove={onLookMove}
@@ -277,7 +284,7 @@ export function FlameEventOpenWorld({
 
       <div className={"absolute bottom-5 right-3 z-20 flex flex-col items-end gap-2 sm:bottom-7 sm:right-5 "+(!entered||!webglAvailable?"pointer-events-none opacity-30":"")}>
         {nearDoor ? <Link
-          href={'/market/'+encodeURIComponent(nearDoor.public_slug)+'?via=system-switch'}
+          href={'/market/'+encodeURIComponent(nearDoor.public_slug)+'?via=system-switch'} onClick={savePosition}
           className="flex max-w-[195px] items-center gap-2 rounded-xl border border-amber-100/70 bg-[#b87728]/95 px-3 py-3 text-xs font-black text-white shadow-lg shadow-amber-400/20"
           aria-label={'Enter Customer Door '+(nearDoor.platform_name||nearDoor.name)}
           data-flame-event-customer-door={nearDoor.public_slug}
@@ -323,7 +330,7 @@ export function FlameEventOpenWorld({
         {enterprises.length===0?<p className="text-xs leading-5 text-sky-100/75">{doorStatus==='loading'?'Retrieving opened public Client Customer Doors…':doorStatus==='unavailable'?'Customer Door service is currently unavailable. Please retry.':'No public Client Customer Door is open yet. This list will update automatically.'}</p>:
         <div className="grid gap-2">
           {enterprises.map((enterprise,index)=><Link key={enterprise.public_slug}
-            href={'/market/'+encodeURIComponent(enterprise.public_slug)+'?via=system-switch'}
+            href={'/market/'+encodeURIComponent(enterprise.public_slug)+'?via=system-switch'} onClick={savePosition}
             data-flame-event-customer-door={enterprise.public_slug}
             className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[.07] px-3 py-3 text-xs text-white"
           >
@@ -333,7 +340,7 @@ export function FlameEventOpenWorld({
           </Link>)}
         </div>}
       </div>}
-      {entered&&crossed&&role==='client'&&<Link href="/client/system-switch?via=system-switch" className="absolute left-3 bottom-[10.5rem] z-20 inline-flex items-center gap-2 rounded-xl border border-cyan-200/50 bg-[#082741]/90 px-3 py-3 text-xs font-black text-white" data-system-switch-enter-owned-folder>
+      {entered&&crossed&&role==='client'&&<Link href="/client/system-switch?via=system-switch" onClick={savePosition} className="absolute left-3 bottom-[10.5rem] z-20 inline-flex items-center gap-2 rounded-xl border border-cyan-200/50 bg-[#082741]/90 px-3 py-3 text-xs font-black text-white" data-system-switch-enter-owned-folder>
         <Orbit className="h-4 w-4 text-amber-200"/> Enter My File Folder <ChevronRight className="h-3.5 w-3.5"/>
       </Link>}
       {!entered&&<div className="absolute inset-0 z-40 flex items-center justify-center bg-[radial-gradient(ellipse_at_50%_40%,rgba(30,94,121,.4),rgba(2,14,30,.93)_72%)] px-5 py-8 text-center" data-system-switch-arrival-threshold>
