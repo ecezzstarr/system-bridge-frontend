@@ -41,10 +41,23 @@ export async function PATCH(request: NextRequest) {
     const id = typeof body.id === 'string' ? body.id : ''
     const decision = body.decision
     const reviewNote = typeof body.reviewNote === 'string' ? body.reviewNote.trim() : ''
-    if (!uuidPattern.test(id) || !['verified', 'rejected'].includes(decision) || reviewNote.length < 12 || reviewNote.length > 2000) {
+    if (!uuidPattern.test(id) || !['verified', 'rejected', 'unpublish'].includes(decision) || reviewNote.length < 12 || reviewNote.length > 2000) {
       return NextResponse.json({ success: false, error: 'Record, decision and review note (12–2000 characters) are required' }, { status: 400 })
     }
     await ensureFlameFrontierSchema()
+    if (decision === 'unpublish') {
+      const [hidden] = await sql`
+        UPDATE weave_flame_frontier
+        SET public_opt_in = false,
+            review_note = COALESCE(review_note, '') || ${' | Unpublished: ' + reviewNote},
+            updated_at = NOW()
+        WHERE id = ${id}::uuid AND event_key = ${FLAME_EVENT.key}
+          AND status = 'verified' AND public_opt_in = true
+        RETURNING id, status, state_code, public_opt_in
+      `
+      if (!hidden) return NextResponse.json({ success: false, error: 'No published verified record found' }, { status: 409 })
+      return NextResponse.json({ success: true, record: hidden })
+    }
     const [record] = await sql`
       UPDATE weave_flame_frontier
       SET status = ${decision}, reviewed_by = ${admin.id}::uuid, review_note = ${reviewNote},
