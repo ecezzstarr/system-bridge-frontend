@@ -45,7 +45,7 @@ export async function POST(request:NextRequest){
         adminPath:'/admin/weave-trx-sales',actorName:'Bridge of Radiance'})
     }catch(e){console.error('[TRX sales request notification]',e)}
     return NextResponse.json({success:true,sale:order,
-      instruction:'Request recorded. Do not pay until Administration issues a quote with verified bank instructions. No TRX has been sold or transferred.'},{status:201})
+      instruction:'Interest recorded. Weave TRX bank sales are not activated until compliant provider authorization is verified. Do not send bank funds or expect a quote yet.'},{status:201})
   }
   if(action==='submit_proof'){
     const id=String(body.orderId||'')
