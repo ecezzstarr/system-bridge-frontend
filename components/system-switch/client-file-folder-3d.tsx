@@ -1,5 +1,6 @@
 'use client'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
+import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
@@ -540,6 +541,7 @@ function Scene({
   constructionPage:number
   systemPage:number
 }){
+  const mobileBudget=useAdaptiveRuntime()
   const visibleSystems=liveSystems.slice(systemPage*12,systemPage*12+12)
   return <>
     <color attach="background" args={['#101d29']}/>
@@ -551,7 +553,7 @@ function Scene({
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
     <StoneGround/>
-    <SystemSwitchThreshold position={[0,0,7.5]} scale={.44} quiet={false}/>
+    <SystemSwitchThreshold position={[0,0,7.5]} scale={.44} quiet={mobileBudget.reducedMotion}/>
     <FileFolderScenery formationCount={activeBuilds.length}/>
     <FileFolderFacilities
       marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
