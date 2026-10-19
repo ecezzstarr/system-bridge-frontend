@@ -12,7 +12,7 @@ import {
   resolveEventStatus,
 } from '@/lib/weave-event'
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
-import { FlameEventOpenWorld } from '@/components/events/flame-event-open-world'
+import { FlameEventOpenWorld, type FlameDoorFeedStatus } from '@/components/events/flame-event-open-world'
 import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { visiblePoll } from '@/lib/visible-poll'
 import { getRolePlaces } from '@/lib/weave-role-districts'
@@ -44,6 +44,7 @@ export default function PositionEventWorld({
   const [now, setNow] = useState(() => new Date())
   const [event, setEvent] = useState<WeaveEvent>(FLAME_EVENT)
   const [enterprises, setEnterprises] = useState<PublicClientEnterprise[]>([])
+  const [doorStatus,setDoorStatus]=useState<FlameDoorFeedStatus>('loading')
 
   useEffect(() => visiblePoll(() => setNow(new Date()), 1000), [])
 
@@ -60,10 +61,17 @@ export default function PositionEventWorld({
   useEffect(() => {
     let mounted = true
     const stop = visiblePoll(async signal => {
-      const res = await fetch('/api/public/client-market', { cache: 'no-store', signal })
-      const data = await res.json()
-      if (mounted && data?.success && Array.isArray(data.enterprises)) {
-        setEnterprises(data.enterprises.slice(0, 9))
+      try{
+        const res = await fetch('/api/public/client-market', { cache: 'no-store', signal })
+        if(!res.ok)throw new Error('Customer Door feed unavailable')
+        const data = await res.json()
+        if(!data?.success||!Array.isArray(data.enterprises))throw new Error('Invalid Customer Door feed')
+        if(mounted){
+          setEnterprises(data.enterprises.slice(0,9))
+          setDoorStatus('ready')
+        }
+      }catch{
+        if(mounted&&!signal.aborted)setDoorStatus('unavailable')
       }
     }, 12000)
     return () => { mounted = false; stop() }
@@ -103,7 +111,7 @@ export default function PositionEventWorld({
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,247,237,.018),transparent_18%,transparent_78%,rgba(249,115,22,.035)),radial-gradient(circle_at_50%_42%,rgba(249,115,22,.08),transparent_30%)]" />
 
       <div className="relative z-10">
-        <FlameEventOpenWorld enterprises={enterprises} role={role} />
+        <FlameEventOpenWorld enterprises={enterprises} doorStatus={doorStatus} role={role} />
         <header className="grid gap-5 border-b border-white/8 px-4 py-5 sm:px-6 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:px-8 lg:py-7">
           <FlameEventArtifactMark size="md" surface="client-event" className="mx-auto lg:mx-0" />
 
