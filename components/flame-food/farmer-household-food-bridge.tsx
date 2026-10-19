@@ -1,4 +1,5 @@
 'use client'
+import { FarmToFamilySettlementInfo } from '@/components/weave-food/food-program-info'
 import { FormEvent,useCallback,useEffect,useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CheckCircle2, Flame, MapPin, RefreshCcw, Tractor, Truck } from 'lucide-react'
@@ -135,6 +136,7 @@ export default function FarmerHouseholdFoodBridge(){
   </main>
 
   return <main className="min-h-screen bg-[#08110d] text-white" data-lifestyle-food="farmer-household">
+    <div className="mx-auto max-w-6xl px-4 pt-5 sm:px-8"><FarmToFamilySettlementInfo audience="seller"/></div>
     <header className="border-b border-emerald-300/15 bg-[radial-gradient(circle_at_72%_0%,rgba(34,197,94,.15),transparent_48%)] px-4 py-8 sm:px-8">
       <div className="mx-auto max-w-6xl">
         <Link href="/weave/lifestyles" className="inline-flex items-center gap-2 text-xs text-emerald-200"><ArrowLeft className="h-4 w-4"/> Lifestyle</Link>
