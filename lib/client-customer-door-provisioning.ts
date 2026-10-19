@@ -62,6 +62,7 @@ export async function provisionPurchasedFileFolderCustomerDoor(params: {
     LIMIT 1
   `
 
+  const commissionedWithPurchase = !build
   if (!build) {
     ;[build] = await sql`
       INSERT INTO client_file_folder_builds (
@@ -126,6 +127,17 @@ export async function provisionPurchasedFileFolderCustomerDoor(params: {
         ELSE ${build.completes_at}
       END,
       public_opened_at=client_business_stores.public_opened_at,
+      -- New File Folder purchases expose their Customer Door to both public
+      -- Market and staff Flame Event after its build matures. Replay never
+      -- replaces later Client hosting choices.
+      world_host_customer_market=CASE
+        WHEN ${commissionedWithPurchase} THEN true
+        ELSE client_business_stores.world_host_customer_market
+      END,
+      world_host_flame_event=CASE
+        WHEN ${commissionedWithPurchase} THEN true
+        ELSE client_business_stores.world_host_flame_event
+      END,
       updated_at=NOW()
     WHERE id=${store.id}::uuid
     RETURNING id,client_id,file_number,public_slug,name,formation_status,formation_due_at,public_opened_at
