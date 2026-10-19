@@ -42,6 +42,7 @@ export default function SystemSwitchEntryPage() {
           Your {position} stays yours. When you enter Flame Event, you become a walking presence inside the Burning River. Reach the Switch arch and enter the opened Customer Doors of Client-owned worlds.
         </p>
       </div>
+      <Link href="/system-switch/bridge-radiance/trx" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-300/35 bg-amber-300/10 px-5 py-3 text-xs font-black text-amber-100">Buy TRX through Bridge of Radiance · Verified Wise / Flutterwave <ArrowRight className="h-4 w-4"/></Link>
       <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Visit Client-hosted Customer Doors as an avatar</Link>
       <div className="relative my-7"><StaffFileFolderWorld role={role} identity={user.name || user.username} userId={user.id}/></div>
       <p className="text-center text-[10px] font-semibold leading-5 text-white/85">
