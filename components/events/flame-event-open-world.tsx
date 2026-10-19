@@ -1,180 +1,285 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { ArrowRight, DoorOpen, Flame, Radio, ShoppingBag, Waves } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { ArrowRight, DoorOpen, Flame, Footprints, Hand, List, PersonStanding, Radio, Waves, X } from 'lucide-react'
+import type { FlameMobileInput } from './flame-event-mobile-scene'
+
+const FlameEventMobileScene=dynamic(
+  ()=>import('./flame-event-mobile-scene').then(module=>module.FlameEventMobileScene),
+  {ssr:false,loading:()=>null},
+)
 
 export type FlameWorldCustomerDoor = {
-  public_slug: string
-  name: string
-  description?: string | null
-  platform_name?: string | null
-  market_section?: string | null
-  level: 'door' | 'storefront' | 'market_hall'
-  offer_count: number
+  public_slug:string
+  name:string
+  description?:string|null
+  platform_name?:string|null
+  market_section?:string|null
+  level:'door'|'storefront'|'market_hall'
+  offer_count:number
 }
 
 /**
- * The Burning River is the shared visual ground, not a gallery of fake doors.
- * Each lit portal is backed by an opened public Client enterprise from
- * /api/public/client-market; the destination stays the existing public market.
- * Private File Folder data is never exposed here.
+ * Flame Event mobile crossing. The client public API owns portal identity;
+ * no synthetic shops, private folders, or invented other players are exposed.
+ * First-person input is not used: this is an over-the-shoulder human avatar.
  */
 export function FlameEventOpenWorld({
   enterprises,
   role,
-}: {
-  enterprises: FlameWorldCustomerDoor[]
-  role: 'admin' | 'agent' | 'bridger' | 'client'
-}) {
-  return (
-    <section
-      className="flame-world relative isolate overflow-hidden border-b border-amber-200/20 bg-[#061c35] text-white"
-      aria-label="Flame Event Burning River open world"
-      data-flame-event-open-world="burning-river"
-      data-flame-event-location="system-switch"
+}:{
+  enterprises:FlameWorldCustomerDoor[]
+  role:'admin'|'agent'|'bridger'|'client'
+}){
+  const controls=useRef<FlameMobileInput>({
+    forward:0,right:0,yaw:0,pitch:0,run:false,crouch:false,jumpQueued:false,
+  })
+  const joystick=useRef<HTMLDivElement>(null)
+  const thumb=useRef<HTMLDivElement>(null)
+  const movementPointer=useRef<number|null>(null)
+  const lookPointer=useRef<number|null>(null)
+  const lookLast=useRef({x:0,y:0})
+  const [nearby,setNearby]=useState<number|null>(null)
+  const [showDirectory,setShowDirectory]=useState(false)
+  const [crouching,setCrouching]=useState(false)
+  const [running,setRunning]=useState(false)
+  const [ready,setReady]=useState(false)
+
+  const nearDoor=nearby===null?null:enterprises[nearby]||null
+
+  const resetMovement=useCallback(()=>{
+    controls.current.forward=0
+    controls.current.right=0
+    controls.current.run=false
+    movementPointer.current=null
+    lookPointer.current=null
+    if(thumb.current)thumb.current.style.transform='translate(0px, 0px)'
+    setRunning(false)
+  },[])
+
+  useEffect(()=>{
+    const onVisibility=()=>{if(document.hidden)resetMovement()}
+    window.addEventListener('blur',resetMovement)
+    document.addEventListener('visibilitychange',onVisibility)
+    return ()=>{
+      window.removeEventListener('blur',resetMovement)
+      document.removeEventListener('visibilitychange',onVisibility)
+      resetMovement()
+    }
+  },[resetMovement])
+
+  const moveThumb=(x:number,y:number)=>{
+    const bounds=joystick.current?.getBoundingClientRect()
+    if(!bounds)return
+    const radius=Math.min(bounds.width,bounds.height)*.32
+    const dx=x-(bounds.left+bounds.width/2),dy=y-(bounds.top+bounds.height/2)
+    const length=Math.hypot(dx,dy)
+    const scale=length>radius?radius/length:1
+    const bx=dx*scale,by=dy*scale
+    controls.current.right=bx/radius
+    controls.current.forward=-by/radius
+    if(thumb.current)thumb.current.style.transform='translate('+bx+'px,'+by+'px)'
+  }
+
+  const onStickDown=(event:ReactPointerEvent<HTMLDivElement>)=>{
+    if(movementPointer.current!==null)return
+    movementPointer.current=event.pointerId
+    event.currentTarget.setPointerCapture(event.pointerId)
+    moveThumb(event.clientX,event.clientY)
+    event.preventDefault()
+  }
+  const onStickMove=(event:ReactPointerEvent<HTMLDivElement>)=>{
+    if(movementPointer.current===event.pointerId){
+      moveThumb(event.clientX,event.clientY)
+      event.preventDefault()
+    }
+  }
+  const onStickUp=(event:ReactPointerEvent<HTMLDivElement>)=>{
+    if(movementPointer.current!==event.pointerId)return
+    controls.current.forward=0
+    controls.current.right=0
+    movementPointer.current=null
+    if(thumb.current)thumb.current.style.transform='translate(0px, 0px)'
+    if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId)
+    event.preventDefault()
+  }
+
+  const onLookDown=(event:ReactPointerEvent<HTMLDivElement>)=>{
+    if(lookPointer.current!==null)return
+    lookPointer.current=event.pointerId
+    lookLast.current={x:event.clientX,y:event.clientY}
+    event.currentTarget.setPointerCapture(event.pointerId)
+    event.preventDefault()
+  }
+  const onLookMove=(event:ReactPointerEvent<HTMLDivElement>)=>{
+    if(lookPointer.current!==event.pointerId)return
+    const dx=event.clientX-lookLast.current.x
+    const dy=event.clientY-lookLast.current.y
+    controls.current.yaw=Math.atan2(
+      Math.sin(controls.current.yaw-dx*.0055),
+      Math.cos(controls.current.yaw-dx*.0055),
+    )
+    controls.current.pitch=Math.max(-.65,Math.min(.72,controls.current.pitch+dy*.004))
+    lookLast.current={x:event.clientX,y:event.clientY}
+    event.preventDefault()
+  }
+  const onLookUp=(event:ReactPointerEvent<HTMLDivElement>)=>{
+    if(lookPointer.current!==event.pointerId)return
+    lookPointer.current=null
+    if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId)
+    event.preventDefault()
+  }
+
+  const onRunDown=(event:ReactPointerEvent<HTMLButtonElement>)=>{
+    event.currentTarget.setPointerCapture(event.pointerId)
+    controls.current.run=true
+    setRunning(true)
+    event.preventDefault()
+  }
+  const onRunUp=(event:ReactPointerEvent<HTMLButtonElement>)=>{
+    controls.current.run=false
+    setRunning(false)
+    if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId)
+    event.preventDefault()
+  }
+  const toggleCrouch=()=>{
+    setCrouching(previous=>{
+      controls.current.crouch=!previous
+      return !previous
+    })
+  }
+
+  const changeNearby=useCallback((next:number|null)=>{
+    setNearby(current=>current===next?current:next)
+  },[])
+
+  return <section
+    className="relative isolate w-full overflow-hidden border-y border-[#ffe0a0]/25 bg-[#071b36] text-white"
+    data-flame-event-open-world="burning-river"
+    data-flame-event-location="system-switch"
+    data-flame-event-mobile-only="true"
+    aria-label="Flame Event Burning River embodied mobile world"
+  >
+    <div
+      className="relative h-[min(86svh,820px)] min-h-[560px] w-full overflow-hidden bg-[#122c49]"
+      data-flame-event-crossing="system-switch-customer-doors"
+      data-flame-event-client-enterprises="customer-door-current"
+      data-flame-event-customer-door-hub
     >
-      <div className="flame-world-scenery pointer-events-none absolute inset-0" aria-hidden="true" />
-      <div className="flame-world-radiance pointer-events-none absolute inset-0" aria-hidden="true" />
+      <div
+        className="pointer-events-none absolute inset-0 bg-cover bg-center"
+        style={{backgroundImage:"linear-gradient(0deg,rgba(7,22,41,.35),transparent 60%),url('/weave/flame-event/burning-river-world.svg')"}}
+        aria-hidden="true"
+      />
+      <FlameEventMobileScene enterprises={enterprises} inputRef={controls} role={role} onNearbyDoor={changeNearby}/>
+      <div className="absolute inset-y-[13%] right-0 z-[7] w-[60%]" style={{touchAction:'none'}}
+        onPointerDown={onLookDown} onPointerMove={onLookMove}
+        onPointerUp={onLookUp} onPointerCancel={onLookUp}
+        aria-label="Drag here to look around the Flame Event world"
+        data-flame-mobile-look
+      />
 
-      <div className="relative z-10 flex min-h-[690px] flex-col px-4 pb-5 pt-5 sm:min-h-[740px] sm:px-7 sm:pt-8 lg:min-h-[790px] lg:px-10">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="max-w-[29rem] rounded-2xl border border-white/15 bg-[#071b35]/55 px-4 py-3 shadow-[0_20px_65px_rgba(4,15,36,.25)] backdrop-blur-md sm:p-5">
-            <p className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[.2em] text-amber-100">
-              <Flame className="h-3.5 w-3.5 text-amber-300" /> Flame Event · Open World
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-[#081931]/90 via-[#081931]/30 to-transparent px-4 pb-8 pt-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[.15em] text-amber-200">
+              <Flame className="h-3.5 w-3.5"/> Flame Event · The River that Burns
             </p>
-            <h2 className="mt-2 text-2xl font-black tracking-[-.035em] text-white sm:text-4xl">
-              Burning River
-            </h2>
-            <p className="mt-1 text-xs font-semibold tracking-[.12em] text-amber-100/85">The River that Burns</p>
-            <p className="mt-3 max-w-sm text-xs leading-5 text-white/80">
-              Water and fire move together. Cross System Switch and enter an opened Client Customer Door.
-            </p>
+            <h2 className="mt-1 text-xl font-black tracking-[-.03em] text-white sm:text-3xl">System Switch</h2>
+            <p className="text-[10px] font-bold tracking-[.1em] text-sky-100">Bridge of Radiance</p>
           </div>
-          <div className="flex shrink-0 items-center gap-2 rounded-full border border-amber-200/35 bg-[#071b35]/65 px-3 py-2 text-[9px] font-bold uppercase tracking-[.12em] text-amber-100 backdrop-blur-md">
-            <Radio className="h-3 w-3 text-amber-200" />
-            {enterprises.length} opened {enterprises.length === 1 ? 'door' : 'doors'}
-          </div>
-        </div>
-
-        <div className="relative mt-auto flex flex-1 flex-col items-center justify-end pb-10 pt-20 sm:pb-12" data-flame-event-crossing="system-switch-customer-doors">
-          <div className="pointer-events-none absolute left-1/2 top-[8%] w-[min(88%,38rem)] -translate-x-1/2 text-center sm:top-[9%]">
-            <p className="text-[10px] font-black uppercase tracking-[.32em] text-[#fff7d0] [text-shadow:0_2px_9px_rgba(20,37,57,.9),0_0_20px_rgba(253,195,100,.5)] sm:text-base">
-              SYSTEM SWITCH
-            </p>
-            <p className="mt-1 text-[8px] font-bold uppercase tracking-[.28em] text-[#fff6df] [text-shadow:0_2px_8px_rgba(0,0,0,.8)] sm:text-[10px]">
-              Bridge of Radiance
-            </p>
-          </div>
-
-          <div className="flame-world-crossing relative w-full max-w-[1150px]">
-            <p className="mb-3 text-center text-[10px] font-black uppercase tracking-[.22em] text-white [text-shadow:0_2px_8px_rgba(7,22,48,.9)] sm:mb-6">
-              Customer Doors · Client-built worlds
-            </p>
-            {enterprises.length ? (
-              <div
-                className="flame-world-doors flex snap-x snap-mandatory items-end gap-3 overflow-x-auto px-3 pb-4 pt-3 sm:gap-4 sm:px-5"
-                aria-label="Opened Client Customer Doors at System Switch"
-                data-flame-event-customer-door-hub
-              >
-                {enterprises.map((enterprise, index) => {
-                  const name = enterprise.platform_name || enterprise.name
-                  return (
-                    <Link
-                      key={enterprise.public_slug}
-                      href={`/market/${encodeURIComponent(enterprise.public_slug)}`}
-                      className="flame-world-door group relative flex h-48 w-[148px] shrink-0 snap-center flex-col items-center justify-end overflow-hidden rounded-t-[4.2rem] rounded-b-xl border-[3px] border-[#ffdfa0] px-3 pb-3 text-center shadow-[0_0_0_1px_rgba(253,194,83,.5),0_0_20px_rgba(245,152,49,.55),0_12px_24px_rgba(11,27,48,.68)] outline-offset-4 transition duration-300 hover:-translate-y-2 hover:shadow-[0_0_0_2px_rgba(255,238,190,.75),0_0_38px_rgba(252,184,64,.8)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-100 sm:h-56 sm:w-[170px]"
-                      data-flame-event-customer-door={enterprise.public_slug}
-                      aria-label={`Enter Customer Door: ${name}`}
-                    >
-                      <span className="flame-world-door-interior pointer-events-none absolute inset-[3px] rounded-t-[3.8rem] rounded-b-[.55rem]" aria-hidden="true" />
-                      <span className="pointer-events-none absolute inset-x-2 top-2 rounded-t-full border-t-2 border-amber-100/70" aria-hidden="true" />
-                      <span className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 text-[8px] font-black uppercase tracking-[.15em] text-amber-50 [text-shadow:0_2px_5px_rgba(0,0,0,.8)]">
-                        Door {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <span className="relative z-10 mb-auto mt-12 flex h-11 w-11 items-center justify-center rounded-full border border-amber-100/55 bg-[#092946]/65 text-amber-100 shadow-[0_0_26px_rgba(255,207,113,.48)]">
-                        <ShoppingBag className="h-5 w-5" />
-                      </span>
-                      <span className="relative z-10 block w-full break-words rounded-xl border border-[#ffebbc]/40 bg-[#092039]/85 px-2 py-2 backdrop-blur-sm">
-                        <span className="block text-xs font-black leading-4 text-white">{name}</span>
-                        <span className="mt-1 block text-[9px] text-sky-100/90">
-                          {enterprise.market_section || (enterprise.level === 'market_hall' ? 'Market Hall' : 'Customer Market')}
-                        </span>
-                        <span className="mt-1 inline-flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wide text-amber-200">
-                          Enter Door <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1" />
-                        </span>
-                      </span>
-                    </Link>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="mx-auto flex min-h-48 w-full max-w-sm flex-col items-center justify-center rounded-t-[5rem] rounded-b-2xl border-2 border-amber-200/40 bg-[#0b2b47]/80 px-5 text-center shadow-[0_0_35px_rgba(245,169,75,.2)] backdrop-blur-md" data-flame-event-no-open-doors>
-                <DoorOpen className="h-9 w-9 text-amber-200" />
-                <p className="mt-3 text-sm font-black text-white">System Switch awaits its first public Customer Door</p>
-                <p className="mt-2 text-[11px] leading-5 text-sky-100/75">
-                  Opened Client enterprises appear here automatically when published.
-                </p>
-              </div>
-            )}
-            <p className="mt-2 text-center text-[10px] font-medium text-white/90 [text-shadow:0_2px_5px_rgba(0,0,0,.9)]">
-              {enterprises.length
-                ? 'Select a radiant portal to enter that Client’s public enterprise.'
-                : 'No private Client File Folder is shown to visitors or staff.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/15 bg-[#061d37]/70 px-4 py-3 backdrop-blur-md">
-          <span className="inline-flex items-center gap-2 text-[10px] font-semibold text-sky-50">
-            <Waves className="h-4 w-4 text-sky-200" /> Water and fire · One moving world
-          </span>
-          <span className="text-[9px] font-bold uppercase tracking-[.13em] text-amber-100/90">
-            {role === 'client' ? 'Client crossing' : 'Staff crossing'} · Enter Customer Door
+          <span className="rounded-full border border-amber-200/35 bg-[#071a32]/65 px-2.5 py-1.5 text-[9px] font-bold text-amber-100">
+            {enterprises.length} live {enterprises.length===1?'door':'doors'}
           </span>
         </div>
       </div>
-      <style jsx>{`
-        .flame-world-scenery {
-          background: linear-gradient(180deg, rgba(6, 21, 43, .05), rgba(6, 21, 43, .04) 50%, rgba(6, 21, 43, .2)),
-            url('/weave/flame-event/burning-river-world.svg') center center / cover no-repeat;
-          transform: scale(1.02);
-          animation: flame-world-breathe 18s ease-in-out infinite alternate;
-          will-change: transform;
-        }
-        .flame-world-radiance {
-          background: radial-gradient(ellipse at 52% 58%, rgba(255, 229, 161, .12), transparent 34%),
-                      repeating-linear-gradient(105deg, transparent 0 28px, rgba(255, 231, 160, .028) 29px, transparent 32px 83px);
-          background-size: auto, 190% 100%;
-          animation: flame-world-current 24s linear infinite;
-          mix-blend-mode: screen;
-        }
-        .flame-world-doors {
-          scrollbar-width: thin;
-          scrollbar-color: #e8b75a rgba(5, 27, 49, .6);
-          justify-content: safe center;
-          -webkit-overflow-scrolling: touch;
-        }
-        .flame-world-doors::-webkit-scrollbar { height: 5px; }
-        .flame-world-doors::-webkit-scrollbar-thumb { background: #e8b75a; border-radius: 10px; }
-        .flame-world-door {
-          background: linear-gradient(132deg, #fff1bd, #cb903d 20%, #9d6322 65%, #ffd58b);
-        }
-        .flame-world-door-interior {
-          background: radial-gradient(circle at 50% 15%, rgba(252, 214, 132, .9), transparent 45%),
-                      linear-gradient(180deg, rgba(39, 110, 143, .7), rgba(4, 35, 67, .86) 57%, rgba(2, 15, 33, .96)),
-                      url('/weave/flame-event/burning-river-world.svg') center / cover;
-        }
-        @keyframes flame-world-breathe {
-          from { transform: scale(1.02) translateX(-.3%); }
-          to { transform: scale(1.055) translateX(.3%); }
-        }
-        @keyframes flame-world-current {
-          to { background-position: center, -190% center; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .flame-world-scenery, .flame-world-radiance { animation: none; will-change: auto; }
-        }
-      `}</style>
-    </section>
-  )
+
+      <div className="pointer-events-none absolute right-4 top-[26%] z-10 max-w-[40%] text-right text-[10px] font-semibold text-white/70 [text-shadow:0_2px_8px_#051528]" data-flame-mobile-help>
+        Drag right side to look
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 z-[9] h-56 bg-gradient-to-t from-[#06192e]/80 via-[#06192e]/10 to-transparent pointer-events-none"/>
+
+      <div className="absolute bottom-6 left-3 z-20 sm:bottom-8 sm:left-6">
+        <div ref={joystick}
+          className="relative flex h-32 w-32 items-center justify-center rounded-full border-2 border-sky-100/35 bg-[#0b2444]/45 shadow-[inset_0_0_30px_rgba(160,217,252,.12),0_8px_30px_rgba(0,0,0,.3)] backdrop-blur-[3px]"
+          style={{touchAction:'none'}}
+          onPointerDown={onStickDown} onPointerMove={onStickMove}
+          onPointerUp={onStickUp} onPointerCancel={onStickUp}
+          role="group" aria-label="Left-thumb movement joystick" data-flame-mobile-joystick
+        >
+          <span className="pointer-events-none absolute top-2 text-[8px] font-black tracking-widest text-white/60">MOVE</span>
+          <span className="pointer-events-none absolute bottom-2 text-[8px] font-black tracking-widest text-white/40">WALK</span>
+          <div ref={thumb} className="pointer-events-none flex h-14 w-14 items-center justify-center rounded-full border border-sky-100/65 bg-sky-100/25 shadow-[0_0_18px_rgba(164,231,255,.24)]" style={{willChange:'transform'}}>
+            <Footprints className="h-5 w-5 text-white"/>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute bottom-5 right-3 z-20 flex flex-col items-end gap-2 sm:bottom-7 sm:right-5">
+        {nearDoor ? <Link
+          href={'/market/'+encodeURIComponent(nearDoor.public_slug)}
+          className="flex max-w-[195px] items-center gap-2 rounded-xl border border-amber-100/70 bg-[#b87728]/95 px-3 py-3 text-xs font-black text-white shadow-lg shadow-amber-400/20"
+          aria-label={'Enter Customer Door '+(nearDoor.platform_name||nearDoor.name)}
+          data-flame-event-customer-door={nearDoor.public_slug}
+          data-flame-event-enter-proximity
+        >
+          <DoorOpen className="h-5 w-5 shrink-0"/>
+          <span className="min-w-0">
+            <span className="block truncate">{nearDoor.platform_name||nearDoor.name}</span>
+            <span className="block text-[9px] uppercase tracking-wider">Enter Customer Door</span>
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0"/>
+        </Link> : <span className="max-w-[175px] rounded-xl border border-white/20 bg-[#081b35]/75 px-3 py-2 text-[10px] font-semibold leading-4 text-white/85 backdrop-blur-sm" data-flame-event-proximity>
+          {enterprises.length?'Walk up to a glowing Customer Door to enter.':'Opened Client Customer Doors appear in this world.'}
+        </span>}
+        <div className="flex items-end gap-2">
+          <div className="flex flex-col gap-2">
+            <button type="button" onClick={toggleCrouch} aria-pressed={crouching}
+              data-flame-mobile-crouch
+              className={'flex h-12 w-12 flex-col items-center justify-center rounded-full border text-[8px] font-black '+(crouching?'border-amber-200 bg-amber-700/85 text-white':'border-white/35 bg-[#0b2445]/85 text-sky-50')}
+            ><PersonStanding className="h-4 w-4"/>{crouching?'LOW':'CROUCH'}</button>
+            <button type="button" onPointerDown={event=>{controls.current.jumpQueued=true;event.preventDefault()}}
+              data-flame-mobile-jump
+              className="flex h-12 w-12 flex-col items-center justify-center rounded-full border border-white/35 bg-[#0b2445]/85 text-[8px] font-black text-white"
+            ><span className="text-lg leading-4">↑</span>JUMP</button>
+          </div>
+          <button type="button" onPointerDown={onRunDown} onPointerUp={onRunUp} onPointerCancel={onRunUp}
+            aria-pressed={running} data-flame-mobile-run
+            className={'flex h-20 w-20 flex-col items-center justify-center rounded-full border-2 text-[10px] font-black shadow-lg '+(running?'border-amber-100 bg-amber-600/85 text-white':'border-amber-100/60 bg-[#783f24]/85 text-amber-50')}
+            style={{touchAction:'none'}}
+          ><Footprints className="mb-1 h-6 w-6"/>HOLD RUN</button>
+        </div>
+      </div>
+
+      <button type="button" onClick={()=>setShowDirectory(value=>!value)}
+        className="absolute left-3 top-[110px] z-20 flex items-center gap-2 rounded-full border border-amber-200/45 bg-[#071d38]/85 px-3 py-2 text-[10px] font-bold text-amber-100"
+        aria-expanded={showDirectory} data-flame-mobile-door-directory>
+        {showDirectory?<X className="h-3.5 w-3.5"/>:<List className="h-3.5 w-3.5"/>}
+        {showDirectory?'Close doors':'Customer Doors'}
+      </button>
+      {showDirectory&&<div className="absolute left-3 right-3 top-[155px] z-30 max-h-[42%] overflow-y-auto rounded-2xl border border-amber-200/35 bg-[#071b34]/95 p-3 shadow-2xl backdrop-blur-lg"
+        aria-label="Opened Client Customer Door directory" data-flame-event-door-directory>
+        {enterprises.length===0?<p className="text-xs leading-5 text-sky-100/75">No public Client Customer Door is open yet. This list will update automatically.</p>:
+        <div className="grid gap-2">
+          {enterprises.map((enterprise,index)=><Link key={enterprise.public_slug}
+            href={'/market/'+encodeURIComponent(enterprise.public_slug)}
+            data-flame-event-customer-door={enterprise.public_slug}
+            className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[.07] px-3 py-3 text-xs text-white"
+          >
+            <span className="min-w-0"><span className="text-[9px] font-bold uppercase tracking-wider text-amber-200">Door {index+1}</span>
+              <span className="mt-1 block font-bold">{enterprise.platform_name||enterprise.name}</span></span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-amber-100"/>
+          </Link>)}
+        </div>}
+      </div>}
+      <div className="sr-only" aria-live="polite">{nearDoor?'Customer Door nearby: '+(nearDoor.platform_name||nearDoor.name):''}</div>
+    </div>
+
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200/20 bg-[#071b33] px-4 py-3 text-[10px] text-sky-50">
+      <span className="inline-flex items-center gap-2"><Waves className="h-4 w-4 text-sky-300"/> Water and fire · One flowing world</span>
+      <span className="inline-flex items-center gap-2"><Radio className="h-3.5 w-3.5 text-amber-300"/> {role==='client'?'Client':'Staff'} position · Touch movement</span>
+    </div>
+  </section>
 }
