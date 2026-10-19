@@ -2,6 +2,7 @@ import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
+import { notifyManualFoodPreparationAssignment } from '@/lib/food-preparation-routing'
 import {
   ensureFoodPreparationManagerSchema,ensurePreparationOrderSources,
   getPreparationSourceOrder,isPreparationProduct,preparationNextStage,
@@ -99,18 +100,48 @@ export async function PATCH(request:NextRequest){
       const order=await getPreparationSourceOrder(product,orderId)
       if(!order||order.payment_status!=='paid')
         return NextResponse.json({success:false,error:'Only a verified paid source order may be assigned.'},{status:409})
+      if(product==='daisy'&&!order.preparation_released_at)
+        return NextResponse.json({success:false,error:'Administration must confirm the Daisy Pastries payment for kitchen preparation first.'},{status:409})
       const status=String(product==='daisy'?order.status:order.fulfillment_status)
       if(!preparationNextStage(product,status))
         return NextResponse.json({success:false,error:'This order has no unfinished preparation/dispatch step.'},{status:409})
-      const {rows}=await getPool().query(`
-        INSERT INTO weave_food_preparation_tasks(manager_id,product,source_order_id,assigned_by)
-        VALUES($1::uuid,$2,$3::uuid,$4::uuid)
-        ON CONFLICT (product,source_order_id) DO UPDATE
-          SET manager_id=EXCLUDED.manager_id,assigned_by=EXCLUDED.assigned_by,
-            assigned_at=NOW(),updated_at=NOW()
-        RETURNING id,manager_id,product,source_order_id,assigned_at
-      `,[managerId,product,orderId,admin.id])
-      return NextResponse.json({success:true,task:rows[0],message:'Verified order assigned to approved Food Preparation Manager.'})
+      const client=await getPool().connect()
+      let committed=false
+      try{
+        await client.query('BEGIN')
+        const {rows:before}=await client.query(`
+          SELECT manager_id FROM weave_food_preparation_tasks
+          WHERE product=$1 AND source_order_id=$2::uuid FOR UPDATE
+        `,[product,orderId])
+        const priorManager=String(before[0]?.manager_id||'')
+        const {rows}=await client.query(`
+          INSERT INTO weave_food_preparation_tasks(manager_id,product,source_order_id,assigned_by)
+          VALUES($1::uuid,$2,$3::uuid,$4::uuid)
+          ON CONFLICT (product,source_order_id) DO UPDATE
+            SET manager_id=EXCLUDED.manager_id,assigned_by=EXCLUDED.assigned_by,
+              assigned_at=NOW(),updated_at=NOW()
+          RETURNING id,manager_id,product,source_order_id,assigned_at
+        `,[managerId,product,orderId,admin.id])
+        if(priorManager!==managerId){
+          await notifyManualFoodPreparationAssignment(
+            client,String(people[0].agent_id),admin.id,product,order,String(rows[0].id)
+          )
+          if(priorManager){
+            await client.query(`
+              INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link)
+              SELECT m.agent_id,'food_preparation_reassigned','Preparation task reassigned',
+                $1,$2::uuid,'WEAVE Administration','/weave/lifestyles/food-preparation'
+              FROM weave_food_preparation_managers m WHERE m.id=$3::uuid
+            `,['Your '+product+' order '+orderId+' has been reassigned. Please do not prepare or dispatch it.',admin.id,priorManager])
+          }
+        }
+        await client.query('COMMIT');committed=true
+        return NextResponse.json({success:true,task:rows[0],
+          message:priorManager===managerId?'Order remains assigned to this manager.':'Approved Food Preparation Manager notified with the order location and delivery instructions.'})
+      }catch(error){
+        if(!committed)await client.query('ROLLBACK').catch(()=>{})
+        throw error
+      }finally{client.release()}
     }
     return NextResponse.json({success:false,error:'Select a supported staffing action.'},{status:400})
   }catch(error){console.error('[admin preparation] PATCH',error);return NextResponse.json({success:false,error:'Unable to update Food Preparation Manager staffing.'},{status:500})}
