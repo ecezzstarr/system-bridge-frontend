@@ -6,6 +6,7 @@ import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { recordSystemEvent } from '@/lib/system-events'
 import { notifyUser } from '@/lib/deposit-notifications'
+import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
 
 export async function GET(request: NextRequest) {
   const auth = await requireWorkshopAuthorization(request)
@@ -86,6 +87,9 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true, application: rejected })
     }
 
+    const monthlyStanding=await getClientMonthlyStanding(String(application.client_id))
+    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Client must maintain a verified 600 Flame Coin monthly subscription for enterprise approval.'},{status:409})
+
     const [approved] = await sql`
       UPDATE enterprise_applications
       SET status='approved',admin_note=${note},reviewed_at=NOW(),reviewed_by=${auth.session.user.id}::uuid,updated_at=NOW()
@@ -95,7 +99,7 @@ export async function PATCH(request: NextRequest) {
 
     await sql`
       UPDATE client_file_folders
-      SET weave_position=${application.requested_position},
+      SET weave_position=${monthlyStanding.title},
           enterprise_status='approved',
           enterprise_name=${application.enterprise_name},
           enterprise_sector=${application.sector},
