@@ -5,7 +5,7 @@ import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { activateLegionEmployment, ensureLegionEmploymentSchema, getActiveLegionEmployment, releaseLegionEmployment } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
-import {notifyAdministrators} from '@/lib/deposit-notifications'
+import {notifyAdministrators,notifyUser} from '@/lib/deposit-notifications'
 import { getClientMonthlyStanding, ensureClientMonthlySchema } from '@/lib/client-monthly-subscription'
 
 async function enterpriseCapacity(clientId:string){
@@ -166,6 +166,11 @@ export async function POST(request:NextRequest){
       subjectType:'enterprise_legion',subjectId:String(legion.id),source:'lifestyle-legion',
       payload:{applicationId,enterpriseName:application.enterprise_name,acceptedByWorker:true,exclusive:true},
     }).catch(e=>console.error('[Legion accept event]',e))
+    await notifyUser(String(application.client_id),{
+      type:'legion_employment_activated',title:'Enterprise Legion accepted',
+      content:`${user.name||baseRole} accepted the written employment terms. Their active ${baseRole} operating position is now your exclusive Legion until release.`,
+      link:'/client/enterprise/legions',fromUserId:user.id,fromUserName:user.name||'Legion',
+    })
     return NextResponse.json({success:true,legion,exclusive:true})
   }
 
