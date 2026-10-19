@@ -29,7 +29,7 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{code:str
       SELECT o.id,o.status,o.quantity,o.unit_price_ngn,o.food_subtotal_ngn,
         o.delivery_quote_ngn,o.quote_note,o.delivery_mode,
         o.destination_state,o.destination_area,o.created_at,
-        e.status AS escrow_status,e.reference AS escrow_reference,e.buyer_total_ngn,e.seller_payout_ngn,
+        e.status AS escrow_status,e.reference AS escrow_reference,e.buyer_total_ngn,e.seller_payout_ngn,e.weave_commission_ngn,
         e.verified_at,e.payout_recorded_at,
         l.produce,l.unit,f.farm_name,f.state AS origin_state,f.community,
         CASE WHEN f.consent_contact_sharing AND o.status IN ('farmer_confirmed','quoted','accepted','dispatched','delivered')
@@ -42,7 +42,7 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{code:str
         AND o.carrier_referral_code=$3
       LIMIT 1
     `,[digestGuestOrderKey(key),agent.id,String(agent.referral_code).toUpperCase()])
-    return rows.length?NextResponse.json({success:true,order:{...rows[0],paymentAccountNumber:rows[0].escrow_status==='awaiting_payment'?FARM_ESCROW_ACCOUNT_NUMBER:null,weaveCommissionNgn:0}},{headers:{'Cache-Control':'no-store'}})
+    return rows.length?NextResponse.json({success:true,order:{...rows[0],paymentAccountNumber:rows[0].escrow_status==='awaiting_payment'?FARM_ESCROW_ACCOUNT_NUMBER:null,weaveCommissionNgn:rows[0].weave_commission_ngn===null?1000:Number(rows[0].weave_commission_ngn)}},{headers:{'Cache-Control':'no-store'}})
       :NextResponse.json({error:'Tracking key not found for this Agent'},{status:404})
   }catch(error){
     console.error('[carrier farm tracking] GET',error)
@@ -105,7 +105,7 @@ export async function PATCH(request:NextRequest,{params}:{params:Promise<{code:s
           INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
           SELECT id,'farm_escrow_release_due','Buyer confirmed farm delivery',$1,'WEAVE Farm-to-Family','/admin/food-escrow'
           FROM users WHERE role='admin' AND is_active=true
-        `,['Carrier farm order '+order.id+' was received. Pay seller full proceeds; no WEAVE commission.'])
+        `,['Carrier farm order '+order.id+' was received. Pay farmer the quoted total less one ₦1,000 WEAVE seller service fee.'])
         await client.query('COMMIT')
         return NextResponse.json({success:true,order:{id:order.id,status:'delivered'},escrowStatus:'release_due',
           message:'Receipt recorded. WEAVE Administration will arrange the farmer payout, then record the actual transfer.'})
