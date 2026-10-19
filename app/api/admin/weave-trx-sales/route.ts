@@ -76,10 +76,10 @@ export async function POST(request:NextRequest){
       if(clash.rows.length){await db.query('ROLLBACK');return NextResponse.json({error:'TRX transfer already assigned to another buyer'},{status:409})}
       const number='WEAVE-TRX-'+randomUUID().toUpperCase()
       result=(await db.query(`
-        UPDATE weave_trx_sale_orders SET status='delivered',delivery_tx_hash=$2,
+        UPDATE weave_trx_sale_orders SET status='delivered',delivery_tx_hash=$2,receipt_number=$4,
         delivered_at=NOW(),delivered_by=$3::uuid,updated_at=NOW()
-        WHERE id=$1::uuid RETURNING id,status,delivery_tx_hash,amount_trx,destination_tron_wallet
-      `,[id,hash,adminId])).rows[0]
+        WHERE id=$1::uuid RETURNING id,status,delivery_tx_hash,amount_trx,destination_tron_wallet,receipt_number
+      `,[id,hash,adminId,number])).rows[0]
       await db.query(`
         INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
         VALUES($1::uuid,'weave_trx_sale','TRX sale completed',$2,'WEAVE Administration','/admin/weave-trx-sales')
