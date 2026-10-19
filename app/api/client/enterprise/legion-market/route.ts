@@ -5,6 +5,7 @@ import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { ensureLegionEmploymentSchema } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
+import {notifyUser} from '@/lib/deposit-notifications'
 import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
 
 async function resolveClient(request:NextRequest){
@@ -173,6 +174,11 @@ export async function POST(request:NextRequest){
     `
     if(!offer)return NextResponse.json({success:false,error:'Application changed before terms could be offered.'},{status:409})
     await recordSystemEvent({eventType:'legion_terms_offered',actorId:clientId,actorRole:'client',subjectType:'enterprise_application',subjectId:String(offer.id),source:'enterprise-dream',payload:{enterpriseName:enterprise.enterprise_name,functionTitle,profitParticipation}})
+    await notifyUser(String(application.applicant_user_id),{
+      type:'legion_terms_offered',title:'Client enterprise employment offer',
+      content:`${enterprise.enterprise_name} offered you ${functionTitle} with agreed earnings terms. Review and accept the terms in Enterprise Legions; your original role remains active until you accept.`,
+      link:'/weave/lifestyles/legion',fromUserId:clientId,fromUserName:'Client',
+    })
     return NextResponse.json({success:true,application:offer,awaitingWorkerAcceptance:true},{status:201})
   }
 
