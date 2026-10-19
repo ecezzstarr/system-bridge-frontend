@@ -155,15 +155,15 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
       const result=await client.query(`
         UPDATE agility_stock_orders
         SET fulfillment_status=$1,
-          planned_company_cost_per_box_ngn=CASE WHEN $1='heating' THEN $3 ELSE planned_company_cost_per_box_ngn END,
-          planned_company_total_cost_ngn=CASE WHEN $1='heating' THEN $4 ELSE planned_company_total_cost_ngn END,
-          planned_company_gross_profit_ngn=CASE WHEN $1='heating' THEN $5 ELSE planned_company_gross_profit_ngn END,
+          planned_company_cost_per_box_ngn=CASE WHEN $1='heating' THEN $2 ELSE planned_company_cost_per_box_ngn END,
+          planned_company_total_cost_ngn=CASE WHEN $1='heating' THEN $3 ELSE planned_company_total_cost_ngn END,
+          planned_company_gross_profit_ngn=CASE WHEN $1='heating' THEN $4 ELSE planned_company_gross_profit_ngn END,
           heated_at=CASE WHEN $1='heating' THEN COALESCE(heated_at,NOW()) ELSE heated_at END,
           packed_at=CASE WHEN $1='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
           boxed_at=CASE WHEN $1='boxed' THEN COALESCE(boxed_at,NOW()) ELSE boxed_at END,
           dispatched_at=CASE WHEN $1='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
           updated_at=NOW()
-        WHERE id=$6::uuid AND payment_status='paid' AND fulfillment_status=$7
+        WHERE id=$5::uuid AND payment_status='paid' AND fulfillment_status=$6
         RETURNING id,agent_id,fulfillment_status
       `,[next,cost,econ.totalPlannedCostNgn,econ.grossProfitNgn,task.source_order_id,oldStage])
       updated=result.rows[0]
