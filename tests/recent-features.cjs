@@ -45,15 +45,15 @@ const {
   AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,
   AGILITY_OPAY_ACCOUNT_NUMBER,
 }=require('../lib/agility-catalog.ts')
-assert.equal(AGILITY_RETAIL_UNIT_PRICE_NGN,3000)
+assert.equal(AGILITY_RETAIL_UNIT_PRICE_NGN,4000)
 assert.equal(AGILITY_PACKAGES_PER_BOX,10)
-assert.equal(AGILITY_RETAIL_BOX_VALUE_NGN,30000)
-assert.equal(AGILITY_AGENT_BOX_PRICE_NGN,28000)
-assert.equal(AGILITY_AGENT_UNIT_COST_NGN,2800)
-assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,200)
-assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,2000)
+assert.equal(AGILITY_RETAIL_BOX_VALUE_NGN,40000)
+assert.equal(AGILITY_AGENT_BOX_PRICE_NGN,30000)
+assert.equal(AGILITY_AGENT_UNIT_COST_NGN,3000)
+assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN,1000)
+assert.equal(AGILITY_AGENT_GROSS_PROFIT_PER_BOX_NGN,10000)
 assert.equal(AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN,21000)
-assert.equal(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,7000)
+assert.equal(AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN,9000)
 assert.equal(AGILITY_OPAY_ACCOUNT_NUMBER,'8136003459')
 assert.ok(AGILITY_VARIANTS.length>=4,'Agility variants')
 const {getAgilityTotals,getAgilityCompanyEconomics,isValidAgilityCompanyCost,nextAgilityAdminStage}=require('../lib/agility.ts')
@@ -61,21 +61,21 @@ assert.deepEqual(getAgilityTotals(2),{
  boxCount:2,
  packageCount:20,
  packagesPerBox:10,
- retailUnitPriceNgn:3000,
- retailBoxValueNgn:30000,
- agentBoxPriceNgn:28000,
- agentUnitCostNgn:2800,
- agentPayableNgn:56000,
- retailValueNgn:60000,
- agentExpectedGrossProfitNgn:4000,
+ retailUnitPriceNgn:4000,
+ retailBoxValueNgn:40000,
+ agentBoxPriceNgn:30000,
+ agentUnitCostNgn:3000,
+ agentPayableNgn:60000,
+ retailValueNgn:80000,
+ agentExpectedGrossProfitNgn:20000,
 })
 assert.deepEqual(getAgilityCompanyEconomics(2,21000),{
- wholesaleRevenueNgn:56000,
+ wholesaleRevenueNgn:60000,
  totalPlannedCostNgn:42000,
- grossProfitNgn:14000,
- grossProfitPerBoxNgn:7000,
+ grossProfitNgn:18000,
+ grossProfitPerBoxNgn:9000,
 })
-assert.equal(getAgilityCompanyEconomics(1,29000).grossProfitNgn,-1000)
+assert.equal(getAgilityCompanyEconomics(1,31000).grossProfitNgn,-1000)
 assert.equal(isValidAgilityCompanyCost(21000),true)
 assert.equal(isValidAgilityCompanyCost(20000),false)
 assert.equal(isValidAgilityCompanyCost(21001),false)
@@ -88,7 +88,7 @@ assert.equal(nextAgilityAdminStage('delivered'),null)
 auth={...auth,user:{id:'agent-test',name:'Agent',role:'agent'},token:'test-token'}
 const Agility=require('../app/(app)/agility/page.tsx').default
 const agilityHtml=renderToStaticMarkup(React.createElement(Agility))
-for(const label of ['AGILITY','Intelligence in Action','Agent Store','₦3,000','10 packages','₦28,000','₦2,000','₦7,000','Wholesaler','Retailer','OPay'])assert.ok(agilityHtml.includes(label),label)
+for(const label of ['AGILITY','Intelligence in Action','Agent Store','₦4,000','10 packages','₦30,000','₦10,000','₦9,000','Wholesaler','Retailer','OPay'])assert.ok(agilityHtml.includes(label),label)
 for(const route of [
  '/api/agility/payment/opay/receipt/route.ts',
  '/api/admin/agility/payment/opay/verify/route.ts',
@@ -1504,7 +1504,7 @@ assert.ok(numberBridgerSource.includes('[Bridger Number receipt after completed 
 assert.ok(numberBridgerSource.includes("action==='order_country'"),'Bridgers can place an out-of-stock country order')
 assert.ok(numberBridgerSource.includes("gate:'stock_available'"),'Country ordering redirects Bridgers to instant purchase when stock is present')
 assert.ok(numberBridgerSource.includes("entry_type,'whatsapp_number_order'")||numberBridgerSource.includes("'whatsapp_number_order'"),'Country orders debit Flame Coin through the ledger')
-assert.ok(numberBridgerSource.includes("type:'bridger_number_order'"),'Country orders notify Administration for fulfillment')
+assert.ok(numberBridgerSource.includes("subject:'Bridger Number Bay country order'")&&numberBridgerSource.includes('notifyAdminOrder({'),'Country orders notify Administration for fulfillment')
 assert.ok(numberAdminSource.includes("'deliver_order'")&&numberAdminSource.includes("status='delivered'")&&numberAdminSource.includes('number_id=$2::uuid'),'Administration can deliver a timed number order through the engine')
 assert.ok(numberAdminSource.includes("action==='cancel_order'"),'Administration can cancel an unfulfilled number order')
 assert.ok(numberAdminSource.includes("'whatsapp_number_order_refund'"),'Cancelled number orders return Flame Coin through the ledger')

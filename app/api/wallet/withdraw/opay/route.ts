@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getPool } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
 
   const client = await getPool().connect()
   let availableAfter = 0
+  let withdrawalId:string|null=null
   try {
     await client.query('BEGIN')
 
@@ -94,14 +96,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await client.query(
+    const submitted=await client.query(
       `INSERT INTO withdrawal_requests
         (user_id,amount_trx,wallet_address,status,admin_note,method,payout_details,amount_ngn,created_at,updated_at)
        VALUES
-        ($1::uuid,$2,$3,'pending',$4,'opay',$5,$6,NOW(),NOW())`,
+        ($1::uuid,$2,$3,'pending',$4,'opay',$5,$6,NOW(),NOW()) RETURNING id`,
       [userId, amountFlameCoin, accountNumber, reference, payoutDetails, amountNgn],
     )
 
+    withdrawalId=String(submitted.rows[0]?.id||'')||null
     availableAfter = available - amountFlameCoin
     await client.query('COMMIT')
   } catch (error) {
@@ -111,6 +114,8 @@ export async function POST(request: NextRequest) {
   } finally {
     client.release()
   }
+
+  if(withdrawalId&&['agent','bridger'].includes(authedUser.role))await notifyAdminOrder({orderId:withdrawalId,event:'placed',department:authedUser.role as 'agent'|'bridger',subject:'OPay withdrawal approval request',detail:`${authedUser.name||'WEAVE staff'} requested ${amountFlameCoin.toLocaleString()} Flame Coin withdrawal (estimated ₦${amountNgn.toLocaleString()}). Administration approval required`,adminPath:'/admin/control-center',actorId:authedUser.id,actorName:authedUser.name||authedUser.role})
 
   let receipt = null
   try {

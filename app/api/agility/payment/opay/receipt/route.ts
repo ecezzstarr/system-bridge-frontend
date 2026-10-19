@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { createHash } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `
 
+    if(updated)await notifyAdminOrder({orderId:String(updated.id),event:'payment_submitted',department:'agent',subject:'Agility OPay payment proof',detail:`${user.name||'Agent'} submitted OPay proof for ₦${Number(updated.total_ngn).toLocaleString()} stock order. Administration verification required`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||'Agent'})
     return NextResponse.json({ success: true, order: updated, message: 'Agility OPay proof submitted. Administration will verify the payment before preparation begins.' })
   } catch (error: any) {
     console.error('[agility/opay/receipt] failed', error)

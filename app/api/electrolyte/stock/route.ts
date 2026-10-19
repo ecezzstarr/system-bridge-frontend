@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
@@ -111,6 +112,8 @@ export async function POST(request: NextRequest) {
     `
 
     const cartonDescription = formatWeaveFoodCartonQuantity(totals.boxCount)
+    await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'agent',subject:'Electrolyte stock order',detail:`${user.name||user.username||'Agent'} requested ${cartonDescription} of ${variant.name} · ₦${totals.agentPayableNgn.toLocaleString()} awaiting payment`,adminPath:'/admin/electrolyte',actorId:user.id,actorName:user.name||user.username})
+
     const receipt = await issueWeaveReceipt({
       userId: user.id,
       kind: 'purchase',

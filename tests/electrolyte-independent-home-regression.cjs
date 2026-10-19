@@ -20,7 +20,7 @@ const migration=read('gcp-migration/agility.sql')
 
 assert.ok(electrolyteCatalog.includes("id: 'electrolyte'")&&electrolyteCatalog.includes("id: 'electrolyte-medium'"),'Electrolyte owns Small and Medium Bowl definitions')
 assert.ok(electrolyteCatalog.includes('agentBuyUnitPriceNgn: 3000')&&electrolyteCatalog.includes('agentSellingUnitPriceNgn: 4000'),'Small Bowl keeps ₦3,000 Agent buy and ₦4,000 customer sale')
-assert.ok(electrolyteCatalog.includes('agentBuyUnitPriceNgn: 5000')&&electrolyteCatalog.includes('agentSellingUnitPriceNgn: 6000'),'Medium Bowl keeps ₦5,000 Agent buy and ₦6,000 customer sale')
+assert.ok((electrolyteCatalog.match(/agentBuyUnitPriceNgn: 3000/g)||[]).length===2&&(electrolyteCatalog.match(/agentSellingUnitPriceNgn: 4000/g)||[]).length===2,'Both Electrolyte bowls sell for ₦4,000 and leave ₦1,000 Agent earnings')
 assert.ok(electrolyteCatalog.includes("family: 'electrolyte'")&&electrolyteCatalog.includes('customerPriceLocked: true'),'Electrolyte is its own locked-price food family')
 assert.ok(agilityCatalog.includes('AGILITY_PRODUCT_VARIANTS')&&agilityCatalog.includes("from '@/lib/electrolyte-catalog'"),'Agility definitions are separate while the legacy shared-food alias preserves older distribution surfaces')
 

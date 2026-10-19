@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import type { PoolClient } from 'pg'
 import { getAuthUser } from '@/lib/auth-api'
@@ -204,6 +205,7 @@ export async function PATCH(request: NextRequest) {
         [user.id, note || null, orderId]
       )
       await db.query('COMMIT')
+      await notifyAdminOrder({orderId:String(order.id),event:'paid',department:'agent',subject:'Carrier food payment confirmed',detail:`${user.name||'Agent'} verified ₦${Number(order.total_ngn).toLocaleString()} for ${order.customer_name}'s food order; ready for fulfillment`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||'Agent'})
       return NextResponse.json({ success: true, status: 'requested', message: 'Customer payment verified. The order is ready for delivery, pickup or waybill dispatch.' })
     }
 
@@ -281,6 +283,7 @@ export async function PATCH(request: NextRequest) {
       [orderId, user.id]
     )
     await db.query('COMMIT')
+    await notifyAdminOrder({orderId:String(order.id),event:'fulfilled',department:'agent',subject:'Carrier food order fulfilled',detail:`${user.name||'Agent'} fulfilled ${quantity} × ${order.variant_id} for ${order.customer_name} · ₦${customerPaidNgn.toLocaleString()} customer paid`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||'Agent'})
     return NextResponse.json({
       success: true,
       status: 'fulfilled',

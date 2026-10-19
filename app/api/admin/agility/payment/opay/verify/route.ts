@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPool } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
 import { ensureAgilitySchema } from '@/lib/agility'
+import { ensureFoodPreparationManagerSchema } from '@/lib/food-preparation-manager'
+import { assignPaidOrderToPreparationManager } from '@/lib/food-preparation-routing'
 import type { PoolClient } from 'pg'
 
 export async function POST(request: NextRequest) {
@@ -20,6 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   await ensureAgilitySchema()
+  await ensureFoodPreparationManagerSchema()
   let db: PoolClient | undefined
   let committed = false
 
@@ -81,6 +84,7 @@ export async function POST(request: NextRequest) {
       [admin.id, adminNote || null, orderId]
     )
     const paidOrder = approved.rows[0]
+    const preparation=await assignPaidOrderToPreparationManager(db,'agility',paidOrder,admin.id)
     await db.query('COMMIT')
     committed = true
 
@@ -117,7 +121,9 @@ export async function POST(request: NextRequest) {
       console.error('[admin/agility/opay] approval notification failed after payment commit', notificationError)
     }
 
-    return NextResponse.json({ success: true, order: paidOrder, message: 'OPay payment approved. Agility fulfillment is now open.' })
+    return NextResponse.json({ success: true, order: paidOrder, preparation, message: preparation.assigned
+      ? 'OPay approved. Food Preparation Manager has the order, location and delivery instructions.'
+      : 'OPay approved. No available Food Preparation Manager was assigned; Administration must assign the paid order.' })
   } catch (error) {
     console.error('[admin/agility/opay] verification failed', error)
     if (db && !committed) await db.query('ROLLBACK').catch(() => {})

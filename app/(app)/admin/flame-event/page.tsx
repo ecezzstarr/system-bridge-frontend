@@ -14,6 +14,7 @@ import {
   Radio,
   Save,
   Square,
+  Sprout,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import {
@@ -173,6 +174,7 @@ export default function FlameEventWorkshopPage() {
         {[
           ['/event','Open Event Ground',Eye],
           ['/admin/dj-workshop','DJ Workshop',Music2],
+          ['/admin/food-bridge','Farmer Supply Review',Sprout],
           ['/admin/ad-workshop','Ad Workshop',Megaphone],
           ['/company/loops','Loop Registry',CalendarDays],
         ].map(([href,label,Icon])=>{

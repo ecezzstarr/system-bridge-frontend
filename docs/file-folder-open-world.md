@@ -1,0 +1,9 @@
+# File Folder open-world walking pass
+
+Continues the existing reference-world draft on canonical main 48552ed7. The walking ground now extends to radius 28 instead of 9, with connected street columns, cross streets, crossings, sidewalks and eight shared WEAVE host blocks. Host architecture is not counted as purchased Client systems. Districts, installed parts, active construction and existing authenticated workflow callbacks remain attached to the same Client records.
+
+Movement: camera-relative joystick/WASD walking, arrow-key turning, touch or mouse drag to look, hold Run/Shift to run, normalized diagonal speed, character facing travel independently of the camera, and wall sliding. The chase camera eases behind movement and retracts before crossing building facades. Streets and the mini-map share their layout constants. Buildings, tree trunks, host tower, gate posts and AI outposts have collision boundaries. Prior in-session locations remain supported in the expanded world. Input clears on blur, cancellation, hidden page and workspace entry.
+
+Validation uses the actual renderer with explicitly labeled synthetic QA data. Phone joystick movement updated the live map outside the former radius-9 area. The Parts destination fired the existing parts_workshop callback. A renderer fixture does not verify account purchases or transactions. Movement/camera tests cover diagonal speed, running, sliding, rectangular host collisions, camera retraction and keyboard movement relative to camera direction.
+
+This is a walking-city vertical slice. It does not yet provide driving, multiplayer synchronization, a production traffic simulation, or walkable 3D interiors for every workshop. Existing business workspaces remain functional interface overlays. The original image's visual fidelity is still a separate unfinished requirement. Keep the branch separate from production until release review and authenticated device testing.

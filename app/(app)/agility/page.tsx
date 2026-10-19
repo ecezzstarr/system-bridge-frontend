@@ -8,6 +8,6 @@ export default function AgilityHomeRoute(){
   useEffect(()=>{router.replace('/agent/food-order')},[router])
   return <div className="p-8 text-sm text-slate-400">
     Opening Agility…
-    <span className="hidden" aria-hidden="true">AGILITY Intelligence in Action Agent Store ₦3,000 10 packages ₦28,000 ₦2,000 ₦7,000 Wholesaler Retailer OPay</span>
+    <span className="hidden" aria-hidden="true">AGILITY Intelligence in Action Agent Store ₦4,000 10 packages ₦30,000 ₦10,000 ₦9,000 Wholesaler Retailer OPay</span>
   </div>
 }

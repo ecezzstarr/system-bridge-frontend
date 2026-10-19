@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
@@ -22,10 +23,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (action === 'payment_received') {
     const [order] = await sql`UPDATE client_store_orders SET payment_status='received',status='payment_received',updated_at=NOW() WHERE id=${id}::uuid AND store_id=${store.id}::uuid RETURNING id,status,payment_status`
     if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    await notifyAdminOrder({orderId:String(order.id),event:'paid',department:'client',subject:'Client Customer Door payment received',detail:`Client confirmed payment received for Customer Door order ${order.id}; fulfillment pending`,adminPath:'/admin/orders',actorId:clientId,actorName:'Client'})
     return NextResponse.json({ success: true, order })
   }
 
   const [order] = await sql`UPDATE client_store_orders SET status=${action},updated_at=NOW() WHERE id=${id}::uuid AND store_id=${store.id}::uuid RETURNING id,status,payment_status`
   if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+  await notifyAdminOrder({orderId:String(order.id),event:action==='fulfilled'?'fulfilled':'cancelled',department:'client',subject:'Client Customer Door order status',detail:`Client changed Customer Door order ${order.id} to ${action}`,adminPath:'/admin/orders',actorId:clientId,actorName:'Client'})
   return NextResponse.json({ success: true, order })
 }

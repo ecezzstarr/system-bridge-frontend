@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
@@ -168,6 +169,7 @@ export async function POST(request: NextRequest) {
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
     const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,file_folder_tier,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${fileFolderTier},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${directBridgerId || movementBridgerId}::uuid,${movementAttribution?.movement_code || null}) RETURNING *`
     const tierLabel = fileFolderTierLabel(fileFolderTier)
+    await notifyAdminOrder({orderId:String(record.id),event:'placed',department:directBridgerId||movementBridgerId?'bridger':'client',subject:'File Folder purchase awaiting verification',detail:`${buyerName} requested ${tierLabel} File Folder for ${amountFlameCoin.toLocaleString()} Flame Coin through ${bridgeCode?'Bridge AI':'public crossing'}. Verify payment before Client activation`,adminPath:'/admin/file-folder-sales-manager',actorId:directBridgerId||movementBridgerId||clientId||null,actorName:'Bridge of Radiance'})
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
     const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${tierLabel} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
     try {

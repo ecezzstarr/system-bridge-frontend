@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ClientMarketEnvironment } from '@/components/public/client-market-environment'
 import {
   ensureClientBusinessStoreSchema,
@@ -15,7 +15,7 @@ export default async function PublicClientMarketStore({
   searchParams,
 }:{
   params:Promise<{slug:string}>
-  searchParams:Promise<{order?:string;legion?:string;via?:string}>
+  searchParams:Promise<{order?:string;legion?:string;via?:string;checkout?:string}>
 }){
   const {slug}=await params
   const query=await searchParams
@@ -28,7 +28,7 @@ export default async function PublicClientMarketStore({
   const [store]=await sql`
     SELECT
       id,client_id,file_number,name,description,public_slug,
-      formation_status,public_opened_at,customer_wallet_required,environment_config
+      formation_status,public_opened_at,customer_wallet_required,environment_config,world_host_customer_market
     FROM client_business_stores
     WHERE public_slug=${slug}
       AND enabled=true
@@ -36,6 +36,13 @@ export default async function PublicClientMarketStore({
     LIMIT 1
   `
   if(!store)notFound()
+  // Existing shared Client Store links enter the avatar System Switch first.
+  // Preserve Legion attribution and real order confirmation/checkout routes.
+  if(store.world_host_customer_market&&query.checkout!=='1'&&!query.order){
+    const legion=typeof query.legion==='string'?query.legion.trim().slice(0,80):''
+    redirect('/system-switch/customer-doors?entrance=market&door='+encodeURIComponent(slug)+
+      (legion?'&legion='+encodeURIComponent(legion):''))
+  }
 
   const [structure]=await sql`
     SELECT

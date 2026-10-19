@@ -213,6 +213,27 @@ export default function ClientCustomerDoorPanel({
     }finally{setBusy('')}
   }
 
+  const setWorldHosting=async(channel:'flame_event'|'customer_market',enabled:boolean)=>{
+    setBusy('world-hosting');setMessage('')
+    try{
+      const token=getClientToken()
+      const response=await fetch('/api/client/business-store',{
+        method:'PATCH',
+        headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          action:'set_world_hosting',
+          flame_event:channel==='flame_event'?enabled:Boolean(data.store?.world_host_flame_event),
+          customer_market:channel==='customer_market'?enabled:Boolean(data.store?.world_host_customer_market),
+        }),
+      })
+      const body=await response.json()
+      if(!response.ok)throw Error(body.error||'Unable to host your File Folder Customer Door')
+      await refreshStore()
+      setMessage(body.message)
+    }catch(error){setMessage(error instanceof Error?error.message:'Hosting request failed')}
+    finally{setBusy('')}
+  }
+
   const saveEnvironment=async()=>{
     setBusy('design');setMessage('')
     try{
@@ -412,6 +433,29 @@ export default function ClientCustomerDoorPanel({
           <a href="/market" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-[10px] text-slate-300"><Landmark className="h-3.5 w-3.5"/>Open Client Market</a>
         </div>}
       </div>
+    </section>
+
+    <section data-customer-section="hosting" className="rounded-[2rem] border border-emerald-300/15 bg-emerald-300/[.035] p-5 md:p-6" data-client-owner-world-hosting>
+      <p className="text-[9px] font-black uppercase tracking-[.2em] text-emerald-200">Host your Customer Door · System Switch</p>
+      <h3 className="mt-2 text-xl font-black text-white">Station your public File Folder world at System Switch.</h3>
+      <p className="mt-3 text-xs leading-6 text-slate-400">Agents, Bridgers and Administration enter from Flame Event as avatars. Visitors enter from Customer Market as avatars. Both arrive in the shared System Switch plaza before crossing your Customer Door. Other active participants are visible in the world, but only the Lord or Lady owns construction, workshop and finance permissions.</p>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {[
+          {id:'flame_event' as const,title:'Flame Event · Staff',checked:Boolean(data.store?.world_host_flame_event),detail:'Show your Customer Door to signed-in Agent, Bridger and Administration avatars.'},
+          {id:'customer_market' as const,title:'Customer Market · Visitors',checked:Boolean(data.store?.world_host_customer_market),detail:'Allow unregistered visitors to cross as avatars, explore published systems and buy your offers.'},
+        ].map(item=><label key={item.id} className="flex cursor-pointer items-start gap-3 border border-white/10 bg-black/20 p-4">
+          <input type="checkbox" checked={item.checked} disabled={busy==='world-hosting'||!hasDoor||data.store?.formation_status!=='selling'}
+            onChange={e=>void setWorldHosting(item.id,e.target.checked)} aria-label={'Host '+item.title} className="mt-1 h-4 w-4"/>
+          <span><strong className="block text-sm text-white">{item.title}</strong><span className="mt-2 block text-xs leading-5 text-slate-400">{item.detail}</span></span>
+        </label>)}
+      </div>
+      {(!hasDoor||data.store?.formation_status!=='selling')&&<p className="mt-3 text-xs text-amber-200">Construct and activate the Customer Door, then open the Client store before hosting a world.</p>}
+      {data.store?.public_slug&&<div className="mt-4 flex flex-wrap gap-2">
+        <Link href={`/system-switch/customer-doors?door=${encodeURIComponent(data.store.public_slug)}`}
+          className="inline-flex items-center gap-2 border border-emerald-300/25 px-4 py-3 text-xs text-emerald-200">Preview the avatar Customer Door plaza <ArrowRight className="h-4 w-4"/></Link>
+        {data.store?.world_host_customer_market&&<Link href={`/system-switch/customer-doors/${encodeURIComponent(data.store.public_slug)}?entrance=market`}
+          className="inline-flex items-center gap-2 border border-sky-300/25 px-4 py-3 text-xs text-sky-200">Open my hosted visitor world</Link>}
+      </div>}
     </section>
 
     <section data-customer-section="offer" className="rounded-[2rem] border border-emerald-300/15 bg-emerald-400/[0.03] p-5 md:p-6">

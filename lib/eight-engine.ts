@@ -83,7 +83,7 @@ You are not just a helper - you are a co-builder. You understand the entire WEAV
 - AI: Google Gemini (you), OpenAI (fallback)
 - Auth: Custom JWT auth with PostgreSQL
 - Places: role worlds, Client File Folders, role districts, Enterprise Systems Exchange, Arena
-- Client visibility boundary: each Client's System Switch and File Folder are private to that Client. Logged-in Administration, Agents and Bridgers discover open Client Customer Doors inside Flame Event and enter the public enterprise from that event current; staff do not use Customer Market as their in-app discovery route. Public visitors discover Customer Doors from the WEAVE homepage/Customer Market or a Client-shared direct Door link. Never recreate a staff File Folder viewer or Bridge Plaza path.
+- Client visibility boundary: System Switch is the shared crossing used by Client, Administration, Agent and Bridger avatars. Client-published Customer Doors, Client branding and broadcasts appear in that shared world and Flame Event. The Client's private workshop, records and ownership remain private; crossing a public Door never grants private authority. Staff discover Client Doors through System Switch and Flame Event rather than a general Customer Market discovery page. Public visitors discover Customer Doors from the WEAVE homepage/Customer Market or a Client-shared direct Door link. Never recreate a staff File Folder viewer or Bridge Plaza path.
 
 ## Key Systems
 - Positions: Clients (players), Bridgers (partners), Agents (employees), Administration (institutional authority)

@@ -161,6 +161,41 @@ export async function PATCH(request: NextRequest) {
   const body = await request.json().catch(() => ({}))
   const action = String(body.action || '').trim()
 
+  if (action === 'set_world_hosting') {
+    // Hosting is a Client-owned publication decision. It never grants
+    // visitors access to private workshop, wallet or construction APIs.
+    const flame = body.flame_event === true
+    const market = body.customer_market === true
+    if (flame || market) {
+      const [publicDoor] = await ctx.sql`
+        SELECT id FROM client_built_systems
+        WHERE client_id=${ctx.client.id}::uuid
+          AND file_number=${ctx.client.file_number}
+          AND system_type='customer_door' AND status='active' LIMIT 1
+      `
+      if (!publicDoor || ctx.store.formation_status !== 'selling' || !ctx.store.enabled) {
+        return NextResponse.json({
+          error:'Build and activate a Customer Door, publish an offer, and open the store before hosting a public File Folder world.',
+        },{status:409})
+      }
+    }
+    const [hosted]=await ctx.sql`
+      UPDATE client_business_stores
+      SET world_host_flame_event=${flame},
+        world_host_customer_market=${market},updated_at=NOW()
+      WHERE id=${ctx.store.id}::uuid AND client_id=${ctx.client.id}::uuid
+      RETURNING *
+    `
+    if (!hosted) return NextResponse.json({error:'Customer Door not found'},{status:404})
+    return NextResponse.json({
+      success:true,
+      store:hosted,
+      message:flame||market
+        ? 'The selected public File Folder entrances are hosted. Private construction and accounts remain Client-only.'
+        : 'Both hosted world entrances are closed. The underlying Customer Door store remains under Client control.',
+    },{headers:{'Cache-Control':'private, no-store'}})
+  }
+
   if (action === 'set_system_publication') {
     const systemId = String(body.system_id || '').trim()
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(systemId)) {

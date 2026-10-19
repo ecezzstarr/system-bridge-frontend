@@ -113,6 +113,8 @@ export async function ensureClientGrowthWorldSchema(sql:any=getClientGrowthDb())
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `
+  await sql`ALTER TABLE client_stream_channels ADD COLUMN IF NOT EXISTS live_medium varchar(16) NOT NULL DEFAULT 'stream'`
+  await sql`ALTER TABLE client_stream_programs ADD COLUMN IF NOT EXISTS broadcast_medium varchar(16) NOT NULL DEFAULT 'stream'`
   await sql`CREATE INDEX IF NOT EXISTS idx_client_stream_programs_channel ON client_stream_programs(channel_id,created_at DESC)`
 
   await sql`
@@ -272,7 +274,7 @@ export async function getClientGrowthSnapshot(
   }
 
   const programs=await sql`
-    SELECT id,title,description,program_type,media_url,scheduled_at,status,duration_minutes,created_at
+    SELECT id,title,description,program_type,broadcast_medium,media_url,scheduled_at,status,duration_minutes,created_at
     FROM client_stream_programs
     WHERE channel_id=${channel.id}::uuid
     ORDER BY COALESCE(scheduled_at,created_at) DESC

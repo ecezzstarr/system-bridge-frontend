@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, Sparkles, Users } from 'lucide-react'
+import { Bot, BriefcaseBusiness, ChefHat, Gamepad2, Loader2, LockKeyhole, Megaphone, ShieldCheck, Sparkles, Users, Sprout, ShoppingBasket } from 'lucide-react'
 import { toast } from 'sonner'
 
 function authHeaders() {
@@ -65,6 +65,12 @@ export default function WeaveLifestylesPage() {
   const aceOpen = Boolean(access?.active && carrier?.active && carrier?.position === 'Ace')
   const agenticAvailable = access?.role === 'bridger'
   const agenticOpen = Boolean(agenticAvailable && aceOpen)
+  const mandateAvailable = access?.role === 'agent' || access?.role === 'bridger'
+  const mandateOpen = Boolean(mandateAvailable && access?.active)
+  const foodPreparationAvailable = access?.role === 'agent'
+  const foodPreparationOpen = Boolean(foodPreparationAvailable && access?.active)
+  const foodAvailable = access?.role === 'agent' || access?.role === 'bridger'
+  const foodOpen = Boolean(foodAvailable && access?.active)
   const distributionManagerAvailable = access?.role === 'agent' || access?.role === 'bridger'
   const distributionManagerOpen = Boolean(distributionManagerAvailable && access?.active)
   const legionAvailable = access?.role === 'agent' || access?.role === 'bridger'
@@ -140,6 +146,49 @@ export default function WeaveLifestylesPage() {
                   action="Enter Agentic-Bridger"
                   tools={[{icon:<Bot className="h-3.5 w-3.5"/>,label:'Bridger movement'},{icon:<Gamepad2 className="h-3.5 w-3.5"/>,label:'Ace standing'}]}
                   nested
+                />
+              )}
+
+              {mandateAvailable && (
+                <LifestyleGround
+                  tone="amber"
+                  icon={<ShieldCheck className="h-8 w-8" />}
+                  eyebrow="Company Support · Apply for an appointment"
+                  title="WEAVE MANDATE"
+                  detail="Agents and Bridgers can apply for Company Guidance departments: Mandate, Forensics or Attorney. Administration reviews each application. Approved personnel can answer only the guidance conversations assigned to their department. No additional Lifestyle payment."
+                  open={mandateOpen}
+                  reason={access?.active ? 'Mandate is open for applications from your position.' : agentFree ? 'An active Agent account is required.' : 'Active Bridger Continuance is required.'}
+                  href="/weave/lifestyles/mandate"
+                  action="Apply to Weave Mandate"
+                  tools={[{icon:<ShieldCheck className="h-3.5 w-3.5"/>,label:'Department application'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Company Guidance'}]}
+                />
+              )}
+              {foodPreparationAvailable && (
+                <LifestyleGround
+                  tone="amber"
+                  icon={<ChefHat className="h-8 w-8" />}
+                  eyebrow="Agent employment · Company food operations"
+                  title="FOOD PREPARATION MANAGER"
+                  detail="₦60,000 monthly salary upon Administration appointment. An Agent prepares and packages Agility, Electrolyte and Daisy Pastries, then dispatches verified customer and Agent stock orders. Apply here; approved staff receive a real food fulfillment queue."
+                  open={foodPreparationOpen}
+                  reason={access?.active ? 'Apply for Administration appointment.' : 'An active Agent position is required to apply.'}
+                  href="/weave/lifestyles/food-preparation"
+                  action="Apply / Open Kitchen Desk"
+                  tools={[{icon:<ChefHat className="h-3.5 w-3.5"/>,label:'Preparation & packaging'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'₦60,000 / month'}]}
+                />
+              )}
+              {foodAvailable && (
+                <LifestyleGround
+                  tone="amber"
+                  icon={<Sprout className="h-8 w-8" />}
+                  eyebrow="Flame Event · Everyday food"
+                  title="FARM TO FAMILY"
+                  detail="Agent farmers list surplus at their own prices; Agents and Bridgers buy for households across Nigeria. Buyers pay the accepted farm and transport quote to WEAVE. After verified receipt and buyer delivery confirmation, WEAVE deducts a flat ₦1,000 fee from the farmer for each completed order, not per item. No extra Lifestyle access charge."
+                  open={foodOpen}
+                  reason={access?.active ? 'Agent or Bridger access required.' : 'Your Agent or Bridger Lifestyle must be active.'}
+                  href="/weave/lifestyles/food"
+                  action="Enter Food Exchange"
+                  tools={[{icon:<Sprout className="h-3.5 w-3.5"/>,label:'Farmer surplus'},{icon:<ShoppingBasket className="h-3.5 w-3.5"/>,label:'Household orders'}]}
                 />
               )}
 

@@ -22,6 +22,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Production acceptance gate — keep Cloud Build aligned with GitHub CI.
+RUN node tests/system-switch-multiplayer-regression.cjs
+RUN node tests/mandate-guidance-staff-regression.cjs
 RUN node tests/recent-features.cjs
 RUN node tests/agentic-bridger-regression.cjs
 RUN node tests/file-folder-customer-door-purchase-regression.cjs

@@ -42,10 +42,11 @@ function Hand({skin}:{skin:string}){
 }
 
 export function WeaveEmbodiedAvatar({
-  motion,role='visitor',
+  motion,role='visitor',scale=1,
 }:{
   motion:MutableRefObject<WeaveAvatarMotion>
   role?:WeaveAvatarPosition
+  scale?:number
 }){
   const {reducedMotion}=useAdaptiveRuntime()
   const root=useRef<THREE.Group>(null)
@@ -101,7 +102,7 @@ export function WeaveEmbodiedAvatar({
     rightArm.current.rotation.z=.08+run*.1
   })
 
-  return <group ref={root} data-weave-embodied-avatar={role}>
+  return <group ref={root} scale={scale} data-weave-embodied-avatar={role}>
     <mesh rotation={[-Math.PI/2,0,0]} position={[0,.017,0]}>
       <circleGeometry args={[.43,20]}/>
       <meshBasicMaterial color="#06172a" transparent opacity={.26} depthWrite={false}/>

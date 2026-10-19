@@ -4,17 +4,17 @@
 
 Agility is a WEAVE morning-food product family distributed through Agent Stores.
 
-- Consumer retail price: **₦3,000 per Agility package**.
+- Consumer retail price: **₦4,000 per Agility package**.
 - Company delivery box: **10 Agility packages**.
-- Retail value of one full box: **₦30,000**.
-- Agent wholesale price: **₦28,000 per box**.
-- Agent cost basis: **₦2,800 per package**.
-- Agent gross profit on retailer package sales: **₦200 per package**.
-- Agent gross profit on a completed box: **₦2,000 per box**.
+- Retail value of one full box: **₦40,000**.
+- Agent wholesale price: **₦30,000 per box**.
+- Agent cost basis: **₦3,000 per package**.
+- Agent gross profit on retailer package sales: **₦1,000 per package**.
+- Agent gross profit on a completed box: **₦10,000 per box**.
 - Company standard preparation cost: **₦21,000 per box**.
-- Company gross profit target: **₦7,000 per box**.
+- Company gross profit target: **₦9,000 per box**.
 
-The company operating standard is ₦21,000 to prepare one full box. Selling that box to the Agent for ₦28,000 produces the company's intended ₦7,000 gross profit per box. Actual cost is still reconciled at delivery so Administration can see whether real performance stayed on standard. Net profit can still be reduced by wider overhead, spoilage, refunds, taxes or other operating costs.
+The company operating standard is ₦21,000 to prepare one full box. Selling that box to the Agent for ₦30,000 produces the company's intended ₦9,000 gross profit per box. Actual cost is still reconciled at delivery so Administration can see whether real performance stayed on standard. Net profit can still be reduced by wider overhead, spoilage, refunds, taxes or other operating costs.
 
 A standard Agility can include fried egg, bread, butter, akara, pap, sardines, apple, water and milk. Other Agility variants can use fish, meat, pear / avocado, seasonal fruit or other approved morning combinations while preserving the company economics.
 
@@ -33,19 +33,19 @@ The Agility order has its own OPay proof and Administration verification because
 ## Operating movement
 
 1. **Agent creates an order** — authenticated Agent selects the Agility type, wholesaler/retailer position, number of company boxes, Agent Store delivery address, and delivery phone.
-2. **Economics are fixed at order creation** — each box is 10 packages, ₦21,000 company preparation cost, ₦28,000 Agent price, and ₦30,000 sell-out value.
+2. **Economics are fixed at order creation** — each box is 10 packages, ₦21,000 company preparation cost, ₦30,000 Agent price, and ₦40,000 sell-out value.
 3. **Agent pays by OPay** — the screen shows the existing WEAVE OPay account, exact NGN amount and unique Agility order reference.
 4. **Agent submits proof** — Agent pastes the OPay transaction reference or receipt.
 5. **Administration verifies OPay** — Administration compares the proof with the exact expected NGN amount and either approves or rejects it.
 6. **Paid queue opens** — only Administration approval changes the order to `paid`. No food preparation can begin before this.
-7. **Company economics gate** — before heating, the system applies the fixed ₦21,000 preparation standard. At the ₦28,000 Agent price, company gross profit is ₦7,000 per box.
+7. **Company economics gate** — before heating, the system applies the fixed ₦21,000 preparation standard. At the ₦30,000 Agent price, company gross profit is ₦9,000 per box.
 8. **Heating / preparation** — approved paid stock enters food preparation.
 9. **Packed** — each complete Agility meal is sealed. Milk, water and fruit remain separate from hot-food handling.
 10. **Boxed** — 10 sealed Agility packages are placed into one company delivery box.
 11. **Dispatched** — the company sends the paid box to the Agent Store.
 12. **Delivered + actual-cost reconciliation** — the ₦21,000 company standard is used by default. Administration changes the actual cost only if the completed box cost differed; the system calculates actual company gross contribution and flags a loss if actual cost exceeded wholesale revenue.
 13. **Received** — the Agent confirms physical receipt. Only then does the stock become sellable inventory.
-14. **Agent sale** — a wholesaler can move the complete 10-package box for ₦30,000; a retailer sells the individual packages at ₦3,000 each. Either route gives the Agent a base ₦2,000 gross profit per completed box. Retailers also build direct consumer patronage and repeat demand around their store.
+14. **Agent sale** — a wholesaler can move the complete 10-package box for ₦40,000; a retailer sells the individual packages at ₦4,000 each. Either route gives the Agent a base ₦10,000 gross profit per completed box. Retailers also build direct consumer patronage and repeat demand around their store.
 
 ## Company controls
 
@@ -56,7 +56,7 @@ The Agility order has its own OPay proof and Administration verification because
 - The same normalized OPay proof cannot be attached to more than one Agility order.
 - Administration cannot start fulfillment before OPay payment approval.
 - Administration cannot skip fulfillment stages.
-- Preparation opens with the fixed ₦21,000-per-box preparation standard, producing the planned ₦7,000 company gross profit.
+- Preparation opens with the fixed ₦21,000-per-box preparation standard, producing the planned ₦9,000 company gross profit.
 - Delivery reconciles actual company cost using ₦21,000 by default, with an Administration override when the completed cost differed.
 - The Agent cannot record consumer sales until Administration marks delivery and the Agent confirms receipt.
 - Sales cannot exceed received inventory.
@@ -101,24 +101,24 @@ Administration UI:
 For **1 box**:
 
 - Company preparation cost: ₦21,000.
-- WEAVE sells the box to the Agent: ₦28,000.
-- Company gross profit: ₦7,000.
+- WEAVE sells the box to the Agent: ₦30,000.
+- Company gross profit: ₦9,000.
 - Agent receives: 10 packages.
-- Wholesaler route: Agent sells the complete box for ₦30,000.
-- Retailer route: Agent sells 10 individual packages × ₦3,000 = ₦30,000.
-- Agent gross profit: ₦2,000 per completed box.
+- Wholesaler route: Agent sells the complete box for ₦40,000.
+- Retailer route: Agent sells 10 individual packages × ₦4,000 = ₦40,000.
+- Agent gross profit: ₦10,000 per completed box.
 - Retailer Agents also gain direct consumer patronage and repeat-purchase opportunity; that relationship value is not counted as extra guaranteed monetary profit.
 
 For **5 boxes**:
 
 - Company preparation cost: ₦105,000.
-- Agent pays WEAVE: ₦140,000.
-- Company gross profit: ₦35,000.
+- Agent pays WEAVE: ₦150,000.
+- Company gross profit: ₦45,000.
 - Agent receives: 50 packages.
-- Sell-out value: ₦150,000.
-- Agent gross profit: ₦10,000.
+- Sell-out value: ₦200,000.
+- Agent gross profit: ₦50,000.
 
-This separates company production profit, Agent distribution profit, and consumer pricing. Wholesaler and retailer Agents use the same ₦28,000 box cost but sell through different relationships: box-to-buyer wholesale or package-to-consumer retail.
+This separates company production profit, Agent distribution profit, and consumer pricing. Wholesaler and retailer Agents use the same ₦30,000 box cost but sell through different relationships: box-to-buyer wholesale or package-to-consumer retail.
 
 
 ## Production database rollout

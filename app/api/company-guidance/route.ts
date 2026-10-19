@@ -1,3 +1,4 @@
+import { ensureGuidanceDepartmentSchema } from '@/lib/weave-guidance-departments'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
@@ -38,6 +39,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
+  try { await ensureGuidanceDepartmentSchema() } catch(error) {
+    console.error('[Company Guidance] schema unavailable',error)
+    return NextResponse.json({success:false,error:'Company Guidance is temporarily unavailable'},{status:503})
+  }
   const pool = getPool()
   const client = await pool.connect()
   try {
@@ -131,6 +136,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
+  try { await ensureGuidanceDepartmentSchema() } catch(error) {
+    console.error('[Company Guidance] schema unavailable',error)
+    return NextResponse.json({success:false,error:'Company Guidance is temporarily unavailable'},{status:503})
+  }
   const pool = getPool()
   const client = await pool.connect()
   try {

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Flame, FolderOpen, Orbit, Waves } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
+import StaffFileFolderWorld from '@/components/system-switch/staff-file-folder-world'
 
 export default function SystemSwitchEntryPage() {
   const { user, isInitialized, isLoading } = useAuth()
@@ -27,7 +28,7 @@ export default function SystemSwitchEntryPage() {
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-70"
       style={{backgroundImage:"linear-gradient(180deg,rgba(2,14,32,.37),rgba(2,14,32,.61) 55%,rgba(2,14,32,.95)),url('/weave/flame-event/burning-river-world.svg')"}}/>
     <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[12%] h-[26rem] w-[26rem] -translate-x-1/2 rounded-full border border-amber-200/15 bg-[radial-gradient(circle,rgba(255,211,131,.14),transparent_69%)] blur-sm"/>
-    <div className="relative mx-auto w-full max-w-xl" data-system-switch-gate-world>
+    <div className="relative mx-auto w-full max-w-6xl" data-system-switch-gate-world>
       <Link href={backHref} className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-sky-100/90">
         <ArrowLeft className="h-4 w-4" /> Return to {position}
       </Link>
@@ -41,13 +42,8 @@ export default function SystemSwitchEntryPage() {
           Your {position} stays yours. When you enter Flame Event, you become a walking presence inside the Burning River. Reach the Switch arch and enter the opened Customer Doors of Client-owned worlds.
         </p>
       </div>
-      <div className="relative mx-auto my-7 h-[16rem] w-[min(76vw,19rem)]" aria-hidden="true">
-        <div className="absolute inset-x-[10%] bottom-0 h-7 rounded-[50%] bg-amber-300/30 blur-2xl"/>
-        <div className="absolute inset-x-[18%] bottom-[8%] top-[10%] rounded-t-full border-[9px] border-[#f3d2a0]/90 bg-[radial-gradient(ellipse_at_50%_17%,rgba(246,221,145,.38),rgba(26,110,150,.50)_48%,rgba(5,28,55,.85))] shadow-[inset_0_0_60px_rgba(194,230,253,.33),0_0_52px_rgba(248,167,62,.42)]"/>
-        <div className="absolute inset-x-[26%] bottom-[9%] top-[19%] rounded-t-full border-x border-t border-cyan-200/55"/>
-        <div className="absolute bottom-[8%] left-1/2 h-[52%] w-[62%] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(255,235,172,.02),rgba(255,211,137,.41))] [clip-path:polygon(45%_0%,55%_0%,100%_100%,0%_100%)]"/>
-        <div className="absolute left-1/2 top-[-7%] h-4 w-4 -translate-x-1/2 rotate-45 bg-amber-100 shadow-[0_0_26px_#f9c46c]"/>
-      </div>
+      <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Visit Client-hosted Customer Doors as an avatar</Link>
+      <div className="relative my-7"><StaffFileFolderWorld role={role} identity={user.name || user.username} userId={user.id}/></div>
       <p className="text-center text-[10px] font-semibold leading-5 text-white/85">
         <Waves className="mr-1 inline h-4 w-4 text-sky-200"/> River Bank → Burning River → System Switch → Customer Door
       </p>

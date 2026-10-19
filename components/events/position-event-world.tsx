@@ -13,6 +13,7 @@ import {
 } from '@/lib/weave-event'
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
 import { FlameEventOpenWorld, type FlameDoorFeedStatus } from '@/components/events/flame-event-open-world'
+import { FlameFoodCurrent } from '@/components/events/flame-food-current'
 import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { visiblePoll } from '@/lib/visible-poll'
 import { getRolePlaces } from '@/lib/weave-role-districts'
@@ -62,7 +63,7 @@ export default function PositionEventWorld({
     let mounted = true
     const stop = visiblePoll(async signal => {
       try{
-        const res = await fetch('/api/public/client-market', { cache: 'no-store', signal })
+        const res = await fetch(role==='client'?'/api/public/client-market':'/api/events/flame/client-doors', { cache:'no-store',signal,headers:role==='client'?{}:{Authorization:`Bearer ${localStorage.getItem('ssb_auth_token')||''}`} })
         if(!res.ok)throw new Error('Customer Door feed unavailable')
         const data = await res.json()
         if(!data?.success||!Array.isArray(data.enterprises))throw new Error('Invalid Customer Door feed')
@@ -75,7 +76,7 @@ export default function PositionEventWorld({
       }
     }, 12000)
     return () => { mounted = false; stop() }
-  }, [])
+  }, [role])
 
   const position = event.positions[role] || FLAME_EVENT.positions[role]
   const progress = useMemo(() => getEventProgress(event, now), [event, now])
@@ -176,6 +177,8 @@ export default function PositionEventWorld({
           <span className="text-[9px] font-black uppercase tracking-[.12em] text-amber-100">Staff Customer Door current</span>
           <span className="sr-only">Enter Customer Door by selecting an opened public portal.</span>
         </div>
+        <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Enter as avatar · Client-hosted Customer Doors</Link>
+        <FlameFoodCurrent />
 
         {role === 'client' && (
           <section className="relative min-h-[18rem] overflow-hidden border-b border-white/8" data-flame-event-crossing-route="system-switch">

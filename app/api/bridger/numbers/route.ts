@@ -8,7 +8,7 @@ import {
   normalizeCountry,
 } from '@/lib/bridger-number-engine'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
-import { notifyAdministrators } from '@/lib/deposit-notifications'
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 
 export const dynamic='force-dynamic'
 
@@ -209,14 +209,7 @@ export async function POST(request:NextRequest){
 
       await client.query('COMMIT')
 
-      await notifyAdministrators({
-        type:'bridger_number_order',
-        title:`Number order · ${offer.country}`,
-        content:`${user.name||user.email||'A Bridger'} ordered a WEAVE WhatsApp number for ${offer.country}. Delivery is due by ${new Date(order.deadline_at).toLocaleString()}.`,
-        link:'/admin/bridger-numbers',
-        fromUserId:user.id,
-        fromUserName:user.name||'Bridger',
-      })
+      await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'bridger',subject:'Bridger Number Bay country order',detail:`${user.name||user.email||'Bridger'} ordered a WhatsApp number for ${offer.country}, ${price} Flame Coin debited; fulfillment due by ${new Date(order.deadline_at).toLocaleString()}`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
 
       let receipt:any=null
       try{
@@ -370,6 +363,8 @@ export async function POST(request:NextRequest){
     }
 
     await client.query('COMMIT')
+
+    await notifyAdminOrder({orderId:String(assigned.id),event:'paid',department:'bridger',subject:'Bridger Number Bay purchase',detail:`${user.name||user.email||'Bridger'} purchased an in-stock WhatsApp number for ${assigned.country}; ${price} Flame Coin deducted and assignment recorded`,adminPath:'/admin/bridger-numbers',actorId:user.id,actorName:user.name||'Bridger'})
 
     let receipt:any=null
     try{

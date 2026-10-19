@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { AgentFoodCarrierPublic } from '@/components/carrier/agent-food-carrier-public'
+import { AgentFarmCarrierPublic } from '@/components/carrier/agent-farm-carrier-public'
 import { AgentCakeCarrierPublic } from '@/components/carrier/agent-cake-carrier-public'
 import { getAgentByCarrierFoodCode, getCarrierFoodShareImageUrl, getCarrierFoodUrl } from '@/lib/carrier-food'
 
@@ -8,13 +9,13 @@ export async function generateMetadata({params}:{params:Promise<{code:string}>})
   const agent=await getAgentByCarrierFoodCode(code).catch(()=>null)
   const agentName=agent?.name||agent?.username||'WEAVE Agent'
   const title=`WEAVE Agent Carrier · ${agentName}`
-  const description=`Order Agility, Electrolyte and Daisy Pastries cakes through ${agentName}'s Carrier Door or enter WEAVE as this Agent's Bridger.`
+  const description=`Shop this WEAVE Agent's Carrier Door for available farm surplus, Agility, Electrolyte and Daisy Pastries; place food requests directly and explore the Bridger position.`
   const url=getCarrierFoodUrl(code)
   const image=getCarrierFoodShareImageUrl(code)
   return {
     title,
     description,
-    openGraph:{title,description,url,type:'website',images:[{url:image,width:1200,height:630,alt:'WEAVE Agent Carrier · Agility + Electrolyte + Daisy Pastries'}]},
+    openGraph:{title,description,url,type:'website',images:[{url:image,width:1200,height:630,alt:'WEAVE Agent Carrier · Farm Produce + Agility + Electrolyte + Daisy Pastries'}]},
     twitter:{card:'summary_large_image',title,description,images:[image]},
   }
 }
@@ -26,10 +27,10 @@ export default async function CarrierFoodDoorPage({params}:{params:Promise<{code
       <div className="mx-auto max-w-6xl">
         <div className="mb-4 rounded-[1.2rem] border border-sky-300/20 bg-sky-300/[.05] px-4 py-3">
           <p className="text-[9px] font-black uppercase tracking-[.22em] text-sky-300">CUSTOMER ORDER UNIT</p>
-          <p className="mt-1 text-sm font-black text-white">AGILITY · ELECTROLYTE · CAKES</p>
+          <p className="mt-1 text-sm font-black text-white">FARM PRODUCE · AGILITY · ELECTROLYTE · CAKES</p>
           <p className="mt-1 text-xs font-black text-amber-200">CAKES · DAISY PASTRIES</p>
           <p className="mt-1 text-sm font-black text-sky-100">1 PACKAGE / BOWL OR MORE · NO CARTON MINIMUM</p>
-          <p className="mt-1 text-xs leading-5 text-slate-400">Carton rules apply only when an Agent buys company stock from WEAVE. Agility and Electrolyte customers order individual packages or bowls from the Agent's received stock. Cakes operate as Daisy Pastries: choose the package and occasion, send the details, receive the Agent quote within the official Daisy Pastries price band, then pay the Agent before production moves.</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">Farm produce comes from an Agent's verified farm account and shows the farm's reported available stock; customers request quantities and approve a real transport quote before arranging payment. Carton rules apply only when an Agent buys company stock from WEAVE. Agility and Electrolyte customers order packages or bowls from Agent stock. Daisy Pastries cakes retain their separate ordering and payment process.</p>
         </div>
         <p className="mb-3 text-[9px] font-black uppercase tracking-[.24em] text-slate-500">Customer food preview · see what you are ordering</p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -44,6 +45,7 @@ export default async function CarrierFoodDoorPage({params}:{params:Promise<{code
         </div>
       </div>
     </section>
+    <AgentFarmCarrierPublic referralCode={code}/>
     <AgentFoodCarrierPublic referralCode={code}/>
     <AgentCakeCarrierPublic referralCode={code}/>
   </>

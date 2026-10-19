@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getPool } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
@@ -140,6 +141,8 @@ export async function POST(request: NextRequest) {
     )
 
     await db.query('COMMIT')
+
+    await notifyAdminOrder({orderId:String(saleResult.rows[0].id),event:'paid',department:'agent',subject:'Agent direct stock sale',detail:`${user.name||'Agent'} recorded sale of ${packageQuantity} ${order.variant_id} packs · ₦${totalRevenueNgn.toLocaleString()} · ${saleMode}`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||'Agent'})
 
     return NextResponse.json({
       success: true,
