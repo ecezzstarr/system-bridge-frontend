@@ -19,7 +19,7 @@ export default function StaffFileFolderFlameEventPage() {
 
   return (
     <div
-      className="mx-auto w-full max-w-6xl text-white"
+      className="mx-auto w-full max-w-none text-white"
       data-flame-event-location="file-folder"
       data-system-switch-crossed="true"
       data-weave-world="file-folder"
