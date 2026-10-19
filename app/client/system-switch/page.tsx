@@ -104,14 +104,14 @@ export default function ClientSystemSwitchPage() {
 
   return (
     <main className="weave-file-folder-page min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
-      <section className="mx-2 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/25 bg-[linear-gradient(120deg,rgba(74,111,133,.23),rgba(8,23,40,.93)_52%,rgba(158,102,39,.16))] px-3 py-3 text-white sm:mx-5" data-system-switch-client-continuation="real-file-folder">
+      {privateWorkshop&&<section className="mx-2 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/25 bg-[linear-gradient(120deg,rgba(74,111,133,.23),rgba(8,23,40,.93)_52%,rgba(158,102,39,.16))] px-3 py-3 text-white sm:mx-5" data-system-switch-client-continuation="real-file-folder">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[.15em] text-amber-200">{arrivedFromEvent?'Arrived from Flame Event · System Switch':'System Switch · Client-owned File Folder'}</p>
           <h1 className="mt-1 text-sm font-black text-white">The crossing continues as your own operating world.</h1>
           <p className="mt-1 max-w-2xl text-[11px] leading-5 text-sky-100/75">The same physical avatar and Switch arch continue here. Your actual builds, systems, Customer Door and work determine what this ground can do. This is your private formation space, not the public Customer Market.</p>
         </div>
         <Link href="/client/system-switch/flame-event" className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-200/35 px-3 py-2 text-[10px] font-bold text-amber-100"><Flame className="h-3.5 w-3.5"/> Return to Burning River</Link>
-      </section>
+      </section>}
       {privateWorkshop?<ClientFileFolderOperatingEnvironment data={data} />:<SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
       <details className="ff-page-actions">
         <summary aria-label="File Folder menu"><Menu aria-hidden="true" className="h-5 w-5"/></summary>
