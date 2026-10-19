@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { useRouter } from 'next/navigation'
 import {
@@ -226,6 +227,7 @@ export default function AdminAgilityPage() {
       <div>
         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-300">Administration · Agility</p>
         <h1 className="mt-2 text-3xl font-black text-white">Morning Food Company Fulfillment</h1>
+        <Link href="/admin/food-preparation-manager" className="mt-3 inline-flex border border-amber-300/25 px-4 py-2 text-xs font-black text-amber-200">Food Preparation Manager · Employment & Orders</Link>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
           Agility uses the same manual OPay method already used by Agents and Bridgers. Administration verifies
           the OPay proof, then controls company economics and physical fulfillment before stock reaches the Agent Store.
