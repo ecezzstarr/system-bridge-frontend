@@ -12,6 +12,7 @@ import {
   resolveEventStatus,
 } from '@/lib/weave-event'
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
+import { NigeriaFlameFrontier } from '@/components/events/nigeria-flame-frontier'
 import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { visiblePoll } from '@/lib/visible-poll'
 import { getRolePlaces } from '@/lib/weave-role-districts'
@@ -214,6 +215,8 @@ export default function PositionEventWorld({
             <span>Presence</span><ArrowRight className="h-3 w-3" /><span>Burn</span><ArrowRight className="h-3 w-3" /><span>Flow</span><ArrowRight className="h-3 w-3" /><span>Compile</span>
           </div>
         </section>
+
+        <NigeriaFlameFrontier />
 
         <section className="border-b border-white/8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8" data-flame-event-client-enterprises="customer-door-current">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
