@@ -35,6 +35,7 @@ jobs:
 
       - name: WEAVE food regressions
         run: |
+          node tests/admin-order-notification-coverage.cjs
           node tests/carrier-food-payment-regression.cjs
           node tests/electrolyte-independent-home-regression.cjs
           node tests/agent-work-cakes-regression.cjs
