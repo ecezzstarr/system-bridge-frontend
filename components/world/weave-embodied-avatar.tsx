@@ -71,7 +71,8 @@ export function WeaveEmbodiedAvatar({
     const state=motion.current
     const amount=Math.min(1,Math.max(0,state.speed/4.9))
     action.current=THREE.MathUtils.damp(action.current,amount,9,dt)
-    bodyAngle.current=THREE.MathUtils.damp(bodyAngle.current,state.yaw,11,dt)
+    const turn=Math.atan2(Math.sin(state.yaw-bodyAngle.current),Math.cos(state.yaw-bodyAngle.current))
+    bodyAngle.current+=turn*(1-Math.exp(-11*dt))
     stride.current+=dt*(2.8+amount*11.8)
     const step=Math.sin(stride.current)
     const bend=Math.max(0,step)
