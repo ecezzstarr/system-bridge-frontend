@@ -42,7 +42,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Farm to Family',
     route: '/weave/lifestyles/food',
     roles: ['agent', 'bridger'],
-    summary: 'Farmers use their Agent position to offer real surplus at farm prices. Agents and active Bridgers buy food directly for households across Nigerian states, with transport quoted before buyer acceptance.',
+    summary: 'Agent farmers sell produce across Nigerian states through a WEAVE-verified buyer payment hold. WEAVE deducts ₦1,000 from seller proceeds once per completed order; there is no buyer surcharge or additional Lifestyle entry charge.',
     environments: [
       { label: 'Farmer Food Exchange', href: '/weave/lifestyles/food', purpose: 'Browse live produce, request food, and carry accepted cross-state orders.' },
       { label: 'My Farm', href: '/weave/lifestyles/food', purpose: 'Agents who farm list surplus and negotiate household delivery.' },
