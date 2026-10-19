@@ -104,6 +104,12 @@ jobs:
           node tests/adaptive-runtime.cjs
           node tests/communication-security.cjs
 
+      - name: Enterprise and Flame Coin purchase regressions
+        run: |
+          node tests/enterprise-legions-notebook.cjs
+          node tests/client-lord-lady-subscription-regression.cjs
+          node tests/flame-coin-prospect-purchases.cjs
+
       - name: TypeScript check
         run: npx tsc --noEmit
 
