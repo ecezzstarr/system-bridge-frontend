@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
-import { ensureLegionEmploymentSchema, activateLegionEmployment } from '@/lib/legion-employment'
+import { ensureLegionEmploymentSchema } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
 import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
@@ -71,7 +71,7 @@ export async function GET(request:NextRequest){
     FROM legion_lifestyle_applications la
     JOIN users u ON u.id=la.applicant_user_id
     JOIN enterprise_applications a ON a.id=la.enterprise_application_id
-    WHERE la.client_id=${clientId}::uuid AND la.status='pending'
+    WHERE la.client_id=${clientId}::uuid AND la.status IN ('pending','offered')
     ORDER BY CASE WHEN la.direction='candidate_application' THEN 0 ELSE 1 END,la.created_at DESC
   `
 
@@ -157,11 +157,21 @@ export async function POST(request:NextRequest){
     if(!accessCurrent)return NextResponse.json({success:false,error:'The Bridger applicant no longer has active Continuance.'},{status:409})
     const currentCapacity=await capacityState(clientId)
     if(currentCapacity.count>=currentCapacity.capacity)return NextResponse.json({success:false,error:'Legion Quarter capacity is full.'},{status:409})
-    const legion=await activateLegionEmployment(sql,{
-      applicantUserId:String(application.applicant_user_id),applicantRole:String(application.applicant_role),clientId:String(clientId),enterpriseApplicationId:String(enterprise.id),fileNumber:String(enterprise.file_number),name:String(application.name||'Legion'),contact:String(application.email||''),functionTitle,profitParticipation,livelihoodRole:'Works exclusively for this Client inside Weave while Legion employment remains active.',
-    })
-    await recordSystemEvent({eventType:'legion_employment_activated',actorId:clientId,actorRole:'client',subjectType:'enterprise_legion',subjectId:String(legion.id),source:'enterprise-dream',payload:{enterpriseName:enterprise.enterprise_name,sourceRole:application.applicant_role,exclusive:true}})
-    return NextResponse.json({success:true,legion,exclusive:true},{status:201})
+    // Applying expresses interest in the enterprise, not agreement to
+    // employment terms later chosen by the Client. Send a final written offer;
+    // exclusivity starts only after the candidate explicitly accepts it.
+    const [offer]=await sql`
+      UPDATE legion_lifestyle_applications
+      SET status='offered',function_title=${functionTitle},
+          profit_participation=${profitParticipation},updated_at=NOW()
+      WHERE id=${application.id}::uuid
+        AND client_id=${clientId}::uuid
+        AND direction='candidate_application' AND status='pending'
+      RETURNING *
+    `
+    if(!offer)return NextResponse.json({success:false,error:'Application changed before terms could be offered.'},{status:409})
+    await recordSystemEvent({eventType:'legion_terms_offered',actorId:clientId,actorRole:'client',subjectType:'enterprise_application',subjectId:String(offer.id),source:'enterprise-dream',payload:{enterpriseName:enterprise.enterprise_name,functionTitle,profitParticipation}})
+    return NextResponse.json({success:true,application:offer,awaitingWorkerAcceptance:true},{status:201})
   }
 
   return NextResponse.json({success:false,error:'Unsupported recruitment action.'},{status:400})
