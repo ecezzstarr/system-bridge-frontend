@@ -23,7 +23,7 @@ assert.ok(sale.includes('weave_flame_coin_orders'),'Flame Coin purchases use a d
 assert.ok(sale.includes('flame_coin_amount'),'Order denomination is Flame Coin')
 assert.ok(!sale.includes('destination_tron_wallet'),'No buyer TRON address required')
 assert.ok(!sale.includes('delivery_tx_hash'),'No TRX transaction sent to buyers')
-assert.ok(sale.includes("status='bank_verified'"),'Verify independent bank payment before credit')
+assert.ok(sale.includes("order.status!=='bank_verified'"),'Verify independent bank payment before credit')
 assert.ok(sale.includes("await db.query('BEGIN')")&&sale.includes('FOR UPDATE'),'Transfer must be atomic')
 assert.ok(sale.includes("balance_trx=balance_trx-$1")&&sale.includes("balance_trx=balance_trx+$1"),'Value moves from funded Admin reserve to buyer wallet')
 assert.ok(sale.includes('Math.round(value*1e8)'),'Amount must not exceed supported precision')
