@@ -15,6 +15,7 @@ export default function LegionLifestylePage(){
   const [loading,setLoading]=useState(true)
   const [busy,setBusy]=useState<string|null>(null)
   const [note,setNote]=useState('')
+  const [releaseReason,setReleaseReason]=useState('')
 
   const load=async()=>{
     setLoading(true)
@@ -53,6 +54,23 @@ export default function LegionLifestylePage(){
     finally{setBusy(null)}
   }
 
+  const leaveLegion=async(legionId:string)=>{
+    if(releaseReason.trim().length<5){toast.error('Explain why you are ending Legion employment.');return}
+    setBusy(legionId)
+    try{
+      const res=await fetch('/api/weave/lifestyles/legion',{
+        method:'POST',headers:headers(),
+        body:JSON.stringify({action:'release_legion',reason:releaseReason.trim()}),
+      })
+      const result=await res.json()
+      if(!res.ok)throw new Error(result.error||'Unable to end Legion employment')
+      toast.success('Legion appointment ended. Your original Agent/Bridger position is restored subject to its usual access requirements.')
+      setReleaseReason('')
+      await load()
+    }catch(error:any){toast.error(error.message||'Unable to release Legion employment')}
+    finally{setBusy(null)}
+  }
+
   const pendingByEnterprise=useMemo(()=>new Set((data?.applications||[]).filter((a:any)=>a.direction==='candidate_application').map((a:any)=>String(a.enterprise_application_id))),[data])
   if(loading)return <div className="flex min-h-[520px] items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-violet-300"/></div>
 
@@ -67,6 +85,16 @@ export default function LegionLifestylePage(){
           <section className="rounded-2xl border border-white/10 bg-black/20 p-5"><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Your movement</p><div className="mt-4 grid grid-cols-3 gap-2 text-center"><div><p className="text-2xl font-black text-white">{Number(employment.stats?.orders||0)}</p><p className="text-[8px] uppercase text-slate-600">Orders</p></div><div><p className="text-2xl font-black text-white">{Number(employment.stats?.paid_orders||0)}</p><p className="text-[8px] uppercase text-slate-600">Paid</p></div><div><p className="text-2xl font-black text-white">{Number(employment.stats?.revenue||0).toLocaleString()}</p><p className="text-[8px] uppercase text-slate-600">Movement</p></div></div>{employment.carrierPath&&<a href={employment.carrierPath} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-full border border-violet-300/20 bg-violet-400/[.07] px-4 py-2.5 text-[10px] font-black uppercase tracking-wider text-violet-100"><ExternalLink className="h-4 w-4"/>Open your Client Carrier</a>}</section>
         </div>
         <div className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-400/[.04] p-4 text-xs leading-5 text-amber-100"><strong>Exclusive position:</strong> while this employment remains active, Agent/Bridger dashboards and normal work APIs are unavailable. Your operating ground is this Client enterprise.</div>
+        <section className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
+          <h3 className="text-sm font-bold text-white">End Legion employment</h3>
+          <p className="mt-2 text-xs leading-5 text-slate-400">You may leave voluntarily. Your original position becomes available again, subject to normal account and subscription access. The Client keeps responsibility for outstanding Customer Door orders, and historical sales, receipts and earned compensation remain recorded.</p>
+          <textarea value={releaseReason} maxLength={1200} rows={2}
+            onChange={e=>setReleaseReason(e.target.value)} placeholder="Reason for departure"
+            className="mt-3 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-sm text-white"/>
+          <button type="button" disabled={busy===employment.legionId||releaseReason.trim().length<5}
+            onClick={()=>void leaveLegion(String(employment.legionId))}
+            className="mt-3 min-h-11 rounded-xl border border-amber-300/40 px-4 py-3 text-xs font-bold text-amber-100 disabled:opacity-40">Release my Legion position</button>
+        </section>
       </div>
     </main>
   }
