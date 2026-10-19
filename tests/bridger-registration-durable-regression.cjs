@@ -60,6 +60,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
     '@/lib/weave-infrastructure':{getDivineShieldState:async()=>({active:false})},
     '@/lib/user-referral':{buildUserReferralCode:()=> 'WEAVE-CODE',resolveReferralOwnerByCode:async()=>null},
     '@/lib/referral-bonus':{queueReferralSignupBonus:async()=>{}},
+    '@/lib/client-monthly-subscription':{normalizeRegisteredGender:value=>['male','female'].includes(value)?value:null,ensureClientMonthlySchema:async()=>{}},
     '@/lib/public-flame-movement':{publicFlameMovementCodeFromRequest:()=>null,recordPublicFlameMovementEvent:async()=>{}},
   }
   const module={exports:{}}
@@ -70,7 +71,7 @@ async function runSignup({role='bridger',fail='',codeUsed=false,duplicate=false,
   vm.runInNewContext(compiled,sandbox)
   const result=await module.exports.POST({json:async()=>({
     email:'NEW@sample.test',username:'newmember',name:'New Member',
-    password:'strongpassword',role,department:role.toUpperCase(),
+    password:'strongpassword',gender:'male',role,department:role.toUpperCase(),
     termsAccepted:true,fullNameConfirmed:'New Member',
     departmentalCode:'BRIDGER-AAAA-BBBB-CCCC',
   })})
