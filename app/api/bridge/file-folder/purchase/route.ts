@@ -64,8 +64,6 @@ export async function GET(request: NextRequest) {
     const amountFlameCoin = Number(purchase.amount_trx || 0)
     const fileFolderTier = getFileFolderTier(amountFlameCoin, purchase.file_folder_tier) || getFileFolderTier(amountFlameCoin)
     const confirmed = purchase.status === 'confirmed' && Boolean(purchase.file_number)
-    await notifyAdminOrder({orderId:String(record.id),event:'placed',department:directBridgerId||movementBridgerId?'bridger':'client',subject:'File Folder purchase awaiting verification',detail:`${buyerName} requested ${tierLabel} File Folder for ${amountFlameCoin.toLocaleString()} Flame Coin through ${bridgeCode?'Bridge AI':'public crossing'}. Verify payment before Client activation`,adminPath:'/admin/file-folder-sales-manager',actorId:directBridgerId||movementBridgerId||clientId||null,actorName:'Bridge of Radiance'})
-
     return NextResponse.json({
       success: true,
       purchase: {
@@ -184,6 +182,8 @@ export async function POST(request: NextRequest) {
     } catch (movementError) {
       console.error('[Public Flame Movement] File Folder attribution failed:', movementError)
     }
+    await notifyAdminOrder({orderId:String(record.id),event:'placed',department:directBridgerId||movementBridgerId?'bridger':'client',subject:'File Folder purchase awaiting verification',detail:`${buyerName} requested ${tierLabel} File Folder for ${amountFlameCoin.toLocaleString()} Flame Coin through ${bridgeCode?'Bridge AI':'public crossing'}. Verify payment before Client activation`,adminPath:'/admin/file-folder-sales-manager',actorId:directBridgerId||movementBridgerId||clientId||null,actorName:'Bridge of Radiance'})
+
     return NextResponse.json({
       success: true,
       purchase: {
