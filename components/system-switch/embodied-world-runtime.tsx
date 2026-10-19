@@ -1,7 +1,6 @@
 'use client'
 import { useRef, type MutableRefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
 import { movePresence, canEnter, type Presence, type WorldObstacle } from '@/lib/file-folder-world-runtime'
 
 export type WorldEntrance = { id: string; label: string; position: [number,number,number]; enter: () => void }
@@ -12,9 +11,8 @@ export function EmbodiedWorldRuntime({input,presence,entrances,obstacles,onNearb
 }) {
   const label = useRef('')
   const pitch = useRef(0)
-  const followCamera=useRef(new THREE.Vector3())
-  const followLook=useRef(new THREE.Vector3())
-  const cameraTarget=useRef(new THREE.Vector3())
+  const followCamera=useRef({x:0,y:0,z:0,initialized:false})
+  const followLook=useRef({x:0,y:1.35,z:0,initialized:false})
   useFrame(({camera},dt) => {
     const controls=input.current
     const keys=controls.keys
@@ -38,12 +36,30 @@ export function EmbodiedWorldRuntime({input,presence,entrances,obstacles,onNearb
     if(thirdPerson){
       const portrait='aspect' in camera && Number(camera.aspect)<1
       const distance=portrait?3.4:2.15
-      cameraTarget.current.set(p.x+Math.sin(p.yaw)*distance,portrait?3.2:2.5,p.z+Math.cos(p.yaw)*distance)
-      followCamera.current.copy(cameraTarget.current)
-      camera.position.lerp(followCamera.current,1-Math.exp(-Math.min(dt,.05)*7.5))
-      cameraTarget.current.set(p.x-Math.sin(p.yaw)*1.6,1.35+Math.sin(pitch.current),p.z-Math.cos(p.yaw)*1.6)
-      followLook.current.lerp(cameraTarget.current,1-Math.exp(-Math.min(dt,.05)*10))
-      camera.lookAt(followLook.current)
+      const x=p.x+Math.sin(p.yaw)*distance
+      const y=portrait?3.2:2.5
+      const z=p.z+Math.cos(p.yaw)*distance
+      const cameraEase=1-Math.exp(-Math.min(dt,.05)*7.5)
+      if(!followCamera.current.initialized){
+        followCamera.current={x,y,z,initialized:true}
+      }else{
+        followCamera.current.x+=(x-followCamera.current.x)*cameraEase
+        followCamera.current.y+=(y-followCamera.current.y)*cameraEase
+        followCamera.current.z+=(z-followCamera.current.z)*cameraEase
+      }
+      camera.position.set(followCamera.current.x,followCamera.current.y,followCamera.current.z)
+      const tx=p.x-Math.sin(p.yaw)*1.6
+      const ty=1.35+Math.sin(pitch.current)
+      const tz=p.z-Math.cos(p.yaw)*1.6
+      const lookEase=1-Math.exp(-Math.min(dt,.05)*10)
+      if(!followLook.current.initialized){
+        followLook.current={x:tx,y:ty,z:tz,initialized:true}
+      }else{
+        followLook.current.x+=(tx-followLook.current.x)*lookEase
+        followLook.current.y+=(ty-followLook.current.y)*lookEase
+        followLook.current.z+=(tz-followLook.current.z)*lookEase
+      }
+      camera.lookAt(followLook.current.x,followLook.current.y,followLook.current.z)
     }else{
       camera.position.set(p.x,1.25,p.z)
       camera.lookAt(p.x-Math.sin(p.yaw)*Math.cos(pitch.current),1.25+Math.sin(pitch.current),p.z-Math.cos(p.yaw)*Math.cos(pitch.current))
