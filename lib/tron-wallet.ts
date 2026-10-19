@@ -2,9 +2,10 @@
 // Real blockchain wallet operations for SSB Now platform
 // This file should only be imported on the server side
 
+import { WORLD_RULES } from '@/lib/world/constants'
+
 const TRONGRID_API_KEY = process.env.TRONGRID_API_KEY
 const PLATFORM_PRIVATE_KEY = process.env.PLATFORM_TRON_PRIVATE_KEY
-import { WORLD_RULES } from '@/lib/world/constants'
 const COMPANY_WALLET = WORLD_RULES.COMPANY_TRX_WALLET
 
 // TronGrid API base URL
