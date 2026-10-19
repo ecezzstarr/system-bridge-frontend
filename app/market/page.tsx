@@ -32,7 +32,7 @@ export default async function PublicClientMarket(){
       ) AS has_market_hall
     FROM client_business_stores s
     WHERE s.enabled=true
-      AND s.formation_status='selling'
+      AND s.formation_status='selling' AND s.world_host_customer_market=true
     ORDER BY s.public_opened_at DESC NULLS LAST,s.created_at DESC
     LIMIT 120
   `
