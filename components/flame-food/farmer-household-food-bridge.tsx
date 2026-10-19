@@ -1,339 +1,272 @@
 'use client'
-
-import { FormEvent, useCallback, useEffect, useState } from 'react'
+import { FormEvent,useCallback,useEffect,useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, Check, ClipboardCopy, Flame, MapPin, Package, RefreshCw, ShieldCheck, Truck } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, Flame, MapPin, RefreshCcw, Tractor, Truck } from 'lucide-react'
+import { useAuth } from '@/lib/auth-provider'
 import { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS } from '@/lib/food-bridge-states'
 
-type Offer = {
-  id:string;produce:string;unit:string;unit_price_ngn:string;available_quantity:string;
-  minimum_quantity:string;farm_name:string;state:string;community:string;details:string
-}
-type FarmerData = {
-  farmer:{farm_name:string;status:string;state:string;community:string}
-  offers:{id:string;produce:string;unit:string;available_quantity:string;status:string}[]
-  orders:{id:string;produce:string;unit:string;quantity:string;destination_state:string;destination_area:string;
-    delivery_mode:string;food_subtotal_ngn:string;delivery_quote_ngn:string|null;
-    status:string;buyer_name?:string|null;buyer_contact?:string|null}[]
-}
-type BuyerOrder = {
-  id:string;status:string;produce:string;unit:string;quantity:string;farm_name:string;origin_state:string;community:string;
-  destination_state:string;destination_area:string;delivery_mode:string;food_subtotal_ngn:string;
-  delivery_quote_ngn:string|null;quote_note:string|null;farmer_contact:string|null
-}
-const money=(v:unknown)=>'₦'+Number(v||0).toLocaleString('en-NG',{maximumFractionDigits:2,minimumFractionDigits:0})
+type Offer={id:string;produce:string;unit:string;available_quantity:string;minimum_quantity:string;unit_price_ngn:string;details:string;farm_name:string;state:string;community:string}
+type Order={id:string;status:string;quantity:string;food_subtotal_ngn:string;delivery_quote_ngn:string|null;
+  destination_state:string;destination_area:string;delivery_mode:string;created_at:string;quote_note?:string|null;
+  produce:string;unit:string;farm_name?:string;origin_state?:string;farmer_contact?:string|null;buyer_contact?:string|null}
+type Farm={farmer:{id:string;farm_name:string;state:string;community:string;status:string}|null;
+  offers:{id:string;produce:string;unit:string;available_quantity:string;status:string}[];orders:Order[]}
+const money=(value:unknown)=>'₦'+Number(value||0).toLocaleString('en-NG',{maximumFractionDigits:2})
 
-export default function FarmerHouseholdFoodBridge() {
+export default function FarmerHouseholdFoodBridge(){
+  const {user,token,isInitialized}=useAuth()
+  const role=user?.role
+  const isFarmerEligible=role==='agent'
   const [offers,setOffers]=useState<Offer[]>([])
+  const [orders,setOrders]=useState<Order[]>([])
+  const [farm,setFarm]=useState<Farm|null>(null)
   const [source,setSource]=useState('')
-  const [search,setSearch]=useState('')
+  const [query,setQuery]=useState('')
+  const [tab,setTab]=useState<'market'|'farm'>('market')
   const [selected,setSelected]=useState<Offer|null>(null)
-  const [buyerName,setBuyerName]=useState('')
-  const [buyerPhone,setBuyerPhone]=useState('')
-  const [destination,setDestination]=useState('Lagos')
-  const [area,setArea]=useState('')
   const [qty,setQty]=useState('1')
-  const [shareBuyer,setShareBuyer]=useState(false)
-  const [deliveryMode,setDeliveryMode]=useState<'delivery'|'pickup'>('delivery')
-  const [farmerKey,setFarmerKey]=useState('')
-  const [existingFarmerKey,setExistingFarmerKey]=useState('')
-  const [buyerKey,setBuyerKey]=useState('')
+  const [phone,setPhone]=useState('')
+  const [area,setArea]=useState('')
+  const [destination,setDestination]=useState('Lagos')
+  const [deliveryMode,setDeliveryMode]=useState('delivery')
+  const [shareBuyerContact,setShareBuyerContact]=useState(false)
   const [farmName,setFarmName]=useState('')
   const [farmPhone,setFarmPhone]=useState('')
+  const [farmCommunity,setFarmCommunity]=useState('')
   const [farmState,setFarmState]=useState('Kano')
-  const [community,setCommunity]=useState('')
-  const [shareFarmer,setShareFarmer]=useState(false)
-  const [farmer,setFarmer]=useState<FarmerData|null>(null)
-  const [buyerOrder,setBuyerOrder]=useState<BuyerOrder|null>(null)
+  const [shareFarmerContact,setShareFarmerContact]=useState(false)
   const [produce,setProduce]=useState('')
-  const [unit,setUnit]=useState<string>('kg')
-  const [available,setAvailable]=useState('')
+  const [unit,setUnit]=useState('kg')
+  const [stock,setStock]=useState('')
   const [minimum,setMinimum]=useState('')
-  const [price,setPrice]=useState('')
-  const [details,setDetails]=useState('')
-  const [quoteFee,setQuoteFee]=useState<Record<string,string>>({})
-  const [quoteNote,setQuoteNote]=useState<Record<string,string>>({})
-  const [tab,setTab]=useState<'buy'|'farm'>('buy')
-  const [message,setMessage]=useState('')
+  const [unitPrice,setUnitPrice]=useState('')
+  const [produceDetails,setProduceDetails]=useState('')
+  const [fees,setFees]=useState<Record<string,string>>({})
+  const [terms,setTerms]=useState<Record<string,string>>({})
   const [busy,setBusy]=useState(false)
-
-  const catalogue=useCallback(async()=>{
-    try{
-      const query=new URLSearchParams()
-      if(source)query.set('origin',source)
-      if(search.trim())query.set('search',search.trim())
-      const response=await fetch('/api/flame/food?'+query.toString(),{cache:'no-store'})
-      const body=await response.json()
-      if(!response.ok)throw new Error(body.error||'Unable to fetch available produce')
-      setOffers(body.offers||[])
-    }catch(e){setMessage(e instanceof Error?e.message:'Unable to load available produce')}
-  },[source,search])
-  const refreshFarmer=useCallback(async(key:string)=>{
-    if(!key)return
-    const res=await fetch('/api/flame/food/farmer',{headers:{'x-farmer-key':key},cache:'no-store'})
-    const body=await res.json()
-    if(!res.ok)throw new Error(body.error||'Unable to open farmer desk')
-    setFarmer(body)
-  },[])
-  const trackBuyer=useCallback(async(key:string)=>{
-    if(!key)return
-    const res=await fetch('/api/flame/food/orders',{headers:{'x-food-order-key':key},cache:'no-store'})
-    const body=await res.json()
-    if(!res.ok)throw new Error(body.error||'Unable to open order tracking')
-    setBuyerOrder(body.order)
-  },[])
-  useEffect(()=>{void catalogue()},[catalogue])
-  useEffect(()=>{
-    const farmer=localStorage.getItem('weave_food_farmer_key')||''
-    const buyer=localStorage.getItem('weave_food_buyer_key')||''
-    if(farmer){setFarmerKey(farmer);void refreshFarmer(farmer).catch(()=>{})}
-    if(buyer){setBuyerKey(buyer);void trackBuyer(buyer).catch(()=>{})}
-  },[refreshFarmer,trackBuyer])
-  async function post(action:string,payload:Record<string,unknown>,headers:Record<string,string>={}){
-    const res=await fetch('/api/flame/food',{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify({action,...payload})})
-    const body=await res.json()
-    if(!res.ok)throw new Error(body.error||'Unable to complete this step')
+  const [message,setMessage]=useState('')
+  const [error,setError]=useState('')
+  const headers=useCallback(():Record<string,string>=>({
+    'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{}),
+  }),[token])
+  const read=useCallback(async(path:string)=>{
+    const response=await fetch(path,{headers:headers(),cache:'no-store'})
+    const body=await response.json()
+    if(!response.ok)throw new Error(body.error||'Unable to load Lifestyle food activity')
     return body
-  }
-  async function registerFarm(event:FormEvent){
-    event.preventDefault();setBusy(true);setMessage('')
+  },[headers])
+  const refresh=useCallback(async()=>{
+    if(!token||!['agent','bridger'].includes(role||''))return
     try{
-      const body=await post('register',{farmName,contact:farmPhone,community,state:farmState,shareFarmerContact:shareFarmer})
-      setFarmerKey(body.managementKey)
-      localStorage.setItem('weave_food_farmer_key',body.managementKey)
-      setMessage('Farmer request received. Save your private farmer key. Administration must verify you before your food appears in the market.')
-      await refreshFarmer(body.managementKey)
-    }catch(e){setMessage(e instanceof Error?e.message:'Unable to register farm')}
-    finally{setBusy(false)}
+      const params=new URLSearchParams()
+      if(source)params.set('origin',source)
+      if(query.trim())params.set('search',query.trim())
+      const [market,buying,farming]=await Promise.all([
+        read('/api/flame/food?'+params.toString()),
+        read('/api/flame/food/orders'),
+        role==='agent'?read('/api/flame/food/farmer'):Promise.resolve(null),
+      ])
+      setOffers(market.offers||[])
+      setOrders(buying.orders||[])
+      setFarm(farming)
+      setError('')
+    }catch(e){setError(e instanceof Error?e.message:'Unable to load food exchange')}
+  },[read,role,token,source,query])
+  useEffect(()=>{void refresh()},[refresh])
+  async function write(path:string,method:'POST'|'PATCH',body:Record<string,unknown>){
+    const response=await fetch(path,{method,headers:headers(),body:JSON.stringify(body)})
+    const data=await response.json()
+    if(!response.ok)throw new Error(data.error||'Food activity failed')
+    return data
   }
-  async function publish(event:FormEvent){
-    event.preventDefault();setBusy(true);setMessage('')
-    try{
-      await post('offer',{produce,unit,quantity:Number(available),minimumQuantity:Number(minimum),priceNgn:Number(price),details},{'x-farmer-key':farmerKey})
-      setMessage('Surplus published to the public market.')
-      setProduce('');setAvailable('');setMinimum('');setPrice('');setDetails('')
-      await Promise.all([refreshFarmer(farmerKey),catalogue()])
-    }catch(e){setMessage(e instanceof Error?e.message:'Unable to publish produce')}
-    finally{setBusy(false)}
-  }
-  async function requestFood(event:FormEvent){
-    event.preventDefault();if(!selected)return
+  async function action(operation:()=>Promise<unknown>,success:string){
     setBusy(true);setMessage('')
-    try{
-      const res=await fetch('/api/flame/food/orders',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({offerId:selected.id,quantity:Number(qty),buyerName,buyerPhone,destinationState:destination,
-          destinationArea:area,shareBuyerContact:shareBuyer,deliveryMode})})
-      const body=await res.json()
-      if(!res.ok)throw new Error(body.error||'Unable to request produce')
-      localStorage.setItem('weave_food_buyer_key',body.buyerKey)
-      setBuyerKey(body.buyerKey)
-      await trackBuyer(body.buyerKey)
-      await catalogue()
-      setSelected(null)
-      setMessage('Produce reserved for 24 hours while the farmer responds. This is not a payment. Keep your private order key.')
-    }catch(e){setMessage(e instanceof Error?e.message:'Unable to request food')}
+    try{await operation();setSelected(null);setMessage(success);await refresh()}
+    catch(e){setMessage(e instanceof Error?e.message:'The operation did not complete')}
     finally{setBusy(false)}
   }
-  async function farmerAction(orderId:string,action:string){
-    setBusy(true);setMessage('')
-    try{
-      const response=await fetch('/api/flame/food/farmer',{method:'PATCH',
-        headers:{'Content-Type':'application/json','x-farmer-key':farmerKey},
-        body:JSON.stringify({action,orderId,deliveryFeeNgn:Number(quoteFee[orderId]||0),quoteNote:quoteNote[orderId]||''})})
-      const body=await response.json()
-      if(!response.ok)throw new Error(body.error||'Cannot update order')
-      setMessage('Farmer order movement recorded.')
-      await Promise.all([refreshFarmer(farmerKey),catalogue()])
-    }catch(e){setMessage(e instanceof Error?e.message:'Unable to move order')}
-    finally{setBusy(false)}
+  function register(e:FormEvent){
+    e.preventDefault()
+    void action(()=>write('/api/flame/food','POST',{
+      action:'register',farmName,contact:farmPhone,state:farmState,community:farmCommunity,shareFarmerContact,
+    }),'Your farm is linked to your Agent identity. Administration verification is required to publish its offers.')
   }
-  async function buyerAction(action:string){
-    setBusy(true);setMessage('')
-    try{
-      const response=await fetch('/api/flame/food/orders',{method:'PATCH',
-        headers:{'Content-Type':'application/json','x-food-order-key':buyerKey},body:JSON.stringify({action})})
-      const body=await response.json()
-      if(!response.ok)throw new Error(body.error||'Cannot update order')
-      await Promise.all([trackBuyer(buyerKey),catalogue()])
-      setMessage(action==='accept_quote'?'You accepted the food and delivery quote. Coordinate payment and dispatch directly with the supplier; WEAVE has not received payment.'
-        :action==='confirm_delivery'?'Household delivery acknowledged.':'Household request cancelled and quantity released.')
-    }catch(e){setMessage(e instanceof Error?e.message:'Unable to update order')}
-    finally{setBusy(false)}
+  function publish(e:FormEvent){
+    e.preventDefault()
+    void action(()=>write('/api/flame/food','POST',{
+      action:'offer',produce,unit,quantity:Number(stock),minimumQuantity:Number(minimum),
+      priceNgn:Number(unitPrice),details:produceDetails,
+    }),'Real available produce published in Lifestyle Food Exchange.')
   }
+  function request(e:FormEvent){
+    e.preventDefault()
+    if(!selected)return
+    void action(()=>write('/api/flame/food/orders','POST',{
+      offerId:selected.id,quantity:Number(qty),buyerPhone:phone,destinationState:destination,destinationArea:area,
+      deliveryMode,shareBuyerContact,
+    }),'Food quantity reserved. The farmer must confirm and quote the delivery. You have not been charged.')
+  }
+  const buyerAction=(id:string,kind:string)=>void action(
+    ()=>write('/api/flame/food/orders','PATCH',{orderId:id,action:kind}),
+    kind==='accept_quote'?'You accepted the quoted total. Payment and dispatch still require direct coordination; no payment was collected by WEAVE.':
+    kind==='confirm_delivery'?'Food delivery confirmed by the household.':'Quantity released to the farmer.'
+  )
+  const sellerAction=(id:string,kind:string)=>void action(
+    ()=>write('/api/flame/food/farmer','PATCH',{
+      orderId:id,action:kind,deliveryFeeNgn:Number(fees[id]||0),quoteNote:terms[id]||'',
+    }),'Farmer order updated. The household can track the next step.'
+  )
 
-  return <main className="min-h-screen bg-[#080e0b] text-white" data-weave-food-bridge="farmer-to-household">
-    <header className="border-b border-emerald-200/15 bg-[radial-gradient(circle_at_75%_0%,rgba(34,197,94,.13),transparent_48%)]">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12">
-        <Link href="/market" className="inline-flex items-center gap-2 text-xs text-emerald-200"><ArrowLeft className="h-4 w-4"/> WEAVE Customer Market</Link>
-        <p className="mt-7 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-amber-200"><Flame className="h-4 w-4"/> Flame Event · Food movement</p>
-        <h1 className="mt-3 max-w-4xl text-4xl font-black tracking-tight sm:text-6xl">From surplus at the farm to food on the family table.</h1>
-        <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-300">A farmer in the North can make surplus food available. A household in Lagos can order from that actual stock. WEAVE connects the two; origin, quantity, farm price and delivery quotation stay visible.</p>
-        <div className="mt-6 flex flex-wrap gap-2 text-[10px] font-bold text-stone-300">
-          <span className="border border-white/10 px-3 py-2">Direct farmer offers</span>
-          <span className="border border-white/10 px-3 py-2">Real available quantities</span>
-          <span className="border border-white/10 px-3 py-2">Delivery quote before acceptance</span>
-          <span className="border border-white/10 px-3 py-2">No payment collected here</span>
-        </div>
+  if(!isInitialized)return <main className="p-8 text-white">Opening Lifestyle Food Exchange…</main>
+  if(!user||!['agent','bridger'].includes(role||''))return <main className="min-h-screen p-8 text-white">
+    <h1 className="text-2xl font-black">WEAVE Lifestyle · Farm to Family</h1>
+    <p className="mt-4 text-sm text-stone-400">Register or sign in as an Agent or Bridger to use the food exchange.</p>
+    <div className="mt-4 flex gap-4"><Link href="/register" className="text-emerald-200">Register for WEAVE</Link><Link href="/login" className="text-sky-200">Sign in</Link></div>
+  </main>
+
+  return <main className="min-h-screen bg-[#08110d] text-white" data-lifestyle-food="farmer-household">
+    <header className="border-b border-emerald-300/15 bg-[radial-gradient(circle_at_72%_0%,rgba(34,197,94,.15),transparent_48%)] px-4 py-8 sm:px-8">
+      <div className="mx-auto max-w-6xl">
+        <Link href="/weave/lifestyles" className="inline-flex items-center gap-2 text-xs text-emerald-200"><ArrowLeft className="h-4 w-4"/> Lifestyle</Link>
+        <p className="mt-7 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-amber-200"><Flame className="h-4 w-4"/> Flame Event · Real food movement</p>
+        <h1 className="mt-2 text-3xl font-black sm:text-5xl">FARM TO FAMILY</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-300">When a farmer has excess produce in the North, an Agent or Bridger with a household in Lagos can order directly from that farmer. See who has stock, where it comes from and what the total will cost before agreeing.</p>
+        <p className="mt-3 text-xs text-emerald-200">Your current position: {role==='agent'?'Agent · Buying and farming':'Bridger · Buying and arranging food'} · No additional Lifestyle charge.</p>
       </div>
     </header>
-
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <div className="flex border-b border-white/15">
-        <button type="button" onClick={()=>setTab('buy')} className={'px-5 py-4 text-xs font-black '+(tab==='buy'?'border-b-2 border-emerald-300 text-white':'text-stone-500')}>Household · Find food</button>
-        <button type="button" onClick={()=>setTab('farm')} className={'px-5 py-4 text-xs font-black '+(tab==='farm'?'border-b-2 border-amber-300 text-white':'text-stone-500')}>Farmer · Sell surplus</button>
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8">
+      <div className="flex flex-wrap justify-between gap-3 border-b border-white/10 pb-4">
+        <div className="flex gap-2">
+          <button type="button" onClick={()=>setTab('market')} className={`border px-4 py-2 text-xs font-black ${tab==='market'?'border-emerald-300 bg-emerald-300/10 text-white':'border-white/10 text-stone-400'}`}>Buy from farmers</button>
+          {isFarmerEligible&&<button type="button" onClick={()=>setTab('farm')} className={`border px-4 py-2 text-xs font-black ${tab==='farm'?'border-amber-300 bg-amber-300/10 text-white':'border-white/10 text-stone-400'}`}>My farm & orders</button>}
+        </div>
+        <button type="button" onClick={()=>void refresh()} className="flex items-center gap-2 text-xs text-sky-200"><RefreshCcw className="h-4 w-4"/> Refresh live trades</button>
       </div>
-      {message&&<p role="status" className="my-4 border-l-2 border-emerald-300 bg-emerald-300/5 p-3 text-sm text-emerald-100">{message}</p>}
-
-      {tab==='buy'&&<div className="mt-7 grid gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,.9fr)]">
-        <section>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div><h2 className="text-2xl font-black">Food available from farmers</h2><p className="mt-2 text-xs text-stone-400">Only approved farmers with actual available produce appear here.</p></div>
-            <button type="button" onClick={()=>void catalogue()} className="flex items-center gap-2 border border-white/15 px-3 py-2 text-xs"><RefreshCw className="h-4 w-4"/> Refresh</button>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <label className="text-xs text-stone-300">Origin state
-              <select value={source} onChange={e=>setSource(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3">
-                <option value="">All states</option>{FOOD_BRIDGE_STATES.map(state=><option key={state} value={state}>{state}</option>)}
-              </select>
-            </label>
-            <label className="text-xs text-stone-300">Produce
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rice, yam, tomatoes…" className="mt-2 w-full border border-white/15 bg-[#18251d] p-3 text-white"/>
-            </label>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {offers.map(offer=><article key={offer.id} className="border border-emerald-200/15 bg-white/[.025] p-5" data-food-offer={offer.id}>
-              <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-emerald-200"><MapPin className="h-3.5 w-3.5"/>{offer.community}, {offer.state}</p>
-              <h3 className="mt-3 text-xl font-black">{offer.produce}</h3>
-              <p className="mt-1 text-sm text-stone-300">{offer.farm_name}</p>
-              <p className="mt-4 text-2xl font-black text-white">{money(offer.unit_price_ngn)} <span className="text-xs font-normal text-stone-400">/ {offer.unit} · farm price</span></p>
-              <p className="mt-2 text-xs text-stone-400">{offer.available_quantity} {offer.unit} available · minimum {offer.minimum_quantity} {offer.unit}</p>
-              {offer.details&&<p className="mt-2 text-xs leading-5 text-stone-500">{offer.details}</p>}
-              <button type="button" onClick={()=>{setSelected(offer);setQty(String(offer.minimum_quantity))}} className="mt-5 flex w-full items-center justify-between bg-emerald-300 px-4 py-3 text-xs font-black text-emerald-950">
-                Request this produce <ArrowRight className="h-4 w-4"/>
-              </button>
-            </article>)}
-          </div>
-          {!offers.length&&<p className="mt-5 border border-dashed border-white/15 p-8 text-sm text-stone-400">No verified farm surplus matches this search yet. No inventory has been invented.</p>}
-          {selected&&<form onSubmit={requestFood} className="mt-6 space-y-4 border border-emerald-300/30 bg-[#102018] p-5" data-food-order-form>
-            <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-emerald-200">Household order request</p><h3 className="mt-1 text-lg font-black">{selected.produce} from {selected.community}, {selected.state}</h3></div><button type="button" onClick={()=>setSelected(null)} className="text-xs text-stone-400">Close</button></div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="text-xs">Quantity ({selected.unit})
-                <input type="number" step=".01" min={selected.minimum_quantity} max={selected.available_quantity} required value={qty} onChange={e=>setQty(e.target.value)} className="mt-1 w-full border border-white/15 bg-[#1d3024] p-3"/>
-              </label>
-              <label className="text-xs">Delivery mode
-                <select value={deliveryMode} onChange={e=>setDeliveryMode(e.target.value as 'delivery'|'pickup')} className="mt-1 w-full border border-white/15 bg-[#1d3024] p-3"><option value="delivery">Deliver to household</option><option value="pickup">Arrange pickup</option></select>
-              </label>
-              <label className="text-xs">Household contact name
-                <input required minLength={2} maxLength={120} value={buyerName} onChange={e=>setBuyerName(e.target.value)} className="mt-1 w-full border border-white/15 bg-[#1d3024] p-3"/>
-              </label>
-              <label className="text-xs">Phone / WhatsApp number
-                <input required type="tel" maxLength={60} value={buyerPhone} onChange={e=>setBuyerPhone(e.target.value)} className="mt-1 w-full border border-white/15 bg-[#1d3024] p-3"/>
-              </label>
-              <label className="text-xs">Destination state
-                <select value={destination} onChange={e=>setDestination(e.target.value)} className="mt-1 w-full border border-white/15 bg-[#1d3024] p-3">{FOOD_BRIDGE_STATES.map(state=><option key={state} value={state}>{state}</option>)}</select>
-              </label>
-              <label className="text-xs">Delivery district / nearest town
-                <input required minLength={3} maxLength={160} value={area} onChange={e=>setArea(e.target.value)} placeholder="Lagos Mainland, Ikeja…" className="mt-1 w-full border border-white/15 bg-[#1d3024] p-3"/>
-              </label>
-            </div>
-            <p className="text-sm">Farm produce subtotal: <strong>{money(Number(selected.unit_price_ngn)*Number(qty||0))}</strong></p>
-            <p className="text-xs leading-5 text-amber-100">Delivery price is not known yet. The farmer must confirm the available food and provide a real transport quote. You can accept or decline that quote. Do not transfer money merely because you submitted a request.</p>
-            <label className="flex items-start gap-2 text-xs text-stone-300"><input type="checkbox" className="mt-1" checked={shareBuyer} onChange={e=>setShareBuyer(e.target.checked)}/>After the farmer confirms, share my name and phone with that farmer so we can coordinate directly.</label>
-            <button disabled={busy} type="submit" className="w-full bg-emerald-300 px-4 py-3 text-xs font-black text-emerald-950 disabled:opacity-50">Request available food · no payment</button>
-          </form>}
-        </section>
-
-        <aside className="self-start border border-white/10 bg-white/[.025] p-5" data-food-buyer-tracking>
-          <p className="flex items-center gap-2 text-xs font-black text-sky-200"><Package className="h-4 w-4"/> Your household order</p>
-          <p className="mt-2 text-xs leading-5 text-stone-400">Your order key is private. Enter it here from this or another device to see farmer confirmation, the exact delivery quote and the current step.</p>
-          <label className="mt-4 block text-xs text-stone-300">Private order key
-            <input type="password" value={buyerKey} onChange={e=>setBuyerKey(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/>
+      {error&&<p role="alert" className="mt-4 border border-rose-300/20 p-3 text-xs text-rose-200">{error}</p>}
+      {message&&<p role="status" className="mt-4 border border-emerald-300/20 p-3 text-xs text-emerald-200">{message}</p>}
+      {tab==='market'&&<div className="mt-7 space-y-8">
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="text-xs text-stone-300">Source state
+            <select value={source} onChange={e=>setSource(e.target.value)} className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3 text-white"><option value="">All Nigeria</option>{FOOD_BRIDGE_STATES.map(s=><option value={s} key={s}>{s}</option>)}</select>
           </label>
-          <button type="button" onClick={()=>void trackBuyer(buyerKey).catch(e=>setMessage(String(e)))} className="mt-3 flex items-center gap-2 border border-white/20 px-4 py-2 text-xs"><RefreshCw className="h-4 w-4"/> Check order</button>
-          {buyerOrder&&<div className="mt-5 border-t border-white/10 pt-4 text-sm">
-            <p className="text-xs font-black uppercase tracking-wider text-emerald-200">{buyerOrder.status.replaceAll('_',' ')}</p>
-            <h3 className="mt-2 text-lg font-black">{buyerOrder.produce} · {buyerOrder.quantity} {buyerOrder.unit}</h3>
-            <p className="mt-1 text-xs text-stone-400">From {buyerOrder.farm_name}, {buyerOrder.origin_state} to {buyerOrder.destination_area}, {buyerOrder.destination_state}</p>
-            <div className="mt-4 space-y-2 border-y border-white/10 py-3 text-xs">
-              <p className="flex justify-between"><span>Food subtotal</span><strong>{money(buyerOrder.food_subtotal_ngn)}</strong></p>
-              <p className="flex justify-between"><span>Delivery / pickup quotation</span><strong>{buyerOrder.delivery_quote_ngn===null?'Awaiting quote':money(buyerOrder.delivery_quote_ngn)}</strong></p>
-              {buyerOrder.delivery_quote_ngn!==null&&<p className="flex justify-between text-base"><span>Total quoted</span><strong>{money(Number(buyerOrder.food_subtotal_ngn)+Number(buyerOrder.delivery_quote_ngn))}</strong></p>}
-            </div>
-            {buyerOrder.quote_note&&<p className="mt-3 text-xs text-stone-300">{buyerOrder.quote_note}</p>}
-            {buyerOrder.farmer_contact&&<p className="mt-3 border border-emerald-300/20 p-3 text-xs">Farmer’s shared contact: <strong>{buyerOrder.farmer_contact}</strong></p>}
-            {buyerOrder.status==='quoted'&&<button disabled={busy} type="button" onClick={()=>void buyerAction('accept_quote')} className="mt-4 w-full bg-emerald-300 px-3 py-3 text-xs font-black text-emerald-950"><Check className="mr-1 inline h-3.5 w-3.5"/> Accept this food + transport total</button>}
-            {buyerOrder.status==='dispatched'&&<button disabled={busy} type="button" onClick={()=>void buyerAction('confirm_delivery')} className="mt-4 w-full bg-emerald-300 px-3 py-3 text-xs font-black text-emerald-950">Confirm food received</button>}
-            {['requested','farmer_confirmed','quoted'].includes(buyerOrder.status)&&<button disabled={busy} type="button" onClick={()=>void buyerAction('cancel')} className="mt-4 w-full border border-rose-300/30 px-3 py-2 text-xs text-rose-200">Cancel request and release quantity</button>}
-            <p className="mt-4 text-[11px] leading-5 text-amber-200">WEAVE has not collected payment, verified a transfer or guaranteed transport through this service.</p>
-          </div>}
-        </aside>
-      </div>}
-
-      {tab==='farm'&&<div className="mt-7 grid gap-8 lg:grid-cols-2">
-        <section>
-          <h2 className="text-2xl font-black">Farmer supply desk</h2>
-          <p className="mt-2 text-xs leading-6 text-stone-400">A farmer can bring real village surplus into the WEAVE food current. No paid File Folder is required for this initial supply registration. Administration confirms the supplier before offers are shown to households.</p>
-          {!farmerKey?<form onSubmit={registerFarm} className="mt-5 space-y-4 border border-white/10 p-5">
-            <label className="block text-xs">Farm or producer name<input value={farmName} onChange={e=>setFarmName(e.target.value)} required minLength={3} maxLength={120} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
-            <label className="block text-xs">Private phone / WhatsApp number<input type="tel" required value={farmPhone} onChange={e=>setFarmPhone(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
-            <label className="block text-xs">State<select value={farmState} onChange={e=>setFarmState(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3">{FOOD_BRIDGE_STATES.map(state=><option key={state} value={state}>{state}</option>)}</select></label>
-            <label className="block text-xs">Village / community<input required minLength={3} maxLength={120} value={community} onChange={e=>setCommunity(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
-            <label className="flex gap-2 text-xs leading-5 text-stone-300"><input type="checkbox" checked={shareFarmer} onChange={e=>setShareFarmer(e.target.checked)} className="mt-1"/>Share my contact privately with households only after I confirm their requests.</label>
-            <button disabled={busy} type="submit" className="w-full bg-amber-300 px-4 py-3 text-xs font-black text-black">Register actual farmer supply</button>
-          </form>:<div className="mt-5 border border-emerald-300/25 p-5">
-            <p className="text-xs font-black text-emerald-200">Farmer access · {farmer?.farmer.status||'Checking verification'}</p>
-            <p className="mt-2 text-sm">{farmer?.farmer.farm_name||'Your farm'} · {farmer?.farmer.community}, {farmer?.farmer.state}</p>
-            <p className="mt-3 text-xs text-stone-400">Your private key is saved in this browser. Store it somewhere secure before changing devices. Anyone holding the key can act for this farm.</p>
-            <div className="mt-3 flex gap-2"><button type="button" onClick={()=>void navigator.clipboard?.writeText(farmerKey)} className="flex items-center gap-2 border border-white/15 px-3 py-2 text-xs"><ClipboardCopy className="h-4 w-4"/> Copy farmer key</button><button type="button" onClick={()=>void refreshFarmer(farmerKey).catch(e=>setMessage(String(e)))} className="flex items-center gap-2 border border-white/15 px-3 py-2 text-xs"><RefreshCw className="h-4 w-4"/> Refresh</button></div>
-          </div>}
-          {!farmerKey&&<div className="mt-5"><p className="mb-2 text-xs text-stone-400">Already registered? Enter your secret farmer key:</p><input type="password" value={existingFarmerKey} onChange={e=>setExistingFarmerKey(e.target.value)} className="w-full border border-white/15 bg-[#18251d] p-3"/><button type="button" onClick={()=>{setFarmerKey(existingFarmerKey);localStorage.setItem('weave_food_farmer_key',existingFarmerKey);void refreshFarmer(existingFarmerKey).catch(e=>setMessage(String(e)))}} className="mt-2 border border-white/15 px-4 py-2 text-xs">Open farmer desk</button></div>}
-          {farmer?.farmer.status==='approved'&&<form onSubmit={publish} className="mt-7 space-y-4 border border-amber-200/20 p-5" data-food-farmer-offer>
-            <h3 className="text-lg font-black">Publish available harvest</h3>
-            <label className="block text-xs">Produce name<input required minLength={2} value={produce} onChange={e=>setProduce(e.target.value)} placeholder="Rice, yam, beans, tomatoes" className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="text-xs">Unit<select value={unit} onChange={e=>setUnit(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3">{FOOD_BRIDGE_UNITS.map(item=><option key={item} value={item}>{item}</option>)}</select></label>
-              <label className="text-xs">Unit price (₦)<input required type="number" step=".01" min=".01" value={price} onChange={e=>setPrice(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
-              <label className="text-xs">Quantity available<input required type="number" step=".01" min=".01" value={available} onChange={e=>setAvailable(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
-              <label className="text-xs">Minimum household order<input required type="number" step=".01" min=".01" value={minimum} onChange={e=>setMinimum(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
-            </div>
-            <label className="block text-xs">Produce condition / packing notes<textarea maxLength={500} rows={3} value={details} onChange={e=>setDetails(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
-            <button disabled={busy} type="submit" className="w-full bg-amber-300 px-4 py-3 text-xs font-black text-black">Offer these units to households</button>
-          </form>}
+          <label className="text-xs text-stone-300">Food / crop
+            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Rice, yam, beans, tomatoes…" className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3 text-white"/>
+          </label>
+        </div>
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-food-live-offers>
+          {offers.map(offer=><article key={offer.id} className="flex flex-col border border-emerald-200/15 bg-white/[.025] p-5">
+            <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-emerald-200"><MapPin className="h-4 w-4"/>{offer.community}, {offer.state}</p>
+            <h2 className="mt-3 text-xl font-black">{offer.produce}</h2>
+            <p className="mt-1 text-xs text-stone-400">From {offer.farm_name}</p>
+            <p className="mt-4 text-2xl font-black">{money(offer.unit_price_ngn)}<span className="text-xs font-normal text-stone-400"> / {offer.unit} farm price</span></p>
+            <p className="mt-3 text-xs text-stone-400">{offer.available_quantity} {offer.unit} left · minimum {offer.minimum_quantity} {offer.unit}</p>
+            {offer.details&&<p className="mt-2 text-xs leading-5 text-stone-500">{offer.details}</p>}
+            <button type="button" onClick={()=>{setSelected(offer);setQty(offer.minimum_quantity)}} className="mt-auto flex items-center justify-between bg-emerald-300 px-4 py-3 pt-3 text-xs font-black text-black">Order this food <ArrowRight className="h-4 w-4"/></button>
+          </article>)}
+          {!offers.length&&<p className="border border-dashed border-white/10 p-8 text-sm text-stone-400 sm:col-span-2">No verified farm produce is listed yet. Available inventory will appear when an Agent farmer publishes it.</p>}
         </section>
-        <section>
-          <h2 className="flex items-center gap-2 text-xl font-black"><Truck className="h-5 w-5 text-amber-200"/> Incoming family orders</h2>
-          <p className="mt-2 text-xs leading-6 text-stone-400">Requests arrive directly from households. Confirm the stock; obtain a real delivery charge; let the household approve the total; then arrange dispatch. Never invent a transport fee.</p>
-          {!farmer?<div className="mt-5 border border-dashed border-white/15 p-6 text-xs text-stone-500">Open your farmer desk to see requests.</div>:!farmer.orders.length?<p className="mt-5 border border-dashed border-white/15 p-6 text-xs text-stone-500">No household requests yet.</p>:<div className="mt-5 space-y-4">
-            {farmer.orders.map(order=><article key={order.id} className="border border-white/10 p-4">
-              <p className="text-[10px] font-bold uppercase text-amber-200">{order.status.replaceAll('_',' ')}</p>
-              <h3 className="mt-2 text-lg font-black">{order.produce} · {order.quantity} {order.unit}</h3>
-              <p className="mt-2 text-xs text-stone-400">To {order.destination_area}, {order.destination_state} · {order.delivery_mode} · food subtotal {money(order.food_subtotal_ngn)}</p>
-              {order.buyer_contact&&<p className="mt-2 text-xs">Contact shared by household: {order.buyer_name} · {order.buyer_contact}</p>}
-              {order.status==='requested'&&<div className="mt-4 flex gap-3">
-                <button disabled={busy} type="button" onClick={()=>void farmerAction(order.id,'confirm')} className="bg-emerald-300 px-4 py-2 text-xs font-bold text-black">Confirm available</button>
-                <button disabled={busy} type="button" onClick={()=>void farmerAction(order.id,'reject')} className="border border-rose-300/30 px-4 py-2 text-xs text-rose-200">Decline</button>
-              </div>}
-              {order.status==='farmer_confirmed'&&<div className="mt-4 space-y-3">
-                <label className="block text-xs">Delivery / pickup quotation in ₦
-                  <input type="number" min="0" step=".01" value={quoteFee[order.id]||''} onChange={e=>setQuoteFee(p=>({...p,[order.id]:e.target.value}))} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/>
-                </label>
-                <label className="block text-xs">Carrier and transport terms
-                  <textarea required minLength={10} value={quoteNote[order.id]||''} onChange={e=>setQuoteNote(p=>({...p,[order.id]:e.target.value}))} rows={2} className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/>
-                </label>
-                <button disabled={busy} type="button" onClick={()=>void farmerAction(order.id,'quote')} className="bg-amber-300 px-4 py-3 text-xs font-black text-black">Send transport quote</button>
-              </div>}
-              {order.status==='accepted'&&<button disabled={busy} type="button" onClick={()=>void farmerAction(order.id,'dispatch')} className="mt-4 flex items-center gap-2 border border-emerald-300/25 px-4 py-2 text-xs"><Truck className="h-4 w-4"/> Mark dispatched</button>}
+        {selected&&<form onSubmit={request} className="space-y-4 border border-emerald-300/30 p-5" data-food-direct-order>
+          <h2 className="text-xl font-black">Order {selected.produce} from {selected.farm_name}</h2>
+          <p className="text-xs text-stone-400">From {selected.community}, {selected.state} · Unit price {money(selected.unit_price_ngn)}</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="text-xs">Quantity in {selected.unit}
+              <input type="number" step=".01" min={selected.minimum_quantity} max={selected.available_quantity} value={qty} onChange={e=>setQty(e.target.value)} required className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3"/>
+            </label>
+            <label className="text-xs">Destination state
+              <select value={destination} onChange={e=>setDestination(e.target.value)} className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3">{FOOD_BRIDGE_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select>
+            </label>
+            <label className="text-xs">Delivery area
+              <input required minLength={3} value={area} onChange={e=>setArea(e.target.value)} placeholder="Ikeja, Lagos" className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3"/>
+            </label>
+            <label className="text-xs">Your phone / WhatsApp
+              <input type="tel" required value={phone} onChange={e=>setPhone(e.target.value)} className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3"/>
+            </label>
+            <label className="text-xs">How will you receive food?
+              <select value={deliveryMode} onChange={e=>setDeliveryMode(e.target.value)} className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3"><option value="delivery">Quoted delivery</option><option value="pickup">Arrange pickup</option></select>
+            </label>
+          </div>
+          <p className="text-sm font-bold">Farm goods subtotal: {money(Number(qty||0)*Number(selected.unit_price_ngn))}</p>
+          <p className="text-xs leading-5 text-amber-200">Transport is not included. The farmer must confirm this stock and send a real logistics quote. You accept the complete price before dispatch. This is not a paid order.</p>
+          <label className="flex items-start gap-2 text-xs text-stone-300"><input type="checkbox" className="mt-1" checked={shareBuyerContact} onChange={e=>setShareBuyerContact(e.target.checked)}/>Allow the farmer to view my contact after confirming this request.</label>
+          <div className="flex flex-wrap gap-3"><button type="submit" disabled={busy} className="bg-emerald-300 px-5 py-3 text-xs font-black text-black disabled:opacity-40">Reserve available quantity</button><button type="button" onClick={()=>setSelected(null)} className="border border-white/15 px-5 py-3 text-xs">Close</button></div>
+        </form>}
+        <section data-food-my-orders>
+          <h2 className="text-xl font-black">Your food trades</h2>
+          {!orders.length?<p className="mt-3 text-xs text-stone-400">No food orders placed from your position yet.</p>:<div className="mt-4 grid gap-4 md:grid-cols-2">
+            {orders.map(o=><article key={o.id} className="border border-white/10 p-5">
+              <p className="text-[10px] font-bold uppercase text-emerald-200">{o.status.replaceAll('_',' ')}</p>
+              <h3 className="mt-2 text-lg font-black">{o.produce} · {o.quantity} {o.unit}</h3>
+              <p className="mt-2 text-xs text-stone-400">{o.farm_name} in {o.origin_state} → {o.destination_area}, {o.destination_state}</p>
+              <p className="mt-4 text-xs">Food: {money(o.food_subtotal_ngn)} · Delivery: {o.delivery_quote_ngn===null?'Awaiting quote':money(o.delivery_quote_ngn)}</p>
+              {o.delivery_quote_ngn!==null&&<p className="mt-2 text-sm font-black">Total quoted: {money(Number(o.food_subtotal_ngn)+Number(o.delivery_quote_ngn))}</p>}
+              {o.quote_note&&<p className="mt-2 text-xs text-stone-400">{o.quote_note}</p>}
+              {o.farmer_contact&&<p className="mt-2 text-xs text-emerald-200">Supplier shared contact: {o.farmer_contact}</p>}
+              {o.status==='quoted'&&<button disabled={busy} type="button" onClick={()=>buyerAction(o.id,'accept_quote')} className="mt-3 bg-emerald-300 px-4 py-2 text-xs font-black text-black">Accept complete quote</button>}
+              {o.status==='dispatched'&&<button disabled={busy} type="button" onClick={()=>buyerAction(o.id,'confirm_delivery')} className="mt-3 bg-emerald-300 px-4 py-2 text-xs font-black text-black">Confirm food received</button>}
+              {['requested','farmer_confirmed','quoted'].includes(o.status)&&<button disabled={busy} type="button" onClick={()=>buyerAction(o.id,'cancel')} className="ml-2 mt-3 border border-rose-300/20 px-4 py-2 text-xs text-rose-200">Cancel order</button>}
             </article>)}
           </div>}
-          {farmer&&<div className="mt-6 border-t border-white/10 pt-5"><h3 className="text-sm font-black">Your available offers</h3>
-            {farmer.offers.map(item=><p key={item.id} className="mt-3 text-xs text-stone-300">{item.produce} · {item.available_quantity} {item.unit} remaining · {item.status}</p>)}
-          </div>}
         </section>
       </div>}
+      {tab==='farm'&&isFarmerEligible&&<section className="mt-7 grid gap-8 lg:grid-cols-2" data-food-agent-farm>
+        <div>
+          <h2 className="flex items-center gap-2 text-xl font-black"><Tractor className="h-5 w-5 text-amber-200"/> Your farm · Agent position</h2>
+          <p className="mt-3 text-xs leading-6 text-stone-400">Your WEAVE Agent identity owns the farm account. A separate farmer login or extra subscription is not required. Administration verifies the farm before publishing available stock.</p>
+          {!farm?.farmer?<form onSubmit={register} className="mt-5 space-y-4 border border-white/10 p-5">
+            <label className="block text-xs">Name of farm / producer<input required minLength={3} value={farmName} onChange={e=>setFarmName(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            <label className="block text-xs">Farm contact<input required type="tel" value={farmPhone} onChange={e=>setFarmPhone(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            <label className="block text-xs">State<select value={farmState} onChange={e=>setFarmState(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3">{FOOD_BRIDGE_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
+            <label className="block text-xs">Village or community<input required minLength={3} value={farmCommunity} onChange={e=>setFarmCommunity(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            <label className="flex items-start gap-2 text-xs text-stone-400"><input type="checkbox" className="mt-1" checked={shareFarmerContact} onChange={e=>setShareFarmerContact(e.target.checked)}/>Let confirmed buyers see my farm contact to coordinate delivery.</label>
+            <button type="submit" disabled={busy} className="bg-amber-300 px-5 py-3 text-xs font-black text-black">Register farm under my Agent account</button>
+          </form>:<div className="mt-4 border border-white/10 p-4">
+            <p className="text-xs font-black text-amber-200">{farm.farmer.farm_name} · {farm.farmer.status.toUpperCase()}</p>
+            <p className="mt-2 text-xs text-stone-400">{farm.farmer.community}, {farm.farmer.state}</p>
+          </div>}
+          {farm?.farmer?.status==='approved'&&<form onSubmit={publish} className="mt-6 space-y-3 border border-amber-300/20 p-5" data-food-agent-surplus>
+            <h3 className="text-lg font-black">Offer actual surplus stock</h3>
+            <label className="block text-xs">Produce<input required value={produce} onChange={e=>setProduce(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-xs">Selling unit<select value={unit} onChange={e=>setUnit(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3">{FOOD_BRIDGE_UNITS.map(u=><option value={u} key={u}>{u}</option>)}</select></label>
+              <label className="text-xs">Price ₦ per unit<input type="number" step=".01" min=".01" required value={unitPrice} onChange={e=>setUnitPrice(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+              <label className="text-xs">Surplus quantity<input type="number" step=".01" min=".01" required value={stock} onChange={e=>setStock(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+              <label className="text-xs">Minimum buy quantity<input type="number" step=".01" min=".01" required value={minimum} onChange={e=>setMinimum(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            </div>
+            <label className="block text-xs">Harvest, condition and packing<textarea maxLength={500} rows={3} value={produceDetails} onChange={e=>setProduceDetails(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            <button type="submit" disabled={busy} className="bg-amber-300 px-5 py-3 text-xs font-black text-black">Publish farm stock</button>
+          </form>}
+          {farm&&farm.offers.length>0&&<div className="mt-5 border-t border-white/10 pt-4">
+            <h3 className="text-sm font-black">Your inventory</h3>
+            {farm.offers.map(i=><div key={i.id} className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-300">
+              <span>{i.produce} · {i.available_quantity} {i.unit} remaining · {i.status}</span>
+              <button disabled={busy} onClick={()=>void action(()=>write('/api/flame/food/farmer','PATCH',{action:i.status==='paused'?'resume_offer':'pause_offer',offerId:i.id}),'Farm offer visibility changed.')} className="border border-white/15 px-3 py-2">{i.status==='paused'?'Resume':'Pause'}</button>
+            </div>)}
+          </div>}
+        </div>
+        <div>
+          <h2 className="flex items-center gap-2 text-xl font-black"><Truck className="h-5 w-5 text-amber-200"/> Offers moving to households</h2>
+          <p className="mt-3 text-xs leading-5 text-stone-400">A confirmed request can receive a real transport quote. Food is not marked paid by this system. Agree on payment and transport with the other party before dispatch.</p>
+          {(!farm?.orders.length)?<p className="mt-5 border border-dashed border-white/15 p-6 text-xs text-stone-400">No family orders received yet.</p>:<div className="mt-4 space-y-4">
+            {farm.orders.map(o=><article key={o.id} className="border border-white/10 p-5">
+              <p className="text-[10px] font-black uppercase text-amber-200">{o.status.replaceAll('_',' ')}</p>
+              <h3 className="mt-2 text-lg font-black">{o.produce} · {o.quantity} {o.unit}</h3>
+              <p className="mt-2 text-xs text-stone-400">Deliver to {o.destination_area}, {o.destination_state} · {money(o.food_subtotal_ngn)} food subtotal</p>
+              {o.buyer_contact&&<p className="mt-2 text-xs text-emerald-200">Buyer consented contact: {o.buyer_contact}</p>}
+              {o.status==='requested'&&<div className="mt-3 flex flex-wrap gap-3">
+                <button disabled={busy} onClick={()=>sellerAction(o.id,'confirm')} className="bg-emerald-300 px-4 py-2 text-xs font-black text-black">Confirm stock</button>
+                <button disabled={busy} onClick={()=>sellerAction(o.id,'reject')} className="border border-rose-300/30 px-4 py-2 text-xs text-rose-200">Decline</button>
+              </div>}
+              {o.status==='farmer_confirmed'&&<div className="mt-4 space-y-3">
+                <label className="block text-xs">Real transport quote (₦)<input type="number" min="0" step=".01" value={fees[o.id]||''} onChange={e=>setFees(prev=>({...prev,[o.id]:e.target.value}))} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+                <label className="block text-xs">Carrier, transport and delivery terms<textarea minLength={10} required value={terms[o.id]||''} onChange={e=>setTerms(prev=>({...prev,[o.id]:e.target.value}))} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+                <button disabled={busy} onClick={()=>sellerAction(o.id,'quote')} type="button" className="bg-amber-300 px-4 py-2 text-xs font-black text-black">Send total for approval</button>
+              </div>}
+              {o.status==='accepted'&&<button disabled={busy} type="button" onClick={()=>sellerAction(o.id,'dispatch')} className="mt-4 border border-emerald-300/30 px-4 py-2 text-xs">Mark as dispatched</button>}
+              {o.status==='delivered'&&<p className="mt-3 flex items-center gap-2 text-xs text-emerald-200"><CheckCircle2 className="h-4 w-4"/> Household confirmed receipt</p>}
+            </article>)}
+          </div>}
+        </div>
+      </section>}
     </div>
-    <footer className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-7 text-xs text-stone-400 sm:px-6">
-      <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4"/> Farmer verification by Administration · Independent household confirmation</span>
-      <Link href="/" className="text-emerald-200">WEAVE Flame Event <ArrowRight className="inline h-4 w-4"/></Link>
-    </footer>
   </main>
 }
