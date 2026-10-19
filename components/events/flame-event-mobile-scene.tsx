@@ -169,7 +169,7 @@ function Avatar({position,heading,activity,crouch,height,role}:{
   const leftArm=useRef<THREE.Group>(null),rightArm=useRef<THREE.Group>(null)
   const shirt=role==='client'?'#5c598c':role==='bridger'?'#ba8b50':role==='agent'?'#436d86':'#d0d1d7'
   const skin='#aa724c',pants='#2e394b'
-  useFrame(({clock,delta})=>{
+  useFrame(({clock},delta)=>{
     if(!actor.current||!torso.current||!leftLeg.current||!rightLeg.current||!leftArm.current||!rightArm.current)return
     const dt=Math.min(.05,delta),power=activity.current
     const cadence=Math.sin(clock.elapsedTime*(power>.65?12:8.3))
