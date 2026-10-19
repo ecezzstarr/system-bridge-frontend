@@ -29,8 +29,8 @@ The purchase options appear as **enquiry choices**, even when not permitted to a
 - `WEAVE_VASP_AUTHORIZED=true` must accompany every enabled rail, **after** external legal verification; an environment flag alone is not legal authorization.
 - Banks: additionally `WEAVE_BANK_FLAME_COIN_APPROVED=true` for an approved business receiving account.
 - Cards: additionally `WEAVE_CARD_FLAME_COIN_APPROVED=true` and a verified `WEAVE_APPROVED_CARD_CHECKOUT_HOST`; only HTTPS links at exactly that host can be published.
-- TRX: additionally `WEAVE_CRYPTO_PAYMENTS_AUTHORIZED=true`; the canonical company TRON address is used.
-- USDT and BTC: same crypto authorization plus separately configured and confirmed network-appropriate receiving addresses. No guessed or mismatched addresses.
+- TRX: additionally `WEAVE_CRYPTO_PAYMENTS_AUTHORIZED=true` and `WEAVE_TRON_WALLET_OWNERSHIP_VERIFIED=true` after confirming control of the canonical company TRON address.
+- USDT and BTC: the same crypto authorization, appropriate `WEAVE_USDT_TRC20_RECEIVING_ADDRESS` / `WEAVE_BTC_RECEIVING_ADDRESS`, and separate `WEAVE_USDT_WALLET_OWNERSHIP_VERIFIED=true` / `WEAVE_BTC_WALLET_OWNERSHIP_VERIFIED=true` flags after independent custody verification. No guessed or mismatched addresses.
 - Wise account transfers are not offered for coin purchases. Flutterwave is not assumed approved; its public policies list digital-wallet and virtual-currency businesses as restricted/prohibited without specific arrangements.
 - Payment proof is never enough to credit a buyer. A buyer must register using the same email if they are not yet registered. Bank receipts, card settlement and blockchain transfers must be checked independently by authorized Forensics personnel.
 - No cross-chain credit, unbacked balance minting, duplicate reference use, or double credit is allowed in the existing workflow.
