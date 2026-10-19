@@ -1,32 +1,28 @@
-import crypto from 'node:crypto'
 import { getPool } from '@/lib/db'
-import { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS } from '@/lib/food-bridge-states'
 export { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS, validFoodState, validFoodUnit } from '@/lib/food-bridge-states'
-import { validFoodState, validFoodUnit } from '@/lib/food-bridge-states'
 
-export function secretKey() { return crypto.randomBytes(32).toString('hex') }
-export function keyHash(input: string) { return crypto.createHash('sha256').update(input).digest('hex') }
-export function validKey(input: unknown) { return typeof input === 'string' && /^[a-f0-9]{64}$/.test(input) }
+export const FOOD_BRIDGE_SECTORS = ['grains','roots','vegetables','fruits','protein','other'] as const
+
 export function safeText(input: unknown, limit: number) {
   return typeof input === 'string' ? input.trim().slice(0, limit) : ''
 }
 export function validPhone(input: string) { return /^[+0-9()\s-]{7,30}$/.test(input) }
 export function validQuantity(value: unknown, max = 100000) {
-  const number = Number(value)
-  return Number.isFinite(number) && number > 0 && number <= max && Math.abs(Math.round(number * 100)-number*100) < 1e-7
+  const n = Number(value)
+  return Number.isFinite(n) && n > 0 && n <= max && Math.abs(Math.round(n*100)-n*100) < 1e-7
 }
-export function toNaira(value: unknown) {
-  const number = Number(value)
-  return Number.isFinite(number) && number >= 0 && number <= 100000000
-    && Math.abs(Math.round(number * 100)-number*100) < 1e-7
+export function validNaira(value: unknown) {
+  const n = Number(value)
+  return Number.isFinite(n) && n >= 0 && n <= 100000000 && Math.abs(Math.round(n*100)-n*100) < 1e-7
 }
-let schemaPromise: Promise<void> | undefined
+export const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+let schema:Promise<void>|undefined
 async function establishSchema() {
-  const pool = getPool()
-  await pool.query(`
+  await getPool().query(`
     CREATE TABLE IF NOT EXISTS weave_food_farmers (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      key_digest char(64) UNIQUE NOT NULL,
+      agent_id uuid NOT NULL UNIQUE REFERENCES users(id),
       farm_name varchar(120) NOT NULL,
       contact_private varchar(60) NOT NULL,
       state varchar(40) NOT NULL,
@@ -37,6 +33,7 @@ async function establishSchema() {
       review_note text,
       reviewed_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT NOW(),
+      updated_at timestamptz NOT NULL DEFAULT NOW(),
       CHECK (status IN ('pending','approved','rejected'))
     );
     CREATE TABLE IF NOT EXISTS weave_food_surplus (
@@ -56,7 +53,7 @@ async function establishSchema() {
     );
     CREATE TABLE IF NOT EXISTS weave_food_direct_orders (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      buyer_key_digest char(64) UNIQUE NOT NULL,
+      buyer_user_id uuid NOT NULL REFERENCES users(id),
       listing_id uuid NOT NULL REFERENCES weave_food_surplus(id),
       farmer_id uuid NOT NULL REFERENCES weave_food_farmers(id),
       buyer_name varchar(120) NOT NULL,
@@ -78,36 +75,32 @@ async function establishSchema() {
     );
     CREATE INDEX IF NOT EXISTS idx_weave_food_farmers_status ON weave_food_farmers(status,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_surplus_farmer ON weave_food_surplus(farmer_id,status);
+    CREATE INDEX IF NOT EXISTS idx_weave_food_orders_buyer ON weave_food_direct_orders(buyer_user_id,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_farmer ON weave_food_direct_orders(farmer_id,status,created_at DESC);
   `)
 }
 export async function ensureFoodBridgeSchema() {
-  if (!schemaPromise) schemaPromise = establishSchema().catch(error => { schemaPromise = undefined; throw error })
-  await schemaPromise
+  if (!schema) schema = establishSchema().catch(error=>{schema=undefined;throw error})
+  await schema
 }
 
-// Release stock from requests that never reached the farmer. Neither an accepted
-// nor an already dispatched order is ever expired by this task.
+// Cancel unpaid, unconfirmed requests after 24 hours, restoring only their
+// reserved stock. Every row leaves 'requested' exactly once.
 export async function expireFoodRequests() {
   await ensureFoodBridgeSchema()
-  const client = await getPool().connect()
+  const client=await getPool().connect()
   try {
     await client.query('BEGIN')
-    const { rows } = await client.query(`
-      UPDATE weave_food_direct_orders
-      SET status = 'expired', updated_at = NOW()
-      WHERE status = 'requested' AND created_at < NOW() - INTERVAL '24 hours'
-      RETURNING listing_id, quantity
+    const {rows}=await client.query(`
+      UPDATE weave_food_direct_orders SET status='expired',updated_at=NOW()
+      WHERE status='requested' AND created_at < NOW()-INTERVAL '24 hours'
+      RETURNING listing_id,quantity
     `)
-    for (const row of rows) {
-      await client.query(
-        'UPDATE weave_food_surplus SET available_quantity = LEAST(original_quantity, available_quantity + $1::numeric), updated_at=NOW() WHERE id=$2::uuid',
-        [row.quantity, row.listing_id],
-      )
-    }
+    for(const row of rows)await client.query(`
+      UPDATE weave_food_surplus
+      SET available_quantity=LEAST(original_quantity,available_quantity+$1::numeric),updated_at=NOW()
+      WHERE id=$2::uuid
+    `,[row.quantity,row.listing_id])
     await client.query('COMMIT')
-  } catch(error) {
-    await client.query('ROLLBACK')
-    throw error
-  } finally { client.release() }
+  } catch(e) { await client.query('ROLLBACK');throw e } finally { client.release() }
 }
