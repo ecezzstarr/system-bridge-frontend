@@ -8,7 +8,9 @@ import { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS } from '@/lib/food-bridge-states'
 type Offer={id:string;produce:string;unit:string;available_quantity:string;minimum_quantity:string;unit_price_ngn:string;details:string;farm_name:string;state:string;community:string}
 type Order={id:string;status:string;quantity:string;food_subtotal_ngn:string;delivery_quote_ngn:string|null;
   destination_state:string;destination_area:string;delivery_mode:string;created_at:string;quote_note?:string|null;
-  produce:string;unit:string;farm_name?:string;origin_state?:string;farmer_contact?:string|null;buyer_contact?:string|null}
+  produce:string;unit:string;farm_name?:string;origin_state?:string;farmer_contact?:string|null;buyer_contact?:string|null;
+  escrow_status?:string|null;escrow_reference?:string|null;buyer_total_ngn?:string|null;
+  seller_payout_ngn?:string|null;paymentAccountNumber?:string|null}
 type Farm={farmer:{id:string;farm_name:string;state:string;community:string;status:string}|null;
   offers:{id:string;produce:string;unit:string;available_quantity:string;status:string}[];orders:Order[]}
 const money=(value:unknown)=>'₦'+Number(value||0).toLocaleString('en-NG',{maximumFractionDigits:2})
@@ -30,6 +32,11 @@ export default function FarmerHouseholdFoodBridge(){
   const [destination,setDestination]=useState('Lagos')
   const [deliveryMode,setDeliveryMode]=useState('delivery')
   const [shareBuyerContact,setShareBuyerContact]=useState(false)
+  const [paymentRefs,setPaymentRefs]=useState<Record<string,string>>({})
+  const [disputes,setDisputes]=useState<Record<string,string>>({})
+  const [payoutBank,setPayoutBank]=useState('')
+  const [payoutAccount,setPayoutAccount]=useState('')
+  const [payoutName,setPayoutName]=useState('')
   const [farmName,setFarmName]=useState('')
   const [farmPhone,setFarmPhone]=useState('')
   const [farmCommunity,setFarmCommunity]=useState('')
@@ -107,9 +114,12 @@ export default function FarmerHouseholdFoodBridge(){
     }),'Food quantity reserved. The farmer must confirm and quote the delivery. You have not been charged.')
   }
   const buyerAction=(id:string,kind:string)=>void action(
-    ()=>write('/api/flame/food/orders','PATCH',{orderId:id,action:kind}),
-    kind==='accept_quote'?'You accepted the quoted total. Payment and dispatch still require direct coordination; no payment was collected by WEAVE.':
-    kind==='confirm_delivery'?'Food delivery confirmed by the household.':'Quantity released to the farmer.'
+    ()=>write('/api/flame/food/orders','PATCH',{orderId:id,action:kind,
+      transactionReference:paymentRefs[id]||'',disputeNote:disputes[id]||''}),
+    kind==='accept_quote'?'Quote accepted. Pay the exact amount to WEAVE using the FARM reference below. The farmer cannot dispatch until Administration verifies funds.':
+    kind==='confirm_delivery'?'Receipt confirmed. WEAVE will release the full held payment to the farmer after bank settlement.':
+    kind==='submit_payment_proof'?'Payment proof sent for WEAVE bank reconciliation; no dispatch yet.':
+    kind==='dispute'?'Delivery dispute recorded; seller payout is blocked.':'Quantity released to the farmer.'
   )
   const sellerAction=(id:string,kind:string)=>void action(
     ()=>write('/api/flame/food/farmer','PATCH',{
@@ -202,8 +212,20 @@ export default function FarmerHouseholdFoodBridge(){
               {o.quote_note&&<p className="mt-2 text-xs text-stone-400">{o.quote_note}</p>}
               {o.farmer_contact&&<p className="mt-2 text-xs text-emerald-200">Supplier shared contact: {o.farmer_contact}</p>}
               {o.status==='quoted'&&<button disabled={busy} type="button" onClick={()=>buyerAction(o.id,'accept_quote')} className="mt-3 bg-emerald-300 px-4 py-2 text-xs font-black text-black">Accept complete quote</button>}
+              {o.status==='accepted'&&<div className="mt-4 border border-emerald-300/20 p-4" data-food-farm-escrow-payment>
+                <p className="text-xs font-black text-emerald-200">Pay WEAVE · conditional payment protection · 0% seller commission</p>
+                <p className="mt-2 text-sm">Send {money(o.buyer_total_ngn)} to WEAVE OPay account <strong>{o.paymentAccountNumber||'See verified payment instructions'}</strong> using reference <strong>{o.escrow_reference}</strong>.</p>
+                <p className="mt-2 text-xs text-stone-400">Seller is notified only after Administration confirms actual receipt. Never pay farmer directly for this escrow order.</p>
+                {o.escrow_status==='awaiting_payment'&&<div className="mt-3 flex flex-wrap gap-2">
+                  <input aria-label="Actual transfer reference" value={paymentRefs[o.id]||''} onChange={e=>setPaymentRefs(p=>({...p,[o.id]:e.target.value}))} placeholder="OPay/bank transfer reference" className="min-w-48 flex-1 border border-white/15 bg-[#18281d] p-3 text-sm"/>
+                  <button disabled={busy||(paymentRefs[o.id]||'').trim().length<8} onClick={()=>buyerAction(o.id,'submit_payment_proof')} className="bg-emerald-300 px-4 py-2 text-xs font-black text-black">Submit paid transfer reference</button>
+                </div>}
+                {o.escrow_status==='proof_submitted'&&<p className="mt-3 text-xs text-amber-200">Bank verification pending. Do not request dispatch yet.</p>}
+              </div>}
+              {o.status==='funds_held'&&<p className="mt-3 text-xs font-black text-emerald-200">WEAVE confirmed funds held; farmer is authorized to dispatch.</p>}
+              {o.status==='dispatched'&&<div className="mt-4"><label className="text-xs">Delivery problem? <textarea value={disputes[o.id]||''} onChange={e=>setDisputes(p=>({...p,[o.id]:e.target.value}))} placeholder="Explain a missing or incomplete delivery" className="mt-2 block w-full border border-white/15 bg-[#18281d] p-2 text-sm"/></label><button disabled={busy||(disputes[o.id]||'').trim().length<15} onClick={()=>buyerAction(o.id,'dispute')} className="mt-2 border border-rose-300/25 px-4 py-2 text-xs text-rose-200">Hold payout · report problem</button></div>}
               {o.status==='dispatched'&&<button disabled={busy} type="button" onClick={()=>buyerAction(o.id,'confirm_delivery')} className="mt-3 bg-emerald-300 px-4 py-2 text-xs font-black text-black">Confirm food received</button>}
-              {['requested','farmer_confirmed','quoted'].includes(o.status)&&<button disabled={busy} type="button" onClick={()=>buyerAction(o.id,'cancel')} className="ml-2 mt-3 border border-rose-300/20 px-4 py-2 text-xs text-rose-200">Cancel order</button>}
+              {['requested','farmer_confirmed','quoted','accepted'].includes(o.status)&&<button disabled={busy} type="button" onClick={()=>buyerAction(o.id,'cancel')} className="ml-2 mt-3 border border-rose-300/20 px-4 py-2 text-xs text-rose-200">Cancel order</button>}
             </article>)}
           </div>}
         </section>
@@ -223,6 +245,7 @@ export default function FarmerHouseholdFoodBridge(){
             <p className="text-xs font-black text-amber-200">{farm.farmer.farm_name} · {farm.farmer.status.toUpperCase()}</p>
             <p className="mt-2 text-xs text-stone-400">{farm.farmer.community}, {farm.farmer.state}</p>
           </div>}
+          {farm?.farmer?.status==='approved'&&<div className="mt-5 border border-emerald-300/25 p-5" data-farmer-escrow-bank><h3 className="text-sm font-black">Your private bank account for full farmer payouts</h3><p className="mt-2 text-xs text-stone-400">WEAVE commission is ₦0. Administration uses this verified bank destination only after buyer receipt; details are never published to buyers.</p><div className="mt-3 grid gap-2 sm:grid-cols-3"><input aria-label="Bank name" placeholder="Bank name" value={payoutBank} onChange={e=>setPayoutBank(e.target.value)} className="border border-white/10 bg-[#18281d] p-3 text-sm"/><input aria-label="Account number" placeholder="10-digit account number" value={payoutAccount} onChange={e=>setPayoutAccount(e.target.value)} className="border border-white/10 bg-[#18281d] p-3 text-sm"/><input aria-label="Account holder name" placeholder="Account holder name" value={payoutName} onChange={e=>setPayoutName(e.target.value)} className="border border-white/10 bg-[#18281d] p-3 text-sm"/></div><button disabled={busy} onClick={()=>void action(()=>write('/api/flame/food','POST',{action:'set_payout_account',bankName:payoutBank,accountNumber:payoutAccount,accountName:payoutName}),'Private farm payout details recorded.')} className="mt-3 border border-emerald-300/30 px-4 py-2 text-xs text-emerald-200">Save receiving account</button></div>}
           {farm?.farmer?.status==='approved'&&<form onSubmit={publish} className="mt-6 space-y-3 border border-amber-300/20 p-5" data-food-agent-surplus>
             <h3 className="text-lg font-black">Offer actual surplus stock</h3>
             <label className="block text-xs">Produce<input required value={produce} onChange={e=>setProduce(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
@@ -245,7 +268,7 @@ export default function FarmerHouseholdFoodBridge(){
         </div>
         <div>
           <h2 className="flex items-center gap-2 text-xl font-black"><Truck className="h-5 w-5 text-amber-200"/> Offers moving to households</h2>
-          <p className="mt-3 text-xs leading-5 text-stone-400">A confirmed request can receive a real transport quote. Food is not marked paid by this system. Agree on payment and transport with the other party before dispatch.</p>
+          <p className="mt-3 text-xs leading-5 text-stone-400">A confirmed request can receive a real transport quote. After the buyer accepts the quote and pays WEAVE, only Administration-confirmed held funds authorize dispatch. WEAVE charges you no farmer commission; the full quoted amount is paid out after confirmed delivery.</p>
           {(!farm?.orders.length)?<p className="mt-5 border border-dashed border-white/15 p-6 text-xs text-stone-400">No family orders received yet.</p>:<div className="mt-4 space-y-4">
             {farm.orders.map(o=><article key={o.id} className="border border-white/10 p-5">
               <p className="text-[10px] font-black uppercase text-amber-200">{o.status.replaceAll('_',' ')}</p>
@@ -261,8 +284,10 @@ export default function FarmerHouseholdFoodBridge(){
                 <label className="block text-xs">Carrier, transport and delivery terms<textarea minLength={10} required value={terms[o.id]||''} onChange={e=>setTerms(prev=>({...prev,[o.id]:e.target.value}))} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
                 <button disabled={busy} onClick={()=>sellerAction(o.id,'quote')} type="button" className="bg-amber-300 px-4 py-2 text-xs font-black text-black">Send total for approval</button>
               </div>}
-              {o.status==='accepted'&&<button disabled={busy} type="button" onClick={()=>sellerAction(o.id,'dispatch')} className="mt-4 border border-emerald-300/30 px-4 py-2 text-xs">Mark as dispatched</button>}
-              {o.status==='delivered'&&<p className="mt-3 flex items-center gap-2 text-xs text-emerald-200"><CheckCircle2 className="h-4 w-4"/> Household confirmed receipt</p>}
+              {o.status==='funds_held'&&<button disabled={busy} type="button" onClick={()=>sellerAction(o.id,'dispatch')} className="mt-4 border border-emerald-300/30 px-4 py-2 text-xs">Mark as dispatched</button>}
+              {o.status==='accepted'&&<p className="mt-3 text-xs text-amber-200">Awaiting WEAVE verification of buyer payment. Do not dispatch.</p>}
+              {o.status==='delivered'&&<p className="mt-3 flex items-center gap-2 text-xs text-emerald-200"><CheckCircle2 className="h-4 w-4"/> Household confirmed receipt · WEAVE payout pending</p>}
+              {o.status==='released'&&<p className="mt-3 text-xs text-emerald-200">WEAVE recorded a full seller payout with no commission.</p>}
             </article>)}
           </div>}
         </div>
