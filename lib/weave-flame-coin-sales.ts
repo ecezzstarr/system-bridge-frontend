@@ -20,9 +20,9 @@ export function flameCoinMethodEnabled(method:FlameCoinPaymentMethod):boolean {
   switch(method){
     case 'bank':return process.env.WEAVE_BANK_FLAME_COIN_APPROVED==='true'
     case 'card':return process.env.WEAVE_CARD_FLAME_COIN_APPROVED==='true'&&Boolean(process.env.WEAVE_APPROVED_CARD_CHECKOUT_HOST)
-    case 'trx':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'
-    case 'usdt':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&Boolean(process.env.WEAVE_USDT_TRC20_RECEIVING_ADDRESS)
-    case 'btc':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&Boolean(process.env.WEAVE_BTC_RECEIVING_ADDRESS)
+    case 'trx':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&process.env.WEAVE_TRON_WALLET_OWNERSHIP_VERIFIED==='true'
+    case 'usdt':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&process.env.WEAVE_USDT_WALLET_OWNERSHIP_VERIFIED==='true'&&Boolean(process.env.WEAVE_USDT_TRC20_RECEIVING_ADDRESS)
+    case 'btc':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&process.env.WEAVE_BTC_WALLET_OWNERSHIP_VERIFIED==='true'&&Boolean(process.env.WEAVE_BTC_RECEIVING_ADDRESS)
   }
 }
 export const flameCoinBankSalesEnabled=()=>flameCoinMethodEnabled('bank')
