@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { ArrowRight, DoorOpen, Flame, Footprints, List, PersonStanding, Radio, Waves, X, Orbit, Compass, ChevronRight } from 'lucide-react'
 import type { FlameMobileInput, FlameRegion } from './flame-event-mobile-scene'
+import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 
 const FlameEventMobileScene=dynamic(
   ()=>import('./flame-event-mobile-scene').then(module=>module.FlameEventMobileScene),
@@ -74,6 +75,7 @@ export function FlameEventOpenWorld({
       setCrossed(true)
       // A scene milestone, not proof of ownership or a permission token.
       window.dispatchEvent(new CustomEvent('weave:system-switch-crossed',{detail:{scene:'flame-event'}}))
+      emitWeaveMotion({kind:'confirmation',label:'System Switch physically crossed',source:'flame-event',confirmed:true,intensity:1.2})
       if(typeof navigator!=='undefined'&&'vibrate' in navigator)navigator.vibrate?.(25)
     }
   },[])
@@ -82,6 +84,7 @@ export function FlameEventOpenWorld({
     if(!webglAvailable){setEntered(true);setShowDirectory(true);return}
     if(!ready)return
     try{window.sessionStorage.setItem('weave:flame:entered:'+role,'yes')}catch{}
+    emitWeaveMotion({kind:'arrival',label:'Human entered the Burning River',source:'flame-event',confirmed:true,intensity:.75})
     setEntered(true)
   }
 
