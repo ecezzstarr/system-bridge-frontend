@@ -7,6 +7,17 @@
  * mature. The public read has no power to issue a new File Folder or a sale.
  */
 export async function matureElapsedCustomerDoors(sql: any): Promise<number> {
+  // A brand-new installation can open the public market before its first
+  // Client File Folder is ever purchased. That is an empty market, not 500.
+  const [tables] = await sql`
+    SELECT
+      to_regclass('public.client_file_folder_builds') AS builds,
+      to_regclass('public.client_file_folder_build_parts') AS parts,
+      to_regclass('public.client_file_folders') AS folders,
+      to_regclass('public.client_built_systems') AS systems,
+      to_regclass('public.client_business_stores') AS stores
+  `
+  if(!tables?.builds||!tables?.parts||!tables?.folders||!tables?.systems||!tables?.stores)return 0
   const [result] = await sql`
     WITH due AS MATERIALIZED (
       SELECT b.id,b.client_id,b.file_number,b.title,b.blueprint_key
