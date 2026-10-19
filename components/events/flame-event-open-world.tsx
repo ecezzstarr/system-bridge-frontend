@@ -11,6 +11,8 @@ const FlameEventMobileScene=dynamic(
   {ssr:false,loading:()=>null},
 )
 
+export type FlameDoorFeedStatus = 'loading' | 'ready' | 'unavailable'
+
 export type FlameWorldCustomerDoor = {
   public_slug:string
   name:string
@@ -29,8 +31,10 @@ export type FlameWorldCustomerDoor = {
 export function FlameEventOpenWorld({
   enterprises,
   role,
+  doorStatus='ready',
 }:{
   enterprises:FlameWorldCustomerDoor[]
+  doorStatus?:FlameDoorFeedStatus
   role:'admin'|'agent'|'bridger'|'client'|'visitor'
 }){
   const controls=useRef<FlameMobileInput>({
@@ -243,7 +247,7 @@ export function FlameEventOpenWorld({
             <p className="text-[10px] font-bold tracking-[.1em] text-sky-100">Bridge of Radiance</p>
           </div>
           <span className="rounded-full border border-amber-200/35 bg-[#071a32]/65 px-2.5 py-1.5 text-[9px] font-bold text-amber-100">
-            {enterprises.length} live {enterprises.length===1?'door':'doors'}
+            {doorStatus==='loading'?'Loading doors…':doorStatus==='unavailable'&&!enterprises.length?'Doors unavailable':enterprises.length+' live '+(enterprises.length===1?'door':'doors')}
           </span>
         </div>
       </div>
@@ -286,7 +290,7 @@ export function FlameEventOpenWorld({
           </span>
           <ArrowRight className="h-4 w-4 shrink-0"/>
         </Link> : <span className="max-w-[175px] rounded-xl border border-white/20 bg-[#081b35]/75 px-3 py-2 text-[10px] font-semibold leading-4 text-white/85 backdrop-blur-sm" data-flame-event-proximity>
-          {enterprises.length?'Walk up to a glowing Customer Door to enter.':'Opened Client Customer Doors appear in this world.'}
+          {enterprises.length?'Walk up to a glowing Customer Door to enter.':doorStatus==='loading'?'Checking for opened Client Customer Doors…':doorStatus==='unavailable'?'Customer Door connection is unavailable. Please retry shortly.':'Opened Client Customer Doors appear in this world.'}
         </span>}
         <div className="flex items-end gap-2">
           <div className="flex flex-col gap-2">
@@ -316,7 +320,7 @@ export function FlameEventOpenWorld({
       </button>
       {showDirectory&&<div className="absolute left-3 right-3 top-[155px] z-30 max-h-[42%] overflow-y-auto rounded-2xl border border-amber-200/35 bg-[#071b34]/95 p-3 shadow-2xl backdrop-blur-lg"
         aria-label="Opened Client Customer Door directory" data-flame-event-door-directory>
-        {enterprises.length===0?<p className="text-xs leading-5 text-sky-100/75">No public Client Customer Door is open yet. This list will update automatically.</p>:
+        {enterprises.length===0?<p className="text-xs leading-5 text-sky-100/75">{doorStatus==='loading'?'Retrieving opened public Client Customer Doors…':doorStatus==='unavailable'?'Customer Door service is currently unavailable. Please retry.':'No public Client Customer Door is open yet. This list will update automatically.'}</p>:
         <div className="grid gap-2">
           {enterprises.map((enterprise,index)=><Link key={enterprise.public_slug}
             href={'/market/'+encodeURIComponent(enterprise.public_slug)+'?via=system-switch'}
