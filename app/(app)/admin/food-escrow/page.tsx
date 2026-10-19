@@ -1,4 +1,5 @@
 'use client'
+import { FarmToFamilySettlementInfo } from '@/components/weave-food/food-program-info'
 import { useCallback,useEffect,useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
@@ -49,6 +50,7 @@ export default function AdminFarmEscrow(){
  if(!isInitialized)return <main className="p-6 text-white">Opening Farm-to-Family settlement desk…</main>
  if(user?.role!=='admin')return <main className="p-6 text-white">Administration only.</main>
  return <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 text-white" data-admin-farm-escrow="flat-seller-fee">
+    <FarmToFamilySettlementInfo audience="admin"/>
   <Link href="/admin/food-bridge" className="text-xs text-emerald-200">← Farm-to-Family Administration</Link>
   <h1 className="mt-5 text-3xl font-black">FARM-TO-FAMILY · PAYMENT HOLD & SETTLEMENT</h1>
   <p className="mt-3 text-sm leading-6 text-stone-300">WEAVE deducts <strong>₦1,000 from the farmer for each successfully completed order</strong>, regardless of quantity. The buyer pays the accepted food and delivery total with no added WEAVE fee. Confirm actual bank credit before dispatch; after buyer receipt send the net total (buyer payment minus ₦1,000) to the farmer’s verified bank account, then record the bank transfer reference. These controls record external payment movements; they cannot initiate or prove a bank transfer automatically.</p>
