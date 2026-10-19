@@ -57,10 +57,10 @@ export async function PATCH(request:NextRequest){
         // reviews that recorded verification and releases the kitchen order.
         const release=await client.query(`
           UPDATE carrier_cake_orders
-          SET preparation_released_at=NOW(),preparation_released_by=$1::uuid,updated_at=NOW()
+          SET preparation_released_at=NOW(),preparation_released_by=$1::uuid,admin_note=$3,updated_at=NOW()
           WHERE id=$2::uuid AND status='paid' AND payment_status='paid'
             AND preparation_released_at IS NULL RETURNING *
-        `,[user.id,orderId])
+        `,[user.id,orderId,confirmationNote])
         if(!release.rows.length)throw new Error('Cake payment release changed during confirmation')
         const preparation=await assignPaidOrderToPreparationManager(client,'daisy',release.rows[0],user.id)
         await client.query('COMMIT')
