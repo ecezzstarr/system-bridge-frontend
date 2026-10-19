@@ -8,7 +8,16 @@ export async function GET(request:NextRequest){
   const auth=await requireWorkshopAuthorization(request)
   if(!auth.authorized)return auth.response
   await ensureFlameCoinSalesSchema()
-  const {rows}=await getPool().query('SELECT * FROM weave_flame_coin_orders ORDER BY created_at DESC LIMIT 150')
+  const {rows}=await getPool().query(`
+    SELECT o.*,u.id AS suggested_recipient_id,u.role AS suggested_recipient_role,
+           EXISTS(SELECT 1 FROM wallets w WHERE w.user_id=u.id AND w.is_primary=true) AS recipient_wallet_ready
+    FROM weave_flame_coin_orders o
+    LEFT JOIN LATERAL(
+      SELECT id,role FROM users WHERE lower(email)=o.buyer_email AND is_active=true
+        AND role IN ('agent','bridger','client') ORDER BY created_at DESC LIMIT 1
+    ) u ON true
+    ORDER BY o.created_at DESC LIMIT 150
+  `)
   const reserve=await getPool().query('SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true LIMIT 1',[auth.session.user.id])
   return NextResponse.json({sales:rows,bankSalesEnabled:flameCoinBankSalesEnabled(),
     availableReserveFlameCoin:Number(reserve.rows[0]?.balance_trx||0),
