@@ -1,6 +1,7 @@
 import {randomUUID} from 'node:crypto'
 import {getPool} from '@/lib/db'
 import {ensureWeaveReceiptSchema} from '@/lib/weave-receipts'
+import {WORLD_RULES} from '@/lib/world/constants'
 
 export const validFlameCoinOrderId=(id:string)=>/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)
 export const validFlameCoinAmount=(value:number)=>Number.isFinite(value)&&value>0&&value<=1_000_000_000&&Math.round(value*1e8)/1e8===value
@@ -18,7 +19,7 @@ export function flameCoinMethodEnabled(method:FlameCoinPaymentMethod):boolean {
   if(process.env.WEAVE_VASP_AUTHORIZED!=='true')return false
   switch(method){
     case 'bank':return process.env.WEAVE_BANK_FLAME_COIN_APPROVED==='true'
-    case 'card':return process.env.WEAVE_CARD_FLAME_COIN_APPROVED==='true'
+    case 'card':return process.env.WEAVE_CARD_FLAME_COIN_APPROVED==='true'&&Boolean(process.env.WEAVE_APPROVED_CARD_CHECKOUT_HOST)
     case 'trx':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'
     case 'usdt':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&Boolean(process.env.WEAVE_USDT_TRC20_RECEIVING_ADDRESS)
     case 'btc':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&Boolean(process.env.WEAVE_BTC_RECEIVING_ADDRESS)
@@ -28,7 +29,7 @@ export const flameCoinBankSalesEnabled=()=>flameCoinMethodEnabled('bank')
 export const flameCoinMethodNetwork=(method:FlameCoinPaymentMethod) =>
   method==='trx'?'TRON':method==='usdt'?'TRON-TRC20':method==='btc'?'BITCOIN':null
 export const flameCoinReceiveAddress=(method:FlameCoinPaymentMethod):string|null =>
-  method==='trx'? (process.env.COMPANY_TRON_WALLET || 'TFT8e4EbMTvfQUGBHSz6LWTi4wokRBBz32')
+  method==='trx'? WORLD_RULES.COMPANY_TRX_WALLET
   :method==='usdt'? (process.env.WEAVE_USDT_TRC20_RECEIVING_ADDRESS||null)
   :method==='btc'? (process.env.WEAVE_BTC_RECEIVING_ADDRESS||null)
   :null
