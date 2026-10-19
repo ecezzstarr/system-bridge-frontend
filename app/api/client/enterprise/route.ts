@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const monthlyStanding = await getClientMonthlyStanding(clientId)
-    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Activate the 600 Flame Coin Client monthly subscription before enterprise elevation.'},{status:403})
+    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Activate the 600 Flame Coin Client monthly subscription before submitting an enterprise plan.'},{status:403})
     const requestedPosition = monthlyStanding.title
     const enterpriseName = cleanText(body.enterpriseName, 255)
     const sector = cleanText(body.sector, 255)
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     const projectedCosts = body.projectedMonthlyCosts === '' || body.projectedMonthlyCosts == null ? null : Number(body.projectedMonthlyCosts)
 
     if (!['lord', 'lady'].includes(requestedPosition)) {
-      return NextResponse.json({ error: 'Choose Lord or Lady as the requested enterprise position.' }, { status: 400 })
+      return NextResponse.json({ error: 'Registration gender must determine Lord or Lady after monthly subscription.' }, { status: 400 })
     }
     if (!enterpriseName || !sector || !businessPlan || !profitModel || !participantModel || !sustainabilityPlan) {
       return NextResponse.json({ error: 'Enterprise name, sector, business plan, profit model, participant model and sustainability plan are required.' }, { status: 400 })
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       WHERE client_id=${clientId}::uuid AND file_number=${client.file_number}
       LIMIT 1
     `
-    if (!folder || folder.status !== 'active') return NextResponse.json({ error: 'Your File Folder must be active before enterprise elevation.' }, { status: 409 })
+    if (!folder || folder.status !== 'active') return NextResponse.json({ error: 'Your File Folder must be active before enterprise plan submission.' }, { status: 409 })
     if (folder.enterprise_status === 'approved') {
       return NextResponse.json({ error: 'This File Folder is already an approved enterprise.' }, { status: 409 })
     }
@@ -189,8 +189,8 @@ export async function POST(request: NextRequest) {
 
     await notifyAdministrators({
       type: 'enterprise_plan_submitted',
-      title: `${requestedPosition === 'lady' ? 'Lady' : 'Lord'} elevation plan submitted`,
-      content: `${client.name} submitted ${enterpriseName} for ${requestedPosition} elevation in File Folder ${client.file_number}.`,
+      title: 'Enterprise plan submitted',
+      content: `${client.name} submitted the enterprise plan for ${enterpriseName} from File Folder ${client.file_number}. Current subscribed title: ${requestedPosition}.`,
       link: '/admin/enterprise-dream',
       fromUserId: clientId,
       fromUserName: client.name,
