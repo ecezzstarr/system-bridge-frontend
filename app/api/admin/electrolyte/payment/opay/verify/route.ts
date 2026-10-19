@@ -3,6 +3,8 @@ import type { PoolClient } from 'pg'
 import { getPool } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
 import { ensureAgilitySchema } from '@/lib/agility'
+import { ensureFoodPreparationManagerSchema } from '@/lib/food-preparation-manager'
+import { assignPaidOrderToPreparationManager } from '@/lib/food-preparation-routing'
 
 export async function POST(request: NextRequest) {
   const admin = await getAuthUser(request)
@@ -19,6 +21,7 @@ export async function POST(request: NextRequest) {
   }
 
   await ensureAgilitySchema()
+  await ensureFoodPreparationManagerSchema()
   let db: PoolClient | undefined
   let committed = false
 
@@ -81,6 +84,7 @@ export async function POST(request: NextRequest) {
       [admin.id, adminNote || null, orderId]
     )
     const paidOrder = approved.rows[0]
+    const preparation=await assignPaidOrderToPreparationManager(db,'electrolyte',paidOrder,admin.id)
     await db.query('COMMIT')
     committed = true
 
@@ -130,7 +134,10 @@ export async function POST(request: NextRequest) {
       success: true,
       order: paidOrder,
       canOrderMore: true,
-      message: 'Electrolyte payment approved. Fresh preparation is now open.',
+      preparation,
+      message: preparation.assigned
+        ? 'Electrolyte payment approved. Food Preparation Manager was notified to begin preparation with delivery instructions.'
+        : 'Electrolyte payment approved. Administration must assign a Food Preparation Manager.',
     })
   } catch (error) {
     console.error('[admin/electrolyte/opay] verification failed', error)
