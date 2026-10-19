@@ -13,6 +13,7 @@ export type FlameMobileInput = {
   forward:number
   right:number
   yaw:number
+  pitch:number
   run:boolean
   crouch:boolean
   jumpQueued:boolean
@@ -251,7 +252,7 @@ function Walker({inputRef,doors,role,onNearbyDoor}:{
     const closest=nearestFlameEventDoor(position.current.x,position.current.z,doors)
     if(closest!==previousDoor.current){previousDoor.current=closest;onNearbyDoor(closest)}
     const dist=data.crouch?3.8:data.run?5.3:4.5
-    target.current.set(position.current.x+Math.sin(data.yaw)*dist,data.crouch?1.8:2.5,position.current.z+Math.cos(data.yaw)*dist)
+    target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2,position.current.z+Math.cos(data.yaw)*dist)
     camera.position.lerp(target.current,1-Math.exp(-dt*7))
     look.current.set(position.current.x,1.28+height.current*.35,position.current.z)
     camera.lookAt(look.current)
