@@ -133,7 +133,7 @@ async function establishSchema() {
       LOOP
         EXECUTE format('ALTER TABLE weave_food_escrow DROP CONSTRAINT %I',old_check);
       END LOOP;
-    END $;
+    END $$;
     ALTER TABLE weave_food_escrow ADD CONSTRAINT weave_food_escrow_service_fee_check
       CHECK (weave_commission_ngn=1000);
     ALTER TABLE weave_food_escrow ADD CONSTRAINT weave_food_escrow_seller_payout_policy_check
@@ -166,7 +166,7 @@ async function establishSchema() {
           ADD CONSTRAINT weave_food_orders_identity_check
           CHECK (buyer_user_id IS NOT NULL OR guest_order_digest IS NOT NULL);
       END IF;
-    END $;
+    END $$;
   `)
 }
 export async function ensureFoodBridgeSchema() {
