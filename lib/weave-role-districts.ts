@@ -184,6 +184,8 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Client Deposits',href:'/admin/client-deposits',detail:'Review Client funding requests.',daily:true},
         {label:'Client Vaults',href:'/admin/client-vault',detail:'Administer Client vault movement.'},
+        {label:'Customer Door Settlements',href:'/admin/customer-door-settlements',detail:'Forensics reviews real Customer Door payments and credits Client Main Wallets from funded reserves.',daily:true},
+        {label:'TRX Sales Forensics',href:'/admin/weave-trx-sales',detail:'Quote and verify Wise or Flutterwave receipts and confirmed TRON delivery for prospects.',daily:true},
         {label:'Payments',href:'/admin/payments',detail:'Institutional payment administration.'},
         {label:'Wallet',href:'/wallet',detail:'Administration balances and value position.'},
         {label:'Reserve',href:'/fund-wall',detail:'Institutional reserve and fund position.'},
