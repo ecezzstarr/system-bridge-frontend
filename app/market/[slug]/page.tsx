@@ -112,7 +112,7 @@ export default async function PublicClientMarketStore({
       )
     LIMIT 1
   `
-  const orderForCheckout=(query.order&&/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(query.order))?await sql`
+  const orderForCheckout=(query.order&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query.order))?await sql`
     SELECT o.id,o.amount,o.currency FROM client_store_orders o
     WHERE o.id=${query.order}::uuid AND o.store_id=${store.id}::uuid LIMIT 1
   `:[]
