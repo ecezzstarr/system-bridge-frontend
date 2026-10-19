@@ -753,7 +753,7 @@ export function ClientFileFolder3D({
       ? "absolute left-3 top-[7.5rem] z-10 hidden max-w-[72%] sm:block border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-5 sm:top-[8.5rem] sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
       : "absolute left-3 top-3 z-10 max-w-[72%] border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-4 sm:top-4 sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
     }>
-      <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Lord / Lady · Cloud File Folder Construction World</p>
+      <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Lord / Lady · Cloud File Folder · Client-owned Business World</p>
       <p className="mt-1 text-xs font-black text-white">{businessName}</p>
       <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">{businessSector ? `${businessSector} · ` : ''}You decide what systems exist here. WEAVE hosts, organizes and connects them through your Customer Door.</p>
       <p className="mt-2 text-[9px] text-sky-200" data-client-cloud-live-presence>{cloudOnline?`Cloud multiplayer · ${otherLords.length+1} Lord/Lady avatar${otherLords.length===0?'':'s'} present`:'Cloud multiplayer reconnecting…'}</p>
