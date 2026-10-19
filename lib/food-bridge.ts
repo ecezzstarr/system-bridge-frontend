@@ -93,7 +93,7 @@ async function establishSchema() {
       food_amount_ngn numeric(18,2) NOT NULL,
       delivery_amount_ngn numeric(18,2) NOT NULL,
       buyer_total_ngn numeric(18,2) NOT NULL,
-      weave_commission_ngn numeric(18,2) NOT NULL DEFAULT 0 CHECK (weave_commission_ngn=0),
+      weave_commission_ngn numeric(18,2) NOT NULL DEFAULT 1000 CHECK (weave_commission_ngn=1000),
       seller_payout_ngn numeric(18,2) NOT NULL,
       status varchar(24) NOT NULL DEFAULT 'awaiting_payment',
       proof_reference varchar(255),
@@ -115,9 +115,20 @@ async function establishSchema() {
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW(),
       CHECK (buyer_total_ngn=food_amount_ngn+delivery_amount_ngn),
-      CHECK (seller_payout_ngn=buyer_total_ngn),
+      CHECK (seller_payout_ngn=buyer_total_ngn-weave_commission_ngn AND seller_payout_ngn>0),
       CHECK (status IN ('awaiting_payment','proof_submitted','held','release_due','released','disputed','refund_due','refunded'))
     );
+    -- The seller pays a fixed ₦1,000 per completed order, once, not per unit.
+    -- The quote total remains the buyer's charge; the fee is deducted only from
+    -- seller proceeds on successful completion. Full refunds restore buyer total.
+    ALTER TABLE weave_food_escrow ALTER COLUMN weave_commission_ngn SET DEFAULT 1000;
+    ALTER TABLE weave_food_escrow DROP CONSTRAINT IF EXISTS weave_food_escrow_weave_commission_ngn_check;
+    ALTER TABLE weave_food_escrow ADD CONSTRAINT weave_food_escrow_weave_commission_ngn_check
+      CHECK (weave_commission_ngn=1000);
+    ALTER TABLE weave_food_escrow DROP CONSTRAINT IF EXISTS weave_food_escrow_check;
+    ALTER TABLE weave_food_escrow DROP CONSTRAINT IF EXISTS weave_food_escrow_seller_payout_ngn_check;
+    ALTER TABLE weave_food_escrow ADD CONSTRAINT weave_food_escrow_seller_payout_policy_check
+      CHECK (seller_payout_ngn=buyer_total_ngn-weave_commission_ngn AND seller_payout_ngn>0);
     CREATE UNIQUE INDEX IF NOT EXISTS weave_food_escrow_bank_verification_uidx
       ON weave_food_escrow(verified_bank_reference) WHERE verified_bank_reference IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS weave_food_escrow_proof_uidx
