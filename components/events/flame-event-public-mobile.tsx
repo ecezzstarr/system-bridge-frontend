@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Flame } from 'lucide-react'
-import { FlameEventOpenWorld, type FlameWorldCustomerDoor } from '@/components/events/flame-event-open-world'
+import { FlameEventOpenWorld, type FlameDoorFeedStatus, type FlameWorldCustomerDoor } from '@/components/events/flame-event-open-world'
 import { visiblePoll } from '@/lib/visible-poll'
 
 /** Public visitor landing: the same physical doors, never the private Client folder. */
 export function PublicFlameEventMobile() {
   const [enterprises,setEnterprises]=useState<FlameWorldCustomerDoor[]>([])
   const [message,setMessage]=useState('')
+  const [doorStatus,setDoorStatus]=useState<FlameDoorFeedStatus>('loading')
   useEffect(()=>{
     let mounted=true
     const stop=visiblePoll(async signal=>{
@@ -20,9 +21,10 @@ export function PublicFlameEventMobile() {
         if(mounted){
           setEnterprises(Array.isArray(body.enterprises)?body.enterprises.slice(0,9):[])
           setMessage('')
+          setDoorStatus('ready')
         }
       }catch{
-        if(mounted&&!signal.aborted)setMessage('Public Customer Door updates are temporarily unavailable. Try again shortly.')
+        if(mounted&&!signal.aborted){setDoorStatus('unavailable');setMessage('Public Customer Door updates are temporarily unavailable. Try again shortly.')}
       }
     },12000,true)
     return ()=>{mounted=false;stop()}
@@ -34,7 +36,7 @@ export function PublicFlameEventMobile() {
         <Flame className="h-4 w-4"/> Flame Event · Public Arrival
       </span>
     </div>
-    <FlameEventOpenWorld enterprises={enterprises} role="visitor"/>
+    <FlameEventOpenWorld enterprises={enterprises} doorStatus={doorStatus} role="visitor"/>
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">
       <p>Visitors can explore opened public Customer Doors without buying a Weave account.</p>
