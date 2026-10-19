@@ -42,7 +42,7 @@ export default function WeaveTrxSalesForensics(){
   return <main className="mx-auto max-w-6xl space-y-5 px-4 py-8 text-white">
     <Link href="/admin/dashboard" className="text-xs text-amber-200">← Administration</Link>
     <h1 className="text-3xl font-black">Bridge of Radiance · TRX Sales Forensics</h1>
-    <p className="text-sm leading-6 text-slate-300">Manually quote a prospect's request, provide only a real configured Wise or Flutterwave payment destination, verify actual bank receipt, then send TRX from WEAVE's own wallet. A delivery cannot be marked completed without a confirmed on-chain transfer to the prospect's recorded wallet.</p>
+    <p className="text-sm leading-6 text-slate-300">Bank-to-TRX sales are on compliance hold. Wise forbids account-based cryptocurrency transactions; Flutterwave crypto merchants require explicit provider authorization and WEAVE needs the appropriate VASP operating authority. Do not quote or collect bank funds unless those checks are complete. Where a bank transaction was lawfully authorized and received, Forensics reviews it and validates confirmed on-chain TRX delivery. A delivery cannot be marked completed without a confirmed on-chain transfer to the prospect's recorded wallet.</p>
     <div className="text-xs text-sky-200">WEAVE TRX wallet: <code className="break-all">TFT8e4EbMTvfQUGBHSz6LWTi4wokRBBz32</code></div>
     <button onClick={()=>void refresh()} className="rounded-lg border border-white/15 px-4 py-2 text-xs">Refresh requests</button>
     {error&&<p role="alert" className="rounded-xl border border-red-300/20 p-3 text-red-200">{error}</p>}
@@ -55,7 +55,7 @@ export default function WeaveTrxSalesForensics(){
       </div>
       <p className="mt-3 text-sm font-bold">{Number(s.amount_trx).toLocaleString()} TRX → <code className="break-all text-sky-200">{s.destination_tron_wallet}</code></p>
       <p className="mt-2 text-xs text-slate-500">Order: {s.id}</p>
-      {s.status==='awaiting_quote'&&<div className="mt-4 grid gap-3">
+      {s.status==='awaiting_quote'&&s.payment_method==='flutterwave'&&<div className="mt-4 grid gap-3">
         <input placeholder="Bank amount" type="number" min="0.01" step="0.01" value={form[s.id]?.amount||''} onChange={e=>update(s.id,'amount',e.target.value)} className="rounded-lg bg-slate-900 p-3 text-base"/>
         <select value={form[s.id]?.currency||'NGN'} onChange={e=>update(s.id,'currency',e.target.value)} className="rounded-lg bg-slate-900 p-3"><option>NGN</option><option>USD</option><option>GBP</option><option>EUR</option></select>
         <textarea rows={3} placeholder="Verified Flutterwave/Wise payment link or verified receiving bank details. Include reference and account beneficiary." value={form[s.id]?.instructions||''} onChange={e=>update(s.id,'instructions',e.target.value)} className="rounded-lg bg-slate-900 p-3"/>
