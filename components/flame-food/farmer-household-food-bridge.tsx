@@ -96,7 +96,7 @@ export default function FarmerHouseholdFoodBridge(){
     void action(()=>write('/api/flame/food','POST',{
       action:'offer',produce,unit,quantity:Number(stock),minimumQuantity:Number(minimum),
       priceNgn:Number(unitPrice),details:produceDetails,
-    }),'Real available produce published in Lifestyle Food Exchange.')
+    }),'Your farm surplus listing is now visible to eligible Agents and Bridgers. Keep availability accurate.')
   }
   function request(e:FormEvent){
     e.preventDefault()
@@ -163,7 +163,7 @@ export default function FarmerHouseholdFoodBridge(){
             {offer.details&&<p className="mt-2 text-xs leading-5 text-stone-500">{offer.details}</p>}
             <button type="button" onClick={()=>{setSelected(offer);setQty(offer.minimum_quantity)}} className="mt-auto flex items-center justify-between bg-emerald-300 px-4 py-3 pt-3 text-xs font-black text-black">Order this food <ArrowRight className="h-4 w-4"/></button>
           </article>)}
-          {!offers.length&&<p className="border border-dashed border-white/10 p-8 text-sm text-stone-400 sm:col-span-2">No verified farm produce is listed yet. Available inventory will appear when an Agent farmer publishes it.</p>}
+          {!offers.length&&<p className="border border-dashed border-white/10 p-8 text-sm text-stone-400 sm:col-span-2">No produce is currently listed by approved Agent farmers. Offers appear when a farmer reports available stock.</p>}
         </section>
         {selected&&<form onSubmit={request} className="space-y-4 border border-emerald-300/30 p-5" data-food-direct-order>
           <h2 className="text-xl font-black">Order {selected.produce} from {selected.farm_name}</h2>
