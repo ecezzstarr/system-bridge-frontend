@@ -75,7 +75,7 @@ export async function settleCustomerDoorPayment(input:{
   try{
     await conn.query('BEGIN')
     const found=await conn.query(`
-      SELECT o.id,o.store_id,o.amount,o.currency,o.payment_status,o.status,
+      SELECT o.id,o.store_id,o.amount,o.currency,o.payment_status,o.payment_reference,o.status,
              o.customer_name,s.client_id,s.name AS store_name
       FROM client_store_orders o
       JOIN client_business_stores s ON s.id=o.store_id
@@ -116,6 +116,17 @@ export async function settleCustomerDoorPayment(input:{
       return {success:false,error:'Clients cannot purchase from their own Customer Door to create wallet earnings',status:403}
     }
     if(!internal){
+      // A claim typed by a buyer or Client is not a verified deposit. It must
+      // match the on-order reference, and a real funded WEAVE reserve account
+      // is debited before any FC credit can occur.
+      if(!order.payment_reference || String(order.payment_reference).trim()!==input.verifiedReference!.trim()){
+        await conn.query('ROLLBACK')
+        return {success:false,error:'The verified payment reference must match the order proof',status:409}
+      }
+      if(!['awaiting_payment','payment_reported','proof_submitted'].includes(String(order.payment_status))){
+        await conn.query('ROLLBACK')
+        return {success:false,error:'This external order is not awaiting verification',status:409}
+      }
       const approver=await conn.query("SELECT id FROM users WHERE id=$1::uuid AND role='admin' AND is_active=true LIMIT 1",[input.adminId])
       if(!approver.rows[0]||input.confirmation!=='funds_received_by_weave'){
         await conn.query('ROLLBACK')
