@@ -50,7 +50,7 @@ export default function FlameFrontierReviewPage() {
     if (user?.role === 'admin' && token) void load()
   }, [user?.id, token])
 
-  async function decide(id: string, decision: 'verified' | 'rejected') {
+  async function decide(id: string, decision: 'verified' | 'rejected' | 'unpublish') {
     if (!token || busyId) return
     setBusyId(id)
     try {
@@ -62,9 +62,29 @@ export default function FlameFrontierReviewPage() {
       const body = await response.json()
       if (!response.ok || !body.success) throw new Error(body.error || 'Review failed')
       await load()
-      setMessage(decision === 'verified' ? 'Movement verified. Public visibility follows the contributor’s consent.' : 'Submission rejected.')
+      setMessage(decision === 'verified' ? 'Movement verified. Public visibility follows the contributor’s consent.' : decision === 'unpublish' ? 'Public record withdrawn from the Nigeria frontier.' : 'Submission rejected.')
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : 'Review failed')
+    } finally {
+      setBusyId('')
+    }
+  }
+
+  async function unpublish(id: string, reviewNote: string) {
+    if (!token || busyId) return
+    setBusyId(id)
+    try {
+      const response = await fetch('/api/admin/flame-frontier', {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, decision: 'unpublish', reviewNote }),
+      })
+      const body = await response.json()
+      if (!response.ok || !body.success) throw new Error(body.error || 'Unable to withdraw record')
+      await load()
+      setMessage('Public record withdrawn from the Nigeria frontier.')
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : 'Unable to withdraw record')
     } finally {
       setBusyId('')
     }
@@ -121,6 +141,15 @@ export default function FlameFrontierReviewPage() {
           {reviewed.map(item => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-4 text-xs">
             <span>{item.title} · {item.state_code} · {item.phase}</span>
             <span className={item.status === 'verified' ? 'text-emerald-200' : 'text-rose-200'}>{item.status} {item.public_opt_in ? '· Public opt-in' : '· Private'}</span>
+            {item.status === 'verified' && item.public_opt_in && (
+              <button type="button" disabled={busyId === item.id} onClick={() => {
+                const reason = window.prompt('Reason for removing this public record (at least 12 characters):')?.trim() || ''
+                if (reason.length < 12) { setMessage('Withdrawal requires a reason of at least 12 characters.'); return }
+                setNotes(prev => ({ ...prev, [item.id]: reason }))
+                // Pass the reason directly; state updates do not complete synchronously.
+                void unpublish(item.id, reason)
+              }} className="border border-rose-300/25 px-3 py-2 text-[10px] text-rose-200 disabled:opacity-40">Withdraw public record</button>
+            )}
           </div>)}
           {!reviewed.length && <p className="py-4 text-xs text-stone-500">No review decisions recorded yet.</p>}
         </div>
