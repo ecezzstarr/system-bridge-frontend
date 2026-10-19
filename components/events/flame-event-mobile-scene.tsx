@@ -263,13 +263,14 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
   playerMotion:MutableRefObject<WeaveAvatarMotion>
 }){
   const {camera}=useThree()
+  const budget=useAdaptiveRuntime()
   const position=useRef(new THREE.Vector3(FLAME_EVENT_PLAYER_START.x,0,FLAME_EVENT_PLAYER_START.z))
   const velocity=useRef(new THREE.Vector3()),heading=useRef(0),activity=useRef(0)
   const crouch=useRef(false),height=useRef(0),vertical=useRef(0)
   const lastRegion=useRef<FlameRegion>('riverbank')
   const previousDoor=useRef<number|null>(null)
   const target=useRef(new THREE.Vector3()),look=useRef(new THREE.Vector3())
-  useFrame((_,delta)=>{
+  useFrame(({clock},delta)=>{
     const dt=Math.min(.05,delta),data=inputRef.current
     const magnitude=Math.min(1,Math.hypot(data.forward,data.right))
     const ux=(data.right*Math.cos(data.yaw)-data.forward*Math.sin(data.yaw))/(magnitude||1)
@@ -303,7 +304,8 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
     playerMotion.current.crouching=crouch.current
     playerMotion.current.airborne=height.current
     const dist=data.crouch?3.8:data.run?5.3:4.5
-    target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2,position.current.z+Math.cos(data.yaw)*dist)
+    const footfall=budget.reducedMotion?0:Math.sin(clock.elapsedTime*(data.run?13:8.8))*Math.min(.045,actual*.009)
+    target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2+footfall,position.current.z+Math.cos(data.yaw)*dist)
     camera.position.lerp(target.current,1-Math.exp(-dt*7))
     look.current.set(position.current.x,1.28+height.current*.35,position.current.z)
     camera.lookAt(look.current)
