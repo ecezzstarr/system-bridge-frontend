@@ -2,13 +2,14 @@ import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 import type { WeaveFoodVariant } from '@/lib/weave-food-types'
 import { ELECTROLYTE_VARIANTS } from '@/lib/electrolyte-catalog'
 
-export const AGILITY_RETAIL_UNIT_PRICE_NGN = 3000
+export const AGILITY_RETAIL_UNIT_PRICE_NGN = 4000
 export const AGILITY_PACKAGES_PER_BOX = 10
 export const AGILITY_RETAIL_BOX_VALUE_NGN = AGILITY_RETAIL_UNIT_PRICE_NGN * AGILITY_PACKAGES_PER_BOX
 export const AGILITY_WHOLESALE_BOX_SELL_PRICE_NGN = AGILITY_RETAIL_BOX_VALUE_NGN
 
-// Agility Agent economics remain unchanged.
-export const AGILITY_AGENT_BOX_PRICE_NGN = 28000
+// ₦4,000 customer sale: ₦3,000 WEAVE production share and ₦1,000 Agent earnings.
+// Ten units in a carton: ₦10,000 Agent margin; five units: ₦5,000 margin.
+export const AGILITY_AGENT_BOX_PRICE_NGN = 30000
 export const AGILITY_AGENT_UNIT_COST_NGN = AGILITY_AGENT_BOX_PRICE_NGN / AGILITY_PACKAGES_PER_BOX
 export const AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN =
   AGILITY_RETAIL_UNIT_PRICE_NGN - AGILITY_AGENT_UNIT_COST_NGN
