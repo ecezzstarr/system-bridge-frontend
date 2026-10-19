@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, Sparkles, Users } from 'lucide-react'
+import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, ShieldCheck, Sparkles, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
 function authHeaders() {
@@ -65,6 +65,8 @@ export default function WeaveLifestylesPage() {
   const aceOpen = Boolean(access?.active && carrier?.active && carrier?.position === 'Ace')
   const agenticAvailable = access?.role === 'bridger'
   const agenticOpen = Boolean(agenticAvailable && aceOpen)
+  const mandateAvailable = access?.role === 'agent' || access?.role === 'bridger'
+  const mandateOpen = Boolean(mandateAvailable && access?.active)
   const distributionManagerAvailable = access?.role === 'agent' || access?.role === 'bridger'
   const distributionManagerOpen = Boolean(distributionManagerAvailable && access?.active)
   const legionAvailable = access?.role === 'agent' || access?.role === 'bridger'
@@ -140,6 +142,21 @@ export default function WeaveLifestylesPage() {
                   action="Enter Agentic-Bridger"
                   tools={[{icon:<Bot className="h-3.5 w-3.5"/>,label:'Bridger movement'},{icon:<Gamepad2 className="h-3.5 w-3.5"/>,label:'Ace standing'}]}
                   nested
+                />
+              )}
+
+              {mandateAvailable && (
+                <LifestyleGround
+                  tone="amber"
+                  icon={<ShieldCheck className="h-8 w-8" />}
+                  eyebrow="Company Support · Apply for an appointment"
+                  title="WEAVE MANDATE"
+                  detail="Agents and Bridgers can apply for Company Guidance departments: Mandate, Forensics or Attorney. Administration reviews each application. Approved personnel can answer only the guidance conversations assigned to their department. No additional Lifestyle payment."
+                  open={mandateOpen}
+                  reason={access?.active ? 'Mandate is open for applications from your position.' : agentFree ? 'An active Agent account is required.' : 'Active Bridger Continuance is required.'}
+                  href="/weave/lifestyles/mandate"
+                  action="Apply to Weave Mandate"
+                  tools={[{icon:<ShieldCheck className="h-3.5 w-3.5"/>,label:'Department application'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Company Guidance'}]}
                 />
               )}
 
