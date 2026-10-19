@@ -148,7 +148,7 @@ export async function activateLegionEmployment(sql: any, input: {
         accepted_at=CASE WHEN enterprise_application_id=${input.enterpriseApplicationId}::uuid THEN NOW() ELSE accepted_at END,
         updated_at=NOW()
     WHERE applicant_user_id=${input.applicantUserId}::uuid
-      AND status='pending'
+      AND status IN ('pending','offered')
   `
   return legion
 }
