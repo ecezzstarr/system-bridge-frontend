@@ -40,7 +40,7 @@ export async function GET(request:NextRequest){
     JOIN enterprise_applications a ON a.id=la.enterprise_application_id
     LEFT JOIN users owner ON owner.id=la.client_id
     WHERE la.applicant_user_id=${user.id}::uuid
-      AND la.status='pending'
+      AND la.status IN ('pending','offered')
     ORDER BY la.created_at DESC
   `
 
@@ -131,7 +131,9 @@ export async function POST(request:NextRequest){
     return NextResponse.json({success:true,application},{status:201})
   }
 
-  if(action==='accept_invite'){
+  if(action==='accept_invite'||action==='accept_offer'){
+    const expectedDirection=action==='accept_offer'?'candidate_application':'client_invite'
+    const expectedStatus=action==='accept_offer'?'offered':'pending'
     const applicationId=String(body.applicationId||'')
     const [application]=await sql`
       SELECT la.*,a.enterprise_name,u.name,u.email
@@ -140,11 +142,11 @@ export async function POST(request:NextRequest){
       JOIN users u ON u.id=la.applicant_user_id
       WHERE la.id=${applicationId}::uuid
         AND la.applicant_user_id=${user.id}::uuid
-        AND la.direction='client_invite'
-        AND la.status='pending'
+        AND la.direction=${expectedDirection}
+        AND la.status=${expectedStatus}
       LIMIT 1
     `
-    if(!application)return NextResponse.json({success:false,error:'Legion invitation not found.'},{status:404})
+    if(!application)return NextResponse.json({success:false,error:'Legion invitation or agreed Client employment offer was not found.'},{status:404})
     const clientStanding=await getClientMonthlyStanding(String(application.client_id))
     if(!clientStanding.active)return NextResponse.json({success:false,error:'This Client enterprise must renew its monthly subscription before activating new Legions.'},{status:409})
     const capacity=await enterpriseCapacity(String(application.client_id))
@@ -152,6 +154,11 @@ export async function POST(request:NextRequest){
     const legion=await activateLegionEmployment(sql,{
       applicantUserId:user.id,applicantRole:baseRole,clientId:String(application.client_id),enterpriseApplicationId:String(application.enterprise_application_id),fileNumber:String(application.file_number),name:String(application.name||user.name||'Legion'),contact:String(application.email||user.email||''),functionTitle:application.function_title||'Enterprise Legion',profitParticipation:application.profit_participation||null,
     })
+    await recordSystemEvent({
+      eventType:'legion_employment_activated',actorId:user.id,actorRole:baseRole,
+      subjectType:'enterprise_legion',subjectId:String(legion.id),source:'lifestyle-legion',
+      payload:{applicationId,enterpriseName:application.enterprise_name,acceptedByWorker:true,exclusive:true},
+    }).catch(e=>console.error('[Legion accept event]',e))
     return NextResponse.json({success:true,legion,exclusive:true})
   }
 
