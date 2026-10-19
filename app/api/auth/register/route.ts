@@ -24,6 +24,7 @@ async function recoverCompletedRegistration(input:{
     WHERE dc.code=${input.code} AND dc.department=${input.department}
       AND dc.status='USED' AND u.role=${input.role}
       AND u.email=${input.email} AND u.username=${input.username}
+      AND COALESCE(u.is_active,true)=true
     LIMIT 1
   `
   if(!owner||!await bcrypt.compare(input.password,owner.password_hash))return null
@@ -251,9 +252,13 @@ export async function POST(request: NextRequest) {
         INSERT INTO terms_acceptance_log (user_id, role, terms_version, full_name_confirmed)
         VALUES (${userId}::uuid, ${role}, 1, ${fullNameConfirmed})
       `
-      await sql`UPDATE users SET terms_accepted_at = NOW() WHERE id = ${userId}::uuid`
     } catch (termsError) {
       console.error('[registration] Terms log deferred', termsError)
+    }
+    try {
+      await sql`UPDATE users SET terms_accepted_at = NOW() WHERE id = ${userId}::uuid`
+    } catch (termsError) {
+      console.error('[registration] Terms acceptance timestamp deferred', termsError)
     }
     if (genericReferrerId && ['agent','bridger'].includes(String(referralOwner?.role || ''))) {
       try {
