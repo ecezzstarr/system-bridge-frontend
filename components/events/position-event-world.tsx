@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, CalendarDays, Flame, Music2, Orbit, Radio, Sparkles, Waves, Wind } from 'lucide-react'
+import { ArrowRight, CalendarDays, Music2, Orbit, Radio, Sparkles } from 'lucide-react'
 import {
   FLAME_EVENT,
   type EventRole,
@@ -12,6 +12,7 @@ import {
   resolveEventStatus,
 } from '@/lib/weave-event'
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
+import { FlameEventOpenWorld } from '@/components/events/flame-event-open-world'
 import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { visiblePoll } from '@/lib/visible-poll'
 import { getRolePlaces } from '@/lib/weave-role-districts'
@@ -74,33 +75,6 @@ export default function PositionEventWorld({
   const effectiveStatus = event.effectiveStatus || resolveEventStatus(event, now)
   const status = effectiveStatus === 'active' ? 'LIVE' : effectiveStatus === 'planned' ? 'PREPARING' : 'CLOSED'
   const dateRange = `${new Date(event.startsAt).toLocaleDateString()} — ${new Date(event.endsAt).toLocaleDateString()}`
-  const flowIndex = effectiveStatus === 'planned' ? 0 : Math.floor(now.getTime() / 4200) % 3
-  const flow = [
-    {
-      key: 'air',
-      label: 'PRESENCE · HELD',
-      detail: effectiveStatus === 'planned'
-        ? 'The ground is forming. What is present remains available before movement opens.'
-        : 'You do not enter empty. What has already lived remains present in the current.',
-      icon: Wind,
-    },
-    {
-      key: 'fire',
-      label: 'BURN · FORMATION',
-      detail: effectiveStatus === 'planned'
-        ? 'Ignition begins when Loop One opens.'
-        : position.movement[flowIndex % position.movement.length] || 'Act from your position. The system recognizes movement as it happens.',
-      icon: Flame,
-    },
-    {
-      key: 'water',
-      label: 'FLOW · CONTINUITY',
-      detail: effectiveStatus === 'planned'
-        ? 'What forms will be carried forward rather than beginning again.'
-        : 'What forms is carried. Movement remains available to the next moment.',
-      icon: Waves,
-    },
-  ] as const
 
   const eventStations = useMemo(() => {
     const selfEventHref = role === 'client' ? '/client/event' : '/event'
@@ -179,84 +153,21 @@ export default function PositionEventWorld({
           )}
         </div>
 
-        <section aria-label="Burning River current" className="relative min-h-[22rem] overflow-hidden border-b border-white/8 px-4 py-8 sm:px-6 lg:px-8">
-          <div className="pointer-events-none absolute left-[5%] right-[5%] top-1/2 h-24 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,247,237,.13),rgba(249,115,22,.12)_22%,rgba(239,68,68,.07)_42%,rgba(56,189,248,.06)_58%,transparent_76%)] blur-2xl" />
-          <div className="pointer-events-none absolute left-[8%] right-[8%] top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-sky-200/30 via-40% to-orange-200/40 shadow-[0_0_28px_rgba(249,115,22,.28)]" />
-
-          <div className="relative grid min-h-[18rem] gap-8 md:grid-cols-3 md:items-center md:gap-5">
-            {flow.map((state, index) => {
-              const Icon = state.icon
-              const active = effectiveStatus === 'active' && index === flowIndex
-              return (
-                <div
-                  key={state.key}
-                  data-weave-route-station
-                  data-loop-current={state.key}
-                  data-active={active ? 'true' : 'false'}
-                  className="group relative flex min-h-36 flex-col justify-center border-l border-white/8 pl-4 transition duration-700 md:border-l-0 md:border-t md:px-4 md:pt-5"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={`flex h-8 w-8 items-center justify-center rounded-full border ${
-                      active ? 'border-orange-200/50 bg-orange-300/12 shadow-[0_0_32px_rgba(249,115,22,.22)]' : 'border-white/10 bg-black/25'
-                    }`}>
-                      <Icon className={`h-4 w-4 ${state.key === 'fire' ? 'text-orange-200' : state.key === 'water' ? 'text-sky-200' : 'text-stone-200'}`} />
-                    </span>
-                    <p data-weave-live-word="station" className="text-[9px] font-black uppercase tracking-[.18em]">{state.label}</p>
-                  </div>
-                  <p className="mt-3 max-w-sm text-[11px] leading-5 text-stone-400">{state.detail}</p>
-                  <span className={`mt-4 h-px w-full origin-left bg-gradient-to-r from-orange-200/55 via-rose-300/20 to-transparent transition duration-700 ${active ? 'scale-x-100 opacity-100' : 'scale-x-50 opacity-30'}`} />
-                </div>
-              )
-            })}
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-200/15 bg-[#071c34]/75 px-4 py-4 sm:px-7"
+          data-flame-event-client-enterprises="customer-door-current"
+        >
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-200">Client Enterprise Current · System Switch</p>
+            <h2 className="mt-1 text-lg font-black text-white">Opened Customer Doors in the Burning River</h2>
+            <p className="mt-1 max-w-3xl text-[11px] leading-5 text-sky-100/75">
+              Client-owned public enterprises appear as portals in the shared event world. Private File Folders remain accessible only to their owners.
+            </p>
           </div>
-
-          <div className="relative mx-auto mt-3 flex max-w-3xl items-center justify-center gap-2 text-[7px] font-black uppercase tracking-[.2em] text-white/28">
-            <span>Presence</span><ArrowRight className="h-3 w-3" /><span>Burn</span><ArrowRight className="h-3 w-3" /><span>Flow</span><ArrowRight className="h-3 w-3" /><span>Compile</span>
-          </div>
-        </section>
-
-        <section className="border-b border-white/8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8" data-flame-event-client-enterprises="customer-door-current">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[.22em] text-emerald-200">Client Enterprise Current</p>
-              <h2 className="mt-1 text-xl font-black text-white">Customer Doors carried into Flame Event</h2>
-              <p className="mt-2 max-w-3xl text-[11px] leading-5 text-stone-400">
-                The Client File Folder remains private to its Client. Flame Event carries only the public enterprise that has crossed through an opened Customer Door. Logged-in staff meet those Doors here; the Client keeps ownership of the private System Switch.
-              </p>
-            </div>
-            <span className="text-[9px] font-black uppercase tracking-[.14em] text-emerald-200">
-              Staff Customer Door current
-            </span>
-          </div>
-
-          {enterprises.length===0 ? (
-            <div className="mt-5 border-y border-white/8 py-6 text-center text-[10px] text-stone-500">
-              No Client Customer Door is open in the event current yet.
-            </div>
-          ) : (
-            <div className="mt-5 grid border-y border-white/8 sm:grid-cols-2 lg:grid-cols-3">
-              {enterprises.map((enterprise,index)=>(
-                <Link
-                  key={enterprise.public_slug}
-                  href={`/market/${enterprise.public_slug}`}
-                  data-flame-event-customer-door={enterprise.public_slug}
-                  className="group min-h-32 border-b border-white/8 p-4 transition hover:bg-white/[.025] sm:border-r lg:[&:nth-child(3n)]:border-r-0"
-                >
-                  <p className="text-[7px] font-black uppercase tracking-[.16em] text-emerald-200/70">
-                    Door {String(index+1).padStart(2,'0')} · {enterprise.market_section||'Customer Market'}
-                  </p>
-                  <h3 className="mt-2 text-sm font-black text-white">{enterprise.platform_name||enterprise.name}</h3>
-                  <p className="mt-1 text-[10px] leading-4 text-stone-500">
-                    {enterprise.level==='market_hall'?'Market Hall':enterprise.level==='storefront'?'Storefront':'Customer Door'} · {enterprise.offer_count} public offer{enterprise.offer_count===1?'':'s'}
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.13em] text-sky-200">
-                    Enter Customer Door <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1"/>
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
+          <span className="text-[9px] font-black uppercase tracking-[.12em] text-amber-100">Staff Customer Door current</span>
+          <span className="sr-only">Enter Customer Door by selecting an opened public portal.</span>
+        </div>
+        <FlameEventOpenWorld enterprises={enterprises} role={role} />
 
         {role === 'client' && (
           <section className="relative min-h-[18rem] overflow-hidden border-b border-white/8" data-flame-event-crossing-route="system-switch">
