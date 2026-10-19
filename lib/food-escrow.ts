@@ -2,8 +2,9 @@ import type { PoolClient } from 'pg'
 import { getPool } from '@/lib/db'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 import { ensureFoodBridgeSchema } from '@/lib/food-bridge'
+import { FARM_TO_FAMILY_SELLER_FEE_NGN,calculateFarmSettlement } from '@/lib/farm-service-fee'
 
-export const WEAVE_FARM_COMMISSION_NGN = 1000 as const
+export const WEAVE_FARM_COMMISSION_NGN = FARM_TO_FAMILY_SELLER_FEE_NGN
 export const FARM_ESCROW_ACCOUNT_NUMBER = WEAVE_OPAY_ACCOUNT_NUMBER
 export const FARM_ESCROW_RULE =
   'WEAVE charges sellers a single flat ₦1,000 service fee per successfully completed Farm-to-Family order, regardless of order quantity or value. The buyer pays only the accepted food and delivery quote to WEAVE. Administration verifies actual funds before dispatch. After receipt, seller payout equals buyer total minus ₦1,000, with no additional per-unit charge. This requires authorized escrow/payment operations, banking controls, refunds and reconciliation before real-money production use.'
@@ -22,8 +23,8 @@ export async function initializeFarmEscrow(client:PoolClient,orderId:string) {
   const food=Number(order.food_subtotal_ngn)
   const delivery=Number(order.delivery_quote_ngn)
   const total=Number((food+delivery).toFixed(2))
-  if(!(food>0)||!(delivery>=0)||!Number.isFinite(total)||total<=WEAVE_FARM_COMMISSION_NGN)
-    throw new Error('Farm quoted total must exceed the fixed ₦1,000 seller fee so the farmer receives positive proceeds')
+  if(!(food>0)||!(delivery>=0))throw new Error('Invalid farm quotation')
+  const settlement=calculateFarmSettlement(total)
   const {rows}=await client.query(`
     INSERT INTO weave_food_escrow (
       order_id,reference,food_amount_ngn,delivery_amount_ngn,
@@ -31,7 +32,7 @@ export async function initializeFarmEscrow(client:PoolClient,orderId:string) {
     ) VALUES($1::uuid,$2,$3,$4,$5,$6,$7)
     ON CONFLICT(order_id) DO NOTHING
     RETURNING order_id,status,reference,buyer_total_ngn
-  `,[orderId,farmPaymentReference(orderId),food,delivery,total,WEAVE_FARM_COMMISSION_NGN,Number((total-WEAVE_FARM_COMMISSION_NGN).toFixed(2))])
+  `,[orderId,farmPaymentReference(orderId),food,delivery,settlement.buyerTotalNgn,settlement.sellerFeeNgn,settlement.sellerPayoutNgn])
   if(rows.length)return rows[0]
   const existing=await client.query(`SELECT order_id,status,reference,buyer_total_ngn
     FROM weave_food_escrow WHERE order_id=$1::uuid`,[orderId])
