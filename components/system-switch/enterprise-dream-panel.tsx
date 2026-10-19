@@ -14,12 +14,14 @@ type EnterpriseState = {
   store_public_slug?: string | null
   application?: any
   legions?: any[]
+  monthlyStanding?: {active:boolean;gender:'male'|'female'|null;title:'lord'|'lady'|null;paidUntil:string|null;monthlyFlameCoin:number;needsRegistrationGender:boolean}
 }
 
 export default function EnterpriseDreamPanel({ initialState, growth }: { initialState?: EnterpriseState | null; growth?: any }) {
   const [state,setState]=useState<EnterpriseState|null>(initialState || null)
   const [loading,setLoading]=useState(!initialState)
   const [message,setMessage]=useState('')
+  const [registrationGender,setRegistrationGender]=useState<'male'|'female'|''>('')
   const [busy,setBusy]=useState(false)
   const [plan,setPlan]=useState({
     requestedPosition:'lord',
@@ -43,7 +45,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       if(!res.ok)throw new Error(body.error||'Unable to load Enterprise Dream')
       setState(body)
       if(body.application)setPlan({
-        requestedPosition:body.application.requested_position||'lord',
+        requestedPosition:body.monthlyStanding?.title||body.application.requested_position||'lord',
         enterpriseName:body.application.enterprise_name||'',
         sector:body.application.sector||'',
         businessPlan:body.application.business_plan||'',
@@ -72,10 +74,27 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
     finally{setBusy(false)}
   }
 
+  const monthlyAction=async(action:'subscribe'|'complete_registration_gender')=>{
+    const token=getClientToken();if(!token)return
+    setBusy(true);setMessage('')
+    try{
+      const response=await fetch('/api/client/monthly-subscription',{
+        method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({action,gender:registrationGender}),
+      })
+      const payload=await response.json()
+      if(!response.ok)throw new Error(payload.error || 'Could not complete Client monthly subscription')
+      setMessage(action==='subscribe' ? 'Monthly subscription active. Your enterprise title follows the gender recorded at registration.' : 'Registration gender recorded.')
+      await load(true)
+    }catch(e:any){setMessage(e.message || 'Could not complete monthly subscription')}
+    finally{setBusy(false)}
+  }
+
   if(loading)return <section className="mt-4 rounded-3xl border border-white/10 bg-slate-950 p-6 text-sm text-slate-400">Opening Enterprise Dream layer…</section>
 
   const application=state?.application
-  const approved=state?.enterprise_status==='approved' && (state?.position==='lord'||state?.position==='lady')
+  const subscriptionActive=Boolean(state?.monthlyStanding?.active)
+  const approved=subscriptionActive && state?.enterprise_status==='approved' && (state?.position==='lord'||state?.position==='lady')
   const pending=application && ['submitted','under_review'].includes(application.status)
   const legionCapacity=Number(growth?.capabilities?.legionCapacity||0)
   const legionCount=state?.legions?.length||0
@@ -86,7 +105,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       <div>
         <p className="text-[10px] uppercase tracking-[0.3em] text-amber-300">File Folder · Enterprise Elevation</p>
         <h2 className="mt-2 text-2xl font-semibold">{approved?'Enterprise Dream Workshop':'Carry your File Folder as an Enterprise'}</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">A Client becomes Lord or Lady only after Administration approves a business plan showing how enterprise profits can sustain life among its participants.</p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Your registration gender determines Lord or Lady. The 600 Flame Coin monthly Client subscription activates the title. Administration separately approves an enterprise business plan before Legion recruitment.</p>
       </div>
       <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-right">
         <p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Position</p>
@@ -95,7 +114,22 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       </div>
     </div>
 
-    {approved ? <div className="mt-6 space-y-5">
+    <div className="mt-5 rounded-2xl border border-amber-300/20 bg-amber-400/[.04] p-5">
+      <p className="text-xs font-black uppercase tracking-wider text-amber-200">Client monthly subscription · 600 Flame Coin</p>
+      <p className="mt-2 text-sm text-slate-300">{subscriptionActive ? `Active until ${new Date(state!.monthlyStanding!.paidUntil!).toLocaleDateString()}. Your title is ${state!.monthlyStanding!.title === 'lady' ? 'Lady' : 'Lord'}.` : 'Activate your monthly subscription to become Lord or Lady. Your File Folder stays yours.'}</p>
+      {!state?.monthlyStanding?.gender && <div className="mt-3">
+        <label className="block text-xs text-slate-300">Complete your existing registration identity
+          <select value={registrationGender} onChange={e=>setRegistrationGender(e.target.value as 'male'|'female'|'')} className="mt-2 w-full rounded-lg border border-white/10 bg-slate-950 p-3 text-white">
+            <option value="">Select registration gender</option><option value="male">Male</option><option value="female">Female</option>
+          </select>
+        </label>
+        <button type="button" disabled={busy || !registrationGender} onClick={()=>void monthlyAction('complete_registration_gender')} className="mt-3 rounded-full border border-amber-300/30 px-4 py-2 text-xs font-black text-amber-100 disabled:opacity-40">Complete Registration Identity</button>
+      </div>}
+      {!subscriptionActive && state?.monthlyStanding?.gender && <button type="button" disabled={busy} onClick={()=>void monthlyAction('subscribe')} className="mt-3 rounded-full bg-amber-400 px-5 py-3 text-xs font-black text-slate-950 disabled:opacity-40">Subscribe · 600 Flame Coin / month</button>}
+      <p className="mt-3 text-xs text-slate-400">The enterprise earns from its own real products and services. After costs and agreed worker earnings, remaining funds can support operations and expansion. Sales and profits are not guaranteed.</p>
+    </div>
+
+    {!subscriptionActive ? <div className="mt-6 border border-amber-300/20 bg-black/20 p-5 text-sm text-amber-100">Activate the monthly Client subscription before requesting enterprise approval.</div> : approved ? <div className="mt-6 space-y-5">
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-5 md:col-span-2"><div className="flex items-center gap-3"><Crown className="h-5 w-5 text-amber-300"/><div><p className="text-[9px] uppercase tracking-[0.2em] text-amber-300">{state?.position}</p><h3 className="mt-1 text-xl font-semibold">{state?.enterprise_name}</h3></div></div><p className="mt-3 text-sm text-slate-400">{state?.sector}</p><p className="mt-4 text-xs leading-6 text-slate-500">{application?.sustainability_plan}</p></div>
         <div className="rounded-2xl border border-white/10 bg-black/25 p-5"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Administration</p></div><p className="mt-3 text-sm font-semibold">Approved</p><p className="mt-2 text-xs text-slate-500">Elevation is approved. Legion participation opens through constructed Legion Quarters; the Client identity remains active underneath the Lord/Lady enterprise position.</p></div>
@@ -117,7 +151,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
     </div> : pending ? <div className="mt-6 rounded-2xl border border-sky-400/20 bg-sky-400/5 p-5"><div className="flex items-center gap-3"><BriefcaseBusiness className="h-5 w-5 text-sky-300"/><div><p className="text-sm font-semibold">{application.enterprise_name}</p><p className="text-xs text-slate-500">{application.sector}</p></div></div><p className="mt-4 text-xs leading-6 text-slate-400">Your business plan is with Administration. The File Folder remains a Client System Formation Workshop until approval.</p></div> : <div className="mt-6 space-y-4">
       {application?.status==='rejected'&&<div className="rounded-xl border border-red-400/20 bg-red-400/5 p-4 text-xs text-red-200">Administration returned this plan. {application.admin_note||'Review the plan and submit again.'}</div>}
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="text-xs text-slate-400">Requested position<select value={plan.requestedPosition} onChange={e=>setPlan({...plan,requestedPosition:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="lord">Lord</option><option value="lady">Lady</option></select></label>
+        <div className="text-xs text-slate-300">Position: <strong className="capitalize">{state?.monthlyStanding?.title || 'Client'}</strong> · automatically assigned from registration gender after the 600 Flame Coin monthly subscription.</div>
         <label className="text-xs text-slate-400">Enterprise name<input value={plan.enterpriseName} onChange={e=>setPlan({...plan,enterpriseName:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
         <label className="text-xs text-slate-400 md:col-span-2">Business sector<input value={plan.sector} onChange={e=>setPlan({...plan,sector:e.target.value})} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/></label>
         <label className="text-xs text-slate-400 md:col-span-2">Business plan<textarea value={plan.businessPlan} onChange={e=>setPlan({...plan,businessPlan:e.target.value})} rows={5} className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white" placeholder="What the enterprise makes, sells or does; customers; operations; and how it grows."/></label>
