@@ -46,7 +46,14 @@ export async function POST(request:NextRequest) {
       const {rows}=await getPool().query(`
         INSERT INTO weave_food_farmers (agent_id,farm_name,contact_private,state,community,consent_contact_sharing)
         VALUES ($1::uuid,$2,$3,$4,$5,$6)
-        ON CONFLICT (agent_id) DO NOTHING
+        ON CONFLICT (agent_id) DO UPDATE SET
+          farm_name=EXCLUDED.farm_name,
+          contact_private=EXCLUDED.contact_private,
+          state=EXCLUDED.state,
+          community=EXCLUDED.community,
+          consent_contact_sharing=EXCLUDED.consent_contact_sharing,
+          status='pending',reviewed_by=NULL,review_note=NULL,reviewed_at=NULL,updated_at=NOW()
+        WHERE weave_food_farmers.status='rejected'
         RETURNING id,status,farm_name,state,community
       `,[user.id,name,phone,body.state,community,body.shareFarmerContact===true])
       return rows.length ? NextResponse.json({success:true,farmer:rows[0],message:'Farm registered under your Agent account for Administration verification.'},{status:201})
