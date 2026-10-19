@@ -1,5 +1,7 @@
 'use client'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
+import { SharedWorldAvatars } from '@/components/system-switch/shared-world-avatars'
+import { useWorldPresence,type WorldAvatar } from '@/components/system-switch/use-world-presence'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
@@ -507,7 +509,7 @@ function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,constructionPage,systemPage,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,constructionPage,systemPage,otherLords,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -536,6 +538,7 @@ function Scene({
   thirdPerson:boolean
   constructionPage:number
   systemPage:number
+  otherLords:WorldAvatar[]
 }){
   const visibleSystems=liveSystems.slice(systemPage*12,systemPage*12+12)
   return <>
@@ -590,6 +593,7 @@ function Scene({
     <FlameBeacon position={[7.7,.02,5.9]} scale={.55}/>
 
     <ContactShadows frames={1} resolution={256} position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
+    <SharedWorldAvatars others={otherLords}/>
     {thirdPerson&&<FileFolderPresenceAvatar presence={presence}/>}
     <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby} thirdPerson={thirdPerson}
       obstacles={[
@@ -640,6 +644,7 @@ export function ClientFileFolder3D({
 }){
   const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,lookPitchDelta:0,zoomDelta:0})
   const presence=useRef<Presence>({x:0,z:3,yaw:0})
+  const {others:otherLords,online:cloudOnline}=useWorldPresence('client-cloud',presence,Boolean(presenceKey))
   const touchPoints=useRef(new Map<number,{x:number;y:number}>())
   const joystickPointer=useRef<number|null>(null)
   const joystickThumb=useRef<HTMLSpanElement>(null)
@@ -734,6 +739,7 @@ export function ClientFileFolder3D({
       <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Client-owned Business World</p>
       <p className="mt-1 text-xs font-black text-white">{businessName}</p>
       <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">{businessSector ? `${businessSector} · ` : ''}You decide what systems exist here. WEAVE hosts, organizes and connects them through your Customer Door.</p>
+      <p className="mt-2 text-[9px] text-sky-200" data-client-cloud-live-presence>{cloudOnline?`Cloud multiplayer · ${otherLords.length+1} Lord/Lady avatar${otherLords.length===0?'':'s'} present`:'Cloud multiplayer reconnecting…'}</p>
     </div>
 
     <div className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>
@@ -793,7 +799,7 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} thirdPerson={thirdPerson} constructionPage={Math.min(constructionPage,Math.max(0,Math.ceil(activeBuilds.length/6)-1))} systemPage={Math.min(systemPage,Math.max(0,Math.ceil(liveSystems.length/12)-1))}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} thirdPerson={thirdPerson} otherLords={otherLords} constructionPage={Math.min(constructionPage,Math.max(0,Math.ceil(activeBuilds.length/6)-1))} systemPage={Math.min(systemPage,Math.max(0,Math.ceil(liveSystems.length/12)-1))}
         />
       </AdaptiveCanvas>
     </div>
