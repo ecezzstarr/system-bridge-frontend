@@ -81,12 +81,12 @@ async function establishSchema() {
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW(),
       CHECK (delivery_mode IN ('delivery','pickup')),
-      CHECK (status IN ('requested','farmer_confirmed','quoted','accepted','dispatched','delivered','cancelled','rejected','expired','disputed','released'))
+      CHECK (status IN ('requested','farmer_confirmed','quoted','accepted','dispatched','delivered','cancelled','rejected','expired','disputed','released','refunded'))
     );
     ALTER TABLE weave_food_direct_orders DROP CONSTRAINT IF EXISTS weave_food_direct_orders_status_check;
     ALTER TABLE weave_food_direct_orders ADD CONSTRAINT weave_food_direct_orders_status_check
       CHECK (status IN ('requested','farmer_confirmed','quoted','accepted','funds_held',
-        'dispatched','delivered','released','disputed','cancelled','rejected','expired'));
+        'dispatched','delivered','released','disputed','refunded','cancelled','rejected','expired'));
     CREATE TABLE IF NOT EXISTS weave_food_escrow (
       order_id uuid PRIMARY KEY REFERENCES weave_food_direct_orders(id) ON DELETE RESTRICT,
       reference varchar(90) NOT NULL UNIQUE,
@@ -99,6 +99,8 @@ async function establishSchema() {
       proof_reference varchar(255),
       proof_submitted_at timestamptz,
       verified_by uuid REFERENCES users(id),
+      verified_bank_reference varchar(255),
+      verified_amount_ngn numeric(18,2),
       verified_at timestamptz,
       rejected_by uuid REFERENCES users(id),
       rejected_at timestamptz,
@@ -109,12 +111,15 @@ async function establishSchema() {
       refund_recorded_by uuid REFERENCES users(id),
       refund_recorded_at timestamptz,
       dispute_note text,
+      administration_note text,
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW(),
       CHECK (buyer_total_ngn=food_amount_ngn+delivery_amount_ngn),
       CHECK (seller_payout_ngn=buyer_total_ngn),
       CHECK (status IN ('awaiting_payment','proof_submitted','held','release_due','released','disputed','refund_due','refunded'))
     );
+    CREATE UNIQUE INDEX IF NOT EXISTS weave_food_escrow_bank_verification_uidx
+      ON weave_food_escrow(verified_bank_reference) WHERE verified_bank_reference IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS weave_food_escrow_proof_uidx
       ON weave_food_escrow(proof_reference) WHERE proof_reference IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS weave_food_escrow_payout_uidx
