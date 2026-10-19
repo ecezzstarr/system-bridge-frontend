@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
+import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
 import { getPool } from '@/lib/db'
 import {
   getClientMonthlyStanding,
@@ -42,6 +43,7 @@ export async function POST(request:NextRequest) {
     }
     if(body.action!=='subscribe')return NextResponse.json({error:'Unsupported subscription action'},{status:400})
     await ensureClientFileFolderSchema(getFileFolderDb())
+    await ensureEnterpriseDreamSchema(getFileFolderDb())
     const result=await subscribeClientMonthly(clientId)
     if(!result.success) {
       return NextResponse.json({success:false,...result,error:
