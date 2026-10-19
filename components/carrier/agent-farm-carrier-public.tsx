@@ -1,4 +1,5 @@
 'use client'
+import { FarmToFamilySettlementInfo } from '@/components/weave-food/food-program-info'
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { ArrowRight, CheckCircle2, ClipboardCopy, MapPin, RefreshCw, Sprout, Truck } from 'lucide-react'
@@ -109,6 +110,7 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
   }
 
   return <section id="agent-farm-produce" className="border-y border-emerald-300/15 bg-[#09140e] px-4 py-8 text-white sm:px-8" data-carrier-agent-farm={referralCode}>
+    <div className="mx-auto max-w-6xl pb-5"><FarmToFamilySettlementInfo audience="public"/></div>
     <div className="mx-auto max-w-6xl">
       <header className="flex flex-wrap items-start justify-between gap-5">
         <div>
