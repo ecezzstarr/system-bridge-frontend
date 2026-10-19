@@ -36,7 +36,8 @@ export function ensureWeaveTrxSalesSchema(){
 
 export const WEAVE_TRX_RECEIVING_WALLET=WORLD_RULES.COMPANY_TRX_WALLET
 export const validTrxSaleId=(v:string)=>/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v)
-export const compliantTrxSaleEnabled=()=>process.env.WEAVE_VASP_AUTHORIZED==='true' && process.env.WEAVE_FLUTTERWAVE_CRYPTO_APPROVED==='true'\nexport const validBankMethod=(v:string)=>v==='pending_compliant_provider'||(v==='flutterwave'&&compliantTrxSaleEnabled())
+export const compliantTrxSaleEnabled=()=>process.env.WEAVE_VASP_AUTHORIZED==='true' && process.env.WEAVE_FLUTTERWAVE_CRYPTO_APPROVED==='true'
+export const validBankMethod=(v:string)=>v==='pending_compliant_provider'||(v==='flutterwave'&&compliantTrxSaleEnabled())
 
 export async function verifyTrxSaleDeliveryOnChain(input:{txHash:string;toWallet:string;trx:number}){
   if(!/^[a-f0-9]{64}$/i.test(input.txHash))return {verified:false,error:'64-character TRON transaction hash required'}
