@@ -1,4 +1,5 @@
 'use client'
+import { DaisyPricingInfo } from '@/components/weave-food/food-program-info'
 
 import Link from 'next/link'
 import { useEffect,useMemo,useState } from 'react'
@@ -63,6 +64,7 @@ export default function AgentCakesPage(){
 
   if(loading)return <main className="flex min-h-[520px] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-amber-300"/></main>
   return <main className="mx-auto max-w-7xl space-y-7 px-4 py-8 text-white md:px-7 md:py-12" data-agent-cakes="true" data-daisy-pastries="true">
+    <DaisyPricingInfo audience="agent"/>
     <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/agent/work" className="text-xs font-black uppercase tracking-wider text-slate-500">← Agent Work</Link><Button onClick={()=>void load()} variant="outline" className="border-white/15 text-white"><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div>
 
     <section className="grid items-start gap-6 border-b border-amber-300/15 pb-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,.72fr)]">
