@@ -39,7 +39,7 @@ export async function provisionPurchasedFileFolderCustomerDoor(params: {
     ON CONFLICT (client_id) DO UPDATE SET
       file_number=EXCLUDED.file_number,
       business_name=COALESCE(NULLIF(client_business_formations.business_name,''),EXCLUDED.business_name),
-      formation_state='forming',
+      -- Keep enterprise formation and its completed Client records unchanged.
       updated_at=NOW()
   `
 
@@ -113,10 +113,19 @@ export async function provisionPurchasedFileFolderCustomerDoor(params: {
   const [formingStore] = await sql`
     UPDATE client_business_stores
     SET
-      enabled=true,
-      formation_status='forming',
-      formation_due_at=${build.completes_at},
-      public_opened_at=NULL,
+      -- Purchase replay cannot unpublish a completed Client Customer Door.
+      formation_status=CASE
+        WHEN client_business_stores.formation_status IN ('selling','ready_for_offer')
+          OR client_business_stores.public_opened_at IS NOT NULL
+          THEN client_business_stores.formation_status
+        ELSE 'forming'
+      END,
+      formation_due_at=CASE
+        WHEN client_business_stores.public_opened_at IS NOT NULL
+          THEN client_business_stores.formation_due_at
+        ELSE ${build.completes_at}
+      END,
+      public_opened_at=client_business_stores.public_opened_at,
       updated_at=NOW()
     WHERE id=${store.id}::uuid
     RETURNING id,client_id,file_number,public_slug,name,formation_status,formation_due_at,public_opened_at
@@ -129,7 +138,7 @@ export async function provisionPurchasedFileFolderCustomerDoor(params: {
     storeId: String(formingStore.id),
     publicSlug: String(formingStore.public_slug),
     publicPath: `/market/${encodeURIComponent(String(formingStore.public_slug))}`,
-    status: 'building',
+    status: formingStore.public_opened_at ? 'open' : build.status === 'complete' ? 'ready_for_offer' : 'building',
     durationMinutes: Number(build.duration_minutes || effectiveMinutes),
     completesAt: build.completes_at,
     boostOptional: true,
