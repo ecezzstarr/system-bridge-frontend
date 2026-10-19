@@ -6,7 +6,6 @@ import { ArrowLeft, CheckCircle2, Clipboard, ExternalLink, Image as ImageIcon, L
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AGILITY_VARIANTS } from '@/lib/agility-catalog'
-import Link from 'next/link'
 
 type Door={referralCode:string;agentName:string;publicUrl:string;shareImageUrl:string;bridgerInfoUrl:string;bridgerJoinUrl:string;shareText:string}
 type PaymentAccount={bank_name:string;account_number:string;account_name:string;payment_note?:string|null}
