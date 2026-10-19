@@ -124,7 +124,8 @@ export function SystemSwitchDoorPlaza(){
     return()=>{done=true;clearInterval(timer)}
   },[])
   const navigate=(door:Door)=>{
-    const url='/system-switch/customer-doors/'+encodeURIComponent(door.slug)+'?entrance='+door.entrance
+    const referral=new URLSearchParams(window.location.search).get('legion')
+    const url='/system-switch/customer-doors/'+encodeURIComponent(door.slug)+'?entrance='+door.entrance+(referral?'&legion='+encodeURIComponent(referral):'')
     window.location.assign(url)
   }
   const places:Landmark[]=doors.slice(0,10).map((d,i,a)=>({
@@ -186,6 +187,8 @@ export function HostedFileFolderVisit({slug,entrance}:{slug:string;entrance:'mar
   },[slug,entrance])
   const things=world?[...world.offers.slice(0,12).map(o=>({id:o.id,name:o.name,kind:'offer' as const,tag:'OFFER'})),
     ...world.systems.slice(0,12).map((s,i)=>({id:'system:'+i,name:s.name,kind:'system' as const,tag:'PUBLIC SYSTEM'}))]:[]
+  const checkout=typeof window!=='undefined' ? new URLSearchParams(window.location.search).get('legion') : null
+  const checkoutUrl=world ? world.shopUrl.replace('#offers',(checkout?'&legion='+encodeURIComponent(checkout):'')+'#offers') : '/market'
   const places:Landmark[]=things.slice(0,14).map((p,i,a)=>({...p,at:at(i,a.length),click:()=>setSelection({
     ...p,at:at(i,a.length),click:()=>{}, // Offers are inspected in the existing Client-controlled checkout.
   })}))
@@ -210,14 +213,14 @@ export function HostedFileFolderVisit({slug,entrance}:{slug:string;entrance:'mar
         <p className="text-[10px] font-black uppercase text-emerald-200">{selection.kind==='offer'?'Client offer':'Public system'}</p>
         <h2 className="mt-2 text-xl font-black">{selection.name}</h2>
         <p className="mt-2 text-xs text-stone-400">{selection.kind==='offer'?world.offers.find(o=>o.id===selection.id)?.description:world.systems[Number(selection.id.replace('system:',''))]?.description}</p>
-        {selection.kind==='offer'&&<Link href={world.shopUrl} className="mt-4 inline-flex items-center gap-2 bg-emerald-300 px-4 py-3 text-xs font-black text-[#071a15]"><ShoppingBag className="h-4 w-4"/>Continue to Client checkout <ArrowRight className="h-4 w-4"/></Link>}
+        {selection.kind==='offer'&&<Link href={checkoutUrl} className="mt-4 inline-flex items-center gap-2 bg-emerald-300 px-4 py-3 text-xs font-black text-[#071a15]"><ShoppingBag className="h-4 w-4"/>Continue to Client checkout <ArrowRight className="h-4 w-4"/></Link>}
       </div>}
       <div className="grid gap-3 py-6 sm:grid-cols-2 lg:grid-cols-3">
         {world.offers.map(o=><div key={o.id} className="border border-white/10 p-5">
           <p className="text-[10px] font-bold uppercase text-emerald-200">{o.offerType}</p><h3 className="mt-2 text-lg font-black">{o.name}</h3>
           <p className="mt-2 text-xs text-stone-400">{o.description}</p>
           <p className="mt-3 text-sm font-bold text-amber-200">{o.price===null?'Request Client quote':o.price.toLocaleString()+' '+o.currency}</p>
-          <Link href={world.shopUrl} className="mt-4 inline-flex items-center gap-2 text-xs text-sky-200">Buy from Client <ArrowRight className="h-4 w-4"/></Link>
+          <Link href={checkoutUrl} className="mt-4 inline-flex items-center gap-2 text-xs text-sky-200">Buy from Client <ArrowRight className="h-4 w-4"/></Link>
         </div>)}
       </div>
       <p className="pb-8 text-xs text-stone-500"><ShieldCheck className="mr-1 inline h-4 w-4"/>Buyer payments and orders continue through the Client’s existing Customer Door. Avatar access never authorizes private construction, wallets or Administration.</p>
