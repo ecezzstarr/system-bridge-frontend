@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Flame, FolderOpen, Menu, PackageOpen, Volume2 } from 'lucide-react'
+import SharedSystemSwitchWorld from '@/components/system-switch/shared-system-switch-world'
 import ClientFileFolderGate from '@/components/system-switch/client-file-folder-gate'
 import ClientFileFolderOperatingEnvironment from '@/components/system-switch/client-file-folder-operating-environment'
 import { FileFolderEnvironmentLoader } from '@/components/system-switch/file-folder-environment-loader'
@@ -12,6 +13,7 @@ import './file-folder-phone.css'
 
 export default function ClientSystemSwitchPage() {
   const router = useRouter()
+  const [privateWorkshop,setPrivateWorkshop]=useState(false)
   const [entry, setEntry] = useState<any>(null)
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -100,11 +102,12 @@ export default function ClientSystemSwitchPage() {
 
   return (
     <main className="weave-file-folder-page min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
-      <ClientFileFolderOperatingEnvironment data={data} />
+      {privateWorkshop?<ClientFileFolderOperatingEnvironment data={data} />:<SharedSystemSwitchWorld role="client" getToken={getClientToken} onPrivateWorkshop={()=>setPrivateWorkshop(true)}/>}
       <details className="ff-page-actions">
         <summary aria-label="File Folder menu"><Menu aria-hidden="true" className="h-5 w-5"/></summary>
         <nav aria-label="File Folder actions">
           <p>File Folder</p>
+          {privateWorkshop&&<button type="button" onClick={()=>setPrivateWorkshop(false)}>Return to shared System Switch</button>}
           <Link href="/client/dashboard"><ArrowLeft className="h-4 w-4"/>Client World</Link>
           <Link href="/client/system-store" data-file-folder-publish-system="true"><PackageOpen className="h-4 w-4"/>Publish System</Link>
           <Link href="/client/system-switch/flame-event" data-file-folder-flame-event="inside"><Flame className="h-4 w-4"/>Flame Event</Link>

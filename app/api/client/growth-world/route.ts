@@ -1,3 +1,4 @@
+import {broadcastMedium} from '@/lib/system-switch-directory'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFileFolderDb, ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { resolveClientToken } from '@/lib/client-vault'
@@ -114,6 +115,7 @@ export async function POST(request:NextRequest){
       const programType=['program','launch','workshop','interview','music','product_demo'].includes(String(body.program_type))
         ? String(body.program_type)
         : 'program'
+      const medium=broadcastMedium(body.broadcast_medium)
       const mediaUrl=safeExternalUrl(body.media_url)
       const scheduledAt=clean(body.scheduled_at,80)
       const scheduledDate=scheduledAt?new Date(scheduledAt):null
@@ -141,7 +143,7 @@ export async function POST(request:NextRequest){
       const [channel]=await ctx.sql`SELECT id FROM client_stream_channels WHERE client_id=${ctx.client.id}::uuid LIMIT 1`
       await ctx.sql`
         INSERT INTO client_stream_programs (
-          channel_id,client_id,title,description,program_type,media_url,scheduled_at,status,duration_minutes
+          channel_id,client_id,title,description,program_type,broadcast_medium,media_url,scheduled_at,status,duration_minutes
         )
         VALUES (
           ${channel.id}::uuid,
@@ -149,6 +151,7 @@ export async function POST(request:NextRequest){
           ${title},
           ${description||null},
           ${programType},
+          ${medium},
           ${mediaUrl},
           ${scheduledDate?scheduledDate.toISOString():null}::timestamptz,
           'scheduled',
@@ -169,6 +172,7 @@ export async function POST(request:NextRequest){
         return NextResponse.json({error:'Streaming Open Gate must finish construction before public live broadcasting opens.',gate:'streaming_gate'},{status:409})
       }
       const isLive=Boolean(body.is_live)
+      const liveMedium=broadcastMedium(body.live_medium)
       const liveTitle=clean(body.live_title,255)
       const sourceUrl=safeExternalUrl(body.live_source_url)
       if(isLive&&(!liveTitle||!sourceUrl)){
@@ -178,6 +182,7 @@ export async function POST(request:NextRequest){
         UPDATE client_stream_channels
         SET
           is_live=${isLive},
+          live_medium=${liveMedium},
           live_title=CASE WHEN ${isLive} THEN ${liveTitle} ELSE live_title END,
           live_source_url=CASE WHEN ${isLive} THEN ${sourceUrl} ELSE live_source_url END,
           live_started_at=CASE WHEN ${isLive} THEN NOW() ELSE NULL END,
@@ -188,12 +193,12 @@ export async function POST(request:NextRequest){
       if(isLive){
         await ctx.sql`
           INSERT INTO client_stream_programs (
-            channel_id,client_id,title,description,program_type,media_url,scheduled_at,status,duration_minutes
+            channel_id,client_id,title,description,program_type,broadcast_medium,media_url,scheduled_at,status,duration_minutes
           )
           VALUES (
             ${channel.id}::uuid,${ctx.client.id}::uuid,${liveTitle},
             'Live public broadcast opened from the Client Streaming Gate.',
-            'program',${sourceUrl},NOW(),'live',NULL
+            'program',${liveMedium},${sourceUrl},NOW(),'live',NULL
           )
         `
       }else{

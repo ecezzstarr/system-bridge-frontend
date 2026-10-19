@@ -14,6 +14,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    services:
+      system-switch-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: weave_qa
+          POSTGRES_PASSWORD: weave_qa_only
+          POSTGRES_DB: weave_switch_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U weave_qa -d weave_switch_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,6 +41,15 @@ jobs:
 
       - name: File Folder world runtime regression
         run: node tests/file-folder-world-runtime-regression.cjs
+
+      - name: Shared System Switch protocol and PostgreSQL multiplayer
+        env:
+          WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
+        run: |
+          node tests/system-switch-multiplayer-regression.cjs
+          node tests/mandate-guidance-staff-regression.cjs
+          node tests/system-switch-multiplayer-postgres.cjs
+          node tests/mandate-guidance-postgres.cjs
 
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs

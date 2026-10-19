@@ -29,6 +29,7 @@ import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-pa
 import ClientGrowthWorld from '@/components/system-switch/client-growth-world'
 import { ClientPremiumDJ } from '@/components/system-switch/client-premium-dj'
 import { ClientBridgeAiSupport } from '@/components/system-switch/client-bridge-ai-support'
+import { FileFolderWorkshopInterior } from './file-folder-workshop-interior'
 import { ClientFileFolder3D } from '@/components/system-switch/client-file-folder-3d'
 import { getClientToken } from '@/lib/client-auth'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
@@ -412,7 +413,9 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
     setPanelOpen(true)
   }
 
+  const [insideWorkshop,setInsideWorkshop]=useState(false)
   const travelToStudio = (district: string) => {
+    setInsideWorkshop(true)
     setSelectedBuildId('')
     setSurface('builds')
     setSelectedSystemId('')
@@ -530,7 +533,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       data-file-folder-panel={panelOpen ? 'interior-open' : 'territory'}
     >
       <header className="ff-environment-header pointer-events-none absolute inset-x-0 top-0 z-30 border-b border-cyan-100/10 bg-[linear-gradient(180deg,rgba(4,10,16,.96),rgba(4,10,16,.78),transparent)] px-4 py-4 md:px-6 md:py-5">
-        <div className="ff-phone-identity"><span>FILE FOLDER</span><h1>{territoryName}</h1><p>{activeBuilds.length} building <span aria-hidden="true">·</span> {systems.length} live systems</p></div>
+        <div className="ff-phone-identity"><span className="ff-brand">W <b>WEAVE</b></span><div><h1>File Folder</h1><p>{territoryName}</p></div><div className="ff-file-badge"><strong>{data.client.file_number}</strong><small>Your File</small></div></div>
         <div className="flex items-start gap-3 md:gap-4">
           <div className="hidden rounded-2xl border border-sky-300/15 bg-sky-400/10 p-3 sm:block">
             <FolderOpen className="h-6 w-6 text-sky-300" />
@@ -638,6 +641,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
             </button>
           </div>
           <div className="ff-workspace-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 md:p-5">
+          {surface==='builds'&&insideWorkshop&&<FileFolderWorkshopInterior key={formationDistrict} district={formationDistrict} onOperate={()=>setInsideWorkshop(false)}/>}
         <section aria-label="Construction sequence" className="ff-build-sequence border-y border-cyan-100/10 bg-[#06101b]/55 px-2 py-2.5 md:px-4 md:py-3" data-file-folder-awareness="compact-build-sequence">
           <div className="flex items-center gap-3">
             <button onClick={()=>travelToStudio('workshop_core')} className="inline-flex shrink-0 items-center gap-1.5 border-r border-cyan-100/10 pr-3 text-[8px] font-black uppercase tracking-[.12em] text-amber-100 md:gap-2 md:text-[9px] md:tracking-[.14em]">

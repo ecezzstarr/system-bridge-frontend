@@ -50,13 +50,13 @@ export default function ClientGrowthWorld({
   const [program,setProgram]=useState({
     title:'',
     description:'',
-    program_type:'program',
+    program_type:'program',broadcast_medium:'stream',
     media_url:'',
     scheduled_at:'',
     duration_minutes:'60',
   })
   const [live,setLive]=useState({
-    live_title:channel.live_title||'',
+    live_title:channel.live_title||'',live_medium:channel.live_medium||'stream',
     live_source_url:channel.live_source_url||'',
   })
   const [route,setRoute]=useState({
@@ -78,7 +78,7 @@ export default function ClientGrowthWorld({
     if(!growth?.streaming?.channel)return
     const next=growth.streaming.channel
     setChannelForm({name:next.name||'',tagline:next.tagline||'',description:next.description||''})
-    setLive({live_title:next.live_title||'',live_source_url:next.live_source_url||''})
+    setLive({live_medium:next.live_medium||'stream',live_title:next.live_title||'',live_source_url:next.live_source_url||''})
   },[growth?.streaming?.channel?.updated_at])
 
   const act=async(payload:any,key:string)=>{
@@ -135,8 +135,8 @@ export default function ClientGrowthWorld({
 
   const saveChannel=()=>act({action:'save_stream_profile',...channelForm},'channel')
   const addProgram=async()=>{
-    const ok=await act({action:'add_stream_program',...program,duration_minutes:Number(program.duration_minutes)},'program')
-    if(ok)setProgram({title:'',description:'',program_type:'program',media_url:'',scheduled_at:'',duration_minutes:'60'})
+    const ok=await act({action:'add_stream_program',...program,scheduled_at:program.scheduled_at?new Date(program.scheduled_at).toISOString():'',duration_minutes:Number(program.duration_minutes)},'program')
+    if(ok)setProgram({title:'',description:'',program_type:'program',broadcast_medium:'stream',media_url:'',scheduled_at:'',duration_minutes:'60'})
   }
   const setLiveState=async(isLive:boolean)=>{
     await act({action:'set_stream_live',is_live:isLive,...live},'live')
@@ -224,6 +224,7 @@ export default function ClientGrowthWorld({
         <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-500">Live source</p>
           <div className="mt-3 grid gap-2">
+            <select aria-label="Live broadcast medium" value={live.live_medium} onChange={e=>setLive({...live,live_medium:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="radio">Radio</option><option value="tv">Television</option><option value="stream">Live stream</option></select>
             <input value={live.live_title} onChange={e=>setLive({...live,live_title:e.target.value})} placeholder="Live title" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/>
             <input value={live.live_source_url} onChange={e=>setLive({...live,live_source_url:e.target.value})} placeholder="Secure HTTPS broadcast source / player URL" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/>
             <div className="grid grid-cols-2 gap-2">
@@ -239,7 +240,8 @@ export default function ClientGrowthWorld({
         <div className="mt-3 grid gap-2 md:grid-cols-2">
           <input value={program.title} onChange={e=>setProgram({...program,title:e.target.value})} placeholder="Program title" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/>
           <select value={program.program_type} onChange={e=>setProgram({...program,program_type:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="program">Program</option><option value="launch">Launch</option><option value="workshop">Workshop</option><option value="interview">Interview</option><option value="music">Music</option><option value="product_demo">Product demonstration</option></select>
-          <input type="datetime-local" value={program.scheduled_at} onChange={e=>setProgram({...program,scheduled_at:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/>
+          <select aria-label="Broadcast medium" value={program.broadcast_medium} onChange={e=>setProgram({...program,broadcast_medium:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"><option value="radio">Radio</option><option value="tv">Television</option><option value="stream">Live stream</option></select>
+          <input aria-label="Broadcast date and time" type="datetime-local" value={program.scheduled_at} onChange={e=>setProgram({...program,scheduled_at:e.target.value})} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/>
           <input type="number" min="5" value={program.duration_minutes} onChange={e=>setProgram({...program,duration_minutes:e.target.value})} placeholder="Minutes" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"/>
           <input value={program.media_url} onChange={e=>setProgram({...program,media_url:e.target.value})} placeholder="Replay/source URL (optional)" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white md:col-span-2"/>
           <textarea value={program.description} onChange={e=>setProgram({...program,description:e.target.value})} rows={2} placeholder="Program purpose" className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white md:col-span-2"/>

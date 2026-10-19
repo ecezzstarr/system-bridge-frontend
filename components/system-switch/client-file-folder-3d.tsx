@@ -3,13 +3,16 @@ import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { ContactShadows,Text,useTexture } from '@react-three/drei'
+import { ContactShadows,Text,useTexture,Sky } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
-import { systemWorldPosition, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
+import { systemWorldPosition, aiTerritoryWorldPosition, FILE_FOLDER_PARK_TREES, FILE_FOLDER_DISTRICT_POSITIONS, FILE_FOLDER_WORLD_RADIUS, FILE_FOLDER_CITY_OBSTACLES, FILE_FOLDER_STREET_COLUMNS, FILE_FOLDER_STREET_ROWS, DISTRICT_BODY_RADIUS, type Presence } from '@/lib/file-folder-world-runtime'
 import { useVisualRuntime } from '@/components/world/use-visual-runtime'
 import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FOLDER_STATION_POSITIONS,type FormationStation } from './file-folder-world-art'
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
+import { FileFolderCityStreets } from './file-folder-city-streets'
+import { CityMaterial } from './file-folder-city-material'
+import { FileFolderCityArchitecture } from './file-folder-city-architecture'
 import { InstitutionalArchitecture } from './file-folder-institutional-architecture'
 
 type DistrictKey='command'|'builds'|'business'|'enterprise'|'sound'
@@ -28,30 +31,24 @@ const COLORS:Record<District['tone'],string>={
   rose:'#fda4af',
 }
 
-const POSITIONS:Record<DistrictKey,[number,number,number]>={
-  command:[0,0,0],
-  builds:[-5.1,0,-2.15],
-  business:[5.2,0,-1.85],
-  enterprise:[-3.6,0,4.15],
-  sound:[3.75,0,4.1],
-}
+const POSITIONS=FILE_FOLDER_DISTRICT_POSITIONS
 
 function StoneGround(){
   return <group>
     <mesh position={[0,-.52,0]} receiveShadow>
-      <cylinderGeometry args={[10.4,10.8,.42,80]}/>
+      <boxGeometry args={[60,.42,60]}/>
       <meshStandardMaterial color="#090d12" roughness={.88} metalness={.04}/>
     </mesh>
     <mesh position={[0,-.28,0]} receiveShadow>
-      <cylinderGeometry args={[9.65,10.05,.08,80]}/>
-      <meshStandardMaterial color="#111923" roughness={.82} metalness={.06}/>
+      <boxGeometry args={[58,.08,58]}/>
+      <CityMaterial kind="paving"/>
     </mesh>
     <mesh position={[0,-.235,0]} rotation={[-Math.PI/2,0,0]} receiveShadow>
-      <ringGeometry args={[3.25,8.9,96]}/>
-      <meshStandardMaterial color="#0d141d" roughness={.9}/>
+      <planeGeometry args={[56,56]}/>
+      <CityMaterial kind="paving"/>
     </mesh>
     <mesh position={[0,-.21,0]} rotation={[-Math.PI/2,0,0]}>
-      <ringGeometry args={[7.95,8.08,96]}/>
+      <ringGeometry args={[8.8,8.84,96]}/>
       <meshStandardMaterial color="#466170" emissive="#f59e0b" emissiveIntensity={.04} metalness={.34} roughness={.55}/>
     </mesh>
   </group>
@@ -111,21 +108,14 @@ function FlameBeacon({position,scale=.75}:{position:[number,number,number];scale
 
 function CommandHall({active}:{active:boolean}){
   return <group>
-    <mesh position={[0,.55,0]} castShadow receiveShadow>
-      <cylinderGeometry args={[1.34,1.65,1.1,8]}/>
-      <meshStandardMaterial color="#17232d" roughness={.68} metalness={.16}/>
-    </mesh>
-    <mesh position={[0,1.42,0]} castShadow>
-      <coneGeometry args={[1.42,.9,8]}/>
-      <meshStandardMaterial color="#334b59" metalness={.34} roughness={.5}/>
-    </mesh>
-    <mesh position={[0,.62,1.38]}>
-      <boxGeometry args={[.64,.95,.14]}/>
-      <meshStandardMaterial color="#071016" emissive="#f59e0b" emissiveIntensity={active ? .16:.06}/>
-    </mesh>
-    <Text position={[0,.8,1.48]} fontSize={.14} color="#fef3c7" anchorX="center">FORMATION INTELLIGENCE</Text>
-    <FlameBeacon position={[-1.4,.02,.95]} scale={.55}/>
-    <FlameBeacon position={[1.4,.02,.95]} scale={.55}/>
+    <mesh position={[0,.1,0]} receiveShadow><boxGeometry args={[2.8,.2,2.5]}/><meshStandardMaterial color="#53616a" metalness={.3} roughness={.55}/></mesh>
+    <mesh position={[0,.85,0]} castShadow><boxGeometry args={[2.5,1.5,1.8]}/><CityMaterial kind="glass" glow={.3}/></mesh>
+    {[-1.15,-.58,.58,1.15].map(x=><mesh key={x} position={[x,.95,.94]} castShadow><boxGeometry args={[.07,1.75,.12]}/><meshStandardMaterial color="#a3a99a" metalness={.7} roughness={.3}/></mesh>)}
+    {[.25,1.7].map(y=><mesh key={y} position={[0,y,.94]}><boxGeometry args={[2.65,.06,.12]}/><meshStandardMaterial color="#ffdf9b" emissive="#ffbc5e" emissiveIntensity={active?1.4:.7}/></mesh>)}
+    <mesh position={[0,1.9,0]} castShadow><boxGeometry args={[2.85,.22,2.2]}/><meshStandardMaterial color="#3d5059" metalness={.5} roughness={.4}/></mesh>
+    <mesh position={[0,.7,.98]}><boxGeometry args={[.62,1.2,.03]}/><meshStandardMaterial color="#e8f6ee" emissive="#ffb951" emissiveIntensity={.6} transparent opacity={.7}/></mesh>
+    <Text position={[0,2.13,1.04]} fontSize={.11} color="#fff0ca" anchorX="center">FORMATION INTELLIGENCE</Text>
+    <FlameBeacon position={[-1.4,.02,1.25]} scale={.45}/><FlameBeacon position={[1.4,.02,1.25]} scale={.45}/>
   </group>
 }
 
@@ -137,7 +127,7 @@ function MarketDistrict({level,buildProgress,active}:{level:number;buildProgress
       <mesh position={[0,.18,0]} receiveShadow><boxGeometry args={[2.0,.12,1.5]}/><meshStandardMaterial color="#1b2b35" roughness={.85}/></mesh>
       <Text position={[0,.42,.82]} fontSize={.12} color="#a79075">MARKET PLOT</Text>
     </>:<>
-      <mesh position={[0,.56,0]} castShadow><boxGeometry args={[2.3,.9,1.65]}/><meshStandardMaterial color="#1b2b35" roughness={.68}/></mesh>
+      <mesh position={[0,.56,0]} castShadow><boxGeometry args={[2.3,.9,1.65]}/><CityMaterial kind="warm" glow={.65}/></mesh>
       {floors>=2&&<mesh position={[0,1.23,0]} castShadow><boxGeometry args={[1.95,.48,1.42]}/><meshStandardMaterial color="#243b47" roughness={.62}/></mesh>}
       {floors>=3&&<mesh position={[0,1.76,0]} castShadow><boxGeometry args={[1.5,.55,1.15]}/><meshStandardMaterial color="#315160" metalness={.15} roughness={.58}/></mesh>}
       {[-.72,0,.72].map(x=><mesh key={x} position={[x,.6,.84]}><boxGeometry args={[.32,.48,.09]}/><meshStandardMaterial color="#18241d" emissive="#34d399" emissiveIntensity={active ? .24:.1}/></mesh>)}
@@ -219,10 +209,16 @@ function Crane({height=2.6,speed=1}:{height?:number;speed?:number}){
   const arm=useRef<THREE.Group>(null)
   useFrame(({clock})=>{if(arm.current)arm.current.rotation.y=Math.sin(clock.getElapsedTime()*.18*Math.min(4,Math.max(1,speed)))*.4})
   return <group position={[1.3,.02,-.95]}>
-    <mesh position={[0,height/2,0]}><boxGeometry args={[.09,height,.09]}/><meshStandardMaterial color="#a97835" metalness={.55} roughness={.42}/></mesh>
+    {[-.08,.08].flatMap(x=>[-.08,.08].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.035,height,.035]}/><meshStandardMaterial color="#efb949" metalness={.55} roughness={.4}/></mesh>))}
+    {Array.from({length:8},(_,i)=><group key={i} position={[0,i*height/8,0]}>
+      <mesh><boxGeometry args={[.2,.025,.2]}/><meshStandardMaterial color="#f2be54" metalness={.6} roughness={.4}/></mesh>
+      <mesh rotation={[0,0,-.5]} position={[0,height/16,.09]}><boxGeometry args={[.025,height/7,.025]}/><meshStandardMaterial color="#f2be54" metalness={.6}/></mesh>
+    </group>)}
     <group ref={arm} position={[0,height,0]}>
-      <mesh position={[.7,0,0]}><boxGeometry args={[1.45,.07,.07]}/><meshStandardMaterial color="#d3a45b" metalness={.52} roughness={.38}/></mesh>
-      <mesh position={[1.35,-.45,0]}><boxGeometry args={[.02,.9,.02]}/><meshBasicMaterial color="#3e3328"/></mesh>
+      {[0,.16].map(y=><mesh key={y} position={[.6,y,0]}><boxGeometry args={[1.8,.04,.09]}/><meshStandardMaterial color="#e9b348" metalness={.52} roughness={.38}/></mesh>)}
+      {Array.from({length:9},(_,i)=><mesh key={i} position={[-.2+i*.2,.08,0]} rotation={[0,0,i%2?.8:-.8]}><boxGeometry args={[.025,.23,.025]}/><meshStandardMaterial color="#e9b348" metalness={.5}/></mesh>)}
+      <mesh position={[1.35,-.45,0]}><boxGeometry args={[.016,.9,.016]}/><meshBasicMaterial color="#504635"/></mesh>
+      <mesh position={[1.35,-.94,0]}><torusGeometry args={[.065,.018,6,12,Math.PI*1.5]}/><meshStandardMaterial color="#d9b76a" metalness={.8}/></mesh>
     </group>
   </group>
 }
@@ -276,10 +272,15 @@ function ConstructionSite({build,position,emergence,onEnter}:{build:ActiveBuild;
   return <group position={position} onClick={event=>{event.stopPropagation();onEnter?.()}}>
     <mesh position={[0,.04,0]} receiveShadow><boxGeometry args={[1.05,.08,.8]}/><meshStandardMaterial color="#1c2c37" roughness={.86}/></mesh>
     {!institutional&&progress>=12&&[-.39,.39].flatMap(x=>[-.28,.28].map(z=><mesh key={x+':'+z} position={[x,height/2,z]}><boxGeometry args={[.08,height,.08]}/><meshStandardMaterial color="#526d79" metalness={.35} roughness={.5}/></mesh>))}
-    {!institutional&&walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><meshStandardMaterial color="#1d303b" transparent opacity={.68} roughness={.66}/></mesh>}
+    {!institutional&&walls&&<mesh position={[0,height*.52,0]}><boxGeometry args={[.88,height*.72,.64]}/><CityMaterial kind="glass" glow={.35}/></mesh>}
     {!institutional&&roof&&<mesh position={[0,height+.08,0]}><boxGeometry args={[.98,.12,.74]}/><meshStandardMaterial color="#315160" roughness={.5} metalness={.16}/></mesh>}
     {institutional&&<InstitutionalArchitecture systemType={String(build.systemType||"")} progress={progress} parts={parts} compact/>}
+    {!institutional&&progress>=42&&[.35,.7,1].map(level=><mesh key={level} position={[0,height*level,0]}><boxGeometry args={[1.02,.055,.78]}/><meshStandardMaterial color="#d9c7a5" emissive="#ffac43" emissiveIntensity={.25} metalness={.65} roughness={.35}/></mesh>)}
     {!institutional&&parts.slice(0,6).map((part,index)=><CapabilityFixture key={part.id||part.itemKey||index} part={part} index={index} baseY={height*.58}/>)}
+    {parts.slice(0,4).map((part,index)=><group key={'installed-label:'+index} position={[.7,.65+index*.28,.49]}>
+      <mesh><boxGeometry args={[1,.22,.035]}/><meshStandardMaterial color="#062b39" emissive="#16b9dd" emissiveIntensity={.5} metalness={.6}/></mesh>
+      <Text position={[0,0,.025]} fontSize={.065} maxWidth={.9} color="#b8f8ff">{part.name||part.effectType?.replaceAll('_',' ')||'Installed part'}</Text>
+    </group>)}
     {speed>1.01&&<group>
       <mesh rotation={[-Math.PI/2,0,0]} position={[0,.13,0]}><torusGeometry args={[.84,.035,6,36]}/><meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={Math.min(2,.45+(speed-1)*.8)}/></mesh>
       <mesh position={[0,height+.32,0]}><octahedronGeometry args={[.13,0]}/><meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={Math.min(2,speed*.3)}/></mesh>
@@ -456,9 +457,7 @@ function PersistedSystemWeave({weave,liveSystems,currentStrength}:{weave:SystemW
 
 function AiTerritoryOutpost({territory,index,total}:{territory:AiTerritory;index:number;total:number}){
   const angle=(index/Math.max(1,total))*Math.PI*2-Math.PI/2
-  const radius=10.15+(index%2)*.55
-  const x=Math.cos(angle)*radius
-  const z=Math.sin(angle)*radius
+  const [x,,z]=aiTerritoryWorldPosition(index,total)
   const activity=String(territory.activity||'active').toUpperCase()
   return <group position={[x,0,z]} rotation={[0,-angle+Math.PI/2,0]}>
     <mesh position={[0,.06,0]} receiveShadow><cylinderGeometry args={[.82,.9,.12,18]}/><meshStandardMaterial color="#101821" roughness={.86}/></mesh>
@@ -539,15 +538,18 @@ function Scene({
 }){
   const visibleSystems=liveSystems.slice(systemPage*12,systemPage*12+12)
   return <>
-    <color attach="background" args={['#101d29']}/>
-    <fog attach="fog" args={['#101d29',21,52]}/>
-    <ambientLight intensity={.68} color="#ccecff"/>
+    <color attach="background" args={['#58667b']}/>
+    <fog attach="fog" args={['#58667b',25,65]}/>
+    <Sky sunPosition={[8,4,-20]} turbidity={8} rayleigh={1.8} mieCoefficient={.005}/>
+    <ambientLight intensity={1.1} color="#ffe2bb"/>
     <hemisphereLight args={["#b6d7ee","#16312b",1.18]}/>
-    <directionalLight position={[5,11,6]} intensity={3.2} color="#e0f2fe" castShadow/>
+    <directionalLight position={[5,11,6]} intensity={3.8} color="#ffdfb8" castShadow/>
     <pointLight position={[-6,4,-4]} intensity={7} color="#fb923c" distance={12}/>
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
     <StoneGround/>
+    <FileFolderCityArchitecture/>
+    <FileFolderCityStreets/>
     <FileFolderScenery formationCount={activeBuilds.length}/>
     <FileFolderFacilities
       marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
@@ -593,8 +595,11 @@ function Scene({
     {thirdPerson&&<FileFolderPresenceAvatar presence={presence}/>}
     <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby} thirdPerson={thirdPerson}
       obstacles={[
+        ...FILE_FOLDER_CITY_OBSTACLES,
+        ...FILE_FOLDER_PARK_TREES.map(p=>({...p,radius:.08,height:.8})),
+        ...aiTerritories.slice(0,8).map((_,i,all)=>{const [x,,z]=aiTerritoryWorldPosition(i,all.length);return {x,z,radius:.7,height:1.9}}),
         ...districts.map(d=>({x:POSITIONS[d.key][0],z:POSITIONS[d.key][2],radius:DISTRICT_BODY_RADIUS})),
-        ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({x:FILE_FOLDER_STATION_POSITIONS[key][0],z:FILE_FOLDER_STATION_POSITIONS[key][2],radius:.74})),
+        ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({x:FILE_FOLDER_STATION_POSITIONS[key][0],z:FILE_FOLDER_STATION_POSITIONS[key][2],radius:1.1})),
         ...visibleSystems.map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[
@@ -609,7 +614,7 @@ function Scene({
 }
 
 export function ClientFileFolder3D({
-  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,onStudioEnter,navigationEnabled=true,presenceKey='',
+  activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,onStudioEnter,navigationEnabled=true,presenceKey='',staffVisitor=false,
   marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
 }:{
   activeSurface:DistrictKey
@@ -620,6 +625,7 @@ export function ClientFileFolder3D({
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
   onStudioEnter?:(key:FormationStation)=>void
+  staffVisitor?:boolean
   navigationEnabled?:boolean
   presenceKey?:string
   visibleSurfaceKeys?:DistrictKey[]
@@ -639,12 +645,13 @@ export function ClientFileFolder3D({
   territoryMode?:boolean
 }){
   const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,lookPitchDelta:0,zoomDelta:0})
-  const presence=useRef<Presence>({x:0,z:3,yaw:0})
+  const presence=useRef<Presence>({x:0,z:8.2,yaw:0})
   const touchPoints=useRef(new Map<number,{x:number;y:number}>())
   const joystickPointer=useRef<number|null>(null)
   const joystickThumb=useRef<HTMLSpanElement>(null)
   const captureWorldRef=useRef<(()=>void)|null>(null)
   const resetTouchMovement=()=>{
+    input.current.running=false
     input.current.analogForward=0
     input.current.analogStrafe=0
     input.current.lookDelta=0
@@ -669,7 +676,7 @@ export function ClientFileFolder3D({
   const [thirdPerson,setThirdPerson]=useState(true)
   const [constructionPage,setConstructionPage]=useState(0)
   const [systemPage,setSystemPage]=useState(0)
-  const [mapPresence,setMapPresence]=useState<Presence>({x:0,z:3,yaw:0})
+  const [mapPresence,setMapPresence]=useState<Presence>({x:0,z:8.2,yaw:0})
   useEffect(()=>{
     const interval=window.setInterval(()=>{
       const p=presence.current
@@ -684,7 +691,7 @@ export function ClientFileFolder3D({
       const saved=window.sessionStorage.getItem(storageKey)
       if(saved){
         const next=JSON.parse(saved)
-        if([next.x,next.z,next.yaw].every((n:unknown)=>typeof n==='number'&&Number.isFinite(n))&&Math.hypot(next.x,next.z)<=9){
+        if([next.x,next.z,next.yaw].every((n:unknown)=>typeof n==='number'&&Number.isFinite(n))&&Math.hypot(next.x,next.z)<=FILE_FOLDER_WORLD_RADIUS){
           presence.current={x:next.x,z:next.z,yaw:next.yaw}
         }
       }
@@ -711,7 +718,7 @@ export function ClientFileFolder3D({
 
   const districts=useMemo<District[]>(()=>[
     {key:'command',label:'Business Core',tone:'sky'},
-    {key:'builds',label:'Build Ground',tone:'violet'},
+    {key:'builds',label:'System Formation Workshop',tone:'violet'},
     {key:'business',label:'Customer Door',tone:'emerald'},
     {key:'enterprise',label:'Business Expansion',tone:'amber'},
     ...(premiumSound?[{key:'sound' as const,label:'Sound Pavilion',tone:'rose' as const}]:[]),
@@ -736,25 +743,25 @@ export function ClientFileFolder3D({
       <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">{businessSector ? `${businessSector} · ` : ''}You decide what systems exist here. WEAVE hosts, organizes and connects them through your Customer Door.</p>
     </div>
 
-    <div className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>
+    <div hidden={staffVisitor} className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>
       <div className="rounded-xl border border-cyan-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">In formation</p><p className="text-sm font-black text-amber-100">{activeBuilds.length}</p></div>
       <div className="rounded-xl border border-emerald-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Systems in motion</p><p className="text-sm font-black text-emerald-100">{completed}</p></div>
       <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Formation state</p><p className="text-sm font-black text-white">{average}%</p></div><div className="rounded-xl border border-cyan-200/10 bg-black/35 px-3 py-2 text-right backdrop-blur-md"><p className="text-[7px] font-black uppercase text-stone-500">Connections</p><p className="text-sm font-black text-cyan-100">{Math.max(routeCount,completed>1?completed:0)}</p></div>
     </div>
 
-    <div tabIndex={0} aria-label="Walk through File Folder. Use phone joystick to walk, drag to look, pinch to zoom, and tap Enter near structures. Keyboard W A S D and E also work."
+    <div tabIndex={0} aria-label="Walk through File Folder. Use phone joystick to walk, drag to look, pinch to zoom, and tap Enter near structures. Keyboard W A S D moves, arrow keys turn, Shift runs, and E enters."
       onFocus={()=>{input.current.active=navigationEnabled}}
       onBlur={()=>{input.current.active=false;input.current.keys.clear()}}
-      onKeyDown={e=>{if(!navigationEnabled)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();input.current.active=true;input.current.keys.add(k);if(k==='e'&&!e.repeat)input.current.enter=true}}}
+      onKeyDown={e=>{if(!navigationEnabled)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift','e'].includes(k)){e.preventDefault();input.current.active=true;input.current.keys.add(k);if(k==='e'&&!e.repeat)input.current.enter=true}}}
       onKeyUp={e=>input.current.keys.delete(e.key.toLowerCase())}
       onPointerDown={e=>e.currentTarget.focus({preventScroll:true})}
       onPointerDownCapture={e=>{
-        if(!navigationEnabled||e.pointerType!=='touch')return
+        if(!navigationEnabled||(e.pointerType!=='touch'&&e.button!==0))return
         touchPoints.current.set(e.pointerId,{x:e.clientX,y:e.clientY})
         input.current.active=true
       }}
       onPointerMoveCapture={e=>{
-        if(!navigationEnabled||e.pointerType!=='touch')return
+        if(!navigationEnabled)return
         const before=touchPoints.current.get(e.pointerId)
         if(!before)return
         const others=Array.from(touchPoints.current.entries()).filter(([id])=>id!==e.pointerId)
@@ -771,8 +778,9 @@ export function ClientFileFolder3D({
       }}
       onPointerUpCapture={e=>touchPoints.current.delete(e.pointerId)}
       onPointerCancelCapture={e=>touchPoints.current.delete(e.pointerId)}
+      onPointerLeave={e=>{if(e.pointerType!=='touch')touchPoints.current.delete(e.pointerId)}}
       className={territoryMode ? "h-full min-h-[540px] sm:min-h-[680px]" : "h-[390px] sm:h-[500px] lg:h-[590px]"} style={{touchAction:"none"}}>
-      <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:65}} dpr={[1,1.5]}>
+      <AdaptiveCanvas shadows camera={{position:[0,10.5,14.6],fov:72}} dpr={[1,1.5]}>
         <WorldImageCapture captureRef={captureWorldRef}/>
         <Scene
           districts={districts}
@@ -798,6 +806,7 @@ export function ClientFileFolder3D({
       </AdaptiveCanvas>
     </div>
 
+    <button type="button" className="ff-file-overview" onClick={()=>onSurfaceChange('command')} hidden={!navigationEnabled}><strong>▤ &nbsp; FILE OVERVIEW</strong><span>{liveSystems.length} systems · {activeBuilds.reduce((n,b)=>n+(b.parts?.length||0),0)+liveSystems.reduce((n,b)=>n+(b.parts?.length||0),0)} installed parts · {activeBuilds.length} builds</span></button>
     <details className="ff-world-tools" hidden={!navigationEnabled}>
       <summary>World tools</summary>
       <div className="ff-world-tools-content">
@@ -808,14 +817,18 @@ export function ClientFileFolder3D({
       </div>
       <div className="relative aspect-square w-full overflow-hidden rounded-full border border-cyan-100/25 bg-[radial-gradient(circle_at_center,#244451_0%,#0c2736_40%,#07131e_90%)]">
         <div className="absolute inset-[8%] rounded-full border border-dashed border-cyan-100/15"/>
+        <svg className="absolute inset-[5%] h-[90%] w-[90%]" viewBox="-28 -28 56 56" aria-hidden="true">
+          {FILE_FOLDER_STREET_COLUMNS.map(x=><path key={'road-x:'+x} d={`M ${x} -26 V 26`} stroke="#4a7b89" strokeWidth="1.4"/>)}
+          {FILE_FOLDER_STREET_ROWS.map(z=><path key={'road-z:'+z} d={`M -24 ${z} H 24`} stroke="#4a7b89" strokeWidth="1.4"/>)}
+        </svg>
         {districts.map(d=>{
           const pos=POSITIONS[d.key]
           return <span key={d.key} aria-hidden="true" title={d.label}
             className="absolute z-10 h-[8px] w-[8px] -translate-x-1/2 -translate-y-1/2 rounded-sm border border-white/50 disabled:opacity-40"
-            style={{left:(50+pos[0]*4.4)+'%',top:(50+pos[2]*4.4)+'%',backgroundColor:COLORS[d.tone]}}/>
+            style={{left:(50+pos[0]*(45/FILE_FOLDER_WORLD_RADIUS))+'%',top:(50+pos[2]*(45/FILE_FOLDER_WORLD_RADIUS))+'%',backgroundColor:COLORS[d.tone]}}/>
         })}
         <span className="pointer-events-none absolute z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-amber-100 bg-amber-400 shadow-[0_0_8px_#fbbf24]"
-          style={{left:(50+mapPresence.x*4.4)+'%',top:(50+mapPresence.z*4.4)+'%',transform:'translate(-50%,-50%) rotate('+(-mapPresence.yaw)+'rad)'}}/>
+          style={{left:(50+mapPresence.x*(45/FILE_FOLDER_WORLD_RADIUS))+'%',top:(50+mapPresence.z*(45/FILE_FOLDER_WORLD_RADIUS))+'%',transform:'translate(-50%,-50%) rotate('+(-mapPresence.yaw)+'rad)'}}/>
       </div>
       <p className="mt-1 truncate text-center text-[7px] uppercase tracking-wider text-slate-300">{nearby||'Your location'}</p>
     </div>
@@ -892,12 +905,15 @@ export function ClientFileFolder3D({
       </button>
       <span className="max-w-20 text-[10px] text-cyan-100/80">Walk · drag to look · pinch to zoom</span>
     </div>
+    <button type="button" className="ff-run-action" aria-label="Hold to run" disabled={!navigationEnabled}
+      onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);input.current.active=true;input.current.running=true}}
+      onPointerUp={()=>{input.current.running=false}} onPointerCancel={()=>{input.current.running=false}} onLostPointerCapture={()=>{input.current.running=false}}>Run</button>
     <button type="button" disabled={!nearby||!navigationEnabled} onClick={()=>{input.current.active=true;input.current.enter=true}}
       className="ff-enter-structure absolute bottom-28 right-3 z-20 hidden rounded-2xl border border-emerald-200/50 bg-emerald-950/80 px-5 py-4 text-sm font-bold text-emerald-100 shadow-lg disabled:opacity-35 [@media(pointer:coarse)]:block">
       {nearby?'Enter '+nearby:'Approach a structure'}
     </button>
     <div className="absolute left-3 bottom-20 z-20 rounded-xl bg-black/80 p-2 text-xs text-white [@media(pointer:coarse)]:hidden" aria-label="World movement controls">
-      <p aria-live="polite">{nearby ? `Nearby: ${nearby}` : 'Walk to a structure'} · W/S walk · A/D turn</p>
+      <p aria-live="polite">{nearby ? `Nearby: ${nearby}` : 'Walk to a structure'} · WASD move · arrows turn · Shift run</p>
       <div className="mt-2 flex gap-2">
         {[['a','Turn left'],['w','Walk forward'],['s','Walk back'],['d','Turn right']].map(([key,label])=><button key={key} disabled={!navigationEnabled}
           onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);input.current.active=true;input.current.keys.add(key)}}
@@ -906,12 +922,11 @@ export function ClientFileFolder3D({
         <button disabled={!nearby||!navigationEnabled} onClick={()=>{input.current.active=true;input.current.enter=true}} className="rounded border border-emerald-300/40 px-3 py-2">Enter</button>
       </div>
     </div>
-    <nav className="ff-phone-dock" aria-label="File Folder destinations" hidden={!navigationEnabled}>
-      <label htmlFor="ff-destination">Enter a place</label>
-      <select id="ff-destination" aria-label="Choose a File Folder destination" value="" onChange={e=>{if(e.target.value)onSurfaceChange(e.target.value as DistrictKey)}}>
-        <option value="" disabled>Where would you like to go?</option>
-        {districts.map(d=><option key={d.key} value={d.key}>{d.label}</option>)}
-      </select>
+    <nav className="ff-phone-dock" aria-label="File Folder destinations" hidden={!navigationEnabled||staffVisitor}>
+      {([
+        ['Build','formation_yard','▥'],['Parts','parts_workshop','◇'],['Blueprints','blueprint_foundry','▤'],['Boosts','boost_bay','ϟ'],
+      ] as const).map(([label,key,icon])=><button type="button" key={key} onClick={()=>onStudioEnter?.(key)}><span aria-hidden="true">{icon}</span>{label}</button>)}
+      <button type="button" onClick={()=>onSurfaceChange('business')}><span aria-hidden="true">♧</span>Customers</button>
     </nav>
     <div className={territoryMode
       ? "ff-district-rail absolute inset-x-2 bottom-3 z-20 flex snap-x snap-mandatory justify-start gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:inset-x-5 sm:bottom-5 sm:justify-center sm:gap-2"

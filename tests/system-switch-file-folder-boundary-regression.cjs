@@ -30,3 +30,8 @@ assert.ok(rolePlace.includes("label: 'System Switch'")&&rolePlace.includes("'/cl
 assert.ok(roleDistrict.includes('placeThroughSystemSwitch')&&rolePresence.includes('placeThroughSystemSwitch'),'Role districts and Presence movement show System Switch rather than top-level Flame Event')
 
 console.log('System Switch is the shared File Folder gate and Flame Event stays inside the File Folder boundary')
+
+const staffWalking=read("components/system-switch/staff-file-folder-world.tsx")
+assert.ok(staffGate.includes("<StaffFileFolderWorld role={role}"),"Staff gate mounts the walking world for the authenticated role")
+assert.ok(staffWalking.includes("<SharedSystemSwitchWorld role={role}"),"Staff enter the same public room as Clients using their own authenticated position")
+assert.ok(!staffWalking.includes("/api/client/")&&!staffWalking.includes("fetch("),"Staff movement does not request private Client data")

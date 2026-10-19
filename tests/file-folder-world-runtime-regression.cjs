@@ -97,9 +97,21 @@ assert(world.movePresence(p,0,0,.05,[],1).x>p.x,'Mobile thumb right strafes in w
 assert(world.movePresence(p,0,0,.05,[],-1).x<p.x,'Mobile thumb left strafes in world')
 assert.equal(world.movePresence(p,0,0,.05,[{x:.15,z:3,radius:.5}],1).x,p.x,'Mobile movement still collides with buildings')
 assert.equal(world.movePresence(p,1,0,10).z,world.movePresence(p,1,0,.05).z,'Long frames are capped')
-assert.equal(world.movePresence({x:0,z:8.99,yaw:0},-1,0,.05).z,8.99,'Territory boundary')
+assert.equal(world.movePresence({x:0,z:27.99,yaw:0},-1,0,.05).z,27.99,'Territory boundary')
 assert.equal(world.movePresence(p,1,0,.05,[{x:0,z:2.85,radius:.5}]).z,3,'Structure collision')
 assert(world.canEnter(p,[0,0,2]));assert(!world.canEnter(p,[7,0,2]))
+const diagonal=world.movePresence({x:0,z:0,yaw:0},1,0,.05,[],1)
+assert(Math.abs(Math.hypot(diagonal.x,diagonal.z)-.15)<1e-9,'Diagonal walking is not faster')
+const run=world.movePresence({x:0,z:0,yaw:0},1,0,.05,[],0,true)
+assert(Math.abs(run.z)>.15,'Run control increases speed')
+const slide=world.movePresence({x:.9,z:0,yaw:0},1,0,.05,[{x:0,z:0,radius:.6}],-1)
+assert(slide.x===.9&&slide.z<0,'Character can slide out of a glancing wall collision')
+const block=world.FILE_FOLDER_CITY_OBSTACLES[0]
+const wall={x:block.x+block.halfWidth+.21,z:block.z,yaw:Math.PI/2}
+assert.equal(world.movePresence(wall,1,0,.05,[block]).x,wall.x,'Host building geometry blocks walking')
+const safe=world.safeFollowCamera({x:0,z:0,yaw:0},{x:0,y:2.4,z:5},[{x:0,z:2,radius:.8,height:4}])
+assert(safe.z<1,'Follow camera retracts before passing through a wall')
+assert.equal(world.movePresence({x:0,z:0,yaw:0},0,0,.05,[],1).heading,-Math.PI/2,'Avatar faces the direction of travel independently of camera yaw')
 let frame,entered=0,nearby=''
 const input={current:{keys:new Set(['w']),active:true,enter:false}},presence={current:{...p}}
 const runtime=load('components/system-switch/embodied-world-runtime.tsx',{
@@ -126,6 +138,29 @@ assert(presence.current.x>beforeStrafe,'Analog joystick movement reaches the wor
 input.current.analogStrafe=0
 input.current.enter=true;frame({camera},.05);frame({camera},.05);assert.equal(entered,1,'Entry fires once')
 input.current.active=false;const before=presence.current.z;input.current.enter=true;frame({camera},.05);assert.equal(presence.current.z,before);assert.equal(entered,1,'Panels stop input')
+// Portrait follow camera tracks the same collision-limited presence as the map.
+const following={current:{x:0,z:8.2,yaw:0}},followInput={current:{keys:new Set(),active:true,enter:false,analogForward:1}}
+let followPosition,followTarget
+runtime.EmbodiedWorldRuntime({input:followInput,presence:following,obstacles:[],entrances:[],onNearby:()=>{},thirdPerson:true})
+const portraitCamera={aspect:.5,position:{set(...v){followPosition=v}},lookAt(...v){followTarget=v}}
+frame({camera:portraitCamera},.05)
+assert(following.current.z<8.2,'Follow view uses actual walking state')
+assert(Math.abs(followPosition[2]-following.current.z-4.8)<1e-9,'Portrait camera remains behind the Client')
+assert.equal(followPosition[0],.85,'Camera shoulder offset leaves the Client clear of the construction HUD')
+assert.equal(followPosition[1],3.6,'Portrait view opens over the formation gate')
+assert(followTarget[2]<following.current.z,'Follow camera looks into the operating ground')
+followInput.current.analogForward=0;followInput.current.keys.add('d')
+const strafeStart=following.current.x
+frame({camera:portraitCamera},.05)
+assert(following.current.x>strafeStart,'Third-person D moves right relative to the camera')
+assert.equal(following.current.yaw,0,'Third-person strafe does not rotate the camera')
+
+for(const [district,position] of Object.entries(world.FILE_FOLDER_DISTRICT_POSITIONS)){
+ assert(Math.hypot(position[0],position[2])<8,'District stays inside the walkable territory: '+district)
+ const approach={x:position[0],z:position[2]+world.DISTRICT_BODY_RADIUS+.21,yaw:0}
+ assert(world.canEnter(approach,position),'Entrance is reachable outside its collision body: '+district)
+}
+assert(world.FILE_FOLDER_DISTRICT_POSITIONS.business[0]<0,'Customer Door is on the reference left side')
 const systems=[{id:'a',system_type:'operations_board',status:'active'},{id:'b',system_type:'data_room',status:'active'},{id:'c',system_type:'commerce_storefront',status:'building'}]
 const g=graph.capabilityGraph(systems,[{source_system_id:'a',target_system_id:'b',authority_state:'client_authorized'},{source_system_id:'a',target_system_id:'c',authority_state:'client_authorized'},{source_system_id:'a',target_system_id:'b',authority_state:'pending'}])
 assert.equal(g.nodes.length,2);assert.equal(g.edges.length,1);assert.equal(g.nodes[0].capabilities[0],'work_queue')
@@ -176,7 +211,7 @@ assert(scene.includes('{thirdPerson&&<FileFolderPresenceAvatar presence={presenc
 assert(scene.includes('setThirdPerson(current=>!current)'),'Client can switch phone camera modes')
 assert(fs.readFileSync('components/system-switch/embodied-world-runtime.tsx','utf8').includes('if(thirdPerson){'),'Follow camera tracks the authoritative walking position')
 
-assert(scene.includes('left:(50+mapPresence.x*4.4)'),'Map position follows the real Client presence')
+assert(scene.includes('left:(50+mapPresence.x*(45/FILE_FOLDER_WORLD_RADIUS))'),'Map position follows the real Client presence')
 assert(scene.includes('activeBuilds[0].parts?.length'),'World construction HUD uses real installed parts')
 assert(scene.includes('activeBuilds[0].progress'),'World HUD uses the current build progress')
 assert(scene.includes('onStudioEnter={onStudioEnter}'),'Physical shop interactions are wired')
@@ -214,3 +249,12 @@ assert(approach.z>=1.8,'Presence stays outside the central hall wall')
 assert(world.canEnter(approach,[0,0,0]),'Door remains reachable outside the collision boundary')
 assert(env.includes('inert={!panelOpen}'),'Closed workspaces cannot retain keyboard focus')
 assert(scene.includes('focus({preventScroll:true})'),'World focus does not scroll the territory')
+
+const room=load('lib/file-folder-workshop-layout.ts')
+let worker={x:0,z:2.8,yaw:0}
+for(let step=0;step<100;step++)worker=world.movePresence(worker,1,0,.05,room.FILE_FOLDER_WORKSHOP_WALLS)
+assert(worker.z>-1.25,'Workbench collision stops the avatar before the desk')
+assert(world.canEnter(worker,room.FILE_FOLDER_WORKBENCH),'The workbench interaction remains reachable before collision')
+let side={x:0,z:2.8,yaw:0}
+for(let step=0;step<100;step++)side=world.movePresence(side,0,0,.05,room.FILE_FOLDER_WORKSHOP_WALLS,1)
+assert(side.x<3.7,'Interior walls contain the avatar')

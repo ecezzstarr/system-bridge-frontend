@@ -2,8 +2,10 @@
 import Link from 'next/link'
 import { CalendarClock, Radio, Sparkles, Store, TowerControl, Users } from 'lucide-react'
 
-function SourcePlayer({url,title}:{url?:string|null;title:string}){
+function SourcePlayer({url,title,medium}:{url?:string|null;title:string;medium?:string}){
   if(!url)return <div className="flex aspect-video items-center justify-center rounded-[2rem] border border-dashed border-white/10 bg-black/30 text-sm text-slate-500">The Client has not attached a public broadcast source.</div>
+  try{if(new URL(url).protocol!=='https:')return <p>Secure broadcast source required.</p>}catch{return <p>Broadcast source unavailable.</p>}
+  if(medium==='radio')return <div className="rounded-2xl border border-white/10 bg-black/30 p-5"><p className="mb-3 text-sm">{title} · Radio</p><audio src={url} controls preload="none" className="w-full"/></div>
   const lower=url.toLowerCase()
   if(lower.includes('youtube.com/embed/')||lower.includes('youtube-nocookie.com/embed/')||lower.includes('player.vimeo.com/')){
     return <iframe src={url} title={title} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen className="aspect-video w-full rounded-[2rem] border border-white/10 bg-black"/>
@@ -62,14 +64,14 @@ export function ClientStreamEnvironment({
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-rose-300">Broadcast chamber</p>
           <h2 data-weave-live-word="title" className="mt-2 text-2xl font-black">{live?(channel.live_title||'Live broadcast'):'The gate is open.'}</h2>
-          <div className="mt-5"><SourcePlayer url={live?channel.live_source_url:null} title={channel.live_title||channel.name}/></div>
+          <div className="mt-5"><SourcePlayer url={live?channel.live_source_url:null} title={channel.live_title||channel.name} medium={channel.live_medium}/></div>
         </div>
         <aside className="space-y-4">
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.025] p-5">
             <div className="flex items-center gap-2"><CalendarClock className="h-4 w-4 text-violet-300"/><p className="text-[9px] font-black uppercase tracking-[0.18em] text-violet-300">Program board</p></div>
             <div className="mt-4 space-y-2">
               {upcoming.length===0&&<p className="text-xs leading-5 text-slate-500">No scheduled public programs yet.</p>}
-              {upcoming.map(program=><div key={program.id} className="rounded-xl border border-white/8 bg-black/20 p-3"><p className="text-xs font-black text-white">{program.title}</p><p className="mt-1 text-[9px] uppercase tracking-wider text-slate-500">{String(program.program_type).replaceAll('_',' ')}{program.scheduled_at?' · '+new Date(program.scheduled_at).toLocaleString():''}</p></div>)}
+              {upcoming.map(program=><div key={program.id} className="rounded-xl border border-white/8 bg-black/20 p-3"><p className="text-xs font-black text-white">{program.title}</p><p className="mt-1 text-[9px] uppercase tracking-wider text-slate-500">{program.broadcast_medium==='radio'?'Radio':program.broadcast_medium==='tv'?'Television':'Live stream'} · {String(program.program_type).replaceAll('_',' ')}{program.scheduled_at?' · '+new Date(program.scheduled_at).toLocaleString():''}</p></div>)}
             </div>
           </div>
           <div className="rounded-[2rem] border border-white/10 bg-black/25 p-5">
@@ -84,7 +86,7 @@ export function ClientStreamEnvironment({
 
       {replays.length>0&&<section className="mt-12">
         <div className="flex items-end justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Replay district</p><h2 className="mt-2 text-2xl font-black">Past programs</h2></div><Sparkles className="h-5 w-5 text-sky-300"/></div>
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{replays.map(program=><article key={program.id} className="rounded-[1.6rem] border border-white/10 bg-white/[0.025] p-5"><p className="text-[8px] font-black uppercase tracking-wider text-slate-500">{String(program.program_type).replaceAll('_',' ')}</p><h3 className="mt-2 text-lg font-black">{program.title}</h3>{program.description&&<p className="mt-2 text-xs leading-5 text-slate-500">{program.description}</p>}{program.media_url&&<a href={program.media_url} target="_blank" rel="noreferrer" className="mt-4 inline-flex rounded-full border border-white/10 px-3 py-2 text-[9px] font-black uppercase text-slate-300">Open replay</a>}</article>)}</div>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{replays.map(program=><article key={program.id} className="rounded-[1.6rem] border border-white/10 bg-white/[0.025] p-5"><p className="text-[8px] font-black uppercase tracking-wider text-slate-500">{program.broadcast_medium==='radio'?'Radio':program.broadcast_medium==='tv'?'Television':'Live stream'} · {String(program.program_type).replaceAll('_',' ')}</p><h3 className="mt-2 text-lg font-black">{program.title}</h3>{program.description&&<p className="mt-2 text-xs leading-5 text-slate-500">{program.description}</p>}{program.media_url&&<a href={program.media_url} target="_blank" rel="noreferrer" className="mt-4 inline-flex rounded-full border border-white/10 px-3 py-2 text-[9px] font-black uppercase text-slate-300">Open replay</a>}</article>)}</div>
       </section>}
 
       <footer className="mt-12 border-t border-white/10 pt-6 text-center text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">Client-built Streaming Open Gate · public access does not require a WEAVE account</footer>
