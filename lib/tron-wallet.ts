@@ -4,7 +4,8 @@
 
 const TRONGRID_API_KEY = process.env.TRONGRID_API_KEY
 const PLATFORM_PRIVATE_KEY = process.env.PLATFORM_TRON_PRIVATE_KEY
-const COMPANY_WALLET = process.env.COMPANY_TRON_WALLET
+import { WORLD_RULES } from '@/lib/world/constants'
+const COMPANY_WALLET = WORLD_RULES.COMPANY_TRX_WALLET
 
 // TronGrid API base URL
 const TRONGRID_API = 'https://api.trongrid.io'
