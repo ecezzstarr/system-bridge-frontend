@@ -313,6 +313,7 @@ export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor}:{
       gl={{alpha:true,antialias:false,powerPreference:'low-power'}}
       camera={{fov:66,near:.1,far:125,position:[0,2.6,15]}}
       shadows
+      mobileGame
     >
       <World enterprises={enterprises} inputRef={inputRef} role={role} onNearbyDoor={onNearbyDoor}/>
     </AdaptiveCanvas>
