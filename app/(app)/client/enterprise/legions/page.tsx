@@ -17,6 +17,7 @@ export default function ClientLegionRecruitmentPage(){
   const [query,setQuery]=useState('')
   const [functionTitle,setFunctionTitle]=useState('Enterprise Legion')
   const [profitParticipation,setProfitParticipation]=useState('')
+  const [releaseReasons,setReleaseReasons]=useState<Record<string,string>>({})
 
   const load=async()=>{
     setLoading(true)
@@ -54,6 +55,23 @@ export default function ClientLegionRecruitmentPage(){
     finally{setBusy(null)}
   }
 
+  const release=async(legionId:string)=>{
+    const reason=(releaseReasons[legionId]||'').trim()
+    if(reason.length<5){toast.error('Provide the reason for ending Legion employment.');return}
+    setBusy(legionId)
+    try{
+      const res=await fetch('/api/client/enterprise/legions/release',{
+        method:'POST',headers:headers(),body:JSON.stringify({legionId,reason}),
+      })
+      const body=await res.json()
+      if(!res.ok)throw new Error(body.error||'Legion release failed')
+      toast.success(`Legion released. ${body.pendingOrders||0} unfinished Client orders remain assigned to your enterprise.`)
+      setReleaseReasons(x=>({...x,[legionId]:''}))
+      await load()
+    }catch(error:any){toast.error(error.message||'Legion release failed')}
+    finally{setBusy(null)}
+  }
+
   const candidates=useMemo(()=>{
     const q=query.trim().toLowerCase()
     if(!q)return data?.candidates||[]
@@ -79,7 +97,15 @@ export default function ClientLegionRecruitmentPage(){
 
     <section className="mt-8"><div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-emerald-300"/><h2 className="text-xl font-black text-white">Applications to your Legion Quarter</h2></div><div className="mt-4 grid gap-4 md:grid-cols-2">{incoming.map((a:any)=><article key={a.id} className="rounded-2xl border border-emerald-300/15 bg-emerald-400/[.035] p-5"><p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">{a.role} applied</p><h3 className="mt-2 text-xl font-black text-white">{a.name||a.username}</h3>{a.note&&<p className="mt-3 text-xs leading-5 text-slate-400">{a.note}</p>}<button disabled={data.subscriptionActive===false||busy===a.id||data.capacity.count>=data.capacity.capacity} onClick={()=>accept(a.id)} className="mt-4 rounded-full bg-emerald-400 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider text-slate-950 disabled:opacity-40">Accept as exclusive Legion</button></article>)}</div>{incoming.length===0&&<p className="mt-3 text-sm text-slate-500">No new Legion applications.</p>}</section>
 
-    <section className="mt-8"><div className="flex items-center gap-2"><Users className="h-5 w-5 text-violet-300"/><h2 className="text-xl font-black text-white">Active Legions</h2></div><div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{(data.legions||[]).map((l:any)=><article key={l.id} className="rounded-2xl border border-violet-300/15 bg-violet-400/[.03] p-5"><p className="text-[9px] font-black uppercase tracking-wider text-violet-300">{l.source_role} → Legion</p><h3 className="mt-2 text-xl font-black text-white">{l.name}</h3><p className="mt-1 text-xs text-slate-400">{l.function_title}</p><div className="mt-4 grid grid-cols-2 gap-2 text-center"><div className="rounded-lg border border-white/5 bg-black/20 p-2"><p className="text-lg font-black text-white">{Number(l.orders||0)}</p><p className="text-[8px] uppercase text-slate-600">Orders</p></div><div className="rounded-lg border border-white/5 bg-black/20 p-2"><p className="text-lg font-black text-white">{Number(l.paid_orders||0)}</p><p className="text-[8px] uppercase text-slate-600">Paid</p></div></div></article>)}</div></section>
+    <section className="mt-8"><div className="flex items-center gap-2"><Users className="h-5 w-5 text-violet-300"/><h2 className="text-xl font-black text-white">Active Legions</h2></div><div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{(data.legions||[]).map((l:any)=><article key={l.id} className="rounded-2xl border border-violet-300/15 bg-violet-400/[.03] p-5"><p className="text-[9px] font-black uppercase tracking-wider text-violet-300">{l.source_role} → Legion</p><h3 className="mt-2 text-xl font-black text-white">{l.name}</h3><p className="mt-1 text-xs text-slate-400">{l.function_title}</p><div className="mt-4 grid grid-cols-2 gap-2 text-center"><div className="rounded-lg border border-white/5 bg-black/20 p-2"><p className="text-lg font-black text-white">{Number(l.orders||0)}</p><p className="text-[8px] uppercase text-slate-600">Orders</p></div><div className="rounded-lg border border-white/5 bg-black/20 p-2"><p className="text-lg font-black text-white">{Number(l.paid_orders||0)}</p><p className="text-[8px] uppercase text-slate-600">Paid</p></div></div><div className="mt-4 border-t border-white/10 pt-3">
+    <p className="text-xs leading-5 text-slate-400">Release the Legion while keeping all historical sales, receipts, compensation records and unfinished Customer Door orders under your enterprise.</p>
+    <textarea value={releaseReasons[String(l.id)]||''} maxLength={1200} rows={2}
+      onChange={e=>setReleaseReasons(x=>({...x,[String(l.id)]:e.target.value}))}
+      placeholder="Reason for release" className="mt-3 w-full rounded-lg border border-white/15 bg-slate-950 p-3 text-sm text-white"/>
+    <button type="button" disabled={busy===l.id||(releaseReasons[String(l.id)]||'').trim().length<5}
+      onClick={()=>void release(String(l.id))}
+      className="mt-2 min-h-11 rounded-lg border border-amber-300/30 px-4 py-2 text-xs font-bold text-amber-100 disabled:opacity-40">Release Legion</button>
+  </div></article>)}</div></section>
 
     {outgoing.length>0&&<section className="mt-8 border-t border-white/10 pt-6"><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Pending Client invitations</p><div className="mt-3 flex flex-wrap gap-2">{outgoing.map((a:any)=><span key={a.id} className="rounded-full border border-white/10 px-3 py-2 text-xs text-slate-400">{a.name||a.username} · {a.role}</span>)}</div></section>}
   </main>
