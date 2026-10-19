@@ -8,13 +8,17 @@ import { getDivineShieldState } from '@/lib/weave-infrastructure'
 import { buildUserReferralCode } from '@/lib/user-referral'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
+import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/client-monthly-subscription'
 
 export async function POST(request: NextRequest) {
   try {
     const shield=await getDivineShieldState()
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
-    const { fileNumber, email, password, businessName } = await request.json()
+    const { fileNumber, email, password, businessName, gender: rawGender } = await request.json()
+    const gender=normalizeRegisteredGender(rawGender)
+    if(!gender)return NextResponse.json({error:'Choose Male or Female at registration.'},{status:400})
+    await ensureClientMonthlySchema()
 
     if (!fileNumber || !email || !password) {
       return NextResponse.json(
@@ -57,6 +61,8 @@ export async function POST(request: NextRequest) {
         file_number,
         whatsapp_number,
         business_name,
+        gender,
+        subscription_status,
         referral_code,
         referred_by
       )
@@ -69,10 +75,12 @@ export async function POST(request: NextRequest) {
         ${fileNumber},
         ${phone},
         ${businessName || null},
+        ${gender},
+        'due',
         ${referralCode},
         ${bridgerId}
       )
-      RETURNING id, name, email, role, file_number, business_name, referral_code, referred_by
+      RETURNING id, name, email, role, file_number, business_name, gender, referral_code, referred_by
     `
 
     const user = newUser[0]
@@ -127,6 +135,7 @@ export async function POST(request: NextRequest) {
         role: user.role,
         file_number: user.file_number,
         business_name: user.business_name,
+        gender: user.gender,
         referral_code: user.referral_code,
         referred_by: user.referred_by,
       },
