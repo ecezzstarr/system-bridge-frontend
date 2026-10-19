@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { submitContinuancePayment } from '@/lib/bridger-subscription'
 import { getAuthUser } from '@/lib/auth-api'
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
       description: 'Bridger monthly continuance submitted for Administration approval',
       metadata: { paymentMethod, reference: String(reference).trim().slice(0, 255) },
     }) : null
+    if(paymentId)await notifyAdminOrder({orderId:String(paymentId),event:'payment_submitted',department:'bridger',subject:'Bridger Continuance payment',detail:`${user.name||'Bridger'} submitted monthly Continuance payment reference for ₦${WORLD_RULES.BRIDGER_CONTINUANCE_NGN.toLocaleString()}. Awaiting verification`,adminPath:'/admin/control-center',actorId:user.id,actorName:user.name||'Bridger'})
     return NextResponse.json({
       success: Boolean(paymentId),
       paymentId,
