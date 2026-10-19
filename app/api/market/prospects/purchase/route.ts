@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
 
     await client.query('COMMIT')
     primaryCommitted=true
-    await notifyAdminOrder({orderId:String(packageId),event:'paid',department:'bridger',subject:'Bridger prospect package purchase',detail:`Bridger purchased prospect package ${packageId} for ${priceTrx} Flame Coin with ${contactsResult.rows.length} prospects; Agent share reconciliation follows`,adminPath:'/admin/control-center',actorId:userId,actorName:'Bridger'})
+    await notifyAdminOrder({orderId:String(packageId),event:'paid',department:'bridger',subject:'Bridger prospect package purchase',detail:`Bridger purchased prospect package ${packageId} for ${priceTrx} Flame Coin with ${contactsResult.rows.length} prospects; Agent share reconciliation follows`,adminPath:'/admin/orders',actorId:userId,actorName:'Bridger'})
 
     import('@/lib/fulfillment-agent').then(({fulfillmentAgent})=>{
       fulfillmentAgent.reconcile().catch(err=>console.error('[market purchase] reconcile error:',err))
