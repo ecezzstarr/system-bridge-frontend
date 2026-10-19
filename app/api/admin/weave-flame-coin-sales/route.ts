@@ -92,9 +92,27 @@ export async function POST(request:NextRequest){
       }
       // No debit from cards is collected here. A card order requires an
       // approved externally hosted checkout URL, issued by Administration.
-      if(method==='card'&&!/^https:\/\//i.test(instructions)){
-        await conn.query('ROLLBACK')
-        return NextResponse.json({error:'Card collection requires an approved HTTPS hosted payment URL; do not collect card data in WEAVE'},{status:400})
+      if(method==='card'){
+        let approved=false
+        try{
+          const url=new URL(instructions)
+          approved=url.protocol==='https:'&&url.hostname.toLowerCase()===
+            String(process.env.WEAVE_APPROVED_CARD_CHECKOUT_HOST||'').trim().toLowerCase()
+        }catch{}
+        if(!approved){
+          await conn.query('ROLLBACK')
+          return NextResponse.json({error:'Card quote must use exactly the contracted HTTPS checkout host; do not collect card data inside WEAVE'},{status:400})
+        }
+      }
+      if(crypto){
+        const {TronWeb}=await import('tronweb')
+        const addressValid=method==='btc'?
+          /^(?:bc1[ac-hj-np-z02-9]{11,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})$/.test(address||''):
+          TronWeb.isAddress(address||'')
+        if(!addressValid){
+          await conn.query('ROLLBACK')
+          return NextResponse.json({error:'The company receiving wallet is not configured for the chosen chain. Do not issue payment instructions.'},{status:409})
+        }
       }
       result=(await conn.query(`
         UPDATE weave_flame_coin_orders
