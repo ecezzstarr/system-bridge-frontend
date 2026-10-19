@@ -79,7 +79,7 @@ assert.ok(roleWorldReturnPage.includes("router.replace(roleHome(user?.role))")&&
 assert.ok(!fs.existsSync(path.join(root,'components/world/bridge-plaza-map.tsx')),'Bridge Plaza world implementation is removed')
 assert.ok(privateFileFolderWorldApi.includes('private to the Client')&&privateFileFolderWorldApi.includes('status: 403'),'Staff cannot open another Client private File Folder world through the old API')
 assert.ok(retiredPrivateFileFolderRoute.includes("redirect('/event')"),'Old staff File Folder route resolves to Flame Event Customer Door discovery')
-assert.ok(publicCustomerMarketApi.includes("formation_status='selling'")&&publicCustomerMarketApi.includes('public_slug'),'Customer Market exposes only opened public Client enterprises')
+assert.ok(publicCustomerMarketApi.includes("formation_status IN ('selling','ready_for_offer')")&&publicCustomerMarketApi.includes('public_slug'),'Customer Market exposes only opened public Client enterprises')
 assert.ok(positionEventWorld.includes('data-flame-event-client-enterprises="customer-door-current"')&&positionEventWorld.includes("role==='client'?'/api/public/client-market':'/api/events/flame/client-doors'")&&positionEventWorld.includes('Enter as avatar'),'Flame Event carries public Client Customer Doors to every event position')
 assert.ok(positionEventWorld.includes('Staff Customer Door current')&&!positionEventWorld.includes('<Link href="/market"'),'Logged-in staff discover Client Customer Doors inside Flame Event without a Customer Market shortcut')
 assert.ok(positionEventWorld.includes('getRolePlaces(role)')&&positionEventWorld.includes('data-flame-event-function-gate'),'Flame Event role functions are real canonical movement gates rather than descriptive cards')
