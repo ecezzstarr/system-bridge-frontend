@@ -94,9 +94,9 @@ async function insertOrder(n,amount,status,mail='buyer@example.test'){
     INSERT INTO weave_flame_coin_orders
     (id,buyer_name,buyer_email,flame_coin_amount,payment_method,bank_reference,
       status,verified_at,verification_evidence,provider)
-    VALUES($1,'Buyer',$2,$3,'trx',$4,$5,
-      CASE WHEN $5='payment_verified' THEN NOW() ELSE NULL END,
-      CASE WHEN $5='payment_verified' THEN 'Independently verified TRON payment: correct sender and receiver, transaction hash, confirmed chain, exact asset and final value.' ELSE NULL END,
+    VALUES($1,'Buyer',$2,$3,'trx',$4,$5::text,
+      CASE WHEN $5::text='payment_verified' THEN NOW() ELSE NULL END,
+      CASE WHEN $5::text='payment_verified' THEN 'Independently verified TRON payment: correct sender and receiver, transaction hash, confirmed chain, exact asset and final value.' ELSE NULL END,
       'manual_crypto_receipt')
   `,[order,mail,amount,key,status])
   return order
