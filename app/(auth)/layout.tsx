@@ -1,23 +1,26 @@
 'use client'
 
 import { useAuth } from '@/lib/auth-provider'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { RegistrationReferralCapture } from '@/components/registration-referral-capture'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuth()
+  const pathname = usePathname()
+  const { isAuthenticated, isLoading, isInitialized, user } = useAuth()
 
   useEffect(() => {
-    if (isAuthenticated && !isLoading) router.push('/weave')
-  }, [isAuthenticated, isLoading, router])
+    // Registration controls its own position-specific success destination.
+    // Never race its redirect by pushing a newly registered Bridger into /weave.
+    if (isInitialized && isAuthenticated && !isLoading && pathname !== '/register') {
+      router.replace(user?.role === 'bridger' ? '/bridger/dashboard' : user?.role === 'agent' ? '/agent/dashboard' : user?.role === 'admin' ? '/admin/dashboard' : '/weave')
+    }
+  }, [isInitialized, isAuthenticated, isLoading, pathname, user?.role, router])
 
-  if (isLoading) {
-    return <div className="relative flex min-h-dvh items-center justify-center bg-transparent"><Loader2 className="h-8 w-8 animate-spin text-blue-400" /></div>
-  }
+  // Do not unmount children during the registration request. Unmounting resets
+  // every controlled input and puts a rejected paid applicant back at Step 1.
 
   return <div className="relative flex min-h-dvh items-start justify-center overflow-x-hidden overflow-y-auto bg-transparent px-4 py-8 sm:items-center">
     <div className="w-full max-w-md relative z-10">

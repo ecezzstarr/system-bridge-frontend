@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
@@ -14,6 +14,7 @@ import { WEAVE_WRITING } from '@/lib/weave-writing'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 
 type Step = 'role' | 'dept-gate' | 'notice' | 'terms' | 'guide' | 'details'
+const BRIDGER_DRAFT_KEY = 'weave:staff:registration-draft:v1'
 
 function RegisterContent() {
   const router = useRouter()
@@ -38,19 +39,62 @@ function RegisterContent() {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [termsScrolledToEnd, setTermsScrolledToEnd] = useState(false)
   const [fullNameConfirm, setFullNameConfirm] = useState('')
+  const [draftReady, setDraftReady] = useState(false)
+  const submissionLock = useRef(false)
 
+  // Retain the applicant's non-secret details within this tab. Never put
+  // passwords or the typed Terms confirmation into browser storage.
   useEffect(() => {
     const ref = searchParams.get('ref')
     const roleParam = searchParams.get('role')
-    if (ref) setReferredBy(ref)
-    if (roleParam === 'bridger') {
-      setFormData(prev => ({ ...prev, role: 'bridger' }))
-      setStep('dept-gate')
+    try {
+      const stored = sessionStorage.getItem(BRIDGER_DRAFT_KEY)
+      const draft = stored ? JSON.parse(stored) : null
+      const desiredRole: 'agent' | 'bridger' | '' =
+        roleParam === 'bridger' || roleParam === 'agent'
+          ? roleParam
+          : draft?.role === 'bridger' || draft?.role === 'agent' ? draft.role : ''
+      const sameRole = desiredRole && draft?.role === desiredRole
+      setReferredBy(ref || (sameRole ? draft.referredBy || null : null))
+      if (desiredRole) setFormData(prev => ({
+        ...prev,
+        role: desiredRole,
+        departmentalCode: sameRole ? String(draft.departmentalCode || '') : '',
+        email: sameRole ? String(draft.email || '') : '',
+        username: sameRole ? String(draft.username || '') : '',
+        name: sameRole ? String(draft.name || '') : '',
+      }))
+      if (sameRole && ['notice','terms','guide','details'].includes(draft.step) && draft.departmentalCode) {
+        setStep(draft.step)
+      } else if (desiredRole) {
+        setStep('dept-gate')
+      }
+    } catch {
+      if (roleParam === 'bridger' || roleParam === 'agent') {
+        setFormData(prev => ({...prev, role: roleParam}))
+        setStep('dept-gate')
+      }
+    } finally {
+      setDraftReady(true)
     }
-  }, [searchParams])
+  // Read referral parameters once, not on every render while someone types.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!draftReady || !formData.role) return
+    try {
+      sessionStorage.setItem(BRIDGER_DRAFT_KEY, JSON.stringify({
+        step, role:formData.role, departmentalCode:formData.departmentalCode,
+        email:formData.email, username:formData.username, name:formData.name,
+        referredBy,
+      }))
+    } catch {}
+  }, [draftReady,step,formData.role,formData.departmentalCode,formData.email,formData.username,formData.name,referredBy])
 
   const handleRoleSelect = (role: 'agent' | 'bridger') => {
-    setFormData({ ...formData, role })
+    setError(null)
+    setFormData(prev => ({ ...prev, role, departmentalCode: prev.role===role?prev.departmentalCode:'' }))
     setStep('dept-gate')
   }
 
@@ -94,6 +138,7 @@ function RegisterContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submissionLock.current) return
     setError(null)
 
     if (formData.password !== formData.confirmPassword) {
@@ -113,6 +158,7 @@ function RegisterContent() {
       return
     }
 
+    submissionLock.current = true
     setIsSubmitting(true)
     try {
       await register({
@@ -127,9 +173,11 @@ function RegisterContent() {
         termsAccepted: true,
         fullNameConfirmed: fullNameConfirm.trim(),
       } as any)
-      window.location.href = '/dashboard'
+      try { sessionStorage.removeItem(BRIDGER_DRAFT_KEY) } catch {}
+      router.replace(formData.role === 'bridger' ? '/bridger/dashboard' : '/agent/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed')
+      setError(err instanceof Error ? err.message : 'Registration failed. Your information remains on this page; you can retry.')
+      submissionLock.current = false
       setIsSubmitting(false)
     }
   }
@@ -338,10 +386,11 @@ function RegisterContent() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" data-staff-registration="resumable">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-md text-[10px] font-bold uppercase tracking-wide text-center">
+            <div role="alert" aria-live="assertive" className="bg-red-500/10 border border-red-500/50 text-red-200 px-4 py-3 rounded-md text-xs leading-5 font-semibold">
               {error}
+              <p className="mt-2 text-slate-300">Your entered details are still here. If the request timed out after payment or you think the account was created, <Link href="/login" className="underline text-cyan-200">try signing in</Link> before submitting again.</p>
             </div>
           )}
 
