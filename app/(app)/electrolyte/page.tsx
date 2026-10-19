@@ -1,4 +1,5 @@
 'use client'
+import { AgentFoodPricingInfo } from '@/components/weave-food/food-program-info'
 
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -137,6 +138,7 @@ export default function ElectrolyteHomePage(){
   if(!isAgent)return <main className="p-8 text-sm text-slate-300">Agent account required.</main>
 
   return <main className="mx-auto max-w-7xl space-y-7 pb-20 text-white" data-electrolyte-home="independent">
+    <AgentFoodPricingInfo product="electrolyte"/>
     <section className="overflow-hidden rounded-[2rem] border border-emerald-300/20 bg-gradient-to-br from-emerald-500/10 via-slate-950 to-lime-500/5">
       <div className="grid gap-0 lg:grid-cols-[1fr_430px]">
         <div className="p-6 md:p-9"><p className="text-[10px] font-black uppercase tracking-[.3em] text-emerald-300">Agent Department · Electrolyte</p><h1 className="mt-2 text-5xl font-black md:text-7xl">ELECTROLYTE</h1><p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 md:text-base">Electrolyte is its own WEAVE food ground. Order Small Bowl or Medium Bowl stock, pay WEAVE, move through Administration fresh preparation, receive it, then distribute through your local route or Carrier.</p><div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/[.05] p-4 text-sm text-emerald-50"><strong>Restock is always open.</strong> Having Electrolyte already in inventory does not stop an Agent from ordering more.</div><div className="mt-5 flex flex-wrap gap-2"><Link href="/agent/work"><Button variant="outline" className="border-white/15 text-white">AGENT WORK</Button></Link><Link href="/agent/distribution"><Button variant="outline" className="border-white/15 text-white"><Truck className="mr-2 h-4 w-4"/>DISTRIBUTION ROUTE</Button></Link><Link href="/weave/carrier/food"><Button variant="outline" className="border-white/15 text-white">CARRIER</Button></Link><Button variant="outline" className="border-white/15 text-white" onClick={()=>void load()}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div></div>
