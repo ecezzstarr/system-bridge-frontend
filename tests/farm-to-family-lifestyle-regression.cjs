@@ -39,7 +39,7 @@ assert.ok(administration.includes("user?.role === 'admin'")&&administration.incl
 const marketGet=offers.slice(offers.indexOf('export async function GET'),offers.indexOf('export async function POST'))
 assert.ok(administration.includes('contact_private')&&!marketGet.includes('contact_private')&&!ui.includes('contact_private'),'Farmer contact is absent from the public market SELECT, while Administration may review it')
 assert.ok(model.includes('buyer_phone_private')&&farm.includes('share_buyer_contact'),'Buyer contact requires explicit opt in')
-assert.ok(lifestyle.includes('FARM TO FAMILY')&&lifestyle.includes("'/weave/lifestyles/food'"),'The exchange is an actual Lifestyle surface')
+assert.ok(lifestyle.includes('FARM TO FAMILY')&&lifestyle.includes('href="/weave/lifestyles/food"'),'The exchange is an actual Lifestyle surface')
 assert.ok(lifestylePage.includes('FarmerHouseholdFoodBridge')&&ui.includes('data-lifestyle-food'),'Lifestyle route renders the trading environment')
 assert.ok(homepage.includes('data-home-farm-to-family')&&homepage.includes('href="/register"'),'A visitor can enter through WEAVE registration')
 assert.ok(!ui.includes('localStorage.setItem(\'weave_food_farmer_key\''),'No separate farmer access key is required')
