@@ -60,6 +60,9 @@ const cases=[
   ['app/api/agility/stock/route.ts',["subject:'Agility stock order'","event:'placed'"]],
   ['app/api/electrolyte/stock/route.ts',["subject:'Electrolyte stock order'","event:'placed'"]],
   ['app/api/agent/distribution/route.ts',["subject:'Agent outlet stock placement'","event:'allocated'"]],
+  ['app/api/agility/sales/route.ts',["subject:'Agent direct stock sale'","event:'paid'"]],
+  ['app/api/agility/payment/opay/receipt/route.ts',["subject:'Agility OPay payment proof'","event:'payment_submitted'"]],
+  ['app/api/electrolyte/payment/opay/receipt/route.ts',["subject:'Electrolyte OPay payment proof'","event:'payment_submitted'"]],
   ['app/api/carrier/food/[code]/route.ts',["subject:'Carrier food customer order'","event:'placed'","event:'payment_submitted'"]],
   ['app/api/carrier/food/route.ts',["subject:'Carrier food payment confirmed'","event:'paid'","event:'fulfilled'"]],
   ['app/api/carrier/cakes/[code]/route.ts',["subject:'Daisy Pastries Carrier order'","event:'payment_submitted'"]],
@@ -72,12 +75,22 @@ const cases=[
   ['app/api/client/business-store/orders/[id]/status/route.ts',["subject:'Client Customer Door payment received'","event:action==='fulfilled'?'fulfilled':'cancelled'"]],
   ['app/api/client/vault/withdraw/route.ts',["subject:'Client Vault withdrawal request'"]],
   ['app/api/video-service/[code]/route.ts',["subject:'Video Ad Studio service order'"]],
+  ['app/api/client/system-store/route.ts',["subject:'Client System Store version submitted'"]],
+  ['app/api/enterprise-systems/route.ts',["subject:'Enterprise system acquisition request'"]],
+  ['app/api/wallet/withdraw/route.ts',["subject:'External Flame Coin withdrawal request'"]],
+  ['app/api/wallet/withdraw/opay/route.ts',["subject:'OPay withdrawal approval request'"]],
 ]
 for(const [path,checks] of cases){
   const source=read(path)
   assert(source.includes('notifyAdminOrder({'),path+' must persist an Admin alert after committing an order')
   for(const phrase of checks)assert(source.includes(phrase),path+' missing '+phrase)
 }
+const directPurchase=read('app/api/bridge/file-folder/purchase/route.ts')
+assert(directPurchase.indexOf('await notifyAdminOrder({')>directPurchase.indexOf('export async function POST'),'GET purchase status reads may not mint new Admin alerts')
+const clientStatus=read('app/api/client/business-store/orders/[id]/status/route.ts')
+assert(clientStatus.indexOf("event:action==='fulfilled'")>clientStatus.indexOf("if (action === 'payment_received')"),'Fulfillment alert follows the order status update')
+const notificationsApi=read('app/api/notifications/route.ts')
+assert(notificationsApi.includes("notificationType.startsWith('order_')"),'Users cannot forge official order/payment notifications')
 const publicFileFolder=read('app/api/public/file-folder/purchase/route.ts')
 assert(publicFileFolder.includes('submitFileFolderPurchase(request)'),'One sale must not emit duplicate notifications through the public wrapper')
 const entry=read('lib/department-entry-tickets.ts')
