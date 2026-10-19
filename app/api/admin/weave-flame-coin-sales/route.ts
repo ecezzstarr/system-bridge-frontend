@@ -54,7 +54,7 @@ export async function POST(request:NextRequest){
     if(!sale){await conn.query('ROLLBACK');return NextResponse.json({error:'Flame Coin order not found'},{status:404}}
     let result:any
     if(action==='quote'){
-      if(!flameCoinBankSalesEnabled()||sale.provider!=='flutterwave'){
+      if(!flameCoinBankSalesEnabled()||!['pending_compliant_provider','flutterwave'].includes(String(sale.provider))){
         await conn.query('ROLLBACK')
         return NextResponse.json({error:'Bank-to-Flame Coin quotes are disabled until regulatory and provider approval is confirmed. Wise is not a permitted coin purchase rail.'},{status:403})
       }
@@ -67,7 +67,7 @@ export async function POST(request:NextRequest){
         return NextResponse.json({error:'Valid bank quote, currency and approved provider instructions required'},{status:400})
       }
       result=(await conn.query(`
-        UPDATE weave_flame_coin_orders SET bank_amount=$2,bank_currency=$3,bank_instructions=$4,
+        UPDATE weave_flame_coin_orders SET provider='flutterwave',bank_amount=$2,bank_currency=$3,bank_instructions=$4,
           status='quoted',updated_at=NOW() WHERE id=$1::uuid RETURNING id,status,bank_amount,bank_currency
       `,[id,amount,currency,instructions])).rows[0]
     }else if(action==='verify_bank'){
