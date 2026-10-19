@@ -153,7 +153,7 @@ function Portal({name,x,z,index}:{name:string;x:number;z:number;index:number}){
 }
 
 function Piece({at,size,color}:{at:[number,number,number];size:[number,number,number];color:string}){
-  return <mesh position={at} castShadow><boxGeometry args={size}/><meshStandardMaterial color={color} roughness={.8}/></mesh>
+  return <mesh position={at} scale={[size[0]*.6,size[1]*.55,size[2]*.65]} castShadow><sphereGeometry args={[1,12,10]}/><meshStandardMaterial color={color} roughness={.79}/></mesh>
 }
 
 function Avatar({position,heading,activity,crouch,height,role}:{
@@ -188,6 +188,18 @@ function Avatar({position,heading,activity,crouch,height,role}:{
       <Piece at={[0,1.38,0]} size={[.64,.78,.37]} color={shirt}/>
       <Piece at={[0,.84,0]} size={[.5,.26,.32]} color={pants}/>
       <Piece at={[0,1.35,.27]} size={[.42,.5,.2]} color="#283348"/>
+      <mesh position={[0,1.36,.39]} castShadow>
+        <boxGeometry args={[.19,.34,.065]}/>
+        <meshStandardMaterial color="#1b293a" roughness={.83}/>
+      </mesh>
+      <mesh position={[.19,1.40,-.13]} rotation={[0,0,-.17]} castShadow>
+        <capsuleGeometry args={[.07,.52,4,8]}/>
+        <meshStandardMaterial color="#d7b783" roughness={.8}/>
+      </mesh>
+      <mesh position={[-.19,1.40,-.13]} rotation={[0,0,.17]} castShadow>
+        <capsuleGeometry args={[.07,.52,4,8]}/>
+        <meshStandardMaterial color="#d7b783" roughness={.8}/>
+      </mesh>
       <Piece at={[0,1.86,0]} size={[.18,.2,.19]} color={skin}/>
       <mesh position={[0,2.08,0]} castShadow><sphereGeometry args={[.23,12,10]}/><meshStandardMaterial color={skin} roughness={.87}/></mesh>
       <mesh position={[0,2.22,0]} castShadow><sphereGeometry args={[.232,12,9,0,Math.PI*2,0,Math.PI*.48]}/><meshStandardMaterial color="#211e22" roughness={1}/></mesh>
@@ -196,7 +208,10 @@ function Avatar({position,heading,activity,crouch,height,role}:{
         <mesh position={[side*.087,2.11,-.218]}><sphereGeometry args={[.012,7,7]}/><meshBasicMaterial color="#1b1b23"/></mesh>
       </group>)}
       <group ref={leftArm} position={[-.41,1.68,0]}>
-        <Piece at={[0,-.27,0]} size={[.21,.55,.25]} color={shirt}/>
+        <mesh position={[0,-.28,0]} castShadow>
+          <capsuleGeometry args={[.13,.37,5,10]}/>
+          <meshStandardMaterial color={shirt} roughness={.87}/>
+        </mesh>
         <Piece at={[0,-.62,0]} size={[.16,.2,.17]} color={skin}/>
       </group>
       <group ref={rightArm} position={[.41,1.68,0]}>
@@ -204,8 +219,14 @@ function Avatar({position,heading,activity,crouch,height,role}:{
         <Piece at={[0,-.62,0]} size={[.16,.2,.17]} color={skin}/>
       </group>
       <group ref={leftLeg} position={[-.18,.77,0]}>
-        <Piece at={[0,-.34,0]} size={[.24,.69,.27]} color={pants}/>
-        <Piece at={[0,-.68,-.085]} size={[.27,.16,.42]} color="#1b202d"/>
+        <mesh position={[0,-.35,0]} castShadow>
+          <capsuleGeometry args={[.145,.46,5,10]}/>
+          <meshStandardMaterial color={pants} roughness={.91}/>
+        </mesh>
+        <mesh position={[0,-.68,-.09]} castShadow>
+          <capsuleGeometry args={[.15,.26,4,9]}/>
+          <meshStandardMaterial color="#1a2430" roughness={.82}/>
+        </mesh>
       </group>
       <group ref={rightLeg} position={[.18,.77,0]}>
         <Piece at={[0,-.34,0]} size={[.24,.69,.27]} color={pants}/>
