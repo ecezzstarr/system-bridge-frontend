@@ -40,6 +40,8 @@ async function initializeCarrierCakeSchema(){
       payment_status varchar(40) NOT NULL DEFAULT 'not_ready',
       payment_verified_at timestamptz,
       payment_rejected_at timestamptz,
+      preparation_released_at timestamptz,
+      preparation_released_by uuid REFERENCES users(id),
       status varchar(50) NOT NULL DEFAULT 'quote_requested',
       admin_note text,
       quoted_at timestamptz,
@@ -58,6 +60,8 @@ async function initializeCarrierCakeSchema(){
       CHECK (payment_status IN ('not_ready','awaiting_payment','proof_submitted','paid','rejected'))
     )
   `)
+  await pool.query('ALTER TABLE carrier_cake_orders ADD COLUMN IF NOT EXISTS preparation_released_at timestamptz')
+  await pool.query('ALTER TABLE carrier_cake_orders ADD COLUMN IF NOT EXISTS preparation_released_by uuid REFERENCES users(id)')
   await pool.query('CREATE INDEX IF NOT EXISTS carrier_cake_orders_agent_idx ON carrier_cake_orders(agent_id,created_at DESC)')
   await pool.query('CREATE INDEX IF NOT EXISTS carrier_cake_orders_status_idx ON carrier_cake_orders(status,created_at DESC)')
   await pool.query('CREATE INDEX IF NOT EXISTS carrier_cake_orders_ref_idx ON carrier_cake_orders(referral_code,created_at DESC)')
