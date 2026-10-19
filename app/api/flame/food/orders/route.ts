@@ -14,7 +14,7 @@ export async function GET(request:NextRequest){
     const {rows}=await getPool().query(`
       SELECT o.id,o.status,o.quantity,o.unit_price_ngn,o.food_subtotal_ngn,
         o.delivery_quote_ngn,o.quote_note,o.destination_state,o.destination_area,
-        e.status AS escrow_status,e.reference AS escrow_reference,e.buyer_total_ngn,e.seller_payout_ngn,
+        e.status AS escrow_status,e.reference AS escrow_reference,e.buyer_total_ngn,e.seller_payout_ngn,e.weave_commission_ngn,
         e.verified_at,e.payout_recorded_at,
         o.delivery_mode,o.created_at,l.produce,l.unit,f.farm_name,f.state AS origin_state,f.community,
         CASE WHEN f.consent_contact_sharing AND o.status IN ('farmer_confirmed','quoted','accepted','dispatched','delivered')
@@ -27,7 +27,7 @@ export async function GET(request:NextRequest){
     `,[user.id])
     return NextResponse.json({success:true,orders:rows.map(row=>({...row,
       paymentAccountNumber:row.escrow_status==='awaiting_payment'?FARM_ESCROW_ACCOUNT_NUMBER:null,
-      weaveCommissionNgn:0})),feePolicy:'WEAVE charges farmers zero commission.'},{headers:{'Cache-Control':'no-store'}})
+      weaveCommissionNgn:row.weave_commission_ngn===null?1000:Number(row.weave_commission_ngn)})),feePolicy:'₦1,000 flat deducted from seller proceeds per completed order; no extra charge to buyers.'},{headers:{'Cache-Control':'no-store'}})
   }catch(error){
     console.error('[lifestyle food orders] GET',error)
     return NextResponse.json({error:foodBridgeError(error)===500?'Unable to load your food orders':(error as Error).message},{status:foodBridgeError(error)})
@@ -150,7 +150,7 @@ export async function PATCH(request:NextRequest){
           SELECT id,'farm_escrow_release_due','Buyer confirmed farm food received',$1,
             'WEAVE Farm-to-Family','/admin/food-escrow'
           FROM users WHERE role='admin' AND is_active=true
-        `,['Farm order '+id+' buyer confirmed receipt. Review and send the full seller payout; WEAVE commission is ₦0.'])
+        `,['Farm order '+id+' buyer confirmed receipt. Review and send seller payout less the flat ₦1,000 WEAVE service fee.'])
         await client.query('COMMIT')
         return NextResponse.json({success:true,order:{id,status:'delivered'},escrowStatus:'release_due',
           message:'Delivery acknowledged. WEAVE Administration must pay the farmer and record the bank payout reference.'})
