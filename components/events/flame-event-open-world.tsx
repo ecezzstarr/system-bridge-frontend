@@ -31,7 +31,7 @@ export function FlameEventOpenWorld({
   role,
 }:{
   enterprises:FlameWorldCustomerDoor[]
-  role:'admin'|'agent'|'bridger'|'client'
+  role:'admin'|'agent'|'bridger'|'client'|'visitor'
 }){
   const controls=useRef<FlameMobileInput>({
     forward:0,right:0,yaw:0,pitch:0,run:false,crouch:false,jumpQueued:false,
@@ -278,7 +278,7 @@ export function FlameEventOpenWorld({
 
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200/20 bg-[#071b33] px-4 py-3 text-[10px] text-sky-50">
       <span className="inline-flex items-center gap-2"><Waves className="h-4 w-4 text-sky-300"/> Water and fire · One flowing world</span>
-      <span className="inline-flex items-center gap-2"><Radio className="h-3.5 w-3.5 text-amber-300"/> {role==='client'?'Client':'Staff'} position · Touch movement</span>
+      <span className="inline-flex items-center gap-2"><Radio className="h-3.5 w-3.5 text-amber-300"/> {role==='visitor'?'Visitor':role==='client'?'Client':'Staff'} position · Touch movement</span>
       <span className="sr-only">No private Client File Folder is exposed through the public Customer Doors.</span>
     </div>
   </section>
