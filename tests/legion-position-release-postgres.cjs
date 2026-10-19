@@ -3,6 +3,17 @@ const fs=require('node:fs')
 const ts=require('typescript')
 const vm=require('node:vm')
 const {Pool}=require('pg')
+const workerApi=fs.readFileSync('app/api/weave/lifestyles/legion/route.ts','utf8')
+const clientApi=fs.readFileSync('app/api/client/enterprise/legions/release/route.ts','utf8')
+const workerUi=fs.readFileSync('app/(app)/weave/lifestyles/legion/page.tsx','utf8')
+const clientUi=fs.readFileSync('app/(app)/client/enterprise/legions/page.tsx','utf8')
+const runtimeAuth=fs.readFileSync('lib/auth-api.ts','utf8')
+assert.ok(workerApi.indexOf("action==='release_legion'")<workerApi.indexOf("if(!access.active)"),'Resignation must remain possible despite expired Continuance')
+assert.ok(clientApi.includes("actorPosition:'client'")&&!clientApi.includes('getClientMonthlyStanding'),'Client release is not gated by subscription')
+assert.ok(workerUi.includes('Release my Legion position')&&workerUi.includes('window.location.assign'),'Agent/Bridger gets a mobile exit that clears cached role restriction')
+assert.ok(clientUi.includes('Release Legion')&&clientUi.includes('/api/client/enterprise/legions/release'),'Client can end appointments')
+assert.ok(runtimeAuth.includes("return {...user,baseRole:user.role,role:'legion'}"),'Failed employment lookup must never grant unverified Agent/Bridger work')
+
 const base=process.env.WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL
 if(!base||new URL(base).pathname!=='/weave_switch_test')throw Error('Disposable PostgreSQL test URL required')
 const url=new URL(base);url.pathname='/weave_legion_release_test'
