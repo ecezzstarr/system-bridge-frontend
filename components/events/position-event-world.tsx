@@ -59,14 +59,14 @@ export default function PositionEventWorld({
   useEffect(() => {
     let mounted = true
     const stop = visiblePoll(async signal => {
-      const res = await fetch('/api/public/client-market', { cache: 'no-store', signal })
+      const res = await fetch(role==='client'?'/api/public/client-market':'/api/events/flame/client-doors', { cache: 'no-store', signal,headers:role==='client'?{}:{Authorization:`Bearer ${localStorage.getItem('ssb_auth_token')||''}`} })
       const data = await res.json()
       if (mounted && data?.success && Array.isArray(data.enterprises)) {
         setEnterprises(data.enterprises.slice(0, 9))
       }
     }, 12000)
     return () => { mounted = false; stop() }
-  }, [])
+  }, [role])
 
   const position = event.positions[role] || FLAME_EVENT.positions[role]
   const progress = useMemo(() => getEventProgress(event, now), [event, now])
@@ -221,8 +221,9 @@ export default function PositionEventWorld({
               <p className="text-[8px] font-black uppercase tracking-[.22em] text-emerald-200">Client Enterprise Current</p>
               <h2 className="mt-1 text-xl font-black text-white">Customer Doors carried into Flame Event</h2>
               <p className="mt-2 max-w-3xl text-[11px] leading-5 text-stone-400">
-                The Client File Folder remains private to its Client. Flame Event carries only the public enterprise that has crossed through an opened Customer Door. Logged-in staff meet those Doors here; the Client keeps ownership of the private System Switch.
+                Staff cross as avatars at the shared System Switch Customer Door plaza, with real live multiplayer presence. Each Client chooses whether their published world is hosted for Flame Event staff or Customer Market visitors. Private construction remains reserved for the owning Lord or Lady.
               </p>
+              {role!=='client'&&<Link href="/system-switch/customer-doors?entrance=flame-event" className="mt-3 inline-flex items-center gap-2 border border-emerald-300/25 px-4 py-3 text-xs font-black text-emerald-200">Cross as staff avatar · System Switch <ArrowRight className="h-4 w-4"/></Link>}
             </div>
             <span className="text-[9px] font-black uppercase tracking-[.14em] text-emerald-200">
               Staff Customer Door current
@@ -238,7 +239,7 @@ export default function PositionEventWorld({
               {enterprises.map((enterprise,index)=>(
                 <Link
                   key={enterprise.public_slug}
-                  href={`/market/${enterprise.public_slug}`}
+                  href={role==='client'?`/system-switch/customer-doors?door=${encodeURIComponent(enterprise.public_slug)}`:`/system-switch/customer-doors/${encodeURIComponent(enterprise.public_slug)}?entrance=flame-event`}
                   data-flame-event-customer-door={enterprise.public_slug}
                   className="group min-h-32 border-b border-white/8 p-4 transition hover:bg-white/[.025] sm:border-r lg:[&:nth-child(3n)]:border-r-0"
                 >
@@ -250,7 +251,7 @@ export default function PositionEventWorld({
                     {enterprise.level==='market_hall'?'Market Hall':enterprise.level==='storefront'?'Storefront':'Customer Door'} · {enterprise.offer_count} public offer{enterprise.offer_count===1?'':'s'}
                   </p>
                   <span className="mt-4 inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.13em] text-sky-200">
-                    Enter Customer Door <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1"/>
+                    Enter as avatar <ArrowRight className="h-3 w-3 transition group-hover:translate-x-1"/>
                   </span>
                 </Link>
               ))}
