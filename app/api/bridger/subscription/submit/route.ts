@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
       String(reference).trim().slice(0, 255),
       String(paymentMethod).trim().slice(0, 50)
     )
+    await notifyAdminOrder({orderId:String(paymentId),event:'payment_submitted',department:'bridger',subject:'Bridger Continuance payment',detail:`${user.name||'Bridger'} submitted monthly Continuance payment reference for ₦${WORLD_RULES.BRIDGER_CONTINUANCE_NGN.toLocaleString()}. Awaiting verification`,adminPath:'/admin/orders',actorId:user.id,actorName:user.name||'Bridger'})
     const receipt = paymentId ? await issueWeaveReceipt({
       userId: user.id,
       kind: 'subscription',
@@ -33,7 +34,6 @@ export async function POST(request: NextRequest) {
       description: 'Bridger monthly continuance submitted for Administration approval',
       metadata: { paymentMethod, reference: String(reference).trim().slice(0, 255) },
     }) : null
-    if(paymentId)await notifyAdminOrder({orderId:String(paymentId),event:'payment_submitted',department:'bridger',subject:'Bridger Continuance payment',detail:`${user.name||'Bridger'} submitted monthly Continuance payment reference for ₦${WORLD_RULES.BRIDGER_CONTINUANCE_NGN.toLocaleString()}. Awaiting verification`,adminPath:'/admin/orders',actorId:user.id,actorName:user.name||'Bridger'})
     return NextResponse.json({
       success: Boolean(paymentId),
       paymentId,
