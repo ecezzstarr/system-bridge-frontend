@@ -84,8 +84,9 @@ export async function ensureFoodBridgeSchema() {
   await schema
 }
 
-// Cancel unpaid, unconfirmed requests after 24 hours, restoring only their
-// reserved stock. Every row leaves 'requested' exactly once.
+// Release unaccepted household reservations if the farmer does not respond
+// within 24h, or a confirmation/quote stalls for 48h. Accepted/dispatched
+// orders are never expired automatically.
 export async function expireFoodRequests() {
   await ensureFoodBridgeSchema()
   const client=await getPool().connect()
@@ -93,7 +94,8 @@ export async function expireFoodRequests() {
     await client.query('BEGIN')
     const {rows}=await client.query(`
       UPDATE weave_food_direct_orders SET status='expired',updated_at=NOW()
-      WHERE status='requested' AND created_at < NOW()-INTERVAL '24 hours'
+      WHERE (status='requested' AND created_at < NOW()-INTERVAL '24 hours')
+        OR (status IN ('farmer_confirmed','quoted') AND updated_at < NOW()-INTERVAL '48 hours')
       RETURNING listing_id,quantity
     `)
     for(const row of rows)await client.query(`
