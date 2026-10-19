@@ -30,6 +30,8 @@ async function initializeCarrierCakeSchema(){
       delivery_mode varchar(30) NOT NULL DEFAULT 'local',
       delivery_location text NOT NULL,
       quoted_price_ngn numeric(14,2),
+      agent_commission_ngn numeric(14,2),
+      weave_share_ngn numeric(14,2),
       waybill_fee_ngn numeric(14,2) NOT NULL DEFAULT 0,
       total_ngn numeric(14,2),
       payment_method varchar(40) NOT NULL DEFAULT 'bank_transfer',
@@ -58,6 +60,8 @@ async function initializeCarrierCakeSchema(){
       CHECK (payment_status IN ('not_ready','awaiting_payment','proof_submitted','paid','rejected'))
     )
   `)
+  await pool.query('ALTER TABLE carrier_cake_orders ADD COLUMN IF NOT EXISTS agent_commission_ngn numeric(14,2)')
+  await pool.query('ALTER TABLE carrier_cake_orders ADD COLUMN IF NOT EXISTS weave_share_ngn numeric(14,2)')
   await pool.query('CREATE INDEX IF NOT EXISTS carrier_cake_orders_agent_idx ON carrier_cake_orders(agent_id,created_at DESC)')
   await pool.query('CREATE INDEX IF NOT EXISTS carrier_cake_orders_status_idx ON carrier_cake_orders(status,created_at DESC)')
   await pool.query('CREATE INDEX IF NOT EXISTS carrier_cake_orders_ref_idx ON carrier_cake_orders(referral_code,created_at DESC)')
