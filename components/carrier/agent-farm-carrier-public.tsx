@@ -12,7 +12,9 @@ type Order = {
   id:string;status:string;quantity:string;unit_price_ngn:string;food_subtotal_ngn:string;
   delivery_quote_ngn:string|null;quote_note:string|null;delivery_mode:string;
   destination_state:string;destination_area:string;produce:string;unit:string;
-  farm_name:string;origin_state:string;community:string;farmer_contact?:string|null
+  farm_name:string;origin_state:string;community:string;farmer_contact?:string|null;
+  escrow_status?:string|null;escrow_reference?:string|null;buyer_total_ngn?:string|null;
+  seller_payout_ngn?:string|null;paymentAccountNumber?:string|null;weaveCommissionNgn?:number
 }
 const money=(value:unknown)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:2}).format(Number(value||0))
 
@@ -26,6 +28,8 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
   const [destinationArea,setDestinationArea]=useState('')
   const [deliveryMode,setDeliveryMode]=useState<'delivery'|'pickup'>('delivery')
   const [shareBuyerContact,setShareBuyerContact]=useState(false)
+  const [paymentReference,setPaymentReference]=useState('')
+  const [disputeNote,setDisputeNote]=useState('')
   const [orderKey,setOrderKey]=useState('')
   const [order,setOrder]=useState<Order|null>(null)
   const [busy,setBusy]=useState(false)
@@ -84,20 +88,22 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
       setError(cause instanceof Error?cause.message:'Unable to submit food request')
     }finally{setBusy(false)}
   }
-  async function orderAction(action:'accept_quote'|'cancel'|'confirm_delivery'){
+  async function orderAction(action:'accept_quote'|'submit_payment_proof'|'dispute'|'cancel'|'confirm_delivery'){
     if(!orderKey)return
     setBusy(true);setError('');setMessage('')
     try{
       const res=await fetch(endpoint+'/order',{
         method:'PATCH',headers:{'Content-Type':'application/json','x-farm-order-key':orderKey},
-        body:JSON.stringify({action}),
+        body:JSON.stringify({action,transactionReference:paymentReference,disputeNote}),
       })
       const data=await res.json()
       if(!res.ok)throw new Error(data.error||'Unable to update your order')
       await Promise.all([loadOrder(orderKey),loadOffers()])
       setMessage(action==='accept_quote'
-        ? 'You accepted the food and logistics quote. Arrange payment and delivery with the farm; WEAVE has not collected a payment.'
-        :action==='confirm_delivery'?'Your receipt of food is recorded.':'Your reserved stock was returned to the farm.')
+        ? 'Quote accepted. Pay the exact amount to WEAVE and submit your actual bank transfer reference below. Farmer dispatch is blocked until funds are confirmed.'
+        :action==='submit_payment_proof'?'Bank proof received for WEAVE Administration reconciliation. Seller cannot dispatch yet.'
+        :action==='dispute'?'Your concern has been recorded and seller payout is blocked.'
+        :action==='confirm_delivery'?'Your receipt is recorded. WEAVE now processes full farmer payout with zero commission.':'Your reserved stock was returned to the farm.')
     }catch(cause){setError(cause instanceof Error?cause.message:'Unable to update your order')}
     finally{setBusy(false)}
   }
@@ -112,7 +118,7 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
           <h2 className="mt-2 text-2xl font-black sm:text-4xl">Food directly from the farm</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-400">
             Produce listed by this Agent's approved farm appears here on the same Carrier link shared through WhatsApp.
-            No WEAVE registration is needed to request farm food. Choose a quantity, see its farm price, and agree on transport before buying.
+            No WEAVE registration is needed to request farm food. Farmers pay ₦0 commission. WEAVE confirms buyer funds before dispatch and records farmer payout after delivery.
           </p>
         </div>
         <button type="button" onClick={()=>void loadOffers()} className="inline-flex items-center gap-2 border border-white/15 px-3 py-2 text-xs text-emerald-100"><RefreshCw className="h-4 w-4"/> Refresh stock</button>
@@ -168,7 +174,7 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
         <p className="mt-2 text-xs leading-5 text-amber-100">Transport costs are not yet known. You are requesting available stock, not making a payment. The Agent farmer confirms and provides the total quote before you approve it.</p>
         <label className="mt-4 flex items-start gap-2 text-xs text-stone-300">
           <input type="checkbox" checked={shareBuyerContact} onChange={e=>setShareBuyerContact(e.target.checked)} className="mt-1"/>
-          After this farmer confirms, share my name and phone with them to arrange delivery.
+          After WEAVE verifies my payment, share my name and phone with this farmer to arrange delivery.
         </label>
         <div className="mt-5 flex flex-wrap gap-3">
           <button type="submit" disabled={busy} className="bg-emerald-300 px-5 py-3 text-xs font-black text-emerald-950 disabled:opacity-40">Request and reserve produce</button>
@@ -199,9 +205,18 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
           {order.quote_note&&<p className="mt-3 text-xs text-stone-400">{order.quote_note}</p>}
           {order.farmer_contact&&<p className="mt-3 text-xs text-emerald-200">Farm contact: {order.farmer_contact}</p>}
           {order.status==='quoted'&&<button type="button" disabled={busy} onClick={()=>void orderAction('accept_quote')} className="mt-4 bg-emerald-300 px-4 py-3 text-xs font-black text-emerald-950"><CheckCircle2 className="mr-2 inline h-4 w-4"/> Accept full quote</button>}
+          {order.status==='accepted'&&<div className="mt-4 border border-emerald-300/25 p-4" data-guest-farm-weave-payment>
+            <p className="text-xs font-black text-emerald-200">WEAVE payment holding · no fee to farmer</p>
+            <p className="mt-2 text-sm">Pay <strong>{money(order.buyer_total_ngn)}</strong> to WEAVE OPay <strong>{order.paymentAccountNumber||'Refer to the verified WEAVE order'}</strong>, reference <strong>{order.escrow_reference}</strong>.</p>
+            <p className="mt-2 text-xs text-stone-400">Farmer dispatch begins only when Administration verifies actual receipt of funds.</p>
+            {order.escrow_status==='awaiting_payment'&&<div className="mt-3 flex flex-wrap gap-2"><input aria-label="Actual bank transfer reference" value={paymentReference} onChange={e=>setPaymentReference(e.target.value)} placeholder="Your OPay/bank transfer reference" className="min-w-48 flex-1 border border-white/10 bg-[#17261b] p-3 text-sm"/><button type="button" disabled={busy||paymentReference.trim().length<8} onClick={()=>void orderAction('submit_payment_proof')} className="bg-emerald-300 px-4 py-2 text-xs font-black text-black">Submit bank proof</button></div>}
+            {order.escrow_status==='proof_submitted'&&<p className="mt-2 text-xs text-amber-200">Payment confirmation pending; no seller dispatch until verified.</p>}
+          </div>}
+          {order.status==='funds_held'&&<p className="mt-3 text-xs text-emerald-200">WEAVE confirmed buyer funds held; farmer can send your food.</p>}
+          {order.status==='dispatched'&&<div className="mt-4 space-y-2"><label className="text-xs">Delivery problem?<textarea value={disputeNote} onChange={e=>setDisputeNote(e.target.value)} placeholder="Explain the problem (at least 15 characters)" className="mt-2 block w-full border border-white/10 bg-[#17261b] p-3"/></label><button type="button" disabled={busy||disputeNote.trim().length<15} onClick={()=>void orderAction('dispute')} className="border border-rose-300/30 px-3 py-2 text-xs text-rose-200">Hold seller payout · report problem</button></div>}
           {order.status==='dispatched'&&<button type="button" disabled={busy} onClick={()=>void orderAction('confirm_delivery')} className="mt-4 inline-flex items-center gap-2 bg-emerald-300 px-4 py-3 text-xs font-black text-emerald-950"><Truck className="h-4 w-4"/> Confirm food received</button>}
-          {['requested','farmer_confirmed','quoted'].includes(order.status)&&<button type="button" disabled={busy} onClick={()=>void orderAction('cancel')} className="mt-4 border border-rose-300/20 px-4 py-3 text-xs text-rose-200">Cancel request</button>}
-          <p className="mt-4 text-xs leading-5 text-stone-500">WEAVE has not collected or verified any payment through this farm order flow.</p>
+          {['requested','farmer_confirmed','quoted','accepted'].includes(order.status)&&<button type="button" disabled={busy} onClick={()=>void orderAction('cancel')} className="mt-4 border border-rose-300/20 px-4 py-3 text-xs text-rose-200">Cancel request</button>}
+          <p className="mt-4 text-xs leading-5 text-stone-500">WEAVE charges farmers ₦0 commission. A payment reference alone is not proof of received money; verified escrow funds must be held before the farmer dispatches. Payout is recorded after buyer receipt and actual bank settlement.</p>
         </div>}
       </div>
     </div>
