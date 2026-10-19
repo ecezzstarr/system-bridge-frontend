@@ -68,7 +68,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
       const res=await fetch('/api/client/enterprise',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(plan)})
       const body=await res.json()
       if(!res.ok)throw new Error(body.error||'Unable to submit enterprise plan')
-      setMessage('Business plan submitted to Administration for Lord/Lady elevation review.')
+      setMessage('Business plan submitted for Administration enterprise approval.')
       await load(true)
     }catch(e:any){setMessage(e.message||'Unable to submit enterprise plan')}
     finally{setBusy(false)}
@@ -132,7 +132,7 @@ export default function EnterpriseDreamPanel({ initialState, growth }: { initial
     {!subscriptionActive ? <div className="mt-6 border border-amber-300/20 bg-black/20 p-5 text-sm text-amber-100">Activate the monthly Client subscription before requesting enterprise approval.</div> : approved ? <div className="mt-6 space-y-5">
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-5 md:col-span-2"><div className="flex items-center gap-3"><Crown className="h-5 w-5 text-amber-300"/><div><p className="text-[9px] uppercase tracking-[0.2em] text-amber-300">{state?.position}</p><h3 className="mt-1 text-xl font-semibold">{state?.enterprise_name}</h3></div></div><p className="mt-3 text-sm text-slate-400">{state?.sector}</p><p className="mt-4 text-xs leading-6 text-slate-500">{application?.sustainability_plan}</p></div>
-        <div className="rounded-2xl border border-white/10 bg-black/25 p-5"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Administration</p></div><p className="mt-3 text-sm font-semibold">Approved</p><p className="mt-2 text-xs text-slate-500">Elevation is approved. Legion participation opens through constructed Legion Quarters; the Client identity remains active underneath the Lord/Lady enterprise position.</p></div>
+        <div className="rounded-2xl border border-white/10 bg-black/25 p-5"><div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300"/><p className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Administration</p></div><p className="mt-3 text-sm font-semibold">Approved</p><p className="mt-2 text-xs text-slate-500">Enterprise plan approved. Build Legion Quarters to recruit Legions. Lord/Lady standing follows paid monthly subscription and registration gender.</p></div>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
