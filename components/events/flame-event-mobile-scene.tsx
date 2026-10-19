@@ -154,18 +154,45 @@ function Portal({name,x,z,index}:{name:string;x:number;z:number;index:number}){
   </group>
 }
 
-function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange}:{
+function PresenceCurrent({motion,quiet}:{motion:MutableRefObject<WeaveAvatarMotion>;quiet:boolean}){
+  const wake=useRef<THREE.Mesh>(null)
+  const aura=useRef<THREE.PointLight>(null)
+  const circle=useRef<THREE.MeshBasicMaterial>(null)
+  const elapsed=useRef(0)
+  useFrame((_,delta)=>{
+    const state=motion.current
+    if(!wake.current||!circle.current||!aura.current)return
+    const pace=Math.min(1,state.speed/5.3)
+    elapsed.current+=Math.min(.05,delta)*state.speed
+    wake.current.position.set(state.x,.073,state.z)
+    wake.current.rotation.z=quiet?0:elapsed.current*.19
+    const scale=.84+pace*.6
+    wake.current.scale.setScalar(scale)
+    circle.current.opacity=quiet?.06:(.07+pace*(.16+.05*Math.sin(elapsed.current*2)))
+    aura.current.position.set(state.x,.18,state.z)
+    aura.current.intensity=.04+pace*.28
+  })
+  return <group data-flame-event-responsive-ground>
+    <mesh ref={wake} rotation={[-Math.PI/2,0,0]}>
+      <ringGeometry args={[.6,.69,48]}/>
+      <meshBasicMaterial ref={circle} color="#fde6aa" side={THREE.DoubleSide} transparent opacity={.07} depthWrite={false}/>
+    </mesh>
+    <pointLight ref={aura} color="#b9eefa" intensity={.04} distance={2.1}/>
+  </group>
+}
+
+function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
   inputRef:MutableRefObject<FlameMobileInput>
   doors:{x:number;z:number}[]
   role:string
   onNearbyDoor:(index:number|null)=>void
   onRegionChange:(region:FlameRegion)=>void
+  playerMotion:MutableRefObject<WeaveAvatarMotion>
 }){
   const {camera}=useThree()
   const position=useRef(new THREE.Vector3(FLAME_EVENT_PLAYER_START.x,0,FLAME_EVENT_PLAYER_START.z))
   const velocity=useRef(new THREE.Vector3()),heading=useRef(0),activity=useRef(0)
   const crouch=useRef(false),height=useRef(0),vertical=useRef(0)
-  const motion=useRef<WeaveAvatarMotion>({x:FLAME_EVENT_PLAYER_START.x,z:FLAME_EVENT_PLAYER_START.z,yaw:0,speed:0,crouching:false,airborne:0})
   const lastRegion=useRef<FlameRegion>('riverbank')
   const previousDoor=useRef<number|null>(null)
   const target=useRef(new THREE.Vector3()),look=useRef(new THREE.Vector3())
@@ -195,19 +222,19 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange}:{
     if(closest!==previousDoor.current){previousDoor.current=closest;onNearbyDoor(closest)}
     const region:FlameRegion=closest!==null?'customer-door':position.current.z>5?'riverbank':position.current.z>0?'burning-river':'system-switch'
     if(region!==lastRegion.current){lastRegion.current=region;onRegionChange(region)}
-    motion.current.x=position.current.x
-    motion.current.z=position.current.z
-    motion.current.yaw=heading.current
-    motion.current.speed=actual
-    motion.current.crouching=crouch.current
-    motion.current.airborne=height.current
+    playerMotion.current.x=position.current.x
+    playerMotion.current.z=position.current.z
+    playerMotion.current.yaw=heading.current
+    playerMotion.current.speed=actual
+    playerMotion.current.crouching=crouch.current
+    playerMotion.current.airborne=height.current
     const dist=data.crouch?3.8:data.run?5.3:4.5
     target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2,position.current.z+Math.cos(data.yaw)*dist)
     camera.position.lerp(target.current,1-Math.exp(-dt*7))
     look.current.set(position.current.x,1.28+height.current*.35,position.current.z)
     camera.lookAt(look.current)
   })
-  return <WeaveEmbodiedAvatar motion={motion} role={role as WeaveAvatarPosition}/>
+  return <WeaveEmbodiedAvatar motion={playerMotion} role={role as WeaveAvatarPosition}/>
 }
 
 export type FlameRegion='riverbank'|'burning-river'|'system-switch'|'customer-door'
@@ -221,6 +248,7 @@ function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
 }){
   const budget=useAdaptiveRuntime()
   const doorPositions=useMemo(()=>flameEventDoorPositions(enterprises.length),[enterprises.length])
+  const playerMotion=useRef<WeaveAvatarMotion>({x:FLAME_EVENT_PLAYER_START.x,z:FLAME_EVENT_PLAYER_START.z,yaw:0,speed:0,crouching:false,airborne:0})
   return <>
     <fog attach="fog" args={['#7894a8',30,95]}/>
     <ambientLight intensity={1.15} color="#dae9f7"/>
@@ -230,8 +258,9 @@ function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
     <RiverSurface quiet={budget.reducedMotion}/>
     <Terrain quality={budget.level}/>
     <SystemSwitchThreshold active={!budget.reducedMotion} quiet={budget.reducedMotion}/>
+    <PresenceCurrent motion={playerMotion} quiet={budget.reducedMotion}/>
     {enterprises.map((door,i)=><Portal key={door.public_slug} name={door.platform_name||door.name} index={i} x={doorPositions[i].x} z={doorPositions[i].z}/>)}
-    <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
+    <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange} playerMotion={playerMotion}/>
   </>
 }
 
