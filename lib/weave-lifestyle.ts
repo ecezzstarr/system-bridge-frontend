@@ -1,4 +1,5 @@
 import { getPool } from '@/lib/db'
+import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
 import {
   ACE_LIFESTYLE,
   AGENTIC_BRIDGER_LIFESTYLE,
@@ -117,6 +118,19 @@ export async function getLifestyleAccess(userId: string): Promise<LifestyleAcces
       expiresAt: null,
       role,
       source: 'unsupported',
+      positionScoped: true,
+    }
+  }
+
+  if (role === 'client') {
+    const standing = await getClientMonthlyStanding(userId)
+    const active = standing.active && row?.is_active !== false
+    return {
+      active,
+      status: active ? 'active' : standing.hasPayment ? 'expired' : 'due',
+      expiresAt: standing.paidUntil,
+      role,
+      source: 'role_monthly_subscription',
       positionScoped: true,
     }
   }
