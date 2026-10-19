@@ -94,6 +94,7 @@ assert.equal(enforceSystemSwitchGate({x:1,z:.2},{x:1,z:-.5}).z,-.5,'The physical
 assert.equal(enforceSystemSwitchGate({x:-7,z:-.3},{x:-7,z:.4}).z,-.25,'Return crossing also uses the Switch')
 assert.match(world,/data-system-switch-arrival-threshold/)
 assert.match(world,/weave:flame:entered/)
+assert.match(world,/if\(!webglAvailable\)\{setEntered\(true\);setShowDirectory\(true\);return\}/)
 assert.match(world,/weave:flame-event:save-presence/)
 assert.match(world,/onReady=\{sceneReady\}/)
 assert.match(world,/doorStatus==='loading'/)
