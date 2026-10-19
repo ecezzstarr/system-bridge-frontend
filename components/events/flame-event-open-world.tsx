@@ -74,21 +74,6 @@ export function FlameEventOpenWorld({
     }
   },[])
 
-  useEffect(()=>{
-    if(!ready||!webglAvailable)return
-    const host=document.querySelector('[data-flame-event-mobile-scene]')
-    if(!host)return
-    const onLost=(event:Event)=>{
-      event.preventDefault()
-      resetMovement()
-      setWebglAvailable(false)
-      setEntered(true)
-      setShowDirectory(true)
-    }
-    host.addEventListener('webglcontextlost',onLost,true)
-    return ()=>host.removeEventListener('webglcontextlost',onLost,true)
-  },[ready,webglAvailable,resetMovement])
-
   const beginCrossing=()=>{
     if(!webglAvailable){setShowDirectory(true);return}
     if(!ready)return
@@ -106,6 +91,21 @@ export function FlameEventOpenWorld({
     if(thumb.current)thumb.current.style.transform='translate(0px, 0px)'
     setRunning(false)
   },[])
+
+  useEffect(()=>{
+    if(!ready||!webglAvailable)return
+    const host=document.querySelector('[data-flame-event-mobile-scene]')
+    if(!host)return
+    const onLost=(event:Event)=>{
+      event.preventDefault()
+      resetMovement()
+      setWebglAvailable(false)
+      setEntered(true)
+      setShowDirectory(true)
+    }
+    host.addEventListener('webglcontextlost',onLost,true)
+    return ()=>host.removeEventListener('webglcontextlost',onLost,true)
+  },[ready,webglAvailable,resetMovement])
 
   useEffect(()=>{
     const onVisibility=()=>{if(document.hidden)resetMovement()}
