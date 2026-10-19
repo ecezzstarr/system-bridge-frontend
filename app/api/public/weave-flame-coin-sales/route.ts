@@ -57,6 +57,10 @@ export async function POST(request:NextRequest){
     if(!isFlameCoinPaymentMethod(method)||!validFlameCoinProof(method,reference)||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
       return NextResponse.json({error:'A valid order, matching email and payment reference are required; crypto transfers need a 64-character transaction hash'},{status:400})
     }
+    const previous=await getPool().query(
+      'SELECT id FROM weave_flame_coin_orders WHERE bank_reference=$1 AND id<>$2::uuid LIMIT 1',[reference,id]
+    )
+    if(previous.rows.length)return NextResponse.json({error:'This bank/card reference or blockchain transaction was already submitted for a different Flame Coin order'},{status:409})
     const {rows}=await getPool().query(`
       UPDATE weave_flame_coin_orders SET bank_reference=$3,status='proof_submitted',updated_at=NOW()
       WHERE id=$1::uuid AND buyer_email=$2 AND status='quoted' AND COALESCE(payment_asset_amount,bank_amount)>0
