@@ -22,7 +22,7 @@ export const FOOD_PREPARATION_WORKFLOW:Record<PreparationProduct,readonly string
 export function isPreparationProduct(value:unknown):value is PreparationProduct {
   return typeof value==='string' && FOOD_PREPARATION_PRODUCTS.some(p=>p===value)
 }
-export const validUuid=(s:unknown):s is string=>typeof s==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-[a-f0-9]{12}$/i.test(s)
+export const validUuid=(s:unknown):s is string=>typeof s==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(s)
 export class PreparationAccessError extends Error {
   constructor(message:string,public status=403){super(message)}
 }
@@ -197,7 +197,7 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
     `,[task.id,manager.id,next,note])
     await client.query('COMMIT')
     // Failure to notify cannot undo the recorded handoff.
-    getPool().query(`
+    await getPool().query(`
       INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
       VALUES($1::uuid,'food_preparation','Food preparation updated',$2,'WEAVE Food Preparation Manager',$3)
     `,[updated.agent_id,`Your ${task.product} order moved to ${next}.`,
