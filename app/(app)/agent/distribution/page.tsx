@@ -1,4 +1,5 @@
 'use client'
+import { AgentFoodPricingInfo } from '@/components/weave-food/food-program-info'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
@@ -186,6 +187,7 @@ export default function AgentDistributionPage(){
   if(!isAgent)return <div className="p-8 text-sm text-slate-300">Agent account required.</div>
 
   return <div className="mx-auto max-w-7xl space-y-7 pb-20 text-white">
+    <AgentFoodPricingInfo product="both"/>
     <section className="rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-cyan-500/10 via-slate-950 to-emerald-500/10 p-6 md:p-9">
       <p className="text-[10px] font-black uppercase tracking-[.3em] text-cyan-300">Agent Department · Physical Distribution</p><h1 className="mt-2 text-4xl font-black md:text-6xl">AGENT DISTRIBUTION ROUTE</h1><p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300 md:text-base">Buy WEAVE cartons, carry them into existing shops and outlets, collect immediately or place stock on pay-after-sale, and use Carrier to sell directly through your link. The Agent is the distributor — not the store owner.</p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{[['Outlets',String(data.summary.outlet_count),MapPin],['Cartons in hand',String(cartonsAvailable),Boxes],['Packs with outlets',String(data.summary.packages_still_with_outlets||0),Store],['Carrier reserved',String(data.summary.carrier_reserved_packages||0),PackageCheck],['Money outstanding',money(data.summary.outstanding_ngn),HandCoins]].map(([label,value,Icon]:any)=><div key={label} className="rounded-2xl border border-white/10 bg-black/20 p-4"><Icon className="h-5 w-5 text-cyan-300"/><p className="mt-3 text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{label}</p><p className="mt-1 text-xl font-black">{value}</p></div>)}</div><p className="mt-4 text-xs text-emerald-300">Collected from outlets today: {money(data.summary.collected_today_ngn)}</p>
