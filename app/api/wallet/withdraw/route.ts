@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
@@ -40,12 +41,15 @@ export async function POST(request: NextRequest) {
     }
 
     const reference = `WD-${user.id.substring(0, 8)}-${Date.now()}`
-    await sql`
+    const [withdrawal] = await sql`
       INSERT INTO withdrawal_requests
         (user_id,amount_trx,wallet_address,status,admin_note,created_at,updated_at)
       VALUES
         (${user.id}::uuid,${amountFlameCoin},${address},'pending',${reference},NOW(),NOW())
+      RETURNING id
     `
+
+    await notifyAdminOrder({orderId:String(withdrawal.id),event:'placed',department:user.role==='agent'?'agent':user.role==='bridger'?'bridger':'client',subject:'External Flame Coin withdrawal request',detail:`${user.name||user.username||user.role} requested withdrawal of ${amountFlameCoin.toLocaleString()} Flame Coin. Administration approval required`,adminPath:'/admin/control-center',actorId:user.id,actorName:user.name||user.role})
 
     const receipt = await issueWeaveReceipt({
       userId: user.id,
