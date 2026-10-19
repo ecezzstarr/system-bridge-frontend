@@ -1,11 +1,13 @@
 export const ACE_LIFESTYLE = 'ace' as const
 export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger' as const
 export const DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager' as const
+export const FOOD_PREPARATION_MANAGER_LIFESTYLE = 'food_preparation_manager' as const
 
 export type WeaveLifestyleKey =
   | typeof ACE_LIFESTYLE
   | typeof AGENTIC_BRIDGER_LIFESTYLE
   | typeof DISTRIBUTION_MANAGER_LIFESTYLE
+  | typeof FOOD_PREPARATION_MANAGER_LIFESTYLE
 
 export const WEAVE_LIFESTYLE_CATALOG = {
   [ACE_LIFESTYLE]: {
@@ -33,6 +35,17 @@ export const WEAVE_LIFESTYLE_CATALOG = {
       { label: 'Bridge AI', href: '/bridger/bridge-ai', purpose: 'Use Bridger assistance while preserving human authority.' },
       { label: 'Arena', href: '/arena', purpose: 'Enter the Ace game ground with Agentic-Bridger standing.' },
       { label: 'Carrier', href: '/weave/carrier', purpose: 'Distribute the Ace stream outward.' },
+    ],
+  },
+  [FOOD_PREPARATION_MANAGER_LIFESTYLE]: {
+    key: FOOD_PREPARATION_MANAGER_LIFESTYLE,
+    label: 'Food Preparation Manager',
+    route: '/weave/lifestyles/food-preparation',
+    roles: ['agent'],
+    summary: 'Agent employment in WEAVE food operations at a ₦60,000 monthly salary following Administration approval. Prepare, package and dispatch paid Agility, Electrolyte and Daisy Pastries orders for customers and restocking Agents.',
+    environments: [
+      { label: 'Employment Application', href: '/weave/lifestyles/food-preparation', purpose: 'Apply to work as a Food Preparation Manager.' },
+      { label: 'Daily Kitchen Work Desk', href: '/weave/lifestyles/food-preparation', purpose: 'Process Administration-assigned paid food orders, package and log dispatch.' },
     ],
   },
   [DISTRIBUTION_MANAGER_LIFESTYLE]: {
