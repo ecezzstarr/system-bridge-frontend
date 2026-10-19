@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-api'
@@ -137,6 +138,8 @@ export async function POST(request: NextRequest) {
       description:`${variant.name} distribution stock · ${cartonDescription}`,
       metadata:{variantId:variant.id,productName:variant.name,distributionMode,paymentReference,boxCount:totals.boxCount,packageCount:totals.packageCount,agentBuyUnitPriceNgn:totals.agentBuyUnitPriceNgn,agentSellingUnitPriceNgn:totals.agentSellingUnitPriceNgn},
     })
+
+    await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'agent',subject:'Agility stock order',detail:`${user.name||user.username||'Agent'} requested ${cartonDescription} of ${variant.name} · ₦${totals.agentPayableNgn.toLocaleString()} awaiting payment`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||user.username})
 
     return NextResponse.json({
       success:true,order,receipt,product:{id:variant.id,name:variant.name},
