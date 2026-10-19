@@ -557,12 +557,12 @@ assert.ok(roleDistrictEnvironmentSource.includes('districtScenes')&&roleDistrict
 assert.equal(getRoleDistricts('admin')[0].name,'Control','Administration starts with one control district')
 assert.deepEqual(
  getRolePlaces('agent').map(place=>place.href),
- ['/agent/presence','/settings','/agility','/electrolyte','/agent/cakes','/agent/commissions','/communications','/company-chat','/event'],
+ ['/agent/presence','/settings','/enterprise/legions-notebook','/agility','/electrolyte','/agent/cakes','/agent/commissions','/communications','/company-chat','/event'],
  'Agent account keeps focused districts with Company Guidance inside Connection & Event'
 )
 assert.deepEqual(
  getRolePlaces('bridger').map(place=>place.href),
- ['/bridger/presence','/settings','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/company-chat','/profiles','/event'],
+ ['/bridger/presence','/settings','/enterprise/legions-notebook','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/company-chat','/profiles','/event'],
  'Bridger account keeps its focused Prospect/Crossing and Continuity functions including Email Outreach'
 )
 for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace','/lounge']) assert.ok(!roleHas(role,href),role+' excludes unrelated account entrance '+href)
