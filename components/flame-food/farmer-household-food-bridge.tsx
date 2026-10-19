@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Check, ClipboardCopy, Flame, MapPin, Package, RefreshCw, ShieldCheck, Truck } from 'lucide-react'
-import { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS } from '@/lib/food-bridge'
+import { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS } from '@/lib/food-bridge-states'
 
 type Offer = {
   id:string;produce:string;unit:string;unit_price_ngn:string;available_quantity:string;
@@ -36,6 +36,7 @@ export default function FarmerHouseholdFoodBridge() {
   const [shareBuyer,setShareBuyer]=useState(false)
   const [deliveryMode,setDeliveryMode]=useState<'delivery'|'pickup'>('delivery')
   const [farmerKey,setFarmerKey]=useState('')
+  const [existingFarmerKey,setExistingFarmerKey]=useState('')
   const [buyerKey,setBuyerKey]=useState('')
   const [farmName,setFarmName]=useState('')
   const [farmPhone,setFarmPhone]=useState('')
@@ -285,7 +286,7 @@ export default function FarmerHouseholdFoodBridge() {
             <p className="mt-3 text-xs text-stone-400">Your private key is saved in this browser. Store it somewhere secure before changing devices. Anyone holding the key can act for this farm.</p>
             <div className="mt-3 flex gap-2"><button type="button" onClick={()=>void navigator.clipboard?.writeText(farmerKey)} className="flex items-center gap-2 border border-white/15 px-3 py-2 text-xs"><ClipboardCopy className="h-4 w-4"/> Copy farmer key</button><button type="button" onClick={()=>void refreshFarmer(farmerKey).catch(e=>setMessage(String(e)))} className="flex items-center gap-2 border border-white/15 px-3 py-2 text-xs"><RefreshCw className="h-4 w-4"/> Refresh</button></div>
           </div>}
-          {!farmerKey&&<div className="mt-5"><p className="mb-2 text-xs text-stone-400">Already registered? Enter your secret farmer key:</p><input type="password" value={farmerKey} onChange={e=>setFarmerKey(e.target.value)} className="w-full border border-white/15 bg-[#18251d] p-3"/><button type="button" onClick={()=>{localStorage.setItem('weave_food_farmer_key',farmerKey);void refreshFarmer(farmerKey).catch(e=>setMessage(String(e)))}} className="mt-2 border border-white/15 px-4 py-2 text-xs">Open farmer desk</button></div>}
+          {!farmerKey&&<div className="mt-5"><p className="mb-2 text-xs text-stone-400">Already registered? Enter your secret farmer key:</p><input type="password" value={existingFarmerKey} onChange={e=>setExistingFarmerKey(e.target.value)} className="w-full border border-white/15 bg-[#18251d] p-3"/><button type="button" onClick={()=>{setFarmerKey(existingFarmerKey);localStorage.setItem('weave_food_farmer_key',existingFarmerKey);void refreshFarmer(existingFarmerKey).catch(e=>setMessage(String(e)))}} className="mt-2 border border-white/15 px-4 py-2 text-xs">Open farmer desk</button></div>}
           {farmer?.farmer.status==='approved'&&<form onSubmit={publish} className="mt-7 space-y-4 border border-amber-200/20 p-5" data-food-farmer-offer>
             <h3 className="text-lg font-black">Publish available harvest</h3>
             <label className="block text-xs">Produce name<input required minLength={2} value={produce} onChange={e=>setProduce(e.target.value)} placeholder="Rice, yam, beans, tomatoes" className="mt-2 w-full border border-white/15 bg-[#18251d] p-3"/></label>
@@ -332,7 +333,7 @@ export default function FarmerHouseholdFoodBridge() {
     </div>
     <footer className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-7 text-xs text-stone-400 sm:px-6">
       <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4"/> Farmer verification by Administration · Independent household confirmation</span>
-      <Link href="/flame/frontier" className="text-emerald-200">Flame Event Frontier <ArrowRight className="inline h-4 w-4"/></Link>
+      <Link href="/" className="text-emerald-200">WEAVE Flame Event <ArrowRight className="inline h-4 w-4"/></Link>
     </footer>
   </main>
 }
