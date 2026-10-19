@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, Sparkles, Users } from 'lucide-react'
+import { Bot, BriefcaseBusiness, Gamepad2, Loader2, LockKeyhole, Megaphone, Sparkles, Users, Sprout, ShoppingBasket } from 'lucide-react'
 import { toast } from 'sonner'
 
 function authHeaders() {
@@ -65,6 +65,8 @@ export default function WeaveLifestylesPage() {
   const aceOpen = Boolean(access?.active && carrier?.active && carrier?.position === 'Ace')
   const agenticAvailable = access?.role === 'bridger'
   const agenticOpen = Boolean(agenticAvailable && aceOpen)
+  const foodAvailable = access?.role === 'agent' || access?.role === 'bridger'
+  const foodOpen = Boolean(foodAvailable && access?.active)
   const distributionManagerAvailable = access?.role === 'agent' || access?.role === 'bridger'
   const distributionManagerOpen = Boolean(distributionManagerAvailable && access?.active)
   const legionAvailable = access?.role === 'agent' || access?.role === 'bridger'
@@ -140,6 +142,21 @@ export default function WeaveLifestylesPage() {
                   action="Enter Agentic-Bridger"
                   tools={[{icon:<Bot className="h-3.5 w-3.5"/>,label:'Bridger movement'},{icon:<Gamepad2 className="h-3.5 w-3.5"/>,label:'Ace standing'}]}
                   nested
+                />
+              )}
+
+              {foodAvailable && (
+                <LifestyleGround
+                  tone="amber"
+                  icon={<Sprout className="h-8 w-8" />}
+                  eyebrow="Flame Event · Everyday food"
+                  title="FARM TO FAMILY"
+                  detail="Buy everyday food directly from an Agent farmer with surplus stock. Agents can publish farm produce; Agents and Bridgers can place household orders across Nigeria, receive transport quotes and arrange delivery. No extra Lifestyle charge."
+                  open={foodOpen}
+                  reason={access?.active ? 'Agent or Bridger access required.' : 'Your Agent or Bridger Lifestyle must be active.'}
+                  href="/weave/lifestyles/food"
+                  action="Enter Food Exchange"
+                  tools={[{icon:<Sprout className="h-3.5 w-3.5"/>,label:'Farmer surplus'},{icon:<ShoppingBasket className="h-3.5 w-3.5"/>,label:'Household orders'}]}
                 />
               )}
 
