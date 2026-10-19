@@ -22,3 +22,6 @@ CREATE INDEX IF NOT EXISTS weave_guidance_staff_queue_idx
 CREATE INDEX IF NOT EXISTS weave_guidance_staff_active_idx
  ON weave_guidance_staff_applications(user_id,department)
  WHERE status='approved';
+
+-- Match the read receipts already used by Administration Company Guidance.
+ALTER TABLE lounge_messages ADD COLUMN IF NOT EXISTS is_read boolean DEFAULT false;
