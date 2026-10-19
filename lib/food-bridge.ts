@@ -29,6 +29,9 @@ async function establishSchema() {
       agent_id uuid NOT NULL UNIQUE REFERENCES users(id),
       farm_name varchar(120) NOT NULL,
       contact_private varchar(60) NOT NULL,
+      payout_bank_name varchar(120),
+      payout_account_number varchar(30),
+      payout_account_name varchar(150),
       state varchar(40) NOT NULL,
       community varchar(120) NOT NULL,
       consent_contact_sharing boolean NOT NULL DEFAULT false,
@@ -40,6 +43,9 @@ async function establishSchema() {
       updated_at timestamptz NOT NULL DEFAULT NOW(),
       CHECK (status IN ('pending','approved','rejected'))
     );
+    ALTER TABLE weave_food_farmers ADD COLUMN IF NOT EXISTS payout_bank_name varchar(120);
+    ALTER TABLE weave_food_farmers ADD COLUMN IF NOT EXISTS payout_account_number varchar(30);
+    ALTER TABLE weave_food_farmers ADD COLUMN IF NOT EXISTS payout_account_name varchar(150);
     CREATE TABLE IF NOT EXISTS weave_food_surplus (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       farmer_id uuid NOT NULL REFERENCES weave_food_farmers(id),
