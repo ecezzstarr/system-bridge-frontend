@@ -42,6 +42,7 @@ jobs:
           node tests/carrier-farm-door-regression.cjs
           node tests/flame-real-food-current-regression.cjs
           node tests/weave-food-economics-escrow-regression.cjs
+          node tests/weave-food-pages-info-regression.cjs
 
       - name: Remaining regression checks
         run: |
