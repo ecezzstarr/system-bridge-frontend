@@ -119,9 +119,14 @@ export default function Home() {
               <p className="inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.18em] text-orange-100">
                 <Flame className="h-3.5 w-3.5 text-orange-200"/> Flame Event Live · Burning River · The River that Burns
               </p>
-              <Link href="/market" className="inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.14em] text-emerald-200">
-                Visit open Client Customer Doors <ArrowRight className="h-3 w-3"/>
-              </Link>
+              <div className="flex flex-wrap items-center gap-4">
+                <Link href="/flame/frontier" className="inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.14em] text-orange-200">
+                  Watch Nigeria Frontier <ArrowRight className="h-3 w-3"/>
+                </Link>
+                <Link href="/market" className="inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[.14em] text-emerald-200">
+                  Visit open Client Customer Doors <ArrowRight className="h-3 w-3"/>
+                </Link>
+              </div>
             </div>
           </div>
         )}
