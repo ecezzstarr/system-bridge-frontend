@@ -239,7 +239,7 @@ export default function PositionEventWorld({
               {enterprises.map((enterprise,index)=>(
                 <Link
                   key={enterprise.public_slug}
-                  href={role==='client'?`/system-switch/customer-doors?door=${encodeURIComponent(enterprise.public_slug)}`:`/system-switch/customer-doors/${encodeURIComponent(enterprise.public_slug)}?entrance=flame-event`}
+                  href={`/system-switch/customer-doors?door=${encodeURIComponent(enterprise.public_slug)}&entrance=${role==='client'?'market':'flame-event'}`}
                   data-flame-event-customer-door={enterprise.public_slug}
                   className="group min-h-32 border-b border-white/8 p-4 transition hover:bg-white/[.025] sm:border-r lg:[&:nth-child(3n)]:border-r-0"
                 >
