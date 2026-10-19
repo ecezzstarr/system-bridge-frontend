@@ -173,7 +173,7 @@ export function HostedFileFolderVisit({slug,entrance}:{slug:string;entrance:'mar
     const load=async()=>{
       try{
         const token=localStorage.getItem('ssb_auth_token')
-        const response=await fetch('/api/public/client-world/'+encodeURIComponent(slug)+'?entrance='+entrance,{
+        const response=await fetch(`/api/public/client-world/${encodeURIComponent(slug)}?entrance=${entrance}`,{
           cache:'no-store',headers:token?{Authorization:'Bearer '+token}:{},
         })
         const data=await response.json()
