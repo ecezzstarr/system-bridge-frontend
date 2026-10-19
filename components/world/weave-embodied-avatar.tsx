@@ -174,9 +174,9 @@ export function WeaveEmbodiedAvatar({
       </group>
       <group ref={leftLeg} position={[-.165,.79,0]}>
         <Limb radius={.15} length={.58} color={fabric} position={[0,-.27,0]}/>
-        <group ref={leftKnee} position={[0,-.57,0]}>
+        <group ref={leftKnee} position={[0,-.40,0]}>
           <Limb radius={.122} length={.49} color={fabric} position={[0,-.17,0]}/>
-          <mesh castShadow position={[0,-.42,-.115]} scale={[.18,.115,.3]}>
+          <mesh castShadow position={[0,-.35,-.115]} scale={[.18,.115,.3]}>
             <sphereGeometry args={[1,11,8]}/>
             <meshStandardMaterial color={dark} roughness={.82}/>
           </mesh>
@@ -184,9 +184,9 @@ export function WeaveEmbodiedAvatar({
       </group>
       <group ref={rightLeg} position={[.165,.79,0]}>
         <Limb radius={.15} length={.58} color={fabric} position={[0,-.27,0]}/>
-        <group ref={rightKnee} position={[0,-.57,0]}>
+        <group ref={rightKnee} position={[0,-.40,0]}>
           <Limb radius={.122} length={.49} color={fabric} position={[0,-.17,0]}/>
-          <mesh castShadow position={[0,-.42,-.115]} scale={[.18,.115,.3]}>
+          <mesh castShadow position={[0,-.35,-.115]} scale={[.18,.115,.3]}>
             <sphereGeometry args={[1,11,8]}/>
             <meshStandardMaterial color={dark} roughness={.82}/>
           </mesh>
