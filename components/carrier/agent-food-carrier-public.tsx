@@ -1,4 +1,5 @@
 'use client'
+import { CustomerFoodPriceInfo } from '@/components/weave-food/food-program-info'
 
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, CheckCircle2, CreditCard, Loader2, MapPin, Package, Share2, Truck, Users } from 'lucide-react'
@@ -205,6 +206,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
         <Button onClick={()=>void share()} variant="outline" className="border-white/15 bg-white/[.03] text-white"><Share2 className="mr-2 h-4 w-4"/>SHARE</Button>
       </div>
     </header>
+    <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-8"><CustomerFoodPriceInfo/></div>
 
     <section className="mx-auto max-w-6xl px-4 py-7 sm:px-8">
       <div className="grid gap-5 lg:grid-cols-2">
