@@ -79,7 +79,7 @@ export function FlameEventOpenWorld({
   },[])
 
   const beginCrossing=()=>{
-    if(!webglAvailable){setShowDirectory(true);return}
+    if(!webglAvailable){setEntered(true);setShowDirectory(true);return}
     if(!ready)return
     try{window.sessionStorage.setItem('weave:flame:entered:'+role,'yes')}catch{}
     setEntered(true)
