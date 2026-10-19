@@ -33,7 +33,7 @@ export async function GET(request:NextRequest){
         WHEN 'disputed' THEN 3 WHEN 'held' THEN 4 ELSE 5 END,e.updated_at DESC
       LIMIT 150
     `)
-    return NextResponse.json({success:true,orders:rows,feePolicy:'WEAVE farmer commission is always ₦0. Buyer transport quote is passed to the seller without a WEAVE markup.',manualBankReconciliationRequired:true},
+    return NextResponse.json({success:true,orders:rows,feePolicy:'Each successfully completed Farm-to-Family order incurs a flat ₦1,000 seller service fee, deducted once from the buyer-paid order total. The buyer pays no added fee. The farmer receives buyer total minus ₦1,000.',manualBankReconciliationRequired:true},
       {headers:{'Cache-Control':'private, no-store'}})
   }catch(error){console.error('[admin/farm escrow] GET',error);return invalid('Cannot load payment reviews',500)}
 }
@@ -66,8 +66,8 @@ export async function PATCH(request:NextRequest){
     `,[orderId])
     const order=rows[0]
     if(!order){await client.query('ROLLBACK');return invalid('Escrow order not found',404)}
-    if(Number(order.weave_commission_ngn)!==0||Number(order.seller_payout_ngn)!==Number(order.buyer_total_ngn))
-      throw new Error('Zero-fee farmer payout invariant does not hold')
+    if(Number(order.weave_commission_ngn)!==1000||Number(order.seller_payout_ngn)!==Number(order.buyer_total_ngn)-1000)
+      throw new Error('Flat ₦1,000 seller-fee invariant does not hold')
     if(decision==='verify_payment'){
       const bankReference=typeof body.bankReference==='string'?body.bankReference.trim():''
       const amount=Number(body.verifiedAmountNgn)
@@ -87,8 +87,9 @@ export async function PATCH(request:NextRequest){
         'Order '+orderId,
         'Deliver to '+String(order.destination_area)+', '+String(order.destination_state),
         order.share_buyer_contact?'Buyer '+String(order.buyer_name)+' · '+String(order.buyer_phone_private):'Buyer contact not released; coordinate through WEAVE Administration.',
-        'Farm price + delivery quote: ₦'+Number(order.seller_payout_ngn).toLocaleString('en-NG'),
-        'WEAVE commission: ₦0.',
+        'Buyer paid: ₦'+Number(order.buyer_total_ngn).toLocaleString('en-NG'),
+        'WEAVE seller fee: ₦1,000 (once per completed order).',
+        'Farmer payout due after confirmed receipt: ₦'+Number(order.seller_payout_ngn).toLocaleString('en-NG'),
         'Open Lifestyle → Farm-to-Family to record dispatch.',
       ].join('\n')
       await client.query(`
@@ -131,7 +132,7 @@ export async function PATCH(request:NextRequest){
         INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link)
         VALUES($1::uuid,'farm_payout_released','Farm-to-Family payout recorded',$2,
           $3::uuid,'WEAVE Administration','/weave/lifestyles/food')
-      `,[order.seller_agent_id,'Order '+orderId+' paid in full (₦'+Number(order.seller_payout_ngn).toLocaleString('en-NG')+'). Transfer reference: '+transfer+'. WEAVE commission: ₦0.',admin.id])
+      `,[order.seller_agent_id,'Farm order '+orderId+' seller payout recorded (₦'+Number(order.seller_payout_ngn).toLocaleString('en-NG')+'). WEAVE deducted its single ₦1,000 seller fee. Bank transfer reference: '+transfer+'.',admin.id])
       await client.query('COMMIT')
       return NextResponse.json({success:true,orderId,escrowStatus:'released',
         message:'Administration recorded a completed external bank payout and notified the seller.'})
