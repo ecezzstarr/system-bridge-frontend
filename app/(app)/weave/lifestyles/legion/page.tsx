@@ -54,6 +54,20 @@ export default function LegionLifestylePage(){
     finally{setBusy(null)}
   }
 
+  const acceptOffer=async(applicationId:string)=>{
+    setBusy(applicationId)
+    try{
+      const res=await fetch('/api/weave/lifestyles/legion',{
+        method:'POST',headers:headers(),body:JSON.stringify({action:'accept_offer',applicationId}),
+      })
+      const result=await res.json()
+      if(!res.ok)throw new Error(result.error||'Unable to accept Client employment offer')
+      toast.success('Client employment terms accepted. Exclusive Legion service is now active.')
+      await load()
+    }catch(error:any){toast.error(error.message||'Unable to accept Client employment')}
+    finally{setBusy(null)}
+  }
+
   const leaveLegion=async(legionId:string)=>{
     if(releaseReason.trim().length<5){toast.error('Explain why you are ending Legion employment.');return}
     setBusy(legionId)
@@ -102,6 +116,7 @@ export default function LegionLifestylePage(){
   }
 
   const invites=(data?.applications||[]).filter((a:any)=>a.direction==='client_invite')
+  const offers=(data?.applications||[]).filter((a:any)=>a.direction==='candidate_application'&&a.status==='offered')
   const freeAgent=data?.access?.role==='agent'
   return <main className="mx-auto max-w-6xl px-4 py-8 md:px-7 md:py-12" data-legion-employment="available">
     <Link href="/weave/lifestyles" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-white"><ArrowLeft className="h-4 w-4"/>Lifestyle</Link>
@@ -110,6 +125,20 @@ export default function LegionLifestylePage(){
     <Link href="/enterprise/legions-notebook" className="mt-5 inline-flex min-h-11 items-center rounded-full border border-amber-300/25 bg-amber-400/[.07] px-4 text-xs font-black text-amber-100">Read Enterprise Legions · The General's Notebook</Link>
 
     {!data?.eligible&&<div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-400/[.05] p-5 text-sm text-amber-100">{freeAgent?'Your Agent account must be active before you can apply for Legion employment.':'Your Bridger Continuance must be active before you can apply for Legion employment.'}</div>}
+
+    {offers.length>0&&<section className="mt-7 rounded-2xl border border-amber-300/25 bg-amber-200/[.04] p-5">
+      <h2 className="text-lg font-bold text-amber-100">Employment offers requiring your agreement</h2>
+      <p className="mt-2 text-xs leading-5 text-slate-300">Applying did not make you a Legion. Review the Client's function and earnings terms before choosing whether to accept exclusive employment.</p>
+      <div className="mt-4 grid gap-3">{offers.map((a:any)=><article key={a.id} className="rounded-xl border border-white/15 bg-black/20 p-4">
+        <p className="text-sm font-bold text-white">{a.enterprise_name} · {a.client_name}</p>
+        <p className="mt-2 text-xs text-slate-200">Function: {a.function_title||'Enterprise Legion'}</p>
+        <p className="mt-1 whitespace-pre-wrap text-xs text-slate-300">Earnings agreement: {a.profit_participation||'Not specified — obtain terms before accepting.'}</p>
+        <button type="button" disabled={busy===a.id||!a.profit_participation} onClick={()=>void acceptOffer(String(a.id))}
+          className="mt-4 min-h-11 rounded-xl bg-amber-300 px-4 py-3 text-xs font-bold text-slate-950 disabled:opacity-40">
+          Accept these terms and become a Legion
+        </button>
+      </article>)}</div>
+    </section>}
 
     {invites.length>0&&<section className="mt-7"><div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-emerald-300"/><h2 className="text-lg font-black text-white">Client invitations</h2></div><div className="mt-4 grid gap-3 md:grid-cols-2">{invites.map((a:any)=><article key={a.id} className="rounded-2xl border border-emerald-300/15 bg-emerald-300/[.035] p-5"><p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Invitation</p><h3 className="mt-2 text-xl font-black text-white">{a.enterprise_name}</h3><p className="mt-1 text-xs text-slate-500">Client: {a.client_name}</p>{a.function_title&&<p className="mt-3 text-sm text-slate-300">{a.function_title}</p>}{a.profit_participation&&<p className="mt-2 text-xs text-slate-500">{a.profit_participation}</p>}<button disabled={busy===a.id} onClick={()=>acceptInvite(a.id)} className="mt-4 rounded-full bg-emerald-400 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider text-slate-950 disabled:opacity-50">Accept exclusive Legion employment</button></article>)}</div></section>}
 
