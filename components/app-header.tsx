@@ -192,7 +192,7 @@ export function AppHeader({ user }: AppHeaderProps) {
         </Button>
 
         <div className="shrink-0" data-phone-chrome="signal">
-          <NotificationBell />
+          <NotificationBell position="phone" />
         </div>
       </div>
 
@@ -248,7 +248,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             {accountOpen && renderAccountMenu('right')}
           </div>
 
-          <NotificationBell />
+          <NotificationBell position="desktop" />
         </div>
       </div>
     </header>
