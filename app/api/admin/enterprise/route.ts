@@ -79,7 +79,7 @@ export async function PATCH(request: NextRequest) {
       await notifyUser(application.client_id, {
         type: 'enterprise_plan_rejected',
         title: 'Enterprise Dream plan returned',
-        content: `Administration returned your ${application.requested_position} elevation plan for ${application.enterprise_name}.${note ? ` Note: ${note}` : ''}`,
+        content: `Administration returned your enterprise plan for ${application.enterprise_name}.${note ? ` Note: ${note}` : ''}`,
         link: '/client/system-switch',
         fromUserId: auth.session.user.id,
         fromUserName: 'WEAVE Administration',
@@ -143,8 +143,8 @@ export async function PATCH(request: NextRequest) {
 
     await notifyUser(application.client_id, {
       type: 'enterprise_plan_approved',
-      title: `${application.requested_position === 'lady' ? 'Lady' : 'Lord'} elevation approved`,
-      content: `Administration approved ${application.enterprise_name}. Your File Folder is now an Enterprise Dream Workshop. Enterprise construction is unlocked; build Legion Quarters to open Legion participation.`,
+      title: 'Enterprise plan approved',
+      content: `Administration approved the enterprise plan for ${application.enterprise_name}. Your subscribed Lord/Lady title remains based on registration gender. Enterprise construction is unlocked; build Legion Quarters to recruit Legions.`,
       link: '/client/system-switch',
       fromUserId: auth.session.user.id,
       fromUserName: 'WEAVE Administration',
