@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
-import { activateLegionEmployment, ensureLegionEmploymentSchema, getActiveLegionEmployment } from '@/lib/legion-employment'
+import { activateLegionEmployment, ensureLegionEmploymentSchema, getActiveLegionEmployment, releaseLegionEmployment } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
 import { getClientMonthlyStanding, ensureClientMonthlySchema } from '@/lib/client-monthly-subscription'
@@ -69,6 +69,28 @@ export async function POST(request:NextRequest){
   if(!['agent','bridger'].includes(baseRole))return NextResponse.json({success:false,error:'Agent or Bridger access required.'},{status:403})
 
   await ensureLegionEmploymentSchema(sql)
+  const body=await request.json().catch(()=>({}))
+  const action=String(body.action||'apply')
+
+  // Resignation is available even when the worker's underlying subscription
+  // has expired. An exclusive employment must never trap someone in a role.
+  if(action==='release_legion'){
+    const employment=await getActiveLegionEmployment(sql,user.id)
+    if(!employment.active||!employment.legionId)
+      return NextResponse.json({success:false,error:'No active Legion employment to release'},{status:409})
+    const result=await releaseLegionEmployment(sql,{
+      legionId:employment.legionId,actorUserId:user.id,
+      actorPosition:'worker',reason:String(body.reason||''),
+    })
+    if(!result.success)return NextResponse.json(result,{status:result.status||500})
+    if(!result.alreadyReleased)await recordSystemEvent({
+      eventType:'legion_employment_released',actorId:user.id,actorRole:baseRole,
+      subjectType:'enterprise_legion',subjectId:employment.legionId,source:'lifestyle-legion',
+      payload:{releasedBy:'worker',clientId:employment.clientId,pendingOrders:result.pendingOrders},
+    }).catch(e=>console.error('[Legion release event]',e))
+    return NextResponse.json(result)
+  }
+
   const access=await getLifestyleAccess(user.id)
   if(!access.active){
     const error=baseRole==='agent'
@@ -78,9 +100,6 @@ export async function POST(request:NextRequest){
   }
   const current=await getActiveLegionEmployment(sql,user.id)
   if(current.active)return NextResponse.json({success:false,error:'You are already an active Legion and can only work for your Client inside Weave.'},{status:409})
-
-  const body=await request.json().catch(()=>({}))
-  const action=String(body.action||'apply')
 
   if(action==='apply'){
     const enterpriseApplicationId=String(body.enterpriseApplicationId||'')
