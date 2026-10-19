@@ -9,6 +9,40 @@ import { buildUserReferralCode, resolveReferralOwnerByCode } from '@/lib/user-re
 import { queueReferralSignupBonus } from '@/lib/referral-bonus'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 
+// A client may lose the HTTP response after a successful DB commit on mobile.
+// Reusing the paid ticket is safe only when the original owner's password and
+// identity match; this is never a way to transfer or reuse a one-time ticket.
+async function recoverCompletedRegistration(input:{
+  code:string;department:string;role:string;email:string;username:string;password:string
+}){
+  if(!input.code||!input.email||!input.username||!input.password)return null
+  const [owner]=await sql`
+    SELECT u.id,u.email,u.username,u.name,u.role,u.departmental_code,
+      u.referral_code,u.assigned_agent_id,u.password_hash
+    FROM departmental_codes dc
+    JOIN users u ON u.id=dc.used_by
+    WHERE dc.code=${input.code} AND dc.department=${input.department}
+      AND dc.status='USED' AND u.role=${input.role}
+      AND u.email=${input.email} AND u.username=${input.username}
+    LIMIT 1
+  `
+  if(!owner||!await bcrypt.compare(input.password,owner.password_hash))return null
+  const token=`ssb_${owner.id}_${Date.now()}`
+  await sql`
+    INSERT INTO sessions (id,user_id,token,created_at,expires_at)
+    VALUES (gen_random_uuid(),${owner.id}::uuid,${token},NOW(),NOW()+INTERVAL '7 days')
+  `
+  return NextResponse.json({
+    recovered:true,token,
+    user:{
+      id:owner.id,email:owner.email,username:owner.username,name:owner.name,
+      role:owner.role,departmental_code:owner.departmental_code,
+      referral_code:owner.referral_code,assigned_agent_id:owner.assigned_agent_id||null,
+      platform_wallet_balance:0,escrow_balance:0,
+    },
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const shield=await getDivineShieldState()
@@ -60,9 +94,15 @@ export async function POST(request: NextRequest) {
     const dept = role.toUpperCase() as Department
     const validation = await validateDepartmentalCode(departmentalCode, dept)
     if (!validation.valid) {
+      if (validation.error === 'Code has already been used.') {
+        const recovered = await recoverCompletedRegistration({
+          code:departmentalCode,department:dept,role,email,username,password,
+        })
+        if (recovered) return recovered
+      }
       return NextResponse.json(
-        { error: validation.error || 'Invalid departmental code.' },
-        { status: 400 }
+        { error: validation.error || 'Invalid departmental code.', code: 'ENTRY_CODE_UNAVAILABLE' },
+        { status: 409 }
       )
     }
 
