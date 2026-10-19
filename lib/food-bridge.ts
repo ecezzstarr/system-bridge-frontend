@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import { getPool } from '@/lib/db'
 export { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS, validFoodState, validFoodUnit } from '@/lib/food-bridge-states'
 
@@ -16,6 +17,9 @@ export function validNaira(value: unknown) {
   return Number.isFinite(n) && n >= 0 && n <= 100000000 && Math.abs(Math.round(n*100)-n*100) < 1e-7
 }
 export const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+export const guestOrderKey = () => crypto.randomBytes(32).toString('hex')
+export const digestGuestOrderKey = (key:string) => crypto.createHash('sha256').update(key).digest('hex')
+export const isGuestOrderKey = (key:unknown):key is string => typeof key==='string' && /^[a-f0-9]{64}$/.test(key)
 
 let schema:Promise<void>|undefined
 async function establishSchema() {
@@ -75,8 +79,19 @@ async function establishSchema() {
     );
     CREATE INDEX IF NOT EXISTS idx_weave_food_farmers_status ON weave_food_farmers(status,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_surplus_farmer ON weave_food_surplus(farmer_id,status);
+    ALTER TABLE weave_food_direct_orders ALTER COLUMN buyer_user_id DROP NOT NULL;
+    ALTER TABLE weave_food_direct_orders ADD COLUMN IF NOT EXISTS guest_order_digest char(64);
+    ALTER TABLE weave_food_direct_orders ADD COLUMN IF NOT EXISTS carrier_referral_code varchar(40);
+    CREATE UNIQUE INDEX IF NOT EXISTS weave_food_guest_order_digest_unique
+      ON weave_food_direct_orders(guest_order_digest) WHERE guest_order_digest IS NOT NULL;
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_buyer ON weave_food_direct_orders(buyer_user_id,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_farmer ON weave_food_direct_orders(farmer_id,status,created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_weave_food_orders_carrier ON weave_food_direct_orders(carrier_referral_code,status,created_at DESC);
+    ALTER TABLE weave_food_direct_orders
+      DROP CONSTRAINT IF EXISTS weave_food_orders_identity_check;
+    ALTER TABLE weave_food_direct_orders
+      ADD CONSTRAINT weave_food_orders_identity_check
+      CHECK (buyer_user_id IS NOT NULL OR guest_order_digest IS NOT NULL);
   `)
 }
 export async function ensureFoodBridgeSchema() {
