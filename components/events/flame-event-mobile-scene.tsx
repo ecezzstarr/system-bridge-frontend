@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
 import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
 import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
-import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
+import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, enforceSystemSwitchGate, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
 import type { FlameWorldCustomerDoor } from './flame-event-open-world'
 import { WeaveEmbodiedAvatar, type WeaveAvatarMotion, type WeaveAvatarPosition } from '@/components/world/weave-embodied-avatar'
 
@@ -96,6 +96,20 @@ function Terrain({quality}:{quality:number}){
   }),[quality])
   return <group>
     <StonePaving/>
+    {[-1,1].map(side=><group key={'embankment:'+side} position={[side*10,0,0]}>
+      <mesh position={[0,.31,0]} castShadow receiveShadow>
+        <boxGeometry args={[13,.64,.72]}/>
+        <meshStandardMaterial color="#858e95" metalness={.18} roughness={.8}/>
+      </mesh>
+      <mesh position={[0,.67,0]}>
+        <boxGeometry args={[13,.08,.85]}/>
+        <meshStandardMaterial color="#d7bd93" metalness={.42} roughness={.52} emissive="#946a2e" emissiveIntensity={.18}/>
+      </mesh>
+      <mesh position={[0,.45,.39]}>
+        <boxGeometry args={[12.3,.065,.055]}/>
+        <meshBasicMaterial color="#eec889" transparent opacity={.8}/>
+      </mesh>
+    </group>)}
     <mesh position={[0,-.2,0]}><cylinderGeometry args={[16.68,17,.4,80]}/><meshStandardMaterial color="#78808b" roughness={.8}/></mesh>
     <mesh position={[0,.028,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[16.2,16.43,80]}/><meshBasicMaterial color="#ffca79" side={THREE.DoubleSide}/>
@@ -264,7 +278,8 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
     const blend=1-Math.exp(-dt*(magnitude>.02?9:13))
     velocity.current.x=THREE.MathUtils.lerp(velocity.current.x,magnitude>.02?ux*speed*magnitude:0,blend)
     velocity.current.z=THREE.MathUtils.lerp(velocity.current.z,magnitude>.02?uz*speed*magnitude:0,blend)
-    const next=clampFlameEventPosition(position.current.x+velocity.current.x*dt,position.current.z+velocity.current.z*dt)
+    const bounded=clampFlameEventPosition(position.current.x+velocity.current.x*dt,position.current.z+velocity.current.z*dt)
+    const next=enforceSystemSwitchGate(position.current,bounded)
     position.current.x=next.x;position.current.z=next.z
     const actual=Math.hypot(velocity.current.x,velocity.current.z)
     activity.current=THREE.MathUtils.lerp(activity.current,Math.min(1,actual/4.7),blend)
