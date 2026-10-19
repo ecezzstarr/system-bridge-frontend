@@ -47,7 +47,7 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "audience": "client",
     "title": "The Lord or Lady Is the General",
     "story": "The field begins with its builder. The General gives the enterprise its direction, just as a leader once gave a camp its purpose.",
-    "meaning": "A Client is Lord or Lady according to the Client's chosen identity, and automatically the General of their own enterprise—the equivalent of its founder and CEO. They own the business, brand, products, pricing, and Customer Door; Legion workers do not become owners merely by working there.",
+    "meaning": "When Administration approves the enterprise, the Client takes the Lord or Lady position requested for their identity and automatically becomes the General of their own enterprise—the equivalent of its founder and CEO. They own the business, brand, products, pricing, and Customer Door; Legion workers do not become owners merely by working there.",
     "action": [
       "Name the enterprise and what it will produce or provide.",
       "Define what belongs to the Client and what work can be delegated."
