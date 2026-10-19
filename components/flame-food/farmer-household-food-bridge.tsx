@@ -10,7 +10,7 @@ type Order={id:string;status:string;quantity:string;food_subtotal_ngn:string;del
   destination_state:string;destination_area:string;delivery_mode:string;created_at:string;quote_note?:string|null;
   produce:string;unit:string;farm_name?:string;origin_state?:string;farmer_contact?:string|null;buyer_contact?:string|null;
   escrow_status?:string|null;escrow_reference?:string|null;buyer_total_ngn?:string|null;
-  seller_payout_ngn?:string|null;paymentAccountNumber?:string|null;weaveCommissionNgn?:number}
+  seller_payout_ngn?:string|null;paymentAccountNumber?:string|null;weave_commission_ngn?:string|null;weaveCommissionNgn?:number}
 type Farm={farmer:{id:string;farm_name:string;state:string;community:string;status:string}|null;
   offers:{id:string;produce:string;unit:string;available_quantity:string;status:string}[];orders:Order[]}
 const money=(value:unknown)=>'₦'+Number(value||0).toLocaleString('en-NG',{maximumFractionDigits:2})
@@ -274,6 +274,7 @@ export default function FarmerHouseholdFoodBridge(){
               <p className="text-[10px] font-black uppercase text-amber-200">{o.status.replaceAll('_',' ')}</p>
               <h3 className="mt-2 text-lg font-black">{o.produce} · {o.quantity} {o.unit}</h3>
               <p className="mt-2 text-xs text-stone-400">Deliver to {o.destination_area}, {o.destination_state} · {money(o.food_subtotal_ngn)} food subtotal</p>
+              {o.buyer_total_ngn!==null&&o.buyer_total_ngn!==undefined&&<div className="mt-3 border border-emerald-300/20 p-3 text-xs text-stone-300" data-farmer-order-settlement><p>Buyer total: {money(o.buyer_total_ngn)}</p><p>WEAVE flat seller fee (one per order): {money(o.weave_commission_ngn||1000)}</p><p className="font-black text-emerald-200">Farmer payout after confirmed delivery: {money(o.seller_payout_ngn)}</p></div>}
               {o.buyer_contact&&<p className="mt-2 text-xs text-emerald-200">Buyer consented contact: {o.buyer_contact}</p>}
               {o.status==='requested'&&<div className="mt-3 flex flex-wrap gap-3">
                 <button disabled={busy} onClick={()=>sellerAction(o.id,'confirm')} className="bg-emerald-300 px-4 py-2 text-xs font-black text-black">Confirm stock</button>
