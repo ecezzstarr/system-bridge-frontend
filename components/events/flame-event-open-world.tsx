@@ -74,6 +74,21 @@ export function FlameEventOpenWorld({
     }
   },[])
 
+  useEffect(()=>{
+    if(!ready||!webglAvailable)return
+    const host=document.querySelector('[data-flame-event-mobile-scene]')
+    if(!host)return
+    const onLost=(event:Event)=>{
+      event.preventDefault()
+      resetMovement()
+      setWebglAvailable(false)
+      setEntered(true)
+      setShowDirectory(true)
+    }
+    host.addEventListener('webglcontextlost',onLost,true)
+    return ()=>host.removeEventListener('webglcontextlost',onLost,true)
+  },[ready,webglAvailable,resetMovement])
+
   const beginCrossing=()=>{
     if(!webglAvailable){setShowDirectory(true);return}
     if(!ready)return
@@ -213,6 +228,7 @@ export function FlameEventOpenWorld({
       <div className={"absolute inset-y-[13%] right-0 z-[7] w-[60%] "+(!entered?"pointer-events-none":"")} style={{touchAction:'none'}}
         onPointerDown={onLookDown} onPointerMove={onLookMove}
         onPointerUp={onLookUp} onPointerCancel={onLookUp}
+        onLostPointerCapture={()=>{lookPointer.current=null}}
         aria-label="Drag here to look around the Flame Event world"
         data-flame-mobile-look
       />
@@ -238,12 +254,13 @@ export function FlameEventOpenWorld({
       </div>}
       <div className="absolute bottom-0 left-0 right-0 z-[9] h-56 bg-gradient-to-t from-[#06192e]/80 via-[#06192e]/10 to-transparent pointer-events-none"/>
 
-      <div className={"absolute bottom-6 left-3 z-20 sm:bottom-8 sm:left-6 "+(!entered?"pointer-events-none opacity-30":"")} data-switch-mobile-controls={entered?"active":"waiting"}>
+      <div className={"absolute bottom-6 left-3 z-20 sm:bottom-8 sm:left-6 "+(!entered||!webglAvailable?"pointer-events-none opacity-30":"")} data-switch-mobile-controls={entered&&webglAvailable?"active":"waiting"}>
         <div ref={joystick}
           className="relative flex h-32 w-32 items-center justify-center rounded-full border-2 border-sky-100/35 bg-[#0b2444]/45 shadow-[inset_0_0_30px_rgba(160,217,252,.12),0_8px_30px_rgba(0,0,0,.3)] backdrop-blur-[3px]"
           style={{touchAction:'none'}}
           onPointerDown={onStickDown} onPointerMove={onStickMove}
           onPointerUp={onStickUp} onPointerCancel={onStickUp}
+          onLostPointerCapture={()=>{movementPointer.current=null;controls.current.forward=0;controls.current.right=0;if(thumb.current)thumb.current.style.transform='translate(0px,0px)'}}
           role="group" aria-label="Left-thumb movement joystick" data-flame-mobile-joystick
         >
           <span className="pointer-events-none absolute top-2 text-[8px] font-black tracking-widest text-white/60">MOVE</span>
@@ -254,7 +271,7 @@ export function FlameEventOpenWorld({
         </div>
       </div>
 
-      <div className={"absolute bottom-5 right-3 z-20 flex flex-col items-end gap-2 sm:bottom-7 sm:right-5 "+(!entered?"pointer-events-none opacity-30":"")}>
+      <div className={"absolute bottom-5 right-3 z-20 flex flex-col items-end gap-2 sm:bottom-7 sm:right-5 "+(!entered||!webglAvailable?"pointer-events-none opacity-30":"")}>
         {nearDoor ? <Link
           href={'/market/'+encodeURIComponent(nearDoor.public_slug)+'?via=system-switch'}
           className="flex max-w-[195px] items-center gap-2 rounded-xl border border-amber-100/70 bg-[#b87728]/95 px-3 py-3 text-xs font-black text-white shadow-lg shadow-amber-400/20"
@@ -283,6 +300,7 @@ export function FlameEventOpenWorld({
             ><span className="text-lg leading-4">↑</span>JUMP</button>
           </div>
           <button type="button" onPointerDown={onRunDown} onPointerUp={onRunUp} onPointerCancel={onRunUp}
+            onLostPointerCapture={()=>{controls.current.run=false;setRunning(false)}}
             aria-pressed={running} data-flame-mobile-run
             className={'flex h-20 w-20 flex-col items-center justify-center rounded-full border-2 text-[10px] font-black shadow-lg '+(running?'border-amber-100 bg-amber-600/85 text-white':'border-amber-100/60 bg-[#783f24]/85 text-amber-50')}
             style={{touchAction:'none'}}
