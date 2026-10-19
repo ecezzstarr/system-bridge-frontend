@@ -30,7 +30,7 @@ export default async function CarrierFoodDoorPage({params}:{params:Promise<{code
           <p className="mt-1 text-sm font-black text-white">FARM PRODUCE · AGILITY · ELECTROLYTE · CAKES</p>
           <p className="mt-1 text-xs font-black text-amber-200">CAKES · DAISY PASTRIES</p>
           <p className="mt-1 text-sm font-black text-sky-100">1 PACKAGE / BOWL OR MORE · NO CARTON MINIMUM</p>
-          <p className="mt-1 text-xs leading-5 text-slate-400">Farm produce comes from an Agent's verified farm account and shows the farm's reported available stock; customers request quantities and approve a real transport quote before arranging payment. Agility and Electrolyte customers order packages or bowls from Agent stock. Daisy Pastries cakes retain their separate ordering and payment process.</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">Farm produce comes from an Agent's verified farm account and shows the farm's reported available stock; customers request quantities and approve a real transport quote before arranging payment. Carton rules apply only when an Agent buys company stock from WEAVE. Agility and Electrolyte customers order packages or bowls from Agent stock. Daisy Pastries cakes retain their separate ordering and payment process.</p>
         </div>
         <p className="mb-3 text-[9px] font-black uppercase tracking-[.24em] text-slate-500">Customer food preview · see what you are ordering</p>
         <div className="grid gap-3 sm:grid-cols-2">
