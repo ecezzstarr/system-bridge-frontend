@@ -21,6 +21,7 @@ export function ensureWeaveTrxSalesSchema(){
         bank_verified_at timestamptz,
         bank_verified_by uuid REFERENCES users(id),
         bank_verification_note text,
+        receipt_number varchar(90) UNIQUE,
         delivery_tx_hash varchar(128) UNIQUE,
         delivered_at timestamptz,
         delivered_by uuid REFERENCES users(id),
@@ -29,6 +30,7 @@ export function ensureWeaveTrxSalesSchema(){
         CHECK (status IN ('awaiting_quote','quoted','proof_submitted','bank_verified','delivered','rejected'))
       )
     `)
+    await pool.query("CREATE UNIQUE INDEX IF NOT EXISTS idx_weave_trx_sales_bank_reference ON weave_trx_sale_orders(payment_reference) WHERE payment_reference IS NOT NULL")
     await pool.query("CREATE INDEX IF NOT EXISTS idx_weave_trx_sales_status ON weave_trx_sale_orders(status,created_at DESC)")
   })().catch(e=>{ready=null;throw e})
   return ready
