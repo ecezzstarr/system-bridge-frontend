@@ -166,6 +166,9 @@ export async function expireFoodRequests() {
       UPDATE weave_food_direct_orders SET status='expired',updated_at=NOW()
       WHERE (status='requested' AND created_at < NOW()-INTERVAL '24 hours')
         OR (status IN ('farmer_confirmed','quoted') AND updated_at < NOW()-INTERVAL '48 hours')
+        OR (status='accepted' AND updated_at < NOW()-INTERVAL '24 hours' AND NOT EXISTS (
+          SELECT 1 FROM weave_food_escrow e WHERE e.order_id=weave_food_direct_orders.id
+            AND e.status<>'awaiting_payment'))
       RETURNING listing_id,quantity
     `)
     for(const row of rows)await client.query(`
