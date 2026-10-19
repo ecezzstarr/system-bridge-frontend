@@ -17,7 +17,10 @@ export function clientEnterpriseTitle(gender: unknown): 'lord' | 'lady' | null {
 
 // Use a paid Client subscription record as evidence. A legacy users row with a
 // default subscription_status='active' must NOT grant a free Lord/Lady title.
-export async function ensureClientMonthlySchema() {
+let monthlySchemaReady: Promise<void> | null = null
+
+export function ensureClientMonthlySchema() {
+  if (!monthlySchemaReady) monthlySchemaReady = (async () => {
   const pool = getPool()
   await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS gender varchar(12)")
   await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status varchar(20) DEFAULT 'active'")
@@ -36,6 +39,8 @@ export async function ensureClientMonthlySchema() {
     )
   `)
   await pool.query("CREATE INDEX IF NOT EXISTS client_monthly_subscriptions_active_idx ON client_monthly_subscriptions(client_id,period_end DESC)")
+  })().catch(error => { monthlySchemaReady = null; throw error })
+  return monthlySchemaReady
 }
 
 export async function getClientMonthlyStanding(clientId: string) {
