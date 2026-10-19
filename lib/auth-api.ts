@@ -50,8 +50,11 @@ async function applyExclusiveLegionPosition(user:AuthUser):Promise<AuthUser>{
     // Older databases do not have the Legion employment columns until the
     // Lifestyle layer is first opened. Preserve normal auth before that point.
     if(String(error?.message||'').includes('source_user_id') || String(error?.message||'').includes('employment_status')) return user
-    console.error('[Legion Position] auth state unavailable:',error)
-    return user
+    console.error('[Legion Position] auth state unavailable; preserving exclusive-role restrictions:',error)
+    // A transient query failure must not re-enable Agent/Bridger work for a
+    // worker who may still have an exclusive Client employment. Restrict their
+    // runtime capabilities until the employment check is available again.
+    return {...user,baseRole:user.role,role:'legion'}
   }
 }
 
