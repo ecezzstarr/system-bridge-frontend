@@ -120,6 +120,7 @@ export function ClientMarketEnvironment({
   orderRef,
   streamUrl,
   enterpriseUrl,
+  arrivalFromSystemSwitch=false,
 }:{
   slug:string
   store:{name:string;description?:string|null;customer_wallet_required?:boolean}
@@ -131,11 +132,23 @@ export function ClientMarketEnvironment({
   orderRef?:string|null
   streamUrl?:string|null
   enterpriseUrl?:string|null
+  arrivalFromSystemSwitch?:boolean
 }){
   const style=presetClass[config.preset]||presetClass.radiant_arcade
   const doorName=config.platformName || store.name || 'Customer Door'
   const levelLabel=level==='market_hall'?'Market Hall':level==='storefront'?'Constructed Storefront':doorName
   return <main className="min-h-screen bg-transparent text-white" data-client-market-world>
+    {arrivalFromSystemSwitch&&<section data-customer-door-system-switch-arrival="true" className="relative isolate overflow-hidden border-b border-amber-200/25 bg-[#081d31] px-4 py-5 text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(251,192,98,.28),transparent_60%),linear-gradient(120deg,rgba(125,211,252,.10),transparent_70%)]"/>
+      <div className="relative mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-[.23em] text-amber-200">Burning River → System Switch → Customer Door</p>
+          <h2 className="mt-1 text-lg font-black tracking-tight sm:text-2xl">You crossed into {doorName}.</h2>
+          <p className="mt-2 max-w-2xl text-xs leading-5 text-sky-100/80">The shared event ground is behind you. This public enterprise is operated by its Client; the offers, services, and order actions below belong to this actual business.</p>
+        </div>
+        <Link href="/flame-event" className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-amber-200/40 bg-amber-100/10 px-3 py-2.5 text-[10px] font-bold text-amber-100">Return to Burning River <ArrowRight className="h-3.5 w-3.5"/></Link>
+      </div>
+    </section>}
     <section className={`relative isolate overflow-hidden border-b border-white/10 bg-gradient-to-b ${style.sky}`}>
       <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.04)_1px,transparent_1px)] [background-size:42px_42px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]"/>
       <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-sky-400/10 blur-3xl"/>
