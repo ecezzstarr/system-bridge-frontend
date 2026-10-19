@@ -4,7 +4,37 @@ import {ensureWeaveReceiptSchema} from '@/lib/weave-receipts'
 
 export const validFlameCoinOrderId=(id:string)=>/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)
 export const validFlameCoinAmount=(value:number)=>Number.isFinite(value)&&value>0&&value<=1_000_000_000&&Math.round(value*1e8)/1e8===value
-export const flameCoinBankSalesEnabled=()=>process.env.WEAVE_VASP_AUTHORIZED==='true'&&process.env.WEAVE_FLUTTERWAVE_CRYPTO_APPROVED==='true'
+export const FLAME_COIN_PAYMENT_METHODS = ['bank','card','trx','usdt','btc'] as const
+export type FlameCoinPaymentMethod = typeof FLAME_COIN_PAYMENT_METHODS[number]
+export const isFlameCoinPaymentMethod = (value:unknown):value is FlameCoinPaymentMethod =>
+  typeof value==='string' && FLAME_COIN_PAYMENT_METHODS.includes(value as FlameCoinPaymentMethod)
+export const isCryptoPaymentMethod=(value:unknown):value is 'trx'|'usdt'|'btc' =>
+  value==='trx'||value==='usdt'||value==='btc'
+/** A mode appearing on the form does not authorize accepting money.
+ * WEAVE must independently verify both local permissions and receiving-bank or
+ * card-acquirer contracts before any flag is enabled.
+ */
+export function flameCoinMethodEnabled(method:FlameCoinPaymentMethod):boolean {
+  if(process.env.WEAVE_VASP_AUTHORIZED!=='true')return false
+  switch(method){
+    case 'bank':return process.env.WEAVE_BANK_FLAME_COIN_APPROVED==='true'
+    case 'card':return process.env.WEAVE_CARD_FLAME_COIN_APPROVED==='true'
+    case 'trx':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'
+    case 'usdt':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&Boolean(process.env.WEAVE_USDT_TRC20_RECEIVING_ADDRESS)
+    case 'btc':return process.env.WEAVE_CRYPTO_PAYMENTS_AUTHORIZED==='true'&&Boolean(process.env.WEAVE_BTC_RECEIVING_ADDRESS)
+  }
+}
+export const flameCoinBankSalesEnabled=()=>flameCoinMethodEnabled('bank')
+export const flameCoinMethodNetwork=(method:FlameCoinPaymentMethod) =>
+  method==='trx'?'TRON':method==='usdt'?'TRON-TRC20':method==='btc'?'BITCOIN':null
+export const flameCoinReceiveAddress=(method:FlameCoinPaymentMethod):string|null =>
+  method==='trx'? (process.env.COMPANY_TRON_WALLET || 'TFT8e4EbMTvfQUGBHSz6LWTi4wokRBBz32')
+  :method==='usdt'? (process.env.WEAVE_USDT_TRC20_RECEIVING_ADDRESS||null)
+  :method==='btc'? (process.env.WEAVE_BTC_RECEIVING_ADDRESS||null)
+  :null
+export const validFlameCoinProof=(method:FlameCoinPaymentMethod,reference:string) =>
+  isCryptoPaymentMethod(method)?/^[a-f0-9]{64}$/i.test(reference):reference.trim().length>=8
+
 
 let schemaReady:Promise<void>|null=null
 export function ensureFlameCoinSalesSchema(){
@@ -18,6 +48,11 @@ export function ensureFlameCoinSalesSchema(){
         buyer_email varchar(255) NOT NULL,
         flame_coin_amount numeric(30,8) NOT NULL CHECK(flame_coin_amount>0),
         provider varchar(40) NOT NULL DEFAULT 'pending_compliant_provider',
+        payment_method varchar(12) NOT NULL DEFAULT 'bank',
+        payment_network varchar(24),
+        payment_asset_amount numeric(30,8),
+        receiving_address text,
+        verification_evidence text,
         bank_amount numeric(30,2),
         bank_currency varchar(10),
         bank_instructions text,
@@ -38,6 +73,16 @@ export function ensureFlameCoinSalesSchema(){
         updated_at timestamptz NOT NULL DEFAULT NOW()
       )
     `)
+    // Existing enquiry rows predate method choice and remain bank records.
+    await pool.query("ALTER TABLE weave_flame_coin_orders ADD COLUMN IF NOT EXISTS payment_method varchar(12) NOT NULL DEFAULT 'bank'")
+    await pool.query("ALTER TABLE weave_flame_coin_orders ADD COLUMN IF NOT EXISTS payment_network varchar(24)")
+    await pool.query("ALTER TABLE weave_flame_coin_orders ADD COLUMN IF NOT EXISTS payment_asset_amount numeric(30,8)")
+    await pool.query("ALTER TABLE weave_flame_coin_orders ADD COLUMN IF NOT EXISTS receiving_address text")
+    await pool.query("ALTER TABLE weave_flame_coin_orders ADD COLUMN IF NOT EXISTS verification_evidence text")
+    // Existing DB status constraint predates asset-neutral settlement.
+    await pool.query("ALTER TABLE weave_flame_coin_orders DROP CONSTRAINT IF EXISTS weave_flame_coin_orders_status_check")
+    await pool.query(`ALTER TABLE weave_flame_coin_orders ADD CONSTRAINT weave_flame_coin_orders_status_check
+      CHECK(status IN ('awaiting_quote','quoted','proof_submitted','bank_verified','payment_verified','credited','rejected'))`)
     await pool.query('CREATE INDEX IF NOT EXISTS weave_fc_orders_review ON weave_flame_coin_orders(status,created_at DESC)')
   })().catch(e=>{schemaReady=null;throw e})
   return schemaReady
@@ -64,13 +109,13 @@ export async function creditVerifiedFlameCoinPurchase(input:{
       return {success:true,alreadyCredited:true,amountFlameCoin:Number(order.flame_coin_amount),
         balanceAfter:Number(order.credited_balance_after),receiptNumber:order.receipt_number}
     }
-    if(order.status!=='bank_verified'||!order.verified_at||!order.bank_reference){
+    if(!['bank_verified','payment_verified'].includes(order.status)||!order.verified_at||!order.bank_reference||!order.verification_evidence){
       await db.query('ROLLBACK')
-      return {success:false,error:'Forensics must verify actual bank receipt first',status:409}
+      return {success:false,error:'Forensics must independently verify the selected payment method first',status:409}
     }
-    if(!flameCoinBankSalesEnabled()){
+    if(!isFlameCoinPaymentMethod(order.payment_method)||!flameCoinMethodEnabled(order.payment_method)){
       await db.query('ROLLBACK')
-      return {success:false,error:'Bank-to-Flame Coin settlement is paused until regulatory and provider authorization is active',status:403}
+      return {success:false,error:'Selected payment rail is not authorized for Flame Coin purchases',status:403}
     }
     const [admin]=(await db.query("SELECT id FROM users WHERE id=$1::uuid AND role='admin' AND is_active=true",[input.adminId])).rows
     if(!admin){
@@ -114,20 +159,22 @@ export async function creditVerifiedFlameCoinPurchase(input:{
     )).rows
     if(!credit)throw Error('Recipient wallet credit failed')
     const receiptNumber='WEAVE-FC-'+randomUUID().toUpperCase()
-    const metadata=JSON.stringify({source:'flame_coin_bank_purchase',orderId:order.id,
-      bankReference:order.bank_reference,provider:order.provider,verifiedBy:order.verified_by,
-      fiatAmount:Number(order.bank_amount),fiatCurrency:order.bank_currency})
+    const metadata=JSON.stringify({source:'flame_coin_purchase',orderId:order.id,
+      paymentMethod:order.payment_method,network:order.payment_network,
+      paymentReference:order.bank_reference,provider:order.provider,verifiedBy:order.verified_by,
+      receivedAmount:Number(order.payment_asset_amount||order.bank_amount||0),
+      receivingAddress:order.receiving_address,asset:order.bank_currency,verificationEvidence:order.verification_evidence})
     await db.query(`
       INSERT INTO ledger_entries
       (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
       VALUES
       (gen_random_uuid(),$1::uuid,'transfer',$3,'Flame Coin','Funded customer Flame Coin purchase',$4,$5,$6::jsonb,NOW()),
-      (gen_random_uuid(),$2::uuid,'deposit',$3,'Flame Coin','Forensics-verified Flame Coin purchase',$7,$8,$6::jsonb,NOW())
+      (gen_random_uuid(),$2::uuid,'deposit',$3,'Flame Coin','Forensics-verified multi-rail Flame Coin purchase',$7,$8,$6::jsonb,NOW())
     `,[input.adminId,input.recipientId,amount,Number(funder.balance_trx),Number(debit.balance_trx),
        metadata,Number(receiver.balance_trx),Number(credit.balance_trx)])
     await db.query(`
       INSERT INTO weave_receipts(receipt_number,user_id,kind,source,source_id,amount,currency,status,description,metadata)
-      VALUES($1,$2::uuid,'purchase','flame_coin_bank_purchase',$3,$4,'Flame Coin','paid',
+      VALUES($1,$2::uuid,'purchase','flame_coin_purchase',$3,$4,'Flame Coin','paid',
         'Flame Coin purchase credited after Forensics verification',$5::jsonb)
     `,[receiptNumber,input.recipientId,order.id,amount,metadata])
     await db.query(`
@@ -145,7 +192,7 @@ export async function creditVerifiedFlameCoinPurchase(input:{
       balanceAfter:Number(credit.balance_trx),receiptNumber}
   }catch(e){
     if(!committed)await db.query('ROLLBACK').catch(()=>{})
-    console.error('[Flame Coin bank order credit]',e)
+    console.error('[Flame Coin verified purchase credit]',e)
     return {success:false,error:'Wallet transfer could not be completed; no purchase confirmed',status:500}
   }finally{db.release()}
 }
