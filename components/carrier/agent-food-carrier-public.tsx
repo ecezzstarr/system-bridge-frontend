@@ -176,7 +176,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
 
   const share=async()=>{
     const url=window.location.href
-    const text=`WEAVE Food · Agility + Electrolyte\nOrder through ${data?.agent?.name||'this Agent'}'s Carrier Door.`
+    const text=`WEAVE Food · Farm Produce + Agility + Electrolyte + Cakes\nOrder directly through ${data?.agent?.name||'this Agent'}'s Carrier Door.`
     const nativeShare=(navigator as unknown as {share?:NativeShare}).share
     void fetch(`/api/carrier/food/${encodeURIComponent(referralCode)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'share',channel:nativeShare?'native':'copy'})}).catch(()=>{})
     if(nativeShare){
@@ -200,7 +200,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
         <div>
           <p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">WEAVE · Carrier Door</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-6xl">FOOD IN MOVEMENT</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">Buy one or more Agility packages or Electrolyte bowls through <strong className="text-white">{data?.agent.name}</strong>. Customer orders are by package/bowl, not by carton. Pay the Agent first; then the order moves. No WEAVE account is required to buy.</p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">Buy farm produce where this Agent has listed it, plus Agility packages or Electrolyte bowls through <strong className="text-white">{data?.agent.name}</strong>. Farm produce requires a farmer-confirmed transport quote; WEAVE ready-made foods retain their existing Agent checkout. No WEAVE account is required to order.</p>
         </div>
         <Button onClick={()=>void share()} variant="outline" className="border-white/15 bg-white/[.03] text-white"><Share2 className="mr-2 h-4 w-4"/>SHARE</Button>
       </div>
