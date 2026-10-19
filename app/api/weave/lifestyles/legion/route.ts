@@ -147,6 +147,7 @@ export async function POST(request:NextRequest){
       LIMIT 1
     `
     if(!application)return NextResponse.json({success:false,error:'Legion invitation or agreed Client employment offer was not found.'},{status:404})
+    if(String(application.profit_participation||'').trim().length<5)return NextResponse.json({success:false,error:'A written earnings agreement is required before exclusive Legion employment.'},{status:409})
     const clientStanding=await getClientMonthlyStanding(String(application.client_id))
     if(!clientStanding.active)return NextResponse.json({success:false,error:'This Client enterprise must renew its monthly subscription before activating new Legions.'},{status:409})
     const capacity=await enterpriseCapacity(String(application.client_id))
