@@ -24,11 +24,13 @@ export async function GET(request:NextRequest) {
       getPool().query(`
         SELECT o.id,o.quantity,o.food_subtotal_ngn,o.delivery_quote_ngn,o.destination_state,
           o.destination_area,o.delivery_mode,o.status,o.created_at,l.produce,l.unit,
+          e.status AS escrow_status,e.buyer_total_ngn,e.seller_payout_ngn,e.verified_at,e.payout_recorded_at,
           CASE WHEN o.share_buyer_contact AND o.status NOT IN ('requested','rejected','expired','cancelled')
             THEN o.buyer_name ELSE NULL END AS buyer_name,
           CASE WHEN o.share_buyer_contact AND o.status NOT IN ('requested','rejected','expired','cancelled')
             THEN o.buyer_phone_private ELSE NULL END AS buyer_contact
         FROM weave_food_direct_orders o JOIN weave_food_surplus l ON l.id=o.listing_id
+        LEFT JOIN weave_food_escrow e ON e.order_id=o.id
         WHERE o.farmer_id=$1::uuid ORDER BY o.created_at DESC LIMIT 100
       `,[farmer.id]),
     ])
@@ -77,13 +79,16 @@ export async function PATCH(request:NextRequest) {
       return rows.length?NextResponse.json({success:true,order:rows[0]}):NextResponse.json({error:'Confirm this order before quoting'},{status:409})
     }
     if(action==='confirm'||action==='dispatch'){
-      const expected=action==='confirm'?'requested':'accepted',next=action==='confirm'?'farmer_confirmed':'dispatched'
+      const expected=action==='confirm'?'requested':'funds_held',next=action==='confirm'?'farmer_confirmed':'dispatched'
       const {rows}=await pool.query(`
         UPDATE weave_food_direct_orders SET status=$1,updated_at=NOW()
         WHERE id=$2::uuid AND farmer_id=$3::uuid AND status=$4
+          AND ($1<>'dispatched' OR EXISTS(
+            SELECT 1 FROM weave_food_escrow e WHERE e.order_id=weave_food_direct_orders.id
+              AND e.status='held' AND e.verified_at IS NOT NULL))
         RETURNING id,status
       `,[next,id,farmer.id,expected])
-      return rows.length?NextResponse.json({success:true,order:rows[0]}):NextResponse.json({error:'Order already moved past this stage'},{status:409})
+      return rows.length?NextResponse.json({success:true,order:rows[0]}):NextResponse.json({error:'Order is not ready; dispatch requires WEAVE verified funds on hold.'},{status:409})
     }
     const client=await pool.connect()
     try{
