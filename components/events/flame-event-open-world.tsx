@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { ArrowRight, DoorOpen, Flame, Footprints, Hand, List, PersonStanding, Radio, Waves, X } from 'lucide-react'
+import { ArrowRight, DoorOpen, Flame, Footprints, List, PersonStanding, Radio, Waves, X } from 'lucide-react'
 import type { FlameMobileInput } from './flame-event-mobile-scene'
 
 const FlameEventMobileScene=dynamic(
@@ -45,7 +45,6 @@ export function FlameEventOpenWorld({
   const [showDirectory,setShowDirectory]=useState(false)
   const [crouching,setCrouching]=useState(false)
   const [running,setRunning]=useState(false)
-  const [ready,setReady]=useState(false)
 
   const nearDoor=nearby===null?null:enterprises[nearby]||null
 
@@ -163,7 +162,7 @@ export function FlameEventOpenWorld({
     aria-label="Flame Event Burning River embodied mobile world"
   >
     <div
-      className="relative h-[min(86svh,820px)] min-h-[560px] w-full overflow-hidden bg-[#122c49]"
+      className="relative h-[86svh] min-h-[560px] max-h-[820px] w-full overflow-hidden bg-[#122c49] landscape:h-[94svh] landscape:min-h-[350px] landscape:max-h-none"
       data-flame-event-crossing="system-switch-customer-doors"
       data-flame-event-client-enterprises="customer-door-current"
       data-flame-event-customer-door-hub
@@ -280,6 +279,7 @@ export function FlameEventOpenWorld({
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200/20 bg-[#071b33] px-4 py-3 text-[10px] text-sky-50">
       <span className="inline-flex items-center gap-2"><Waves className="h-4 w-4 text-sky-300"/> Water and fire · One flowing world</span>
       <span className="inline-flex items-center gap-2"><Radio className="h-3.5 w-3.5 text-amber-300"/> {role==='client'?'Client':'Staff'} position · Touch movement</span>
+      <span className="sr-only">No private Client File Folder is exposed through the public Customer Doors.</span>
     </div>
   </section>
 }
