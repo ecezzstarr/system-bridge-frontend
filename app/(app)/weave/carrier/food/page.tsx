@@ -84,9 +84,14 @@ export default function AgentFoodCarrierConsole(){
     <header className="mt-5 border-b border-emerald-300/15 pb-7">
       <p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">Ace · Carrier · Agent instrument</p>
       <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-6xl">FOOD CARRIER DOOR</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">You pay WEAVE for stock. Customers pay your Agent receiving account before their order moves. Electrolyte Small Bowl sells at ₦4,000, Medium Bowl at ₦6,000. Far-location customers also pay the quoted waybill fee.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">You pay WEAVE ₦3,000 per unit of Agility or Electrolyte stock and sell each pack or bowl at the official ₦4,000 price. You earn ₦1,000 per unit: ₦5,000 per half carton (5), ₦10,000 per full carton (10). Prices are fixed; delivery waybill is separate.</p>
     </header>
 
+    <section className="mt-5 grid gap-3 sm:grid-cols-3" data-weave-official-food-earnings>
+      <div className="border border-emerald-300/20 p-4"><p className="text-xs text-stone-400">Customer price per pack or bowl</p><p className="mt-2 text-2xl font-black text-white">₦4,000</p></div>
+      <div className="border border-emerald-300/20 p-4"><p className="text-xs text-stone-400">Agent margin per sale</p><p className="mt-2 text-2xl font-black text-emerald-200">₦1,000</p></div>
+      <div className="border border-emerald-300/20 p-4"><p className="text-xs text-stone-400">Agent margin per carton (10)</p><p className="mt-2 text-2xl font-black text-emerald-200">₦10,000</p></div>
+    </section>
     {message&&<div className="mt-5 border border-emerald-300/20 bg-emerald-300/[.06] px-4 py-3 text-sm text-emerald-100">{message}</div>}
     {error&&<div className="mt-5 border border-red-300/20 bg-red-300/[.05] px-4 py-3 text-sm text-red-200">{error}</div>}
 
