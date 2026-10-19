@@ -1,11 +1,13 @@
 export const ACE_LIFESTYLE = 'ace' as const
 export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger' as const
 export const DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager' as const
+export const WEAVE_MANDATE_LIFESTYLE = 'weave_mandate' as const
 
 export type WeaveLifestyleKey =
   | typeof ACE_LIFESTYLE
   | typeof AGENTIC_BRIDGER_LIFESTYLE
   | typeof DISTRIBUTION_MANAGER_LIFESTYLE
+  | typeof WEAVE_MANDATE_LIFESTYLE
 
 export const WEAVE_LIFESTYLE_CATALOG = {
   [ACE_LIFESTYLE]: {
@@ -33,6 +35,17 @@ export const WEAVE_LIFESTYLE_CATALOG = {
       { label: 'Bridge AI', href: '/bridger/bridge-ai', purpose: 'Use Bridger assistance while preserving human authority.' },
       { label: 'Arena', href: '/arena', purpose: 'Enter the Ace game ground with Agentic-Bridger standing.' },
       { label: 'Carrier', href: '/weave/carrier', purpose: 'Distribute the Ace stream outward.' },
+    ],
+  },
+  [WEAVE_MANDATE_LIFESTYLE]: {
+    key: WEAVE_MANDATE_LIFESTYLE,
+    label: 'Weave Mandate',
+    route: '/weave/lifestyles/mandate',
+    roles: ['agent','bridger'],
+    summary: 'Apply through your existing Agent or Bridger standing for a Company Guidance departmental appointment. Administration controls approval and revocation.',
+    environments: [
+      { label: 'Department Applications', href: '/weave/lifestyles/mandate', purpose: 'Apply to Mandate, Forensics or Attorney support.' },
+      { label: 'Guidance Department Inbox', href: '/weave/lifestyles/mandate/inbox', purpose: 'Approved staff reply to actual Company Guidance conversations in their assigned department.' },
     ],
   },
   [DISTRIBUTION_MANAGER_LIFESTYLE]: {
