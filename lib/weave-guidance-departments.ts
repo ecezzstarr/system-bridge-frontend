@@ -21,6 +21,23 @@ let schemaPromise:Promise<void>|null=null
 export async function ensureGuidanceDepartmentSchema() {
   if(!schemaPromise) {
     schemaPromise=getPool().query(`
+      CREATE TABLE IF NOT EXISTS lounge_messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_type varchar(20) NOT NULL DEFAULT 'public',
+  room_id text NOT NULL DEFAULT 'main',
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  sender_name text NOT NULL,
+  sender_avatar text,
+  sender_role varchar(40) NOT NULL,
+  content text NOT NULL DEFAULT '',
+  message_type text NOT NULL DEFAULT 'text',
+  media_url text,
+  is_read boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS lounge_messages_room_type_idx
+ ON lounge_messages(room_type,room_id,message_type,created_at);
+
       CREATE TABLE IF NOT EXISTS weave_guidance_staff_applications (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,

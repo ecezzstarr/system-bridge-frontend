@@ -48,3 +48,5 @@ console.log('Mandate Lifestyle and Company Guidance staff regression checks pass
 
 assert.ok(schema.includes('source_role=$2'),'Department appointment remains bound to the reviewed base role')
 assert.ok(staff.includes('FOR SHARE OF a,u')&&staff.includes("await client.query('COMMIT')"),'Reply holds its assignment authorization through message commit')
+
+assert.ok(migration.includes('CREATE TABLE IF NOT EXISTS lounge_messages')&&oldGuidance.includes('await ensureGuidanceDepartmentSchema()'),'Guidance initializes its real chat table before reads and writes')

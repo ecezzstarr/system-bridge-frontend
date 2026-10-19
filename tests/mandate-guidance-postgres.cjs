@@ -24,7 +24,6 @@ async function run(){
  CREATE TABLE sessions(token text,user_id uuid,expires_at timestamptz);
  CREATE TABLE arena_matches(id uuid PRIMARY KEY);
  CREATE TABLE enterprise_legions(id uuid,client_id uuid,source_user_id uuid,active boolean,employment_status text,accepted_at timestamptz,created_at timestamptz);
- CREATE TABLE lounge_messages(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),room_type text,room_id text,user_id uuid,sender_name text,sender_avatar text,sender_role text,content text,message_type text,media_url text,is_read boolean DEFAULT false,created_at timestamptz DEFAULT NOW());
  CREATE TABLE notifications(id uuid DEFAULT gen_random_uuid(),user_id uuid,type text,title text,content text,from_user_id uuid,from_user_name text,link text,created_at timestamptz DEFAULT NOW())`)
  for(const [who,id] of Object.entries(ids)){
   await pool.query('INSERT INTO users(id,name,username,email,role,subscription_status) VALUES($1,$2,$3,$4,$5,$6)',[id,'QA '+who,who,who+'@example.invalid',who==='admin'?'admin':who==='due'?'bridger':who==='client'?'client':'agent',who==='due'?'due':'active'])
