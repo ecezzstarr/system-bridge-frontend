@@ -2,12 +2,16 @@ export const ACE_LIFESTYLE = 'ace' as const
 export const AGENTIC_BRIDGER_LIFESTYLE = 'agentic_bridger' as const
 export const DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager' as const
 export const WEAVE_MANDATE_LIFESTYLE = 'weave_mandate' as const
+export const FOOD_PREPARATION_MANAGER_LIFESTYLE = 'food_preparation_manager' as const
+export const FARM_TO_FAMILY_LIFESTYLE = 'farm_to_family' as const
 
 export type WeaveLifestyleKey =
   | typeof ACE_LIFESTYLE
   | typeof AGENTIC_BRIDGER_LIFESTYLE
   | typeof DISTRIBUTION_MANAGER_LIFESTYLE
   | typeof WEAVE_MANDATE_LIFESTYLE
+  | typeof FOOD_PREPARATION_MANAGER_LIFESTYLE
+  | typeof FARM_TO_FAMILY_LIFESTYLE
 
 export const WEAVE_LIFESTYLE_CATALOG = {
   [ACE_LIFESTYLE]: {
@@ -46,6 +50,28 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     environments: [
       { label: 'Department Applications', href: '/weave/lifestyles/mandate', purpose: 'Apply to Mandate, Forensics or Attorney support.' },
       { label: 'Guidance Department Inbox', href: '/weave/lifestyles/mandate/inbox', purpose: 'Approved staff reply to actual Company Guidance conversations in their assigned department.' },
+    ],
+  },
+  [FOOD_PREPARATION_MANAGER_LIFESTYLE]: {
+    key: FOOD_PREPARATION_MANAGER_LIFESTYLE,
+    label: 'Food Preparation Manager',
+    route: '/weave/lifestyles/food-preparation',
+    roles: ['agent'],
+    summary: 'Agent employment in WEAVE food operations at a ₦60,000 monthly salary following Administration approval. Prepare, package and dispatch paid Agility, Electrolyte and Daisy Pastries orders for customers and restocking Agents.',
+    environments: [
+      { label: 'Employment Application', href: '/weave/lifestyles/food-preparation', purpose: 'Apply to work as a Food Preparation Manager.' },
+      { label: 'Daily Kitchen Work Desk', href: '/weave/lifestyles/food-preparation', purpose: 'Process Administration-assigned paid food orders, package and log dispatch.' },
+    ],
+  },
+  [FARM_TO_FAMILY_LIFESTYLE]: {
+    key: FARM_TO_FAMILY_LIFESTYLE,
+    label: 'Farm to Family',
+    route: '/weave/lifestyles/food',
+    roles: ['agent', 'bridger'],
+    summary: 'Agent farmers sell produce across Nigerian states through a WEAVE-verified buyer payment hold. WEAVE deducts ₦1,000 from seller proceeds once per completed order; there is no buyer surcharge or additional Lifestyle entry charge.',
+    environments: [
+      { label: 'Farmer Food Exchange', href: '/weave/lifestyles/food', purpose: 'Browse live produce, request food, and carry accepted cross-state orders.' },
+      { label: 'My Farm', href: '/weave/lifestyles/food', purpose: 'Agents who farm list surplus and negotiate household delivery.' },
     ],
   },
   [DISTRIBUTION_MANAGER_LIFESTYLE]: {

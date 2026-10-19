@@ -1,4 +1,5 @@
 'use client'
+import { AgentFoodPricingInfo, FarmToFamilySettlementInfo, DaisyPricingInfo } from '@/components/weave-food/food-program-info'
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -79,14 +80,20 @@ export default function AgentFoodCarrierConsole(){
   if(error&&!data)return <main className="mx-auto max-w-4xl px-4 py-12 text-white"><Link href="/weave/carrier" className="text-xs text-slate-500">← Carrier</Link><h1 className="mt-6 text-3xl font-black">FOOD CARRIER DOOR</h1><p className="mt-3 text-sm text-red-300">{error}</p></main>
 
   return <main className="mx-auto max-w-6xl px-4 py-8 text-white md:px-7 md:py-12" data-agent-food-carrier="true">
+    <div className="mt-6 space-y-4" data-agent-carrier-all-food-info><AgentFoodPricingInfo/><DaisyPricingInfo/><FarmToFamilySettlementInfo audience="seller"/></div>
     <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/weave/carrier" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-white"><ArrowLeft className="h-4 w-4"/>Carrier</Link><Button onClick={()=>void load()} variant="outline" className="border-white/15 text-slate-200"><RefreshCw className="mr-2 h-4 w-4"/>REFRESH</Button></div>
 
     <header className="mt-5 border-b border-emerald-300/15 pb-7">
       <p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">Ace · Carrier · Agent instrument</p>
       <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-6xl">FOOD CARRIER DOOR</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">You pay WEAVE for stock. Customers pay your Agent receiving account before their order moves. Electrolyte Small Bowl sells at ₦4,000, Medium Bowl at ₦6,000. Far-location customers also pay the quoted waybill fee.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">You pay WEAVE ₦3,000 per unit of Agility or Electrolyte stock and sell each pack or bowl at the official ₦4,000 price. You earn ₦1,000 per unit: ₦5,000 per half carton (5), ₦10,000 per full carton (10). Prices are fixed; delivery waybill is separate.</p>
     </header>
 
+    <section className="mt-5 grid gap-3 sm:grid-cols-3" data-weave-official-food-earnings>
+      <div className="border border-emerald-300/20 p-4"><p className="text-xs text-stone-400">Customer price per pack or bowl</p><p className="mt-2 text-2xl font-black text-white">₦4,000</p></div>
+      <div className="border border-emerald-300/20 p-4"><p className="text-xs text-stone-400">Agent margin per sale</p><p className="mt-2 text-2xl font-black text-emerald-200">₦1,000</p></div>
+      <div className="border border-emerald-300/20 p-4"><p className="text-xs text-stone-400">Agent margin per carton (10)</p><p className="mt-2 text-2xl font-black text-emerald-200">₦10,000</p></div>
+    </section>
     {message&&<div className="mt-5 border border-emerald-300/20 bg-emerald-300/[.06] px-4 py-3 text-sm text-emerald-100">{message}</div>}
     {error&&<div className="mt-5 border border-red-300/20 bg-red-300/[.05] px-4 py-3 text-sm text-red-200">{error}</div>}
 
@@ -101,10 +108,17 @@ export default function AgentFoodCarrierConsole(){
       <div className="grid grid-cols-2 border border-white/10 bg-black/20"><div className="border-b border-r border-white/10 p-4"><Users className="h-4 w-4 text-sky-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.unique_views||0)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">Door reach</p></div><div className="border-b border-white/10 p-4"><Share2 className="h-4 w-4 text-violet-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.shares||0)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">Shares</p></div><div className="border-r border-white/10 p-4"><WalletCards className="h-4 w-4 text-amber-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.payment_verification||0)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">Payments to verify</p></div><div className="p-4"><ShoppingBag className="h-4 w-4 text-emerald-300"/><p className="mt-2 text-2xl font-black">{Number(data?.stats.open_orders||0)}</p><p className="mt-1 text-[8px] uppercase tracking-wider text-slate-600">Paid orders ready</p></div></div>
     </section>
 
+<section className="mt-7 border border-emerald-300/20 bg-emerald-300/[.035] p-5 sm:p-6" data-carrier-farm-supply>
+      <h2 className="text-xl font-black text-white">Your farm produce · Same Carrier Door</h2>
+      <p className="mt-2 text-xs leading-5 text-slate-400">
+        An Agent who farms manages surplus stock inside Lifestyle Farm to Family. Approved farm listings automatically appear on this exact public Carrier link along with Agility, Electrolyte and Daisy Pastries. Customers coming from WhatsApp can request farm produce without a WEAVE account.
+      </p>
+      <Link href="/weave/lifestyles/food" className="mt-4 inline-flex border border-emerald-300/25 px-4 py-3 text-[10px] font-black uppercase tracking-wide text-emerald-200">Manage my farm products in Lifestyle</Link>
+    </section>
     <section className="mt-7 border border-white/10 bg-black/20 p-5 sm:p-6">
       <p className="text-[9px] font-black uppercase tracking-[.22em] text-emerald-300">Customer receiving account</p>
-      <h2 className="mt-1 text-2xl font-black">CUSTOMERS PAY YOU</h2>
-      <p className="mt-2 text-xs leading-5 text-slate-500">This is separate from the OPay account you use to buy WEAVE stock. Carrier shows this account to customers after they choose their order.</p>
+      <h2 className="mt-1 text-2xl font-black">WEAVE FOOD & DAISY CUSTOMERS PAY YOU</h2>
+      <p className="mt-2 text-xs leading-5 text-slate-500">This account is for Agility, Electrolyte and Daisy Pastries customer orders only. Farm-to-Family buyers pay WEAVE instead; Administration verifies and holds their payment and releases the seller payout after buyer receipt, deducting exactly one ₦1,000 seller fee per completed farm order. Never send a farm buyer to this Agent receiving account.</p>
       <div className="mt-4 grid gap-3 md:grid-cols-2"><Input value={bankName} onChange={e=>setBankName(e.target.value)} placeholder="Bank / OPay name"/><Input value={accountNumber} onChange={e=>setAccountNumber(e.target.value)} placeholder="Account number"/><Input value={accountName} onChange={e=>setAccountName(e.target.value)} placeholder="Account name"/><Input value={paymentNote} onChange={e=>setPaymentNote(e.target.value)} placeholder="Payment note · optional"/></div>
       <Button onClick={saveAccount} disabled={moving==='account'} className="mt-4 bg-emerald-300 font-black text-slate-950 hover:bg-emerald-200">SAVE CUSTOMER RECEIVING ACCOUNT</Button>
     </section>

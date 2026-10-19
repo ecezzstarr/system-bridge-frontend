@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1440 860" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Burning River, a radiant world of flowing water and fire surrounding the System Switch crossing">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#142b52"/><stop offset=".32" stop-color="#446c92"/><stop offset=".59" stop-color="#e7bb80"/><stop offset=".79" stop-color="#d19b65"/><stop offset="1" stop-color="#101d38"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#fffdea"/><stop offset=".16" stop-color="#fff6c7" stop-opacity=".96"/><stop offset=".41" stop-color="#ffc979" stop-opacity=".75"/><stop offset="1" stop-color="#ffbf72" stop-opacity="0"/></radialGradient>
+ <linearGradient id="mountain" x2="0" y2="1"><stop stop-color="#a6c2ce"/><stop offset=".5" stop-color="#5d7595"/><stop offset="1" stop-color="#2a395b"/></linearGradient>
+ <linearGradient id="river" x2=".2" y2="1"><stop stop-color="#537a9c"/><stop offset=".24" stop-color="#1b527e"/><stop offset=".57" stop-color="#0b315c"/><stop offset="1" stop-color="#041e42"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff3bd"/><stop offset=".35" stop-color="#ffce74"/><stop offset=".72" stop-color="#d48c2a"/><stop offset="1" stop-color="#9b5b23"/></linearGradient>
+ <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#f5e6ce"/><stop offset=".35" stop-color="#c3b6a7"/><stop offset=".7" stop-color="#7b8194"/><stop offset="1" stop-color="#344769"/></linearGradient>
+ <linearGradient id="fire" x2="0" y2="0" x1="1" y1="1"><stop stop-color="#fff5c3"/><stop offset=".3" stop-color="#ffc76a"/><stop offset=".7" stop-color="#ff913f"/><stop offset="1" stop-color="#ec5729"/></linearGradient>
+ <linearGradient id="flow" x1="0" x2="1"><stop stop-color="#ffcf7b" stop-opacity="0"/><stop offset=".17" stop-color="#ffb45c" stop-opacity=".87"/><stop offset=".55" stop-color="#fff3aa" stop-opacity=".95"/><stop offset=".9" stop-color="#f08e34" stop-opacity=".87"/><stop offset="1" stop-color="#ffcf7b" stop-opacity="0"/></linearGradient>
+ <radialGradient id="mist"><stop stop-color="#fff6e0" stop-opacity=".67"/><stop offset="1" stop-color="#e0e7eb" stop-opacity="0"/></radialGradient>
+ <filter id="glow" x="-40%" y="-60%" width="180%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+ <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="19"/></filter>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".012 .022" numOctaves="2" seed="8" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".12"/></feComponentTransfer></filter>
+ <pattern id="ripples" width="108" height="34" patternUnits="userSpaceOnUse"><path d="M-4 10 Q22 1 53 10 T112 10 M-18 28 Q19 20 63 29 T118 27" fill="none" stroke="#dbeaf0" stroke-opacity=".17" stroke-width="1.4"/></pattern>
+ <style>
+ .flow-a{stroke-dasharray:19 26;animation:river-a 20s linear infinite}.flow-b{stroke-dasharray:32 24;animation:river-a 28s linear reverse infinite}.glimmer{animation:glimmer 5s ease-in-out infinite alternate}
+ @keyframes river-a{to{stroke-dashoffset:-900}}@keyframes glimmer{to{opacity:.35;transform:translateY(6px)}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+ </style>
+</defs>
+<rect width="1440" height="860" fill="url(#sky)"/>
+<ellipse cx="715" cy="250" rx="480" ry="250" fill="url(#sun)"/>
+<path d="M0 355 L90 247 148 296 206 211 278 290 347 190 426 294 506 244 572 330 652 271 730 333 801 233 888 304 947 211 1046 309 1107 202 1196 297 1267 214 1329 291 1384 244 1440 310 1440 465 0 465Z" fill="#d6dcce" opacity=".7"/>
+<path d="M0 394 L93 292 149 343 222 247 291 354 373 272 449 348 542 303 639 394 721 317 803 393 885 276 971 356 1040 259 1126 363 1207 280 1286 357 1362 295 1440 380 1440 530 0 530Z" fill="url(#mountain)" opacity=".8"/>
+<path d="M0 440 L110 355 215 413 314 349 411 442 532 372 641 454 757 390 843 457 972 357 1089 431 1198 351 1313 427 1440 367 1440 556 0 556Z" fill="#284568" opacity=".84"/>
+<path d="M0 472 Q183 431 322 459 T700 443 T1440 455 L1440 555 0 555Z" fill="#eac798" opacity=".27"/>
+<path d="M0 498 Q191 474 400 505 T797 486 T1440 495 L1440 860H0Z" fill="url(#river)"/>
+<path d="M0 498 Q210 485 418 504 T851 485 T1440 495 L1440 860H0Z" fill="url(#ripples)" opacity=".8"/>
+<g opacity=".75">
+ <path d="M0 473 L84 373 148 394 202 337 248 418 304 388 331 465Z" fill="#17334d"/>
+ <path d="M1113 458 L1182 380 1246 405 1318 332 1378 395 1440 367 1440 515Z" fill="#18344f"/>
+ <g fill="#fcdda8">
+  <path d="M72 381v-92h8v92m-17-75h28l-14-51zM175 373v-74h8v74m-18-58h26l-13-37zM1337 368v-122h12v122m-20-100h29l-15-56zM1239 406v-87h9v87m-16-73h23l-12-37z" opacity=".68"/>
+ </g>
+ <path d="M-20 480 Q110 471 250 484 M1164 483 Q1303 466 1470 480" fill="none" stroke="#ffe3a5" stroke-width="5" opacity=".58"/>
+</g>
+<g opacity=".6" fill="url(#mist)">
+ <ellipse cx="142" cy="473" rx="340" ry="87"/><ellipse cx="1247" cy="478" rx="390" ry="94"/><ellipse cx="742" cy="476" rx="400" ry="54"/>
+</g>
+<!-- faraway arch and towers -->
+<g transform="translate(720 335)">
+ <ellipse cy="133" rx="174" ry="20" fill="#ffcf7b" opacity=".43" filter="url(#soft)"/>
+ <path d="M-149 156 L-149-70 -131-119 -113-72 -113 156 M113 156 V-72 L131-119 149-70 V156" fill="url(#stone)" stroke="url(#gold)" stroke-width="7"/>
+ <path d="M-118 145V-70Q0-256 118-70V145L84 145V-71Q0-201-84-71V145Z" fill="url(#stone)" stroke="url(#gold)" stroke-width="8"/>
+ <path d="M-77 134V-76Q0-184 77-76V134" fill="none" stroke="#fff0b7" stroke-opacity=".64" stroke-width="8"/>
+ <path d="M0-189 L9-135 0-111 -9-135Z" fill="#fff3c3"/>
+ <path d="M-183 156Q-128 95-76 110L0 128 76 110Q125 96 183 156" fill="#8c8292" stroke="#ffe4ab" stroke-width="6"/>
+ <path d="M-182 156Q0 174 182 156" fill="none" stroke="#ffb04c" stroke-width="9"/>
+</g>
+<!-- side terraces and waterfalls -->
+<path d="M0 518 L313 510 410 563 316 618 0 607Z" fill="url(#stone)" stroke="#b9a288" stroke-width="10"/>
+<path d="M1440 518 L1127 510 1030 563 1124 618 1440 607Z" fill="url(#stone)" stroke="#b9a288" stroke-width="10"/>
+<path d="M235 587 Q260 656 234 748 L285 748 Q309 648 316 607" fill="#d3e7ee" opacity=".5"/>
+<path d="M1205 587 Q1180 656 1206 748 L1155 748 Q1131 648 1124 607" fill="#d3e7ee" opacity=".5"/>
+<path d="M247 591 Q257 678 252 758 M1193 591 Q1183 678 1188 758" fill="none" stroke="#fff1bf" stroke-width="10" opacity=".5" filter="url(#glow)"/>
+<!-- stone-and-gold crossing -->
+<path d="M450 539 Q720 492 990 539 L1169 860 H271Z" fill="#172b44" opacity=".6"/>
+<path d="M475 539 Q720 483 965 539 L1047 674 1130 860 H310L393 674Z" fill="url(#stone)" stroke="url(#gold)" stroke-width="11"/>
+<path d="M493 556 Q720 514 947 556 L1103 860 H337Z" fill="#a5a3a7" opacity=".25"/>
+<path d="M720 553V860M584 548L512 860M854 548L927 860" fill="none" stroke="#ffe9a2" stroke-width="2.5" opacity=".55"/>
+<path d="M460 567Q720 523 980 567 M413 662Q720 617 1027 662 M359 791Q720 747 1080 791" fill="none" stroke="#f3d9aa" stroke-opacity=".43" stroke-width="3"/>
+<path d="M465 544Q720 501 976 544L1050 683 1124 860M465 544L388 683 315 860" fill="none" stroke="#ffcd72" stroke-width="9" opacity=".8" filter="url(#glow)"/>
+<path d="M465 544Q720 501 976 544L1050 683 1124 860M465 544L388 683 315 860" fill="none" stroke="#ffdc97" stroke-width="2.5"/>
+<!-- rivers of fire intertwine with water -->
+<path d="M-90 700Q139 557 295 703T666 815T1266 734T1540 658" stroke="#f99639" stroke-width="30" fill="none" opacity=".4" filter="url(#glow)"/>
+<path d="M-90 700Q139 557 295 703T666 815T1266 734T1540 658" stroke="url(#flow)" stroke-width="6" fill="none" class="flow-a"/>
+<path d="M-40 803Q193 716 312 819T720 780T1120 813T1510 775" stroke="#ffb552" stroke-width="19" fill="none" opacity=".52" filter="url(#glow)"/>
+<path d="M-40 803Q193 716 312 819T720 780T1120 813T1510 775" stroke="#ffdd8d" stroke-width="4" fill="none" class="flow-b"/>
+<path d="M-70 602Q141 561 281 639M1155 645Q1296 565 1510 603" fill="none" stroke="#ccf1f8" stroke-width="4" stroke-dasharray="28 30" class="flow-a" opacity=".65"/>
+<path d="M-40 750Q114 630 290 744M1150 748Q1322 631 1480 746" fill="none" stroke="#d7faff" stroke-opacity=".38" stroke-width="2" stroke-dasharray="34 34" class="flow-b"/>
+<ellipse cx="720" cy="593" rx="420" ry="74" fill="url(#mist)" opacity=".42"/>
+<g class="glimmer" fill="#fff7d4"><circle cx="92" cy="530" r="3"/><circle cx="328" cy="478" r="2"/><circle cx="486" cy="381" r="3"/><circle cx="984" cy="390" r="2"/><circle cx="1097" cy="534" r="3"/><circle cx="1260" cy="461" r="2"/></g>
+<rect width="1440" height="860" fill="#f2e7da" filter="url(#grain)" opacity=".21"/>
+</svg>

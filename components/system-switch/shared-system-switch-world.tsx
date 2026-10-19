@@ -23,7 +23,7 @@ function RemoteAvatar({person}:{person:SharedAvatar}){
   if(Math.hypot(p.x-t.x,p.z-t.z)>6){p.x=t.x;p.z=t.z}else{p.x+=(t.x-p.x)*k;p.z+=(t.z-p.z)*k}
   p.yaw=t.yaw;p.heading=t.heading;label.current?.position.set(p.x,1.5,p.z)
  })
- return <><FileFolderWorker presence={presence}/><group ref={label}><Billboard><Text fontSize={.14} color={ROLE_COLORS[person.role]} anchorX="center" maxWidth={2}>{person.name.slice(0,32)}{'\n'}{person.role==='admin'?'Administration':person.role}</Text></Billboard></group></>
+ return <><FileFolderWorker presence={presence} role={person.role}/><group ref={label}><Billboard><Text fontSize={.14} color={ROLE_COLORS[person.role]} anchorX="center" maxWidth={2}>{person.name.slice(0,32)}{'\n'}{person.role==='admin'?'Administration':person.role}</Text></Billboard></group></>
 }
 function CustomerDoor({door,index,onEnter}:{door:PublicWorldDoor;index:number;onEnter:()=>void}){
  const pos=doorWorldPosition(index),angle=Math.atan2(-pos[0],-pos[2]),fire=useRef<THREE.Group>(null)

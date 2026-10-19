@@ -5,6 +5,12 @@ import {ensureSharedPresence,sharedIdentity,sharedSnapshot,heartbeat,parsePresen
 export const dynamic='force-dynamic'
 const headers={'Cache-Control':'private, no-store'}
 const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers})
+// Next's internal URL can use the container port behind a reverse proxy.
+// Browser Origin must match the actual HTTP Host, which scripts cannot override.
+function isSameOrigin(request:NextRequest){
+ const origin=request.headers.get('origin');if(!origin)return true
+ try{const parsed=new URL(origin);return ['http:','https:'].includes(parsed.protocol)&&!parsed.username&&!parsed.password&&parsed.host===(request.headers.get('host')||request.nextUrl.host)}catch{return false}
+}
 async function authorize(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return {error:reply({error:'Sign in to cross System Switch.'},401)}
@@ -20,8 +26,7 @@ export async function GET(request:NextRequest){
 }
 export async function POST(request:NextRequest){
   try{
-    const origin=request.headers.get('origin')
-    if(origin&&origin!==request.nextUrl.origin)return reply({error:'Cross-origin movement is not allowed.'},403)
+    if(!isSameOrigin(request))return reply({error:'Cross-origin movement is not allowed.'},403)
     const text=await request.text();if(text.length>2048)return reply({error:'Movement is too large.'},413)
     let body;try{body=JSON.parse(text)}catch{return reply({error:'Invalid movement.'},400)}
     const input=parsePresence(body);if(!input)return reply({error:'Invalid public-world movement.'},400)
@@ -35,7 +40,7 @@ export async function POST(request:NextRequest){
 }
 export async function DELETE(request:NextRequest){
   try{
-    const origin=request.headers.get('origin');if(origin&&origin!==request.nextUrl.origin)return reply({error:'Cross-origin movement is not allowed.'},403)
+    if(!isSameOrigin(request))return reply({error:'Cross-origin movement is not allowed.'},403)
     const ctx=await authorize(request);if(ctx.error)return ctx.error
     const connectionId=request.nextUrl.searchParams.get('connectionId')||''
     if(!/^[0-9a-f-]{36}$/i.test(connectionId))return reply({error:'Invalid connection.'},400)

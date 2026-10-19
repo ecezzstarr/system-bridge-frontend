@@ -257,7 +257,7 @@ export function getCarrierFoodBridgerJoinUrl(referralCode: string) {
 }
 
 export function buildCarrierFoodShareText(input: { agentName: string; url: string }) {
-  return `WEAVE Food through ${input.agentName}\n\nAgility + Electrolyte are available through my Carrier Door. Customers pay my Agent receiving account before the order moves. Far-location orders include waybill. Open the link to order, or understand the Bridger position before entering WEAVE as my Bridger.\n\n${input.url}`
+  return `WEAVE Food through ${input.agentName}\n\nOpen my Carrier Door to see farm produce (where available), Agility, Electrolyte and Daisy Pastries. Choose what your family needs directly from this link. Farm produce requests are confirmed and delivery is quoted before payment; ready-made WEAVE food follows its existing Agent checkout. You can also learn how to join WEAVE as my Bridger.\n\n${input.url}`
 }
 
 export async function getCarrierFoodAvailableStock(agentId: string) {

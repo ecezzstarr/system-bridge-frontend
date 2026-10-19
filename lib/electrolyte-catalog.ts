@@ -19,7 +19,7 @@ export const ELECTROLYTE_VARIANTS: WeaveFoodVariant[] = [
     agentBuyUnitPriceNgn: 3000,
     agentSellingUnitPriceNgn: 4000,
     customerPriceLocked: true,
-    note: 'Small Electrolyte bowl. Agent buys from WEAVE at ₦3,000 per bowl and sells to the customer at ₦4,000.',
+    note: 'Small Electrolyte bowl. Customer price ₦4,000; WEAVE receives ₦3,000 and the selling Agent earns ₦1,000.',
   },
   {
     id: 'electrolyte-medium',
@@ -32,10 +32,10 @@ export const ELECTROLYTE_VARIANTS: WeaveFoodVariant[] = [
     drink: 'Fresh coconut water',
     water: 'Water',
     packagesPerBox: ELECTROLYTE_PACKAGES_PER_CARTON,
-    agentBuyUnitPriceNgn: 5000,
-    agentSellingUnitPriceNgn: 6000,
+    agentBuyUnitPriceNgn: 3000,
+    agentSellingUnitPriceNgn: 4000,
     customerPriceLocked: true,
-    note: 'Medium Electrolyte bowl. Agent buys from WEAVE at ₦5,000 per bowl and sells to the customer at ₦6,000.',
+    note: 'Medium Electrolyte bowl. Customer price ₦4,000; WEAVE receives ₦3,000 and the selling Agent earns ₦1,000.',
   },
 ]
 

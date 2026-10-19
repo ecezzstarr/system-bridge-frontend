@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           referredByBridgerId: data.referredBy,
           departmentalCode: data.departmentalCode,
         }),
-      })
+      }, 60000)
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'Registration failed')
       if (result.token && result.user) {

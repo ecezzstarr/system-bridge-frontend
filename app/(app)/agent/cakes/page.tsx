@@ -1,4 +1,5 @@
 'use client'
+import { DaisyPricingInfo } from '@/components/weave-food/food-program-info'
 
 import Link from 'next/link'
 import { useEffect,useMemo,useState } from 'react'
@@ -63,13 +64,14 @@ export default function AgentCakesPage(){
 
   if(loading)return <main className="flex min-h-[520px] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-amber-300"/></main>
   return <main className="mx-auto max-w-7xl space-y-7 px-4 py-8 text-white md:px-7 md:py-12" data-agent-cakes="true" data-daisy-pastries="true">
+    <DaisyPricingInfo audience="agent"/>
     <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/agent/work" className="text-xs font-black uppercase tracking-wider text-slate-500">← Agent Work</Link><Button onClick={()=>void load()} variant="outline" className="border-white/15 text-white"><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div>
 
     <section className="grid items-start gap-6 border-b border-amber-300/15 pb-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,.72fr)]">
-      <header><p className="text-[10px] font-black uppercase tracking-[.28em] text-amber-300">Agent Work · Official WEAVE Cakes</p><h1 className="mt-2 text-5xl font-black text-[#fff2c5] sm:text-7xl">DAISY PASTRIES</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Daisy Pastries is the official name of WEAVE Cakes. Agents can place an order directly here for themselves or a customer they are handling. Customers can also order from the public Carrier Door. Both paths enter the same quote, payment verification and Administration production movement.</p>
-        <div className="mt-5 grid gap-2 sm:grid-cols-3"><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Cake Slice</p><p className="mt-1 text-xl font-black">UNDER ₦5,000</p></div><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Bento Cake</p><p className="mt-1 text-xl font-black">₦10,000</p></div><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Celebration Cakes</p><p className="mt-1 text-xl font-black">₦15,000–₦60,000</p></div></div>
+      <header><p className="text-[10px] font-black uppercase tracking-[.28em] text-amber-300">Agent Work · Official WEAVE Cakes</p><h1 className="mt-2 text-5xl font-black text-[#fff2c5] sm:text-7xl">DAISY PASTRIES</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Daisy Pastries is the official WEAVE Cakes brand. Cake Slice costs ₦5,000; Bento Cake costs ₦10,000; other cakes follow official quotes. The selling Agent earns ₦1,000 for each successfully paid and completed cake sale, regardless of cake size. WEAVE receives the remaining cake price; waybill is separate.</p>
+        <div className="mt-5 grid gap-2 sm:grid-cols-3"><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Cake Slice</p><p className="mt-1 text-xl font-black">₦5,000</p></div><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Bento Cake</p><p className="mt-1 text-xl font-black">₦10,000</p></div><div className="border border-amber-300/20 bg-amber-300/[.04] p-4"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Celebration Cakes</p><p className="mt-1 text-xl font-black">₦15,000–₦60,000</p></div></div>
       </header>
-      <figure className="overflow-hidden rounded-[1.5rem] border border-amber-300/25 bg-[#f8f0df]"><img src={DAISY_PASTRIES_IMAGE_SRC} alt="Daisy Pastries official WEAVE cake artwork" className="h-auto w-full object-contain"/><figcaption className="bg-[#fff8e8] px-4 py-3 text-xs font-black text-[#17472b]">Daisy Pastries · Order through WEAVE</figcaption></figure>
+      <figure className="overflow-hidden rounded-[1.5rem] border border-amber-300/25 bg-[#f8f0df]"><img src={DAISY_PASTRIES_IMAGE_SRC} alt="Daisy Pastries official WEAVE cake artwork" className="h-auto w-full object-contain"/><figcaption className="bg-[#fff8e8] px-4 py-3 text-xs font-black text-[#17472b]">Daisy Pastries · Cake slice ₦5,000 · Agent earns ₦1,000 per completed cake</figcaption></figure>
     </section>
 
     {message&&<div className="border border-emerald-300/20 bg-emerald-300/[.05] p-4 text-sm text-emerald-100">{message}</div>}

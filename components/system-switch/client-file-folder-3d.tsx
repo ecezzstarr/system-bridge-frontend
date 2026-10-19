@@ -1,8 +1,13 @@
 'use client'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
+import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
+import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
+import { SharedWorldAvatars } from '@/components/system-switch/shared-world-avatars'
+import { useWorldPresence,type WorldAvatar } from '@/components/system-switch/use-world-presence'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
+import { useRouter } from 'next/navigation'
 import { ContactShadows,Text,useTexture,Sky } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
@@ -504,9 +509,25 @@ function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>
   return null
 }
 
+function CloudDevelopmentLevel(){
+  // A suspended sky-level Client construction island. These are part of the
+  // territory, not fabricated participants or active customer buildings.
+  return <group>
+    {Array.from({length:20},(_,i)=>{
+      const angle=i/20*Math.PI*2
+      const radius=10.2+(i%3)*.55
+      const x=Math.cos(angle)*radius,z=Math.sin(angle)*radius
+      return <mesh key={i} position={[x,-1.55-(i%3)*.16,z]} scale={[2.2+(i%3)*.3,.68,1.7+(i%2)*.4]}>
+        <sphereGeometry args={[1,10,8]}/>
+        <meshStandardMaterial color="#bedde6" emissive="#263d52" emissiveIntensity={.1} transparent opacity={.40} roughness={1} depthWrite={false}/>
+      </mesh>
+    })}
+  </group>
+}
+
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,constructionPage,systemPage,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,onReturnToFlame,thirdPerson,constructionPage,systemPage,otherLords,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -532,10 +553,13 @@ function Scene({
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
   onStudioEnter?:(key:FormationStation)=>void
+  onReturnToFlame?:()=>void
   thirdPerson:boolean
   constructionPage:number
   systemPage:number
+  otherLords:WorldAvatar[]
 }){
+  const mobileBudget=useAdaptiveRuntime()
   const visibleSystems=liveSystems.slice(systemPage*12,systemPage*12+12)
   return <>
     <color attach="background" args={['#58667b']}/>
@@ -550,6 +574,7 @@ function Scene({
     <StoneGround/>
     <FileFolderCityArchitecture/>
     <FileFolderCityStreets/>
+    <SystemSwitchThreshold position={[0,0,7.5]} scale={.44} quiet={mobileBudget.reducedMotion}/>
     <FileFolderScenery formationCount={activeBuilds.length}/>
     <FileFolderFacilities
       marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
@@ -592,6 +617,7 @@ function Scene({
     <FlameBeacon position={[7.7,.02,5.9]} scale={.55}/>
 
     <ContactShadows frames={1} resolution={256} position={[0,-.18,0]} opacity={.42} scale={23} blur={2.6} far={8}/>
+    <SharedWorldAvatars others={otherLords}/>
     {thirdPerson&&<FileFolderPresenceAvatar presence={presence}/>}
     <EmbodiedWorldRuntime input={input} presence={presence} onNearby={onNearby} thirdPerson={thirdPerson}
       obstacles={[
@@ -603,6 +629,7 @@ function Scene({
         ...visibleSystems.map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[
+        {id:'flame-event',label:'System Switch · Burning River',position:[0,0,7.5],enter:()=>onReturnToFlame?.()},
         ...districts.map(d=>({id:d.key,label:d.label,position:POSITIONS[d.key],enter:()=>onSurfaceChange(d.key)})),
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({
           id:key,label:key.replaceAll('_',' '),position:FILE_FOLDER_STATION_POSITIONS[key],enter:()=>onStudioEnter?.(key)
@@ -644,8 +671,10 @@ export function ClientFileFolder3D({
   businessSector?:string|null
   territoryMode?:boolean
 }){
+  const router=useRouter()
   const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,lookPitchDelta:0,zoomDelta:0})
   const presence=useRef<Presence>({x:0,z:8.2,yaw:0})
+  const {others:otherLords,online:cloudOnline}=useWorldPresence('client-cloud',presence,Boolean(presenceKey))
   const touchPoints=useRef(new Map<number,{x:number;y:number}>())
   const joystickPointer=useRef<number|null>(null)
   const joystickThumb=useRef<HTMLSpanElement>(null)
@@ -740,7 +769,9 @@ export function ClientFileFolder3D({
     }>
       <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Main File Folder · Client-owned Business World</p>
       <p className="mt-1 text-xs font-black text-white">{businessName}</p>
+      <p className="mt-1 text-[9px] font-black uppercase tracking-[.12em] text-sky-200">Lord / Lady · Cloud Development Territory</p>
       <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">{businessSector ? `${businessSector} · ` : ''}You decide what systems exist here. WEAVE hosts, organizes and connects them through your Customer Door.</p>
+      <p className="mt-2 text-[9px] text-sky-200" data-client-cloud-live-presence>{cloudOnline?`Cloud multiplayer · ${otherLords.length+1} Lord/Lady avatar${otherLords.length===0?'':'s'} present`:'Cloud multiplayer reconnecting…'}</p>
     </div>
 
     <div hidden={staffVisitor} className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>
@@ -801,7 +832,7 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} thirdPerson={thirdPerson} constructionPage={Math.min(constructionPage,Math.max(0,Math.ceil(activeBuilds.length/6)-1))} systemPage={Math.min(systemPage,Math.max(0,Math.ceil(liveSystems.length/12)-1))}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} onReturnToFlame={()=>router.push('/client/system-switch/flame-event')} thirdPerson={thirdPerson} otherLords={otherLords} constructionPage={Math.min(constructionPage,Math.max(0,Math.ceil(activeBuilds.length/6)-1))} systemPage={Math.min(systemPage,Math.max(0,Math.ceil(liveSystems.length/12)-1))}
         />
       </AdaptiveCanvas>
     </div>

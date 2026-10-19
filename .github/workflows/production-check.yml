@@ -56,9 +56,16 @@ jobs:
 
       - name: WEAVE food regressions
         run: |
+          node tests/admin-order-notification-coverage.cjs
           node tests/carrier-food-payment-regression.cjs
           node tests/electrolyte-independent-home-regression.cjs
           node tests/agent-work-cakes-regression.cjs
+          node tests/food-preparation-manager-payment-routing-regression.cjs
+          node tests/farm-to-family-lifestyle-regression.cjs
+          node tests/carrier-farm-door-regression.cjs
+          node tests/flame-real-food-current-regression.cjs
+          node tests/weave-food-economics-escrow-regression.cjs
+          node tests/weave-food-pages-info-regression.cjs
 
       - name: Remaining regression checks
         run: |
@@ -72,6 +79,7 @@ jobs:
           node tests/agentic-bridger-regression.cjs
           node tests/file-folder-customer-door-purchase-regression.cjs
           node tests/system-switch-file-folder-boundary-regression.cjs
+          node tests/client-hosted-avatar-world-regression.cjs
           node tests/file-folder-pricing-contract-regression.cjs
           node tests/legion-commerce-regression.cjs
           node tests/legion-lifestyle-employment-regression.cjs
@@ -81,6 +89,7 @@ jobs:
           node tests/manager-employment-regression.cjs
           node tests/system-store-regression.cjs
           node tests/public-app-download-regression.cjs
+          node tests/bridger-registration-durable-regression.cjs
           node tests/password-hash-login-regression.cjs
           node tests/core-hardening-regression.cjs
           node tests/commerce-ledger-regression.cjs
@@ -90,6 +99,7 @@ jobs:
           node tests/video-ad-workshop.cjs
           node tests/wiring.cjs
           node tests/environment-grade.cjs
+          node tests/flame-event-open-world-regression.cjs
           node tests/adaptive-runtime.cjs
           node tests/communication-security.cjs
 

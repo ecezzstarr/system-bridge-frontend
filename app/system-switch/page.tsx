@@ -1,12 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import '../client/system-switch/file-folder-phone.css'
-const StaffFileFolderWorld = dynamic(() => import('@/components/system-switch/staff-file-folder-world'), { ssr: false })
 import { redirect } from 'next/navigation'
-import { ArrowRight, Flame, FolderOpen } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Flame, FolderOpen, Orbit, Waves } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
+import { StaffFileFolderWorld } from '@/components/system-switch/staff-file-folder-world'
 
 export default function SystemSwitchEntryPage() {
   const { user, isInitialized, isLoading } = useAuth()
@@ -20,45 +18,46 @@ export default function SystemSwitchEntryPage() {
   const backHref = role === 'admin' ? '/admin/dashboard' : role === 'agent' ? '/agent/dashboard' : '/bridger/dashboard'
   const position = role === 'admin' ? 'Administration' : role === 'agent' ? 'Agent' : 'Bridger'
 
-  return (
-    <main
-      className="mx-auto flex min-h-[72vh] w-full max-w-7xl items-center justify-center px-2 py-3 text-white"
-      data-system-switch-gate="file-folder"
-      data-weave-world="file-folder"
-      data-system-switch-role={role}
-    >
-      <section className="w-full overflow-hidden rounded-[2rem] border border-cyan-200/15 bg-[#030914]/94 shadow-[0_34px_120px_rgba(0,0,0,.42)]">
-        <header className="border-b border-cyan-100/10 px-5 py-4">
-          <Link href={backHref} className="text-xs text-slate-400">Return to {position}</Link>
-          <h1 className="mt-2 text-xl font-black">System Switch · File Folder</h1>
-        </header>
-
-        <StaffFileFolderWorld role={role} identity={user.name || user.username} userId={user.id} />
-        <div className="grid gap-0 md:grid-cols-2">
-          <div className="border-b border-white/10 p-6 md:border-b-0 md:border-r sm:p-9">
-            <FolderOpen className="h-6 w-6 text-sky-300" />
-            <p className="mt-5 text-[9px] font-black uppercase tracking-[.18em] text-sky-200">File Folder boundary</p>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Client-owned systems, Customer Doors, builds and the live event ground remain inside the File Folder boundary. Staff participation enters through System Switch rather than treating those places as general WEAVE rooms.
-            </p>
-          </div>
-          <div className="p-6 sm:p-9">
-            <Flame className="h-6 w-6 text-orange-300" />
-            <p className="mt-5 text-[9px] font-black uppercase tracking-[.18em] text-orange-200">Inside the File Folder</p>
-            <h2 className="mt-2 text-xl font-black">Flame Event · Loop 1</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Burning River is an event inside the File Folder. Cross System Switch first, then enter the event ground from here.
-            </p>
-            <Link
-              href="/system-switch/flame-event"
-              data-system-switch-crossing="flame-event-inside-file-folder"
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-xs font-black uppercase tracking-[.12em] text-[#030914] hover:bg-slate-100"
-            >
-              Cross into Flame Event <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+  return <main
+    className="relative isolate flex min-h-[88svh] w-full flex-col justify-center overflow-hidden bg-[#071b31] px-4 pb-12 pt-6 text-white"
+    data-system-switch-gate="file-folder"
+    data-weave-world="file-folder"
+    data-system-switch-role={role}
+    data-system-switch-threshold="staff-to-embodied-world"
+  >
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-70"
+      style={{backgroundImage:"linear-gradient(180deg,rgba(2,14,32,.37),rgba(2,14,32,.61) 55%,rgba(2,14,32,.95)),url('/weave/flame-event/burning-river-world.svg')"}}/>
+    <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[12%] h-[26rem] w-[26rem] -translate-x-1/2 rounded-full border border-amber-200/15 bg-[radial-gradient(circle,rgba(255,211,131,.14),transparent_69%)] blur-sm"/>
+    <div className="relative mx-auto w-full max-w-6xl" data-system-switch-gate-world>
+      <Link href={backHref} className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-sky-100/90">
+        <ArrowLeft className="h-4 w-4" /> Return to {position}
+      </Link>
+      <div className="mt-5 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-amber-200/45 bg-[#082b48]/70 shadow-[0_0_43px_rgba(250,192,91,.23)]">
+          <Orbit className="h-7 w-7 text-amber-100"/>
         </div>
-      </section>
-    </main>
-  )
+        <p className="mt-5 text-[10px] font-black uppercase tracking-[.28em] text-amber-200">System Switch · Bridge of Radiance</p>
+        <h1 className="mt-3 text-4xl font-black leading-[1.07] tracking-[-.05em] sm:text-5xl">Go beyond the page.</h1>
+        <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-sky-100/85">
+          Your {position} stays yours. When you enter Flame Event, you become a walking presence inside the Burning River. Reach the Switch arch and enter the opened Customer Doors of Client-owned worlds.
+        </p>
+      </div>
+      <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Visit Client-hosted Customer Doors as an avatar</Link>
+      <div className="relative my-7"><StaffFileFolderWorld role={role} identity={user.name || user.username} userId={user.id}/></div>
+      <p className="text-center text-[10px] font-semibold leading-5 text-white/85">
+        <Waves className="mr-1 inline h-4 w-4 text-sky-200"/> River Bank → Burning River → System Switch → Customer Door
+      </p>
+      <Link
+        href="/system-switch/flame-event"
+        data-system-switch-crossing="flame-event-inside-file-folder"
+        className="mx-auto mt-6 flex min-h-14 w-full max-w-md items-center justify-center gap-3 rounded-xl border border-amber-100/70 bg-amber-200 px-5 py-3 text-sm font-black text-[#0e2436] shadow-[0_9px_32px_rgba(253,197,99,.18)]"
+      >
+        Cross into Flame Event <ArrowRight className="h-5 w-5"/>
+      </Link>
+      <div className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-4 border-t border-white/15 pt-4 text-[10px] leading-5 text-sky-100/75">
+        <p><FolderOpen className="mb-1 h-4 w-4 text-amber-200"/>File Folder boundary: Client ownership and private construction stay protected.</p>
+        <p><Flame className="mb-1 h-4 w-4 text-amber-200"/>Inside the File Folder layer: your position can discover opened public Client Customer Doors.</p>
+      </div>
+    </div>
+  </main>
 }

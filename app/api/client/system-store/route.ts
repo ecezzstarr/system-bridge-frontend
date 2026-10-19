@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { randomUUID } from 'node:crypto'
 import { Storage } from '@google-cloud/storage'
 import { NextRequest, NextResponse } from 'next/server'
@@ -188,6 +189,7 @@ export async function POST(request: NextRequest) {
         ${JSON.stringify(screenshots)}::jsonb,${releaseNotes},'submitted',NOW()
       ) RETURNING *
     `
+    await notifyAdminOrder({orderId:String(version.id),event:'placed',department:'client',subject:'Client System Store version submitted',detail:`${ctx.client.name||'Client'} submitted ${systemName} (${versionName}) to the System Store for Administration verification`,adminPath:'/admin/system-store',actorId:String(ctx.client.id),actorName:ctx.client.name||'Client'})
     return NextResponse.json({ success:true, publication, version, message:'System version submitted to WEAVE Administration for verification.' })
   }
 

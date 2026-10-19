@@ -1,6 +1,8 @@
 import { ImageResponse } from 'next/og'
 import { getAgentByCarrierFoodCode } from '@/lib/carrier-food'
 import { AGILITY_RETAIL_UNIT_PRICE_NGN } from '@/lib/agility-catalog'
+import { ensureFoodBridgeSchema } from '@/lib/food-bridge'
+import { getPool } from '@/lib/db'
 import { getWeaveFoodVariantEconomics } from '@/lib/weave-food-economics'
 
 export const size={width:1200,height:630}
@@ -10,20 +12,34 @@ export default async function Image({params}:{params:Promise<{code:string}>}){
   const {code}=await params
   const agent=await getAgentByCarrierFoodCode(code).catch(()=>null)
   const agentName=String(agent?.name||agent?.username||'WEAVE Agent')
+  const farmProducts=agent ? await (async()=>{
+    try{
+      await ensureFoodBridgeSchema()
+      const result=await getPool().query(`
+        SELECT l.produce,l.unit_price_ngn,l.unit
+        FROM weave_food_surplus l
+        JOIN weave_food_farmers f ON f.id=l.farmer_id
+        WHERE f.agent_id=$1::uuid AND f.status='approved'
+          AND l.status='active' AND l.available_quantity>=l.minimum_quantity
+        ORDER BY l.created_at DESC LIMIT 3
+      `,[agent.id])
+      return result.rows.map(row=>String(row.produce)+' · ₦'+Number(row.unit_price_ngn).toLocaleString('en-NG')+'/'+String(row.unit))
+    }catch{return [] as string[]}
+  })():[] as string[]
   const agilityPrice=`₦${AGILITY_RETAIL_UNIT_PRICE_NGN.toLocaleString('en-NG')}`
   const small=getWeaveFoodVariantEconomics('electrolyte')
   const medium=getWeaveFoodVariantEconomics('electrolyte-medium')
   const smallPrice=`₦${Number(small?.agentSellingUnitPriceNgn||4000).toLocaleString('en-NG')}`
-  const mediumPrice=`₦${Number(medium?.agentSellingUnitPriceNgn||6000).toLocaleString('en-NG')}`
+  const mediumPrice=`₦${Number(medium?.agentSellingUnitPriceNgn||4000).toLocaleString('en-NG')}`
 
   return new ImageResponse(
     <div style={{width:'1200px',height:'630px',display:'flex',flexDirection:'column',background:'#07100b',color:'white',fontFamily:'sans-serif'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'34px 48px',borderBottom:'1px solid rgba(255,255,255,.14)'}}>
         <div style={{display:'flex',flexDirection:'column'}}>
-          <div style={{fontSize:24,fontWeight:900,letterSpacing:'4px'}}>WEAVE FOOD</div>
+          <div style={{fontSize:24,fontWeight:900,letterSpacing:'4px'}}>WEAVE FOOD · FARM TO FAMILY</div>
           <div style={{fontSize:18,color:'#a7f3d0',marginTop:'5px'}}>Carrier Door · {agentName}</div>
         </div>
-        <div style={{display:'flex',background:'#ffffff',color:'#07100b',padding:'14px 24px',fontSize:24,fontWeight:900}}>PAY AGENT · ORDER ONLINE</div>
+        <div style={{display:'flex',background:'#ffffff',color:'#07100b',padding:'14px 24px',fontSize:22,fontWeight:900}}>₦4,000 EACH · AGENT EARNS ₦1,000</div>
       </div>
       <div style={{display:'flex',flex:1}}>
         <div style={{width:'50%',display:'flex',flexDirection:'column',justifyContent:'space-between',padding:'44px 48px',background:'linear-gradient(135deg,#6b2d08,#1a0d06)'}}>
@@ -46,7 +62,7 @@ export default async function Image({params}:{params:Promise<{code:string}>}){
         </div>
       </div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'22px 48px',fontSize:20,background:'#030806'}}>
-        <div style={{display:'flex',fontWeight:900}}>Open the Carrier Door · Buy without a WEAVE account</div>
+        <div style={{display:'flex',fontWeight:900,fontSize:18,maxWidth:810}}>{farmProducts.length ? 'FROM THIS FARM: '+farmProducts.join('  ·  ') : 'Open the Carrier Door · Farm produce when listed · No WEAVE account needed'}</div>
         <div style={{display:'flex',color:'#94a3b8'}}>Or understand the Bridger position and join this Agent</div>
       </div>
     </div>,

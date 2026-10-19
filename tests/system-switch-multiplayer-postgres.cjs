@@ -4,7 +4,7 @@ const uri=process.env.WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL
 if(!uri||new URL(uri).pathname!=='/weave_switch_test')throw Error('Set WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL to the disposable weave_switch_test database')
 const pool=new Pool({connectionString:uri,max:8}),secondPool=new Pool({connectionString:uri,max:4})
 const compiled=process.env.SYSTEM_SWITCH_COMPILED_SOURCES?JSON.parse(fs.readFileSync(process.env.SYSTEM_SWITCH_COMPILED_SOURCES,'utf8')):null
-function load(file,deps={}){const exports={};const source=compiled?compiled[file]:require('typescript').transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:1,target:9}}).outputText;vm.runInNewContext(source,{exports,require:n=>{if(n in deps)return deps[n];throw Error(n)},Math,Number,WeakMap,console});return exports}
+function load(file,deps={}){const exports={};const source=compiled?compiled[file]:require('typescript').transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:1,target:9}}).outputText;vm.runInNewContext(source,{exports,require:n=>{if(n in deps)return deps[n];throw Error(n)},Math,Number,WeakMap,console,URL});return exports}
 const runtime=load('lib/file-folder-world-runtime.ts'),presence=load('lib/system-switch-presence.ts',{'./file-folder-world-runtime':runtime})
 const sql=async(strings,...values)=>(await pool.query(strings.reduce((s,part,i)=>s+(i?'$'+i:'')+part,''),values)).rows
 let shield=false
@@ -29,6 +29,8 @@ async function run(){
  await pool.query("INSERT INTO sessions VALUES($1,$2,NOW()+INTERVAL '1 hour'),($3,$4,NOW()+INTERVAL '1 hour'),($5,$6,NOW()+INTERVAL '1 hour')",[clientToken,client,staffToken,staff,otherToken,other])
  await pool.query("INSERT INTO client_file_folders VALUES($1,'active')",[client])
  assert.equal((await routes.GET(request('GET'))).status,401)
+ const proxied=request('POST',null,body(connection,1),'','https://weavingsystem.online');proxied.headers.set('host','weavingsystem.online');proxied.nextUrl=new URL('http://0.0.0.0:3000/api/system-switch/world');assert.equal((await routes.POST(proxied)).status,401,'Same-origin proxy request reaches authentication')
+ proxied.headers.set('origin','https://untrusted.invalid');assert.equal((await routes.POST(proxied)).status,403,'Untrusted origin rejected behind proxy')
  assert.equal((await routes.POST(request('POST',otherToken,body(connection,1)))).status,403,'Unowned Client cannot enter')
  assert.equal((await routes.POST(request('POST',clientToken,body(connection,1),'','https://untrusted.invalid'))).status,403)
  assert.equal((await routes.POST(request('POST',clientToken,{...body(connection,1),room:'private-client-folder'}))).status,400)

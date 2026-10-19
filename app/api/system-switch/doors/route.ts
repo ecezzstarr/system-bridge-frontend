@@ -26,6 +26,8 @@ export async function GET(request:NextRequest){
    LEFT JOIN client_stream_channels c ON c.client_id=s.client_id AND c.enabled=true
      AND EXISTS(SELECT 1 FROM client_built_systems b WHERE b.client_id=s.client_id AND b.file_number=s.file_number AND b.system_type='streaming_gate' AND b.status='active')
    WHERE s.enabled=true AND s.formation_status='selling' AND COALESCE(u.is_active,true)=true
+   AND (s.world_host_customer_market=true OR s.world_host_flame_event=true)
+   AND EXISTS(SELECT 1 FROM client_built_systems d WHERE d.client_id=s.client_id AND d.file_number=s.file_number AND d.system_type='customer_door' AND d.status='active')
    ORDER BY s.public_slug ASC LIMIT 24`
   return NextResponse.json({doors:stores.map(publicWorldDoor),broadcastDate:new Date().toISOString().slice(0,10),timeZone:'UTC',limit:24},{headers:{'Cache-Control':'private, no-store'}})
  }catch(error){console.error('[System Switch] directory unavailable',error);return NextResponse.json({error:'Customer Doors are temporarily unavailable.'},{status:503})}

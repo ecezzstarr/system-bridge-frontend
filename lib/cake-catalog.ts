@@ -7,13 +7,15 @@ export type WeaveCakeType={
 }
 
 export const DAISY_PASTRIES_BRAND='Daisy Pastries'
-export const DAISY_CAKE_SLICE_MAX_NGN=4999
+export const DAISY_CAKE_SLICE_PRICE_NGN=5000
+export const DAISY_CAKE_SLICE_MAX_NGN=DAISY_CAKE_SLICE_PRICE_NGN
+export const DAISY_AGENT_COMMISSION_NGN=1000
 export const DAISY_BENTO_PRICE_NGN=10000
 export const DAISY_CELEBRATION_MIN_NGN=15000
 export const DAISY_CELEBRATION_MAX_NGN=60000
 
 export const DAISY_PASTRIES_PRICE_BANDS=[
-  {id:'slice',name:'Cake Slice',label:'Under ₦5,000',minNgn:1,maxNgn:DAISY_CAKE_SLICE_MAX_NGN},
+  {id:'slice',name:'Cake Slice',label:'₦5,000',minNgn:DAISY_CAKE_SLICE_PRICE_NGN,maxNgn:DAISY_CAKE_SLICE_PRICE_NGN},
   {id:'bento',name:'Bento Cake',label:'₦10,000',minNgn:DAISY_BENTO_PRICE_NGN,maxNgn:DAISY_BENTO_PRICE_NGN},
   {id:'celebration',name:'Daisy Pastries Celebration Cakes',label:'₦15,000 to ₦60,000',minNgn:DAISY_CELEBRATION_MIN_NGN,maxNgn:DAISY_CELEBRATION_MAX_NGN},
 ] as const
@@ -30,14 +32,22 @@ export const WEAVE_CAKE_TYPES:WeaveCakeType[]=[
 ]
 
 export const WEAVE_CAKE_FLAVORS=['Vanilla','Chocolate','Red Velvet','Marble','Fruit','Coconut','Carrot','Custom / discuss with Agent'] as const
-export const WEAVE_CAKE_SIZES=['Cake Slice · Under ₦5,000','Bento Cake · ₦10,000','6 inch','8 inch','10 inch','12 inch','Two tier','Three tier','Custom event size'] as const
+export const WEAVE_CAKE_SIZES=['Cake Slice · ₦5,000','Bento Cake · ₦10,000','6 inch','8 inch','10 inch','12 inch','Two tier','Three tier','Custom event size'] as const
 
 export type DaisyPastriesPricePolicy={kind:'slice'|'bento'|'celebration';label:string;minNgn:number;maxNgn:number;fixed:boolean}
 
 export function getDaisyPastriesPricePolicy(sizeOption:string):DaisyPastriesPricePolicy{
-  if(String(sizeOption).startsWith('Cake Slice'))return {kind:'slice',label:'Under ₦5,000',minNgn:1,maxNgn:DAISY_CAKE_SLICE_MAX_NGN,fixed:false}
+  if(String(sizeOption).startsWith('Cake Slice'))return {kind:'slice',label:'₦5,000',minNgn:DAISY_CAKE_SLICE_PRICE_NGN,maxNgn:DAISY_CAKE_SLICE_PRICE_NGN,fixed:true}
   if(String(sizeOption).startsWith('Bento Cake'))return {kind:'bento',label:'₦10,000',minNgn:DAISY_BENTO_PRICE_NGN,maxNgn:DAISY_BENTO_PRICE_NGN,fixed:true}
   return {kind:'celebration',label:'₦15,000 to ₦60,000',minNgn:DAISY_CELEBRATION_MIN_NGN,maxNgn:DAISY_CELEBRATION_MAX_NGN,fixed:false}
+}
+
+export function getDaisyPastriesAgentEarnings(cakePriceNgn:number){
+  if(!Number.isFinite(cakePriceNgn)||cakePriceNgn<DAISY_AGENT_COMMISSION_NGN){
+    throw new Error('Official cake selling price must cover the Agent commission')
+  }
+  return {customerPriceNgn:cakePriceNgn,agentCommissionNgn:DAISY_AGENT_COMMISSION_NGN,
+    weaveShareNgn:cakePriceNgn-DAISY_AGENT_COMMISSION_NGN}
 }
 
 export function getWeaveCakeType(id:string){return WEAVE_CAKE_TYPES.find(item=>item.id===id)||null}

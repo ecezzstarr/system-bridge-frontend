@@ -23,7 +23,7 @@ export default function ClientFileFolderFlameEventPage() {
 
   return (
     <div
-      className="mx-auto w-full max-w-6xl p-3 pb-24 text-white sm:p-4"
+      className="mx-auto w-full max-w-none px-1 pb-24 pt-3 text-white sm:px-3"
       data-flame-event-location="file-folder"
       data-system-switch-crossed="true"
       data-weave-world="file-folder"

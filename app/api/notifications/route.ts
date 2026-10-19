@@ -45,6 +45,12 @@ export async function POST(request: NextRequest) {
     }
 
     const { userId, type = 'message', title, content, link } = await request.json()
+    const notificationType=String(type||'message').trim().slice(0,90)
+    // Only the trusted server order/deposit workflows may mint operational alerts.
+    // An ordinary authenticated user must not forge a paid/order-verification notice.
+    if(notificationType.startsWith('order_')||notificationType.startsWith('deposit_')||['cake_paid','carrier_cake_payment','carrier_customer_payment'].includes(notificationType)){
+      return NextResponse.json({success:false,error:'System notification types are server-controlled'},{status:403})
+    }
     if (!userId || !title) {
       return NextResponse.json({ success: false, error: 'userId and title required' }, { status: 400 })
     }
@@ -60,7 +66,7 @@ export async function POST(request: NextRequest) {
       )
       VALUES (
         ${userId}::uuid,
-        ${type},
+        ${notificationType},
         ${title},
         ${content || ''},
         ${user.id}::uuid,

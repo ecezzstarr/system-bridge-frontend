@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { getPool } from '@/lib/db'
 import { ensureVideoAdStudioSchema } from '@/lib/video-ad-studio'
@@ -78,6 +79,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{code:st
       RETURNING id,quoted_amount,quoted_currency,created_at`,
       [item.user_id,item.role,customerKind,customerName,customerContact,customerEmail,businessName,item.package_key,item.name,item.duration_seconds,quotedAmount,item.currency,subject,objective,audience,notes])
     const order=result.rows[0]
+    await notifyAdminOrder({orderId:String(order.id),event:'placed',department:item.role,subject:'Video Ad Studio service order',detail:`${customerName} requested ${item.name} from ${item.role} producer · ${order.quoted_currency} ${Number(order.quoted_amount).toLocaleString()} quoted (payment not verified)`,adminPath:'/admin/video-ad-workshop',actorId:String(item.user_id),actorName:'WEAVE video producer'})
     return NextResponse.json({
       success:true,
       orderId:String(order.id),

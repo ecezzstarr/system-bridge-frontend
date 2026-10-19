@@ -1,4 +1,5 @@
 'use client'
+import { AgentFoodPricingInfo } from '@/components/weave-food/food-program-info'
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -102,6 +103,7 @@ export default function AgentAgilityOrderPage(){
   if(!isAgent)return <main className="p-8 text-sm text-slate-300">Agent account required.</main>
 
   return <main className="mx-auto max-w-7xl space-y-7 pb-20 text-white" data-agility-home="independent">
+    <AgentFoodPricingInfo product="agility"/>
     <section className="rounded-[2rem] border border-orange-300/20 bg-gradient-to-br from-orange-500/10 via-slate-950 to-amber-500/10 p-6 md:p-9"><p className="text-[10px] font-black uppercase tracking-[.3em] text-orange-300">Agent Department · Agility</p><h1 className="mt-2 text-5xl font-black md:text-7xl">AGILITY</h1><p className="mt-4 max-w-4xl text-sm leading-7 text-slate-300 md:text-base">Agility is its own WEAVE food ground. Order Agility cartons from WEAVE, pay through OPay, wait for Administration verification and company fulfillment, then receive and move the stock through your Distribution Route or Carrier.</p><div className="mt-5 flex flex-wrap gap-2"><Link href="/agent/distribution"><Button variant="outline" className="border-white/15 text-white"><Truck className="mr-2 h-4 w-4"/>DISTRIBUTION ROUTE</Button></Link><Link href="/agent/work"><Button variant="outline" className="border-white/15 text-white">AGENT WORK</Button></Link><Button variant="outline" className="border-white/15 text-white" onClick={()=>void load()}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></div></section>
 
     <section className="rounded-[1.5rem] border border-white/10 bg-white/[.025] p-5"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Where WEAVE sends your Agility stock</p><div className="mt-3 grid gap-3 md:grid-cols-2"><Input value={address} onChange={event=>setAddress(event.target.value)} placeholder="Receiving location / address" className="border-white/10 bg-black/25"/><Input value={phone} onChange={event=>setPhone(event.target.value)} placeholder="Receiving phone" className="border-white/10 bg-black/25"/></div></section>
