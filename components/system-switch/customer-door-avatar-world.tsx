@@ -137,6 +137,7 @@ export function SystemSwitchDoorPlaza(){
         <h1 className="mt-2 text-3xl font-black">System Switch · Customer Door Plaza</h1>
         <p className="mt-2 text-xs text-stone-400">Arrive as your {position} avatar. Walk to a hosted Client Customer Door and cross into its public File Folder territory.</p>
       </div>
+      <Link href="/system-switch/bridge-radiance/trx" className="inline-flex items-center gap-2 border border-amber-200/25 bg-amber-300/[.07] p-3 text-xs font-bold text-amber-200">WEAVE TRX wallet · Purchase inquiry</Link>
       <Link href={position==='visitor'?'/market':'/system-switch/flame-event'} className="inline-flex items-center gap-2 border border-white/10 p-3 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Back</Link>
     </header>
     <section className="mx-auto max-w-7xl px-3" data-shared-customer-door-avatar-plaza>
