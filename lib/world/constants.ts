@@ -36,6 +36,6 @@ export const WORLD_RULES = {
   CASINO_LOSS_RETURN_RATE: 0.30,
   
   // Client funding rail: real TRX is paid here, then verified value is credited as Flame Coin.
-  COMPANY_TRX_WALLET: process.env.COMPANY_TRON_WALLET || 'TFT8e4EbMTvfQUGBHSz6LWTi4wokRBBz32',
+  COMPANY_TRX_WALLET: 'TFT8e4EbMTvfQUGBHSz6LWTi4wokRBBz32',
   TRX_PAYMENT_NGN_FALLBACK_RATE: Number(process.env.TRX_NGN_FALLBACK_RATE || 441.09),
 }
