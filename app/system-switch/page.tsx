@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Flame, FolderOpen, Orbit, Waves } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
-import { StaffFileFolderWorld } from '@/components/system-switch/staff-file-folder-world'
+import StaffFileFolderWorld from '@/components/system-switch/staff-file-folder-world'
 
 export default function SystemSwitchEntryPage() {
   const { user, isInitialized, isLoading } = useAuth()
