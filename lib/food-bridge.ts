@@ -75,8 +75,46 @@ async function establishSchema() {
       created_at timestamptz NOT NULL DEFAULT NOW(),
       updated_at timestamptz NOT NULL DEFAULT NOW(),
       CHECK (delivery_mode IN ('delivery','pickup')),
-      CHECK (status IN ('requested','farmer_confirmed','quoted','accepted','dispatched','delivered','cancelled','rejected','expired'))
+      CHECK (status IN ('requested','farmer_confirmed','quoted','accepted','dispatched','delivered','cancelled','rejected','expired','disputed','released'))
     );
+    ALTER TABLE weave_food_direct_orders DROP CONSTRAINT IF EXISTS weave_food_direct_orders_status_check;
+    ALTER TABLE weave_food_direct_orders ADD CONSTRAINT weave_food_direct_orders_status_check
+      CHECK (status IN ('requested','farmer_confirmed','quoted','accepted','funds_held',
+        'dispatched','delivered','released','disputed','cancelled','rejected','expired'));
+    CREATE TABLE IF NOT EXISTS weave_food_escrow (
+      order_id uuid PRIMARY KEY REFERENCES weave_food_direct_orders(id) ON DELETE RESTRICT,
+      reference varchar(90) NOT NULL UNIQUE,
+      food_amount_ngn numeric(18,2) NOT NULL,
+      delivery_amount_ngn numeric(18,2) NOT NULL,
+      buyer_total_ngn numeric(18,2) NOT NULL,
+      weave_commission_ngn numeric(18,2) NOT NULL DEFAULT 0 CHECK (weave_commission_ngn=0),
+      seller_payout_ngn numeric(18,2) NOT NULL,
+      status varchar(24) NOT NULL DEFAULT 'awaiting_payment',
+      proof_reference varchar(255),
+      proof_submitted_at timestamptz,
+      verified_by uuid REFERENCES users(id),
+      verified_at timestamptz,
+      rejected_by uuid REFERENCES users(id),
+      rejected_at timestamptz,
+      payout_reference varchar(255),
+      payout_recorded_by uuid REFERENCES users(id),
+      payout_recorded_at timestamptz,
+      refund_reference varchar(255),
+      refund_recorded_by uuid REFERENCES users(id),
+      refund_recorded_at timestamptz,
+      dispute_note text,
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      updated_at timestamptz NOT NULL DEFAULT NOW(),
+      CHECK (buyer_total_ngn=food_amount_ngn+delivery_amount_ngn),
+      CHECK (seller_payout_ngn=buyer_total_ngn),
+      CHECK (status IN ('awaiting_payment','proof_submitted','held','release_due','released','disputed','refund_due','refunded'))
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS weave_food_escrow_proof_uidx
+      ON weave_food_escrow(proof_reference) WHERE proof_reference IS NOT NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS weave_food_escrow_payout_uidx
+      ON weave_food_escrow(payout_reference) WHERE payout_reference IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS weave_food_escrow_review_idx
+      ON weave_food_escrow(status,updated_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_farmers_status ON weave_food_farmers(status,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_surplus_farmer ON weave_food_surplus(farmer_id,status);
     ALTER TABLE weave_food_direct_orders ALTER COLUMN buyer_user_id DROP NOT NULL;
