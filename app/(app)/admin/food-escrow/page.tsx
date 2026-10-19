@@ -48,10 +48,10 @@ export default function AdminFarmEscrow(){
  }
  if(!isInitialized)return <main className="p-6 text-white">Opening Farm-to-Family settlement desk…</main>
  if(user?.role!=='admin')return <main className="p-6 text-white">Administration only.</main>
- return <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 text-white" data-admin-farm-escrow="zero-commission">
+ return <main className="mx-auto max-w-6xl px-4 pb-24 pt-6 text-white" data-admin-farm-escrow="flat-seller-fee">
   <Link href="/admin/food-bridge" className="text-xs text-emerald-200">← Farm-to-Family Administration</Link>
   <h1 className="mt-5 text-3xl font-black">FARM-TO-FAMILY · PAYMENT HOLD & SETTLEMENT</h1>
-  <p className="mt-3 text-sm leading-6 text-stone-300">Weave charges farmers <strong>₦0 commission</strong>. Confirm actual bank credit before releasing goods. After the buyer confirms receipt, send the entire food + delivery amount to the farmer’s verified bank account, then record the actual transfer reference. These controls record external payment movements; they cannot initiate or prove a bank transfer automatically.</p>
+  <p className="mt-3 text-sm leading-6 text-stone-300">WEAVE deducts <strong>₦1,000 from the farmer for each successfully completed order</strong>, regardless of quantity. The buyer pays the accepted food and delivery total with no added WEAVE fee. Confirm actual bank credit before dispatch; after buyer receipt send the net total (buyer payment minus ₦1,000) to the farmer’s verified bank account, then record the bank transfer reference. These controls record external payment movements; they cannot initiate or prove a bank transfer automatically.</p>
   {error&&<p role="alert" className="mt-4 border border-rose-300/20 p-3 text-sm text-rose-200">{error}</p>}
   {message&&<p role="status" className="mt-4 border border-emerald-300/20 p-3 text-sm text-emerald-200">{message}</p>}
   <button type="button" onClick={()=>void load()} className="mt-5 border border-white/15 px-4 py-2 text-xs">Refresh bank verification queue</button>
@@ -65,9 +65,9 @@ export default function AdminFarmEscrow(){
     <div className="mt-4 grid gap-3 sm:grid-cols-3">
      <div><p className="text-[10px] text-stone-500">Food amount</p><p className="text-lg font-black">{fmt(o.food_amount_ngn)}</p></div>
      <div><p className="text-[10px] text-stone-500">Transport quote</p><p className="text-lg font-black">{fmt(o.delivery_amount_ngn)}</p></div>
-     <div><p className="text-[10px] text-stone-500">Buyer total / seller due</p><p className="text-lg font-black text-emerald-200">{fmt(o.seller_payout_ngn)}</p></div>
+     <div><p className="text-[10px] text-stone-500">Net amount due to seller</p><p className="text-lg font-black text-emerald-200">{fmt(o.seller_payout_ngn)}</p></div>
     </div>
-    <p className="mt-3 text-xs text-amber-200">WEAVE commission: ₦0 · Order reference: {o.reference}</p>
+    <p className="mt-3 text-xs text-amber-200">Buyer paid: {fmt(o.buyer_total_ngn)} · WEAVE flat seller fee: {fmt(o.weave_commission_ngn)} · Seller receives: {fmt(o.seller_payout_ngn)} · Order reference: {o.reference}</p>
     {o.proof_reference&&<p className="mt-2 text-xs text-stone-300">Buyer payment evidence: {o.proof_reference} (not independently verified)</p>}
     <p className="mt-3 text-xs text-stone-400">Farmer bank: {o.payout_bank_name||'Not registered'} · {o.payout_account_name||'No owner name'} · {o.payout_account_number||'No account'}</p>
     {o.dispute_note&&<p className="mt-3 text-xs text-rose-200">Buyer dispute: {o.dispute_note}</p>}
