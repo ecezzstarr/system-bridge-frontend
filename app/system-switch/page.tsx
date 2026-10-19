@@ -58,6 +58,7 @@ export default function SystemSwitchEntryPage() {
             <p className="mt-3 text-sm leading-6 text-slate-400">
               Burning River is an event inside the File Folder. Cross System Switch first, then enter the event ground from here.
             </p>
+            <Link href="/system-switch/customer-doors?entrance=flame-event" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-300/30 bg-emerald-300/[.07] px-5 py-3 text-xs font-black uppercase tracking-[.1em] text-emerald-200">Enter the multiplayer Customer Door plaza as staff avatar <ArrowRight className="h-4 w-4"/></Link>
             <Link
               href="/system-switch/flame-event"
               data-system-switch-crossing="flame-event-inside-file-folder"
