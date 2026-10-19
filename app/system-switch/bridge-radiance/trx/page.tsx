@@ -10,7 +10,7 @@ export default function BridgeRadianceTrxSales(){
   const [contact,setContact]=useState('')
   const [wallet,setWallet]=useState('')
   const [amount,setAmount]=useState('')
-  const [provider,setProvider]=useState<'flutterwave'|'wise'>('flutterwave')
+  const [provider,setProvider]=useState<'pending_compliant_provider'>('pending_compliant_provider')
   const [id,setId]=useState('')
   const [lookupContact,setLookupContact]=useState('')
   const [reference,setReference]=useState('')
@@ -55,20 +55,20 @@ export default function BridgeRadianceTrxSales(){
       <Link href="/system-switch/customer-doors?entrance=market" className="text-xs text-sky-200">← System Switch · Customer Doors</Link>
       <div className="mt-8 flex items-center gap-2 text-amber-200"><Waves className="h-6 w-6"/><Flame className="h-6 w-6"/><span className="text-xs font-black uppercase tracking-[.23em]">Weave of Presence · System Switch — Bridge of Radiance</span></div>
       <h1 className="mt-5 text-3xl font-black sm:text-5xl">TRX for your crossing</h1>
-      <p className="mt-4 text-sm leading-7 text-slate-300">Need TRX but only have access to an online bank? Request a manual quote through Flutterwave or Wise. Administration Forensics confirms actual bank receipt first; a TRX transfer is then released and confirmed on-chain. This is not an instant exchange or automatic payment gateway.</p>
+      <p className="mt-4 text-sm leading-7 text-slate-300">Need TRX for your File Folder? Record your interest here. Wise accounts prohibit cryptocurrency sales, and Flutterwave requires specific merchant authorization. WEAVE will not collect bank payments for TRX through either channel unless lawful authorization and permitted provider support are confirmed.</p>
       <section className="mt-7 rounded-3xl border border-sky-200/20 bg-sky-100/[.045] p-5">
         <p className="text-xs font-bold uppercase tracking-wider text-sky-200">WEAVE public TRX receiving wallet · TRON network</p>
         <div className="mt-3 flex items-center gap-2"><code className="min-w-0 flex-1 break-all text-sm text-white">{companyWallet}</code><button type="button" onClick={()=>navigator.clipboard?.writeText(companyWallet)} className="rounded-lg border border-white/20 p-3" aria-label="Copy TRX wallet"><Copy className="h-4 w-4"/></button></div>
-        <p className="mt-3 text-xs leading-6 text-slate-400">This is WEAVE's receiving address for direct TRX payment. Do not send USDT or another coin without separate verified instructions. If buying TRX through a bank, do not send funds before an Administration quote.</p>
+        <p className="mt-3 text-xs leading-6 text-slate-400">This is WEAVE's receiving address for direct TRX payment. Do not send USDT or another coin without separate verified instructions. The bank purchase channel is not active. Do not send bank funds to buy TRX through WEAVE at present.</p>
       </section>
       <form onSubmit={request} className="mt-6 grid gap-4 rounded-3xl border border-amber-100/20 bg-black/25 p-5">
-        <h2 className="text-xl font-bold">Request a TRX purchase quote</h2>
+        <h2 className="text-xl font-bold">Register interest in TRX purchase</h2>
         <label className="text-xs text-slate-300">Name<input required value={name} onChange={e=>setName(e.target.value)} minLength={2} maxLength={180} className="mt-2 w-full rounded-lg border border-white/15 bg-slate-950 p-3 text-base"/></label>
         <label className="text-xs text-slate-300">Email or phone<input required value={contact} onChange={e=>setContact(e.target.value)} minLength={5} maxLength={255} className="mt-2 w-full rounded-lg border border-white/15 bg-slate-950 p-3 text-base"/></label>
         <label className="text-xs text-slate-300">Your TRON wallet (TRX receiving address)<input required value={wallet} onChange={e=>setWallet(e.target.value)} placeholder="T..." className="mt-2 w-full rounded-lg border border-white/15 bg-slate-950 p-3 text-base"/></label>
         <label className="text-xs text-slate-300">How much TRX do you want?<input required type="number" min="0.000001" step="0.000001" value={amount} onChange={e=>setAmount(e.target.value)} className="mt-2 w-full rounded-lg border border-white/15 bg-slate-950 p-3 text-base"/></label>
-        <label className="text-xs text-slate-300">Preferred bank method<select value={provider} onChange={e=>setProvider(e.target.value as 'flutterwave'|'wise')} className="mt-2 w-full rounded-lg border border-white/15 bg-slate-950 p-3 text-base"><option value="flutterwave">Flutterwave · manual verification</option><option value="wise">Wise · manual verification</option></select></label>
-        <button disabled={busy} type="submit" className="min-h-12 rounded-xl bg-amber-200 p-3 text-sm font-black text-slate-900 disabled:opacity-50">Request Quote</button>
+        <label className="text-xs text-slate-300">Preferred bank method<select value={provider} onChange={e=>setProvider(e.target.value as 'flutterwave'|'wise')} className="mt-2 w-full rounded-lg border border-white/15 bg-slate-950 p-3 text-base"><option value="pending_compliant_provider">Request compliant bank purchase options</option><option disabled value="flutterwave">Flutterwave · pending explicit approval</option><option disabled value="wise">Wise · not permitted for crypto sales</option></select></label>
+        <button disabled={busy} type="submit" className="min-h-12 rounded-xl bg-amber-200 p-3 text-sm font-black text-slate-900 disabled:opacity-50">Register Interest · No Payment Required</button>
       </form>
       <section className="mt-6 rounded-3xl border border-white/15 bg-black/20 p-5">
         <h2 className="font-bold">Check your request</h2>
