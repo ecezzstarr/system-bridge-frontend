@@ -1,5 +1,6 @@
 'use client'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
+import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
@@ -548,6 +549,7 @@ function Scene({
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
     <StoneGround/>
+    <SystemSwitchThreshold position={[0,0,7.5]} scale={.44} quiet={false}/>
     <FileFolderScenery formationCount={activeBuilds.length}/>
     <FileFolderFacilities
       marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
