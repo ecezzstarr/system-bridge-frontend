@@ -95,7 +95,7 @@ export default function PositionEventWorld({
 
   return (
     <section
-      className="weave-operating-environment relative isolate w-full overflow-hidden border-y border-orange-300/15 bg-[#070505]/72 text-white shadow-[0_34px_120px_rgba(69,10,10,.18)] backdrop-blur-xl"
+      className="weave-operating-environment relative isolate w-full overflow-hidden border-y border-orange-300/15 bg-[#070505]/72 text-white shadow-[0_34px_120px_rgba(69,10,10,.18)]"
       data-loop-one-environment="burning-river"
       data-weave-environment="flame-event-loop-one"
     >
@@ -103,6 +103,7 @@ export default function PositionEventWorld({
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,247,237,.018),transparent_18%,transparent_78%,rgba(249,115,22,.035)),radial-gradient(circle_at_50%_42%,rgba(249,115,22,.08),transparent_30%)]" />
 
       <div className="relative z-10">
+        <FlameEventOpenWorld enterprises={enterprises} role={role} />
         <header className="grid gap-5 border-b border-white/8 px-4 py-5 sm:px-6 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:px-8 lg:py-7">
           <FlameEventArtifactMark size="md" surface="client-event" className="mx-auto lg:mx-0" />
 
@@ -167,7 +168,6 @@ export default function PositionEventWorld({
           <span className="text-[9px] font-black uppercase tracking-[.12em] text-amber-100">Staff Customer Door current</span>
           <span className="sr-only">Enter Customer Door by selecting an opened public portal.</span>
         </div>
-        <FlameEventOpenWorld enterprises={enterprises} role={role} />
 
         {role === 'client' && (
           <section className="relative min-h-[18rem] overflow-hidden border-b border-white/8" data-flame-event-crossing-route="system-switch">
