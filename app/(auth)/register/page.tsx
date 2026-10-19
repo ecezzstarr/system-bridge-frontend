@@ -27,6 +27,7 @@ function RegisterContent() {
     email: '',
     username: '',
     name: '',
+    gender: '' as 'male' | 'female' | '',
     password: '',
     confirmPassword: '',
     role: '' as 'agent' | 'bridger' | '',
@@ -63,6 +64,7 @@ function RegisterContent() {
         email: sameRole ? String(draft.email || '') : '',
         username: sameRole ? String(draft.username || '') : '',
         name: sameRole ? String(draft.name || '') : '',
+        gender: sameRole && ['male','female'].includes(draft.gender) ? draft.gender : '',
       }))
       if (sameRole && ['notice','terms','guide','details'].includes(draft.step) && draft.departmentalCode) {
         setStep(draft.step)
@@ -86,11 +88,11 @@ function RegisterContent() {
     try {
       sessionStorage.setItem(BRIDGER_DRAFT_KEY, JSON.stringify({
         step, role:formData.role, departmentalCode:formData.departmentalCode,
-        email:formData.email, username:formData.username, name:formData.name,
+        email:formData.email, username:formData.username, name:formData.name, gender:formData.gender,
         referredBy,
       }))
     } catch {}
-  }, [draftReady,step,formData.role,formData.departmentalCode,formData.email,formData.username,formData.name,referredBy])
+  }, [draftReady,step,formData.role,formData.departmentalCode,formData.email,formData.username,formData.name,formData.gender,referredBy])
 
   const handleRoleSelect = (role: 'agent' | 'bridger') => {
     setError(null)
@@ -149,6 +151,10 @@ function RegisterContent() {
       setError('Password must be at least 8 characters')
       return
     }
+    if (!formData.gender) {
+      setError('Choose your gender at registration')
+      return
+    }
     if (!formData.role) {
       setError('Please select a role')
       return
@@ -165,6 +171,7 @@ function RegisterContent() {
         email: formData.email,
         username: formData.username,
         name: formData.name,
+        gender: formData.gender,
         password: formData.password,
         role: formData.role as 'agent' | 'bridger',
         department: formData.role.toUpperCase(),
@@ -443,6 +450,15 @@ function RegisterContent() {
             required
             disabled={isSubmitting || isLoading}
           />
+
+          <label className="block text-xs font-semibold text-slate-300">
+            Gender
+            <select required value={formData.gender} onChange={e=>setFormData({...formData,gender:e.target.value as 'male' | 'female' | ''})} className="mt-2 w-full rounded-lg border border-slate-600 bg-slate-800 p-3 text-sm text-white">
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </label>
 
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 pointer-events-none" />
