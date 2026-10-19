@@ -270,6 +270,44 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
   const lastRegion=useRef<FlameRegion>('riverbank')
   const previousDoor=useRef<number|null>(null)
   const target=useRef(new THREE.Vector3()),look=useRef(new THREE.Vector3())
+  useEffect(()=>{
+    // This is visual continuity within this browser tab; never an access credential.
+    const key='weave:flame:presence:'+role
+    try{
+      const raw=window.sessionStorage.getItem(key)
+      const value=raw?JSON.parse(raw):null
+      if(value&&[value.x,value.z,value.yaw,value.pitch].every((n:unknown)=>typeof n==='number'&&Number.isFinite(n))){
+        const bounded=clampFlameEventPosition(value.x,value.z)
+        // Ignore corrupt or out-of-bounds location data instead of teleporting.
+        if(Math.hypot(bounded.x-value.x,bounded.z-value.z)<.1){
+          position.current.set(bounded.x,0,bounded.z)
+          heading.current=value.yaw
+          inputRef.current.yaw=value.yaw
+          inputRef.current.pitch=Math.max(-.65,Math.min(.72,value.pitch))
+          playerMotion.current.x=bounded.x
+          playerMotion.current.z=bounded.z
+          playerMotion.current.yaw=value.yaw
+        }
+      }
+    }catch{}
+    const save=()=>{
+      try{
+        window.sessionStorage.setItem(key,JSON.stringify({
+          x:position.current.x,z:position.current.z,
+          yaw:inputRef.current.yaw,pitch:inputRef.current.pitch,
+        }))
+      }catch{}
+    }
+    const timer=window.setInterval(save,2500)
+    window.addEventListener('pagehide',save)
+    window.addEventListener('weave:flame-event:save-presence',save)
+    return ()=>{
+      save()
+      window.clearInterval(timer)
+      window.removeEventListener('pagehide',save)
+      window.removeEventListener('weave:flame-event:save-presence',save)
+    }
+  },[role,inputRef,playerMotion])
   useFrame(({clock},delta)=>{
     const dt=Math.min(.05,delta),data=inputRef.current
     const magnitude=Math.min(1,Math.hypot(data.forward,data.right))
