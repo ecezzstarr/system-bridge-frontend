@@ -1,8 +1,11 @@
 'use client'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
+import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
+import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
 
 import { useEffect,useMemo,useRef,useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
+import { useRouter } from 'next/navigation'
 import { ContactShadows,Text,useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { EmbodiedWorldRuntime, type WorldInput } from './embodied-world-runtime'
@@ -507,7 +510,7 @@ function WorldImageCapture({captureRef}:{captureRef:React.MutableRefObject<(()=>
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,thirdPerson,constructionPage,systemPage,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,onReturnToFlame,thirdPerson,constructionPage,systemPage,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -533,10 +536,12 @@ function Scene({
   onSystemEnter?:(id:string)=>void
   onBuildEnter?:(id:string)=>void
   onStudioEnter?:(key:FormationStation)=>void
+  onReturnToFlame?:()=>void
   thirdPerson:boolean
   constructionPage:number
   systemPage:number
 }){
+  const mobileBudget=useAdaptiveRuntime()
   const visibleSystems=liveSystems.slice(systemPage*12,systemPage*12+12)
   return <>
     <color attach="background" args={['#101d29']}/>
@@ -548,6 +553,7 @@ function Scene({
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
     <StoneGround/>
+    <SystemSwitchThreshold position={[0,0,7.5]} scale={.44} quiet={mobileBudget.reducedMotion}/>
     <FileFolderScenery formationCount={activeBuilds.length}/>
     <FileFolderFacilities
       marketReady={liveSystems.some(system=>system.systemType==='customer_door')}
@@ -598,6 +604,7 @@ function Scene({
         ...visibleSystems.map((_,i,all)=>{const [x,,z]=systemWorldPosition(i,all.length);return {x,z,radius:.65}}),
       ]}
       entrances={[
+        {id:'flame-event',label:'System Switch · Burning River',position:[0,0,7.5],enter:()=>onReturnToFlame?.()},
         ...districts.map(d=>({id:d.key,label:d.label,position:POSITIONS[d.key],enter:()=>onSurfaceChange(d.key)})),
         ...(['blueprint_foundry','parts_workshop','boost_bay'] as FormationStation[]).map(key=>({
           id:key,label:key.replaceAll('_',' '),position:FILE_FOLDER_STATION_POSITIONS[key],enter:()=>onStudioEnter?.(key)
@@ -638,6 +645,7 @@ export function ClientFileFolder3D({
   businessSector?:string|null
   territoryMode?:boolean
 }){
+  const router=useRouter()
   const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,lookPitchDelta:0,zoomDelta:0})
   const presence=useRef<Presence>({x:0,z:3,yaw:0})
   const touchPoints=useRef(new Map<number,{x:number;y:number}>())
@@ -793,7 +801,7 @@ export function ClientFileFolder3D({
           aiTerritories={aiTerritories}
           emergence={emergence}
           routeCurrent={routeCurrent}
-          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} thirdPerson={thirdPerson} constructionPage={Math.min(constructionPage,Math.max(0,Math.ceil(activeBuilds.length/6)-1))} systemPage={Math.min(systemPage,Math.max(0,Math.ceil(liveSystems.length/12)-1))}
+          input={input} presence={presence} onNearby={setNearby} onSystemEnter={onSystemEnter} onBuildEnter={onBuildEnter} onStudioEnter={onStudioEnter} onReturnToFlame={()=>router.push('/client/system-switch/flame-event')} thirdPerson={thirdPerson} constructionPage={Math.min(constructionPage,Math.max(0,Math.ceil(activeBuilds.length/6)-1))} systemPage={Math.min(systemPage,Math.max(0,Math.ceil(liveSystems.length/12)-1))}
         />
       </AdaptiveCanvas>
     </div>

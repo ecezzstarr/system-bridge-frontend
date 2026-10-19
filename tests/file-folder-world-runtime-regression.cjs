@@ -126,6 +126,18 @@ assert(presence.current.x>beforeStrafe,'Analog joystick movement reaches the wor
 input.current.analogStrafe=0
 input.current.enter=true;frame({camera},.05);frame({camera},.05);assert.equal(entered,1,'Entry fires once')
 input.current.active=false;const before=presence.current.z;input.current.enter=true;frame({camera},.05);assert.equal(presence.current.z,before);assert.equal(entered,1,'Panels stop input')
+const followInput={current:{keys:new Set(['w']),active:true,enter:false,analogForward:1,analogStrafe:0}}
+const followPresence={current:{x:0,z:3,yaw:0}}
+let lastCameraPosition=[0,0,0],lastLook=[0,0,0]
+const followCamera={aspect:.7,position:{set(x,y,z){lastCameraPosition=[x,y,z]}},lookAt(x,y,z){lastLook=[x,y,z]},fov:65,updateProjectionMatrix(){}}
+runtime.EmbodiedWorldRuntime({input:followInput,presence:followPresence,obstacles:[],entrances:[],onNearby:()=>{},thirdPerson:true})
+frame({camera:followCamera},.05)
+assert(lastCameraPosition.every(Number.isFinite),'Third-person mobile camera produces finite positions')
+assert(lastLook.every(Number.isFinite),'Third-person mobile camera follows a valid point in the File Folder')
+const firstFollowZ=lastCameraPosition[2]
+frame({camera:followCamera},.05)
+assert(lastCameraPosition[2]<firstFollowZ,'The camera follows the walking body instead of remaining a static interface')
+
 const systems=[{id:'a',system_type:'operations_board',status:'active'},{id:'b',system_type:'data_room',status:'active'},{id:'c',system_type:'commerce_storefront',status:'building'}]
 const g=graph.capabilityGraph(systems,[{source_system_id:'a',target_system_id:'b',authority_state:'client_authorized'},{source_system_id:'a',target_system_id:'c',authority_state:'client_authorized'},{source_system_id:'a',target_system_id:'b',authority_state:'pending'}])
 assert.equal(g.nodes.length,2);assert.equal(g.edges.length,1);assert.equal(g.nodes[0].capabilities[0],'work_queue')

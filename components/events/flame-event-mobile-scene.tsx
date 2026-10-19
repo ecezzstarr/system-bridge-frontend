@@ -5,9 +5,11 @@ import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
+import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
 import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
-import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
+import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, enforceSystemSwitchGate, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
 import type { FlameWorldCustomerDoor } from './flame-event-open-world'
+import { WeaveEmbodiedAvatar, type WeaveAvatarMotion, type WeaveAvatarPosition } from '@/components/world/weave-embodied-avatar'
 
 export type FlameMobileInput = {
   forward:number
@@ -94,6 +96,20 @@ function Terrain({quality}:{quality:number}){
   }),[quality])
   return <group>
     <StonePaving/>
+    {[-1,1].map(side=><group key={'embankment:'+side} position={[side*10,0,0]}>
+      <mesh position={[0,.31,0]} castShadow receiveShadow>
+        <boxGeometry args={[13,.64,.72]}/>
+        <meshStandardMaterial color="#858e95" metalness={.18} roughness={.8}/>
+      </mesh>
+      <mesh position={[0,.67,0]}>
+        <boxGeometry args={[13,.08,.85]}/>
+        <meshStandardMaterial color="#d7bd93" metalness={.42} roughness={.52} emissive="#946a2e" emissiveIntensity={.18}/>
+      </mesh>
+      <mesh position={[0,.45,.39]}>
+        <boxGeometry args={[12.3,.065,.055]}/>
+        <meshBasicMaterial color="#eec889" transparent opacity={.8}/>
+      </mesh>
+    </group>)}
     <mesh position={[0,-.2,0]}><cylinderGeometry args={[16.68,17,.4,80]}/><meshStandardMaterial color="#78808b" roughness={.8}/></mesh>
     <mesh position={[0,.028,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[16.2,16.43,80]}/><meshBasicMaterial color="#ffca79" side={THREE.DoubleSide}/>
@@ -128,127 +144,171 @@ function Terrain({quality}:{quality:number}){
   </group>
 }
 
-function Portal({name,x,z,index}:{name:string;x:number;z:number;index:number}){
+function Portal({
+  enterprise,x,z,index,playerMotion,
+}:{
+  enterprise:FlameWorldCustomerDoor
+  x:number
+  z:number
+  index:number
+  playerMotion:MutableRefObject<WeaveAvatarMotion>
+}){
   const glow=useRef<THREE.Mesh>(null)
-  useFrame(({clock})=>{if(glow.current)glow.current.scale.y=1+Math.sin(clock.elapsedTime*1.8+index)*.065})
-  return <group position={[x,.12,z]}>
-    <mesh position={[0,-.01,0]}><cylinderGeometry args={[1.33,1.5,.2,24]}/><meshStandardMaterial color="#c2a273" metalness={.35} roughness={.63}/></mesh>
-    {[-.9,.9].map(a=><mesh key={a} position={[a,1,0]} castShadow>
-      <boxGeometry args={[.22,1.96,.29]}/>
-      <meshStandardMaterial color="#e7c995" metalness={.48} roughness={.28} emissive="#ae7135" emissiveIntensity={.28}/>
-    </mesh>)}
-    <mesh position={[0,2.01,0]}><torusGeometry args={[.9,.125,8,32,Math.PI]}/><meshStandardMaterial color="#ffcd81" metalness={.52} roughness={.19} emissive="#f0a253" emissiveIntensity={.95}/></mesh>
-    <mesh ref={glow} position={[0,1.21,-.03]}>
-      <planeGeometry args={[1.63,2.07]}/>
-      <meshBasicMaterial color="#54c6de" side={THREE.DoubleSide} transparent opacity={.49} depthWrite={false}/>
+  const membrane=useRef<THREE.MeshBasicMaterial>(null)
+  const trim=useRef<THREE.MeshStandardMaterial>(null)
+  const level=enterprise.level
+  const strong=level==='market_hall'
+  const complete=level!=='door'
+  const name=enterprise.platform_name||enterprise.name
+  const tier=strong?'Market Hall':complete?'Storefront':'Customer Door'
+  const height=strong?1.15:complete?1.07:1
+  useFrame(({clock})=>{
+    const person=playerMotion.current
+    const distance=Math.hypot(x-person.x,z-person.z)
+    const approach=Math.max(0,1-distance/6)
+    if(glow.current)glow.current.scale.y=1+Math.sin(clock.elapsedTime*1.5+index)*.025*(1+approach)
+    if(membrane.current)membrane.current.opacity=.34+approach*.28
+    if(trim.current)trim.current.emissiveIntensity=.35+approach*1.15
+  })
+  return <group position={[x,.12,z]} scale={[1,height,1]} data-client-enterprise-level={level}>
+    <mesh position={[0,-.02,0]} receiveShadow>
+      <cylinderGeometry args={[1.34,1.51,.2,24]}/>
+      <meshStandardMaterial color="#a99275" roughness={.65} metalness={.35}/>
     </mesh>
-    <mesh position={[0,2.7,0]}><boxGeometry args={[2.1,.18,.35]}/><meshStandardMaterial color="#e8b36e" metalness={.55} roughness={.24}/></mesh>
-    <Html position={[0,3.02,0]} center distanceFactor={13} style={{pointerEvents:'none'}} zIndexRange={[12,2]}>
-      <div style={{width:126,textAlign:'center',color:'#fff2d8',fontWeight:800,fontSize:12,lineHeight:1.25,textShadow:'0 2px 6px #071522,0 0 8px #071522',overflowWrap:'break-word'}}>
-        <span style={{fontSize:8,letterSpacing:1.2,color:'#ffd78c'}}>CUSTOMER DOOR {index+1}</span>
+    <mesh rotation={[-Math.PI/2,0,0]} position={[0,.10,0]}>
+      <ringGeometry args={[.98,1.31,36]}/>
+      <meshBasicMaterial color={strong?'#c4f1f3':'#ffe3a4'} transparent opacity={.57} side={THREE.DoubleSide}/>
+    </mesh>
+    {[-.9,.9].map(side=><group key={side} position={[side,0,0]}>
+      <mesh position={[0,1,0]} castShadow>
+        <boxGeometry args={[.24,1.96,.3]}/>
+        <meshStandardMaterial color="#d5c0a1" metalness={.41} roughness={.37}/>
+      </mesh>
+      <mesh position={[0,2.18,0]}>
+        <boxGeometry args={[.37,.22,.41]}/>
+        <meshStandardMaterial color="#e4c08b" metalness={.54} roughness={.3}/>
+      </mesh>
+      {complete&&<mesh position={[side*.32,1.19,-.2]} castShadow>
+        <cylinderGeometry args={[.19,.27,2.25,8]}/>
+        <meshStandardMaterial color={strong?'#8397a3':'#a09a97'} metalness={.3} roughness={.59}/>
+      </mesh>}
+      {strong&&<mesh position={[side*.43,2.51,-.2]}>
+        <octahedronGeometry args={[.19,0]}/>
+        <meshStandardMaterial color="#e5faff" emissive="#4fb5cd" emissiveIntensity={1.25}/>
+      </mesh>}
+    </group>)}
+    <mesh position={[0,2.01,0]}>
+      <torusGeometry args={[.9,.126,8,40,Math.PI]}/>
+      <meshStandardMaterial ref={trim} color={strong?'#d2edf0':'#ffcd81'} metalness={.52} roughness={.21} emissive="#edab53" emissiveIntensity={.58}/>
+    </mesh>
+    <mesh ref={glow} position={[0,1.2,-.06]}>
+      <planeGeometry args={[1.66,2.10]}/>
+      <meshBasicMaterial ref={membrane} color={strong?'#b2e3f0':'#70c7e0'} side={THREE.DoubleSide} transparent opacity={.4} depthWrite={false}/>
+    </mesh>
+    <mesh position={[0,2.75,0]}>
+      <boxGeometry args={[2.16,.17,.36]}/>
+      <meshStandardMaterial color="#f0cf93" metalness={.51} roughness={.33}/>
+    </mesh>
+    {complete&&<mesh position={[0,2.91,-.1]}>
+      <boxGeometry args={[2.45,.20,.45]}/>
+      <meshStandardMaterial color={strong?'#899ca2':'#ad9478'} roughness={.48} metalness={.26}/>
+    </mesh>}
+    {strong&&<group position={[0,3.20,-.1]}>
+      <mesh><boxGeometry args={[1.75,.35,.46]}/><meshStandardMaterial color="#d3c3ab" metalness={.41}/></mesh>
+      <mesh position={[0,.29,0]}><octahedronGeometry args={[.34,0]}/><meshStandardMaterial color="#fff1c3" emissive="#d3a050" emissiveIntensity={1.65}/></mesh>
+    </group>}
+    <Html position={[0,strong?3.94:complete?3.42:3.08,0]} center distanceFactor={13} style={{pointerEvents:'none'}} zIndexRange={[12,2]}>
+      <div style={{width:132,textAlign:'center',color:'#fff2d8',fontWeight:800,fontSize:12,lineHeight:1.3,textShadow:'0 2px 7px #061421,0 0 8px #061421',overflowWrap:'break-word'}}>
+        <div style={{fontSize:8,letterSpacing:1.25,color:'#ffdb98'}}>{tier.toUpperCase()} {String(index+1).padStart(2,'0')}</div>
         <div>{name}</div>
+        <div style={{fontSize:9,color:'#d3f0f8'}}>{enterprise.offer_count} public {enterprise.offer_count===1?'offer':'offers'}</div>
       </div>
     </Html>
   </group>
 }
 
-function Piece({at,size,color}:{at:[number,number,number];size:[number,number,number];color:string}){
-  return <mesh position={at} scale={[size[0]*.6,size[1]*.55,size[2]*.65]} castShadow><sphereGeometry args={[1,12,10]}/><meshStandardMaterial color={color} roughness={.79}/></mesh>
-}
-
-function Avatar({position,heading,activity,crouch,height,role}:{
-  position:THREE.Vector3
-  heading:MutableRefObject<number>
-  activity:MutableRefObject<number>
-  crouch:MutableRefObject<boolean>
-  height:MutableRefObject<number>
-  role:string
-}){
-  const actor=useRef<THREE.Group>(null),torso=useRef<THREE.Group>(null)
-  const leftLeg=useRef<THREE.Group>(null),rightLeg=useRef<THREE.Group>(null)
-  const leftArm=useRef<THREE.Group>(null),rightArm=useRef<THREE.Group>(null)
-  const shirt=role==='client'?'#5c598c':role==='bridger'?'#ba8b50':role==='agent'?'#436d86':'#d0d1d7'
-  const skin='#aa724c',pants='#2e394b'
-  useFrame(({clock},delta)=>{
-    if(!actor.current||!torso.current||!leftLeg.current||!rightLeg.current||!leftArm.current||!rightArm.current)return
-    const dt=Math.min(.05,delta),power=activity.current
-    const cadence=Math.sin(clock.elapsedTime*(power>.65?12:8.3))
-    actor.current.position.copy(position)
-    actor.current.position.y+=height.current+(power>.01?Math.abs(cadence)*.028:0)
-    actor.current.rotation.y=THREE.MathUtils.lerp(actor.current.rotation.y,heading.current,Math.min(1,dt*12))
-    torso.current.position.y=THREE.MathUtils.lerp(torso.current.position.y,crouch.current?-.44:0,Math.min(1,dt*9))
-    torso.current.rotation.x=THREE.MathUtils.lerp(torso.current.rotation.x,power>.25?-.1:0,Math.min(1,dt*7))
-    const swing=cadence*power*.48
-    leftLeg.current.rotation.x=swing;rightLeg.current.rotation.x=-swing
-    leftArm.current.rotation.x=-swing*.86;rightArm.current.rotation.x=swing*.86
+function PresenceCurrent({motion,quiet}:{motion:MutableRefObject<WeaveAvatarMotion>;quiet:boolean}){
+  const wake=useRef<THREE.Mesh>(null)
+  const aura=useRef<THREE.PointLight>(null)
+  const circle=useRef<THREE.MeshBasicMaterial>(null)
+  const elapsed=useRef(0)
+  useFrame((_,delta)=>{
+    const state=motion.current
+    if(!wake.current||!circle.current||!aura.current)return
+    const pace=Math.min(1,state.speed/5.3)
+    elapsed.current+=Math.min(.05,delta)*state.speed
+    wake.current.position.set(state.x,.073,state.z)
+    wake.current.rotation.z=quiet?0:elapsed.current*.19
+    const scale=.84+pace*.6
+    wake.current.scale.setScalar(scale)
+    circle.current.opacity=quiet?.06:(.07+pace*(.16+.05*Math.sin(elapsed.current*2)))
+    aura.current.position.set(state.x,.18,state.z)
+    aura.current.intensity=.04+pace*.28
   })
-  return <group ref={actor}>
-    <mesh position={[0,.017,0]} rotation={[-Math.PI/2,0,0]}><circleGeometry args={[.45,20]}/><meshBasicMaterial color="#082039" transparent opacity={.4} depthWrite={false}/></mesh>
-    <group ref={torso}>
-      <Piece at={[0,1.38,0]} size={[.64,.78,.37]} color={shirt}/>
-      <Piece at={[0,.84,0]} size={[.5,.26,.32]} color={pants}/>
-      <Piece at={[0,1.35,.27]} size={[.42,.5,.2]} color="#283348"/>
-      <mesh position={[0,1.36,.39]} castShadow>
-        <boxGeometry args={[.19,.34,.065]}/>
-        <meshStandardMaterial color="#1b293a" roughness={.83}/>
-      </mesh>
-      <mesh position={[.19,1.40,-.13]} rotation={[0,0,-.17]} castShadow>
-        <capsuleGeometry args={[.07,.52,4,8]}/>
-        <meshStandardMaterial color="#d7b783" roughness={.8}/>
-      </mesh>
-      <mesh position={[-.19,1.40,-.13]} rotation={[0,0,.17]} castShadow>
-        <capsuleGeometry args={[.07,.52,4,8]}/>
-        <meshStandardMaterial color="#d7b783" roughness={.8}/>
-      </mesh>
-      <Piece at={[0,1.86,0]} size={[.18,.2,.19]} color={skin}/>
-      <mesh position={[0,2.08,0]} castShadow><sphereGeometry args={[.23,12,10]}/><meshStandardMaterial color={skin} roughness={.87}/></mesh>
-      <mesh position={[0,2.22,0]} castShadow><sphereGeometry args={[.232,12,9,0,Math.PI*2,0,Math.PI*.48]}/><meshStandardMaterial color="#211e22" roughness={1}/></mesh>
-      {[-1,1].map(side=><group key={side}>
-        <mesh position={[side*.226,2.08,0]}><sphereGeometry args={[.054,8,8]}/><meshStandardMaterial color={skin}/></mesh>
-        <mesh position={[side*.087,2.11,-.218]}><sphereGeometry args={[.012,7,7]}/><meshBasicMaterial color="#1b1b23"/></mesh>
-      </group>)}
-      <group ref={leftArm} position={[-.41,1.68,0]}>
-        <mesh position={[0,-.28,0]} castShadow>
-          <capsuleGeometry args={[.13,.37,5,10]}/>
-          <meshStandardMaterial color={shirt} roughness={.87}/>
-        </mesh>
-        <Piece at={[0,-.62,0]} size={[.16,.2,.17]} color={skin}/>
-      </group>
-      <group ref={rightArm} position={[.41,1.68,0]}>
-        <Piece at={[0,-.27,0]} size={[.21,.55,.25]} color={shirt}/>
-        <Piece at={[0,-.62,0]} size={[.16,.2,.17]} color={skin}/>
-      </group>
-      <group ref={leftLeg} position={[-.18,.77,0]}>
-        <mesh position={[0,-.35,0]} castShadow>
-          <capsuleGeometry args={[.145,.46,5,10]}/>
-          <meshStandardMaterial color={pants} roughness={.91}/>
-        </mesh>
-        <mesh position={[0,-.68,-.09]} castShadow>
-          <capsuleGeometry args={[.15,.26,4,9]}/>
-          <meshStandardMaterial color="#1a2430" roughness={.82}/>
-        </mesh>
-      </group>
-      <group ref={rightLeg} position={[.18,.77,0]}>
-        <Piece at={[0,-.34,0]} size={[.24,.69,.27]} color={pants}/>
-        <Piece at={[0,-.68,-.085]} size={[.27,.16,.42]} color="#1b202d"/>
-      </group>
-    </group>
+  return <group data-flame-event-responsive-ground>
+    <mesh ref={wake} rotation={[-Math.PI/2,0,0]}>
+      <ringGeometry args={[.6,.69,48]}/>
+      <meshBasicMaterial ref={circle} color="#fde6aa" side={THREE.DoubleSide} transparent opacity={.07} depthWrite={false}/>
+    </mesh>
+    <pointLight ref={aura} color="#b9eefa" intensity={.04} distance={2.1}/>
   </group>
 }
 
-function Walker({inputRef,doors,role,onNearbyDoor}:{
+function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
   inputRef:MutableRefObject<FlameMobileInput>
   doors:{x:number;z:number}[]
   role:string
   onNearbyDoor:(index:number|null)=>void
+  onRegionChange:(region:FlameRegion)=>void
+  playerMotion:MutableRefObject<WeaveAvatarMotion>
 }){
   const {camera}=useThree()
+  const budget=useAdaptiveRuntime()
   const position=useRef(new THREE.Vector3(FLAME_EVENT_PLAYER_START.x,0,FLAME_EVENT_PLAYER_START.z))
   const velocity=useRef(new THREE.Vector3()),heading=useRef(0),activity=useRef(0)
   const crouch=useRef(false),height=useRef(0),vertical=useRef(0)
+  const lastRegion=useRef<FlameRegion>('riverbank')
   const previousDoor=useRef<number|null>(null)
   const target=useRef(new THREE.Vector3()),look=useRef(new THREE.Vector3())
-  useFrame((_,delta)=>{
+  useEffect(()=>{
+    // This is visual continuity within this browser tab; never an access credential.
+    const key='weave:flame:presence:'+role
+    try{
+      const raw=window.sessionStorage.getItem(key)
+      const value=raw?JSON.parse(raw):null
+      if(value&&[value.x,value.z,value.yaw,value.pitch].every((n:unknown)=>typeof n==='number'&&Number.isFinite(n))){
+        const bounded=clampFlameEventPosition(value.x,value.z)
+        // Ignore corrupt or out-of-bounds location data instead of teleporting.
+        if(Math.hypot(bounded.x-value.x,bounded.z-value.z)<.1){
+          position.current.set(bounded.x,0,bounded.z)
+          heading.current=value.yaw
+          inputRef.current.yaw=value.yaw
+          inputRef.current.pitch=Math.max(-.65,Math.min(.72,value.pitch))
+          playerMotion.current.x=bounded.x
+          playerMotion.current.z=bounded.z
+          playerMotion.current.yaw=value.yaw
+        }
+      }
+    }catch{}
+    const save=()=>{
+      try{
+        window.sessionStorage.setItem(key,JSON.stringify({
+          x:position.current.x,z:position.current.z,
+          yaw:inputRef.current.yaw,pitch:inputRef.current.pitch,
+        }))
+      }catch{}
+    }
+    const timer=window.setInterval(save,2500)
+    window.addEventListener('pagehide',save)
+    window.addEventListener('weave:flame-event:save-presence',save)
+    return ()=>{
+      save()
+      window.clearInterval(timer)
+      window.removeEventListener('pagehide',save)
+      window.removeEventListener('weave:flame-event:save-presence',save)
+    }
+  },[role,inputRef,playerMotion])
+  useFrame(({clock},delta)=>{
     const dt=Math.min(.05,delta),data=inputRef.current
     const magnitude=Math.min(1,Math.hypot(data.forward,data.right))
     const ux=(data.right*Math.cos(data.yaw)-data.forward*Math.sin(data.yaw))/(magnitude||1)
@@ -257,7 +317,8 @@ function Walker({inputRef,doors,role,onNearbyDoor}:{
     const blend=1-Math.exp(-dt*(magnitude>.02?9:13))
     velocity.current.x=THREE.MathUtils.lerp(velocity.current.x,magnitude>.02?ux*speed*magnitude:0,blend)
     velocity.current.z=THREE.MathUtils.lerp(velocity.current.z,magnitude>.02?uz*speed*magnitude:0,blend)
-    const next=clampFlameEventPosition(position.current.x+velocity.current.x*dt,position.current.z+velocity.current.z*dt)
+    const bounded=clampFlameEventPosition(position.current.x+velocity.current.x*dt,position.current.z+velocity.current.z*dt)
+    const next=enforceSystemSwitchGate(position.current,bounded)
     position.current.x=next.x;position.current.z=next.z
     const actual=Math.hypot(velocity.current.x,velocity.current.z)
     activity.current=THREE.MathUtils.lerp(activity.current,Math.min(1,actual/4.7),blend)
@@ -272,23 +333,36 @@ function Walker({inputRef,doors,role,onNearbyDoor}:{
     if(height.current===0)vertical.current=0
     const closest=nearestFlameEventDoor(position.current.x,position.current.z,doors)
     if(closest!==previousDoor.current){previousDoor.current=closest;onNearbyDoor(closest)}
+    const region:FlameRegion=closest!==null?'customer-door':position.current.z>5?'riverbank':position.current.z>0?'burning-river':'system-switch'
+    if(region!==lastRegion.current){lastRegion.current=region;onRegionChange(region)}
+    playerMotion.current.x=position.current.x
+    playerMotion.current.z=position.current.z
+    playerMotion.current.yaw=heading.current
+    playerMotion.current.speed=actual
+    playerMotion.current.crouching=crouch.current
+    playerMotion.current.airborne=height.current
     const dist=data.crouch?3.8:data.run?5.3:4.5
-    target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2,position.current.z+Math.cos(data.yaw)*dist)
+    const footfall=budget.reducedMotion?0:Math.sin(clock.elapsedTime*(data.run?13:8.8))*Math.min(.045,actual*.009)
+    target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2+footfall,position.current.z+Math.cos(data.yaw)*dist)
     camera.position.lerp(target.current,1-Math.exp(-dt*7))
     look.current.set(position.current.x,1.28+height.current*.35,position.current.z)
     camera.lookAt(look.current)
   })
-  return <Avatar position={position.current} heading={heading} activity={activity} crouch={crouch} height={height} role={role}/>
+  return <WeaveEmbodiedAvatar motion={playerMotion} role={role as WeaveAvatarPosition}/>
 }
 
-function World({enterprises,inputRef,role,onNearbyDoor}:{
+export type FlameRegion='riverbank'|'burning-river'|'system-switch'|'customer-door'
+
+function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
   enterprises:FlameWorldCustomerDoor[]
   inputRef:MutableRefObject<FlameMobileInput>
   role:string
   onNearbyDoor:(index:number|null)=>void
+  onRegionChange:(region:FlameRegion)=>void
 }){
   const budget=useAdaptiveRuntime()
   const doorPositions=useMemo(()=>flameEventDoorPositions(enterprises.length),[enterprises.length])
+  const playerMotion=useRef<WeaveAvatarMotion>({x:FLAME_EVENT_PLAYER_START.x,z:FLAME_EVENT_PLAYER_START.z,yaw:0,speed:0,crouching:false,airborne:0})
   return <>
     <fog attach="fog" args={['#7894a8',30,95]}/>
     <ambientLight intensity={1.15} color="#dae9f7"/>
@@ -297,16 +371,20 @@ function World({enterprises,inputRef,role,onNearbyDoor}:{
     <pointLight position={[0,7,-13]} color="#ffc381" intensity={5} distance={31}/>
     <RiverSurface quiet={budget.reducedMotion}/>
     <Terrain quality={budget.level}/>
-    {enterprises.map((door,i)=><Portal key={door.public_slug} name={door.platform_name||door.name} index={i} x={doorPositions[i].x} z={doorPositions[i].z}/>)}
-    <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor}/>
+    <SystemSwitchThreshold active={!budget.reducedMotion} quiet={budget.reducedMotion}/>
+    <PresenceCurrent motion={playerMotion} quiet={budget.reducedMotion}/>
+    {enterprises.map((door,i)=><Portal key={door.public_slug} enterprise={door} index={i} x={doorPositions[i].x} z={doorPositions[i].z} playerMotion={playerMotion}/>)}
+    <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange} playerMotion={playerMotion}/>
   </>
 }
 
-export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor}:{
+export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor,onRegionChange,onReady}:{
   enterprises:FlameWorldCustomerDoor[]
   inputRef:MutableRefObject<FlameMobileInput>
   role:string
   onNearbyDoor:(index:number|null)=>void
+  onRegionChange:(region:FlameRegion)=>void
+  onReady?:()=>void
 }){
   return <div className="absolute inset-0" data-flame-event-mobile-scene>
     <AdaptiveCanvas
@@ -314,8 +392,9 @@ export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor}:{
       camera={{fov:66,near:.1,far:125,position:[0,2.6,15]}}
       shadows
       mobileGame
+      onWorldReady={onReady}
     >
-      <World enterprises={enterprises} inputRef={inputRef} role={role} onNearbyDoor={onNearbyDoor}/>
+      <World enterprises={enterprises} inputRef={inputRef} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
     </AdaptiveCanvas>
   </div>
 }

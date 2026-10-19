@@ -15,7 +15,7 @@ export default async function PublicClientMarketStore({
   searchParams,
 }:{
   params:Promise<{slug:string}>
-  searchParams:Promise<{order?:string;legion?:string}>
+  searchParams:Promise<{order?:string;legion?:string;via?:string}>
 }){
   const {slug}=await params
   const query=await searchParams
@@ -129,6 +129,7 @@ export default async function PublicClientMarketStore({
       payments={payments}
       config={normalizeStoreEnvironmentConfig(store.environment_config)}
       level={level}
+      arrivalFromSystemSwitch={query.via==='system-switch'}
       orderRef={query.order||null}
       streamUrl={channel?.public_slug?'/stream/'+channel.public_slug:null}
       enterpriseUrl={enterprise?.public_slug?'/enterprise/'+enterprise.public_slug:null}

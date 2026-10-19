@@ -43,3 +43,19 @@ export function nearestFlameEventDoor(
   })
   return nearest
 }
+
+/**
+ * The crossing is a genuine gateway rather than an invisible z-trigger.
+ * The low embankment on either side of the arch is collidable; the opening
+ * between x=-3 and x=3 remains traversable in both directions.
+ */
+export function enforceSystemSwitchGate(
+  previous:{x:number;z:number},
+  target:{x:number;z:number},
+){
+  const outsideGate=Math.abs(target.x)>3.0
+  if(!outsideGate)return target
+  if(previous.z>=0&&target.z<0)return {...target,z:.25}
+  if(previous.z<=0&&target.z>0)return {...target,z:-.25}
+  return target
+}
