@@ -130,25 +130,84 @@ function Terrain({quality}:{quality:number}){
   </group>
 }
 
-function Portal({name,x,z,index}:{name:string;x:number;z:number;index:number}){
+function Portal({
+  enterprise,x,z,index,playerMotion,
+}:{
+  enterprise:FlameWorldCustomerDoor
+  x:number
+  z:number
+  index:number
+  playerMotion:MutableRefObject<WeaveAvatarMotion>
+}){
   const glow=useRef<THREE.Mesh>(null)
-  useFrame(({clock})=>{if(glow.current)glow.current.scale.y=1+Math.sin(clock.elapsedTime*1.8+index)*.065})
-  return <group position={[x,.12,z]}>
-    <mesh position={[0,-.01,0]}><cylinderGeometry args={[1.33,1.5,.2,24]}/><meshStandardMaterial color="#c2a273" metalness={.35} roughness={.63}/></mesh>
-    {[-.9,.9].map(a=><mesh key={a} position={[a,1,0]} castShadow>
-      <boxGeometry args={[.22,1.96,.29]}/>
-      <meshStandardMaterial color="#e7c995" metalness={.48} roughness={.28} emissive="#ae7135" emissiveIntensity={.28}/>
-    </mesh>)}
-    <mesh position={[0,2.01,0]}><torusGeometry args={[.9,.125,8,32,Math.PI]}/><meshStandardMaterial color="#ffcd81" metalness={.52} roughness={.19} emissive="#f0a253" emissiveIntensity={.95}/></mesh>
-    <mesh ref={glow} position={[0,1.21,-.03]}>
-      <planeGeometry args={[1.63,2.07]}/>
-      <meshBasicMaterial color="#54c6de" side={THREE.DoubleSide} transparent opacity={.49} depthWrite={false}/>
+  const membrane=useRef<THREE.MeshBasicMaterial>(null)
+  const trim=useRef<THREE.MeshStandardMaterial>(null)
+  const level=enterprise.level
+  const strong=level==='market_hall'
+  const complete=level!=='door'
+  const name=enterprise.platform_name||enterprise.name
+  const tier=strong?'Market Hall':complete?'Storefront':'Customer Door'
+  const height=strong?1.15:complete?1.07:1
+  useFrame(({clock})=>{
+    const person=playerMotion.current
+    const distance=Math.hypot(x-person.x,z-person.z)
+    const approach=Math.max(0,1-distance/6)
+    if(glow.current)glow.current.scale.y=1+Math.sin(clock.elapsedTime*1.5+index)*.025*(1+approach)
+    if(membrane.current)membrane.current.opacity=.34+approach*.28
+    if(trim.current)trim.current.emissiveIntensity=.35+approach*1.15
+  })
+  return <group position={[x,.12,z]} scale={[1,height,1]} data-client-enterprise-level={level}>
+    <mesh position={[0,-.02,0]} receiveShadow>
+      <cylinderGeometry args={[1.34,1.51,.2,24]}/>
+      <meshStandardMaterial color="#a99275" roughness={.65} metalness={.35}/>
     </mesh>
-    <mesh position={[0,2.7,0]}><boxGeometry args={[2.1,.18,.35]}/><meshStandardMaterial color="#e8b36e" metalness={.55} roughness={.24}/></mesh>
-    <Html position={[0,3.02,0]} center distanceFactor={13} style={{pointerEvents:'none'}} zIndexRange={[12,2]}>
-      <div style={{width:126,textAlign:'center',color:'#fff2d8',fontWeight:800,fontSize:12,lineHeight:1.25,textShadow:'0 2px 6px #071522,0 0 8px #071522',overflowWrap:'break-word'}}>
-        <span style={{fontSize:8,letterSpacing:1.2,color:'#ffd78c'}}>CUSTOMER DOOR {index+1}</span>
+    <mesh rotation={[-Math.PI/2,0,0]} position={[0,.10,0]}>
+      <ringGeometry args={[.98,1.31,36]}/>
+      <meshBasicMaterial color={strong?'#c4f1f3':'#ffe3a4'} transparent opacity={.57} side={THREE.DoubleSide}/>
+    </mesh>
+    {[-.9,.9].map(side=><group key={side} position={[side,0,0]}>
+      <mesh position={[0,1,0]} castShadow>
+        <boxGeometry args={[.24,1.96,.3]}/>
+        <meshStandardMaterial color="#d5c0a1" metalness={.41} roughness={.37}/>
+      </mesh>
+      <mesh position={[0,2.18,0]}>
+        <boxGeometry args={[.37,.22,.41]}/>
+        <meshStandardMaterial color="#e4c08b" metalness={.54} roughness={.3}/>
+      </mesh>
+      {complete&&<mesh position={[side*.32,1.19,-.2]} castShadow>
+        <cylinderGeometry args={[.19,.27,2.25,8]}/>
+        <meshStandardMaterial color={strong?'#8397a3':'#a09a97'} metalness={.3} roughness={.59}/>
+      </mesh>}
+      {strong&&<mesh position={[side*.43,2.51,-.2]}>
+        <octahedronGeometry args={[.19,0]}/>
+        <meshStandardMaterial color="#e5faff" emissive="#4fb5cd" emissiveIntensity={1.25}/>
+      </mesh>}
+    </group>)}
+    <mesh position={[0,2.01,0]}>
+      <torusGeometry args={[.9,.126,8,40,Math.PI]}/>
+      <meshStandardMaterial ref={trim} color={strong?'#d2edf0':'#ffcd81'} metalness={.52} roughness={.21} emissive="#edab53" emissiveIntensity={.58}/>
+    </mesh>
+    <mesh ref={glow} position={[0,1.2,-.06]}>
+      <planeGeometry args={[1.66,2.10]}/>
+      <meshBasicMaterial ref={membrane} color={strong?'#b2e3f0':'#70c7e0'} side={THREE.DoubleSide} transparent opacity={.4} depthWrite={false}/>
+    </mesh>
+    <mesh position={[0,2.75,0]}>
+      <boxGeometry args={[2.16,.17,.36]}/>
+      <meshStandardMaterial color="#f0cf93" metalness={.51} roughness={.33}/>
+    </mesh>
+    {complete&&<mesh position={[0,2.91,-.1]}>
+      <boxGeometry args={[2.45,.20,.45]}/>
+      <meshStandardMaterial color={strong?'#899ca2':'#ad9478'} roughness={.48} metalness={.26}/>
+    </mesh>}
+    {strong&&<group position={[0,3.20,-.1]}>
+      <mesh><boxGeometry args={[1.75,.35,.46]}/><meshStandardMaterial color="#d3c3ab" metalness={.41}/></mesh>
+      <mesh position={[0,.29,0]}><octahedronGeometry args={[.34,0]}/><meshStandardMaterial color="#fff1c3" emissive="#d3a050" emissiveIntensity={1.65}/></mesh>
+    </group>}
+    <Html position={[0,strong?3.94:complete?3.42:3.08,0]} center distanceFactor={13} style={{pointerEvents:'none'}} zIndexRange={[12,2]}>
+      <div style={{width:132,textAlign:'center',color:'#fff2d8',fontWeight:800,fontSize:12,lineHeight:1.3,textShadow:'0 2px 7px #061421,0 0 8px #061421',overflowWrap:'break-word'}}>
+        <div style={{fontSize:8,letterSpacing:1.25,color:'#ffdb98'}}>{tier.toUpperCase()} {String(index+1).padStart(2,'0')}</div>
         <div>{name}</div>
+        <div style={{fontSize:9,color:'#d3f0f8'}}>{enterprise.offer_count} public {enterprise.offer_count===1?'offer':'offers'}</div>
       </div>
     </Html>
   </group>
@@ -259,7 +318,7 @@ function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
     <Terrain quality={budget.level}/>
     <SystemSwitchThreshold active={!budget.reducedMotion} quiet={budget.reducedMotion}/>
     <PresenceCurrent motion={playerMotion} quiet={budget.reducedMotion}/>
-    {enterprises.map((door,i)=><Portal key={door.public_slug} name={door.platform_name||door.name} index={i} x={doorPositions[i].x} z={doorPositions[i].z}/>)}
+    {enterprises.map((door,i)=><Portal key={door.public_slug} enterprise={door} index={i} x={doorPositions[i].x} z={doorPositions[i].z} playerMotion={playerMotion}/>)}
     <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange} playerMotion={playerMotion}/>
   </>
 }
