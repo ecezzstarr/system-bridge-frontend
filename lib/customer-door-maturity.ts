@@ -48,6 +48,7 @@ export async function matureElapsedCustomerDoors(sql: any): Promise<number> {
           ),'[]'::jsonb)
         )
       FROM due b
+      WHERE TRUE
       ON CONFLICT (build_id) DO NOTHING
       RETURNING build_id
     ),
