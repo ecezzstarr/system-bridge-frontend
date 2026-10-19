@@ -3,10 +3,10 @@ import { getPool } from '@/lib/db'
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 import { ensureFoodBridgeSchema } from '@/lib/food-bridge'
 
-export const WEAVE_FARM_COMMISSION_NGN = 0 as const
+export const WEAVE_FARM_COMMISSION_NGN = 1000 as const
 export const FARM_ESCROW_ACCOUNT_NUMBER = WEAVE_OPAY_ACCOUNT_NUMBER
 export const FARM_ESCROW_RULE =
-  'WEAVE charges no farmer commission. Buyer pays the quoted food and transport total to the WEAVE receiving account. Administration independently confirms funds received before the farmer may dispatch. Following buyer receipt confirmation and bank payout, Administration records the seller transfer reference. This workflow requires operational escrow/payment compliance and reconciliation before real-money production use.'
+  'WEAVE charges sellers a single flat ₦1,000 service fee per successfully completed Farm-to-Family order, regardless of order quantity or value. The buyer pays only the accepted food and delivery quote to WEAVE. Administration verifies actual funds before dispatch. After receipt, seller payout equals buyer total minus ₦1,000, with no additional per-unit charge. This requires authorized escrow/payment operations, banking controls, refunds and reconciliation before real-money production use.'
 
 export function farmPaymentReference(orderId:string) { return 'FARM-'+orderId.toUpperCase() }
 export type FarmEscrowState='awaiting_payment'|'proof_submitted'|'held'|'release_due'|'released'|'disputed'|'refund_due'|'refunded'
@@ -22,15 +22,16 @@ export async function initializeFarmEscrow(client:PoolClient,orderId:string) {
   const food=Number(order.food_subtotal_ngn)
   const delivery=Number(order.delivery_quote_ngn)
   const total=Number((food+delivery).toFixed(2))
-  if(!(food>0)||!(delivery>=0)||!Number.isFinite(total))throw new Error('Invalid farm amount')
+  if(!(food>0)||!(delivery>=0)||!Number.isFinite(total)||total<=WEAVE_FARM_COMMISSION_NGN)
+    throw new Error('Farm quoted total must exceed the fixed ₦1,000 seller fee so the farmer receives positive proceeds')
   const {rows}=await client.query(`
     INSERT INTO weave_food_escrow (
       order_id,reference,food_amount_ngn,delivery_amount_ngn,
       buyer_total_ngn,weave_commission_ngn,seller_payout_ngn
-    ) VALUES($1::uuid,$2,$3,$4,$5,0,$5)
+    ) VALUES($1::uuid,$2,$3,$4,$5,$6,$7)
     ON CONFLICT(order_id) DO NOTHING
     RETURNING order_id,status,reference,buyer_total_ngn
-  `,[orderId,farmPaymentReference(orderId),food,delivery,total])
+  `,[orderId,farmPaymentReference(orderId),food,delivery,total,WEAVE_FARM_COMMISSION_NGN,Number((total-WEAVE_FARM_COMMISSION_NGN).toFixed(2))])
   if(rows.length)return rows[0]
   const existing=await client.query(`SELECT order_id,status,reference,buyer_total_ngn
     FROM weave_food_escrow WHERE order_id=$1::uuid`,[orderId])
@@ -65,7 +66,7 @@ export function farmEscrowPublicFields(row:any) {
     reference:row?.escrow_reference||null,
     buyerTotalNgn:row?.buyer_total_ngn===null||row?.buyer_total_ngn===undefined?null:Number(row.buyer_total_ngn),
     sellerPayoutNgn:row?.seller_payout_ngn===null||row?.seller_payout_ngn===undefined?null:Number(row.seller_payout_ngn),
-    weaveCommissionNgn:0,
+    weaveCommissionNgn:row?.weave_commission_ngn===undefined||row?.weave_commission_ngn===null?WEAVE_FARM_COMMISSION_NGN:Number(row.weave_commission_ngn),
     receivingAccountNumber:row?.escrow_status==='awaiting_payment'?FARM_ESCROW_ACCOUNT_NUMBER:null,
     proofSubmittedAt:row?.proof_submitted_at||null,
     verifiedAt:row?.verified_at||null,
