@@ -177,7 +177,7 @@ export default function PositionEventWorld({
           <span className="text-[9px] font-black uppercase tracking-[.12em] text-amber-100">Staff Customer Door current</span>
           <span className="sr-only">Enter Customer Door by selecting an opened public portal.</span>
         </div>
-        <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Visit Client-hosted Customer Doors as an avatar</Link>
+        <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Enter as avatar · Client-hosted Customer Doors</Link>
         <FlameFoodCurrent />
 
         {role === 'client' && (

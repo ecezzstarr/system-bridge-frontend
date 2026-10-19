@@ -122,7 +122,7 @@ async function establishSchema() {
     -- The quote total remains the buyer's charge; the fee is deducted only from
     -- seller proceeds on successful completion. Full refunds restore buyer total.
     ALTER TABLE weave_food_escrow ALTER COLUMN weave_commission_ngn SET DEFAULT 1000;
-    DO $
+    DO $$
     DECLARE old_check text;
     BEGIN
       FOR old_check IN
@@ -156,7 +156,7 @@ async function establishSchema() {
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_buyer ON weave_food_direct_orders(buyer_user_id,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_farmer ON weave_food_direct_orders(farmer_id,status,created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_weave_food_orders_carrier ON weave_food_direct_orders(carrier_referral_code,status,created_at DESC);
-    DO $
+    DO $$
     BEGIN
       IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conrelid='weave_food_direct_orders'::regclass

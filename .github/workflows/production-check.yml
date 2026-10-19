@@ -50,6 +50,7 @@ jobs:
           node tests/mandate-guidance-staff-regression.cjs
           node tests/system-switch-multiplayer-postgres.cjs
           node tests/mandate-guidance-postgres.cjs
+          node tests/today-food-postgres.cjs
 
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
