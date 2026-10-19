@@ -50,6 +50,7 @@ export async function POST(request:NextRequest) {
         result.reason==='insufficient_balance'?'Your Main Client Wallet needs 600 Flame Coin.'
         :result.reason==='gender_missing'?'Complete the missing registration gender before subscribing.'
         :result.reason==='client_inactive'?'This Client account is not active.'
+        :result.reason==='file_folder_inactive'?'Activate your owned File Folder before beginning the 600 Flame Coin monthly subscription.'
         :'Monthly subscription could not complete.'},
         {status:result.reason==='insufficient_balance'?409:400})
     }
