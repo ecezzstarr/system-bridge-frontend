@@ -96,7 +96,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     RETURNING id,status,payment_status,legion_id,legion_sales_code
   `
 
-  await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'client',subject:'Client Customer Door order',detail:`${customerName} requested a Client store item (${item.currency} ${Number(item.price||0).toLocaleString()})${legion?.sales_code?' via Legion '+legion.sales_code:''}. Awaiting payment; Client retains ownership.`,adminPath:'/admin/control-center',actorName:'Customer Door'})
+  await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'client',subject:'Client Customer Door order',detail:`${customerName} requested a Client store item (${item.currency} ${Number(item.price||0).toLocaleString()})${legion?.sales_code?' via Legion '+legion.sales_code:''}. Awaiting payment; Client retains ownership.`,adminPath:'/admin/orders',actorName:'Customer Door'})
 
   const destination = new URL(`/market/${encodeURIComponent(slug)}`, request.url)
   destination.searchParams.set('order', String(order.id))
