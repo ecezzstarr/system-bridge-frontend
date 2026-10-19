@@ -72,7 +72,7 @@ const cases=[
   ['app/api/bridger/subscription/submit/route.ts',["subject:'Bridger Continuance payment'"]],
   ['app/api/bridge/file-folder/purchase/route.ts',["subject:'File Folder purchase awaiting verification'"]],
   ['app/api/public/store/[slug]/orders/route.ts',["subject:'Client Customer Door order'"]],
-  ['app/api/client/business-store/orders/[id]/status/route.ts',["subject:'Client Customer Door payment received'","event:action==='fulfilled'?'fulfilled':'cancelled'"]],
+  ['app/api/client/business-store/orders/[id]/status/route.ts',["subject:'Customer Door external payment needs verification'","event:action==='fulfilled'?'fulfilled':'cancelled'"]],
   ['app/api/client/vault/withdraw/route.ts',["subject:'Client Vault withdrawal request'"]],
   ['app/api/video-service/[code]/route.ts',["subject:'Video Ad Studio service order'"]],
   ['app/api/client/system-store/route.ts',["subject:'Client System Store version submitted'"]],
@@ -88,7 +88,7 @@ for(const [path,checks] of cases){
 const directPurchase=read('app/api/bridge/file-folder/purchase/route.ts')
 assert(directPurchase.indexOf('await notifyAdminOrder({')>directPurchase.indexOf('export async function POST'),'GET purchase status reads may not mint new Admin alerts')
 const clientStatus=read('app/api/client/business-store/orders/[id]/status/route.ts')
-assert(clientStatus.indexOf("event:action==='fulfilled'")>clientStatus.indexOf("if (action === 'payment_received')"),'Fulfillment alert follows the order status update')
+assert(clientStatus.indexOf("event:action==='fulfilled'")>clientStatus.indexOf("if(action==='payment_received')"),'Fulfillment alert follows the order status update')
 const notificationsApi=read('app/api/notifications/route.ts')
 assert(notificationsApi.includes("notificationType.startsWith('order_')"),'Users cannot forge official order/payment notifications')
 const publicFileFolder=read('app/api/public/file-folder/purchase/route.ts')
