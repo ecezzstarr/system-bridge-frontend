@@ -44,7 +44,7 @@ const phaseLabels: Record<Phase, string> = {
   delivered: 'Outcome delivered',
 }
 
-export function NigeriaFlameFrontier() {
+export function NigeriaFlameFrontier({ allowSubmission = true }: { allowSubmission?: boolean } = {}) {
   const [current, setCurrent] = useState<PublicCurrent | null>(null)
   const [error, setError] = useState('')
   const [zone, setZone] = useState('All')
@@ -190,9 +190,9 @@ export function NigeriaFlameFrontier() {
             {selected.recognized} verified needs · {selected.organized} organized movements · {selected.delivered} delivered outcomes
           </p>
           {selected.total === 0 && <p className="mt-2 text-xs text-stone-500">No public verified activity is recorded for this state yet.</p>}
-          <button type="button" onClick={() => { setFormOpen(true); setFormMessage('') }} className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-orange-200">
+          {allowSubmission && <button type="button" onClick={() => { setFormOpen(true); setFormMessage('') }} className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-orange-200">
             Record movement from {selected.name} <ChevronRight className="h-4 w-4" />
-          </button>
+          </button>}
         </div>
       )}
 
@@ -202,16 +202,16 @@ export function NigeriaFlameFrontier() {
             ? `Verified delivery recorded in: ${deliveredNames.join(', ')}.`
             : 'No publicly verified delivery has been recorded yet. Empty states are not presented as active.'}
         </p>
-        <button
+        {allowSubmission && <button
           type="button"
           onClick={() => { setFormOpen(value => !value); setFormMessage('') }}
           className="inline-flex items-center gap-2 border border-orange-300/25 px-4 py-2 text-xs font-black text-orange-100 hover:bg-orange-300/10"
         >
           <Send className="h-3.5 w-3.5" /> {formOpen ? 'Close submission' : 'Submit real movement'}
-        </button>
+        </button>}
       </div>
 
-      {formOpen && (
+      {allowSubmission && formOpen && (
         <form onSubmit={submitMovement} className="mt-5 grid gap-4 border border-white/10 bg-black/30 p-4 sm:grid-cols-2 sm:p-6" data-frontier-intake="needs-work-outcomes">
           <div className="sm:col-span-2">
             <p className="text-sm font-black text-white">Record a recognized need, organized work, or delivered outcome</p>
