@@ -5,6 +5,7 @@ import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { AdaptiveCanvas } from '@/components/world/adaptive-canvas'
+import { SystemSwitchThreshold } from '@/components/world/system-switch-threshold'
 import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
 import type { FlameWorldCustomerDoor } from './flame-event-open-world'
@@ -228,6 +229,7 @@ function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
     <pointLight position={[0,7,-13]} color="#ffc381" intensity={5} distance={31}/>
     <RiverSurface quiet={budget.reducedMotion}/>
     <Terrain quality={budget.level}/>
+    <SystemSwitchThreshold active={!budget.reducedMotion} quiet={budget.reducedMotion}/>
     {enterprises.map((door,i)=><Portal key={door.public_slug} name={door.platform_name||door.name} index={i} x={doorPositions[i].x} z={doorPositions[i].z}/>)}
     <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
   </>
