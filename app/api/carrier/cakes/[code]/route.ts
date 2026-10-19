@@ -1,3 +1,4 @@
+import { notifyAdminOrder } from '@/lib/admin-order-notifications'
 import { NextRequest,NextResponse } from 'next/server'
 import { getPool } from '@/lib/db'
 import { getCarrierAccess } from '@/lib/carrier-access'
@@ -89,6 +90,7 @@ export async function POST(request:NextRequest,context:{params:Promise<{code:str
           [agent.id,`${customerName} requested ${type.name} · ${sizeOption} for ${eventDate}. Quote it from Agent Work → Cakes.`]
         )
       }catch{}
+      await notifyAdminOrder({orderId:String(result.rows[0].id),event:'placed',department:'agent',subject:'Daisy Pastries Carrier order',detail:`${customerName} requested ${type.name} (${sizeOption}) for ${eventDate} through an Agent's Carrier Door. Awaiting Agent quote`,adminPath:'/admin/cakes',actorId:String(agent.id),actorName:agent.name||'Agent'})
       return NextResponse.json({success:true,order:safeOrder(result.rows[0]),message:'Daisy Pastries request sent to the Agent. Keep this Carrier Door open or return later; the quote will appear here.'},{status:201})
     }
 
@@ -114,6 +116,7 @@ export async function POST(request:NextRequest,context:{params:Promise<{code:str
           [agent.id,`${current.customer_name} submitted ${transactionReference} for the quoted Daisy Pastries order. Verify the payment before production moves.`]
         )
       }catch{}
+      await notifyAdminOrder({orderId:String(result.rows[0].id),event:'payment_submitted',department:'agent',subject:'Daisy Pastries payment proof',detail:`${current.customer_name} submitted payment proof; Agent verification pending`,adminPath:'/admin/cakes',actorId:String(agent.id),actorName:agent.name||'Agent'})
       return NextResponse.json({success:true,order:safeOrder(result.rows[0]),message:'Payment reference sent to the Agent for verification.'})
     }
 
