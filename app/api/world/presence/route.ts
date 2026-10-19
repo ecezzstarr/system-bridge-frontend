@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto'
+import { randomUUID,createHash } from 'crypto'
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { resolveClientToken } from '@/lib/client-vault'
@@ -104,7 +104,8 @@ async function handle(request:NextRequest,write:boolean){
     const response=NextResponse.json({
       success:true,room,role,
       people:roster.map((r:any)=>({
-        id:String(r.participant_key),label:String(r.label).slice(0,90),role:String(r.participant_role),
+        id:createHash('sha256').update(room+'|'+String(r.participant_key)).digest('hex').slice(0,20),
+        label:String(r.label).slice(0,90),role:String(r.participant_role),
         x:Number(r.x),z:Number(r.z),yaw:Number(r.yaw),
         isSelf:String(r.participant_key)===participant,
       })),
