@@ -90,7 +90,7 @@ export async function getPreparationSourceOrder(product:PreparationProduct,id:st
   if(product==='daisy'){
     const {rows}=await getPool().query(`
       SELECT id,agent_id,customer_name,customer_phone,delivery_location,delivery_mode,
-        payment_status,status,flavor,occasion,cake_type,size_option,event_date,total_ngn
+        preparation_released_at,payment_status,status,flavor,occasion,cake_type,size_option,event_date,total_ngn
       FROM carrier_cake_orders WHERE id=$1::uuid LIMIT 1
     `,[id])
     return rows[0]||null
@@ -154,7 +154,7 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
         throw new PreparationAccessError('Administration production cost must exist before processing.',409)
       const result=await client.query(`
         UPDATE agility_stock_orders
-        SET fulfillment_status=$1,admin_note=$2,
+        SET fulfillment_status=$1,
           planned_company_cost_per_box_ngn=CASE WHEN $1='heating' THEN $3 ELSE planned_company_cost_per_box_ngn END,
           planned_company_total_cost_ngn=CASE WHEN $1='heating' THEN $4 ELSE planned_company_total_cost_ngn END,
           planned_company_gross_profit_ngn=CASE WHEN $1='heating' THEN $5 ELSE planned_company_gross_profit_ngn END,
@@ -165,29 +165,29 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
           updated_at=NOW()
         WHERE id=$6::uuid AND payment_status='paid' AND fulfillment_status=$7
         RETURNING id,agent_id,fulfillment_status
-      `,[next,note,cost,econ.totalPlannedCostNgn,econ.grossProfitNgn,task.source_order_id,oldStage])
+      `,[next,cost,econ.totalPlannedCostNgn,econ.grossProfitNgn,task.source_order_id,oldStage])
       updated=result.rows[0]
     }else if(task.product==='electrolyte'){
       const result=await client.query(`
-        UPDATE agility_stock_orders SET fulfillment_status=$1,admin_note=$2,
+        UPDATE agility_stock_orders SET fulfillment_status=$1,
           prepared_at=CASE WHEN $1='preparing' THEN COALESCE(prepared_at,NOW()) ELSE prepared_at END,
           packed_at=CASE WHEN $1='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
           dispatched_at=CASE WHEN $1='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
           updated_at=NOW()
-        WHERE id=$3::uuid AND payment_status='paid' AND fulfillment_status=$4
+        WHERE id=$2::uuid AND payment_status='paid' AND fulfillment_status=$3
         RETURNING id,agent_id,fulfillment_status
-      `,[next,note,task.source_order_id,oldStage])
+      `,[next,task.source_order_id,oldStage])
       updated=result.rows[0]
     }else{
       const result=await client.query(`
-        UPDATE carrier_cake_orders SET status=$1,admin_note=$2,
+        UPDATE carrier_cake_orders SET status=$1,
           preparing_at=CASE WHEN $1='preparing' THEN COALESCE(preparing_at,NOW()) ELSE preparing_at END,
           ready_at=CASE WHEN $1='ready' THEN COALESCE(ready_at,NOW()) ELSE ready_at END,
           dispatched_at=CASE WHEN $1='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
           updated_at=NOW()
-        WHERE id=$3::uuid AND payment_status='paid' AND status=$4
+        WHERE id=$2::uuid AND payment_status='paid' AND status=$3 AND preparation_released_at IS NOT NULL
         RETURNING id,agent_id,status
-      `,[next,note,task.source_order_id,oldStage])
+      `,[next,task.source_order_id,oldStage])
       updated=result.rows[0]
     }
     if(!updated)throw new PreparationAccessError('Order changed; refresh your preparation desk.',409)
