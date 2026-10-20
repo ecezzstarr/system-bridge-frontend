@@ -135,7 +135,7 @@ export function SystemSwitchDoorPlaza(){
     <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5">
       <div><p className="text-[10px] font-black uppercase tracking-[.18em] text-emerald-200">WEAVE · Bridge of Radiance</p>
         <h1 className="mt-2 text-3xl font-black">System Switch · Customer Door Plaza</h1>
-        <p className="mt-2 text-xs text-stone-400">Arrive as your {position} avatar. Walk to a hosted Client Customer Door and cross into its public File Folder territory.</p>
+        <p className="mt-2 text-xs text-stone-400">Arrive as your {position} Presence. Flow to a hosted Client Customer Door and cross into its public File Folder territory.</p>
       </div>
       <Link href={position==='visitor'?'/market':'/system-switch/flame-event'} className="inline-flex items-center gap-2 border border-white/10 p-3 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Back</Link>
     </header>
@@ -144,7 +144,7 @@ export function SystemSwitchDoorPlaza(){
         <SpatialWorld presence={presence} input={input} places={places} others={others} onNearby={setNearby}/>
         <div className="pointer-events-none absolute left-3 top-3 bg-[#07111b]/80 p-3 text-xs text-white/90">
           <p className="flex items-center gap-2 font-bold"><Users className="h-4 w-4"/>{online?others.length+1+' participants here':'Connecting real participants…'}</p>
-          <p className="mt-1 text-emerald-200">{nearby?'Nearby: '+nearby:'Walk towards a Customer Door'}</p>
+          <p className="mt-1 text-emerald-200">{nearby?'Nearby: '+nearby:'Move toward a Customer Door'}</p>
         </div>
       </div>
       <Controls input={input}/>
@@ -155,7 +155,7 @@ export function SystemSwitchDoorPlaza(){
           <p className="text-[10px] font-black uppercase tracking-[.14em] text-emerald-200">{d.entrance==='flame-event'?'Flame Event hosted':'Customer Market hosted'}</p>
           <h2 className="mt-2 text-lg font-black">{d.platform||d.name}</h2>
           <p className="mt-2 text-xs leading-5 text-stone-400">{d.description||'A Client-created business and systems world.'}</p>
-          <p className="mt-3 text-xs text-amber-200">{d.offerCount} live offer{d.offerCount===1?'':'s'} · Enter as avatar <ArrowRight className="inline h-3 w-3"/></p>
+          <p className="mt-3 text-xs text-amber-200">{d.offerCount} live offer{d.offerCount===1?'':'s'} · Enter as Presence <ArrowRight className="inline h-3 w-3"/></p>
         </button>)}
       </section>
       {!doors.length&&!error&&<p className="pb-12 text-sm text-stone-500">No Client has hosted a public Customer Door for your position yet. The plaza remains available for real participant movement.</p>}
@@ -205,7 +205,7 @@ export function HostedFileFolderVisit({slug,entrance}:{slug:string;entrance:'mar
         <SpatialWorld places={places} presence={presence} input={input} others={others} onNearby={setNearby}/>
         <div className="pointer-events-none absolute left-3 top-3 bg-[#07111b]/80 p-3 text-xs">
           <p className="flex items-center gap-2"><Users className="h-4 w-4"/>{online?others.length+1+' present':'Connecting multiplayer presence…'}</p>
-          <p className="mt-1 text-emerald-200">{nearby||'Walk to a public system or offer'}</p>
+          <p className="mt-1 text-emerald-200">{nearby||'Move your Presence to a public system or offer'}</p>
         </div>
       </div>
       <Controls input={input}/>
