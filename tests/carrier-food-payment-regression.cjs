@@ -75,14 +75,14 @@ assert.ok(publicDoor.includes('FAR LOCATION · WAYBILL')&&publicDoor.includes('G
 assert.ok(publicDoor.includes('PAY THE AGENT')&&publicDoor.includes('I PAID THE AGENT — SEND ORDER'),'public UI makes customer→Agent payment explicit')
 assert.ok(publicDoor.includes('not to WEAVE'),'public UI prevents customer payment to the company account')
 assert.ok(publicDoor.includes('maxCustomerQuantity')&&publicDoor.includes('max={maxCustomerQuantity}'),'customer quantity is limited by Agent available stock rather than carton size')
-assert.ok(publicDoor.includes('Customer quantity: 1, 2, 3, 4… packages/bowls'),'customer quantity control clearly starts at one individual package/bowl')
+assert.ok(publicDoor.includes('Customer quantity: 1, 2, 3, 4… packages/bowls/boxes'),'customer quantity control clearly starts at one individual package, bowl or box')
 assert.ok(publicDoor.includes('Carton rules apply only when the Agent buys stock from WEAVE.'),'public Carrier separates customer units from Agent carton stock ordering')
 assert.ok(!publicDoor.includes('up to 10 per Carrier order'),'old ten-unit customer ceiling is removed from the Carrier UI')
 
 assert.ok(fs.existsSync(path.join(root,'public/weave-food/agility.jpeg')),'Agility customer preview asset exists')
 assert.ok(fs.existsSync(path.join(root,'public/weave-food/electrolyte.jpeg')),'Electrolyte customer preview asset exists')
-assert.ok(carrierPage.includes('/weave-food/agility.jpeg')&&carrierPage.includes('/weave-food/electrolyte.jpeg'),'Carrier Door visibly previews both foods before customer checkout')
-assert.ok(carrierPage.includes('1 PACKAGE / BOWL OR MORE · NO CARTON MINIMUM')&&carrierPage.includes('Carton rules apply only when an Agent buys company stock from WEAVE.'),'Carrier Door explicitly separates customer package ordering from Agent carton stock ordering')
+assert.ok(carrierPage.includes('/weave-food/agility.jpeg')&&carrierPage.includes('/weave-food/electrolyte.jpeg'),'Carrier Door still previews both existing foods before customer checkout')
+assert.ok(carrierPage.includes('1 PACKAGE / BOWL / BOX OR MORE · NO CARTON MINIMUM')&&carrierPage.includes('Carton rules apply only when an Agent buys company stock from WEAVE.'),'Carrier Door explicitly separates customer package ordering from Agent carton stock ordering')
 assert.ok(shareImage.includes('ImageResponse')&&shareImage.includes('width:1200')&&shareImage.includes('height:630'),'Carrier social/link preview image is an actual 1200×630 image route')
 assert.ok(shareImage.includes('AGILITY')&&shareImage.includes('ELECTROLYTE'),'Carrier share image carries both WEAVE foods')
 
