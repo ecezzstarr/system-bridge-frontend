@@ -29,11 +29,11 @@ export async function GET(request:NextRequest){
       getPool().query(`
         SELECT o.id,o.variant_id,o.fulfillment_status AS stage,o.payment_status,
           o.package_count,o.delivery_address AS destination,u.name AS buying_agent,
-          CASE WHEN o.variant_id IN ('electrolyte','electrolyte-medium') THEN 'electrolyte' ELSE 'agility' END AS product,
+          CASE WHEN o.variant_id IN ('electrolyte','electrolyte-medium') THEN 'electrolyte' WHEN o.variant_id IN ('ember-small','ember-large') THEN 'ember' ELSE 'agility' END AS product,
           t.manager_id,t.id AS task_id
         FROM agility_stock_orders o
         LEFT JOIN weave_food_preparation_tasks t ON t.source_order_id=o.id
-          AND t.product=CASE WHEN o.variant_id IN ('electrolyte','electrolyte-medium') THEN 'electrolyte' ELSE 'agility' END
+          AND t.product=CASE WHEN o.variant_id IN ('electrolyte','electrolyte-medium') THEN 'electrolyte' WHEN o.variant_id IN ('ember-small','ember-large') THEN 'ember' ELSE 'agility' END
         LEFT JOIN users u ON u.id=o.agent_id
         WHERE o.payment_status='paid'
           AND o.fulfillment_status IN ('paid','heating','packed','boxed','preparing')
