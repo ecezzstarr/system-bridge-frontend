@@ -93,8 +93,8 @@ export function LivingPresenceForm({
   const fireRing=useRef<THREE.Group>(null)
   const time=useRef(0)
   const materials=useMemo(()=>[
-    makeMaterial(compact?.78:.88,element),
-    makeMaterial(compact?.56:.63,element),
+    makeMaterial(compact ? .78 : .88,element),
+    makeMaterial(compact ? .56 : .63,element),
   ],[compact,element])
   useEffect(()=>()=>materials.forEach(material=>material.dispose()),[materials])
 
@@ -126,7 +126,7 @@ export function LivingPresenceForm({
 
   return <group data-weave-living-presence={element} data-presence-detail={compact?'compact':'local'}>
     <group ref={root}>
-      <mesh position={[0,1.04,0]} scale={[.78,1.06,.78]} material={materials[0]} frustumCulled={false}>
+      <mesh position={[0,1.04,0]} scale={[.78,1.06,.78]} material={materials[0]} >
         <sphereGeometry args={[1,20,14]}/>
       </mesh>
       <mesh position={[0,1.04,0]} scale={[.45,.93,.45]} material={materials[1]} frustumCulled={false}>
