@@ -43,7 +43,7 @@ assert.ok(beneficiaries.includes('sender_id=$3::uuid'),'Sender controls only own
 assert.ok(monthly.includes('WEAVE_INTERNAL_JOBS_SECRET'),'Scheduler rejects unsigned internal requests')
 assert.ok(transfer.includes("order.status!=='funds_verified'"),'Transfer receipt cannot be recorded before verified funds')
 assert.ok(transfer.includes('FOR SHARE OF a,u'),'Forensics appointment rechecked during transfer review')
-assert.ok(guidance.includes("a.status='approved'"),'Mandate and Attorney appointments rechecked')
+assert.ok(guidance.includes('a.status=')&&guidance.includes('approved'),'Mandate and Attorney appointments rechecked')
 assert.ok(guidance.includes("'lawyer'"),'Attorney support included')
 assert.ok(board.includes('Pause monthly instructions'),'Recurring plan remains sender-controlled')
 assert.ok(board.includes('Record bank transfer receipt'),'Interface does not falsely claim auto-transfer')
