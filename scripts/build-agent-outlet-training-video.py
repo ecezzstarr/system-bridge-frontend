@@ -74,12 +74,13 @@ total=sum(weights);durations=[DUR*w/total for w in weights]
 durations[-1]=DUR-sum(durations[:-1])+0.6
 for idx,((category,title,body,footer),seconds) in enumerate(zip(scenes,durations)):
     im=Image.new('RGB',(WIDTH,HEIGHT))
-    pix=im.load()
+    # Draw the background one scanline at a time instead of setting 921,600 pixels
+    # individually on each scene. This substantially reduces CI render time.
+    d=ImageDraw.Draw(im)
     for y in range(HEIGHT):
         t=y/HEIGHT
         col=(int(7+20*t),int(19+7*t),int(27+4*t))
-        for x in range(WIDTH):pix[x,y]=col
-    d=ImageDraw.Draw(im)
+        d.line((0,y,WIDTH,y),fill=col)
     d.rounded_rectangle((36,36,684,125),radius=23,fill='#112b31',outline='#42686e',width=2)
     d.text((60,57),'WEAVE  /  AGENT STABILITY',font=ft(27,True),fill='#7ff0d6')
     d.text((43,177),category,font=ft(29,True),fill='#ffab68')
