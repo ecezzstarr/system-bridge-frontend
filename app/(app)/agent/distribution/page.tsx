@@ -132,7 +132,7 @@ export default function AgentDistributionPage(){
     if(!token)return
     setWorking(`receive:${orderId}`)
     try{
-      const response=await fetch(order.variant_id.startsWith('ember')?'/api/ember/receive':order.variant_id.startsWith('electrolyte')?'/api/electrolyte/receive':'/api/agility/receive',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId})})
+      const response=await fetch('/api/agility/receive',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to confirm receipt')
       setMessage('Cartons received. They are now available for outlets and Carrier.');await load()
