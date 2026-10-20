@@ -54,7 +54,7 @@ export async function POST(request:NextRequest){
       'SELECT payment_method FROM weave_flame_coin_orders WHERE id=$1::uuid AND buyer_email=$2',[id,email]
     ):({rows:[]} as {rows:{payment_method:string}[]})
     const method=orderRows[0]?.payment_method
-    if(!isFlameCoinPaymentMethod(method)||!validFlameCoinProof(method,reference)||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
+    if(!isFlameCoinPaymentMethod(method)||!validFlameCoinProof(method,reference)||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
       return NextResponse.json({error:'A valid order, matching email and payment reference are required; crypto transfers need a 64-character transaction hash'},{status:400})
     }
     const previous=await getPool().query(
