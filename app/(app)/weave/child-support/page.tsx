@@ -105,8 +105,9 @@ export default function FamilySupportBoard(){
    if(!r.ok)throw new Error(data.error||'Guidance not saved')
    setGuideNotes(v=>({...v,[id]:''}))
    setNotice('Support-plan guidance recorded for the sender.')
-   setSelectedGuidance('')
-   await openGuidance(id)
+   const rr=await fetch('/api/child-support/orders/'+encodeURIComponent(id)+'/guidance',{headers:headers(),cache:'no-store'})
+   const dd=await rr.json()
+   if(rr.ok)setGuidance(dd.guidance||[])
   }catch(e){setError(e instanceof Error?e.message:'Guidance not saved')}
   finally{setBusy('')}
  }
