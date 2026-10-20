@@ -67,6 +67,13 @@ export async function ensureFoodPreparationManagerSchema(){
       CREATE INDEX IF NOT EXISTS weave_food_preparation_events_idx
         ON weave_food_preparation_task_events(task_id,occurred_at DESC);
     `)
+    // Existing production databases were created before Ember. Update their
+    // original check constraint as well as the new-table schema.
+    await getPool().query(`
+      ALTER TABLE weave_food_preparation_tasks DROP CONSTRAINT IF EXISTS weave_food_preparation_tasks_product_check;
+      ALTER TABLE weave_food_preparation_tasks ADD CONSTRAINT weave_food_preparation_tasks_product_check
+        CHECK (product IN ('agility','electrolyte','ember','daisy'));
+    `)
   })().catch(e=>{schemaPromise=null;throw e})
   await schemaPromise
 }
