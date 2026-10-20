@@ -1,3 +1,4 @@
+import { WORLD_RULES } from '@/lib/world/constants'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     console.log('[WEAVE] EIGHT cross-system operator - command received:', command)
 
-    const companyWallet = process.env.COMPANY_TRON_WALLET || 'THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk'
+    const companyWallet = WORLD_RULES.COMPANY_TRX_WALLET || 'THGBvmPt3XEb8mbSRXViA93GkW3PpCanJk'
     const platformWallet = process.env.PLATFORM_WALLET_PUBLIC_KEY || 'TNzNPekX1tbeFYRe3DPjnNV2dG6QfvHymt'
 
     // EIGHT command patterns

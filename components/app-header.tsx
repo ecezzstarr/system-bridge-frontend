@@ -52,7 +52,7 @@ export function AppHeader({ user }: AppHeaderProps) {
     : effectiveUser.role === 'agent'
       ? 'Stability · Agent'
       : effectiveUser.role === 'client'
-        ? 'Lord/Lady · Client'
+        ? 'Client · File Folder'
         : effectiveUser.role === 'admin'
           ? 'A Cat · Administration'
           : effectiveUser.role

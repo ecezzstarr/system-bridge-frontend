@@ -1,3 +1,4 @@
+import { matureElapsedCustomerDoors } from '@/lib/customer-door-maturity'
 import { NextResponse } from 'next/server'
 import {
   ensureClientBusinessStoreSchema,
@@ -11,6 +12,7 @@ export async function GET() {
   try {
     const sql=getBusinessDb()
     await ensureClientBusinessStoreSchema(sql)
+    await matureElapsedCustomerDoors(sql)
 
     const stores=await sql`
       SELECT
@@ -36,7 +38,7 @@ export async function GET() {
         ) AS has_market_hall
       FROM client_business_stores s
       WHERE s.enabled=true
-        AND s.formation_status='selling' AND s.world_host_customer_market=true
+        AND s.formation_status IN ('selling','ready_for_offer') AND s.world_host_customer_market=true
       ORDER BY s.public_opened_at DESC NULLS LAST,s.created_at DESC
       LIMIT 24
     `

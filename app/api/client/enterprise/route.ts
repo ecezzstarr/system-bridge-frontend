@@ -9,6 +9,7 @@ import { ensureLegionEmploymentSchema } from '@/lib/legion-employment'
 import { publicGrowthSlug } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
 import { notifyAdministrators } from '@/lib/deposit-notifications'
+import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
 
 function cleanText(value: unknown, max = 10000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
       LIMIT 1
     `
     const enterprise = await getEnterpriseDream(sql, clientId)
+    const monthlyStanding = await getClientMonthlyStanding(clientId)
     const [store] = await sql`
       SELECT public_slug
       FROM client_business_stores
@@ -72,7 +74,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      position: folder?.weave_position || 'client',
+      monthlyStanding,
+      position: monthlyStanding.active ? monthlyStanding.title : 'client',
       enterprise_status: folder?.enterprise_status || 'none',
       workshop_type: folder?.workshop_type || 'formation',
       enterprise_name: folder?.enterprise_name || enterprise.application?.enterprise_name || null,
@@ -97,7 +100,9 @@ export async function POST(request: NextRequest) {
     await ensureEnterpriseDreamSchema(sql)
 
     const body = await request.json()
-    const requestedPosition = cleanText(body.requestedPosition, 20).toLowerCase()
+    const monthlyStanding = await getClientMonthlyStanding(clientId)
+    if(!monthlyStanding.active || !monthlyStanding.title)return NextResponse.json({error:'Activate the 600 Flame Coin Client monthly subscription before submitting an enterprise plan.'},{status:403})
+    const requestedPosition = monthlyStanding.title
     const enterpriseName = cleanText(body.enterpriseName, 255)
     const sector = cleanText(body.sector, 255)
     const businessPlan = cleanText(body.businessPlan)
@@ -108,7 +113,7 @@ export async function POST(request: NextRequest) {
     const projectedCosts = body.projectedMonthlyCosts === '' || body.projectedMonthlyCosts == null ? null : Number(body.projectedMonthlyCosts)
 
     if (!['lord', 'lady'].includes(requestedPosition)) {
-      return NextResponse.json({ error: 'Choose Lord or Lady as the requested enterprise position.' }, { status: 400 })
+      return NextResponse.json({ error: 'Registration gender must determine Lord or Lady after monthly subscription.' }, { status: 400 })
     }
     if (!enterpriseName || !sector || !businessPlan || !profitModel || !participantModel || !sustainabilityPlan) {
       return NextResponse.json({ error: 'Enterprise name, sector, business plan, profit model, participant model and sustainability plan are required.' }, { status: 400 })
@@ -122,13 +127,13 @@ export async function POST(request: NextRequest) {
     if (!client?.file_number) return NextResponse.json({ error: 'An active Client File Folder is required.' }, { status: 409 })
 
     const [folder] = await sql`
-      SELECT id,status,weave_position
+      SELECT id,status,weave_position,enterprise_status
       FROM client_file_folders
       WHERE client_id=${clientId}::uuid AND file_number=${client.file_number}
       LIMIT 1
     `
-    if (!folder || folder.status !== 'active') return NextResponse.json({ error: 'Your File Folder must be active before enterprise elevation.' }, { status: 409 })
-    if (folder.weave_position === 'lord' || folder.weave_position === 'lady') {
+    if (!folder || folder.status !== 'active') return NextResponse.json({ error: 'Your File Folder must be active before enterprise plan submission.' }, { status: 409 })
+    if (folder.enterprise_status === 'approved') {
       return NextResponse.json({ error: 'This File Folder is already an approved enterprise.' }, { status: 409 })
     }
 
@@ -184,8 +189,8 @@ export async function POST(request: NextRequest) {
 
     await notifyAdministrators({
       type: 'enterprise_plan_submitted',
-      title: `${requestedPosition === 'lady' ? 'Lady' : 'Lord'} elevation plan submitted`,
-      content: `${client.name} submitted ${enterpriseName} for ${requestedPosition} elevation in File Folder ${client.file_number}.`,
+      title: 'Enterprise plan submitted',
+      content: `${client.name} submitted the enterprise plan for ${enterpriseName} from File Folder ${client.file_number}. Current subscribed title: ${requestedPosition}.`,
       link: '/admin/enterprise-dream',
       fromUserId: clientId,
       fromUserName: client.name,
