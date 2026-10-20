@@ -771,7 +771,7 @@ export function ClientFileFolder3D({
       <p className="mt-1 text-xs font-black text-white">{businessName}</p>
       <p className="mt-1 text-[9px] font-black uppercase tracking-[.12em] text-sky-200">Lord / Lady · Cloud Development Territory</p>
       <p className="mt-1 hidden text-[9px] leading-4 text-stone-400 sm:block">{businessSector ? `${businessSector} · ` : ''}You decide what systems exist here. WEAVE hosts, organizes and connects them through your Customer Door.</p>
-      <p className="mt-2 text-[9px] text-sky-200" data-client-cloud-live-presence>{cloudOnline?`Cloud multiplayer · ${otherLords.length+1} Lord/Lady avatar${otherLords.length===0?'':'s'} present`:'Cloud multiplayer reconnecting…'}</p>
+      <p className="mt-2 text-[9px] text-sky-200" data-client-cloud-live-presence>{cloudOnline?`Cloud multiplayer · ${otherLords.length+1} Lord/Lady Presence${otherLords.length===0?'':'s'} present`:'Cloud multiplayer reconnecting…'}</p>
     </div>
 
     <div hidden={staffVisitor} className={territoryMode ? "absolute right-5 top-[8.5rem] z-10 hidden gap-2 lg:flex" : "absolute right-4 top-4 z-10 hidden gap-2 sm:flex"}>
