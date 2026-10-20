@@ -74,7 +74,7 @@ assert.ok(adminApi.includes("payment_status!=='paid'"),'Administration cannot pr
 
 const carrierPage=read('app/carrier/food/[code]/page.tsx')
 assert.ok(carrierPage.includes('AgentCakeCarrierPublic'),'Agent Carrier Door renders Daisy Pastries')
-assert.ok(carrierPage.includes('AGILITY · ELECTROLYTE · CAKES'),'Carrier Door preserves the Agent Cakes movement')
+assert.ok(carrierPage.includes('AGILITY · ELECTROLYTE · EMBER · CAKES'),'Carrier Door preserves the Agent Cakes movement')
 assert.ok(carrierPage.includes('CAKES · DAISY PASTRIES'),'Carrier Door identifies the official cake brand')
 
 const cakePublic=read('components/carrier/agent-cake-carrier-public.tsx')
