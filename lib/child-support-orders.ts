@@ -6,7 +6,7 @@ export const CHILD_SUPPORT_ORDER_STATUSES=['submitted','funds_verified','transfe
 export const CHILD_SUPPORT_FIXED_ADMIN_RESERVE_NGN=200
 export const CHILD_SUPPORT_ADMIN_RECEIPT_UNIT_NGN=1000
 export const CHILD_SUPPORT_MONTHLY_RULE='Administration reserves ₦200 of each ₦1,000 received through Stability. This is one total reserve, not ₦200 per child.'
-export const childSupportUuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+export const childSupportUuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
 
 let schemaPromise:Promise<void>|null=null
 export async function ensureChildSupportOrdersSchema(){
