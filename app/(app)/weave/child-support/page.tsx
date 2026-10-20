@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useCallback,useEffect,useState } from 'react'
+import type { FormEvent } from 'react'
 import { ArrowLeft,ShieldCheck,Send,RefreshCcw } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -64,7 +65,7 @@ export default function FamilySupportBoard(){
  useEffect(()=>{void load();void loadBeneficiaries();return visiblePoll(()=>load(),20000,false)},[load,loadBeneficiaries])
  useEffect(()=>{if(board?.canGuide.length&&!board.canGuide.includes(department))setDepartment(board.canGuide[0])},[board?.canGuide?.join(','),department])
 
- async function submit(event:React.FormEvent){
+ async function submit(event:FormEvent){
   event.preventDefault();if(!token||busy)return
   setBusy('submit');setError('');setNotice('')
   try{
