@@ -105,7 +105,7 @@ export default function AgentDistributionPage(){
     setOrderFeedback(null)
     setWorking(`buy:${product.id}`);setMessage('')
     try{
-      const response=await fetchWithTimeout('/api/agility/stock',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({variantId:product.id,boxCount,distributionMode:'wholesaler',deliveryAddress:receivingAddress,deliveryPhone:receivingPhone,note:'Agent neighborhood distribution stock'})})
+      const response=await fetchWithTimeout(product.id.startsWith('ember')?'/api/ember/stock':product.id.startsWith('electrolyte')?'/api/electrolyte/stock':'/api/agility/stock',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({variantId:product.id,boxCount,distributionMode:'wholesaler',deliveryAddress:receivingAddress,deliveryPhone:receivingPhone,note:'Agent neighborhood distribution stock'})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to order WEAVE stock')
       feedback(`${product.name}: ${formatWeaveFoodCartonQuantity(boxCount)} ordered. Pay ${money(result.payment.amountNgn)} to OPay ${result.payment.accountNumber}. Order reference: ${result.payment.reference}. Submit your payment proof below for Administration verification.`)
@@ -120,7 +120,7 @@ export default function AgentDistributionPage(){
     if(!receipt){setMessage('Enter the OPay transaction reference or receipt.');return}
     setWorking(`proof:${order.id}`)
     try{
-      const response=await fetch('/api/agility/payment/opay/receipt',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId:order.id,receipt})})
+      const response=await fetch(order.variant_id.startsWith('ember')?'/api/ember/payment/opay/receipt':order.variant_id.startsWith('electrolyte')?'/api/electrolyte/payment/opay/receipt':'/api/agility/payment/opay/receipt',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId:order.id,receipt})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to submit proof')
       setProof(current=>({...current,[order.id]:''}));setMessage('Payment proof sent to Administration. Preparation begins after verification.');await load()
@@ -132,7 +132,7 @@ export default function AgentDistributionPage(){
     if(!token)return
     setWorking(`receive:${orderId}`)
     try{
-      const response=await fetch('/api/agility/receive',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId})})
+      const response=await fetch(order.variant_id.startsWith('ember')?'/api/ember/receive':order.variant_id.startsWith('electrolyte')?'/api/electrolyte/receive':'/api/agility/receive',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({orderId})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok||!result.success)throw new Error(result.error||'Unable to confirm receipt')
       setMessage('Cartons received. They are now available for outlets and Carrier.');await load()
