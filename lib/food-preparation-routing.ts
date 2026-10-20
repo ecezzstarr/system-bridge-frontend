@@ -13,7 +13,7 @@ type PaidOrder = {
 type AssignmentResult={assigned:true;managerId:string;managerAgentId:string;taskId:string}|{assigned:false;reason:'no_active_manager'|'already_assigned'}
 
 function notificationDetails(product:PreparationProduct,order:PaidOrder) {
-  const name=product==='agility'?'Agility':product==='electrolyte'?'Electrolyte':'Daisy Pastries'
+  const name=product==='agility'?'Agility':product==='electrolyte'?'Electrolyte':product==='ember'?'Ember':'Daisy Pastries'
   const item=product==='daisy'?String(order.cake_type||'Cake')+' · '+String(order.size_option||'')
     :String(order.variant_id||name)
   const amount=product==='daisy'?'1 cake':String(order.package_count||'')+' packages ('+String(order.box_count||'')+' cartons)'
