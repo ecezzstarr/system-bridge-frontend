@@ -38,7 +38,7 @@ export function WeaveEmbodiedAvatar({
     const dt=Math.min(.05,delta)
     const turn=Math.atan2(Math.sin(state.yaw-yaw.current),Math.cos(state.yaw-yaw.current))
     yaw.current+=turn*(1-Math.exp(-9*dt))
-    actor.position.set(state.x,Math.max(0,state.airborne)-(state.crouching?.24:0),state.z)
+    actor.position.set(state.x,Math.max(0,state.airborne)-(state.crouching ? .24 : 0),state.z)
     actor.rotation.y=yaw.current
   })
   return <group ref={root} scale={scale} data-weave-embodied-avatar={role}>
