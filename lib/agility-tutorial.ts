@@ -9,7 +9,7 @@ export const AGILITY_AGENT_TUTORIAL = {
     },
     {
       title: 'Know the carton economics',
-      detail: 'The current standard carton contains 10 packages. The Agent buys the carton from WEAVE at the company Agent price, then agrees the outlet return amount before supplying the shop.',
+      detail: 'The current standard carton contains 10 packages. The Agent buys the carton from WEAVE at the company Agent price, then supplies the shop at the official WEAVE unit price. Independent shops choose their own resale prices.',
     },
     {
       title: 'Receive the physical stock',
