@@ -6,9 +6,6 @@ import * as THREE from 'three'
 import { LivingPresenceForm } from '@/components/world/weave-living-presence'
 import { usePresenceElement } from '@/components/world/use-presence-element'
 
-const WEAVE_GOLD = '#e8b93f'
-const WEAVE_TEAL = '#14b8a6'
-
 interface PlayerProps {
   onMove?: (position: THREE.Vector3) => void
   externalDir?: { x: number, z: number }
