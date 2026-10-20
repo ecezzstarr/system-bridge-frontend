@@ -90,6 +90,7 @@ export default function MandateLifestylePage(){
           </article>
         })}
       </div>
+      {data.activeDepartments.some(d=>['forensic','mandate','lawyer'].includes(d))&&<Link href="/weave/child-support" className="mt-6 inline-flex items-center gap-2 border border-emerald-300/35 px-4 py-3 text-xs font-bold text-emerald-200">Child & Parent Support Orders <ArrowRight className="h-4 w-4"/></Link>}
     </>}
     <section className="mt-8 border-t border-white/10 pt-5">
       <p className="text-[10px] font-black uppercase tracking-wider text-amber-200">Company support chain</p>
