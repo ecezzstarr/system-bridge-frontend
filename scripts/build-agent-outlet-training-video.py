@@ -8,7 +8,8 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/'public'/'training'
+# The approved Agent-only video must never be written into the public web root.
+OUT=ROOT/'private'/'agent-training'
 OUT.mkdir(parents=True,exist_ok=True)
 WORK=Path(os.getenv('WEAVE_TRAINING_TMP','/tmp/weave-training'))
 WORK.mkdir(parents=True,exist_ok=True)
