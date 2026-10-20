@@ -8,7 +8,7 @@ const db={'@/lib/db':{getPool:()=>pool}}
 const bridge=load('lib/food-bridge.ts',{...db,'@/lib/food-bridge-states':{}})
 const fee=load('lib/farm-service-fee.ts')
 const escrow=load('lib/food-escrow.ts',{...db,'@/lib/opay-config':{WEAVE_OPAY_ACCOUNT_NUMBER:'QA-ONLY'},'@/lib/food-bridge':bridge,'@/lib/farm-service-fee':fee})
-const prep=load('lib/food-preparation-manager.ts',{...db,'@/lib/weave-lifestyle':{},'@/lib/agility':{},'@/lib/electrolyte-catalog':{},'@/lib/carrier-cakes':{}})
+const prep=load('lib/food-preparation-manager.ts',{...db,'@/lib/weave-lifestyle':{},'@/lib/agility':{},'@/lib/electrolyte-catalog':{},'@/lib/ember-catalog':{nextEmberAdminStage:()=>null,emberMoneySplit:()=>null},'@/lib/carrier-cakes':{}})
 const routing=load('lib/food-preparation-routing.ts')
 const admin='70000000-0000-4000-8000-000000000001',worker='70000000-0000-4000-8000-000000000002',buyer='70000000-0000-4000-8000-000000000003'
 const response={json:(data,opts)=>new Response(JSON.stringify(data),opts)}
