@@ -25,7 +25,7 @@ export default function AgentWorkPage(){
       {functions.map(item=>{const Icon=item.icon;return <Link key={item.name} href={item.href} className={`group border p-6 transition hover:-translate-y-0.5 ${item.accent}`}>
         <Icon className="h-7 w-7"/>
         <h2 className="mt-5 text-3xl font-black text-white">{item.name.toUpperCase()}</h2>
-        {item.name==='Ember'&&<img src="/weave-food/ember.svg" alt="WEAVE Ember Small and Large food box" className="mt-4 h-auto w-full max-w-[280px] rounded-lg object-contain"/>}
+        {item.name==='Ember'&&<img src="/weave-food/ember.jpg" alt="WEAVE Ember Small and Large food box" className="mt-4 h-auto w-full max-w-[280px] rounded-lg object-contain"/>}
         {item.name==='Daisy Pastries'&&<img src={DAISY_PASTRIES_IMAGE_SRC} alt="Daisy Pastries WEAVE cakes" width={1122} height={1402} className="mt-4 h-auto w-full max-w-[280px] rounded-lg object-contain"/>}
         <p className="mt-3 text-sm leading-6 text-slate-400">{item.detail}</p>
         <p className="mt-5 text-[10px] font-black uppercase tracking-[.2em]">OPEN {item.name}</p>
