@@ -38,6 +38,7 @@ export default function FamilySupportBoard(){
  const [relationshipConfirmed,setConfirmed]=useState(false)
  const [note,setNote]=useState('')
  const [evidence,setEvidence]=useState<Record<string,string>>({})
+ const [fundingRefs,setFundingRefs]=useState<Record<string,string>>({})
  const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({})
  const [guideNotes,setGuideNotes]=useState<Record<string,string>>({})
  const [selectedGuidance,setSelectedGuidance]=useState('')
@@ -91,6 +92,20 @@ export default function FamilySupportBoard(){
    setNotice(recurring?'Monthly instruction preparation resumed.':'Future monthly instruction preparation paused.')
    await loadBeneficiaries()
   }catch(error){setError(error instanceof Error?error.message:'Update failed')}
+  finally{setBusy('')}
+ }
+ async function fundMonthly(id:string){
+  if(!token||busy)return
+  setBusy('fund:'+id);setError('');setNotice('')
+  try{
+   const response=await fetch('/api/child-support/orders/'+encodeURIComponent(id)+'/funding',{
+    method:'POST',headers:{...headers(),'Content-Type':'application/json'},
+    body:JSON.stringify({sourceReference:fundingRefs[id]||''})})
+   const data=await response.json()
+   if(!response.ok)throw new Error(data.error||'Funding submission failed')
+   setNotice('Monthly funding evidence submitted for Forensics verification.')
+   setFundingRefs(v=>({...v,[id]:''}));await load()
+  }catch(error){setError(error instanceof Error?error.message:'Funding submission failed')}
   finally{setBusy('')}
  }
  async function review(id:string,action:'verify_funds'|'record_transfer'|'reject'){
@@ -239,6 +254,13 @@ export default function FamilySupportBoard(){
       {(reviewer||own)&&<p className="mt-3 break-words text-xs text-stone-400">Beneficiary: {order.recipient_account_name} · {order.recipient_bank} · {order.recipient_account_number}</p>}
       {order.review_note&&<p className="mt-3 text-xs text-amber-200">Forensics note: {order.review_note}</p>}
       {own&&<p className="mt-2 text-xs text-stone-400">Funding: {order.source_reference||'Not supplied'} · Transfer: {order.transfer_reference||'Not yet recorded'}</p>}
+      {own&&order.status==='awaiting_funding'&&<div className="mt-3 flex flex-col gap-2 border-t border-white/10 pt-3 sm:flex-row">
+       <input className={field} placeholder="New month's WEAVE funding reference" minLength={5} maxLength={160}
+        value={fundingRefs[order.id]||''} onChange={e=>setFundingRefs(v=>({...v,[order.id]:e.target.value}))}/>
+       <button type="button" disabled={busy!==''||(fundingRefs[order.id]||'').trim().length<5}
+        className="border border-emerald-300/35 px-4 py-2 text-xs font-bold text-emerald-200 disabled:opacity-40"
+        onClick={()=>void fundMonthly(order.id)}>Send funding to Forensics</button>
+      </div>}
       {reviewer&&!own&&['submitted','funds_verified'].includes(order.status)&&<div className="mt-4 grid gap-3 border-t border-white/10 pt-4">
        <input className={field} placeholder="Independent bank verification / transfer receipt reference" value={evidence[order.id]||''} onChange={e=>setEvidence(v=>({...v,[order.id]:e.target.value}))}/>
        <textarea className={field} placeholder="Review note / evidence of independently checked funds" maxLength={800} rows={2} value={reviewNotes[order.id]||''} onChange={e=>setReviewNotes(v=>({...v,[order.id]:e.target.value}))}/>
