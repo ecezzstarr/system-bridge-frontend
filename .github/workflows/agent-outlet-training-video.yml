@@ -19,6 +19,8 @@ jobs:
           fetch-depth: 0
       - name: Install image rendering library
         run: python3 -m pip install --break-system-packages Pillow==11.1.0
+      - name: Install media tools
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
       - name: Fetch approved narration asset
         env:
           WEAVE_AUDIO_URL: 'https://dnznrvs05pmza.cloudfront.net/text_to_speech/71d51dc5-c491-427a-bc13-b74bf8311761/WEAVE_Stability_Agent_Training___Natural_Narration_Revised.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMzM2N2YzN2I2NzAxNTA1NSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjYzMjk1NX0.WEu4wkq8bT7_CHNW6O1Dbv4Cd_Qy6lTl_abGOxL-yk4'
