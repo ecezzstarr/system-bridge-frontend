@@ -25,7 +25,7 @@ export const AGILITY_AGENT_TUTORIAL = {
     },
     {
       title: 'Supply pay after sale',
-      detail: 'When an outlet has customers but cannot fund the cartons upfront, place the stock there on pay-after-sale. WEAVE records the cartons and packs held by that outlet and the amount the outlet owes the Agent.',
+      detail: 'When an outlet has customers but cannot fund the cartons upfront, place the stock there on pay-after-sale. WEAVE records the cartons and packs held by that outlet and the official WEAVE price amount the outlet owes the Agent.',
     },
     {
       title: 'Follow the stock and money',
