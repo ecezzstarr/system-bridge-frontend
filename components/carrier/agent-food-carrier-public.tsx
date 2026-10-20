@@ -232,6 +232,24 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
               <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-wider text-emerald-200"><Package className="h-4 w-4"/>{product.availablePackages} bowls available · order from 1</div>
             </button>):<p className="text-sm text-slate-500">This Agent has no free Electrolyte stock at this moment.</p>}
           </div>
+
+        <article className="overflow-hidden border border-orange-400/25 bg-gradient-to-br from-orange-500/15 via-[#2c1008] to-[#110908]">
+          <div className="border-b border-orange-300/15 px-5 py-5">
+            <p className="text-[9px] font-black uppercase tracking-[.22em] text-orange-200">WEAVE Food · Rich evening combination</p>
+            <h2 className="mt-1 text-4xl font-black text-orange-300">EMBER</h2>
+            <p className="mt-2 text-xs text-orange-100/70">Suya beef or chicken · Roasted plantain · Seasoned yam · Pepper sauce</p>
+          </div>
+          <img src="/weave-food/ember.svg" alt="Ember Small and Large evening food boxes" className="mx-auto max-h-[390px] w-full bg-[#180906] object-contain"/>
+          <div className="grid gap-3 p-5 sm:grid-cols-2">
+            {ember.length?ember.map(product=><button key={product.id} disabled={Boolean(paymentIntent)} onClick={()=>chooseProduct(product)}
+              className={`border p-4 text-left transition disabled:opacity-60 ${selected?.id===product.id?'border-orange-300 bg-orange-400/10':'border-white/10 bg-black/15 hover:border-orange-400/40'}`}>
+              <p className="text-[9px] font-black uppercase tracking-wider text-orange-200">{product.id==='ember-small'?'Small Box':'Large Box'}</p>
+              <div className="mt-1 flex items-center justify-between gap-2"><h3 className="text-base font-black">{product.name}</h3><span className="text-lg font-black text-orange-300">{money(product.agentSellingUnitPriceNgn)}</span></div>
+              <p className="mt-3 text-xs text-stone-300">{product.protein} · {product.foods.join(' · ')}</p>
+              <p className="mt-3 text-[9px] font-black uppercase tracking-wider text-orange-200">{product.availablePackages} boxes available · order from 1</p>
+            </button>):<p className="text-xs text-stone-400">This Agent has no available Ember boxes yet.</p>}
+          </div>
+        </article>
         </article>
       </div>
 
@@ -248,10 +266,10 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
             <Input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" className="border-white/10 bg-black/25 text-white"/>
             <Input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Phone / WhatsApp" className="border-white/10 bg-black/25 text-white"/>
             <Input value={location} onChange={e=>setLocation(e.target.value)} placeholder="Delivery / pickup / waybill destination" className="border-white/10 bg-black/25 text-white md:col-span-2"/>
-            <Input type="number" min={1} max={maxCustomerQuantity} step={1} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(maxCustomerQuantity,Math.trunc(Number(e.target.value)||1))))} placeholder="Packages / bowls" className="border-white/10 bg-black/25 text-white"/>
+            <Input type="number" min={1} max={maxCustomerQuantity} step={1} value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(maxCustomerQuantity,Math.trunc(Number(e.target.value)||1))))} placeholder="Packages / bowls / boxes" className="border-white/10 bg-black/25 text-white"/>
             <Input value={note} onChange={e=>setNote(e.target.value)} placeholder="Note · optional" className="border-white/10 bg-black/25 text-white"/>
           </div>
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-[.12em] text-sky-300">Customer quantity: 1, 2, 3, 4… packages/bowls. Carton rules apply only when the Agent buys stock from WEAVE.</p>
+          <p className="mt-2 text-[10px] font-bold uppercase tracking-[.12em] text-sky-300">Customer quantity: 1, 2, 3, 4… packages/bowls/boxes. Carton rules apply only when the Agent buys stock from WEAVE.</p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <button onClick={()=>{setDeliveryMode('local');setWaybillFee('')}} className={`border p-4 text-left ${deliveryMode==='local'?'border-sky-300 bg-sky-300/10':'border-white/10 bg-black/20'}`}><MapPin className="h-5 w-5 text-sky-300"/><p className="mt-2 font-black">NEAR / PICKUP</p><p className="mt-1 text-xs text-slate-500">No waybill fee is added by Carrier.</p></button>
