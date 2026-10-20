@@ -49,6 +49,9 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+# Keep approved Agent training media outside the public web root; the authenticated
+# /api/agent/training/video route reads this private file at runtime.
+COPY --from=builder --chown=nextjs:nodejs /app/private/agent-training ./private/agent-training
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
