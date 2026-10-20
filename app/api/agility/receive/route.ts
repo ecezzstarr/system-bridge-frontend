@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       SET fulfillment_status='received', received_at=COALESCE(received_at,NOW()), updated_at=NOW()
       WHERE id=${orderId}::uuid
         AND agent_id=${user.id}::uuid
-        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')
         AND payment_status='paid'
         AND fulfillment_status='delivered'
       RETURNING *
