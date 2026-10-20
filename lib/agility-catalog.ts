@@ -1,5 +1,6 @@
 import { WEAVE_OPAY_ACCOUNT_NUMBER } from '@/lib/opay-config'
 import type { WeaveFoodVariant } from '@/lib/weave-food-types'
+import { EMBER_VARIANTS } from '@/lib/ember-catalog'
 import { ELECTROLYTE_VARIANTS } from '@/lib/electrolyte-catalog'
 
 export const AGILITY_RETAIL_UNIT_PRICE_NGN = 4000
@@ -87,6 +88,7 @@ export const AGILITY_PRODUCT_VARIANTS: AgilityVariant[] = [
 export const AGILITY_VARIANTS: AgilityVariant[] = [
   ...AGILITY_PRODUCT_VARIANTS,
   ...ELECTROLYTE_VARIANTS,
+  ...EMBER_VARIANTS,
 ]
 
 export const AGILITY_FULFILLMENT_STAGES = [
