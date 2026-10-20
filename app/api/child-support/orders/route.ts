@@ -109,17 +109,17 @@ export async function POST(request:NextRequest){
     // bank account information, child identity or payment details in notifications.
     await getPool().query([
       'INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link)',
-      "SELECT u.id,'child_support_order','Child support order awaiting Forensics',",
+      "SELECT u.id,'child_support_order','Child or parent support instruction awaiting review',",
       "'A '||$1||' submitted a child or parent support instruction for review.',",
       "$2::uuid,$3,'/weave/child-support'",
       'FROM users u WHERE u.is_active=true AND (u.role=\'admin\' OR EXISTS (',
       'SELECT 1 FROM weave_guidance_staff_applications a',
-      "WHERE a.user_id=u.id AND a.department='forensic' AND a.status='approved' AND a.source_role=u.role",
+      "WHERE a.user_id=u.id AND a.department IN ('forensic','mandate','lawyer') AND a.status='approved' AND a.source_role=u.role",
       '))',
     ].join('\n'),[user.role,user.id,user.name||user.username||'WEAVE']).catch(()=>{})
     return NextResponse.json({
       success:true,order:saved,
-      message:'Child support instruction sent to the approved Forensics queue. Funding and transfer have not yet been confirmed.',
+      message:'Child or parent support instruction sent to the approved Forensics queue. Funding and transfer have not yet been confirmed.',
     },{status:201,headers:noStore})
   }catch(error:any){
     if(error?.code==='23505')return NextResponse.json({error:'This source reference or beneficiary-month already has a support order.'},{status:409})
