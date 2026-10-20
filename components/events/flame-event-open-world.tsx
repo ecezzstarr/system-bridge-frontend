@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPoi
 import { ArrowRight, DoorOpen, Flame, Footprints, List, PersonStanding, Radio, Waves, X, Orbit, Compass, ChevronRight } from 'lucide-react'
 import type { FlameMobileInput, FlameRegion } from './flame-event-mobile-scene'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
+import { choosePresenceElement,usePresenceElement } from '@/components/world/use-presence-element'
 
 const FlameEventMobileScene=dynamic(
   ()=>import('./flame-event-mobile-scene').then(module=>module.FlameEventMobileScene),
@@ -27,7 +28,7 @@ export type FlameWorldCustomerDoor = {
 /**
  * Flame Event mobile crossing. The client public API owns portal identity;
  * no synthetic shops, private folders, or invented other players are exposed.
- * First-person input is not used: this is an over-the-shoulder human avatar.
+ * A mobile user steers a living water/fire Presence in third person.
  */
 export function FlameEventOpenWorld({
   enterprises,
@@ -38,6 +39,7 @@ export function FlameEventOpenWorld({
   doorStatus?:FlameDoorFeedStatus
   role:'admin'|'agent'|'bridger'|'client'|'visitor'
 }){
+  const presenceElement=usePresenceElement()
   const controls=useRef<FlameMobileInput>({
     forward:0,right:0,yaw:0,pitch:0,run:false,crouch:false,jumpQueued:false,
   })
@@ -57,7 +59,7 @@ export function FlameEventOpenWorld({
   const [entered,setEntered]=useState(false)
   const [webglAvailable,setWebglAvailable]=useState(true)
   const phase=region==='riverbank'?'RIVER BANK':region==='burning-river'?'BURNING RIVER':region==='system-switch'?'SYSTEM SWITCH':'CUSTOMER DOOR'
-  const phaseDetail=region==='riverbank'?'You have a body here. Walk toward the bright arch across the living river.':region==='burning-river'?'Water and fire carry the crossing. Follow the paved current.':region==='system-switch'?'You crossed into System Switch. Each open door belongs to a Client.':'A real Client-owned Customer Door is within reach.'
+  const phaseDetail=region==='riverbank'?'Your Presence is alive here. Flow toward the bright arch across the living river.':region==='burning-river'?'Water and fire carry the crossing. Follow the paved current.':region==='system-switch'?'You crossed into System Switch. Each open door belongs to a Client.':'A real Client-owned Customer Door is within reach.'
 
 
   useEffect(()=>{
@@ -84,7 +86,7 @@ export function FlameEventOpenWorld({
     if(!webglAvailable){setEntered(true);setShowDirectory(true);return}
     if(!ready)return
     try{window.sessionStorage.setItem('weave:flame:entered:'+role,'yes')}catch{}
-    emitWeaveMotion({kind:'arrival',label:'Human entered the Burning River',source:'flame-event',confirmed:true,intensity:.75})
+    emitWeaveMotion({kind:'arrival',label:'Presence entered the Burning River',source:'flame-event',confirmed:true,intensity:.75})
     setEntered(true)
   }
 
@@ -224,7 +226,7 @@ export function FlameEventOpenWorld({
     data-flame-event-mobile-only="true"
     data-flame-event-region={region}
     data-system-switch-physically-crossed={crossed?'true':'false'}
-    aria-label="Flame Event Burning River embodied mobile world"
+    aria-label="Flame Event Burning River living Presence mobile world"
   >
     <div
       className="relative h-[86svh] min-h-[560px] max-h-[820px] w-full overflow-hidden bg-[#122c49] landscape:h-[94svh] landscape:min-h-[350px] landscape:max-h-none"
@@ -322,6 +324,18 @@ export function FlameEventOpenWorld({
         </div>
       </div>
 
+      <div className="absolute left-3 top-[158px] z-20 flex items-center gap-1 rounded-full border border-cyan-200/30 bg-[#071d38]/85 px-1.5 py-1.5 text-[9px] font-black text-sky-50 backdrop-blur-[3px]"
+        role="group" aria-label="Choose your living Presence" data-weave-presence-picker>
+        {([
+          {id:'water',label:'Water'},
+          {id:'fire',label:'Fire'},
+          {id:'confluence',label:'Both'},
+        ] as const).map(choice=><button key={choice.id} type="button"
+          onClick={()=>choosePresenceElement(choice.id)}
+          aria-pressed={presenceElement===choice.id}
+          className={'rounded-full px-2.5 py-1.5 transition-colors '+(presenceElement===choice.id?'bg-cyan-200 text-[#072338]':'text-sky-100/75')}
+        >{choice.label}</button>)}
+      </div>
       <button type="button" onClick={()=>setShowDirectory(value=>!value)}
         className="absolute left-3 top-[110px] z-20 flex items-center gap-2 rounded-full border border-amber-200/45 bg-[#071d38]/85 px-3 py-2 text-[10px] font-bold text-amber-100"
         aria-expanded={showDirectory} data-flame-mobile-door-directory>
