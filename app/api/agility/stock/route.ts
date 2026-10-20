@@ -13,6 +13,7 @@ import {
   ensureAgilitySchema,
   getAgilityVariant,
 } from '@/lib/agility'
+import { getEmberVariant } from '@/lib/ember-catalog'
 import { getElectrolyteVariant } from '@/lib/electrolyte-catalog'
 import {
   formatWeaveFoodCartonQuantity,
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
         ),0)::numeric AS today_gross_profit_ngn
       FROM agility_stock_orders o
       WHERE o.agent_id = ${user.id}::uuid
-        AND (${legacyDistributionRead} OR o.variant_id NOT IN ('electrolyte','electrolyte-medium'))
+        AND (${legacyDistributionRead} OR o.variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large'))
       ORDER BY o.created_at DESC
       LIMIT 100
     `
@@ -94,6 +95,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const variantId = String(body.variantId || '').trim()
+    if (getEmberVariant(variantId)) {
+      return NextResponse.redirect(new URL('/api/ember/stock', request.url), 307)
+    }
     if (getElectrolyteVariant(variantId)) {
       return NextResponse.redirect(new URL('/api/electrolyte/stock', request.url), 307)
     }
