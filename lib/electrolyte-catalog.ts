@@ -32,10 +32,10 @@ export const ELECTROLYTE_VARIANTS: WeaveFoodVariant[] = [
     drink: 'Fresh coconut water',
     water: 'Water',
     packagesPerBox: ELECTROLYTE_PACKAGES_PER_CARTON,
-    agentBuyUnitPriceNgn: 3000,
-    agentSellingUnitPriceNgn: 4000,
+    agentBuyUnitPriceNgn: 5000,
+    agentSellingUnitPriceNgn: 6000,
     customerPriceLocked: true,
-    note: 'Medium Electrolyte bowl. Customer price ₦4,000; WEAVE receives ₦3,000 and the selling Agent earns ₦1,000.',
+    note: 'Medium Electrolyte bowl. Customer price ₦6,000; WEAVE receives ₦5,000 and the selling Agent earns ₦1,000.',
   },
 ]
 
