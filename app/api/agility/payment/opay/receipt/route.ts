@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       FROM agility_stock_orders
       WHERE id=${orderId}::uuid
         AND agent_id=${user.id}::uuid
-        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')
       LIMIT 1
     `
 
