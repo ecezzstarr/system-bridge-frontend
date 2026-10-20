@@ -6,21 +6,29 @@ import {
   AGILITY_PACKAGES_PER_BOX,
   AGILITY_RETAIL_UNIT_PRICE_NGN,
 } from '@/lib/agility-catalog'
+import { ELECTROLYTE_VARIANTS } from '@/lib/electrolyte-catalog'
+import { EMBER_VARIANTS } from '@/lib/ember-catalog'
 import { DAISY_AGENT_COMMISSION_NGN,DAISY_CAKE_SLICE_PRICE_NGN } from '@/lib/cake-catalog'
 import { FARM_TO_FAMILY_SELLER_FEE_NGN,calculateFarmSettlement } from '@/lib/farm-service-fee'
 
 const money=(v:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(v)
+const officialFoodPriceText=[
+  `Agility ${money(AGILITY_RETAIL_UNIT_PRICE_NGN)}`,
+  ...ELECTROLYTE_VARIANTS.map(variant=>`${variant.name.replace(' · ', ' ')} ${money(Number(variant.agentSellingUnitPriceNgn))}`),
+  ...EMBER_VARIANTS.map(variant=>`${variant.name.replace(' · ', ' ')} ${money(Number(variant.agentSellingUnitPriceNgn))}`),
+].join(' · ')
 
 /** Official WEAVE economics, shown on Agent order, stock, and Carrier Info pages.
  * Agent "earnings" are gross resale margins AFTER the corresponding sale; the
  * panel makes no automatic payroll/wallet credit claim.
  */
 export function AgentFoodPricingInfo({product='both'}:{product?:'agility'|'electrolyte'|'both'}) {
-  const title=product==='agility'?'AGILITY':product==='electrolyte'?'ELECTROLYTE':'AGILITY + ELECTROLYTE'
+  const title=product==='agility'?'AGILITY':product==='electrolyte'?'ELECTROLYTE':'AGILITY + ELECTROLYTE + EMBER'
   return <section className="border border-emerald-300/20 bg-emerald-300/[.035] p-5 text-white sm:p-6" data-food-official-agent-info={product}>
     <p className="text-[10px] font-black uppercase tracking-[.18em] text-emerald-200">Official WEAVE Price · Agent Earnings Info</p>
-    <h2 className="mt-2 text-xl font-black">{title} — sell each at {money(AGILITY_RETAIL_UNIT_PRICE_NGN)}</h2>
-    <p className="mt-2 text-xs leading-6 text-stone-300">The customer pays {money(AGILITY_RETAIL_UNIT_PRICE_NGN)} per pack or food bowl. The Agent's stock basis is {money(AGILITY_AGENT_UNIT_COST_NGN)} per unit. The Agent's {money(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN)} gross earning is already included in the selling price, not added to it.</p>
+    <h2 className="mt-2 text-xl font-black">{title} — official prices by size</h2>
+    <p className="mt-2 text-sm font-bold text-emerald-100">{officialFoodPriceText}</p>
+    <p className="mt-2 text-xs leading-6 text-stone-300">Agents sell directly to individuals and supply independent shops at the official price shown for each variant. Shops choose their own resale markup. Each food variant currently leaves {money(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN)} gross Agent margin at WEAVE price; that margin is already included, not added. The carton example below is Agility.</p>
     <div className="mt-4 grid gap-3 sm:grid-cols-4">
       {[
         ['One sale',money(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN)],
@@ -39,8 +47,8 @@ export function AgentFoodPricingInfo({product='both'}:{product?:'agility'|'elect
 export function CustomerFoodPriceInfo() {
   return <section className="border border-emerald-300/20 bg-emerald-300/[.035] p-5 text-white sm:p-6" data-food-official-customer-info>
     <p className="text-[10px] font-black uppercase tracking-[.18em] text-emerald-200">WEAVE Food · Official Customer Prices</p>
-    <h2 className="mt-2 text-2xl font-black">Agility {money(AGILITY_RETAIL_UNIT_PRICE_NGN)} · Electrolyte {money(AGILITY_RETAIL_UNIT_PRICE_NGN)}</h2>
-    <p className="mt-2 text-xs leading-6 text-stone-300">One Agility food pack or one Electrolyte food bowl costs {money(AGILITY_RETAIL_UNIT_PRICE_NGN)}. Both Electrolyte sizes share the official price. The Agent's sales margin is part of the price; it is not an additional customer charge. Delivery and waybill fees, if required, are shown separately before payment.</p>
+    <h2 className="mt-2 text-2xl font-black">{officialFoodPriceText}</h2>
+    <p className="mt-2 text-xs leading-6 text-stone-300">Each product size has its own fixed WEAVE customer price. Agents sell directly at that price; independent shops that buy from Agents set their own resale price. The Agent's sales margin is part of the price; it is not an additional customer charge. Delivery and waybill fees, if required, are shown separately before payment.</p>
     <p className="mt-3 text-xs text-stone-400">Only available received Agent stock can be ordered. Follow the payment instructions for the particular WEAVE product; Farm-to-Family purchases use a separate WEAVE-held payment flow.</p>
   </section>
 }

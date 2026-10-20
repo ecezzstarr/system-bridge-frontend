@@ -1,15 +1,16 @@
 import { getPool } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureAgilitySchema, getAgilityCompanyEconomics, AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN, AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN, nextAgilityAdminStage } from '@/lib/agility'
+import { nextEmberAdminStage,emberMoneySplit } from '@/lib/ember-catalog'
 import { nextElectrolyteAdminStage } from '@/lib/electrolyte-catalog'
 import { ensureCarrierCakeSchema, nextCakeAdministrationStatus } from '@/lib/carrier-cakes'
 
 export const FOOD_PREPARATION_MANAGER_SALARY_NGN=60000
 export const FOOD_PREPARATION_MANAGER_TITLE='Food Preparation Manager'
-export const FOOD_PREPARATION_PRODUCTS=['agility','electrolyte','daisy'] as const
+export const FOOD_PREPARATION_PRODUCTS=['agility','electrolyte','ember','daisy'] as const
 export type PreparationProduct=typeof FOOD_PREPARATION_PRODUCTS[number]
 export const FOOD_PREPARATION_DUTIES=[
-  'Prepare approved Agility and Electrolyte orders and Daisy Pastries cakes.',
+  'Prepare approved Agility, Electrolyte and Ember orders and Daisy Pastries cakes.',
   'Package, seal and label each order to match its authorized quantity and destination.',
   'Dispatch orders to customers and restocking Agents using recorded delivery details.',
   'Record each preparation, packaging and dispatch handoff; report shortages or safety concerns.',
@@ -17,6 +18,7 @@ export const FOOD_PREPARATION_DUTIES=[
 export const FOOD_PREPARATION_WORKFLOW:Record<PreparationProduct,readonly string[]>={
   agility:['paid','heating','packed','boxed','dispatched'],
   electrolyte:['paid','preparing','packed','dispatched'],
+  ember:['paid','preparing','packed','dispatched'],
   daisy:['paid','preparing','ready','dispatched'],
 }
 export function isPreparationProduct(value:unknown):value is PreparationProduct {
@@ -45,7 +47,7 @@ export async function ensureFoodPreparationManagerSchema(){
       CREATE TABLE IF NOT EXISTS weave_food_preparation_tasks (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         manager_id uuid NOT NULL REFERENCES weave_food_preparation_managers(id),
-        product varchar(20) NOT NULL CHECK (product IN ('agility','electrolyte','daisy')),
+        product varchar(20) NOT NULL CHECK (product IN ('agility','electrolyte','ember','daisy')),
         source_order_id uuid NOT NULL,
         assigned_by uuid NOT NULL REFERENCES users(id),
         assigned_at timestamptz NOT NULL DEFAULT NOW(),
@@ -64,6 +66,13 @@ export async function ensureFoodPreparationManagerSchema(){
         ON weave_food_preparation_tasks(manager_id,assigned_at DESC);
       CREATE INDEX IF NOT EXISTS weave_food_preparation_events_idx
         ON weave_food_preparation_task_events(task_id,occurred_at DESC);
+    `)
+    // Existing production databases were created before Ember. Update their
+    // original check constraint as well as the new-table schema.
+    await getPool().query(`
+      ALTER TABLE weave_food_preparation_tasks DROP CONSTRAINT IF EXISTS weave_food_preparation_tasks_product_check;
+      ALTER TABLE weave_food_preparation_tasks ADD CONSTRAINT weave_food_preparation_tasks_product_check
+        CHECK (product IN ('agility','electrolyte','ember','daisy'));
     `)
   })().catch(e=>{schemaPromise=null;throw e})
   await schemaPromise
@@ -100,7 +109,8 @@ export async function getPreparationSourceOrder(product:PreparationProduct,id:st
       delivery_phone,payment_status,fulfillment_status,total_ngn,planned_company_cost_per_box_ngn
     FROM agility_stock_orders WHERE id=$1::uuid
       AND (( $2='electrolyte' AND variant_id IN ('electrolyte','electrolyte-medium'))
-        OR ($2='agility' AND variant_id NOT IN ('electrolyte','electrolyte-medium')))
+        OR ($2='ember' AND variant_id IN ('ember-small','ember-large'))
+        OR ($2='agility' AND variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')))
     LIMIT 1
   `,[id,product])
   return rows[0]||null
@@ -108,6 +118,7 @@ export async function getPreparationSourceOrder(product:PreparationProduct,id:st
 export function preparationNextStage(product:PreparationProduct,status:string){
   const proposed=product==='agility'?nextAgilityAdminStage(status)
     :product==='electrolyte'?nextElectrolyteAdminStage(status)
+    :product==='ember'?nextEmberAdminStage(status)
     :nextCakeAdministrationStatus(status)
   return proposed && FOOD_PREPARATION_WORKFLOW[product].includes(proposed)?proposed:null
 }
@@ -167,16 +178,21 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
         RETURNING id,agent_id,fulfillment_status
       `,[next,cost,econ.totalPlannedCostNgn,econ.grossProfitNgn,task.source_order_id,oldStage])
       updated=result.rows[0]
-    }else if(task.product==='electrolyte'){
+    }else if(task.product==='electrolyte'||task.product==='ember'){
+      const split=task.product==='ember'?emberMoneySplit(String(order.variant_id)):null
+      const budgetPerCarton=split?split.preparationBudgetNgn*10:null
       const result=await client.query(`
         UPDATE agility_stock_orders SET fulfillment_status=$1,
+          planned_company_cost_per_box_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN $4 ELSE planned_company_cost_per_box_ngn END,
+          planned_company_total_cost_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN $4 * box_count ELSE planned_company_total_cost_ngn END,
+          planned_company_gross_profit_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN (agent_box_price_ngn-$4)*box_count ELSE planned_company_gross_profit_ngn END,
           prepared_at=CASE WHEN $1='preparing' THEN COALESCE(prepared_at,NOW()) ELSE prepared_at END,
           packed_at=CASE WHEN $1='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
           dispatched_at=CASE WHEN $1='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
           updated_at=NOW()
         WHERE id=$2::uuid AND payment_status='paid' AND fulfillment_status=$3
         RETURNING id,agent_id,fulfillment_status
-      `,[next,task.source_order_id,oldStage])
+      `,[next,task.source_order_id,oldStage,budgetPerCarton])
       updated=result.rows[0]
     }else{
       const result=await client.query(`
@@ -201,7 +217,7 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
       INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
       VALUES($1::uuid,'food_preparation','Food preparation updated',$2,'WEAVE Food Preparation Manager',$3)
     `,[updated.agent_id,`Your ${task.product} order moved to ${next}.`,
-       task.product==='daisy'?'/agent/cakes':task.product==='electrolyte'?'/electrolyte':'/agility']).catch(()=>{})
+       task.product==='daisy'?'/agent/cakes':task.product==='electrolyte'?'/electrolyte':task.product==='ember'?'/ember':'/agility']).catch(()=>{})
     return {taskId:task.id,orderId:updated.id,product:task.product,status:next}
   }catch(error){
     await client.query('ROLLBACK').catch(()=>{})

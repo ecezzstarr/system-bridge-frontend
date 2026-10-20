@@ -41,7 +41,7 @@ export async function GET(request:NextRequest){
           (SELECT COUNT(*)::int FROM weave_food_preparation_task_events e WHERE e.task_id=t.id) AS recorded_handoffs
         FROM weave_food_preparation_tasks t
         LEFT JOIN agility_stock_orders s
-          ON t.product IN ('agility','electrolyte') AND s.id=t.source_order_id
+          ON t.product IN ('agility','electrolyte','ember') AND s.id=t.source_order_id
         LEFT JOIN carrier_cake_orders c
           ON t.product='daisy' AND c.id=t.source_order_id
         LEFT JOIN users u ON u.id=COALESCE(s.agent_id,c.agent_id)

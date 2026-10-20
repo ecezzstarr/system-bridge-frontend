@@ -53,7 +53,7 @@ export function getWeaveFoodVariantEconomics(variantId: string): WeaveFoodVarian
     retailBoxValueNgn,
     agentGrossProfitPerPackageNgn: agentSellingUnitPriceNgn - agentBuyUnitPriceNgn,
     agentGrossProfitPerBoxNgn: retailBoxValueNgn - agentBoxPriceNgn,
-    customerPriceLocked: true, // Both official WEAVE food families have a fixed ₦4,000 retail price.
+    customerPriceLocked: true, // Every food variant uses its own published customer price.
   }
 }
 

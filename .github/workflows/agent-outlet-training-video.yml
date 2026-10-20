@@ -1,0 +1,52 @@
+name: Build WEAVE Agent Training Video
+on:
+  push:
+    branches:
+      - feature/ember-food-agent-carrier-20261020
+    paths:
+      - scripts/build-agent-outlet-training-video.py
+      - .github/workflows/agent-outlet-training-video.yml
+permissions:
+  contents: write
+jobs:
+  assemble-training:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Check out WEAVE branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install image rendering library
+        run: python3 -m pip install --break-system-packages Pillow==11.1.0
+      - name: Install media tools
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Fetch approved narration asset
+        env:
+          WEAVE_AUDIO_URL: 'https://dnznrvs05pmza.cloudfront.net/text_to_speech/71d51dc5-c491-427a-bc13-b74bf8311761/WEAVE_Stability_Agent_Training___Natural_Narration_Revised.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMzM2N2YzN2I2NzAxNTA1NSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjYzMjk1NX0.WEu4wkq8bT7_CHNW6O1Dbv4Cd_Qy6lTl_abGOxL-yk4'
+        run: |
+          mkdir -p /tmp/weave-training
+          curl --retry 3 --fail --location --silent --show-error "$WEAVE_AUDIO_URL" -o /tmp/weave-training/narration.mp3
+          ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 /tmp/weave-training/narration.mp3
+      - name: Render phone-first training video with narration
+        env:
+          WEAVE_TRAINING_AUDIO: /tmp/weave-training/narration.mp3
+        run: python3 scripts/build-agent-outlet-training-video.py
+      - name: Verify produced video
+        run: |
+          test -s public/training/agent-outlet-training.mp4
+          ffprobe -v error -show_entries stream=codec_name,codec_type -of csv=p=0 public/training/agent-outlet-training.mp4
+      - name: Upload deliverable
+        uses: actions/upload-artifact@v4
+        with:
+          name: weave-agent-outlet-training-video
+          path: public/training/agent-outlet-training.mp4
+          retention-days: 30
+      - name: Commit training video into app
+        run: |
+          git config user.name "weave-media-bot"
+          git config user.email "weave-media-bot@users.noreply.github.com"
+          git add public/training/agent-outlet-training.mp4
+          git diff --cached --quiet && exit 0
+          git commit -m "media: publish naturally narrated Agent outlet training [skip ci]"
+          git push origin HEAD:feature/ember-food-agent-carrier-20261020

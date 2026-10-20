@@ -7,9 +7,9 @@ type Manager={
   id:string;agent_id:string;status:string;application_note:string;review_note?:string|null;
   name:string;username:string;email:string;is_active:boolean;role:string;monthly_salary_ngn:string
 }
-type Order={id:string;product:'agility'|'electrolyte'|'daisy';variant_id:string;stage:string;payment_status:string;
+type Order={id:string;product:'agility'|'electrolyte'|'ember'|'daisy';variant_id:string;stage:string;payment_status:string;
   package_count:number;destination:string;buying_agent:string;manager_id:string|null;task_id:string|null;preparation_released_at?:string|null}
-const productLabels={agility:'Agility',electrolyte:'Electrolyte',daisy:'Daisy Pastries'}
+const productLabels={agility:'Agility',electrolyte:'Electrolyte',ember:'Ember',daisy:'Daisy Pastries'}
 export default function AdminFoodPreparationManagerPage(){
   const {user,token,isInitialized}=useAuth()
   const [staff,setStaff]=useState<Manager[]>([])

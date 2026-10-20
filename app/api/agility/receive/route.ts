@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
       LIMIT 1
     `
     if (!identity) return NextResponse.json({ success: false, error: 'WEAVE food order not found' }, { status: 404 })
+    if (['ember-small','ember-large'].includes(String(identity.variant_id))) {
+      return NextResponse.redirect(new URL('/api/ember/receive', request.url), 307)
+    }
     if (['electrolyte','electrolyte-medium'].includes(String(identity.variant_id))) {
       return NextResponse.redirect(new URL('/api/electrolyte/receive', request.url), 307)
     }
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest) {
       SET fulfillment_status='received', received_at=COALESCE(received_at,NOW()), updated_at=NOW()
       WHERE id=${orderId}::uuid
         AND agent_id=${user.id}::uuid
-        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')
         AND payment_status='paid'
         AND fulfillment_status='delivered'
       RETURNING *

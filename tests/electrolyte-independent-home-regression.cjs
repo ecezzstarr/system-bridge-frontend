@@ -20,7 +20,7 @@ const migration=read('gcp-migration/agility.sql')
 
 assert.ok(electrolyteCatalog.includes("id: 'electrolyte'")&&electrolyteCatalog.includes("id: 'electrolyte-medium'"),'Electrolyte owns Small and Medium Bowl definitions')
 assert.ok(electrolyteCatalog.includes('agentBuyUnitPriceNgn: 3000')&&electrolyteCatalog.includes('agentSellingUnitPriceNgn: 4000'),'Small Bowl keeps ₦3,000 Agent buy and ₦4,000 customer sale')
-assert.ok((electrolyteCatalog.match(/agentBuyUnitPriceNgn: 3000/g)||[]).length===2&&(electrolyteCatalog.match(/agentSellingUnitPriceNgn: 4000/g)||[]).length===2,'Both Electrolyte bowls sell for ₦4,000 and leave ₦1,000 Agent earnings')
+assert.ok((electrolyteCatalog.match(/agentBuyUnitPriceNgn: 3000/g)||[]).length===1&&(electrolyteCatalog.match(/agentSellingUnitPriceNgn: 4000/g)||[]).length===1&&(electrolyteCatalog.match(/agentBuyUnitPriceNgn: 5000/g)||[]).length===1&&(electrolyteCatalog.match(/agentSellingUnitPriceNgn: 6000/g)||[]).length===1,'Electrolyte Small ₦4,000 / Medium ₦6,000 each leave ₦1,000 Agent gross margin')
 assert.ok(electrolyteCatalog.includes("family: 'electrolyte'")&&electrolyteCatalog.includes('customerPriceLocked: true'),'Electrolyte is its own locked-price food family')
 assert.ok(agilityCatalog.includes('AGILITY_PRODUCT_VARIANTS')&&agilityCatalog.includes("from '@/lib/electrolyte-catalog'"),'Agility definitions are separate while the legacy shared-food alias preserves older distribution surfaces')
 
@@ -39,7 +39,7 @@ assert.ok(adminPage.includes('data-admin-electrolyte="independent"')&&adminPage.
 assert.ok(adminPage.includes("'/api/admin/electrolyte/payment/opay/verify'")&&adminPage.includes("'/api/admin/electrolyte/stock'"),'Administration uses independent Electrolyte verification and fulfillment APIs')
 assert.ok(adminStock.includes("['paid', 'preparing', 'packed', 'dispatched', 'delivered']")||read('lib/electrolyte-catalog.ts').includes("['paid', 'preparing', 'packed', 'dispatched', 'delivered']"),'Electrolyte moves paid → preparing → packed → dispatched → delivered')
 assert.ok(adminVerify.includes("source: 'electrolyte'")&&adminVerify.includes('repeatRestockAllowed: true'),'Administration payment ledger preserves Electrolyte identity and repeat-restock rule')
-assert.ok(agilityStock.includes("variant_id NOT IN ('electrolyte','electrolyte-medium')")&&adminAgilityStock.includes("variant_id NOT IN ('electrolyte','electrolyte-medium')"),'Agility order/admin APIs no longer carry Electrolyte orders')
+assert.ok(agilityStock.includes("variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')")&&adminAgilityStock.includes("variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')"),'Agility order/admin APIs no longer carry Electrolyte orders')
 assert.ok(migration.includes('prepared_at timestamptz'),'production stock ledger supports Electrolyte fresh preparation')
 
 console.log('Independent Electrolyte home, order, Administration fulfillment and repeat restocking checks passed')

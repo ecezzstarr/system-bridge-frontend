@@ -242,6 +242,20 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'This carton quantity does not form a whole number of packages' }, { status: 400 })
       }
 
+      // Agents supply both individuals and shops at the official WEAVE unit
+      // price for this purchased batch. Independent shops control their own
+      // resale markup; WEAVE never claims the store's added retail revenue.
+      const officialAmountNgn = packageCount * Number(order.retail_unit_price_ngn)
+      if (!Number.isSafeInteger(officialAmountNgn) || officialAmountNgn <= 0 ||
+          Math.abs(agreedAmountNgn - officialAmountNgn) > 0.001) {
+        await db.query('ROLLBACK')
+        return NextResponse.json({
+          success: false,
+          error: 'Outlet supply must use the official WEAVE price for this stock. The store chooses its own resale price.',
+          expectedAmountNgn: officialAmountNgn,
+        }, { status: 409 })
+      }
+
       const available = Number(order.package_count)
         - Number(soldResult.rows[0]?.sold || 0)
         - Number(allocatedResult.rows[0]?.allocated || 0)

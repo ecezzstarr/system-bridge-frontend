@@ -9,7 +9,7 @@ export const AGILITY_AGENT_TUTORIAL = {
     },
     {
       title: 'Know the carton economics',
-      detail: 'The current standard carton contains 10 packages. The Agent buys the carton from WEAVE at the company Agent price, then agrees the outlet return amount before supplying the shop.',
+      detail: 'The current standard carton contains 10 packages. The Agent buys the carton from WEAVE at the company Agent price, then supplies the shop at the official WEAVE unit price. Independent shops choose their own resale prices.',
     },
     {
       title: 'Receive the physical stock',
@@ -21,11 +21,11 @@ export const AGILITY_AGENT_TUTORIAL = {
     },
     {
       title: 'Supply paid now',
-      detail: 'When an outlet can fund the cartons, supply the agreed quantity and collect the agreed amount immediately. That stock leaves the Agent distribution inventory at once.',
+      detail: 'When an outlet can fund the cartons, supply at the official WEAVE unit price and collect the full supply amount immediately. The shop keeps its separate resale markup. That stock leaves the Agent distribution inventory at once.',
     },
     {
       title: 'Supply pay after sale',
-      detail: 'When an outlet has customers but cannot fund the cartons upfront, place the stock there on pay-after-sale. WEAVE records the cartons and packs held by that outlet and the amount the outlet owes the Agent.',
+      detail: 'When an outlet has customers but cannot fund the cartons upfront, place the stock there on pay-after-sale. WEAVE records the cartons and packs held by that outlet and the official WEAVE price amount the outlet owes the Agent.',
     },
     {
       title: 'Follow the stock and money',

@@ -12,5 +12,5 @@ export type WeaveFoodVariant = {
   agentBuyUnitPriceNgn?: number
   agentSellingUnitPriceNgn?: number
   customerPriceLocked?: boolean
-  family: 'agility' | 'electrolyte'
+  family: 'agility' | 'electrolyte' | 'ember'
 }

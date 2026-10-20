@@ -5,7 +5,7 @@ import { ArrowLeft,ClipboardList,PackageCheck,Truck,ChefHat,RefreshCcw,ShieldChe
 import { useAuth } from '@/lib/auth-provider'
 
 type PreparationTask={
-  id:string;product:'agility'|'electrolyte'|'daisy';source_order_id:string;stage:string;next_stage:string|null;
+  id:string;product:'agility'|'electrolyte'|'ember'|'daisy';source_order_id:string;stage:string;next_stage:string|null;
   item:string;package_count:number;delivery_location:string|null;delivery_phone:string|null;
   customer_name?:string|null;purchasing_agent?:string|null;occasion?:string|null;size_option?:string|null;
   payment_status:string;recorded_handoffs:number;assigned_at:string
@@ -13,7 +13,7 @@ type PreparationTask={
 type Appointment={id:string;status:'pending'|'approved'|'rejected'|'revoked';application_note:string;review_note?:string|null;monthly_salary_ngn:string}
 type State={eligible:boolean;appointment:Appointment|null;tasks:PreparationTask[];duties:string[];salaryNgn:number;payrollStatus:string}
 const money=(amount:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(amount)
-const productName=(product:string)=>product==='daisy'?'Daisy Pastries':product==='electrolyte'?'Electrolyte':'Agility'
+const productName=(product:string)=>product==='daisy'?'Daisy Pastries':product==='electrolyte'?'Electrolyte':product==='ember'?'Ember':'Agility'
 
 export default function FoodPreparationManagerPage(){
   const {user,token,isInitialized}=useAuth()
@@ -108,7 +108,7 @@ export default function FoodPreparationManagerPage(){
         <h2 className="mt-8 text-lg font-black">Daily responsibilities</h2>
         <div className="mt-3 space-y-3">{[
           'Receive Agility and Electrolyte carton orders from Agents after WEAVE payment verification.',
-          'Prepare fresh bowls and packages to the correct ingredient and size specification.',
+          'Prepare fresh Ember boxes, bowls and packages to the correct ingredient and size specification.',
           'Prepare Daisy Pastries only after the cake order payment is verified.',
           'Check ordered quantities, labels, packaging and delivery destinations.',
           'Dispatch orders to the correct Agent or customer and record each handoff.',
