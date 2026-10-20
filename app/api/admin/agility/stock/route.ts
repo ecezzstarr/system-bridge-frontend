@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         COALESCE((SELECT SUM(s.agent_gross_profit_ngn) FROM agility_agent_sales s WHERE s.order_id=o.id),0)::numeric AS realized_agent_gross_profit_ngn
       FROM agility_stock_orders o
       LEFT JOIN users u ON u.id=o.agent_id
-      WHERE o.variant_id NOT IN ('electrolyte','electrolyte-medium')
+      WHERE o.variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')
       ORDER BY
         CASE o.payment_status
           WHEN 'proof_submitted' THEN 1
@@ -94,7 +94,7 @@ export async function PATCH(request: NextRequest) {
       SELECT *
       FROM agility_stock_orders
       WHERE id=${orderId}::uuid
-        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')
       LIMIT 1
     `
 
@@ -176,7 +176,7 @@ export async function PATCH(request: NextRequest) {
         delivered_at=CASE WHEN ${nextStatus}='delivered' THEN COALESCE(delivered_at,NOW()) ELSE delivered_at END,
         updated_at=NOW()
       WHERE id=${orderId}::uuid
-        AND variant_id NOT IN ('electrolyte','electrolyte-medium')
+        AND variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')
         AND payment_status='paid'
         AND fulfillment_status=${current.fulfillment_status}
       RETURNING *
