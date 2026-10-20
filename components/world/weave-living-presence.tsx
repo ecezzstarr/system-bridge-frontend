@@ -40,7 +40,6 @@ const VERTEX_SHADER = [
 ].join('\n')
 
 const FRAGMENT_SHADER = [
-  'precision mediump float;',
   'uniform float uTime;',
   'uniform float uElement;',
   'uniform float uOpacity;',
