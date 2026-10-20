@@ -1,11 +1,16 @@
 import Link from 'next/link'
 import {ArrowLeft,Store} from 'lucide-react'
+import { AgentOutletTrainingVideo } from '@/components/agent/agent-outlet-training-video'
+import { ELECTROLYTE_VARIANTS } from '@/lib/electrolyte-catalog'
+import { EMBER_VARIANTS } from '@/lib/ember-catalog'
 
 export const metadata={title:'Agent Training · Daily Outlet Supply | WEAVE'}
+const money=(price:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(price)
+const productPricing=[...ELECTROLYTE_VARIANTS,...EMBER_VARIANTS].map(variant=>`${variant.name} ${money(Number(variant.agentSellingUnitPriceNgn))}`).join('; ')
 const topics=[
   {label:'Approach',detail:'Visit a real shop, observe customers and ask which food sells.'},
   {label:'Prices',detail:'Agents supply at WEAVE price. Independent stores choose their resale price.'},
-  {label:'Products',detail:'Electrolyte Small ₦4,000; Medium ₦6,000. Ember Small ₦6,000; Large ₦12,000.'},
+  {label:'Products',detail:productPricing},
   {label:'Records',detail:'Use Distribution Route to register the outlet, supply received stock and record settlement.'},
 ]
 export default function AgentOutletTrainingPage(){
@@ -16,9 +21,7 @@ export default function AgentOutletTrainingPage(){
    <h1 className="mt-2 text-3xl font-black">Daily Carton Outlet Training</h1>
    <p className="mt-3 text-sm leading-6 text-stone-300">Watch before visiting a shop. Agents sell to individuals and supply stores at official WEAVE prices. The independent store sets its own markup.</p>
   </header>
-  <video controls playsInline preload="metadata" className="aspect-[9/16] w-full max-w-[420px] rounded-xl border border-emerald-300/25 bg-black" src="/training/agent-outlet-training.mp4" aria-label="WEAVE daily outlet supply training video">
-   Your browser does not support this video. Open this <a href="/training/agent-outlet-training.mp4">video file</a>.
-  </video>
+  <AgentOutletTrainingVideo />
   <div className="grid gap-3 sm:grid-cols-2">
    {topics.map(topic=><section key={topic.label} className="rounded-xl border border-white/10 bg-white/[.03] p-4">
     <p className="text-sm font-bold text-emerald-200">{topic.label}</p>
