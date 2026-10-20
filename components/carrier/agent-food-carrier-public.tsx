@@ -108,7 +108,8 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
   const foodSubtotal=useMemo(()=>selected?selected.agentSellingUnitPriceNgn*quantity:0,[selected,quantity])
   const waybill=deliveryMode==='waybill'?Math.max(0,Number(waybillFee)||0):0
   const total=foodSubtotal+waybill
-  const agility=data?.products.filter(product=>!product.id.startsWith('electrolyte'))||[]
+  const agility=data?.products.filter(product=>!product.id.startsWith('electrolyte')&&!product.id.startsWith('ember'))||[]
+  const ember=data?.products.filter(product=>product.id.startsWith('ember'))||[]
   const electrolyte=data?.products.filter(product=>product.id.startsWith('electrolyte'))||[]
   const agentWhatsApp=whatsAppNumber(data?.agent?.whatsappNumber)
   const maxCustomerQuantity=Math.max(1,Number(selected?.availablePackages||1))
@@ -121,7 +122,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
   const preparePayment=async()=>{
     if(!selected)return
     if(!Number.isSafeInteger(quantity)||quantity<1||quantity>selected.availablePackages){
-      setError(`Choose from 1 to ${selected.availablePackages} available ${selected.id.startsWith('electrolyte')?'bowl':'package'}${selected.availablePackages===1?'':'s'}. Customer orders are by unit, not by carton.`)
+      setError(`Choose from 1 to ${selected.availablePackages} available ${selected.id.startsWith('electrolyte')?'bowl':selected.id.startsWith('ember')?'box':'package'}${selected.availablePackages===1?'':'s'}. Customer orders are by unit, not by carton.`)
       return
     }
     if(deliveryMode==='waybill'&&waybill<=0){
