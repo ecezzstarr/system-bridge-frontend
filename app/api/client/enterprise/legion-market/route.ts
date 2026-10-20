@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { resolveClientToken } from '@/lib/client-vault'
 import { ensureEnterpriseDreamSchema } from '@/lib/enterprise-dream'
-import { ensureLegionEmploymentSchema, activateLegionEmployment } from '@/lib/legion-employment'
+import { ensureLegionEmploymentSchema } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
+import {notifyUser} from '@/lib/deposit-notifications'
+import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
 
 async function resolveClient(request:NextRequest){
   const token=request.headers.get('authorization')?.replace(/^Bearer\s+/i,'').trim()||null
@@ -42,6 +44,7 @@ export async function GET(request:NextRequest){
   if(!enterprise)return NextResponse.json({success:false,error:'Build and activate Legion Quarters inside an approved enterprise before recruiting Legions.'},{status:409})
 
   const capacity=await capacityState(clientId)
+  const monthlyStanding=await getClientMonthlyStanding(clientId)
   const candidates=await sql`
     SELECT u.id,u.name,u.username,u.role,u.subscription_status,u.subscription_expiry,
            EXISTS(
@@ -69,7 +72,7 @@ export async function GET(request:NextRequest){
     FROM legion_lifestyle_applications la
     JOIN users u ON u.id=la.applicant_user_id
     JOIN enterprise_applications a ON a.id=la.enterprise_application_id
-    WHERE la.client_id=${clientId}::uuid AND la.status='pending'
+    WHERE la.client_id=${clientId}::uuid AND la.status IN ('pending','offered')
     ORDER BY CASE WHEN la.direction='candidate_application' THEN 0 ELSE 1 END,la.created_at DESC
   `
 
@@ -84,7 +87,7 @@ export async function GET(request:NextRequest){
     ORDER BY l.accepted_at DESC NULLS LAST,l.created_at DESC
   `
 
-  return NextResponse.json({success:true,enterprise,capacity,candidates,applications,legions})
+  return NextResponse.json({success:true,enterprise,capacity,candidates,applications,legions,subscriptionActive:monthlyStanding.active})
 }
 
 export async function POST(request:NextRequest){
@@ -94,6 +97,8 @@ export async function POST(request:NextRequest){
   await ensureLegionEmploymentSchema(sql)
   const enterprise=await getEnterprise(clientId)
   if(!enterprise)return NextResponse.json({success:false,error:'Legion Quarters are required before recruitment.'},{status:409})
+  const monthlyStanding=await getClientMonthlyStanding(clientId)
+  if(!monthlyStanding.active)return NextResponse.json({success:false,error:'Renew your 600 Flame Coin Client monthly subscription before recruiting new Legions.'},{status:403})
   const capacity=await capacityState(clientId)
   if(capacity.count>=capacity.capacity)return NextResponse.json({success:false,error:'Legion Quarter capacity is full.'},{status:409})
 
@@ -104,6 +109,7 @@ export async function POST(request:NextRequest){
     const userId=String(body.userId||'')
     const functionTitle=String(body.functionTitle||'Enterprise Legion').trim().slice(0,255)||'Enterprise Legion'
     const profitParticipation=String(body.profitParticipation||'').trim().slice(0,4000)||null
+    if(!profitParticipation||profitParticipation.length<5)return NextResponse.json({success:false,error:'Specify earnings, commission or profit participation terms before offering exclusive Legion employment.'},{status:400})
     const note=String(body.note||'').trim().slice(0,2000)||null
     const [candidate]=await sql`
       SELECT u.id,u.name,u.email,u.role
@@ -138,6 +144,7 @@ export async function POST(request:NextRequest){
     const applicationId=String(body.applicationId||'')
     const functionTitle=String(body.functionTitle||'Enterprise Legion').trim().slice(0,255)||'Enterprise Legion'
     const profitParticipation=String(body.profitParticipation||'').trim().slice(0,4000)||null
+    if(!profitParticipation||profitParticipation.length<5)return NextResponse.json({success:false,error:'Specify earnings, commission or profit participation terms before offering exclusive Legion employment.'},{status:400})
     const [application]=await sql`
       SELECT la.*,u.name,u.email,u.role,u.subscription_status,u.subscription_expiry,u.is_subscription_exempt
       FROM legion_lifestyle_applications la
@@ -153,11 +160,26 @@ export async function POST(request:NextRequest){
     if(!accessCurrent)return NextResponse.json({success:false,error:'The Bridger applicant no longer has active Continuance.'},{status:409})
     const currentCapacity=await capacityState(clientId)
     if(currentCapacity.count>=currentCapacity.capacity)return NextResponse.json({success:false,error:'Legion Quarter capacity is full.'},{status:409})
-    const legion=await activateLegionEmployment(sql,{
-      applicantUserId:String(application.applicant_user_id),applicantRole:String(application.applicant_role),clientId:String(clientId),enterpriseApplicationId:String(enterprise.id),fileNumber:String(enterprise.file_number),name:String(application.name||'Legion'),contact:String(application.email||''),functionTitle,profitParticipation,livelihoodRole:'Works exclusively for this Client inside Weave while Legion employment remains active.',
+    // Applying expresses interest in the enterprise, not agreement to
+    // employment terms later chosen by the Client. Send a final written offer;
+    // exclusivity starts only after the candidate explicitly accepts it.
+    const [offer]=await sql`
+      UPDATE legion_lifestyle_applications
+      SET status='offered',function_title=${functionTitle},
+          profit_participation=${profitParticipation},updated_at=NOW()
+      WHERE id=${application.id}::uuid
+        AND client_id=${clientId}::uuid
+        AND direction='candidate_application' AND status='pending'
+      RETURNING *
+    `
+    if(!offer)return NextResponse.json({success:false,error:'Application changed before terms could be offered.'},{status:409})
+    await recordSystemEvent({eventType:'legion_terms_offered',actorId:clientId,actorRole:'client',subjectType:'enterprise_application',subjectId:String(offer.id),source:'enterprise-dream',payload:{enterpriseName:enterprise.enterprise_name,functionTitle,profitParticipation}})
+    await notifyUser(String(application.applicant_user_id),{
+      type:'legion_terms_offered',title:'Client enterprise employment offer',
+      content:`${enterprise.enterprise_name} offered you ${functionTitle} with agreed earnings terms. Review and accept the terms in Enterprise Legions; your original role remains active until you accept.`,
+      link:'/weave/lifestyles/legion',fromUserId:clientId,fromUserName:'Client',
     })
-    await recordSystemEvent({eventType:'legion_employment_activated',actorId:clientId,actorRole:'client',subjectType:'enterprise_legion',subjectId:String(legion.id),source:'enterprise-dream',payload:{enterpriseName:enterprise.enterprise_name,sourceRole:application.applicant_role,exclusive:true}})
-    return NextResponse.json({success:true,legion,exclusive:true},{status:201})
+    return NextResponse.json({success:true,application:offer,awaitingWorkerAcceptance:true},{status:201})
   }
 
   return NextResponse.json({success:false,error:'Unsupported recruitment action.'},{status:400})

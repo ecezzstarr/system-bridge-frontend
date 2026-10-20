@@ -356,6 +356,15 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
     layer: 'district',
   }],
 
+  ['/enterprise/legions-notebook', {
+    key: 'enterprise-legions-notebook',
+    title: 'Enterprise Legions',
+    district: 'Enterprise Dream',
+    purpose: 'A manually turned 3D teaching book for Clients, Agents and Bridgers on voluntary exclusive Legion employment inside a Client-owned business.',
+    movement: 'Lord or Lady → Enterprise Workshop → Legion Quarters → application/invitation → employment → work → sales → earnings → release',
+    layer: 'interaction',
+  }],
+
   ['/bridger/crossing-notebook', {
     key: 'bridger-crossing-notebook',
     title: 'Bridger Crossing Notebook',

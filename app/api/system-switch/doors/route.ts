@@ -1,3 +1,4 @@
+import { matureElapsedCustomerDoors } from '@/lib/customer-door-maturity'
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
 import {getPool} from '@/lib/db'
@@ -11,7 +12,7 @@ export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return NextResponse.json({error:'Sign in to cross System Switch.'},{status:401})
   if(!await sharedIdentity(getPool(),user))return NextResponse.json({error:'Active position required.'},{status:403})
-  const sql=getBusinessDb();await ensureClientBusinessStoreSchema(sql);await ensureClientGrowthWorldSchema(sql)
+  const sql=getBusinessDb();await ensureClientBusinessStoreSchema(sql);await ensureClientGrowthWorldSchema(sql);await matureElapsedCustomerDoors(sql)
   const stores=await sql`SELECT s.public_slug,s.name,s.description,s.environment_config,
     (SELECT COUNT(*)::int FROM client_store_items i WHERE i.store_id=s.id AND i.enabled=true) AS offer_count,
     EXISTS(SELECT 1 FROM client_built_systems b WHERE b.client_id=s.client_id AND b.file_number=s.file_number AND b.system_type='commerce_storefront' AND b.status='active') AS has_storefront,
@@ -25,7 +26,7 @@ export async function GET(request:NextRequest){
    FROM client_business_stores s JOIN users u ON u.id=s.client_id
    LEFT JOIN client_stream_channels c ON c.client_id=s.client_id AND c.enabled=true
      AND EXISTS(SELECT 1 FROM client_built_systems b WHERE b.client_id=s.client_id AND b.file_number=s.file_number AND b.system_type='streaming_gate' AND b.status='active')
-   WHERE s.enabled=true AND s.formation_status='selling' AND COALESCE(u.is_active,true)=true
+   WHERE s.enabled=true AND s.formation_status IN ('selling','ready_for_offer') AND COALESCE(u.is_active,true)=true
    AND (s.world_host_customer_market=true OR s.world_host_flame_event=true)
    AND EXISTS(SELECT 1 FROM client_built_systems d WHERE d.client_id=s.client_id AND d.file_number=s.file_number AND d.system_type='customer_door' AND d.status='active')
    ORDER BY s.public_slug ASC LIMIT 24`

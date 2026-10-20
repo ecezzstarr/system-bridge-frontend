@@ -557,12 +557,12 @@ assert.ok(roleDistrictEnvironmentSource.includes('districtScenes')&&roleDistrict
 assert.equal(getRoleDistricts('admin')[0].name,'Control','Administration starts with one control district')
 assert.deepEqual(
  getRolePlaces('agent').map(place=>place.href),
- ['/agent/presence','/settings','/agility','/electrolyte','/ember','/agent/cakes','/agent/commissions','/communications','/company-chat','/event'],
+ ['/agent/presence','/settings','/enterprise/legions-notebook','/agility','/electrolyte','/ember','/agent/cakes','/agent/commissions','/communications','/company-chat','/event'],
  'Agent account keeps focused districts with Company Guidance inside Connection & Event'
 )
 assert.deepEqual(
  getRolePlaces('bridger').map(place=>place.href),
- ['/bridger/presence','/settings','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/company-chat','/profiles','/event'],
+ ['/bridger/presence','/settings','/enterprise/legions-notebook','/bridger/crossing-notebook','/weave/market/prospects','/bridger/email-outreach','/bridger/numbers','/bridger/bridge-ai','/echo','/wallet/deposit-withdraw','/communications','/company-chat','/profiles','/event'],
  'Bridger account keeps its focused Prospect/Crossing and Continuity functions including Email Outreach'
 )
 for(const role of ['agent','bridger']) for(const href of ['/arena','/casino','/video-feed','/marketplace','/lounge']) assert.ok(!roleHas(role,href),role+' excludes unrelated account entrance '+href)
@@ -824,7 +824,7 @@ assert.ok(bridgeAiEngineSource.includes('CROSSING → CLIENT CONTINUITY'),'Bridg
 assert.ok(clientSystemSwitchSource.includes('ClientFileFolderOperatingEnvironment'),'Client System Switch enters the unified File Folder operating environment')
 assert.ok(fileFolderOperatingMigrationSource.includes('client_file_folder_build_parts'),'Production migration persists live build attachments')
 assert.ok(fileFolderWorldApiSource.includes("gate: 'build_funding'"),'New builds stop after an uncleared first Customer Door funding gate')
-assert.ok(publicCustomerDoorSource.includes("formation_status='selling'"),'Public Client store stays closed until the Customer Door build/funding gate clears')
+assert.ok(publicCustomerDoorSource.includes("formation_status='selling' OR formation_status='ready_for_offer'"),'Public Client store stays closed until the Customer Door build/funding gate clears')
 assert.ok(publicCustomerOrdersSource.includes("formation_status='selling'"),'Outsider orders cannot bypass the Customer Door gate')
 assert.ok(publicClientMarketSource.includes('WEAVE Customer Market')||publicClientMarketSource.includes('WEAVE Client Market'),'Public Customer Market exists as a discoverable district')
 assert.ok(publicClientMarketSource.includes("formation_status='selling'"),'Only opened Client businesses enter the public market')
@@ -1562,7 +1562,7 @@ const customerMarketApiRepairSource=fs.readFileSync(path.join(root,'app/api/publ
 const flameEventEnterpriseSource=fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8')
 assert.ok(!fs.existsSync(path.join(root,'components/world/bridge-plaza-map.tsx')),'Retired Bridge Plaza implementation stays removed')
 assert.ok(roleWorldReturnRepairSource.includes('Opening your role world'),'Retired /weave route provides a role-world handoff')
-assert.ok(customerMarketApiRepairSource.includes("formation_status='selling'"),'Public enterprise discovery is limited to opened Customer Doors')
+assert.ok(customerMarketApiRepairSource.includes("formation_status IN ('selling','ready_for_offer')"),'Public enterprise discovery is limited to opened Customer Doors')
 assert.ok(flameEventEnterpriseSource.includes('data-flame-event-client-enterprises="customer-door-current"'),'Flame Event carries Customer Door enterprise discovery')
 assert.ok(weaveReadabilityRepairSource.includes('.truncate:not([data-allow-truncate="true"])'),'WEAVE has a default no-clipping guardrail for operational copy')
 assert.ok(weaveReadabilityRepairSource.includes('[class*="line-clamp-"]'),'WEAVE prevents accidental line-clamp text loss by default')

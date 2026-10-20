@@ -16,6 +16,7 @@ interface User {
   name: string
   avatar?: string
   role?: 'agent' | 'bridger' | 'admin' | 'client'
+  gender?: 'male' | 'female'
   wallet_balance?: number
   wallet_address?: string
   personal_wallet_address?: string
@@ -41,6 +42,7 @@ interface AuthContextType {
     email: string; 
     password: string; 
     name: string; 
+    gender: 'male' | 'female';
     username: string; 
     role: 'agent' | 'bridger'; 
     department: string; 
@@ -106,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const register = async (data: { 
-    email: string; password: string; name: string; username: string; role: 'agent' | 'bridger'; department: string;
+    email: string; password: string; name: string; gender: 'male' | 'female'; username: string; role: 'agent' | 'bridger'; department: string;
     referredBy?: string; termsAccepted: boolean; fullNameConfirmed: string; departmentalCode?: string;
   }) => {
     setIsLoading(true)
@@ -118,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.email,
           password: data.password,
           name: data.name,
+          gender: data.gender,
           username: data.username,
           role: data.role,
           department: data.department,

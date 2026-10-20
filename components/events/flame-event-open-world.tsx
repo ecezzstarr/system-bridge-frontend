@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPoi
 import { ArrowRight, DoorOpen, Flame, Footprints, List, PersonStanding, Radio, Waves, X, Orbit, Compass, ChevronRight } from 'lucide-react'
 import type { FlameMobileInput, FlameRegion } from './flame-event-mobile-scene'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
+import { choosePresenceElement,usePresenceElement } from '@/components/world/use-presence-element'
 
 const FlameEventMobileScene=dynamic(
   ()=>import('./flame-event-mobile-scene').then(module=>module.FlameEventMobileScene),
@@ -27,7 +28,7 @@ export type FlameWorldCustomerDoor = {
 /**
  * Flame Event mobile crossing. The client public API owns portal identity;
  * no synthetic shops, private folders, or invented other players are exposed.
- * First-person input is not used: this is an over-the-shoulder human avatar.
+ * A mobile user steers a living water/fire Presence in third person.
  */
 export function FlameEventOpenWorld({
   enterprises,
@@ -38,6 +39,7 @@ export function FlameEventOpenWorld({
   doorStatus?:FlameDoorFeedStatus
   role:'admin'|'agent'|'bridger'|'client'|'visitor'
 }){
+  const presenceElement=usePresenceElement()
   const controls=useRef<FlameMobileInput>({
     forward:0,right:0,yaw:0,pitch:0,run:false,crouch:false,jumpQueued:false,
   })
@@ -57,7 +59,7 @@ export function FlameEventOpenWorld({
   const [entered,setEntered]=useState(false)
   const [webglAvailable,setWebglAvailable]=useState(true)
   const phase=region==='riverbank'?'RIVER BANK':region==='burning-river'?'BURNING RIVER':region==='system-switch'?'SYSTEM SWITCH':'CUSTOMER DOOR'
-  const phaseDetail=region==='riverbank'?'You have a body here. Walk toward the bright arch across the living river.':region==='burning-river'?'Water and fire carry the crossing. Follow the paved current.':region==='system-switch'?'You crossed into System Switch. Each open door belongs to a Client.':'A real Client-owned Customer Door is within reach.'
+  const phaseDetail=region==='riverbank'?'Your Presence is alive here. Flow toward the bright arch across the living river.':region==='burning-river'?'Water and fire carry the crossing. Follow the paved current.':region==='system-switch'?'You crossed into System Switch. Each open door belongs to a Client.':'A real Client-owned Customer Door is within reach.'
 
 
   useEffect(()=>{
@@ -84,7 +86,7 @@ export function FlameEventOpenWorld({
     if(!webglAvailable){setEntered(true);setShowDirectory(true);return}
     if(!ready)return
     try{window.sessionStorage.setItem('weave:flame:entered:'+role,'yes')}catch{}
-    emitWeaveMotion({kind:'arrival',label:'Human entered the Burning River',source:'flame-event',confirmed:true,intensity:.75})
+    emitWeaveMotion({kind:'arrival',label:'Presence entered the Burning River',source:'flame-event',confirmed:true,intensity:.75})
     setEntered(true)
   }
 
@@ -224,7 +226,7 @@ export function FlameEventOpenWorld({
     data-flame-event-mobile-only="true"
     data-flame-event-region={region}
     data-system-switch-physically-crossed={crossed?'true':'false'}
-    aria-label="Flame Event Burning River embodied mobile world"
+    aria-label="Flame Event Burning River living Presence mobile world"
   >
     <div
       className="relative h-[86svh] min-h-[560px] max-h-[820px] w-full overflow-hidden bg-[#122c49] landscape:h-[94svh] landscape:min-h-[350px] landscape:max-h-none"
@@ -278,7 +280,7 @@ export function FlameEventOpenWorld({
           role="group" aria-label="Left-thumb movement joystick" data-flame-mobile-joystick
         >
           <span className="pointer-events-none absolute top-2 text-[8px] font-black tracking-widest text-white/60">MOVE</span>
-          <span className="pointer-events-none absolute bottom-2 text-[8px] font-black tracking-widest text-white/40">WALK</span>
+          <span className="pointer-events-none absolute bottom-2 text-[8px] font-black tracking-widest text-white/40">FLOW</span>
           <div ref={thumb} className="pointer-events-none flex h-14 w-14 items-center justify-center rounded-full border border-sky-100/65 bg-sky-100/25 shadow-[0_0_18px_rgba(164,231,255,.24)]" style={{willChange:'transform'}}>
             <Footprints className="h-5 w-5 text-white"/>
           </div>
@@ -300,28 +302,40 @@ export function FlameEventOpenWorld({
           </span>
           <ArrowRight className="h-4 w-4 shrink-0"/>
         </Link> : <span className="max-w-[175px] rounded-xl border border-white/20 bg-[#081b35]/75 px-3 py-2 text-[10px] font-semibold leading-4 text-white/85 backdrop-blur-sm" data-flame-event-proximity>
-          {enterprises.length?'Walk up to a glowing Customer Door to enter.':doorStatus==='loading'?'Checking for opened Client Customer Doors…':doorStatus==='unavailable'?'Customer Door connection is unavailable. Please retry shortly.':'Opened Client Customer Doors appear in this world.'}
+          {enterprises.length?'Move your Presence to a glowing Customer Door to enter.':doorStatus==='loading'?'Checking for opened Client Customer Doors…':doorStatus==='unavailable'?'Customer Door connection is unavailable. Please retry shortly.':'Opened Client Customer Doors appear in this world.'}
         </span>}
         <div className="flex items-end gap-2">
           <div className="flex flex-col gap-2">
             <button type="button" onClick={toggleCrouch} aria-pressed={crouching}
               data-flame-mobile-crouch
               className={'flex h-12 w-12 flex-col items-center justify-center rounded-full border text-[8px] font-black '+(crouching?'border-amber-200 bg-amber-700/85 text-white':'border-white/35 bg-[#0b2445]/85 text-sky-50')}
-            ><PersonStanding className="h-4 w-4"/>{crouching?'LOW':'CROUCH'}</button>
+            ><PersonStanding className="h-4 w-4"/>{crouching?'LOW':'LOWER'}</button>
             <button type="button" onPointerDown={event=>{controls.current.jumpQueued=true;event.preventDefault()}}
               data-flame-mobile-jump
               className="flex h-12 w-12 flex-col items-center justify-center rounded-full border border-white/35 bg-[#0b2445]/85 text-[8px] font-black text-white"
-            ><span className="text-lg leading-4">↑</span>JUMP</button>
+            ><span className="text-lg leading-4">↑</span>RISE</button>
           </div>
           <button type="button" onPointerDown={onRunDown} onPointerUp={onRunUp} onPointerCancel={onRunUp}
             onLostPointerCapture={()=>{controls.current.run=false;setRunning(false)}}
             aria-pressed={running} data-flame-mobile-run
             className={'flex h-20 w-20 flex-col items-center justify-center rounded-full border-2 text-[10px] font-black shadow-lg '+(running?'border-amber-100 bg-amber-600/85 text-white':'border-amber-100/60 bg-[#783f24]/85 text-amber-50')}
             style={{touchAction:'none'}}
-          ><Footprints className="mb-1 h-6 w-6"/>HOLD RUN</button>
+          ><Footprints className="mb-1 h-6 w-6"/>HOLD SURGE</button>
         </div>
       </div>
 
+      <div className="absolute left-3 top-[158px] z-20 flex items-center gap-1 rounded-full border border-cyan-200/30 bg-[#071d38]/85 px-1.5 py-1.5 text-[9px] font-black text-sky-50 backdrop-blur-[3px]"
+        role="group" aria-label="Choose your living Presence" data-weave-presence-picker>
+        {([
+          {id:'water',label:'Water'},
+          {id:'fire',label:'Fire'},
+          {id:'confluence',label:'Both'},
+        ] as const).map(choice=><button key={choice.id} type="button"
+          onClick={()=>choosePresenceElement(choice.id)}
+          aria-pressed={presenceElement===choice.id}
+          className={'rounded-full px-2.5 py-1.5 transition-colors '+(presenceElement===choice.id?'bg-cyan-200 text-[#072338]':'text-sky-100/75')}
+        >{choice.label}</button>)}
+      </div>
       <button type="button" onClick={()=>setShowDirectory(value=>!value)}
         className="absolute left-3 top-[110px] z-20 flex items-center gap-2 rounded-full border border-amber-200/45 bg-[#071d38]/85 px-3 py-2 text-[10px] font-bold text-amber-100"
         aria-expanded={showDirectory} data-flame-mobile-door-directory>
@@ -351,7 +365,7 @@ export function FlameEventOpenWorld({
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-amber-200/50 bg-sky-200/10 shadow-[0_0_54px_rgba(248,192,104,.25)]"><Compass className="h-8 w-8 text-amber-100"/></div>
           <p className="mt-6 text-[10px] font-black uppercase tracking-[.29em] text-amber-200">Website → Presence → Movement</p>
           <h3 className="mt-3 text-3xl font-black leading-[1.08] tracking-tight text-white">The website ends at the riverbank.</h3>
-          <p className="mx-auto mt-4 max-w-xs text-[13px] leading-6 text-sky-100/85">Beyond this point you walk with a body. Move through water and fire, reach System Switch, and choose a real Client's Customer Door.</p>
+          <p className="mx-auto mt-4 max-w-xs text-[13px] leading-6 text-sky-100/85">Beyond this point you become a living Presence. Flow through the Burning River, cross System Switch, and enter a real Client's Customer Door.</p>
           <button type="button" disabled={webglAvailable&&!ready} onClick={beginCrossing}
             className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-amber-100/70 bg-amber-200 px-5 py-3 text-sm font-black text-[#11223b] shadow-[0_8px_38px_rgba(252,190,84,.19)] disabled:opacity-60"
             data-system-switch-enter-world>

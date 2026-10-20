@@ -1,3 +1,4 @@
+import { matureElapsedCustomerDoors } from '@/lib/customer-door-maturity'
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { ensureClientBusinessStoreSchema,getBusinessDb,normalizeStoreEnvironmentConfig } from '@/lib/client-business-store'
@@ -11,6 +12,7 @@ export async function GET(request:NextRequest){
   try{
     const sql=getBusinessDb()
     await ensureClientBusinessStoreSchema(sql)
+    await matureElapsedCustomerDoors(sql)
     const stores=await sql`
       SELECT s.public_slug,s.name,s.description,s.environment_config,s.public_opened_at,
         (SELECT COUNT(*)::int FROM client_store_items i
@@ -22,7 +24,7 @@ export async function GET(request:NextRequest){
           WHERE b.client_id=s.client_id AND b.file_number=s.file_number
           AND b.system_type='marketplace_network' AND b.status='active') AS has_market_hall
       FROM client_business_stores s
-      WHERE s.enabled=true AND s.formation_status='selling'
+      WHERE s.enabled=true AND s.formation_status IN ('selling','ready_for_offer')
         AND s.world_host_flame_event=true
         AND EXISTS(SELECT 1 FROM client_built_systems d
           WHERE d.client_id=s.client_id AND d.file_number=s.file_number

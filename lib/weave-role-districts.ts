@@ -39,6 +39,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       purpose:'Order and move Agility and Electrolyte, handle Daisy Pastries requests, and review qualifying commission returns.',
       accent:'#34d399',
       places:[
+        {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Read the voluntary Client enterprise employment flow before applying to be a Legion.',daily:true},
         {label:'Agility',href:'/agility',detail:'Order, receive, distribute and record Agility movement.',daily:true},
         {label:'Electrolyte',href:'/electrolyte',detail:'Order and receive Electrolyte bowls, then distribute and restock.',daily:true},
         {label:'Ember',href:'/ember',detail:'Order Ember Small and Large food boxes, verify payment, and distribute received cartons.',daily:true},
@@ -78,6 +79,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       purpose:'Work unverified Prospect tools through human-first outreach. When a real response appears, recognize the relationship and carry willing participation toward Client crossing so WEAVE systems can become owned and used.',
       accent:'#22d3ee',
       places:[
+        {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Read how a subscribed Bridger can join a Client enterprise as an exclusive Legion.'},
         {label:'Crossing Notebook',href:'/bridger/crossing-notebook',detail:'Read how Hope moves from Prospect possibility → real response → relationship → File Folder → Client ownership and use.',daily:true},
         {label:'Prospect Market',href:'/weave/market/prospects',detail:'Claim or purchase unverified Prospect farming tools and work them for real human interaction.',daily:true},
         {label:'Email Outreach',href:'/bridger/email-outreach',detail:'Acquire lower-cost unverified email Prospect candidates, attempt contact and inspect the response movement.',daily:true},
@@ -119,6 +121,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       purpose:'Enter System Switch, build systems, operate the Client business and release completed systems through WEAVE.',
       accent:'#34d399',
       places:[
+        {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Lead your own enterprise as Lord or Lady, build Legion Quarters and employ Legions.'},
         {label:'File Folder',href:'/client/system-switch',detail:'Build and operate systems, your store and Customer Door.',daily:true},
         {label:'System Publisher',href:'/client/system-store',detail:'Package active File Folder systems, submit versions for Administration verification and manage public releases.',daily:true},
         {label:'WEAVE System Store',href:'/system-store',detail:'See verified Client-built systems distributed publicly through WEAVE.'},
@@ -182,6 +185,8 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Client Deposits',href:'/admin/client-deposits',detail:'Review Client funding requests.',daily:true},
         {label:'Client Vaults',href:'/admin/client-vault',detail:'Administer Client vault movement.'},
+        {label:'Customer Door Settlements',href:'/admin/customer-door-settlements',detail:'Forensics reviews real Customer Door payments and credits Client Main Wallets from funded reserves.',daily:true},
+        {label:'Flame Coin Sales Forensics',href:'/admin/weave-flame-coin-sales',detail:'Verify approved bank payments and credit purchased Flame Coin into registered buyer Main Wallets from funded reserves.',daily:true},
         {label:'Payments',href:'/admin/payments',detail:'Institutional payment administration.'},
         {label:'Wallet',href:'/wallet',detail:'Administration balances and value position.'},
         {label:'Reserve',href:'/fund-wall',detail:'Institutional reserve and fund position.'},
@@ -200,6 +205,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Prospect Engine',href:'/admin/prospect-engine',detail:'Create and organize Prospect movement.',daily:true},
         {label:'Email Outreach',href:'/admin/email-outreach',detail:'Load email Prospects, configure Administration outreach, run the daily engine and inspect Admin/Bridger reports.',daily:true},
         {label:'File Folder Sales Manager',href:'/admin/file-folder-sales-manager',detail:'Echo coordinates daily prospect follow-up while EIGHT diagnoses the weekly File Folder sales funnel and escalation state.',daily:true},
+        {label:'Enterprise Legion Changes',href:'/admin/legion-releases',detail:'Administration audit of Worker departures, Client releases and unfinished Client order obligations.',daily:true},
         {label:'System Store Workshop',href:'/admin/system-store',detail:'Verify Client-built system versions, approve public releases and inspect distribution movement.',daily:true},
         {label:'Number Bay Engine',href:'/admin/bridger-numbers',detail:'Number Bay stock, delivery and verification authority.',daily:true},
         {label:'Bridge AI',href:'/admin/bridge-ai',detail:'Review Bridge AI crossing and Client continuity.'},

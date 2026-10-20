@@ -35,6 +35,7 @@ function ClientRegisterContent() {
     email: '',
     password: '',
     confirmPassword: '',
+    gender: '' as 'male' | 'female' | '',
     businessName: ''
   })
 
@@ -90,7 +91,8 @@ function ClientRegisterContent() {
           fileNumber,
           email: formData.email,
           password: formData.password,
-          businessName: formData.businessName
+          businessName: formData.businessName,
+          gender: formData.gender
         })
       })
 
@@ -196,6 +198,15 @@ function ClientRegisterContent() {
                     required
                   />
                 </div>
+
+                <label className="block text-[10px] font-black uppercase tracking-wide text-slate-400">
+                  Gender (registration identity)
+                  <select required value={formData.gender} onChange={e=>setFormData({...formData,gender:e.target.value as 'male' | 'female' | ''})} className="mt-2 w-full rounded-md border border-slate-700 bg-slate-800 p-3 text-sm text-white">
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </label>
 
                 <div className="relative">
                   <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />

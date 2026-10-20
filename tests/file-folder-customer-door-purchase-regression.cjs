@@ -51,7 +51,7 @@ for(const part of ['door_foundation_frame','door_identity_facade','door_customer
 assert.ok(provisioning.includes("'building'")&&provisioning.includes('completes_at')&&provisioning.includes('effectiveBuildMinutes'),'Purchased Customer Door keeps a real construction timer')
 assert.ok(provisioning.includes('purchase_speed_multiplier')&&provisioning.includes('boostOptional: true'),'Purchased Customer Door remains compatible with optional boosts')
 assert.ok(!provisioning.includes("'completed',\n        0,0,0"),'Purchase does not bypass Customer Door construction time')
-assert.ok(provisioning.includes("formation_status='forming'")&&provisioning.includes('public_opened_at=NULL'),'Public Customer Door stays closed while construction is active')
+assert.ok(provisioning.includes("WHEN client_business_stores.formation_status IN ('selling','ready_for_offer')")&&provisioning.includes('public_opened_at=client_business_stores.public_opened_at'),'Replayed File Folder activation must never unpublish an established Customer Door')
 assert.ok(provisioning.includes('publicPath: `/market/'),'Provisioning reserves the direct Customer Door path')
 
 assert.ok(world.includes("status='building' AND completes_at <= NOW()")&&world.includes("system_type === 'customer_door'"),'Existing world finalizer activates Customer Door only after construction time completes')

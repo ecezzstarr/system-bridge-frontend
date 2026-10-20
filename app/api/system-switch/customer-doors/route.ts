@@ -1,3 +1,4 @@
+import { matureElapsedCustomerDoors } from '@/lib/customer-door-maturity'
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getBusinessDb,ensureClientBusinessStoreSchema,normalizeStoreEnvironmentConfig } from '@/lib/client-business-store'
@@ -8,13 +9,14 @@ export async function GET(request:NextRequest){
     const staff=Boolean(user&&['agent','bridger','admin'].includes(user.role))
     const sql=getBusinessDb()
     await ensureClientBusinessStoreSchema(sql)
+    await matureElapsedCustomerDoors(sql)
     const rows=await sql`
       SELECT s.public_slug,s.name,s.description,s.environment_config,
         s.world_host_customer_market,s.world_host_flame_event,
         (SELECT COUNT(*)::int FROM client_store_items i
           WHERE i.store_id=s.id AND i.enabled=true) AS offers
       FROM client_business_stores s
-      WHERE s.enabled=true AND s.formation_status='selling'
+      WHERE s.enabled=true AND s.formation_status IN ('selling','ready_for_offer')
         AND (s.world_host_customer_market=true OR (${staff}::boolean AND s.world_host_flame_event=true))
         AND EXISTS(SELECT 1 FROM client_built_systems d
           WHERE d.client_id=s.client_id AND d.file_number=s.file_number

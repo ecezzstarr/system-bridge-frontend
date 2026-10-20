@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
-import { activateLegionEmployment, ensureLegionEmploymentSchema, getActiveLegionEmployment } from '@/lib/legion-employment'
+import { activateLegionEmployment, ensureLegionEmploymentSchema, getActiveLegionEmployment, releaseLegionEmployment } from '@/lib/legion-employment'
 import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
+import {notifyAdministrators,notifyUser} from '@/lib/deposit-notifications'
+import { getClientMonthlyStanding, ensureClientMonthlySchema } from '@/lib/client-monthly-subscription'
 
 async function enterpriseCapacity(clientId:string){
   const capability=await getInstalledCapabilityTotals(sql,clientId)
@@ -39,10 +41,11 @@ export async function GET(request:NextRequest){
     JOIN enterprise_applications a ON a.id=la.enterprise_application_id
     LEFT JOIN users owner ON owner.id=la.client_id
     WHERE la.applicant_user_id=${user.id}::uuid
-      AND la.status='pending'
+      AND la.status IN ('pending','offered')
     ORDER BY la.created_at DESC
   `
 
+  await ensureClientMonthlySchema()
   const enterprises=access.active ? await sql`
     SELECT a.id,a.client_id,a.file_number,a.enterprise_name,a.sector,owner.name AS client_name,
            COUNT(l.id) FILTER (WHERE l.active=true AND l.employment_status='active')::int AS legion_count
@@ -51,6 +54,7 @@ export async function GET(request:NextRequest){
     JOIN client_built_systems q ON q.client_id=a.client_id AND q.file_number=a.file_number AND q.system_type='legion_quarters' AND q.status='active'
     LEFT JOIN enterprise_legions l ON l.client_id=a.client_id
     WHERE a.status='approved'
+      AND EXISTS (SELECT 1 FROM client_monthly_subscriptions cms WHERE cms.client_id=a.client_id AND cms.payment_status='paid' AND cms.period_end>NOW())
     GROUP BY a.id,owner.name
     ORDER BY a.reviewed_at DESC NULLS LAST,a.submitted_at DESC
     LIMIT 100
@@ -66,6 +70,33 @@ export async function POST(request:NextRequest){
   if(!['agent','bridger'].includes(baseRole))return NextResponse.json({success:false,error:'Agent or Bridger access required.'},{status:403})
 
   await ensureLegionEmploymentSchema(sql)
+  const body=await request.json().catch(()=>({}))
+  const action=String(body.action||'apply')
+
+  // Resignation is available even when the worker's underlying subscription
+  // has expired. An exclusive employment must never trap someone in a role.
+  if(action==='release_legion'){
+    const employment=await getActiveLegionEmployment(sql,user.id)
+    if(!employment.active||!employment.legionId)
+      return NextResponse.json({success:false,error:'No active Legion employment to release'},{status:409})
+    const result=await releaseLegionEmployment(sql,{
+      legionId:employment.legionId,actorUserId:user.id,
+      actorPosition:'worker',reason:String(body.reason||''),
+    })
+    if(!result.success)return NextResponse.json(result,{status:result.status||500})
+    if(!result.alreadyReleased)await recordSystemEvent({
+      eventType:'legion_employment_released',actorId:user.id,actorRole:baseRole,
+      subjectType:'enterprise_legion',subjectId:employment.legionId,source:'lifestyle-legion',
+      payload:{releasedBy:'worker',clientId:employment.clientId,pendingOrders:result.pendingOrders},
+    }).catch(e=>console.error('[Legion release event]',e))
+    if(!result.alreadyReleased)await notifyAdministrators({
+      type:'legion_employment_released',title:'Worker ended exclusive Legion employment',
+      content:`${user.name||baseRole} returned to their underlying ${baseRole} position. ${result.pendingOrders||0} unfinished Client orders remain attached to the enterprise. Reason: ${String(body.reason||'').slice(0,180)}`,
+      link:'/admin/legion-releases',fromUserId:user.id,fromUserName:user.name||'Legion',
+    })
+    return NextResponse.json(result)
+  }
+
   const access=await getLifestyleAccess(user.id)
   if(!access.active){
     const error=baseRole==='agent'
@@ -75,9 +106,6 @@ export async function POST(request:NextRequest){
   }
   const current=await getActiveLegionEmployment(sql,user.id)
   if(current.active)return NextResponse.json({success:false,error:'You are already an active Legion and can only work for your Client inside Weave.'},{status:409})
-
-  const body=await request.json().catch(()=>({}))
-  const action=String(body.action||'apply')
 
   if(action==='apply'){
     const enterpriseApplicationId=String(body.enterpriseApplicationId||'')
@@ -90,6 +118,8 @@ export async function POST(request:NextRequest){
       LIMIT 1
     `
     if(!enterprise)return NextResponse.json({success:false,error:'This Client enterprise is not open for Legions.'},{status:404})
+    const clientStanding=await getClientMonthlyStanding(String(enterprise.client_id))
+    if(!clientStanding.active)return NextResponse.json({success:false,error:'This Client enterprise must renew its monthly subscription before accepting new Legions.'},{status:409})
     const capacity=await enterpriseCapacity(String(enterprise.client_id))
     if(capacity.count>=capacity.capacity)return NextResponse.json({success:false,error:'This Client Legion Quarter is currently full.'},{status:409})
     const [existing]=await sql`
@@ -107,7 +137,9 @@ export async function POST(request:NextRequest){
     return NextResponse.json({success:true,application},{status:201})
   }
 
-  if(action==='accept_invite'){
+  if(action==='accept_invite'||action==='accept_offer'){
+    const expectedDirection=action==='accept_offer'?'candidate_application':'client_invite'
+    const expectedStatus=action==='accept_offer'?'offered':'pending'
     const applicationId=String(body.applicationId||'')
     const [application]=await sql`
       SELECT la.*,a.enterprise_name,u.name,u.email
@@ -116,15 +148,28 @@ export async function POST(request:NextRequest){
       JOIN users u ON u.id=la.applicant_user_id
       WHERE la.id=${applicationId}::uuid
         AND la.applicant_user_id=${user.id}::uuid
-        AND la.direction='client_invite'
-        AND la.status='pending'
+        AND la.direction=${expectedDirection}
+        AND la.status=${expectedStatus}
       LIMIT 1
     `
-    if(!application)return NextResponse.json({success:false,error:'Legion invitation not found.'},{status:404})
+    if(!application)return NextResponse.json({success:false,error:'Legion invitation or agreed Client employment offer was not found.'},{status:404})
+    if(String(application.profit_participation||'').trim().length<5)return NextResponse.json({success:false,error:'A written earnings agreement is required before exclusive Legion employment.'},{status:409})
+    const clientStanding=await getClientMonthlyStanding(String(application.client_id))
+    if(!clientStanding.active)return NextResponse.json({success:false,error:'This Client enterprise must renew its monthly subscription before activating new Legions.'},{status:409})
     const capacity=await enterpriseCapacity(String(application.client_id))
     if(capacity.count>=capacity.capacity)return NextResponse.json({success:false,error:'The Client Legion Quarter is now full.'},{status:409})
     const legion=await activateLegionEmployment(sql,{
       applicantUserId:user.id,applicantRole:baseRole,clientId:String(application.client_id),enterpriseApplicationId:String(application.enterprise_application_id),fileNumber:String(application.file_number),name:String(application.name||user.name||'Legion'),contact:String(application.email||user.email||''),functionTitle:application.function_title||'Enterprise Legion',profitParticipation:application.profit_participation||null,
+    })
+    await recordSystemEvent({
+      eventType:'legion_employment_activated',actorId:user.id,actorRole:baseRole,
+      subjectType:'enterprise_legion',subjectId:String(legion.id),source:'lifestyle-legion',
+      payload:{applicationId,enterpriseName:application.enterprise_name,acceptedByWorker:true,exclusive:true},
+    }).catch(e=>console.error('[Legion accept event]',e))
+    await notifyUser(String(application.client_id),{
+      type:'legion_employment_activated',title:'Enterprise Legion accepted',
+      content:`${user.name||baseRole} accepted the written employment terms. Their active ${baseRole} operating position is now your exclusive Legion until release.`,
+      link:'/client/enterprise/legions',fromUserId:user.id,fromUserName:user.name||'Legion',
     })
     return NextResponse.json({success:true,legion,exclusive:true})
   }
