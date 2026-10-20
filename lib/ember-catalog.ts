@@ -6,10 +6,10 @@ export const EMBER_OPAY_ACCOUNT_NUMBER=WEAVE_OPAY_ACCOUNT_NUMBER
 export const EMBER_AGENT_EARNING_PER_PACK_NGN=1000
 export const EMBER_ADMIN_ALLOCATION_PER_PACK_NGN=1000
 export const EMBER_VARIANTS:WeaveFoodVariant[]=[
- {id:'ember-small',family:'ember',name:'Ember · Small Box',accent:'Evening · Small',foods:['Roasted plantain','Seasoned yam','Pepper sauce'],protein:'Suya beef or chicken',fruit:'Roasted plantain',drink:'Not included',water:'Not included',
+ {id:'ember-small',family:'ember',name:'Ember · Small Box',accent:'Evening · Small',foods:['Roasted plantain','Seasoned yam','Pepper sauce'],protein:'Suya beef or chicken',fruit:'',drink:'',water:'',
   packagesPerBox:10,agentBuyUnitPriceNgn:5000,agentSellingUnitPriceNgn:6000,customerPriceLocked:true,
   note:'A rich hot evening combination. Customer ₦6,000, selling Agent ₦1,000; WEAVE ₦5,000 for preparation and Administration.'},
- {id:'ember-large',family:'ember',name:'Ember · Large Box',accent:'Evening · Large',foods:['Roasted plantain','Seasoned yam','Pepper sauce'],protein:'Suya beef or chicken',fruit:'Roasted plantain',drink:'Not included',water:'Not included',
+ {id:'ember-large',family:'ember',name:'Ember · Large Box',accent:'Evening · Large',foods:['Roasted plantain','Seasoned yam','Pepper sauce'],protein:'Suya beef or chicken',fruit:'',drink:'',water:'',
   packagesPerBox:10,agentBuyUnitPriceNgn:11000,agentSellingUnitPriceNgn:12000,customerPriceLocked:true,
   note:'A generous hot evening combination. Customer ₦12,000, selling Agent ₦1,000; WEAVE ₦11,000 for preparation and Administration.'},
 ]
