@@ -7,6 +7,7 @@ import { CakeSlice,CircleDollarSign,PackagePlus,Salad,ShoppingBag,Truck } from '
 const functions=[
   {name:'Agility',href:'/agility',detail:'Order and restock Agility, receive company stock and move it through customers and outlets.',accent:'border-orange-300/25 bg-orange-300/[.04] text-orange-200',icon:PackagePlus},
   {name:'Electrolyte',href:'/electrolyte',detail:'Order Small Bowl or Medium Bowl stock, receive it and keep restocking while earlier stock is still moving.',accent:'border-emerald-300/25 bg-emerald-300/[.04] text-emerald-200',icon:Salad},
+  {name:'Outlet Training Video',href:'/agent/outlet-training',detail:'Watch the practical Agent-to-store daily carton supply training and learn the WEAVE pricing rule.',accent:'border-cyan-400/25 bg-cyan-400/[.04] text-cyan-200',icon:PackagePlus},
   {name:'Ember',href:'/ember',detail:'Sell rich Ember Small or Large evening boxes. Order fresh stock, verify payments and receive company cartons.',accent:'border-amber-400/25 bg-orange-400/[.04] text-amber-200',icon:PackagePlus},
   {name:'Commission',href:'/agent/commissions',detail:'See qualifying Agent commission movement from attached Bridger and Client activity.',accent:'border-violet-300/25 bg-violet-300/[.04] text-violet-200',icon:CircleDollarSign},
   {name:'Daisy Pastries',href:'/agent/cakes',detail:'Daisy Pastries · official WEAVE cakes. Receive slice, Bento and celebration cake requests through your Carrier Door and move each order into production.',accent:'border-amber-300/25 bg-amber-300/[.04] text-amber-200',icon:CakeSlice},
