@@ -54,6 +54,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Direct Communication',href:'/communications',detail:'Message Bridgers attached to your Agent position directly.',daily:true},
         {label:'Company Guidance',href:'/company-chat',detail:'Get company guidance for Agent movement, Agility, earnings and the current Loop.'},
+        {label:'Child & Parent Support',href:'/weave/child-support',detail:'Register a loved-one beneficiary and submit verified monthly support instructions.'},
         {label:'Flame Event · Loop 1',href:'/event',detail:'Enter the same Burning River event ground used by every WEAVE role.',daily:true},
       ],
     },
@@ -95,6 +96,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Deposit & Withdrawal',href:'/wallet/deposit-withdraw',detail:'Deposit Flame Coin value or request withdrawal.',daily:true},
         {label:'Direct Communication',href:'/communications',detail:'Continue with your assigned Agent, responding Prospects and referred Clients from one authorized place.',daily:true},
         {label:'Company Guidance',href:'/company-chat',detail:'Get company guidance for Prospect farming, Client crossing, Continuance, Number Bay, Bridge AI and the current Loop.'},
+        {label:'Child & Parent Support',href:'/weave/child-support',detail:'Send monthly support to a registered child or parent through Forensics.'},
         {label:'Presences',href:'/profiles',detail:'See people and active Presences inside WEAVE.'},
         {label:'Flame Event · Loop 1',href:'/event',detail:'Enter the Burning River as Hope and continue the same Bridger movement inside Company Loop 1.',daily:true},
       ],
@@ -149,6 +151,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Your Bridger',href:'/client/chat/bridger',detail:'Contact Your Bridger for crossing and continuity support.'},
         {label:'Mandate',href:'/client/chat/mandate',detail:'Contact Mandate for operational support.'},
         {label:'Forensics',href:'/client/chat/forensic',detail:'Contact Forensics for value and verification support.'},
+        {label:'Child & Parent Support',href:'/weave/child-support',detail:'Register a loved one and submit monthly family support orders.'},
         {label:'Attorney',href:'/client/chat/lawyer',detail:'Contact Attorney for legal support.'},
         {label:'Administration',href:'/client/chat/admin',detail:'Contact Administration for institutional support.'},
         {label:'Loop Field',href:'/client/loops',detail:'See Company Loops, responsibilities, agreements and participation stages.'},
