@@ -232,6 +232,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
               <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-wider text-emerald-200"><Package className="h-4 w-4"/>{product.availablePackages} bowls available · order from 1</div>
             </button>):<p className="text-sm text-slate-500">This Agent has no free Electrolyte stock at this moment.</p>}
           </div>
+        </article>
 
         <article className="overflow-hidden border border-orange-400/25 bg-gradient-to-br from-orange-500/15 via-[#2c1008] to-[#110908]">
           <div className="border-b border-orange-300/15 px-5 py-5">
@@ -249,7 +250,6 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
               <p className="mt-3 text-[9px] font-black uppercase tracking-wider text-orange-200">{product.availablePackages} boxes available · order from 1</p>
             </button>):<p className="text-xs text-stone-400">This Agent has no available Ember boxes yet.</p>}
           </div>
-        </article>
         </article>
       </div>
 
