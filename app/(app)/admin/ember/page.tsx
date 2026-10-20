@@ -1,12 +1,10 @@
 'use client'
-import { emberMoneySplit } from '@/lib/ember-catalog'
-
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, CreditCard, Loader2, PackageCheck, RefreshCcw, Truck, UtensilsCrossed } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
-import { EMBER_VARIANTS } from '@/lib/ember-catalog'
+import { EMBER_VARIANTS, emberMoneySplit } from '@/lib/ember-catalog'
 
 type OrderRow={
   id:string
@@ -99,7 +97,7 @@ export default function AdminEmberPage(){
 
   return <main className="mx-auto max-w-7xl space-y-7 text-white" data-admin-ember="independent">
     <p className="text-sm text-amber-200">Ember Small ₦6,000 · Large ₦12,000 · ₦1,000 Agent earning and ₦1,000 Administration allocation per box.</p>
-    <header className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/[.04] p-6 md:p-8"><p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">Administration · Ember</p><h1 className="mt-2 text-4xl font-black">EMBER FULFILLMENT</h1><p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">Ember is administered separately from Agility. Verify each Agent OPay payment, prepare the exact Small or Medium Bowl order fresh, pack and seal it, dispatch it, then mark delivery. Existing Agent inventory never blocks another paid restock order.</p><Button variant="outline" className="mt-5 border-white/15 text-white" onClick={()=>void load()}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></header>
+    <header className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/[.04] p-6 md:p-8"><p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">Administration · Ember</p><h1 className="mt-2 text-4xl font-black">EMBER FULFILLMENT</h1><p className="mt-3 max-w-4xl text-sm leading-6 text-slate-400">Ember is administered separately from Agility. Verify each Agent OPay payment, prepare the exact Small or Large Box order fresh, pack and seal it, dispatch it, then mark delivery. Existing Agent inventory never blocks another paid restock order.</p><Button variant="outline" className="mt-5 border-white/15 text-white" onClick={()=>void load()}><RefreshCcw className="mr-2 h-4 w-4"/>REFRESH</Button></header>
 
     <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><Metric label="Proof waiting" value={summary.proof} icon={<CreditCard className="h-5 w-5"/>}/><Metric label="Paid orders" value={summary.paid} icon={<CheckCircle2 className="h-5 w-5"/>}/><Metric label="In preparation / dispatch" value={summary.preparing} icon={<UtensilsCrossed className="h-5 w-5"/>}/><Metric label="Agent received" value={summary.received} icon={<PackageCheck className="h-5 w-5"/>}/></section>
 
