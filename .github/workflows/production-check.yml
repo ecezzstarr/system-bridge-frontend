@@ -62,6 +62,7 @@ jobs:
           node tests/electrolyte-independent-home-regression.cjs
           node tests/ember-food-flow-regression.cjs
           node tests/agent-outlet-price-policy-regression.cjs
+          node tests/agent-outlet-training-availability-regression.cjs
           node tests/agent-work-cakes-regression.cjs
           node tests/food-preparation-manager-payment-routing-regression.cjs
           node tests/farm-to-family-lifestyle-regression.cjs
@@ -115,41 +116,3 @@ jobs:
       - name: Container build
         run: docker build --progress=plain -t weave-production-check .
 
-  agent-training-video:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/feature/ember-food-agent-carrier-20261020'
-    runs-on: ubuntu-latest
-    timeout-minutes: 22
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install image video dependencies
-        run: pip install Pillow==11.1.0
-      - name: Fetch revised approved WEAVE narration
-        env:
-          WEAVE_AUDIO_URL: 'https://dnznrvs05pmza.cloudfront.net/text_to_speech/71d51dc5-c491-427a-bc13-b74bf8311761/WEAVE_Stability_Agent_Training___Natural_Narration_Revised.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMzM2N2YzN2I2NzAxNTA1NSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjYzMjk1NX0.WEu4wkq8bT7_CHNW6O1Dbv4Cd_Qy6lTl_abGOxL-yk4'
-        run: |
-          mkdir -p /tmp/weave-training
-          curl --retry 3 -fsSL "$WEAVE_AUDIO_URL" -o /tmp/weave-training/narration.mp3
-          ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 /tmp/weave-training/narration.mp3
-      - name: Render phone training video
-        env:
-          WEAVE_TRAINING_AUDIO: /tmp/weave-training/narration.mp3
-        run: python scripts/build-agent-outlet-training-video.py
-      - name: Preserve downloadable training video
-        uses: actions/upload-artifact@v4
-        with:
-          name: weave-stability-agent-training-video
-          path: public/training/agent-outlet-training.mp4
-          retention-days: 30
-      - name: Publish training video in app assets
-        run: |
-          git config user.name "weave-training-bot"
-          git config user.email "weave-training-bot@users.noreply.github.com"
-          git add public/training/agent-outlet-training.mp4
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "media: publish natural voice Agent training video [skip ci]"
-          git push origin HEAD:feature/ember-food-agent-carrier-20261020
