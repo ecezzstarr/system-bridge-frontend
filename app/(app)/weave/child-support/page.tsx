@@ -13,6 +13,7 @@ type Order={
  verification_reference?:string|null;transfer_reference?:string|null;review_note?:string|null;created_at:string;
 }
 type Guidance={id:string;department:string;guidance_note:string;created_at:string;author_name:string}
+type Beneficiary={id:string;kind:string;display_name:string;bank_name:string;account_number:string;monthly_amount_ngn:string;recurring:boolean;active:boolean}
 type Board={canReview:boolean;canGuide:string[];orders:Order[];monthlyRule:string;error?:string}
 const cash=(v:number|string)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v)||0)
 const field='mt-2 w-full rounded-lg border border-white/15 bg-black/30 px-3 py-3 text-sm text-white outline-none focus:border-emerald-300'
@@ -40,6 +41,7 @@ export default function FamilySupportBoard(){
  const [guideNotes,setGuideNotes]=useState<Record<string,string>>({})
  const [selectedGuidance,setSelectedGuidance]=useState('')
  const [guidance,setGuidance]=useState<Guidance[]>([])
+ const [beneficiaries,setBeneficiaries]=useState<Beneficiary[]>([])
  const [department,setDepartment]=useState('mandate')
  const headers=useCallback(()=>({Authorization:'Bearer '+(token||'')}),[token])
  const load=useCallback(async()=>{
@@ -51,7 +53,15 @@ export default function FamilySupportBoard(){
    setBoard(data);setError('')
   }catch(e){setError(e instanceof Error?e.message:'Board unavailable')}
  },[token,headers])
- useEffect(()=>{void load();return visiblePoll(()=>load(),20000,false)},[load])
+ const loadBeneficiaries=useCallback(async()=>{
+  if(!token)return
+  try{
+   const response=await fetch('/api/child-support/beneficiaries',{headers:headers(),cache:'no-store'})
+   const data=await response.json()
+   if(response.ok)setBeneficiaries(data.beneficiaries||[])
+  }catch{} // The orders board reports authorization errors independently.
+ },[token,headers])
+ useEffect(()=>{void load();void loadBeneficiaries();return visiblePoll(()=>load(),20000,false)},[load,loadBeneficiaries])
  useEffect(()=>{if(board?.canGuide.length&&!board.canGuide.includes(department))setDepartment(board.canGuide[0])},[board?.canGuide?.join(','),department])
 
  async function submit(event:React.FormEvent){
@@ -65,8 +75,21 @@ export default function FamilySupportBoard(){
    if(!r.ok)throw new Error(data.error||'Submission failed')
    setNotice('Beneficiary registered. Forensics received the instruction; payment is not yet verified.')
    setAmount('');setReference('');setName('');setBank('');setNumber('');setNote('');setConfirmed(false)
-   await load()
+   await load();await loadBeneficiaries()
   }catch(e){setError(e instanceof Error?e.message:'Submission failed')}
+  finally{setBusy('')}
+ }
+ async function setMonthly(id:string,recurring:boolean){
+  if(!token||busy)return
+  setBusy('monthly:'+id);setError('')
+  try{
+   const response=await fetch('/api/child-support/beneficiaries',{method:'PATCH',
+    headers:{...headers(),'Content-Type':'application/json'},body:JSON.stringify({beneficiaryId:id,recurring})})
+   const data=await response.json()
+   if(!response.ok)throw new Error(data.error||'Unable to change monthly plan')
+   setNotice(recurring?'Monthly instruction preparation resumed.':'Future monthly instruction preparation paused.')
+   await loadBeneficiaries()
+  }catch(error){setError(error instanceof Error?error.message:'Update failed')}
   finally{setBusy('')}
  }
  async function review(id:string,action:'verify_funds'|'record_transfer'|'reject'){
@@ -176,6 +199,21 @@ export default function FamilySupportBoard(){
    </form>
   </section>
 
+  <section className="border border-white/10 p-4 sm:p-6">
+   <h2 className="text-lg font-bold">My registered loved ones</h2>
+   <p className="mt-2 text-xs leading-5 text-stone-400">These are payment beneficiaries registered by this account, not new WEAVE logins. You can stop future monthly instructions at any time; an order already funded still follows Forensics review.</p>
+   {!beneficiaries.length&&<p className="mt-4 text-xs text-stone-400">No loved-one accounts have been registered.</p>}
+   <div className="mt-4 space-y-3">
+    {beneficiaries.map(person=><div key={person.id} className="flex flex-wrap items-center justify-between gap-3 border border-white/10 bg-black/15 p-3">
+     <div><p className="text-sm font-semibold">{person.kind==='parent'?'Parent':'Child'} · {person.display_name}</p>
+      <p className="mt-1 text-xs text-stone-400">{person.bank_name} · account ending {person.account_number.slice(-4)} · {cash(person.monthly_amount_ngn)}/month</p></div>
+     <button className="rounded-md border border-emerald-300/30 px-3 py-2 text-xs text-emerald-200 disabled:opacity-40"
+      type="button" disabled={busy!==''} onClick={()=>void setMonthly(person.id,!person.recurring)}>
+      {person.recurring?'Pause monthly instructions':'Resume monthly instructions'}
+     </button>
+    </div>)}
+   </div>
+  </section>
   <section className="border border-white/10 p-4 sm:p-6">
    <div className="flex items-center justify-between gap-3">
     <div><h2 className="text-lg font-bold">{reviewer?'Forensics transfer orders':guides.length?'Family support guidance queue':'My family support orders'}</h2>
