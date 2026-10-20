@@ -39,7 +39,7 @@ assert.ok(adminPage.includes('data-admin-electrolyte="independent"')&&adminPage.
 assert.ok(adminPage.includes("'/api/admin/electrolyte/payment/opay/verify'")&&adminPage.includes("'/api/admin/electrolyte/stock'"),'Administration uses independent Electrolyte verification and fulfillment APIs')
 assert.ok(adminStock.includes("['paid', 'preparing', 'packed', 'dispatched', 'delivered']")||read('lib/electrolyte-catalog.ts').includes("['paid', 'preparing', 'packed', 'dispatched', 'delivered']"),'Electrolyte moves paid → preparing → packed → dispatched → delivered')
 assert.ok(adminVerify.includes("source: 'electrolyte'")&&adminVerify.includes('repeatRestockAllowed: true'),'Administration payment ledger preserves Electrolyte identity and repeat-restock rule')
-assert.ok(agilityStock.includes("variant_id NOT IN ('electrolyte','electrolyte-medium')")&&adminAgilityStock.includes("variant_id NOT IN ('electrolyte','electrolyte-medium')"),'Agility order/admin APIs no longer carry Electrolyte orders')
+assert.ok(agilityStock.includes("variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')")&&adminAgilityStock.includes("variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')"),'Agility order/admin APIs no longer carry Electrolyte orders')
 assert.ok(migration.includes('prepared_at timestamptz'),'production stock ledger supports Electrolyte fresh preparation')
 
 console.log('Independent Electrolyte home, order, Administration fulfillment and repeat restocking checks passed')
