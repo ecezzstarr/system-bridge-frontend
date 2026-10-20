@@ -41,7 +41,7 @@ export function WeaveEmbodiedAvatar({
     actor.position.set(state.x,Math.max(0,state.airborne)-(state.crouching ? .24 : 0),state.z)
     actor.rotation.y=yaw.current
   })
-  return <group ref={root} scale={scale} data-weave-embodied-avatar={role}>
+  return <group ref={root} scale={scale} userData={{weaveEmbodiedAvatar:role}}>
     <LivingPresenceForm element={element||preferredElement} motion={motion}/>
   </group>
 }

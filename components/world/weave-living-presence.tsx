@@ -124,7 +124,7 @@ export function LivingPresenceForm({
     }
   })
 
-  return <group data-weave-living-presence={element} data-presence-detail={compact?'compact':'local'}>
+  return <group userData={{weaveLivingPresence:element,presenceDetail:compact?'compact':'local'}}>
     <group ref={root}>
       <mesh position={[0,1.04,0]} scale={[.78,1.06,.78]} material={materials[0]} >
         <sphereGeometry args={[1,20,14]}/>
