@@ -41,6 +41,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       places:[
         {label:'Agility',href:'/agility',detail:'Order, receive, distribute and record Agility movement.',daily:true},
         {label:'Electrolyte',href:'/electrolyte',detail:'Order and receive Electrolyte bowls, then distribute and restock.',daily:true},
+        {label:'Ember',href:'/ember',detail:'Order Ember Small and Large food boxes, verify payment, and distribute received cartons.',daily:true},
         {label:'Daisy Pastries',href:'/agent/cakes',detail:'Place cake orders, quote customer requests and verify payments for Administration production.',daily:true},
         {label:'Commissions',href:'/agent/commissions',detail:'See Prospect purchase shares and verified Client File Folder shares generated through attached Bridgers.',daily:true},
       ],
@@ -205,6 +206,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Bridge Templates',href:'/admin/bridge-templates',detail:'Control Bridge AI crossing templates.'},
         {label:'Fulfillment Agent',href:'/admin/outreach',detail:'Authorized phone/WhatsApp Prospect outreach and delivery movement.'},
         {label:'Agility Fulfillment',href:'/admin/agility',detail:'Administer Agility orders and fulfillment.'},
+        {label:'Ember Fulfillment',href:'/admin/ember',detail:'Verify Ember Agent stock payments and record hot food preparation, dispatch and receipt.'},
         {label:'Enterprise Dream',href:'/admin/enterprise-dream',detail:'Lord/Lady elevation and enterprise plans.'},
         {label:'Client Build Catalog',href:'/admin/client-build-catalog',detail:'Control Client build systems and pricing.'},
         {label:'Enterprise Systems',href:'/admin/enterprise-systems',detail:'Build and administer enterprise-scale systems.'},
