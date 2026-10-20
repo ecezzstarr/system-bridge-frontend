@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const result = await db.query(
       `SELECT * FROM agility_stock_orders
        WHERE id=$1::uuid
-         AND variant_id NOT IN ('electrolyte','electrolyte-medium')
+         AND variant_id NOT IN ('electrolyte','electrolyte-medium','ember-small','ember-large')
        FOR UPDATE`,
       [orderId]
     )
