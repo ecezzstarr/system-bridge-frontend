@@ -110,6 +110,7 @@ jobs:
           node tests/client-lord-lady-subscription-regression.cjs
           node tests/flame-coin-prospect-purchases.cjs
           node tests/flame-coin-proof-route-regression.cjs
+          node tests/customer-door-payment-privacy.cjs
 
       - name: Flame Coin payments PostgreSQL settlement
         env:

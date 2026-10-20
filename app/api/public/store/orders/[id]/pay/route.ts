@@ -21,5 +21,9 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
         adminPath:'/admin/orders',actorId:String(user.id),actorName:String(user.name||'Customer')})
     }catch(e){console.error('[Customer Door notification]',e)}
   }
-  return NextResponse.json(result,{headers:{'Cache-Control':'private, no-store'}})
+  // Buyer confirmation must never disclose the Client's private Main Wallet balance.
+  return NextResponse.json({success:result.success,alreadyPaid:result.alreadyPaid,
+    orderId:result.orderId,settlementId:result.settlementId,
+    amountFlameCoin:result.amountFlameCoin,receiptNumber:result.receiptNumber},
+    {headers:{'Cache-Control':'private, no-store'}})
 }
