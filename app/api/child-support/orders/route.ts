@@ -30,7 +30,7 @@ export async function GET(request:NextRequest){
       success:true,canReview:access.canReview,canGuide:access.canGuide,
       orders:rows.map(order=>access.canReview||order.requester_id===user.id?order:{
         ...order,recipient_account_name:'Private beneficiary',recipient_bank:'Restricted',
-        recipient_account_number:'',source_reference:'Restricted',
+        recipient_account_number:'',source_reference:'Restricted',note:'Private',review_note:null,
         verification_reference:null,transfer_reference:null,
       }),monthlyRule:CHILD_SUPPORT_MONTHLY_RULE,
       disclaimer:'An order is not proof of a deposit or bank transfer. Forensics must verify funds and record a real bank receipt.',
