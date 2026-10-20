@@ -1,7 +1,8 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
-import { childSupportAccess,childSupportUuid,ensureChildSupportOrdersSchema } from '@/lib/child-support-orders'
+import { childSupportUuid } from '@/lib/child-support-orders'
+import { familySupportAccess,ensureFamilySupportSchema } from '@/lib/family-support'
 
 export const dynamic='force-dynamic'
 const noStore={'Cache-Control':'private, no-store'}
@@ -11,7 +12,7 @@ const str=(value:unknown)=>typeof value==='string'?value.trim():''
 export async function PATCH(request:NextRequest,context:{params:Promise<{id:string}>}){
   const user=await getAuthUser(request)
   if(!user)return NextResponse.json({error:'Sign in required'},{status:401})
-  const access=await childSupportAccess(user)
+  const access=await familySupportAccess(user)
   if(!access.canReview)return NextResponse.json({error:'Administration or approved Forensics appointment required'},{status:403})
   const {id}=await context.params
   if(!childSupportUuid.test(id))return NextResponse.json({error:'Invalid order reference'},{status:400})
@@ -26,7 +27,7 @@ export async function PATCH(request:NextRequest,context:{params:Promise<{id:stri
   const pool=getPool()
   let client:Awaited<ReturnType<typeof pool.connect>>|null=null
   try{
-    await ensureChildSupportOrdersSchema()
+    await ensureFamilySupportSchema()
     client=await pool.connect()
     await client.query('BEGIN')
     if(user.role!=='admin'){
