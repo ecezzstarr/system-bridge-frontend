@@ -4,6 +4,7 @@ import { useRef, type MutableRefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { LivingPresenceForm, type PresenceElement } from '@/components/world/weave-living-presence'
+import { usePresenceElement } from '@/components/world/use-presence-element'
 
 /**
  * The same moving, non-human Presence crosses Flame Event, System Switch and
@@ -20,13 +21,14 @@ export type WeaveAvatarMotion = {
 export type WeaveAvatarPosition = 'visitor'|'client'|'agent'|'bridger'|'admin'
 
 export function WeaveEmbodiedAvatar({
-  motion,role='visitor',scale=1,element='confluence',
+  motion,role='visitor',scale=1,element,
 }:{
   motion:MutableRefObject<WeaveAvatarMotion>
   role?:WeaveAvatarPosition
   scale?:number
   element?:PresenceElement
 }){
+  const preferredElement=usePresenceElement()
   const root=useRef<THREE.Group>(null)
   const yaw=useRef(0)
   useFrame((_,delta)=>{
@@ -40,6 +42,6 @@ export function WeaveEmbodiedAvatar({
     actor.rotation.y=yaw.current
   })
   return <group ref={root} scale={scale} data-weave-embodied-avatar={role}>
-    <LivingPresenceForm element={element} motion={motion}/>
+    <LivingPresenceForm element={element||preferredElement} motion={motion}/>
   </group>
 }
