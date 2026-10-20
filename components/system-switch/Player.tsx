@@ -4,6 +4,7 @@ import { useRef, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { LivingPresenceForm } from '@/components/world/weave-living-presence'
+import { usePresenceElement } from '@/components/world/use-presence-element'
 
 const WEAVE_GOLD = '#e8b93f'
 const WEAVE_TEAL = '#14b8a6'
@@ -14,6 +15,7 @@ interface PlayerProps {
 }
 
 export function Player({ onMove, externalDir }: PlayerProps) {
+  const element=usePresenceElement()
   const meshRef = useRef<THREE.Group>(null)
   const { camera } = useThree()
   
@@ -108,7 +110,7 @@ export function Player({ onMove, externalDir }: PlayerProps) {
     <group ref={meshRef}>
       {/* Corridor movement, station proximity and third-person camera are unchanged. */}
       <group position={[0,-2.2,0]}>
-        <LivingPresenceForm element="confluence" motion={flow}/>
+        <LivingPresenceForm element={element} motion={flow}/>
       </group>
     </group>
   )
