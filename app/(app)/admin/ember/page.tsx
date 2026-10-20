@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2, CreditCard, Loader2, PackageCheck, RefreshCcw, Truck, UtensilsCrossed } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
-import { EMBER_VARIANTS, emberMoneySplit } from '@/lib/ember-catalog'
+import { EMBER_VARIANTS } from '@/lib/ember-catalog'
 
 type OrderRow={
   id:string
