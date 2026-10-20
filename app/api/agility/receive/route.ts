@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
       LIMIT 1
     `
     if (!identity) return NextResponse.json({ success: false, error: 'WEAVE food order not found' }, { status: 404 })
+    if (['ember-small','ember-large'].includes(String(identity.variant_id))) {
+      return NextResponse.redirect(new URL('/api/ember/receive', request.url), 307)
+    }
     if (['electrolyte','electrolyte-medium'].includes(String(identity.variant_id))) {
       return NextResponse.redirect(new URL('/api/electrolyte/receive', request.url), 307)
     }
