@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const variant = getEmberVariant(variantId)
 
     if (!variant) {
-      return NextResponse.json({ success: false, error: 'Choose Small Bowl or Medium Bowl Ember' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Choose Ember Small Box or Large Box' }, { status: 400 })
     }
     if (!isValidWeaveFoodCartonQuantity(boxCount)) {
       return NextResponse.json({
