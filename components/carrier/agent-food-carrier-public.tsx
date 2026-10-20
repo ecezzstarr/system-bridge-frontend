@@ -240,7 +240,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
             <h2 className="mt-1 text-4xl font-black text-orange-300">EMBER</h2>
             <p className="mt-2 text-xs text-orange-100/70">Suya beef or chicken · Roasted plantain · Seasoned yam · Pepper sauce</p>
           </div>
-          <img src="/weave-food/ember.svg" alt="Ember Small and Large evening food boxes" className="mx-auto max-h-[390px] w-full bg-[#180906] object-contain"/>
+          <img src="/weave-food/ember.jpg" alt="Ember Small and Large evening food boxes" className="mx-auto h-auto w-full max-w-[460px] rounded-xl bg-[#180906] object-contain"/>
           <div className="grid gap-3 p-5 sm:grid-cols-2">
             {ember.length?ember.map(product=><button key={product.id} disabled={Boolean(paymentIntent)} onClick={()=>chooseProduct(product)}
               className={`border p-4 text-left transition disabled:opacity-60 ${selected?.id===product.id?'border-orange-300 bg-orange-400/10':'border-white/10 bg-black/15 hover:border-orange-400/40'}`}>

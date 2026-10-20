@@ -43,7 +43,7 @@ export default async function CarrierFoodDoorPage({params}:{params:Promise<{code
             <figcaption className="px-4 py-3 text-xs font-bold text-emerald-100">ELECTROLYTE · Small Bowl ₦4,000 · Medium Bowl ₦6,000 · customers order from 1 bowl</figcaption>
           </figure>
           <figure className="overflow-hidden rounded-[1.4rem] border border-orange-400/25 bg-black/20">
-            <a href="/weave-food/ember.svg" target="_blank" rel="noopener noreferrer" aria-label="Open Ember image"><img src="/weave-food/ember.svg" alt="WEAVE Ember rich evening food box, Small ₦6,000 and Large ₦12,000" className="h-auto max-h-[36rem] w-full bg-[#170b05] object-contain"/></a>
+            <a href="/weave-food/ember.jpg" target="_blank" rel="noopener noreferrer" aria-label="Open Ember image"><img src="/weave-food/ember.jpg" alt="WEAVE Ember rich evening food box, Small ₦6,000 and Large ₦12,000" className="mx-auto h-auto w-full max-w-[460px] bg-[#170b05] object-contain"/></a>
             <figcaption className="px-4 py-3 text-xs font-bold text-orange-100">EMBER · Small ₦6,000 · Large ₦12,000 · order from 1 box</figcaption>
           </figure>
         </div>
