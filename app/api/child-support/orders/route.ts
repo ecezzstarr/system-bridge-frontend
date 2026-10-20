@@ -3,7 +3,6 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import {familySupportAccess,ensureFamilySupportSchema,generateCurrentMonthSupportInstructions,validSupportMonth} from '@/lib/family-support'
 import {
-  validChildSupportMonth,
   CHILD_SUPPORT_MONTHLY_RULE,
 } from '@/lib/child-support-orders'
 
@@ -46,7 +45,7 @@ export async function POST(request:NextRequest){
   try{
     const user=await getAuthUser(request)
     if(!user)return NextResponse.json({error:'Sign in required'},{status:401})
-    const access=await childSupportAccess(user)
+    const access=await familySupportAccess(user)
     if(!access.canSubmit)return NextResponse.json({error:'Active Client, Agent, Bridger or Administration position required'},{status:403})
     const body=await request.json().catch(()=>({}))
     const amount=Number(body.amountNgn)
@@ -111,7 +110,7 @@ export async function POST(request:NextRequest){
     await getPool().query([
       'INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link)',
       "SELECT u.id,'child_support_order','Child support order awaiting Forensics',",
-      "'A '+$1+' submitted a child-support transfer instruction for review.',",
+      "'A '||$1||' submitted a child or parent support instruction for review.',",
       "$2::uuid,$3,'/weave/child-support'",
       'FROM users u WHERE u.is_active=true AND (u.role=\'admin\' OR EXISTS (',
       'SELECT 1 FROM weave_guidance_staff_applications a',
