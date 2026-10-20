@@ -21,7 +21,7 @@ export const AGILITY_AGENT_TUTORIAL = {
     },
     {
       title: 'Supply paid now',
-      detail: 'When an outlet can fund the cartons, supply the agreed quantity and collect the agreed amount immediately. That stock leaves the Agent distribution inventory at once.',
+      detail: 'When an outlet can fund the cartons, supply at the official WEAVE unit price and collect the full supply amount immediately. The shop keeps its separate resale markup. That stock leaves the Agent distribution inventory at once.',
     },
     {
       title: 'Supply pay after sale',
