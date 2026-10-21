@@ -12,9 +12,10 @@ import { useAuth } from '@/lib/auth-provider'
 import {
   ENTERPRISE_LEGIONS_NOTEBOOK,
   ENTERPRISE_LEGION_RULES,
+  type EnterpriseLegionPage,
 } from '@/lib/enterprise-legions-notebook'
 
-function NotebookArtifact({ pageIndex }: { pageIndex: number }) {
+function NotebookArtifact({ pageIndex, pages }: { pageIndex: number; pages: EnterpriseLegionPage[] }) {
   const turningPage = useRef<THREE.Group>(null)
   const turn = useRef(1)
   const previous = useRef(pageIndex)
@@ -40,7 +41,7 @@ function NotebookArtifact({ pageIndex }: { pageIndex: number }) {
   })
 
   const number = String(pageIndex + 1).padStart(2, '0')
-  const total = String(ENTERPRISE_LEGIONS_NOTEBOOK.pages.length).padStart(2, '0')
+  const total = String(pages.length).padStart(2, '0')
 
   return (
     <group rotation={[0.04, -0.05, 0]} position={[0, -0.15, 0]}>
@@ -111,7 +112,7 @@ function NotebookArtifact({ pageIndex }: { pageIndex: number }) {
         anchorX="center"
         anchorY="middle"
       >
-        {ENTERPRISE_LEGIONS_NOTEBOOK.pages[pageIndex]?.title || 'LEGIONS'}
+        {pages[pageIndex]?.title || 'LEGIONS'}
       </Text>
       <Text
         position={[1.53, 0.18, 0.1]}
@@ -134,7 +135,7 @@ function NotebookArtifact({ pageIndex }: { pageIndex: number }) {
         anchorX="center"
         anchorY="top"
       >
-        {(ENTERPRISE_LEGIONS_NOTEBOOK.pages[pageIndex]?.meaning || '').slice(0, 260)}
+        {(pages[pageIndex]?.meaning || '').slice(0, 260)}
       </Text>
 
       <mesh position={[-2.77, 0.3, -1.63]} castShadow>
@@ -146,7 +147,7 @@ function NotebookArtifact({ pageIndex }: { pageIndex: number }) {
   )
 }
 
-function NotebookScene({ pageIndex }: { pageIndex: number }) {
+function NotebookScene({ pageIndex, pages }: { pageIndex: number; pages: EnterpriseLegionPage[] }) {
   return (
     <AdaptiveCanvas
       shadows
@@ -157,7 +158,7 @@ function NotebookScene({ pageIndex }: { pageIndex: number }) {
       <directionalLight position={[3.8, 7.5, 4.2]} intensity={4.2} castShadow />
       <pointLight position={[-4, 3.6, -1]} color="#a78bfa" intensity={2.2} distance={9} />
       <pointLight position={[4, 2.4, 2]} color="#f59e0b" intensity={1.8} distance={8} />
-      <NotebookArtifact pageIndex={pageIndex} />
+      <NotebookArtifact pageIndex={pageIndex} pages={pages} />
       <ContactShadows position={[0, -0.81, 0]} opacity={0.42} scale={10} blur={2.6} far={4} />
       <OrbitControls
         makeDefault
@@ -187,8 +188,13 @@ export default function EnterpriseLegionsNotebookWorld() {
   const { user, isInitialized, isLoading } = useAuth()
   const router = useRouter()
   const [pageIndex, setPageIndex] = useState(0)
-  const steps = ENTERPRISE_LEGIONS_NOTEBOOK.pages
-  const step = steps[pageIndex]
+  // Workers read only their own employment chapters; Client formation stays in the Client notebook.
+  const steps = ENTERPRISE_LEGIONS_NOTEBOOK.pages.filter(page =>
+    user?.role === 'admin' || page.audience === 'all' || page.audience === user?.role ||
+    (page.audience === 'worker' && (user?.role === 'agent' || user?.role === 'bridger'))
+  )
+  const visiblePageIndex = Math.min(pageIndex, steps.length - 1)
+  const step = steps[visiblePageIndex]
   const audience = step.audience === 'all' ? 'All positions' : step.audience === 'worker' ? 'Agent & Bridger' : step.audience === 'client' ? 'Lord / Lady' : step.audience === 'agent' ? 'Agent' : 'Bridger'
 
   useEffect(() => {
@@ -207,8 +213,8 @@ export default function EnterpriseLegionsNotebookWorld() {
     )
   }
 
-  const first = pageIndex === 0
-  const last = pageIndex === steps.length - 1
+  const first = visiblePageIndex === 0
+  const last = visiblePageIndex === steps.length - 1
 
   const go = (next: number) => {
     const clamped = Math.max(0, Math.min(steps.length - 1, next))
@@ -223,7 +229,7 @@ export default function EnterpriseLegionsNotebookWorld() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(245,158,11,.12),transparent_24%),radial-gradient(circle_at_50%_72%,rgba(167,139,250,.08),transparent_34%),linear-gradient(180deg,#020303,#080705_58%,#020304)]" />
 
       <section className="relative h-[380px] min-h-[340px] w-full sm:h-[500px] lg:h-[560px]" aria-label="Three dimensional Enterprise Legions notebook">
-        <NotebookScene pageIndex={pageIndex} />
+        <NotebookScene pageIndex={visiblePageIndex} pages={steps} />
         <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-4 bg-gradient-to-b from-black/80 to-transparent px-4 pb-12 pt-5 sm:px-7">
           <div className="min-w-0">
             <p className="text-[8px] font-black uppercase tracking-[.22em] text-amber-200">Enterprise Dream · Lord / Lady and Legion</p>
@@ -242,13 +248,13 @@ export default function EnterpriseLegionsNotebookWorld() {
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#6f5b42]/20 px-4 py-3 sm:px-6">
             <div className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-[#8a6338]" />
-              <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#6c5337]">Page {String(pageIndex + 1).padStart(2, '0')} of {String(steps.length).padStart(2, '0')} · {step.phase} · {audience}</p>
+              <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#6c5337]">Page {String(visiblePageIndex + 1).padStart(2, '0')} of {String(steps.length).padStart(2, '0')} · {step.phase} · {audience}</p>
             </div>
             <div className="flex gap-1" aria-label="Notebook progress">
               {steps.map((item, index) => (
                 <span
                   key={item.key}
-                  className={`h-1.5 rounded-full transition-all ${index === pageIndex ? 'w-6 bg-[#8a6338]' : index < pageIndex ? 'w-2 bg-[#8a6338]/55' : 'w-2 bg-[#6f5b42]/18'}`}
+                  className={`h-1.5 rounded-full transition-all ${index === visiblePageIndex ? 'w-6 bg-[#8a6338]' : index < visiblePageIndex ? 'w-2 bg-[#8a6338]/55' : 'w-2 bg-[#6f5b42]/18'}`}
                 />
               ))}
             </div>
@@ -309,7 +315,7 @@ export default function EnterpriseLegionsNotebookWorld() {
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => go(pageIndex - 1)}
+                onClick={() => go(visiblePageIndex - 1)}
                 disabled={first}
                 className="inline-flex min-h-11 items-center gap-2 border border-[#6f5b42]/25 px-4 text-[9px] font-black uppercase tracking-[.13em] text-[#493a29] disabled:cursor-not-allowed disabled:opacity-30"
               >
@@ -335,7 +341,7 @@ export default function EnterpriseLegionsNotebookWorld() {
             ) : (
               <button
                 type="button"
-                onClick={() => go(pageIndex + 1)}
+                onClick={() => go(visiblePageIndex + 1)}
                 className="inline-flex min-h-11 items-center gap-2 bg-[#3d2b1c] px-5 text-[9px] font-black uppercase tracking-[.13em] text-[#f4ead5]"
               >
                 Turn page <ArrowRight className="h-3.5 w-3.5" />
