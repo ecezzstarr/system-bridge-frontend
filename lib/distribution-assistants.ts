@@ -2,6 +2,7 @@ import { getPool, sql } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable, getManagerEmployment } from '@/lib/manager-employment'
 import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
+import { calculateDistributionTeamCompensation } from '@/lib/distribution-team-compensation'
 
 export const DISTRIBUTION_ASSISTANT_LIMIT = 6
 export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
@@ -146,7 +147,7 @@ export async function reviewDistributionAssistant(
     await client.query('COMMIT')
     try {
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and the shared monthly target for your three-person team is 500 verified Agent/Bridger referrals.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
+        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and the shared monthly target for your three-person team is 500 verified Agent/Bridger referrals. Full monthly salary is conditional on team success. Below 500, you earn only the existing ₦500 bonus per verified referral you personally brought.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
     } catch(error) {console.error('[distribution-assistants] notification failed',error)}
     return {success:true as const,status}
   } catch(error) {
@@ -175,6 +176,7 @@ export async function getDistributionAssistantState(userId:string) {
     : null
   const verifiedReferrals=teamProgress?.total||0
   const ownReferrals=teamProgress?.members.find(member=>member.userId===userId)?.referrals||0
+  const compensation=calculateDistributionTeamCompensation({teamReferrals:verifiedReferrals,ownReferrals,monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN})
   let pending:any[]=[]
   let team:any[]=[]
   if (canReview) {
@@ -201,6 +203,7 @@ export async function getDistributionAssistantState(userId:string) {
     teamTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
     teamMembers:teamProgress?.members||[],
     ownReferrals,
+    compensation,
     verifiedReferrals, remainingReferrals:Math.max(0,DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET-verifiedReferrals),
     payrollStatus:'employment_terms_only_no_automatic_payment',
   }
