@@ -1,6 +1,7 @@
 'use client'
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
 import FileFolderPlatformProjectStudio from './file-folder-platform-project-studio'
+import FileFolderLivingTerrain from './file-folder-living-terrain'
 import { type FileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -363,6 +364,8 @@ export default function FileFolderOpenWorld({
       </details>
 
       <div className="min-h-[520px] sm:min-h-[650px]">
+        <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={setDistrict} systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}/>
+
         <nav aria-label="Walk the build site" className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
           <div className="ff-workspace-picker"><label htmlFor="ff-build-district">Build workspace</label><select id="ff-build-district" aria-label="Choose build workspace" value={district} onChange={e=>{setDistrict(e.target.value);recordOutput({type:'action',label:`File Folder district: ${e.target.value}`,toScene:'file-folder'})}}>{visibleDistricts.map(item=><option key={item.key} value={item.key}>{item.label}</option>)}</select></div>
           <div className="ff-build-rail flex h-12 items-center gap-2 px-3 md:h-auto md:px-4 md:py-3">
