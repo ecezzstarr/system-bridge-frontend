@@ -1,7 +1,7 @@
 import { getPool } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
-import { ensureAgilitySchema, getAgilityCompanyEconomics, AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN, AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN, nextAgilityAdminStage } from '@/lib/agility'
-import { nextEmberAdminStage,emberMoneySplit } from '@/lib/ember-catalog'
+import { ensureAgilitySchema, nextAgilityAdminStage } from '@/lib/agility'
+import { nextEmberAdminStage } from '@/lib/ember-catalog'
 import { nextElectrolyteAdminStage } from '@/lib/electrolyte-catalog'
 import { ensureCarrierCakeSchema, nextCakeAdministrationStatus } from '@/lib/carrier-cakes'
 
@@ -230,43 +230,38 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
       throw new PreparationAccessError(next?`The next permitted stage is ${next}.`:'This order requires Administration or recipient confirmation for its next step.',409)
     }
     let updated
-    if(task.product==='agility'){
-      const cost=AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
-      const econ=getAgilityCompanyEconomics(Number(order.box_count),cost)
-      if(next==='heating' && econ.grossProfitPerBoxNgn!==AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)
-        throw new PreparationAccessError('Agility company cost policy does not balance.',409)
-      if(next!=='heating'&&!order.planned_company_cost_per_box_ngn)
-        throw new PreparationAccessError('Administration production cost must exist before processing.',409)
+    if(task.product==='agility'||task.product==='electrolyte'||task.product==='ember'){
+      // Verified Agent→WEAVE stock purchase is the authoritative funds source.
+      // Administration (₦800) and Child/Parents Support (₦200) are reserved
+      // per package. Every remaining naira is allocated to the Stability Lead.
+      const {rows:finance}=await client.query(`
+        SELECT package_count,received_ngn,lead_preparation_ngn
+        FROM weave_food_forensic_stock_splits
+        WHERE product=$1 AND source_order_id=$2::uuid
+      `,[task.product,task.source_order_id])
+      const split=finance[0]
+      if(!split||Number(split.package_count)!==Number(order.package_count))
+        throw new PreparationAccessError('Forensics must reconcile this paid stock order before preparation starts.',409)
+      const budget=Number(split.lead_preparation_ngn)
+      const perCarton=budget/Number(order.box_count)
+      if(!Number.isFinite(perCarton)||perCarton<=0)
+        throw new PreparationAccessError('Invalid audited preparation budget.',409)
+      const preparing=task.product==='agility'?'heating':'preparing'
       const result=await client.query(`
         UPDATE agility_stock_orders
         SET fulfillment_status=$1,
-          planned_company_cost_per_box_ngn=CASE WHEN $1='heating' THEN $2 ELSE planned_company_cost_per_box_ngn END,
-          planned_company_total_cost_ngn=CASE WHEN $1='heating' THEN $3 ELSE planned_company_total_cost_ngn END,
-          planned_company_gross_profit_ngn=CASE WHEN $1='heating' THEN $4 ELSE planned_company_gross_profit_ngn END,
+          planned_company_cost_per_box_ngn=CASE WHEN $1=$4 THEN $5 ELSE planned_company_cost_per_box_ngn END,
+          planned_company_total_cost_ngn=CASE WHEN $1=$4 THEN $6 ELSE planned_company_total_cost_ngn END,
+          planned_company_gross_profit_ngn=CASE WHEN $1=$4 THEN 0 ELSE planned_company_gross_profit_ngn END,
           heated_at=CASE WHEN $1='heating' THEN COALESCE(heated_at,NOW()) ELSE heated_at END,
+          prepared_at=CASE WHEN $1='preparing' THEN COALESCE(prepared_at,NOW()) ELSE prepared_at END,
           packed_at=CASE WHEN $1='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
           boxed_at=CASE WHEN $1='boxed' THEN COALESCE(boxed_at,NOW()) ELSE boxed_at END,
           dispatched_at=CASE WHEN $1='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
           updated_at=NOW()
-        WHERE id=$5::uuid AND payment_status='paid' AND fulfillment_status=$6
-        RETURNING id,agent_id,fulfillment_status
-      `,[next,cost,econ.totalPlannedCostNgn,econ.grossProfitNgn,task.source_order_id,oldStage])
-      updated=result.rows[0]
-    }else if(task.product==='electrolyte'||task.product==='ember'){
-      const split=task.product==='ember'?emberMoneySplit(String(order.variant_id)):null
-      const budgetPerCarton=split?split.preparationBudgetNgn*10-(split.administrationNgn/Math.max(1,Number(order.box_count))):null
-      const result=await client.query(`
-        UPDATE agility_stock_orders SET fulfillment_status=$1,
-          planned_company_cost_per_box_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN $4 ELSE planned_company_cost_per_box_ngn END,
-          planned_company_total_cost_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN $4 * box_count ELSE planned_company_total_cost_ngn END,
-          planned_company_gross_profit_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN (agent_box_price_ngn-$4)*box_count ELSE planned_company_gross_profit_ngn END,
-          prepared_at=CASE WHEN $1='preparing' THEN COALESCE(prepared_at,NOW()) ELSE prepared_at END,
-          packed_at=CASE WHEN $1='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
-          dispatched_at=CASE WHEN $1='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
-          updated_at=NOW()
         WHERE id=$2::uuid AND payment_status='paid' AND fulfillment_status=$3
         RETURNING id,agent_id,fulfillment_status
-      `,[next,task.source_order_id,oldStage,budgetPerCarton])
+      `,[next,task.source_order_id,oldStage,preparing,perCarton,budget])
       updated=result.rows[0]
     }else{
       const result=await client.query(`
