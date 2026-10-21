@@ -17,6 +17,7 @@ import { FlameEventAd } from '@/components/events/flame-event-ad'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
+import { WeaveExistingPageImage } from '@/components/world/weave-existing-page-image'
 import { canAccessEnvironmentRoute } from '@/lib/company-guidance-access'
 
 export default function AppLayout({
@@ -164,7 +165,7 @@ export default function AppLayout({
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
               <FlameEventRoleAtmosphere userRole={user?.role} userName={user?.name} pathname={pathname}>
                 <NormalWeaveRoleAtmosphere userRole={user?.role} userName={user?.name} pathname={pathname}>
-                  <EnvironmentPageGuard>{children}</EnvironmentPageGuard>
+                  <EnvironmentPageGuard><WeaveExistingPageImage/>{children}</EnvironmentPageGuard>
                 </NormalWeaveRoleAtmosphere>
               </FlameEventRoleAtmosphere>
             </WeaveEnvironmentSurface>

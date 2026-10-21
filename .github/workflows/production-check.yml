@@ -61,6 +61,11 @@ jobs:
       - name: Smart WEAVE loading guidance regression
         run: node tests/weave-loading-guidance-regression.cjs
 
+      - name: Contextual WEAVE images and full route preservation
+        run: |
+          node tests/weave-existing-page-images-regression.cjs
+          node tests/weave-page-preservation-regression.cjs
+
       - name: Bridge of Radiance live loader regression
         run: node tests/weave-live-role-loader-regression.cjs
 
