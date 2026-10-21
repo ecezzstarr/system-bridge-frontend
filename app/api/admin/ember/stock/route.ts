@@ -85,7 +85,7 @@ export async function PATCH(request: NextRequest) {
 
     const split=emberMoneySplit(String(current.variant_id))
     if(!split)return NextResponse.json({success:false,error:'Ember variant economics unavailable'},{status:409})
-    const plannedPerCarton=split.preparationBudgetNgn*10-(split.administrationNgn/Math.max(1,Number(current.box_count)))
+    const plannedPerCarton=split.preparationBudgetNgn*10
     const [updated] = await sql`
       UPDATE agility_stock_orders
       SET
@@ -93,7 +93,7 @@ export async function PATCH(request: NextRequest) {
         admin_note=${adminNote || null},
         planned_company_cost_per_box_ngn=CASE WHEN ${nextStatus}='preparing' THEN ${plannedPerCarton} ELSE planned_company_cost_per_box_ngn END,
         planned_company_total_cost_ngn=CASE WHEN ${nextStatus}='preparing' THEN ${plannedPerCarton}*box_count ELSE planned_company_total_cost_ngn END,
-        planned_company_gross_profit_ngn=CASE WHEN ${nextStatus}='preparing' THEN ${split.administrationNgn} ELSE planned_company_gross_profit_ngn END,
+        planned_company_gross_profit_ngn=CASE WHEN ${nextStatus}='preparing' THEN 0 ELSE planned_company_gross_profit_ngn END,
         prepared_at=CASE WHEN ${nextStatus}='preparing' THEN COALESCE(prepared_at,NOW()) ELSE prepared_at END,
         packed_at=CASE WHEN ${nextStatus}='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
         dispatched_at=CASE WHEN ${nextStatus}='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
