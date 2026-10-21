@@ -306,6 +306,10 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const role:WeaveLoadingRole=user?.role==='agent'||user?.role==='bridger'||user?.role==='client'||user?.role==='admin'
     ? user.role
     : destinationPath.startsWith('/client/') ? 'client' : 'visitor'
+  // Client login/registration is not yet an authenticated Client world.
+  const canReturnClientWorld=role==='client'&&(
+    user?.role==='client'||destinationPath.startsWith('/client/system-switch')||destinationPath==='/client/presence'
+  )
   const hopeDestination=destinationPath.startsWith('/bridger')||destinationPath==='/weave/market/prospects'
   const showHopeBriefing=booting&&(role==='bridger'||hopeDestination)
   const showAgentBriefing=booting&&role==='agent'
@@ -423,7 +427,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       {/* The water/fire river forms the Bridge of Radiance; text is live. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[54dvh] overflow-hidden opacity-95 sm:h-[67dvh]">
         <div className="absolute inset-0 bg-[url('/weave/flame-event/burning-river-world.svg')] bg-cover bg-center opacity-65"/>
-        <div className="absolute inset-0 bg-[url('/weave/bridge-of-radiance-approved-scene.svg')] bg-cover bg-center opacity-85 sm:bg-center"/>
+        <div className="absolute inset-0 bg-[url('/weave/bridge-of-radiance-approved-scene.svg')] bg-cover bg-center opacity-50 sm:bg-center"/>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_57%,rgba(255,184,70,.12),transparent_44%),linear-gradient(180deg,rgba(2,8,22,.12)_0%,rgba(3,9,20,.15)_35%,rgba(2,5,10,.98)_100%)]"/>
         <div className="absolute bottom-[16%] left-[-24%] h-[12%] w-[95%] -rotate-6 rounded-full bg-sky-400/20 blur-2xl motion-safe:animate-pulse"/>
         <div className="absolute bottom-[12%] right-[-24%] h-[12%] w-[95%] rotate-6 rounded-full bg-orange-400/20 blur-2xl motion-safe:animate-pulse"/>
@@ -480,7 +484,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           />)}
         </div>
 
-        {role==='client'&&destinationPath!=='/client/dashboard'&&<Link href="/client/dashboard"
+        {canReturnClientWorld&&destinationPath!=='/client/dashboard'&&<Link href="/client/dashboard"
           data-client-loader-open-world-return="true"
           className="mx-auto mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-amber-200/40 bg-[#071c30]/95 px-5 py-2 text-xs font-black text-amber-100">
           Return to Weave Open World <ArrowRight className="ml-2 h-4 w-4"/>
