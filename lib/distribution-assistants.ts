@@ -2,7 +2,8 @@ import { getPool, sql } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable, getManagerEmployment } from '@/lib/manager-employment'
 
-export const DISTRIBUTION_ASSISTANT_LIMIT = 3
+export const DISTRIBUTION_ASSISTANT_LIMIT = 6
+export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
 export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 30_000
 export const DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = 300
 
@@ -122,6 +123,13 @@ export async function reviewDistributionAssistant(
       if (Number(capacity[0]?.occupied||0)>=DISTRIBUTION_ASSISTANT_LIMIT) {
         await client.query('ROLLBACK');return {success:false as const,reason:'positions_full' as const}
       }
+      const {rows:teamCapacity}=await client.query(
+        "SELECT COUNT(*)::int AS occupied FROM weave_distribution_assistants WHERE status='approved' AND manager_user_id=$1::uuid",
+        [reviewerId],
+      )
+      if (Number(teamCapacity[0]?.occupied||0)>=DISTRIBUTION_ASSISTANTS_PER_MANAGER) {
+        await client.query('ROLLBACK');return {success:false as const,reason:'manager_team_full' as const}
+      }
     }
     const status=decision==='approve'?'approved':'rejected'
     await client.query(`
@@ -177,13 +185,16 @@ export async function getDistributionAssistantState(userId:string) {
         WHERE a.status='pending' AND u.is_active=true ORDER BY a.created_at LIMIT 100`),
       getPool().query(`SELECT a.user_id,a.manager_user_id,a.hired_at,u.name,u.role
         FROM weave_distribution_assistants a JOIN users u ON u.id=a.user_id
-        WHERE a.status='approved' ORDER BY a.hired_at LIMIT 3`),
+        WHERE a.status='approved' AND a.manager_user_id=$1::uuid
+        ORDER BY a.hired_at LIMIT 2`,[userId]),
     ])
     pending=applicants.rows
     team=employees.rows
   }
   return {
     appointment, canReview, pending, team,
+    assistantPositionsPerManager:DISTRIBUTION_ASSISTANTS_PER_MANAGER,
+    managerTeamRemaining:canReview?Math.max(0,DISTRIBUTION_ASSISTANTS_PER_MANAGER-team.length):null,
     positions:DISTRIBUTION_ASSISTANT_LIMIT, employed,
     remainingPositions:Math.max(0,DISTRIBUTION_ASSISTANT_LIMIT-employed),
     monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN,
