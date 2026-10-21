@@ -53,7 +53,7 @@ export async function getDistributionTeamMonthlyReferrals(managerUserId: string)
     ORDER BY CASE WHEN tm.position='manager' THEN 0 ELSE 1 END,tm.member_name
   `,[managerUserId])
 
-  const members:DistributionTeamMemberProgress[]=rows.map(row=>({
+  const members:DistributionTeamMemberProgress[]=rows.map((row):DistributionTeamMemberProgress=>({
     userId:String(row.member_id),
     name:String(row.member_name||'WEAVE colleague'),
     position:row.position==='manager'?'manager':'assistant',
