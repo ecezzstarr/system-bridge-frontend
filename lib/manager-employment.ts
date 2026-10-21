@@ -56,7 +56,7 @@ export async function ensureManagerEmploymentTable() {
       probation_started_at TIMESTAMPTZ NOT NULL,
       probation_ends_at TIMESTAMPTZ NOT NULL,
       monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 70000,
-      probation_target INTEGER NOT NULL DEFAULT 400,
+      probation_target INTEGER NOT NULL DEFAULT 500,
       core_duty TEXT NOT NULL DEFAULT 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.',
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -65,8 +65,8 @@ export async function ensureManagerEmploymentTable() {
   `
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS accepted_name TEXT`
   await sql`ALTER TABLE manager_employment ALTER COLUMN monthly_salary_ngn SET DEFAULT 70000`
-  await sql`ALTER TABLE manager_employment ALTER COLUMN probation_target SET DEFAULT 400`
-  await sql`UPDATE manager_employment SET probation_target=400 WHERE probation_target<>400`
+  await sql`ALTER TABLE manager_employment ALTER COLUMN probation_target SET DEFAULT 500`
+  await sql`UPDATE manager_employment SET probation_target=500 WHERE probation_target<>500`
   await sql`UPDATE manager_employment SET monthly_salary_ngn=70000 WHERE monthly_salary_ngn=150000`
   await sql`UPDATE manager_employment SET core_duty=${DISTRIBUTION_MANAGER_CORE_DUTY},updated_at=NOW() WHERE core_duty='Market WEAVE to prospective Agents and Bridgers and carry verified referral movement.'`
   await sql`CREATE INDEX IF NOT EXISTS manager_employment_status_idx ON manager_employment(status, probation_ends_at)`
