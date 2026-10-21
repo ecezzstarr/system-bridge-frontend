@@ -85,6 +85,9 @@ export async function POST(request: NextRequest) {
     if (result.reason === 'positions_full') {
       return NextResponse.json({ success:false, error:`All ${MANAGER_EMPLOYMENT_LIMIT} Distribution Manager positions are currently occupied.` }, { status:409 })
     }
+    if (result.reason === 'already_assistant') {
+      return NextResponse.json({ success:false, error:'An appointed Assistant Distribution Manager cannot simultaneously accept a lead Distribution Manager position.' }, { status:409 })
+    }
     if (result.reason === 'signature_mismatch') {
       return NextResponse.json({ success:false, error:'The document signature must match the full name on the Agent/Bridger account.' }, { status:400 })
     }
