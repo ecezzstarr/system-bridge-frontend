@@ -55,6 +55,9 @@ jobs:
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
 
+      - name: Agent Creative Studio fee and image regressions
+        run: node tests/agent-creative-studio-regression.cjs
+
       - name: WEAVE food regressions
         run: |
           node tests/admin-order-notification-coverage.cjs
