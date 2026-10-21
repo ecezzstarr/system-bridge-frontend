@@ -1,8 +1,9 @@
 import type { PoolClient } from 'pg'
-import { FOOD_PREPARATION_ADMIN_PER_ORDER_NGN,type PreparationProduct } from '@/lib/food-preparation-manager'
+import type { PreparationProduct } from '@/lib/food-preparation-manager'
+import { allocateVerifiedFoodStockFunds } from '@/lib/food-forensic-settlement'
 
 type PaidOrder = {
-  id:string;payment_status:string;agent_id:string;
+  id:string;payment_status:string;agent_id:string;total_ngn?:number|string;retail_unit_price_ngn?:number|string;agent_unit_cost_ngn?:number|string;
   variant_id?:string;box_count?:number|string;package_count?:number|string;
   delivery_address?:string|null;delivery_phone?:string|null;
   customer_name?:string|null;customer_phone?:string|null;
@@ -44,13 +45,11 @@ export async function assignPaidOrderToPreparationManager(
   client:PoolClient,product:PreparationProduct,order:PaidOrder,adminId:string
 ):Promise<AssignmentResult> {
   if(order.payment_status!=='paid') throw new Error('Unpaid order cannot enter kitchen preparation')
-  // A single non-disbursing Administration allocation per verified food order,
-  // never per package or carton. Unique product/order key prevents repeat fees.
-  await client.query(`
-    INSERT INTO weave_food_administration_allocations(product,source_order_id,amount_ngn)
-    VALUES($1,$2::uuid,$3)
-    ON CONFLICT (product,source_order_id) DO NOTHING
-  `,[product,order.id,FOOD_PREPARATION_ADMIN_PER_ORDER_NGN])
+  // One per-package allocation when an Agent's OPay STOCK purchase is verified.
+  // Customer Carrier purchases reuse this inventory and do not create payouts.
+  if(product!=='daisy'){
+    await allocateVerifiedFoodStockFunds(client,product,order as Parameters<typeof allocateVerifiedFoodStockFunds>[2])
+  }
   const {rows:existing}=await client.query(`
     SELECT t.id,t.manager_id,m.agent_id FROM weave_food_preparation_tasks t
     JOIN weave_food_preparation_managers m ON m.id=t.manager_id
