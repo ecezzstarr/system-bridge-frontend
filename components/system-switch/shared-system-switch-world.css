@@ -1,4 +1,4 @@
-.ss-shared-world{position:relative;isolation:isolate;height:max(620px,calc(100svh - 64px));min-width:0;overflow:hidden;background:#07151f;color:#e1edf0}
+.ss-shared-world{position:relative;isolation:isolate;height:clamp(480px,calc(100svh - 96px),850px);min-width:0;overflow:hidden;background:#07151f;color:#e1edf0}
 .ss-shared-world>header{position:absolute;inset:0 0 auto;z-index:3;display:flex;justify-content:space-between;gap:12px;padding:15px;background:#05121be8;pointer-events:none}
 .ss-shared-world header p,.ss-eyebrow{font-size:10px;letter-spacing:.14em;color:#dbbe86}.ss-shared-world h1{font-size:18px;margin:3px 0}.ss-shared-world small{display:block;font-size:11px;color:#b2c9d2}.ss-shared-world header>span{font-size:11px;color:#91dcc9;white-space:nowrap}
 .ss-world-canvas{height:100%;width:100%;touch-action:none;outline:none}.ss-world-note{position:absolute;top:96px;left:15px;right:15px;font-size:11px;color:#cfe2e8;pointer-events:none;text-shadow:0 1px 3px #000;background:#071c2bd9;border-radius:9px;padding:8px;right:auto;max-width:90%}.ss-world-note small{margin-top:6px}
