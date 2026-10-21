@@ -169,7 +169,7 @@ export default function WeaveLifestylesPage() {
                   icon={<ChefHat className="h-8 w-8" />}
                   eyebrow="Agent employment · Company food operations"
                   title="FOOD PREPARATION TEAM"
-                  detail="Company food operations offer one Food Preparation Manager application place and five Assistant Manager places. Eligible Agents can apply for a vacant position and, following Administration approval, prepare verified Agility, Electrolyte, Ember and Daisy Pastries orders."
+                  detail="The Head of WEAVE Stability leads Agent food operations and allocates work to five Assistant Managers. One lead and five assistant application places are available. Eligible Agents can apply for a vacant position and, following Administration approval, prepare verified Agility, Electrolyte, Ember and Daisy Pastries orders."
                   open={foodPreparationOpen}
                   reason={access?.active ? 'Apply for Administration appointment.' : 'An active Agent position is required to apply.'}
                   href="/weave/lifestyles/food-preparation"
