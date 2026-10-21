@@ -17,7 +17,8 @@ export function FileFolderEnvironmentLoader() {
 
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#020711] p-6 text-white" data-environment-pending="true">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(56,189,248,.12),transparent_26%),radial-gradient(circle_at_28%_70%,rgba(139,92,246,.08),transparent_25%),radial-gradient(circle_at_72%_72%,rgba(52,211,153,.07),transparent_24%)]" />
+      <div className="absolute inset-0 bg-[url('/weave/bridge-of-radiance-approved-scene.svg')] bg-cover bg-center opacity-35" aria-hidden="true"/>
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,7,17,.35),rgba(2,7,17,.98)_78%),radial-gradient(circle_at_50%_45%,rgba(56,189,248,.15),transparent_34%)]" aria-hidden="true"/>
       <div className="relative w-full max-w-2xl border-y border-sky-300/15 bg-[#030914]/82 p-6 text-center shadow-[0_30px_100px_rgba(2,8,23,.72)] backdrop-blur-xl md:p-9">
         <div className="relative mx-auto h-32 w-32">
           <div className="absolute inset-0 animate-spin rounded-full border border-sky-300/15 border-t-sky-300/80 [animation-duration:2.8s]" />
