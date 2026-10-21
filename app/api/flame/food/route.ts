@@ -37,7 +37,7 @@ export async function GET(request:NextRequest) {
 export async function POST(request:NextRequest) {
   try {
     const user=await requireFoodBridgePosition(request)
-    if(user.role!=='agent')return NextResponse.json({error:'Only an Agent who farms can publish produce. Bridgers can buy.'},{status:403})
+    if(user.role!=='agent')return NextResponse.json({error:'Only approved Agent farm or food-supplier accounts can publish household food. Bridgers can buy.'},{status:403})
     await ensureFoodBridgeSchema()
     const body=await request.json().catch(()=>({}))
     if(body.action==='register') {
