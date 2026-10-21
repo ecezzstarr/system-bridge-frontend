@@ -35,6 +35,7 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
   return <main className="min-h-dvh bg-[#05182a] text-white" data-public-flame-preview-world>
     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-300/15 px-3 py-3">
       <Link href="/" className="inline-flex items-center gap-2 text-[10px] font-bold text-sky-100"><ArrowLeft className="h-4 w-4"/> Weave Homepage</Link>
+      <Link href="/lifestyle" data-public-lifestyle-entry className="inline-flex min-h-10 items-center px-2 text-xs font-black text-amber-100">Lifestyle</Link>
       <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-200">
         <Flame className="h-4 w-4"/> Flame Event · Public Arrival
       </span>

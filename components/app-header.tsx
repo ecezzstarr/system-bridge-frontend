@@ -169,6 +169,7 @@ export function AppHeader({ user }: AppHeaderProps) {
           {accountOpen && renderAccountMenu('left')}
         </div>
 
+        {lifestyleVisible && <Button variant="ghost" size="sm" data-lifestyle-entry="open-weave-phone" className="h-9 shrink-0 px-2 text-[10px] font-black text-yellow-100" onClick={() => router.push('/weave/lifestyles')}>Lifestyle</Button>}
         <Button
           variant="ghost"
           size="sm"
@@ -222,6 +223,7 @@ export function AppHeader({ user }: AppHeaderProps) {
         </div>
 
         <div className="flex shrink-0 items-center gap-4">
+          {lifestyleVisible && <Button variant="ghost" size="sm" data-lifestyle-entry="open-weave-desktop" className="h-8 gap-2 px-3 text-xs font-black text-yellow-100" onClick={() => router.push('/weave/lifestyles')}><Sparkles className="h-4 w-4" />Lifestyle</Button>}
           <Button
             variant="outline"
             size="sm"

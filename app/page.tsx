@@ -127,6 +127,10 @@ export default function Home() {
         )}
 
         <main className="mx-auto w-full max-w-6xl px-3 pb-16 pt-4 sm:px-5 sm:pt-7" data-weave-public-entry-world="true">
+          <Link href="/lifestyle" data-public-lifestyle-entry className="mb-4 flex min-h-16 items-center justify-between gap-3 rounded-xl border border-amber-200/35 bg-amber-200/[.08] px-4 py-3 text-amber-100">
+            <span><span className="block text-base font-black">Lifestyle</span><span className="mt-1 block text-xs text-slate-300">Explore the ways to work and participate in WEAVE.</span></span>
+            <ArrowRight className="h-5 w-5 shrink-0" />
+          </Link>
           <Link href="/food-store" className="mb-4 block overflow-hidden rounded-xl border border-emerald-300/20 bg-[#102015]" data-weave-family-food-image-entry>
             <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_320px]">
               <div className="p-3 sm:p-5">
