@@ -90,41 +90,186 @@
 
 
 
-/* Environment briefing cards: each message arrives, stays readable, then yields
-   to the next briefing before the destination is revealed. */
+/* The loading interface must be pixel-stable on real mobile devices.
+   Do not animate, blur, transform or remount the reading panel. Only river
+   paths and the small loading indicator are allowed to move. */
 .weave-loading-brief {
-  animation: weave-loading-brief-cycle 3s cubic-bezier(.16,1,.3,1) both;
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  filter: none !important;
+  will-change: auto;
 }
 
-@keyframes weave-loading-brief-cycle {
-  0% {
-    opacity: 0;
-    transform: translate3d(0,14px,0) scale(.985);
-    filter: blur(3px);
+[data-weave-loader-art="bridge-of-radiance-river"].weave-loader-stable {
+  position: fixed;
+  inset: 0;
+  height: 100svh;
+  min-height: 100svh;
+  max-height: 100svh;
+  isolation: isolate;
+  contain: layout style;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  text-shadow: none;
+}
+
+.weave-loader-stable :where(h1,h2,p,span,a,section) {
+  text-shadow: none;
+  filter: none;
+}
+
+.weave-loader-scenery {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #04172c;
+}
+
+.weave-loader-scenery-portrait,
+.weave-loader-scenery-landscape,
+.weave-loader-scenery-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: 50% 40%;
+  background-size: cover;
+}
+
+.weave-loader-scenery-portrait {
+  background-image: url('/weave/bridge-of-radiance-portrait.svg');
+}
+
+.weave-loader-scenery-landscape {
+  display: none;
+}
+
+.weave-loader-scenery-shade {
+  /* Contrast belongs to the bottom reading region; do not blur the world. */
+  background: linear-gradient(180deg,
+    rgba(2, 8, 20, 0.10) 0%,
+    rgba(2, 9, 25, 0.12) 30%,
+    rgba(2, 10, 24, 0.54) 54%,
+    rgba(2, 8, 19, 0.90) 79%,
+    #020712 100%);
+}
+
+.weave-loader-layout {
+  box-sizing: border-box;
+  width: min(100%, 52rem);
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, min(17.5rem, 38svh)) auto auto auto;
+  gap: clamp(.35rem, 1.2svh, .8rem);
+  align-content: stretch;
+  padding:
+    max(.6rem, env(safe-area-inset-top))
+    clamp(.75rem, 3.2vw, 1.5rem)
+    max(.6rem, env(safe-area-inset-bottom));
+  margin: 0 auto;
+}
+
+.weave-loader-heading {
+  min-height: 0;
+  overflow: hidden;
+  align-self: end;
+  padding-bottom: .1rem;
+}
+
+.weave-loader-card {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: rgba(3, 14, 30, .97);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 15px 36px rgba(0, 0, 0, .48);
+}
+
+.weave-loader-card > :first-child {
+  flex: 0 0 auto;
+}
+
+.weave-loader-card-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(162, 203, 229, .35) transparent;
+}
+
+.weave-loader-card-movement {
+  flex: 0 0 auto;
+  max-height: 3.5rem;
+  overflow-y: auto;
+}
+
+.weave-loader-progress {
+  min-height: 4px;
+  margin-top: .05rem;
+}
+
+.weave-loader-status {
+  max-height: 2.6rem;
+  overflow: hidden;
+  padding: 0 .25rem;
+}
+
+.weave-loader-return {
+  max-width: 100%;
+}
+
+@media (min-width: 700px) and (min-aspect-ratio: 1/1) {
+  .weave-loader-scenery-portrait { display: none; }
+  .weave-loader-scenery-landscape {
+    display: block;
+    background-image: url('/weave/flame-event/burning-river-world.svg');
+    background-position: center 48%;
   }
-  16% {
-    opacity: 1;
-    transform: translate3d(0,0,0) scale(1);
-    filter: blur(0);
+  .weave-loader-scenery-shade {
+    background: linear-gradient(180deg,rgba(2,8,20,.08),rgba(2,8,20,.45) 38%,rgba(2,7,16,.95) 80%);
   }
-  84% {
-    opacity: 1;
-    transform: translate3d(0,0,0) scale(1);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0,0,0) scale(1);
-    filter: blur(0);
+  .weave-loader-layout {
+    grid-template-rows: minmax(0, 1fr) minmax(0, 17rem) auto auto auto;
+    max-width: 48rem;
   }
 }
 
+@media (max-height: 600px) {
+  .weave-loader-layout {
+    grid-template-rows: minmax(0, 1fr) minmax(0, 43svh) auto auto auto;
+    gap: .23rem;
+    padding-top: max(.25rem, env(safe-area-inset-top));
+    padding-bottom: max(.25rem, env(safe-area-inset-bottom));
+  }
+  .weave-loader-heading {
+    font-size: .78rem;
+  }
+  .weave-loader-card {
+    padding: .65rem .85rem;
+  }
+  .weave-loader-card-movement {
+    max-height: 2rem;
+    padding-top: .25rem;
+    margin-top: .25rem;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .weave-loading-brief {
-    animation: none;
+  .weave-loader-stable * {
+    animation: none !important;
   }
 }
-
 
 /* Phone-fit guardrails
    The WEAVE world may be spatial, but no route is allowed to be wider than the
