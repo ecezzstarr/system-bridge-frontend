@@ -27,6 +27,20 @@ export default async function CarrierFoodDoorPage({params}:{params:Promise<{code
     <div className="bg-[#102017] px-4 py-3 text-center">
       <Link href="/food-store" className="text-xs font-black text-emerald-100">WEAVE Family Food Store · Rice, beans, groceries, Family Baskets, Agility, Electrolyte, Ember and Daisy Pastries</Link>
     </div>
+    <section className="border-y border-amber-200/25 bg-[#091c29] px-4 py-5 text-white sm:px-8" data-carrier-flame-event-entrance>
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-200">WEAVE OF PRESENCE · FLAME EVENT</p>
+          <h2 className="mt-2 text-xl font-black tracking-tight sm:text-2xl">From everyday food to the Burning River</h2>
+          <p className="mt-2 text-xs leading-5 text-sky-100/80">Electrolyte, Agility, Ember and the other products are practical movements of Weave. Enter the living river of water and fire as a Presence, cross System Switch and see how participation connects. You can return to this Agent's Carrier Door to order at any time.</p>
+        </div>
+        <Link href={`/flame-event?carrier=${encodeURIComponent(code)}`}
+          className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl border border-amber-100/60 bg-amber-200 px-4 py-3 text-center text-xs font-black text-[#112438]"
+          data-carrier-enter-burning-river>
+          Enter the Living Burning River →
+        </Link>
+      </div>
+    </section>
     <div className="bg-[#09150d] px-4 py-4 text-white sm:px-8" data-carrier-family-products>
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 sm:flex-nowrap">
         <img src="/weave-food/weave-family-products.avif" width={420} height={307} alt="WEAVE Family Food Store branded household grocery illustration" loading="lazy" className="w-full max-w-[260px] rounded-lg border border-emerald-300/20"/>
