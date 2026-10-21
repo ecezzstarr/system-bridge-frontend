@@ -1,5 +1,5 @@
 -- Food preparation staffing: exactly one lead Manager application place
--- and five Assistant Manager application places. Salaries are employment terms,
+-- and two Assistant Manager application places. Salaries are employment terms,
 -- visible to the applicant after submission and to Administration; no auto-pay.
 -- Preserve existing applications as lead Manager applications.
 ALTER TABLE weave_food_preparation_managers
