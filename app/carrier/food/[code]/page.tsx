@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { AgentFoodCarrierPublic } from '@/components/carrier/agent-food-carrier-public'
 import { AgentFarmCarrierPublic } from '@/components/carrier/agent-farm-carrier-public'
@@ -21,8 +22,11 @@ export async function generateMetadata({params}:{params:Promise<{code:string}>})
   }
 }
 
-export default async function CarrierFoodDoorPage({params}:{params:Promise<{code:string}>}){
-  const {code}=await params
+export default async function CarrierFoodDoorPage({params,searchParams}:{params:Promise<{code:string}>,searchParams:Promise<{checkout?:string|string[]}>}){
+  const [{code},query]=await Promise.all([params,searchParams])
+  // The shared public Carrier link first opens Burning River. Checkout stays on
+  // the original attributed Agent Door after the visitor selects a product.
+  if(query.checkout!=='1')redirect('/flame-event?carrier='+encodeURIComponent(code))
   return <>
     <div className="bg-[#102017] px-4 py-3 text-center">
       <Link href="/food-store" className="text-xs font-black text-emerald-100">WEAVE Family Food Store · Rice, beans, groceries, Family Baskets, Agility, Electrolyte, Ember and Daisy Pastries</Link>

@@ -177,7 +177,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
   }
 
   const share=async()=>{
-    const url=window.location.href
+    const url=new URL('/carrier/food/'+encodeURIComponent(referralCode),window.location.origin).toString()
     const text=`WEAVE Food · Farm Produce + Agility + Electrolyte + Cakes\nOrder directly through ${data?.agent?.name||'this Agent'}'s Carrier Door.`
     const nativeShare=(navigator as unknown as {share?:NativeShare}).share
     void fetch(`/api/carrier/food/${encodeURIComponent(referralCode)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'share',channel:nativeShare?'native':'copy'})}).catch(()=>{})
@@ -196,7 +196,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
   if(loading)return <main className="flex min-h-screen items-center justify-center bg-[#07100b] text-white"><Loader2 className="h-8 w-8 animate-spin text-emerald-300"/></main>
   if(error&&!data)return <main className="flex min-h-screen items-center justify-center bg-[#07100b] px-5 text-center text-white"><div><p className="text-2xl font-black">CARRIER DOOR CLOSED</p><p className="mt-3 text-sm text-slate-400">{error}</p></div></main>
 
-  return <main className="min-h-screen bg-[#07100b] text-white">
+  return <main id="agent-prepared-food" className="min-h-screen bg-[#07100b] text-white">
     <header className="border-b border-white/10 bg-black/20 px-5 py-7 sm:px-8">
       <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-5">
         <div>
@@ -211,7 +211,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
 
     <section className="mx-auto max-w-6xl px-4 py-7 sm:px-8">
       <div className="grid gap-5 lg:grid-cols-2">
-        <article className="overflow-hidden border border-orange-300/25 bg-gradient-to-br from-orange-500/20 via-[#1b1008] to-[#0b0907]">
+        <article id="agent-agility" className="overflow-hidden border border-orange-300/25 bg-gradient-to-br from-orange-500/20 via-[#1b1008] to-[#0b0907]">
           <div className="border-b border-orange-300/15 px-5 py-5"><p className="text-[9px] font-black uppercase tracking-[.24em] text-orange-300">WEAVE Food · Morning</p><h2 className="mt-1 text-4xl font-black text-orange-300">AGILITY</h2></div>
           <div className="grid gap-3 p-5 sm:grid-cols-2">
             {agility.length?agility.map(product=><button key={product.id} disabled={Boolean(paymentIntent)} onClick={()=>chooseProduct(product)} className={`text-left border p-4 transition disabled:opacity-60 ${selected?.id===product.id?'border-orange-300 bg-orange-300/10':'border-white/10 bg-black/15 hover:border-orange-300/40'}`}>
@@ -222,7 +222,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
           </div>
         </article>
 
-        <article className="overflow-hidden border border-emerald-300/25 bg-gradient-to-br from-emerald-500/18 via-[#0b1a11] to-[#07100b]">
+        <article id="agent-electrolyte" className="overflow-hidden border border-emerald-300/25 bg-gradient-to-br from-emerald-500/18 via-[#0b1a11] to-[#07100b]">
           <div className="border-b border-emerald-300/15 px-5 py-5"><p className="text-[9px] font-black uppercase tracking-[.24em] text-emerald-300">WEAVE Food · Fresh sliced</p><h2 className="mt-1 text-4xl font-black text-emerald-200">ELECTROLYTE</h2><p className="mt-2 text-sm text-emerald-100/70">Nourish · Replenish · Stay Strong.</p></div>
           <div className="grid gap-3 p-5 sm:grid-cols-2">
             {electrolyte.length?electrolyte.map(product=><button key={product.id} disabled={Boolean(paymentIntent)} onClick={()=>chooseProduct(product)} className={`text-left border p-5 transition disabled:opacity-60 ${selected?.id===product.id?'border-emerald-300 bg-emerald-300/10':'border-white/10 bg-black/15 hover:border-emerald-300/40'}`}>
@@ -234,7 +234,7 @@ export function AgentFoodCarrierPublic({referralCode}:{referralCode:string}){
           </div>
         </article>
 
-        <article className="overflow-hidden border border-orange-400/25 bg-gradient-to-br from-orange-500/15 via-[#2c1008] to-[#110908]">
+        <article id="agent-ember" className="overflow-hidden border border-orange-400/25 bg-gradient-to-br from-orange-500/15 via-[#2c1008] to-[#110908]">
           <div className="border-b border-orange-300/15 px-5 py-5">
             <p className="text-[9px] font-black uppercase tracking-[.22em] text-orange-200">WEAVE Food · Rich evening combination</p>
             <h2 className="mt-1 text-4xl font-black text-orange-300">EMBER</h2>
