@@ -14,7 +14,7 @@ export type EnterpriseLegionPage = {
 
 export const ENTERPRISE_LEGION_RULES = [
   'The Client owns the enterprise, File Folder, Customer Door, pricing and products.',
-  'The Client monthly subscription is 600 Flame Coin. Registration gender assigns Lord for male and Lady for female when the paid month begins.',
+  'Client subscription and Lord/Lady standing are managed in the Client account; employment applicants do not need Client billing amounts.',
   'Real Client product sales fund expenses, agreed Legion compensation, operations and expansion; there is no guaranteed surplus.',
   'Lord or Lady is the Client title; General means enterprise leadership, never military authority.',
   'Only an approved enterprise with active Legion Quarters recruits Legions.',
@@ -49,7 +49,7 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "audience": "client",
     "title": "The Lord or Lady Is the General",
     "story": "The field begins with its builder. The General gives the enterprise its direction, just as a leader once gave a camp its purpose.",
-    "meaning": "After the Client pays the 600 Flame Coin monthly subscription, registered male gender assigns Lord and registered female gender assigns Lady. The Client then stands as the General (CEO) of their own enterprise. Separate business-plan approval is required to open the Enterprise Dream Workshop and recruit Legions. They own the business, brand, products, pricing, and Customer Door; Legion workers do not become owners merely by working there.",
+    "meaning": "After the Client activates their monthly subscription, their registered gender determines Lord or Lady standing. The Client then stands as the General (CEO) of their own enterprise. Separate business-plan approval is required to open the Enterprise Dream Workshop and recruit Legions. They own the business, brand, products, pricing, and Customer Door; Legion workers do not become owners merely by working there.",
     "action": [
       "Name the enterprise and what it will produce or provide.",
       "Define what belongs to the Client and what work can be delegated."
