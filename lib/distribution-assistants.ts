@@ -93,6 +93,8 @@ export async function reviewDistributionAssistant(
   const client=await getPool().connect()
   try {
     await client.query('BEGIN')
+    // Take the lead-manager lock first to prevent a concurrent promotion.
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('weave_manager_employment_capacity'))")
     await client.query("SELECT pg_advisory_xact_lock(hashtext('weave_distribution_assistant_capacity'))")
     const {rows:reviewers}=await client.query(`
       SELECT me.user_id FROM manager_employment me JOIN users u ON u.id=me.user_id
