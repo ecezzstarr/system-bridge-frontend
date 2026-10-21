@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       monthlySalaryNgn:MANAGER_MONTHLY_SALARY_NGN,
       probationTarget:MANAGER_PROBATION_TARGET,
       monthlyReferralTarget:MANAGER_PROBATION_TARGET,
+      referralTargetScope:'manager_and_two_assistants',
       probationMonths:1,
       documentVersion:MANAGER_DOCUMENT_VERSION,
       continuanceNgn:agentFree ? 0 : MANAGER_CONTINUANCE_NGN,
