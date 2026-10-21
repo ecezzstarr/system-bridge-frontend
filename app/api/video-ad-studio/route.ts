@@ -286,6 +286,7 @@ async function purchaseOwnVideo(user:any, body:any) {
     const soundtrackUrl = text(body?.soundtrackUrl,2048)
     if (soundtrackUrl && !soundtrackBelongsToUser(soundtrackUrl,user.id)) return NextResponse.json({ success:false, error:'Upload your own soundtrack first' },{status:400})
     if (!packageKey || !businessName || !subject || !objective || !audience) return NextResponse.json({ success:false, error:'Choose a video package and provide the business name, subject, objective and audience' }, { status:400 })
+    if (!assets.length) return NextResponse.json({ success:false, error:'Attach at least one real product image or video before paying for production' },{ status:400 })
 
     await client.query('BEGIN')
     const packageResult = await client.query('SELECT * FROM video_ad_studio_packages WHERE package_key=$1 AND active=true FOR SHARE',[packageKey])
