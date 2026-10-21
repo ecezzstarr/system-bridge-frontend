@@ -129,8 +129,8 @@ export default function ManagerDashboardPage(){
     <section className="mt-6 rounded-2xl border border-emerald-300/15 bg-emerald-300/[.035] p-5"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Core duty · Distribute WEAVE</p><h2 className="mt-1 text-xl font-black text-white">Carry WEAVE outward and return the movement.</h2><p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">Use public distribution, campaign tools and field coordination to create measurable movement. The monthly acquisition target counts active Agent or Bridger registrations attributed to your referral identity in the current calendar month, beginning no earlier than employment acceptance.</p></div><div className="min-w-[180px]"><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-emerald-300" style={{width:`${state.progressPercent}%`}}/></div><p className="mt-2 text-right text-xs font-black text-emerald-200">{state.progressPercent}%</p></div></div></section>
     {assistantState?.canReview&&<section className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[.03] p-5" data-distribution-assistant-review="true">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><p className="text-[10px] font-black uppercase tracking-widest text-amber-300">Assistant Distribution Managers</p><h2 className="mt-2 text-xl font-black text-white">Your distribution support team</h2><p className="mt-2 text-sm text-slate-400">Three assistant appointments across WEAVE. Each receives a ₦30,000 monthly salary term after appointment and carries an individual target of 300 verified Agent/Bridger referrals per calendar month.</p></div>
-        <div className="rounded-xl border border-white/10 p-3 text-right text-sm font-black text-white">{assistantState.employed} / {assistantState.positions} appointed</div>
+        <div><p className="text-[10px] font-black uppercase tracking-widest text-amber-300">Assistant Distribution Managers</p><h2 className="mt-2 text-xl font-black text-white">Your distribution support team</h2><p className="mt-2 text-sm text-slate-400">Six assistant appointments across WEAVE, two reporting to each of the three Distribution Managers. Each receives a ₦30,000 monthly salary term after appointment and carries an individual target of 300 verified Agent/Bridger referrals per calendar month.</p></div>
+        <div className="rounded-xl border border-white/10 p-3 text-right text-sm font-black text-white">{assistantState.team?.length||0} / {assistantState.assistantPositionsPerManager} your team · {assistantState.employed} / {assistantState.positions} company-wide</div>
       </div>
       {error&&<p className="mt-3 text-sm text-rose-200">{error}</p>}
       <div className="mt-4 space-y-2">
@@ -143,7 +143,7 @@ export default function ManagerDashboardPage(){
           <p className="text-sm font-black text-white">{candidate.name} · {candidate.role}</p>
           <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-400">{candidate.application_note}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button size="sm" disabled={busy||assistantState.remainingPositions===0} onClick={()=>reviewAssistant(candidate.user_id,'approve')} className="bg-emerald-700 text-white hover:bg-emerald-600">Appoint assistant</Button>
+            <Button size="sm" disabled={busy||assistantState.remainingPositions===0||assistantState.managerTeamRemaining===0} onClick={()=>reviewAssistant(candidate.user_id,'approve')} className="bg-emerald-700 text-white hover:bg-emerald-600">Appoint assistant</Button>
             <Button size="sm" variant="outline" disabled={busy} onClick={()=>reviewAssistant(candidate.user_id,'reject')}>Decline</Button>
           </div>
         </div>)}
