@@ -80,6 +80,7 @@ export default function AgentFoodCarrierConsole(){
   if(error&&!data)return <main className="mx-auto max-w-4xl px-4 py-12 text-white"><Link href="/weave/carrier" className="text-xs text-slate-500">← Carrier</Link><h1 className="mt-6 text-3xl font-black">FOOD CARRIER DOOR</h1><p className="mt-3 text-sm text-red-300">{error}</p></main>
 
   return <main className="mx-auto max-w-6xl px-4 py-8 text-white md:px-7 md:py-12" data-agent-food-carrier="true">
+    <Link href="/food-store" className="mb-4 inline-flex border border-emerald-300/30 px-4 py-3 text-xs font-black text-emerald-200">Open branded WEAVE Family Food Store · groceries + ready baskets + Daisy</Link>
     <div className="mt-6 space-y-4" data-agent-carrier-all-food-info><AgentFoodPricingInfo/><DaisyPricingInfo/><FarmToFamilySettlementInfo audience="seller"/></div>
     <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/weave/carrier" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-white"><ArrowLeft className="h-4 w-4"/>Carrier</Link><Button onClick={()=>void load()} variant="outline" className="border-white/15 text-slate-200"><RefreshCw className="mr-2 h-4 w-4"/>REFRESH</Button></div>
 

@@ -25,6 +25,7 @@ export type VideoStudioOrder = {
   audience: string
   notes: string
   assets: string[]
+  soundtrackUrl: string | null
   status: 'paid' | 'in_production' | 'ready' | 'delivered'
   projectId: string | null
   outputUrl: string | null
@@ -61,6 +62,7 @@ export type VideoServiceOrder = {
   audience: string
   notes: string
   assets: string[]
+  soundtrackUrl: string | null
   customerPaymentStatus: 'pending' | 'received'
   status: 'requested' | 'accepted' | 'studio_paid' | 'in_production' | 'ready' | 'delivered' | 'rejected'
   studioOrderId: string | null
@@ -71,6 +73,25 @@ export type VideoServiceOrder = {
 }
 
 export const VIDEO_STUDIO_CUSTOMER_ROLES = new Set(['agent', 'bridger', 'client'])
+
+// Agent production fees are a role-specific internal WEAVE charge, never the
+// price an Agent chooses to charge a customer through their Service Door.
+export const AGENT_STUDIO_MAX_FEE_FLAME_COIN = 1.5
+export const AGENT_VIDEO_STUDIO_FEES: Readonly<Record<string, number>> = {
+  'social-30': 0.3,
+  'full-60': 0.5,
+  'business-120': 0.75,
+  'campaign-180': 1,
+  'brand-360': 1.5,
+}
+
+export function studioFeeForRole(role: string | null | undefined, packageKey: string, publishedPrice: number): number {
+  if (!Number.isFinite(publishedPrice) || publishedPrice < 0) throw new Error('Invalid Studio package price')
+  if (role !== 'agent') return publishedPrice
+  const agentFee = AGENT_VIDEO_STUDIO_FEES[packageKey] ?? AGENT_STUDIO_MAX_FEE_FLAME_COIN
+  // An Admin reduction can also benefit Agents, but never increase their cap.
+  return Math.min(publishedPrice, agentFee, AGENT_STUDIO_MAX_FEE_FLAME_COIN)
+}
 
 const DEFAULT_PACKAGES = [
   ['social-30', 'Social Cut', 'A focused 30-second vertical video for fast social movement.', 30, 30, 10],
@@ -125,6 +146,7 @@ export async function ensureVideoAdStudioSchema() {
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `)
+  await pool.query('ALTER TABLE video_ad_studio_orders ADD COLUMN IF NOT EXISTS soundtrack_url text')
   await pool.query("ALTER TABLE video_ad_studio_orders ADD COLUMN IF NOT EXISTS order_source varchar(24) NOT NULL DEFAULT 'self'")
   await pool.query('ALTER TABLE video_ad_studio_orders ADD COLUMN IF NOT EXISTS service_order_id uuid')
   await pool.query('CREATE INDEX IF NOT EXISTS video_ad_studio_orders_user_idx ON video_ad_studio_orders(user_id,created_at DESC)')
@@ -185,12 +207,13 @@ export async function ensureVideoAdStudioSchema() {
       updated_at timestamptz NOT NULL DEFAULT NOW()
     )
   `)
+  await pool.query('ALTER TABLE video_ad_service_orders ADD COLUMN IF NOT EXISTS soundtrack_url text')
   await pool.query('CREATE INDEX IF NOT EXISTS video_ad_service_orders_provider_idx ON video_ad_service_orders(provider_user_id,created_at DESC)')
   await pool.query('CREATE INDEX IF NOT EXISTS video_ad_service_orders_status_idx ON video_ad_service_orders(status,created_at ASC)')
   await ensureWeaveReceiptSchema()
 }
 
-export async function listVideoStudioPackages(includeInactive = false): Promise<VideoStudioPackage[]> {
+export async function listVideoStudioPackages(includeInactive = false, role?: string | null): Promise<VideoStudioPackage[]> {
   await ensureVideoAdStudioSchema()
   const pool = getPool()
   const result = await pool.query(
@@ -204,7 +227,7 @@ export async function listVideoStudioPackages(includeInactive = false): Promise<
     name: String(row.name),
     description: String(row.description),
     durationSeconds: Number(row.duration_seconds),
-    priceFlameCoin: Number(row.price_flame_coin),
+    priceFlameCoin: studioFeeForRole(role, String(row.package_key), Number(row.price_flame_coin)),
     active: Boolean(row.active),
     sortOrder: Number(row.sort_order),
   }))
@@ -253,6 +276,7 @@ export function mapVideoServiceOrder(row:any): VideoServiceOrder {
     audience:String(row.audience||''),
     notes:String(row.notes||''),
     assets:Array.isArray(row.assets)?row.assets.map(String):[],
+    soundtrackUrl:row.soundtrack_url ? String(row.soundtrack_url) : null,
     customerPaymentStatus:row.customer_payment_status,
     status:row.status,
     studioOrderId:row.studio_order_id?String(row.studio_order_id):null,
@@ -278,6 +302,7 @@ export function mapVideoStudioOrder(row:any): VideoStudioOrder {
     audience: String(row.audience || ''),
     notes: String(row.notes || ''),
     assets: Array.isArray(row.assets) ? row.assets.map(String) : [],
+    soundtrackUrl:row.soundtrack_url ? String(row.soundtrack_url) : null,
     status: row.status,
     projectId: row.project_id ? String(row.project_id) : null,
     outputUrl: row.output_url || null,

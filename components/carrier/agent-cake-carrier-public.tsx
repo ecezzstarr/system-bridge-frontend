@@ -90,7 +90,7 @@ export function AgentCakeCarrierPublic({referralCode}:{referralCode:string}){
   if(error&&!data)return null
 
   const order=data?.order
-  return <section className="border-t border-amber-200/20 bg-[#101109] text-white" data-carrier-cakes="true" data-daisy-pastries="true">
+  return <section id="agent-daisy-pastries" className="border-t border-amber-200/20 bg-[#101109] text-white" data-carrier-cakes="true" data-daisy-pastries="true">
     <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-8"><DaisyPricingInfo audience="public"/></div>
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,.75fr)]">

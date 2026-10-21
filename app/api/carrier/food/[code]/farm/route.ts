@@ -29,9 +29,12 @@ export async function GET(_request:NextRequest,{params}:{params:Promise<{code:st
     await expireFoodRequests()
     const {rows}=await getPool().query(`
       SELECT l.id,l.produce,l.unit,l.unit_price_ngn,l.available_quantity,l.minimum_quantity,
-        l.details,f.farm_name,f.state,f.community
+        l.details,f.farm_name,f.state,f.community,
+        b.components AS basket_components,b.separate_listed_ngn AS basket_individual_total_ngn,
+        b.listing_saving_ngn AS basket_listed_saving_ngn
       FROM weave_food_surplus l
       JOIN weave_food_farmers f ON f.id=l.farmer_id
+      LEFT JOIN weave_food_household_bundles b ON b.listing_id=l.id
       WHERE f.agent_id=$1::uuid AND f.status='approved'
         AND l.status='active' AND l.available_quantity>=l.minimum_quantity
       ORDER BY l.created_at DESC LIMIT 50
@@ -86,6 +89,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{code:st
         AND f.agent_id=$3::uuid AND f.status='approved'
         AND l.status='active' AND l.available_quantity>=$1::numeric
         AND l.minimum_quantity<=$1::numeric
+        AND (l.unit<>'pack' OR $1::numeric=TRUNC($1::numeric))
       RETURNING l.id,l.farmer_id,l.unit_price_ngn,ROUND(l.unit_price_ngn*$1::numeric,2) AS subtotal
     `,[quantity,offerId,agent.id])
     if(!listings.length){

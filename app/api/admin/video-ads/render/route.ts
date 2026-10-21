@@ -118,15 +118,15 @@ export async function POST(request: NextRequest) {
         'scale=720:1280:force_original_aspect_ratio=increase',
         'crop=720:1280',
         'setsar=1',
-        'drawbox=x=0:y=ih*0.70:w=iw:h=ih*0.30:color=black@0.42:t=fill',
-        `drawtext=fontfile=${FONT_PATH}:textfile=${textPath}:fontcolor=white:fontsize=44:line_spacing=12:x=(w-text_w)/2:y=h*0.78:box=1:boxcolor=black@0.14:boxborderw=20`,
+        'drawbox=x=0:y=ih*0.79:w=iw:h=ih*0.21:color=black@0.39:t=fill',
+        `drawtext=fontfile=${FONT_PATH}:textfile=${textPath}:fontcolor=white:fontsize=36:line_spacing=10:x=(w-text_w)/2:y=h*0.855:box=1:boxcolor=black@0.08:boxborderw=16`,
         'fade=t=in:st=0:d=0.25',
         `fade=t=out:st=${Math.max(0, duration - 0.25)}:d=0.25`,
       ].join(',')
       const inputArgs = scene.assetType === 'image'
         ? ['-loop', '1', '-framerate', '30', '-i', inputPath]
         : ['-stream_loop', '-1', '-i', inputPath]
-      await runFfmpeg(['-y', ...inputArgs, '-t', String(duration), '-vf', visualFilter, '-an', '-r', '30', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '24', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', segmentPath])
+      await runFfmpeg(['-y', ...inputArgs, '-t', String(duration), '-vf', visualFilter, '-an', '-r', '30', '-c:v', 'libx264', '-preset', 'fast', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', segmentPath])
       segments.push(segmentPath)
     }
 

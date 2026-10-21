@@ -1,15 +1,23 @@
 import { getPool } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
-import { ensureAgilitySchema, getAgilityCompanyEconomics, AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN, AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN, nextAgilityAdminStage } from '@/lib/agility'
-import { nextEmberAdminStage,emberMoneySplit } from '@/lib/ember-catalog'
+import { ensureAgilitySchema, nextAgilityAdminStage } from '@/lib/agility'
+import { nextEmberAdminStage } from '@/lib/ember-catalog'
 import { nextElectrolyteAdminStage } from '@/lib/electrolyte-catalog'
 import { ensureCarrierCakeSchema, nextCakeAdministrationStatus } from '@/lib/carrier-cakes'
 
-export const FOOD_PREPARATION_MANAGER_SALARY_NGN=60000
+export const FOOD_PREPARATION_MANAGER_SALARY_NGN=70000
+export const FOOD_PREPARATION_ASSISTANT_SALARY_NGN=40000
 export const FOOD_PREPARATION_MANAGER_TITLE='Food Preparation Manager'
+export const FOOD_PREPARATION_ASSISTANT_TITLE='Assistant Food Preparation Manager'
+export const FOOD_PREPARATION_CAPACITY={manager:1,assistant:5} as const
+export type FoodPreparationPosition=keyof typeof FOOD_PREPARATION_CAPACITY
+export const isFoodPreparationPosition=(value:unknown):value is FoodPreparationPosition=>value==='manager'||value==='assistant'
+export const foodPreparationSalary=(position:FoodPreparationPosition)=>
+  position==='manager'?FOOD_PREPARATION_MANAGER_SALARY_NGN:FOOD_PREPARATION_ASSISTANT_SALARY_NGN
 export const FOOD_PREPARATION_PRODUCTS=['agility','electrolyte','ember','daisy'] as const
 export type PreparationProduct=typeof FOOD_PREPARATION_PRODUCTS[number]
 export const FOOD_PREPARATION_DUTIES=[
+  'The Food Preparation Manager heads WEAVE Stability food operations and assigns verified paid orders to approved assistants.',
   'Prepare approved Agility, Electrolyte and Ember orders and Daisy Pastries cakes.',
   'Package, seal and label each order to match its authorized quantity and destination.',
   'Dispatch orders to customers and restocking Agents using recorded delivery details.',
@@ -37,7 +45,8 @@ export async function ensureFoodPreparationManagerSchema(){
         agent_id uuid NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
         application_note text NOT NULL,
         status varchar(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','revoked')),
-        monthly_salary_ngn numeric(12,2) NOT NULL DEFAULT 60000,
+        position varchar(16) NOT NULL DEFAULT 'manager' CHECK (position IN ('manager','assistant')),
+        monthly_salary_ngn numeric(12,2) NOT NULL DEFAULT 70000,
         review_note text,
         reviewed_by uuid REFERENCES users(id),
         reviewed_at timestamptz,
@@ -54,6 +63,60 @@ export async function ensureFoodPreparationManagerSchema(){
         updated_at timestamptz NOT NULL DEFAULT NOW(),
         UNIQUE(product,source_order_id)
       );
+      CREATE TABLE IF NOT EXISTS weave_food_administration_allocations (
+        product varchar(20) NOT NULL CHECK (product IN ('agility','electrolyte','ember','daisy')),
+        source_order_id uuid NOT NULL,
+        amount_ngn numeric(12,2) NOT NULL DEFAULT 800 CHECK (amount_ngn=800),
+        status varchar(24) NOT NULL DEFAULT 'allocated' CHECK (status IN ('allocated','settled')),
+        allocated_at timestamptz NOT NULL DEFAULT NOW(),
+        PRIMARY KEY(product,source_order_id)
+      );
+      CREATE TABLE IF NOT EXISTS weave_food_forensic_stock_splits (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        product varchar(20) NOT NULL CHECK (product IN ('agility','electrolyte','ember')),
+        source_order_id uuid NOT NULL,
+        purchasing_agent_id uuid NOT NULL REFERENCES users(id),
+        package_count integer NOT NULL CHECK (package_count>0),
+        received_ngn numeric(14,2) NOT NULL CHECK (received_ngn>0),
+        agent_expected_margin_ngn numeric(14,2) NOT NULL CHECK (agent_expected_margin_ngn>=0),
+        administration_ngn numeric(14,2) NOT NULL CHECK (administration_ngn>=0),
+        family_support_ngn numeric(14,2) NOT NULL CHECK (family_support_ngn>=0),
+        lead_preparation_ngn numeric(14,2) NOT NULL CHECK (lead_preparation_ngn>0),
+        retail_unit_price_ngn numeric(14,2) NOT NULL,
+        unit_cost_ngn numeric(14,2) NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT NOW(),
+        UNIQUE(product,source_order_id),
+        CHECK (received_ngn=administration_ngn+family_support_ngn+lead_preparation_ngn)
+      );
+      CREATE TABLE IF NOT EXISTS weave_food_forensic_payouts (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        split_id uuid NOT NULL REFERENCES weave_food_forensic_stock_splits(id) ON DELETE CASCADE,
+        beneficiary varchar(24) NOT NULL
+          CHECK (beneficiary IN ('administration','family_support','lead_manager')),
+        amount_ngn numeric(14,2) NOT NULL CHECK(amount_ngn>0),
+        status varchar(24) NOT NULL DEFAULT 'pending'
+          CHECK(status IN ('pending','transfer_reported')),
+        transfer_reference varchar(180) UNIQUE,
+        bank_name varchar(120),
+        destination_account_last4 varchar(4),
+        transfer_note varchar(800),
+        recorded_by uuid REFERENCES users(id),
+        recorded_at timestamptz,
+        UNIQUE(split_id,beneficiary)
+      );
+      CREATE INDEX IF NOT EXISTS weave_food_forensic_payout_queue_idx
+        ON weave_food_forensic_payouts(status,beneficiary);
+      CREATE TABLE IF NOT EXISTS weave_food_preparation_assignment_events (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        task_id uuid NOT NULL REFERENCES weave_food_preparation_tasks(id),
+        from_manager_id uuid REFERENCES weave_food_preparation_managers(id),
+        to_manager_id uuid NOT NULL REFERENCES weave_food_preparation_managers(id),
+        assigned_by_agent_id uuid NOT NULL REFERENCES users(id),
+        note varchar(800) NOT NULL,
+        assigned_at timestamptz NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS weave_food_preparation_assignment_events_task_idx
+        ON weave_food_preparation_assignment_events(task_id,assigned_at DESC);
       CREATE TABLE IF NOT EXISTS weave_food_preparation_task_events (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         task_id uuid NOT NULL REFERENCES weave_food_preparation_tasks(id),
@@ -66,6 +129,17 @@ export async function ensureFoodPreparationManagerSchema(){
         ON weave_food_preparation_tasks(manager_id,assigned_at DESC);
       CREATE INDEX IF NOT EXISTS weave_food_preparation_events_idx
         ON weave_food_preparation_task_events(task_id,occurred_at DESC);
+    `)
+    // Existing production tables predate the assistant role. Preserve all
+    // appointments and bring their monthly terms up to the current policy.
+    await getPool().query(`
+      ALTER TABLE weave_food_preparation_managers
+        ADD COLUMN IF NOT EXISTS position varchar(16) NOT NULL DEFAULT 'manager';
+      UPDATE weave_food_preparation_managers
+        SET monthly_salary_ngn=CASE WHEN position='assistant' THEN 40000 ELSE 70000 END,
+            updated_at=NOW()
+        WHERE monthly_salary_ngn IS DISTINCT FROM
+          CASE WHEN position='assistant' THEN 40000 ELSE 70000 END;
     `)
     // Existing production databases were created before Ember. Update their
     // original check constraint as well as the new-table schema.
@@ -86,7 +160,7 @@ export async function getActiveFoodPreparationManager(user:{id:string;role:strin
   if(!access.active)throw new PreparationAccessError('An active Agent position is required.')
   await ensureFoodPreparationManagerSchema()
   const {rows}=await getPool().query(`
-    SELECT m.id,m.agent_id,m.status,m.monthly_salary_ngn
+    SELECT m.id,m.agent_id,m.status,m.position,m.monthly_salary_ngn
     FROM weave_food_preparation_managers m
     JOIN users u ON u.id=m.agent_id
     WHERE m.agent_id=$1::uuid AND m.status='approved' AND u.role='agent' AND u.is_active=true
@@ -156,43 +230,38 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
       throw new PreparationAccessError(next?`The next permitted stage is ${next}.`:'This order requires Administration or recipient confirmation for its next step.',409)
     }
     let updated
-    if(task.product==='agility'){
-      const cost=AGILITY_COMPANY_STANDARD_PREPARATION_COST_PER_BOX_NGN
-      const econ=getAgilityCompanyEconomics(Number(order.box_count),cost)
-      if(next==='heating' && econ.grossProfitPerBoxNgn!==AGILITY_COMPANY_TARGET_GROSS_PROFIT_PER_BOX_NGN)
-        throw new PreparationAccessError('Agility company cost policy does not balance.',409)
-      if(next!=='heating'&&!order.planned_company_cost_per_box_ngn)
-        throw new PreparationAccessError('Administration production cost must exist before processing.',409)
+    if(task.product==='agility'||task.product==='electrolyte'||task.product==='ember'){
+      // Verified Agent→WEAVE stock purchase is the authoritative funds source.
+      // Administration (₦800) and Child/Parents Support (₦200) are reserved
+      // per package. Every remaining naira is allocated to the Stability Lead.
+      const {rows:finance}=await client.query(`
+        SELECT package_count,received_ngn,lead_preparation_ngn
+        FROM weave_food_forensic_stock_splits
+        WHERE product=$1 AND source_order_id=$2::uuid
+      `,[task.product,task.source_order_id])
+      const split=finance[0]
+      if(!split||Number(split.package_count)!==Number(order.package_count))
+        throw new PreparationAccessError('Forensics must reconcile this paid stock order before preparation starts.',409)
+      const budget=Number(split.lead_preparation_ngn)
+      const perCarton=budget/Number(order.box_count)
+      if(!Number.isFinite(perCarton)||perCarton<=0)
+        throw new PreparationAccessError('Invalid audited preparation budget.',409)
+      const preparing=task.product==='agility'?'heating':'preparing'
       const result=await client.query(`
         UPDATE agility_stock_orders
         SET fulfillment_status=$1,
-          planned_company_cost_per_box_ngn=CASE WHEN $1='heating' THEN $2 ELSE planned_company_cost_per_box_ngn END,
-          planned_company_total_cost_ngn=CASE WHEN $1='heating' THEN $3 ELSE planned_company_total_cost_ngn END,
-          planned_company_gross_profit_ngn=CASE WHEN $1='heating' THEN $4 ELSE planned_company_gross_profit_ngn END,
+          planned_company_cost_per_box_ngn=CASE WHEN $1=$4 THEN $5 ELSE planned_company_cost_per_box_ngn END,
+          planned_company_total_cost_ngn=CASE WHEN $1=$4 THEN $6 ELSE planned_company_total_cost_ngn END,
+          planned_company_gross_profit_ngn=CASE WHEN $1=$4 THEN 0 ELSE planned_company_gross_profit_ngn END,
           heated_at=CASE WHEN $1='heating' THEN COALESCE(heated_at,NOW()) ELSE heated_at END,
+          prepared_at=CASE WHEN $1='preparing' THEN COALESCE(prepared_at,NOW()) ELSE prepared_at END,
           packed_at=CASE WHEN $1='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
           boxed_at=CASE WHEN $1='boxed' THEN COALESCE(boxed_at,NOW()) ELSE boxed_at END,
           dispatched_at=CASE WHEN $1='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
           updated_at=NOW()
-        WHERE id=$5::uuid AND payment_status='paid' AND fulfillment_status=$6
-        RETURNING id,agent_id,fulfillment_status
-      `,[next,cost,econ.totalPlannedCostNgn,econ.grossProfitNgn,task.source_order_id,oldStage])
-      updated=result.rows[0]
-    }else if(task.product==='electrolyte'||task.product==='ember'){
-      const split=task.product==='ember'?emberMoneySplit(String(order.variant_id)):null
-      const budgetPerCarton=split?split.preparationBudgetNgn*10:null
-      const result=await client.query(`
-        UPDATE agility_stock_orders SET fulfillment_status=$1,
-          planned_company_cost_per_box_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN $4 ELSE planned_company_cost_per_box_ngn END,
-          planned_company_total_cost_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN $4 * box_count ELSE planned_company_total_cost_ngn END,
-          planned_company_gross_profit_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN (agent_box_price_ngn-$4)*box_count ELSE planned_company_gross_profit_ngn END,
-          prepared_at=CASE WHEN $1='preparing' THEN COALESCE(prepared_at,NOW()) ELSE prepared_at END,
-          packed_at=CASE WHEN $1='packed' THEN COALESCE(packed_at,NOW()) ELSE packed_at END,
-          dispatched_at=CASE WHEN $1='dispatched' THEN COALESCE(dispatched_at,NOW()) ELSE dispatched_at END,
-          updated_at=NOW()
         WHERE id=$2::uuid AND payment_status='paid' AND fulfillment_status=$3
         RETURNING id,agent_id,fulfillment_status
-      `,[next,task.source_order_id,oldStage,budgetPerCarton])
+      `,[next,task.source_order_id,oldStage,preparing,perCarton,budget])
       updated=result.rows[0]
     }else{
       const result=await client.query(`

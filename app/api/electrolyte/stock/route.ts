@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
         agentBoxPriceNgn: totals.agentBoxPriceNgn,
         retailValueNgn: totals.retailValueNgn,
         agentPayableNgn: totals.agentPayableNgn,
-        agentExpectedGrossProfitNgn: totals.agentExpectedGrossProfitNgn,
+        agentExpectedGrossProfitNgn: totals.agentExpectedGrossProfitNgn,administrationNgn:totals.administrationNgn,familySupportNgn:totals.familySupportNgn,leadPreparationNgn:totals.leadPreparationNgn,paymentDistributionStatus:totals.paymentDistributionStatus,
       },
     }, { status: 201 })
   } catch (error) {

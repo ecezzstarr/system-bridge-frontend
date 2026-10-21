@@ -63,6 +63,7 @@ export async function POST(request:NextRequest){
       SET available_quantity=l.available_quantity-$1::numeric,updated_at=NOW()
       FROM weave_food_farmers f
       WHERE l.id=$2::uuid AND f.id=l.farmer_id
+        AND (l.unit<>'pack' OR $1::numeric=TRUNC($1::numeric))
         AND f.agent_id<>$3::uuid
         AND f.status='approved' AND l.status='active'
         AND l.available_quantity >= $1::numeric AND l.minimum_quantity <= $1::numeric

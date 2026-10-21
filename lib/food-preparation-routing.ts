@@ -1,8 +1,9 @@
 import type { PoolClient } from 'pg'
 import type { PreparationProduct } from '@/lib/food-preparation-manager'
+import { allocateVerifiedFoodStockFunds } from '@/lib/food-forensic-settlement'
 
 type PaidOrder = {
-  id:string;payment_status:string;agent_id:string;
+  id:string;payment_status:string;agent_id:string;total_ngn?:number|string;retail_unit_price_ngn?:number|string;agent_unit_cost_ngn?:number|string;
   variant_id?:string;box_count?:number|string;package_count?:number|string;
   delivery_address?:string|null;delivery_phone?:string|null;
   customer_name?:string|null;customer_phone?:string|null;
@@ -37,13 +38,18 @@ function notificationDetails(product:PreparationProduct,order:PaidOrder) {
  * server-side paid transition. The task and notification commit with the
  * verified payment, so a manager is never told to prepare unpaid food.
  *
- * Managers are selected from approved active Agent appointments. Round robin
- * by smallest outstanding task count, preserving any previous assignment.
+ * Automatically route paid food orders to the single approved Manager.
+ * Assistants work on orders assigned exclusively by the Stability lead Manager.
  */
 export async function assignPaidOrderToPreparationManager(
   client:PoolClient,product:PreparationProduct,order:PaidOrder,adminId:string
 ):Promise<AssignmentResult> {
   if(order.payment_status!=='paid') throw new Error('Unpaid order cannot enter kitchen preparation')
+  // One per-package allocation when an Agent's OPay STOCK purchase is verified.
+  // Customer Carrier purchases reuse this inventory and do not create payouts.
+  if(product!=='daisy'){
+    await allocateVerifiedFoodStockFunds(client,product,order as Parameters<typeof allocateVerifiedFoodStockFunds>[2])
+  }
   const {rows:existing}=await client.query(`
     SELECT t.id,t.manager_id,m.agent_id FROM weave_food_preparation_tasks t
     JOIN weave_food_preparation_managers m ON m.id=t.manager_id
@@ -59,7 +65,7 @@ export async function assignPaidOrderToPreparationManager(
       SELECT COUNT(*)::int AS jobs FROM weave_food_preparation_tasks t
       WHERE t.manager_id=m.id
     ) workload ON TRUE
-    WHERE m.status='approved' AND u.role='agent' AND u.is_active=true
+    WHERE m.status='approved' AND m.position='manager' AND u.role='agent' AND u.is_active=true
     ORDER BY workload.jobs ASC,m.reviewed_at ASC,m.id ASC
     LIMIT 1
   `)
@@ -69,7 +75,7 @@ export async function assignPaidOrderToPreparationManager(
       INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
       VALUES($1::uuid,'food_preparation_unassigned','Paid food needs a Preparation Manager',
         $2,'WEAVE Food Operations','/admin/food-preparation-manager')
-    `,[adminId,product+' order '+order.id+' is verified/authorized for preparation but no approved active manager is available. Assign a manager from Administration.'])
+    `,[adminId,product+' order '+order.id+' is verified/authorized for preparation but no approved active manager is available. Notify WEAVE Stability to appoint a lead Manager.'])
     return {assigned:false,reason:'no_active_manager'}
   }
 
@@ -84,7 +90,7 @@ export async function assignPaidOrderToPreparationManager(
   await client.query(`
     INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link)
     VALUES($1::uuid,'food_preparation_start','START PREPARATION · VERIFIED FOOD ORDER',
-      $2,$3::uuid,'WEAVE Administration',$4)
+      $2,$3::uuid,'WEAVE Food Operations',$4)
   `,[
     selected.agent_id,
     notificationDetails(product,order),
@@ -95,9 +101,9 @@ export async function assignPaidOrderToPreparationManager(
 }
 
 /** Notify a manually appointed or reassigned manager only when the current
- * source order is paid and the authorization came from Administration. */
+ * source order is paid and the authorization came from WEAVE Stability. */
 export async function notifyManualFoodPreparationAssignment(
-  client:PoolClient,managerAgentId:string,adminId:string,product:PreparationProduct,
+  client:PoolClient,managerAgentId:string,leadAgentId:string,product:PreparationProduct,
   order:PaidOrder,taskId:string
 ) {
   if(order.payment_status!=='paid')throw new Error('Cannot notify manager about unpaid preparation')
@@ -105,6 +111,6 @@ export async function notifyManualFoodPreparationAssignment(
     INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link)
     VALUES($1::uuid,'food_preparation_start','START PREPARATION · ASSIGNED ORDER',
       $2,$3::uuid,'WEAVE Administration',$4)
-  `,[managerAgentId,notificationDetails(product,order),adminId,
+  `,[managerAgentId,notificationDetails(product,order),leadAgentId,
     '/weave/lifestyles/food-preparation?taskId='+encodeURIComponent(taskId)])
 }

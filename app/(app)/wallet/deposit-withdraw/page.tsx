@@ -17,7 +17,6 @@ export default function WalletDepositWithdrawPage() {
   const [balance, setBalance] = useState(0)
   const [withdrawAddress, setWithdrawAddress] = useState('')
   const [flameCoinRate, setFlameCoinRate] = useState<number | null>(null)
-  const [trxPaymentRate, setTrxPaymentRate] = useState<number | null>(null)
   const [companyTrxWallet, setCompanyTrxWallet] = useState('')
   const [depositTxHash, setDepositTxHash] = useState('')
   const [platformFeePercent, setPlatformFeePercent] = useState(5)
@@ -41,7 +40,12 @@ export default function WalletDepositWithdrawPage() {
     }
   }
 
+  // Naira rates belong to OPay payment positions, never to the Client TRX funding view.
   useEffect(() => {
+    if (!user || !isOpayRole) {
+      setFlameCoinRate(null)
+      return
+    }
     fetch('/api/rate/flame-coin-ngn')
       .then(res => res.json())
       .then(data => {
@@ -49,7 +53,7 @@ export default function WalletDepositWithdrawPage() {
         setPlatformFeePercent(data.platformFeePercent)
       })
       .catch(() => {})
-  }, [])
+  }, [user?.role, isOpayRole])
 
   useEffect(() => {
     fetchBalance()
@@ -60,11 +64,11 @@ export default function WalletDepositWithdrawPage() {
 
   useEffect(() => {
     if (!user || isOpayRole) return
-    fetch('/api/rate/trx-payment-ngn')
+    // Fetch only the Company TRX wallet and Flame Coin peg; no NGN quote for Clients.
+    fetch('/api/bridge/file-folder')
       .then(res => res.json())
       .then(data => {
         if (!data.success) return
-        setTrxPaymentRate(data.rateNgnPerTrx)
         setCompanyTrxWallet(data.companyTrxWallet || '')
       })
       .catch(() => {})
@@ -491,7 +495,6 @@ export default function WalletDepositWithdrawPage() {
                       {amount && (
                         <p className="text-xs text-cyan-400 -mt-4 mb-6">
                           After verification: <span className="font-bold">{parseFloat(amount).toLocaleString(undefined, { maximumFractionDigits: 6 })} TRX = {parseFloat(amount).toLocaleString(undefined, { maximumFractionDigits: 6 })} Flame Coin</span>
-                          {trxPaymentRate ? <> · NGN value ≈ ₦{(parseFloat(amount) * trxPaymentRate).toLocaleString(undefined, { maximumFractionDigits: 2 })}</> : null}
                         </p>
                       )}
                       <div className="mb-6">
