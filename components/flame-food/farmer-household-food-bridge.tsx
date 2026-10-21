@@ -5,15 +5,16 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CheckCircle2, Flame, MapPin, RefreshCcw, Tractor, Truck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { FOOD_BRIDGE_STATES, FOOD_BRIDGE_UNITS } from '@/lib/food-bridge-states'
+import { WEAVE_HOUSEHOLD_BASKET_TEMPLATES,WEAVE_HOUSEHOLD_FOOD_GROUPS,quoteHouseholdBasket } from '@/lib/weave-household-food-store'
 
-type Offer={id:string;produce:string;unit:string;available_quantity:string;minimum_quantity:string;unit_price_ngn:string;details:string;farm_name:string;state:string;community:string}
+type Offer={id:string;produce:string;unit:string;available_quantity:string;minimum_quantity:string;unit_price_ngn:string;details:string;farm_name:string;state:string;community:string;basket_components?:{name:string;quantity:number;unit:string}[]|null;basket_individual_total_ngn?:string|null;basket_listed_saving_ngn?:string|null}
 type Order={id:string;status:string;quantity:string;food_subtotal_ngn:string;delivery_quote_ngn:string|null;
   destination_state:string;destination_area:string;delivery_mode:string;created_at:string;quote_note?:string|null;
   produce:string;unit:string;farm_name?:string;origin_state?:string;farmer_contact?:string|null;buyer_contact?:string|null;
   escrow_status?:string|null;escrow_reference?:string|null;buyer_total_ngn?:string|null;
   seller_payout_ngn?:string|null;paymentAccountNumber?:string|null;weave_commission_ngn?:string|null;weaveCommissionNgn?:number}
 type Farm={farmer:{id:string;farm_name:string;state:string;community:string;status:string}|null;
-  offers:{id:string;produce:string;unit:string;available_quantity:string;status:string}[];orders:Order[]}
+  offers:{id:string;produce:string;unit:string;available_quantity:string;unit_price_ngn:string;status:string}[];orders:Order[]}
 const money=(value:unknown)=>'₦'+Number(value||0).toLocaleString('en-NG',{maximumFractionDigits:2})
 
 export default function FarmerHouseholdFoodBridge(){
@@ -49,6 +50,12 @@ export default function FarmerHouseholdFoodBridge(){
   const [minimum,setMinimum]=useState('')
   const [unitPrice,setUnitPrice]=useState('')
   const [produceDetails,setProduceDetails]=useState('')
+  const [basketTemplate,setBasketTemplate]=useState<string>('family-starter')
+  const [basketItems,setBasketItems]=useState<Record<string,string>>({})
+  const [basketPrice,setBasketPrice]=useState('')
+  const [basketCount,setBasketCount]=useState('')
+  const [basketLabel,setBasketLabel]=useState('')
+  const [basketIndependent,setBasketIndependent]=useState(false)
   const [fees,setFees]=useState<Record<string,string>>({})
   const [terms,setTerms]=useState<Record<string,string>>({})
   const [busy,setBusy]=useState(false)
@@ -106,6 +113,23 @@ export default function FarmerHouseholdFoodBridge(){
       priceNgn:Number(unitPrice),details:produceDetails,
     }),'Your farm surplus listing is now visible to eligible Agents and Bridgers. Keep availability accurate.')
   }
+  function publishBasket(e:FormEvent){
+    e.preventDefault()
+    if(!farm?.farmer||farm.farmer.status!=='approved')return
+    const components=Object.entries(basketItems).filter(([,v])=>Number(v)>0)
+      .map(([offerId,quantity])=>({offerId,quantity:Number(quantity)}))
+    try{
+      quoteHouseholdBasket(components,
+        farm.offers.filter(o=>o.status==='active'&&o.unit!=='pack'),Number(basketPrice))
+    }catch(cause){setError(cause instanceof Error?cause.message:'Basket price or ingredients are invalid');return}
+    if(!basketIndependent){setError('Confirm the listed packs are physically prepared and counted separately from loose stock.');return}
+    setError('')
+    void action(()=>write('/api/flame/food','POST',{
+      action:'household_bundle',templateId:basketTemplate,packLabel:basketLabel,
+      packCount:Number(basketCount),priceNgn:Number(basketPrice),
+      stockAttestedSeparate:basketIndependent,components,
+    }),'WEAVE Family Basket published with verified supplier-backed savings at the time of listing.')
+  }
   function request(e:FormEvent){
     e.preventDefault()
     if(!selected)return
@@ -141,7 +165,7 @@ export default function FarmerHouseholdFoodBridge(){
       <div className="mx-auto max-w-6xl">
         <Link href="/weave/lifestyles" className="inline-flex items-center gap-2 text-xs text-emerald-200"><ArrowLeft className="h-4 w-4"/> Lifestyle</Link>
         <p className="mt-7 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-amber-200"><Flame className="h-4 w-4"/> Flame Event · Real food movement</p>
-        <h1 className="mt-2 text-3xl font-black sm:text-5xl">FARM TO FAMILY</h1>
+        <h1 className="mt-2 text-3xl font-black sm:text-5xl">FARM TO FAMILY · WEAVE FOOD STORE</h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-300">When a farmer has excess produce in the North, an Agent or Bridger with a household in Lagos can order directly from that farmer. See who has stock, where it comes from and what the total will cost before agreeing.</p>
         <p className="mt-3 text-xs text-emerald-200">Your current position: {role==='agent'?'Agent · Buying and farming':'Bridger · Buying and arranging food'} · No additional Lifestyle charge.</p>
       </div>
@@ -169,6 +193,7 @@ export default function FarmerHouseholdFoodBridge(){
           {offers.map(offer=><article key={offer.id} className="flex flex-col border border-emerald-200/15 bg-white/[.025] p-5">
             <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-emerald-200"><MapPin className="h-4 w-4"/>{offer.community}, {offer.state}</p>
             <h2 className="mt-3 text-xl font-black">{offer.produce}</h2>
+            {offer.basket_listed_saving_ngn&&<p className="mt-2 text-xs text-emerald-200">Supplier bundle saving at listing: {money(offer.basket_listed_saving_ngn)} against their individual offer prices</p>}
             <p className="mt-1 text-xs text-stone-400">From {offer.farm_name}</p>
             <p className="mt-4 text-2xl font-black">{money(offer.unit_price_ngn)}<span className="text-xs font-normal text-stone-400"> / {offer.unit} farm price</span></p>
             <p className="mt-3 text-xs text-stone-400">{offer.available_quantity} {offer.unit} left · minimum {offer.minimum_quantity} {offer.unit}</p>
@@ -182,7 +207,7 @@ export default function FarmerHouseholdFoodBridge(){
           <p className="text-xs text-stone-400">From {selected.community}, {selected.state} · Unit price {money(selected.unit_price_ngn)}</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-xs">Quantity in {selected.unit}
-              <input type="number" step=".01" min={selected.minimum_quantity} max={selected.available_quantity} value={qty} onChange={e=>setQty(e.target.value)} required className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3"/>
+              <input type="number" step={selected.unit==='pack'?'1':'.01'} min={selected.minimum_quantity} max={selected.available_quantity} value={qty} onChange={e=>setQty(e.target.value)} required className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3"/>
             </label>
             <label className="text-xs">Destination state
               <select value={destination} onChange={e=>setDestination(e.target.value)} className="mt-2 block w-full border border-white/15 bg-[#18281d] p-3">{FOOD_BRIDGE_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select>
@@ -259,6 +284,33 @@ export default function FarmerHouseholdFoodBridge(){
             </div>
             <label className="block text-xs">Harvest, condition and packing<textarea maxLength={500} rows={3} value={produceDetails} onChange={e=>setProduceDetails(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
             <button type="submit" disabled={busy} className="bg-amber-300 px-5 py-3 text-xs font-black text-black">Publish farm stock</button>
+          </form>}
+          {farm?.farmer?.status==='approved'&&<form onSubmit={publishBasket} className="mt-6 space-y-4 border border-emerald-300/30 p-5" data-publish-weave-family-basket>
+            <h3 className="text-xl font-black text-emerald-100">Create a cheaper branded WEAVE Family Basket</h3>
+            <p className="text-xs leading-6 text-stone-300">Choose actual items you already offer separately, package them as a distinct ready-to-ship basket, then set a lower combined price. The comparison uses YOUR current individual item prices, not invented national market figures. Sell only physically separate prepared basket stock.</p>
+            <label className="block text-xs">Family Basket brand
+              <select value={basketTemplate} onChange={e=>setBasketTemplate(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3">
+                {WEAVE_HOUSEHOLD_BASKET_TEMPLATES.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </label>
+            <p className="text-xs text-stone-400">{WEAVE_HOUSEHOLD_BASKET_TEMPLATES.find(t=>t.id===basketTemplate)?.description}</p>
+            <div className="max-h-72 space-y-2 overflow-y-auto border border-white/10 p-3">
+              {farm.offers.filter(o=>o.status==='active'&&o.unit!=='pack'&&Number(o.available_quantity)>0).map(offer=><label key={offer.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 py-2 text-xs">
+                <span>{offer.produce} · {money(offer.unit_price_ngn)}/{offer.unit} · {offer.available_quantity} available</span>
+                <input aria-label={`Quantity of ${offer.produce} in basket`} type="number" min="0" step=".01" max={offer.available_quantity} value={basketItems[offer.id]||''}
+                  placeholder="Qty" onChange={e=>setBasketItems(x=>({...x,[offer.id]:e.target.value}))}
+                  className="w-24 border border-white/20 bg-[#18281d] p-2 text-white"/>
+              </label>)}
+            </div>
+            {farm.offers.filter(o=>o.status==='active'&&o.unit!=='pack').length<3&&<p className="text-xs text-amber-200">Publish at least three different genuine item offers first (for example rice, beans and palm oil).</p>}
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-xs">Prepared baskets physically available<input type="number" min="1" max="100" step="1" required value={basketCount} onChange={e=>setBasketCount(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+              <label className="text-xs">Discounted price ₦ per basket<input type="number" min="1000.01" step=".01" required value={basketPrice} onChange={e=>setBasketPrice(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            </div>
+            <label className="block text-xs">Optional batch name<input value={basketLabel} onChange={e=>setBasketLabel(e.target.value)} maxLength={50} placeholder="Family value pack" className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            <p className="text-xs text-emerald-200">Separate prices at your listed rates: {money(Object.entries(basketItems).reduce((total,[id,q])=>{const offer=farm.offers.find(x=>x.id===id);return total+(offer?Number(offer.unit_price_ngn)*Number(q||0):0)},0))}. Saving appears only if the final basket price is lower.</p>
+            <label className="flex items-start gap-2 text-xs text-stone-300"><input type="checkbox" checked={basketIndependent} onChange={e=>setBasketIndependent(e.target.checked)} className="mt-0.5"/>I have physically prepared this many full baskets and set aside their ingredients separately from my loose-item inventory. I will not sell the same food twice.</label>
+            <button type="submit" disabled={busy||!basketIndependent} className="border border-emerald-300/50 bg-emerald-300 px-5 py-3 text-xs font-black text-[#062010] disabled:opacity-40">Publish a cheaper WEAVE Family Basket</button>
           </form>}
           {farm&&farm.offers.length>0&&<div className="mt-5 border-t border-white/10 pt-4">
             <h3 className="text-sm font-black">Your inventory</h3>
