@@ -422,7 +422,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         <div className="weave-loader-scenery-landscape"/>
         <div className="weave-loader-scenery-shade"/>
       </div>
-      <div className="weave-loader-layout weave-stable-content relative grid h-full min-h-0 w-full max-w-3xl">
+      <div className="weave-loader-layout relative grid h-full min-h-0 w-full max-w-3xl">
         <div className="weave-loader-heading flex min-h-0 flex-col items-center justify-end text-center">
           <div className="relative flex h-12 w-12 shrink-0 items-center justify-center sm:h-16 sm:w-16">
             <div className="absolute inset-0 animate-[spin_5.4s_linear_infinite] rounded-full border border-amber-200/15 border-t-orange-300/70 motion-reduce:animate-none"/>
@@ -440,12 +440,11 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           <p className={'mt-1 text-[8px] font-bold uppercase tracking-[.18em] '+(showFlameBriefing?'text-rose-200/70':'text-stone-500')}>
             {showAgentBriefing?'Learn WEAVE · operate one system · verify results':showClientBriefing?'Preview · build · activate · operate':showAdminBriefing?'Organize · verify · preserve records':showHopeBriefing?'WEAVE builds · Hope searches · Clients own and use':showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
           </p>
-          <h1 className="mt-2 text-2xl font-black tracking-tight drop-shadow-[0_2px_16px_rgba(0,0,0,.9)] sm:text-3xl">{openingLabel}</h1>
+          <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
         </div>
 
         <section
           data-weave-loading-training={role}
-          /* The briefing node stays mounted as wording changes. */
           data-loading-brief={briefIndex+1}
           className="weave-loading-brief weave-loader-card mx-auto w-full min-h-0 overflow-hidden rounded-2xl border border-amber-200/30 bg-[#041222]/95 p-4 shadow-[0_20px_45px_rgba(0,0,0,.45)] sm:p-6"
         >
