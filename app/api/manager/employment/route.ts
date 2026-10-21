@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
       probationTarget:MANAGER_PROBATION_TARGET,
       monthlyReferralTarget:MANAGER_PROBATION_TARGET,
       referralTargetScope:'manager_and_two_assistants',
+      salaryPaymentRule:'Full monthly salary after month-end verification only if team completes 500 referrals; below target, individual ₦500 verified-referral bonuses only.',
+      salaryPaidAutomatically:false,
       probationMonths:1,
       documentVersion:MANAGER_DOCUMENT_VERSION,
       continuanceNgn:agentFree ? 0 : MANAGER_CONTINUANCE_NGN,
