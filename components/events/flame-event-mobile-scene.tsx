@@ -34,7 +34,6 @@ export function RiverSurface({quiet}:{quiet:boolean}) {
       '}',
     ].join('\n'),
     fragmentShader:[
-      'precision mediump float;',
       'uniform float time;',
       'varying vec2 vUv2;',
       'void main(){',

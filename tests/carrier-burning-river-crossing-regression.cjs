@@ -21,6 +21,8 @@ assert.ok(publicFlame.includes('<FlameEventFoodStore carrierCode={carrierCode}/>
 assert.ok(!publicFlame.includes('FlameEventOpenWorld enterprises='),'Public route does not require player transformation or joystick')
 assert.ok(preview.includes('data-flame-preview-no-avatar="true"')&&!preview.includes('WeaveEmbodiedAvatar'),'No visitor avatar is created')
 assert.ok(preview.includes('<RiverSurface quiet={false}/>')&&three.includes('export function RiverSurface'),'Preview uses actual live water and fire shader')
+const river=three.slice(three.indexOf('export function RiverSurface'),three.indexOf('function StonePaving'))
+assert.ok(!river.includes('precision mediump float;'),'River stages share Three.js precision so the time uniform links on mobile WebGL')
 assert.ok(preview.includes('public_systems')&&preview.includes('system_type'),'Client models reflect their published build type')
 assert.ok(preview.includes('onClick={open}')&&preview.includes('Open Customer Door'),'Tapping a 3D Client structure opens their Customer Door')
 assert.ok(preview.includes('checkout=1#offers')&&marketRoute.includes("query.checkout!=='1'"),'Client Customer Doors open directly at public offers, not back through the avatar plaza')
