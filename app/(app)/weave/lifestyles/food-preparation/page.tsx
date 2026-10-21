@@ -10,8 +10,9 @@ type PreparationTask={
   customer_name?:string|null;purchasing_agent?:string|null;occasion?:string|null;size_option?:string|null;
   payment_status:string;recorded_handoffs:number;assigned_at:string
 }
-type Appointment={id:string;status:'pending'|'approved'|'rejected'|'revoked';application_note:string;review_note?:string|null;monthly_salary_ngn:string}
-type State={eligible:boolean;appointment:Appointment|null;tasks:PreparationTask[];duties:string[];salaryNgn:number;payrollStatus:string}
+type FoodPosition='manager'|'assistant'
+type Appointment={id:string;position:FoodPosition;status:'pending'|'approved'|'rejected'|'revoked';application_note:string;review_note?:string|null;monthly_salary_ngn:string}
+type State={eligible:boolean;appointment:Appointment|null;openings:Record<FoodPosition,{capacity:number;remaining:number}>;tasks:PreparationTask[];duties:string[];payrollStatus:string}
 const money=(amount:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(amount)
 const productName=(product:string)=>product==='daisy'?'Daisy Pastries':product==='electrolyte'?'Electrolyte':product==='ember'?'Ember':'Agility'
 
@@ -19,6 +20,7 @@ export default function FoodPreparationManagerPage(){
   const {user,token,isInitialized}=useAuth()
   const [data,setData]=useState<State|null>(null)
   const [note,setNote]=useState('')
+  const [position,setPosition]=useState<FoodPosition>('manager')
   const [handoffs,setHandoffs]=useState<Record<string,string>>({})
   const [busy,setBusy]=useState('')
   const [error,setError]=useState('')
@@ -40,7 +42,7 @@ export default function FoodPreparationManagerPage(){
     try{
       const result=await fetch('/api/weave/lifestyles/food-preparation',{
         method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
-        body:JSON.stringify({applicationNote:note}),
+        body:JSON.stringify({applicationNote:note,position}),
       })
       const body=await result.json()
       if(!result.ok)throw new Error(body.error||'Application was not recorded')
@@ -69,10 +71,11 @@ export default function FoodPreparationManagerPage(){
     <Link href="/weave/lifestyles" className="inline-flex items-center gap-2 text-xs text-amber-200"><ArrowLeft className="h-4 w-4"/> WEAVE Lifestyle</Link>
     <header className="mt-6 border-b border-white/10 pb-6">
       <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ChefHat className="h-4 w-4"/> Agent Employment · Food Operations</p>
-      <h1 className="mt-2 text-3xl font-black md:text-5xl">FOOD PREPARATION MANAGER</h1>
-      <p className="mt-4 text-3xl font-black text-emerald-200">{money(60000)} <span className="text-sm font-normal text-stone-300">monthly salary · approved appointment</span></p>
+      <h1 className="mt-2 text-3xl font-black md:text-5xl">FOOD PREPARATION TEAM</h1>
+      <p className="mt-4 text-sm text-emerald-200">One Food Preparation Manager and five Assistant Food Preparation Managers. Agents apply for an available position.</p>
+      {data?.appointment&&<p className="mt-4 text-2xl font-black text-emerald-200">{money(Number(data.appointment.monthly_salary_ngn))} <span className="text-sm font-normal text-stone-300">monthly employment terms · {data.appointment.position==='manager'?'Manager':'Assistant Manager'}</span></p>}
       <p className="mt-3 max-w-4xl text-sm leading-6 text-stone-300">
-        Prepare, package and dispatch Agility, Electrolyte and Daisy Pastries for verified customer and Agent supply orders.
+        Coordinate and support preparation, packaging and dispatch of Agility, Electrolyte, Ember and Daisy Pastries for verified customer and Agent supply orders.
         Your work follows the actual stock and cake orders already entered in WEAVE. Each handoff is recorded for Administration.
       </p>
       <p className="mt-3 text-xs leading-5 text-amber-100">Applications are reviewed by Administration; this is not automatic employment or an automatic wallet credit. Current salary payment processing is not connected.</p>
@@ -91,23 +94,30 @@ export default function FoodPreparationManagerPage(){
       <div>
         <h2 className="text-xl font-black">Your position</h2>
         {data?.appointment?<div className="mt-4 border border-white/10 p-5">
-          <p className="text-xs font-black uppercase text-amber-200">Application: {data.appointment.status}</p>
+          <p className="text-xs font-black uppercase text-amber-200">{data.appointment.position==='manager'?'Food Preparation Manager':'Assistant Food Preparation Manager'} · Application: {data.appointment.status}</p>
           {data.appointment.review_note&&<p className="mt-3 text-xs text-stone-400">Administration: {data.appointment.review_note}</p>}
-          {data.appointment.status==='approved'&&<p className="mt-3 text-xs text-emerald-200">You may work only on orders assigned to this Food Preparation Manager desk.</p>}
-        </div>:<p className="mt-4 text-xs text-stone-500">No Food Preparation Manager application recorded yet.</p>}
+          {data.appointment.status==='approved'&&<p className="mt-3 text-xs text-emerald-200">You may work only on orders assigned to your food preparation desk by Administration.</p>}
+        </div>:<p className="mt-4 text-xs text-stone-500">No food preparation position application recorded yet.</p>}
         {data?.eligible && (!data.appointment||['rejected','revoked'].includes(data.appointment.status))&&
         <form onSubmit={apply} className="mt-4 border border-amber-300/20 p-5">
-          <h3 className="text-sm font-black">Apply for the position</h3>
+          <h3 className="text-sm font-black">Apply for one available position</h3>
+          <div className="mt-3 grid gap-2">
+            {(['manager','assistant'] as const).map(role=><label key={role} className="flex items-center gap-3 border border-white/10 p-3 text-xs">
+              <input type="radio" name="foodPosition" value={role} checked={position===role}
+                disabled={!data.openings[role].remaining} onChange={()=>setPosition(role)}/>
+              <span>{role==='manager'?'Food Preparation Manager':'Assistant Food Preparation Manager'} · {data.openings[role].remaining} of {data.openings[role].capacity} application places available</span>
+            </label>)}
+          </div>
           <label className="mt-3 block text-xs leading-5 text-stone-300">Describe your food-handling experience, preparation and packaging ability, available work hours and how you can organize delivery.
             <textarea required minLength={40} maxLength={2000} rows={6} value={note} onChange={e=>setNote(e.target.value)}
               className="mt-3 block w-full border border-white/15 bg-[#151920] p-3 text-sm text-white"/>
           </label>
-          <button type="submit" disabled={busy==='apply'||note.trim().length<40} className="mt-4 bg-amber-300 px-4 py-3 text-xs font-black text-black disabled:opacity-40">Submit application to Administration</button>
+          <button type="submit" disabled={busy==='apply'||note.trim().length<40||!data.openings[position].remaining} className="mt-4 bg-amber-300 px-4 py-3 text-xs font-black text-black disabled:opacity-40">Submit application to Administration</button>
         </form>}
         {data&&!data.eligible&&<p className="mt-4 text-xs text-stone-500">An active Agent account is required before an application can proceed.</p>}
         <h2 className="mt-8 text-lg font-black">Daily responsibilities</h2>
         <div className="mt-3 space-y-3">{[
-          'Receive Agility and Electrolyte carton orders from Agents after WEAVE payment verification.',
+          'Receive verified Agility, Electrolyte and Ember orders; the Manager coordinates the kitchen while Assistants support assigned work.',
           'Prepare fresh Ember boxes, bowls and packages to the correct ingredient and size specification.',
           'Prepare Daisy Pastries only after the cake order payment is verified.',
           'Check ordered quantities, labels, packaging and delivery destinations.',
