@@ -261,14 +261,14 @@ export function WeaveExistingPageImage(){
   if(!visual)return null
   const pictures=visual.pictures
   return <figure
-    className="relative mx-auto my-3 grid w-full max-w-7xl grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)] overflow-hidden rounded-2xl border border-amber-200/20 bg-[#081725] text-white shadow-[0_18px_55px_rgba(0,0,0,.19)] sm:my-5 sm:grid-cols-[minmax(0,.85fr)_minmax(0,1fr)]"
+    className="relative mx-auto my-3 grid w-full max-w-7xl grid-cols-1 overflow-hidden rounded-2xl border border-amber-200/20 bg-[#081725] text-white shadow-[0_18px_55px_rgba(0,0,0,.19)] sm:my-5 sm:grid-cols-[minmax(0,.85fr)_minmax(0,1fr)]"
     data-weave-page-original-visual={pathname}
   >
-    <div className="relative flex min-h-[150px] items-center overflow-hidden bg-[#102b3a] sm:min-h-[230px]">
+    <div className="relative flex h-44 items-center overflow-hidden bg-[#102b3a] sm:h-auto sm:min-h-[230px]">
       <div className="grid h-full w-full" style={{gridTemplateColumns:`repeat(${pictures.length},minmax(0,1fr))`}}>
         {pictures.map((picture,index)=><img key={picture.src} src={picture.src}
           alt={picture.alt} loading={index===0?'eager':'lazy'} decoding="async"
-          className="h-full min-h-[150px] w-full object-cover object-center sm:min-h-[230px]" />)}
+          className="h-44 w-full object-cover object-center sm:h-full sm:min-h-[230px]" />)}
       </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#081725]/40" aria-hidden="true"/>
     </div>
