@@ -191,7 +191,7 @@ export async function getManagerEmploymentState(userId: string) {
   const referral=await getReferralCoreState(userId)
   let successful=0
   if(employment){
-    const [period]=await sql`SELECT COUNT(*)::int AS successful_referrals FROM users WHERE referred_by=${userId}::uuid AND role IN ('agent','bridger') AND created_at>=${employment.probation_started_at}`
+    const [period]=await sql`SELECT COUNT(*)::int AS successful_referrals FROM users WHERE referred_by=${userId}::uuid AND role IN ('agent','bridger') AND is_active=true AND created_at>=${employment.probation_started_at} AND created_at>=date_trunc('month',NOW()) AND created_at<date_trunc('month',NOW())+INTERVAL '1 month'`
     successful=Number(period?.successful_referrals||0)
   }
   const target=Number(employment?.probation_target||MANAGER_PROBATION_TARGET)
