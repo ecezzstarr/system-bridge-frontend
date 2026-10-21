@@ -75,7 +75,7 @@ export async function GET(request:NextRequest){
         LEFT JOIN carrier_cake_orders c
           ON t.product='daisy' AND c.id=t.source_order_id
         LEFT JOIN users u ON u.id=COALESCE(s.agent_id,c.agent_id)
-        WHERE t.manager_id=$1::uuid OR ($2::boolean AND assigned_m.position='assistant' AND assigned_m.status='approved')
+        WHERE (t.manager_id=$1::uuid OR ($2::boolean AND assigned_m.position='assistant'))
         ORDER BY t.assigned_at DESC LIMIT 100
       `,[appointment.id,isLead])
       tasks=rows.map(row=>({
