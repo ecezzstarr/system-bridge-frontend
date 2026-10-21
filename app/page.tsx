@@ -127,6 +127,16 @@ export default function Home() {
         )}
 
         <main className="mx-auto w-full max-w-6xl px-3 pb-16 pt-4 sm:px-5 sm:pt-7" data-weave-public-entry-world="true">
+          <Link href="/food-store" className="mb-4 block overflow-hidden rounded-xl border border-emerald-300/20 bg-[#102015]" data-weave-family-food-image-entry>
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="p-3 sm:p-5">
+                <p className="text-[10px] font-black uppercase tracking-wide text-emerald-200">WEAVE FAMILY FOOD STORE</p>
+                <p className="mt-2 text-sm font-black text-white sm:text-xl">Rice · Beans · Garri · Nigerian family essentials</p>
+                <p className="mt-2 text-xs text-stone-400">Browse verified suppliers and family provision baskets.</p>
+              </div>
+              <img src="/weave-food/weave-family-products.avif" width={420} height={307} alt="WEAVE Family Food Store grocery collection illustration" loading="lazy" className="h-full w-full object-cover"/>
+            </div>
+          </Link>
           <section className="mb-5 flex flex-wrap items-center justify-between gap-4 border border-emerald-300/15 bg-emerald-300/[.035] p-4 sm:p-5" data-home-farm-to-family>
             <div className="max-w-3xl">
               <p className="text-[10px] font-black uppercase tracking-[.18em] text-emerald-300">Flame Event · Farm to Family</p>
