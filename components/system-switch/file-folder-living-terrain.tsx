@@ -1,5 +1,6 @@
 'use client'
 import {useMemo,useState} from 'react'
+import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 type District={key:string;label:string}
 const LOCATIONS:Record<string,{x:number;y:number;description:string;type:string}>={
  workshop_core:{x:50,y:28,description:'Understand your world, resources and next movement.',type:'citadel'},
@@ -11,16 +12,17 @@ const LOCATIONS:Record<string,{x:number;y:number;description:string;type:string}
  active_systems:{x:83,y:75,description:'Enter completed and operating systems.',type:'city'},
  library_district:{x:51,y:82,description:'Explore what systems can become together.',type:'sphere'}
 }
-export default function FileFolderLivingTerrain({districts,onEnter,active,systems=0,building=0}:{districts:District[];onEnter:(key:string)=>void;active:string;systems?:number;building?:number}){
+export default function FileFolderLivingTerrain({districts,onEnter,active,systems=0,building=0,builds=[],now=Date.now()}:{districts:District[];onEnter:(key:string)=>void;active:string;systems?:number;building?:number;builds?:Array<{id:string;title:string;status:string;started_at?:string;completes_at?:string}>;now?:number}){
  const [selected,setSelected]=useState<string|null>(null)
  const places=useMemo(()=>districts.map((district,i)=>({district,...(LOCATIONS[district.key]||{x:18+(i%3)*31,y:35+Math.floor(i/3)*20,description:'Enter this construction workspace.',type:'dome'})})),[districts])
+ const forming=builds.filter(b=>b.status==='building').slice(0,4).map(b=>({ ...b,progress:buildFormationProgress(b,now),remaining:Math.max(0,Math.ceil((new Date(b.completes_at||now).getTime()-now)/1000)) }))
  const focused=places.find(p=>p.district.key===selected)||places.find(p=>p.district.key===active)||places[0]
  return <section aria-label="Explore your File Folder world" className="relative isolate overflow-hidden rounded-2xl border border-cyan-200/25 bg-[#061728] text-white">
  <header className="relative z-20 border-b border-cyan-100/10 bg-[#071523]/90 px-4 py-4">
   <p className="text-[10px] font-bold uppercase tracking-[.2em] text-amber-200">WEAVE · File Folder World</p>
   <h3 className="mt-1 text-xl font-black">Your systems are places you can enter</h3>
   <p className="mt-1 text-xs leading-5 text-slate-300">Touch a building to see what happens there, then enter to work. Your real construction records remain connected to the existing workshops.</p>
-  <p className="mt-2 text-[10px] text-cyan-200">{building} building · {systems} completed</p>
+  <p className="mt-2 text-[10px] text-cyan-200">{building} building · {systems} completed · construction follows real-world time, even while you are away</p>
  </header>
  <div className="relative min-h-[540px] overflow-hidden sm:min-h-[650px]" style={{background:'radial-gradient(ellipse at 50% 22%,rgba(255,196,125,.9),transparent 22%),linear-gradient(180deg,#0b1d3d 0%,#355177 25%,#dd9971 43%,#28728a 54%,#06384e 100%)'}}>
   <div aria-hidden="true" className="absolute inset-x-0 top-[43%] h-[57%]" style={{background:'repeating-radial-gradient(ellipse at 50% 50%,rgba(13,98,125,.3) 0px,rgba(46,176,204,.3) 3px,rgba(8,46,73,.8) 8px,rgba(7,46,70,.9) 24px)'}}/>
