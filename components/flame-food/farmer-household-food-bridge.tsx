@@ -155,7 +155,7 @@ export default function FarmerHouseholdFoodBridge(){
   if(!isInitialized)return <main className="p-8 text-white">Opening Lifestyle Food Exchange…</main>
   if(!user||!['agent','bridger'].includes(role||''))return <main className="min-h-screen p-8 text-white">
     <h1 className="text-2xl font-black">WEAVE Lifestyle · Farm to Family</h1>
-    <p className="mt-4 text-sm text-stone-400">Register or sign in as an Agent or Bridger to use the food exchange.</p>
+    <p className="mt-4 text-sm text-stone-400">Register or sign in as an Agent or Bridger to use the food exchange. Approved Agents may supply farms, market staples and household provision packs.</p>
     <div className="mt-4 flex gap-4"><Link href="/register" className="text-emerald-200">Register for WEAVE</Link><Link href="/login" className="text-sky-200">Sign in</Link></div>
   </main>
 
@@ -259,22 +259,22 @@ export default function FarmerHouseholdFoodBridge(){
       </div>}
       {tab==='farm'&&isFarmerEligible&&<section className="mt-7 grid gap-8 lg:grid-cols-2" data-food-agent-farm>
         <div>
-          <h2 className="flex items-center gap-2 text-xl font-black"><Tractor className="h-5 w-5 text-amber-200"/> Your farm · Agent position</h2>
-          <p className="mt-3 text-xs leading-6 text-stone-400">Your WEAVE Agent identity owns the farm account. A separate farmer login or extra subscription is not required. Administration verifies the farm before publishing available stock.</p>
+          <h2 className="flex items-center gap-2 text-xl font-black"><Tractor className="h-5 w-5 text-amber-200"/> Your farm or food supplier · Agent position</h2>
+          <p className="mt-3 text-xs leading-6 text-stone-400">Your WEAVE Agent identity owns the farm/food-supplier profile. No separate supplier login is required. Administration verifies your farming, cooperative or market-provisions business before you may publish actual stock.</p>
           {!farm?.farmer?<form onSubmit={register} className="mt-5 space-y-4 border border-white/10 p-5">
-            <label className="block text-xs">Name of farm / producer<input required minLength={3} value={farmName} onChange={e=>setFarmName(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            <label className="block text-xs">Farm, cooperative or food supplier name<input required minLength={3} value={farmName} onChange={e=>setFarmName(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
             <label className="block text-xs">Farm contact<input required type="tel" value={farmPhone} onChange={e=>setFarmPhone(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
             <label className="block text-xs">State<select value={farmState} onChange={e=>setFarmState(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3">{FOOD_BRIDGE_STATES.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
             <label className="block text-xs">Village or community<input required minLength={3} value={farmCommunity} onChange={e=>setFarmCommunity(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
             <label className="flex items-start gap-2 text-xs text-stone-400"><input type="checkbox" className="mt-1" checked={shareFarmerContact} onChange={e=>setShareFarmerContact(e.target.checked)}/>Let confirmed buyers see my farm contact to coordinate delivery.</label>
-            <button type="submit" disabled={busy} className="bg-amber-300 px-5 py-3 text-xs font-black text-black">Register farm under my Agent account</button>
+            <button type="submit" disabled={busy} className="bg-amber-300 px-5 py-3 text-xs font-black text-black">Register approved food supplier under my Agent account</button>
           </form>:<div className="mt-4 border border-white/10 p-4">
             <p className="text-xs font-black text-amber-200">{farm.farmer.farm_name} · {farm.farmer.status.toUpperCase()}</p>
             <p className="mt-2 text-xs text-stone-400">{farm.farmer.community}, {farm.farmer.state}</p>
           </div>}
           {farm?.farmer?.status==='approved'&&<div className="mt-5 border border-emerald-300/25 p-5" data-farmer-escrow-bank><h3 className="text-sm font-black">Your private bank account for farm payouts</h3><p className="mt-2 text-xs text-stone-400">WEAVE takes one flat ₦1,000 service fee from the proceeds of each completed trade, regardless of quantity. Administration pays the remaining buyer total to this bank account after receipt confirmation. Details are not published to buyers.</p><div className="mt-3 grid gap-2 sm:grid-cols-3"><input aria-label="Bank name" placeholder="Bank name" value={payoutBank} onChange={e=>setPayoutBank(e.target.value)} className="border border-white/10 bg-[#18281d] p-3 text-sm"/><input aria-label="Account number" placeholder="10-digit account number" value={payoutAccount} onChange={e=>setPayoutAccount(e.target.value)} className="border border-white/10 bg-[#18281d] p-3 text-sm"/><input aria-label="Account holder name" placeholder="Account holder name" value={payoutName} onChange={e=>setPayoutName(e.target.value)} className="border border-white/10 bg-[#18281d] p-3 text-sm"/></div><button disabled={busy} onClick={()=>void action(()=>write('/api/flame/food','POST',{action:'set_payout_account',bankName:payoutBank,accountNumber:payoutAccount,accountName:payoutName}),'Private farm payout details recorded.')} className="mt-3 border border-emerald-300/30 px-4 py-2 text-xs text-emerald-200">Save receiving account</button></div>}
           {farm?.farmer?.status==='approved'&&<form onSubmit={publish} className="mt-6 space-y-3 border border-amber-300/20 p-5" data-food-agent-surplus>
-            <h3 className="text-lg font-black">Offer actual surplus stock</h3>
+            <h3 className="text-lg font-black">Offer real farm or household provision stock</h3>
             <label className="block text-xs">Produce<input required value={produce} onChange={e=>setProduce(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
             <div className="grid grid-cols-2 gap-3">
               <label className="text-xs">Selling unit<select value={unit} onChange={e=>setUnit(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3">{FOOD_BRIDGE_UNITS.filter(u=>u!=='pack').map(u=><option value={u} key={u}>{u}</option>)}</select></label>
@@ -282,7 +282,7 @@ export default function FarmerHouseholdFoodBridge(){
               <label className="text-xs">Surplus quantity<input type="number" step=".01" min=".01" required value={stock} onChange={e=>setStock(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
               <label className="text-xs">Minimum buy quantity<input type="number" step=".01" min=".01" required value={minimum} onChange={e=>setMinimum(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
             </div>
-            <label className="block text-xs">Harvest, condition and packing<textarea maxLength={500} rows={3} value={produceDetails} onChange={e=>setProduceDetails(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
+            <label className="block text-xs">Product source, quality, pack size and condition<textarea maxLength={500} rows={3} value={produceDetails} onChange={e=>setProduceDetails(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
             <button type="submit" disabled={busy} className="bg-amber-300 px-5 py-3 text-xs font-black text-black">Publish farm stock</button>
           </form>}
           {farm?.farmer?.status==='approved'&&<form onSubmit={publishBasket} className="mt-6 space-y-4 border border-emerald-300/30 p-5" data-publish-weave-family-basket>
