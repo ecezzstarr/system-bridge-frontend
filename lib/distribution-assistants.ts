@@ -146,7 +146,7 @@ export async function reviewDistributionAssistant(
     await client.query('COMMIT')
     try {
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and your three-person team's shared monthly target is 500 verified Agent/Bridger referrals.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
+        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and the shared monthly target for your three-person team is 500 verified Agent/Bridger referrals.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
     } catch(error) {console.error('[distribution-assistants] notification failed',error)}
     return {success:true as const,status}
   } catch(error) {
