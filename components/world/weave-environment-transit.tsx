@@ -457,7 +457,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           data-weave-loading-training={role}
           key={briefing.eyebrow+'-'+briefing.title}
           data-loading-brief={briefIndex+1}
-          className="weave-loading-brief mx-auto mt-3 w-full min-h-[11rem] overflow-hidden rounded-2xl border border-amber-200/25 bg-[#051324]/90 p-4 shadow-[0_24px_85px_rgba(0,0,0,.72)] backdrop-blur-xl sm:min-h-[14rem] sm:p-6"
+          className="weave-loading-brief mx-auto mt-3 w-full min-h-[15rem] overflow-hidden rounded-2xl border border-amber-200/25 bg-[#051324]/90 p-4 shadow-[0_24px_85px_rgba(0,0,0,.72)] backdrop-blur-xl sm:min-h-[14rem] sm:p-6"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
