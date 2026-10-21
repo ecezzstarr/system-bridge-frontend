@@ -66,6 +66,7 @@ jobs:
           node tests/agent-work-cakes-regression.cjs
           node tests/food-preparation-manager-payment-routing-regression.cjs
           node tests/food-forensic-economics.cjs
+          node tests/weave-family-food-store-regression.cjs
           node tests/farm-to-family-lifestyle-regression.cjs
           node tests/carrier-farm-door-regression.cjs
           node tests/flame-real-food-current-regression.cjs
