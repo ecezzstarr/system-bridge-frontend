@@ -34,7 +34,7 @@ export default function FoodForensicsPage(){
   },[token])
   useEffect(()=>{void load()},[load])
   function edit(id:string,key:'transferReference'|'bankName'|'accountLast4'|'note',value:string){
-    setDetails(d=>({...d,[id]:{transferReference:'',bankName:'',accountLast4:'',note:'',...d[id],[key]:value}}))
+    setDetails(d=>({...d,[id]:{...(d[id]||{transferReference:'',bankName:'',accountLast4:'',note:''}),[key]:value}}))
   }
   async function record(p:Payout){
     const form=details[p.payout_id]
@@ -52,7 +52,7 @@ export default function FoodForensicsPage(){
     finally{setBusy('')}
   }
   if(!isInitialized)return <main className="p-6 text-white">Opening Food Forensics…</main>
-  if(!user||!['agent','bridger'].includes(user.role))
+  if(!user||!['agent','bridger'].includes(user.role||''))
     return <main className="p-6 text-white">An approved Forensics departmental appointment is required.</main>
   return <main className="mx-auto max-w-5xl space-y-6 px-4 pb-20 pt-6 text-white" data-forensics-food-settlement>
     <Link href="/weave/lifestyles/mandate/inbox?department=forensic" className="inline-flex items-center gap-2 text-xs text-amber-200"><ArrowLeft className="h-4 w-4"/> Forensics inbox</Link>
