@@ -18,7 +18,7 @@ for(const role of ['visitor','agent','bridger','client','admin']){
 assert.ok(trainingBriefsForRole('agent')[0].body.includes('Stability'))
 assert.ok(trainingBriefsForRole('agent')[1].body.includes('1.5 Flame Coin'))
 assert.ok(trainingBriefsForRole('bridger')[1].body.includes('unverified'))
-assert.ok(trainingBriefsForRole('client')[1].body.includes('real time'))
+assert.ok(trainingBriefsForRole('client')[1].title.includes('real time'))
 assert.ok(trainingBriefsForRole('admin')[1].body.includes('verification')||trainingBriefsForRole('admin')[1].body.includes('confirmed'))
 assert.ok(trainingBriefsForRole('visitor').some(item=>item.body.includes('System Switch')))
 assert.equal(agentOperatingGuideForPath('/video-ad-studio').nextHref,'/agent/creative')
