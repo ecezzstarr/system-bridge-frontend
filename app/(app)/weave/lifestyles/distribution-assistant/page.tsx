@@ -45,7 +45,7 @@ export default function DistributionAssistantLifestylePage(){
     <Link href="/weave/lifestyles" className="text-xs text-cyan-300">← Return to Lifestyle</Link>
     <p className="mt-7 text-xs font-black uppercase tracking-widest text-amber-300">WEAVE Distribution · Employment</p>
     <h1 className="mt-2 text-3xl font-black">Assistant Distribution Manager</h1>
-    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Three assistant positions support WEAVE's Distribution Managers with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE.</p>
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE.</p>
     <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
       <Info label="Monthly salary term" value="₦30,000"/>
       <Info label="Individual monthly target" value={String(target)}/>
@@ -56,7 +56,7 @@ export default function DistributionAssistantLifestylePage(){
     {!data?.eligible&&<p className="mt-5 rounded-xl border border-amber-400/20 p-4 text-sm text-amber-100">Your Agent or Bridger position must be active to apply or carry this employment.</p>}
     {appointment ? <section className="mt-7 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-5">
       <h2 className="text-lg font-black">Application status: {String(appointment.status).toUpperCase()}</h2>
-      <p className="mt-2 text-sm text-slate-300">{appointed?'Your approved position is active. Work through your Distribution instruments and keep a verified monthly acquisition record.':appointment.status==='pending'?'Your application has been received. A Distribution Manager reviews applications and appoints up to three assistants.':'This appointment is no longer active.'}</p>
+      <p className="mt-2 text-sm text-slate-300">{appointed?'Your approved position is active. Work through your Distribution instruments and keep a verified monthly acquisition record.':appointment.status==='pending'?'Your application has been received. A Distribution Manager reviews applications and appoints up to two assistants.':'This appointment is no longer active.'}</p>
       {appointed&&<>
         <div className="mt-4 grid grid-cols-2 gap-3"><Info label="Referrals this month" value={`${state.verifiedReferrals} / ${target}`}/><Info label="Still required this month" value={String(state.remainingReferrals)}/></div>
         <div className="mt-5 flex flex-wrap gap-3 text-sm text-cyan-200"><Link href="/referrals">Referral movement →</Link><Link href="/distribution-studio">Distribution Studio →</Link><Link href="/video-ad-studio">Video Ad Studio →</Link><Link href="/event">Flame Event →</Link></div>
@@ -66,12 +66,12 @@ export default function DistributionAssistantLifestylePage(){
       <p className="mt-2 text-sm text-slate-300">Your existing Distribution Manager appointment carries the assistant selection and supervision desk. Lead Managers cannot also apply for assistant employment.</p>
       <Link href="/manager/dashboard" className="mt-4 inline-block text-sm font-black text-amber-200">Open assistant appointments →</Link>
     </section> : <section className="mt-7 rounded-2xl border border-white/10 bg-white/[.03] p-5">
-      <h2 className="text-lg font-black">Apply for one of three positions</h2>
+      <h2 className="text-lg font-black">Apply for one of six positions</h2>
       <p className="mt-2 text-sm text-slate-300">Describe your experience distributing WEAVE and how you will work toward 300 verified referrals each month.</p>
       <label className="mt-4 block text-xs font-bold text-slate-300" htmlFor="assistant-note">Distribution experience and monthly plan</label>
       <textarea id="assistant-note" maxLength={2000} rows={5} value={note} onChange={event=>setNote(event.target.value)} className="mt-2 w-full rounded-xl border border-white/20 bg-slate-950 p-3 text-sm text-white" placeholder="Explain how you will find, guide and follow up with new Agents and Bridgers."/>
       <Button className="mt-4 bg-cyan-700 text-white hover:bg-cyan-600" onClick={apply} disabled={!data?.eligible||submitting||note.trim().length<30||state?.remainingPositions===0}>{submitting?'Submitting…':'Submit application'}</Button>
-      {state?.remainingPositions===0&&<p className="mt-2 text-xs text-slate-400">All three appointments are currently filled.</p>}
+      {state?.remainingPositions===0&&<p className="mt-2 text-xs text-slate-400">All six appointments are currently filled.</p>}
     </section>}
   </main>
 }
