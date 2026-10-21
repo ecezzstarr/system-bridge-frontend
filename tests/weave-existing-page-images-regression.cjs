@@ -7,11 +7,11 @@ const visual=read('components/world/weave-existing-page-image.tsx')
 const app=read('app/(app)/layout.tsx')
 const client=read('app/client/layout.tsx')
 const agentWork=read('app/(app)/agent/work/page.tsx')
-const bridge=read('public/weave/bridge-of-radiance-approved-scene.svg')
+const bridge=read('public/weave/bridge-of-radiance-portrait.svg')
 const river=read('public/weave/flame-event/burning-river-world.svg')
 
 const originalSources=[
- 'public/weave/bridge-of-radiance-approved-scene.svg',
+ 'public/weave/bridge-of-radiance-portrait.svg',
  'public/weave/flame-event/burning-river-world.svg',
  'public/weave-food/agility.jpeg',
  'public/weave-food/electrolyte.jpeg',
