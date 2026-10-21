@@ -203,7 +203,7 @@ const BRIDGER_GUIDES:ReadonlyArray<{match:(pathname:string)=>boolean;guide:Weave
     title:'Work through your current Prospects',
     explanation:'Prospect records are possible contacts, not guaranteed sales. Check their real statuses and observe daily limits.',
     steps:['Open your current Prospect list and recognize the available candidates.','Contact each candidate respectfully through the allowed communication route.','Record the actual response. Mark unavailable candidates accurately before requesting permitted replacements.'],
-    nextHref:'/bridger/prospects',nextLabel:'Open My Prospects'
+    nextHref:'/weave/market/prospects',nextLabel:'Open My Prospects'
   }},
   {match:path=>/email-outreach/.test(path),guide:{
     title:'Prepare an authorized email approach',
@@ -215,7 +215,7 @@ const BRIDGER_GUIDES:ReadonlyArray<{match:(pathname:string)=>boolean;guide:Weave
     title:'Verify Flame Coin movement',
     explanation:'A payment request and a verified wallet credit are different states.',
     steps:['Choose the correct deposit or withdrawal route.','Follow the displayed instructions and preserve any required evidence.','Wait for the actual wallet and receipt record before marking funds as confirmed.'],
-    nextHref:'/bridger/dashboard',nextLabel:'Return to Bridger position'
+    nextHref:'/wallet/deposit-withdraw',nextLabel:'Open Wallet Movement'
   }},
 ]
 
@@ -223,7 +223,7 @@ const DEFAULT_BRIDGER_GUIDE:WeaveOperatingGuide={
   title:'Hope: begin with a real conversation',
   explanation:'Bridgers connect interested people to Client ownership and WEAVE systems. A Prospect becomes real through contact and informed choice.',
   steps:['Open the Prospect tools or Bridge AI to understand your current opportunities.','Contact a candidate and listen for what the person actually needs.','Record the response, then guide interested people through the authorized System Switch process.'],
-  nextHref:'/bridger/dashboard',nextLabel:'Open Bridger position',
+  nextHref:'/bridger/presence',nextLabel:'Open Bridger Presence',
 }
 
 export function bridgerOperatingGuideForPath(path:string):WeaveOperatingGuide {
