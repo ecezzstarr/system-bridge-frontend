@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Boxes, Building2, FolderOpen, Store, Zap } from 'lucide-react'
 
 export function FileFolderEnvironmentLoader() {
-  const stages = ['Presence recognized', 'Systems compiling', 'Your world opening']
+  const stages = ['Know what you own', 'Preview before building', 'Operate when active']
   const [stage,setStage]=useState(0)
 
   useEffect(()=>{
@@ -32,10 +32,10 @@ export function FileFolderEnvironmentLoader() {
           WEAVE File Folder · System Switch
         </p>
         <h1 className="mt-2 text-2xl font-black md:text-3xl">
-          Your world is forming
+          Know your File Folder
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-xs leading-6 text-slate-400">
-          Your File Folder carries the complexity underneath. Workshops, builds, systems, enterprise state and Bridge AI are compiling into one place you can operate.
+          You own the business and choose its systems. Preview a build, check its actual time and requirements, then start it. Only activated systems can serve real customers.
         </p>
 
         <div className="mx-auto mt-6 grid max-w-xl grid-cols-3 gap-2">
@@ -56,7 +56,7 @@ export function FileFolderEnvironmentLoader() {
         </div>
         <div className="mx-auto mt-5 h-px max-w-md overflow-hidden bg-white/8"><div className="h-full bg-cyan-200/70 transition-all duration-700" style={{width:`${((stage+1)/stages.length)*100}%`}} /></div>
         <p className="mt-5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">
-          Complexity underneath · simplicity at Presence
+          Recognize → preview → build → activate → operate
         </p>
       </div>
     </main>
