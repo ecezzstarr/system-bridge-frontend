@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 1120" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The Bridge of Radiance formed by the flowing rivers of water and fire">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#021331"/><stop offset=".29" stop-color="#0a4176"/><stop offset=".52" stop-color="#5785aa"/><stop offset=".66" stop-color="#f5be7c"/><stop offset="1" stop-color="#07172f"/></linearGradient>
+ <radialGradient id="halo"><stop stop-color="#fff9cc"/><stop offset=".18" stop-color="#ffe8a4" stop-opacity=".9"/><stop offset=".49" stop-color="#ffca79" stop-opacity=".47"/><stop offset="1" stop-color="#ffdca3" stop-opacity="0"/></radialGradient>
+ <linearGradient id="water" x2=".1" y2="1"><stop stop-color="#ebffff"/><stop offset=".18" stop-color="#59e6ff"/><stop offset=".56" stop-color="#00a6f6"/><stop offset="1" stop-color="#0057be"/></linearGradient>
+ <linearGradient id="fire" x2=".1" y2="1"><stop stop-color="#fffdd8"/><stop offset=".22" stop-color="#ffe07e"/><stop offset=".52" stop-color="#ff993a"/><stop offset="1" stop-color="#ee4718"/></linearGradient>
+ <linearGradient id="gold" x2=".1" y2="1"><stop stop-color="#fff3c1"/><stop offset=".35" stop-color="#eab36a"/><stop offset=".75" stop-color="#ab6a39"/><stop offset="1" stop-color="#593a3a"/></linearGradient>
+ <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#ffe9c4"/><stop offset=".4" stop-color="#a9a4a2"/><stop offset="1" stop-color="#36466b"/></linearGradient>
+ <linearGradient id="ground" x2=".2" y2="1"><stop stop-color="#163659"/><stop offset=".52" stop-color="#063051"/><stop offset="1" stop-color="#030e26"/></linearGradient>
+ <pattern id="ripple" width="86" height="27" patternUnits="userSpaceOnUse"><path d="M-8 12Q19 4 45 12T95 12M-12 25Q29 18 77 25" fill="none" stroke="#c9f5ff" stroke-opacity=".16" stroke-width="1.6"/></pattern>
+ <style>
+  .rflow{stroke-dasharray:16 24;animation:currents 23s linear infinite}
+  .rflow.alt{animation-duration:29s;animation-direction:reverse}
+  .stars{animation:glint 5s ease-in-out infinite alternate}
+  @keyframes currents{to{stroke-dashoffset:-800}}
+  @keyframes glint{to{opacity:.38}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+ </style>
+</defs>
+<rect width="640" height="1120" fill="url(#sky)"/>
+<ellipse cx="320" cy="360" rx="310" ry="400" fill="url(#halo)" opacity=".9"/>
+<!-- distant clouds and sky geometry -->
+<g fill="#d4e4e6" opacity=".15"><path d="M-30 237Q69 181 158 225T350 218T690 239v46H-30Z"/><path d="M-30 329Q93 280 183 327T376 323T690 313v39H-30Z"/></g>
+<g fill="#eef6f0" opacity=".32"><path d="M0 382L56 327 91 351 130 298 190 379 245 327 302 395 366 340 431 376 493 311 559 371 607 323 640 345v188H0Z"/></g>
+<path d="M0 429L74 363 112 407 163 351 214 423 270 389 324 456 389 383 446 424 495 365 560 431 610 379 640 403v140H0Z" fill="#284a72" opacity=".72"/>
+<!-- floating gardens and terraced palaces -->
+<path d="M-18 440L34 417 114 426 161 458 126 516 27 503-18 476Z" fill="#315978" stroke="#e8c486" stroke-width="5"/>
+<path d="M658 437L596 420 520 425 478 456 514 522 617 506 658 474Z" fill="#315978" stroke="#e8c486" stroke-width="5"/>
+<path d="M30 419v-89l19-28 18 28v89M85 429v-123l18-33 20 33v123M518 425V301l19-32 18 32v124M579 420v-104l20-27 19 27v104" fill="url(#stone)" stroke="#ffe09b" stroke-width="3"/>
+<path d="M31 360h35M88 351h35M519 352h35M580 357h35" stroke="#fff5be" stroke-width="3"/>
+<path d="M7 505Q31 567 13 664l39-3Q72 585 57 508M577 511q-25 91-9 150l43 3q-20-90 5-154" fill="#b7eeff" opacity=".58"/>
+<path d="M29 513q22 83 8 171M595 516q-23 79-7 163" fill="none" stroke="#e2fbff" stroke-width="6" opacity=".6"/>
+<!-- bridge crossing: real architectural arch and river -->
+<path d="M-20 545Q320 486 660 545L660 585Q320 541-20 585Z" fill="url(#stone)" stroke="#ffdb91" stroke-width="7"/>
+<path d="M-20 564Q128 537 191 552T320 553T450 551T660 561" stroke="#f1cf8c" stroke-width="3" fill="none"/>
+<g fill="none" stroke="url(#stone)" stroke-width="21"><path d="M85 574v72Q156 530 226 646v-83"/><path d="M417 568v78Q487 531 558 646v-70"/></g>
+<g fill="none" stroke="#e9cf9f" stroke-width="5"><path d="M85 574v72Q156 530 226 646v-83"/><path d="M417 568v78Q487 531 558 646v-70"/></g>
+<!-- radiant bridge arch -->
+<path d="M224 562V414Q320 241 416 414V562h-28V419Q320 305 252 419v143Z" fill="url(#stone)" stroke="url(#gold)" stroke-width="9"/>
+<path d="M264 557V425Q320 331 376 425V557" fill="none" stroke="#fff2c1" stroke-width="6" opacity=".85"/>
+<path d="M320 256l12 44-12 43-12-43Z" fill="#fff3b1"/>
+<ellipse cx="320" cy="442" rx="84" ry="105" fill="url(#halo)" opacity=".57"/>
+<g fill="#ffe9a8" opacity=".8"><path d="M299 535V431l14-18 14 18v104M343 535V455l11-13 11 13v80M277 535v-66l8-11 9 11v66"/></g>
+<!-- water and fire join into a moving river that makes the bridge -->
+<path d="M0 607Q320 565 640 609V1120H0Z" fill="url(#ground)"/>
+<path d="M0 607Q320 565 640 609V1120H0Z" fill="url(#ripple)"/>
+<path d="M317 550Q283 621 207 671T137 786Q154 840 321 896T465 1035Q441 1082 386 1151" fill="none" stroke="#047dcf" stroke-width="85" opacity=".37"/>
+<path d="M320 549Q357 616 435 684T490 799Q455 852 292 911T160 1045Q173 1094 259 1152" fill="none" stroke="#e67721" stroke-width="87" opacity=".4"/>
+<path d="M315 551Q269 620 209 678T159 789Q180 846 325 897T447 1038Q427 1076 393 1138" fill="none" stroke="url(#water)" stroke-width="36" opacity=".93"/>
+<path d="M323 551Q377 617 436 687T477 792Q449 849 289 914T176 1048Q197 1100 257 1140" fill="none" stroke="url(#fire)" stroke-width="37" opacity=".92"/>
+<path d="M315 552Q270 627 219 680T170 782Q189 846 322 892T445 1040" fill="none" stroke="#e4ffff" stroke-width="5" stroke-linecap="round" class="rflow" opacity=".95"/>
+<path d="M326 552Q366 613 425 681T463 792Q433 850 296 917T192 1049" fill="none" stroke="#fffbd0" stroke-width="5" stroke-linecap="round" class="rflow alt" opacity=".9"/>
+<g class="stars" fill="#fff5b5"><circle cx="320" cy="265" r="4"/><circle cx="118" cy="288" r="3"/><circle cx="512" cy="319" r="3"/><circle cx="78" cy="395" r="2"/><circle cx="563" cy="395" r="2"/></g>
+<!-- lower third remains dark so loading training words are not overpainted -->
+<rect x="0" y="710" width="640" height="410" fill="#021025" opacity=".26"/>
+</svg>
