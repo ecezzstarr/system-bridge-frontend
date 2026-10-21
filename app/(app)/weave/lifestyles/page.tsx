@@ -169,12 +169,12 @@ export default function WeaveLifestylesPage() {
                   icon={<ChefHat className="h-8 w-8" />}
                   eyebrow="Agent employment · Company food operations"
                   title="FOOD PREPARATION TEAM"
-                  detail="The Head of WEAVE Stability leads Agent food operations and allocates work to five Assistant Managers. One lead and five assistant application places are available. Eligible Agents can apply for a vacant position and, following Administration approval, prepare verified Agility, Electrolyte, Ember and Daisy Pastries orders."
+                  detail="The Head of WEAVE Stability leads Agent food operations and allocates work to two Assistant Managers. One lead and two assistant application places are available. Eligible Agents can apply for a vacant position and, following Administration approval, prepare verified Agility, Electrolyte, Ember and Daisy Pastries orders."
                   open={foodPreparationOpen}
                   reason={access?.active ? 'Apply for Administration appointment.' : 'An active Agent position is required to apply.'}
                   href="/weave/lifestyles/food-preparation"
                   action="Apply / Open Kitchen Desk"
-                  tools={[{icon:<ChefHat className="h-3.5 w-3.5"/>,label:'Preparation & packaging'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'1 Manager · 5 Assistants'}]}
+                  tools={[{icon:<ChefHat className="h-3.5 w-3.5"/>,label:'Preparation & packaging'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'1 Manager · 2 Assistants'}]}
                 />
               )}
               {foodAvailable && (
