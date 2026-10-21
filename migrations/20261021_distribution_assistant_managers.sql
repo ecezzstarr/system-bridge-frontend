@@ -1,4 +1,4 @@
--- Three company-wide Assistant Distribution Manager appointments.
+-- Six company-wide Assistant Distribution Manager appointments: two per each of three lead managers.
 -- Agents and Bridgers apply through Lifestyle; employment only begins on approval.
 CREATE TABLE IF NOT EXISTS weave_distribution_assistants (
   user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
