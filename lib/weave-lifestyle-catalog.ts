@@ -81,7 +81,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Assistant Distribution Manager',
     route: '/weave/lifestyles/distribution-assistant',
     roles: ['agent','bridger'],
-    summary: 'Six paid assistant employment positions, two under each of the three Distribution Managers, under WEAVE Distribution Managers. Each assistant receives a ₦30,000 monthly salary term and must work toward 300 genuine Agent/Bridger referrals monthly after appointment. Apply through your existing Agent or Bridger Lifestyle.',
+    summary: 'Six paid assistant employment positions, two under each of the three Distribution Managers. Each assistant receives a ₦30,000 monthly salary term after appointment. Every main Manager and their two assistants share one 400 verified Agent/Bridger referral target each calendar month; there is no individual target. Apply through your existing Agent or Bridger Lifestyle.',
     environments: [
       { label: 'Employment Application', href: '/weave/lifestyles/distribution-assistant', purpose: 'Apply for one of six assistant appointments.' },
       { label: 'Distribution Studio', href: '/distribution-studio', purpose: 'Carry actual WEAVE distribution work after appointment.' },
