@@ -1,8 +1,10 @@
+import { DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
+import { STAFF_REFERRAL_BONUS_NGN } from '@/lib/referral-bonus'
 // Distribution salary is a monthly, team-gated employment entitlement.
 // The existing referral-bonus ledger is the sole payment source for referral
 // bonuses. This calculation MUST NOT create a second wallet credit.
-export const DISTRIBUTION_REFERRAL_RATE_NGN = 500
-export const DISTRIBUTION_TEAM_TARGET = 500
+export const DISTRIBUTION_REFERRAL_RATE_NGN = STAFF_REFERRAL_BONUS_NGN
+export const DISTRIBUTION_TEAM_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
 
 export function calculateDistributionTeamCompensation({
   teamReferrals, ownReferrals, monthlySalaryNgn, monthClosed = false,
