@@ -171,7 +171,7 @@ export default function AppLayout({
           </PresenceCameraViewport>
         </main>
       </div>
-      {user?.role==='agent'&&!legionEmployment?.active&&user.id&&<AgentSmartGuide userId={user.id}/>}
+      {user?.role==='agent'&&termsChecked&&!termsNeeded&&!legionEmployment?.active&&user.id&&<AgentSmartGuide userId={user.id}/>}
       <Toaster position="top-center" richColors />
       <LiveAdSurface />
       <PresenceCameraSignal />
