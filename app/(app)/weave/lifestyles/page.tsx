@@ -211,9 +211,9 @@ export default function WeaveLifestylesPage() {
                 <LifestyleGround
                   tone="cyan"
                   icon={<Users className="h-8 w-8" />}
-                  eyebrow="WEAVE distribution employment · 3 appointments"
+                  eyebrow="WEAVE distribution employment · 6 appointments"
                   title="ASSISTANT DISTRIBUTION MANAGER"
-                  detail="Work with WEAVE Distribution Managers. ₦30,000 monthly salary after appointment; 300 verified Agent/Bridger referrals per month per assistant. Three assistant positions across WEAVE."
+                  detail="Work with WEAVE Distribution Managers. ₦30,000 monthly salary after appointment; 300 verified Agent/Bridger referrals per month per assistant. Six assistant positions across WEAVE, two per Distribution Manager."
                   open={distributionManagerOpen}
                   reason={access?.active ? 'Assistant Distribution Manager applications are available.' : agentFree ? 'An active Agent account is required.' : 'Renew Bridger Continuance to apply.'}
                   href="/weave/lifestyles/distribution-assistant"
