@@ -101,6 +101,21 @@
   will-change: auto;
 }
 
+/* The root uses perspective for 3D worlds. While the full-screen loader is
+   present, disable that ancestor perspective: otherwise Android may treat
+   position:fixed as a transformed containing block, making the overlay drift
+   with the page and text become rasterized. Reinstate it on reveal. */
+@supports selector(html:has(.weave-loader-stable)) {
+  html:has(.weave-loader-stable) {
+    perspective: none !important;
+    scroll-behavior: auto;
+  }
+  html:has(.weave-loader-stable) body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+
 [data-weave-loader-art="bridge-of-radiance-river"].weave-loader-stable {
   position: fixed;
   inset: 0;
