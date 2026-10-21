@@ -10,7 +10,7 @@ import { visiblePoll } from '@/lib/visible-poll'
 
 /** Public visitor landing: the same physical doors, never the private Client folder. */
 export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|null}) {
-  const carrierHref=carrierCode?`/carrier/food/${encodeURIComponent(carrierCode)}`:null
+  const carrierHref=carrierCode?`/carrier/food/${encodeURIComponent(carrierCode)}?checkout=1`:null
   const [enterprises,setEnterprises]=useState<PublicClientFolder[]>([])
   const [message,setMessage]=useState('')
   const [doorStatus,setDoorStatus]=useState<FlameDoorFeedStatus>('loading')
@@ -32,7 +32,7 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
     },12000,true)
     return ()=>{mounted=false;stop()}
   },[])
-  return <main className="min-h-dvh bg-[#05182a] text-white" data-public-flame-avatar-world>
+  return <main className="min-h-dvh bg-[#05182a] text-white" data-public-flame-preview-world>
     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-300/15 px-3 py-3">
       <Link href="/" className="inline-flex items-center gap-2 text-[10px] font-bold text-sky-100"><ArrowLeft className="h-4 w-4"/> Weave Homepage</Link>
       <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-200">
@@ -40,8 +40,8 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
       </span>
     </div>
     {carrierHref&&<div className="flex flex-col gap-3 border-b border-amber-200/20 bg-[#0a2635] px-4 py-3 text-xs text-sky-100 sm:flex-row sm:items-center sm:justify-between" data-flame-event-carrier-arrival>
-      <p>From food in movement to the Burning River: explore Weave as a living Presence. Your Agent's Carrier Door remains available for orders.</p>
-      <Link href={carrierHref} className="inline-flex min-h-10 shrink-0 items-center gap-2 font-black text-amber-200" data-flame-event-return-carrier><ArrowLeft className="h-4 w-4"/> Return to Agent Carrier Door</Link>
+      <p>Explore real Client-built systems inside Burning River. Food purchases remain linked to the Agent who brought you here.</p>
+      <Link href={carrierHref} className="inline-flex min-h-10 shrink-0 items-center gap-2 font-black text-amber-200" data-flame-event-return-carrier><ArrowLeft className="h-4 w-4"/> Order through your Agent</Link>
     </div>}
     <FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>
     <FlameEventFoodStore carrierCode={carrierCode}/>
