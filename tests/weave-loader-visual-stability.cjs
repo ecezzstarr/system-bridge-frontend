@@ -34,6 +34,7 @@ assert.ok(css.includes('.weave-loader-scenery-landscape')&&css.includes("backgro
 assert.ok(css.includes('grid-template-rows: minmax(0, 1fr) minmax(0, min(17.5rem, 38svh))'),'Reading panel reserves a constant-height slot')
 assert.ok(css.includes('.weave-loader-card-body')&&css.includes('scrollbar-width: thin'),'Overflowing instructions remain readable and scrollable')
 assert.ok(css.includes('.weave-loader-stable :where(h1,h2,p,span,a,section)'),'Text shadow suppression is scoped to loader')
+assert.ok(css.includes('html:has(.weave-loader-stable)')&&css.includes('perspective: none !important'),'Fixed loader escapes the global 3D perspective containing block while visible')
 assert.ok(css.includes('@media (max-height: 600px)'),'Compact-height Android landscape layout has a dedicated fallback')
 assert.ok(css.includes('prefers-reduced-motion: reduce'),'Reduced motion is respected')
 
