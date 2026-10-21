@@ -24,6 +24,7 @@ assert.ok(shared.includes('<SystemSwitchThreshold position={[0,0,0]}'),'Physical
 assert.ok(!shared.includes('[7,11,19,27].map'),'Old static plaza rings are removed')
 assert.ok(!systemSwitch.includes("url('/weave/flame-event/burning-river-world.svg')"),'Staff System Switch does not substitute a wallpaper for the real river')
 assert.ok(systemSwitch.includes('data-system-switch-living-river'),'Live crossing is mounted in the staff route')
+assert.ok(systemSwitch.indexOf('<StaffFileFolderWorld role={role}')<systemSwitch.indexOf('Go beyond the page.'),'Phone arrival opens playable live world before descriptive text')
 assert.ok(shared.includes("const moveEnabled=status!=='denied'"),'Temporary network interruption cannot freeze the local scene')
 assert.ok(shared.includes("status==='denied'"),'Denied positions remain blocked')
 assert.ok(shared.includes("status==='connected'?"),'Shared participant counts are not invented')
