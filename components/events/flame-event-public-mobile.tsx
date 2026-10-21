@@ -7,7 +7,8 @@ import { FlameEventOpenWorld, type FlameDoorFeedStatus, type FlameWorldCustomerD
 import { visiblePoll } from '@/lib/visible-poll'
 
 /** Public visitor landing: the same physical doors, never the private Client folder. */
-export function PublicFlameEventMobile() {
+export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|null}) {
+  const carrierHref=carrierCode?`/carrier/food/${encodeURIComponent(carrierCode)}`:null
   const [enterprises,setEnterprises]=useState<FlameWorldCustomerDoor[]>([])
   const [message,setMessage]=useState('')
   const [doorStatus,setDoorStatus]=useState<FlameDoorFeedStatus>('loading')
@@ -36,6 +37,10 @@ export function PublicFlameEventMobile() {
         <Flame className="h-4 w-4"/> Flame Event · Public Arrival
       </span>
     </div>
+    {carrierHref&&<div className="flex flex-col gap-3 border-b border-amber-200/20 bg-[#0a2635] px-4 py-3 text-xs text-sky-100 sm:flex-row sm:items-center sm:justify-between" data-flame-event-carrier-arrival>
+      <p>From food in movement to the Burning River: explore Weave as a living Presence. Your Agent's Carrier Door remains available for orders.</p>
+      <Link href={carrierHref} className="inline-flex min-h-10 shrink-0 items-center gap-2 font-black text-amber-200" data-flame-event-return-carrier><ArrowLeft className="h-4 w-4"/> Return to Agent Carrier Door</Link>
+    </div>}
     <FlameEventOpenWorld enterprises={enterprises} doorStatus={doorStatus} role="visitor"/>
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">
