@@ -133,9 +133,12 @@ export default function Home() {
               <p className="mt-2 text-sm font-black text-white">Buy everyday food directly from farmers with available surplus.</p>
               <p className="mt-1 text-xs leading-5 text-stone-400">An Agent farmer offers produce from their village; Agents and Bridgers can order for families across Nigeria. Register for the position that matches your work, then enter Lifestyle. Transport is quoted before you accept the total.</p>
             </div>
+            <div className="flex flex-wrap gap-2"><Link href="/food-store" className="inline-flex items-center gap-2 border border-emerald-300/50 bg-emerald-300/10 px-4 py-3 text-[10px] font-black uppercase tracking-[.1em] text-emerald-100">
+              Shop WEAVE Family Food <ArrowRight className="h-4 w-4"/>
+            </Link>
             <Link href="/register" className="inline-flex items-center gap-2 border border-emerald-300/25 px-4 py-3 text-[10px] font-black uppercase tracking-[.1em] text-emerald-200">
               Enter WEAVE as Agent or Bridger <ArrowRight className="h-4 w-4"/>
-            </Link>
+            </Link></div>
           </section>
           <section className="relative overflow-hidden rounded-[1.7rem] border border-sky-300/10 bg-[#030a15]/52 p-4 shadow-[0_30px_100px_rgba(2,8,23,.5)] backdrop-blur-md sm:p-6 md:p-8">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,.09),transparent_30%),radial-gradient(circle_at_85%_35%,rgba(245,158,11,.05),transparent_25%)]" />
