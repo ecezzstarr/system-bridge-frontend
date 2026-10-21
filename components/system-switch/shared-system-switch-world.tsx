@@ -4,6 +4,9 @@ import {useFrame} from '@react-three/fiber'
 import {Text,Sky,Billboard} from '@react-three/drei'
 import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
+import {useAdaptiveRuntime} from '@/components/world/use-adaptive-runtime'
+import {RiverSurface} from '@/components/events/flame-event-mobile-scene'
+import {SystemSwitchThreshold} from '@/components/world/system-switch-threshold'
 import {visiblePoll} from '@/lib/visible-poll'
 import {doorWorldPosition,type PublicWorldDoor} from '@/lib/system-switch-directory'
 import type {SharedAvatar,SharedRole} from '@/lib/system-switch-presence'
@@ -49,6 +52,7 @@ function CustomerDoor({door,index,onEnter}:{door:PublicWorldDoor;index:number;on
  </group>
 }
 export default function SharedSystemSwitchWorld({getToken,role,onPrivateWorkshop}:{getToken:()=>string|null;role:SharedRole;onPrivateWorkshop?:()=>void}){
+ const runtime=useAdaptiveRuntime()
  const presence=useRef<Presence>({x:0,z:8.2,yaw:0}),input=useRef<WorldInput>({keys:new Set(),active:false,enter:false})
  const {people,self,status}=useSharedPresence(presence,getToken)
  const [doors,setDoors]=useState<PublicWorldDoor[]>([]),[directoryError,setDirectoryError]=useState(''),[directoryLoaded,setDirectoryLoaded]=useState(false),[date,setDate]=useState('')
@@ -59,14 +63,16 @@ export default function SharedSystemSwitchWorld({getToken,role,onPrivateWorkshop
   try{const token=getToken(),res=await fetch('/api/system-switch/doors',{headers:token?{Authorization:`Bearer ${token}`}:{},cache:'no-store',signal});if(!res.ok)throw Error();const data=await res.json();if(alive){setDoors(data.doors);setDirectoryLoaded(true);setDate(data.broadcastDate);setDirectoryError('')}}catch{if(alive&&!signal.aborted)setDirectoryError('Customer Doors could not be refreshed.')}
  },15000);return()=>{alive=false;cancel()}},[getToken])
  useEffect(()=>{const hidden=()=>{if(document.hidden)stop()};window.addEventListener('blur',stop);document.addEventListener('visibilitychange',hidden);return()=>{stop();window.removeEventListener('blur',stop);document.removeEventListener('visibilitychange',hidden)}},[])
- useEffect(()=>{if(selected||directoryOpen||status!=='connected')stop()},[selected,directoryOpen,status])
+ useEffect(()=>{if(selected||directoryOpen||status==='denied')stop()},[selected,directoryOpen,status])
  const obstacles=useMemo<WorldObstacle[]>(()=>[...FILE_FOLDER_CITY_BLOCKS.map(b=>({x:b.x,z:b.z,radius:0,halfWidth:b.width/2,halfDepth:b.depth/2,height:b.height})),...FILE_FOLDER_PARK_TREES.map(p=>({x:p.x,z:p.z,radius:.15,height:1.8})),...doors.map((_,i)=>{const p=doorWorldPosition(i);return{x:p[0],z:p[2],radius:1.4,height:5}})],[doors])
  const openDoor=(door:PublicWorldDoor)=>{stop();setSelected(door);setDirectoryOpen(false)}
  const entrances=doors.map((door,i)=>{const p=doorWorldPosition(i),r=Math.hypot(p[0],p[2]);return{id:door.slug,label:`Meet at ${door.name}`,position:[p[0]*(r-2.5)/r,0,p[2]*(r-2.5)/r] as [number,number,number],enter:()=>openDoor(door)}})
- const moveEnabled=status==='connected'&&!selected&&!directoryOpen
+ // A momentary network interruption does not freeze the local walking scene.
+ // The server still authorizes identity and publishes only verified participants.
+ const moveEnabled=status!=='denied'&&!selected&&!directoryOpen
  const visiblePeople=people.filter(p=>Math.hypot(p.position.x-presence.current.x,p.position.z-presence.current.z)<30).slice(0,16)
  return <section className="ss-shared-world" data-system-switch-shared="true" data-presence-status={status}>
-  <header><div><p>WEAVE · SYSTEM SWITCH</p><h1>File Folder crossing</h1><small>{self?`${self.name} · ${self.role==='admin'?'Administration':self.role}`:'Entering with your WEAVE identity'}</small></div><span role="status">{status==='connected'?`${people.length+1} present`:status==='connecting'?'Connecting…':status==='denied'?'Entry unavailable':'Reconnecting…'}</span></header>
+  <header><div><p>WEAVE · SYSTEM SWITCH</p><h1>File Folder crossing</h1><small>{self?`${self.name} · ${self.role==='admin'?'Administration':self.role}`:'Entering with your WEAVE identity'}</small></div><span role="status">{status==='connected'?`${people.length+1} present`:status==='connecting'?'Connecting presence…':status==='denied'?'Entry unavailable':'Moving locally · reconnecting participants…'}</span></header>
   <div className="ss-world-canvas" tabIndex={0} aria-label="Shared System Switch world. Joystick or WASD moves, drag looks, E crosses a nearby Customer Door."
    onKeyDown={e=>{const k=e.key.toLowerCase();if(moveEnabled&&['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift','e'].includes(k)){e.preventDefault();input.current.active=true;input.current.keys.add(k);if(k==='e'&&!e.repeat)input.current.enter=true}}}
    onKeyUp={e=>input.current.keys.delete(e.key.toLowerCase())} onBlur={()=>{input.current.keys.clear()}}
@@ -74,17 +80,17 @@ export default function SharedSystemSwitchWorld({getToken,role,onPrivateWorkshop
    onPointerMove={e=>{const p=look.current;if(!p||p.id!==e.pointerId)return;input.current.lookDelta=(input.current.lookDelta||0)+e.clientX-p.x;input.current.lookPitchDelta=(input.current.lookPitchDelta||0)+e.clientY-p.y;look.current={id:e.pointerId,x:e.clientX,y:e.clientY}}}
    onPointerUp={()=>{look.current=null}} onPointerCancel={stop}>
    <AdaptiveCanvas camera={{position:[.85,3.6,13],fov:60}} shadows>
-    <Sky sunPosition={[8,7,-20]} turbidity={5}/><ambientLight intensity={1.1}/><directionalLight position={[-12,20,5]} intensity={2.2} castShadow/>
+    <Sky sunPosition={[8,7,-20]} turbidity={5}/><ambientLight intensity={1.1}/><directionalLight position={[-12,20,5]} intensity={2.2} castShadow={runtime.shadows}/>
+    <RiverSurface quiet={runtime.reducedMotion}/>
+    <SystemSwitchThreshold position={[0,0,0]} scale={.8} active={!runtime.reducedMotion} quiet={runtime.reducedMotion}/>
     <mesh position={[0,-.23,0]} receiveShadow><cylinderGeometry args={[29,29,.3,64]}/><CityMaterial kind="paving"/></mesh>
     <FileFolderCityStreets/><FileFolderScenery/>
-    {[7,11,19,27].map(r=><mesh key={r} position={[0,-.065,0]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[r,r+.08,96]}/><meshStandardMaterial color="#c1a677" emissive="#b16b22" emissiveIntensity={.15}/></mesh>)}
-    <Text position={[0,.02,0]} rotation={[-Math.PI/2,0,0]} fontSize={.65} color="#dec18a">WEAVE</Text>
     {doors.map((door,i)=><CustomerDoor key={door.slug} door={door} index={i} onEnter={()=>openDoor(door)}/>)}
     <FileFolderWorker presence={presence}/>{visiblePeople.map(person=><RemoteAvatar key={person.id} person={person}/>)}
     <EmbodiedWorldRuntime presence={presence} input={input} entrances={entrances} obstacles={obstacles} thirdPerson onNearby={setNearby}/>
    </AdaptiveCanvas>
   </div>
-  <aside className="ss-world-note">Customer Doors · Client branding and formations{doors.length===0&&!directoryError&&<small>{directoryLoaded?'No public Customer Doors have opened yet.':'Loading Client Customer Doors…'}</small>}{directoryError&&<small role="alert">{directoryError}</small>}</aside>
+  <aside className="ss-world-note">Bridge of Radiance · Living water and fire · Client Customer Doors{doors.length===0&&!directoryError&&<small>{directoryLoaded?'No public Customer Doors have opened yet.':'Loading Client Customer Doors…'}</small>}{directoryError&&<small role="alert">{directoryError}</small>}</aside>
   {status==='connected'&&<details className="ss-people"><summary>People here · {people.length+1}</summary><p>{self?.name} · You</p>{people.map(person=><p key={person.id} data-presence-id={person.id} data-x={person.position.x} data-z={person.position.z}>{person.name} · {person.role==='admin'?'Administration':person.role}</p>)}</details>}
   <button className="ss-stick" type="button" disabled={!moveEnabled} aria-label="Move avatar using phone joystick"
    onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);const r=e.currentTarget.getBoundingClientRect();stick.current={id:e.pointerId,x:r.left+r.width/2,y:r.top+r.height/2};input.current.active=true;input.current.analogStrafe=Math.max(-1,Math.min(1,(e.clientX-stick.current.x)/35));input.current.analogForward=Math.max(-1,Math.min(1,(stick.current.y-e.clientY)/35))}}
