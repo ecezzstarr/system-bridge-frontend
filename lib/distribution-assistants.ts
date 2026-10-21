@@ -170,11 +170,11 @@ export async function getDistributionAssistantState(userId:string) {
     "SELECT COUNT(*)::int AS employed FROM weave_distribution_assistants WHERE status='approved'",
   )
   const employed=Number(count[0]?.employed||0)
-  const team = appointment?.status==='approved' && appointment.manager_user_id
+  const teamProgress = appointment?.status==='approved' && appointment.manager_user_id
     ? await getDistributionTeamMonthlyReferrals(String(appointment.manager_user_id))
     : null
-  const verifiedReferrals=team?.total||0
-  const ownReferrals=team?.members.find(member=>member.userId===userId)?.referrals||0
+  const verifiedReferrals=teamProgress?.total||0
+  const ownReferrals=teamProgress?.members.find(member=>member.userId===userId)?.referrals||0
   let pending:any[]=[]
   let team:any[]=[]
   if (canReview) {
@@ -199,7 +199,7 @@ export async function getDistributionAssistantState(userId:string) {
     monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN,
     monthlyTarget:DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET,
     teamTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
-    teamMembers:team?.members||[],
+    teamMembers:teamProgress?.members||[],
     ownReferrals,
     verifiedReferrals, remainingReferrals:Math.max(0,DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET-verifiedReferrals),
     payrollStatus:'employment_terms_only_no_automatic_payment',
