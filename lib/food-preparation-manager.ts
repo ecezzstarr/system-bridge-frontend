@@ -9,7 +9,7 @@ export const FOOD_PREPARATION_MANAGER_SALARY_NGN=70000
 export const FOOD_PREPARATION_ASSISTANT_SALARY_NGN=40000
 export const FOOD_PREPARATION_MANAGER_TITLE='Food Preparation Manager'
 export const FOOD_PREPARATION_ASSISTANT_TITLE='Assistant Food Preparation Manager'
-export const FOOD_PREPARATION_CAPACITY={manager:1,assistant:5} as const
+export const FOOD_PREPARATION_CAPACITY={manager:1,assistant:2} as const
 export type FoodPreparationPosition=keyof typeof FOOD_PREPARATION_CAPACITY
 export const isFoodPreparationPosition=(value:unknown):value is FoodPreparationPosition=>value==='manager'||value==='assistant'
 export const foodPreparationSalary=(position:FoodPreparationPosition)=>
