@@ -57,6 +57,10 @@ export default function WeaveFamilyFoodStore(){
         <p className="mt-3 text-xs leading-6 text-amber-100">Family Baskets are discounted only against the same supplier’s separate-item prices at the time of publication. The seller sets the basket price; delivery may change the final total. No national cheapest-price guarantee is made.</p>
       </header>
 
+      <figure className="mt-6 overflow-hidden rounded-xl border border-emerald-300/20 bg-[#eee8d9]" data-weave-food-real-product-image>
+        <img src="/weave-food/weave-family-products.avif" alt="WEAVE Family Food Store branded rice, honey beans, garri, palm oil, vegetables, yams and eggs product collection illustration" width={420} height={307} loading="eager" fetchPriority="high" className="aspect-[420/307] w-full object-cover"/>
+        <figcaption className="bg-[#0e1c12] px-4 py-3 text-xs leading-5 text-stone-300">WEAVE Family Food Store · branded product presentation. Packaging is illustrative; purchase only verified stock and prices shown below.</figcaption>
+      </figure>
       <section className="mt-7 grid gap-3 sm:grid-cols-3" data-store-departments>
         <div className="border border-emerald-300/20 bg-emerald-300/[.035] p-5">
           <Sprout className="h-6 w-6 text-emerald-200"/><h2 className="mt-3 text-lg font-black">Farm & household essentials</h2>
