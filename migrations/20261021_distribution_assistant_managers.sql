@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS weave_distribution_assistants (
 CREATE INDEX IF NOT EXISTS weave_distribution_assistants_status_idx
   ON weave_distribution_assistants(status,created_at);
 
--- The 500 target belongs to a Manager's full team, not to each employee.
-ALTER TABLE manager_employment ALTER COLUMN probation_target SET DEFAULT 500;
-UPDATE manager_employment SET probation_target=500 WHERE probation_target<>500;
+-- The first month requires 300 team referrals; subsequent employment months require 500.
+ALTER TABLE manager_employment ALTER COLUMN probation_target SET DEFAULT 300;
+UPDATE manager_employment SET probation_target=300 WHERE probation_target<>300;
 ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_referral_target SET DEFAULT 500;
 UPDATE weave_distribution_assistants SET monthly_referral_target=500 WHERE monthly_referral_target<>500;
