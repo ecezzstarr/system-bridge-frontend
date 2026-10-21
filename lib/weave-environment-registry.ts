@@ -13,6 +13,9 @@ export type EnvironmentSurfaceDefinition = {
 }
 
 export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
+  { key:'shared-lifestyle', label:'Lifestyle', kind:'district', route:'/weave/lifestyles', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:12 },
+  { key:'shared-carrier', label:'Carrier', kind:'district', route:'/weave/carrier', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:14 },
+  { key:'shared-carrier-food', label:'Food Carrier', kind:'station', route:'/weave/carrier/food', area:'Carrier', scope:'agent', protected:true, defaultOrder:15 },
   { key:'shared-company-loops', label:'Company Loops', kind:'district', route:'/company/loops', area:'Shared WEAVE', scope:'shared', defaultOrder:10 },
   { key:'shared-human-cadences', label:'Human Cadences', kind:'district', route:'/search', area:'Shared WEAVE', scope:'shared', defaultOrder:20 },
   { key:'shared-presences', label:'Presences', kind:'district', route:'/profiles', area:'Shared WEAVE', scope:'shared', defaultOrder:30 },
