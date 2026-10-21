@@ -24,7 +24,7 @@ const forensicUI=read('app/(app)/weave/lifestyles/mandate/forensic-food/page.tsx
 const carrier=read('app/api/carrier/food/[code]/route.ts')
 
 assert.equal((manager.match(/FOOD_PREPARATION_MANAGER_SALARY_NGN=70000/g)||[]).length,1,'manager salary ₦70,000')
-assert.equal((manager.match(/FOOD_PREPARATION_ASSISTANT_SALARY_NGN=40000/g)||[]).length,1,'assistant salary ₦40,000')
+assert.equal((manager.match(/FOOD_PREPARATION_ASSISTANT_SALARY_NGN=30000/g)||[]).length,1,'assistant salary ₦30,000')
 assert.ok(manager.includes('FOOD_PREPARATION_CAPACITY={manager:1,assistant:2}'),'One lead and two assistant positions')
 assert.ok(application.includes("FOOD_PREPARATION_CAPACITY.assistant")&&application.includes("status IN ('pending','approved')"),'Only two assistant applications may reserve the two slots')
 assert.ok(application.includes("LIMIT 2"),'Lead Manager sees no more than two assistants in work assignment selection')
@@ -40,7 +40,7 @@ assert.ok(application.includes("isFoodPreparationPosition(position)")&&applicati
 assert.ok(appoint.includes("FOOD_PREPARATION_CAPACITY[person.position"),'Administration cannot approve beyond the position capacity')
 assert.ok(route.includes("m.position='manager'"),'Verified orders automatically route to the single lead Manager')
 assert.ok(managerUI.includes('name="foodPosition"')&&managerUI.includes('data?.appointment && data.salaryNgn !== null'),'Only applicants see their own monthly terms')
-assert.ok(!lifestyle.includes("₦70,000")&&!lifestyle.includes("₦40,000"),'Lifestyle public listing hides salary before applications')
+assert.ok(!lifestyle.includes("₦70,000")&&!lifestyle.includes("₦30,000"),'Lifestyle public listing hides salary before applications')
 assert.ok(staffingMigration.includes("ADD COLUMN IF NOT EXISTS position")&&staffingMigration.includes('SET DEFAULT 70000'),'Migration updates existing production data and salary default')
 assert.ok(application.includes("user.role!=='agent'")&&application.includes('getLifestyleAccess(user.id)'),'Agent only, active Lifestyle')
 assert.ok(application.includes("WHERE weave_food_preparation_managers.status IN ('rejected','revoked')"),'No applicant self-approves or overwrites approvals')
