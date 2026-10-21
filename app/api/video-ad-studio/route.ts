@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { getWeavePublicOrigin } from '@/lib/weave-origin'
+import { mediaObjectNameFromUrl } from '@/lib/weave-media-storage'
 import {
   ensureVideoAdStudioSchema,
   ensureVideoServiceProfile,
@@ -20,6 +21,11 @@ function receiptNumber() {
 
 function text(value: unknown, max: number) {
   return String(value || '').trim().slice(0, max)
+}
+
+function soundtrackBelongsToUser(url: string, userId: string) {
+  const objectName = mediaObjectNameFromUrl(url)
+  return Boolean(objectName && objectName.startsWith(`video-ads/customer-assets/${userId}/`) && /\\.(mp3|m4a|wav)$/i.test(objectName))
 }
 
 function assetTypeFromUrl(url:string): 'image' | 'video' {
@@ -156,6 +162,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success:true, serviceOrder:mapVideoServiceOrder(result.rows[0]) })
     }
 
+    if (action === 'set_service_soundtrack') {
+      const orderId = text(body?.orderId,80)
+      const url = text(body?.url,2048)
+      if (!orderId || !soundtrackBelongsToUser(url,user.id)) return NextResponse.json({ success:false, error:'Upload your own MP3, M4A or WAV soundtrack to WEAVE first' },{status:400})
+      const result = await pool.query(
+        `UPDATE video_ad_service_orders SET soundtrack_url=$3,updated_at=NOW()
+         WHERE id=$1::uuid AND provider_user_id=$2::uuid AND project_id IS NULL AND status NOT IN ('rejected','delivered') RETURNING *`,
+        [orderId,user.id,url]
+      )
+      if (!result.rows[0]) return NextResponse.json({ success:false, error:'Soundtrack cannot be changed after production begins' },{status:409})
+      return NextResponse.json({ success:true, serviceOrder:mapVideoServiceOrder(result.rows[0]) })
+    }
+
     if (action === 'activate_service_order') {
       const orderId = text(body?.orderId,80)
       if (!orderId) return NextResponse.json({ success:false, error:'Outside order id is required' },{status:400})
@@ -207,15 +226,15 @@ export async function POST(request: NextRequest) {
         await client.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid',[studioFee,wallet.id])
         const studioResult = await client.query(
           `INSERT INTO video_ad_studio_orders
-           (user_id,user_role,package_key,package_name,duration_seconds,price_flame_coin,business_name,subject,objective,audience,notes,assets,status,order_source,service_order_id)
-           VALUES($1::uuid,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,'in_production','outside_client',$13::uuid) RETURNING *`,
-          [user.id,user.role,pack.package_key,pack.name,pack.duration_seconds,studioFee,String(serviceOrder.business_name||serviceOrder.customer_name),serviceOrder.subject,serviceOrder.objective,serviceOrder.audience,serviceOrder.notes,JSON.stringify(sourceAssets),serviceOrder.id]
+           (user_id,user_role,package_key,package_name,duration_seconds,price_flame_coin,business_name,subject,objective,audience,notes,assets,status,order_source,service_order_id,soundtrack_url)
+           VALUES($1::uuid,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,'in_production','outside_client',$13::uuid,$14) RETURNING *`,
+          [user.id,user.role,pack.package_key,pack.name,pack.duration_seconds,studioFee,String(serviceOrder.business_name||serviceOrder.customer_name),serviceOrder.subject,serviceOrder.objective,serviceOrder.audience,serviceOrder.notes,JSON.stringify(sourceAssets),serviceOrder.id,serviceOrder.soundtrack_url||null]
         )
         const studioOrder = studioResult.rows[0]
         const projectResult = await client.query(
-          `INSERT INTO admin_video_ad_projects(created_by,order_id,title,subject,objective,audience,duration_seconds,aspect_ratio,status,storyboard)
-           VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7,'9:16','planned',$8::jsonb) RETURNING *`,
-          [user.id,studioOrder.id,String(serviceOrder.business_name||serviceOrder.customer_name),serviceOrder.subject,serviceOrder.objective,serviceOrder.audience,Number(pack.duration_seconds),JSON.stringify(storyboard)]
+          `INSERT INTO admin_video_ad_projects(created_by,order_id,title,subject,objective,audience,duration_seconds,aspect_ratio,status,storyboard,soundtrack_url)
+           VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7,'9:16','planned',$8::jsonb,$9) RETURNING *`,
+          [user.id,studioOrder.id,String(serviceOrder.business_name||serviceOrder.customer_name),serviceOrder.subject,serviceOrder.objective,serviceOrder.audience,Number(pack.duration_seconds),JSON.stringify(storyboard),serviceOrder.soundtrack_url||null]
         )
         const project = projectResult.rows[0]
         await client.query('UPDATE video_ad_studio_orders SET project_id=$2::uuid WHERE id=$1::uuid',[studioOrder.id,project.id])
@@ -264,6 +283,8 @@ async function purchaseOwnVideo(user:any, body:any) {
     const audience = text(body?.audience, 900)
     const notes = text(body?.notes, 2000)
     const assets = Array.isArray(body?.assets) ? body.assets.map((item:unknown)=>text(item, 2048)).filter(Boolean).slice(0,12) : []
+    const soundtrackUrl = text(body?.soundtrackUrl,2048)
+    if (soundtrackUrl && !soundtrackBelongsToUser(soundtrackUrl,user.id)) return NextResponse.json({ success:false, error:'Upload your own soundtrack first' },{status:400})
     if (!packageKey || !businessName || !subject || !objective || !audience) return NextResponse.json({ success:false, error:'Choose a video package and provide the business name, subject, objective and audience' }, { status:400 })
 
     await client.query('BEGIN')
@@ -279,9 +300,9 @@ async function purchaseOwnVideo(user:any, body:any) {
     await client.query('UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid', [price, wallet.id])
     const orderResult = await client.query(
       `INSERT INTO video_ad_studio_orders
-       (user_id,user_role,package_key,package_name,duration_seconds,price_flame_coin,business_name,subject,objective,audience,notes,assets,status,order_source)
-       VALUES($1::uuid,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,'paid','self') RETURNING *`,
-      [user.id,user.role,pack.package_key,pack.name,pack.duration_seconds,price,businessName,subject,objective,audience,notes,JSON.stringify(assets)]
+       (user_id,user_role,package_key,package_name,duration_seconds,price_flame_coin,business_name,subject,objective,audience,notes,assets,status,order_source,soundtrack_url)
+       VALUES($1::uuid,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,'paid','self',$13) RETURNING *`,
+      [user.id,user.role,pack.package_key,pack.name,pack.duration_seconds,price,businessName,subject,objective,audience,notes,JSON.stringify(assets),soundtrackUrl||null]
     )
     const order = orderResult.rows[0]
     const receipt = receiptNumber()
