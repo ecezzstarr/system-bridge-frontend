@@ -39,16 +39,16 @@ export default function DistributionAssistantLifestylePage(){
   const state=data?.state
   const appointment=state?.appointment
   const appointed=appointment?.status==='approved'
-  const target=Number(state?.monthlyTarget||300)
+  const target=Number(state?.teamTarget||400)
   if(!isInitialized||isLoading||loading)return <main className="p-7 text-sm text-slate-200">Opening Distribution Assistant employment…</main>
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-4xl px-4 py-8 text-white" data-distribution-assistant-lifestyle="true">
     <Link href="/weave/lifestyles" className="text-xs text-cyan-300">← Return to Lifestyle</Link>
     <p className="mt-7 text-xs font-black uppercase tracking-widest text-amber-300">WEAVE Distribution · Employment</p>
     <h1 className="mt-2 text-3xl font-black">Assistant Distribution Manager</h1>
-    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE.</p>
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. Each three-person team (one main Manager and two assistants) shares a single 400-referral target each month.</p>
     <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
       <Info label="Monthly salary term" value="₦30,000"/>
-      <Info label="Individual monthly target" value={String(target)}/>
+      <Info label="Shared monthly team target" value={String(target)}/>
       <Info label="Employment positions remaining" value={String(state?.remainingPositions??'—')}/>
     </section>
     <p className="mt-4 text-xs text-slate-400">Monthly salary begins only after appointment and is subject to company payroll. Application does not guarantee employment or trigger an automatic wallet payment. Qualifying referrals must be genuine and attributable.</p>
@@ -58,7 +58,9 @@ export default function DistributionAssistantLifestylePage(){
       <h2 className="text-lg font-black">Application status: {String(appointment.status).toUpperCase()}</h2>
       <p className="mt-2 text-sm text-slate-300">{appointed?'Your approved position is active. Work through your Distribution instruments and keep a verified monthly acquisition record.':appointment.status==='pending'?'Your application has been received. A Distribution Manager reviews applications and appoints up to two assistants.':'This appointment is no longer active.'}</p>
       {appointed&&<>
-        <div className="mt-4 grid grid-cols-2 gap-3"><Info label="Referrals this month" value={`${state.verifiedReferrals} / ${target}`}/><Info label="Still required this month" value={String(state.remainingReferrals)}/></div>
+        <div className="mt-4 grid grid-cols-2 gap-3"><Info label="Team referrals this month" value={`${state.verifiedReferrals} / ${target}`}/><Info label="Team referrals remaining" value={String(state.remainingReferrals)}/></div>
+        <div className="mt-3 text-sm text-slate-300">Your individual contribution: <strong className="text-white">{state.ownReferrals||0} referrals</strong>. There is no separate individual quota.</div>
+        <div className="mt-3 space-y-2">{(state.teamMembers||[]).map((member:any)=><div key={member.userId} className="flex items-center justify-between gap-2 border-b border-white/10 py-2 text-xs text-slate-300"><span>{member.name} · {member.position==='manager'?'Main Manager':'Assistant'}</span><span className="font-black text-cyan-200">{member.referrals} referrals</span></div>)}</div>
         <div className="mt-5 flex flex-wrap gap-3 text-sm text-cyan-200"><Link href="/referrals">Referral movement →</Link><Link href="/distribution-studio">Distribution Studio →</Link><Link href="/video-ad-studio">Video Ad Studio →</Link><Link href="/event">Flame Event →</Link></div>
       </>}
     </section> : state?.canReview ? <section className="mt-7 rounded-2xl border border-amber-300/20 bg-amber-300/[.03] p-5">
@@ -67,7 +69,7 @@ export default function DistributionAssistantLifestylePage(){
       <Link href="/manager/dashboard" className="mt-4 inline-block text-sm font-black text-amber-200">Open assistant appointments →</Link>
     </section> : <section className="mt-7 rounded-2xl border border-white/10 bg-white/[.03] p-5">
       <h2 className="text-lg font-black">Apply for one of six positions</h2>
-      <p className="mt-2 text-sm text-slate-300">Describe your experience distributing WEAVE and how you will work toward 300 verified referrals each month.</p>
+      <p className="mt-2 text-sm text-slate-300">Describe your distribution experience and how you would contribute to your team’s shared 400 verified referrals each month.</p>
       <label className="mt-4 block text-xs font-bold text-slate-300" htmlFor="assistant-note">Distribution experience and monthly plan</label>
       <textarea id="assistant-note" maxLength={2000} rows={5} value={note} onChange={event=>setNote(event.target.value)} className="mt-2 w-full rounded-xl border border-white/20 bg-slate-950 p-3 text-sm text-white" placeholder="Explain how you will find, guide and follow up with new Agents and Bridgers."/>
       <Button className="mt-4 bg-cyan-700 text-white hover:bg-cyan-600" onClick={apply} disabled={!data?.eligible||submitting||note.trim().length<30||state?.remainingPositions===0}>{submitting?'Submitting…':'Submit application'}</Button>
