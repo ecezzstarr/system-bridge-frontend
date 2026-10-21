@@ -21,7 +21,7 @@ assert.ok(engine.includes('MANAGER_EMPLOYMENT_LIMIT = 3'),'WEAVE keeps three Dis
 assert.ok(engine.includes('MANAGER_MONTHLY_SALARY_NGN = 70_000'),'Distribution Manager monthly salary is ₦70,000')
 assert.ok(catalog.includes("DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager'"),'Distribution Manager is encoded as a Lifestyle rather than a fifth role')
 assert.ok(engine.includes('MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE'),'Legacy Manager API remains a compatibility surface over Distribution Manager Lifestyle')
-assert.ok(engine.includes('MANAGER_PROBATION_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET')&&team.includes('DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET = 400'),'Each Distribution Manager team shares a 400 verified Agent/Bridger referral monthly goal')
+assert.ok(engine.includes('MANAGER_PROBATION_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET')&&team.includes('DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET = 500'),'Each Distribution Manager team shares a 500 verified Agent/Bridger referral monthly goal')
 assert.ok(engine.includes("role IN ('agent','bridger')"),'Distribution Manager Lifestyle is carried only by Agent or Bridger identities')
 assert.ok(engine.includes('getLifestyleAccess(userId)'),'Distribution Manager resolves Lifestyle entitlement through the shared position access engine')
 assert.ok(engine.includes("reason:'continuance_required'"),'Employment document cannot activate Distribution Manager without the underlying position entitlement')
