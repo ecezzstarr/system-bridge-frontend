@@ -1,8 +1,9 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { FOOD_ADMIN_PER_PACKAGE_NGN } from '@/lib/food-forensic-settlement'
 import {
-  ensureFoodPreparationManagerSchema,validUuid,FOOD_PREPARATION_ADMIN_PER_ORDER_NGN,
+  ensureFoodPreparationManagerSchema,validUuid,
   FOOD_PREPARATION_MANAGER_SALARY_NGN,FOOD_PREPARATION_ASSISTANT_SALARY_NGN,FOOD_PREPARATION_CAPACITY,
 } from '@/lib/food-preparation-manager'
 export const dynamic='force-dynamic'
@@ -24,15 +25,17 @@ export async function GET(request:NextRequest){
       `),
       getPool().query(`
         SELECT COUNT(*)::int AS order_count,
-               COALESCE(SUM(amount_ngn),0)::numeric AS allocated_ngn
-        FROM weave_food_administration_allocations
+               COALESCE(SUM(administration_ngn),0)::numeric AS allocated_ngn,
+               COALESCE(SUM(package_count),0)::int AS package_count,
+               COALESCE(SUM(received_ngn),0)::numeric AS verified_stock_funds_ngn
+        FROM weave_food_forensic_stock_splits
       `),
     ])
     return NextResponse.json({
       success:true,monthlySalaryNgn:FOOD_PREPARATION_MANAGER_SALARY_NGN,
       assistantSalaryNgn:FOOD_PREPARATION_ASSISTANT_SALARY_NGN,
       capacities:FOOD_PREPARATION_CAPACITY,applications:staff.rows,
-      administrationFeeNgn:FOOD_PREPARATION_ADMIN_PER_ORDER_NGN,
+      administrationFeeNgn:FOOD_ADMIN_PER_PACKAGE_NGN,
       allocation:allocations.rows[0],
       allocationStatus:'recorded_not_automatically_disbursed',
     },{headers:{'Cache-Control':'private, no-store'}})
