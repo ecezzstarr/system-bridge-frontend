@@ -277,7 +277,7 @@ export default function FarmerHouseholdFoodBridge(){
             <h3 className="text-lg font-black">Offer actual surplus stock</h3>
             <label className="block text-xs">Produce<input required value={produce} onChange={e=>setProduce(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
             <div className="grid grid-cols-2 gap-3">
-              <label className="text-xs">Selling unit<select value={unit} onChange={e=>setUnit(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3">{FOOD_BRIDGE_UNITS.map(u=><option value={u} key={u}>{u}</option>)}</select></label>
+              <label className="text-xs">Selling unit<select value={unit} onChange={e=>setUnit(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3">{FOOD_BRIDGE_UNITS.filter(u=>u!=='pack').map(u=><option value={u} key={u}>{u}</option>)}</select></label>
               <label className="text-xs">Price ₦ per unit<input type="number" step=".01" min=".01" required value={unitPrice} onChange={e=>setUnitPrice(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
               <label className="text-xs">Surplus quantity<input type="number" step=".01" min=".01" required value={stock} onChange={e=>setStock(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
               <label className="text-xs">Minimum buy quantity<input type="number" step=".01" min=".01" required value={minimum} onChange={e=>setMinimum(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3"/></label>
@@ -287,6 +287,7 @@ export default function FarmerHouseholdFoodBridge(){
           </form>}
           {farm?.farmer?.status==='approved'&&<form onSubmit={publishBasket} className="mt-6 space-y-4 border border-emerald-300/30 p-5" data-publish-weave-family-basket>
             <h3 className="text-xl font-black text-emerald-100">Create a cheaper branded WEAVE Family Basket</h3>
+            <p className="text-xs leading-6 text-stone-400">Essential categories: {WEAVE_HOUSEHOLD_FOOD_GROUPS.map(g=>g.label).join(" · ")}.</p>
             <p className="text-xs leading-6 text-stone-300">Choose actual items you already offer separately, package them as a distinct ready-to-ship basket, then set a lower combined price. The comparison uses YOUR current individual item prices, not invented national market figures. Sell only physically separate prepared basket stock.</p>
             <label className="block text-xs">Family Basket brand
               <select value={basketTemplate} onChange={e=>setBasketTemplate(e.target.value)} className="mt-2 w-full border border-white/15 bg-[#18281d] p-3">
