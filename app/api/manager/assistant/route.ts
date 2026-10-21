@@ -48,7 +48,8 @@ export async function POST(request:NextRequest) {
       const errors:Record<string,string>={
         not_manager:'Only an active Distribution Manager may review assistant applications.',
         not_pending:'The application is no longer pending.',
-        positions_full:'All three Assistant Distribution Manager positions are filled.',
+        positions_full:'All six Assistant Distribution Manager positions are filled.',
+        manager_team_full:'This Distribution Manager already has two appointed assistants.',
         already_manager:'This applicant currently holds a Distribution Manager position.',
       }
       return NextResponse.json({success:false,error:errors[result.reason]||'Could not review the application'},{status:result.reason==='error'?500:409})
