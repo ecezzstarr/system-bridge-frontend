@@ -91,7 +91,7 @@ export async function assignPaidOrderToPreparationManager(
   await client.query(`
     INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link)
     VALUES($1::uuid,'food_preparation_start','START PREPARATION · VERIFIED FOOD ORDER',
-      $2,$3::uuid,'WEAVE Stability Lead',$4)
+      $2,$3::uuid,'WEAVE Food Operations',$4)
   `,[
     selected.agent_id,
     notificationDetails(product,order),
