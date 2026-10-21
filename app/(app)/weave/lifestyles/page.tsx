@@ -168,13 +168,13 @@ export default function WeaveLifestylesPage() {
                   tone="amber"
                   icon={<ChefHat className="h-8 w-8" />}
                   eyebrow="Agent employment · Company food operations"
-                  title="FOOD PREPARATION MANAGER"
-                  detail="₦60,000 monthly salary upon Administration appointment. An Agent prepares and packages Agility, Electrolyte and Daisy Pastries, then dispatches verified customer and Agent stock orders. Apply here; approved staff receive a real food fulfillment queue."
+                  title="FOOD PREPARATION TEAM"
+                  detail="Company food operations offer one Food Preparation Manager application place and five Assistant Manager places. Eligible Agents can apply for a vacant position and, following Administration approval, prepare verified Agility, Electrolyte, Ember and Daisy Pastries orders."
                   open={foodPreparationOpen}
                   reason={access?.active ? 'Apply for Administration appointment.' : 'An active Agent position is required to apply.'}
                   href="/weave/lifestyles/food-preparation"
                   action="Apply / Open Kitchen Desk"
-                  tools={[{icon:<ChefHat className="h-3.5 w-3.5"/>,label:'Preparation & packaging'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'₦60,000 / month'}]}
+                  tools={[{icon:<ChefHat className="h-3.5 w-3.5"/>,label:'Preparation & packaging'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'1 Manager · 5 Assistants'}]}
                 />
               )}
               {foodAvailable && (
