@@ -1,6 +1,7 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getPool } from '@/lib/db'
 import { ensureFoodBridgeSchema } from '@/lib/food-bridge'
+import { ensureCarrierFoodSchema } from '@/lib/carrier-food'
 import { WEAVE_HOUSEHOLD_FOOD_GROUPS,WEAVE_HOUSEHOLD_BASKET_TEMPLATES } from '@/lib/weave-household-food-store'
 import { DAISY_PASTRIES_PRICE_BANDS } from '@/lib/cake-catalog'
 import { AGILITY_RETAIL_UNIT_PRICE_NGN } from '@/lib/agility-catalog'
@@ -13,7 +14,7 @@ export const dynamic='force-dynamic'
  * Actual checkout, transport quotes, and held payments happen at the Agent Door. */
 export async function GET(_request:NextRequest){
   try{
-    await ensureFoodBridgeSchema()
+    await Promise.all([ensureFoodBridgeSchema(),ensureCarrierFoodSchema()])
     const {rows}=await getPool().query(`
       SELECT l.id,l.produce,l.unit,l.unit_price_ngn,l.available_quantity,l.minimum_quantity,
         l.details,f.farm_name,f.state,f.community,u.name AS agent_name,u.username,u.referral_code,
@@ -30,9 +31,21 @@ export async function GET(_request:NextRequest){
       ORDER BY b.listing_id IS NOT NULL DESC,l.created_at DESC
       LIMIT 180
     `)
-    return NextResponse.json({
+    const {rows:agents}=await getPool().query(`
+      SELECT u.id,u.name,u.username,u.referral_code
+      FROM carrier_food_agent_payment_accounts a
+      JOIN users u ON u.id=a.agent_id
+      WHERE u.role='agent' AND u.is_active=true AND u.referral_code IS NOT NULL
+      ORDER BY a.updated_at DESC LIMIT 40
+    `)
+        return NextResponse.json({
       success:true,brand:'WEAVE Family Food Store',
       groups:WEAVE_HOUSEHOLD_FOOD_GROUPS,templates:WEAVE_HOUSEHOLD_BASKET_TEMPLATES,
+      carrierAgents:agents.map(agent=>({
+        name:agent.name||agent.username||'WEAVE Agent',
+        carrierPath:'/carrier/food/'+encodeURIComponent(agent.referral_code),
+        daisyPath:'/carrier/food/'+encodeURIComponent(agent.referral_code)+'#agent-daisy-pastries',
+      })),
       offers:rows.map(row=>({
         id:row.id,name:row.produce,unit:row.unit,
         priceNgn:Number(row.unit_price_ngn),availableQuantity:Number(row.available_quantity),
