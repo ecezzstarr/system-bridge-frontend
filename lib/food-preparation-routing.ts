@@ -37,8 +37,8 @@ function notificationDetails(product:PreparationProduct,order:PaidOrder) {
  * server-side paid transition. The task and notification commit with the
  * verified payment, so a manager is never told to prepare unpaid food.
  *
- * Managers are selected from approved active Agent appointments. Round robin
- * by smallest outstanding task count, preserving any previous assignment.
+ * Automatically route paid food orders to the single approved Manager.
+ * Assistants work on orders explicitly assigned by Administration.
  */
 export async function assignPaidOrderToPreparationManager(
   client:PoolClient,product:PreparationProduct,order:PaidOrder,adminId:string
@@ -59,7 +59,7 @@ export async function assignPaidOrderToPreparationManager(
       SELECT COUNT(*)::int AS jobs FROM weave_food_preparation_tasks t
       WHERE t.manager_id=m.id
     ) workload ON TRUE
-    WHERE m.status='approved' AND u.role='agent' AND u.is_active=true
+    WHERE m.status='approved' AND m.position='manager' AND u.role='agent' AND u.is_active=true
     ORDER BY workload.jobs ASC,m.reviewed_at ASC,m.id ASC
     LIMIT 1
   `)
