@@ -2,7 +2,7 @@ import { getPool } from '@/lib/db'
 
 // One monthly target belongs to one main Distribution Manager and up to two
 // assistants. Individual referral attribution remains intact for bonuses.
-export const DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET = 400
+export const DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET = 500
 
 export type DistributionTeamMemberProgress = {
   userId: string
