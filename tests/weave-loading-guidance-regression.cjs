@@ -7,9 +7,9 @@ const root=path.resolve(__dirname,'..')
 const read=p=>fs.readFileSync(path.join(root,p),'utf8')
 const source=read('lib/weave-loading-guidance.ts')
 const translated=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText
-const exports={}
-vm.runInNewContext(translated,{exports},{filename:'lib/weave-loading-guidance.ts'})
-const {trainingBriefsForRole,agentOperatingGuideForPath,transitTrainingForPath}=exports
+const moduleExports={}
+vm.runInNewContext(translated,{exports:moduleExports},{filename:'lib/weave-loading-guidance.ts'})
+const {trainingBriefsForRole,agentOperatingGuideForPath,transitTrainingForPath}=moduleExports
 for(const role of ['visitor','agent','bridger','client','admin']){
   const cards=trainingBriefsForRole(role)
   assert.equal(cards.length,3,role+' needs three training cards')
