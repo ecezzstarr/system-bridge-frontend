@@ -39,13 +39,13 @@ export default function DistributionAssistantLifestylePage(){
   const state=data?.state
   const appointment=state?.appointment
   const appointed=appointment?.status==='approved'
-  const target=Number(state?.teamTarget||400)
+  const target=Number(state?.teamTarget||500)
   if(!isInitialized||isLoading||loading)return <main className="p-7 text-sm text-slate-200">Opening Distribution Assistant employment…</main>
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-4xl px-4 py-8 text-white" data-distribution-assistant-lifestyle="true">
     <Link href="/weave/lifestyles" className="text-xs text-cyan-300">← Return to Lifestyle</Link>
     <p className="mt-7 text-xs font-black uppercase tracking-widest text-amber-300">WEAVE Distribution · Employment</p>
     <h1 className="mt-2 text-3xl font-black">Assistant Distribution Manager</h1>
-    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. Each three-person team (one main Manager and two assistants) shares a single 400-referral target each month.</p>
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. Each three-person team (one main Manager and two assistants) shares a single 500-referral target each month.</p>
     <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
       <Info label="Monthly salary term" value="₦30,000"/>
       <Info label="Shared monthly team target" value={String(target)}/>
@@ -69,7 +69,7 @@ export default function DistributionAssistantLifestylePage(){
       <Link href="/manager/dashboard" className="mt-4 inline-block text-sm font-black text-amber-200">Open assistant appointments →</Link>
     </section> : <section className="mt-7 rounded-2xl border border-white/10 bg-white/[.03] p-5">
       <h2 className="text-lg font-black">Apply for one of six positions</h2>
-      <p className="mt-2 text-sm text-slate-300">Describe your distribution experience and how you would contribute to your team’s shared 400 verified referrals each month.</p>
+      <p className="mt-2 text-sm text-slate-300">Describe your distribution experience and how you would contribute to your team’s shared 500 verified referrals each month.</p>
       <label className="mt-4 block text-xs font-bold text-slate-300" htmlFor="assistant-note">Distribution experience and monthly plan</label>
       <textarea id="assistant-note" maxLength={2000} rows={5} value={note} onChange={event=>setNote(event.target.value)} className="mt-2 w-full rounded-xl border border-white/20 bg-slate-950 p-3 text-sm text-white" placeholder="Explain how you will find, guide and follow up with new Agents and Bridgers."/>
       <Button className="mt-4 bg-cyan-700 text-white hover:bg-cyan-600" onClick={apply} disabled={!data?.eligible||submitting||note.trim().length<30||state?.remainingPositions===0}>{submitting?'Submitting…':'Submit application'}</Button>
