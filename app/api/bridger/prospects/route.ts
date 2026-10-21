@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { sql } from '@/lib/db'
+import { getPool, sql } from '@/lib/db'
+import { DAILY_WHATSAPP_REPLACEMENT_LIMIT, getDailyWhatsAppReplacementCount } from '@/lib/bridger-prospect-replacements'
 import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
 // GET - list this Bridger's purchased prospects + their saved WhatsApp number
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
       SELECT whatsapp_number FROM users WHERE id = ${authUser.id}::uuid
     `
 
+    const replacementsToday = await getDailyWhatsAppReplacementCount(getPool(), authUser.id)
     const bridgeOrigin = getWeaveBridgeOrigin()
 
     const prospects = rows.map((r: any) => ({
@@ -56,6 +58,11 @@ export async function GET(request: NextRequest) {
       success: true,
       prospects,
       whatsappNumber: userRow[0]?.whatsapp_number || '',
+      replacementQuota: {
+        limit: DAILY_WHATSAPP_REPLACEMENT_LIMIT,
+        used: replacementsToday,
+        remaining: Math.max(0, DAILY_WHATSAPP_REPLACEMENT_LIMIT - replacementsToday),
+      },
     })
   } catch (error) {
     console.error('[Bridger Prospects] Get error:', error)
