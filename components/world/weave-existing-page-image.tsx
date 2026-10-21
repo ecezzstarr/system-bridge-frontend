@@ -15,7 +15,7 @@ type Visual={
   pictures:readonly {src:string;alt:string}[]
 }
 
-const BRIDGE={src:'/weave/bridge-of-radiance-approved-scene.svg',alt:'WEAVE approved Bridge of Radiance: water and fire crossing together'}
+const BRIDGE={src:'/weave/bridge-of-radiance-portrait.svg',alt:'WEAVE approved Bridge of Radiance: water and fire crossing together'}
 const RIVER={src:'/weave/flame-event/burning-river-world.svg',alt:'WEAVE existing Burning River water and fire crossing scene'}
 const AGILITY={src:'/weave-food/agility.jpeg',alt:'Original WEAVE Agility prepared food image'}
 const ELECTROLYTE={src:'/weave-food/electrolyte.jpeg',alt:'Original WEAVE Electrolyte food bowl image'}
@@ -285,7 +285,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Review the actual Bridge AI pathways used to help Prospects become Clients.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -296,7 +296,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Maintain approved crossing templates for Bridgers and the people they guide.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -362,7 +362,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Review requests and responses routed to authorized Weave staff.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -439,7 +439,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Outreach records show actual sending, response and the next permitted action.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -587,7 +587,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "See how System Switch, Client activity and company operations fit together.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -598,7 +598,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Company outreach follows approved destinations and the resulting response.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -620,7 +620,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Manage actual prospect distribution and resulting responses.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -697,7 +697,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Follow an actual Client referral without taking ownership of their File Folder.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -812,7 +812,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Reach a real participant through the communication channel available to your position.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -823,7 +823,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Ask the appropriate staff department about work inside WEAVE.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -867,7 +867,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Continue approved conversations and shared movement.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -900,7 +900,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "This operating ground is controlled by actual account authorization.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -911,7 +911,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Locate available participant profiles and the activity they choose to make public.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
@@ -1040,7 +1040,7 @@ const additionalVisions:Record<string,Visual>={
     "meaning": "Standing follows eligible work rather than decorative rank.",
     "pictures": [
       {
-        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "src": "/weave/bridge-of-radiance-portrait.svg",
         "alt": "Approved WEAVE Bridge of Radiance artwork"
       }
     ]
