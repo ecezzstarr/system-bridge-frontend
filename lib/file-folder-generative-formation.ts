@@ -38,11 +38,12 @@ export function createPartProposal(input:{
  if(!input.clientId||!input.fileNumber||prompt.length<15||prompt.length>6000)throw new Error('A Client, File Folder and meaningful description are required.')
  const name=(input.name||prompt.split(/[.!?\n]/)[0]).trim().slice(0,100)||'Unnamed formation'
  const materials=[...new Set((input.materials||['custom']).filter(m=>FORMATION_MATERIALS.includes(m)))]
+ const selectedMaterials:FormationMaterial[]=materials.length?materials:['custom']
  const createdAt=input.createdAt||new Date().toISOString()
  return {
    id:'proposal-pending-persistence',clientId:input.clientId,fileNumber:input.fileNumber,
-   prompt,name,purpose:prompt,materials:materials.length?materials:['custom'],
-   geometry:'structure',textures:(materials.length?materials:['custom']).map(material=>({material,description:'Client-directed material study; texture generation pending',scale:1})),
+   prompt,name,purpose:prompt,materials:selectedMaterials,
+   geometry:'structure',textures:selectedMaterials.map(material=>({material,description:'Client-directed material study; texture generation pending',scale:1})),
    interfaces:[],dependencies:[],openQuestions:['What must this formation do?','What inputs, outputs and constraints must it satisfy?'],
    reality:'conceptual',requiresHumanReview:true,createdAt
  }

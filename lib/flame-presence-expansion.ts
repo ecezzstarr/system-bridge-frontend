@@ -43,6 +43,12 @@ export const FLAME_POSITION_RESPONSIBILITIES: Record<FlamePosition,string> = {
   legion:'Carries Client-authorized enterprise work into practical markets.',
   flame_ai:'Prepares and executes only connected, authorized digital movements.',
 }
+function validAuthority(authority:FlameExpansionAuthority,now:number){
+  const approved=Date.parse(authority.approvedAt),expires=Date.parse(authority.expiresAt)
+  return Number.isFinite(now)&&Number.isFinite(approved)&&Number.isFinite(expires)&&approved<=now&&expires>now
+    &&Boolean(authority.clientId&&authority.fileNumber&&authority.aiId&&authority.approvedBy)
+    &&Number.isFinite(authority.budgetFlameCoin)&&authority.budgetFlameCoin>=0
+}
 export function assessFlameExpansion(input:{
   identityExists:boolean
   authority?:FlameExpansionAuthority|null
@@ -52,15 +58,14 @@ export function assessFlameExpansion(input:{
   if(!input.identityExists)return {stage:'identity',ready:false,missing:FLAME_REQUIRED_CONNECTIONS,reason:'No registered AI identity.'}
   if(!input.authority)return {stage:'identity',ready:false,missing:FLAME_REQUIRED_CONNECTIONS,reason:'Administration has not approved an operating mandate.'}
   const now=Date.parse(input.now||new Date().toISOString())
-  if(!Number.isFinite(now)||Date.parse(input.authority.expiresAt)<=now)return {stage:'paused',ready:false,missing:[],reason:'Operating mandate expired.'}
-  if(!input.authority.clientId||!input.authority.fileNumber||!input.authority.aiId||!input.authority.approvedBy||input.authority.budgetFlameCoin<0)return {stage:'paused',ready:false,missing:[],reason:'Operating mandate is incomplete.'}
+  if(!validAuthority(input.authority,now))return {stage:'paused',ready:false,missing:[],reason:'Operating mandate is invalid, incomplete or expired.'}
   const missing=FLAME_REQUIRED_CONNECTIONS.filter(connection=>!input.authority!.allowedConnections.includes(connection)||!input.connections.some(status=>status.connection===connection&&status.configured&&status.verified))
   if(missing.length)return {stage:'connected',ready:false,missing,reason:'External capabilities are not all verified.'}
   return {stage:'ready',ready:true,missing:[],reason:'Connections verified; an independent scheduled executor is still required for autonomous operation.'}
 }
 export function canExecuteFlameMovement(authority:FlameExpansionAuthority,movement:FlameExpansionMovement,now=new Date().toISOString()){
   if(authority.aiId!==movement.aiId||authority.fileNumber!==movement.fileNumber)return false
-  if(Date.parse(authority.expiresAt)<=Date.parse(now))return false
+  if(!validAuthority(authority,Date.parse(now)))return false
   if(movement.kind==='publish'||movement.kind==='engage')return authority.allowedConnections.includes(movement.kind==='publish'?'social_publishing':'prospect_inbox')
   if(movement.kind==='settlement')return false // Forensics must verify independently.
   return true
