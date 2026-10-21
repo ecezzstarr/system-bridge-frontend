@@ -9,7 +9,7 @@ const bridge=load('lib/food-bridge.ts',{...db,'@/lib/food-bridge-states':{}})
 const fee=load('lib/farm-service-fee.ts')
 const escrow=load('lib/food-escrow.ts',{...db,'@/lib/opay-config':{WEAVE_OPAY_ACCOUNT_NUMBER:'QA-ONLY'},'@/lib/food-bridge':bridge,'@/lib/farm-service-fee':fee})
 const prep=load('lib/food-preparation-manager.ts',{...db,'@/lib/weave-lifestyle':{},'@/lib/agility':{},'@/lib/electrolyte-catalog':{},'@/lib/ember-catalog':{nextEmberAdminStage:()=>null,emberMoneySplit:()=>null},'@/lib/carrier-cakes':{}})
-const routing=load('lib/food-preparation-routing.ts')
+const routing=load('lib/food-preparation-routing.ts',{'@/lib/food-preparation-manager':{FOOD_PREPARATION_ADMIN_PER_ORDER_NGN:800}})
 const admin='70000000-0000-4000-8000-000000000001',worker='70000000-0000-4000-8000-000000000002',buyer='70000000-0000-4000-8000-000000000003'
 const response={json:(data,opts)=>new Response(JSON.stringify(data),opts)}
 const route=load('app/api/admin/food-escrow/route.ts',{...db,'next/server':{NextResponse:response},'@/lib/auth-api':{getAuthUser:async req=>req.user},'@/lib/food-bridge':bridge})
@@ -37,6 +37,8 @@ async function run(){
  const work={id:require('node:crypto').randomUUID(),payment_status:'pending',agent_id:worker,variant_id:'agility',box_count:1,package_count:10,delivery_address:'QA destination',delivery_phone:'QA phone'}
  const tx=await pool.connect();try{await assert.rejects(()=>routing.assignPaidOrderToPreparationManager(tx,'agility',work,admin));work.payment_status='paid';await tx.query('BEGIN');assert.equal((await routing.assignPaidOrderToPreparationManager(tx,'agility',work,admin)).assigned,true);assert.equal((await routing.assignPaidOrderToPreparationManager(tx,'agility',work,admin)).assigned,false);await tx.query('COMMIT')}finally{tx.release()}
  assert.equal(Number((await pool.query("SELECT count(*) FROM notifications WHERE type='food_preparation_start'")).rows[0].count),1)
+ assert.equal(Number((await pool.query("SELECT count(*) FROM weave_food_administration_allocations WHERE product='agility'")).rows[0].count),1,'One fee allocation even when order verification is retried')
+ assert.equal(Number((await pool.query("SELECT SUM(amount_ngn) AS fee FROM weave_food_administration_allocations WHERE product='agility'")).rows[0].fee),800,'Administration receives an allocation of exactly ₦800 per paid order')
  await pool.query("UPDATE weave_food_preparation_managers SET status='revoked'");work.id=require('node:crypto').randomUUID();const tx2=await pool.connect();try{assert.equal((await routing.assignPaidOrderToPreparationManager(tx2,'agility',work,admin)).reason,'no_active_manager')}finally{tx2.release()}
  console.log('PASS: real PostgreSQL food migration idempotency, fixed seller fee, proof/held/payout guards, Admin isolation, duplicate settlement prevention, unpaid kitchen blocking and one-time manager notification')
 }
