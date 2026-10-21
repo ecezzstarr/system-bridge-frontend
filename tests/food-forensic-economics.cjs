@@ -4,11 +4,11 @@ const vm=require('node:vm')
 const assert=require('node:assert/strict')
 const ts=require('typescript')
 const text=fs.readFileSync(path.join(__dirname,'../lib/food-forensic-settlement.ts'),'utf8')
-const module={exports:{}}
+const sandboxModule={exports:{}}
 vm.runInNewContext(ts.transpileModule(text,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
-  module,exports:module.exports,require,Number,Error,
+  module:sandboxModule,exports:sandboxModule.exports,require,Number,Error,
 })
-const {calculateFoodStockForensicSplit:calculate}=module.exports
+const {calculateFoodStockForensicSplit:calculate}=sandboxModule.exports
 const examples=[
   ['Agility',3000,4000,2000],
   ['Electrolyte Small',3000,4000,2000],
