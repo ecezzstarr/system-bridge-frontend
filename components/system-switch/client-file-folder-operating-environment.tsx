@@ -24,6 +24,7 @@ import {
   X,
 } from 'lucide-react'
 import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-world'
+import GenerativeFormationWorkshop from '@/components/system-switch/generative-formation-workshop'
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
 import ClientGrowthWorld from '@/components/system-switch/client-growth-world'
@@ -811,6 +812,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                     <span><b className="block text-base text-emerald-100">{systems.length}</b>live</span>
                   </div>
                 </div>
+                <GenerativeFormationWorkshop />
                 <FileFolderOpenWorld
                   clientName={data.client.name}
                   fileNumber={data.client.file_number}
