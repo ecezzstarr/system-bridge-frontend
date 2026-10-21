@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
+import { DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
 import {
   acceptManagerEmploymentDocument,
   getManagerEmploymentState,
@@ -29,9 +30,9 @@ export async function GET(request: NextRequest) {
       positions:MANAGER_EMPLOYMENT_LIMIT,
       monthlySalaryNgn:MANAGER_MONTHLY_SALARY_NGN,
       probationTarget:MANAGER_PROBATION_TARGET,
-      monthlyReferralTarget:MANAGER_PROBATION_TARGET,
+      monthlyReferralTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
       referralTargetScope:'manager_and_two_assistants',
-      salaryPaymentRule:'Full monthly salary after month-end verification only if team completes 500 referrals; below target, individual ₦500 verified-referral bonuses only.',
+      salaryPaymentRule:'Full monthly salary after period-end verification when the team completes 300 referrals in the first one-month probation period or 500 in later employment months; otherwise only personally attributable ₦500 verified-referral bonuses.',
       salaryPaidAutomatically:false,
       probationMonths:1,
       documentVersion:MANAGER_DOCUMENT_VERSION,
