@@ -24,7 +24,8 @@ const LOCATIONS:[number,number][]=[
 function BuiltClientSystem({door,index}:{door:PublicClientFolder;index:number}){
   const [x,z]=LOCATIONS[index]||[0,-15]
   const systems=door.public_systems||[]
-  const kind=systems[0]?.system_type||
+  const featured=systems.find(system=>system.system_type!=='customer_door')||systems[0]
+  const kind=featured?.system_type||
     (door.level==='market_hall'?'marketplace_network':door.level==='storefront'?'commerce_storefront':'customer_door')
   const market=/market|commerce|store|distribution/.test(kind)
   const media=/stream|media|broadcast|creator/.test(kind)
@@ -79,7 +80,7 @@ function BuiltClientSystem({door,index}:{door:PublicClientFolder;index:number}){
         onClick={event=>event.stopPropagation()}
         className="block w-40 rounded-xl border border-amber-200/60 bg-[#06182d]/95 px-3 py-2 text-center text-white shadow-xl backdrop-blur-sm">
         <span className="block text-[8px] font-black uppercase tracking-widest text-amber-200">
-          {systems.length?systems[0].name:door.level==='market_hall'?'Client Market Hall':door.level==='storefront'?'Client Storefront':'Client Customer Door'}
+          {featured?featured.name:door.level==='market_hall'?'Client Market Hall':door.level==='storefront'?'Client Storefront':'Client Customer Door'}
         </span>
         <span className="mt-1 block text-[11px] font-black leading-tight">{door.platform_name||door.name}</span>
         <span className="mt-2 block text-[9px] font-bold text-cyan-100">Open Customer Door →</span>
@@ -127,6 +128,7 @@ export function FlameEventPublicPreview({enterprises,status}:{
     <div className="relative z-10 px-4 pb-3 pt-5">
       <p className="text-[10px] font-black uppercase tracking-[.23em] text-amber-200">Company Loop 1 · Flame Event</p>
       <h1 className="mt-1 text-3xl font-black tracking-tight">Burning River</h1>
+      <p className="mt-1 text-[10px] font-black uppercase tracking-[.18em] text-cyan-100">System Switch · Client File Folder Open World</p>
       <p className="mt-2 max-w-xl text-xs leading-5 text-sky-100/85">
         Preview the live Client world. Each structure represents an actual publicly opened Client enterprise and its published systems. Tap a Client File Folder structure to see what its owner sells.
       </p>
@@ -152,7 +154,7 @@ export function FlameEventPublicPreview({enterprises,status}:{
           className="rounded-xl border border-cyan-100/20 bg-white/[.05] p-3 text-xs text-sky-100">
           <span className="block font-black">{door.platform_name||door.name}</span>
           <span className="mt-1 block text-[10px] text-slate-300">
-            {door.public_systems?.[0]?.name|| (door.level==='market_hall'?'Market Hall':door.level==='storefront'?'Storefront':'Customer Door')}
+            {door.public_systems?.find(system=>system.system_type!=='customer_door')?.name||door.public_systems?.[0]?.name|| (door.level==='market_hall'?'Market Hall':door.level==='storefront'?'Storefront':'Customer Door')}
           </span>
           <span className="mt-2 block font-bold text-amber-200">View products & services →</span>
         </Link>)}
