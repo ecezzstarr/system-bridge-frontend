@@ -422,7 +422,8 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       </>}
       {/* The water/fire river forms the Bridge of Radiance; text is live. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[54dvh] overflow-hidden opacity-95 sm:h-[67dvh]">
-        <div className="absolute inset-0 bg-[url('/weave/flame-event/burning-river-world.svg')] bg-cover bg-center opacity-85"/>
+        <div className="absolute inset-0 bg-[url('/weave/flame-event/burning-river-world.svg')] bg-cover bg-center opacity-65"/>
+        <div className="absolute inset-0 bg-[url('/weave/bridge-of-radiance-approved-scene.svg')] bg-cover bg-center opacity-85 sm:bg-center"/>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_57%,rgba(255,184,70,.12),transparent_44%),linear-gradient(180deg,rgba(2,8,22,.12)_0%,rgba(3,9,20,.15)_35%,rgba(2,5,10,.98)_100%)]"/>
         <div className="absolute bottom-[16%] left-[-24%] h-[12%] w-[95%] -rotate-6 rounded-full bg-sky-400/20 blur-2xl motion-safe:animate-pulse"/>
         <div className="absolute bottom-[12%] right-[-24%] h-[12%] w-[95%] rotate-6 rounded-full bg-orange-400/20 blur-2xl motion-safe:animate-pulse"/>
