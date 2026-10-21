@@ -5,7 +5,6 @@ import { nextEmberAdminStage,emberMoneySplit } from '@/lib/ember-catalog'
 import { nextElectrolyteAdminStage } from '@/lib/electrolyte-catalog'
 import { ensureCarrierCakeSchema, nextCakeAdministrationStatus } from '@/lib/carrier-cakes'
 
-export const FOOD_PREPARATION_ADMIN_PER_ORDER_NGN=800
 export const FOOD_PREPARATION_MANAGER_SALARY_NGN=70000
 export const FOOD_PREPARATION_ASSISTANT_SALARY_NGN=40000
 export const FOOD_PREPARATION_MANAGER_TITLE='Food Preparation Manager'
@@ -72,6 +71,41 @@ export async function ensureFoodPreparationManagerSchema(){
         allocated_at timestamptz NOT NULL DEFAULT NOW(),
         PRIMARY KEY(product,source_order_id)
       );
+      CREATE TABLE IF NOT EXISTS weave_food_forensic_stock_splits (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        product varchar(20) NOT NULL CHECK (product IN ('agility','electrolyte','ember')),
+        source_order_id uuid NOT NULL,
+        purchasing_agent_id uuid NOT NULL REFERENCES users(id),
+        package_count integer NOT NULL CHECK (package_count>0),
+        received_ngn numeric(14,2) NOT NULL CHECK (received_ngn>0),
+        agent_expected_margin_ngn numeric(14,2) NOT NULL CHECK (agent_expected_margin_ngn>=0),
+        administration_ngn numeric(14,2) NOT NULL CHECK (administration_ngn>=0),
+        family_support_ngn numeric(14,2) NOT NULL CHECK (family_support_ngn>=0),
+        lead_preparation_ngn numeric(14,2) NOT NULL CHECK (lead_preparation_ngn>0),
+        retail_unit_price_ngn numeric(14,2) NOT NULL,
+        unit_cost_ngn numeric(14,2) NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT NOW(),
+        UNIQUE(product,source_order_id),
+        CHECK (received_ngn=administration_ngn+family_support_ngn+lead_preparation_ngn)
+      );
+      CREATE TABLE IF NOT EXISTS weave_food_forensic_payouts (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        split_id uuid NOT NULL REFERENCES weave_food_forensic_stock_splits(id) ON DELETE CASCADE,
+        beneficiary varchar(24) NOT NULL
+          CHECK (beneficiary IN ('administration','family_support','lead_manager')),
+        amount_ngn numeric(14,2) NOT NULL CHECK(amount_ngn>0),
+        status varchar(24) NOT NULL DEFAULT 'pending'
+          CHECK(status IN ('pending','transfer_reported')),
+        transfer_reference varchar(180) UNIQUE,
+        bank_name varchar(120),
+        destination_account_last4 varchar(4),
+        transfer_note varchar(800),
+        recorded_by uuid REFERENCES users(id),
+        recorded_at timestamptz,
+        UNIQUE(split_id,beneficiary)
+      );
+      CREATE INDEX IF NOT EXISTS weave_food_forensic_payout_queue_idx
+        ON weave_food_forensic_payouts(status,beneficiary);
       CREATE TABLE IF NOT EXISTS weave_food_preparation_assignment_events (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         task_id uuid NOT NULL REFERENCES weave_food_preparation_tasks(id),
