@@ -51,7 +51,7 @@ export default function AdminFoodPreparationManagerPage(){
         <div>
           <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ShieldCheck className="h-4 w-4"/> Administration · Company Kitchen</p>
           <h1 className="mt-2 text-3xl font-black">Food Preparation Management Team</h1>
-          <p className="mt-3 text-xl font-black text-emerald-200">1 Manager · ₦70,000/month | 2 Assistants · ₦40,000/month each</p>
+          <p className="mt-3 text-xl font-black text-emerald-200">1 Manager · ₦70,000/month | 2 Assistants · ₦30,000/month each</p>
           <p className="mt-2 text-xs text-amber-200">Approved: {approved.filter(person=>person.position==='manager').length}/1 Manager · {approvedAssistants}/2 Assistants</p>
           <p className="mt-2 max-w-3xl text-xs leading-6 text-stone-400">Review Agent applications and appointments. The Food Preparation Manager is the Head of WEAVE Stability food operations and exclusively assigns approved assistants. Administration does not assign kitchen work. Payroll is not automatically disbursed.</p>
         </div>
