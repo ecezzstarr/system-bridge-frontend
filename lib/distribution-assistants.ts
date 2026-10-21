@@ -1,13 +1,13 @@
 import { getPool, sql } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable, getManagerEmployment } from '@/lib/manager-employment'
-import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
+import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET, DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
 import { calculateDistributionTeamCompensation } from '@/lib/distribution-team-compensation'
 
 export const DISTRIBUTION_ASSISTANT_LIMIT = 6
 export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
 export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 30_000
-// One 500-referral target is shared by the lead Manager and both assistants.
+// Team target is 300 in the Manager's probation month, then 500 per employment month.
 export const DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
 
 // Assistants retain their Agent or Bridger identity; appointment is a separate
@@ -147,7 +147,7 @@ export async function reviewDistributionAssistant(
     await client.query('COMMIT')
     try {
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and the shared monthly target for your three-person team is 500 verified Agent/Bridger referrals. Full monthly salary is conditional on team success. Below 500, you earn only the existing ₦500 bonus per verified referral you personally brought.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
+        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and your three-person team has a shared target of 300 verified referrals in its first probation month and 500 in later employment months. Full monthly salary is conditional on meeting the applicable team target. Below that target, you earn only the existing ₦500 bonus per verified referral you personally brought.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
     } catch(error) {console.error('[distribution-assistants] notification failed',error)}
     return {success:true as const,status}
   } catch(error) {
@@ -175,8 +175,9 @@ export async function getDistributionAssistantState(userId:string) {
     ? await getDistributionTeamMonthlyReferrals(String(appointment.manager_user_id))
     : null
   const verifiedReferrals=teamProgress?.total||0
+  const applicableTarget=teamProgress?.target||DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
   const ownReferrals=teamProgress?.members.find(member=>member.userId===userId)?.referrals||0
-  const compensation=calculateDistributionTeamCompensation({teamReferrals:verifiedReferrals,ownReferrals,monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN})
+  const compensation=calculateDistributionTeamCompensation({teamReferrals:verifiedReferrals,ownReferrals,teamTarget:applicableTarget,monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN})
   let pending:any[]=[]
   let team:any[]=[]
   if (canReview) {
@@ -199,12 +200,18 @@ export async function getDistributionAssistantState(userId:string) {
     positions:DISTRIBUTION_ASSISTANT_LIMIT, employed,
     remainingPositions:Math.max(0,DISTRIBUTION_ASSISTANT_LIMIT-employed),
     monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN,
-    monthlyTarget:DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET,
-    teamTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
+    monthlyTarget:applicableTarget,
+    teamTarget:applicableTarget,
+    probationTarget:DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET,
+    regularTeamTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
+    probationPeriod:Boolean(teamProgress?.probation),
+    employmentMonth:teamProgress?.monthNumber||null,
+    periodStart:teamProgress?.periodStart||null,
+    periodEnd:teamProgress?.periodEnd||null,
     teamMembers:teamProgress?.members||[],
     ownReferrals,
     compensation,
-    verifiedReferrals, remainingReferrals:Math.max(0,DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET-verifiedReferrals),
+    verifiedReferrals, remainingReferrals:Math.max(0,applicableTarget-verifiedReferrals),
     payrollStatus:'employment_terms_only_no_automatic_payment',
   }
 }
