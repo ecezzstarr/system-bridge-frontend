@@ -254,10 +254,869 @@ const visions:Record<string,Visual>={
   },
 }
 
+
+// Additional WEAVE operating stations. Existing media only; no fabricated state or customers.
+const additionalVisions:Record<string,Visual>={
+  "/admin/access-recovery": {
+    "eyebrow": "Administration · Identity",
+    "title": "Access recovery protects ownership",
+    "meaning": "Review verified account recovery without exposing passwords or private identities.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/system-formation.svg",
+        "alt": "Existing WEAVE System Formation module illustration"
+      }
+    ]
+  },
+  "/admin/ad-workshop": {
+    "eyebrow": "Administration · Public outreach",
+    "title": "Publish the company message",
+    "meaning": "Manage real WEAVE campaigns and their approved destinations.",
+    "pictures": [
+      {
+        "src": "/weave/flame-event/burning-river-world.svg",
+        "alt": "Existing WEAVE Burning River artwork"
+      }
+    ]
+  },
+  "/admin/bridge-ai": {
+    "eyebrow": "Administration · Bridge AI",
+    "title": "Guide the crossing process",
+    "meaning": "Review the actual Bridge AI pathways used to help Prospects become Clients.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/admin/bridge-templates": {
+    "eyebrow": "Administration · Bridge Templates",
+    "title": "One bridge, consistent guidance",
+    "meaning": "Maintain approved crossing templates for Bridgers and the people they guide.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/admin/campaign-flame": {
+    "eyebrow": "Administration · Flame campaign",
+    "title": "The Flame Event is in motion",
+    "meaning": "Control communications that point people toward real Company Loop 1 activities.",
+    "pictures": [
+      {
+        "src": "/weave/flame-event/burning-river-world.svg",
+        "alt": "Existing WEAVE Burning River artwork"
+      }
+    ]
+  },
+  "/admin/client-build-catalog": {
+    "eyebrow": "Administration · Client construction",
+    "title": "Tools for Client-made systems",
+    "meaning": "Organize actual blueprints and building components available in File Folders.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/blueprint-foundry.svg",
+        "alt": "Existing WEAVE Blueprint Foundry module illustration"
+      }
+    ]
+  },
+  "/admin/client-deposits": {
+    "eyebrow": "Administration · Client payments",
+    "title": "Verification before wallet credit",
+    "meaning": "Inspect real deposit evidence before authorizing a Client account update.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/admin/client-messages": {
+    "eyebrow": "Administration · Client communication",
+    "title": "Respond where the Client is",
+    "meaning": "Company replies remain linked to the Client relationship and the actual request.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/customer-door.svg",
+        "alt": "Existing WEAVE Client Customer Door module illustration"
+      }
+    ]
+  },
+  "/admin/client-vault": {
+    "eyebrow": "Administration · Client vaults",
+    "title": "Private balances have records",
+    "meaning": "Client funds and transactions are controlled by verified records, not estimates.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/admin/company-guidance": {
+    "eyebrow": "Administration · Company Guidance",
+    "title": "One institution, accountable answers",
+    "meaning": "Review requests and responses routed to authorized Weave staff.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/admin/customer-door-settlements": {
+    "eyebrow": "Administration · Customer payments",
+    "title": "Products connect to settlement",
+    "meaning": "Audit real Customer Door payments and fulfillment before recording completion.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/admin/departmental-registration": {
+    "eyebrow": "Administration · Work positions",
+    "title": "Assign responsibility carefully",
+    "meaning": "Review applications for defined company duties and access.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/admin/deployment-records": {
+    "eyebrow": "Administration · System releases",
+    "title": "Changes leave a release record",
+    "meaning": "Record actual technical deployments and what became available in WEAVE.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/system-formation.svg",
+        "alt": "Existing WEAVE System Formation module illustration"
+      }
+    ]
+  },
+  "/admin/dev-workshop": {
+    "eyebrow": "Administration · Development",
+    "title": "Build the system before release",
+    "meaning": "Use the existing Weave workshop to organize technical changes.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/blueprint-foundry.svg",
+        "alt": "Existing WEAVE Blueprint Foundry module illustration"
+      }
+    ]
+  },
+  "/admin/development-agents": {
+    "eyebrow": "Administration · Development agents",
+    "title": "Assign builds to defined work",
+    "meaning": "Development assignments connect requested improvements with accountable implementation.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/ai-automation.svg",
+        "alt": "Existing WEAVE AI automation module illustration"
+      }
+    ]
+  },
+  "/admin/dj-workshop": {
+    "eyebrow": "Administration · Sound",
+    "title": "Broadcast belongs to the world",
+    "meaning": "Control the sound of shared Flame Event experiences without interrupting work.",
+    "pictures": [
+      {
+        "src": "/weave/flame-event/burning-river-world.svg",
+        "alt": "Existing WEAVE Burning River artwork"
+      }
+    ]
+  },
+  "/admin/email-outreach": {
+    "eyebrow": "Administration · Prospect communication",
+    "title": "Send only accountable outreach",
+    "meaning": "Outreach records show actual sending, response and the next permitted action.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/admin/ember": {
+    "eyebrow": "Administration · Food fulfillment",
+    "title": "Ember is a real food product",
+    "meaning": "Review evening food stock and orders through the existing operations flow.",
+    "pictures": [
+      {
+        "src": "/weave-food/ember.jpg",
+        "alt": "Original WEAVE Ember product image"
+      }
+    ]
+  },
+  "/admin/enterprise-dream": {
+    "eyebrow": "Administration · Client enterprise",
+    "title": "Enterprise grows from real systems",
+    "meaning": "Review completed Client capabilities before authorizing enterprise progression.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/enterprise-expansion.svg",
+        "alt": "Existing WEAVE Enterprise Expansion module illustration"
+      }
+    ]
+  },
+  "/admin/enterprise-systems": {
+    "eyebrow": "Administration · Client-built systems",
+    "title": "Building becomes capability",
+    "meaning": "Review operating systems clients can construct and use.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/system-formation.svg",
+        "alt": "Existing WEAVE System Formation module illustration"
+      }
+    ]
+  },
+  "/admin/environment-organizer": {
+    "eyebrow": "Administration · Weave environment",
+    "title": "One environment, organized districts",
+    "meaning": "Organize where real functions appear without replacing their controllers.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/network-module.svg",
+        "alt": "Existing WEAVE network systems module illustration"
+      }
+    ]
+  },
+  "/admin/file-folder-sales-manager": {
+    "eyebrow": "Administration · File Folder distribution",
+    "title": "A purchase opens Client ownership",
+    "meaning": "Review recognized File Folder movement and authorized seller responsibilities.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/customer-door.svg",
+        "alt": "Existing WEAVE Client Customer Door module illustration"
+      }
+    ]
+  },
+  "/admin/food-preparation-manager": {
+    "eyebrow": "Administration · Preparation oversight",
+    "title": "Orders reach the preparation team",
+    "meaning": "Review preparation work, staffing and recorded dispatches.",
+    "pictures": [
+      {
+        "src": "/weave-food/agility.jpeg",
+        "alt": "Original WEAVE Agility product image"
+      },
+      {
+        "src": "/weave-food/electrolyte.jpeg",
+        "alt": "Original WEAVE Electrolyte product image"
+      },
+      {
+        "src": "/weave-food/ember.jpg",
+        "alt": "Original WEAVE Ember product image"
+      }
+    ]
+  },
+  "/admin/guidance-staff": {
+    "eyebrow": "Administration · Guidance staffing",
+    "title": "Assign the person who can respond",
+    "meaning": "Manage who is authorized to give company support.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/admin/infrastructure": {
+    "eyebrow": "Administration · Stability",
+    "title": "The Weave system must remain available",
+    "meaning": "Monitor deployed services and maintenance while protecting ongoing work.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/admin/legion-releases": {
+    "eyebrow": "Administration · Legion employment",
+    "title": "Employment has a recorded ending",
+    "meaning": "Review approved Legion releases and restored position access.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/enterprise-expansion.svg",
+        "alt": "Existing WEAVE Enterprise Expansion module illustration"
+      }
+    ]
+  },
+  "/admin/loop-workshop": {
+    "eyebrow": "Administration · Company Loops",
+    "title": "Formation precedes publication",
+    "meaning": "Prepare and release the company loop that organizes real participation.",
+    "pictures": [
+      {
+        "src": "/weave/flame-event/burning-river-world.svg",
+        "alt": "Existing WEAVE Burning River artwork"
+      }
+    ]
+  },
+  "/admin/orders": {
+    "eyebrow": "Administration · Order inbox",
+    "title": "Every order deserves attention",
+    "meaning": "Follow actual Agent, Bridger and Client order and payment alerts.",
+    "pictures": [
+      {
+        "src": "/weave-food/agility.jpeg",
+        "alt": "Original WEAVE Agility product image"
+      },
+      {
+        "src": "/weave-food/electrolyte.jpeg",
+        "alt": "Original WEAVE Electrolyte product image"
+      },
+      {
+        "src": "/weave-food/ember.jpg",
+        "alt": "Original WEAVE Ember product image"
+      }
+    ]
+  },
+  "/admin/origin-systems": {
+    "eyebrow": "Administration · Weave foundation",
+    "title": "One source, many functions",
+    "meaning": "See how System Switch, Client activity and company operations fit together.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/admin/outreach": {
+    "eyebrow": "Administration · Outreach",
+    "title": "Move the message to people",
+    "meaning": "Company outreach follows approved destinations and the resulting response.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/admin/payments": {
+    "eyebrow": "Administration · Payment records",
+    "title": "Value is recorded and verified",
+    "meaning": "Keep payments linked to valid transaction evidence and approvals.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/admin/prospect-engine": {
+    "eyebrow": "Administration · Prospects",
+    "title": "A possible relationship is not yet a Client",
+    "meaning": "Manage actual prospect distribution and resulting responses.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/admin/subscriptions": {
+    "eyebrow": "Administration · Continuance",
+    "title": "Access follows its real status",
+    "meaning": "Track subscription activity and permitted account access.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/admin/system-store": {
+    "eyebrow": "Administration · Store control",
+    "title": "A system purchase must be fulfilled",
+    "meaning": "Review verified store orders and published system availability.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/system-formation.svg",
+        "alt": "Existing WEAVE System Formation module illustration"
+      }
+    ]
+  },
+  "/admin/video-ad-workshop": {
+    "eyebrow": "Administration · Creative work",
+    "title": "Visuals accompany real businesses",
+    "meaning": "Prepare customer video advertisements without inventing product claims.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/blueprint-foundry.svg",
+        "alt": "Existing WEAVE Blueprint Foundry module illustration"
+      }
+    ]
+  },
+  "/admin/weave-flame-coin-sales": {
+    "eyebrow": "Administration · Flame Coin sales",
+    "title": "Payment and credit need evidence",
+    "meaning": "Verify the real Flame Coin purchase flow before recording a balance.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/admin/weave-trx-sales": {
+    "eyebrow": "Administration · Exchange desk",
+    "title": "Purchases require clear settlement",
+    "meaning": "Record supported payment evidence before releasing digital value.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/admin/workshop": {
+    "eyebrow": "Administration · Workbench",
+    "title": "Organize the work of WEAVE",
+    "meaning": "Use the institution's existing workshops for real operating changes.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/agent/bridge-radiance": {
+    "eyebrow": "Agent · Bridge",
+    "title": "Carry the Client crossing forward",
+    "meaning": "Follow an actual Client referral without taking ownership of their File Folder.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/agent/commissions": {
+    "eyebrow": "Agent · Earned commission",
+    "title": "Value follows verified participation",
+    "meaning": "Commission is calculated from real qualifying activity, not impressions.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/agent/creative": {
+    "eyebrow": "Agent · Visual creation",
+    "title": "Show the product a customer can buy",
+    "meaning": "Create advertising from the existing WEAVE product and business assets.",
+    "pictures": [
+      {
+        "src": "/weave-food/agility.jpeg",
+        "alt": "Original WEAVE Agility product image"
+      },
+      {
+        "src": "/weave-food/electrolyte.jpeg",
+        "alt": "Original WEAVE Electrolyte product image"
+      },
+      {
+        "src": "/weave-food/ember.jpg",
+        "alt": "Original WEAVE Ember product image"
+      }
+    ]
+  },
+  "/agent/store": {
+    "eyebrow": "Agent · Product stock",
+    "title": "Stock becomes an orderable product",
+    "meaning": "Keep Agent inventory and the daily sale of actual WEAVE foods connected.",
+    "pictures": [
+      {
+        "src": "/weave-food/agility.jpeg",
+        "alt": "Original WEAVE Agility product image"
+      },
+      {
+        "src": "/weave-food/electrolyte.jpeg",
+        "alt": "Original WEAVE Electrolyte product image"
+      },
+      {
+        "src": "/weave-food/ember.jpg",
+        "alt": "Original WEAVE Ember product image"
+      }
+    ]
+  },
+  "/authority": {
+    "eyebrow": "WEAVE · Authority",
+    "title": "Work within defined authority",
+    "meaning": "Real responsibility and approved boundaries determine what can be done.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/authority/workshops": {
+    "eyebrow": "WEAVE · Authority workshops",
+    "title": "Formation follows permitted work",
+    "meaning": "The workshop turns authorized decisions into accountable movement.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/blueprint-foundry.svg",
+        "alt": "Existing WEAVE Blueprint Foundry module illustration"
+      }
+    ]
+  },
+  "/client-interactions": {
+    "eyebrow": "WEAVE · Client relationship",
+    "title": "Interaction creates practical next steps",
+    "meaning": "Move from a real Client request to the function that can serve it.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/customer-door.svg",
+        "alt": "Existing WEAVE Client Customer Door module illustration"
+      }
+    ]
+  },
+  "/client/enterprise/legions": {
+    "eyebrow": "Client · Enterprise Legions",
+    "title": "Client-owned work creates positions",
+    "meaning": "Legion assignments belong to the Client enterprise and its authorized operations.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/enterprise-expansion.svg",
+        "alt": "Existing WEAVE Enterprise Expansion module illustration"
+      }
+    ]
+  },
+  "/clients": {
+    "eyebrow": "WEAVE · Client records",
+    "title": "A Client owns the business",
+    "meaning": "The Client relationship supports ownership, purchases and practical use.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/customer-door.svg",
+        "alt": "Existing WEAVE Client Customer Door module illustration"
+      }
+    ]
+  },
+  "/communications": {
+    "eyebrow": "WEAVE · Communication",
+    "title": "The conversation continues",
+    "meaning": "Reach a real participant through the communication channel available to your position.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/company-chat": {
+    "eyebrow": "WEAVE · Company Guidance",
+    "title": "Position-aware support",
+    "meaning": "Ask the appropriate staff department about work inside WEAVE.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/distribution-studio": {
+    "eyebrow": "WEAVE · Social presence",
+    "title": "Make actual activity visible",
+    "meaning": "Publish communication connected to real Weave functions and their audience.",
+    "pictures": [
+      {
+        "src": "/weave/flame-event/burning-river-world.svg",
+        "alt": "Existing WEAVE Burning River artwork"
+      }
+    ]
+  },
+  "/fund-wall": {
+    "eyebrow": "WEAVE · Family support",
+    "title": "Care has accountable records",
+    "meaning": "Record family support payments and their intended beneficiaries.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/ledger": {
+    "eyebrow": "WEAVE · Transaction ledger",
+    "title": "Every movement leaves evidence",
+    "meaning": "Review recorded economic movements and their verified origin.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/lounge": {
+    "eyebrow": "WEAVE · Conversation",
+    "title": "People meet through participation",
+    "meaning": "Continue approved conversations and shared movement.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/manager/dashboard": {
+    "eyebrow": "WEAVE · Distribution management",
+    "title": "Daily work needs clear oversight",
+    "meaning": "Coordinate real operating responsibilities and distribution records.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/marketplace": {
+    "eyebrow": "WEAVE · Enterprise Systems",
+    "title": "Systems become available for use",
+    "meaning": "Explore Client-building capabilities without treating previews as completed installations.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/system-formation.svg",
+        "alt": "Existing WEAVE System Formation module illustration"
+      }
+    ]
+  },
+  "/private-ground": {
+    "eyebrow": "WEAVE · Private activity",
+    "title": "Private space stays protected",
+    "meaning": "This operating ground is controlled by actual account authorization.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/profiles": {
+    "eyebrow": "WEAVE · Presences",
+    "title": "People carry their own activities",
+    "meaning": "Locate available participant profiles and the activity they choose to make public.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/receipts": {
+    "eyebrow": "WEAVE · Receipts",
+    "title": "Evidence belongs to each payment",
+    "meaning": "Use recorded receipts to understand what was paid, approved and fulfilled.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/search": {
+    "eyebrow": "WEAVE · Find a place",
+    "title": "Navigate the operating system",
+    "meaning": "Find real people, districts and available workspaces in the Weave environment.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/network-module.svg",
+        "alt": "Existing WEAVE network systems module illustration"
+      }
+    ]
+  },
+  "/settings": {
+    "eyebrow": "WEAVE · Preferences",
+    "title": "Control your own account",
+    "meaning": "Adjust the settings that apply to your authenticated identity.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/video-ad-studio": {
+    "eyebrow": "WEAVE · Creative studio",
+    "title": "Create what customers can recognize",
+    "meaning": "Produce media from real Client and company product material.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/blueprint-foundry.svg",
+        "alt": "Existing WEAVE Blueprint Foundry module illustration"
+      }
+    ]
+  },
+  "/video-feed": {
+    "eyebrow": "WEAVE · Published video",
+    "title": "Watch real available activity",
+    "meaning": "Media becomes meaningful through its real source and permission to publish.",
+    "pictures": [
+      {
+        "src": "/weave/flame-event/burning-river-world.svg",
+        "alt": "Existing WEAVE Burning River artwork"
+      }
+    ]
+  },
+  "/wallet": {
+    "eyebrow": "WEAVE · Account value",
+    "title": "Money remains accountable",
+    "meaning": "Balances, transfers and deposits reflect real transaction records.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/wallet/deposit-withdraw": {
+    "eyebrow": "WEAVE · Deposit and withdrawal",
+    "title": "Payment requests are verified",
+    "meaning": "Use the existing supported payment flow; illustrative artwork is not a receipt.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/weave/lifestyles/ace": {
+    "eyebrow": "WEAVE Lifestyle · Ace",
+    "title": "Playing is an activity in Weave",
+    "meaning": "Arena and Carrier participation follow the actual subscription and game state.",
+    "pictures": [
+      {
+        "src": "/weave/flame-event/burning-river-world.svg",
+        "alt": "Existing WEAVE Burning River artwork"
+      }
+    ]
+  },
+  "/weave/lifestyles/mandate/forensic-food": {
+    "eyebrow": "WEAVE · Food forensics",
+    "title": "Evidence moves money correctly",
+    "meaning": "Verify physical food orders before recording money distribution.",
+    "pictures": [
+      {
+        "src": "/weave-food/agility.jpeg",
+        "alt": "Original WEAVE Agility product image"
+      },
+      {
+        "src": "/weave-food/electrolyte.jpeg",
+        "alt": "Original WEAVE Electrolyte product image"
+      },
+      {
+        "src": "/weave-food/ember.jpg",
+        "alt": "Original WEAVE Ember product image"
+      }
+    ]
+  },
+  "/weave/lifestyles/mandate/inbox": {
+    "eyebrow": "WEAVE · Guidance inbox",
+    "title": "Reply within approved authority",
+    "meaning": "Only appointed staff act on requests in their authorized department.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/weave/standing": {
+    "eyebrow": "WEAVE · Standing",
+    "title": "Position and contribution are recorded",
+    "meaning": "Standing follows eligible work rather than decorative rank.",
+    "pictures": [
+      {
+        "src": "/weave/bridge-of-radiance-approved-scene.svg",
+        "alt": "Approved WEAVE Bridge of Radiance artwork"
+      }
+    ]
+  },
+  "/client/admin-chat": {
+    "eyebrow": "Client · Company support",
+    "title": "Your work connects to a response",
+    "meaning": "Ask company staff for help while keeping ownership of your File Folder.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/customer-door.svg",
+        "alt": "Existing WEAVE Client Customer Door module illustration"
+      }
+    ]
+  },
+  "/client/deposit": {
+    "eyebrow": "Client · File Folder value",
+    "title": "Fund the world you own",
+    "meaning": "Deposit and verified credits support the actual systems you choose to build.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  },
+  "/client/functions": {
+    "eyebrow": "Client · Available functions",
+    "title": "Your capabilities are connected",
+    "meaning": "Operate the tools that belong to your Client account and File Folder.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/system-formation.svg",
+        "alt": "Existing WEAVE System Formation module illustration"
+      }
+    ]
+  },
+  "/client/settings": {
+    "eyebrow": "Client · Preferences",
+    "title": "Control your Client identity",
+    "meaning": "Account settings protect your own operating environment.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/operations-module.svg",
+        "alt": "Existing WEAVE operations module illustration"
+      }
+    ]
+  },
+  "/client/system-store": {
+    "eyebrow": "Client · Build resources",
+    "title": "Make the next capability practical",
+    "meaning": "Choose systems and components that can be installed through the File Folder.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/blueprint-foundry.svg",
+        "alt": "Existing WEAVE Blueprint Foundry module illustration"
+      }
+    ]
+  },
+  "/client/withdraw": {
+    "eyebrow": "Client · Account value",
+    "title": "Value leaves through verification",
+    "meaning": "Withdrawals follow real balance and approval rules.",
+    "pictures": [
+      {
+        "src": "/weave/file-folder/assets/payments-module.svg",
+        "alt": "Existing WEAVE payments module illustration"
+      }
+    ]
+  }
+}
+
 /** Existing finished immersive worlds and already illustrated food homes are untouched. */
 export function WeaveExistingPageImage(){
   const pathname=usePathname()
-  const visual=pathname?visions[pathname]:undefined
+  const visual=pathname?(visions[pathname]||additionalVisions[pathname]):undefined
   if(!visual)return null
   const pictures=visual.pictures
   return <figure
