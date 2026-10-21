@@ -25,8 +25,8 @@ export default function SystemSwitchEntryPage() {
     data-system-switch-role={role}
     data-system-switch-threshold="staff-to-embodied-world"
   >
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-70"
-      style={{backgroundImage:"linear-gradient(180deg,rgba(2,14,32,.37),rgba(2,14,32,.61) 55%,rgba(2,14,32,.95)),url('/weave/flame-event/burning-river-world.svg')"}}/>
+    {/* The actual scene below is live 3D. Do not substitute a wallpaper of the river. */}
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#06213e,#091b32_45%,#041426)]"/>
     <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[12%] h-[26rem] w-[26rem] -translate-x-1/2 rounded-full border border-amber-200/15 bg-[radial-gradient(circle,rgba(255,211,131,.14),transparent_69%)] blur-sm"/>
     <div className="relative mx-auto w-full max-w-6xl" data-system-switch-gate-world>
       <Link href={backHref} className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-sky-100/90">
@@ -44,7 +44,9 @@ export default function SystemSwitchEntryPage() {
       </div>
       <Link href="/system-switch/bridge-radiance/flame-coin" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-300/35 bg-amber-300/10 px-5 py-3 text-xs font-black text-amber-100">Request Flame Coin · Bridge of Radiance <ArrowRight className="h-4 w-4"/></Link>
       <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Visit Client-hosted Customer Doors as an avatar</Link>
-      <div className="relative my-7"><StaffFileFolderWorld role={role} identity={user.name || user.username} userId={user.id}/></div>
+      <div className="relative my-7" data-system-switch-living-river="water-fire-bridge">
+        <StaffFileFolderWorld role={role} identity={user.name || user.username} userId={user.id}/>
+      </div>
       <p className="text-center text-[10px] font-semibold leading-5 text-white/85">
         <Waves className="mr-1 inline h-4 w-4 text-sky-200"/> River Bank → Burning River → System Switch → Customer Door
       </p>
