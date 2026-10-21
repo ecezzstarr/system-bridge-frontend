@@ -9,10 +9,10 @@ ALTER TABLE weave_food_preparation_managers
   ALTER COLUMN monthly_salary_ngn SET DEFAULT 70000;
 
 UPDATE weave_food_preparation_managers
-SET monthly_salary_ngn=CASE WHEN position='assistant' THEN 40000 ELSE 70000 END,
+SET monthly_salary_ngn=CASE WHEN position='assistant' THEN 30000 ELSE 70000 END,
     updated_at=NOW()
 WHERE monthly_salary_ngn IS DISTINCT FROM
-  CASE WHEN position='assistant' THEN 40000 ELSE 70000 END;
+  CASE WHEN position='assistant' THEN 30000 ELSE 70000 END;
 
 -- Application-slot capacities and the single-application-per-Agent rule are
 -- checked within pg_advisory_xact_lock(20261021, 51) by both application and
