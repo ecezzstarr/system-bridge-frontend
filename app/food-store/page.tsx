@@ -14,7 +14,7 @@ type FoodOffer={
 type Catalog={
   groups:Group[];templates:BasketTemplate[];offers:FoodOffer[];
   prepared:{agilityNgn:number;electrolyte:{name:string;priceNgn:number}[];ember:{name:string;priceNgn:number}[]};
-  daisy:{name:string;label:string}[]
+  daisy:{name:string;label:string}[];carrierAgents:{name:string;carrierPath:string;daisyPath:string}[]
 }
 const naira=(v:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(v)
 const matches=(offer:FoodOffer,group:Group)=>group.items.some(item=>{
@@ -71,9 +71,17 @@ export default function WeaveFamilyFoodStore(){
           <CakeSlice className="h-6 w-6 text-orange-200"/><h2 className="mt-3 text-lg font-black">Daisy Pastries</h2>
           <p className="mt-2 text-xs leading-6 text-stone-300">Cake slices, bento cakes, celebration, wedding, birthday and event cakes. Customers use the Agent’s Daisy Carrier section; quote and payment flow remain separate from Farm-to-Family stock.</p>
           <p className="mt-3 text-xs font-bold text-orange-100">{catalog?.daisy.map(x=>x.name+' '+x.label).join(' · ')||'View prices through an Agent Carrier Door'}</p>
+          {catalog?.carrierAgents?.length?<Link href={catalog.carrierAgents[0].daisyPath} className="mt-4 inline-flex items-center gap-2 text-xs font-black text-orange-100">Order from a configured Agent <ArrowRight className="h-4 w-4"/></Link>:<p className="mt-3 text-xs text-stone-400">Customer cake requests become available when an Agent configures a receiving account.</p>}
         </div>
       </section>
 
+      {!!catalog?.carrierAgents?.length&&<section className="mt-6 border border-orange-300/20 p-4" data-store-real-agent-carriers>
+        <h2 className="text-lg font-black">Order from a registered WEAVE Food Agent</h2>
+        <p className="mt-2 text-xs text-stone-400">These Agents have configured customer receiving accounts. Their Carrier Doors include Daisy Pastries requests; prepared food is orderable only where they have paid, received stock. Browse the food selection before paying.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {catalog.carrierAgents.slice(0,20).map((agent,i)=><Link key={agent.carrierPath+i} href={agent.carrierPath} className="border border-orange-300/25 px-3 py-2 text-xs text-orange-100">{agent.name} →</Link>)}
+        </div>
+      </section>}
       <section className="mt-8" data-household-food-categories>
         <h2 className="text-xl font-black">Household food categories</h2>
         <p className="mt-2 text-xs text-stone-400">The catalogue below is a food checklist. Only separately displayed live offers are available for purchase.</p>
