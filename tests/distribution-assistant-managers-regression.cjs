@@ -16,7 +16,7 @@ assert.ok(engine.includes('DISTRIBUTION_ASSISTANT_LIMIT = 6'),'No more than six 
 assert.ok(engine.includes('DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2'),'Each of the three managers supervises two assistants')
 assert.ok(engine.includes("reason:'manager_team_full'"),'A manager cannot appoint more than two assistants')
 assert.ok(engine.includes('DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 30_000'),'Assistant monthly salary is ₦30,000')
-assert.ok(engine.includes('DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET')&&team.includes('DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET = 400'),'A Manager and their two assistants share one 400-referral target per month')
+assert.ok(engine.includes('DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET')&&team.includes('DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET = 500'),'A Manager and their two assistants share one 500-referral target per month')
 assert.ok(engine.includes("status='approved'")&&engine.includes('pg_advisory_xact_lock'),'Appointments, not applications, consume capacity under transaction lock')
 assert.ok(engine.includes('manager_user_id'),'Approved assistants are connected to the Distribution Manager')
 assert.ok(engine.includes("['agent','bridger']")&&engine.includes('getLifestyleAccess(userId)'),'Applicants use existing Agent/Bridger standing')
@@ -32,6 +32,6 @@ assert.ok(application.includes('payroll')||application.includes('automatic walle
 assert.ok(migration.includes('REFERENCES users(id)')&&migration.includes('DEFAULT 30000'),'Assistant appointments have persistent schema')
 assert.ok(team.includes('COUNT(DISTINCT referred.id)')&&team.includes("a.manager_user_id=$1::uuid"),'Each attributable referral counts once for the manager and appointed assistants in that manager’s team')
 assert.ok(engine.includes('ownReferrals')&&main.includes('myReferrals'),'Team total and each person’s own contribution remain separately visible')
-assert.ok(migration.includes('probation_target=400')&&migration.includes('monthly_referral_target=400'),'Existing stored targets migrate to 400 without setting independent quotas')
+assert.ok(migration.includes('probation_target=500')&&migration.includes('monthly_referral_target=500'),'Existing stored targets migrate to 500 without setting independent quotas')
 
 console.log('Assistant Distribution Manager employment regression checks passed')
