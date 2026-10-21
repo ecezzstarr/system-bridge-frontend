@@ -2,8 +2,9 @@
 
 import { useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
-import { trainingBriefsForRole, transitTrainingForPath, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
+import { trainingBriefsForRole, transitTrainingForPath, transitDirectionForPath, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
 import { setRuntimeCovered } from './use-adaptive-runtime'
 import { ArrowRight,Flame,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
@@ -304,7 +305,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   // Staff roles come from the authenticated account, never from an inferred identity.
   const role:WeaveLoadingRole=user?.role==='agent'||user?.role==='bridger'||user?.role==='client'||user?.role==='admin'
     ? user.role
-    : 'visitor'
+    : destinationPath.startsWith('/client/') ? 'client' : 'visitor'
   const hopeDestination=destinationPath.startsWith('/bridger')||destinationPath==='/weave/market/prospects'
   const showHopeBriefing=booting&&(role==='bridger'||hopeDestination)
   const showAgentBriefing=booting&&role==='agent'
@@ -329,12 +330,21 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     [requestedPath],
   )
   const destinationEnvironment=requestedEnvironment||environment
+  const returningToWorld=!booting&&transitDirectionForPath(pathname,destinationPath)==='return'
   const transitBrief=useMemo<LoadingBrief>(()=>{
     const baseBrief:LoadingBrief={
       eyebrow:`${destinationEnvironment.district} · ${destinationEnvironment.layer}`,
       title:`Opening ${destinationEnvironment.title}`,
       body:destinationEnvironment.purpose,
       movement:destinationEnvironment.movement,
+    }
+    if(returningToWorld) {
+      return {
+        eyebrow:`${role==='visitor'?'WEAVE':role.toUpperCase()} · RETURNING TO OPEN WORLD`,
+        title:`Returning to ${destinationEnvironment.title}`,
+        body:`Your current position and recorded work remain yours. ${destinationEnvironment.purpose}`,
+        movement:'Return → recognize your work → continue',
+      }
     }
     const guidance=transitTrainingForPath(role,destinationPath)
     if(guidance)return guidance
@@ -345,10 +355,12 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       body:`WEAVE builds systems across the world. Hope works through Prospect possibilities so those systems can reach Client ownership and use. ${destinationEnvironment.purpose}`,
       movement:'Prospect tool → attempt → response → relationship → Client → ownership + use',
     }
-  },[destinationEnvironment,hopeDestination,role,destinationPath])
+  },[destinationEnvironment,hopeDestination,role,destinationPath,returningToWorld])
   const activeBriefs=booting?bootBriefs:[transitBrief]
   const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
-  const openingLabel=showAgentBriefing
+  const openingLabel=returningToWorld
+    ? `Returning to ${destinationEnvironment.title}`
+    : showAgentBriefing
     ? 'Agent training · Stability'
     : showClientBriefing
       ? 'Client training · File Folder'
@@ -361,7 +373,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       : booting
         ? 'Forming the living environment'
         : `Opening ${destinationEnvironment.title}`
-  const statusLabel=showAgentBriefing||(!booting&&role==='agent')
+  const statusLabel=returningToWorld
+    ? 'RETURNING TO WEAVE OPEN WORLD · YOUR WORK REMAINS INTACT'
+    : showAgentBriefing||(!booting&&role==='agent')
     ? 'STABILITY · LEARN → OPERATE → VERIFY'
     : showClientBriefing||(!booting&&role==='client')
       ? 'CLIENT · PREVIEW → BUILD → ACTIVATE → OPERATE'
@@ -393,6 +407,10 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       data-flame-event-loader={showFlameBriefing?'burning-river':undefined}
       data-flame={showFlameBriefing?'true':'false'}
       data-hope-loader={hopeDestination?'bridger-department':undefined}
+      data-weave-loader-art="bridge-of-radiance-river"
+      data-weave-loader-role={role}
+      data-weave-loader-destination={destinationPath}
+      data-weave-loader-direction={returningToWorld?'return':'opening'}
     >
       <div className={showFlameBriefing
         ? "pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(14,165,233,.28),transparent_32%),radial-gradient(ellipse_at_42%_78%,rgba(249,115,22,.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(239,68,68,.16),transparent_24%),linear-gradient(180deg,#02050a_0%,#05070b_52%,#020914_100%)]"
@@ -402,13 +420,20 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         <div className="pointer-events-none absolute inset-x-[-8%] bottom-[-8%] h-[34%] rotate-[-2deg] bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,.30),rgba(251,113,133,.12)_38%,rgba(56,189,248,.08)_58%,transparent_72%)] blur-2xl"/>
         <div className="pointer-events-none absolute inset-x-0 bottom-[12%] h-px bg-gradient-to-r from-transparent via-orange-300/55 to-transparent shadow-[0_0_35px_rgba(249,115,22,.7)]"/>
       </>}
+      {/* The water/fire river forms the Bridge of Radiance; text is live. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[54dvh] overflow-hidden opacity-95 sm:h-[67dvh]">
+        <div className="absolute inset-0 bg-[url('/weave/flame-event/burning-river-world.svg')] bg-cover bg-center opacity-85"/>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_57%,rgba(255,184,70,.12),transparent_44%),linear-gradient(180deg,rgba(2,8,22,.12)_0%,rgba(3,9,20,.15)_35%,rgba(2,5,10,.98)_100%)]"/>
+        <div className="absolute bottom-[16%] left-[-24%] h-[12%] w-[95%] -rotate-6 rounded-full bg-sky-400/20 blur-2xl motion-safe:animate-pulse"/>
+        <div className="absolute bottom-[12%] right-[-24%] h-[12%] w-[95%] rotate-6 rounded-full bg-orange-400/20 blur-2xl motion-safe:animate-pulse"/>
+      </div>
       <div className="pointer-events-none absolute left-1/2 top-[34%] h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-100/[.035]"/>
       <div className="pointer-events-none absolute left-1/2 top-[34%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-200/[.045]"/>
       <div className="pointer-events-none absolute inset-x-[7%] bottom-[13%] h-px bg-gradient-to-r from-transparent via-amber-200/15 to-transparent"/>
 
-      <div className="relative flex min-h-[100dvh] w-full max-w-3xl flex-col justify-center py-6 sm:py-10">
+      <div className="relative flex min-h-[100dvh] w-full max-w-3xl flex-col justify-end gap-1 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[min(7dvh,4rem)] sm:justify-center sm:py-10">
         <div className="flex flex-col items-center text-center">
-          <div className="relative flex h-24 w-24 items-center justify-center sm:h-28 sm:w-28">
+          <div className="relative flex h-14 w-14 items-center justify-center sm:h-20 sm:w-20">
             <div className="absolute inset-0 animate-[spin_5.4s_linear_infinite] rounded-full border border-amber-200/15 border-t-orange-300/70 motion-reduce:animate-none"/>
             <div className="absolute inset-3 animate-[spin_3.2s_linear_infinite_reverse] rounded-full border border-stone-300/10 border-r-amber-100/50 motion-reduce:animate-none"/>
             <div className="absolute inset-7 animate-pulse rounded-full border border-orange-300/10 bg-orange-400/[.035] motion-reduce:animate-none"/>
@@ -424,14 +449,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           <p className={'mt-1 text-[8px] font-bold uppercase tracking-[.18em] '+(showFlameBriefing?'text-rose-200/70':'text-stone-500')}>
             {showAgentBriefing?'Learn WEAVE · operate one system · verify results':showClientBriefing?'Preview · build · activate · operate':showAdminBriefing?'Organize · verify · preserve records':showHopeBriefing?'WEAVE builds · Hope searches · Clients own and use':showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
           </p>
-          <h1 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
+          <h1 className="mt-2 text-2xl font-black tracking-tight drop-shadow-[0_2px_16px_rgba(0,0,0,.9)] sm:text-3xl">{openingLabel}</h1>
         </div>
 
         <section
           data-weave-loading-training={role}
           key={briefing.eyebrow+'-'+briefing.title}
           data-loading-brief={briefIndex+1}
-          className="weave-loading-brief mx-auto mt-6 w-full min-h-[15rem] overflow-hidden rounded-3xl border border-white/10 bg-black/45 p-5 shadow-[0_30px_90px_rgba(0,0,0,.42)] backdrop-blur-xl sm:p-5"
+          className="weave-loading-brief mx-auto mt-3 w-full min-h-[11rem] overflow-hidden rounded-2xl border border-amber-200/25 bg-[#051324]/90 p-4 shadow-[0_24px_85px_rgba(0,0,0,.72)] backdrop-blur-xl sm:min-h-[14rem] sm:p-6"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
@@ -447,14 +472,19 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           </div>}
         </section>
 
-        <div className="mx-auto mt-5 flex max-w-sm items-center gap-2" aria-hidden="true">
+        <div className="mx-auto mt-3 flex w-full max-w-sm items-center gap-2" aria-hidden="true">
           {activeBriefs.map((_,index)=><span
             key={index}
             className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,activeBriefs.length-1)?'bg-amber-200/80':'bg-white/10')}
           />)}
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-3 text-center">
+        {role==='client'&&destinationPath!=='/client/dashboard'&&<Link href="/client/dashboard"
+          data-client-loader-open-world-return="true"
+          className="mx-auto mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-amber-200/40 bg-[#071c30]/95 px-5 py-2 text-xs font-black text-amber-100">
+          Return to Weave Open World <ArrowRight className="ml-2 h-4 w-4"/>
+        </Link>}
+        <div className="mt-3 flex items-center justify-center gap-3 text-center">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-200 motion-reduce:animate-none"/>
           <p className="text-[8px] font-black uppercase tracking-[.15em] text-stone-500">{statusLabel}</p>
         </div>
