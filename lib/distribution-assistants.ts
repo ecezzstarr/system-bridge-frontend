@@ -1,11 +1,13 @@
 import { getPool, sql } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable, getManagerEmployment } from '@/lib/manager-employment'
+import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
 
 export const DISTRIBUTION_ASSISTANT_LIMIT = 6
 export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
 export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 30_000
-export const DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = 300
+// One 400-referral target is shared by the lead Manager and both assistants.
+export const DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
 
 // Assistants retain their Agent or Bridger identity; appointment is a separate
 // employment record. Applying never activates salary or access to manager tools.
@@ -18,7 +20,7 @@ export async function ensureDistributionAssistantSchema() {
       application_note TEXT NOT NULL,
       manager_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
       monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 30000,
-      monthly_referral_target INTEGER NOT NULL DEFAULT 300,
+      monthly_referral_target INTEGER NOT NULL DEFAULT 400,
       hired_at TIMESTAMPTZ,
       reviewed_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -26,6 +28,8 @@ export async function ensureDistributionAssistantSchema() {
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS weave_distribution_assistants_status_idx ON weave_distribution_assistants(status,created_at)`
+  await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_referral_target SET DEFAULT 400`
+  await sql`UPDATE weave_distribution_assistants SET monthly_referral_target=400 WHERE monthly_referral_target<>400`
 }
 
 // Only a real Distribution Manager whose position access is active may hire.
@@ -142,7 +146,7 @@ export async function reviewDistributionAssistant(
     await client.query('COMMIT')
     try {
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and your monthly target is 300 verified Agent/Bridger referrals.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
+        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and your three-person team's shared monthly target is 400 verified Agent/Bridger referrals.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
     } catch(error) {console.error('[distribution-assistants] notification failed',error)}
     return {success:true as const,status}
   } catch(error) {
@@ -166,16 +170,11 @@ export async function getDistributionAssistantState(userId:string) {
     "SELECT COUNT(*)::int AS employed FROM weave_distribution_assistants WHERE status='approved'",
   )
   const employed=Number(count[0]?.employed||0)
-  let verifiedReferrals=0
-  if (appointment?.status==='approved'&&appointment.hired_at) {
-    const {rows:referrals}=await getPool().query(`
-      SELECT COUNT(*)::int AS total FROM users u
-      WHERE u.referred_by=$1::uuid AND u.role IN ('agent','bridger') AND u.is_active=true
-        AND u.created_at>=GREATEST(date_trunc('month',NOW()),$2::timestamptz)
-        AND u.created_at<date_trunc('month',NOW())+INTERVAL '1 month'
-    `,[userId,appointment.hired_at])
-    verifiedReferrals=Number(referrals[0]?.total||0)
-  }
+  const team = appointment?.status==='approved' && appointment.manager_user_id
+    ? await getDistributionTeamMonthlyReferrals(String(appointment.manager_user_id))
+    : null
+  const verifiedReferrals=team?.total||0
+  const ownReferrals=team?.members.find(member=>member.userId===userId)?.referrals||0
   let pending:any[]=[]
   let team:any[]=[]
   if (canReview) {
@@ -199,7 +198,10 @@ export async function getDistributionAssistantState(userId:string) {
     remainingPositions:Math.max(0,DISTRIBUTION_ASSISTANT_LIMIT-employed),
     monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN,
     monthlyTarget:DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET,
-    verifiedReferrals, remainingReferrals:Math.max(0,DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET-verifiedReferrals),
+    teamTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
+    teamMembers:team?.members||[],
+    ownReferrals,
+    verifiedReferrals, remainingReferrals:Math.max(0,DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET-verifiedReferrals),
     payrollStatus:'employment_terms_only_no_automatic_payment',
   }
 }
