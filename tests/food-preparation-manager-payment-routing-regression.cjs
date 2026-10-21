@@ -56,4 +56,10 @@ assert.ok(managerUI.includes('data-food-preparation-work-queue')&&managerUI.incl
 assert.ok(adminUI.includes('data-food-preparation-assignment-queue'),'Admin can assign paid orders manually')
 assert.ok(lifestyle.includes('title="FOOD PREPARATION MANAGER"')&&catalog.includes('FOOD_PREPARATION_MANAGER_LIFESTYLE'),'Lifestyle contains this employment')
 assert.ok(migration.includes('UNIQUE(product,source_order_id)')&&migration.includes('preparation_released_by'),'Migration preserves unique paid order and Admin release')
+
+assert.ok(!lifestyle.includes('₦60,000') && !catalog.includes('₦60,000'), 'Unapplied candidates must not see food manager salary in public Lifestyle descriptions')
+assert.ok(!managerUI.includes('money(60000)') && managerUI.includes('data?.appointment && data.salaryNgn !== null'), 'Salary renders only once this Agent has a recorded application')
+assert.ok(application.includes('salaryNgn:appointment ? Number(appointment.monthly_salary_ngn) : null'), 'Unauthenticated candidates and Agents without an application cannot receive salary in the GET response')
+assert.ok(application.includes('WHERE agent_id=$1::uuid LIMIT 1'), 'Application terms are loaded only for the signed-in Agent')
+
 console.log('Food Preparation Manager payment-to-notification regression checks passed')
