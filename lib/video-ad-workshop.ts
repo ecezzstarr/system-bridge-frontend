@@ -84,7 +84,7 @@ function fallbackStoryboard(title: string, subject: string, objective: string, d
     { beat: 'HUMAN SITUATION', text: '', visualDirection: `Show the person inside the ordinary friction around ${subject}. Keep it observational, not promotional.`, voiceover: `There is a point where the old way starts taking more than it gives.` },
     { beat: 'TENSION', text: 'Too many steps.', visualDirection: 'Cut faster. Show fragmentation, delay or missed movement. One short line only.', voiceover: '' },
     { beat: 'TURN', text: 'What if it had one place?', visualDirection: 'Slow the pace for one beat. Create contrast before the reveal.', voiceover: '' },
-    { beat: 'WEAVE REVEAL', text: 'WEAVE', visualDirection: `Reveal the actual environment connected to ${subject}. Show the product functioning, not a poster.`, voiceover: '' },
+    { beat: 'PRODUCT REVEAL', text: short(title, 28).toUpperCase(), visualDirection: `Reveal the actual ${title} product or service connected to ${subject}. Show what the customer actually receives.`, voiceover: '' },
     { beat: 'PROOF', text: '', visualDirection: `Demonstrate the real movement that proves ${objective}. Use interface, environment, people or operation.`, voiceover: '' },
     { beat: 'CONSEQUENCE', text: '', visualDirection: 'Return to a human consequence. Show what is now possible because the system is working.', voiceover: '' },
     { beat: 'FINAL LINE', text: title.toUpperCase(), visualDirection: 'End with one memorable line. No paragraph and no crowded call-to-action.', voiceover: '' },
@@ -157,6 +157,10 @@ WEAVE VIDEO GRAMMAR:
 - End with one simple memorable line and the correct business identity.
 - Do not invent guarantees, statistics, customers or outcomes.
 - Each scene must be materially different from the previous scene.
+- This video belongs to the customer's brand in PROJECT, not automatically to WEAVE. Never insert WEAVE as the featured brand unless that is the actual product.
+- Use an elegant editorial style: coherent typography, deliberate pacing, legible safe-zone text, clean color and true product photography.
+- Limit visible text to a short phrase (ideally six words or less) per scene. Avoid captions across a face or the central subject.
+- Specify meaningful soundtrack or voiceover cues in visualDirection; do not invent copyrighted songs or imply audio was generated.
 
 PROJECT:
 Title: ${title}
