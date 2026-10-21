@@ -11,7 +11,7 @@ type PreparationTask={
   payment_status:string;recorded_handoffs:number;assigned_at:string
 }
 type Appointment={id:string;status:'pending'|'approved'|'rejected'|'revoked';application_note:string;review_note?:string|null;monthly_salary_ngn:string}
-type State={eligible:boolean;appointment:Appointment|null;tasks:PreparationTask[];duties:string[];salaryNgn:number;payrollStatus:string}
+type State={eligible:boolean;appointment:Appointment|null;tasks:PreparationTask[];duties:string[];salaryNgn:number|null;payrollStatus:string}
 const money=(amount:number)=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(amount)
 const productName=(product:string)=>product==='daisy'?'Daisy Pastries':product==='electrolyte'?'Electrolyte':product==='ember'?'Ember':'Agility'
 
@@ -70,7 +70,11 @@ export default function FoodPreparationManagerPage(){
     <header className="mt-6 border-b border-white/10 pb-6">
       <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ChefHat className="h-4 w-4"/> Agent Employment · Food Operations</p>
       <h1 className="mt-2 text-3xl font-black md:text-5xl">FOOD PREPARATION MANAGER</h1>
-      <p className="mt-4 text-3xl font-black text-emerald-200">{money(60000)} <span className="text-sm font-normal text-stone-300">monthly salary · approved appointment</span></p>
+      {data?.appointment && data.salaryNgn !== null ? (
+        <p className="mt-4 text-3xl font-black text-emerald-200" data-applicant-salary="submitted-application">{money(data.salaryNgn)} <span className="text-sm font-normal text-stone-300">monthly salary · subject to approved appointment</span></p>
+      ) : (
+        <p className="mt-4 text-sm text-amber-100">Compensation details will be available in your application record after submission.</p>
+      )}
       <p className="mt-3 max-w-4xl text-sm leading-6 text-stone-300">
         Prepare, package and dispatch Agility, Electrolyte and Daisy Pastries for verified customer and Agent supply orders.
         Your work follows the actual stock and cake orders already entered in WEAVE. Each handoff is recorded for Administration.
