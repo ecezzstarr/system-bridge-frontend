@@ -10,6 +10,7 @@ import {
   mapVideoServiceOrder,
   mapVideoStudioOrder,
   VIDEO_STUDIO_CUSTOMER_ROLES,
+  studioFeeForRole,
 } from '@/lib/video-ad-studio'
 import { ensureVideoAdWorkshopSchema, generateVideoAdStoryboard, mapVideoAdProject, type VideoAdScene } from '@/lib/video-ad-workshop'
 
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     const pool = getPool()
     const profile = await ensureVideoServiceProfile(user.id,providerName(user))
     const [packages, orders, wallet, prices, serviceOrders, projects] = await Promise.all([
-      listVideoStudioPackages(false),
+      listVideoStudioPackages(false, user.role),
       pool.query('SELECT * FROM video_ad_studio_orders WHERE user_id=$1::uuid ORDER BY created_at DESC LIMIT 50', [user.id]),
       pool.query('SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true LIMIT 1', [user.id]),
       pool.query(`SELECT p.package_key,p.personal_price,p.business_price,p.currency,p.active
@@ -195,7 +196,7 @@ export async function POST(request: NextRequest) {
         const packResult = await client.query('SELECT * FROM video_ad_studio_packages WHERE package_key=$1 AND active=true FOR SHARE',[serviceOrder.package_key])
         const pack = packResult.rows[0]
         if (!pack) throw new Error('This Studio package is no longer available')
-        const studioFee = Number(pack.price_flame_coin)
+        const studioFee = studioFeeForRole(user.role, String(pack.package_key), Number(pack.price_flame_coin))
         const walletResult = await client.query('SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE',[user.id])
         const wallet = walletResult.rows[0]
         const balance = Number(wallet?.balance_trx || 0)
@@ -269,7 +270,7 @@ async function purchaseOwnVideo(user:any, body:any) {
     const packageResult = await client.query('SELECT * FROM video_ad_studio_packages WHERE package_key=$1 AND active=true FOR SHARE',[packageKey])
     const pack = packageResult.rows[0]
     if (!pack) { await client.query('ROLLBACK'); return NextResponse.json({ success:false, error:'This Video Ad Studio package is not currently available' }, { status:404 }) }
-    const price = Number(pack.price_flame_coin)
+    const price = studioFeeForRole(user.role, String(pack.package_key), Number(pack.price_flame_coin))
     const walletResult = await client.query('SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true FOR UPDATE',[user.id])
     const wallet = walletResult.rows[0]
     const balance = Number(wallet?.balance_trx || 0)
