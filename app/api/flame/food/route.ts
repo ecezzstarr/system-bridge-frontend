@@ -148,7 +148,7 @@ export async function POST(request:NextRequest) {
     if(body.action==='offer') {
       const name=safeText(body.produce,120),details=safeText(body.details,500)
       const qty=Number(body.quantity),min=Number(body.minimumQuantity),price=Number(body.priceNgn)
-      if(name.length<2 || !validFoodUnit(body.unit) || !validQuantity(qty) || !validQuantity(min) || min>qty || !validNaira(price) || price<=0) {
+      if(name.length<2 || body.unit==='pack' || !validFoodUnit(body.unit) || !validQuantity(qty) || !validQuantity(min) || min>qty || !validNaira(price) || price<=0) {
         return NextResponse.json({error:'Enter genuine produce, unit, stock, minimum amount and positive naira price'},{status:400})
       }
       const {rows}=await getPool().query(`
