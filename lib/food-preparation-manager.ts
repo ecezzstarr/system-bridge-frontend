@@ -5,6 +5,7 @@ import { nextEmberAdminStage,emberMoneySplit } from '@/lib/ember-catalog'
 import { nextElectrolyteAdminStage } from '@/lib/electrolyte-catalog'
 import { ensureCarrierCakeSchema, nextCakeAdministrationStatus } from '@/lib/carrier-cakes'
 
+export const FOOD_PREPARATION_ADMIN_PER_ORDER_NGN=800
 export const FOOD_PREPARATION_MANAGER_SALARY_NGN=70000
 export const FOOD_PREPARATION_ASSISTANT_SALARY_NGN=40000
 export const FOOD_PREPARATION_MANAGER_TITLE='Food Preparation Manager'
@@ -17,6 +18,7 @@ export const foodPreparationSalary=(position:FoodPreparationPosition)=>
 export const FOOD_PREPARATION_PRODUCTS=['agility','electrolyte','ember','daisy'] as const
 export type PreparationProduct=typeof FOOD_PREPARATION_PRODUCTS[number]
 export const FOOD_PREPARATION_DUTIES=[
+  'The Food Preparation Manager heads WEAVE Stability food operations and assigns verified paid orders to approved assistants.',
   'Prepare approved Agility, Electrolyte and Ember orders and Daisy Pastries cakes.',
   'Package, seal and label each order to match its authorized quantity and destination.',
   'Dispatch orders to customers and restocking Agents using recorded delivery details.',
@@ -62,6 +64,25 @@ export async function ensureFoodPreparationManagerSchema(){
         updated_at timestamptz NOT NULL DEFAULT NOW(),
         UNIQUE(product,source_order_id)
       );
+      CREATE TABLE IF NOT EXISTS weave_food_administration_allocations (
+        product varchar(20) NOT NULL CHECK (product IN ('agility','electrolyte','ember','daisy')),
+        source_order_id uuid NOT NULL,
+        amount_ngn numeric(12,2) NOT NULL DEFAULT 800 CHECK (amount_ngn=800),
+        status varchar(24) NOT NULL DEFAULT 'allocated' CHECK (status IN ('allocated','settled')),
+        allocated_at timestamptz NOT NULL DEFAULT NOW(),
+        PRIMARY KEY(product,source_order_id)
+      );
+      CREATE TABLE IF NOT EXISTS weave_food_preparation_assignment_events (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        task_id uuid NOT NULL REFERENCES weave_food_preparation_tasks(id),
+        from_manager_id uuid REFERENCES weave_food_preparation_managers(id),
+        to_manager_id uuid NOT NULL REFERENCES weave_food_preparation_managers(id),
+        assigned_by_agent_id uuid NOT NULL REFERENCES users(id),
+        note varchar(800) NOT NULL,
+        assigned_at timestamptz NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS weave_food_preparation_assignment_events_task_idx
+        ON weave_food_preparation_assignment_events(task_id,assigned_at DESC);
       CREATE TABLE IF NOT EXISTS weave_food_preparation_task_events (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         task_id uuid NOT NULL REFERENCES weave_food_preparation_tasks(id),
