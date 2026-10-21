@@ -10,7 +10,7 @@ type Manager={
 export default function AdminFoodPreparationManagerPage(){
   const {user,token,isInitialized}=useAuth()
   const [staff,setStaff]=useState<Manager[]>([])
-  const [allocation,setAllocation]=useState<{order_count:number;allocated_ngn:string}|null>(null)
+  const [allocation,setAllocation]=useState<{order_count:number;package_count:number;allocated_ngn:string}|null>(null)
   const [notes,setNotes]=useState<Record<string,string>>({})
   const [busy,setBusy]=useState('')
   const [message,setMessage]=useState('')
@@ -60,9 +60,9 @@ export default function AdminFoodPreparationManagerPage(){
     {error&&<p role="alert" className="border border-rose-300/20 px-4 py-3 text-xs text-rose-200">{error}</p>}
     {message&&<p role="status" className="border border-emerald-300/20 px-4 py-3 text-xs text-emerald-200">{message}</p>}
     <section className="border border-white/10 p-4" data-food-admin-allocation-summary>
-      <h2 className="font-black text-amber-200">Administration allocation · ₦800 per verified food order</h2>
-      <p className="mt-2 text-xs text-stone-400">Fixed once per source order, regardless of package or carton count. These amounts are recorded allocations, not proof of a completed bank or wallet payment.</p>
-      <p className="mt-3 text-xl font-black">{new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(allocation?.allocated_ngn||0))} <span className="text-xs font-normal text-stone-400">allocated across {Number(allocation?.order_count||0)} orders</span></p>
+      <h2 className="font-black text-amber-200">Administration allocation · ₦800 per verified food bowl/package</h2>
+      <p className="mt-2 text-xs text-stone-400">Calculated per verified stock package. Forensics handles external bank transfer and independently records payment references. The amount shown is an allocation, not proof of bank settlement.</p>
+      <p className="mt-3 text-xl font-black">{new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(allocation?.allocated_ngn||0))} <span className="text-xs font-normal text-stone-400">allocated across {Number(allocation?.package_count||0)} packages in {Number(allocation?.order_count||0)} verified stock orders</span></p>
     </section>
     <section>
       <h2 className="text-xl font-black">Applications awaiting review · {pending.length}</h2>
