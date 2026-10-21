@@ -22,12 +22,10 @@ assert.equal(transitDirectionForPath('/agent/dashboard','/agent/creative'),'forw
 for(const role of ['agent','bridger','client','admin','visitor'])
   assert.equal(trainingBriefsForRole(role).length,3,role+' should retain three training cards')
 
-const art=read('public/weave/bridge-of-radiance-approved-scene.svg')
-assert.ok(art.includes('Bridge of Radiance')&&art.includes('data:image/jpeg;base64,'),'Approved water/fire artwork is bundled locally')
-const b64=art.match(/base64,([A-Za-z0-9+/=]+)"/)?.[1]
-assert.ok(b64&&b64.length>3000,'Embedded scene artwork must be real rather than a missing reference')
-const jpeg=Buffer.from(b64,'base64')
-assert.ok(jpeg.length>2500&&jpeg[0]===255&&jpeg[1]===216&&jpeg.at(-2)===255&&jpeg.at(-1)===217,'Approved scene must decode as a valid JPEG')
+const art=read('public/weave/bridge-of-radiance-portrait.svg')
+assert.ok(art.includes('Bridge of Radiance')&&art.includes('viewBox="0 0 640 1120"'),'Sharp portrait river artwork is bundled locally as scalable vector paths')
+assert.ok(art.includes('id="water"')&&art.includes('id="fire"'),'Water and fire form one bridge without a low-resolution raster')
+assert.ok(!art.includes('base64,'),'Portrait scene must never embed a stretched thumbnail')
 
 const transit=read('components/world/weave-environment-transit.tsx')
 assert.ok(transit.includes('weave-loader-scenery-portrait'),'A resolution-independent portrait scene is rendered at each crossing')
@@ -49,4 +47,4 @@ assert.ok(client.includes('data-client-loading-with-open-world-return'),'Client 
 assert.ok(client.includes('Return to Weave Open World'))
 const folderLoader=read('components/system-switch/file-folder-environment-loader.tsx')
 assert.ok(folderLoader.includes('/weave/bridge-of-radiance-portrait.svg'),'Client private loader uses crisp portrait vector art')
-console.log('WEAVE approved art, dynamic role/destination lessons, Bridger guidance and Client open-world return passed')
+console.log('WEAVE sharp vector art, dynamic role/destination lessons, Bridger guidance and Client open-world return passed')
