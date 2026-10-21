@@ -57,7 +57,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Food Preparation Manager',
     route: '/weave/lifestyles/food-preparation',
     roles: ['agent'],
-    summary: 'Agent employment in WEAVE food operations at a ₦60,000 monthly salary following Administration approval. Prepare, package and dispatch paid Agility, Electrolyte and Daisy Pastries orders for customers and restocking Agents.',
+    summary: 'Apply for Agent employment in WEAVE food operations. Prepare, package and dispatch paid Agility, Electrolyte, Ember and Daisy Pastries orders for customers and restocking Agents. Compensation details become available only after an application is submitted.',
     environments: [
       { label: 'Employment Application', href: '/weave/lifestyles/food-preparation', purpose: 'Apply to work as a Food Preparation Manager.' },
       { label: 'Daily Kitchen Work Desk', href: '/weave/lifestyles/food-preparation', purpose: 'Process Administration-assigned paid food orders, package and log dispatch.' },
