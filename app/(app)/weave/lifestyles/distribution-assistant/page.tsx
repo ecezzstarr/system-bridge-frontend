@@ -61,6 +61,10 @@ export default function DistributionAssistantLifestylePage(){
         <div className="mt-4 grid grid-cols-2 gap-3"><Info label="Referrals this month" value={`${state.verifiedReferrals} / ${target}`}/><Info label="Still required this month" value={String(state.remainingReferrals)}/></div>
         <div className="mt-5 flex flex-wrap gap-3 text-sm text-cyan-200"><Link href="/referrals">Referral movement →</Link><Link href="/distribution-studio">Distribution Studio →</Link><Link href="/video-ad-studio">Video Ad Studio →</Link><Link href="/event">Flame Event →</Link></div>
       </>}
+    </section> : state?.canReview ? <section className="mt-7 rounded-2xl border border-amber-300/20 bg-amber-300/[.03] p-5">
+      <h2 className="text-lg font-black">Distribution Manager position active</h2>
+      <p className="mt-2 text-sm text-slate-300">Your existing Distribution Manager appointment carries the assistant selection and supervision desk. Lead Managers cannot also apply for assistant employment.</p>
+      <Link href="/manager/dashboard" className="mt-4 inline-block text-sm font-black text-amber-200">Open assistant appointments →</Link>
     </section> : <section className="mt-7 rounded-2xl border border-white/10 bg-white/[.03] p-5">
       <h2 className="text-lg font-black">Apply for one of three positions</h2>
       <p className="mt-2 text-sm text-slate-300">Describe your experience distributing WEAVE and how you will work toward 300 verified referrals each month.</p>
