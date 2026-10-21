@@ -3,6 +3,7 @@
 import type { ChangeEvent } from 'react'
 import { useEffect,useMemo,useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -69,8 +70,10 @@ export default function VideoAdStudioPage(){
 
   return <main className="mx-auto max-w-7xl space-y-6 pb-16">
     <section className="overflow-hidden rounded-3xl border border-fuchsia-300/15 bg-[radial-gradient(circle_at_15%_0%,rgba(217,70,239,.15),transparent_34%),linear-gradient(140deg,#090b12,#05070c)] p-6 sm:p-8">
-      <div className="flex flex-wrap items-start justify-between gap-5"><div className="max-w-4xl"><div className="inline-flex items-center gap-2 border border-fuchsia-300/15 bg-fuchsia-300/[0.05] px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-fuchsia-200"><Clapperboard className="h-3.5 w-3.5"/>WEAVE VIDEO AD STUDIO</div><h1 className="mt-4 text-3xl font-black text-white sm:text-5xl">PRODUCE FOR YOURSELF OR SELL VIDEO WORK.</h1><p className="mt-3 text-sm leading-6 text-slate-400">Agent, Bridger and Client can take video orders from people outside WEAVE. Your outside customer pays you at the price you set. Each time you activate a production inside this Studio, your wallet pays Administration the listed Flame Coin Studio fee.</p></div><div className="border border-white/10 bg-black/20 px-5 py-4 text-right"><p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-500">Available balance</p><p className="mt-1 text-2xl font-black text-white">{balance.toLocaleString(undefined,{maximumFractionDigits:8})}</p><p className="text-[10px] font-black text-orange-300">FLAME COIN</p></div></div>
+      <div className="flex flex-wrap items-start justify-between gap-5"><div className="max-w-4xl"><div className="inline-flex items-center gap-2 border border-fuchsia-300/15 bg-fuchsia-300/[0.05] px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-fuchsia-200"><Clapperboard className="h-3.5 w-3.5"/>WEAVE VIDEO AD STUDIO</div><h1 className="mt-4 text-3xl font-black text-white sm:text-5xl">PRODUCE FOR YOURSELF OR SELL VIDEO WORK.</h1><p className="mt-3 text-sm leading-6 text-slate-400">Agent, Bridger and Client can take video orders from people outside WEAVE. Your outside customer pays you at the price you set. Agents pay a reduced fee of 0.3–1.5 Flame Coin per video production. Other roles pay the published Studio fee. Your wallet is charged only when you activate a production.</p></div><div className="border border-white/10 bg-black/20 px-5 py-4 text-right"><p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-500">Available balance</p><p className="mt-1 text-2xl font-black text-white">{balance.toLocaleString(undefined,{maximumFractionDigits:8})}</p><p className="text-[10px] font-black text-orange-300">FLAME COIN</p></div></div>
     </section>
+
+    {user.role==='agent'&&<Link href="/agent/creative" className="block rounded-xl border border-amber-300/20 bg-amber-300/[.04] px-4 py-3 text-xs text-amber-100">AGENT IMAGE STUDIO · Free professional image layout · OPEN IMAGE MAKER</Link>}
 
     {message&&<div className="border-y border-fuchsia-300/15 bg-fuchsia-300/[0.04] px-4 py-3 text-sm text-fuchsia-100 sm:border">{message}</div>}
 
