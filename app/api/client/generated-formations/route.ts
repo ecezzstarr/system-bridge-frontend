@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from 'next/server'
+import {deriveFormationDesign} from '@/lib/file-folder-formation-engine'
 import {getFileFolderDb,ensureClientFileFolderSchema} from '@/lib/client-file-folder'
 import {resolveClientToken} from '@/lib/client-vault'
 import {createPartProposal,FORMATION_MATERIALS} from '@/lib/file-folder-generative-formation'
@@ -38,7 +39,8 @@ export async function POST(request:NextRequest){
   const description=typeof body.description==='string'?body.description:''
   const materials=Array.isArray(body.materials)?body.materials.filter((m:unknown):m is FormationMaterial=>typeof m==='string'&&FORMATION_MATERIALS.includes(m as FormationMaterial)).slice(0,10):[]
   const proposal=createPartProposal({clientId:String(ctx.clientId),fileNumber:ctx.fileNumber!,description,name:typeof body.name==='string'?body.name.slice(0,100):undefined,materials})
-  const rows=await ctx.sql!`INSERT INTO client_generated_formations(client_id,file_number,specification) VALUES(${ctx.clientId}::uuid,${ctx.fileNumber},${JSON.stringify(proposal)}::jsonb) RETURNING id,specification,status,created_at`
+  const specification={...proposal,design:deriveFormationDesign(proposal)}
+  const rows=await ctx.sql!`INSERT INTO client_generated_formations(client_id,file_number,specification) VALUES(${ctx.clientId}::uuid,${ctx.fileNumber},${JSON.stringify(specification)}::jsonb) RETURNING id,specification,status,created_at`
   return NextResponse.json({success:true,formation:rows[0]},{status:201})
  }catch(e){if(e instanceof Error&&e.message.includes('meaningful description'))return NextResponse.json({error:e.message},{status:400});console.error('[generated-formations POST]',e);return NextResponse.json({error:'Unable to form proposal'},{status:500})}
 }
