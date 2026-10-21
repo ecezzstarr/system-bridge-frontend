@@ -402,7 +402,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       {children}
     </div>
     {covered&&<div
-      className={'fixed inset-0 z-[9999] flex min-h-[100dvh] items-stretch justify-center overflow-hidden bg-[#02050a] px-4 text-white sm:px-6 '+(showFlameBriefing?'data-[flame=true]:bg-[#02050a]':'')}
+      className={'weave-loader-stable fixed inset-0 z-[9999] flex h-[100svh] min-h-[100svh] items-stretch justify-center overflow-hidden bg-[#02050a] text-white '+(showFlameBriefing?'data-[flame=true]:bg-[#02050a]':'')}
       role="status"
       aria-live="polite"
       aria-label={booting?'Loading WEAVE environment':'Moving to '+environment.title}
@@ -416,29 +416,15 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       data-weave-loader-destination={destinationPath}
       data-weave-loader-direction={returningToWorld?'return':'opening'}
     >
-      <div className={showFlameBriefing
-        ? "pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_92%,rgba(14,165,233,.28),transparent_32%),radial-gradient(ellipse_at_42%_78%,rgba(249,115,22,.34),transparent_28%),radial-gradient(circle_at_72%_18%,rgba(239,68,68,.16),transparent_24%),linear-gradient(180deg,#02050a_0%,#05070b_52%,#020914_100%)]"
-        : "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,rgba(56,189,248,.12),transparent_24%),radial-gradient(circle_at_24%_78%,rgba(249,115,22,.16),transparent_26%),linear-gradient(180deg,#02050a_0%,#060910_58%,#02050a_100%)]"
-      }/>
-      {showFlameBriefing&&<>
-        <div className="pointer-events-none absolute inset-x-[-8%] bottom-[-8%] h-[34%] rotate-[-2deg] bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,.30),rgba(251,113,133,.12)_38%,rgba(56,189,248,.08)_58%,transparent_72%)] blur-2xl"/>
-        <div className="pointer-events-none absolute inset-x-0 bottom-[12%] h-px bg-gradient-to-r from-transparent via-orange-300/55 to-transparent shadow-[0_0_35px_rgba(249,115,22,.7)]"/>
-      </>}
-      {/* The water/fire river forms the Bridge of Radiance; text is live. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[54dvh] overflow-hidden opacity-95 sm:h-[67dvh]">
-        <div className="absolute inset-0 bg-[url('/weave/flame-event/burning-river-world.svg')] bg-cover bg-center opacity-65"/>
-        <div className="absolute inset-0 bg-[url('/weave/bridge-of-radiance-approved-scene.svg')] bg-cover bg-center opacity-50 sm:bg-center"/>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_57%,rgba(255,184,70,.12),transparent_44%),linear-gradient(180deg,rgba(2,8,22,.12)_0%,rgba(3,9,20,.15)_35%,rgba(2,5,10,.98)_100%)]"/>
-        <div className="absolute bottom-[16%] left-[-24%] h-[12%] w-[95%] -rotate-6 rounded-full bg-sky-400/20 blur-2xl motion-safe:animate-pulse"/>
-        <div className="absolute bottom-[12%] right-[-24%] h-[12%] w-[95%] rotate-6 rounded-full bg-orange-400/20 blur-2xl motion-safe:animate-pulse"/>
+      {/* Scalable river artwork is painted once behind legible live text. */}
+      <div className="weave-loader-scenery" aria-hidden="true">
+        <div className="weave-loader-scenery-portrait"/>
+        <div className="weave-loader-scenery-landscape"/>
+        <div className="weave-loader-scenery-shade"/>
       </div>
-      <div className="pointer-events-none absolute left-1/2 top-[34%] h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-100/[.035]"/>
-      <div className="pointer-events-none absolute left-1/2 top-[34%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-200/[.045]"/>
-      <div className="pointer-events-none absolute inset-x-[7%] bottom-[13%] h-px bg-gradient-to-r from-transparent via-amber-200/15 to-transparent"/>
-
-      <div className="relative flex min-h-[100dvh] w-full max-w-3xl flex-col justify-end gap-1 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[min(7dvh,4rem)] sm:justify-center sm:py-10">
-        <div className="flex flex-col items-center text-center">
-          <div className="relative flex h-14 w-14 items-center justify-center sm:h-20 sm:w-20">
+      <div className="weave-loader-layout relative grid h-full min-h-0 w-full max-w-3xl">
+        <div className="weave-loader-heading flex min-h-0 flex-col items-center justify-end text-center">
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center sm:h-16 sm:w-16">
             <div className="absolute inset-0 animate-[spin_5.4s_linear_infinite] rounded-full border border-amber-200/15 border-t-orange-300/70 motion-reduce:animate-none"/>
             <div className="absolute inset-3 animate-[spin_3.2s_linear_infinite_reverse] rounded-full border border-stone-300/10 border-r-amber-100/50 motion-reduce:animate-none"/>
             <div className="absolute inset-7 animate-pulse rounded-full border border-orange-300/10 bg-orange-400/[.035] motion-reduce:animate-none"/>
@@ -448,20 +434,19 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
             }
           </div>
 
-          <p className={'mt-4 text-[9px] font-black uppercase tracking-[.3em] '+(showFlameBriefing?'text-orange-200':'text-amber-200')}>
+          <p className={'mt-3 text-[10px] font-black uppercase tracking-[.13em] '+(showFlameBriefing?'text-orange-200':'text-amber-200')}>
             {showAgentBriefing?'AGENT · STABILITY':showClientBriefing?'CLIENT · FILE FOLDER':showAdminBriefing?'ADMINISTRATION':showHopeBriefing?'HOPE · BRIDGER DEPARTMENT':showFlameBriefing?'FLAME EVENT':'WEAVE of Presence'}
           </p>
           <p className={'mt-1 text-[8px] font-bold uppercase tracking-[.18em] '+(showFlameBriefing?'text-rose-200/70':'text-stone-500')}>
             {showAgentBriefing?'Learn WEAVE · operate one system · verify results':showClientBriefing?'Preview · build · activate · operate':showAdminBriefing?'Organize · verify · preserve records':showHopeBriefing?'WEAVE builds · Hope searches · Clients own and use':showFlameBriefing?'Burning River · The River that Burns':'System Switch — Bridge Radiance'}
           </p>
-          <h1 className="mt-2 text-2xl font-black tracking-tight drop-shadow-[0_2px_16px_rgba(0,0,0,.9)] sm:text-3xl">{openingLabel}</h1>
+          <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{openingLabel}</h1>
         </div>
 
         <section
           data-weave-loading-training={role}
-          key={briefing.eyebrow+'-'+briefing.title}
           data-loading-brief={briefIndex+1}
-          className="weave-loading-brief mx-auto mt-3 w-full min-h-[15rem] overflow-hidden rounded-2xl border border-amber-200/25 bg-[#051324]/90 p-4 shadow-[0_24px_85px_rgba(0,0,0,.72)] backdrop-blur-xl sm:min-h-[14rem] sm:p-6"
+          className="weave-loading-brief weave-loader-card mx-auto w-full min-h-0 overflow-hidden rounded-2xl border border-amber-200/30 bg-[#041222]/95 p-4 shadow-[0_20px_45px_rgba(0,0,0,.45)] sm:p-6"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
@@ -469,15 +454,17 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
               {showAgentBriefing?'STABILITY':showClientBriefing?'CLIENT':showAdminBriefing?'ADMIN':showHopeBriefing?'HOPE':showFlameBriefing?'LIVE · LOOP 1':hopeDestination?'HOPE':destinationEnvironment.district}
             </span>
           </div>
-          <h2 className="mt-2 text-lg font-black text-white sm:text-xl">{briefing.title}</h2>
-          <p className="mt-2 text-xs leading-5 text-stone-300 sm:text-sm sm:leading-6">{briefing.body}</p>
-          {briefing.movement&&<div className="mt-4 flex items-start gap-2 border-t border-white/8 pt-3">
+          <div className="weave-loader-card-body min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <h2 className="mt-2 text-lg font-black leading-snug text-white sm:text-xl">{briefing.title}</h2>
+            <p className="mt-2 text-sm leading-5 text-slate-100 sm:leading-6">{briefing.body}</p>
+          </div>
+          {briefing.movement&&<div className="weave-loader-card-movement mt-2 flex shrink-0 items-start gap-2 border-t border-white/15 pt-2">
             <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-200"/>
-            <p className="text-[9px] font-bold leading-4 text-stone-400">{briefing.movement}</p>
+            <p className="text-xs font-semibold leading-4 text-slate-200">{briefing.movement}</p>
           </div>}
         </section>
 
-        <div className="mx-auto mt-3 flex w-full max-w-sm items-center gap-2" aria-hidden="true">
+        <div className="weave-loader-progress mx-auto flex w-full max-w-sm items-center gap-2" aria-hidden="true">
           {activeBriefs.map((_,index)=><span
             key={index}
             className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,activeBriefs.length-1)?'bg-amber-200/80':'bg-white/10')}
@@ -486,12 +473,12 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
 
         {canReturnClientWorld&&destinationPath!=='/client/dashboard'&&<Link href="/client/dashboard"
           data-client-loader-open-world-return="true"
-          className="mx-auto mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-amber-200/40 bg-[#071c30]/95 px-5 py-2 text-xs font-black text-amber-100">
+          className="weave-loader-return mx-auto inline-flex min-h-11 items-center justify-center rounded-full border border-amber-200/40 bg-[#071c30]/95 px-5 py-2 text-xs font-black text-amber-100">
           Return to Weave Open World <ArrowRight className="ml-2 h-4 w-4"/>
         </Link>}
-        <div className="mt-3 flex items-center justify-center gap-3 text-center">
+        <div className="weave-loader-status flex min-h-6 items-center justify-center gap-3 text-center">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-200 motion-reduce:animate-none"/>
-          <p className="text-[8px] font-black uppercase tracking-[.15em] text-stone-500">{statusLabel}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[.08em] text-slate-200">{statusLabel}</p>
         </div>
       </div>
     </div>}

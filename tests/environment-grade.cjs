@@ -410,9 +410,9 @@ assert.ok(cleanRevealTransit2026.includes("document.addEventListener('click',han
 assert.ok(cleanRevealTransit2026.includes('setReadyPath(null)')&&cleanRevealTransit2026.includes('setTransiting(true)'),'Sidebar movement hides the old environment immediately while preserving destination formation')
 assert.ok(cleanRevealTransit2026.includes("waitForBriefingSequence('transit',startedAt,controller.signal)\n          .then(()=>waitForEnvironmentReadiness('transit'"),'Query-only sidebar stations use the short travel handoff before the final readiness check')
 const loadingBriefCss2026=read('app/weave-readability.css')
-assert.ok(loadingBriefCss2026.includes('@keyframes weave-loading-brief-cycle')&&loadingBriefCss2026.includes('.weave-loading-brief'),'Loading cards enter as discrete readable briefing surfaces')
-assert.ok(loadingBriefCss2026.includes('weave-loading-brief-cycle 3s'),'Loading card animation duration matches the three-second hold')
-assert.ok(loadingBriefCss2026.includes('100% {\n    opacity: 1;'),'Final loader brief remains visible until the destination reveal')
+assert.ok(loadingBriefCss2026.includes('.weave-loading-brief')&&loadingBriefCss2026.includes('animation: none !important'),'Loader reading surface stays sharp without animated blur')
+assert.ok(loadingBriefCss2026.includes('grid-template-rows: minmax(0, 1fr)')&&loadingBriefCss2026.includes('38svh'),'Loader card occupies a constant portion of the stable viewport')
+assert.ok(loadingBriefCss2026.includes('filter: none !important')&&loadingBriefCss2026.includes('transform: none !important'),'Brief changes do not soften or move the text')
 
 
 /* Environment grammar: major operating surfaces may contain instruments,
@@ -774,11 +774,11 @@ assert.ok(!environmentSurfaceSource.includes('FILE FOLDER WORLD')&&!environmentS
 assert.ok(!environmentSurfaceSource.includes('roleWorldHref')&&!environmentSurfaceSource.includes('presenceFor(role)'),'Persistent environment shell leaves world and Presence navigation to canonical controls instead of duplicate header links')
 
 
-assert.ok(environmentTransit.includes("min-h-[100dvh]")&&environmentTransit.includes("items-stretch"),'Global loader occupies the full viewport instead of exposing the root background')
+assert.ok(environmentTransit.includes("min-h-[100svh]")&&environmentTransit.includes("items-stretch"),'Global loader uses a stable viewport and avoids mobile address-bar jumps')
 assert.ok(environmentTransit.includes("bg-[#02050a]")&&!environmentTransit.includes("bg-[#090807]/98"),'Loader has no brown fallback background')
 assert.ok(environmentTransit.includes("const showFlameBriefing=booting&&flameEventActive"),'Active Flame Event owns the cold-entry loader rather than requiring a 30-minute reentry gap')
 assert.ok(environmentTransit.includes('data-flame-event-loader={showFlameBriefing?\'burning-river\':undefined}'),'Flame Event loader exposes the Burning River state')
-assert.ok(environmentTransit.includes("max-w-3xl")&&environmentTransit.includes("min-h-[15rem]"),'Loading cards occupy a substantial readable part of the viewport')
+assert.ok(environmentTransit.includes("max-w-3xl")&&environmentTransit.includes("weave-loader-card"),'Loading card stays readable inside fixed, bounded viewport geometry')
 
 
 assert.ok(environmentTransit.includes('data-environment-reveal-shell="continuous"'),'Loader and destination share one continuous dark reveal shell with no exposed frame')
