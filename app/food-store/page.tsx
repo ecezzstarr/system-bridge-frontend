@@ -57,9 +57,13 @@ export default function WeaveFamilyFoodStore(){
         <p className="mt-3 text-xs leading-6 text-amber-100">Family Baskets are discounted only against the same supplier’s separate-item prices at the time of publication. The seller sets the basket price; delivery may change the final total. No national cheapest-price guarantee is made.</p>
       </header>
 
-      <figure className="mt-6 overflow-hidden rounded-xl border border-emerald-300/20 bg-[#eee8d9]" data-weave-food-real-product-image>
-        <img src="/weave-food/weave-family-products.avif" alt="WEAVE Family Food Store branded rice, honey beans, garri, palm oil, vegetables, yams and eggs product collection illustration" width={420} height={307} loading="eager" fetchPriority="high" className="aspect-[420/307] w-full object-cover"/>
-        <figcaption className="bg-[#0e1c12] px-4 py-3 text-xs leading-5 text-stone-300">WEAVE Family Food Store · branded product presentation. Packaging is illustrative; purchase only verified stock and prices shown below.</figcaption>
+      <figure className="mt-6 grid overflow-hidden rounded-xl border border-emerald-300/20 bg-[#0e1c12] sm:grid-cols-[minmax(0,420px)_minmax(0,1fr)]" data-weave-food-real-product-image>
+        <img src="/weave-food/weave-family-products.avif" alt="WEAVE Family Food Store branded rice, honey beans, garri, palm oil, vegetables, yams and eggs product collection illustration" width={420} height={307} loading="eager" fetchPriority="high" className="mx-auto h-auto w-full max-w-[420px] object-contain"/>
+        <figcaption className="flex flex-col justify-center gap-3 px-5 py-5 text-sm leading-6 text-stone-300 sm:px-8">
+          <span className="text-xl font-black text-emerald-100">Food for Nigerian homes</span>
+          <span>Rice, beans, garri, cooking oils and household provisions under the WEAVE Family Food Store collection.</span>
+          <span className="text-xs text-amber-100">Branded packaging is illustrative; verified seller listings below determine actual products, prices and stock.</span>
+        </figcaption>
       </figure>
       <section className="mt-7 grid gap-3 sm:grid-cols-3" data-store-departments>
         <div className="border border-emerald-300/20 bg-emerald-300/[.035] p-5">
