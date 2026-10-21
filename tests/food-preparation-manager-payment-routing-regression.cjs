@@ -25,7 +25,7 @@ const carrier=read('app/api/carrier/food/[code]/route.ts')
 
 assert.equal((manager.match(/FOOD_PREPARATION_MANAGER_SALARY_NGN=70000/g)||[]).length,1,'manager salary ₦70,000')
 assert.equal((manager.match(/FOOD_PREPARATION_ASSISTANT_SALARY_NGN=40000/g)||[]).length,1,'assistant salary ₦40,000')
-assert.ok(manager.includes('FOOD_PREPARATION_CAPACITY={manager:1,assistant:5}'),'One lead and five assistant positions')
+assert.ok(manager.includes('FOOD_PREPARATION_CAPACITY={manager:1,assistant:2}'),'One lead and two assistant positions')
 assert.ok(application.includes("pg_advisory_xact_lock(20261021, 51)"),'Concurrent applications are serialized')
 assert.ok(appoint.includes("pg_advisory_xact_lock(20261021, 51)"),'Review serializes with applications')
 assert.ok(application.includes("COUNT(*)::int AS taken")&&application.includes("status IN ('pending','approved')"),'Pending and approved people reserve application slots')
