@@ -48,7 +48,7 @@ export default function DistributionAssistantLifestylePage(){
     <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. Each three-person team (one main Manager and two assistants) shares a 300-referral target in its first probation month and a 500-referral target in each later team employment month.</p>
     <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
       <Info label="Monthly salary term" value="₦30,000"/>
-      <Info label="Shared monthly team target" value={String(target)}/>
+      <Info label="Shared team target" value={appointed?String(target):"300 probation → 500 regular"}/>
       <Info label="Employment positions remaining" value={String(state?.remainingPositions??'—')}/>
     </section>
     <p className="mt-4 text-xs text-slate-400">Full ₦30,000 monthly salary is payable when your team reaches 300 verified referrals during the Manager’s first probation month, or 500 in a later employment month. Below target, your monthly earnings consist only of ₦500 for each qualifying referral you personally made. Previously credited referral bonuses must not be paid twice. Salaries require month-end verification and payroll approval; applying alone does not trigger payment.</p>
