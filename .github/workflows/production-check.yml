@@ -61,6 +61,9 @@ jobs:
       - name: Smart WEAVE loading guidance regression
         run: node tests/weave-loading-guidance-regression.cjs
 
+      - name: Bridge of Radiance live loader regression
+        run: node tests/weave-live-role-loader-regression.cjs
+
       - name: WEAVE food regressions
         run: |
           node tests/admin-order-notification-coverage.cjs
