@@ -137,7 +137,9 @@ export async function POST(request: NextRequest) {
     `
 
     const cartonDescription = formatWeaveFoodCartonQuantity(totals.boxCount)
-    await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'agent',subject:'Agility stock order',detail:`${user.name||user.username||'Agent'} requested ${cartonDescription} of ${variant.name} · ₦${totals.agentPayableNgn.toLocaleString()} awaiting payment`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||user.username})
+    try { await notifyAdminOrder({orderId:String(order.id),event:'placed',department:'agent',subject:'Agility stock order',detail:`${user.name||user.username||'Agent'} requested ${cartonDescription} of ${variant.name} · ₦${totals.agentPayableNgn.toLocaleString()} awaiting payment`,adminPath:'/admin/agility',actorId:user.id,actorName:user.name||user.username}) } catch (notificationError) {
+      console.error('[agent/stock] committed order notification failed', notificationError)
+    }
 
     const receipt = await issueWeaveReceipt({
       userId:user.id,kind:'purchase',source:'agility_stock_order',sourceId:String(order.id),amount:totals.agentPayableNgn,currency:'NGN',status:'awaiting_payment',
