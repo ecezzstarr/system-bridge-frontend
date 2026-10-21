@@ -192,6 +192,55 @@ export function agentOperatingGuideForPath(path:string):WeaveOperatingGuide {
   return AGENT_GUIDES.find(item=>item.match(pathname))?.guide||DEFAULT_AGENT_GUIDE
 }
 
+const BRIDGER_GUIDES:ReadonlyArray<{match:(pathname:string)=>boolean;guide:WeaveOperatingGuide}>=[
+  {match:path=>/bridge-ai|bridge-radiance/.test(path),guide:{
+    title:'Help a Prospect understand the crossing',
+    explanation:'Bridge AI introduces WEAVE to a real Prospect. An invitation becomes a Client relationship only through an informed choice and the authorized verification flow.',
+    steps:['Open your issued Bridge AI entrance and inspect the offer you are sharing.','Explain Client File Folder ownership, what the prospect can build and the actual quoted price.','Send the correct link, listen for a real response and record the outcome.'],
+    nextHref:'/bridger/bridge-ai',nextLabel:'Open Bridge AI'
+  }},
+  {match:path=>/prospect|number-bay|numbers|whatsapp/.test(path),guide:{
+    title:'Work through your current Prospects',
+    explanation:'Prospect records are possible contacts, not guaranteed sales. Check their real statuses and observe daily limits.',
+    steps:['Open your current Prospect list and recognize the available candidates.','Contact each candidate respectfully through the allowed communication route.','Record the actual response. Mark unavailable candidates accurately before requesting permitted replacements.'],
+    nextHref:'/bridger/prospects',nextLabel:'Open My Prospects'
+  }},
+  {match:path=>/email-outreach/.test(path),guide:{
+    title:'Prepare an authorized email approach',
+    explanation:'The outreach system connects opportunities to real people; sending messages is not evidence of a reply or conversion.',
+    steps:['Check available candidate inventory, sending limits and the displayed charge.','Review truthful language and use an authorized sender connection.','Check delivery status and responses before updating Prospect progress.'],
+    nextHref:'/bridger/email-outreach',nextLabel:'Open Email Outreach'
+  }},
+  {match:path=>/deposit|withdraw|wallet/.test(path),guide:{
+    title:'Verify Flame Coin movement',
+    explanation:'A payment request and a verified wallet credit are different states.',
+    steps:['Choose the correct deposit or withdrawal route.','Follow the displayed instructions and preserve any required evidence.','Wait for the actual wallet and receipt record before marking funds as confirmed.'],
+    nextHref:'/bridger/dashboard',nextLabel:'Return to Bridger position'
+  }},
+]
+
+const DEFAULT_BRIDGER_GUIDE:WeaveOperatingGuide={
+  title:'Hope: begin with a real conversation',
+  explanation:'Bridgers connect interested people to Client ownership and WEAVE systems. A Prospect becomes real through contact and informed choice.',
+  steps:['Open the Prospect tools or Bridge AI to understand your current opportunities.','Contact a candidate and listen for what the person actually needs.','Record the response, then guide interested people through the authorized System Switch process.'],
+  nextHref:'/bridger/dashboard',nextLabel:'Open Bridger position',
+}
+
+export function bridgerOperatingGuideForPath(path:string):WeaveOperatingGuide {
+  const pathname=path.split('?')[0]
+  return BRIDGER_GUIDES.find(item=>item.match(pathname))?.guide||DEFAULT_BRIDGER_GUIDE
+}
+
+export function roleOperatingGuideForPath(role:'agent'|'bridger',path:string):WeaveOperatingGuide {
+  return role==='agent'?agentOperatingGuideForPath(path):bridgerOperatingGuideForPath(path)
+}
+
+export function transitDirectionForPath(from:string,to:string):'return'|'forward'{
+  const destination=to.split('?')[0]
+  if(destination==='/'||destination==='/weave'||/\/(agent|bridger|client|admin)\/dashboard$/.test(destination)||destination==='/client/presence')return 'return'
+  return 'forward'
+}
+
 export function transitTrainingForPath(role:WeaveLoadingRole,path:string):WeaveLoadingBrief|null {
   if(role==='agent'){
     const guide=agentOperatingGuideForPath(path)
@@ -202,8 +251,9 @@ export function transitTrainingForPath(role:WeaveLoadingRole,path:string):WeaveL
       movement:'Next: '+guide.steps[1],
     }
   }
-  if(role==='bridger'&&(/prospect|number|bridge-ai|email-outreach/.test(path))){
-    return {eyebrow:'BRIDGER · SMART OPERATING GUIDE',title:'Begin with a verified response.',body:'Identify which Prospect action this page permits. Contact an actual candidate respectfully; do not record a conversation or conversion before it occurs.',movement:'Open tool → attempt → actual response → record'}
+  if(role==='bridger'){
+    const guide=bridgerOperatingGuideForPath(path)
+    return {eyebrow:'BRIDGER · CONTEXT GUIDE',title:guide.title,body:guide.explanation+' '+guide.steps[0],movement:'Next: '+guide.steps[1]}
   }
   if(role==='client'&&/system-switch|file-folder|workshop/.test(path)){
     return {eyebrow:'CLIENT · SMART OPERATING GUIDE',title:'Builds are not instant.',body:'Preview your chosen system, check the real construction requirements and start only when ready. Return to the live build status before operating it.',movement:'Preview → build → verify live status → activate'}
