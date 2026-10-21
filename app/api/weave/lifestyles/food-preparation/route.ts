@@ -52,7 +52,8 @@ export async function GET(request:NextRequest){
       }))
     }
     return NextResponse.json({
-      success:true,title:FOOD_PREPARATION_MANAGER_TITLE,salaryNgn:FOOD_PREPARATION_MANAGER_SALARY_NGN,
+      success:true,title:FOOD_PREPARATION_MANAGER_TITLE,
+      salaryNgn:appointment ? Number(appointment.monthly_salary_ngn) : null,
       payrollStatus:'employment_terms_only_no_automatic_payment',
       duties:FOOD_PREPARATION_DUTIES,workflow:FOOD_PREPARATION_WORKFLOW,
       eligible:access.active,appointment,tasks,
