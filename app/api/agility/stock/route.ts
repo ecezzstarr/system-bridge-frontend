@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success:true,order,receipt,product:{id:variant.id,name:variant.name},
       payment:{method:'OPay',accountNumber:AGILITY_OPAY_ACCOUNT_NUMBER,amountNgn:totals.agentPayableNgn,reference:paymentReference,instruction:`Send exactly ₦${totals.agentPayableNgn.toLocaleString()} to OPay ${AGILITY_OPAY_ACCOUNT_NUMBER}, then submit the OPay transaction reference or receipt for Administration verification.`},
-      economics:{cartonQuantity:totals.boxCount,cartonDescription,packagesPerBox:totals.packagesPerBox,packageCount:totals.packageCount,agentBuyUnitPriceNgn:totals.agentBuyUnitPriceNgn,agentSellingUnitPriceNgn:totals.agentSellingUnitPriceNgn,agentBoxPriceNgn:totals.agentBoxPriceNgn,retailValueNgn:totals.retailValueNgn,agentPayableNgn:totals.agentPayableNgn,agentExpectedGrossProfitNgn:totals.agentExpectedGrossProfitNgn,customerPriceLocked:totals.customerPriceLocked,distributionMode},
+      economics:{cartonQuantity:totals.boxCount,cartonDescription,packagesPerBox:totals.packagesPerBox,packageCount:totals.packageCount,agentBuyUnitPriceNgn:totals.agentBuyUnitPriceNgn,agentSellingUnitPriceNgn:totals.agentSellingUnitPriceNgn,agentBoxPriceNgn:totals.agentBoxPriceNgn,retailValueNgn:totals.retailValueNgn,agentPayableNgn:totals.agentPayableNgn,agentExpectedGrossProfitNgn:totals.agentExpectedGrossProfitNgn,administrationNgn:totals.administrationNgn,familySupportNgn:totals.familySupportNgn,leadPreparationNgn:totals.leadPreparationNgn,paymentDistributionStatus:totals.paymentDistributionStatus,customerPriceLocked:totals.customerPriceLocked,distributionMode},
     },{status:201})
   } catch (error) {
     console.error('[agility/stock] POST failed', error)

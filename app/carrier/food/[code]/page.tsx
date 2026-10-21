@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import { AgentFoodCarrierPublic } from '@/components/carrier/agent-food-carrier-public'
 import { AgentFarmCarrierPublic } from '@/components/carrier/agent-farm-carrier-public'
@@ -23,6 +24,19 @@ export async function generateMetadata({params}:{params:Promise<{code:string}>})
 export default async function CarrierFoodDoorPage({params}:{params:Promise<{code:string}>}){
   const {code}=await params
   return <>
+    <div className="bg-[#102017] px-4 py-3 text-center">
+      <Link href="/food-store" className="text-xs font-black text-emerald-100">WEAVE Family Food Store · Rice, beans, groceries, Family Baskets, Agility, Electrolyte, Ember and Daisy Pastries</Link>
+    </div>
+    <div className="bg-[#09150d] px-4 py-4 text-white sm:px-8" data-carrier-family-products>
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 sm:flex-nowrap">
+        <img src="/weave-food/weave-family-products.avif" width={420} height={307} alt="WEAVE Family Food Store branded household grocery illustration" loading="lazy" className="w-full max-w-[260px] rounded-lg border border-emerald-300/20"/>
+        <div>
+          <p className="text-sm font-black">WEAVE Family Food Store · Household Essentials</p>
+          <p className="mt-2 text-xs leading-5 text-stone-400">Rice, beans, garri, palm oil and other real supplier-listed products. The branded packaging shown is an illustration, not confirmation that this Agent currently holds each item.</p>
+          <Link href="/food-store" className="mt-3 inline-flex text-xs font-black text-emerald-200">Browse the Family Food Store →</Link>
+        </div>
+      </div>
+    </div>
     <section className="bg-[#07100b] px-4 pt-5 text-white sm:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-4 rounded-[1.2rem] border border-sky-300/20 bg-sky-300/[.05] px-4 py-3">

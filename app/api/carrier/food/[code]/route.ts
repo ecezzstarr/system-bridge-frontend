@@ -6,6 +6,7 @@ import { getPool } from '@/lib/db'
 import { getCarrierAccess } from '@/lib/carrier-access'
 import { AGILITY_VARIANTS } from '@/lib/agility-catalog'
 import { getWeaveFoodVariantEconomics } from '@/lib/weave-food-economics'
+import { FOOD_AGENT_MARGIN_PER_PACKAGE_NGN } from '@/lib/food-forensic-settlement'
 import {
   CARRIER_FOOD_PAYMENT_WINDOW_MINUTES,
   ensureCarrierFoodSchema,
@@ -301,9 +302,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
       ? canonical.agentSellingUnitPriceNgn
       : Math.max(canonical.agentSellingUnitPriceNgn, configuredPrice)
     const actualAgentUnitCostNgn = Number(selected.agent_unit_cost_ngn || canonical.agentBuyUnitPriceNgn)
+    if(unitPrice-actualAgentUnitCostNgn!==FOOD_AGENT_MARGIN_PER_PACKAGE_NGN){
+      await db.query('ROLLBACK')
+      return NextResponse.json({
+        error:'This stock lot does not preserve the WEAVE selling Agent ₦1,000 margin per package. Contact Stability before selling.',
+      },{status:409})
+    }
     const foodSubtotalNgn = unitPrice * quantity
     const totalNgn = foodSubtotalNgn + waybillFeeNgn
-    const agentMarginNgn = Math.max(0, (unitPrice - actualAgentUnitCostNgn) * quantity)
+    const agentMarginNgn = FOOD_AGENT_MARGIN_PER_PACKAGE_NGN * quantity
     const paymentReference = carrierPaymentReference()
 
     const orderResult = await db.query(

@@ -54,12 +54,12 @@ export const WEAVE_LIFESTYLE_CATALOG = {
   },
   [FOOD_PREPARATION_MANAGER_LIFESTYLE]: {
     key: FOOD_PREPARATION_MANAGER_LIFESTYLE,
-    label: 'Food Preparation Manager',
+    label: 'Food Preparation Team',
     route: '/weave/lifestyles/food-preparation',
     roles: ['agent'],
-    summary: 'Agent employment in WEAVE food operations at a ₦60,000 monthly salary following Administration approval. Prepare, package and dispatch paid Agility, Electrolyte and Daisy Pastries orders for customers and restocking Agents.',
+    summary: 'Agent employment within WEAVE Stability led by the Head of the Agent Department, with one Food Preparation Manager position and five Assistant Manager positions. The lead Manager assigns the assistants, never Administration. Following Administration approval, prepare, package and dispatch assigned paid Agility, Electrolyte, Ember and Daisy Pastries orders for customers and restocking Agents.',
     environments: [
-      { label: 'Employment Application', href: '/weave/lifestyles/food-preparation', purpose: 'Apply to work as a Food Preparation Manager.' },
+      { label: 'Employment Application', href: '/weave/lifestyles/food-preparation', purpose: 'Apply for an available Manager or Assistant Manager position.' },
       { label: 'Daily Kitchen Work Desk', href: '/weave/lifestyles/food-preparation', purpose: 'Process Administration-assigned paid food orders, package and log dispatch.' },
     ],
   },

@@ -12,6 +12,10 @@ const EXT_BY_MIME: Record<string,string> = {
   'video/mp4':'mp4',
   'video/webm':'webm',
   'video/quicktime':'mov',
+  'audio/mpeg':'mp3',
+  'audio/mp4':'m4a',
+  'audio/wav':'wav',
+  'audio/x-wav':'wav',
 }
 
 export async function POST(request: NextRequest) {
@@ -24,7 +28,8 @@ export async function POST(request: NextRequest) {
     const file = form.get('file') as File | null
     if (!file) return NextResponse.json({ success:false, error:'No file provided' }, { status:400 })
     const ext = EXT_BY_MIME[file.type]
-    if (!ext) return NextResponse.json({ success:false, error:'Use JPG, PNG, WEBP, MP4, WEBM or MOV business media' }, { status:400 })
+    if (!ext) return NextResponse.json({ success:false, error:'Use JPG, PNG, WEBP, MP4, WEBM, MOV, MP3, M4A or WAV business media' }, { status:400 })
+    if (file.type.startsWith('audio/') && file.size > 25 * 1024 * 1024) return NextResponse.json({ success:false, error:'Soundtrack is too large (max 25MB)' }, { status:400 })
     if (file.size > MAX_SIZE_BYTES) return NextResponse.json({ success:false, error:'File too large (max 150MB)' }, { status:400 })
 
     const objectName = `video-ads/customer-assets/${user.id}/${new Date().toISOString().slice(0,10)}/${randomUUID()}.${ext}`
@@ -32,7 +37,7 @@ export async function POST(request: NextRequest) {
       contentType:file.type,
       cacheControl:'private, max-age=3600',
     })
-    return NextResponse.json({ success:true, url, mediaType:file.type.startsWith('video/')?'video':'image' })
+    return NextResponse.json({ success:true, url, mediaType:file.type.startsWith('audio/')?'audio':file.type.startsWith('video/')?'video':'image' })
   } catch (error:any) {
     console.error('[Video Ad Studio] asset upload failed:', error)
     return NextResponse.json({ success:false, error:error.message || 'Asset upload failed' }, { status:500 })

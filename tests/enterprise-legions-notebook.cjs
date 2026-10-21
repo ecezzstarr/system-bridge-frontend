@@ -40,4 +40,10 @@ assert.ok(employment.includes("status IN ('pending','offered')"),'Accepted offer
 assert.ok(recruitment.includes('Employment offer sent · awaiting agreement'),'Client is shown offer-not-active state')
 assert.ok(lifestyle.includes('Accept these terms and become a Legion'),'Agent and Bridger can affirm final terms')
 assert.ok(recruitment.includes('/api/client/enterprise/legions/release')&&lifestyle.includes("action:'release_legion'"),'Both sides can terminate a recorded appointment')
+
+assert.ok(!data.includes('600 Flame Coin') && !data.includes('600 Flame Coins'), 'Enterprise notebook does not reveal Client subscription price to worker roles')
+assert.ok(world.includes("page.audience === user?.role") && world.includes("page.audience === 'worker'"), 'Role-specific notebook navigation filters Client-only chapters for Agent and Bridger readers')
+assert.ok(world.includes('pages[pageIndex]?.meaning') && world.includes('pages[pageIndex]?.title'), 'The 3D notebook uses the same role-filtered pages as its chapter text')
+assert.ok(world.includes('<NotebookScene pageIndex={visiblePageIndex} pages={steps} />'), 'Notebook page turner never displays Client-only chapter in worker view')
+
 console.log('Enterprise Legions notebook static checks passed')

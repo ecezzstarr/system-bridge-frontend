@@ -4,7 +4,8 @@ import type { WeaveFoodVariant } from '@/lib/weave-food-types'
 export const EMBER_PACKAGES_PER_CARTON=10
 export const EMBER_OPAY_ACCOUNT_NUMBER=WEAVE_OPAY_ACCOUNT_NUMBER
 export const EMBER_AGENT_EARNING_PER_PACK_NGN=1000
-export const EMBER_ADMIN_ALLOCATION_PER_PACK_NGN=1000
+export const EMBER_ADMIN_ALLOCATION_PER_PACKAGE_NGN=800
+export const EMBER_FAMILY_SUPPORT_PER_PACKAGE_NGN=200
 export const EMBER_VARIANTS:WeaveFoodVariant[]=[
  {id:'ember-small',family:'ember',name:'Ember · Small Box',accent:'Evening · Small',foods:['Roasted plantain','Seasoned yam','Pepper sauce'],protein:'Suya beef or chicken',fruit:'',drink:'',water:'',
   packagesPerBox:10,agentBuyUnitPriceNgn:5000,agentSellingUnitPriceNgn:6000,customerPriceLocked:true,
@@ -32,6 +33,6 @@ export function nextEmberAdminStage(stage:string){
 export function emberMoneySplit(id:string){
  const variant=getEmberVariant(id)
  if(!variant)return null
- const retail=Number(variant.agentSellingUnitPriceNgn),agent=EMBER_AGENT_EARNING_PER_PACK_NGN,admin=EMBER_ADMIN_ALLOCATION_PER_PACK_NGN
- return {retailNgn:retail,agentNgn:agent,administrationNgn:admin,preparationBudgetNgn:retail-agent-admin}
+ const retail=Number(variant.agentSellingUnitPriceNgn),agent=EMBER_AGENT_EARNING_PER_PACK_NGN,admin=EMBER_ADMIN_ALLOCATION_PER_PACKAGE_NGN
+ return {retailNgn:retail,agentNgn:agent,administrationNgn:admin,familySupportNgn:EMBER_FAMILY_SUPPORT_PER_PACKAGE_NGN,preparationBudgetNgn:retail-agent-admin-EMBER_FAMILY_SUPPORT_PER_PACKAGE_NGN}
 }

@@ -2,9 +2,10 @@
 
 import Link from 'next/link'
 import { DAISY_PASTRIES_IMAGE_SRC } from '@/lib/daisy-pastries-image'
-import { CakeSlice,CircleDollarSign,PackagePlus,Salad,ShoppingBag,Truck } from 'lucide-react'
+import { CakeSlice,CircleDollarSign,PackagePlus,Salad,ShoppingBag,Truck,ImagePlus } from 'lucide-react'
 
 const functions=[
+  {name:'Creative Studio',href:'/agent/creative',detail:'Design clear customer images for free, then produce video advertisements at Agent fees capped at 1.5 Flame Coin.',accent:'border-fuchsia-300/25 bg-fuchsia-300/[.04] text-fuchsia-200',icon:ImagePlus},
   {name:'Agility',href:'/agility',detail:'Order and restock Agility, receive company stock and move it through customers and outlets.',accent:'border-orange-300/25 bg-orange-300/[.04] text-orange-200',icon:PackagePlus},
   {name:'Electrolyte',href:'/electrolyte',detail:'Order Small Bowl or Medium Bowl stock, receive it and keep restocking while earlier stock is still moving.',accent:'border-emerald-300/25 bg-emerald-300/[.04] text-emerald-200',icon:Salad},
   {name:'Outlet Training Video',href:'/agent/outlet-training',detail:'Watch the practical Agent-to-store daily carton supply training and learn the WEAVE pricing rule.',accent:'border-cyan-400/25 bg-cyan-400/[.04] text-cyan-200',icon:PackagePlus},
@@ -18,7 +19,7 @@ export default function AgentWorkPage(){
     <header className="border-b border-white/10 pb-7">
       <p className="text-[10px] font-black uppercase tracking-[.28em] text-emerald-300">Agent · Stability · Company work</p>
       <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-6xl">AGENT WORK</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Five working movements sit here: Agility, Electrolyte, Ember, Commission and Daisy Pastries. Food stock moves physically. Commission records value movement. Daisy Pastries is the official WEAVE cake brand. Each product opens its own ordering space directly from Agent Work.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Your production and commercial working movements are here: Agility, Electrolyte, Ember, Commission and Daisy Pastries. Food stock moves physically. Commission records value movement. Daisy Pastries is the official WEAVE cake brand. Each product opens its own ordering space directly from Agent Work.</p>
     </header>
 
     <section className="grid gap-4 md:grid-cols-2">

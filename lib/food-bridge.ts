@@ -61,6 +61,22 @@ async function establishSchema() {
       updated_at timestamptz NOT NULL DEFAULT NOW(),
       CHECK (status IN ('active','paused','closed'))
     );
+
+    -- Ready-packed, independently counted food baskets published by approved
+    -- Agent suppliers. Baseline uses that SAME supplier's active single offers.
+    -- No fictitious availability or invented comparison price is created.
+    CREATE TABLE IF NOT EXISTS weave_food_household_bundles (
+      listing_id uuid PRIMARY KEY REFERENCES weave_food_surplus(id) ON DELETE CASCADE,
+      farmer_id uuid NOT NULL REFERENCES weave_food_farmers(id),
+      template_id varchar(40) NOT NULL,
+      components jsonb NOT NULL,
+      separate_listed_ngn numeric(18,2) NOT NULL CHECK(separate_listed_ngn>0),
+      bundle_price_ngn numeric(18,2) NOT NULL CHECK(bundle_price_ngn>1000),
+      listing_saving_ngn numeric(18,2) NOT NULL CHECK(listing_saving_ngn>0),
+      stock_attested_separate boolean NOT NULL DEFAULT false CHECK(stock_attested_separate),
+      created_at timestamptz NOT NULL DEFAULT NOW(),
+      CHECK (separate_listed_ngn=bundle_price_ngn+listing_saving_ngn)
+    );
     CREATE TABLE IF NOT EXISTS weave_food_direct_orders (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       buyer_user_id uuid NOT NULL REFERENCES users(id),

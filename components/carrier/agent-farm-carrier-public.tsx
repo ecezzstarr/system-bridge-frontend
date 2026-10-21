@@ -7,6 +7,7 @@ import { FOOD_BRIDGE_STATES } from '@/lib/food-bridge-states'
 
 type FarmOffer = {
   id:string; produce:string; unit:string; available_quantity:string; minimum_quantity:string;
+  basket_components?:{name:string;quantity:number;unit:string}[]|null;basket_individual_total_ngn?:string|null;basket_listed_saving_ngn?:string|null;
   unit_price_ngn:string; details?:string|null; farm_name:string; state:string; community:string
 }
 type Order = {
@@ -117,10 +118,10 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
           <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.22em] text-emerald-200">
             <Sprout className="h-4 w-4"/> Village surplus · Agent Carrier
           </p>
-          <h2 className="mt-2 text-2xl font-black sm:text-4xl">Food directly from the farm</h2>
+          <h2 className="mt-2 text-2xl font-black sm:text-4xl">WEAVE FAMILY FOOD · Farm & packed baskets</h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-400">
             Produce listed by this Agent's approved farm appears here on the same Carrier link shared through WhatsApp.
-            No WEAVE registration is needed to request farm food. WEAVE deducts a flat ₦1,000 seller service fee per completed farm order, regardless of quantity. Buyer money is held pending verified dispatch and delivery.
+            Rice, beans, garri, yam, oils, soup ingredients and verified ready-packed WEAVE Family Baskets appear only when this approved supplier actually lists them.             No WEAVE registration is needed to request farm food. WEAVE deducts a flat ₦1,000 seller service fee per completed farm order, regardless of quantity. Buyer money is held pending verified dispatch and delivery.
           </p>
         </div>
         <button type="button" onClick={()=>void loadOffers()} className="inline-flex items-center gap-2 border border-white/15 px-3 py-2 text-xs text-emerald-100"><RefreshCw className="h-4 w-4"/> Refresh stock</button>
@@ -130,6 +131,8 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
         {offers.map(offer=><article key={offer.id} className="flex flex-col border border-emerald-200/20 bg-white/[.035] p-5" data-farm-offer={offer.id}>
           <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-emerald-200"><MapPin className="h-4 w-4"/>{offer.community}, {offer.state}</p>
           <h3 className="mt-3 text-xl font-black">{offer.produce}</h3>
+           {offer.basket_listed_saving_ngn&&<p className="mt-2 text-xs text-emerald-200">Bundle saving at supplier publication: {money(offer.basket_listed_saving_ngn)} vs individual listed foods ({money(offer.basket_individual_total_ngn)})</p>}
+           {offer.basket_components?.length&&<p className="mt-2 text-xs leading-5 text-sky-200">{offer.basket_components.map(x=>x.quantity+' '+x.unit+' '+x.name).join(' · ')}</p>}
           <p className="mt-1 text-xs text-stone-400">{offer.farm_name}</p>
           <p className="mt-4 text-2xl font-black">{money(offer.unit_price_ngn)}<span className="text-xs font-normal text-stone-400"> / {offer.unit} · farm price</span></p>
           <p className="mt-3 text-xs text-stone-300">{offer.available_quantity} {offer.unit} reported available · minimum {offer.minimum_quantity}</p>
@@ -145,7 +148,7 @@ export function AgentFarmCarrierPublic({referralCode}:{referralCode:string}){
         <p className="mt-2 text-xs text-stone-400">Farm price {money(selected.unit_price_ngn)} / {selected.unit}. Logistics are quoted separately.</p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="text-xs text-stone-300">Quantity ({selected.unit})
-            <input type="number" step=".01" required min={selected.minimum_quantity} max={selected.available_quantity}
+            <input type="number" step={selected.unit==='pack'?'1':'.01'} required min={selected.minimum_quantity} max={selected.available_quantity}
               value={quantity} onChange={e=>setQuantity(e.target.value)}
               className="mt-2 block w-full border border-white/15 bg-[#17261b] p-3 text-white"/>
           </label>

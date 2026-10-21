@@ -52,6 +52,7 @@ export default function ProspectMarketPage() {
 
   // My Prospects tab state
   const [myProspects, setMyProspects] = useState<MyProspect[]>([])
+  const [replacementQuota, setReplacementQuota] = useState({ limit: 10, used: 0, remaining: 10 })
   const [whatsappNumber, setWhatsappNumber] = useState('')
   const [numberInput, setNumberInput] = useState('')
   const [mineLoading, setMineLoading] = useState(true)
@@ -87,6 +88,7 @@ export default function ProspectMarketPage() {
       const data = await res.json()
       if (data.success) {
         setMyProspects(data.prospects)
+        if (data.replacementQuota) setReplacementQuota(data.replacementQuota)
         setWhatsappNumber(data.whatsappNumber || '')
         setNumberInput(data.whatsappNumber || '')
       }
@@ -149,8 +151,8 @@ export default function ProspectMarketPage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success(data.message || 'Reported. Replacements added.')
-        fetchMine()
+        toast.success(data.message || 'Prospect report recorded.')
+        await fetchMine()
       } else {
         toast.error(data.error || 'Failed to report prospect')
       }
@@ -358,11 +360,15 @@ export default function ProspectMarketPage() {
             </CardContent>
           </Card>
 
+          <div data-whatsapp-replacement-quota="daily" className="rounded-xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm text-amber-100">
+            <p className="font-bold">Not on WhatsApp replacements: {replacementQuota.used} / {replacementQuota.limit} today</p>
+            <p className="mt-1 text-xs text-slate-400">Each reported, unverified number can receive one unused replacement candidate. At most 10 replacements are issued per day (Nigeria time). {replacementQuota.remaining} remaining. Reports after the limit will not create extra candidates.</p>
+          </div>
           {mineLoading ? (
             <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-slate-700" /></div>
           ) : myProspects.length === 0 ? (
             <div className="text-center py-20 text-slate-500 text-sm">
-              No prospects purchased yet. Browse packages above.
+              No prospects assigned yet. Claim a free candidate or browse available packages.
             </div>
           ) : (
             <div className="space-y-3">
@@ -400,16 +406,27 @@ export default function ProspectMarketPage() {
                       ) : p.status === 'converted' ? (
                         <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                       ) : p.status === 'sent' ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={!p.bridgeUrl}
-                          onClick={() => handleSendBridge(p)}
-                          className="border-amber-300/30 text-amber-200 hover:bg-amber-300/10"
-                        >
-                          <MessageCircle className="mr-1 h-3 w-3" />
-                          Send Bridge When Ready
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={!p.bridgeUrl}
+                            onClick={() => handleSendBridge(p)}
+                            className="border-amber-300/30 text-amber-200 hover:bg-amber-300/10"
+                          >
+                            <MessageCircle className="mr-1 h-3 w-3" />
+                            Send Bridge When Ready
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={reportingId === p.outreachId}
+                            onClick={() => handleReportInvalid(p)}
+                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                          >
+                            {reportingId === p.outreachId ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Not on WhatsApp?'}
+                          </Button>
+                        </div>
                       ) : (
                         <MessageCircle className="h-5 w-5 text-slate-500" />
                       )}

@@ -55,6 +55,12 @@ jobs:
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
 
+      - name: Agent Creative Studio fee and image regressions
+        run: node tests/agent-creative-studio-regression.cjs
+
+      - name: Smart WEAVE loading guidance regression
+        run: node tests/weave-loading-guidance-regression.cjs
+
       - name: WEAVE food regressions
         run: |
           node tests/admin-order-notification-coverage.cjs
@@ -65,6 +71,8 @@ jobs:
           node tests/agent-outlet-training-availability-regression.cjs
           node tests/agent-work-cakes-regression.cjs
           node tests/food-preparation-manager-payment-routing-regression.cjs
+          node tests/food-forensic-economics.cjs
+          node tests/weave-family-food-store-regression.cjs
           node tests/farm-to-family-lifestyle-regression.cjs
           node tests/carrier-farm-door-regression.cjs
           node tests/flame-real-food-current-regression.cjs
@@ -76,6 +84,7 @@ jobs:
           node tests/bridger-bridge-radiance-purchase-regression.cjs
           node tests/selfhost-deployment-regression.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
+          node tests/bridger-whatsapp-replacement-limit.cjs
           node tests/file-folder-sales-manager-regression.cjs
           node tests/public-flame-movement-regression.cjs
           node tests/carrier-ace-regression.cjs
