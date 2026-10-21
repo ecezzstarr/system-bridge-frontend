@@ -5,8 +5,15 @@ import { nextEmberAdminStage,emberMoneySplit } from '@/lib/ember-catalog'
 import { nextElectrolyteAdminStage } from '@/lib/electrolyte-catalog'
 import { ensureCarrierCakeSchema, nextCakeAdministrationStatus } from '@/lib/carrier-cakes'
 
-export const FOOD_PREPARATION_MANAGER_SALARY_NGN=60000
+export const FOOD_PREPARATION_MANAGER_SALARY_NGN=70000
+export const FOOD_PREPARATION_ASSISTANT_SALARY_NGN=40000
 export const FOOD_PREPARATION_MANAGER_TITLE='Food Preparation Manager'
+export const FOOD_PREPARATION_ASSISTANT_TITLE='Assistant Food Preparation Manager'
+export const FOOD_PREPARATION_CAPACITY={manager:1,assistant:5} as const
+export type FoodPreparationPosition=keyof typeof FOOD_PREPARATION_CAPACITY
+export const isFoodPreparationPosition=(value:unknown):value is FoodPreparationPosition=>value==='manager'||value==='assistant'
+export const foodPreparationSalary=(position:FoodPreparationPosition)=>
+  position==='manager'?FOOD_PREPARATION_MANAGER_SALARY_NGN:FOOD_PREPARATION_ASSISTANT_SALARY_NGN
 export const FOOD_PREPARATION_PRODUCTS=['agility','electrolyte','ember','daisy'] as const
 export type PreparationProduct=typeof FOOD_PREPARATION_PRODUCTS[number]
 export const FOOD_PREPARATION_DUTIES=[
@@ -37,7 +44,8 @@ export async function ensureFoodPreparationManagerSchema(){
         agent_id uuid NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
         application_note text NOT NULL,
         status varchar(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','revoked')),
-        monthly_salary_ngn numeric(12,2) NOT NULL DEFAULT 60000,
+        position varchar(16) NOT NULL DEFAULT 'manager' CHECK (position IN ('manager','assistant')),
+        monthly_salary_ngn numeric(12,2) NOT NULL DEFAULT 70000,
         review_note text,
         reviewed_by uuid REFERENCES users(id),
         reviewed_at timestamptz,
@@ -67,6 +75,17 @@ export async function ensureFoodPreparationManagerSchema(){
       CREATE INDEX IF NOT EXISTS weave_food_preparation_events_idx
         ON weave_food_preparation_task_events(task_id,occurred_at DESC);
     `)
+    // Existing production tables predate the assistant role. Preserve all
+    // appointments and bring their monthly terms up to the current policy.
+    await getPool().query(`
+      ALTER TABLE weave_food_preparation_managers
+        ADD COLUMN IF NOT EXISTS position varchar(16) NOT NULL DEFAULT 'manager';
+      UPDATE weave_food_preparation_managers
+        SET monthly_salary_ngn=CASE WHEN position='assistant' THEN 40000 ELSE 70000 END,
+            updated_at=NOW()
+        WHERE monthly_salary_ngn IS DISTINCT FROM
+          CASE WHEN position='assistant' THEN 40000 ELSE 70000 END;
+    `)
     // Existing production databases were created before Ember. Update their
     // original check constraint as well as the new-table schema.
     await getPool().query(`
@@ -86,7 +105,7 @@ export async function getActiveFoodPreparationManager(user:{id:string;role:strin
   if(!access.active)throw new PreparationAccessError('An active Agent position is required.')
   await ensureFoodPreparationManagerSchema()
   const {rows}=await getPool().query(`
-    SELECT m.id,m.agent_id,m.status,m.monthly_salary_ngn
+    SELECT m.id,m.agent_id,m.status,m.position,m.monthly_salary_ngn
     FROM weave_food_preparation_managers m
     JOIN users u ON u.id=m.agent_id
     WHERE m.agent_id=$1::uuid AND m.status='approved' AND u.role='agent' AND u.is_active=true
