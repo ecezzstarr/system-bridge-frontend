@@ -175,6 +175,12 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
   try{
     await client.query('BEGIN')
     await client.query("SELECT pg_advisory_xact_lock(hashtext('weave_manager_employment_capacity'))")
+    // Serialize promotion against assistant appointments so one person cannot hold both.
+    const assistantRelation=await client.query("SELECT to_regclass('weave_distribution_assistants') AS relation")
+    if(assistantRelation.rows[0]?.relation){
+      const assistant=await client.query("SELECT status FROM weave_distribution_assistants WHERE user_id=$1::uuid AND status='approved' FOR UPDATE",[userId])
+      if(assistant.rows.length){await client.query('ROLLBACK');return {success:false as const,reason:'already_assistant' as const}}
+    }
     const capacityResult=await client.query("SELECT COUNT(*)::int AS occupied FROM manager_employment WHERE status IN ('probation','active')")
     if(Number(capacityResult.rows[0]?.occupied||0)>=MANAGER_EMPLOYMENT_LIMIT){await client.query('ROLLBACK');return {success:false as const,reason:'positions_full' as const}}
     const result=await client.query(`INSERT INTO manager_employment (user_id,source_role,status,document_version,accepted_name,document_accepted_at,probation_started_at,probation_ends_at,monthly_salary_ngn,probation_target,core_duty) VALUES ($1::uuid,$2,'probation',$3,$4,NOW(),NOW(),NOW()+INTERVAL '1 month',$5,$6,$7) ON CONFLICT (user_id) DO UPDATE SET source_role=EXCLUDED.source_role,status='probation',document_version=EXCLUDED.document_version,accepted_name=EXCLUDED.accepted_name,document_accepted_at=NOW(),probation_started_at=NOW(),probation_ends_at=NOW()+INTERVAL '1 month',monthly_salary_ngn=EXCLUDED.monthly_salary_ngn,probation_target=EXCLUDED.probation_target,core_duty=EXCLUDED.core_duty,ended_at=NULL,updated_at=NOW() RETURNING *`,[userId,user.role,MANAGER_DOCUMENT_VERSION,acceptedName.trim(),MANAGER_MONTHLY_SALARY_NGN,MANAGER_PROBATION_TARGET,DISTRIBUTION_MANAGER_CORE_DUTY])
