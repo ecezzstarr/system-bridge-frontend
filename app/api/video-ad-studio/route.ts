@@ -25,7 +25,7 @@ function text(value: unknown, max: number) {
 
 function soundtrackBelongsToUser(url: string, userId: string) {
   const objectName = mediaObjectNameFromUrl(url)
-  return Boolean(objectName && objectName.startsWith(`video-ads/customer-assets/${userId}/`) && /\\.(mp3|m4a|wav)$/i.test(objectName))
+  return Boolean(objectName && objectName.startsWith(`video-ads/customer-assets/${userId}/`) && /\.(mp3|m4a|wav)$/i.test(objectName))
 }
 
 function assetTypeFromUrl(url:string): 'image' | 'video' {
