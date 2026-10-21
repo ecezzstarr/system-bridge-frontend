@@ -72,6 +72,25 @@ export type VideoServiceOrder = {
 
 export const VIDEO_STUDIO_CUSTOMER_ROLES = new Set(['agent', 'bridger', 'client'])
 
+// Agent production fees are a role-specific internal WEAVE charge, never the
+// price an Agent chooses to charge a customer through their Service Door.
+export const AGENT_STUDIO_MAX_FEE_FLAME_COIN = 1.5
+export const AGENT_VIDEO_STUDIO_FEES: Readonly<Record<string, number>> = {
+  'social-30': 0.3,
+  'full-60': 0.5,
+  'business-120': 0.75,
+  'campaign-180': 1,
+  'brand-360': 1.5,
+}
+
+export function studioFeeForRole(role: string | null | undefined, packageKey: string, publishedPrice: number): number {
+  if (!Number.isFinite(publishedPrice) || publishedPrice < 0) throw new Error('Invalid Studio package price')
+  if (role !== 'agent') return publishedPrice
+  const agentFee = AGENT_VIDEO_STUDIO_FEES[packageKey] ?? AGENT_STUDIO_MAX_FEE_FLAME_COIN
+  // An Admin reduction can also benefit Agents, but never increase their cap.
+  return Math.min(publishedPrice, agentFee, AGENT_STUDIO_MAX_FEE_FLAME_COIN)
+}
+
 const DEFAULT_PACKAGES = [
   ['social-30', 'Social Cut', 'A focused 30-second vertical video for fast social movement.', 30, 30, 10],
   ['full-60', 'Full Ad', 'A complete 60-second advertisement with room for problem, reveal and proof.', 60, 50, 20],
@@ -190,7 +209,7 @@ export async function ensureVideoAdStudioSchema() {
   await ensureWeaveReceiptSchema()
 }
 
-export async function listVideoStudioPackages(includeInactive = false): Promise<VideoStudioPackage[]> {
+export async function listVideoStudioPackages(includeInactive = false, role?: string | null): Promise<VideoStudioPackage[]> {
   await ensureVideoAdStudioSchema()
   const pool = getPool()
   const result = await pool.query(
@@ -204,7 +223,7 @@ export async function listVideoStudioPackages(includeInactive = false): Promise<
     name: String(row.name),
     description: String(row.description),
     durationSeconds: Number(row.duration_seconds),
-    priceFlameCoin: Number(row.price_flame_coin),
+    priceFlameCoin: studioFeeForRole(role, String(row.package_key), Number(row.price_flame_coin)),
     active: Boolean(row.active),
     sortOrder: Number(row.sort_order),
   }))
