@@ -21,6 +21,7 @@ const AGILITY={src:'/weave-food/agility.jpeg',alt:'Original WEAVE Agility prepar
 const ELECTROLYTE={src:'/weave-food/electrolyte.jpeg',alt:'Original WEAVE Electrolyte food bowl image'}
 const EMBER={src:'/weave-food/ember.jpg',alt:'Original WEAVE Ember prepared food package image'}
 const FAMILY={src:'/weave-food/weave-family-products.avif',alt:'WEAVE existing branded household food collection illustration'}
+const DAISY={src:'/weave-food/daisy-pastries-original.png',alt:'Existing WEAVE Daisy Pastries cake image'}
 
 const visions:Record<string,Visual>={
   '/weave/lifestyles':{
@@ -28,6 +29,78 @@ const visions:Record<string,Visual>={
     title:'Lifestyle follows your position',
     meaning:'Choose an available working environment. Each opens a real function of WEAVE, not a separate account.',
     pictures:[BRIDGE,RIVER],
+  },
+  '/weave/lifestyles/food':{
+    eyebrow:'WEAVE Lifestyle · Farm to Family',
+    title:'Everyday food for households',
+    meaning:'A real food catalogue begins with verified Agent supply; artwork alone does not establish available inventory.',
+    pictures:[FAMILY],
+  },
+  '/weave/market/prospects':{
+    eyebrow:'Bridger · Prospect Market',
+    title:'Hope searches for human response',
+    meaning:'Recognize genuine responses before guiding a person toward Client ownership.',
+    pictures:[BRIDGE],
+  },
+  '/company/loops':{
+    eyebrow:'WEAVE · Company movement',
+    title:'Company loops connect participation',
+    meaning:'Company Loop 1 connects real positions and daily activity inside Flame Event.',
+    pictures:[RIVER],
+  },
+  '/referrals':{
+    eyebrow:'WEAVE · Referral Movement',
+    title:'Your link carries an encounter',
+    meaning:'Only eligible verified participation becomes an attributed referral record.',
+    pictures:[BRIDGE],
+  },
+  '/agent/presence':{
+    eyebrow:'Agent · Stability',
+    title:'Food and people move through Agents',
+    meaning:'Stock, customer orders, outlet distribution and Bridger movement remain part of one Agent position.',
+    pictures:[AGILITY,ELECTROLYTE,EMBER],
+  },
+  '/bridger/presence':{
+    eyebrow:'Bridger · Hope',
+    title:'Hope begins through interaction',
+    meaning:'Prospect response and completed Client crossing are distinct stages of the Bridger position.',
+    pictures:[BRIDGE],
+  },
+  '/client/presence':{
+    eyebrow:'Client · File Folder ownership',
+    title:'Your world begins at System Switch',
+    meaning:'Bridge of Radiance opens the way; your actual Client buildings and work state are shown inside your File Folder.',
+    pictures:[BRIDGE],
+  },
+  '/client/loops':{
+    eyebrow:'Client · Company Loop',
+    title:'Your enterprise participates in Weave',
+    meaning:'The Flame Event connects public activities while your File Folder construction remains yours.',
+    pictures:[RIVER],
+  },
+  '/admin/cakes':{
+    eyebrow:'Administration · Daisy Pastries',
+    title:'Cakes follow a real preparation flow',
+    meaning:'Track the existing pastry enquiries, price decisions and confirmed orders.',
+    pictures:[DAISY],
+  },
+  '/admin/agility':{
+    eyebrow:'Administration · Agility',
+    title:'Food orders lead to fulfillment',
+    meaning:'Check the real product against verified preparation and stock records.',
+    pictures:[AGILITY],
+  },
+  '/admin/electrolyte':{
+    eyebrow:'Administration · Electrolyte',
+    title:'A real bowl, a recorded order',
+    meaning:'Keep the product image, actual stock, payments and delivery evidence distinct.',
+    pictures:[ELECTROLYTE],
+  },
+  '/agent/outlet-training':{
+    eyebrow:'Agent · Outlet training',
+    title:'Know the food that outlets sell',
+    meaning:'Use the existing prepared-food visuals while learning Agent carton supply.',
+    pictures:[AGILITY,ELECTROLYTE,EMBER],
   },
   '/weave/lifestyles/agentic-bridger':{
     eyebrow:'WEAVE Lifestyle · Hope',
