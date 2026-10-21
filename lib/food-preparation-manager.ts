@@ -220,7 +220,7 @@ export async function moveAssignedPreparationStage(agentId:string,taskId:string,
       updated=result.rows[0]
     }else if(task.product==='electrolyte'||task.product==='ember'){
       const split=task.product==='ember'?emberMoneySplit(String(order.variant_id)):null
-      const budgetPerCarton=split?split.preparationBudgetNgn*10:null
+      const budgetPerCarton=split?split.preparationBudgetNgn*10-(split.administrationNgn/Math.max(1,Number(order.box_count))):null
       const result=await client.query(`
         UPDATE agility_stock_orders SET fulfillment_status=$1,
           planned_company_cost_per_box_ngn=CASE WHEN $1='preparing' AND $4::numeric IS NOT NULL THEN $4 ELSE planned_company_cost_per_box_ngn END,
