@@ -32,6 +32,10 @@ export default function SystemSwitchEntryPage() {
       <Link href={backHref} className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-sky-100/90">
         <ArrowLeft className="h-4 w-4" /> Return to {position}
       </Link>
+      {/* The living mobile environment arrives before descriptive website content. */}
+      <div className="relative mt-3 mb-4" data-system-switch-living-river="water-fire-bridge">
+        <StaffFileFolderWorld role={role} identity={user.name || user.username} userId={user.id}/>
+      </div>
       <div className="mt-5 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-amber-200/45 bg-[#082b48]/70 shadow-[0_0_43px_rgba(250,192,91,.23)]">
           <Orbit className="h-7 w-7 text-amber-100"/>
@@ -39,14 +43,12 @@ export default function SystemSwitchEntryPage() {
         <p className="mt-5 text-[10px] font-black uppercase tracking-[.28em] text-amber-200">System Switch · Bridge of Radiance</p>
         <h1 className="mt-3 text-4xl font-black leading-[1.07] tracking-[-.05em] sm:text-5xl">Go beyond the page.</h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-sky-100/85">
-          Your {position} stays yours. When you enter Flame Event, you become a walking presence inside the Burning River. Reach the Switch arch and enter the opened Customer Doors of Client-owned worlds.
+          Your {position} stays yours. This shared System Switch is a living 3D crossing, with flowing water and fire, a physical Bridge of Radiance, and real Client Customer Doors. Enter Flame Event to move through the full Burning River.
         </p>
       </div>
       <Link href="/system-switch/bridge-radiance/flame-coin" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-300/35 bg-amber-300/10 px-5 py-3 text-xs font-black text-amber-100">Request Flame Coin · Bridge of Radiance <ArrowRight className="h-4 w-4"/></Link>
       <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Visit Client-hosted Customer Doors as an avatar</Link>
-      <div className="relative my-7" data-system-switch-living-river="water-fire-bridge">
-        <StaffFileFolderWorld role={role} identity={user.name || user.username} userId={user.id}/>
-      </div>
+
       <p className="text-center text-[10px] font-semibold leading-5 text-white/85">
         <Waves className="mr-1 inline h-4 w-4 text-sky-200"/> River Bank → Burning River → System Switch → Customer Door
       </p>
