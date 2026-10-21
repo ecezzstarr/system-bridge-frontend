@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft,ChefHat,RefreshCcw,ShieldCheck,Truck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 type Manager={
-  id:string;agent_id:string;status:string;application_note:string;review_note?:string|null;
+  id:string;agent_id:string;status:string;position:'manager'|'assistant';application_note:string;review_note?:string|null;
   name:string;username:string;email:string;is_active:boolean;role:string;monthly_salary_ngn:string
 }
 type Order={id:string;product:'agility'|'electrolyte'|'ember'|'daisy';variant_id:string;stage:string;payment_status:string;
@@ -53,8 +53,9 @@ export default function AdminFoodPreparationManagerPage(){
       <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ShieldCheck className="h-4 w-4"/> Administration · Company Kitchen</p>
-          <h1 className="mt-2 text-3xl font-black">Food Preparation Manager</h1>
-          <p className="mt-3 text-xl font-black text-emerald-200">₦60,000 monthly salary</p>
+          <h1 className="mt-2 text-3xl font-black">Food Preparation Management Team</h1>
+          <p className="mt-3 text-xl font-black text-emerald-200">1 Manager · ₦70,000/month | 5 Assistants · ₦40,000/month each</p>
+          <p className="mt-2 text-xs text-amber-200">Approved: {approved.filter(person=>person.position==='manager').length}/1 Manager · {approved.filter(person=>person.position==='assistant').length}/5 Assistants</p>
           <p className="mt-2 max-w-3xl text-xs leading-6 text-stone-400">Review Agent applicants, authorize appointment, and assign paid Agility, Electrolyte and Daisy Pastries orders. Each preparation and dispatch handoff stays attached to the original order. Salary terms are informational until an authorized payroll process is established.</p>
         </div>
         <button type="button" onClick={()=>void load()} className="inline-flex items-center gap-2 border border-white/10 px-4 py-2 text-xs"><RefreshCcw className="h-4 w-4"/> Refresh</button>
@@ -66,9 +67,9 @@ export default function AdminFoodPreparationManagerPage(){
       <h2 className="text-xl font-black">Applications awaiting review · {pending.length}</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {pending.map(person=><article key={person.id} className="border border-white/10 p-5">
-          <p className="flex items-center gap-2 text-xs text-amber-200"><ChefHat className="h-4 w-4"/> Agent applicant</p>
+          <p className="flex items-center gap-2 text-xs text-amber-200"><ChefHat className="h-4 w-4"/> {person.position==='manager'?'Manager application':'Assistant Manager application'}</p>
           <h3 className="mt-2 text-lg font-black">{person.name||person.username}</h3>
-          <p className="mt-1 text-xs text-stone-500">{person.email} · {person.is_active?'Active':'Inactive'}</p>
+          <p className="mt-1 text-xs text-stone-500">{person.email} · {person.is_active?'Active':'Inactive'} · ₦{Number(person.monthly_salary_ngn).toLocaleString('en-NG')}/month after appointment</p>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-300">{person.application_note}</p>
           <label className="mt-4 block text-xs text-stone-300">Verification, availability and decision reason
             <textarea minLength={15} maxLength={2000} rows={3} value={notes[person.id]||''}
@@ -77,7 +78,7 @@ export default function AdminFoodPreparationManagerPage(){
           </label>
           <div className="mt-3 flex flex-wrap gap-3">
             <button type="button" disabled={busy===person.id||!person.is_active||(notes[person.id]||'').trim().length<15}
-              onClick={()=>void update({action:'review',appointmentId:person.id,decision:'approved',reviewNote:notes[person.id]},person.id,'Agent approved for Food Preparation Manager.')}
+              onClick={()=>void update({action:'review',appointmentId:person.id,decision:'approved',reviewNote:notes[person.id]},person.id,'Agent approved for the selected Food Preparation position.')}
               className="border border-emerald-300/30 px-4 py-2 text-xs text-emerald-200 disabled:opacity-40">Approve</button>
             <button type="button" disabled={busy===person.id||(notes[person.id]||'').trim().length<15}
               onClick={()=>void update({action:'review',appointmentId:person.id,decision:'rejected',reviewNote:notes[person.id]},person.id,'Application declined.')}
@@ -88,11 +89,11 @@ export default function AdminFoodPreparationManagerPage(){
       </div>
     </section>
     <section className="border-t border-white/10 pt-6">
-      <h2 className="text-xl font-black">Approved managers · {approved.length}</h2>
+      <h2 className="text-xl font-black">Approved kitchen staff · {approved.length}/6</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {staff.filter(p=>p.status==='approved').map(person=><div key={person.id} className="border border-white/10 p-4">
-          <p className="text-sm font-black">{person.name||person.username}</p>
-          <p className="mt-2 text-xs text-stone-400">Agent · {person.is_active?'Active':'Inactive'} · salary ₦60,000 per month</p>
+          <p className="text-sm font-black">{person.name||person.username} · {person.position==='manager'?'Manager':'Assistant Manager'}</p>
+          <p className="mt-2 text-xs text-stone-400">Agent · {person.is_active?'Active':'Inactive'} · salary ₦{Number(person.monthly_salary_ngn).toLocaleString('en-NG')} per month</p>
           <label className="mt-3 block text-xs text-stone-300">Reason to revoke access
             <textarea minLength={15} maxLength={2000} rows={2} value={notes[person.id]||''} onChange={e=>setNotes(v=>({...v,[person.id]:e.target.value}))} className="mt-2 w-full border border-white/10 bg-[#161c1b] p-3"/>
           </label>
@@ -119,7 +120,7 @@ export default function AdminFoodPreparationManagerPage(){
               <select value={assignees[order.product+order.id]||order.manager_id||''}
                 onChange={e=>setAssignees(v=>({...v,[order.product+order.id]:e.target.value}))}
                 className="mt-2 block min-w-56 border border-white/10 bg-[#17221d] p-3">
-                <option value="">Choose approved Agent</option>
+                <option value="">Choose approved kitchen staff</option>
                 {approved.map(person=><option value={person.id} key={person.id}>{person.name||person.username}</option>)}
               </select>
             </label>
