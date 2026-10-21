@@ -21,7 +21,7 @@ export type FlameMobileInput = {
   jumpQueued:boolean
 }
 
-function RiverSurface({quiet}:{quiet:boolean}) {
+export function RiverSurface({quiet}:{quiet:boolean}) {
   const material=useMemo(()=>new THREE.ShaderMaterial({
     uniforms:{time:{value:0}},
     vertexShader:[
