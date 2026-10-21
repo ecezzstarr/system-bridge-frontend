@@ -349,7 +349,13 @@ export async function POST(request: NextRequest, context: { params: Promise<{ co
     await db.query('COMMIT')
 
     const product = publicProduct(variantId)
-    await notifyAdminOrder({orderId:String(orderResult.rows[0].id),event:'placed',department:'agent',subject:'Carrier food customer order',detail:`${customerName} reserved ${quantity} × ${product?.name||variantId} from ${agent.name||'Agent'}; customer payment pending`,adminPath:'/admin/agility',actorId:String(agent.id),actorName:agent.name||'Agent'})
+    // The order has committed: a notification outage must never make the customer
+    // think the order failed and submit a duplicate payment reservation.
+    try {
+      await notifyAdminOrder({orderId:String(orderResult.rows[0].id),event:'placed',department:'agent',subject:'Carrier food customer order',detail:`${customerName} reserved ${quantity} × ${product?.name||variantId} from ${agent.name||'Agent'}; customer payment pending`,adminPath:'/admin/agility',actorId:String(agent.id),actorName:agent.name||'Agent'})
+    } catch (notificationError) {
+      console.error('[carrier/food/public] committed order notification failed', notificationError)
+    }
 
     return NextResponse.json({
       success: true,
