@@ -271,6 +271,31 @@
   }
 }
 
+/* The Client private formation loader shares the same stable viewport.
+   On short Android screens its content scrolls inside a fixed reading pane. */
+.weave-file-folder-loader {
+  height: 100svh;
+  min-height: 100svh;
+  max-height: 100svh;
+  isolation: isolate;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: none;
+}
+.weave-file-folder-loader-card {
+  max-height: calc(100svh - max(2rem, env(safe-area-inset-top)) - max(2rem, env(safe-area-inset-bottom)));
+  scrollbar-width: thin;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  filter: none;
+  transform: none;
+}
+.weave-file-folder-loader :where(h1,h2,p,span) {
+  text-shadow: none;
+  filter: none;
+}
+
 /* Phone-fit guardrails
    The WEAVE world may be spatial, but no route is allowed to be wider than the
    physical viewport. Safe-area padding and intrinsic-width resets keep the
