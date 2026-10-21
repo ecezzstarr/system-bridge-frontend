@@ -24,7 +24,7 @@ export default function FileFolderLivingTerrain({districts,onEnter,active,system
   <p className="mt-1 text-xs leading-5 text-slate-300">Touch a building to see what happens there, then enter to work. Your real construction records remain connected to the existing workshops.</p>
   <p className="mt-2 text-[10px] text-cyan-200">{building} building · {systems} completed · construction follows real-world time, even while you are away</p>
  </header>
- <div className="relative min-h-[540px] overflow-hidden sm:min-h-[650px]" style={{background:'radial-gradient(ellipse at 50% 22%,rgba(255,196,125,.9),transparent 22%),linear-gradient(180deg,#0b1d3d 0%,#355177 25%,#dd9971 43%,#28728a 54%,#06384e 100%)'}}>
+ <div className="relative overflow-hidden" style={{minHeight:540,background:'radial-gradient(ellipse at 50% 22%,rgba(255,196,125,.9),transparent 22%),linear-gradient(180deg,#0b1d3d 0%,#355177 25%,#dd9971 43%,#28728a 54%,#06384e 100%)'}}>
   <div aria-hidden="true" className="absolute inset-x-0 top-[43%] h-[57%]" style={{background:'repeating-radial-gradient(ellipse at 50% 50%,rgba(13,98,125,.3) 0px,rgba(46,176,204,.3) 3px,rgba(8,46,73,.8) 8px,rgba(7,46,70,.9) 24px)'}}/>
   <div aria-hidden="true" className="absolute left-1/2 top-[47%] h-[44%] w-[90%] -translate-x-1/2 rounded-[50%] border-[10px] border-[#a9f3e5]/25 bg-[#165a63]/45 shadow-[0_0_75px_rgba(63,210,228,.25)]"/>
   <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-60" viewBox="0 0 100 100" preserveAspectRatio="none">
