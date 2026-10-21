@@ -117,11 +117,11 @@ export async function POST(request: NextRequest) {
     })
     const projectResult = await pool.query(
       `INSERT INTO admin_video_ad_projects
-       (created_by,order_id,title,subject,objective,audience,duration_seconds,aspect_ratio,status,storyboard)
-       VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7,'9:16','planned',$8::jsonb)
+       (created_by,order_id,title,subject,objective,audience,duration_seconds,aspect_ratio,status,storyboard,soundtrack_url)
+       VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7,'9:16','planned',$8::jsonb,$9)
        ON CONFLICT(order_id) WHERE order_id IS NOT NULL DO NOTHING
        RETURNING *`,
-      [auth.user.id,orderId,String(order.business_name),String(order.subject),String(order.objective),String(order.audience),Number(order.duration_seconds),JSON.stringify(storyboard)]
+      [auth.user.id,orderId,String(order.business_name),String(order.subject),String(order.objective),String(order.audience),Number(order.duration_seconds),JSON.stringify(storyboard),order.soundtrack_url||null]
     )
     let project = projectResult.rows[0]
     if (!project) {
