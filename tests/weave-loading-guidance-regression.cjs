@@ -15,7 +15,7 @@ for(const role of ['visitor','agent','bridger','client','admin']){
   assert.equal(cards.length,3,role+' needs three training cards')
   assert.ok(cards.every(card=>card.title&&card.body&&card.movement),'All messages teach something usable')
 }
-assert.ok(trainingBriefsForRole('agent')[0].body.includes('Stability'))
+assert.ok(trainingBriefsForRole('agent')[0].title.includes('Stability'))
 assert.ok(trainingBriefsForRole('agent')[1].body.includes('1.5 Flame Coin'))
 assert.ok(trainingBriefsForRole('bridger')[1].body.includes('unverified'))
 assert.ok(trainingBriefsForRole('client')[1].title.includes('real time'))
