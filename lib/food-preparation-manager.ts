@@ -6,7 +6,7 @@ import { nextElectrolyteAdminStage } from '@/lib/electrolyte-catalog'
 import { ensureCarrierCakeSchema, nextCakeAdministrationStatus } from '@/lib/carrier-cakes'
 
 export const FOOD_PREPARATION_MANAGER_SALARY_NGN=70000
-export const FOOD_PREPARATION_ASSISTANT_SALARY_NGN=40000
+export const FOOD_PREPARATION_ASSISTANT_SALARY_NGN=30000
 export const FOOD_PREPARATION_MANAGER_TITLE='Food Preparation Manager'
 export const FOOD_PREPARATION_ASSISTANT_TITLE='Assistant Food Preparation Manager'
 export const FOOD_PREPARATION_CAPACITY={manager:1,assistant:2} as const
@@ -136,10 +136,10 @@ export async function ensureFoodPreparationManagerSchema(){
       ALTER TABLE weave_food_preparation_managers
         ADD COLUMN IF NOT EXISTS position varchar(16) NOT NULL DEFAULT 'manager';
       UPDATE weave_food_preparation_managers
-        SET monthly_salary_ngn=CASE WHEN position='assistant' THEN 40000 ELSE 70000 END,
+        SET monthly_salary_ngn=CASE WHEN position='assistant' THEN 30000 ELSE 70000 END,
             updated_at=NOW()
         WHERE monthly_salary_ngn IS DISTINCT FROM
-          CASE WHEN position='assistant' THEN 40000 ELSE 70000 END;
+          CASE WHEN position='assistant' THEN 30000 ELSE 70000 END;
     `)
     // Existing production databases were created before Ember. Update their
     // original check constraint as well as the new-table schema.
