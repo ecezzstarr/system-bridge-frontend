@@ -24,8 +24,9 @@ export const WORLD_RULES = {
   AGENT_CROSSING_YIELD_RATE: 0.02, // 5% of 40% = 2% total on client crossing
   
   // Continuance (formerly Continuance)
-  BRIDGER_CONTINUANCE_NGN: 5000,
-  BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN: 15,
+  // Bridgers have no recurring membership subscription. These are product purchases.
+  AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN: 20,
+  BRIDGE_AI_TEMPLATE_OPEN_FLAME_COIN: 8,
   
   // Wallet Fees
   PLATFORM_FEE_PERCENT: 5,
