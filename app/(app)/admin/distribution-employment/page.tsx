@@ -5,7 +5,7 @@ import {useAuth} from '@/lib/auth-provider'
 import {Button} from '@/components/ui/button'
 
 type Applicant={user_id:string;name:string;email:string;source_role:string;status:string;accepted_name:string;document_version:number;document_accepted_at:string;verified_at:string|null;verification_note:string|null;probation_started_at:string|null;probation_ends_at:string|null}
-type TeamRow={manager_id:string;manager_name:string;status:string;assistant_count:number;last_update_at:string|null;probation_started_at:string|null;probation_ends_at:string|null}
+type TeamRow={manager_id:string;manager_name:string;status:string;assistant_count:number;last_update_at:string|null;probation_started_at:string|null;probation_ends_at:string|null;referralMetrics:{total:number;target:number;remaining:number;monthNumber:number;probation:boolean}|null}
 type WorkUpdate={id:string;manager_user_id:string;manager_name:string;author_name:string;kind:string;content:string;created_at:string}
 type ReviewState={appointments:Applicant[];overview:{teams:TeamRow[];updates:WorkUpdate[]};readOnlyReports:boolean}
 export default function DistributionEmploymentAdministration(){
@@ -81,6 +81,7 @@ export default function DistributionEmploymentAdministration(){
           <p className="mt-1">Probation started: {t.probation_started_at?new Date(t.probation_started_at).toLocaleString('en-NG'):'Not started'}</p>
           <p className="mt-1">Probation ends: {t.probation_ends_at?new Date(t.probation_ends_at).toLocaleString('en-NG'):'Not started'}</p>
           <p className="mt-1">Last field update: {t.last_update_at?new Date(t.last_update_at).toLocaleString('en-NG'):'No update recorded'}</p>
+          <p className="mt-2 font-black text-emerald-200">Verified referral progress: {t.referralMetrics?`${t.referralMetrics.total} / ${t.referralMetrics.target}`:t.status==='pending_verification'?'Not started':'No verified report available'}</p>
         </article>)}
       </div>
     </section>
