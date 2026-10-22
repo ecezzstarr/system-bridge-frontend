@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     },{headers:{'Cache-Control':'private, no-store'}})
   }
 
-  const results = await runEchoAnalysis(context as any)
+  const results = await runEchoAnalysis(context as any,authUser.role)
 
   const stored = []
   for (const insight of results) {
