@@ -89,7 +89,7 @@ export default function AppLayout({
             cache: 'no-store',
           })
           const data = await res.json()
-          if (data.success && data.subscription.subscription_status === 'suspended') {
+          if (data.success && data.subscription?.status === 'suspended') {
             router.replace('/bridger/subscription')
             toast.error('Automatic renewal could not complete. Add enough Flame Coin to your wallet to restore Continuance.')
           }
