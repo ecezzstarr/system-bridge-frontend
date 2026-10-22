@@ -31,7 +31,7 @@ export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
   }, [])
 
   const active = useMemo(
-    () => (event.effectiveStatus || resolveEventStatus(event, now)) === 'active',
+    () => resolveEventStatus({...event, status:event.effectiveStatus || event.status}, now) === 'active',
     [event, now]
   )
 
