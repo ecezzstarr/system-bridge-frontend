@@ -115,6 +115,8 @@ export async function readDistributionEmploymentOverview(){
       JOIN users m ON m.id=t.manager_user_id
       ORDER BY t.created_at DESC,t.id DESC LIMIT 150`),
     pool.query(`SELECT a.user_id,a.status,a.manager_user_id,a.hired_at,a.reviewed_at,
+      a.application_note,a.created_at,a.administration_verification,
+      a.administration_verified_at,a.administration_verification_note,
       a.exited_at,a.exit_kind,u.name,u.role,m.name AS manager_name
       FROM weave_distribution_assistants a JOIN users u ON u.id=a.user_id
       LEFT JOIN users m ON m.id=a.manager_user_id
