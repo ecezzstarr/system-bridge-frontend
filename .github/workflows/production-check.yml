@@ -115,6 +115,7 @@ jobs:
           node tests/bridger-subscribe-all-regression.cjs
           node tests/referral-core-regression.cjs
           node tests/manager-employment-regression.cjs
+          node tests/agentic-bridger-attainment-wording-regression.cjs
           node tests/distribution-verification-team-regression.cjs
           node tests/weave-employment-exit-correspondence-regression.cjs
           node tests/weave-employment-workflow-wording-regression.cjs
