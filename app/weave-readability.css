@@ -237,6 +237,17 @@
 .weave-loader-lyric-focus {
   margin: .15rem 0;
 }
+/* The lyric line moves through a stable, sharp reading window. Animate only
+   the changing words, never the page, the artwork or the reading surface. */
+.weave-loader-lyric-motion {
+  animation: weave-loader-lyric-arrive .55s ease-out both;
+  filter: none !important;
+  text-shadow: none !important;
+}
+@keyframes weave-loader-lyric-arrive {
+  from { opacity: .35; transform: translateY(.55rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .weave-loader-lyric-meter-fill {
   width: 0;
   animation-name: weave-loader-lyric-beat;
@@ -246,6 +257,13 @@
 @keyframes weave-loader-lyric-beat {
   from { width: 0%; }
   to { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .weave-loader-lyric-motion {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .weave-loader-lyric-meter-fill {
