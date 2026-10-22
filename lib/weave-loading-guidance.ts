@@ -48,13 +48,13 @@ const PLATFORM_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'WEAVE · FOUR POSITIONS',
     title:'Know who operates each part.',
-    body:'Agents maintain Stability. Bridgers connect Prospects with Client opportunities. Clients own their File Folders and businesses. Administration verifies and organizes the institution.',
+    body:'Agents work in Stability by selling and distributing WEAVE products in Nigeria and supporting Bridger programs. Bridgers work in Hope, introducing digital File Folders to interested people worldwide. Clients own their businesses. Administration organizes the company.',
     movement:'Agent · Bridger · Client · Administration',
   },
   {
     eyebrow:'WEAVE · HOW TO BEGIN',
     title:'Choose one real action.',
-    body:'Enter through your correct position. Open its working systems, follow the instructions for an actual activity, and verify the outcome before you continue.',
+    body:'Company Loop 1 — Flame Event: Burning River runs October 1 to December 31, 2026. Every department continues its own real business activities within this shared three-month event. Later loops will reflect verified results and new needs.',
     movement:'Choose a system → operate → verify → continue',
   },
 ]
@@ -63,19 +63,19 @@ const AGENT_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'AGENT TRAINING · 1 OF 3',
     title:'Your position is Stability.',
-    body:'WEAVE operates product sales, services and systems. As an Agent you can participate in commerce, use your Carrier Door and take creative work from businesses. You do not need to learn everything at once.',
+    body:'Stability is WEAVE product commerce in Nigeria. Agents offer Agility, Electrolyte, Ember and Daisy Pastries to customers, manage orders and supply shops, while also supporting attached Bridger programs. Choose one real function first.',
     movement:'Recognize Agent position → choose one working system',
   },
   {
     eyebrow:'AGENT TRAINING · 2 OF 3',
     title:'Learn the work before spending.',
-    body:'Agent Work leads to food products, stock and selling. Creative Studio lets you make image layouts free and produce videos at the Agent Studio fee of up to 1.5 Flame Coin. Customer selling prices are separate.',
+    body:'Agent Work opens real food and customer sales. Order stock, supply outlets and follow verified payments. Creative Studio offers media services; commissions from attached Bridger activity are a separate recorded earning stream.',
     movement:'Agent Work → product or creative service → customer',
   },
   {
     eyebrow:'AGENT TRAINING · 3 OF 3',
     title:'Make your first verified movement.',
-    body:'Open Agent Work or Creative Studio. Check the details and price, complete one practical task, then confirm the order, delivery or receipt. Open the optional WEAVE Guide bubble for page-specific instructions.',
+    body:'Your activity contributes to Company Loop 1 — Flame Event: Burning River, October 1 to December 31, 2026. Open Agent Work, follow one real customer order or stock movement, verify it and continue. The Guide bubble can explain each page.',
     movement:'Open → learn → act → verify',
   },
 ]
@@ -84,7 +84,7 @@ const BRIDGER_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'BRIDGER TRAINING · 1 OF 3',
     title:'Your position is Hope.',
-    body:'WEAVE builds operating systems. Bridgers approach potential Prospects, listen to what people need, and help interested people understand Client File Folder ownership and use.',
+    body:'Hope is WEAVE digital outreach. Bridgers introduce File Folders and cloud-based systems to interested people worldwide, including Europe. Listen first: only a real response can lead to an informed Client crossing.',
     movement:'Prospect possibility → contact → response',
   },
   {
@@ -96,7 +96,7 @@ const BRIDGER_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'BRIDGER TRAINING · 3 OF 3',
     title:'Carry an informed crossing.',
-    body:'When a Prospect asks to continue, explain what the File Folder does, the real charges and the verification process. Give their authorized Bridge AI entrance, not an invented promise.',
+    body:'During Company Loop 1 — Flame Event: Burning River, October 1 to December 31, 2026, explain File Folder ownership, the actual price and verification process. Share an authorized Bridge AI entrance only with an interested Prospect. No guaranteed income or conversion.',
     movement:'Explain → consent → System Switch → verified ownership',
   },
 ]
