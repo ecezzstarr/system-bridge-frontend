@@ -12,7 +12,6 @@ assert.ok(room.includes('System pulse'),'Reusable WEAVE room exposes live system
 const converted=[
  ['app/client/loops/page.tsx','client-loop-field'],
  ['app/(app)/admin/loop-workshop/page.tsx','administration-loop-workshop'],
- ['app/(app)/bridger/subscription/page.tsx','bridger-continuance'],
  ['app/(app)/bridger/numbers/page.tsx','bridger-number-bay'],
  ['app/(app)/admin/bridger-numbers/page.tsx','administration-number-engine'],
 ]
@@ -231,9 +230,8 @@ assert.ok(bridgerRadiancePage.includes("redirect('/bridger/bridge-ai')"),'Retire
 assert.ok(!bridgerRadiancePage.includes('visiblePoll(')&&!bridgerRadiancePage.includes('setInterval('),'Retired Bridger Bridge Radiance mounts no duplicate polling runtime')
 assert.ok(bridgerNumbers.includes('visiblePoll(signal=>load(true,signal),10000,false)'),'Number Bay refreshes delivery and verification movement while visible')
 assert.ok(bridgerClientsPage.includes("redirect('/bridger/presence')"),'Retired Bridger Clients route resolves to Bridger Presence without mounting a second continuity application')
-assert.ok(bridgerContinuancePage.includes('visiblePoll(signal=>fetchContinuance(true,signal),30000,false)'),'Bridger Continuance reflects Administration decisions without reopening the page')
-assert.ok(bridgerContinuancePage.includes('Automatic Continuance')&&bridgerContinuancePage.includes('Retry automatic wallet renewal'),'Bridger Continuance makes wallet-first automatic renewal visible')
-assert.ok(bridgerContinuancePage.includes('BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN')&&bridgerContinuancePage.includes('Subscribe to Bridge AI'),'Bridger Continuance still distinguishes the separate Bridge AI subscription')
+assert.ok(bridgerContinuancePage.includes('data-bridger-no-continuance'),'Legacy Bridger Continuance page now explains free Bridger participation')
+assert.ok(bridgerContinuancePage.includes('8 Flame Coin')&&bridgerContinuancePage.includes('20 Flame Coin'),'Old Bridger links display current per-template and permanent fees')
 assert.ok(dailyProspectClaimUi.includes('visiblePoll(signal => load(true, signal), 60000, false)')&&dailyProspectClaimUi.includes('Refresh intake'),'Daily Prospect intake can recover and reflect new reserve state')
 assert.ok(environmentRegistry.includes('WEAVE_ENVIRONMENT_REGISTRY'),'Environment Organizer has an explicit world surface registry')
 assert.ok(environmentRegistry.includes("kind:'station'")&&environmentRegistry.includes("kind:'district'"),'Environment Organizer registers world districts and operating stations')
