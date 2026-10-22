@@ -77,7 +77,7 @@ export async function applyForDistributionAssistant(userId: string, note: string
       VALUES ($1::uuid,'pending',$2)
       ON CONFLICT(user_id) DO UPDATE SET
         status='pending',application_note=EXCLUDED.application_note,
-        manager_user_id=NULL,hired_at=NULL,reviewed_at=NULL,updated_at=NOW()
+        manager_user_id=NULL,hired_at=NULL,reviewed_at=NULL,exit_kind=NULL,exit_reason=NULL,exited_at=NULL,exited_by=NULL,updated_at=NOW()
       WHERE weave_distribution_assistants.status IN ('rejected','ended')
       RETURNING user_id,status
     `,[userId,applicantNote])
