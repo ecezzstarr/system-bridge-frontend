@@ -15,7 +15,7 @@ const layout=read('app/(app)/layout.tsx')
 const legacy=read('app/api/bridger/subscription/route.ts')
 const legions=read('app/api/client/enterprise/legion-market/route.ts')
 
-assert.ok(rules.includes('AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN: 20')&&rules.includes('BRIDGE_AI_TEMPLATE_OPEN_FLAME_COIN: 8'),'Canonical purchases cost 20 and 8 Flame Coin')
+assert.ok(rules.includes('AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN: 11')&&rules.includes('BRIDGE_AI_TEMPLATE_OPEN_FLAME_COIN: 8'),'Canonical Agentic-Bridger attainment costs 11 Flame Coin and Bridge AI costs 8')
 assert.ok(!rules.includes('BRIDGER_CONTINUANCE_NGN:'),'Recurring Bridger fee is retired')
 assert.ok(engine.includes("source: 'agentic_bridger_one_time'")&&engine.includes('getAgenticBridgerPurchase(userId)'),'Bridger Lifestyle requires purchased Agentic entitlement, not a subscription')
 assert.ok(engine.includes("if (role === 'agent')")&&engine.includes("source: 'agent_position'"),'Agent Lifestyle still opens from active Agent position')
