@@ -3,6 +3,7 @@ import { LiveAdSurface } from '@/components/live-ad-surface'
 import { AppHeader } from '@/components/app-header'
 import { ClientRouteGuard } from '@/components/client/client-route-guard'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
+import { CompanyLoopTwoScroll } from '@/components/events/company-loop-two-scroll'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
@@ -40,6 +41,7 @@ export default function ClientLayout({
         <div className="relative z-10" data-client-shell-height="content-owned">
           <AppHeader />
           <FlameEventAd />
+          <CompanyLoopTwoScroll />
           <LiveAdSurface />
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role="client">
