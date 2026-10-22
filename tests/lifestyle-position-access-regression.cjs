@@ -42,6 +42,7 @@ assert.ok(page.includes('await load()')&&page.includes('data.reason === \'insuff
 assert.ok(page.includes('Bridge AI and Echo are optional separate services; Lifestyle takes no second subscription fee'),'Renewal does not bundle optional services or invent a Lifestyle fee')
 assert.ok(appLayout.includes("'/bridger/subscription', '/weave/lifestyles', '/wallet', '/wallet/deposit-withdraw'"),'Suspended Bridgers retain access to Continuance, Lifestyle landing and wallet funding without opening gated Lifestyle activities')
 assert.ok(appLayout.includes("data.subscription?.status === 'suspended'"),'Suspension enforcement reads the status field actually returned by the Continuance API')
+assert.ok(appLayout.includes("router.replace('/weave/lifestyles')"),'Suspended Bridgers are taken to self-service Lifestyle renewal')
 assert.ok(bridgerContinuance.includes("reason: 'account_inactive'")&&bridgerContinuance.includes('bridger.is_active === false'),'Inactive accounts cannot be debited without reopening Lifestyle')
 assert.ok(bridgerSubscriptionPage.includes('href="/weave/lifestyles"'),'Bridger Continuance console points back to Lifestyle')
 
