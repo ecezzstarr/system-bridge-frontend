@@ -49,7 +49,7 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
       if(!response.ok)throw new Error(result.error||'Action was not completed')
       setContent('');setReason('');setPendingAction(null)
       setNotice(action==='reply'?'Reply delivered to the employment correspondence record.':
-        action==='resign'?'Resignation recorded. Your employment access has ended.':
+        action==='resign'?result.result?.exitKind==='withdrawn'?'Application withdrawal recorded.':'Resignation recorded. Your employment access has ended.':
         'Administration termination recorded. Employment access has ended.')
       await load()
       if(action!=='reply')onStatusChange?.()
@@ -100,7 +100,7 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
           onChange={e=>setReason(e.target.value)} placeholder="Provide the decision reason and any operational handoff details."
           className="mt-2 w-full border border-rose-300/25 bg-slate-950 p-3 text-sm text-white"/>
         <div className="mt-2 flex flex-wrap gap-2">
-          <Button type="button" disabled={busy||reason.trim().length<10} onClick={()=>void act(pendingAction)}
+          <Button type="button" disabled={busy||reason.trim().length<10} onClick={()=>void act(pendingAction==='fire'?'fire':'resign')}
             className="bg-rose-800 text-white">{busy?'Recording…':pendingAction==='fire'?'Confirm firing':'Confirm resignation'}</Button>
           <Button type="button" variant="outline" disabled={busy} onClick={()=>{setPendingAction(null);setReason('')}}>Cancel</Button>
         </div>
