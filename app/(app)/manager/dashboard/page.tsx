@@ -7,6 +7,7 @@ import { ArrowRight, BriefcaseBusiness, CalendarClock, CheckCircle2, Copy, FileS
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DistributionTeamWorkspace } from '@/components/distribution/team-workspace'
 
 export default function ManagerDashboardPage(){
   const {user,token,isInitialized,isLoading}=useAuth()
@@ -54,11 +55,11 @@ export default function ManagerDashboardPage(){
 
   const acceptDocument=async()=>{
     if(!token||!user)return
-    if(!accepted){setError('Accept the Distribution Manager Lifestyle document to begin probation.');return}
+    if(!accepted){setError('Accept the Distribution Manager Lifestyle document for Administration verification.');return}
     if(signature.trim().toLowerCase()!==String(user.name||'').trim().toLowerCase()){setError('Type your full account name exactly as your signature.');return}
     setBusy(true);setError('')
     try{
-      const response=await fetch('/api/manager/employment',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({action:'accept_document',accepted:true,documentVersion:terms?.documentVersion||2,signature:signature.trim()})})
+      const response=await fetch('/api/manager/employment',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({action:'accept_document',accepted:true,documentVersion:terms?.documentVersion||3,signature:signature.trim()})})
       const data=await response.json()
       if(!response.ok)throw new Error(data.error||'Distribution Manager Lifestyle could not begin.')
       setState(data.state)
@@ -102,25 +103,40 @@ export default function ManagerDashboardPage(){
     </main>
   }
 
-  if(!state?.employment||state.employment.status==='ended'){
+  if(!state?.employment||['ended','rejected'].includes(state.employment.status)){
     return <main className="mx-auto max-w-3xl px-4 py-10" data-distribution-manager-lifestyle-document="true">
       <section className="rounded-3xl border border-cyan-300/15 bg-cyan-300/[.025] p-6 md:p-8">
         <div className="flex items-center gap-2 text-cyan-300"><FileSignature className="h-5 w-5"/><p className="text-[10px] font-black uppercase tracking-[.2em]">Distribution Manager Lifestyle Document</p></div>
         <h1 className="mt-3 text-3xl font-black text-white">{user?.name}</h1>
+        {state?.employment?.status==='rejected'&&<p className="mt-3 border border-rose-300/25 p-3 text-xs text-rose-200">Administration did not approve the previous application. {state.employment.verification_note||'You may sign a new application after reviewing the requirements.'}</p>}
         <p className="mt-2 text-sm text-slate-400">Your underlying WEAVE position remains {String(user?.role||'').toUpperCase()}. {agentFree?'As an Agent, Distribution Manager is carried through your active Agent position with no monthly subscription.':'Distribution Manager is carried through your Bridger identity while Bridger Continuance remains active.'}</p>
         {error&&<p className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{error}</p>}
         <div className="mt-6 space-y-3 rounded-2xl border border-white/10 bg-black/20 p-5 text-sm leading-6 text-slate-300">
-          <p><strong className="text-white">Probation.</strong> Acceptance begins Day 1. Probation lasts one calendar month.</p>
+          <p><strong className="text-white">Administration verification.</strong> Signing submits your application for review. One-month probation begins only when Administration verifies the appointment, not when you sign.</p>
           <p><strong className="text-white">Core duty.</strong> Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaigns and return distribution records to Administration.</p>
           <p><strong className="text-white">Field organization.</strong> Help Bridgers carry Prospect-to-Client movement and help Agents carry WEAVE distribution through their existing positions.</p>
           <p><strong className="text-white">Monthly target.</strong> 300 verified Agent or Bridger referrals shared by the Manager and up to two appointed assistants in their first one-month probation period, then 500 each subsequent team employment month. No separate individual quota.</p>
           <p><strong className="text-white">Salary condition.</strong> ₦70,000 full monthly salary when the team reaches 300 verified referrals in the first probation month, or 500 in a later team employment month. Below the applicable target, receive only ₦500 for each qualifying referral you personally made; no full salary. Salary requires month-end payroll verification and referral bonuses are never paid twice.</p>
           <p><strong className="text-white">Lifestyle access.</strong> {agentFree?'Agent position access is free. Distribution Manager remains open while the Agent account is active.':'Distribution Manager follows Bridger Continuance. If Continuance closes, this Lifestyle closes while preserving the underlying Bridger role.'}</p>
         </div>
-        <label className="mt-5 flex items-start gap-3 rounded-xl border border-white/10 p-3 text-xs text-slate-300"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} className="mt-1"/><span>I accept the Distribution Manager Lifestyle document and understand that acceptance begins my one-month probation.</span></label>
+        <label className="mt-5 flex items-start gap-3 rounded-xl border border-white/10 p-3 text-xs text-slate-300"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} className="mt-1"/><span>I accept the Distribution Manager Lifestyle document and understand that Administration must approve the signed application before probation begins.</span></label>
         <label htmlFor="distribution-manager-signature" className="mt-4 block text-sm font-semibold text-white">Sign with your full account name</label>
         <Input id="distribution-manager-signature" name="signature" type="text" autoComplete="name" aria-label="Distribution Manager document signature" className="mt-2 min-h-12 w-full border-slate-700 bg-slate-900/50 text-white" value={signature} onChange={e=>setSignature(e.target.value)} placeholder={user?.name||'Full account name'}/>
-        <Button onClick={acceptDocument} disabled={busy||!accepted} className="mt-4 w-full bg-cyan-700 font-black uppercase tracking-wider hover:bg-cyan-600">{busy?'Recording…':<><CheckCircle2 className="mr-2 h-4 w-4"/>Accept · Begin Distribution Manager Lifestyle</>}</Button>
+        <Button onClick={acceptDocument} disabled={busy||!accepted} className="mt-4 w-full bg-cyan-700 font-black uppercase tracking-wider hover:bg-cyan-600">{busy?'Recording…':<><CheckCircle2 className="mr-2 h-4 w-4"/>Accept · Request Administration Verification</>}</Button>
+      </section>
+    </main>
+  }
+
+  if(state.employment.status==='pending_verification') {
+    return <main className="mx-auto max-w-3xl px-4 py-10" data-distribution-manager-awaiting-administration="true">
+      <section className="border border-amber-300/25 bg-amber-300/[.04] p-6">
+        <p className="text-[10px] font-black uppercase tracking-widest text-amber-200">Awaiting Administration verification</p>
+        <h1 className="mt-3 text-2xl font-black text-white">Signed Distribution Manager application received</h1>
+        <p className="mt-3 text-sm leading-6 text-slate-300">Administration must verify your appointment before probation, Manager pay qualification, and team-assistant hiring can begin. Your signed application is saved; your original Agent or Bridger work remains available.</p>
+        <p className="mt-3 text-xs text-slate-400">Signed: {new Date(state.employment.document_accepted_at).toLocaleString('en-NG')} · Probation has not started · No Manager team actions are authorized yet.</p>
+        <Button type="button" onClick={()=>load().catch(err=>setError(err.message))} className="mt-5 bg-amber-700 text-white">Refresh verification status</Button>
+        {error&&<p role="alert" className="mt-3 text-xs text-rose-200">{error}</p>}
+        <Link href="/weave/lifestyles" className="mt-4 block text-xs text-cyan-200">Return to Lifestyle →</Link>
       </section>
     </main>
   }
@@ -133,6 +149,7 @@ export default function ManagerDashboardPage(){
     <section className="mt-7 grid gap-4 md:grid-cols-4"><Metric icon={<CalendarClock className="h-4 w-4"/>} label="Probation remaining" value={employment.status==='probation'?`${daysRemaining} days`:statusLabel}/><Metric icon={<Target className="h-4 w-4"/>} label={state.probationPeriod?"Probation team referrals":"Monthly team referrals"} value={`${state.successfulReferrals} / ${state.target}`}/><Metric icon={<Users className="h-4 w-4"/>} label="Team referrals remaining" value={String(state.remaining)}/><Metric icon={<BriefcaseBusiness className="h-4 w-4"/>} label="Potential full salary" value={`₦${Number(state.monthlySalaryNgn||70000).toLocaleString('en-NG')}`}/></section>
     <section className="mt-6 rounded-2xl border border-emerald-300/15 bg-emerald-300/[.035] p-5"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Core duty · Distribute WEAVE</p><h2 className="mt-1 text-xl font-black text-white">Carry WEAVE outward and return the movement.</h2><p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">Use public distribution, campaign tools and field coordination to create measurable movement. The shared target is 300 referrals in your first probation month and 500 every subsequent team employment month, across you and your two assigned Assistant Distribution Managers. Each qualifying referral counts once, credited to the person who referred them after starting the position.</p></div><div className="min-w-[180px]"><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-emerald-300" style={{width:`${state.progressPercent}%`}}/></div><p className="mt-2 text-right text-xs font-black text-emerald-200">{state.progressPercent}%</p></div></div></section>
     <section className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[.035] p-5" data-distribution-manager-pay-rule="team-performance"><h2 className="text-sm font-black text-white">Current month · Payment qualification</h2><p className="mt-2 text-sm text-slate-300">{state.compensation?.teamQualified?'Your team has reached its applicable monthly target. Full Manager salary of ₦70,000 is provisionally eligible, subject to month-end verification and payroll approval.':'Your team has not yet reached its applicable monthly target. No full Manager salary is currently eligible; you receive only the existing ₦500 bonus for each qualifying referral you brought.'}</p><div className="mt-3 grid grid-cols-2 gap-3"><Metric icon={<BriefcaseBusiness className="h-4 w-4"/>} label="Salary eligibility (provisional)" value={`₦${Number(state.compensation?.salaryEntitlementNgn||0).toLocaleString('en-NG')}`}/><Metric icon={<Users className="h-4 w-4"/>} label="Your referral bonus value" value={`₦${Number(state.compensation?.individualReferralBonusNgn||0).toLocaleString('en-NG')}`}/></div><p className="mt-3 text-xs text-slate-500">This is a performance preview, not confirmation of a salary transfer. Referral bonus settlement is handled separately by Weave’s existing referral ledger.</p></section>
+    <DistributionTeamWorkspace/>
     {assistantState?.canReview&&<section className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[.03] p-5" data-distribution-assistant-review="true">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><p className="text-[10px] font-black uppercase tracking-widest text-amber-300">Assistant Distribution Managers</p><h2 className="mt-2 text-xl font-black text-white">Your distribution support team</h2><p className="mt-2 text-sm text-slate-400">Six assistant appointments across WEAVE, two reporting to each of the three Distribution Managers. Each receives a ₦30,000 monthly salary term after appointment. Your full three-person team shares one target of 300 verified Agent/Bridger referrals in the first probation month, then 500 in subsequent team employment months. Full salaries apply only when the applicable target is met; otherwise individuals receive only their qualifying ₦500 referral bonuses.</p></div>
