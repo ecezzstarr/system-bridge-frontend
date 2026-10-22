@@ -200,7 +200,7 @@ export async function getManagerEmploymentState(userId: string) {
   const employment=await getManagerEmployment(userId)
   // Referral ledger reconciliation is not a condition for viewing an accepted
   // employment position. A reporting failure must never hide the signed record.
-  const referral=await getReferralCoreState(userId).catch(error=>{
+  const referral=await getReferralCoreState(userId,{settlePending:false}).catch(error=>{
     console.error('[manager-employment] referral summary unavailable',error)
     return null
   })
