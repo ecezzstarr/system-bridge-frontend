@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Bot, BriefcaseBusiness, ChefHat, Gamepad2, Loader2, LockKeyhole, Megaphone, ShieldCheck, Sparkles, Users, Sprout, ShoppingBasket } from 'lucide-react'
 import { toast } from 'sonner'
+import { WORLD_RULES } from '@/lib/world/constants'
 
 function authHeaders() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('ssb_auth_token') : null
@@ -33,6 +34,8 @@ export default function WeaveLifestylesPage() {
   const [access, setAccess] = useState<AccessState | null>(null)
   const [carrier, setCarrier] = useState<CarrierState | null>(null)
   const [loading, setLoading] = useState(true)
+  const [continuanceRenewing, setContinuanceRenewing] = useState(false)
+  const [continuanceError, setContinuanceError] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -51,6 +54,41 @@ export default function WeaveLifestylesPage() {
       toast.error(error.message || 'Could not read WEAVE Lifestyle access')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const renewContinuance = async () => {
+    if (access?.role !== 'bridger' || access.active || continuanceRenewing) return
+    setContinuanceRenewing(true)
+    setContinuanceError(null)
+    try {
+      const response = await fetch('/api/bridger/subscription', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ action: 'auto_deduct' }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.success) {
+        if (data.reason === 'insufficient_balance') {
+          setContinuanceError(`Your wallet contains ${Number(data.availableFlameCoin || 0).toLocaleString()} Flame Coin. ${Number(data.requiredFlameCoin || 0).toLocaleString()} Flame Coin is required at the current conversion rate. Fund the wallet, then subscribe here.`)
+          return
+        }
+        if (data.reason === 'rate_unavailable') {
+          setContinuanceError('The Flame Coin conversion rate is temporarily unavailable. No payment was taken.')
+          return
+        }
+        if (data.reason === 'account_inactive') {
+          setContinuanceError('This Bridger account is inactive. Contact Administration before renewing.')
+          return
+        }
+        throw new Error(data.error || 'Could not renew Bridger Continuance.')
+      }
+      await load()
+      toast.success(data.renewed ? 'Bridger Continuance renewed. Lifestyle access has been refreshed.' : 'Bridger Continuance is already current.')
+    } catch (error: any) {
+      setContinuanceError(error.message || 'Could not renew Bridger Continuance.')
+    } finally {
+      setContinuanceRenewing(false)
     }
   }
 
@@ -109,6 +147,31 @@ export default function WeaveLifestylesPage() {
               )}
             </div>
           </section>
+
+          {access?.role === 'bridger' && (
+            <section className="mt-5 rounded-2xl border border-emerald-300/25 bg-emerald-400/[.05] p-5 sm:p-6" data-lifestyle-bridger-continuance="self-service">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Bridger Continuance · Open Lifestyle</p>
+                  <h2 className="mt-2 text-2xl font-black text-white">₦{WORLD_RULES.BRIDGER_CONTINUANCE_NGN.toLocaleString('en-NG')} <span className="text-sm text-slate-300">/ 30 days</span></h2>
+                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Subscribe personally with your Flame Coin wallet. Active Bridger Continuance opens eligible Lifestyle activities, Ace and Agentic-Bridger. Bridge AI and Echo are optional separate services; Lifestyle takes no second subscription fee.</p>
+                  <p className="mt-2 text-xs text-slate-400">The ₦ amount converts to Flame Coin at the current payment rate. An already-current Continuance is never charged again.</p>
+                  {access.expiresAt && <p className="mt-2 text-xs text-slate-400">Current period ends {new Date(access.expiresAt).toLocaleDateString('en-NG')}.</p>}
+                </div>
+                <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase ${access.active ? 'border-emerald-300/25 text-emerald-200' : 'border-amber-300/25 text-amber-200'}`}>{access.active ? 'Continuance active' : 'Continuance required'}</span>
+              </div>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                {!access.active && (
+                  <button type="button" onClick={() => void renewContinuance()} disabled={continuanceRenewing} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-950 disabled:cursor-wait disabled:opacity-50">
+                    {continuanceRenewing ? 'Processing Continuance…' : 'Subscribe · Open Lifestyle'}
+                  </button>
+                )}
+                <Link href="/wallet/deposit-withdraw" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-xs font-black text-white">Fund Flame Coin Wallet</Link>
+                <Link href="/bridger/subscription" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 px-4 py-3 text-xs font-black text-emerald-100">Continuance details / payment proof</Link>
+              </div>
+              {continuanceError && <p role="alert" className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/[.08] px-4 py-3 text-xs leading-5 text-rose-200">{continuanceError}</p>}
+            </section>
+          )}
 
           <section className="mt-7">
             <div className="flex flex-wrap items-end justify-between gap-2">
