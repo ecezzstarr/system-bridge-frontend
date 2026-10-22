@@ -24,6 +24,8 @@ export type FlameWorldCustomerDoor = {
   market_section?:string|null
   level:'door'|'storefront'|'market_hall'
   offer_count:number
+  visual_preset?:string
+  public_systems?:{name:string;system_type:string}[]
 }
 
 /**
