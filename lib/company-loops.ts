@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db'
+import { ONE_NIGERIAN_LOOP } from '@/lib/company-loop-two'
 
 export const COMPANY_LOOP_ROLES = ['client', 'agent', 'bridger', 'admin'] as const
 export const COMPANY_LOOP_PLAYER_ROLE = 'client' as const
@@ -34,6 +35,45 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
   `
   await sql`
     CREATE INDEX IF NOT EXISTS company_loops_number_idx ON company_loops(loop_number)
+  `
+
+  // Official Company Loop 2 is independent of the preserved Burning River row.
+  // Existing Administration-authored Loop 2 records are never overwritten.
+  await sql`
+    INSERT INTO company_loops (
+      loop_number, title, purpose, stage, position, functions,
+      responsibilities, boundaries, audience, status, published_at
+    )
+    SELECT
+      2,
+      'One Nigerian',
+      'Company Loop 2 — Flame Event: One Nigerian operates from January 1 through May 1, 2027, with WEAVE taking on a green–white–green national environment.',
+      'Scheduled',
+      'all',
+      'Agents operate Stability; Bridgers carry Hope; Clients build and operate their File Folder worlds; Administration organizes and verifies movement.',
+      'Each position follows its authorized operating systems, records real work and checks the status of approvals, orders and builds.',
+      'The daily scroll explains the current place but does not confirm employment, payments, orders or completed systems.',
+      ARRAY['client','agent','bridger','admin']::text[],
+      'published',
+      NOW()
+    WHERE NOT EXISTS (SELECT 1 FROM company_loops WHERE loop_number = 2)
+  `
+
+  await sql`
+    UPDATE company_loops
+    SET stage = CASE
+      WHEN NOW() > ${ONE_NIGERIAN_LOOP.endsAt}::timestamptz THEN 'Closing'
+      WHEN NOW() >= ${ONE_NIGERIAN_LOOP.startsAt}::timestamptz THEN 'Movement'
+      ELSE 'Scheduled'
+    END, updated_at = NOW()
+    WHERE loop_number = 2
+      AND title = 'One Nigerian'
+      AND status = 'published'
+      AND stage IS DISTINCT FROM CASE
+        WHEN NOW() > ${ONE_NIGERIAN_LOOP.endsAt}::timestamptz THEN 'Closing'
+        WHEN NOW() >= ${ONE_NIGERIAN_LOOP.startsAt}::timestamptz THEN 'Movement'
+        ELSE 'Scheduled'
+      END
   `
 }
 
