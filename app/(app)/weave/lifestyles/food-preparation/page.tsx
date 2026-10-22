@@ -98,7 +98,7 @@ export default function FoodPreparationManagerPage(){
         Coordinate and support preparation, packaging and dispatch of Agility, Electrolyte, Ember and Daisy Pastries for verified customer and Agent supply orders.
         Your work follows actual verified orders. The Lead controls team assignments, and each preparation and dispatch handoff is recorded.
       </p>
-      <p className="mt-3 text-xs leading-5 text-amber-100">Applications are reviewed by Administration; this is not automatic employment or an automatic wallet credit. Current salary payment processing is not connected.</p>
+      <p className="mt-3 text-xs leading-5 text-amber-100">Administration verifies Food Preparation employment applications. Approval opens the position, while the approved Stability Lead organizes day-to-day preparation and assigns tasks to assistants. The salary is an employment term, not an automatic wallet transfer.</p>
     </header>
     {error&&<p role="alert" className="mt-5 border border-rose-300/20 px-4 py-3 text-xs text-rose-200">{error}</p>}
     {message&&<p role="status" className="mt-5 border border-emerald-300/20 px-4 py-3 text-xs text-emerald-200">{message}</p>}
@@ -114,7 +114,7 @@ export default function FoodPreparationManagerPage(){
       <div>
         <h2 className="text-xl font-black">Your position</h2>
         {data?.appointment?<div className="mt-4 border border-white/10 p-5">
-          <p className="text-xs font-black uppercase text-amber-200">{data.appointment.position==='manager'?'Food Preparation Manager':'Assistant Food Preparation Manager'} · Application: {data.appointment.status}</p>
+          <p className="text-xs font-black uppercase text-amber-200">{data.appointment.position==='manager'?'Food Preparation Manager':'Assistant Food Preparation Manager'} · Appointment: {data.appointment.status==='pending'?'Application awaiting Administration review':data.appointment.status==='approved'?'Approved employment':data.appointment.status==='rejected'?'Application declined':data.appointment.status==='revoked'?'Position ended':data.appointment.status}</p>
           <EmploymentActions position="food_preparation" onStatusChange={()=>void load()}/>
           {data.appointment.review_note&&<p className="mt-3 text-xs text-stone-400">Administration: {data.appointment.review_note}</p>}
           {data.appointment.status==='approved'&&<p className="mt-3 text-xs text-emerald-200">{data.appointment.position==='manager'?'You lead WEAVE Stability food operations. Assign work to approved assistants or prepare the order yourself.':'The WEAVE Stability Lead Manager assigns your preparation orders. You may only move orders assigned to you.'}</p>}
@@ -158,7 +158,7 @@ export default function FoodPreparationManagerPage(){
           <button type="button" onClick={()=>void load()} className="inline-flex items-center gap-2 border border-white/15 px-4 py-2 text-xs"><RefreshCcw className="h-4 w-4"/> Refresh</button>
         </div>
         {!data?.appointment||data.appointment.status!=='approved'?
-          <p className="mt-5 border border-dashed border-white/10 p-6 text-xs leading-6 text-stone-500">The work desk opens after Administration approves your employment and assigns verified paid orders.</p>:
+          <p className="mt-5 border border-dashed border-white/10 p-6 text-xs leading-6 text-stone-500">The work desk opens after Administration approves your employment. The approved Stability Lead assigns verified paid food orders to the preparation team.</p>:
           !data.tasks.length?<p className="mt-5 border border-dashed border-white/10 p-6 text-xs text-stone-500">No preparation orders have been assigned to you.</p>:
           <div className="mt-4 space-y-4">{data.tasks.map(task=><article key={task.id} className="border border-white/10 bg-white/[.025] p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
