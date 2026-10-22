@@ -376,7 +376,7 @@ assert.ok(cleanRevealTransit2026.includes("data-environment-content-state={cover
 assert.ok(cleanRevealAppLayout2026.includes('data-environment-pending="true"'),'Authenticated shell keeps the global cover while auth state resolves')
 assert.ok(cleanRevealAppLayout2026.includes('Opening WEAVE')&&cleanRevealAppLayout2026.includes('Restoring your position and the current environment.'),'Authenticated shell has a visible recovery surface if auth initialization outlives the global cover')
 assert.ok(cleanRevealFileLoader2026.includes('data-environment-pending="true"'),'File Folder boot participates in the global readiness gate')
-assert.ok(cleanRevealFileLoader2026.includes('setStage(1)')&&cleanRevealFileLoader2026.includes('setStage(2)'),'File Folder boot visibly progresses through environment formation stages')
+assert.ok(cleanRevealFileLoader2026.includes('FILE_FOLDER_BEATS')&&cleanRevealFileLoader2026.includes('setBeat(index=>(index+1)%FILE_FOLDER_BEATS.length)'),'File Folder boot visibly cycles through lyrical formation stages until ready')
 assert.ok(read('app/client/system-switch/page.tsx').includes('2200-(Date.now()-bootStartedAt)'),'File Folder keeps a deliberate minimum environment-formation interval before reveal')
 assert.ok(!clientFileFolder.includes("bg-[#0d0907]")&&!clientFileFolder.includes("bg-[#17100b]"),'File Folder interior no longer reintroduces the brown panel shell over the 4D territory')
 assert.ok(cleanRevealClientLayout2026.includes('overflow-x-clip')&&!cleanRevealClientLayout2026.includes('min-h-screen overflow-hidden'),'Client environments are not vertically clipped by their shell')
