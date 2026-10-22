@@ -116,3 +116,22 @@ export function getEventCountdown(event: WeaveEvent, now = new Date()) {
     seconds: Math.floor((remaining % 60000) / 1000),
   }
 }
+
+
+/** One Nigerian Company Loop 2 occupies January 1–11, 2027, Lagos time.
+ * Loop 3 begins January 12; no Loop 2 banner may continue past that date.
+ */
+export function isOneNigerianEventActive(now=new Date()):boolean{
+  const timestamp=now.getTime()
+  return timestamp>=Date.parse('2027-01-01T00:00:00+01:00') &&
+    timestamp<Date.parse('2027-01-12T00:00:00+01:00')
+}
+
+/** Stable Nigeria-local day key for once-per-day Company Loop banners. */
+export function nigeriaDayKey(now=new Date()):string{
+  const components=new Intl.DateTimeFormat('en-GB',{
+    timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit',
+  }).formatToParts(now)
+  const part=(name:string)=>components.find(item=>item.type===name)?.value||''
+  return `${part('year')}-${part('month')}-${part('day')}`
+}
