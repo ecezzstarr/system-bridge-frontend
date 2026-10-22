@@ -33,7 +33,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     route: '/weave/lifestyles/agentic-bridger',
     parent: ACE_LIFESTYLE,
     roles: ['bridger'],
-    summary: 'A Bridger-only Lifestyle specialization inside Ace. It keeps the Bridger role intact while applying the Agentic-Bridger movement and eligible 45% earning rate.',
+    summary: 'A permanent, one-time 20 Flame Coin Bridger Lifestyle purchase; opens eligible WEAVE jobs including Distribution Manager and Legion, plus Ace and the Agentic-Bridger earning rate.',
     environments: [
       { label: 'Prospect Market', href: '/weave/market/prospects', purpose: 'Work unverified Prospect candidates toward real interaction.' },
       { label: 'Email Outreach', href: '/bridger/email-outreach', purpose: 'Carry Prospect movement through email.' },
