@@ -25,6 +25,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'shared-flame-event', label:'Flame Event · Loop 1', kind:'district', route:'/event', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:57 },
   { key:'shared-settings', label:'Settings', kind:'district', route:'/settings', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:58 },
   { key:'shared-marketplace', label:'Enterprise Systems', kind:'district', route:'/marketplace', area:'Shared WEAVE', scope:'shared', defaultOrder:70 },
+  { key:'shared-creative-studio', label:'Image Creative Studio', kind:'district', route:'/agent/creative', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:74 },
   { key:'shared-video-ad-studio', label:'Video Ad Studio', kind:'district', route:'/video-ad-studio', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:75 },
   { key:'shared-distribution-studio', label:'Social Presence', kind:'district', route:'/distribution-studio', area:'Shared WEAVE', scope:'shared', protected:true, defaultOrder:77 },
   { key:'shared-echo', label:'Echo', kind:'district', route:'/echo', area:'Shared WEAVE', scope:'shared', defaultOrder:80 },
