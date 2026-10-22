@@ -44,9 +44,9 @@ function loadPurchase(db){
  const output=ts.transpileModule(src,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText
  const module={exports:{}}
  vm.runInNewContext(output,{module,exports:module.exports,console:{error(){}},Date,require(name){
-  if(name==='/lib/db')return db
-  if(name==='/lib/weave-receipts')return {issueWeaveReceipt:async()=>({id:'receipt'})}
-  if(name==='/lib/world/constants')return {WORLD_RULES:{AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN:20}}
+  if(name.endsWith('/db'))return db
+  if(name.endsWith('/weave-receipts'))return {issueWeaveReceipt:async()=>({id:'receipt'})}
+  if(name.endsWith('/world/constants'))return {WORLD_RULES:{AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN:20}}
   throw Error('Unexpected dependency '+name)
  }},{filename:'lib/agentic-bridger-purchase.ts'})
  return module.exports
