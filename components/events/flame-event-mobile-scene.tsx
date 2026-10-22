@@ -143,6 +143,36 @@ function Terrain({quality}:{quality:number}){
   </group>
 }
 
+/** A visible structure exists only after the Client publishes an ACTIVE built system.
+ * No construction countdowns, private workshops, or fictional businesses are shown. */
+function PublishedClientSystem({system,index,preset}:{system:{name:string;system_type:string};index:number;preset?:string}){
+  const kind=system.system_type.toLowerCase()
+  const tower=/stream|broadcast|media|creator/.test(kind)
+  const commerce=/store|market|commerce|distribution/.test(kind)
+  const height=tower?2.6:commerce?1.65:2.05
+  const glow=preset==='garden_exchange'?'#8bffcf':preset==='night_market'?'#ebafff':preset==='glass_citadel'?'#8adfff':'#ffd18b'
+  return <group position={[index===0?-2.8:2.8,0,-1.75]} data-public-client-built-system={system.system_type}>
+    <mesh position={[0,.05,0]} receiveShadow><cylinderGeometry args={[.95,1.08,.18,8]}/><meshStandardMaterial color="#647a80" roughness={.75}/></mesh>
+    <mesh position={[0,height/2+.1,0]} castShadow>
+      {tower?<cylinderGeometry args={[.45,.77,height,8]}/>:<boxGeometry args={[1.38,height,1.17]}/>}
+      <meshStandardMaterial color={commerce?'#345e66':'#326a81'} metalness={.54} roughness={.24} emissive="#0a4861" emissiveIntensity={.26}/>
+    </mesh>
+    {[-.41,.41].map((x)=><mesh key={x} position={[x,height*.59,.595]}>
+      <boxGeometry args={[.18,height*.54,.02]}/><meshStandardMaterial color="#9ce4ff" metalness={.22} emissive="#30b5da" emissiveIntensity={.65}/>
+    </mesh>)}
+    <mesh position={[0,height+.19,0]}>
+      {tower?<octahedronGeometry args={[.35,0]}/>:<boxGeometry args={[1.58,.2,1.37]}/>}
+      <meshStandardMaterial color={glow} emissive={glow} emissiveIntensity={.9} metalness={.48}/>
+    </mesh>
+    <Html center position={[0,height+1,0]} distanceFactor={14} style={{pointerEvents:'none'}} zIndexRange={[11,1]}>
+      <div style={{maxWidth:110,minWidth:90,background:'rgba(5,27,44,.88)',padding:'5px 7px',border:'1px solid rgba(255,216,148,.45)',borderRadius:7,textAlign:'center',fontSize:9,lineHeight:1.3,color:'#fff5df',fontWeight:700}}>
+        <span style={{display:'block',fontSize:7,letterSpacing:'.1em',color:'#9ce5f5'}}>LIVE CLIENT SYSTEM</span>
+        {system.name}
+      </div>
+    </Html>
+  </group>
+}
+
 function Portal({
   enterprise,x,z,index,playerMotion,
 }:{
@@ -216,6 +246,9 @@ function Portal({
       <mesh><boxGeometry args={[1.75,.35,.46]}/><meshStandardMaterial color="#d3c3ab" metalness={.41}/></mesh>
       <mesh position={[0,.29,0]}><octahedronGeometry args={[.34,0]}/><meshStandardMaterial color="#fff1c3" emissive="#d3a050" emissiveIntensity={1.65}/></mesh>
     </group>}
+    {(enterprise.public_systems||[]).filter(s=>s.system_type!=='customer_door').slice(0,2).map((system,i)=>
+      <PublishedClientSystem key={system.system_type+':'+i} system={system} index={i} preset={enterprise.visual_preset}/>
+    )}
     <Html position={[0,strong?3.94:complete?3.42:3.08,0]} center distanceFactor={13} style={{pointerEvents:'none'}} zIndexRange={[12,2]}>
       <div style={{width:132,textAlign:'center',color:'#fff2d8',fontWeight:800,fontSize:12,lineHeight:1.3,textShadow:'0 2px 7px #061421,0 0 8px #061421',overflowWrap:'break-word'}}>
         <div style={{fontSize:8,letterSpacing:1.25,color:'#ffdb98'}}>{tier.toUpperCase()} {String(index+1).padStart(2,'0')}</div>
@@ -363,10 +396,10 @@ function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
   const doorPositions=useMemo(()=>flameEventDoorPositions(enterprises.length),[enterprises.length])
   const playerMotion=useRef<WeaveAvatarMotion>({x:FLAME_EVENT_PLAYER_START.x,z:FLAME_EVENT_PLAYER_START.z,yaw:0,speed:0,crouching:false,airborne:0})
   return <>
-    <fog attach="fog" args={['#7894a8',30,95]}/>
-    <ambientLight intensity={1.15} color="#dae9f7"/>
-    <hemisphereLight args={['#d9e7fc','#726759',1.2]}/>
-    <directionalLight position={[-10,21,-13]} color="#ffe2ab" intensity={2.4} castShadow={budget.shadows} shadow-mapSize-width={512} shadow-mapSize-height={512}/>
+    <fog attach="fog" args={['#0b2840',27,89]}/>
+    <ambientLight intensity={.92} color="#c5e9fc"/>
+    <hemisphereLight args={['#82caff','#413329',1.1]}/>
+    <directionalLight position={[-10,21,-13]} color="#ffd09a" intensity={2.4} castShadow={budget.shadows} shadow-mapSize-width={512} shadow-mapSize-height={512}/>
     <pointLight position={[0,7,-13]} color="#ffc381" intensity={5} distance={31}/>
     <RiverSurface quiet={budget.reducedMotion}/>
     <Terrain quality={budget.level}/>
