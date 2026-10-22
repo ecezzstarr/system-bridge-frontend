@@ -25,7 +25,7 @@ assert.ok(purchase.includes('if (existing.rows.length)')&&purchase.includes('alr
 assert.ok(purchase.includes("source:'agentic_bridger_one_time'")&&purchase.includes('issueWeaveReceipt'),'Purchased entitlement has ledger and receipt')
 assert.ok(purchaseApi.includes('getAuthUser')&&purchaseApi.includes("user.role !== 'bridger'"),'Purchase API rejects other roles and requires authentication')
 assert.ok(page.includes('data-lifestyle-agentic-purchase="self-service"')&&page.includes("fetch('/api/weave/lifestyles/agentic/purchase'"),'Bridger Lifestyle exposes self-service one-time purchase')
-assert.ok(page.includes('Buy Once · Open Lifestyle')&&page.includes('Echo is free'),'Lifestyle displays the new payment structure')
+assert.ok(page.includes('Attain Agentic-Bridger · 11 Flame Coin once')&&page.includes('Echo is free'),'Lifestyle displays the new payment structure')
 assert.ok(page.includes('/wallet/deposit-withdraw'),'Lifestyle offers wallet funding for insufficient balance')
 assert.ok(access.includes('entitlement: access.source'),'Lifestyle API reports the actual entitlement')
 assert.ok(legacy.includes('status:410')&&layout.includes('Bridger core work is not restricted by recurring subscriptions'),'Old recurring API and suspension redirect are gone')
