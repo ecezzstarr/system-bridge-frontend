@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+import { isOneNigerianLoopActive } from '@/lib/weave-loop-two'
 
 // Bump whenever the official WEAVE mark changes so installed devices refresh it.
 const ICON_VERSION = '3'
@@ -10,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Interaction in Motion: people, ideas, opportunities, value and livelihood in one living WEAVE environment.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#06152e',
-    theme_color: '#06152e',
+    background_color: isOneNigerianLoopActive() ? '#052b1c' : '#06152e',
+    theme_color: isOneNigerianLoopActive() ? '#008751' : '#06152e',
     icons: [
       {
         src: `/icon.svg?v=${ICON_VERSION}`,
