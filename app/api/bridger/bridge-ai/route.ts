@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   }
   const body = await request.json().catch(() => ({}))
   const templateId = String(body.templateId||'')
-  if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(templateId)) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(templateId)) {
     return NextResponse.json({error:'A valid Bridge AI template is required'},{status:400})
   }
   const customWelcomeMessage = typeof body.customWelcomeMessage === 'string'
