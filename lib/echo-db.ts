@@ -1,4 +1,4 @@
-import { getPool, sql } from './db'
+import { sql } from './db'
 
 
 export async function ensureEchoTables() {
@@ -52,11 +52,12 @@ export async function ensureEchoTables() {
 // Echo is available without a recurring fee. Historical rows are preserved.
 export async function getEchoContinuance(userId: string) {
   await ensureEchoTables()
-  return { user_id:userId, status:'active', expiry:null, last_paid_at:null, free:true }
+  const active=await hasActiveContinuance(userId)
+  return { user_id:userId, status:active?'active':'inactive', expiry:null, last_paid_at:null, free:true }
 }
 
 export async function hasActiveContinuance(userId: string): Promise<boolean> {
-  const rows=await sql`SELECT id FROM users WHERE id=${userId}::uuid AND is_active=true`
+  const rows=await sql`SELECT id FROM users WHERE id=${userId}::uuid AND COALESCE(is_active,true)=true`
   return rows.length > 0
 }
 
