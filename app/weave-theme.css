@@ -100,3 +100,76 @@ html[data-weave-theme="dark-blue"] :where(input,textarea)::placeholder {
 html[data-weave-theme="dark-blue"] .weave-live-flame-canvas {
   filter: grayscale(1) sepia(1) hue-rotate(175deg) saturate(2);
 }
+
+
+/* Company Loop 2 — One Nigerian. The existing theme stays unchanged outside Loop 2. */
+html[data-weave-theme="dark-blue"][data-weave-loop-theme="one-nigerian"] {
+  --background: #063821;
+  --foreground: #ffffff;
+  --card: #075034;
+  --card-foreground: #ffffff;
+  --popover: #063a26;
+  --popover-foreground: #ffffff;
+  --primary: #008751;
+  --primary-foreground: #ffffff;
+  --secondary: #f7fff9;
+  --secondary-foreground: #064a30;
+  --muted: #15523b;
+  --muted-foreground: #d3f0df;
+  --accent: #a5f3bf;
+  --accent-foreground: #063821;
+  --border: #a3dcc0;
+  --input: #124830;
+  --ring: #e5fff0;
+  --sidebar: #06442c;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #008751;
+  --sidebar-primary-foreground: #ffffff;
+  --weave-world-base: #063821;
+  --weave-world-surface: rgba(4, 57, 36, .78);
+  --weave-world-surface-strong: rgba(4, 57, 36, .94);
+  --weave-world-line: rgba(255,255,255,.19);
+  --presence-glow: #b9f6ce;
+  --field-surface: rgba(5, 68, 43, .78);
+  --field-border: rgba(250,255,250,.25);
+  color-scheme: dark;
+}
+html[data-weave-theme="dark-blue"][data-weave-loop-theme="one-nigerian"] body {
+  background: linear-gradient(90deg, rgba(0,135,81,.28) 0 32%, rgba(255,255,255,.14) 32% 68%, rgba(0,135,81,.28) 68% 100%), #063821;
+  color: #fff;
+}
+html[data-weave-theme="dark-blue"][data-weave-loop-theme="one-nigerian"] :is(
+  .weave-header, .weave-sidebar, .weave-client-nav,
+  .weave-environment-panel, .weave-reading-surface,
+  .field-surface, .card, [role="card"], [data-slot="card"],
+  [data-slot="dialog-content"], [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"], [data-slot="sheet-content"],
+  [data-weave-dj-mirror="true"]
+) {
+  background: linear-gradient(110deg, rgba(0,135,81,.44), rgba(255,255,255,.10) 51%, rgba(0,135,81,.44)), #063a26;
+  border-color: rgba(255,255,255,.27);
+}
+html[data-weave-theme="dark-blue"][data-weave-loop-theme="one-nigerian"] .weave-live-flame-canvas {
+  filter: grayscale(.55) sepia(1) hue-rotate(67deg) saturate(1.85);
+}
+.weave-loop2-scroll {
+  background: linear-gradient(90deg,#00683e,#0d5839 32%,#186443 50%,#0d5839 68%,#00683e);
+  border-color: rgba(255,255,255,.3);
+  box-shadow: 0 8px 28px rgba(0,0,0,.16);
+}
+.weave-loop2-scroll-ticker .weave-loop2-scroll-track {
+  animation: weave-loop2-flow 42s linear infinite;
+  will-change: transform;
+}
+.weave-loop2-scroll-ticker:hover .weave-loop2-scroll-track,
+.weave-loop2-scroll-ticker:focus-visible .weave-loop2-scroll-track,
+.weave-loop2-scroll[data-company-loop-scroll-open="true"] .weave-loop2-scroll-track {
+  animation-play-state: paused;
+}
+@keyframes weave-loop2-flow {
+  from {transform: translateX(0)}
+  to {transform: translateX(-50%)}
+}
+@media (prefers-reduced-motion: reduce) {
+  .weave-loop2-scroll-ticker .weave-loop2-scroll-track {animation:none;will-change:auto}
+}
