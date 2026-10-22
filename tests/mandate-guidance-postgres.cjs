@@ -7,10 +7,11 @@ function load(file,deps={}){const exports={};vm.runInNewContext(ts.transpileModu
 const sql=async(strings,...values)=>(await pool.query(strings.reduce((s,part,i)=>s+(i?'$'+i:'')+part,''),values)).rows
 const db={getPool:()=>pool,sql}
 const catalog=load('lib/weave-lifestyle-catalog.ts')
-const lifestyle=load('lib/weave-lifestyle.ts',{'@/lib/db':db,'@/lib/weave-lifestyle-catalog':catalog,'@/lib/client-monthly-subscription':{getClientMonthlyStanding:async()=>({active:false,hasPayment:false,paidUntil:null})},'@/lib/agentic-bridger-purchase':{getAgenticBridgerPurchase:async()=>null}})
+const agentic=load('lib/agentic-bridger-purchase.ts',{'@/lib/db':db,'@/lib/weave-receipts':{issueWeaveReceipt:async()=>{}},'@/lib/world/constants':{WORLD_RULES:{AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN:11}}})
+const lifestyle=load('lib/weave-lifestyle.ts',{'@/lib/db':db,'@/lib/weave-lifestyle-catalog':catalog,'@/lib/client-monthly-subscription':{getClientMonthlyStanding:async()=>({active:false,hasPayment:false,paidUntil:null})},'@/lib/agentic-bridger-purchase':agentic})
 const departments=load('lib/weave-guidance-departments.ts',{'@/lib/db':db,'@/lib/weave-lifestyle':lifestyle})
 const auth=load('lib/auth-api.ts',{'next-auth/next':{getServerSession:async()=>null},'./auth':{authOptions:{}},'./db':db,'./weave-infrastructure':{getDivineShieldState:async()=>({active:false})}})
-const deps={'next/server':{NextResponse:{json:(body,options)=>new Response(JSON.stringify(body),options)}},'@/lib/auth-api':auth,'@/lib/db':db,'@/lib/weave-lifestyle':lifestyle,'@/lib/weave-guidance-departments':departments}
+const deps={'next/server':{NextResponse:{json:(body,options)=>new Response(JSON.stringify(body),options)}},'@/lib/auth-api':auth,'@/lib/db':db,'@/lib/weave-lifestyle':lifestyle,'@/lib/weave-guidance-departments':departments,'@/lib/agentic-bridger-purchase':agentic}
 const apply=load('app/api/weave/lifestyles/mandate/route.ts',deps),review=load('app/api/admin/guidance-staff/route.ts',deps),staff=load('app/api/company-guidance/staff/route.ts',deps),original=load('app/api/company-guidance/route.ts',deps)
 const ids={admin:'10000000-0000-4000-8000-000000000001',worker:'10000000-0000-4000-8000-000000000002',requester:'10000000-0000-4000-8000-000000000003',due:'10000000-0000-4000-8000-000000000004',client:'10000000-0000-4000-8000-000000000005',unopened:'10000000-0000-4000-8000-000000000006'}
 function request(method,who,body,query=''){const req=new Request('http://localhost/test'+query,{method,headers:who?{Authorization:'Bearer qa-mandate-'+who}: {},...(body?{body:JSON.stringify(body)}:{})});req.nextUrl=new URL(req.url);return req}
@@ -19,7 +20,7 @@ const decision=(id,state)=>({applicationId:id,decision:state,reviewNote:'QA revi
 const reply=()=>staff.POST(request('POST','worker',{department:'forensic',requesterId:ids.requester,content:'QA forensic reply from the real assigned Agent identity.'}))
 async function run(){
  const admin=new Pool({connectionString:rootUri});try{await admin.query('CREATE DATABASE weave_mandate_test')}catch(e){if(e.code!=='42P04')throw e}finally{await admin.end()}
- await pool.query(`DROP TABLE IF EXISTS weave_guidance_staff_applications,arena_ace_accounts,arena_live_predictions,arena_matches,enterprise_legions,lounge_messages,notifications,sessions,users CASCADE;
+ await pool.query(`DROP TABLE IF EXISTS bridger_agentic_purchases,weave_guidance_staff_applications,arena_ace_accounts,arena_live_predictions,arena_matches,enterprise_legions,lounge_messages,notifications,sessions,users CASCADE;
  CREATE TABLE users(id uuid PRIMARY KEY,name text,username text,email text,role text,is_active boolean DEFAULT true,created_at timestamptz DEFAULT NOW(),avatar_url text,subscription_status text DEFAULT 'active',subscription_expiry timestamptz,is_subscription_exempt boolean DEFAULT false);
  CREATE TABLE sessions(token text,user_id uuid,expires_at timestamptz);
  CREATE TABLE arena_matches(id uuid PRIMARY KEY);
