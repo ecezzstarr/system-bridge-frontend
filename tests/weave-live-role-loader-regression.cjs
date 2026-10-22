@@ -35,7 +35,7 @@ assert.ok(transit.includes('transitTrainingForPath(role,destinationPath)'),'Dest
 assert.ok(transit.includes('data-client-loader-open-world-return'),'Client loader provides a real return route')
 assert.ok(!transit.includes("Today's company updates")&&!transit.includes('Select Destination'),'Static image menus and fabricated live updates are absent')
 assert.ok(transit.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'The readiness gate is preserved')
-assert.ok(transit.includes('setLyricIndex(line)')&&transit.includes('data-loading-lyric={visibleLyric+1}'),'Lyric steps advance on the live loading gate')
+assert.ok(transit.includes('setBriefIndex(index=>Math.min(index+1,activeBriefs.length-1))')&&transit.includes('data-loading-lyric={briefIndex+1}'),'Reader-controlled lyrics advance one complete lesson at a time')
 
 const guide=read('components/agent/agent-smart-guide.tsx')
 const layout=read('app/(app)/layout.tsx')
@@ -47,5 +47,6 @@ assert.ok(client.includes('data-client-return-weave-open-world')&&client.include
 assert.ok(client.includes('data-client-loading-with-open-world-return'),'Client can also return while a File Folder is still loading')
 assert.ok(client.includes('Return to Weave Open World'))
 const folderLoader=read('components/system-switch/file-folder-environment-loader.tsx')
-assert.ok(folderLoader.includes('/weave/bridge-of-radiance-portrait.svg'),'Client private loader uses crisp portrait vector art')
+assert.ok(folderLoader.includes('data-file-folder-loader="shared-gate-only"'),'Private File Folder does not render a second image or instruction overlay')
+assert.ok(transit.includes('weave-loader-scenery-portrait'),'The one global loader still uses crisp river artwork')
 console.log('WEAVE sharp vector art, dynamic role/destination lessons, Bridger guidance and Client open-world return passed')
