@@ -29,4 +29,4 @@ jobs:
           node tests/flame-event-open-world-regression.cjs
           node tests/burning-river-system-switch-continuity.cjs
       - name: TypeScript check
-        run: npx tsc --noEmit --pretty false
+        run: npx tsc --project tsconfig.burning-river-3d-food.json --noEmit --pretty false
