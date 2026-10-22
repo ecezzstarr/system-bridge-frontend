@@ -77,7 +77,8 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
     :current==='ended'?'Employment ended':'No employment status available'
   const exitLabel=isApplication?'Withdraw application':'Resign from position'
   const exitConfirm=isApplication?'Confirm application withdrawal':'Confirm resignation'
-  const impact=position==='distribution_manager'?
+  const impact=isApplication?'Only your unapproved application is closed; no team appointment or probation is affected.':
+    position==='distribution_manager'?
     'Ending this appointment also ends the appointments of its approved Assistant Distribution Managers. They will be notified and require new appointments before resuming this work.':
     position==='food_preparation'?
     'Previously assigned food orders stay on record. An approved Stability Lead or replacement must review any unfinished tasks for reassignment.':
