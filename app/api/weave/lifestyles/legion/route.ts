@@ -101,7 +101,7 @@ export async function POST(request:NextRequest){
   if(!access.active){
     const error=baseRole==='agent'
       ? 'An active Agent account is required before applying to become a Legion.'
-      : 'Buy Agentic-Bridger once for 20 Flame Coin before applying to become a Legion.'
+      : 'Attain Agentic-Bridger once for 11 Flame Coin before applying to become a Legion.'
     return NextResponse.json({success:false,error},{status:403})
   }
   const current=await getActiveLegionEmployment(sql,user.id)
