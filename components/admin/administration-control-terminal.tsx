@@ -327,7 +327,7 @@ function BridgerManagementSection() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold uppercase tracking-tight">Bridger Operations</h3>
-          <p className="text-xs text-slate-500 font-medium">Manage Continuance standing and operational access from the live Bridger registry.</p>
+          <p className="text-xs text-slate-500 font-medium">Bridgers have no recurring subscription. Agentic-Bridger is an optional permanent Lifestyle purchase.</p>
         </div>
         <div className="flex gap-2 items-center">
           <button
@@ -339,7 +339,7 @@ function BridgerManagementSection() {
           </button>
           <div className="text-center px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700">
             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Fee</p>
-            <p className="text-sm font-bold text-emerald-400">₦{WORLD_RULES.BRIDGER_CONTINUANCE_NGN.toLocaleString()}</p>
+            <p className="text-sm font-bold text-emerald-400">{WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN} Flame Coin · once</p>
           </div>
         </div>
       </div>
