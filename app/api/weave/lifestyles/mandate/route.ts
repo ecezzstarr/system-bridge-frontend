@@ -41,7 +41,7 @@ export async function POST(request:NextRequest){
     const access=await getLifestyleAccess(user.id)
     if(!access.active)
       return NextResponse.json({success:false,error:user.role==='bridger'
-        ? 'Active Bridger Continuance is required to apply.'
+        ? 'Permanent Agentic-Bridger attainment is required to open this Lifestyle and apply.'
         : 'An active Agent position is required to apply.'}, {status:403})
     const body=await request.json().catch(()=>({}))
     const department=body.department
