@@ -3,6 +3,7 @@ import { useCallback,useEffect,useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft,ChefHat,RefreshCcw,ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
+import { EmploymentActions } from '@/components/employment/employment-actions'
 type Manager={
   id:string;agent_id:string;status:string;position:'manager'|'assistant';application_note:string;review_note?:string|null;
   name:string;username:string;email:string;is_active:boolean;role:string;monthly_salary_ngn:string
@@ -74,6 +75,7 @@ export default function AdminFoodPreparationManagerPage(){
           <h3 className="mt-2 text-lg font-black">{person.name||person.username}</h3>
           <p className="mt-1 text-xs text-stone-500">{person.email} · {person.is_active?'Active':'Inactive'} · ₦{Number(person.monthly_salary_ngn).toLocaleString('en-NG')}/month after appointment</p>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-300">{person.application_note}</p>
+           <EmploymentActions position="food_preparation" employeeId={person.agent_id} administration onStatusChange={()=>void load()}/>
           <label className="mt-4 block text-xs text-stone-300">Verification, availability and decision reason
             <textarea minLength={15} maxLength={2000} rows={3} value={notes[person.id]||''}
               onChange={e=>setNotes(v=>({...v,[person.id]:e.target.value}))}
@@ -97,12 +99,7 @@ export default function AdminFoodPreparationManagerPage(){
         {staff.filter(p=>p.status==='approved').map(person=><div key={person.id} className="border border-white/10 p-4">
           <p className="text-sm font-black">{person.name||person.username} · {person.position==='manager'?'Manager':'Assistant Manager'}</p>
           <p className="mt-2 text-xs text-stone-400">Agent · {person.is_active?'Active':'Inactive'} · salary ₦{Number(person.monthly_salary_ngn).toLocaleString('en-NG')} per month</p>
-          <label className="mt-3 block text-xs text-stone-300">Reason to revoke access
-            <textarea minLength={15} maxLength={2000} rows={2} value={notes[person.id]||''} onChange={e=>setNotes(v=>({...v,[person.id]:e.target.value}))} className="mt-2 w-full border border-white/10 bg-[#161c1b] p-3"/>
-          </label>
-          <button type="button" disabled={busy===person.id||(notes[person.id]||'').trim().length<15}
-            onClick={()=>void update({action:'review',appointmentId:person.id,decision:'revoked',reviewNote:notes[person.id]},person.id,'Manager appointment revoked.')}
-            className="mt-3 border border-rose-300/30 px-4 py-2 text-xs text-rose-200 disabled:opacity-40">Revoke appointment</button>
+          <EmploymentActions position="food_preparation" employeeId={person.agent_id} administration onStatusChange={()=>void load()}/>
         </div>)}
       </div>
     </section>
