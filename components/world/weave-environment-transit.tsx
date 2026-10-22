@@ -4,7 +4,7 @@ import { useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
-import { trainingBriefsForRole, transitTrainingForPath, transitDirectionForPath, lyricLinesForBrief, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
+import { trainingBriefsForRole, transitTrainingForPath, transitDirectionForPath, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
 import { setRuntimeCovered } from './use-adaptive-runtime'
 import { ArrowRight,Flame,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
@@ -22,7 +22,7 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
     // A destination may explicitly hold the clean reveal while it resolves its
     // own state, but no route is allowed to keep the whole application covered
     // forever. After this ceiling the route's own loader/error surface is shown.
-    const absoluteMaximum=maximum+(mode==='boot'?7000:4000)
+    const absoluteMaximum=maximum+(mode==='boot'?16000:16000)
     const minimum=Math.min(mode==='boot'?loading.bootMinMs:loading.transitMinMs,maximum)
     const started=performance.now()
     const cleanup:Array<()=>void>=[]
@@ -110,14 +110,8 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
 
 type LoadingBrief=WeaveLoadingBrief
 
-// Lyric-style pacing makes each verified instruction readable before the
-// next room is revealed. Only the text changes; the full-screen cover stays
-// fixed and the existing world-readiness check runs in parallel.
-const BOOT_LYRIC_STEP_MS=1450
-const TRANSIT_LYRIC_STEP_MS=1950
-const LOADING_CARD_HOLD_MS=5*BOOT_LYRIC_STEP_MS
-const TRANSIT_FORMATION_MS=5*TRANSIT_LYRIC_STEP_MS
-
+// Each entrance has three complete lessons. The user, not a timer, decides
+// when reading is complete; environment readiness is checked in parallel.
 // Three role-aware lessons introduce WEAVE at a cold entrance. Internal
 // crossings teach the actual destination, one line at a time.
 const PLATFORM_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('visitor')]
@@ -125,8 +119,6 @@ const AGENT_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('agent')]
 const HOPE_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('bridger')]
 const CLIENT_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('client')]
 const ADMIN_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('admin')]
-
-const LOADING_SEQUENCE_MS=PLATFORM_BRIEFS.length*LOADING_CARD_HOLD_MS
 
 const FLAME_REENTRY_LAST_ACTIVE_KEY='weave:flame-event:last-active-at'
 
@@ -151,19 +143,6 @@ const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
   },
 ]
 
-function waitForBriefingSequence(mode:'boot'|'transit',startedAt:number,signal:AbortSignal){
-  return new Promise<void>(resolve=>{
-    // Hold each lesson long enough for the lyric sequence to finish.
-    // World readiness is checked concurrently, never inferred from this timer.
-    const presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:TRANSIT_FORMATION_MS
-    const remaining=Math.max(0,presentationWindow-(performance.now()-startedAt))
-    if(remaining===0||signal.aborted){resolve();return}
-    const timer=window.setTimeout(resolve,remaining)
-    const abort=()=>{window.clearTimeout(timer);resolve()}
-    signal.addEventListener('abort',abort,{once:true})
-  })
-}
-
 export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const pathname=usePathname()||'/'
   const {user}=useAuth()
@@ -175,7 +154,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const [transiting,setTransiting]=useState(false)
   const [readyPath,setReadyPath]=useState<string|null>(null)
   const [briefIndex,setBriefIndex]=useState(0)
-  const [lyricIndex,setLyricIndex]=useState(0)
+  const [environmentReady,setEnvironmentReady]=useState(false)
   const [sequenceId,setSequenceId]=useState(0)
   const [requestedPath,setRequestedPath]=useState<string|null>(null)
   const [flameEventActive,setFlameEventActive]=useState(()=>resolveEventStatus(FLAME_EVENT,new Date())==='active')
@@ -227,34 +206,22 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     const controller=new AbortController()
     const mode=first.current?'boot':'transit'
     const alreadyPrimed=mode==='transit'&&transitionStartedAtRef.current!==null
-    const startedAt=alreadyPrimed
-      ? transitionStartedAtRef.current!
-      : performance.now()
-
     if(!alreadyPrimed){
-      transitionStartedAtRef.current=startedAt
+      transitionStartedAtRef.current=performance.now()
       setBriefIndex(0)
       setSequenceId(value=>value+1)
     }
+    setEnvironmentReady(false)
     if(mode==='transit'){
       setReadyPath(null)
       setTransiting(true)
     }
 
-    // Briefing and destination formation happen together. The cover remains
-    // visible for the full presentation window while the real environment
-    // renders underneath; reveal occurs only after both are complete.
-    void Promise.all([
-      waitForBriefingSequence(mode,startedAt,controller.signal),
-      waitForEnvironmentReadiness(mode,configRef.current,controller.signal),
-    ]).then(()=>{
+    // One visible loader owns every crossing. Finish only when the destination
+    // has formed AND the person explicitly chooses to enter after reading.
+    void waitForEnvironmentReadiness(mode,configRef.current,controller.signal).then(()=>{
       if(controller.signal.aborted)return
-      first.current=false
-      transitionStartedAtRef.current=null
-      setRequestedPath(null)
-      setReadyPath(pathname)
-      setBooting(false)
-      setTransiting(false)
+      setEnvironmentReady(true)
     })
     return ()=>controller.abort()
   },[pathname])
@@ -279,22 +246,18 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       setBriefIndex(0)
       setSequenceId(value=>value+1)
       setReadyPath(null)
+      setEnvironmentReady(false)
       setTransiting(true)
 
-      // Query-only sidebar stations do not change usePathname(). Keep a brief
-      // handoff, then uncover as soon as the destination is actually ready.
+      // Query-only navigation keeps the same pathname. It still uses the
+      // same reading gate and cannot reveal an unready destination.
       if(target.pathname===current.pathname){
         queryTransitionControllerRef.current?.abort()
         const controller=new AbortController()
         queryTransitionControllerRef.current=controller
-        void waitForBriefingSequence('transit',startedAt,controller.signal)
-          .then(()=>waitForEnvironmentReadiness('transit',configRef.current,controller.signal))
-          .then(()=>{
+        void waitForEnvironmentReadiness('transit',configRef.current,controller.signal).then(()=>{
           if(controller.signal.aborted)return
-          transitionStartedAtRef.current=null
-          setRequestedPath(null)
-          setReadyPath(target.pathname)
-          setTransiting(false)
+          setEnvironmentReady(true)
         })
       }
     }
