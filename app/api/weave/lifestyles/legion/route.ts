@@ -19,7 +19,7 @@ export async function GET(request:NextRequest){
   const user=await getAuthUser(request)
   if(!user)return NextResponse.json({success:false,error:'Unauthorized'},{status:401})
   const baseRole=String(user.baseRole||user.role||'').toLowerCase()
-  if(!['agent','bridger'].includes(baseRole))return NextResponse.json({success:false,error:'Legion Lifestyle is available to Agents and subscribed Bridgers.'},{status:403})
+  if(!['agent','bridger'].includes(baseRole))return NextResponse.json({success:false,error:'Legion Lifestyle is available to Agents and Agentic-Bridger owners.'},{status:403})
 
   await ensureLegionEmploymentSchema(sql)
   const access=await getLifestyleAccess(user.id)
@@ -73,7 +73,7 @@ export async function POST(request:NextRequest){
   const body=await request.json().catch(()=>({}))
   const action=String(body.action||'apply')
 
-  // Resignation is available even when the worker's underlying subscription
+  // Resignation is available even when the worker's underlying access
   // has expired. An exclusive employment must never trap someone in a role.
   if(action==='release_legion'){
     const employment=await getActiveLegionEmployment(sql,user.id)
@@ -101,7 +101,7 @@ export async function POST(request:NextRequest){
   if(!access.active){
     const error=baseRole==='agent'
       ? 'An active Agent account is required before applying to become a Legion.'
-      : 'Active Bridger Continuance is required before applying to become a Legion.'
+      : 'Buy Agentic-Bridger once for 20 Flame Coin before applying to become a Legion.'
     return NextResponse.json({success:false,error},{status:403})
   }
   const current=await getActiveLegionEmployment(sql,user.id)
