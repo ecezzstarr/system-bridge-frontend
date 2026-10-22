@@ -29,7 +29,7 @@ export default function ArchivedContinuanceClaimsPage() {
     <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Administration · Historical Claims</p>
     <h1 className="mt-3 text-3xl font-black">Bridger Continuance Retired</h1>
     <p className="mt-4 text-sm leading-6 text-slate-300">No recurring Bridger payment may be approved or collected. Outstanding historical proof submissions remain visible for Administration to reconcile and, where appropriate, arrange refunds. Do not treat pending proof as an Agentic-Bridger purchase.</p>
-    <p className="mt-3 text-sm text-emerald-200">Current rule: Agentic-Bridger costs 20 Flame Coin once; Bridge AI costs 8 Flame Coin per new template opening; Echo is free.</p>
+    <p className="mt-3 text-sm text-emerald-200">Current rule: Agentic-Bridger costs 11 Flame Coin once; Bridge AI costs 8 Flame Coin per new template opening; Echo is free.</p>
     <Link href="/admin/orders" className="mt-5 inline-flex rounded-xl border border-emerald-300/20 px-4 py-3 text-xs font-bold text-emerald-100">Review Administration order records</Link>
     {error&&<p role="alert" className="mt-5 text-rose-300">{error}</p>}
     <div className="mt-7 overflow-x-auto rounded-xl border border-white/10">
