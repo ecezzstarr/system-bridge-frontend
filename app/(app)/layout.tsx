@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { AppHeader } from '@/components/app-header'
-import { AgentSmartGuide, BridgerSmartGuide } from '@/components/agent/agent-smart-guide'
 import { toast } from 'sonner'
 import { usePathname } from 'next/navigation'
 import { TermsAcceptanceModal } from '@/components/terms-acceptance-modal'
@@ -172,8 +171,7 @@ export default function AppLayout({
           </PresenceCameraViewport>
         </main>
       </div>
-      {user?.role==='agent'&&termsChecked&&!termsNeeded&&!legionEmployment?.active&&user.id&&<AgentSmartGuide userId={user.id}/>}
-      {user?.role==='bridger'&&termsChecked&&!termsNeeded&&!legionEmployment?.active&&user.id&&<BridgerSmartGuide userId={user.id}/>}
+      {/* No floating operating-guide overlay: it covered mobile forms and signatures. */}
       <Toaster position="top-center" richColors />
       <LiveAdSurface />
       <PresenceCameraSignal />

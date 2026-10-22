@@ -198,9 +198,17 @@ export async function getManagerEmploymentState(userId: string) {
   const continuance=await getManagerContinuanceAccess(userId)
   if(!continuance.eligible)return null
   const employment=await getManagerEmployment(userId)
-  const referral=await getReferralCoreState(userId)
+  // Referral ledger reconciliation is not a condition for viewing an accepted
+  // employment position. A reporting failure must never hide the signed record.
+  const referral=await getReferralCoreState(userId).catch(error=>{
+    console.error('[manager-employment] referral summary unavailable',error)
+    return null
+  })
   const team = employment && employment.status!=='ended'
-    ? await getDistributionTeamMonthlyReferrals(userId)
+    ? await getDistributionTeamMonthlyReferrals(userId).catch(error=>{
+        console.error('[manager-employment] team referral report unavailable',error)
+        return null
+      })
     : null
   const successful=team?.total||0
   const target=team?.target||DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
@@ -209,6 +217,7 @@ export async function getManagerEmploymentState(userId: string) {
   return {
     lifestyle:DISTRIBUTION_MANAGER_LIFESTYLE,
     managerAccess:Boolean(continuance.active&&employment&&employment.status!=='ended'),
+    metricsAvailable:!employment||employment.status==='ended'||Boolean(team),
     continuance,
     employment:employment||null,
     target,
