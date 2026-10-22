@@ -19,7 +19,7 @@ assert.ok(flamePage.includes('carrierCode')&&flamePage.includes('^[a-zA-Z0-9-]{1
 assert.ok(publicFlame.includes('<FlameEventOpenWorld enterprises={enterprises} doorStatus={doorStatus} role="visitor" carrierCode={carrierCode}/>'),'Visitor enters the live shared river')
 assert.ok(world.includes('<FlameEventFoodStore carrierCode={carrierCode} compact/>'),'Food is located inside the live river')
 assert.ok(world.includes('data-system-switch-arrival-threshold'),'Visitors cross from website to embodied river')
-assert.ok(world.includes('data-weave-presence-picker'),'Visitor Presence may be water, fire, or both')
+assert.ok(!world.includes('data-weave-presence-picker')&&!world.includes('choosePresenceElement'),'Visitor can explore without selecting an elemental form')
 assert.ok(three.includes('<RiverSurface quiet={budget.reducedMotion}/>'),'The world is live and respects motion/phone performance')
 const river=three.slice(three.indexOf('export function RiverSurface'),three.indexOf('function StonePaving'))
 assert.ok(!river.includes('precision mediump float;'),'River stages share Three.js precision so the time uniform links on mobile WebGL')
