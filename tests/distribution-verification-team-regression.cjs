@@ -22,7 +22,7 @@ assert.match(assistants,/DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 40_000/,'As
 assert.match(employment,/status='pending_verification'/,'Signature creates pending employment only')
 assert.match(employment,/probation_started_at=NULL,probation_ends_at=NULL/,'Signed applications cannot carry probation timestamps')
 assert.match(employment,/WHERE status IN \('pending_verification','probation','active'\)/,'All pending lead seats count toward three-position capacity')
-assert.match(employment,/probation_started_at=CASE WHEN \$2='probation' THEN NOW\(\) ELSE NULL END/,'Only Administration approval starts probation')
+assert.match(employment,/probation_started_at=CASE WHEN \$2::varchar='probation' THEN NOW\(\) ELSE NULL END/,'Typed Administration approval alone starts probation')
 assert.match(employment,/verified_by=\$3::uuid,verified_at=NOW\(\)/,'Administration decision stores reviewer and timestamp')
 assert.match(employment,/status='probation' AND probation_ends_at IS NOT NULL/,'Automatic active promotion never applies to pending applicants')
 assert.match(employment,/managerAccess:Boolean\(continuance.active&&employment&&\['probation','active'\]/,'Pending applicants have no Manager access')
