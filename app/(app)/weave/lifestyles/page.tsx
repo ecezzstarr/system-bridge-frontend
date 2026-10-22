@@ -276,7 +276,7 @@ export default function WeaveLifestylesPage() {
                   icon={<Users className="h-8 w-8" />}
                   eyebrow="WEAVE distribution employment · 6 appointments"
                   title="ASSISTANT DISTRIBUTION MANAGER"
-                  detail="Work with WEAVE Distribution Managers. ₦30,000 monthly salary after appointment; One shared target of 300 verified Agent/Bridger referrals in the Manager's first probation month, then 500 each later team employment month. Six assistant positions across WEAVE, two per Distribution Manager. Full salaries require meeting the applicable 300 probation or 500 regular target; otherwise only the ₦500 bonus for each personally referred eligible Agent/Bridger applies."
+                  detail="Work alongside verified WEAVE Distribution Managers on campaigns, outreach, follow-up and verified Agent/Bridger acquisition. Six appointments are available, two per Manager. Read the salary, monthly target and payment conditions inside the employment document before submitting an application."
                   open={distributionManagerOpen}
                   reason={access?.active ? 'Assistant Distribution Manager applications are available.' : agentFree ? 'An active Agent account is required.' : 'Renew Bridger Continuance to apply.'}
                   href="/weave/lifestyles/distribution-assistant"
