@@ -59,7 +59,7 @@ export async function applyForDistributionAssistant(userId: string, note: string
     )
     if (!users.length) { await client.query('ROLLBACK'); return {success:false as const,reason:'not_eligible' as const} }
     const {rows:managers} = await client.query(
-      "SELECT status FROM manager_employment WHERE user_id=$1::uuid AND status IN ('probation','active')", [userId],
+      "SELECT status FROM manager_employment WHERE user_id=$1::uuid AND status IN ('pending_verification','probation','active')", [userId],
     )
     if (managers.length) { await client.query('ROLLBACK'); return {success:false as const,reason:'already_manager' as const} }
     const {rows:existing} = await client.query(
@@ -119,7 +119,7 @@ export async function reviewDistributionAssistant(
     }
     if (decision==='approve') {
       const {rows:managerOverlap}=await client.query(
-        "SELECT user_id FROM manager_employment WHERE user_id=$1::uuid AND status IN ('probation','active')",[applicantId],
+        "SELECT user_id FROM manager_employment WHERE user_id=$1::uuid AND status IN ('pending_verification','probation','active')",[applicantId],
       )
       if (managerOverlap.length) {await client.query('ROLLBACK');return {success:false as const,reason:'already_manager' as const}}
       const {rows:capacity}=await client.query(
