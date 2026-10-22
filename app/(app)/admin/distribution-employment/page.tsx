@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {Button} from '@/components/ui/button'
+import {EmploymentActions} from '@/components/employment/employment-actions'
 
 type Applicant={user_id:string;name:string;email:string;source_role:string;status:string;accepted_name:string;document_version:number;document_accepted_at:string;verified_at:string|null;verification_note:string|null;probation_started_at:string|null;probation_ends_at:string|null}
 type TeamRow={manager_id:string;manager_name:string;status:string;assistant_count:number;last_update_at:string|null;probation_started_at:string|null;probation_ends_at:string|null;referralMetrics:{total:number;target:number;remaining:number;monthNumber:number;probation:boolean}|null}
@@ -68,6 +69,7 @@ export default function DistributionEmploymentAdministration(){
           <Button disabled={working!==null||(notes[a.user_id]||'').trim().length<10} onClick={()=>review(a.user_id,'approve')} className="bg-emerald-700 text-white">Verify · Start probation</Button>
           <Button disabled={working!==null||(notes[a.user_id]||'').trim().length<10} onClick={()=>review(a.user_id,'reject')} variant="outline">Reject application</Button>
         </div>
+        <EmploymentActions position="distribution_manager" employeeId={a.user_id} administration onStatusChange={()=>void load()}/>
       </article>)}
     </section>
     <section className="border-t border-white/10 pt-6">
@@ -82,12 +84,13 @@ export default function DistributionEmploymentAdministration(){
           <p className="mt-1">Probation ends: {t.probation_ends_at?new Date(t.probation_ends_at).toLocaleString('en-NG'):'Not started'}</p>
           <p className="mt-1">Last field update: {t.last_update_at?new Date(t.last_update_at).toLocaleString('en-NG'):'No update recorded'}</p>
           <p className="mt-2 font-black text-emerald-200">Verified referral progress: {t.referralMetrics?`${t.referralMetrics.total} / ${t.referralMetrics.target}`:t.status==='pending_verification'?'Not started':'No verified report available'}</p>
+          <EmploymentActions position="distribution_manager" employeeId={t.manager_id} administration onStatusChange={()=>void load()}/>
         </article>)}
       </div>
     </section>
     <section className="border-t border-white/10 pt-6" data-team-reports="administration-observation-only">
       <h2 className="text-xl font-black">Team reports · Administration observation</h2>
-      <p className="mt-2 text-xs text-slate-400">Read-only view of authentic team plans, field progress, discussions and handoffs. There is no Administration reply or edit function in this channel. Referrals and salary still require independent verification.</p>
+      <p className="mt-2 text-xs text-slate-400">Read-only view of authentic team plans, field progress, discussions and handoffs. Employment replies are handled in each separate appointment correspondence panel; Administration cannot post to the team's internal work discussion. Referrals and salary still require independent verification.</p>
       <div className="mt-4 max-h-[42rem] space-y-3 overflow-y-auto">
         {(state?.overview.updates||[]).map(u=><article key={u.id} className="border border-white/10 bg-white/[.025] p-4">
           <div className="flex flex-wrap justify-between gap-2 text-[10px] text-cyan-200">
