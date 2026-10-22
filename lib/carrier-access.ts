@@ -58,7 +58,7 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
       gate: 'agentic_bridger_one_time',
       reason: subscription.active
         ? 'Your permanent Agentic-Bridger purchase opens Lifestyle, Ace and Carrier without any recurring Bridger subscription.'
-        : 'Buy Agentic-Bridger once for 20 Flame Coin to open Lifestyle, Ace and Carrier. Normal Bridger work remains free.',
+        : 'Attain Agentic-Bridger once for 11 Flame Coin to enable eligible Lifestyle, Ace and Carrier access. Normal Bridger work remains free.',
       position: subscription.active ? 'Ace' : null,
       qualifyingState: subscription.status,
     }
