@@ -31,7 +31,7 @@ export const FLAME_EVENT_INTRO = {
   summary: 'Burning River is WEAVE’s three-month company business loop, not another department. The actual work of Agents, Bridgers, Clients and Administration during this period contributes to the same event.',
   agent: 'Stability works through WEAVE-branded food and other products in Nigeria: customer orders, cartons, shops, distribution and coordination with attached Bridgers.',
   bridger: 'Hope works through digital outreach to interested people worldwide, including Europe, introducing WEAVE File Folders and guiding informed prospects toward Client ownership of cloud-based systems.',
-  next: 'When Company Loop 1 ends, WEAVE reviews verified work and results to shape future company loops for the needs and opportunities of their time. Loop 2 is not yet announced.',
+  next: 'Company Loop 2 — Flame Event: One Nigerian is scheduled for January 1 through May 1, 2027. At the opening, the entire WEAVE environment takes on Nigeria’s green–white–green identity.',
 } as const
 
 export const FLAME_EVENT_PHASES = ['Preparing', 'Opening', 'Movement', 'Expansion', 'Recognition', 'Closing'] as const
