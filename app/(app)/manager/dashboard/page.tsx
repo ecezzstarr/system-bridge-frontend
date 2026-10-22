@@ -110,7 +110,7 @@ export default function ManagerDashboardPage(){
       <section className="rounded-3xl border border-cyan-300/15 bg-cyan-300/[.025] p-6 md:p-8">
         <div className="flex items-center gap-2 text-cyan-300"><FileSignature className="h-5 w-5"/><p className="text-[10px] font-black uppercase tracking-[.2em]">Distribution Manager Lifestyle Document</p></div>
         <h1 className="mt-3 text-3xl font-black text-white">{user?.name}</h1>
-        {state?.employment?.status==='ended'&&<EmploymentActions position="distribution_manager" onStatusChange={()=>void load()}/>}
+        {['ended','rejected'].includes(state?.employment?.status||'')&&<EmploymentActions position="distribution_manager" onStatusChange={()=>void load()}/>}
         {state?.employment?.status==='rejected'&&<p className="mt-3 border border-rose-300/25 p-3 text-xs text-rose-200">Administration did not approve the previous application. {state.employment.verification_note||'You may sign a new application after reviewing the requirements.'}</p>}
         <p className="mt-2 text-sm text-slate-400">Your underlying WEAVE position remains {String(user?.role||'').toUpperCase()}. {agentFree?'As an Agent, Distribution Manager is carried through your active Agent position with no monthly subscription.':'Distribution Manager is carried through your Bridger identity while Bridger Continuance remains active.'}</p>
         {error&&<p className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{error}</p>}
