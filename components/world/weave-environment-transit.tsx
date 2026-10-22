@@ -18,7 +18,7 @@ import { visiblePoll } from '@/lib/visible-poll'
 export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:EnvironmentRuntimeConfig,signal:AbortSignal){
   return new Promise<void>(resolve=>{
     const loading=config.loading
-    const maximum=Math.min(loading.maxWaitMs,mode==='boot'?8000:3000)
+    const maximum=Math.min(loading.maxWaitMs,60000)
     // A destination may explicitly hold the clean reveal while it resolves its
     // own state, but no route is allowed to keep the whole application covered
     // forever. After this ceiling the route's own loader/error surface is shown.
@@ -110,8 +110,7 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
 
 type LoadingBrief=WeaveLoadingBrief
 
-// Each entrance has three complete lessons. The user, not a timer, decides
-// when reading is complete; environment readiness is checked in parallel.
+// Each entrance has three automatic lessons while readiness is checked.
 // Three role-aware lessons introduce WEAVE at a cold entrance. Internal
 // crossings teach the actual destination, one line at a time.
 const PLATFORM_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('visitor')]
@@ -285,7 +284,9 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const showAdminBriefing=booting&&role==='admin'
   const showFlameBriefing=booting&&flameEventActive
   const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
-  const bootBriefs=showHopeBriefing?HOPE_BRIEFS:showAgentBriefing?AGENT_BRIEFS:showClientBriefing?CLIENT_BRIEFS:showAdminBriefing?ADMIN_BRIEFS:briefs
+  const audience=showHopeBriefing?'bridger':showAgentBriefing?'agent':showClientBriefing?'client':showAdminBriefing?'admin':showFlameBriefing?'flame-event':'visitor'
+  const fallbackBriefs=showHopeBriefing?HOPE_BRIEFS:showAgentBriefing?AGENT_BRIEFS:showClientBriefing?CLIENT_BRIEFS:showAdminBriefing?ADMIN_BRIEFS:briefs
+  const bootBriefs=config.loading.lessons?.[audience]||fallbackBriefs
 
   const requestedEnvironment=useMemo(
     ()=>requestedPath?resolveWeaveEnvironment(requestedPath.split('?')[0]):null,
@@ -314,7 +315,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       eyebrow:guidance.eyebrow,
       // The named destination stays in focus. Its verified purpose remains the
       // opening lyric even when the position has more specific instructions.
-      body:`${destinationEnvironment.purpose} ${guidance.body}`,
+      body:`${destinationEnvironment.purpose} ${guidance.body}${config.loading.transitionNotes?.[role]?' '+config.loading.transitionNotes[role]:''}`,
       movement:guidance.movement,
     }
     if(!hopeDestination)return baseBrief
@@ -324,7 +325,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       body:`WEAVE builds systems across the world. Hope works through Prospect possibilities so those systems can reach Client ownership and use. ${destinationEnvironment.purpose}`,
       movement:'Prospect tool → attempt → response → relationship → Client → ownership + use',
     }
-  },[destinationEnvironment,hopeDestination,role,destinationPath,returningToWorld])
+  },[destinationEnvironment,hopeDestination,role,destinationPath,returningToWorld,config.loading.transitionNotes])
   // Exactly three meaningful lessons per crossing. Cold entry teaches the
   // actual department; internal travel teaches the destination and its work.
   const activeBriefs:readonly LoadingBrief[]=booting?bootBriefs:[
@@ -349,24 +350,42 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     },
   ]
   const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
-  const onNextLesson=()=>{
-    setBriefIndex(index=>Math.min(index+1,activeBriefs.length-1))
-  }
-  const onPreviousLesson=()=>{
-    setBriefIndex(index=>Math.max(index-1,0))
-  }
-  const enterEnvironment=()=>{
-    // Reading time has no deadline. The destination cannot open until the
-    // person finishes all three passages and the real readiness check passes.
-    if(briefIndex!==activeBriefs.length-1||!environmentReady)return
-    first.current=false
-    transitionStartedAtRef.current=null
-    queryTransitionControllerRef.current?.abort()
-    setRequestedPath(null)
-    setReadyPath(pathname)
-    setBooting(false)
-    setTransiting(false)
-  }
+  const lessonDuration=Math.max(1500,config.loading.autoAdvanceMs)
+  const minimumDuration=booting?config.loading.bootMinMs:config.loading.transitMinMs
+  // Each lesson appears automatically. The cover stays until both the
+  // duration (including all lessons) and destination readiness are satisfied.
+  const revealAfterMs=Math.max(minimumDuration,lessonDuration*activeBriefs.length)
+
+  useEffect(()=>{
+    if(!covered)return
+    const showCurrentLesson=()=>{
+      const started=transitionStartedAtRef.current??performance.now()
+      const elapsed=Math.max(0,performance.now()-started)
+      setBriefIndex(current=>{
+        const next=Math.min(2,Math.floor(elapsed/lessonDuration))
+        return next===current?current:next
+      })
+    }
+    showCurrentLesson()
+    const interval=window.setInterval(showCurrentLesson,180)
+    return ()=>window.clearInterval(interval)
+  },[covered,lessonDuration,sequenceId,pathname,requestedPath])
+
+  useEffect(()=>{
+    if(!covered||!environmentReady)return
+    const elapsed=performance.now()-(transitionStartedAtRef.current??performance.now())
+    const remaining=Math.max(0,revealAfterMs-elapsed)
+    const timer=window.setTimeout(()=>{
+      first.current=false
+      transitionStartedAtRef.current=null
+      queryTransitionControllerRef.current?.abort()
+      setRequestedPath(null)
+      setReadyPath(pathname)
+      setBooting(false)
+      setTransiting(false)
+    },remaining)
+    return ()=>window.clearTimeout(timer)
+  },[covered,environmentReady,revealAfterMs,pathname,sequenceId])
   const openingLabel=returningToWorld
     ? `Returning to ${destinationEnvironment.title}`
     : showAgentBriefing
@@ -421,7 +440,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       data-weave-loader-destination={destinationPath}
       data-weave-loader-direction={returningToWorld?'return':'opening'}
       data-weave-loader-lyrics="three-complete-lessons"
-      data-weave-loader-flow="single-reader-confirmed-gate"
+      data-weave-loader-flow="automatic-readiness-gate"
     >
       {/* Scalable river artwork is painted once behind legible live text. */}
       <div className="weave-loader-scenery" aria-hidden="true">
@@ -454,7 +473,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           data-weave-loading-training={role}
           data-loading-brief={briefIndex+1}
           data-loading-lyric={briefIndex+1}
-          data-weave-reading-pace="reader-controlled"
+          data-weave-reading-pace="automatic"
           className="weave-loading-brief weave-loader-card mx-auto w-full min-h-0 overflow-hidden rounded-2xl border border-amber-200/30 bg-[#041222]/95 p-4 shadow-[0_20px_45px_rgba(0,0,0,.45)] sm:p-6"
         >
           <div className="flex items-center justify-between gap-3">
@@ -481,28 +500,13 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
             aria-hidden="true"
           />)}
         </div>
-        <div className="weave-loader-actions mx-auto flex w-full max-w-lg items-center gap-3">
-          <button type="button"
-            onClick={onPreviousLesson}
-            disabled={briefIndex===0}
-            className="min-h-11 shrink-0 rounded-full border border-amber-200/30 px-4 text-xs font-bold text-amber-100 disabled:cursor-not-allowed disabled:opacity-35">
-            Previous
-          </button>
-          {briefIndex<activeBriefs.length-1
-            ?<button type="button" onClick={onNextLesson}
-              className="min-h-11 flex-1 rounded-full bg-amber-100 px-5 text-sm font-black text-[#081826]">
-              Next lesson <ArrowRight className="ml-1 inline-block h-4 w-4"/>
-            </button>
-            :<button type="button" onClick={enterEnvironment} disabled={!environmentReady}
-              data-weave-loader-enter="reader-confirmed"
-              className="min-h-11 flex-1 rounded-full bg-amber-100 px-5 text-sm font-black text-[#081826] disabled:cursor-wait disabled:opacity-55">
-              {environmentReady?`Enter ${destinationEnvironment.title}`:'Preparing this environment…'}
-            </button>}
+        <div className="weave-loader-actions mx-auto flex w-full max-w-lg items-center justify-center gap-2 rounded-xl border border-amber-200/20 bg-[#071c30]/80 px-4 py-3 text-center"
+          data-weave-loader-enter="automatic" aria-live="off">
+          <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber-200"/>
+          <p className="text-xs font-semibold leading-5 text-slate-100">
+            {environmentReady?'Opening your environment automatically after the three lessons.':'Preparing your environment while the lessons continue.'}
+          </p>
         </div>
-        <p className="mx-auto max-w-lg text-center text-[10px] leading-4 text-slate-200"
-          data-weave-loader-no-auto-close="true">
-          Read at your own pace. This screen stays open until you choose to enter.
-        </p>
 
         {canReturnClientWorld&&destinationPath!=='/client/dashboard'&&<Link href="/client/dashboard"
           data-client-loader-open-world-return="true"
