@@ -10,6 +10,9 @@ import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, enforceSystemSwitchGate, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
 import type { FlameWorldCustomerDoor } from './flame-event-open-world'
 import { WeaveEmbodiedAvatar, type WeaveAvatarMotion, type WeaveAvatarPosition } from '@/components/world/weave-embodied-avatar'
+import {SharedWorldAvatars} from '@/components/system-switch/shared-world-avatars'
+import type {WorldAvatar} from '@/components/system-switch/use-world-presence'
+import type {Presence} from '@/lib/file-folder-world-runtime'
 
 export type FlameMobileInput = {
   forward:number
@@ -286,13 +289,14 @@ function PresenceCurrent({motion,quiet}:{motion:MutableRefObject<WeaveAvatarMoti
   </group>
 }
 
-function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
+function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion,sharedPresence}:{
   inputRef:MutableRefObject<FlameMobileInput>
   doors:{x:number;z:number}[]
   role:string
   onNearbyDoor:(index:number|null)=>void
   onRegionChange:(region:FlameRegion)=>void
   playerMotion:MutableRefObject<WeaveAvatarMotion>
+  sharedPresence:MutableRefObject<Presence>
 }){
   const {camera}=useThree()
   const budget=useAdaptiveRuntime()
@@ -370,6 +374,9 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
     playerMotion.current.x=position.current.x
     playerMotion.current.z=position.current.z
     playerMotion.current.yaw=heading.current
+    sharedPresence.current.x=position.current.x
+    sharedPresence.current.z=position.current.z
+    sharedPresence.current.yaw=heading.current
     playerMotion.current.speed=actual
     playerMotion.current.crouching=crouch.current
     playerMotion.current.airborne=height.current
@@ -385,10 +392,12 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
 
 export type FlameRegion='riverbank'|'burning-river'|'system-switch'|'customer-door'
 
-function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
+function World({enterprises,inputRef,role,sharedPresence,others,onNearbyDoor,onRegionChange}:{
   enterprises:FlameWorldCustomerDoor[]
   inputRef:MutableRefObject<FlameMobileInput>
   role:string
+  sharedPresence:MutableRefObject<Presence>
+  others:WorldAvatar[]
   onNearbyDoor:(index:number|null)=>void
   onRegionChange:(region:FlameRegion)=>void
 }){
@@ -406,14 +415,17 @@ function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
     <SystemSwitchThreshold active={!budget.reducedMotion} quiet={budget.reducedMotion}/>
     <PresenceCurrent motion={playerMotion} quiet={budget.reducedMotion}/>
     {enterprises.map((door,i)=><Portal key={door.public_slug} enterprise={door} index={i} x={doorPositions[i].x} z={doorPositions[i].z} playerMotion={playerMotion}/>)}
-    <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange} playerMotion={playerMotion}/>
+    <SharedWorldAvatars others={others}/>
+    <Walker inputRef={inputRef} doors={doorPositions} role={role} sharedPresence={sharedPresence} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange} playerMotion={playerMotion}/>
   </>
 }
 
-export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor,onRegionChange,onReady}:{
+export function FlameEventMobileScene({enterprises,inputRef,role,sharedPresence,others,onNearbyDoor,onRegionChange,onReady}:{
   enterprises:FlameWorldCustomerDoor[]
   inputRef:MutableRefObject<FlameMobileInput>
   role:string
+  sharedPresence:MutableRefObject<Presence>
+  others:WorldAvatar[]
   onNearbyDoor:(index:number|null)=>void
   onRegionChange:(region:FlameRegion)=>void
   onReady?:()=>void
@@ -426,7 +438,7 @@ export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor,on
       mobileGame
       onWorldReady={onReady}
     >
-      <World enterprises={enterprises} inputRef={inputRef} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
+      <World enterprises={enterprises} inputRef={inputRef} role={role} sharedPresence={sharedPresence} others={others} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
     </AdaptiveCanvas>
   </div>
 }
