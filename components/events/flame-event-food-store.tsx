@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import {useState} from 'react'
 import {ArrowRight,ShoppingBasket,Leaf} from 'lucide-react'
 import {DAISY_PASTRIES_IMAGE_SRC} from '@/lib/daisy-pastries-image'
 
@@ -11,11 +12,40 @@ const FOOD_SECTIONS=[
   {id:'daisy',label:'Daisy Pastries',image:DAISY_PASTRIES_IMAGE_SRC,alt:'WEAVE Daisy Pastries original product photograph',anchor:'agent-daisy-pastries'},
 ] as const
 
-export function FlameEventFoodStore({carrierCode}:{carrierCode?:string|null}){
+export function FlameEventFoodStore({carrierCode,compact=false}:{carrierCode?:string|null;compact?:boolean}){
+  const [expanded,setExpanded]=useState(true)
   const agent=carrierCode&&/^[a-zA-Z0-9-]{1,40}$/.test(carrierCode)
   const link=(anchor:string)=>agent
     ?'/carrier/food/'+encodeURIComponent(carrierCode)+'?checkout=1#'+anchor
     :'/food-store'
+  // The compact store lives at the riverbank, beside the live Client structures.
+  // It uses the SAME verified Agent Carrier checkout paths as the full store.
+  if(compact)return <aside className="w-[43vw] max-w-[208px] rounded-2xl border border-amber-200/50 bg-[#071b25]/90 text-white shadow-[0_12px_32px_rgba(0,0,0,.45)] backdrop-blur-md" data-burning-river-food-dock>
+    <button type="button" onClick={()=>setExpanded(value=>!value)} aria-expanded={expanded}
+      className="flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2 text-left text-[10px] font-black text-amber-100">
+      <span className="flex items-center gap-1.5"><ShoppingBasket className="h-4 w-4 shrink-0"/> WEAVE FOOD STORE</span>
+      <span aria-hidden="true">{expanded?'−':'+'}</span>
+    </button>
+    {expanded&&<div className="max-h-[37svh] overflow-y-auto overscroll-contain border-t border-amber-100/20 p-2" data-burning-river-side-products>
+      <div className="grid grid-cols-2 gap-2">
+        {FOOD_SECTIONS.map(item=><Link key={item.id} href={link(item.anchor)} data-flame-food-order={item.id}
+          className="overflow-hidden rounded-lg border border-amber-200/20 bg-[#0b2730]">
+          <img src={item.image} alt={item.alt} loading="lazy" className="h-16 w-full bg-[#17303b] object-cover"/>
+          <span className="block px-1.5 py-2 text-[9px] font-bold leading-tight">{item.label}</span>
+        </Link>)}
+        <Link href={link('agent-farm-produce')} data-flame-food-order="farm" className="rounded-lg border border-emerald-200/20 bg-[#143329] p-2 text-[9px] font-bold">
+          <Leaf className="mb-2 h-5 w-5 text-emerald-100"/> Farm Produce
+        </Link>
+        <Link href={link('agent-farm-produce')} data-flame-food-order="household" className="rounded-lg border border-emerald-200/20 bg-[#143329] p-2 text-[9px] font-bold">
+          <img src="/weave-food/weave-family-products.avif" loading="lazy" alt="Illustration of WEAVE family food products" className="mb-1 h-11 w-full rounded object-cover"/> Household Food
+        </Link>
+      </div>
+      <p className="mt-2 text-[9px] leading-4 text-sky-100/80">{agent?'Orders remain with the Agent who brought you here.':'Choose a food Agent to place an attributed order.'}</p>
+      <Link href={agent?link('agent-agility'):'/food-store'} className="mt-2 inline-flex min-h-9 w-full items-center justify-center gap-1 rounded-lg border border-amber-200/30 bg-amber-200/15 px-2 py-2 text-[10px] font-bold text-amber-100">
+        View all food <ArrowRight className="h-3 w-3"/>
+      </Link>
+    </div>}
+  </aside>
   return <section className="border-t border-amber-200/30 bg-[#07140f] px-4 py-8 text-white" data-burning-river-food-store>
     <div className="mx-auto max-w-6xl">
       <div className="flex items-start gap-3">
