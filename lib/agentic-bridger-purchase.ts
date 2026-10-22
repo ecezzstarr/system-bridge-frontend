@@ -3,7 +3,8 @@ import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { WORLD_RULES } from '@/lib/world/constants'
 
 // A Bridger keeps their normal position without any recurring subscription.
-// Agentic-Bridger is a permanent, one-time Lifestyle entitlement.
+// A single 20 Flame Coin payment attains Agentic-Bridger permanently.
+// Attainment enables Lifestyle access but does not appoint anyone to employment.
 export const AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN = WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN
 
 export async function ensureAgenticBridgerPurchaseTable() {
@@ -70,7 +71,7 @@ export async function purchaseAgenticBridger(userId: string) {
     purchase = added.rows[0]
     await client.query(
       `INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at)
-       VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin','Agentic-Bridger permanent Lifestyle access',$3,$4,$5::jsonb,NOW())`,
+       VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin','Agentic-Bridger attainment · one-time 20 Flame Coin',$3,$4,$5::jsonb,NOW())`,
       [userId,AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN,before,balanceAfter,
        JSON.stringify({commerce_type:'purchase',source:'agentic_bridger_one_time',purchase_id:purchase.receipt_reference})]
     )
@@ -88,7 +89,7 @@ export async function purchaseAgenticBridger(userId: string) {
       userId, kind:'purchase', source:'agentic_bridger_one_time',
       sourceId:String(purchase.receipt_reference),
       amount:AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN, currency:'Flame Coin', status:'paid',
-      description:'Agentic-Bridger permanent Lifestyle access',
+      description:'Agentic-Bridger attainment · one-time 20 Flame Coin',
       metadata:{permanent:true,balanceAfter}
     })
   } catch (error) { console.error('[agentic-bridger purchase] receipt failed:', error) }
