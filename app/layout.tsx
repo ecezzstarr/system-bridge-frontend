@@ -3,6 +3,7 @@ import './globals.css'
 import './weave-readability.css'
 import './weave-theme.css'
 import './weave-mobile.css'
+import './one-nigerian-theme.css'
 import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
@@ -16,6 +17,7 @@ import { DivineShieldGate } from '@/components/divine-shield-gate'
 import { WeaveEnvironmentTransit } from '@/components/world/weave-environment-transit'
 import { WeavePresenceAmbience } from '@/components/world/weave-presence-ambience'
 import { WeaveRadianceCrossing } from '@/components/world/weave-radiance-crossing'
+import { isOneNigerianLoopActive } from '@/lib/weave-loop-two'
 
 // Every phone navigation must render the currently deployed WEAVE release.
 // Keep immutable Next.js assets cached; never retain an old application shell.
@@ -49,8 +51,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden" data-weave-theme="dark-blue">
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden" data-weave-theme="dark-blue" data-weave-event-theme={isOneNigerianLoopActive() ? 'one-nigerian' : undefined}>
       <body className="bg-background text-foreground overflow-x-hidden antialiased">
+        <div aria-hidden="true" className="one-nigerian-flag-ribbon" />
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
           <AuthProvider>
             <PresenceCameraProvider>
