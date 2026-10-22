@@ -81,7 +81,7 @@ export default function AppLayout({
   // Continuance enforcement for Bridgers who are still operating as Bridgers.
   useEffect(() => {
     const checkSub = async () => {
-      if (user?.role === 'bridger' && !legionEmployment?.active && pathname !== '/bridger/subscription') {
+      if (user?.role === 'bridger' && !legionEmployment?.active && !['/bridger/subscription', '/weave/lifestyles', '/wallet', '/wallet/deposit-withdraw'].includes(pathname)) {
         try {
           const token = localStorage.getItem('ssb_auth_token')
           const res = await fetch('/api/bridger/subscription', {
