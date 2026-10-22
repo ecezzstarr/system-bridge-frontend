@@ -17,8 +17,8 @@ const BRIDGER_30_NGN = (FILE_FOLDER_FLAME_COIN * WORLD_RULES.BRIDGER_YIELD_RATE 
 export const AGENT_CONTENT = {
   positionTitle: 'YOUR POSITION IN WEAVE',
   positionSummary:
-    "WEAVE gives the Agent a working position inside the company. Your daily function is Agility and the value movement connected to the Bridgers attached to you.",
-  role: 'Your role is to move Agility and receive commissions when assigned Bridgers make qualifying Prospect purchases through Weave.',
+    "WEAVE gives the Agent a working position in Stability. Your practical daily work includes selling and distributing WEAVE-branded food and products to Nigerian customers and outlets, while attached Bridger activity may generate qualifying commissions.",
+  role: 'Your role is to sell and distribute WEAVE products, including Agility, Electrolyte, Ember and Daisy Pastries, handle stock and customer orders, and earn defined shares when attached Bridgers complete qualifying movements.',
   earningMovements: [
     `You earn ${(WORLD_RULES.AGENT_LEAD_YIELD_RATE * 100).toFixed(0)}% whenever an attached Bridger makes a qualifying Prospect purchase through the Prospect Market.`,
     `When that Bridger converts a Prospect through a verified Client File Folder purchase, you earn ${(WORLD_RULES.AGENT_CROSSING_YIELD_RATE * 100).toFixed(0)}% of the File Folder value, which is 5% of WEAVE's 40% company share.`,
@@ -38,7 +38,7 @@ export const AGENT_CONTENT = {
 export const BRIDGER_CONTENT = {
   positionTitle: 'YOUR POSITION IN WEAVE',
   positionSummary:
-    'Hope is the Bridger Department. WEAVE gives the Bridger a working position at the human crossing: work from possibility, attempt the connection, recognize what is actually present, and carry a real response toward the part of WEAVE that can serve it.',
+    'Hope is the Bridger Department. Bridgers work mainly through digital outreach to interested people worldwide, including Europe, introducing WEAVE File Folders and cloud-based business systems while carrying real responses toward informed Client ownership.',
   role: 'Your role in Hope is to work with Prospect candidates provided through WEAVE, attempt the human connection, introduce WEAVE when contact becomes real, and guide willing participation toward the crossing. A Prospect is a candidate or guess, not a verified person, verified contact, promised response, or promised conversion.',
   action: `You acquire Prospect tools through the Prospect Market, WhatsApp movement, or Email Prospect movement and use the authorized outreach system to attempt contact. Buying or receiving a Prospect gives you a candidate and its WEAVE reference; it does not certify that the phone number, WhatsApp account, email address, person, business, reachability, interest, or response has been verified. Verification begins only through real outreach and response. Inside WEAVE, a Client may purchase a Standard File Folder from ${STANDARD_FILE_FOLDER_MIN.toLocaleString()} to ${STANDARD_FILE_FOLDER_MAX.toLocaleString()} Flame Coin as starting building power, or Premium at ${FILE_FOLDER_FLAME_COIN.toLocaleString()} Flame Coin. For external/prospect sales, WEAVE sells the Pro File Folder from a normal starting value of ${PRO_FILE_FOLDER_START.toLocaleString()} Flame Coin and Administration may approve a negotiated Pro value as low as ${PRO_FILE_FOLDER_NEGOTIATED_MIN.toLocaleString()} Flame Coin. Once the File Folder is verified, that prospect becomes a Client of Weave and their included Customer Door construction begins automatically with all required functional Door parts already supplied. Flame Coin is the internal wrapper for TRX value; OPay funding is converted using the current TRX/NGN rate.`,
   earnings: [
