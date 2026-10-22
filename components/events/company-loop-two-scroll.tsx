@@ -83,7 +83,7 @@ export function CompanyLoopTwoScroll(){
           <BookOpen className="mr-3 h-4 w-4 shrink-0"/>
           <span className="weave-loop2-scroll-track inline-flex min-w-max items-center gap-10 text-xs font-bold leading-5">
             <span className="whitespace-nowrap">{ONE_NIGERIAN_SCROLL_TEXT}</span>
-            <span aria-hidden="true" className="whitespace-pre-line">{ONE_NIGERIAN_SCROLL_TEXT}</span>
+            <span aria-hidden="true" className="whitespace-nowrap">{ONE_NIGERIAN_SCROLL_TEXT}</span>
           </span>
         </button>
         <button type="button" onClick={()=>setOpen(value=>!value)}
