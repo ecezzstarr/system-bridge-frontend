@@ -171,8 +171,13 @@ export async function getDistributionAssistantState(userId:string) {
     "SELECT COUNT(*)::int AS employed FROM weave_distribution_assistants WHERE status='approved'",
   )
   const employed=Number(count[0]?.employed||0)
+  // Team statistics can be unavailable without invalidating an approved job
+  // or preventing a lead Manager from appointing/reviewing assistants.
   const teamProgress = appointment?.status==='approved' && appointment.manager_user_id
-    ? await getDistributionTeamMonthlyReferrals(String(appointment.manager_user_id))
+    ? await getDistributionTeamMonthlyReferrals(String(appointment.manager_user_id)).catch(error=>{
+        console.error('[distribution-assistants] team report unavailable',error)
+        return null
+      })
     : null
   const verifiedReferrals=teamProgress?.total||0
   const applicableTarget=teamProgress?.target||DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
@@ -195,6 +200,7 @@ export async function getDistributionAssistantState(userId:string) {
   }
   return {
     appointment, canReview, pending, team,
+    metricsAvailable:appointment?.status!=='approved'||Boolean(teamProgress),
     assistantPositionsPerManager:DISTRIBUTION_ASSISTANTS_PER_MANAGER,
     managerTeamRemaining:canReview?Math.max(0,DISTRIBUTION_ASSISTANTS_PER_MANAGER-team.length):null,
     positions:DISTRIBUTION_ASSISTANT_LIMIT, employed,

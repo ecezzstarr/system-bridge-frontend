@@ -39,7 +39,7 @@ assert.ok(transit.includes('setLyricIndex(line)')&&transit.includes('data-loadin
 
 const guide=read('components/agent/agent-smart-guide.tsx')
 const layout=read('app/(app)/layout.tsx')
-assert.ok(guide.includes('export function BridgerSmartGuide'),'Bridger receives the same persistent guide mechanism')
+assert.ok(guide.includes('export function BridgerSmartGuide')&&guide.includes('data-weave-guide-trigger="bubble"'),'Bridger guidance stays available as a small bubble')
 assert.ok(guide.includes('roleOperatingGuideForPath(role,pathname)'),'Guide changes when the destination changes')
 assert.ok(layout.includes('<BridgerSmartGuide userId={user.id}/>')&&layout.includes('!legionEmployment?.active'),'Exclusive Legions do not receive ordinary Bridger work guidance')
 const client=read('app/client/system-switch/page.tsx')
