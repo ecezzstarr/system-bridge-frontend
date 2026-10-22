@@ -9,6 +9,7 @@ import {
   isOneNigerianLoopActive,
   oneNigerianDayKey,
   ONE_NIGERIAN_DEPARTMENT_WORDS,
+  ONE_NIGERIAN_SCROLL_TEXT,
   ONE_NIGERIAN_LOOP,
   type OneNigerianRole,
 } from '@/lib/company-loop-two'
@@ -81,8 +82,8 @@ export function CompanyLoopTwoScroll(){
           aria-label="Open daily departmental meaning scroll">
           <BookOpen className="mr-3 h-4 w-4 shrink-0"/>
           <span className="weave-loop2-scroll-track inline-flex min-w-max items-center gap-10 text-xs font-bold leading-5">
-            <span>{department.department} · {department.words} · {placeTitle}</span>
-            <span aria-hidden="true">{department.department} · {department.words} · {placeTitle}</span>
+            <span className="whitespace-pre-line">{ONE_NIGERIAN_SCROLL_TEXT}</span>
+            <span aria-hidden="true" className="whitespace-pre-line">{ONE_NIGERIAN_SCROLL_TEXT}</span>
           </span>
         </button>
         <button type="button" onClick={()=>setOpen(value=>!value)}
@@ -96,12 +97,12 @@ export function CompanyLoopTwoScroll(){
         className="mt-3 grid gap-3 rounded-xl border border-white/20 bg-[#063620]/95 p-4 text-white sm:grid-cols-2"
         data-loop2-answer="current-place">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wider text-emerald-200">{department.department} · Daily words</p>
-          <p className="mt-2 max-w-2xl whitespace-pre-line text-sm font-semibold leading-7">{department.words}</p>
+          <p className="text-[10px] font-black uppercase tracking-wider text-emerald-200">One Nigerian · Daily scroll</p>
+          <p className="mt-2 max-w-2xl whitespace-pre-line text-sm font-semibold leading-7" data-one-nigerian-verbatim-scroll="true">{ONE_NIGERIAN_SCROLL_TEXT}</p>
           <p className="mt-3 text-[10px] font-semibold text-white/70">{ONE_NIGERIAN_LOOP.title} · {day}</p>
         </div>
         <div>
-          <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-emerald-200"><Compass className="h-3.5 w-3.5"/> What am I doing here?</p>
+          <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-emerald-200"><Compass className="h-3.5 w-3.5"/> {department.department} · What am I doing here?</p>
           <h2 className="mt-2 text-sm font-black">{placeTitle}</h2>
           <p className="mt-2 text-xs leading-6 text-white/90">{placeMeaning}</p>
           <p className="mt-2 text-xs leading-6 text-white/90"><strong>Next movement:</strong> {nextAction}</p>
