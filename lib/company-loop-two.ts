@@ -34,7 +34,7 @@ export const ONE_NIGERIAN_SCROLL_PASSAGES = [
   },
   {
     role: 'admin',
-    text: 'Administration: with that saying a new frontier opened before us who are Hope in being.\n\nA bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
+    text: 'Administration: with that saying a new frontier opened before us who are Hope in being.\nA bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
   },
 ] as const satisfies ReadonlyArray<{role:OneNigerianRole; text:string}>
 
