@@ -203,9 +203,9 @@ export async function reviewManagerEmployment(adminId:string, applicantId:string
     }
     const approved=decision==='approve'
     const {rows:updated}=await client.query(`UPDATE manager_employment
-      SET status=$2,verified_by=$3::uuid,verified_at=NOW(),verification_note=$4,
-        probation_started_at=CASE WHEN $2='probation' THEN NOW() ELSE NULL END,
-        probation_ends_at=CASE WHEN $2='probation' THEN NOW()+INTERVAL '1 month' ELSE NULL END,
+      SET status=$2::varchar,verified_by=$3::uuid,verified_at=NOW(),verification_note=$4,
+        probation_started_at=CASE WHEN $2::varchar='probation' THEN NOW() ELSE NULL END,
+        probation_ends_at=CASE WHEN $2::varchar='probation' THEN NOW()+INTERVAL '1 month' ELSE NULL END,
         updated_at=NOW()
       WHERE user_id=$1::uuid AND status='pending_verification' RETURNING *`,
       [applicantId,approved?'probation':'rejected',adminId,note.trim()])
