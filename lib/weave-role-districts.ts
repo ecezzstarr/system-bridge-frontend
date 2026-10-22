@@ -233,6 +233,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Infrastructure',href:'/admin/infrastructure',detail:'Cloud Run, runtime and maintenance control.'},
         {label:'Visual Systems · Interaction in Motion',href:'/admin/visual-systems',detail:'Govern live Flame, River, route current and visual runtime.'},
         {label:'Environment Organizer',href:'/admin/environment-organizer',detail:'Withdraw, restore and reorder active WEAVE environments.'},
+        {label:'Loader Workshop',href:'/admin/loader-workshop',detail:'Publish automatic loader speed and department wording live without deployment.'},
         {label:'Loop Workshop',href:'/admin/loop-workshop',detail:'Create and publish Company Loops.'},
         {label:'DJ Workshop',href:'/admin/dj-workshop',detail:'System sound and live atmosphere.'},
         {label:'Ad Workshop',href:'/admin/ad-workshop',detail:'Role-targeted communication without deployment.'},
