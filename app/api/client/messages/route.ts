@@ -33,7 +33,7 @@ async function canAccess(client: any, user: AuthUser, clientId: string, position
   if (user.role === 'admin') return true
   if (user.role === 'client') return String(user.id) === String(clientId)
   if (user.role === 'bridger') {
-    return position === 'bridger' && await bridgerOwnsClient(client, user.id, clientId)
+    return (position === 'bridger' || position === 'bridge_ai') && await bridgerOwnsClient(client, user.id, clientId)
   }
   if (user.role === 'agent') {
     if (!(await agentOwnsClient(client, user.id, clientId))) return false
