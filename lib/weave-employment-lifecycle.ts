@@ -96,14 +96,24 @@ export async function replyToEmployment(position:WeaveEmploymentPosition,employe
     VALUES($1,$2::uuid,$3::uuid,$4,$5) RETURNING id,created_at`,
     [position,employeeId,author.id,isAdmin?'administration':'employee',content])
   try{
+    const employeeRoute=position==='distribution_manager'?'/manager/dashboard'
+      :position==='distribution_assistant'?'/weave/lifestyles/distribution-assistant'
+      :'/weave/lifestyles/food-preparation'
+    const administrationRoute=position==='food_preparation'?'/admin/food-preparation-manager'
+      :'/admin/distribution-employment'
     if(isAdmin){
-      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
-        VALUES($1::uuid,'employment_reply','New employment message from Administration',$2,'WEAVE Administration')`,
-        [employeeId,content.slice(0,380)])
+      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+        VALUES($1::uuid,'employment_reply','New employment message from Administration',$2,'WEAVE Administration',$3)`,
+        [employeeId,content.slice(0,380),employeeRoute])
     }else{
-      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
-        SELECT id,'employment_reply','Employment message for Administration',$1,'WEAVE Employment'
-        FROM users WHERE role='admin' AND is_active=true`,[content.slice(0,380)])
+      const {rows:authors}=await pool.query('SELECT name FROM users WHERE id=$1::uuid',[author.id])
+      const sender=String(authors[0]?.name||'An employee').slice(0,100)
+      const roleName=position==='distribution_manager'?'Distribution Manager'
+        :position==='distribution_assistant'?'Assistant Distribution Manager':'Food Preparation'
+      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+        SELECT id,'employment_reply',$1,$2,'WEAVE Employment',$3
+        FROM users WHERE role='admin' AND is_active=true`,
+        [roleName+' · '+sender+' sent an employment message',content.slice(0,380),administrationRoute])
     }
   }catch(error){console.error('[weave employment] correspondence notification failed',error)}
   return {success:true as const,message:rows[0]}
