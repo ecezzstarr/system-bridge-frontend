@@ -2,12 +2,16 @@ import { getPool } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable } from '@/lib/manager-employment'
 import { ensureDistributionAssistantSchema } from '@/lib/distribution-assistants'
+import { getDistributionTeamMonthlyReferrals } from '@/lib/distribution-team-referrals'
 
 export type DistributionTeamUpdateKind='message'|'plan'|'progress'|'handoff'
 
 // The three-person operating unit owns communication and reports. Administration
 // receives a read-only record and cannot impersonate a team participant.
+let teamSchemaPromise:Promise<void>|null=null
 export async function ensureDistributionTeamUpdateSchema(){
+  if(teamSchemaPromise)return teamSchemaPromise
+  teamSchemaPromise=(async()=>{
   await ensureManagerEmploymentTable()
   await ensureDistributionAssistantSchema()
   await getPool().query(`CREATE TABLE IF NOT EXISTS weave_distribution_team_updates (
@@ -19,6 +23,8 @@ export async function ensureDistributionTeamUpdateSchema(){
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`)
   await getPool().query('CREATE INDEX IF NOT EXISTS weave_distribution_team_updates_feed_idx ON weave_distribution_team_updates(manager_user_id,created_at DESC)')
+  })().catch(error=>{teamSchemaPromise=null;throw error})
+  return teamSchemaPromise
 }
 
 export async function resolveDistributionTeamMember(userId:string){
@@ -109,5 +115,15 @@ export async function readDistributionEmploymentOverview(){
       JOIN users m ON m.id=t.manager_user_id
       ORDER BY t.created_at DESC,t.id DESC LIMIT 150`)
   ])
-  return {teams:teams.rows,updates:updates.rows}
+  // Referral figures are independent database measurements, not claims from reports.
+  const verified=await Promise.all(teams.rows.map(async row=>{
+    if(!['probation','active'].includes(row.status))return {...row,referralMetrics:null}
+    const report=await getDistributionTeamMonthlyReferrals(String(row.manager_id)).catch(error=>{
+      console.error('[distribution oversight] verified referral summary unavailable',error)
+      return null
+    })
+    return {...row,referralMetrics:report?{total:report.total,target:report.target,
+      remaining:report.remaining,monthNumber:report.monthNumber,probation:report.probation}:null}
+  }))
+  return {teams:verified,updates:updates.rows}
 }
