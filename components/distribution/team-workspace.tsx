@@ -4,6 +4,7 @@ import { useCallback,useEffect,useState } from 'react'
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { visiblePoll } from '@/lib/visible-poll'
+import {DistributionTeamTaskBoard} from '@/components/distribution/team-task-board'
 
 type UpdateKind='message'|'plan'|'progress'|'handoff'
 type Team={
@@ -78,6 +79,7 @@ export function DistributionTeamWorkspace(){
         <Button type="button" variant="outline" size="sm" onClick={()=>void load()}>Refresh updates</Button>
       </div>
       <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-emerald-100">{team.members.map(member=><span key={member.id} className="border border-emerald-300/15 px-3 py-2">{member.name} · {member.position}</span>)}</div>
+      <DistributionTeamTaskBoard members={team.members}/>
       <div className="mt-4 max-h-[28rem] space-y-2 overflow-y-auto border-y border-white/10 py-3" aria-label="Team messages and activity">
         {team.updates.map(update=><article key={update.id} className="bg-white/[.035] p-3">
           <div className="flex flex-wrap justify-between gap-2 text-[10px] text-sky-200">
