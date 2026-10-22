@@ -30,17 +30,18 @@ export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
     }
   }, [])
 
-  const active = useMemo(
+  const eventActive = useMemo(
     () => resolveEventStatus({...event, status:event.effectiveStatus || event.status}, now) === 'active',
     [event, now]
   )
 
   const loopTwoActive=isOneNigerianLoopActive(now)
   const loopThreeStarted=hasCompanyLoopThreeStarted(now)
+  const active=eventActive||loopTwoActive
 
   useEffect(() => {
     const root=document.documentElement
-    root.dataset.weaveEvent=active||loopTwoActive?'flame-live':'normal'
+    root.dataset.weaveEvent=active?'flame-live':'normal'
     if(loopTwoActive){
       root.dataset.weaveLoopTheme='one-nigerian'
       root.dataset.weaveCompanyLoop='2'
@@ -58,5 +59,5 @@ export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
     }
   }, [active,loopTwoActive,loopThreeStarted])
 
-  return <WeaveLiveFlameField flameLive={active||loopTwoActive} />
+  return <WeaveLiveFlameField flameLive={active} />
 }
