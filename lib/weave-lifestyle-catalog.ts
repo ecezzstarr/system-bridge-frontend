@@ -59,10 +59,10 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Food Preparation Team',
     route: '/weave/lifestyles/food-preparation',
     roles: ['agent'],
-    summary: 'Agent employment within WEAVE Stability led by the Head of the Agent Department, with one Food Preparation Manager position and two Assistant Manager positions. The lead Manager assigns the assistants, never Administration. Following Administration approval, prepare, package and dispatch assigned paid Agility, Electrolyte, Ember and Daisy Pastries orders for customers and restocking Agents.',
+    summary: 'Agent employment within WEAVE Stability led by the Head of the Agent Department, with one Food Preparation Manager position and two Assistant Manager positions. Administration reviews applications and verifies appointments. The approved Stability Lead directs daily kitchen work and assigns orders to approved assistants; Administration does not assign food preparation tasks. Staff prepare, package and dispatch verified paid Agility, Electrolyte, Ember and Daisy Pastries orders.',
     environments: [
       { label: 'Employment Application', href: '/weave/lifestyles/food-preparation', purpose: 'Apply for an available Manager or Assistant Manager position.' },
-      { label: 'Daily Kitchen Work Desk', href: '/weave/lifestyles/food-preparation', purpose: 'Process Administration-assigned paid food orders, package and log dispatch.' },
+      { label: 'Daily Kitchen Work Desk', href: '/weave/lifestyles/food-preparation', purpose: 'Prepare and dispatch verified paid orders assigned by the approved Stability Lead; record each handoff.' },
     ],
   },
   [FARM_TO_FAMILY_LIFESTYLE]: {
@@ -81,7 +81,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Assistant Distribution Manager',
     route: '/weave/lifestyles/distribution-assistant',
     roles: ['agent','bridger'],
-    summary: 'Six Assistant Distribution Manager appointments, two under each of the three verified Distribution Managers. Teams carry distribution campaigns and verified Agent/Bridger acquisition. Full compensation, targets and conditions are disclosed in the employment document before submission, not on the general Lifestyle listing. Apply through your existing Agent or Bridger Lifestyle.',
+    summary: 'Six Assistant Distribution Manager appointments, two under each of the three verified Distribution Managers. Teams carry distribution campaigns and verified Agent/Bridger acquisition. The salary and performance conditions appear in the applicant's employment terms before submission, not in the general Lifestyle listing. Apply through your existing Agent or Bridger Lifestyle.',
     environments: [
       { label: 'Employment Application', href: '/weave/lifestyles/distribution-assistant', purpose: 'Apply for one of six assistant appointments.' },
       { label: 'Distribution Studio', href: '/distribution-studio', purpose: 'Carry actual WEAVE distribution work after appointment.' },
