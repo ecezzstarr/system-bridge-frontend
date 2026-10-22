@@ -22,6 +22,7 @@ const authoredPassages=[
   'Stability Agent department: Where Presence moves family moves with that Stability came into being for who will feed the country if not Weave',
   'Administration: with that saying a new frontier opened before us who are Hope in being.',
   'A bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
+  'Dream Lovely, Lord/Lady ownership department: Weave had promised us presence, the kind like the burning love of God for his creations, the kind that makes a man sings in love after a hard day at work. Our dreams are laid at the file folder where we can be conscious even while sleeping and dreaming lovely cause we have Weave of presence and our legions rotating around our success.',
 ]
 let lastIndex=-1
 for(const passage of authoredPassages){
@@ -29,6 +30,7 @@ for(const passage of authoredPassages){
   assert.ok(index>lastIndex,'Authored scroll must preserve wording and order: '+passage)
   lastIndex=index
 }
+assert.match(event,/client: \{department:'Dream Lovely, Lord\/Lady ownership department',words:ONE_NIGERIAN_SCROLL_PASSAGES\[4\]\.text\}/)
 assert.match(event,/ONE_NIGERIAN_SCROLL_PASSAGES\.map\(passage => passage\.text\)\.join/)
 assert.match(scroll,/data-one-nigerian-verbatim-scroll/)
 assert.match(scroll,/\{ONE_NIGERIAN_SCROLL_TEXT\}/)
