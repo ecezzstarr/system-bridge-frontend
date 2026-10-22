@@ -143,6 +143,59 @@ export async function moveDistributionTeamTask(
     return {success:false as const,reason:'error' as const}
   }finally{client.release()}
 }
+// Reassignment is a lead Manager action, never an Administration override.
+export async function reassignDistributionTeamTask(
+  userId:string,taskId:string,nextAssigneeId:string,rawReason:string
+){
+  const reason=rawReason.trim()
+  if(reason.length<8||reason.length>1200)return {success:false as const,reason:'invalid_update' as const}
+  await ensureDistributionTeamTasksSchema()
+  const member=await resolveDistributionTeamMember(userId)
+  const access=await getLifestyleAccess(userId)
+  if(member?.member_position!=='manager'||!access.active)
+    return {success:false as const,reason:'not_manager' as const}
+  const client=await getPool().connect()
+  let previousAssignee=''
+  try{
+    await client.query('BEGIN')
+    const {rows:tasks}=await client.query(`SELECT t.id,t.status,t.assigned_user_id
+      FROM weave_distribution_team_tasks t
+      JOIN manager_employment me ON me.user_id=t.manager_user_id
+      WHERE t.id=$1::uuid AND t.manager_user_id=$2::uuid
+        AND t.status<>'completed' AND me.status IN ('probation','active')
+      FOR UPDATE OF t`,[taskId,userId])
+    const task=tasks[0]
+    if(!task){await client.query('ROLLBACK');return {success:false as const,reason:'not_found' as const}}
+    const {rows:targets}=await client.query(`SELECT u.id FROM users u
+      WHERE u.id=$2::uuid AND u.is_active=true
+      AND (u.id=$1::uuid OR EXISTS(
+        SELECT 1 FROM weave_distribution_assistants a WHERE a.user_id=u.id
+        AND a.manager_user_id=$1::uuid AND a.status='approved'))`,[userId,nextAssigneeId])
+    if(!targets.length){await client.query('ROLLBACK');return {success:false as const,reason:'invalid_assignee' as const}}
+    previousAssignee=String(task.assigned_user_id)
+    await client.query(`UPDATE weave_distribution_team_tasks
+      SET assigned_user_id=$2::uuid,status='assigned',completed_at=NULL,updated_at=NOW()
+      WHERE id=$1::uuid`,[taskId,nextAssigneeId])
+    await client.query(`INSERT INTO weave_distribution_team_task_history
+      (task_id,actor_user_id,from_status,to_status,note) VALUES($1::uuid,$2::uuid,$3,'assigned',$4)`,
+      [taskId,userId,task.status,'Reassigned: '+reason])
+    await client.query('COMMIT')
+  }catch(e){try{await client.query('ROLLBACK')}catch{};console.error('[distribution tasks] reassignment',e)
+    return {success:false as const,reason:'error' as const}
+  }finally{client.release()}
+  try{
+    await getPool().query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+      VALUES($1::uuid,'distribution_team_task','Distribution task reassigned',$2,
+        'WEAVE Distribution','/weave/lifestyles/work')`,
+      [nextAssigneeId,reason.slice(0,350)])
+    if(previousAssignee&&previousAssignee!==nextAssigneeId)
+      await getPool().query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+        VALUES($1::uuid,'distribution_team_task','Distribution task moved to another team member',
+          $2,'WEAVE Distribution','/weave/lifestyles/work')`,[previousAssignee,reason.slice(0,350)])
+  }catch(e){console.error('[distribution tasks] reassignment alert failed',e)}
+  return {success:true as const}
+}
+
 export async function readDistributionTasksForAdministration(){
   await ensureDistributionTeamTasksSchema()
   const {rows}=await getPool().query(`SELECT t.id,t.manager_user_id,t.title,t.instructions,
