@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ identity })
 }
 
-// POST: create Echo Identity. Only succeeds with an active subscription.
+// POST: create free Echo identity for an active account.
 export async function POST(request: NextRequest) {
   const authUser = await getAuthUser(request)
   if (!authUser) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   const subscribed = await hasActiveContinuance(authUser.id)
   if (!subscribed) {
     return NextResponse.json(
-      { error: 'Active subscription required to create an Echo Identity' },
+      { error: 'Active WEAVE account required' },
       { status: 403 }
     )
   }
