@@ -59,6 +59,12 @@ export default function DistributionEmploymentAdministration(){
     }catch(err){setError(err instanceof Error?err.message:'Application decision failed')}
     finally{setWorking(null)}
   }
+  useEffect(()=>{
+    if(!state)return
+    const id=new URLSearchParams(window.location.search).get('applicationId')
+    if(!id)return
+    window.requestAnimationFrame(()=>document.getElementById('application-'+id)?.scrollIntoView({behavior:'smooth',block:'center'}))
+  },[state])
   if(!isInitialized)return <main className="p-6 text-slate-300">Opening Distribution verification…</main>
   if(user?.role!=='admin')return <main className="p-6 text-rose-200">Administration authorization required.</main>
   const pending=state?.appointments.filter(a=>a.status==='pending_verification')||[]
