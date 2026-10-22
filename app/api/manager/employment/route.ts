@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
           : 'Active Bridger Continuance is required before Distribution Manager Lifestyle can begin.',
       }, { status:403 })
     }
+    if (result.reason === 'already_applied') return NextResponse.json({success:false,error:'An application is already recorded. Refresh your verification status.'},{status:409})
     if (result.reason === 'positions_full') {
       return NextResponse.json({ success:false, error:`All ${MANAGER_EMPLOYMENT_LIMIT} Distribution Manager positions are currently occupied.` }, { status:409 })
     }
