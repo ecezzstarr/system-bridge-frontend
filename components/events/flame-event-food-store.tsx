@@ -37,10 +37,11 @@ export function FlameEventFoodStore({carrierCode}:{carrierCode?:string|null}){
             <p className="mt-2 inline-flex items-center gap-1 text-[10px] font-black text-amber-200">Order through Agent <ArrowRight className="h-3 w-3"/></p>
           </div>
         </Link>)}
-        {[{id:'farm',label:'Farm Produce',anchor:'agent-farm-produce'},
-          {id:'household',label:'Household Food & Family Baskets',anchor:'agent-farm-produce'}].map(item=><Link key={item.id} href={link(item.anchor)}
+        {[{id:'farm',label:'Farm Produce',anchor:'agent-farm-produce',image:null},
+          {id:'household',label:'Household Food & Family Baskets',anchor:'agent-farm-produce',image:'/weave-food/weave-family-products.avif'}].map(item=><Link key={item.id} href={link(item.anchor)}
           className="flex min-h-36 flex-col justify-between rounded-xl border border-emerald-200/20 bg-[#163027] p-4" data-flame-food-order={item.id}>
-          <Leaf className="h-7 w-7 text-emerald-200"/>
+          {item.image?<img src={item.image} alt="Existing WEAVE household food branded illustration, not confirmed stock"
+            loading="lazy" className="mb-3 h-24 w-full rounded-lg object-cover"/>:<Leaf className="h-7 w-7 text-emerald-200"/>}
           <div><h3 className="text-sm font-black">{item.label}</h3>
             <p className="mt-1 text-[10px] leading-4 text-sky-100/75">Browse genuine approved supplier listings; no invented product photographs or stock.</p>
             <p className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-amber-200">View offers <ArrowRight className="h-3 w-3"/></p>
