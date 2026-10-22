@@ -169,6 +169,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       accent:'#60a5fa',
       places:[
         {label:'Administration Control Center',href:'/admin/control-center',detail:'Users, departmental authorization, Bridger operations, verification queues and announcements.',daily:true},
+        {label:'Company Employment Applications',href:'/admin/employment-applications',detail:'Review new staff applications, read submitted statements, and open the correct Administration approval or decline desk.',daily:true},
         {label:'Agent Channel Requests',href:'/admin/agent-channels',detail:'Review channel applications and assign and manage Agents through the existing system workflow.',daily:true},
         {label:'Access Recovery Desk',href:'/admin/access-recovery',detail:'Verify a user and issue one-time password recovery access without exposing an old password.',daily:true},
         {label:'Departmental Registration',href:'/admin/departmental-registration',detail:'Issue departmental codes and company placement.'},
