@@ -22,7 +22,7 @@ export async function getAgentSalaryTier(agentId: string): Promise<AgentSalaryTi
   const activeCount = parseInt(rows[0]?.active_count) || 0
   
   // High-tier yield for maintaining 3+ active bridgers
-  if (activeCount >= 3) return { tier: 2, yieldNgn: WORLD_RULES.BRIDGER_CONTINUANCE_NGN, activeCount }
+  if (activeCount >= 3) return { tier: 2, yieldNgn: 5000 /* Independent senior Agent yield tier; not a Bridger subscription */, activeCount }
   
   // Mid-tier yield
   if (activeCount >= 1) return { tier: 1, yieldNgn: 11800, activeCount }
