@@ -678,7 +678,7 @@ assert.ok(adminBridgerListSource.includes('getAuthUser')&&adminBridgerListSource
 assert.ok(adminBridgerListSource.includes('bridger_agentic_purchases')&&adminBridgerListSource.includes('agentic_bridger_owned'),'Administration Bridger registry shows permanent Agentic ownership')
 assert.ok(adminDashboardCenterSource.includes('Bridger Operations')&&adminDashboardCenterSource.includes('Agentic-Bridger owned')&&adminDashboardCenterSource.includes('Bridge AI paths'),'Administration shows permanent Agentic and Bridge AI purchase activity')
 assert.ok(adminBridgerExemptionSource.includes('getAuthUser')&&adminBridgerExemptionSource.includes("admin.role !== 'admin'")&&adminBridgerExemptionSource.includes('status:410'),'Retired exemption endpoint is restricted to Administration and cannot update old subscriptions')
-assert.ok(adminDashboardCenterSource.includes('WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN'),'Bridger Operations displays the permanent 20 Flame Coin purchase')
+assert.ok(adminDashboardCenterSource.includes('WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN'),'Bridger Operations displays the permanent 11 Flame Coin attainment')
 assert.ok(adminDashboardCenterSource.includes("throw new Error(data.error || data.message || 'Unable to read Bridger operations')")&&adminDashboardCenterSource.includes('setError(message)'),'Bridger Operations surfaces API failures')
 assert.ok(loungeMessagesSource.includes('getAuthUser'),'Lounge sender identity is authenticated')
 assert.ok(loungeConversationsSource.includes('getAuthUser'),'Lounge conversation history is authenticated')
