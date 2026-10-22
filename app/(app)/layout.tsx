@@ -78,28 +78,7 @@ export default function AppLayout({
     if (isAuthenticated && user?.id) void checkLegion()
   }, [isAuthenticated, user?.id, user?.role, pathname, router])
 
-  // Continuance enforcement for Bridgers who are still operating as Bridgers.
-  useEffect(() => {
-    const checkSub = async () => {
-      if (user?.role === 'bridger' && !legionEmployment?.active && !['/bridger/subscription', '/weave/lifestyles', '/wallet', '/wallet/deposit-withdraw', '/manager/dashboard', '/weave/lifestyles/distribution-assistant'].includes(pathname)) {
-        try {
-          const token = localStorage.getItem('ssb_auth_token')
-          const res = await fetch('/api/bridger/subscription', {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-            cache: 'no-store',
-          })
-          const data = await res.json()
-          if (data.success && data.subscription?.status === 'suspended') {
-            router.replace('/weave/lifestyles')
-            toast.error('Bridger Continuance is due. Subscribe from Lifestyle or fund your Flame Coin wallet to reopen it.')
-          }
-        } catch (e) {
-          console.error('Sub check error:', e)
-        }
-      }
-    }
-    if (isAuthenticated && user?.role === 'bridger' && legionChecked) void checkSub()
-  }, [user, pathname, isAuthenticated, router, legionEmployment, legionChecked])
+  // Bridger core work is not restricted by recurring subscriptions.
 
   const [termsNeeded, setTermsNeeded] = useState(false)
   const [termsChecked, setTermsChecked] = useState(false)
