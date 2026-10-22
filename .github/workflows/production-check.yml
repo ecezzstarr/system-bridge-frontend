@@ -117,6 +117,7 @@ jobs:
           node tests/manager-employment-regression.cjs
           node tests/agentic-bridger-attainment-wording-regression.cjs
           node tests/distribution-verification-team-regression.cjs
+          node tests/company-employment-applications-workspaces-regression.cjs
           node tests/weave-employment-exit-correspondence-regression.cjs
           node tests/weave-employment-workflow-wording-regression.cjs
           node tests/distribution-assistant-managers-regression.cjs
