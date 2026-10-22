@@ -48,7 +48,7 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
       const result=await response.json()
       if(!response.ok)throw new Error(result.error||'Action was not completed')
       setContent('');setReason('');setPendingAction(null)
-      setNotice(action==='reply'?'Employment message recorded and sent to the other party.':
+      setNotice(action==='reply'?'Employment message recorded. The other party can read it in their employment desk.':
         action==='resign'?result.result?.exitKind==='withdrawn'?'Application withdrawn. No employment or probation has started.':'Resignation recorded. Your appointment and job access have ended.':
         'Dismissal recorded. The appointment and related work access have ended.')
       await load()
@@ -80,7 +80,7 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
   const impact=position==='distribution_manager'?
     'Ending this appointment also ends the appointments of its approved Assistant Distribution Managers. They will be notified and require new appointments before resuming this work.':
     position==='food_preparation'?
-    'Orders assigned to this staff member remain recorded. The approved Stability Lead must review and reassign unfinished work.':
+    'Previously assigned food orders stay on record. An approved Stability Lead or replacement must review any unfinished tasks for reassignment.':
     'The Manager may appoint another eligible assistant after this position ends.'
   return <section data-weave-employment-actions={position} className="mt-5 space-y-3 border border-white/10 bg-black/15 p-4 text-left text-white">
     <header className="flex flex-wrap items-center justify-between gap-2">
@@ -112,7 +112,7 @@ export function EmploymentActions({position,employeeId,administration=false,onSt
     </div>:null}
     {(canResign||canFire)&&<div className="border-t border-rose-300/20 pt-4">
       <p className="text-xs font-bold text-rose-200">{canFire?'Administration · Dismiss from employment':isApplication?'Application withdrawal':'Resignation'}</p>
-      <p className="mt-1 text-[11px] text-slate-400">{isApplication?'Withdrawing closes the pending application and releases its place; probation and salary eligibility never begin.':'This immediately ends the appointment and work permissions. Existing employment and payment records remain available for verification.'} The underlying WEAVE account remains intact. {impact}</p>
+      <p className="mt-1 text-[11px] text-slate-400">{isApplication?'Withdrawing closes the pending application. No appointment, probation or salary eligibility begins.':'This immediately ends the appointment and work permissions. Existing employment and payment records remain available for verification.'} The underlying WEAVE account remains intact. {impact}</p>
       {!pendingAction?<Button type="button" variant="outline" onClick={()=>setPendingAction(canFire?'fire':'resign')}
         className="mt-3 border-rose-300/30 text-rose-200">{canFire?'Dismiss employee':exitLabel}</Button>:
       <>
