@@ -133,6 +133,7 @@ export default function EnvironmentOrganizerWorkshop(){
       </label>
     </div>
 
+    <a href="/admin/loader-workshop" className="mt-5 block rounded-xl border border-sky-300/25 bg-sky-400/[.045] p-4 text-sm font-bold text-sky-100">Open Loader Workshop → Edit three department lessons and automatic timing, then publish without deployment</a>
     <EnvironmentRuntimeControls />
 
     <div className="mt-5 space-y-5">
