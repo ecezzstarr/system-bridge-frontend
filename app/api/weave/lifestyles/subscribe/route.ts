@@ -23,6 +23,6 @@ export async function POST(request: NextRequest) {
     success: false,
     access,
     separateLifestyleCharge: false,
-    error: access.role === 'bridger' ? 'Buy Agentic-Bridger once for 20 Flame Coin from Lifestyle.' : `${position} subscription is inactive. Renew to reopen Lifestyle.`,
+    error: access.role === 'bridger' ? 'Attain Agentic-Bridger once for 11 Flame Coin from Lifestyle.' : `${position} subscription is inactive. Renew to reopen Lifestyle.`,
   }, { status: 409 })
 }
