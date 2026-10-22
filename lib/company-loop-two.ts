@@ -40,6 +40,10 @@ export const ONE_NIGERIAN_SCROLL_PASSAGES = [
     role: 'client',
     text: 'Dream Lovely, Lord/Lady ownership department: Weave had promised us presence, the kind like the burning love of God for his creations, the kind that makes a man sings in love after a hard day at work. Our dreams are laid at the file folder where we can be conscious even while sleeping and dreaming lovely cause we have Weave of presence and our legions rotating around our success.',
   },
+  {
+    role: 'admin',
+    text: "Administration department: Hope let's form a bridge with those who has dreams and can dream lovely as we welcome them into the Weave of Presence.",
+  },
 ] as const satisfies ReadonlyArray<{role:OneNigerianRole; text:string}>
 
 export const ONE_NIGERIAN_SCROLL_TEXT = ONE_NIGERIAN_SCROLL_PASSAGES.map(passage => passage.text).join('\n\n')
