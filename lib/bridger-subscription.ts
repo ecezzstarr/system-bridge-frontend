@@ -241,7 +241,7 @@ export async function autoDeductContinuance(userId: string) {
     await client.query('BEGIN')
 
     const userResult = await client.query(
-      `SELECT id,role,subscription_status,subscription_expiry,is_subscription_exempt
+      `SELECT id,role,is_active,subscription_status,subscription_expiry,is_subscription_exempt
        FROM users WHERE id=$1::uuid FOR UPDATE`,
       [userId]
     )
@@ -249,6 +249,11 @@ export async function autoDeductContinuance(userId: string) {
     if (!bridger || bridger.role !== 'bridger') {
       await client.query('ROLLBACK')
       return { success: false, reason: 'bridger_not_found' as const }
+    }
+
+    if (bridger.is_active === false) {
+      await client.query('ROLLBACK')
+      return { success: false, reason: 'account_inactive' as const }
     }
 
     if (bridger.is_subscription_exempt) {
