@@ -24,42 +24,52 @@ export type WeaveEvent = {
   positions: Record<EventRole, EventPosition>
 }
 
+/** Shared explanation for choosing a department and understanding the live company loop. */
+export const FLAME_EVENT_INTRO = {
+  name: 'Company Loop 1 — Flame Event: Burning River',
+  period: 'October 1 – December 31, 2026',
+  summary: 'Burning River is WEAVE’s three-month company business loop, not another department. The actual work of Agents, Bridgers, Clients and Administration during this period contributes to the same event.',
+  agent: 'Stability works through WEAVE-branded food and other products in Nigeria: customer orders, cartons, shops, distribution and coordination with attached Bridgers.',
+  bridger: 'Hope works through digital outreach to interested people worldwide, including Europe, introducing WEAVE File Folders and guiding informed prospects toward Client ownership of cloud-based systems.',
+  next: 'When Company Loop 1 ends, WEAVE reviews verified work and results to shape future company loops for the needs and opportunities of their time. Loop 2 is not yet announced.',
+} as const
+
 export const FLAME_EVENT_PHASES = ['Preparing', 'Opening', 'Movement', 'Expansion', 'Recognition', 'Closing'] as const
 export const FLAME_EVENT_FEATURES = ['Opportunities', 'Weave Activities', 'Live Broadcast', 'Special Rewards', 'Global Movement', 'And More'] as const
 
 export const FLAME_EVENT: WeaveEvent = {
   key: 'flame-event-01',
   title: 'Flame Event',
-  subtitle: 'Different paths. One Presence. A more coherent world.',
+  subtitle: 'Burning River · One company, four positions, three months of real work.',
   status: 'planned',
   // Company Loop 1 opens October 1, 2026 at 00:00 West Africa Time (UTC+1).
   startsAt: '2026-10-01T00:00:00+01:00',
   endsAt: '2026-12-31T23:59:59+01:00',
   loopNumber: 1,
-  announcement: 'Flame Event is Company Loop 1. Burning River is open and carrying Client, Bridger, Agent and Administration movement through one live current.',
+  announcement: 'Company Loop 1 — Flame Event: Burning River runs October 1 to December 31, 2026. Each department keeps its own work while participating in one shared business period.',
   adEnabled: true,
   autoStart: true,
   positions: {
     client: {
       mode: 'player',
       headline: 'Your Life. Your Environment. Built Around You.',
-      purpose: 'The Client is the player of Company Loop 1. The Flame Event moves through the Client File Folder, workshop, participation and real-life movement.',
+      purpose: 'During Company Loop 1 (October–December 2026), Clients own their File Folder businesses, build systems and offer products or services through Customer Doors. Their real verified activity is part of the Burning River business loop.',
       focus: ['File Folder', 'Workshop', 'Client Vault', 'Bridge AI', 'Company Support', 'Event Opportunities'],
       movement: ['Continue Interaction in Motion', 'Work through File Folder functions', 'Receive opportunities relevant to your participation', 'Make real movement visible inside the event'],
     },
     bridger: {
       mode: 'support',
       headline: 'More Prospects. More Clients. Greater Reach.',
-      purpose: 'The Bridger supports Company Loop 1 by connecting prospects, accompanying Clients and extending participation into the event.',
+      purpose: 'During Burning River, Hope works mainly through digital outreach worldwide, including Europe, to introduce WEAVE File Folders and support informed prospects who choose to become Clients. Prospects are unverified possibilities until real contact and response.',
       focus: ['Bridge AI', 'Prospect Market', 'Number Bay', 'Echo', 'Presences', 'Value Movement'],
-      movement: ['Move through the live Flame Event current', 'Acquire and work Prospect movement', 'Use Bridge AI and Number Bay where the crossing requires them', 'Carry Prospects toward Client formation', 'Continue authorized communication and value movement'],
+      movement: ['Approach relevant people through digital channels without assuming any lead is verified', 'Use Prospect Market, Email Outreach, Number Bay and Bridge AI as appropriate', 'Explain File Folder ownership and cloud-based business systems', 'Guide interested people through a verified Client crossing', 'Continue authorized Client support during Company Loop 1'],
     },
     agent: {
       mode: 'support',
       headline: 'Agility. Prospect Movement. File Folder Return.',
-      purpose: 'The Agent supports Company Loop 1 through Agility and the commission movement created when attached Bridgers purchase Prospects and convert Clients through verified File Folder purchases.',
-      focus: ['Agility', 'Prospect Purchase Returns', 'File Folder Returns', 'Commission Record', 'Event Movement'],
-      movement: ['Move Agility distribution', 'Follow attached Bridger Prospect purchases through Commission records', 'Recognize verified File Folder crossings connected to those Bridgers', 'Preserve the resulting Agent return'],
+      purpose: 'During Burning River, Stability sells and distributes WEAVE-branded food and products to Nigerian customers and local shops, handles real stock and customer orders, supports attached Bridger programs, and records qualifying Prospect and File Folder commissions.',
+      focus: ['Agility', 'Electrolyte', 'Ember', 'Daisy Pastries', 'Outlet Distribution', 'Carrier Door', 'Bridger Commissions'],
+      movement: ['Receive and sell WEAVE products to Nigerian customers', 'Order cartons and supply shops or outlets using verified records', 'Handle Carrier Door food orders and follow fulfillment', 'Coordinate with attached Bridgers and track qualifying commissions', 'Record real activity as part of Company Loop 1'],
     },
     admin: {
       mode: 'support',
