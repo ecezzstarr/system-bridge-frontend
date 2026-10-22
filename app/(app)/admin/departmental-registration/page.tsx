@@ -313,8 +313,8 @@ export default function DepartmentalRegistrationAdmin() {
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700 text-white">
-                    <SelectItem value="AGENT">AGENT (Fixed Compensation)</SelectItem>
-                    <SelectItem value="BRIDGER">BRIDGER (Performance Share)</SelectItem>
+                    <SelectItem value="AGENT">AGENT (Products + Verified Commissions)</SelectItem>
+                    <SelectItem value="BRIDGER">BRIDGER (Digital Prospect + Client Crossing)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
