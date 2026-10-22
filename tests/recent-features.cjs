@@ -581,7 +581,7 @@ assert.ok(agentPresenceSource.includes('RolePresenceEnvironment role="agent"'),'
 assert.ok(bridgerPresenceSource.includes('RolePresenceEnvironment role="bridger"'),'Bridger Presence uses the shared Presence environment')
 assert.ok(clientPresenceSource.includes('RolePresenceEnvironment role="client"'),'Client Presence uses the shared Presence environment')
 assert.ok(rolePresenceEnvironmentSource.includes("data-role-presence={role}")&&rolePresenceEnvironmentSource.includes('Presence is orientation. Districts organize movement. Places perform the work.'),'Role Presence is one reusable environment with district organization')
-assert.ok(rolePresenceEnvironmentSource.includes('verified File Folder purchases')&&rolePresenceEnvironmentSource.includes('Bridger share'),'Role Presence explicitly explains Agent and Bridger File Folder economics')
+assert.ok(rolePresenceEnvironmentSource.includes('File Folder commissions')&&rolePresenceEnvironmentSource.includes('verified Client ownership'),'Role Presence explains actual Agent commissions and informed Bridger Client crossings')
 assert.ok(roleDistrictEnvironmentSource.includes('data-role-district={district.key}')&&roleDistrictEnvironmentSource.includes('Places inside this district'),'Role districts keep places inside the district instead of scattering functions across the world')
 assert.ok(agentFunctionsSource.includes("redirect('/agent/dashboard')"),'Legacy Agent Functions redirects into the canonical Agent World')
 assert.ok(!fs.readFileSync(path.join(root,'app/(app)/places/page.tsx'),'utf8').includes('/agent/functions'),'Generic Places catalog does not resurrect the Agent Operating Room')
