@@ -66,7 +66,7 @@ export default function AppLayout({
         const data = await res.json().catch(() => ({}))
         const employment = data?.employment?.active ? data.employment : null
         setLegionEmployment(employment)
-        if (employment && !pathname.startsWith('/weave/lifestyles/legion')) {
+        if (employment && !pathname.startsWith('/weave/lifestyles/legion') && pathname !== '/echo') {
           router.replace('/weave/lifestyles/legion')
         }
       } catch (e) {
@@ -131,7 +131,7 @@ export default function AppLayout({
 
   if (!isAuthenticated) return null
   if (!routeAllowed) return null
-  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion')) return null
+  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion') && pathname !== '/echo') return null
 
   return (
     <EnvironmentOrganizerProvider>
