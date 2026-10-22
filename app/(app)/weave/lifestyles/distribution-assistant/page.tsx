@@ -4,6 +4,7 @@ import Link from 'next/link'
 import {useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {Button} from '@/components/ui/button'
+import {DistributionTeamWorkspace} from '@/components/distribution/team-workspace'
 
 export default function DistributionAssistantLifestylePage(){
   const {user,token,isInitialized,isLoading}=useAuth()
@@ -45,7 +46,7 @@ export default function DistributionAssistantLifestylePage(){
     <Link href="/weave/lifestyles" className="text-xs text-cyan-300">← Return to Lifestyle</Link>
     <p className="mt-7 text-xs font-black uppercase tracking-widest text-amber-300">WEAVE Distribution · Employment</p>
     <h1 className="mt-2 text-3xl font-black">Assistant Distribution Manager</h1>
-    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. Each three-person team (one main Manager and two assistants) shares a 300-referral target in its first probation month and a 500-referral target in each later team employment month.</p>
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. A lead Manager must first be verified by Administration before appointing assistants or beginning their probation. Each three-person team (one main Manager and two assistants) shares a 300-referral target in its first probation month and a 500-referral target in each later team employment month.</p>
     <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
       <Info label="Monthly salary term" value="₦30,000"/>
       <Info label="Shared team target" value={appointed?String(target):"300 probation → 500 regular"}/>
@@ -62,11 +63,12 @@ export default function DistributionAssistantLifestylePage(){
         <div className="mt-3 text-sm text-slate-300">Your individual contribution: <strong className="text-white">{state.ownReferrals||0} referrals</strong>. There is no separate individual quota.</div>
         <div className="mt-3 space-y-2">{(state.teamMembers||[]).map((member:any)=><div key={member.userId} className="flex items-center justify-between gap-2 border-b border-white/10 py-2 text-xs text-slate-300"><span>{member.name} · {member.position==='manager'?'Main Manager':'Assistant'}</span><span className="font-black text-cyan-200">{member.referrals} referrals</span></div>)}</div>
         <div className="mt-4 grid grid-cols-2 gap-3"><Info label="Salary eligibility (provisional)" value={`₦${Number(state.compensation?.salaryEntitlementNgn||0).toLocaleString('en-NG')}`}/><Info label="Your referral bonus value" value={`₦${Number(state.compensation?.individualReferralBonusNgn||0).toLocaleString('en-NG')}`}/></div><p className="mt-3 text-xs text-slate-400">{state.compensation?.teamQualified?'Your team has reached its applicable target; full salary is provisionally eligible pending month-end verification.':'Your team is below 500; only your own qualifying referral bonuses apply for this month.'} Figures do not confirm a salary transfer; referral bonuses follow the existing ledger.</p>
+        <DistributionTeamWorkspace/>
         <div className="mt-5 flex flex-wrap gap-3 text-sm text-cyan-200"><Link href="/referrals">Referral movement →</Link><Link href="/distribution-studio">Distribution Studio →</Link><Link href="/video-ad-studio">Video Ad Studio →</Link><Link href="/event">Flame Event →</Link></div>
       </>}
     </section> : state?.canReview ? <section className="mt-7 rounded-2xl border border-amber-300/20 bg-amber-300/[.03] p-5">
       <h2 className="text-lg font-black">Distribution Manager position active</h2>
-      <p className="mt-2 text-sm text-slate-300">Your existing Distribution Manager appointment carries the assistant selection and supervision desk. Lead Managers cannot also apply for assistant employment.</p>
+      <p className="mt-2 text-sm text-slate-300">Your Administration-verified Distribution Manager appointment carries the assistant selection and supervision desk. Lead Managers cannot also apply for assistant employment.</p>
       <Link href="/manager/dashboard" className="mt-4 inline-block text-sm font-black text-amber-200">Open assistant appointments →</Link>
     </section> : <section className="mt-7 rounded-2xl border border-white/10 bg-white/[.03] p-5">
       <h2 className="text-lg font-black">Apply for one of six positions</h2>
