@@ -7,6 +7,7 @@ import { getInstalledCapabilityTotals } from '@/lib/client-growth-world'
 import { recordSystemEvent } from '@/lib/system-events'
 import {notifyUser} from '@/lib/deposit-notifications'
 import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
+import { ensureAgenticBridgerPurchaseTable, getAgenticBridgerPurchase } from '@/lib/agentic-bridger-purchase'
 
 async function resolveClient(request:NextRequest){
   const token=request.headers.get('authorization')?.replace(/^Bearer\s+/i,'').trim()||null
@@ -40,6 +41,7 @@ export async function GET(request:NextRequest){
   if(!clientId)return NextResponse.json({success:false,error:'Client login required'},{status:401})
   await ensureEnterpriseDreamSchema(sql)
   await ensureLegionEmploymentSchema(sql)
+  await ensureAgenticBridgerPurchaseTable()
   const enterprise=await getEnterprise(clientId)
   if(!enterprise)return NextResponse.json({success:false,error:'Build and activate Legion Quarters inside an approved enterprise before recruiting Legions.'},{status:409})
 
@@ -56,8 +58,7 @@ export async function GET(request:NextRequest){
       AND COALESCE(u.is_active,true)=true
       AND (
         u.role='agent'
-        OR COALESCE(u.is_subscription_exempt,false)=true
-        OR (u.subscription_status='active' AND (u.subscription_expiry IS NULL OR u.subscription_expiry>NOW()))
+        OR EXISTS(SELECT 1 FROM bridger_agentic_purchases abp WHERE abp.user_id=u.id)
       )
       AND NOT EXISTS(
         SELECT 1 FROM enterprise_legions l
@@ -95,6 +96,7 @@ export async function POST(request:NextRequest){
   if(!clientId)return NextResponse.json({success:false,error:'Client login required'},{status:401})
   await ensureEnterpriseDreamSchema(sql)
   await ensureLegionEmploymentSchema(sql)
+  await ensureAgenticBridgerPurchaseTable()
   const enterprise=await getEnterprise(clientId)
   if(!enterprise)return NextResponse.json({success:false,error:'Legion Quarters are required before recruitment.'},{status:409})
   const monthlyStanding=await getClientMonthlyStanding(clientId)
@@ -118,8 +120,7 @@ export async function POST(request:NextRequest){
         AND COALESCE(u.is_active,true)=true
         AND (
           u.role='agent'
-          OR COALESCE(u.is_subscription_exempt,false)=true
-          OR (u.subscription_status='active' AND (u.subscription_expiry IS NULL OR u.subscription_expiry>NOW()))
+          OR EXISTS(SELECT 1 FROM bridger_agentic_purchases abp WHERE abp.user_id=u.id)
         )
         AND NOT EXISTS(SELECT 1 FROM enterprise_legions l WHERE l.source_user_id=u.id AND l.active=true AND l.employment_status='active')
       LIMIT 1
@@ -156,8 +157,8 @@ export async function POST(request:NextRequest){
       LIMIT 1
     `
     if(!application)return NextResponse.json({success:false,error:'Legion application not found.'},{status:404})
-    const accessCurrent=String(application.role)==='agent'||Boolean(application.is_subscription_exempt)||(application.subscription_status==='active'&&(!application.subscription_expiry||new Date(application.subscription_expiry).getTime()>Date.now()))
-    if(!accessCurrent)return NextResponse.json({success:false,error:'The Bridger applicant no longer has active Continuance.'},{status:409})
+    const accessCurrent=String(application.role)==='agent'||Boolean(await getAgenticBridgerPurchase(String(application.applicant_user_id)))
+    if(!accessCurrent)return NextResponse.json({success:false,error:'The Bridger applicant must own Agentic-Bridger to receive a Legion employment offer.'},{status:409})
     const currentCapacity=await capacityState(clientId)
     if(currentCapacity.count>=currentCapacity.capacity)return NextResponse.json({success:false,error:'Legion Quarter capacity is full.'},{status:409})
     // Applying expresses interest in the enterprise, not agreement to
