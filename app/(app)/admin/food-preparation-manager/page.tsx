@@ -40,6 +40,12 @@ export default function AdminFoodPreparationManagerPage(){
     }catch(cause){setError(cause instanceof Error?cause.message:'Action failed')}
     finally{setBusy('')}
   }
+  useEffect(()=>{
+    if(!staff.length)return
+    const id=new URLSearchParams(window.location.search).get('applicationId')
+    if(!id)return
+    window.requestAnimationFrame(()=>document.getElementById('application-'+id)?.scrollIntoView({behavior:'smooth',block:'center'}))
+  },[staff])
   if(!isInitialized)return <main className="p-6 text-white">Opening Administration food desk…</main>
   if(user?.role!=='admin')return <main className="p-6 text-white">Administration access required.</main>
   const pending=staff.filter(person=>person.status==='pending')
@@ -70,7 +76,7 @@ export default function AdminFoodPreparationManagerPage(){
     <section>
       <h2 className="text-xl font-black">Applications awaiting review · {pending.length}</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        {pending.map(person=><article key={person.id} className="border border-white/10 p-5">
+        {pending.map(person=><article id={`application-${person.id}`} key={person.id} className="scroll-mt-24 border border-white/10 p-5">
           <p className="flex items-center gap-2 text-xs text-amber-200"><ChefHat className="h-4 w-4"/> {person.position==='manager'?'Manager application':'Assistant Manager application'}</p>
           <h3 className="mt-2 text-lg font-black">{person.name||person.username}</h3>
           <p className="mt-1 text-xs text-stone-500">{person.email} · {person.is_active?'Active':'Inactive'} · ₦{Number(person.monthly_salary_ngn).toLocaleString('en-NG')}/month after appointment</p>
