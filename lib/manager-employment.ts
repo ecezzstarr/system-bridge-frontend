@@ -75,6 +75,10 @@ export async function ensureManagerEmploymentTable() {
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verified_by UUID REFERENCES users(id)`
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ`
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verification_note TEXT`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS exit_kind VARCHAR(20)`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS exit_reason TEXT`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS exited_at TIMESTAMPTZ`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS exited_by UUID REFERENCES users(id)`
   await sql`ALTER TABLE manager_employment ALTER COLUMN status TYPE VARCHAR(24)`
   await sql`ALTER TABLE manager_employment ALTER COLUMN status SET DEFAULT 'pending_verification'`
   await sql`ALTER TABLE manager_employment ALTER COLUMN monthly_salary_ngn SET DEFAULT 70000`
