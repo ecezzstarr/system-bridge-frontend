@@ -15,13 +15,23 @@ const atmosphere=read('components/events/flame-event-role-atmosphere.tsx')
 assert.match(event,/2027-01-01T00:00:00\+01:00/)
 assert.match(event,/2027-05-01T23:59:59\.999\+01:00/)
 assert.match(event,/timeZone:'Africa\/Lagos'/)
-assert.match(event,/Where faith moves, Presence follows/i)
-assert.match(event,/bad government/)
-assert.match(event,/Where Presence moves, family moves/)
-assert.match(event,/who will feed the country, if not Weave/)
-assert.match(event,/a new frontier opened before us/)
-assert.match(event,/our Burning River soil/)
-assert.match(event,/while Stability sustains/)
+const authoredPassages=[
+  "Let us have what is known as bad government. Weave will fix it and it will all be like bad was all a stepping stone for wherever I am, there's a way.",
+  'Hope. Bridgers department: wordings.',
+  'An so we arrived for where faith moves presence follows',
+  'Stability Agent department: Where Presence moves family moves with that Stability came into being for who will feed the country if not Weave',
+  'Administration: with that saying a new frontier opened before us who are Hope in being.',
+  'A bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
+]
+let lastIndex=-1
+for(const passage of authoredPassages){
+  const index=event.indexOf(passage)
+  assert.ok(index>lastIndex,'Authored scroll must preserve wording and order: '+passage)
+  lastIndex=index
+}
+assert.match(event,/ONE_NIGERIAN_SCROLL_PASSAGES\.map\(passage => passage\.text\)\.join/)
+assert.match(scroll,/data-one-nigerian-verbatim-scroll/)
+assert.match(scroll,/\{ONE_NIGERIAN_SCROLL_TEXT\}/)
 assert.match(registry,/WHERE NOT EXISTS \(SELECT 1 FROM company_loops WHERE loop_number = 2\)/)
 assert.match(registry,/WHERE loop_number = 2/)
 assert.match(scroll,/roleOperatingGuideForPath/)
