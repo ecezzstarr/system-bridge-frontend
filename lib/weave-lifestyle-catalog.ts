@@ -93,7 +93,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Distribution Manager',
     route: '/manager/dashboard',
     roles: ['agent', 'bridger'],
-    summary: 'A WEAVE employment Lifestyle carried by an existing Agent or Bridger. It distributes WEAVE outward, coordinates acquisition movement and reports distribution back to Administration.',
+    summary: 'A WEAVE employment Lifestyle carried by an existing Agent or Bridger. Signing submits an application for Administration verification; only approval starts the one-month probation and unlocks appointment of up to two assistants. Verified teams use existing Distribution Studio, Video Ad Studio, Carrier and Referral Movement tools, communicate through their own team workspace and file reports visible read-only to Administration.',
     environments: [
       { label: 'Distribution Studio', href: '/distribution-studio', purpose: 'Plan and operate public social distribution.' },
       { label: 'Video Ad Studio', href: '/video-ad-studio', purpose: 'Form video campaigns for WEAVE distribution.' },
