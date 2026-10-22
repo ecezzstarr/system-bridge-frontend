@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
-import {getPool} from '@/lib/db'
+import {getPool,sql} from '@/lib/db'
+import {getActiveLegionEmployment} from '@/lib/legion-employment'
 import {getLifestyleAccess} from '@/lib/weave-lifestyle'
 import {ensureManagerEmploymentTable} from '@/lib/manager-employment'
 import {ensureDistributionAssistantSchema} from '@/lib/distribution-assistants'
@@ -34,6 +35,11 @@ export async function GET(request:NextRequest){
     const access=await getLifestyleAccess(user.id)
     if(!access.active)return NextResponse.json({success:true,positions:[],eligible:false,
       message:'Activate your eligible Lifestyle position before opening employment systems.'},
+      {headers:{'Cache-Control':'private, no-store'}})
+    // Legion employment is exclusive: former role records do not authorize parallel work.
+    const legion=await getActiveLegionEmployment(sql,user.id)
+    if(legion.active)return NextResponse.json({success:true,positions:[],eligible:false,
+      message:'Your current exclusive Legion service temporarily suspends other company job operations until the Legion appointment ends.'},
       {headers:{'Cache-Control':'private, no-store'}})
     await Promise.all([ensureManagerEmploymentTable(),ensureDistributionAssistantSchema(),
       ...(user.role==='agent'?[ensureFoodPreparationManagerSchema()]:[])])
