@@ -44,7 +44,7 @@ export default function DistributionAssistantLifestylePage(){
   const target=Number(state?.teamTarget||500)
   if(!isInitialized||isLoading||loading)return <main className="p-7 text-sm text-slate-200">Opening Distribution Assistant employment…</main>
   return <main className="weave-operating-environment mx-auto min-h-screen max-w-4xl px-4 py-8 text-white" data-distribution-assistant-lifestyle="true">
-    <Link href="/weave/lifestyles" className="text-xs text-cyan-300">← Return to Lifestyle</Link>
+    <div className="flex flex-wrap gap-4 text-xs text-cyan-300"><Link href="/weave/lifestyles">← Return to Lifestyle</Link><Link href="/weave/lifestyles/work">My approved workspaces →</Link></div>
     <p className="mt-7 text-xs font-black uppercase tracking-widest text-amber-300">WEAVE Distribution · Employment</p>
     <h1 className="mt-2 text-3xl font-black">Assistant Distribution Manager</h1>
     <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Six assistant positions, two for each of WEAVE's three Distribution Managers, support the company with outreach, campaign circulation, follow-ups and verified Agent/Bridger acquisition. The assistant remains an Agent or Bridger in WEAVE. A lead Manager must first be verified by Administration before appointing assistants or beginning their probation. Each three-person team (one main Manager and two assistants) shares a 300-referral target in its first probation month and a 500-referral target in each later team employment month.</p>
