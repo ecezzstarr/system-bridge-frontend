@@ -21,7 +21,7 @@ assert.match(registry,/WHERE NOT EXISTS \(SELECT 1 FROM company_loops WHERE loop
 assert.match(registry,/WHERE loop_number = 2/)
 assert.match(scroll,/roleOperatingGuideForPath/)
 assert.match(scroll,/transitTrainingForPath/)
-assert.match(scroll,/user\.id\+': '\+role/) // Daily marker is bound to role and user.
+assert.match(scroll,/user\.id\+':'\+role/) // Daily marker is bound to role and user.
 assert.match(scroll,/aria-expanded=\{open\}/)
 assert.match(scroll,/What am I doing here\?/)
 assert.match(scroll,/localStorage\.setItem/)
