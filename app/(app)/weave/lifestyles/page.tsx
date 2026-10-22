@@ -118,7 +118,7 @@ export default function WeaveLifestylesPage() {
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">LIFESTYLE</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Agents have included Lifestyle access. Bridgers work without subscriptions and may buy Agentic-Bridger once for 20 Flame Coin to open Lifestyle, Ace, Distribution Manager, Legion and other eligible jobs. Clients use their own subscription.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Agents have included Lifestyle access. Bridgers can attain Agentic-Bridger with one payment of 20 Flame Coin. Agentic-Bridger then enables Lifestyle access and eligibility to apply for positions such as Distribution Manager and Legion. Regular Bridger work has no subscription; Clients follow their own access terms.</p>
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
@@ -133,7 +133,7 @@ export default function WeaveLifestylesPage() {
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{agentFree ? 'Agent position access' : bridger ? 'Agentic-Bridger · permanent access' : `${roleLabel} monthly subscription`}</p>
                 <p className="mt-1 text-sm font-black text-white">{access?.active ? 'LIFESTYLE LAYER OPEN' : 'LIFESTYLE LAYER CLOSED'}</p>
-                <p className="mt-1 text-xs text-slate-500">{agentFree ? 'Agents enter Lifestyle at no additional monthly charge.' : bridger ? 'No Bridger subscription. One permanent Agentic-Bridger purchase opens eligible Lifestyle roles and jobs.' : 'Your Client subscription determines Lifestyle access.'}</p>
+                <p className="mt-1 text-xs text-slate-500">{agentFree ? 'Agents enter Lifestyle at no additional monthly charge.' : bridger ? 'One payment of 20 Flame Coin attains Agentic-Bridger permanently. Agentic-Bridger enables Lifestyle access; job appointments still require application and approval.' : 'Your Client subscription determines Lifestyle access.'}</p>
                 {!agentFree && !bridger && access?.expiresAt && <p className="mt-1 text-xs text-slate-500">Current period ends {new Date(access.expiresAt).toLocaleDateString()}</p>}
               </div>
               {!agentFree && !bridger && !access?.active && (
@@ -149,10 +149,10 @@ export default function WeaveLifestylesPage() {
             <section className="mt-5 rounded-2xl border border-emerald-300/25 bg-emerald-400/[.05] p-5 sm:p-6" data-lifestyle-agentic-purchase="self-service">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Agentic-Bridger · Open Lifestyle</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Attain Agentic-Bridger · Enable Lifestyle</p>
                   <h2 className="mt-2 text-2xl font-black text-white">{WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN} Flame Coin <span className="text-sm text-slate-300">· one time</span></h2>
-                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Buy Agentic-Bridger once with your Flame Coin wallet. It permanently opens eligible Lifestyle identities and Bridger employment applications, including Distribution Manager and Legion. Your normal Bridger work remains free.</p>
-                  <p className="mt-2 text-xs text-slate-400">Bridge AI costs 8 Flame Coin each time you open a new template path. Echo is free. Agentic-Bridger never renews and is never charged twice.</p>
+                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Pay 20 Flame Coin once to attain Agentic-Bridger. This permanent attainment enables Lifestyle access, including applications for eligible Distribution Manager and Legion positions. Appointment and employment are separate approval processes. Regular Bridger activity remains free.</p>
+                  <p className="mt-2 text-xs text-slate-400">Bridge AI costs 8 Flame Coin per new template. Echo is free. Agentic-Bridger is attained once for 20 Flame Coin; there is no recurring Bridger or Agentic-Bridger subscription.</p>
                   
                 </div>
                 <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase ${access.active ? 'border-emerald-300/25 text-emerald-200' : 'border-amber-300/25 text-amber-200'}`}>{access.active ? 'Owned permanently' : 'Not purchased'}</span>
@@ -160,7 +160,7 @@ export default function WeaveLifestylesPage() {
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 {!access.active && (
                   <button type="button" onClick={() => void renewContinuance()} disabled={continuanceRenewing} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-950 disabled:cursor-wait disabled:opacity-50">
-                    {continuanceRenewing ? 'Opening Lifestyle…' : 'Buy Once · Open Lifestyle'}
+                    {continuanceRenewing ? 'Attaining Agentic-Bridger…' : 'Attain Agentic-Bridger · 20 Flame Coin once'}
                   </button>
                 )}
                 <Link href="/wallet/deposit-withdraw" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-xs font-black text-white">Fund Flame Coin Wallet</Link>
@@ -199,7 +199,7 @@ export default function WeaveLifestylesPage() {
                   icon={<Bot className="h-8 w-8" />}
                   eyebrow="Inside Ace · Bridger only"
                   title="AGENTIC-BRIDGER"
-                  detail="Agentic-Bridger is the Bridger-only Lifestyle specialization inside Ace. Your Bridger role remains intact; the one-time 20 Flame Coin purchase opens the specialization and its eligible 45% earning rule."
+                  detail="Agentic-Bridger is attained through a one-time payment of 20 Flame Coin. Attainment permanently enables Lifestyle access and eligible activities, including the Agentic-Bridger earning rules; it does not change the underlying Bridger role or automatically approve employment."
                   open={agenticOpen}
                   reason={access?.active ? (carrier?.reason || 'Ace has not opened yet.') : 'Buy Agentic-Bridger once for 20 Flame Coin.'}
                   href="/weave/lifestyles/agentic-bridger"
