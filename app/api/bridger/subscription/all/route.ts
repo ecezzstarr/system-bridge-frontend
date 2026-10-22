@@ -5,7 +5,7 @@ import { getAuthUser } from '@/lib/auth-api'
 export async function GET(request:NextRequest) {
   const user=await getAuthUser(request)
   if(!user)return NextResponse.json({success:false,error:'Unauthorized'},{status:401})
-  return NextResponse.json({success:true,retired:true,totalDueFlameCoin:0,services:[],message:'Bridger monthly bundles have ended. Echo is free, Bridge AI templates cost 8 each, Agentic-Bridger costs 20 once.'})
+  return NextResponse.json({success:true,retired:true,totalDueFlameCoin:0,services:[],message:'Bridger monthly bundles have ended. Echo is free, Bridge AI templates cost 8 each, Agentic-Bridger costs 11 once.'})
 }
 export async function POST(request:NextRequest) {
   const user=await getAuthUser(request)
