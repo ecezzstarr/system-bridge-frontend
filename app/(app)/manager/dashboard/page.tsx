@@ -80,7 +80,13 @@ export default function ManagerDashboardPage(){
     finally{setBusy(false)}
   }
 
-  const probationEnd=state?.employment?.probation_ends_at?new Date(state.employment.probation_ends_at):null
+  useEffect(()=>{
+    if(!assistantState?.pending?.length)return
+    const id=new URLSearchParams(window.location.search).get('assistantId')
+    if(!id)return
+    window.requestAnimationFrame(()=>document.getElementById('assistant-application-'+id)?.scrollIntoView({behavior:'smooth',block:'center'}))
+  },[assistantState])
+    const probationEnd=state?.employment?.probation_ends_at?new Date(state.employment.probation_ends_at):null
   const daysRemaining=useMemo(()=>probationEnd?Math.max(0,Math.ceil((probationEnd.getTime()-Date.now())/86400000)):0,[state?.employment?.probation_ends_at])
   const sharePath=state?.referralCode?`/register?ref=${encodeURIComponent(state.referralCode)}`:''
   const copyReferral=async()=>{if(!sharePath)return;try{await navigator.clipboard.writeText(`${window.location.origin}${sharePath}`);setCopied(true);window.setTimeout(()=>setCopied(false),1500)}catch{}}
@@ -171,7 +177,7 @@ export default function ManagerDashboardPage(){
       </div>
       <h3 className="mt-6 text-sm font-black text-white">Pending applications</h3>
       <div className="mt-3 space-y-3">
-        {(assistantState.pending||[]).map((candidate:any)=><div key={candidate.user_id} className="rounded-xl border border-white/10 p-4">
+        {(assistantState.pending||[]).map((candidate:any)=><div id={`assistant-application-${candidate.user_id}`} key={candidate.user_id} className="scroll-mt-24 rounded-xl border border-white/10 p-4">
           <p className="text-sm font-black text-white">{candidate.name} · {candidate.role}</p>
           <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-400">{candidate.application_note}</p>
           <div className="mt-3 flex flex-wrap gap-2">
