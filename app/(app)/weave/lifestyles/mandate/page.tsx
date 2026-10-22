@@ -55,7 +55,7 @@ export default function MandateLifestylePage(){
     {message&&<p role="status" className="mt-5 border border-emerald-300/20 p-3 text-xs text-emerald-200">{message}</p>}
     {!data?<div className="mt-6 flex gap-2 text-xs text-stone-400"><Loader2 className="h-4 w-4 animate-spin"/>Loading departments…</div>:<>
       <div className="mt-5 border-l-2 border-amber-300/40 bg-amber-300/[.035] p-4 text-xs leading-6 text-stone-300">
-        <strong className="text-white">Position eligibility:</strong> {data.eligible?'Your position can apply.':'Your current Lifestyle access is inactive. An Agent must have an active account and a Bridger must have active Continuance.'}
+        <strong className="text-white">Position eligibility:</strong> {data.eligible?'Your position can apply.':'Your current Lifestyle access is inactive. An Agent must have an active position and a Bridger must have permanent Agentic-Bridger Lifestyle access.'}
         {' '}Current status: {data.accessStatus}.
       </div>
       <div className="mt-6 grid gap-4 md:grid-cols-3">
