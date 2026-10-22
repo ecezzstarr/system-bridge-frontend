@@ -35,3 +35,5 @@ for(const slug of ['agent-agility','agent-electrolyte','agent-ember']){
 }
 assert.ok(food.includes('no invented product photographs or stock.'),'Farm and household listings are not misrepresented')
 console.log('Burning River preview + public Client build + attributed Agent checkout regression passed')
+
+require('./burning-river-real-food-3d-regression.cjs')
