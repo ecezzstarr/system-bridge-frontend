@@ -62,7 +62,7 @@ export function FileFolderEnvironmentLoader() {
           WEAVE File Folder · System Switch
         </p>
         <h1 className="mt-2 text-xl font-black md:text-2xl">
-          Opening your File Folder
+          Know your File Folder
         </h1>
 
         <section className="mt-4 flex min-h-[11rem] flex-col justify-center rounded-xl border border-sky-200/20 bg-[#041526]/95 px-3 py-4 sm:min-h-[13rem] sm:px-6"
