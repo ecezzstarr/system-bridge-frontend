@@ -24,8 +24,8 @@ const probationAt=compute({teamReferrals:300,ownReferrals:70,monthlySalaryNgn:70
 assert.equal(probationAt.teamTarget,300,'Initial team probation target is 300')
 assert.equal(probationAt.teamQualified,true,'300 referrals meet the one-month probation requirement')
 assert.equal(probationAt.salaryEntitlementNgn,70000,'Manager earns full salary eligibility in qualifying probation month')
-const probationAssistant=compute({teamReferrals:300,ownReferrals:0,monthlySalaryNgn:30000,teamTarget:300})
-assert.equal(probationAssistant.salaryEntitlementNgn,30000,'Assigned assistant can qualify through team probation achievement')
+const probationAssistant=compute({teamReferrals:300,ownReferrals:0,monthlySalaryNgn:40000,teamTarget:300})
+assert.equal(probationAssistant.salaryEntitlementNgn,40000,'Assigned assistant can qualify through team probation achievement')
 assert.equal(probationAssistant.individualReferralBonusNgn,0,'Do not invent individual bonuses')
 
 const helper=read('lib/distribution-team-referrals.ts')
@@ -62,15 +62,15 @@ assert.equal(at.salaryEntitlementNgn,70000,'Full main Manager salary becomes eli
 assert.equal(at.individualReferralBonusNgn,60000,'Bonuses remain attributable individually')
 assert.equal(at.illustrativeCombinedNgn,130000,'Monthly salary plus existing individual referral value')
 
-const assistantBelow=compute({teamReferrals:499,ownReferrals:80,monthlySalaryNgn:30000})
+const assistantBelow=compute({teamReferrals:499,ownReferrals:80,monthlySalaryNgn:40000})
 assert.equal(assistantBelow.salaryEntitlementNgn,0,'No assistant salary when team misses target')
 assert.equal(assistantBelow.individualReferralBonusNgn,40000,'Assistant receives only their own 80 referrals')
 
-const assistantAt=compute({teamReferrals:500,ownReferrals:0,monthlySalaryNgn:30000})
-assert.equal(assistantAt.salaryEntitlementNgn,30000,'Team achievement makes full assistant salary eligible')
+const assistantAt=compute({teamReferrals:500,ownReferrals:0,monthlySalaryNgn:40000})
+assert.equal(assistantAt.salaryEntitlementNgn,40000,'Team achievement makes full assistant salary eligible')
 assert.equal(assistantAt.individualReferralBonusNgn,0,'No invented referral earnings for assistant with no referrals')
 
-const none=compute({teamReferrals:0,ownReferrals:0,monthlySalaryNgn:30000})
+const none=compute({teamReferrals:0,ownReferrals:0,monthlySalaryNgn:40000})
 assert.equal(none.illustrativeCombinedNgn,0,'No team achievement or referrals means no pay')
 assert.equal(at.periodStatus,'provisional_current_month','Midmonth preview never claims a salary was paid')
 assert.equal(at.salaryPaymentSource,'forensic_payroll_approval_required','Forensics controls salary release')
