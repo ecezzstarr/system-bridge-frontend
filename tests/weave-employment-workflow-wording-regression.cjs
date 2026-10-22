@@ -33,7 +33,7 @@ assert.ok(lifecycle.includes('agent_id AS user_id,position,status'),'Food employ
 assert.ok(lifecycle.includes('administrationRoute')&&lifecycle.includes('employeeRoute'),'Replies link to the appropriate employment desk')
 assert.ok(lifecycle.includes('roleName+\' · \'+sender+\' sent an employment message\''),'Administration notification identifies employee and position')
 assert.ok(manager.includes('Administration verification.')&&manager.includes('one-month probation'),'Lead acceptance explains verification before probation')
-assert.ok(assistant.includes('Your application is awaiting a verified Distribution Manager'),'Assistant knows appointment authority')
+assert.ok(assistant.includes('awaiting Administration eligibility verification')&&assistant.includes('a lead Distribution Manager can review'),'Assistant sees Administration screening before lead Manager appointment')
 assert.ok(assistant.includes('target of \'+target+\' verified referrals'),'Salary preview refers to the current probation or monthly target')
 assert.ok(food.includes('approved Stability Lead assigns verified paid food orders'),'Food preparation shows proper order-assignment authority')
 assert.ok(adminFood.includes('Approve appointment')&&adminFood.includes('Decline application'),'Administration appoints or declines Food Preparation applicants')
