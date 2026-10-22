@@ -229,6 +229,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'Draft → preview → publish → observe → roll back when needed',
     layer: 'system',
   },
+  '/admin/loader-workshop': {
+    key: 'administration-loader-workshop',
+    title: 'Loader Workshop',
+    district: 'Institution',
+    purpose: 'Administration controls live automatic loader duration, three educational lessons per department, and transition guidance without a code deployment.',
+    movement: 'Select department → preview lessons → set pace → publish live',
+    layer: 'system',
+  },
   '/admin/environment-organizer': {
     key: 'administration-environment-organizer',
     title: 'Environment Organizer',
