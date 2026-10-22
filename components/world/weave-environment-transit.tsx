@@ -113,8 +113,8 @@ type LoadingBrief=WeaveLoadingBrief
 // Lyric-style pacing makes each verified instruction readable before the
 // next room is revealed. Only the text changes; the full-screen cover stays
 // fixed and the existing world-readiness check runs in parallel.
-const BOOT_LYRIC_STEP_MS=1200
-const TRANSIT_LYRIC_STEP_MS=1600
+const BOOT_LYRIC_STEP_MS=1450
+const TRANSIT_LYRIC_STEP_MS=1950
 const LOADING_CARD_HOLD_MS=5*BOOT_LYRIC_STEP_MS
 const TRANSIT_FORMATION_MS=5*TRANSIT_LYRIC_STEP_MS
 
@@ -369,26 +369,22 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
 
   useEffect(()=>{
     if(!covered)return
+    // Every entrance uses one moving lyric clock. Keep cycling the verified
+    // lesson while the actual destination is unresolved; a slow API, image or
+    // File Folder never leaves users staring at a frozen final line.
+    const timeline=(booting?bootBriefs:[transitBrief]).flatMap((brief,card)=>
+      lyricLinesForBrief(brief).map((_,line)=>({card,line})))
     setBriefIndex(0)
     setLyricIndex(0)
-    const timers:number[]=[]
-    if(booting){
-      bootBriefs.forEach((brief,card)=>{
-        const offset=card*LOADING_CARD_HOLD_MS
-        if(card>0)timers.push(window.setTimeout(()=>{
-          setBriefIndex(card)
-          setLyricIndex(0)
-        },offset))
-        for(let line=1;line<lyricLinesForBrief(brief).length;line++){
-          timers.push(window.setTimeout(()=>setLyricIndex(line),offset+line*BOOT_LYRIC_STEP_MS))
-        }
-      })
-    }else{
-      for(let line=1;line<lyricLinesForBrief(transitBrief).length;line++){
-        timers.push(window.setTimeout(()=>setLyricIndex(line),line*TRANSIT_LYRIC_STEP_MS))
-      }
-    }
-    return ()=>timers.forEach(timer=>window.clearTimeout(timer))
+    if(timeline.length===0)return
+    let beat=0
+    const timer=window.setInterval(()=>{
+      beat=(beat+1)%timeline.length
+      const {card,line}=timeline[beat]
+      setBriefIndex(card)
+      setLyricIndex(line)
+    },booting?BOOT_LYRIC_STEP_MS:TRANSIT_LYRIC_STEP_MS)
+    return ()=>window.clearInterval(timer)
   },[covered,sequenceId,booting,bootBriefs,transitBrief])
   const openingLabel=returningToWorld
     ? `Returning to ${destinationEnvironment.title}`
@@ -444,6 +440,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       data-weave-loader-destination={destinationPath}
       data-weave-loader-direction={returningToWorld?'return':'opening'}
       data-weave-loader-lyrics="timed-instruction"
+      data-weave-loader-flow="continuous-until-ready"
     >
       {/* Scalable river artwork is painted once behind legible live text. */}
       <div className="weave-loader-scenery" aria-hidden="true">
@@ -490,7 +487,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
                 {lyricLines[visibleLyric-1]||'\u00a0'}
               </p>
               <div className="weave-loader-lyric-focus" aria-live="polite" aria-atomic="true">
-                <p className="weave-loader-lyric-current text-lg font-black leading-snug tracking-tight sm:text-2xl">
+                <p key={`${sequenceId}-${briefIndex}-${visibleLyric}`} className="weave-loader-lyric-current weave-loader-lyric-motion text-lg font-black leading-snug tracking-tight sm:text-2xl">
                   {lyricLines[visibleLyric]}
                 </p>
                 <div className="weave-loader-lyric-meter mt-3 h-0.5 w-full overflow-hidden rounded-full bg-white/10" aria-hidden="true">
