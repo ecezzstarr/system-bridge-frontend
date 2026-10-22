@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {Button} from '@/components/ui/button'
+import {visiblePoll} from '@/lib/visible-poll'
 type Task={id:string;manager_user_id:string;assigned_user_id:string;assignee_name:string;
   title:string;instructions:string;status:'assigned'|'in_progress'|'submitted'|'completed';
   created_at:string;updated_at:string}
@@ -18,6 +19,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
   const [instructions,setInstructions]=useState('')
   const [assignee,setAssignee]=useState('')
   const [notes,setNotes]=useState<Record<string,string>>({})
+  const [reassignTargets,setReassignTargets]=useState<Record<string,string>>({})
   const load=useCallback(async()=>{
     if(!token)return
     try{
@@ -28,7 +30,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
       setData(body.workspace);setError('')
     }catch(e){setError(e instanceof Error?e.message:'Team assignments unavailable')}
   },[token])
-  useEffect(()=>{void load()},[load])
+  useEffect(()=>visiblePoll(()=>load(),15000),[load])
   const post=async(body:Record<string,unknown>)=>{
     if(!token||busy)return
     setBusy(true);setMessage('');setError('')
@@ -38,7 +40,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
         body:JSON.stringify(body)})
       const reply=await res.json()
       if(!res.ok)throw new Error(reply.error||'Unable to save task')
-      setMessage(body.action==='assign'?'Assignment delivered to the selected team member.':'Work movement recorded.')
+      setMessage(body.action==='assign'?'Assignment delivered to the selected team member.':body.action==='reassign'?'Unfinished work reassigned with a recorded reason.':'Work movement recorded.')
       if(body.action==='assign'){setTitle('');setInstructions('')}
       if(typeof body.taskId==='string')setNotes(prev=>({...prev,[String(body.taskId)]:''}))
       await load()
@@ -95,7 +97,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
           </div>
           <p className="mt-2 text-[11px] text-slate-400">Assigned to {task.assignee_name} · {new Date(task.updated_at).toLocaleString('en-NG')}</p>
           <p className="mt-3 whitespace-pre-wrap break-words text-xs leading-6 text-slate-200">{task.instructions}</p>
-          {(next||leadAction)&&<div className="mt-3 border-t border-white/10 pt-3">
+          {(next||leadAction||isLead&&task.status!=='completed')&&<div className="mt-3 border-t border-white/10 pt-3">
             <label className="text-xs text-slate-300" htmlFor={`task-note-${task.id}`}>Progress evidence / review note</label>
             <textarea id={`task-note-${task.id}`} rows={2} maxLength={1200}
               value={notes[task.id]||''} onChange={e=>setNotes(prev=>({...prev,[task.id]:e.target.value}))}
@@ -109,6 +111,20 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
               {leadAction&&<Button variant="outline" type="button" disabled={busy||(notes[task.id]||'').trim().length<8}
                 onClick={()=>void post({action:'update',taskId:task.id,status:'in_progress',note:notes[task.id]})}>Return for correction</Button>}
             </div>
+            {isLead&&task.status!=='completed'&&<div className="mt-3 border-t border-white/10 pt-3">
+              <p className="mb-2 text-[11px] font-black text-amber-200">Reassign unfinished work</p>
+              <select value={reassignTargets[task.id]||''}
+                onChange={e=>setReassignTargets(prev=>({...prev,[task.id]:e.target.value}))}
+                aria-label={'Reassign '+task.title}
+                className="min-h-11 w-full border border-white/20 bg-slate-950 p-2 text-xs text-white">
+                <option value="">Select replacement team member</option>
+                {members.map(m=><option key={m.id} value={m.id}>{m.name} · {m.position==='manager'?'Lead':'Assistant'}</option>)}
+              </select>
+              <Button type="button" size="sm" variant="outline" className="mt-2"
+                disabled={busy||!reassignTargets[task.id]||reassignTargets[task.id]===task.assigned_user_id||(notes[task.id]||'').trim().length<8}
+                onClick={()=>void post({action:'reassign',taskId:task.id,
+                  assigneeId:reassignTargets[task.id],note:notes[task.id]})}>Reassign with recorded reason</Button>
+            </div>}
           </div>}
           <details className="mt-3 border-t border-white/10 pt-3 text-xs text-slate-400">
             <summary className="cursor-pointer">Work history</summary>
