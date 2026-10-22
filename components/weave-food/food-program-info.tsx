@@ -29,7 +29,6 @@ export function AgentFoodPricingInfo({product='both'}:{product?:'agility'|'elect
     <h2 className="mt-2 text-xl font-black">{title} — official prices by size</h2>
     <p className="mt-2 text-sm font-bold text-emerald-100">{officialFoodPriceText}</p>
     <p className="mt-2 text-xs leading-6 text-stone-300">Agents sell directly to individuals and supply independent shops at the official price shown for each variant. Shops choose their own resale markup. Each food variant currently leaves {money(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN)} gross Agent margin at WEAVE price; that margin is already included, not added. The carton example below is Agility.</p>
-    <p className="mt-3 text-xs leading-6 text-amber-100" data-food-forensic-payment-guide>Two linked orders: (1) Agent buys cartons from WEAVE OPay; after confirmed payment, Forensics allocates ₦800 per bowl/package to Administration, ₦200 per bowl/package to Child/Parents Support, and the remaining wholesale stock proceeds to the Stability Lead for food preparation. (2) Customer buys from that Agent’s available received stock through their Carrier Door, paying the Agent directly. The Agent’s ₦1,000 gross unit margin is earned on resale; a Carrier purchase does not trigger a second Forensics allocation. Forensics records bank transfers separately; the website does not send payments automatically.</p>
     <div className="mt-4 grid gap-3 sm:grid-cols-4">
       {[
         ['One sale',money(AGILITY_AGENT_GROSS_PROFIT_PER_PACKAGE_NGN)],
