@@ -371,7 +371,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     if(!covered)return
     setBriefIndex(0)
     setLyricIndex(0)
-    const timers:ReturnType<typeof setTimeout>[]=[]
+    const timers:number[]=[]
     if(booting){
       bootBriefs.forEach((brief,card)=>{
         const offset=card*LOADING_CARD_HOLD_MS
