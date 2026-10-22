@@ -106,13 +106,18 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
                 void playRiverAlert()
                 if ('Notification' in window && Notification.permission === 'granted') {
                   freshOnes.slice(0, 3).forEach(n => {
-                    const popup = new Notification(n.title || 'New notification', {
-                      body: n.content || '',
-                      tag: n.id,
-                    })
-                    popup.onclick = () => {
-                      window.focus()
-                      if (n.link) window.location.href = n.link
+                    try {
+                      const popup = new Notification(n.title || 'New notification', {
+                        body: n.content || '',
+                        tag: n.id,
+                      })
+                      popup.onclick = () => {
+                        window.focus()
+                        if (n.link) window.location.href = n.link
+                      }
+                    } catch {
+                      // Mobile browsers may disallow page-created system notifications.
+                      // Keep the in-app inbox and approved river sound working anyway.
                     }
                   })
                 }
