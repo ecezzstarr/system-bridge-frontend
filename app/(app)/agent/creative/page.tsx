@@ -7,7 +7,7 @@ import { Clapperboard, Download, ImagePlus, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 
 type Format = 'post' | 'story' | 'banner'
-type Style = 'editorial' | 'warm' | 'midnight'
+type Style = 'editorial' | 'warm' | 'midnight' | 'product' | 'portrait' | 'minimal'
 
 const FORMATS: Record<Format, { width: number; height: number; label: string }> = {
   post: { width: 1080, height: 1350, label: 'Feed · 4:5' },
@@ -18,6 +18,9 @@ const STYLES: Record<Style, { background: string; ink: string; accent: string; l
   editorial: { background: '#111513', ink: '#f9f6ec', accent: '#dfc99b', label: 'Editorial' },
   warm: { background: '#2c211b', ink: '#fff7e9', accent: '#f0bd80', label: 'Warm' },
   midnight: { background: '#0c1b28', ink: '#f2f8ff', accent: '#86d0e8', label: 'Midnight' },
+  product: { background: '#10241d', ink: '#ffffff', accent: '#a5f3cb', label: 'Product photo' },
+  portrait: { background: '#241b25', ink: '#fff5fa', accent: '#f5a8d3', label: 'Portrait' },
+  minimal: { background: '#161616', ink: '#ffffff', accent: '#f3f3f3', label: 'Minimal' },
 }
 
 function drawCover(ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, w: number, h: number) {
@@ -62,7 +65,7 @@ export default function AgentCreativeStudio() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
 
-  useEffect(() => { if (user && user.role !== 'agent') router.replace('/dashboard') }, [user, router])
+  useEffect(() => { if (user && !['agent','bridger','client'].includes(user.role)) router.replace('/dashboard') }, [user, router])
   useEffect(() => () => { if (photoUrl) URL.revokeObjectURL(photoUrl) }, [photoUrl])
 
   useEffect(() => {
@@ -161,17 +164,17 @@ export default function AgentCreativeStudio() {
     }, 'image/png')
   }
 
-  if (!user || user.role !== 'agent') return null
+  if (!user || !['agent','bridger','client'].includes(user.role)) return null
 
   return <main className="mx-auto max-w-6xl space-y-6 px-4 py-7 text-white" data-agent-creative-studio="true">
-    <Link href="/agent/dashboard" className="inline-flex items-center gap-2 text-xs text-slate-400"><ArrowLeft className="h-4 w-4" />Agent dashboard</Link>
+    <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs text-slate-400"><ArrowLeft className="h-4 w-4" />Return to WEAVE</Link>
     <header className="space-y-3 border-b border-white/10 pb-6">
-      <p className="text-[10px] font-bold uppercase tracking-[.2em] text-amber-300">Agent · Stability · Creative work</p>
+      <p className="text-[10px] font-bold uppercase tracking-[.2em] text-amber-300">WEAVE · Agent · Bridger · Client · Creative work</p>
       <h1 className="text-3xl font-bold sm:text-5xl">WEAVE CREATIVE STUDIO</h1>
       <p className="max-w-3xl text-sm leading-6 text-slate-300">Design clear commercial images for stores, products and companies. Create a finished PNG on your phone, or open the Video Studio for moving advertisements. You can sell the finished work to outside customers at your own price.</p>
       <div className="flex flex-wrap gap-3">
         <span className="border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-xs text-emerald-200">Classic image layout · 0 Flame Coin</span>
-        <span className="border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-xs text-amber-200">Agent video production · maximum 1.5 Flame Coin</span>
+        <span className="border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-xs text-amber-200">Video production · role-based pricing shown in Video Studio</span>
       </div>
     </header>
 
@@ -198,15 +201,15 @@ export default function AgentCreativeStudio() {
         </label>
         <div>
           <p className="mb-2 text-xs text-slate-300">Editorial finish</p>
-          <div className="grid grid-cols-3 gap-2">{(Object.entries(STYLES) as [Style, typeof STYLES[Style]][]).map(([key,value])=>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{(Object.entries(STYLES) as [Style, typeof STYLES[Style]][]).map(([key,value])=>
             <button key={key} onClick={()=>setStyle(key)} className={`rounded-lg border p-3 text-xs ${style===key?'border-amber-300 text-amber-100':'border-white/10 text-slate-400'}`}>{value.label}</button>
           )}</div>
         </div>
         <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-white/20 bg-white/[.03] p-4 text-sm text-white">
-          <ImagePlus className="h-5 w-5 text-amber-200" />Use your product or customer photo
+          <ImagePlus className="h-5 w-5 text-amber-200" />Use a real product, location, work or customer photo
           <input type="file" className="hidden" accept="image/*" onChange={selectPhoto} />
         </label>
-        <p className="text-xs leading-5 text-slate-400">The image is composed locally on your device; this layout tool does not generate new AI imagery, upload the photo, or deduct Flame Coin. Use photos you have permission to publish.</p>
+        <p className="text-xs leading-5 text-slate-400">Choose Product photo, Portrait or Minimal for new real-photo layouts. The image is composed locally on your device; this layout tool does not generate new AI imagery, upload the photo, or deduct Flame Coin. Use photos you have permission to publish.</p>
         <button onClick={saveImage} disabled={!ready} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-amber-200 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-50">
           <Download className="h-5 w-5" />SAVE HIGH-RESOLUTION PNG · FREE
         </button>
