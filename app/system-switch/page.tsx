@@ -13,6 +13,6 @@ export default function SystemSwitchEntryPage(){
   if(!isInitialized||isLoading)return <main className="min-h-dvh bg-[#06182b]" data-system-switch-transition="resolving-position"/>
   if(!user||!user.role)redirect('/login')
   if(user.role==='client')redirect('/client/system-switch')
-  if(['admin','agent','bridger'].includes(user.role))redirect('/system-switch/flame-event')
+  if(['admin', 'agent', 'bridger'].includes(user.role))redirect('/system-switch/flame-event')
   redirect('/login')
 }
