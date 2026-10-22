@@ -11,7 +11,7 @@ export type CarrierAccessUser = {
 export type CarrierAccess = {
   active: boolean
   role: string
-  gate: 'administration' | 'agent_position' | 'bridger_continuance' | 'client_subscription' | 'lord_lady' | 'unsupported'
+  gate: 'administration' | 'agent_position' | 'agentic_bridger_one_time' | 'client_subscription' | 'lord_lady' | 'unsupported'
   reason: string
   position: 'Ace' | null
   qualifyingState?: string | null
@@ -55,10 +55,10 @@ export async function getCarrierAccess(user: CarrierAccessUser): Promise<Carrier
     return {
       active: subscription.active,
       role,
-      gate: 'bridger_continuance',
+      gate: 'agentic_bridger_one_time',
       reason: subscription.active
-        ? 'Your active Bridger monthly Continuance opens Ace. Agentic-Bridger is your Bridger-only specialization inside Ace, while Carrier remains Ace’s distribution instrument.'
-        : 'Bridger Continuance is inactive or expired. Renew the Bridger monthly subscription to reopen Lifestyle, Ace and Agentic-Bridger.',
+        ? 'Your permanent Agentic-Bridger purchase opens Lifestyle, Ace and Carrier without any recurring Bridger subscription.'
+        : 'Buy Agentic-Bridger once for 20 Flame Coin to open Lifestyle, Ace and Carrier. Normal Bridger work remains free.',
       position: subscription.active ? 'Ace' : null,
       qualifyingState: subscription.status,
     }

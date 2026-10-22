@@ -59,7 +59,7 @@ export async function ensureWeaveEmploymentLifecycleSchema(){
 const existenceSql:Record<WeaveEmploymentPosition,string>={
   distribution_manager:"SELECT user_id,status,exit_kind,exit_reason,exited_at FROM manager_employment WHERE user_id=$1::uuid",
   distribution_assistant:"SELECT user_id,status,exit_kind,exit_reason,exited_at FROM weave_distribution_assistants WHERE user_id=$1::uuid",
-  food_preparation:"SELECT agent_id AS user_id,status,exit_kind,exit_reason,exited_at FROM weave_food_preparation_managers WHERE agent_id=$1::uuid",
+  food_preparation:"SELECT agent_id AS user_id,position,status,exit_kind,exit_reason,exited_at FROM weave_food_preparation_managers WHERE agent_id=$1::uuid",
 }
 export async function getEmploymentRecord(position:WeaveEmploymentPosition,employeeId:string){
   await ensureWeaveEmploymentLifecycleSchema()
@@ -96,14 +96,24 @@ export async function replyToEmployment(position:WeaveEmploymentPosition,employe
     VALUES($1,$2::uuid,$3::uuid,$4,$5) RETURNING id,created_at`,
     [position,employeeId,author.id,isAdmin?'administration':'employee',content])
   try{
+    const employeeRoute=position==='distribution_manager'?'/manager/dashboard'
+      :position==='distribution_assistant'?'/weave/lifestyles/distribution-assistant'
+      :'/weave/lifestyles/food-preparation'
+    const administrationRoute=position==='food_preparation'?'/admin/food-preparation-manager'
+      :'/admin/distribution-employment'
     if(isAdmin){
-      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
-        VALUES($1::uuid,'employment_reply','Administration replied to your employment message',$2,'WEAVE Administration')`,
-        [employeeId,content.slice(0,380)])
+      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+        VALUES($1::uuid,'employment_reply','New employment message from Administration',$2,'WEAVE Administration',$3)`,
+        [employeeId,content.slice(0,380),employeeRoute])
     }else{
-      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
-        SELECT id,'employment_reply','Employment reply received',$1,'WEAVE Employment'
-        FROM users WHERE role='admin' AND is_active=true`,[content.slice(0,380)])
+      const {rows:authors}=await pool.query('SELECT name FROM users WHERE id=$1::uuid',[author.id])
+      const sender=String(authors[0]?.name||'An employee').slice(0,100)
+      const roleName=position==='distribution_manager'?'Distribution Manager'
+        :position==='distribution_assistant'?'Assistant Distribution Manager':'Food Preparation'
+      await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+        SELECT id,'employment_reply',$1,$2,'WEAVE Employment',$3
+        FROM users WHERE role='admin' AND is_active=true`,
+        [roleName+' · '+sender+' sent an employment message',content.slice(0,380),administrationRoute])
     }
   }catch(error){console.error('[weave employment] correspondence notification failed',error)}
   return {success:true as const,message:rows[0]}
@@ -158,12 +168,12 @@ export async function exitWeaveEmployment(
         SET status='ended',exit_kind='lead_departed',exit_reason=$2,
           exited_at=NOW(),exited_by=$3::uuid,updated_at=NOW()
         WHERE manager_user_id=$1::uuid AND status='approved' RETURNING user_id`,
-        [employeeId,'The verified lead Distribution Manager position ended. Await a new appointment before working as an assistant.',actor.id])
+        [employeeId,'The lead Distribution Manager appointment ended. Assistant employment is closed until a new appointment is approved.',actor.id])
       affectedAssistants=rows
       for(const assistant of affectedAssistants){
         await client.query(`INSERT INTO weave_employment_exit_events(position,employee_user_id,actor_user_id,exit_kind,reason)
           VALUES('distribution_assistant',$1::uuid,$2::uuid,'lead_departed',$3)`,
-          [assistant.user_id,actor.id,'Lead Distribution Manager departed; assistant appointment ended pending fresh recruitment.'])
+          [assistant.user_id,actor.id,'The lead Distribution Manager appointment ended, and the linked assistant appointment also ended. New employment requires a new application and approval.'])
       }
     }else if(position==='distribution_assistant'){
       await client.query(`UPDATE weave_distribution_assistants SET status='ended',exit_kind=$2,
@@ -193,11 +203,11 @@ export async function exitWeaveEmployment(
   try{
     await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
       VALUES($1::uuid,'employment_exit',$2,$3,'WEAVE Administration')`,[
-        employeeId,action==='fire'?'WEAVE employment terminated':exitKind==='withdrawn'?'WEAVE application withdrawn':'WEAVE resignation recorded',
+        employeeId,action==='fire'?'Your WEAVE employment appointment was ended by Administration':exitKind==='withdrawn'?'Your WEAVE employment application was withdrawn':'Your WEAVE employment resignation was recorded',
         reason.slice(0,550)])
     if(action==='resign'){
       await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
-        SELECT id,'employment_exit','Employment resignation / withdrawal',$1,'WEAVE Employment'
+        SELECT id,'employment_exit','Staff employment resignation or application withdrawal',$1,'WEAVE Employment'
         FROM users WHERE role='admin' AND is_active=true`,
         [`${position}: ${reason}`.slice(0,550)])
     }
@@ -205,7 +215,7 @@ export async function exitWeaveEmployment(
       for(const assistant of affectedAssistants){
         await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name)
           VALUES($1::uuid,'employment_exit','Distribution Assistant employment ended',
-            'Your lead Distribution Manager departed. Your assistant appointment has ended; work access is closed. Existing records remain available.', 'WEAVE Employment')`,
+            'Your lead Distribution Manager appointment has ended. Your Assistant Distribution Manager employment also ended. You may apply again for a future vacancy; existing work and payment records remain available.', 'WEAVE Employment')`,
           [assistant.user_id])
       }
     }

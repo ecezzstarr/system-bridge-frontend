@@ -38,7 +38,7 @@ type Draft = { headline: string; message: string }
 type CarrierAccess = {
   active: boolean
   role?: string
-  gate?: 'administration' | 'agent_position' | 'bridger_continuance' | 'client_subscription' | 'lord_lady' | 'unsupported'
+  gate?: 'administration' | 'agent_position' | 'agentic_bridger_one_time' | 'client_subscription' | 'lord_lady' | 'unsupported'
   reason?: string
   position?: 'Ace' | null
   qualifyingState?: string | null
@@ -100,15 +100,15 @@ export default function AceCarrierConsolePage() {
 
   const gateHref = access?.gate === 'agent_position'
     ? '/weave/lifestyles'
-    : access?.gate === 'bridger_continuance'
-      ? '/bridger/subscription'
+    : access?.gate === 'agentic_bridger_one_time'
+      ? '/weave/lifestyles'
       : access?.gate === 'lord_lady' || access?.gate === 'client_subscription'
         ? '/client/system-switch#enterprise'
         : '/'
 
   const gateLabel = access?.gate === 'agent_position'
     ? 'RETURN TO AGENT POSITION'
-    : access?.gate === 'bridger_continuance'
+    : access?.gate === 'agentic_bridger_one_time'
       ? 'OPEN CONTINUANCE'
       : access?.gate === 'lord_lady' || access?.gate === 'client_subscription'
         ? 'ENTER ENTERPRISE DREAM'
@@ -116,7 +116,7 @@ export default function AceCarrierConsolePage() {
 
   const gateTitle = access?.gate === 'agent_position'
     ? 'AN ACTIVE AGENT POSITION OPENS CARRIER'
-    : access?.gate === 'bridger_continuance'
+    : access?.gate === 'agentic_bridger_one_time'
       ? 'CARRIER OPENS WITH ACTIVE CONTINUANCE'
       : access?.gate === 'lord_lady'
         ? 'CARRIER OPENS WHEN THE CLIENT BECOMES LORD OR LADY'
@@ -210,7 +210,7 @@ export default function AceCarrierConsolePage() {
 
         {access?.active && (
           <div className="mt-5 border-y border-yellow-300/10 bg-yellow-300/[0.025] px-4 py-3 text-xs leading-5 text-slate-400">
-            Entrance carried by <strong className="text-yellow-200">{access.gate === 'administration' ? 'Administration' : access.gate === 'agent_position' ? 'Agent position · no subscription' : access.gate === 'bridger_continuance' ? 'Bridger Continuance' : 'Lord / Lady elevation'}</strong>. Position inside Carrier: <strong className="text-white">ACE</strong>.
+            Entrance carried by <strong className="text-yellow-200">{access.gate === 'administration' ? 'Administration' : access.gate === 'agent_position' ? 'Agent position · no subscription' : access.gate === 'agentic_bridger_one_time' ? 'Agentic-Bridger · Permanent' : 'Lord / Lady elevation'}</strong>. Position inside Carrier: <strong className="text-white">ACE</strong>.
           </div>
         )}
 

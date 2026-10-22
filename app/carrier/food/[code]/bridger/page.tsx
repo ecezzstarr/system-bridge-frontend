@@ -54,7 +54,7 @@ export default async function CarrierBridgerExplanationPage({params}:{params:Pro
           <div className="flex items-center gap-2 text-emerald-300"><CircleDollarSign className="h-5 w-5"/><p className="text-[9px] font-black uppercase tracking-[.22em]">How the Bridger earns</p></div>
           <h2 className="mt-3 text-2xl font-black">EARN WHEN A REAL CROSSING COMPLETES</h2>
           <p className="mt-3 text-sm leading-7 text-slate-400">An ordinary Bridger earns <strong className="text-white">{pct(WORLD_RULES.BRIDGER_YIELD_RATE)}</strong> of the actual verified File Folder purchase value when a Prospect the Bridger guides becomes a WEAVE Client.</p>
-          <p className="mt-3 text-sm leading-7 text-slate-400">With active Bridger Continuance, Ace opens the Bridger-only Agentic-Bridger lifestyle. Its eligible File Folder and Arena earning rate is <strong className="text-white">{pct(AGENTIC_BRIDGER_EARNING_RATE)}</strong>. Current Bridger Continuance is <strong className="text-white">₦{WORLD_RULES.BRIDGER_CONTINUANCE_NGN.toLocaleString()}</strong>.</p>
+          <p className="mt-3 text-sm leading-7 text-slate-400">Agentic-Bridger is a one-time <strong className="text-white">{WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN} Flame Coin</strong> purchase that opens Lifestyle, Ace and eligible jobs. Its eligible File Folder and Arena earning rate is <strong className="text-white">{pct(AGENTIC_BRIDGER_EARNING_RATE)}</strong>. Ordinary Bridger work has no subscription.</p>
           <p className="mt-3 text-xs leading-6 text-slate-500">The earning comes from verified movement. Buying or receiving a Prospect does not guarantee a response or income.</p>
         </article>
       </section>

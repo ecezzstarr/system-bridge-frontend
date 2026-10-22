@@ -21,7 +21,7 @@ interface Bridge {
   public_url: string
 }
 
-const BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN = WORLD_RULES.BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN
+const BRIDGE_AI_TEMPLATE_PRICE = WORLD_RULES.BRIDGE_AI_TEMPLATE_OPEN_FLAME_COIN
 
 const PALETTE = [
   { from: '#06b6d4', to: '#3b82f6', glow: 'rgba(6,182,212,0.25)' },
@@ -46,8 +46,6 @@ export default function BridgerWorkshopPage() {
   const [bridges, setBridges] = useState<Bridge[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
-  const [subscription, setContinuance] = useState<any>(null)
-  const [subscribing, setSubscribing] = useState(false)
   const [subError, setSubError] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -61,49 +59,18 @@ export default function BridgerWorkshopPage() {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('ssb_auth_token') : null
       const authHeaders = { Authorization: `Bearer ${token}` }
-      const [bridgesRes, templatesRes, subRes] = await Promise.all([
+      const [bridgesRes, templatesRes] = await Promise.all([
         fetch('/api/bridger/bridge-ai', { headers: authHeaders }),
         fetch('/api/bridger/bridge-templates', { headers: authHeaders }),
-        fetch('/api/bridger/bridge-ai/subscribe', { headers: authHeaders }),
       ])
       const bridgesData = await bridgesRes.json()
       const templatesData = await templatesRes.json()
-      const subData = await subRes.json()
       if (bridgesData.success) setBridges(bridgesData.bridges)
       if (templatesData.success) setTemplates(templatesData.templates)
-      setContinuance(subData.subscription)
     } catch (err) {
       console.error('Failed to load workshop data:', err)
     }
     setLoading(false)
-  }
-
-  const isSubscribed = !!(subscription?.status === 'active' && subscription.expiry && new Date(subscription.expiry) > new Date())
-
-  const handleSubscribe = async () => {
-    setSubscribing(true)
-    setSubError(null)
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('ssb_auth_token') : null
-      const res = await fetch('/api/bridger/bridge-ai/subscribe', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await res.json()
-      if (!res.ok || !data.success) {
-        if (data.reason === 'insufficient_balance') {
-          setSubError(`Insufficient balance. Need ${data.requiredFlameCoin} Flame Coin, wallet has ${data.availableFlameCoin} Flame Coin.`)
-        } else {
-          setSubError('Continuance failed. Try again.')
-        }
-      } else {
-        await loadData()
-      }
-    } catch (err) {
-      console.error('Failed to subscribe:', err)
-      setSubError('Continuance failed. Try again.')
-    }
-    setSubscribing(false)
   }
 
   useEffect(() => { loadData() }, [])
@@ -123,12 +90,19 @@ export default function BridgerWorkshopPage() {
       })
       const data = await res.json()
       if (data.success) {
+        setSubError(null)
         setDialogOpen(false)
         setSelectedTemplateId('')
         setCustomWelcome('')
         await loadData()
+      } else if (data.reason === 'insufficient_balance') {
+        setSubError(`Opening a Bridge AI template costs ${data.requiredFlameCoin} Flame Coin; wallet has ${data.availableFlameCoin} Flame Coin.`)
+        setDialogOpen(false)
+      } else {
+        setSubError(data.error || 'Bridge AI template could not be opened.')
       }
     } catch (err) {
+      setSubError('Bridge AI template could not be opened.')
       console.error('Failed to create Bridge AI:', err)
     }
     setCreating(false)
@@ -162,13 +136,13 @@ export default function BridgerWorkshopPage() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button disabled={templates.length === 0 || !isSubscribed}>
+            <Button disabled={templates.length === 0}>
               <Plus className="h-4 w-4 mr-2" /> New Bridge AI Path
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create a Bridge AI Path</DialogTitle>
+              <DialogTitle>Open a Bridge AI Template · {BRIDGE_AI_TEMPLATE_PRICE} Flame Coin</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
@@ -198,61 +172,26 @@ export default function BridgerWorkshopPage() {
             </div>
             <DialogFooter>
               <Button onClick={handleCreate} disabled={!selectedTemplateId || creating}>
-                {creating ? 'Creating...' : 'Create Bridge AI Path'}
+                {creating ? 'Opening...' : `Open Template · ${BRIDGE_AI_TEMPLATE_PRICE} Flame Coin`}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </header>
 
-      <section className="space-y-3 border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-bridge-ai-station="subscription">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Bridge AI subscription</span>
-            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-              isSubscribed ? 'bg-green-500/20 text-green-400' : 'bg-slate-800 text-slate-400'
-            }`}>
-              {isSubscribed ? 'Active' : 'Inactive'}
-            </span>
-          </div>
-          {subscription?.expiry && (
-            <div className="flex items-center justify-between text-sm">
-              <span style={{ color: 'var(--muted-foreground)' }}>Renews</span>
-              <span style={{ color: 'var(--foreground)' }}>{new Date(subscription.expiry).toLocaleDateString()}</span>
-            </div>
-          )}
-          {subscription?.last_paid_at && (
-            <div className="flex items-center justify-between text-sm">
-              <span style={{ color: 'var(--muted-foreground)' }}>Last paid</span>
-              <span style={{ color: 'var(--foreground)' }}>{new Date(subscription.last_paid_at).toLocaleDateString()}</span>
-            </div>
-          )}
-        </div>
+      <section className="border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-bridge-ai-station="per-template">
+        <h2 className="text-lg font-bold text-white">Bridge AI · {BRIDGE_AI_TEMPLATE_PRICE} Flame Coin per template opening</h2>
+        <p className="mt-2 text-sm text-slate-400">Each new Bridge AI path is purchased once when you open a template. Existing paths remain available with no monthly subscription. Your wallet is charged only when a new path is created.</p>
       </section>
+      {subError && <div role="alert" className="border-b border-red-400/20 px-5 py-3 text-sm text-red-200">{subError}</div>}
 
-      {subError && <div className="text-sm text-red-400">{subError}</div>}
-
-      {!isSubscribed && (
-        <section className="space-y-4 border-b border-slate-800 bg-slate-900/20 px-5 py-6 md:px-7" data-bridge-ai-station="continuance">
-            <h2 className="text-lg font-medium" style={{ color: 'var(--foreground)' }}>
-              Subscribe — {BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin / month
-            </h2>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Deducted from your primary wallet. Required to open and maintain Bridge AI crossing paths for Clients. The Bridger opens the path; Bridge AI continues with the Client after crossing.
-            </p>
-            <Button onClick={handleSubscribe} disabled={subscribing} className="w-full">
-              {subscribing ? 'Activating...' : `Subscribe for ${BRIDGE_AI_SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin`}
-            </Button>
-        </section>
-      )}
-
-      {isSubscribed && templates.length === 0 && (
+      {templates.length === 0 && (
         <div className="border-b border-slate-800 px-5 py-6 text-sm md:px-7" style={{ color: 'var(--muted-foreground)' }}>
           No published templates yet. Ask an admin to publish one in the Admin Workshop before you can create a Bridge AI.
         </div>
       )}
 
-      {isSubscribed && bridges.length === 0 && templates.length > 0 && (
+      {bridges.length === 0 && templates.length > 0 && (
         <div className="border-b border-slate-800 px-5 py-6 text-sm md:px-7" style={{ color: 'var(--muted-foreground)' }}>
           You have not opened a Bridge AI path yet. Create one to begin a crossing that can continue as Client AI support after entry.
         </div>

@@ -1,36 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getBridgerSubscription, autoDeductContinuance } from '@/lib/bridger-subscription'
 import { getAuthUser } from '@/lib/auth-api'
+import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 
-async function requireBridger(request: NextRequest) {
-  const user = await getAuthUser(request)
-  if (!user) return { user: null, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
-  if (user.role !== 'bridger') return { user: null, response: NextResponse.json({ error: 'Bridger access required' }, { status: 403 }) }
-  return { user, response: null }
+// Legacy endpoint. Bridgers do not have a monthly Continuance requirement.
+export async function GET(request:NextRequest) {
+  const user=await getAuthUser(request)
+  if(!user)return NextResponse.json({success:false,error:'Unauthorized'},{status:401})
+  if(user.role!=='bridger')return NextResponse.json({success:false,error:'Bridger required'},{status:403})
+  return NextResponse.json({
+    success:true, subscription:{status:'not_required',is_exempt:true,expiry:null},
+    monthlyCharge:0,agenticAccess:await getLifestyleAccess(user.id)
+  })
 }
-
-export async function GET(request: NextRequest) {
-  try {
-    const auth = await requireBridger(request)
-    if (!auth.user) return auth.response!
-    const continuance = await getBridgerSubscription(auth.user.id)
-    if (!continuance) return NextResponse.json({ error: 'Bridger record not found' }, { status: 404 })
-    return NextResponse.json({ success: true, continuance, subscription: continuance })
-  } catch (error) {
-    console.error('[continuance GET] error:', error)
-    return NextResponse.json({ error: 'Failed to load continuance' }, { status: 500 })
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const auth = await requireBridger(request)
-    if (!auth.user) return auth.response!
-    const { action } = await request.json()
-    if (action !== 'auto_deduct') return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-    return NextResponse.json(await autoDeductContinuance(auth.user.id))
-  } catch (error: any) {
-    console.error('[continuance POST] error:', error)
-    return NextResponse.json({ error: error.message || 'Continuance action failed' }, { status: 500 })
-  }
+export async function POST(request:NextRequest) {
+  const user=await getAuthUser(request)
+  if(!user)return NextResponse.json({success:false,error:'Unauthorized'},{status:401})
+  return NextResponse.json({success:false,error:'Bridger monthly Continuance has been retired. Use the one-time Agentic-Bridger purchase in Lifestyle.',retired:true},{status:410})
 }

@@ -9,11 +9,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const subscription = await getEchoContinuance(authUser.id)
+  if (!await getEchoIdentity(authUser.id)) await createEchoIdentity(authUser.id)
   return NextResponse.json({ subscription })
 }
 
-// POST: subscribe / renew (7 Flame Coin/month, deducted from primary wallet).
-// Also creates the Echo Identity on first successful subscribe.
+// Free Echo activation. No wallet charge or expiration.
 export async function POST(request: NextRequest) {
   const authUser = await getAuthUser(request)
   if (!authUser) {

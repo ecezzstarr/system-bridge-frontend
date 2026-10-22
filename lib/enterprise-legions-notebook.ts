@@ -18,7 +18,7 @@ export const ENTERPRISE_LEGION_RULES = [
   'Real Client product sales fund expenses, agreed Legion compensation, operations and expansion; there is no guaranteed surplus.',
   'Lord or Lady is the Client title; General means enterprise leadership, never military authority.',
   'Only an approved enterprise with active Legion Quarters recruits Legions.',
-  'Agents qualify through their active position; Bridgers require active subscribed Lifestyle standing.',
+  'Agents qualify through their active position; Bridgers require the one-time 20 Flame Coin Agentic-Bridger purchase.',
   'Applications and invitations are voluntary and do not guarantee employment.',
   'Active Legions serve one Client enterprise exclusively inside WEAVE.',
   'Employment and earning terms must be clear; do not promise automatic sales or income.',
@@ -154,13 +154,13 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
     "audience": "bridger",
     "title": "The Bridger Enters Through Hope",
     "story": "A Bridger who carries human possibility can also choose to carry one Client's enterprise.",
-    "meaning": "A Bridger needs active subscribed Lifestyle standing to apply for Legion employment. Once accepted, the Bridger's normal outreach and position work are suspended for the exclusive Client assignment.",
+    "meaning": "A Bridger needs purchased Agentic-Bridger Lifestyle access to apply for Legion employment. Once accepted, the Bridger's normal outreach and position work are suspended for the exclusive Client assignment.",
     "action": [
-      "Check active Bridger Continuance / Lifestyle access.",
+      "Check permanent Agentic-Bridger ownership / Lifestyle access.",
       "Enter Lifestyle → Legion and inspect available enterprises."
     ],
     "caution": [
-      "Do not promise Legion eligibility with an inactive subscription.",
+      "Do not promise Legion eligibility with an Agentic-Bridger not yet purchased.",
       "Do not continue normal Bridger work after exclusive activation."
     ],
     "moveWhen": "The Bridger has valid eligibility and a specific enterprise to consider."
@@ -377,7 +377,7 @@ export const ENTERPRISE_LEGION_PAGES: EnterpriseLegionPage[] = [
       "End exclusive Legion access, stop future Carrier attribution, and verify Agent/Bridger access under the original role requirements."
     ],
     "caution": [
-      "Use the real Release Legion control: either the Client or worker may end the appointment with a recorded reason, even if a subscription has expired.",
+      "Use the real Release Legion control: either the Client or worker may end the appointment with a recorded reason, even if a Lifestyle account is closed.",
       "Do not erase earned commissions or Client orders on departure."
     ],
     "moveWhen": "The employment is ended in the real system and all outstanding responsibilities are documented."

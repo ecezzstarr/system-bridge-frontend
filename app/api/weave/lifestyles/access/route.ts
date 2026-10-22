@@ -13,6 +13,6 @@ export async function GET(request: NextRequest) {
     layer: 'WEAVE Lifestyle',
     entitlement: access.source,
     separateLifestyleCharge: false,
-    rule: 'Your active monthly subscription covers Lifestyle access. Your WEAVE position determines which lifestyles and identities are available.',
+    rule: access.role === 'bridger' ? 'Bridgers have no recurring subscription. Agentic-Bridger costs 20 Flame Coin once and permanently opens eligible Lifestyle jobs.' : 'WEAVE position rules determine Lifestyle access.',
   })
 }

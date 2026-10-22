@@ -103,7 +103,7 @@ export default function LegionLifestylePage(){
         <div className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-400/[.04] p-4 text-xs leading-5 text-amber-100"><strong>Exclusive position:</strong> while this employment remains active, Agent/Bridger dashboards and normal work APIs are unavailable. Your operating ground is this Client enterprise.</div>
         <section className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
           <h3 className="text-sm font-bold text-white">End Legion employment</h3>
-          <p className="mt-2 text-xs leading-5 text-slate-400">You may leave voluntarily. Your original position becomes available again, subject to normal account and subscription access. The Client keeps responsibility for outstanding Customer Door orders, and historical sales, receipts and earned compensation remain recorded.</p>
+          <p className="mt-2 text-xs leading-5 text-slate-400">You may leave voluntarily. Your original position becomes available again, subject to normal position access. The Client keeps responsibility for outstanding Customer Door orders, and historical sales, receipts and earned compensation remain recorded.</p>
           <textarea value={releaseReason} maxLength={1200} rows={2}
             onChange={e=>setReleaseReason(e.target.value)} placeholder="Reason for departure"
             className="mt-3 w-full rounded-xl border border-white/15 bg-slate-950 p-3 text-sm text-white"/>
@@ -120,11 +120,11 @@ export default function LegionLifestylePage(){
   const freeAgent=data?.access?.role==='agent'
   return <main className="mx-auto max-w-6xl px-4 py-8 md:px-7 md:py-12" data-legion-employment="available">
     <Link href="/weave/lifestyles" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-white"><ArrowLeft className="h-4 w-4"/>Lifestyle</Link>
-    <header className="mt-5 border-b border-white/10 pb-6"><p className="text-[10px] font-black uppercase tracking-[.28em] text-violet-300">WEAVE Lifestyle · Client Enterprise Employment</p><h1 className="mt-2 text-4xl font-black text-white">LEGION</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Agents and subscribed Bridgers can apply to serve a Client whose Legion Quarters are active. Agents enter through their Agent position with no monthly subscription. Acceptance changes your operating position: you stop normal Agent/Bridger work and work only for that Client inside Weave.</p></header>
+    <header className="mt-5 border-b border-white/10 pb-6"><p className="text-[10px] font-black uppercase tracking-[.28em] text-violet-300">WEAVE Lifestyle · Client Enterprise Employment</p><h1 className="mt-2 text-4xl font-black text-white">LEGION</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">Agents and Bridgers who own Agentic-Bridger can apply to serve a Client whose Legion Quarters are active. Agents enter through their Agent position with no monthly subscription. Acceptance changes your operating position: you stop normal Agent/Bridger work and work only for that Client inside Weave.</p></header>
 
     <Link href="/enterprise/legions-notebook" className="mt-5 inline-flex min-h-11 items-center rounded-full border border-amber-300/25 bg-amber-400/[.07] px-4 text-xs font-black text-amber-100">Read Enterprise Legions · The General's Notebook</Link>
 
-    {!data?.eligible&&<div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-400/[.05] p-5 text-sm text-amber-100">{freeAgent?'Your Agent account must be active before you can apply for Legion employment.':'Your Bridger Continuance must be active before you can apply for Legion employment.'}</div>}
+    {!data?.eligible&&<div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-400/[.05] p-5 text-sm text-amber-100">{freeAgent?'Your Agent account must be active before you can apply for Legion employment.':'Buy Agentic-Bridger once for 20 Flame Coin to apply for Legion employment.'}</div>}
 
     {offers.length>0&&<section className="mt-7 rounded-2xl border border-amber-300/25 bg-amber-200/[.04] p-5">
       <h2 className="text-lg font-bold text-amber-100">Employment offers requiring your agreement</h2>

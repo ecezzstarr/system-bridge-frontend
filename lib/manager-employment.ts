@@ -1,9 +1,6 @@
+import { purchaseAgenticBridger } from '@/lib/agentic-bridger-purchase'
 import { getPool, sql } from '@/lib/db'
 import { getReferralCoreState, STAFF_REFERRAL_BONUS_NGN } from '@/lib/referral-bonus'
-import { WORLD_RULES } from '@/lib/world/constants'
-import { ngnToFlameCoin } from '@/lib/flame-coin'
-import { getTrxPaymentNgnRate } from '@/lib/trx-payment'
-import { issueWeaveReceipt } from '@/lib/weave-receipts'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { DISTRIBUTION_MANAGER_LIFESTYLE as DISTRIBUTION_MANAGER_LIFESTYLE_KEY } from '@/lib/weave-lifestyle-catalog'
 import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET, DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
@@ -18,7 +15,7 @@ export const DISTRIBUTION_MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE_KEY
 // Compatibility alias for existing Manager API paths and tables. The Lifestyle
 // itself is now named Distribution Manager; it remains an overlay on Agent/Bridger.
 export const MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE
-export const POSITION_MONTHLY_SUBSCRIPTION_NGN = WORLD_RULES.BRIDGER_CONTINUANCE_NGN
+export const POSITION_MONTHLY_SUBSCRIPTION_NGN = 0 // Retired: no monthly Bridger subscription
 export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.'
 // Compatibility alias for the existing Manager API/UI. This amount renews the
 // underlying Agent/Bridger monthly position subscription, not a Manager-only fee.
@@ -75,6 +72,10 @@ export async function ensureManagerEmploymentTable() {
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verified_by UUID REFERENCES users(id)`
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ`
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verification_note TEXT`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS exit_kind VARCHAR(20)`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS exit_reason TEXT`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS exited_at TIMESTAMPTZ`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS exited_by UUID REFERENCES users(id)`
   await sql`ALTER TABLE manager_employment ALTER COLUMN status TYPE VARCHAR(24)`
   await sql`ALTER TABLE manager_employment ALTER COLUMN status SET DEFAULT 'pending_verification'`
   await sql`ALTER TABLE manager_employment ALTER COLUMN monthly_salary_ngn SET DEFAULT 70000`
@@ -106,59 +107,18 @@ export async function getManagerContinuanceAccess(userId: string) {
     lastPaidAt:row.subscription_last_paid_at||null,
     isExempt:Boolean(row.is_subscription_exempt),
     amountNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN,
-    source:'role_monthly_subscription',
+    source:row.role==='bridger'?'agentic_bridger_one_time':'agent_position',
   }
 }
 
-export async function subscribeManagerContinuance(userId:string){
-  await ensureManagerEmploymentTable()
+// Legacy API name. Employment Lifestyle is opened by one permanent Agentic-Bridger purchase.
+export async function subscribeManagerContinuance(userId:string) {
   const current=await getManagerContinuanceAccess(userId)
   if(!current.eligible)return {success:false as const,reason:'not_eligible' as const}
-  if(current.active)return {success:true as const,renewed:false,reason:'not_due' as const,access:current}
-
-  let rate=0
-  try{const quote=await getTrxPaymentNgnRate();rate=Number(quote.rateNgnPerTrx||0)}catch(error){console.error('[position-subscription] rate lookup failed',error)}
-  if(!Number.isFinite(rate)||rate<=0)return {success:false as const,reason:'rate_unavailable' as const}
-  const flameCoinAmount=ngnToFlameCoin(POSITION_MONTHLY_SUBSCRIPTION_NGN,rate)
-  if(!Number.isFinite(flameCoinAmount)||flameCoinAmount<=0)return {success:false as const,reason:'rate_unavailable' as const}
-
-  const client=await getPool().connect()
-  let paymentId=''
-  let balanceAfter=0
-  let nextExpiry:Date|null=null
-  let subscriptionRole='WEAVE'
-  try{
-    await client.query('BEGIN')
-    const userResult=await client.query(`SELECT id,role,is_subscription_exempt,subscription_status,subscription_expiry,subscription_last_paid_at FROM users WHERE id=$1::uuid AND role IN ('agent','bridger') AND is_active=true FOR UPDATE`,[userId])
-    const user=userResult.rows[0]
-    if(!user){await client.query('ROLLBACK');return {success:false as const,reason:'not_eligible' as const}}
-    subscriptionRole=String(user.role||'WEAVE').toLowerCase()==='agent'?'Agent':'Bridger'
-    if(user.is_subscription_exempt){await client.query(`UPDATE users SET subscription_status='active' WHERE id=$1::uuid`,[userId]);await client.query('COMMIT');return {success:true as const,renewed:false,reason:'exempt' as const,access:await getManagerContinuanceAccess(userId)}}
-
-    const expiry=user.subscription_expiry?new Date(user.subscription_expiry):null
-    if(user.subscription_status==='active'&&(!expiry||expiry.getTime()>Date.now())){
-      await client.query('COMMIT')
-      return {success:true as const,renewed:false,reason:'not_due' as const,access:await getManagerContinuanceAccess(userId)}
-    }
-
-    const walletResult=await client.query(`SELECT id,balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true ORDER BY created_at ASC LIMIT 1 FOR UPDATE`,[userId])
-    const wallet=walletResult.rows[0]
-    const balance=Number(wallet?.balance_trx||0)
-    if(!wallet||balance<flameCoinAmount){await client.query('ROLLBACK');return {success:false as const,reason:'insufficient_balance' as const,requiredFlameCoin:flameCoinAmount,availableFlameCoin:balance,rate}}
-
-    const debit=await client.query(`UPDATE wallets SET balance_trx=balance_trx-$1,updated_at=NOW() WHERE id=$2::uuid AND balance_trx >= $1 RETURNING balance_trx`,[flameCoinAmount,wallet.id])
-    if(debit.rows.length!==1)throw new Error('Position subscription wallet debit lost concurrency race')
-    balanceAfter=Number(debit.rows[0].balance_trx||0)
-    const now=new Date();nextExpiry=new Date(now.getTime()+30*24*60*60*1000)
-    const payment=await client.query(`INSERT INTO subscription_payments (user_id,amount,currency,payment_method,transaction_reference,status,period_start,period_end) VALUES ($1::uuid,$2,'Flame Coin','flame_coin_wallet',$3,'success',$4,$5) RETURNING id`,[userId,flameCoinAmount,'ROLE-SUB-'+Date.now(),now,nextExpiry])
-    paymentId=String(payment.rows[0]?.id||'')
-    await client.query(`UPDATE users SET subscription_status='active',subscription_expiry=$2,subscription_last_paid_at=$3 WHERE id=$1::uuid`,[userId,nextExpiry,now])
-    await client.query(`INSERT INTO ledger_entries (id,user_id,entry_type,amount,currency,description,balance_before,balance_after,metadata,created_at) VALUES (gen_random_uuid(),$1::uuid,'fee',$2,'Flame Coin',$3,$4,$5,($6::jsonb)||jsonb_build_object('commerce_type','subscription'),NOW())`,[userId,flameCoinAmount,`${subscriptionRole} monthly subscription · Lifestyle access`,balance,balanceAfter,JSON.stringify({source:'position_monthly_subscription',requested_from:'distribution_manager_lifestyle',payment_id:paymentId,rate_ngn_per_flame_coin:rate,amount_ngn:POSITION_MONTHLY_SUBSCRIPTION_NGN})])
-    await client.query('COMMIT')
-  }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[position-subscription] subscription failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
-
-  try{if(paymentId&&nextExpiry)await issueWeaveReceipt({userId,kind:'subscription',source:'position_monthly_subscription',sourceId:paymentId,amount:flameCoinAmount,currency:'Flame Coin',status:'paid',description:`${subscriptionRole} monthly subscription · Lifestyle access`,metadata:{requestedFrom:'distribution_manager_lifestyle',amountNgn:POSITION_MONTHLY_SUBSCRIPTION_NGN,rateNgnPerFlameCoin:rate,nextExpiry:nextExpiry.toISOString(),balanceAfter}})}catch(error){console.error('[position-subscription] receipt failed',error)}
-  return {success:true as const,renewed:true,flameCoinAmount,rate,nextExpiry,balanceAfter,access:await getManagerContinuanceAccess(userId)}
+  if(current.active)return {success:true as const,renewed:false,reason:'already_owned' as const,flameCoinAmount:0,access:current}
+  const result=await purchaseAgenticBridger(userId)
+  if(!result.success)return result
+  return {success:true as const,renewed:!result.alreadyOwned,flameCoinAmount:result.chargedFlameCoin,access:await getManagerContinuanceAccess(userId)}
 }
 
 async function refreshManagerStatus(userId: string) {

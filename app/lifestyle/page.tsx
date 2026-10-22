@@ -10,7 +10,7 @@ export default function PublicLifestylePage() {
       <header className="py-8">
         <p className="text-xs font-black uppercase tracking-widest text-amber-200">Open WEAVE · Ways to participate</p>
         <h1 className="mt-3 text-4xl font-black">Lifestyle</h1>
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300">Explore Lifestyle here, then enter through your existing WEAVE position. Agents receive Lifestyle with their active Agent position. Bridger and Client access follows their position’s current subscription and eligibility. Employment and departmental work require the relevant approval.</p>
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-300">Explore Lifestyle here, then enter through your existing WEAVE position. Agents receive Lifestyle with their active Agent position. Bridgers have no monthly subscription. A permanent 20 Flame Coin Agentic-Bridger purchase opens eligible Lifestyle jobs; Client access follows Client subscription and eligibility. Employment and departmental work require the relevant approval.</p>
         <div className="mt-5 flex flex-wrap gap-3"><Link href="/weave/lifestyles" className="rounded-lg bg-amber-200 px-4 py-3 text-sm font-black text-slate-950">Open my Lifestyle</Link><Link href="/register" className="rounded-lg border border-white/20 px-4 py-3 text-sm font-bold">Join WEAVE</Link><Link href="/client/login" className="px-4 py-3 text-sm font-bold text-sky-100">Client entrance →</Link></div>
       </header>
       <section className="grid gap-4 sm:grid-cols-2" aria-label="WEAVE Lifestyles">

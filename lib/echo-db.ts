@@ -1,6 +1,5 @@
 import { getPool, sql } from './db'
 
-const ECHO_SUBSCRIPTION_FEE_FLAME_COIN = 7
 
 export async function ensureEchoTables() {
   await sql`
@@ -50,102 +49,20 @@ export async function ensureEchoTables() {
   `
 }
 
-// Echo has its own subscription (7 Flame Coin / month, open to every user type),
-// separate from bridger-subscription.ts which is bridger-role-specific
-// and denominated in NGN.
+// Echo is available without a recurring fee. Historical rows are preserved.
 export async function getEchoContinuance(userId: string) {
   await ensureEchoTables()
-  const rows = await sql`SELECT * FROM echo_subscriptions WHERE user_id = ${userId}`
-  return rows[0] ?? null
+  return { user_id:userId, status:'active', expiry:null, last_paid_at:null, free:true }
 }
 
 export async function hasActiveContinuance(userId: string): Promise<boolean> {
-  await ensureEchoTables()
-  const rows = await sql`
-    SELECT status, expiry FROM echo_subscriptions WHERE user_id = ${userId}
-  `
-  if (rows.length === 0) return false
-  const sub = rows[0]
-  return sub.status === 'active' && sub.expiry && new Date(sub.expiry) > new Date()
+  const rows=await sql`SELECT id FROM users WHERE id=${userId}::uuid AND is_active=true`
+  return rows.length > 0
 }
 
-// Deducts 7 Flame Coin from the user's primary wallet and activates/renews Echo
-// for 30 days. Mirrors the wallet-deduct pattern in bridger-subscription.ts's
-// autoDeductContinuance, but flat-rate in Flame Coin (no NGN conversion needed).
 export async function subscribeToEcho(userId: string) {
-  await ensureEchoTables()
-
-  const client = await getPool().connect()
-  try {
-    await client.query('BEGIN')
-
-    const walletResult = await client.query(
-      `SELECT id,balance_trx
-       FROM wallets
-       WHERE user_id=$1::uuid AND is_primary=true
-       ORDER BY created_at ASC
-       LIMIT 1
-       FOR UPDATE`,
-      [userId],
-    )
-    const wallet = walletResult.rows[0]
-    const balance = Number(wallet?.balance_trx || 0)
-
-    if (!wallet || balance < ECHO_SUBSCRIPTION_FEE_FLAME_COIN) {
-      await client.query('ROLLBACK')
-      return {
-        success: false,
-        reason: 'insufficient_balance',
-        requiredFlameCoin: ECHO_SUBSCRIPTION_FEE_FLAME_COIN,
-        availableFlameCoin: balance,
-      }
-    }
-
-    const debit = await client.query(
-      `UPDATE wallets
-       SET balance_trx=balance_trx-$1,updated_at=NOW()
-       WHERE id=$2::uuid AND balance_trx >= $1
-       RETURNING balance_trx`,
-      [ECHO_SUBSCRIPTION_FEE_FLAME_COIN, wallet.id],
-    )
-    if (debit.rows.length !== 1) throw new Error('Echo wallet debit lost concurrency race')
-
-    const now = new Date()
-    const nextExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-
-    await client.query(
-      `INSERT INTO echo_subscriptions (user_id,status,expiry,last_paid_at)
-       VALUES ($1::uuid,'active',$2,$3)
-       ON CONFLICT (user_id) DO UPDATE
-       SET status='active',expiry=EXCLUDED.expiry,last_paid_at=EXCLUDED.last_paid_at`,
-      [userId, nextExpiry, now],
-    )
-
-    await client.query(
-      `INSERT INTO ledger_entries (id, user_id, entry_type, amount, currency, description, balance_before, balance_after, metadata, created_at) VALUES (gen_random_uuid(), $1::uuid, 'fee', $2, 'Flame Coin', 'Echo Continuance', $3, $4, ($5::jsonb) || jsonb_build_object('commerce_type','subscription'), NOW())`,
-      [
-        userId,
-        ECHO_SUBSCRIPTION_FEE_FLAME_COIN,
-        balance,
-        Number(debit.rows[0].balance_trx || 0),
-        JSON.stringify({ source: 'echo_continuance' }),
-      ],
-    )
-
-    await client.query('COMMIT')
-    return {
-      success: true,
-      expiry: nextExpiry,
-      trxAmount: ECHO_SUBSCRIPTION_FEE_FLAME_COIN,
-      newBalance: Number(debit.rows[0].balance_trx || 0),
-    }
-  } catch (error) {
-    try { await client.query('ROLLBACK') } catch {}
-    console.error('Echo subscribe failed:', error)
-    return { success: false, reason: 'error' }
-  } finally {
-    client.release()
-  }
+  const eligible=await hasActiveContinuance(userId)
+  return eligible ? {success:true, free:true, chargedFlameCoin:0} : {success:false,reason:'account_inactive'}
 }
 
 export async function getEchoIdentity(userId: string) {

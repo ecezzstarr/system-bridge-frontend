@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       access,
       alreadyCovered: true,
       separateLifestyleCharge: false,
-      message: 'Lifestyle is already covered by your active monthly WEAVE position subscription.',
+      message: access.role === 'bridger' ? 'Agentic-Bridger is owned permanently. Lifestyle is open.' : 'Lifestyle entitlement is active.',
     })
   }
 
@@ -23,6 +23,6 @@ export async function POST(request: NextRequest) {
     success: false,
     access,
     separateLifestyleCharge: false,
-    error: `${position} monthly subscription is inactive. Renew that position subscription to reopen its Lifestyle access.`,
+    error: access.role === 'bridger' ? 'Buy Agentic-Bridger once for 20 Flame Coin from Lifestyle.' : `${position} subscription is inactive. Renew to reopen Lifestyle.`,
   }, { status: 409 })
 }

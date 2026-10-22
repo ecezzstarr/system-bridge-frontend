@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
   const subscribed = await hasActiveContinuance(authUser.id)
   if (!subscribed) {
-    return NextResponse.json({ error: 'Echo is locked; subscription inactive' }, { status: 403 })
+    return NextResponse.json({ error: 'Echo is unavailable' }, { status: 403 })
   }
 
   // Bounded retrieval, not a full-history dump — see retrieveEchoContext.

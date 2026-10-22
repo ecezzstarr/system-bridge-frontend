@@ -1,3 +1,4 @@
+import { getAgenticBridgerPurchase } from '@/lib/agentic-bridger-purchase'
 import { getPool } from '@/lib/db'
 import { getClientMonthlyStanding } from '@/lib/client-monthly-subscription'
 import {
@@ -11,7 +12,7 @@ export const ARENA_SETTLEMENT_DELAY_MINUTES = 20
 export const AGENTIC_BRIDGER_EARNING_RATE = 0.45
 export const ACE_STANDARD_EARNING_RATE = 0.30
 
-export type LifestyleAccessSource = 'role_monthly_subscription' | 'agent_position' | 'administration' | 'unsupported'
+export type LifestyleAccessSource = 'role_monthly_subscription' | 'agentic_bridger_one_time' | 'agent_position' | 'administration' | 'unsupported'
 
 export type LifestyleAccess = {
   active: boolean
@@ -135,22 +136,16 @@ export async function getLifestyleAccess(userId: string): Promise<LifestyleAcces
     }
   }
 
-  const expiry = row?.subscription_expiry ? new Date(row.subscription_expiry) : null
-  const current = !expiry || expiry.getTime() > Date.now()
-  const enabled = row?.is_active !== false
-  const active = enabled && (Boolean(row?.is_subscription_exempt) || (row?.subscription_status === 'active' && current))
-  const status = active
-    ? 'active'
-    : row?.subscription_status === 'active' && !current
-      ? 'expired'
-      : String(row?.subscription_status || 'inactive')
-
+  // Agentic-Bridger is a permanent purchase, not an expiring role subscription.
+  // The normal Bridger position is not gated by this Lifestyle entitlement.
+  const purchased = await getAgenticBridgerPurchase(userId)
+  const active = row?.is_active !== false && Boolean(purchased)
   return {
     active,
-    status,
-    expiresAt: expiry?.toISOString() || null,
+    status: active ? 'active' : row?.is_active === false ? 'inactive' : 'not_purchased',
+    expiresAt: null,
     role,
-    source: 'role_monthly_subscription',
+    source: 'agentic_bridger_one_time',
     positionScoped: true,
   }
 }
@@ -161,7 +156,7 @@ export async function requireLifestyleAccess(userId: string) {
     const position = access.role ? `${access.role[0]?.toUpperCase()}${access.role.slice(1)}` : 'WEAVE'
     const reason = access.role === 'agent'
       ? 'An active Agent account is required to enter Lifestyle'
-      : `${position} monthly subscription is required to enter Lifestyle`
+      : access.role === 'bridger' ? 'Buy Agentic-Bridger once for 20 Flame Coin to open Lifestyle and employment access' : `${position} monthly subscription is required to enter Lifestyle`
     const error = new Error(reason) as Error & { status?: number; lifestyleAccess?: LifestyleAccess }
     error.status = 403
     error.lifestyleAccess = access
@@ -176,7 +171,7 @@ export async function ensureAceAccount(userId: string, fallbackName: string, rol
   const safeName = String(fallbackName || 'Ace').trim().slice(0, 80) || 'Ace'
   // Ace is the parent Lifestyle. Agents enter it directly as part of their free
   // company position. Bridgers carry the Agentic-Bridger specialization while
-  // their Bridger monthly Continuance remains active.
+  // their permanent Agentic-Bridger purchase is owned.
   const lifestyle = String(role || '').toLowerCase() === 'bridger' ? AGENTIC_BRIDGER_LIFESTYLE : ACE_LIFESTYLE
   await pool.query(
     `INSERT INTO arena_ace_accounts (user_id,ace_name,status,lifestyle)
@@ -215,7 +210,7 @@ export async function getAgenticBridgerState(userId: string) {
     [userId]
   )
   const row = result.rows[0]
-  const continuanceActive = subscription.role === 'bridger' && subscription.active
+  const continuanceActive = subscription.role === 'bridger' && subscription.active // Compatibility field: permanent Agentic-Bridger ownership
 
   if (subscription.role === 'bridger' && !continuanceActive) {
     await deactivateBridgerAceForExpiredContinuance(userId)
@@ -230,9 +225,7 @@ export async function getAgenticBridgerState(userId: string) {
   }
 
   const eligible = subscription.role === 'bridger' && continuanceActive
-  const active = eligible
-    && row?.ace_status === 'active'
-    && row?.lifestyle === AGENTIC_BRIDGER_LIFESTYLE
+  const active = eligible // The permanent purchase grants the specialization even before first Ace visit.
 
   return {
     active,

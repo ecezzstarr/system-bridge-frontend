@@ -29,6 +29,10 @@ export async function ensureDistributionAssistantSchema() {
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS weave_distribution_assistants_status_idx ON weave_distribution_assistants(status,created_at)`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exit_kind VARCHAR(20)`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exit_reason TEXT`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exited_at TIMESTAMPTZ`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exited_by UUID REFERENCES users(id)`
   await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_salary_ngn SET DEFAULT 40000`
   // Update previous ₦30,000 appointments; preserve any separately authorized custom terms.
   await sql`UPDATE weave_distribution_assistants SET monthly_salary_ngn=40000,updated_at=NOW() WHERE monthly_salary_ngn=30000`
@@ -166,7 +170,7 @@ export async function getDistributionAssistantState(userId:string) {
   const canReview=await canReviewAssistants(userId)
   const {rows:own}=await getPool().query(`
     SELECT user_id,status,application_note,manager_user_id,
-      monthly_salary_ngn,monthly_referral_target,hired_at,reviewed_at,created_at
+      monthly_salary_ngn,monthly_referral_target,hired_at,reviewed_at,exit_kind,exit_reason,exited_at,created_at
     FROM weave_distribution_assistants WHERE user_id=$1::uuid LIMIT 1
   `,[userId])
   const appointment=own[0]||null
