@@ -65,7 +65,7 @@ export default function AgentCreativeStudio() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
 
-  useEffect(() => { if (user && !['agent','bridger','client'].includes(user.role)) router.replace('/dashboard') }, [user, router])
+  useEffect(() => { if (user && !['agent','bridger','client'].includes(user.role||'')) router.replace('/dashboard') }, [user, router])
   useEffect(() => () => { if (photoUrl) URL.revokeObjectURL(photoUrl) }, [photoUrl])
 
   useEffect(() => {
@@ -164,7 +164,7 @@ export default function AgentCreativeStudio() {
     }, 'image/png')
   }
 
-  if (!user || !['agent','bridger','client'].includes(user.role)) return null
+  if (!user || !['agent','bridger','client'].includes(user.role||'')) return null
 
   return <main className="mx-auto max-w-6xl space-y-6 px-4 py-7 text-white" data-agent-creative-studio="true">
     <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs text-slate-400"><ArrowLeft className="h-4 w-4" />Return to WEAVE</Link>
