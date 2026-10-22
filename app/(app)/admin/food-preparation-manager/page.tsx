@@ -51,14 +51,14 @@ export default function AdminFoodPreparationManagerPage(){
         <div>
           <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ShieldCheck className="h-4 w-4"/> Administration · Company Kitchen</p>
           <h1 className="mt-2 text-3xl font-black">Food Preparation Management Team</h1>
-          <p className="mt-3 text-xl font-black text-emerald-200">1 Manager · ₦70,000/month | 5 Assistants · ₦40,000/month each</p>
-          <p className="mt-2 text-xs text-amber-200">Approved: {approved.filter(person=>person.position==='manager').length}/1 Manager · {approvedAssistants}/5 Assistants</p>
+          <p className="mt-3 text-xl font-black text-emerald-200">1 Manager · ₦70,000/month | 2 Assistants · ₦40,000/month each</p>
+          <p className="mt-2 text-xs text-amber-200">Approved: {approved.filter(person=>person.position==='manager').length}/1 Manager · {approvedAssistants}/2 Assistants</p>
           <p className="mt-2 max-w-3xl text-xs leading-6 text-stone-400">Review Agent applications and appointments. The Food Preparation Manager is the Head of WEAVE Stability food operations and exclusively assigns approved assistants. Administration does not assign kitchen work. Payroll is not automatically disbursed.</p>
         </div>
         <button type="button" onClick={()=>void load()} className="inline-flex items-center gap-2 border border-white/10 px-4 py-2 text-xs"><RefreshCcw className="h-4 w-4"/> Refresh</button>
       </div>
     </header>
-    {approvedAssistants>5&&<p role="alert" className="border border-amber-300/30 bg-amber-300/5 px-4 py-3 text-xs text-amber-200" data-food-assistant-overcapacity="true">There are {approvedAssistants} previously approved Assistant Food Preparation Managers, above the limit of five. Existing appointments and assigned food orders have been preserved. Administration must review the surplus appointments and record any changes with reasons. New assistant approvals are blocked until staffing is within the limit.</p>}
+    {approvedAssistants>2&&<p role="alert" className="border border-amber-300/30 bg-amber-300/5 px-4 py-3 text-xs text-amber-200" data-food-assistant-overcapacity="true">There are {approvedAssistants} previously approved Assistant Food Preparation Managers, above the limit of two. Existing appointments and assigned food orders have been preserved. Administration must review the surplus appointments and record any changes with reasons. New assistant approvals are blocked until staffing is within the limit.</p>}
     {error&&<p role="alert" className="border border-rose-300/20 px-4 py-3 text-xs text-rose-200">{error}</p>}
     {message&&<p role="status" className="border border-emerald-300/20 px-4 py-3 text-xs text-emerald-200">{message}</p>}
     <section className="border border-white/10 p-4" data-food-admin-allocation-summary>
@@ -80,7 +80,7 @@ export default function AdminFoodPreparationManagerPage(){
               className="mt-2 w-full border border-white/15 bg-[#161c1b] p-3 text-white"/>
           </label>
           <div className="mt-3 flex flex-wrap gap-3">
-            <button type="button" disabled={busy===person.id||!person.is_active||(person.position==='assistant'&&approvedAssistants>=5)||(notes[person.id]||'').trim().length<15}
+            <button type="button" disabled={busy===person.id||!person.is_active||(person.position==='assistant'&&approvedAssistants>=2)||(notes[person.id]||'').trim().length<15}
               onClick={()=>void update({action:'review',appointmentId:person.id,decision:'approved',reviewNote:notes[person.id]},person.id,'Agent approved for the selected Food Preparation position.')}
               className="border border-emerald-300/30 px-4 py-2 text-xs text-emerald-200 disabled:opacity-40">Approve</button>
             <button type="button" disabled={busy===person.id||(notes[person.id]||'').trim().length<15}

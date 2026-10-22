@@ -48,7 +48,7 @@ export async function GET(request:NextRequest){
         JOIN users u ON u.id=m.agent_id
         WHERE m.position='assistant' AND m.status='approved'
           AND u.role='agent' AND u.is_active=true
-        ORDER BY m.reviewed_at ASC LIMIT 5
+        ORDER BY m.reviewed_at ASC LIMIT 2
       `)
       team=rows
     }
@@ -123,7 +123,7 @@ export async function POST(request:NextRequest){
       `,[position])
       if(Number(counts[0].taken)>=FOOD_PREPARATION_CAPACITY[position]){
         await client.query('ROLLBACK')
-        return NextResponse.json({success:false,error:position==='manager'?'The single Food Preparation Manager application place is occupied.':'All five Assistant Food Preparation Manager application places are occupied.'},{status:409})
+        return NextResponse.json({success:false,error:position==='manager'?'The single Food Preparation Manager application place is occupied.':'Both Assistant Food Preparation Manager application places are occupied.'},{status:409})
       }
       const {rows}=await client.query(`
         INSERT INTO weave_food_preparation_managers(agent_id,position,application_note,monthly_salary_ngn)
