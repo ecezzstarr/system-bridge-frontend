@@ -28,6 +28,7 @@ export type FlameWorldCustomerDoor = {
   level:'door'|'storefront'|'market_hall'
   offer_count:number
   visual_preset?:string
+  world_host_flame_event?:boolean
   public_systems?:{name:string;system_type:string}[]
 }
 
@@ -106,6 +107,14 @@ export function FlameEventOpenWorld({
     try{if(window.sessionStorage.getItem('weave:flame:entered:'+role)==='yes')setEntered(true)}catch{}
   }
 
+  const customerDoorHref=(door:FlameWorldCustomerDoor)=>{
+    const slug=encodeURIComponent(door.public_slug)
+    // Staff-hosted doors are not necessarily public-market doors. Preserve
+    // the authenticated Client-world boundary and avoid public market loops.
+    if(role!=='visitor'&&role!=='client'&&door.world_host_flame_event)
+      return '/system-switch/customer-doors/'+slug+'?entrance=flame-event'
+    return '/market/'+slug+'?via=system-switch&checkout=1#offers'
+  }
   const nearDoor=nearby===null?null:enterprises[nearby]||null
 
   const resetMovement=useCallback(()=>{
@@ -304,7 +313,7 @@ export function FlameEventOpenWorld({
 
       <div className={"absolute bottom-5 right-3 z-20 flex flex-col items-end gap-2 sm:bottom-7 sm:right-5 "+(!entered||!webglAvailable?"pointer-events-none opacity-30":"")}>
         {nearDoor ? <Link
-          href={'/market/'+encodeURIComponent(nearDoor.public_slug)+'?via=system-switch'} onClick={savePosition}
+          href={customerDoorHref(nearDoor)} onClick={savePosition}
           className="flex max-w-[195px] items-center gap-2 rounded-xl border border-amber-100/70 bg-[#b87728]/95 px-3 py-3 text-xs font-black text-white shadow-lg shadow-amber-400/20"
           aria-label={'Enter Customer Door '+(nearDoor.platform_name||nearDoor.name)}
           data-flame-event-customer-door={nearDoor.public_slug}
@@ -362,7 +371,7 @@ export function FlameEventOpenWorld({
         {enterprises.length===0?<p className="text-xs leading-5 text-sky-100/75">{doorStatus==='loading'?'Retrieving opened public Client Customer Doors…':doorStatus==='unavailable'?'Customer Door service is currently unavailable. Please retry.':'No public Client Customer Door is open yet. This list will update automatically.'}</p>:
         <div className="grid gap-2">
           {enterprises.map((enterprise,index)=><Link key={enterprise.public_slug}
-            href={'/market/'+encodeURIComponent(enterprise.public_slug)+'?via=system-switch'} onClick={savePosition}
+            href={customerDoorHref(enterprise)} onClick={savePosition}
             data-flame-event-customer-door={enterprise.public_slug}
             className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[.07] px-3 py-3 text-xs text-white"
           >
