@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
         u.email,
         u.username,
         u.created_at,
-        u.subscription_status,
         (
           SELECT COUNT(*)
           FROM clients c
@@ -38,7 +37,7 @@ export async function GET(request: NextRequest) {
         id: bridger.id,
         name: bridger.name || bridger.username || 'Bridger',
         email: bridger.email,
-        subscriptionStatus: bridger.subscription_status || 'unknown',
+        subscriptionStatus: 'not_required',
         clientCount: Number(bridger.client_count || 0),
       })),
       count: bridgers.length,
