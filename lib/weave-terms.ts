@@ -32,7 +32,7 @@ export const AGENT_CONTENT = {
     `Ordinary Bridger File Folder share outside Agentic-Bridger: ${(WORLD_RULES.BRIDGER_YIELD_RATE * 100).toFixed(0)}% of the verified File Folder value.`,
   ],
   movement: 'Agility + attached Bridger activity → qualifying share → verified File Folder crossing → File Folder share → record.',
-  folderWork: 'The Agent account does not own or operate a Client File Folder. Presence explains the Agent position; Agility and Commissions are the Agent working environments.',
+  folderWork: 'The Agent account does not own or operate a Client File Folder. Presence explains Stability; Agent Work, Carrier Door, Distribution Route and Commissions handle the Agent operations.',
 }
 
 export const BRIDGER_CONTENT = {
@@ -82,7 +82,7 @@ export const COMPANY_SUPPORT = [
 
 export const HOW_WEAVE_WORKS = {
   summary:
-    'WEAVE is the institution.\n\nAdministration governs the system.\nAgents move Agility and receive their defined shares from attached Bridger Prospect purchases and verified Client File Folder crossings.\nHope is the Bridger Department. Bridgers work with unverified Prospect candidates, attempt connection and carry real responses toward crossing; they receive their defined File Folder share when a guided Prospect becomes a Client. Agentic-Bridger is a Bridger-only Ace lifestyle available only while Bridger Continuance is active.\nClients own and operate their File Folder worlds.\n\nThe Client is the game player inside System Switch, where the Client’s real-life movement forms the continuing game. Shared participation systems do not change a user’s institutional position. The Company provides authorized support positions that help Clients continue without taking ownership of the Client world.',
+    'WEAVE is the institution.\n\nAdministration governs the system.\nAgents sell and distribute WEAVE-branded products to Nigerian customers and outlets, and receive defined shares from qualifying attached Bridger Prospect purchases and verified Client File Folder crossings.\nHope is the Bridger Department. Bridgers work with unverified Prospect candidates, attempt connection and carry real responses toward crossing; they receive their defined File Folder share when a guided Prospect becomes a Client. Agentic-Bridger is a Bridger-only Ace lifestyle available only while Bridger Continuance is active.\nClients own and operate their File Folder worlds.\n\nThe Client is the game player inside System Switch, where the Client’s real-life movement forms the continuing game. Shared participation systems do not change a user’s institutional position. The Company provides authorized support positions that help Clients continue without taking ownership of the Client world.',
   institutionalFlow: 'Administration → Agent → Hope / Bridger → Client',
   clientFlow: 'WEAVE → Prospect candidate → Bridger outreach → real response → Bridger relationship → Prospect movement → File Folder → File Number → System Switch → Client World + Customer Door construction → completed Customer Door → build + learn + participate → outside patronage → Enterprise → Client Vault / Siblings Funds Wallet / Main Client Wallet → continued systems and livelihood',
 }
