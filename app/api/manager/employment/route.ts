@@ -35,6 +35,8 @@ export async function GET(request: NextRequest) {
       salaryPaymentRule:'Full monthly salary after period-end verification when the team completes 300 referrals in the first one-month probation period or 500 in later employment months; otherwise only personally attributable ₦500 verified-referral bonuses.',
       salaryPaidAutomatically:false,
       probationMonths:1,
+      administrationVerificationRequired:true,
+      probationStartRule:'Probation begins only after Administration verifies a signed Distribution Manager appointment.',
       documentVersion:MANAGER_DOCUMENT_VERSION,
       continuanceNgn:agentFree ? 0 : MANAGER_CONTINUANCE_NGN,
       positionSubscriptionNgn:agentFree ? 0 : POSITION_MONTHLY_SUBSCRIPTION_NGN,
