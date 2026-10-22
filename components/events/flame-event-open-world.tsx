@@ -7,6 +7,9 @@ import { ArrowRight, DoorOpen, Flame, Footprints, List, PersonStanding, Radio, W
 import type { FlameMobileInput, FlameRegion } from './flame-event-mobile-scene'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
 import { FlameEventFoodStore } from '@/components/events/flame-event-food-store'
+import { useWorldPresence } from '@/components/system-switch/use-world-presence'
+import type {Presence} from '@/lib/file-folder-world-runtime'
+import { FLAME_EVENT_PLAYER_START } from '@/lib/flame-event-world-geometry'
 import { choosePresenceElement,usePresenceElement } from '@/components/world/use-presence-element'
 
 const FlameEventMobileScene=dynamic(
@@ -63,6 +66,8 @@ export function FlameEventOpenWorld({
   const [ready,setReady]=useState(false)
   const [entered,setEntered]=useState(false)
   const [webglAvailable,setWebglAvailable]=useState(true)
+  const sharedPosition=useRef<Presence>({x:FLAME_EVENT_PLAYER_START.x,z:FLAME_EVENT_PLAYER_START.z,yaw:0})
+  const {others,online}=useWorldPresence('system-switch',sharedPosition,entered&&webglAvailable)
   const phase=region==='riverbank'?'RIVER BANK':region==='burning-river'?'BURNING RIVER':region==='system-switch'?'SYSTEM SWITCH':'CUSTOMER DOOR'
   const phaseDetail=region==='riverbank'?'Your Presence is alive here. Flow toward the bright arch across the living river.':region==='burning-river'?'Water and fire carry the crossing. Follow the paved current.':region==='system-switch'?'You crossed into System Switch. Each open door belongs to a Client.':'A real Client-owned Customer Door is within reach.'
 
@@ -244,7 +249,7 @@ export function FlameEventOpenWorld({
         style={{backgroundImage:"linear-gradient(0deg,rgba(7,22,41,.35),transparent 60%),url('/weave/flame-event/burning-river-world.svg')"}}
         aria-hidden="true"
       />
-      {webglAvailable&&<FlameEventMobileScene enterprises={enterprises} inputRef={controls} role={role} onNearbyDoor={changeNearby} onRegionChange={changeRegion} onReady={sceneReady}/>}
+      {webglAvailable&&<FlameEventMobileScene enterprises={enterprises} inputRef={controls} role={role} sharedPresence={sharedPosition} others={others} onNearbyDoor={changeNearby} onRegionChange={changeRegion} onReady={sceneReady}/>}
       <div className={"pointer-events-none absolute inset-0 z-[6] bg-[radial-gradient(ellipse_at_50%_43%,rgba(127,219,247,.16),transparent_55%)] transition-opacity duration-1000 motion-reduce:transition-none "+(crossed?"opacity-100":"opacity-0")} aria-hidden="true"/>
       <div className={"absolute inset-y-[13%] right-0 z-[7] w-[60%] "+(!entered?"pointer-events-none":"")} style={{touchAction:'none'}}
         onPointerDown={onLookDown} onPointerMove={onLookMove}
@@ -265,6 +270,7 @@ export function FlameEventOpenWorld({
           </div>
           <span className="rounded-full border border-amber-200/35 bg-[#071a32]/65 px-2.5 py-1.5 text-[9px] font-bold text-amber-100">
             {doorStatus==='loading'?'Loading doors…':doorStatus==='unavailable'&&!enterprises.length?'Doors unavailable':enterprises.length+' live '+(enterprises.length===1?'door':'doors')}
+            <span className="mt-1 block text-center text-[8px] text-sky-100">{online?(others.length+1)+' real '+(others.length===0?'Presence':'Presences'):'Presence connection pending'}</span>
           </span>
         </div>
       </div>
