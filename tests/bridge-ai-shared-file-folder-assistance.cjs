@@ -16,7 +16,7 @@ assert.match(clientApi, /sender_type IN \('client','bridge_ai','bridger'\)/, 'Cl
 assert.match(clientApi, /FROM client_file_folder_builds/, 'AI uses actual pending File Folder builds')
 assert.match(clientApi, /status IN \('building','funding_gate'\)/, 'Only real unfinished work is offered as current construction')
 assert.match(clientApi, /role='bridger' AND is_active=true/, 'Client sees an active assigned Bridger only')
-assert.match(clientApi, /The Client owns the File Folder and decides what to build/, 'AI must respect Client control')
+assert.match(clientApi, /the Client owns the File Folder and decides what to build/, 'AI must respect Client control')
 assert.match(clientApi, /Only the Client's authenticated request can trigger/, 'A human Bridger message is not a billable AI request')
 assert.match(bridgerSupport, /position: 'bridge_ai'/, 'Bridger posts to the shared channel')
 assert.match(bridgerSupport, /clientId: selectedId/, 'Bridger messages target an assigned Client')
