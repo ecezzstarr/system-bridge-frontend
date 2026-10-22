@@ -76,25 +76,25 @@ export default function AdminFoodPreparationManagerPage(){
           <p className="mt-1 text-xs text-stone-500">{person.email} · {person.is_active?'Active':'Inactive'} · ₦{Number(person.monthly_salary_ngn).toLocaleString('en-NG')}/month after appointment</p>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-stone-300">{person.application_note}</p>
            <EmploymentActions position="food_preparation" employeeId={person.agent_id} administration onStatusChange={()=>void load()}/>
-          <label className="mt-4 block text-xs text-stone-300">Verification, availability and decision reason
+          <label className="mt-4 block text-xs text-stone-300">Appointment verification findings and decision reason
             <textarea minLength={15} maxLength={2000} rows={3} value={notes[person.id]||''}
               onChange={e=>setNotes(v=>({...v,[person.id]:e.target.value}))}
               className="mt-2 w-full border border-white/15 bg-[#161c1b] p-3 text-white"/>
           </label>
           <div className="mt-3 flex flex-wrap gap-3">
             <button type="button" disabled={busy===person.id||!person.is_active||(person.position==='assistant'&&approvedAssistants>=2)||(notes[person.id]||'').trim().length<15}
-              onClick={()=>void update({action:'review',appointmentId:person.id,decision:'approved',reviewNote:notes[person.id]},person.id,'Agent approved for the selected Food Preparation position.')}
-              className="border border-emerald-300/30 px-4 py-2 text-xs text-emerald-200 disabled:opacity-40">Approve</button>
+              onClick={()=>void update({action:'review',appointmentId:person.id,decision:'approved',reviewNote:notes[person.id]},person.id,'Administration approved this Food Preparation appointment. The Stability Lead directs daily work assignments.')}
+              className="border border-emerald-300/30 px-4 py-2 text-xs text-emerald-200 disabled:opacity-40">Approve appointment</button>
             <button type="button" disabled={busy===person.id||(notes[person.id]||'').trim().length<15}
               onClick={()=>void update({action:'review',appointmentId:person.id,decision:'rejected',reviewNote:notes[person.id]},person.id,'Application declined.')}
-              className="border border-rose-300/30 px-4 py-2 text-xs text-rose-200 disabled:opacity-40">Decline</button>
+              className="border border-rose-300/30 px-4 py-2 text-xs text-rose-200 disabled:opacity-40">Decline application</button>
           </div>
         </article>)}
         {!pending.length&&<p className="border border-dashed border-white/10 p-6 text-xs text-stone-500">No pending applications.</p>}
       </div>
     </section>
     <section className="border-t border-white/10 pt-6">
-      <h2 className="text-xl font-black">Approved kitchen staff · {approved.length}/3</h2>
+      <h2 className="text-xl font-black">Administration-approved Food Preparation staff · {approved.length}/3</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {staff.filter(p=>p.status==='approved').map(person=><div key={person.id} className="border border-white/10 p-4">
           <p className="text-sm font-black">{person.name||person.username} · {person.position==='manager'?'Manager':'Assistant Manager'}</p>
