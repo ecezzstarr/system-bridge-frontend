@@ -7,7 +7,7 @@ import { Sparkles, ShieldCheck, Smartphone, Chrome, Globe, BrainCircuit } from '
 
 const EchoOrb = dynamic(() => import('@/components/echo-orb'), { ssr: false })
 
-const SUBSCRIPTION_FEE_FLAME_COIN = 7
+const SUBSCRIPTION_FEE_FLAME_COIN = 0
 
 type Continuance = {
   user_id: string
@@ -40,7 +40,7 @@ export default function EchoPage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
-  const isActive = subscription?.status === 'active' && subscription.expiry && new Date(subscription.expiry) > new Date()
+  const isActive = subscription?.status === 'active'
 
   const authHeaders = (): Headers => {
     const headers = new Headers()
@@ -91,10 +91,10 @@ export default function EchoPage() {
       } else if (data.reason === 'insufficient_balance') {
         setError(`Insufficient balance. Need ${data.requiredFlameCoin} Flame Coin, wallet has ${data.availableFlameCoin} Flame Coin.`)
       } else {
-        setError('Continuance failed. Please try again.')
+        setError('Echo activation failed. Please try again.')
       }
     } catch {
-      setError('Continuance failed. Please try again.')
+      setError('Echo activation failed. Please try again.')
     } finally {
       setSubscribing(false)
     }
@@ -187,8 +187,7 @@ export default function EchoPage() {
         <div className="border-t border-slate-800 pt-4 flex gap-2 items-start">
           <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-slate-500 leading-relaxed">
-            Privacy: Echo only ever analyzes your own activity. Data collection stops the moment
-            your subscription lapses, and nothing is shared with other users or admins.
+            Privacy: Echo only ever analyzes your own activity. Echo is free, and nothing is shared with other users or admins.
           </p>
         </div>
       </section>
@@ -196,25 +195,13 @@ export default function EchoPage() {
       {/* Status */}
       <section className="space-y-3 border-b border-slate-800 bg-black/10 px-5 py-5 md:px-7" data-echo-station="status">
         <div className="flex items-center justify-between">
-          <span className="text-slate-400 text-sm">Status</span>
+          <span className="text-slate-400 text-sm">Echo · Free for all positions</span>
           <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
             isActive ? 'bg-green-500/20 text-green-400' : 'bg-slate-800 text-slate-400'
           }`}>
             {isActive ? 'Active' : 'Inactive'}
           </span>
         </div>
-        {subscription?.expiry && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-400">Renews</span>
-            <span className="text-white">{new Date(subscription.expiry).toLocaleDateString()}</span>
-          </div>
-        )}
-        {subscription?.last_paid_at && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-400">Last paid</span>
-            <span className="text-white">{new Date(subscription.last_paid_at).toLocaleDateString()}</span>
-          </div>
-        )}
       </section>
 
       {error && <div className="text-sm text-red-400">{error}</div>}
@@ -222,16 +209,16 @@ export default function EchoPage() {
 
       {!isActive ? (
         <section className="space-y-4 border-b border-slate-800 bg-slate-900/20 px-5 py-6 md:px-7" data-echo-station="continuance">
-          <h2 className="text-lg font-medium text-white">Subscribe — {SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin / month</h2>
+          <h2 className="text-lg font-medium text-white">Enable Echo · Free</h2>
           <p className="text-sm text-slate-500">
-            Deducted from your primary wallet. Available to every account type. Cancel anytime by letting it lapse.
+            No subscription or wallet charge. Available to every WEAVE position.
           </p>
           <button
             onClick={handleSubscribe}
             disabled={subscribing}
             className="w-full border-y border-cyan-300/25 bg-cyan-500/15 py-3 font-medium text-cyan-50 transition hover:bg-cyan-500/20 disabled:opacity-50"
           >
-            {subscribing ? 'Activating...' : `Subscribe for ${SUBSCRIPTION_FEE_FLAME_COIN} Flame Coin`}
+            {subscribing ? 'Activating...' : 'Enable Echo free'}
           </button>
         </section>
       ) : (
