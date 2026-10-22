@@ -1,6 +1,7 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { notifyAdministrationOfCompanyApplication } from '@/lib/employment-application-notifications'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import {
   GUIDANCE_DEPARTMENTS,GUIDANCE_NOTE_MIN,GUIDANCE_NOTE_MAX,
@@ -61,17 +62,17 @@ export async function POST(request:NextRequest){
     if(!rows.length)return NextResponse.json({
       success:false,error:'You already have a pending or approved application for this department.'
     },{status:409})
-    // A new application is not a permission or company assignment.
-    await getPool().query(`
-      INSERT INTO notifications(user_id,type,title,content,from_user_id,from_user_name,link)
-      SELECT u.id,'guidance_department_application',$1,$2,$3::uuid,$4,'/admin/guidance-staff'
-      FROM users u WHERE u.role='admin' AND u.is_active=true
-    `,[
-      'Mandate Lifestyle · '+department+' application',
-      (user.name||user.username||user.role)+' applied to support Company Guidance.',
-      user.id,user.name||user.username||'WEAVE applicant',
-    ]).catch(()=>{})
-    return NextResponse.json({success:true,application:rows[0],message:'Application submitted for Administration review. No departmental chat permissions have been granted.'},{status:201})
+    // Only Administration may approve. Notification opens the exact application.
+    try {
+      await notifyAdministrationOfCompanyApplication({
+        kind:'guidance_support',applicationId:String(rows[0].id),applicantId:user.id,
+        positionTitle:'Company Guidance · '+department,name:String(user.name||'Agent or Bridger'),
+        applicationNote:note,
+      })
+    } catch(notificationError) {
+      console.error('[guidance application] Administration notification failed',notificationError)
+    }
+        return NextResponse.json({success:true,application:rows[0],message:'Application submitted for Administration review. No departmental chat permissions have been granted.'},{status:201})
   }catch(error){
     console.error('[Mandate Lifestyle applicant] POST',error)
     return NextResponse.json({success:false,error:'Unable to submit application'}, {status:500})
