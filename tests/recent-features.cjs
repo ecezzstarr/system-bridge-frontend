@@ -673,7 +673,7 @@ assert.ok(bridgerEmailOutreachPageSource.includes('AbortController')&&!bridgerEm
 assert.ok(clientLayoutSource.includes('data-client-shell-height="content-owned"')&&!clientLayoutSource.includes('relative z-10 min-h-screen'),'Client shell no longer nests a second full-screen minimum height below the global header')
 assert.ok(weaveServiceWorkerSource.includes("CACHE_NAME = 'weave-v6'")&&!weaveServiceWorkerSource.includes("  '/',")&&weaveServiceWorkerSource.includes("url.pathname.startsWith('/_next/')"),'Service worker never falls back to stale cached WEAVE HTML or Next.js runtime after deployment')
 assert.ok(fs.existsSync(path.join(root,'migrations/20261001_email_outreach.sql')),'Email outreach database migration exists')
-assert.ok(appLayoutContinuanceSource.includes("pathname !== '/bridger/subscription'")&&appLayoutContinuanceSource.includes("router.replace('/bridger/subscription')"),'A genuinely unfunded suspended Bridger is routed to Continuance instead of being trapped away from renewal')
+assert.ok(appLayoutContinuanceSource.includes("'/weave/lifestyles'")&&appLayoutContinuanceSource.includes("router.replace('/weave/lifestyles')"),'A genuinely suspended Bridger can reopen Continuance directly through Lifestyle instead of being trapped away from renewal')
 assert.ok(adminFneGenerateSource.includes('requireWorkshopAuthorization'),'File Number issuance is Administration-authorized')
 assert.ok(adminFneListSource.includes('requireWorkshopAuthorization'),'File Number inventory is Administration-authorized')
 assert.ok(adminBridgerListSource.includes('getAuthUser')&&adminBridgerListSource.includes("admin.role !== 'admin'"),'Administration Bridger registry uses the active Admin session without Workshop-only gating')
