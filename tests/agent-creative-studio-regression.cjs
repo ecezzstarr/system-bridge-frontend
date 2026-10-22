@@ -51,7 +51,7 @@ assert.equal((customerApi.match(/studioFeeForRole\(user.role/g)||[]).length, 2, 
 assert.ok(customerApi.includes('price_flame_coin,') && customerApi.includes('balance_trx=balance_trx-$1'), 'Wallet and receipt record actual fee')
 assert.ok(page.includes('pack.priceFlameCoin'), 'Studio UI displays returned role-specific fee')
 assert.ok(imagePage.includes('canvasRef.current.toBlob'), 'Image maker exports actual PNG')
-assert.ok(imagePage.includes("['agent','bridger','client'].includes(user.role)"), 'Image maker is available to Agent, Bridger and Client positions')
+assert.ok(imagePage.includes("['agent','bridger','client'].includes(user.role||'')"), 'Image maker is available to Agent, Bridger and Client positions')
 assert.ok(imagePage.includes('0 Flame Coin') && imagePage.includes('role-based pricing shown in Video Studio'), 'Image is free and video prices are disclosed for each role')
 assert.ok(agentWork.includes("href:'/agent/creative'"), 'Agent Work links image tool')
 assert.ok(roleWorld.includes('data-agent-creative-first-step'), 'Phone dashboard surfaces creative tool immediately')
