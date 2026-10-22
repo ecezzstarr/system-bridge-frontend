@@ -219,6 +219,8 @@ export async function reviewManagerEmployment(adminId:string, applicantId:string
   await ensureManagerEmploymentTable()
   if(!['approve','reject'].includes(decision)||note.trim().length>1200)
     return {success:false as const,reason:'invalid_review' as const}
+  const applicantAccess=decision==='approve'?await getLifestyleAccess(applicantId):null
+  if(decision==='approve'&&!applicantAccess?.active)return {success:false as const,reason:'not_eligible' as const}
   const client=await getPool().connect()
   try{
     await client.query('BEGIN')
@@ -231,6 +233,13 @@ export async function reviewManagerEmployment(adminId:string, applicantId:string
     if(!record||record.status!=='pending_verification'){await client.query('ROLLBACK');return {success:false as const,reason:'not_pending' as const}}
     if(decision==='approve'&&(!record.is_active||!['agent','bridger'].includes(record.role)||!record.accepted_name)){
       await client.query('ROLLBACK');return {success:false as const,reason:'not_eligible' as const}
+    }
+    if(decision==='approve'){
+      const {rows:assistantTable}=await client.query("SELECT to_regclass('weave_distribution_assistants') AS table_name")
+      if(assistantTable[0]?.table_name){
+        const {rows:overlap}=await client.query("SELECT user_id FROM weave_distribution_assistants WHERE user_id=$1::uuid AND status='approved'",[applicantId])
+        if(overlap.length){await client.query('ROLLBACK');return {success:false as const,reason:'not_eligible' as const}}
+      }
     }
     const approved=decision==='approve'
     const {rows:updated}=await client.query(`UPDATE manager_employment
