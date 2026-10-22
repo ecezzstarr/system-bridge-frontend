@@ -15,11 +15,11 @@ export const ONE_NIGERIAN_LOOP = {
 
 export type OneNigerianRole = 'admin' | 'bridger' | 'agent' | 'client'
 
-/** Administration and Hope wording are the Administrator's event copy. */
+/** Administration, Hope and Stability wording are the Administrator's event copy. */
 export const ONE_NIGERIAN_DEPARTMENT_WORDS: Record<OneNigerianRole, {department:string; words:string}> = {
   admin: {
     department: 'Administration · A Cat',
-    words: "Let us have what is known as bad government. Weave will fix it, and it will all be like bad was a stepping stone for wherever I am. There's a way.",
+    words: "Let us have what is known as bad government. Weave will fix it, and it will all be like bad was a stepping stone for wherever I am. There's a way.\n\nWith that saying, a new frontier opened before us who are Hope in being. A bridge is forming between us and those who have heard of our Burning River soil. An outreach from Hope begins in time, while Stability sustains.",
   },
   bridger: {
     department: 'Hope · Bridgers Department',
@@ -27,7 +27,7 @@ export const ONE_NIGERIAN_DEPARTMENT_WORDS: Record<OneNigerianRole, {department:
   },
   agent: {
     department: 'Stability · Agents Department',
-    words: 'Stability connects real products to people through verified work, stock, orders and distribution.',
+    words: 'Where Presence moves, family moves. With that, Stability came into being. For who will feed the country, if not Weave?',
   },
   client: {
     department: 'Lord / Lady · Clients Department',
