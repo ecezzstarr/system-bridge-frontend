@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DistributionTeamWorkspace } from '@/components/distribution/team-workspace'
+import { EmploymentActions } from '@/components/employment/employment-actions'
 
 export default function ManagerDashboardPage(){
   const {user,token,isInitialized,isLoading}=useAuth()
@@ -108,6 +109,7 @@ export default function ManagerDashboardPage(){
       <section className="rounded-3xl border border-cyan-300/15 bg-cyan-300/[.025] p-6 md:p-8">
         <div className="flex items-center gap-2 text-cyan-300"><FileSignature className="h-5 w-5"/><p className="text-[10px] font-black uppercase tracking-[.2em]">Distribution Manager Lifestyle Document</p></div>
         <h1 className="mt-3 text-3xl font-black text-white">{user?.name}</h1>
+        {state?.employment?.status==='ended'&&<EmploymentActions position="distribution_manager" onStatusChange={()=>void load()}/>}
         {state?.employment?.status==='rejected'&&<p className="mt-3 border border-rose-300/25 p-3 text-xs text-rose-200">Administration did not approve the previous application. {state.employment.verification_note||'You may sign a new application after reviewing the requirements.'}</p>}
         <p className="mt-2 text-sm text-slate-400">Your underlying WEAVE position remains {String(user?.role||'').toUpperCase()}. {agentFree?'As an Agent, Distribution Manager is carried through your active Agent position with no monthly subscription.':'Distribution Manager is carried through your Bridger identity while Bridger Continuance remains active.'}</p>
         {error&&<p className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{error}</p>}
@@ -138,6 +140,7 @@ export default function ManagerDashboardPage(){
         <p className="mt-3 text-xs text-slate-400">Signed: {new Date(state.employment.document_accepted_at).toLocaleString('en-NG')} · Probation has not started · No Manager team actions are authorized yet.</p>
         <Button type="button" onClick={()=>load().catch(err=>setError(err.message))} className="mt-5 bg-amber-700 text-white">Refresh verification status</Button>
         {error&&<p role="alert" className="mt-3 text-xs text-rose-200">{error}</p>}
+        <EmploymentActions position="distribution_manager" onStatusChange={()=>void load()}/>
         <Link href="/weave/lifestyles" className="mt-4 block text-xs text-cyan-200">Return to Lifestyle →</Link>
       </section>
     </main>
@@ -152,6 +155,7 @@ export default function ManagerDashboardPage(){
     <section className="mt-6 rounded-2xl border border-emerald-300/15 bg-emerald-300/[.035] p-5"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-[9px] font-black uppercase tracking-[.18em] text-emerald-300">Core duty · Distribute WEAVE</p><h2 className="mt-1 text-xl font-black text-white">Carry WEAVE outward and return the movement.</h2><p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">Use public distribution, campaign tools and field coordination to create measurable movement. The shared target is 300 referrals in your first probation month and 500 every subsequent team employment month, across you and your two assigned Assistant Distribution Managers. Each qualifying referral counts once, credited to the person who referred them after starting the position.</p></div><div className="min-w-[180px]"><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-emerald-300" style={{width:`${state.progressPercent}%`}}/></div><p className="mt-2 text-right text-xs font-black text-emerald-200">{state.progressPercent}%</p></div></div></section>
     <section className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[.035] p-5" data-distribution-manager-pay-rule="team-performance"><h2 className="text-sm font-black text-white">Current month · Payment qualification</h2><p className="mt-2 text-sm text-slate-300">{state.compensation?.teamQualified?'Your team has reached its applicable monthly target. Full Manager salary of ₦70,000 is provisionally eligible, subject to month-end verification and payroll approval.':'Your team has not yet reached its applicable monthly target. No full Manager salary is currently eligible; you receive only the existing ₦500 bonus for each qualifying referral you brought.'}</p><div className="mt-3 grid grid-cols-2 gap-3"><Metric icon={<BriefcaseBusiness className="h-4 w-4"/>} label="Salary eligibility (provisional)" value={`₦${Number(state.compensation?.salaryEntitlementNgn||0).toLocaleString('en-NG')}`}/><Metric icon={<Users className="h-4 w-4"/>} label="Your referral bonus value" value={`₦${Number(state.compensation?.individualReferralBonusNgn||0).toLocaleString('en-NG')}`}/></div><p className="mt-3 text-xs text-slate-500">This is a performance preview, not confirmation of a salary transfer. Referral bonus settlement is handled separately by Weave’s existing referral ledger.</p></section>
     <DistributionTeamWorkspace/>
+    <EmploymentActions position="distribution_manager" onStatusChange={()=>void load()}/>
     {assistantState?.canReview&&<section className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[.03] p-5" data-distribution-assistant-review="true">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><p className="text-[10px] font-black uppercase tracking-widest text-amber-300">Assistant Distribution Managers</p><h2 className="mt-2 text-xl font-black text-white">Your distribution support team</h2><p className="mt-2 text-sm text-slate-400">Six assistant appointments across WEAVE, two reporting to each of the three Distribution Managers. Each receives a ₦40,000 monthly salary term after appointment. Your full three-person team shares one target of 300 verified Agent/Bridger referrals in the first probation month, then 500 in subsequent team employment months. Full salaries apply only when the applicable target is met; otherwise individuals receive only their qualifying ₦500 referral bonuses.</p></div>
