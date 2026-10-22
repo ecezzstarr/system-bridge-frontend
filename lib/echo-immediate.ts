@@ -36,8 +36,7 @@ const nextByRole:Record<string,EchoNextMovement[]>={
     {title:'Review employment applications',detail:'Open submitted applications and decide only from verified records.',href:'/admin/employment-applications'},
   ],
   legion:[
-    {title:'Continue the assigned Client position',detail:'Use the Legion operating relationship and your assigned Client instructions.',href:'/enterprise/legions-notebook'},
-    {title:'Check company messages',detail:'Review current authorized communication before acting.',href:'/communications'},
+    {title:'Continue your assigned Client work',detail:'Open your exclusive Legion employment workspace and follow your Client instructions.',href:'/weave/lifestyles/legion'},
   ],
 }
 const fallbackMoves:EchoNextMovement[]=[
