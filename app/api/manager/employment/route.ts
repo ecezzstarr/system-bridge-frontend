@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
+import { DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
 import {
   acceptManagerEmploymentDocument,
   getManagerEmploymentState,
@@ -29,6 +30,10 @@ export async function GET(request: NextRequest) {
       positions:MANAGER_EMPLOYMENT_LIMIT,
       monthlySalaryNgn:MANAGER_MONTHLY_SALARY_NGN,
       probationTarget:MANAGER_PROBATION_TARGET,
+      monthlyReferralTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
+      referralTargetScope:'manager_and_two_assistants',
+      salaryPaymentRule:'Full monthly salary after period-end verification when the team completes 300 referrals in the first one-month probation period or 500 in later employment months; otherwise only personally attributable ₦500 verified-referral bonuses.',
+      salaryPaidAutomatically:false,
       probationMonths:1,
       documentVersion:MANAGER_DOCUMENT_VERSION,
       continuanceNgn:agentFree ? 0 : MANAGER_CONTINUANCE_NGN,
@@ -83,6 +88,9 @@ export async function POST(request: NextRequest) {
     }
     if (result.reason === 'positions_full') {
       return NextResponse.json({ success:false, error:`All ${MANAGER_EMPLOYMENT_LIMIT} Distribution Manager positions are currently occupied.` }, { status:409 })
+    }
+    if (result.reason === 'already_assistant') {
+      return NextResponse.json({ success:false, error:'An appointed Assistant Distribution Manager cannot simultaneously accept a lead Distribution Manager position.' }, { status:409 })
     }
     if (result.reason === 'signature_mismatch') {
       return NextResponse.json({ success:false, error:'The document signature must match the full name on the Agent/Bridger account.' }, { status:400 })

@@ -115,6 +115,8 @@ jobs:
           node tests/bridger-subscribe-all-regression.cjs
           node tests/referral-core-regression.cjs
           node tests/manager-employment-regression.cjs
+          node tests/distribution-assistant-managers-regression.cjs
+          node tests/distribution-team-compensation-regression.cjs
           node tests/system-store-regression.cjs
           node tests/public-app-download-regression.cjs
           node tests/bridger-registration-durable-regression.cjs
