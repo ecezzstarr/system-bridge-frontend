@@ -1,11 +1,10 @@
 'use client'
 
-import {useEffect,useRef,useState} from 'react'
+import {useEffect,useRef,useState,type ElementRef} from 'react'
 import Link from 'next/link'
 import {Html,OrbitControls} from '@react-three/drei'
 import * as THREE from 'three'
 import {useThree} from '@react-three/fiber'
-import type {OrbitControls as OrbitControlsImpl} from 'three-stdlib'
 import {BurningRiverFoodStore3D} from '@/components/events/burning-river-food-store-3d'
 import {FlameEventFoodStore} from '@/components/events/flame-event-food-store'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
@@ -106,7 +105,7 @@ function BuiltClientSystem({door,index}:{door:PublicClientFolder;index:number}){
 type WorldFocus='all'|'food'|'clients'
 
 function PreviewWorld({enterprises,carrierCode,focus}:{enterprises:PublicClientFolder[];carrierCode?:string|null;focus:WorldFocus}){
-  const orbit=useRef<OrbitControlsImpl|null>(null)
+  const orbit=useRef<ElementRef<typeof OrbitControls>>(null)
   const {camera}=useThree()
   useEffect(()=>{
     const next=focus==='food'
