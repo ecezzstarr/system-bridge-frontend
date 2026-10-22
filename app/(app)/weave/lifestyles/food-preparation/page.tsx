@@ -3,6 +3,7 @@ import { useCallback,useEffect,useState,type FormEvent } from 'react'
 import Link from 'next/link'
 import { ArrowLeft,ClipboardList,PackageCheck,Truck,ChefHat,RefreshCcw,ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
+import { EmploymentActions } from '@/components/employment/employment-actions'
 
 type PreparationTask={
   id:string;product:'agility'|'electrolyte'|'ember'|'daisy';source_order_id:string;stage:string;next_stage:string|null;
@@ -114,6 +115,7 @@ export default function FoodPreparationManagerPage(){
         <h2 className="text-xl font-black">Your position</h2>
         {data?.appointment?<div className="mt-4 border border-white/10 p-5">
           <p className="text-xs font-black uppercase text-amber-200">{data.appointment.position==='manager'?'Food Preparation Manager':'Assistant Food Preparation Manager'} · Application: {data.appointment.status}</p>
+          <EmploymentActions position="food_preparation" onStatusChange={()=>void load()}/>
           {data.appointment.review_note&&<p className="mt-3 text-xs text-stone-400">Administration: {data.appointment.review_note}</p>}
           {data.appointment.status==='approved'&&<p className="mt-3 text-xs text-emerald-200">{data.appointment.position==='manager'?'You lead WEAVE Stability food operations. Assign work to approved assistants or prepare the order yourself.':'The WEAVE Stability Lead Manager assigns your preparation orders. You may only move orders assigned to you.'}</p>}
         </div>:<p className="mt-4 text-xs text-stone-500">No food preparation position application recorded yet.</p>}
