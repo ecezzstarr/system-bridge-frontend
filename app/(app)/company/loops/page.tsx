@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Activity, ArrowRight, FileCheck, GitBranch, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
+import { FLAME_EVENT_INTRO } from '@/lib/weave-event'
 
 interface Loop {
   id: string
@@ -59,6 +60,13 @@ export default function CompanyLoopsPage() {
             </div>
           </div>
         </header>
+
+        <section className="border-b border-amber-200/15 bg-amber-300/[.035] px-5 py-4 md:px-7" data-company-loop-one-explanation="true">
+          <p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-200">{FLAME_EVENT_INTRO.name} · {FLAME_EVENT_INTRO.period}</p>
+          <p className="mt-2 text-xs leading-6 text-slate-200">{FLAME_EVENT_INTRO.summary}</p>
+          <p className="mt-1 text-xs leading-6 text-slate-400">{FLAME_EVENT_INTRO.next}</p>
+          <p className="mt-2 text-[11px] text-amber-100">This explanation does not replace an Administration-published Loop agreement, earnings record or position authorization.</p>
+        </section>
 
         <div className="grid gap-4 p-4 md:p-6 lg:grid-cols-[1fr_300px]">
           <section className="weave-reading-surface rounded-3xl p-4 md:p-5">
