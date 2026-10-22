@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       positionSubscriptionNgn:agentFree ? 0 : POSITION_MONTHLY_SUBSCRIPTION_NGN,
       subscriptionRule:agentFree
         ? 'The active Agent position opens Distribution Manager Lifestyle without a monthly subscription.'
-        : 'A one-time payment of 20 Flame Coin attains Agentic-Bridger, which enables Lifestyle access and eligibility to apply for Distribution Manager employment. Appointment requires Administration verification. There is no monthly Bridger subscription.',
+        : 'A one-time payment of 11 Flame Coin attains Agentic-Bridger, which enables Lifestyle access and eligibility to apply for Distribution Manager employment. Appointment requires Administration verification. There is no monthly Bridger subscription.',
       coreDuty:DISTRIBUTION_MANAGER_CORE_DUTY,
     },
   }, { headers:{ 'Cache-Control':'private, no-store' } })
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
     const result=await subscribeManagerContinuance(user.id)
     if(!result.success){
-      if(result.reason==='insufficient_balance') return NextResponse.json({...result,error:'You need 20 Flame Coin to buy permanent Agentic-Bridger access.'},{status:402})
+      if(result.reason==='insufficient_balance') return NextResponse.json({...result,error:'You need 11 Flame Coin for one-time Agentic-Bridger attainment.'},{status:402})
       return NextResponse.json({success:false,error:'Agentic-Bridger could not be purchased.'},{status:500})
     }
     return NextResponse.json({success:true,result,state:await getManagerEmploymentState(user.id)})
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         success:false,
         error:user.role === 'agent'
           ? 'An active Agent account is required before Distribution Manager Lifestyle can begin.'
-          : 'Attain Agentic-Bridger with one payment of 20 Flame Coin to enable Lifestyle and submit a Distribution Manager application.',
+          : 'Attain Agentic-Bridger with one payment of 11 Flame Coin to enable Lifestyle and submit a Distribution Manager application.',
       }, { status:403 })
     }
     if (result.reason === 'already_applied') return NextResponse.json({success:false,error:'An application is already recorded. Refresh your verification status.'},{status:409})
