@@ -37,7 +37,8 @@ assert.ok(!transit.includes("Today's company updates")&&!transit.includes('Selec
 assert.ok(transit.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'The readiness gate is preserved')
 
 const layout=read('app/(app)/layout.tsx')
-assert.ok(!layout.includes('AgentSmartGuide')&&!layout.includes('BridgerSmartGuide'),'The intrusive floating guidance is removed from all role pages')
+assert.ok(layout.includes('<BridgerSmartGuide userId={user.id}/>'),'Bridger retains contextual guidance as a closed bubble')
+assert.ok(read('components/agent/agent-smart-guide.tsx').includes("setOpen(false)"),'Guide can dismiss on navigation and outside interaction')
 const client=read('app/client/system-switch/page.tsx')
 assert.ok(client.includes('data-client-return-weave-open-world')&&client.includes('href="/client/dashboard"'),'Client can return from an active File Folder')
 assert.ok(client.includes('data-client-loading-with-open-world-return'),'Client can also return while a File Folder is still loading')

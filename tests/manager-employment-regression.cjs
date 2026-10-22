@@ -21,7 +21,7 @@ assert.ok(engine.includes('MANAGER_EMPLOYMENT_LIMIT = 3'),'WEAVE keeps three Dis
 assert.ok(engine.includes('getReferralCoreState(userId,{settlePending:false}).catch')&&engine.includes('getDistributionTeamMonthlyReferrals(userId).catch'),'Missing referral reports never hide an accepted employment record')
 assert.ok(referral.includes('options.settlePending !== false'),'Manager page reads referral stats without blocking on an external wallet/FX settlement')
 assert.ok(managerDashboard.includes('id="distribution-manager-signature"')&&managerDashboard.includes('autoComplete="name"'),'Manager signature has a labeled and accessible input')
-assert.ok(!read('app/(app)/layout.tsx').includes('AgentSmartGuide'),'Global guide cannot cover the signature input')
+assert.ok(read('components/agent/agent-smart-guide.tsx').includes('data-weave-guide-trigger="bubble"')&&read('components/agent/agent-smart-guide.tsx').includes('if(input)setOpen(false)'),'Tiny, closed-by-default bubble cannot obstruct employment signatures')
 assert.ok(engine.includes('MANAGER_MONTHLY_SALARY_NGN = 70_000'),'Distribution Manager monthly salary is ₦70,000')
 assert.ok(catalog.includes("DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager'"),'Distribution Manager is encoded as a Lifestyle rather than a fifth role')
 assert.ok(engine.includes('MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE'),'Legacy Manager API remains a compatibility surface over Distribution Manager Lifestyle')
