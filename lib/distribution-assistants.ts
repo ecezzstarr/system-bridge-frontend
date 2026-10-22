@@ -170,7 +170,7 @@ export async function getDistributionAssistantState(userId:string) {
   const canReview=await canReviewAssistants(userId)
   const {rows:own}=await getPool().query(`
     SELECT user_id,status,application_note,manager_user_id,
-      monthly_salary_ngn,monthly_referral_target,hired_at,reviewed_at,created_at
+      monthly_salary_ngn,monthly_referral_target,hired_at,reviewed_at,exit_kind,exit_reason,exited_at,created_at
     FROM weave_distribution_assistants WHERE user_id=$1::uuid LIMIT 1
   `,[userId])
   const appointment=own[0]||null
