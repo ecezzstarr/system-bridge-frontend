@@ -55,7 +55,7 @@ assert.ok(migration.includes('SET DEFAULT 70000')&&migration.includes('monthly_s
 
 assert.ok(engine.includes('reviewManagerEmployment')&&engine.includes('verified_by')&&engine.includes('verified_at')&&engine.includes("status='pending_verification'"),'Signed application waits for an auditable Administration decision')
 assert.ok(engine.includes("WHERE status IN ('pending_verification','probation','active')"),'Pending applications reserve one of three seats')
-assert.ok(engine.includes("status=$2")&&engine.includes("probation_started_at=CASE WHEN $2='probation' THEN NOW() ELSE NULL END"),'Probation dates are created on approval only')
+assert.ok(engine.includes("status=$2::varchar")&&engine.includes("probation_started_at=CASE WHEN $2::varchar='probation' THEN NOW() ELSE NULL END"),'Typed approval status creates probation dates only on approval')
 assert.ok(verificationMigration.includes('DROP NOT NULL')&&verificationMigration.includes('verified_by'),'Legacy employment table can store unsigned probation dates without rewriting old clocks')
 assert.ok(adminRoute.includes("user?.role==='admin'")&&adminRoute.includes('reviewManagerEmployment'),'Only Administration verifies appointments')
 assert.ok(teamRoute.includes("['agent','bridger'].includes(user.role)")&&teamRoute.includes('postDistributionTeamUpdate'),'Only role members can post to their team')
