@@ -9,11 +9,18 @@ const source=read('lib/weave-loading-guidance.ts')
 const translated=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText
 const moduleExports={}
 vm.runInNewContext(translated,{exports:moduleExports},{filename:'lib/weave-loading-guidance.ts'})
-const {trainingBriefsForRole,agentOperatingGuideForPath,transitTrainingForPath}=moduleExports
+const {trainingBriefsForRole,agentOperatingGuideForPath,transitTrainingForPath,lyricLinesForBrief}=moduleExports
 for(const role of ['visitor','agent','bridger','client','admin']){
   const cards=trainingBriefsForRole(role)
   assert.equal(cards.length,3,role+' needs three training cards')
   assert.ok(cards.every(card=>card.title&&card.body&&card.movement),'All messages teach something usable')
+  for(const brief of cards){
+    const lines=lyricLinesForBrief(brief)
+    assert.equal(lines.length,5,'The lyric introduces the destination, teaches three beats and ends with the movement')
+    assert.equal(lines[0],brief.title)
+    assert.equal(lines.at(-1),brief.movement)
+    assert.equal(lines.slice(1,-1).join(' '),brief.body,'The lyric preserves every instructional word')
+  }
 }
 assert.ok(trainingBriefsForRole('agent')[0].title.includes('Stability'))
 assert.ok(trainingBriefsForRole('agent')[1].body.includes('1.5 Flame Coin'))
@@ -32,8 +39,9 @@ const transit=read('components/world/weave-environment-transit.tsx')
 assert.ok(transit.includes('trainingBriefsForRole'),'Loader uses real training copy')
 assert.ok(transit.includes("role==='agent'"),'Authenticated Agent receives the right content')
 assert.ok(transit.includes('transitTrainingForPath(role,destinationPath)'), 'Travel brief understands destination')
-assert.ok(transit.includes("const LOADING_CARD_HOLD_MS=3000"),'3-second cards remain')
+assert.ok(transit.includes('const LOADING_CARD_HOLD_MS=5*BOOT_LYRIC_STEP_MS')&&transit.includes('const TRANSIT_FORMATION_MS=5*TRANSIT_LYRIC_STEP_MS'),'Both boot and internal entrances remain visible for their complete timed lyrics')
 assert.ok(transit.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'), 'Readiness still decides when the world reveals')
+assert.ok(transit.includes('data-weave-loader-lyrics="timed-instruction"')&&transit.includes('weave-loader-lyric-current'),'Lyric content is active inside the actual loader')
 const guide=read('components/agent/agent-smart-guide.tsx')
 const app=read('app/(app)/layout.tsx')
 assert.ok(guide.includes('sessionStorage'),'Remember a lesson was shown, not that work was completed')

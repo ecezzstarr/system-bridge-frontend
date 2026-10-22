@@ -35,6 +35,7 @@ assert.ok(transit.includes('transitTrainingForPath(role,destinationPath)'),'Dest
 assert.ok(transit.includes('data-client-loader-open-world-return'),'Client loader provides a real return route')
 assert.ok(!transit.includes("Today's company updates")&&!transit.includes('Select Destination'),'Static image menus and fabricated live updates are absent')
 assert.ok(transit.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'The readiness gate is preserved')
+assert.ok(transit.includes('setLyricIndex(line)')&&transit.includes('data-loading-lyric={visibleLyric+1}'),'Lyric steps advance on the live loading gate')
 
 const guide=read('components/agent/agent-smart-guide.tsx')
 const layout=read('app/(app)/layout.tsx')

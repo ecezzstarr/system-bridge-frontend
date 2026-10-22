@@ -28,6 +28,7 @@ assert.ok(transit.includes('waitForEnvironmentReadiness(mode,configRef.current,c
 assert.ok(transit.includes('Return to Weave Open World'),'Client can still return to the open world')
 
 assert.ok(css.includes('.weave-loading-brief')&&css.includes('animation: none !important'),'Training card never fades/slides/blurs')
+assert.ok(css.includes('.weave-loader-lyric-current')&&css.includes('@keyframes weave-loader-lyric-beat'),'Timed lyric text and non-blurring pace meter are present')
 assert.ok(!css.includes('@keyframes weave-loading-brief-cycle'),'Obsolete blur animation was actually removed')
 assert.ok(css.includes('.weave-loader-scenery-portrait')&&css.includes("background-image: url('/weave/bridge-of-radiance-portrait.svg')"),'High-resolution vector is the actual phone background')
 assert.ok(css.includes('.weave-loader-scenery-landscape')&&css.includes("background-image: url('/weave/flame-event/burning-river-world.svg')"),'Large screens get a properly framed vector scene')
