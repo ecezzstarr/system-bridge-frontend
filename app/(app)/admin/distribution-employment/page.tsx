@@ -9,7 +9,8 @@ type Applicant={user_id:string;name:string;email:string;source_role:string;statu
 type TeamRow={manager_id:string;manager_name:string;status:string;assistant_count:number;last_update_at:string|null;probation_started_at:string|null;probation_ends_at:string|null;referralMetrics:{total:number;target:number;remaining:number;monthNumber:number;probation:boolean}|null}
 type WorkUpdate={id:string;manager_user_id:string;manager_name:string;author_name:string;kind:string;content:string;created_at:string}
 type AssistantRecord={user_id:string;name:string;role:string;status:string;manager_user_id:string|null;manager_name:string|null;hired_at:string|null;exited_at:string|null;exit_kind:string|null;application_note:string;created_at:string;administration_verification:'pending'|'verified'|'declined';administration_verification_note:string|null}
-type ReviewState={appointments:Applicant[];overview:{teams:TeamRow[];updates:WorkUpdate[];assistants:AssistantRecord[]};readOnlyReports:boolean}
+type TeamTask={id:string;title:string;instructions:string;status:string;manager_name:string;assignee_name:string;created_at:string;updated_at:string}
+type ReviewState={appointments:Applicant[];overview:{teams:TeamRow[];updates:WorkUpdate[];assistants:AssistantRecord[]};teamTasks:TeamTask[];readOnlyReports:boolean}
 export default function DistributionEmploymentAdministration(){
   const {user,token,isInitialized}=useAuth()
   const [state,setState]=useState<ReviewState|null>(null)
@@ -141,6 +142,19 @@ export default function DistributionEmploymentAdministration(){
           <EmploymentActions position="distribution_assistant" employeeId={a.user_id} administration onStatusChange={()=>void load()}/>
         </article>)}
         {!state?.overview.assistants?.length&&<p className="text-xs text-slate-400">No assistant applications or appointments yet.</p>}
+      </div>
+    </section>
+    <section className="border-t border-white/10 pt-6" data-distribution-tasks="administration-read-only">
+      <h2 className="text-xl font-black">Actual distribution assignments</h2>
+      <p className="mt-2 text-xs leading-6 text-slate-400">The verified Manager assigns jobs and marks submitted work complete. Assistants operate the work in their own system. This Administration view observes task status and recorded instructions without editing those assignments.</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {(state?.teamTasks||[]).map(t=><article key={t.id} className="min-w-0 border border-white/10 p-4">
+          <p className="text-xs font-black text-white">{t.title}</p>
+          <p className="mt-2 text-[11px] text-cyan-200">{t.manager_name} → {t.assignee_name} · {t.status.replaceAll('_',' ')}</p>
+          <p className="mt-3 whitespace-pre-wrap break-words text-xs leading-6 text-slate-300">{t.instructions}</p>
+          <p className="mt-2 text-[10px] text-slate-500">{new Date(t.updated_at).toLocaleString('en-NG')}</p>
+        </article>)}
+        {!state?.teamTasks?.length&&<p className="text-xs text-slate-400">No distribution assignments recorded.</p>}
       </div>
     </section>
     <section className="border-t border-white/10 pt-6" data-team-reports="administration-observation-only">
