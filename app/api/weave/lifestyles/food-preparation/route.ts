@@ -1,5 +1,6 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
+import { ensureWeaveEmploymentLifecycleSchema } from '@/lib/weave-employment-lifecycle'
 import { getPool } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { notifyManualFoodPreparationAssignment } from '@/lib/food-preparation-routing'
@@ -75,7 +76,7 @@ export async function GET(request:NextRequest){
         LEFT JOIN carrier_cake_orders c
           ON t.product='daisy' AND c.id=t.source_order_id
         LEFT JOIN users u ON u.id=COALESCE(s.agent_id,c.agent_id)
-        WHERE (t.manager_id=$1::uuid OR ($2::boolean AND assigned_m.position='assistant'))
+        WHERE (t.manager_id=$1::uuid OR ($2::boolean AND (assigned_m.position='assistant' OR assigned_m.status<>'approved')))
         ORDER BY t.assigned_at DESC LIMIT 100
       `,[appointment.id,isLead])
       tasks=rows.map(row=>({
@@ -103,7 +104,7 @@ export async function POST(request:NextRequest){
     if(!isFoodPreparationPosition(position))return NextResponse.json({success:false,error:'Choose Food Preparation Manager or Assistant Food Preparation Manager.'},{status:400})
     const note=typeof body.applicationNote==='string'?body.applicationNote.trim():''
     if(note.length<40||note.length>2000)return NextResponse.json({success:false,error:'Describe your food preparation, hygiene, packaging, availability and delivery experience in 40–2000 characters.'},{status:400})
-    await ensureFoodPreparationManagerSchema()
+    await ensureWeaveEmploymentLifecycleSchema()
     const client=await getPool().connect()
     try{
       await client.query('BEGIN')
@@ -131,7 +132,7 @@ export async function POST(request:NextRequest){
         ON CONFLICT (agent_id) DO UPDATE SET
           position=EXCLUDED.position,application_note=EXCLUDED.application_note,
           monthly_salary_ngn=EXCLUDED.monthly_salary_ngn,status='pending',
-          review_note=NULL,reviewed_by=NULL,reviewed_at=NULL,updated_at=NOW()
+          review_note=NULL,reviewed_by=NULL,reviewed_at=NULL,exit_kind=NULL,exit_reason=NULL,exited_at=NULL,exited_by=NULL,updated_at=NOW()
         WHERE weave_food_preparation_managers.status IN ('rejected','revoked')
         RETURNING id,status,position,monthly_salary_ngn,created_at
       `,[user.id,position,note,foodPreparationSalary(position)])
@@ -182,14 +183,14 @@ export async function PATCH(request:NextRequest){
         const entitlement=await getLifestyleAccess(target.agent_id)
         if(!entitlement.active)throw new PreparationAccessError('The selected assistant does not have active Agent standing.',403)
         const {rows:tasks}=await client.query(`
-          SELECT t.id,t.product,t.source_order_id,t.manager_id,old.position AS former_position,old.agent_id AS former_agent_id
+          SELECT t.id,t.product,t.source_order_id,t.manager_id,old.position AS former_position,old.status AS former_status,old.agent_id AS former_agent_id
           FROM weave_food_preparation_tasks t
           JOIN weave_food_preparation_managers old ON old.id=t.manager_id
           WHERE t.id=$1::uuid FOR UPDATE OF t
         `,[taskId])
         const task=tasks[0]
         if(!task||!isPreparationProduct(task.product)||
-          !(task.manager_id===appointment.id||task.former_position==='assistant'))
+          !(task.manager_id===appointment.id||task.former_position==='assistant'||task.former_status!=='approved'))
           throw new PreparationAccessError('This food order is not part of your Stability team.',403)
         const {rows:orders}=task.product==='daisy'
           ?await client.query('SELECT * FROM carrier_cake_orders WHERE id=$1::uuid FOR UPDATE',[task.source_order_id])
