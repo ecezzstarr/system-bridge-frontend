@@ -5,6 +5,7 @@ import {useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {Button} from '@/components/ui/button'
 import {DistributionTeamWorkspace} from '@/components/distribution/team-workspace'
+import {EmploymentActions} from '@/components/employment/employment-actions'
 
 export default function DistributionAssistantLifestylePage(){
   const {user,token,isInitialized,isLoading}=useAuth()
@@ -55,6 +56,7 @@ export default function DistributionAssistantLifestylePage(){
     {!data?.eligible&&<p className="mt-5 rounded-xl border border-amber-400/20 p-4 text-sm text-amber-100">Your Agent or Bridger position must be active to apply or carry this employment.</p>}
     {appointment ? <section className="mt-7 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-5">
       <h2 className="text-lg font-black">Application status: {String(appointment.status).toUpperCase()}</h2>
+      <EmploymentActions position="distribution_assistant" onStatusChange={()=>void load()}/>
       <p data-distribution-assistant-signed-salary="applicant-only" className="mt-2 text-sm font-semibold text-cyan-100">Recorded employment salary term: ₦{Number(appointment.monthly_salary_ngn||state?.monthlySalaryNgn||40000).toLocaleString('en-NG')} monthly, subject to the agreed team target and payroll verification.</p>
       <p className="mt-2 text-sm text-slate-300">{appointed?'Your approved position is active. Work through your Distribution instruments and keep a verified monthly acquisition record.':appointment.status==='pending'?'Your application has been received. A Distribution Manager reviews applications and appoints up to two assistants.':'This appointment is no longer active.'}</p>
       {appointed&&<>
