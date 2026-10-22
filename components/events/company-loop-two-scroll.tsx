@@ -97,7 +97,7 @@ export function CompanyLoopTwoScroll(){
         data-loop2-answer="current-place">
         <div>
           <p className="text-[10px] font-black uppercase tracking-wider text-emerald-200">{department.department} · Daily words</p>
-          <p className="mt-2 max-w-2xl text-sm font-semibold leading-7">{department.words}</p>
+          <p className="mt-2 max-w-2xl whitespace-pre-line text-sm font-semibold leading-7">{department.words}</p>
           <p className="mt-3 text-[10px] font-semibold text-white/70">{ONE_NIGERIAN_LOOP.title} · {day}</p>
         </div>
         <div>
