@@ -39,13 +39,19 @@ export default function GuidanceStaffAdminPage(){
     }catch(e){setError(e instanceof Error?e.message:'Review failed')}
     finally{setBusy('')}
   }
+  useEffect(()=>{
+    if(!items.length)return
+    const id=new URLSearchParams(window.location.search).get('applicationId')
+    if(!id)return
+    window.requestAnimationFrame(()=>document.getElementById('application-'+id)?.scrollIntoView({behavior:'smooth',block:'center'}))
+  },[items])
   if(!isInitialized)return <main className="p-6 text-white">Opening Administration department review…</main>
   if(!user||user.role!=='admin')return <main className="p-6 text-white">Administration only.</main>
   const pending=items.filter(item=>item.status==='pending')
   const active=items.filter(item=>item.status==='approved')
   const reviewed=items.filter(item=>item.status==='rejected'||item.status==='revoked')
   function card(item:Item){
-    return <article key={item.id} className="border border-white/10 bg-white/[.025] p-5">
+    return <article id={`application-${item.id}`} key={item.id} className="scroll-mt-24 border border-white/10 bg-white/[.025] p-5">
       <p className="text-[10px] font-black uppercase tracking-[.14em] text-amber-200">
         {labels[item.department]||item.department} · {item.status}
       </p>
