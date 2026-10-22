@@ -28,8 +28,8 @@ export async function ensureWeaveLifestyleSchema() {
   const client = await pool.connect()
   try {
     // Agents carry Lifestyle as part of the Agent company position with no monthly
-    // subscription. Bridger and Client Lifestyle access continues to follow the
-    // monthly subscription attached to those WEAVE positions.
+    // subscription. Bridger Lifestyle access is enabled by permanent, one-time
+    // Agentic-Bridger attainment; Clients follow their own subscription.
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status varchar(20) DEFAULT 'active'`)
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expiry timestamptz`)
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_subscription_exempt boolean DEFAULT false`)
@@ -156,7 +156,7 @@ export async function requireLifestyleAccess(userId: string) {
     const position = access.role ? `${access.role[0]?.toUpperCase()}${access.role.slice(1)}` : 'WEAVE'
     const reason = access.role === 'agent'
       ? 'An active Agent account is required to enter Lifestyle'
-      : access.role === 'bridger' ? 'Buy Agentic-Bridger once for 20 Flame Coin to open Lifestyle and employment access' : `${position} monthly subscription is required to enter Lifestyle`
+      : access.role === 'bridger' ? 'Attain Agentic-Bridger with a one-time 20 Flame Coin payment to enable Lifestyle access and eligible job applications' : `${position} monthly subscription is required to enter Lifestyle`
     const error = new Error(reason) as Error & { status?: number; lifestyleAccess?: LifestyleAccess }
     error.status = 403
     error.lifestyleAccess = access
