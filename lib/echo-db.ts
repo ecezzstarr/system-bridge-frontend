@@ -1,7 +1,9 @@
 import { sql } from './db'
 
-
-export async function ensureEchoTables() {
+let echoSchemaPromise:Promise<void>|null=null
+export function ensureEchoTables():Promise<void> {
+  if(echoSchemaPromise)return echoSchemaPromise
+  echoSchemaPromise=(async()=>{
   await sql`
     CREATE TABLE IF NOT EXISTS echo_identities (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,6 +49,11 @@ export async function ensureEchoTables() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `
+  })().catch(error=>{
+    echoSchemaPromise=null
+    throw error
+  })
+  return echoSchemaPromise
 }
 
 // Echo is available without a recurring fee. Historical rows are preserved.
