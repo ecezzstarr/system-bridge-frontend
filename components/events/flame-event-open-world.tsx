@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPoi
 import { ArrowRight, DoorOpen, Flame, Footprints, List, PersonStanding, Radio, Waves, X, Orbit, Compass, ChevronRight } from 'lucide-react'
 import type { FlameMobileInput, FlameRegion } from './flame-event-mobile-scene'
 import { emitWeaveMotion } from '@/lib/weave-interaction-motion'
+import { FlameEventFoodStore } from '@/components/events/flame-event-food-store'
 import { choosePresenceElement,usePresenceElement } from '@/components/world/use-presence-element'
 
 const FlameEventMobileScene=dynamic(
@@ -34,9 +35,11 @@ export function FlameEventOpenWorld({
   enterprises,
   role,
   doorStatus='ready',
+  carrierCode=null,
 }:{
   enterprises:FlameWorldCustomerDoor[]
   doorStatus?:FlameDoorFeedStatus
+  carrierCode?:string|null
   role:'admin'|'agent'|'bridger'|'client'|'visitor'
 }){
   const presenceElement=usePresenceElement()
@@ -255,8 +258,8 @@ export function FlameEventOpenWorld({
             <p className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[.15em] text-amber-200">
               <Flame className="h-3.5 w-3.5"/> Flame Event · The River that Burns
             </p>
-            <h2 className="mt-1 text-xl font-black tracking-[-.03em] text-white sm:text-3xl">System Switch</h2>
-            <p className="text-[10px] font-bold tracking-[.1em] text-sky-100">Bridge of Radiance</p>
+            <h2 className="mt-1 text-xl font-black tracking-[-.03em] text-white sm:text-3xl">Burning River</h2>
+            <p className="text-[10px] font-bold tracking-[.1em] text-sky-100">System Switch · Bridge of Radiance</p>
           </div>
           <span className="rounded-full border border-amber-200/35 bg-[#071a32]/65 px-2.5 py-1.5 text-[9px] font-bold text-amber-100">
             {doorStatus==='loading'?'Loading doors…':doorStatus==='unavailable'&&!enterprises.length?'Doors unavailable':enterprises.length+' live '+(enterprises.length===1?'door':'doors')}
@@ -264,10 +267,14 @@ export function FlameEventOpenWorld({
         </div>
       </div>
 
-      {entered&&<div className="pointer-events-none absolute right-3 top-[22%] z-10 max-w-[47%] rounded-xl border border-sky-200/20 bg-[#071b35]/50 px-3 py-2 text-right backdrop-blur-[2px]" data-switch-spatial-awareness aria-live="polite">
+      {entered&&<div className="pointer-events-none absolute left-3 top-[214px] z-10 max-w-[43%] rounded-xl border border-sky-200/20 bg-[#071b35]/50 px-3 py-2 text-right backdrop-blur-[2px]" data-switch-spatial-awareness aria-live="polite">
         <p className="text-[9px] font-black uppercase tracking-[.17em] text-amber-200">{phase}</p>
         <p className="mt-1 text-[10px] leading-4 text-white/85">{phaseDetail}</p>
       </div>}
+      {/* Food is a district of this exact world, not another scene below the river. */}
+      <div className="absolute right-2 top-[112px] z-20 sm:right-4" data-flame-event-food-store-world>
+        <FlameEventFoodStore carrierCode={carrierCode} compact/>
+      </div>
       <div className="absolute bottom-0 left-0 right-0 z-[9] h-56 bg-gradient-to-t from-[#06192e]/80 via-[#06192e]/10 to-transparent pointer-events-none"/>
 
       <div className={"absolute bottom-6 left-3 z-20 sm:bottom-8 sm:left-6 "+(!entered||!webglAvailable?"pointer-events-none opacity-30":"")} data-switch-mobile-controls={entered&&webglAvailable?"active":"waiting"}>
