@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
         u.id,
         COALESCE(NULLIF(TRIM(u.name), ''), NULLIF(TRIM(u.username), ''), 'Bridger') AS name,
         u.email,
-        u.subscription_status,
         COUNT(le.id) FILTER (
           WHERE le.entry_type = 'prospect_package_purchase'
         )::int AS prospect_purchase_count,
@@ -58,7 +57,6 @@ export async function GET(request: NextRequest) {
         u.name,
         u.username,
         u.email,
-        u.subscription_status
       ORDER BY u.created_at ASC
       LIMIT 3
     `
@@ -69,7 +67,7 @@ export async function GET(request: NextRequest) {
         id: row.id,
         name: row.name,
         email: row.email,
-        subscriptionStatus: row.subscription_status || 'unknown',
+        subscriptionStatus: 'not_required',
         clientCount: Number(row.client_count || 0),
         prospectPurchaseCount: Number(row.prospect_purchase_count || 0),
         prospectPurchaseValue: purchaseValue,
