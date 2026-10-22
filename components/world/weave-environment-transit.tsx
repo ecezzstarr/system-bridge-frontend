@@ -295,6 +295,8 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const destinationEnvironment=requestedEnvironment||environment
   const returningToWorld=!booting&&transitDirectionForPath(pathname,destinationPath)==='return'
   const transitBrief=useMemo<LoadingBrief>(()=>{
+    const additionalNote=config.loading.transitionNotes?.[role]||''
+    const withNote=(description:string)=>additionalNote?description+' '+additionalNote:description
     const baseBrief:LoadingBrief={
       eyebrow:`${destinationEnvironment.district} · ${destinationEnvironment.layer}`,
       title:`Opening ${destinationEnvironment.title}`,
@@ -305,7 +307,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       return {
         eyebrow:`${role==='visitor'?'WEAVE':role.toUpperCase()} · RETURNING TO OPEN WORLD`,
         title:`Returning to ${destinationEnvironment.title}`,
-        body:`Your current position and recorded work remain yours. ${destinationEnvironment.purpose}`,
+        body:withNote(`Your current position and recorded work remain yours. ${destinationEnvironment.purpose}`),
         movement:'Return → recognize your work → continue',
       }
     }
@@ -315,14 +317,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       eyebrow:guidance.eyebrow,
       // The named destination stays in focus. Its verified purpose remains the
       // opening lyric even when the position has more specific instructions.
-      body:`${destinationEnvironment.purpose} ${guidance.body}${config.loading.transitionNotes?.[role]?' '+config.loading.transitionNotes[role]:''}`,
+      body:withNote(`${destinationEnvironment.purpose} ${guidance.body}`),
       movement:guidance.movement,
     }
-    if(!hopeDestination)return baseBrief
+    if(!hopeDestination)return {...baseBrief,body:withNote(baseBrief.body)}
     return {
       ...baseBrief,
       eyebrow:'Hope · Bridger Department',
-      body:`WEAVE builds systems across the world. Hope works through Prospect possibilities so those systems can reach Client ownership and use. ${destinationEnvironment.purpose}`,
+      body:withNote(`WEAVE builds systems across the world. Hope works through Prospect possibilities so those systems can reach Client ownership and use. ${destinationEnvironment.purpose}`),
       movement:'Prospect tool → attempt → response → relationship → Client → ownership + use',
     }
   },[destinationEnvironment,hopeDestination,role,destinationPath,returningToWorld,config.loading.transitionNotes])
