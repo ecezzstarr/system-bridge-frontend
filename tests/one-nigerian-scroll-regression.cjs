@@ -13,9 +13,15 @@ const world=read('components/world/weave-world-environment.tsx')
 const atmosphere=read('components/events/flame-event-role-atmosphere.tsx')
 
 assert.match(event,/2027-01-01T00:00:00\+01:00/)
-assert.match(event,/2027-05-01T23:59:59\.999\+01:00/)
+assert.match(event,/2027-01-11T23:59:59\.999\+01:00/)
 assert.match(event,/timeZone:'Africa\/Lagos'/)
+assert.match(event,/COMPANY_LOOP_THREE_STARTS_AT/)
+assert.match(event,/2027-01-12T00:00:00/)
+assert.match(event,/hasCompanyLoopThreeStarted/)
+assert.equal(Date.parse('2027-01-12T00:00:00+01:00') -
+  Date.parse('2027-01-11T23:59:59.999+01:00'), 1)
 const authoredPassages=[
+  // The original six scroll passages are frozen and remain in author order.
   "Let us have what is known as bad government. Weave will fix it and it will all be like bad was all a stepping stone for wherever I am, there's a way.",
   'Hope. Bridgers department: wordings.',
   'An so we arrived for where faith moves presence follows',
@@ -37,6 +43,9 @@ assert.match(scroll,/data-one-nigerian-verbatim-scroll/)
 assert.match(scroll,/\{ONE_NIGERIAN_SCROLL_TEXT\}/)
 assert.match(registry,/WHERE NOT EXISTS \(SELECT 1 FROM company_loops WHERE loop_number = 2\)/)
 assert.match(registry,/WHERE loop_number = 2/)
+assert.match(registry,/WHERE NOT EXISTS .*loop_number = 3/)
+assert.match(registry,/COMPANY_LOOP_THREE_STARTS_AT/)
+assert.match(registry,/Reconcile only the original generated description/)
 assert.match(scroll,/roleOperatingGuideForPath/)
 assert.match(scroll,/transitTrainingForPath/)
 assert.match(scroll,/user\.id\+':'\+role/) // Daily marker is bound to role and user.
@@ -46,7 +55,11 @@ assert.match(scroll,/localStorage\.setItem/)
 assert.match(app,/<CompanyLoopTwoScroll \/>/)
 assert.match(client,/<CompanyLoopTwoScroll \/>/)
 assert.match(world,/root\.dataset\.weaveLoopTheme='one-nigerian'/)
+assert.match(world,/root\.dataset\.weaveCompanyLoop='3'/)
+assert.match(world,/delete root\.dataset\.weaveLoopTheme/)
 assert.match(atmosphere,/One Nigerian · Company Loop 2/)
+assert.match(atmosphere,/Company Loop 3 · Flame Event · Started January 12, 2027/)
+assert.match(atmosphere,/company-loop-3/)
 assert.match(theme,/prefers-reduced-motion/)
 assert.match(theme,/data-weave-loop-theme="one-nigerian"/)
 console.log('One Nigerian daily Scroll regression checks passed')
