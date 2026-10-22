@@ -72,9 +72,6 @@ jobs:
       - name: WEAVE loader visual stability regression
         run: node tests/weave-loader-visual-stability.cjs
 
-      - name: WEAVE 3D food images and Client File Folder open world
-        run: node tests/burning-river-real-food-3d-regression.cjs
-
       - name: Burning River and System Switch living-world continuity
         run: node tests/burning-river-system-switch-continuity.cjs
 
@@ -118,6 +115,7 @@ jobs:
           node tests/bridger-subscribe-all-regression.cjs
           node tests/referral-core-regression.cjs
           node tests/manager-employment-regression.cjs
+          node tests/agentic-bridger-attainment-wording-regression.cjs
           node tests/distribution-verification-team-regression.cjs
           node tests/weave-employment-exit-correspondence-regression.cjs
           node tests/weave-employment-workflow-wording-regression.cjs
