@@ -10,7 +10,6 @@ import { FlameEventFoodStore } from '@/components/events/flame-event-food-store'
 import { useWorldPresence } from '@/components/system-switch/use-world-presence'
 import type {Presence} from '@/lib/file-folder-world-runtime'
 import { FLAME_EVENT_PLAYER_START } from '@/lib/flame-event-world-geometry'
-import { choosePresenceElement,usePresenceElement } from '@/components/world/use-presence-element'
 
 const FlameEventMobileScene=dynamic(
   ()=>import('./flame-event-mobile-scene').then(module=>module.FlameEventMobileScene),
@@ -35,7 +34,7 @@ export type FlameWorldCustomerDoor = {
 /**
  * Flame Event mobile crossing. The client public API owns portal identity;
  * no synthetic shops, private folders, or invented other players are exposed.
- * A mobile user steers a living water/fire Presence in third person.
+ * A mobile user moves through a game-style open world with no elemental avatar or element picker.
  */
 export function FlameEventOpenWorld({
   enterprises,
@@ -48,7 +47,6 @@ export function FlameEventOpenWorld({
   carrierCode?:string|null
   role:'admin'|'agent'|'bridger'|'client'|'visitor'
 }){
-  const presenceElement=usePresenceElement()
   const controls=useRef<FlameMobileInput>({
     forward:0,right:0,yaw:0,pitch:0,run:false,crouch:false,jumpQueued:false,
   })
@@ -70,7 +68,7 @@ export function FlameEventOpenWorld({
   const sharedPosition=useRef<Presence>({x:FLAME_EVENT_PLAYER_START.x,z:FLAME_EVENT_PLAYER_START.z,yaw:0})
   const {others,online}=useWorldPresence('system-switch',sharedPosition,entered&&webglAvailable)
   const phase=region==='riverbank'?'RIVER BANK':region==='burning-river'?'BURNING RIVER':region==='system-switch'?'SYSTEM SWITCH':'CUSTOMER DOOR'
-  const phaseDetail=region==='riverbank'?'Your Presence is alive here. Flow toward the bright arch across the living river.':region==='burning-river'?'Water and fire carry the crossing. Follow the paved current.':region==='system-switch'?'You crossed into System Switch. Each open door belongs to a Client.':'A real Client-owned Customer Door is within reach.'
+  const phaseDetail=region==='riverbank'?'Follow the path toward the illuminated bridge.':region==='burning-river'?'Explore the riverbank and cross the paved bridge.':region==='system-switch'?'You're in the open world. Each opened door belongs to a Client.':'A Client Customer Door is nearby.'
 
 
   useEffect(()=>{
@@ -97,7 +95,7 @@ export function FlameEventOpenWorld({
     if(!webglAvailable){setEntered(true);setShowDirectory(true);return}
     if(!ready)return
     try{window.sessionStorage.setItem('weave:flame:entered:'+role,'yes')}catch{}
-    emitWeaveMotion({kind:'arrival',label:'Presence entered the Burning River',source:'flame-event',confirmed:true,intensity:.75})
+    emitWeaveMotion({kind:'arrival',label:'Explorer entered the Burning River',source:'flame-event',confirmed:true,intensity:.75})
     setEntered(true)
   }
 
@@ -245,7 +243,7 @@ export function FlameEventOpenWorld({
     data-flame-event-mobile-only="true"
     data-flame-event-region={region}
     data-system-switch-physically-crossed={crossed?'true':'false'}
-    aria-label="Flame Event Burning River living Presence mobile world"
+    aria-label="Burning River interactive open game world"
   >
     <div
       className="relative h-[86svh] min-h-[560px] max-h-[820px] w-full overflow-hidden bg-[#122c49] landscape:h-[94svh] landscape:min-h-[350px] landscape:max-h-none"
@@ -326,7 +324,7 @@ export function FlameEventOpenWorld({
           </span>
           <ArrowRight className="h-4 w-4 shrink-0"/>
         </Link> : <span className="max-w-[175px] rounded-xl border border-white/20 bg-[#081b35]/75 px-3 py-2 text-[10px] font-semibold leading-4 text-white/85 backdrop-blur-sm" data-flame-event-proximity>
-          {enterprises.length?'Move your Presence to a glowing Customer Door to enter.':doorStatus==='loading'?'Checking for opened Client Customer Doors…':doorStatus==='unavailable'?'Customer Door connection is unavailable. Please retry shortly.':'Opened Client Customer Doors appear in this world.'}
+          {enterprises.length?'Walk to a glowing Customer Door to enter.':doorStatus==='loading'?'Checking for opened Client Customer Doors…':doorStatus==='unavailable'?'Customer Door connection is unavailable. Please retry shortly.':'Opened Client Customer Doors appear in this world.'}
         </span>}
         <div className="flex items-end gap-2">
           <div className="flex flex-col gap-2">
@@ -348,18 +346,6 @@ export function FlameEventOpenWorld({
         </div>
       </div>
 
-      <div className="absolute left-3 top-[158px] z-20 flex items-center gap-1 rounded-full border border-cyan-200/30 bg-[#071d38]/85 px-1.5 py-1.5 text-[9px] font-black text-sky-50 backdrop-blur-[3px]"
-        role="group" aria-label="Choose your living Presence" data-weave-presence-picker>
-        {([
-          {id:'water',label:'Water'},
-          {id:'fire',label:'Fire'},
-          {id:'confluence',label:'Both'},
-        ] as const).map(choice=><button key={choice.id} type="button"
-          onClick={()=>choosePresenceElement(choice.id)}
-          aria-pressed={presenceElement===choice.id}
-          className={'rounded-full px-2.5 py-1.5 transition-colors '+(presenceElement===choice.id?'bg-cyan-200 text-[#072338]':'text-sky-100/75')}
-        >{choice.label}</button>)}
-      </div>
       <button type="button" onClick={()=>setShowDirectory(value=>!value)}
         className="absolute left-3 top-[110px] z-20 flex items-center gap-2 rounded-full border border-amber-200/45 bg-[#071d38]/85 px-3 py-2 text-[10px] font-bold text-amber-100"
         aria-expanded={showDirectory} data-flame-mobile-door-directory>
@@ -387,9 +373,9 @@ export function FlameEventOpenWorld({
       {!entered&&<div className="absolute inset-0 z-40 flex items-center justify-center bg-[radial-gradient(ellipse_at_50%_40%,rgba(30,94,121,.4),rgba(2,14,30,.93)_72%)] px-5 py-8 text-center" data-system-switch-arrival-threshold>
         <div className="max-w-sm">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-amber-200/50 bg-sky-200/10 shadow-[0_0_54px_rgba(248,192,104,.25)]"><Compass className="h-8 w-8 text-amber-100"/></div>
-          <p className="mt-6 text-[10px] font-black uppercase tracking-[.29em] text-amber-200">Website → Presence → Movement</p>
-          <h3 className="mt-3 text-3xl font-black leading-[1.08] tracking-tight text-white">The website ends at the riverbank.</h3>
-          <p className="mx-auto mt-4 max-w-xs text-[13px] leading-6 text-sky-100/85">Beyond this point you become a living Presence. Flow through the Burning River, cross System Switch, and enter a real Client's Customer Door.</p>
+          <p className="mt-6 text-[10px] font-black uppercase tracking-[.29em] text-amber-200">Website → System Switch → Open World</p>
+          <h3 className="mt-3 text-3xl font-black leading-[1.08] tracking-tight text-white">Enter the Burning River open world.</h3>
+          <p className="mx-auto mt-4 max-w-xs text-[13px] leading-6 text-sky-100/85">Explore the river, follow the bridge, and enter real Client-built systems through their Customer Doors. Move and look around as in an open-world game.</p>
           <button type="button" disabled={webglAvailable&&!ready} onClick={beginCrossing}
             className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-amber-100/70 bg-amber-200 px-5 py-3 text-sm font-black text-[#11223b] shadow-[0_8px_38px_rgba(252,190,84,.19)] disabled:opacity-60"
             data-system-switch-enter-world>
@@ -403,8 +389,8 @@ export function FlameEventOpenWorld({
     </div>
 
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-200/20 bg-[#071b33] px-4 py-3 text-[10px] text-sky-50">
-      <span className="inline-flex items-center gap-2"><Waves className="h-4 w-4 text-sky-300"/> Water and fire · One flowing world</span>
-      <span className="inline-flex items-center gap-2"><Radio className="h-3.5 w-3.5 text-amber-300"/> {role==='visitor'?'Visitor':role==='client'?'Client':'Staff'} position · Touch movement</span>
+      <span className="inline-flex items-center gap-2"><Waves className="h-4 w-4 text-sky-300"/> One continuous game world · Live river</span>
+      <span className="inline-flex items-center gap-2"><Radio className="h-3.5 w-3.5 text-amber-300"/> {role==='visitor'?'Visitor':role==='client'?'Client':'Staff'} access · Touch movement</span>
       <span className="sr-only">No private Client File Folder is exposed through the public Customer Doors.</span>
     </div>
   </section>
