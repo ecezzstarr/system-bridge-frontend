@@ -8,7 +8,8 @@ import {EmploymentActions} from '@/components/employment/employment-actions'
 type Applicant={user_id:string;name:string;email:string;source_role:string;status:string;accepted_name:string;document_version:number;document_accepted_at:string;verified_at:string|null;verification_note:string|null;probation_started_at:string|null;probation_ends_at:string|null}
 type TeamRow={manager_id:string;manager_name:string;status:string;assistant_count:number;last_update_at:string|null;probation_started_at:string|null;probation_ends_at:string|null;referralMetrics:{total:number;target:number;remaining:number;monthNumber:number;probation:boolean}|null}
 type WorkUpdate={id:string;manager_user_id:string;manager_name:string;author_name:string;kind:string;content:string;created_at:string}
-type ReviewState={appointments:Applicant[];overview:{teams:TeamRow[];updates:WorkUpdate[]};readOnlyReports:boolean}
+type AssistantRecord={user_id:string;name:string;role:string;status:string;manager_user_id:string|null;manager_name:string|null;hired_at:string|null;exited_at:string|null;exit_kind:string|null}
+type ReviewState={appointments:Applicant[];overview:{teams:TeamRow[];updates:WorkUpdate[];assistants:AssistantRecord[]};readOnlyReports:boolean}
 export default function DistributionEmploymentAdministration(){
   const {user,token,isInitialized}=useAuth()
   const [state,setState]=useState<ReviewState|null>(null)
@@ -86,6 +87,19 @@ export default function DistributionEmploymentAdministration(){
           <p className="mt-2 font-black text-emerald-200">Verified referral progress: {t.referralMetrics?`${t.referralMetrics.total} / ${t.referralMetrics.target}`:t.status==='pending_verification'?'Not started':'No verified report available'}</p>
           <EmploymentActions position="distribution_manager" employeeId={t.manager_id} administration onStatusChange={()=>void load()}/>
         </article>)}
+      </div>
+    </section>
+    <section className="border-t border-white/10 pt-6" data-distribution-assistant-employment-admin="true">
+      <h2 className="text-xl font-black">Assistant Distribution Manager appointments</h2>
+      <p className="mt-2 text-xs leading-6 text-slate-400">The appointed lead chooses their assistants. Administration can correspond directly, inspect status and terminate employment for documented reasons, but does not assign their daily team messages.</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {(state?.overview.assistants||[]).map(a=><article key={a.user_id} className="border border-white/10 p-4">
+          <p className="text-sm font-black text-white">{a.name} <span className="text-xs text-slate-400">· {a.role}</span></p>
+          <p className="mt-2 text-xs font-bold text-cyan-200">{a.status.toUpperCase()} · Lead: {a.manager_name||'Not appointed'}</p>
+          {a.hired_at&&<p className="mt-1 text-xs text-slate-400">Appointed: {new Date(a.hired_at).toLocaleString('en-NG')}</p>}
+          <EmploymentActions position="distribution_assistant" employeeId={a.user_id} administration onStatusChange={()=>void load()}/>
+        </article>)}
+        {!state?.overview.assistants?.length&&<p className="text-xs text-slate-400">No assistant applications or appointments yet.</p>}
       </div>
     </section>
     <section className="border-t border-white/10 pt-6" data-team-reports="administration-observation-only">
