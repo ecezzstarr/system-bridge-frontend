@@ -422,11 +422,21 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion,sh
     playerMotion.current.speed=actual
     playerMotion.current.crouching=crouch.current
     playerMotion.current.airborne=height.current
-    const dist=data.crouch?3.8:data.run?5.3:4.5
-    const footfall=budget.reducedMotion?0:Math.sin(clock.elapsedTime*(data.run?13:8.8))*Math.min(.045,actual*.009)
-    target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2+footfall,position.current.z+Math.cos(data.yaw)*dist)
+    // Camera-led exploration: see the playable landscape, not a mandatory avatar.
+    // Keep the actual collision position and proximity rules unchanged.
+    const dist=data.crouch?1.8:data.run?2.8:2.35
+    const footfall=budget.reducedMotion?0:Math.sin(clock.elapsedTime*(data.run?13:8.8))*Math.min(.038,actual*.008)
+    target.current.set(
+      position.current.x+Math.sin(data.yaw)*dist,
+      (data.crouch?1.55:2.4)+data.pitch*1.65+footfall+height.current*.5,
+      position.current.z+Math.cos(data.yaw)*dist,
+    )
     camera.position.lerp(target.current,1-Math.exp(-dt*7))
-    look.current.set(position.current.x,1.28+height.current*.35,position.current.z)
+    look.current.set(
+      position.current.x-Math.sin(data.yaw)*7.5,
+      1.55+data.pitch*.55+height.current*.35,
+      position.current.z-Math.cos(data.yaw)*7.5,
+    )
     camera.lookAt(look.current)
   })
   return <WeaveEmbodiedAvatar motion={playerMotion} role={role as WeaveAvatarPosition}/>
