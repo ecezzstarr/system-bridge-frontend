@@ -288,7 +288,7 @@ function RegisterContent() {
           </div>
           <ul className="text-sm text-slate-400 space-y-2">
             <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> Your account activity, earnings, and client dealings happen under WEAVE's terms.</li>
-            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> Certain roles (Bridgers) carry a recurring subscription to remain active.</li>
+            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> Bridgers have no recurring subscription. Agentic-Bridger is an optional permanent 20 Flame Coin Lifestyle purchase.</li>
             <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" /> You will be asked to review and accept our Terms of Service next.</li>
           </ul>
           <Button onClick={() => setStep('terms')} className="w-full bg-amber-600 hover:bg-amber-700 font-bold uppercase tracking-widest h-11">
@@ -317,9 +317,9 @@ function RegisterContent() {
             className="h-64 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-lg p-4 text-xs text-slate-400 space-y-3"
           >
             <p><strong className="text-slate-300">1. Platform Nature.</strong> WEAVE is a paid operational platform. Access to Arena, Casino, the Enterprise Systems Exchange, and related paid functions may require an active balance, subscription, contract, or company approval.</p>
-            <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents work in Stability through WEAVE product and service sales, stock distribution and customer orders. Qualifying commission earnings and any separately approved salaried appointments are recorded under their own terms.' : 'Bridgers work in Hope through digital Prospect outreach and introduce File Folders to interested people worldwide. Earnings depend on verified Client crossings, and Bridger Continuance has separate ongoing requirements.'}</p>
+            <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents work in Stability through WEAVE product and service sales, stock distribution and customer orders. Qualifying commission earnings and any separately approved salaried appointments are recorded under their own terms.' : 'Bridgers work in Hope through digital Prospect outreach and introduce File Folders to interested people worldwide. Earnings depend on verified Client crossings, and Bridge AI templates cost 8 Flame Coin per opening; Echo is free; Agentic-Bridger is a one-time 20 Flame Coin Lifestyle purchase.'}</p>
             <p><strong className="text-slate-300">3. Financial Conduct.</strong> All deposits, withdrawals, and client fund handling must go through WEAVE's official channels. Off-platform arrangements with clients are not covered or protected by WEAVE.</p>
-            <p><strong className="text-slate-300">4. Continuance & Access.</strong> Certain roles may be suspended if recurring dues are not paid within the grace period communicated to you.</p>
+            <p><strong className="text-slate-300">4. Continuance & Access.</strong> Bridger positions do not expire due to monthly fees. Lifestyle job access for Bridgers follows permanent Agentic-Bridger ownership.</p>
             <p><strong className="text-slate-300">5. Conduct.</strong> Misrepresentation of WEAVE, fraudulent client dealings, or circumventing platform fees may result in immediate suspension.</p>
             <p><strong className="text-slate-300">6. Data & Communication.</strong> Your registered contact details may be used by WEAVE Administration for account verification, payouts, and platform notices.</p>
             <p><strong className="text-slate-300">7. Changes.</strong> WEAVE may update these terms; continued use of the platform after an update constitutes acceptance.</p>
