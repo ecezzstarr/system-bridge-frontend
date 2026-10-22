@@ -122,6 +122,10 @@ export default function WeaveLifestylesPage() {
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
+        {(access?.role==='agent'||access?.role==='bridger')&&<Link href="/weave/lifestyles/work" data-lifestyle-my-workspaces="true"
+          className="mt-5 inline-flex min-h-11 items-center border border-emerald-300/30 bg-emerald-300/[.06] px-5 py-3 text-xs font-black text-emerald-200">
+          My approved company workspaces →
+        </Link>}
       </header>
 
       {loading ? (
