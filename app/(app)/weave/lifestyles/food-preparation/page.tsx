@@ -88,7 +88,7 @@ export default function FoodPreparationManagerPage(){
   if(!isInitialized)return <main className="p-6 text-white">Opening Food Preparation Manager Lifestyle…</main>
   if(!user||user.role!=='agent')return <main className="p-6 text-white"><h1 className="text-2xl font-black">Food Preparation Manager</h1><p className="mt-4 text-sm">Only registered Agents may apply for this position.</p></main>
   return <main className="mx-auto max-w-7xl px-4 pb-16 pt-6 text-white" data-weave-food-preparation-manager="agent-employment">
-    <Link href="/weave/lifestyles" className="inline-flex items-center gap-2 text-xs text-amber-200"><ArrowLeft className="h-4 w-4"/> WEAVE Lifestyle</Link>
+    <div className="flex flex-wrap items-center gap-4 text-xs text-amber-200"><Link href="/weave/lifestyles" className="inline-flex items-center gap-2"><ArrowLeft className="h-4 w-4"/> WEAVE Lifestyle</Link><Link href="/weave/lifestyles/work">My approved workspaces →</Link></div>
     <header className="mt-6 border-b border-white/10 pb-6">
       <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ChefHat className="h-4 w-4"/> Agent Employment · Food Operations</p>
       <h1 className="mt-2 text-3xl font-black md:text-5xl">FOOD PREPARATION TEAM</h1>
