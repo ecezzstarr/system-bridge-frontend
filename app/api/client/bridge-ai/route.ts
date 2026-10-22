@@ -170,12 +170,16 @@ async function contextFor(request: NextRequest) {
 async function supportHistory(sql: any, clientId: string) {
   return sql`
     SELECT id,sender_type,content,created_at
-    FROM client_messages
-    WHERE client_id::text=${clientId}
-      AND position='bridge_ai'
-      AND sender_type IN ('client','bridge_ai','bridger')
+    FROM (
+      SELECT id,sender_type,content,created_at
+      FROM client_messages
+      WHERE client_id::text=${clientId}
+        AND position='bridge_ai'
+        AND sender_type IN ('client','bridge_ai','bridger')
+      ORDER BY created_at DESC
+      LIMIT 100
+    ) recent
     ORDER BY created_at ASC
-    LIMIT 60
   `
 }
 
