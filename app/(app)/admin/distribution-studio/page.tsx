@@ -137,6 +137,7 @@ export default function DistributionStudioPage() {
       ) : (
         <>
           <section className="grid gap-4 lg:grid-cols-4">
+            <OperatingGate href="/admin/employment-applications" icon={<Share2 className="h-5 w-5" />} label="EMPLOYMENT APPLICATIONS" detail="Read every company position application, then open its verified decision desk." />
             <OperatingGate href="/admin/distribution-employment" icon={<Share2 className="h-5 w-5" />} label="DISTRIBUTION EMPLOYMENT" detail="Verify signed Managers, view team progress and observe reports without editing team work." />
             <OperatingGate href="/admin/ad-workshop" icon={<Megaphone className="h-5 w-5" />} label="FORMATION" detail="Form text, image and live WEAVE placements." />
             <OperatingGate href="/admin/video-ad-workshop" icon={<Video className="h-5 w-5" />} label="VIDEO" detail="Form and render video, then move it into distribution." />
