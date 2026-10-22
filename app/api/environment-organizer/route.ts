@@ -11,7 +11,15 @@ export async function GET(request:NextRequest){
     const state=await getEnvironmentOrganizerState()
     const user=await getAuthUser(request)
     const items=state.items.filter((item:any)=>canAccessEnvironmentRoute(item.route,user?.role))
-    return NextResponse.json({success:true,...state,items},{headers:{'Cache-Control':'no-store, max-age=0'}})
+    // Runtime loader copy is position-specific. Never publish Administration's
+    // customized lessons or transition notes to a visitor or another role.
+    const role=user?.role
+    const allowed=new Set(['visitor','flame-event',role].filter(Boolean))
+    const config=state.runtime.config
+    const lessons=Object.fromEntries(Object.entries(config.loading.lessons).filter(([audience])=>allowed.has(audience)))
+    const transitionNotes=Object.fromEntries(Object.entries(config.loading.transitionNotes).filter(([audience])=>allowed.has(audience)))
+    const runtime={...state.runtime,config:{...config,loading:{...config.loading,lessons,transitionNotes}}}
+    return NextResponse.json({success:true,...state,runtime,items},{headers:{'Cache-Control':'no-store, max-age=0'}})
   }catch(error){
     console.error('[Environment Organizer] public state unavailable',error)
     return NextResponse.json({success:true,items:[],runtime:{config:DEFAULT_ENVIRONMENT_RUNTIME_CONFIG,version:0,updatedAt:null},fallback:true},{headers:{'Cache-Control':'no-store, max-age=0'}})
