@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    error: 'Manual Legion creation is closed. Legions must be active Agents or subscribed Bridgers recruited through the Client Legion Quarter or accepted from Lifestyle applications.',
+    error: 'Manual Legion creation is closed. Legions must be active Agents or Bridgers who permanently own Agentic-Bridger recruited through the Client Legion Quarter or accepted from Lifestyle applications.',
     recruitmentPath: '/client/enterprise/legions',
   }, { status: 409 })
 }
