@@ -138,8 +138,8 @@ export async function reviewDistributionAssistant(
     }
     const status=decision==='approve'?'approved':'rejected'
     await client.query(`
-      UPDATE weave_distribution_assistants SET status=$2,manager_user_id=$3::uuid,
-        hired_at=CASE WHEN $2='approved' THEN NOW() ELSE NULL END,
+      UPDATE weave_distribution_assistants SET status=$2::varchar,manager_user_id=$3::uuid,
+        hired_at=CASE WHEN $2::varchar='approved' THEN NOW() ELSE NULL END,
         reviewed_at=NOW(),updated_at=NOW(),
         monthly_salary_ngn=$4,monthly_referral_target=$5
       WHERE user_id=$1::uuid
