@@ -61,7 +61,7 @@ export default function AceLifestylePage(){
         </Link>}
       </section>
 
-      {access.role==='bridger'&&<section className="mt-5 border-l-2 border-cyan-300/20 pl-5" data-ace-specialization="agentic-bridger"><p className="text-[9px] font-black uppercase tracking-[.22em] text-cyan-300">Bridger specialization inside Ace</p><h2 className="mt-2 text-2xl font-black text-white">Agentic-Bridger</h2><p className="mt-2 max-w-3xl text-xs leading-5 text-slate-400">Your Bridger Continuance carries a Bridger-only Agentic-Bridger specialization inside Ace. It keeps the Bridger role while applying the eligible Agentic-Bridger earning rule.</p><Link href="/weave/lifestyles/agentic-bridger" className="mt-4 inline-flex text-[10px] font-black uppercase tracking-wider text-cyan-200">Open Agentic-Bridger →</Link></section>}
+      {access.role==='bridger'&&<section className="mt-5 border-l-2 border-cyan-300/20 pl-5" data-ace-specialization="agentic-bridger"><p className="text-[9px] font-black uppercase tracking-[.22em] text-cyan-300">Bridger specialization inside Ace</p><h2 className="mt-2 text-2xl font-black text-white">Agentic-Bridger</h2><p className="mt-2 max-w-3xl text-xs leading-5 text-slate-400">Your permanent Agentic-Bridger purchase carries this specialization inside Ace. Normal Bridger work remains free; the one-time 20 Flame Coin purchase opens eligible Lifestyle jobs and the Agentic-Bridger earning rule.</p><Link href="/weave/lifestyles/agentic-bridger" className="mt-4 inline-flex text-[10px] font-black uppercase tracking-wider text-cyan-200">Open Agentic-Bridger →</Link></section>}
     </>}
   </main>
 }
