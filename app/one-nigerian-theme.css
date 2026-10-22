@@ -1,0 +1,144 @@
+/*
+ * Company Loop 2 — One Nigerian.
+ * The Nigerian flag becomes the operating identity across all WEAVE roles.
+ * Do not recolour product photography, payments, 3D goods or status warnings.
+ * This is a living interface theme, not a picture placed over the open world.
+ */
+html[data-weave-event-theme="one-nigerian"],
+html.dark[data-weave-event-theme="one-nigerian"] {
+  color-scheme: dark;
+  --background: #062d1e;
+  --foreground: #f6fff9;
+  --card: #10462f;
+  --card-foreground: #ffffff;
+  --popover: #0b3423;
+  --popover-foreground: #ffffff;
+  --primary: #008751;
+  --primary-foreground: #ffffff;
+  --secondary: #e7fff0;
+  --secondary-foreground: #053b23;
+  --muted: #154732;
+  --muted-foreground: #c4e7d1;
+  --accent: #52d99a;
+  --accent-foreground: #062d1e;
+  --border: #468a67;
+  --input: #174b35;
+  --ring: #52d99a;
+  --chart-1: #008751;
+  --chart-2: #37b879;
+  --chart-3: #f6fff9;
+  --chart-4: #106341;
+  --chart-5: #98ecc0;
+  --sidebar: #083b28;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #008751;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e7fff0;
+  --sidebar-accent-foreground: #083b28;
+  --sidebar-border: #468a67;
+  --sidebar-ring: #52d99a;
+  --success: #52d99a;
+  --success-foreground: #062d1e;
+  --presence-glow: #e7fff0;
+  --glow-shadow: 0 0 40px rgba(82, 217, 154, .22);
+  --field-surface: rgba(6, 45, 30, .78);
+  --field-border: rgba(216, 255, 231, .26);
+  --field-active: rgba(0, 135, 81, .28);
+  --weave-world-base: #052b1c;
+  --weave-world-surface: rgba(6, 51, 32, .76);
+  --weave-world-surface-strong: rgba(5, 42, 27, .94);
+  --weave-world-line: rgba(233, 255, 241, .24);
+}
+
+/* Crisp flag sequence, independent of route, account type or screen width. */
+.one-nigerian-flag-ribbon { display: none; }
+html[data-weave-event-theme="one-nigerian"] .one-nigerian-flag-ribbon {
+  display: block;
+  position: fixed;
+  inset: 0 0 auto;
+  height: 5px;
+  z-index: 120;
+  pointer-events: none;
+  background: linear-gradient(to right,
+    #008751 0%, #008751 33.333%,
+    #ffffff 33.333%, #ffffff 66.667%,
+    #008751 66.667%, #008751 100%);
+}
+
+/* World ground continues to animate; it changes colour without an overlay. */
+html[data-weave-event-theme="one-nigerian"] body {
+  background: radial-gradient(ellipse at 50% 28%,
+    rgba(0, 135, 81, .21), transparent 60%), #052b1c !important;
+  color: #f6fff9;
+}
+html[data-weave-event-theme="one-nigerian"] .weave-live-flame-field {
+  background: #052b1c;
+}
+html[data-weave-event-theme="one-nigerian"] .weave-live-flame-current {
+  background: linear-gradient(100deg,
+    transparent 4%, rgba(0, 135, 81, .17) 30%,
+    rgba(255, 255, 255, .13) 50%,
+    rgba(0, 135, 81, .18) 73%, transparent 98%);
+}
+html[data-weave-event-theme="one-nigerian"] .weave-live-flame-canvas {
+  filter: grayscale(1) sepia(1) hue-rotate(85deg) saturate(2.4);
+}
+html[data-weave-event-theme="one-nigerian"][data-weave-event="flame-live"] .weave-live-flame-field {
+  background: radial-gradient(circle at var(--weave-flame-x) var(--weave-flame-y),
+    rgba(0, 135, 81, .25), rgba(3, 64, 37, .09) 38%, transparent 65%), #052b1c;
+}
+
+/* Recolour the operating instruments, not the goods or public shop imagery. */
+html[data-weave-event-theme="one-nigerian"] :is(
+  .weave-header, .weave-sidebar, .weave-client-nav,
+  .weave-environment-panel, .weave-reading-surface,
+  .field-surface, .card, [role="card"],
+  [data-slot="card"], [data-slot="dialog-content"],
+  [data-slot="popover-content"], [data-slot="dropdown-menu-content"],
+  [data-slot="sheet-content"], [data-weave-dj-mirror="true"]
+) {
+  background: linear-gradient(125deg, rgba(0, 135, 81, .36), rgba(5, 43, 28, .94)) !important;
+  border-color: rgba(237, 255, 244, .30) !important;
+  box-shadow: 0 16px 45px rgba(0, 20, 11, .22),
+    inset 0 1px 0 rgba(255, 255, 255, .17);
+}
+html[data-weave-event-theme="one-nigerian"] :is(
+  .weave-nav-item[data-active="true"],
+  .weave-client-nav-item[data-active="true"],
+  [data-weave-route-station]:hover
+) {
+  background: rgba(0, 135, 81, .27) !important;
+  border-color: rgba(255, 255, 255, .48) !important;
+  color: #fff !important;
+}
+html[data-weave-event-theme="one-nigerian"] .weave-nav-item[data-active="true"]::before {
+  background: #fff !important;
+  box-shadow: 0 0 16px rgba(255, 255, 255, .55) !important;
+}
+html[data-weave-event-theme="one-nigerian"] :is(
+  .weave-header, .weave-sidebar, .weave-client-nav,
+  .weave-environment-panel, .weave-reading-surface
+) :is([class*="text-sky-"], [class*="text-cyan-"],
+      [class*="text-orange-"], [class*="text-amber-"]) {
+  color: #e7fff0 !important;
+}
+html[data-weave-event-theme="one-nigerian"][data-weave-event="flame-live"] :is(
+  [data-weave-live-word="title"], [data-weave-live-word="station"]
+) {
+  background-image: linear-gradient(100deg,
+    #ffffff 0%, #9aecc1 22%, #008751 44%,
+    #ffffff 62%, #9aecc1 82%, #ffffff 100%) !important;
+}
+html[data-weave-event-theme="one-nigerian"] .flame-event-role-signal {
+  border-color: rgba(255,255,255,.22) !important;
+  background: linear-gradient(90deg,
+    rgba(0,135,81,.21), rgba(255,255,255,.09) 50%,
+    rgba(0,135,81,.21)) !important;
+  color: #fff !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-weave-event-theme="one-nigerian"] [data-weave-live-word] {
+    animation: none !important;
+  }
+}
