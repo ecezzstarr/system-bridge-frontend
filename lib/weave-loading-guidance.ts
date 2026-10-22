@@ -10,6 +10,26 @@ export type WeaveLoadingBrief = {
   body: string
   movement: string
 }
+/**
+ * A loader lyric is an existing lesson broken into short reading beats.
+ * Preserve every word in the original message: never invent a new offer,
+ * payment status, construction completion, or user-specific achievement.
+ */
+export function lyricLinesForBrief(brief:WeaveLoadingBrief):readonly string[] {
+  const words=brief.body.trim().split(/\s+/).filter(Boolean)
+  const bodyLines:string[]=[]
+  const bodyLineCount=Math.min(3,words.length)
+  let offset=0
+  for(let line=0;line<bodyLineCount;line++){
+    const remaining=words.length-offset
+    const available=bodyLineCount-line
+    const size=Math.ceil(remaining/available)
+    bodyLines.push(words.slice(offset,offset+size).join(' '))
+    offset+=size
+  }
+  return [brief.title.trim(),...bodyLines,brief.movement.trim()].filter(Boolean)
+}
+
 export type WeaveOperatingGuide = {
   title: string
   explanation: string
@@ -55,7 +75,7 @@ const AGENT_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'AGENT TRAINING · 3 OF 3',
     title:'Make your first verified movement.',
-    body:'Open Agent Work or Creative Studio. Check the details and price, complete one practical task, then confirm the order, delivery or receipt. The in-app Guide explains your next step.',
+    body:'Open Agent Work or Creative Studio. Check the details and price, complete one practical task, then confirm the order, delivery or receipt. Open the optional WEAVE Guide bubble for page-specific instructions.',
     movement:'Open → learn → act → verify',
   },
 ]
@@ -292,24 +312,28 @@ export function transitDirectionForPath(from:string,to:string):'return'|'forward
 }
 
 export function transitTrainingForPath(role:WeaveLoadingRole,path:string):WeaveLoadingBrief|null {
+  const pathname=path.split('?')[0]
   if(role==='agent'){
+    // An unrelated Agent introduction must never replace the real destination.
+    if(!AGENT_GUIDES.some(entry=>entry.match(pathname)))return null
     const guide=agentOperatingGuideForPath(path)
     return {
-      eyebrow:'AGENT · SMART OPERATING GUIDE',
+      eyebrow:'AGENT · OPERATING INTRODUCTION',
       title:guide.title,
       body:guide.explanation+' '+guide.steps[0],
       movement:'Next: '+guide.steps[1],
     }
   }
   if(role==='bridger'){
+    if(!BRIDGER_GUIDES.some(entry=>entry.match(pathname)))return null
     const guide=bridgerOperatingGuideForPath(path)
-    return {eyebrow:'BRIDGER · CONTEXT GUIDE',title:guide.title,body:guide.explanation+' '+guide.steps[0],movement:'Next: '+guide.steps[1]}
+    return {eyebrow:'BRIDGER · OPERATING INTRODUCTION',title:guide.title,body:guide.explanation+' '+guide.steps[0],movement:'Next: '+guide.steps[1]}
   }
   if(role==='client'&&/system-switch|file-folder|workshop/.test(path)){
-    return {eyebrow:'CLIENT · SMART OPERATING GUIDE',title:'Builds are not instant.',body:'Preview your chosen system, check the real construction requirements and start only when ready. Return to the live build status before operating it.',movement:'Preview → build → verify live status → activate'}
+    return {eyebrow:'CLIENT · OPERATING INTRODUCTION',title:'Builds are not instant.',body:'Preview your chosen system, check the real construction requirements and start only when ready. Return to the live build status before operating it.',movement:'Preview → build → verify live status → activate'}
   }
   if(role==='admin'&&/forensic|deposit|orders/.test(path)){
-    return {eyebrow:'ADMINISTRATION · SMART OPERATING GUIDE',title:'Verify before approving.',body:'Review the order or payment evidence, follow your authorized approval process and preserve a receipt before publishing the result.',movement:'Evidence → Forensics → approval → record'}
+    return {eyebrow:'ADMINISTRATION · OPERATING INTRODUCTION',title:'Verify before approving.',body:'Review the order or payment evidence, follow your authorized approval process and preserve a receipt before publishing the result.',movement:'Evidence → Forensics → approval → record'}
   }
   return null
 }

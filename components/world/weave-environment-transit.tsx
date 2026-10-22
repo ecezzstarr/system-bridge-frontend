@@ -4,7 +4,7 @@ import { useEffect,useMemo,useRef,useState,type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
-import { trainingBriefsForRole, transitTrainingForPath, transitDirectionForPath, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
+import { trainingBriefsForRole, transitTrainingForPath, transitDirectionForPath, lyricLinesForBrief, type WeaveLoadingRole, type WeaveLoadingBrief } from '@/lib/weave-loading-guidance'
 import { setRuntimeCovered } from './use-adaptive-runtime'
 import { ArrowRight,Flame,Orbit } from 'lucide-react'
 import { resolveWeaveEnvironment } from '@/lib/weave-environments'
@@ -110,11 +110,16 @@ export function waitForEnvironmentReadiness(mode:'boot'|'transit',config:Environ
 
 type LoadingBrief=WeaveLoadingBrief
 
-const LOADING_CARD_HOLD_MS=3000
-const TRANSIT_FORMATION_MS=1800
+// Lyric-style pacing makes each verified instruction readable before the
+// next room is revealed. Only the text changes; the full-screen cover stays
+// fixed and the existing world-readiness check runs in parallel.
+const BOOT_LYRIC_STEP_MS=1200
+const TRANSIT_LYRIC_STEP_MS=1600
+const LOADING_CARD_HOLD_MS=5*BOOT_LYRIC_STEP_MS
+const TRANSIT_FORMATION_MS=5*TRANSIT_LYRIC_STEP_MS
 
-// Three instructional cards teach the next real action while the existing
-// destination-readiness gate is forming the world. No extra wait is introduced.
+// Three role-aware lessons introduce WEAVE at a cold entrance. Internal
+// crossings teach the actual destination, one line at a time.
 const PLATFORM_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('visitor')]
 const AGENT_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('agent')]
 const HOPE_BRIEFS:LoadingBrief[]=[...trainingBriefsForRole('bridger')]
@@ -148,9 +153,8 @@ const FLAME_EVENT_BRIEFS:LoadingBrief[]=[
 
 function waitForBriefingSequence(mode:'boot'|'transit',startedAt:number,signal:AbortSignal){
   return new Promise<void>(resolve=>{
-    // Keep the complete three-card introduction for a cold entrance. Internal
-    // movement must never feel frozen behind presentation after the destination
-    // itself is ready.
+    // Hold each lesson long enough for the lyric sequence to finish.
+    // World readiness is checked concurrently, never inferred from this timer.
     const presentationWindow=mode==='boot'?LOADING_SEQUENCE_MS:TRANSIT_FORMATION_MS
     const remaining=Math.max(0,presentationWindow-(performance.now()-startedAt))
     if(remaining===0||signal.aborted){resolve();return}
@@ -171,6 +175,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const [transiting,setTransiting]=useState(false)
   const [readyPath,setReadyPath]=useState<string|null>(null)
   const [briefIndex,setBriefIndex]=useState(0)
+  const [lyricIndex,setLyricIndex]=useState(0)
   const [sequenceId,setSequenceId]=useState(0)
   const [requestedPath,setRequestedPath]=useState<string|null>(null)
   const [flameEventActive,setFlameEventActive]=useState(()=>resolveEventStatus(FLAME_EVENT,new Date())==='active')
@@ -319,16 +324,6 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   const briefs=showFlameBriefing?FLAME_EVENT_BRIEFS:PLATFORM_BRIEFS
   const bootBriefs=showHopeBriefing?HOPE_BRIEFS:showAgentBriefing?AGENT_BRIEFS:showClientBriefing?CLIENT_BRIEFS:showAdminBriefing?ADMIN_BRIEFS:briefs
 
-  useEffect(()=>{
-    if(!covered)return
-    setBriefIndex(0)
-    const sequenceBriefs=booting?bootBriefs:[bootBriefs[0]]
-    const timers=sequenceBriefs.slice(1).map((_,index)=>
-      window.setTimeout(()=>setBriefIndex(index+1),(index+1)*LOADING_CARD_HOLD_MS)
-    )
-    return ()=>timers.forEach(timer=>window.clearTimeout(timer))
-  },[covered,sequenceId,booting,bootBriefs])
-
   const requestedEnvironment=useMemo(
     ()=>requestedPath?resolveWeaveEnvironment(requestedPath.split('?')[0]):null,
     [requestedPath],
@@ -351,7 +346,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       }
     }
     const guidance=transitTrainingForPath(role,destinationPath)
-    if(guidance)return guidance
+    if(guidance)return {
+      ...baseBrief,
+      eyebrow:guidance.eyebrow,
+      // The named destination stays in focus. Its verified purpose remains the
+      // opening lyric even when the position has more specific instructions.
+      body:`${destinationEnvironment.purpose} ${guidance.body}`,
+      movement:guidance.movement,
+    }
     if(!hopeDestination)return baseBrief
     return {
       ...baseBrief,
@@ -362,6 +364,32 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
   },[destinationEnvironment,hopeDestination,role,destinationPath,returningToWorld])
   const activeBriefs=booting?bootBriefs:[transitBrief]
   const briefing=activeBriefs[Math.min(briefIndex,activeBriefs.length-1)]||activeBriefs[0]
+  const lyricLines=useMemo(()=>lyricLinesForBrief(briefing),[briefing])
+  const visibleLyric=Math.min(lyricIndex,lyricLines.length-1)
+
+  useEffect(()=>{
+    if(!covered)return
+    setBriefIndex(0)
+    setLyricIndex(0)
+    const timers:number[]=[]
+    if(booting){
+      bootBriefs.forEach((brief,card)=>{
+        const offset=card*LOADING_CARD_HOLD_MS
+        if(card>0)timers.push(window.setTimeout(()=>{
+          setBriefIndex(card)
+          setLyricIndex(0)
+        },offset))
+        for(let line=1;line<lyricLinesForBrief(brief).length;line++){
+          timers.push(window.setTimeout(()=>setLyricIndex(line),offset+line*BOOT_LYRIC_STEP_MS))
+        }
+      })
+    }else{
+      for(let line=1;line<lyricLinesForBrief(transitBrief).length;line++){
+        timers.push(window.setTimeout(()=>setLyricIndex(line),line*TRANSIT_LYRIC_STEP_MS))
+      }
+    }
+    return ()=>timers.forEach(timer=>window.clearTimeout(timer))
+  },[covered,sequenceId,booting,bootBriefs,transitBrief])
   const openingLabel=returningToWorld
     ? `Returning to ${destinationEnvironment.title}`
     : showAgentBriefing
@@ -369,7 +397,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     : showClientBriefing
       ? 'Client training · File Folder'
       : showAdminBriefing
-        ? 'Administration · Operating Guidance'
+        ? 'Administration · Work Introduction'
         : showHopeBriefing
     ? 'Hope · forming the Bridger field'
     : showFlameBriefing
@@ -405,7 +433,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       className={'weave-loader-stable fixed inset-0 z-[9999] flex h-[100svh] min-h-[100svh] items-stretch justify-center overflow-hidden bg-[#02050a] text-white '+(showFlameBriefing?'data-[flame=true]:bg-[#02050a]':'')}
       role="status"
       aria-live="polite"
-      aria-label={booting?'Loading WEAVE environment':'Moving to '+environment.title}
+      aria-label={booting?'Loading WEAVE environment':'Moving to '+destinationEnvironment.title}
       data-environment-readiness-gate={booting?'boot':'transit'}
       data-environment-reveal-shell="continuous"
       data-flame-event-loader={showFlameBriefing?'burning-river':undefined}
@@ -415,6 +443,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       data-weave-loader-role={role}
       data-weave-loader-destination={destinationPath}
       data-weave-loader-direction={returningToWorld?'return':'opening'}
+      data-weave-loader-lyrics="timed-instruction"
     >
       {/* Scalable river artwork is painted once behind legible live text. */}
       <div className="weave-loader-scenery" aria-hidden="true">
@@ -446,28 +475,39 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         <section
           data-weave-loading-training={role}
           data-loading-brief={briefIndex+1}
+          data-loading-lyric={visibleLyric+1}
           className="weave-loading-brief weave-loader-card mx-auto w-full min-h-0 overflow-hidden rounded-2xl border border-amber-200/30 bg-[#041222]/95 p-4 shadow-[0_20px_45px_rgba(0,0,0,.45)] sm:p-6"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-[8px] font-black uppercase tracking-[.2em] text-amber-200">{briefing.eyebrow}</p>
-            <span className="rounded-full border border-white/10 bg-white/[.035] px-2.5 py-1 text-[7px] font-black uppercase tracking-[.16em] text-stone-400">
-              {showAgentBriefing?'STABILITY':showClientBriefing?'CLIENT':showAdminBriefing?'ADMIN':showHopeBriefing?'HOPE':showFlameBriefing?'LIVE · LOOP 1':hopeDestination?'HOPE':destinationEnvironment.district}
+            <span className="shrink-0 rounded-full border border-white/10 bg-white/[.035] px-2.5 py-1 text-[8px] font-bold tabular-nums text-amber-100">
+              {visibleLyric+1} / {lyricLines.length}
             </span>
           </div>
-          <div className="weave-loader-card-body min-h-0 flex-1 overflow-y-auto overscroll-contain">
-            <h2 className="mt-2 text-lg font-black leading-snug text-white sm:text-xl">{briefing.title}</h2>
-            <p className="mt-2 text-sm leading-5 text-slate-100 sm:leading-6">{briefing.body}</p>
+          <div className="weave-loader-card-body min-h-0 flex-1 overflow-y-auto overscroll-contain" data-weave-lyric-reader="true">
+            <div className="weave-loader-lyric-stack flex min-h-full flex-col justify-center gap-2 py-2 text-center">
+              <p className="weave-loader-lyric-before text-xs leading-5 sm:text-sm" aria-hidden="true">
+                {lyricLines[visibleLyric-1]||'\u00a0'}
+              </p>
+              <div className="weave-loader-lyric-focus" aria-live="polite" aria-atomic="true">
+                <p className="weave-loader-lyric-current text-lg font-black leading-snug tracking-tight sm:text-2xl">
+                  {lyricLines[visibleLyric]}
+                </p>
+                <div className="weave-loader-lyric-meter mt-3 h-0.5 w-full overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+                  <div key={`${briefIndex}-${visibleLyric}`} className="weave-loader-lyric-meter-fill h-full rounded-full bg-amber-200" style={{animationDuration:`${booting?BOOT_LYRIC_STEP_MS:TRANSIT_LYRIC_STEP_MS}ms`}}/>
+                </div>
+              </div>
+              <p className="weave-loader-lyric-next text-xs leading-5 sm:text-sm" aria-hidden="true">
+                {lyricLines[visibleLyric+1]||'\u00a0'}
+              </p>
+            </div>
           </div>
-          {briefing.movement&&<div className="weave-loader-card-movement mt-2 flex shrink-0 items-start gap-2 border-t border-white/15 pt-2">
-            <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-200"/>
-            <p className="text-xs font-semibold leading-4 text-slate-200">{briefing.movement}</p>
-          </div>}
         </section>
 
         <div className="weave-loader-progress mx-auto flex w-full max-w-sm items-center gap-2" aria-hidden="true">
-          {activeBriefs.map((_,index)=><span
+          {(booting?activeBriefs:lyricLines).map((_,index)=><span
             key={index}
-            className={'h-1 flex-1 rounded-full transition-all duration-300 '+(index===Math.min(briefIndex,activeBriefs.length-1)?'bg-amber-200/80':'bg-white/10')}
+            className={'h-1 flex-1 rounded-full transition-colors duration-300 '+(index===(booting?Math.min(briefIndex,activeBriefs.length-1):visibleLyric)?'bg-amber-200/80':'bg-white/10')}
           />)}
         </div>
 

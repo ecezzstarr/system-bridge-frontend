@@ -90,9 +90,8 @@
 
 
 
-/* The loading interface must be pixel-stable on real mobile devices.
-   Do not animate, blur, transform or remount the reading panel. Only river
-   paths and the small loading indicator are allowed to move. */
+/* Keep the reading panel fixed and text crisp on phones. Lyric emphasis
+   changes inside it; never blur or transform the panel or its scenery. */
 .weave-loading-brief {
   animation: none !important;
   transition: none !important;
@@ -215,6 +214,44 @@
 
 .weave-loader-card > :first-child {
   flex: 0 0 auto;
+}
+
+/* Karaoke-style instructional lines use a stable reading slot. Nothing
+   scrolls the whole page or overlays the user's next signature/input form. */
+.weave-loader-lyric-stack {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100%;
+}
+.weave-loader-lyric-before,
+.weave-loader-lyric-next {
+  overflow-wrap: anywhere;
+  color: #b6cbdc;
+  opacity: .48;
+}
+.weave-loader-lyric-current {
+  overflow-wrap: anywhere;
+  color: #fff8e9;
+  -webkit-font-smoothing: antialiased;
+}
+.weave-loader-lyric-focus {
+  margin: .15rem 0;
+}
+.weave-loader-lyric-meter-fill {
+  width: 0;
+  animation-name: weave-loader-lyric-beat;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes weave-loader-lyric-beat {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .weave-loader-lyric-meter-fill {
+    animation: none !important;
+    width: 100%;
+  }
 }
 
 .weave-loader-card-body {
