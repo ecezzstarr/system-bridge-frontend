@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Flame } from 'lucide-react'
 import type { FlameDoorFeedStatus } from '@/components/events/flame-event-open-world'
 import { FlameEventPublicPreview, type PublicClientFolder } from '@/components/events/flame-event-public-preview'
-import { FlameEventFoodStore } from '@/components/events/flame-event-food-store'
 import { visiblePoll } from '@/lib/visible-poll'
 
 /** Public visitor landing: the same physical doors, never the private Client folder. */
@@ -44,11 +43,10 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
       <p>Explore real Client-built systems inside Burning River. Food purchases remain linked to the Agent who brought you here.</p>
       <Link href={carrierHref} className="inline-flex min-h-10 shrink-0 items-center gap-2 font-black text-amber-200" data-flame-event-return-carrier><ArrowLeft className="h-4 w-4"/> Order through your Agent</Link>
     </div>}
-    <FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>
-    <FlameEventFoodStore carrierCode={carrierCode}/>
+    <FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">
-      <p>Browse published Client File Folder systems and visit their Customer Doors without becoming an avatar or creating a WEAVE account.</p>
+      <p>Explore the WEAVE Food Store and real published Client File Folder systems inside one 3D world. No avatar, joystick, or account is required to browse.</p>
       <Link href="/market" className="inline-flex items-center gap-1.5 font-semibold text-amber-200">Customer Market directory <ArrowRight className="h-4 w-4"/></Link>
     </div>
   </main>
