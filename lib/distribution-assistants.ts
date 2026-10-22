@@ -1,4 +1,5 @@
 import { getPool, sql } from '@/lib/db'
+import { notifyAdministrationOfCompanyApplication } from '@/lib/employment-application-notifications'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable, getManagerEmployment } from '@/lib/manager-employment'
 import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET, DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
@@ -19,6 +20,11 @@ export async function ensureDistributionAssistantSchema() {
       status VARCHAR(20) NOT NULL DEFAULT 'pending'
         CHECK (status IN ('pending','approved','rejected','ended')),
       application_note TEXT NOT NULL,
+      administration_verification VARCHAR(16) NOT NULL DEFAULT 'pending'
+        CHECK (administration_verification IN ('pending','verified','declined')),
+      administration_verified_by UUID REFERENCES users(id),
+      administration_verified_at TIMESTAMPTZ,
+      administration_verification_note TEXT,
       manager_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
       monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 40000,
       monthly_referral_target INTEGER NOT NULL DEFAULT 500,
@@ -29,6 +35,10 @@ export async function ensureDistributionAssistantSchema() {
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS weave_distribution_assistants_status_idx ON weave_distribution_assistants(status,created_at)`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS administration_verification VARCHAR(16) NOT NULL DEFAULT 'pending'`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS administration_verified_by UUID REFERENCES users(id)`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS administration_verified_at TIMESTAMPTZ`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS administration_verification_note TEXT`
   await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exit_kind VARCHAR(20)`
   await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exit_reason TEXT`
   await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS exited_at TIMESTAMPTZ`
@@ -81,12 +91,21 @@ export async function applyForDistributionAssistant(userId: string, note: string
       VALUES ($1::uuid,'pending',$2)
       ON CONFLICT(user_id) DO UPDATE SET
         status='pending',application_note=EXCLUDED.application_note,
+        administration_verification='pending',administration_verified_by=NULL,administration_verified_at=NULL,administration_verification_note=NULL,
         manager_user_id=NULL,hired_at=NULL,reviewed_at=NULL,exit_kind=NULL,exit_reason=NULL,exited_at=NULL,exited_by=NULL,updated_at=NOW()
       WHERE weave_distribution_assistants.status IN ('rejected','ended')
       RETURNING user_id,status
     `,[userId,applicantNote])
     if (!rows.length) {await client.query('ROLLBACK');return {success:false as const,reason:'already_applied' as const}}
     await client.query('COMMIT')
+    try{
+      const applicant=await pool.query('SELECT name FROM users WHERE id=$1::uuid',[userId])
+      await notifyAdministrationOfCompanyApplication({
+        kind:'distribution_assistant',applicationId:userId,applicantId:userId,
+        positionTitle:'Assistant Distribution Manager',
+        name:String(applicant.rows[0]?.name||'Agent or Bridger'),applicationNote:applicantNote,
+      })
+    }catch(error){console.error('[distribution assistant] Administration notification failed',error)}
     return {success:true as const,application:rows[0]}
   } catch(error) {
     try {await client.query('ROLLBACK')} catch {}
@@ -117,12 +136,16 @@ export async function reviewDistributionAssistant(
     `,[reviewerId])
     if (!reviewers.length) {await client.query('ROLLBACK');return {success:false as const,reason:'not_manager' as const}}
     const {rows:applications}=await client.query(`
-      SELECT a.user_id,a.status,u.role,u.is_active FROM weave_distribution_assistants a
+      SELECT a.user_id,a.status,a.administration_verification,u.role,u.is_active FROM weave_distribution_assistants a
       JOIN users u ON u.id=a.user_id WHERE a.user_id=$1::uuid FOR UPDATE
     `,[applicantId])
     if (!applications.length || applications[0].status!=='pending'
       || !applications[0].is_active || !['agent','bridger'].includes(applications[0].role)) {
       await client.query('ROLLBACK');return {success:false as const,reason:'not_pending' as const}
+    }
+    if (decision==='approve' && applications[0].administration_verification!=='verified'){
+      await client.query('ROLLBACK')
+      return {success:false as const,reason:'administration_verification_required' as const}
     }
     if (decision==='approve') {
       const {rows:managerOverlap}=await client.query(
@@ -170,7 +193,7 @@ export async function getDistributionAssistantState(userId:string) {
   const canReview=await canReviewAssistants(userId)
   const {rows:own}=await getPool().query(`
     SELECT user_id,status,application_note,manager_user_id,
-      monthly_salary_ngn,monthly_referral_target,hired_at,reviewed_at,exit_kind,exit_reason,exited_at,created_at
+      monthly_salary_ngn,monthly_referral_target,administration_verification,administration_verification_note,administration_verified_at,hired_at,reviewed_at,exit_kind,exit_reason,exited_at,created_at
     FROM weave_distribution_assistants WHERE user_id=$1::uuid LIMIT 1
   `,[userId])
   const appointment=own[0]||null
@@ -196,7 +219,7 @@ export async function getDistributionAssistantState(userId:string) {
     const [applicants,employees]=await Promise.all([
       getPool().query(`SELECT a.user_id,a.application_note,a.created_at,u.name,u.role
         FROM weave_distribution_assistants a JOIN users u ON u.id=a.user_id
-        WHERE a.status='pending' AND u.is_active=true ORDER BY a.created_at LIMIT 100`),
+        WHERE a.status='pending' AND a.administration_verification='verified' AND u.is_active=true ORDER BY a.created_at LIMIT 100`),
       getPool().query(`SELECT a.user_id,a.manager_user_id,a.hired_at,u.name,u.role
         FROM weave_distribution_assistants a JOIN users u ON u.id=a.user_id
         WHERE a.status='approved' AND a.manager_user_id=$1::uuid
