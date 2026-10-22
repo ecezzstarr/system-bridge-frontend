@@ -47,7 +47,7 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
     </div>}
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">
-      <p>Explore the living Burning River as a water or fire Presence. No WEAVE account is required. Only Client-approved public systems and Customer Doors appear; private File Folders remain protected.</p>
+      <p>Explore Burning River as one continuous game-style world. No WEAVE account is required. Opened Customer Doors and Client-published systems are accessible; private Client File Folders remain protected.</p>
       <Link href="/market" className="inline-flex items-center gap-1.5 font-semibold text-amber-200">Customer Market directory <ArrowRight className="h-4 w-4"/></Link>
     </div>
   </main>
