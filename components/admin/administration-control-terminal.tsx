@@ -103,7 +103,7 @@ export default function AdminTerminal() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-4 flex justify-end"><Link href="/admin/orders" data-admin-order-inbox-link className="inline-flex min-h-11 items-center rounded-xl border border-amber-200/40 bg-amber-200/10 px-4 py-2 text-xs font-black text-amber-100">Orders & payment alerts →</Link></div>
+      <div className="mb-4 flex flex-wrap justify-end gap-3"><Link href="/admin/employment-applications" data-admin-employment-review-link className="inline-flex min-h-11 items-center rounded-xl border border-cyan-200/40 bg-cyan-200/10 px-4 py-2 text-xs font-black text-cyan-100">Company employment applications →</Link><Link href="/admin/orders" data-admin-order-inbox-link className="inline-flex min-h-11 items-center rounded-xl border border-amber-200/40 bg-amber-200/10 px-4 py-2 text-xs font-black text-amber-100">Orders & payment alerts →</Link></div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
