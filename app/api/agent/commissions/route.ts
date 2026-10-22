@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
         u.id,
         u.name,
         u.username,
-        u.email,
+        u.email
       ORDER BY u.created_at ASC
       LIMIT 3
     `
