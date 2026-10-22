@@ -103,5 +103,16 @@ export default function AdminFoodPreparationManagerPage(){
         </div>)}
       </div>
     </section>
+    <section className="border-t border-white/10 pt-6" data-food-employment-history="private">
+      <h2 className="text-xl font-black">Former staff and application correspondence</h2>
+      <p className="mt-2 text-xs leading-6 text-stone-400">Resignations, dismissals and declined applications remain visible to Administration. Replies stay available after a position ends, without restoring employment or kitchen access.</p>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        {staff.filter(person=>['revoked','rejected'].includes(person.status)).map(person=><article key={person.id} className="border border-white/10 p-4">
+          <p className="text-sm font-black">{person.name||person.username} · {person.position==='manager'?'Manager':'Assistant'}</p>
+          <p className="mt-2 text-xs text-stone-400">{person.status.toUpperCase()} · {person.email}</p>
+          <EmploymentActions position="food_preparation" employeeId={person.agent_id} administration onStatusChange={()=>void load()}/>
+        </article>)}
+      </div>
+    </section>
   </main>
 }
