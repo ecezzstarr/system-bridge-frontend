@@ -13,7 +13,7 @@ export const MANAGER_EMPLOYMENT_LIMIT = 3
 export const MANAGER_MONTHLY_SALARY_NGN = 70_000
 export const MANAGER_PROBATION_TARGET = DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET
 export const MANAGER_PROBATION_MONTHS = 1
-export const MANAGER_DOCUMENT_VERSION = 2
+export const MANAGER_DOCUMENT_VERSION = 3
 export const DISTRIBUTION_MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE_KEY
 // Compatibility alias for existing Manager API paths and tables. The Lifestyle
 // itself is now named Distribution Manager; it remains an overlay on Agent/Bridger.
@@ -24,7 +24,7 @@ export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE across public ch
 // underlying Agent/Bridger monthly position subscription, not a Manager-only fee.
 export const MANAGER_CONTINUANCE_NGN = POSITION_MONTHLY_SUBSCRIPTION_NGN
 
-export type ManagerEmploymentStatus = 'probation' | 'active' | 'ended'
+export type ManagerEmploymentStatus = 'pending_verification' | 'probation' | 'active' | 'rejected' | 'ended'
 
 export async function ensureManagerEmploymentTable() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(20) DEFAULT 'active'`
@@ -50,12 +50,15 @@ export async function ensureManagerEmploymentTable() {
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
       source_role VARCHAR(20) NOT NULL,
-      status VARCHAR(20) NOT NULL DEFAULT 'probation',
+      status VARCHAR(24) NOT NULL DEFAULT 'pending_verification',
       document_version INTEGER NOT NULL DEFAULT 2,
       accepted_name TEXT,
       document_accepted_at TIMESTAMPTZ NOT NULL,
-      probation_started_at TIMESTAMPTZ NOT NULL,
-      probation_ends_at TIMESTAMPTZ NOT NULL,
+      probation_started_at TIMESTAMPTZ,
+      probation_ends_at TIMESTAMPTZ,
+      verified_by UUID REFERENCES users(id),
+      verified_at TIMESTAMPTZ,
+      verification_note TEXT,
       monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 70000,
       probation_target INTEGER NOT NULL DEFAULT 300,
       core_duty TEXT NOT NULL DEFAULT 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.',
@@ -65,6 +68,15 @@ export async function ensureManagerEmploymentTable() {
     )
   `
   await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS accepted_name TEXT`
+  // Legacy appointments retain their original probation dates. Only newly signed
+  // applications have no dates until a verified Administration decision.
+  await sql`ALTER TABLE manager_employment ALTER COLUMN probation_started_at DROP NOT NULL`
+  await sql`ALTER TABLE manager_employment ALTER COLUMN probation_ends_at DROP NOT NULL`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verified_by UUID REFERENCES users(id)`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ`
+  await sql`ALTER TABLE manager_employment ADD COLUMN IF NOT EXISTS verification_note TEXT`
+  await sql`ALTER TABLE manager_employment ALTER COLUMN status TYPE VARCHAR(24)`
+  await sql`ALTER TABLE manager_employment ALTER COLUMN status SET DEFAULT 'pending_verification'`
   await sql`ALTER TABLE manager_employment ALTER COLUMN monthly_salary_ngn SET DEFAULT 70000`
   await sql`ALTER TABLE manager_employment ALTER COLUMN probation_target SET DEFAULT 300`
   await sql`UPDATE manager_employment SET probation_target=300 WHERE probation_target<>300`
@@ -151,7 +163,7 @@ export async function subscribeManagerContinuance(userId:string){
 
 async function refreshManagerStatus(userId: string) {
   await ensureManagerEmploymentTable()
-  await sql`UPDATE manager_employment SET status='active',updated_at=NOW() WHERE user_id=${userId}::uuid AND status='probation' AND probation_ends_at<=NOW()`
+  await sql`UPDATE manager_employment SET status='active',updated_at=NOW() WHERE user_id=${userId}::uuid AND status='probation' AND probation_ends_at IS NOT NULL AND probation_ends_at<=NOW()`
 }
 
 export async function getManagerEmployment(userId: string) {
@@ -173,7 +185,7 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
   if(!acceptedName||acceptedName.trim().toLowerCase()!==String(user.name||'').trim().toLowerCase())return {success:false as const,reason:'signature_mismatch' as const}
 
   const existing=await getManagerEmployment(userId)
-  if(existing&&existing.status!=='ended')return {success:true as const,created:false,employment:existing}
+  if(existing&&!['ended','rejected'].includes(existing.status))return {success:true as const,created:false,employment:existing}
 
   const client=await getPool().connect()
   try{
@@ -185,13 +197,71 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
       const assistant=await client.query("SELECT status FROM weave_distribution_assistants WHERE user_id=$1::uuid AND status='approved' FOR UPDATE",[userId])
       if(assistant.rows.length){await client.query('ROLLBACK');return {success:false as const,reason:'already_assistant' as const}}
     }
-    const capacityResult=await client.query("SELECT COUNT(*)::int AS occupied FROM manager_employment WHERE status IN ('probation','active')")
+    const capacityResult=await client.query("SELECT COUNT(*)::int AS occupied FROM manager_employment WHERE status IN ('pending_verification','probation','active')")
     if(Number(capacityResult.rows[0]?.occupied||0)>=MANAGER_EMPLOYMENT_LIMIT){await client.query('ROLLBACK');return {success:false as const,reason:'positions_full' as const}}
-    const result=await client.query(`INSERT INTO manager_employment (user_id,source_role,status,document_version,accepted_name,document_accepted_at,probation_started_at,probation_ends_at,monthly_salary_ngn,probation_target,core_duty) VALUES ($1::uuid,$2,'probation',$3,$4,NOW(),NOW(),NOW()+INTERVAL '1 month',$5,$6,$7) ON CONFLICT (user_id) DO UPDATE SET source_role=EXCLUDED.source_role,status='probation',document_version=EXCLUDED.document_version,accepted_name=EXCLUDED.accepted_name,document_accepted_at=NOW(),probation_started_at=NOW(),probation_ends_at=NOW()+INTERVAL '1 month',monthly_salary_ngn=EXCLUDED.monthly_salary_ngn,probation_target=EXCLUDED.probation_target,core_duty=EXCLUDED.core_duty,ended_at=NULL,updated_at=NOW() RETURNING *`,[userId,user.role,MANAGER_DOCUMENT_VERSION,acceptedName.trim(),MANAGER_MONTHLY_SALARY_NGN,MANAGER_PROBATION_TARGET,DISTRIBUTION_MANAGER_CORE_DUTY])
+    const result=await client.query(`INSERT INTO manager_employment (user_id,source_role,status,document_version,accepted_name,document_accepted_at,probation_started_at,probation_ends_at,monthly_salary_ngn,probation_target,core_duty) VALUES ($1::uuid,$2,'pending_verification',$3,$4,NOW(),NULL,NULL,$5,$6,$7) ON CONFLICT (user_id) DO UPDATE SET source_role=EXCLUDED.source_role,status='pending_verification',document_version=EXCLUDED.document_version,accepted_name=EXCLUDED.accepted_name,document_accepted_at=NOW(),probation_started_at=NULL,probation_ends_at=NULL,verified_by=NULL,verified_at=NULL,verification_note=NULL,monthly_salary_ngn=EXCLUDED.monthly_salary_ngn,probation_target=EXCLUDED.probation_target,core_duty=EXCLUDED.core_duty,ended_at=NULL,updated_at=NOW() WHERE manager_employment.status IN ('ended','rejected') RETURNING *`,[userId,user.role,MANAGER_DOCUMENT_VERSION,acceptedName.trim(),MANAGER_MONTHLY_SALARY_NGN,MANAGER_PROBATION_TARGET,DISTRIBUTION_MANAGER_CORE_DUTY])
+    if(!result.rows.length){await client.query('ROLLBACK');return {success:false as const,reason:'already_applied' as const}}
     await client.query('COMMIT')
-    try{await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name) VALUES (${userId}::uuid,'manager_probation','Distribution Manager Lifestyle probation has begun',${`Your one-month Distribution Manager probation begins today. Shared team target: ${MANAGER_PROBATION_TARGET} verified Agent/Bridger referrals during your first probation month, then ${DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET} per team employment month after probation. Full monthly salary of ₦${MANAGER_MONTHLY_SALARY_NGN.toLocaleString('en-NG')} is eligible only when your team meets the applicable monthly target; below target, pay is limited to your own qualifying ₦500 referral bonuses. Salary requires month-end payroll approval. Distribution Manager access continues while your underlying Agent or Bridger monthly subscription remains active.`},'WEAVE Administration')`}catch(error){console.error('[manager-employment] notification failed',error)}
+    try{
+      await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
+        VALUES (${userId}::uuid,'manager_application','Distribution Manager verification pending','Your signed application is recorded. Administration must verify it before your one-month probation, salary qualification and team appointment permissions begin.','WEAVE Administration')`
+      await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
+        SELECT id,'manager_verification','Distribution Manager application ready for verification',
+          ${String(user.name||'Agent or Bridger')+' signed a Distribution Manager application. Review it from Distribution Employment Verification.'},'WEAVE Distribution'
+        FROM users WHERE role='admin' AND is_active=true`
+    }catch(error){console.error('[manager-employment] verification notification failed',error)}
     return {success:true as const,created:true,employment:result.rows[0]}
   }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[manager-employment] acceptance failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
+}
+
+// Administration verifies the signed document. Only this transaction starts probation.
+export async function reviewManagerEmployment(adminId:string, applicantId:string, decision:'approve'|'reject', note:string) {
+  await ensureManagerEmploymentTable()
+  if(!['approve','reject'].includes(decision)||note.trim().length>1200)
+    return {success:false as const,reason:'invalid_review' as const}
+  const client=await getPool().connect()
+  try{
+    await client.query('BEGIN')
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('weave_manager_employment_capacity'))")
+    const {rows:admins}=await client.query("SELECT id FROM users WHERE id=$1::uuid AND role='admin' AND is_active=true",[adminId])
+    if(!admins.length){await client.query('ROLLBACK');return {success:false as const,reason:'forbidden' as const}}
+    const {rows}=await client.query(`SELECT me.*,u.name,u.role,u.is_active FROM manager_employment me
+      JOIN users u ON u.id=me.user_id WHERE me.user_id=$1::uuid FOR UPDATE`,[applicantId])
+    const record=rows[0]
+    if(!record||record.status!=='pending_verification'){await client.query('ROLLBACK');return {success:false as const,reason:'not_pending' as const}}
+    if(decision==='approve'&&(!record.is_active||!['agent','bridger'].includes(record.role)||!record.accepted_name)){
+      await client.query('ROLLBACK');return {success:false as const,reason:'not_eligible' as const}
+    }
+    const approved=decision==='approve'
+    const {rows:updated}=await client.query(`UPDATE manager_employment
+      SET status=$2,verified_by=$3::uuid,verified_at=NOW(),verification_note=$4,
+        probation_started_at=CASE WHEN $2='probation' THEN NOW() ELSE NULL END,
+        probation_ends_at=CASE WHEN $2='probation' THEN NOW()+INTERVAL '1 month' ELSE NULL END,
+        updated_at=NOW()
+      WHERE user_id=$1::uuid AND status='pending_verification' RETURNING *`,
+      [applicantId,approved?'probation':'rejected',adminId,note.trim()])
+    await client.query('COMMIT')
+    try{
+      await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
+        VALUES (${applicantId}::uuid,'manager_verification',
+          ${approved?'Distribution Manager verified · probation started':'Distribution Manager application not approved'},
+          ${approved?'Administration has verified your signed Distribution Manager appointment. Your one-month probation starts now; open your team workspace, appoint up to two assistants and work the verified monthly team target.':'Administration has not approved your Distribution Manager application. Review the decision in Lifestyle and submit a new application if appropriate.'},
+          'WEAVE Administration')`
+    }catch(error){console.error('[manager-employment] review notification failed',error)}
+    return {success:true as const,employment:updated[0]}
+  }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[manager-employment] verification failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
+}
+
+export async function listManagerEmploymentForAdmin(adminId:string) {
+  await ensureManagerEmploymentTable()
+  const [admin]=await sql`SELECT id FROM users WHERE id=${adminId}::uuid AND role='admin' AND is_active=true`
+  if(!admin)return null
+  const rows=await sql`SELECT me.user_id,me.source_role,me.status,me.accepted_name,me.document_version,
+      me.document_accepted_at,me.probation_started_at,me.probation_ends_at,
+      me.verified_at,me.verification_note,me.verified_by,u.name,u.email
+    FROM manager_employment me JOIN users u ON u.id=me.user_id
+    ORDER BY CASE WHEN me.status='pending_verification' THEN 0 ELSE 1 END,me.document_accepted_at DESC LIMIT 150`
+  return rows
 }
 
 export async function getManagerEmploymentState(userId: string) {
@@ -204,7 +274,7 @@ export async function getManagerEmploymentState(userId: string) {
     console.error('[manager-employment] referral summary unavailable',error)
     return null
   })
-  const team = employment && employment.status!=='ended'
+  const team = employment && ['probation','active'].includes(employment.status)
     ? await getDistributionTeamMonthlyReferrals(userId).catch(error=>{
         console.error('[manager-employment] team referral report unavailable',error)
         return null
@@ -213,11 +283,11 @@ export async function getManagerEmploymentState(userId: string) {
   const successful=team?.total||0
   const target=team?.target||DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
   const myReferrals=team?.members.find(member=>member.userId===userId)?.referrals||0
-  const compensation=calculateDistributionTeamCompensation({teamReferrals:successful,ownReferrals:myReferrals,teamTarget:target,monthlySalaryNgn:Number(employment?.monthly_salary_ngn||MANAGER_MONTHLY_SALARY_NGN)})
+  const compensation=calculateDistributionTeamCompensation({teamReferrals:successful,ownReferrals:myReferrals,teamTarget:target,monthlySalaryNgn:team?Number(employment?.monthly_salary_ngn||MANAGER_MONTHLY_SALARY_NGN):0})
   return {
     lifestyle:DISTRIBUTION_MANAGER_LIFESTYLE,
-    managerAccess:Boolean(continuance.active&&employment&&employment.status!=='ended'),
-    metricsAvailable:!employment||employment.status==='ended'||Boolean(team),
+    managerAccess:Boolean(continuance.active&&employment&&['probation','active'].includes(employment.status)),
+    metricsAvailable:!employment||!['probation','active'].includes(employment.status)||Boolean(team),
     continuance,
     employment:employment||null,
     target,
