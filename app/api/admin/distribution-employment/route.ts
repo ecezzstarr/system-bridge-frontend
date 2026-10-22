@@ -27,7 +27,10 @@ export async function POST(request:NextRequest){
   const user=await admin(request)
   if(!user)return NextResponse.json({success:false,error:'Administration required'},{status:403})
   const body=await request.json().catch(()=>({}))
-  if(!['approve','reject'].includes(body.action)
+  const validDecision=body.position==='distribution_assistant'
+    ?['verify','decline'].includes(body.action)
+    :['approve','reject'].includes(body.action)
+  if(!validDecision
     ||typeof body.applicantId!=='string'
     || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.applicantId)
     || typeof body.note!=='string'||body.note.trim().length<10||body.note.trim().length>1200)
