@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
-import {createDistributionTeamTask,moveDistributionTeamTask,readDistributionTeamTasks,
+import {createDistributionTeamTask,moveDistributionTeamTask,reassignDistributionTeamTask,readDistributionTeamTasks,
   type TeamTaskStatus} from '@/lib/distribution-team-tasks'
 export const dynamic='force-dynamic'
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
@@ -28,6 +28,11 @@ export async function POST(request:NextRequest){
       if(!UUID.test(String(body.assigneeId||''))||typeof body.title!=='string'||typeof body.instructions!=='string')
         return NextResponse.json({success:false,error:'Select a team member and enter actual assignment details'},{status:400})
       result=await createDistributionTeamTask(user.id,body.assigneeId,body.title,body.instructions)
+    }else if(body.action==='reassign'){
+      if(!UUID.test(String(body.taskId||''))||!UUID.test(String(body.assigneeId||''))
+        ||typeof body.note!=='string')
+        return NextResponse.json({success:false,error:'Choose an active team member and explain the reassignment'},{status:400})
+      result=await reassignDistributionTeamTask(user.id,body.taskId,body.assigneeId,body.note)
     }else if(body.action==='update'){
       if(!UUID.test(String(body.taskId||''))||typeof body.note!=='string'
         ||!['in_progress','submitted','completed'].includes(body.status))
