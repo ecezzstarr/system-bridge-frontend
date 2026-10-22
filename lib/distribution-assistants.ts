@@ -6,7 +6,7 @@ import { calculateDistributionTeamCompensation } from '@/lib/distribution-team-c
 
 export const DISTRIBUTION_ASSISTANT_LIMIT = 6
 export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
-export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 30_000
+export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 40_000
 // Team target is 300 in the Manager's probation month, then 500 per employment month.
 export const DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
 
@@ -20,7 +20,7 @@ export async function ensureDistributionAssistantSchema() {
         CHECK (status IN ('pending','approved','rejected','ended')),
       application_note TEXT NOT NULL,
       manager_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-      monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 30000,
+      monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 40000,
       monthly_referral_target INTEGER NOT NULL DEFAULT 500,
       hired_at TIMESTAMPTZ,
       reviewed_at TIMESTAMPTZ,
@@ -29,6 +29,9 @@ export async function ensureDistributionAssistantSchema() {
     )
   `
   await sql`CREATE INDEX IF NOT EXISTS weave_distribution_assistants_status_idx ON weave_distribution_assistants(status,created_at)`
+  await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_salary_ngn SET DEFAULT 40000`
+  // Update previous ₦30,000 appointments; preserve any separately authorized custom terms.
+  await sql`UPDATE weave_distribution_assistants SET monthly_salary_ngn=40000,updated_at=NOW() WHERE monthly_salary_ngn=30000`
   await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_referral_target SET DEFAULT 500`
   await sql`UPDATE weave_distribution_assistants SET monthly_referral_target=500 WHERE monthly_referral_target<>500`
 }
@@ -147,7 +150,7 @@ export async function reviewDistributionAssistant(
     await client.query('COMMIT')
     try {
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦30,000 and your three-person team has a shared target of 300 verified referrals in its first probation month and 500 in later employment months. Full monthly salary is conditional on meeting the applicable team target. Below that target, you earn only the existing ₦500 bonus per verified referral you personally brought.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
+        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦40,000 and your three-person team has a shared target of 300 verified referrals in its first probation month and 500 in later employment months. Full monthly salary is conditional on meeting the applicable team target. Below that target, you earn only the existing ₦500 bonus per verified referral you personally brought.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
     } catch(error) {console.error('[distribution-assistants] notification failed',error)}
     return {success:true as const,status}
   } catch(error) {
