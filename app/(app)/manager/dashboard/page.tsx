@@ -61,9 +61,9 @@ export default function ManagerDashboardPage(){
     try{
       const response=await fetch('/api/manager/employment',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({action:'accept_document',accepted:true,documentVersion:terms?.documentVersion||3,signature:signature.trim()})})
       const data=await response.json()
-      if(!response.ok)throw new Error(data.error||'Distribution Manager Lifestyle could not begin.')
+      if(!response.ok)throw new Error(data.error||'Distribution Manager application could not be recorded.')
       setState(data.state)
-    }catch(err){setError(err instanceof Error?err.message:'Distribution Manager Lifestyle could not begin.')}
+    }catch(err){setError(err instanceof Error?err.message:'Distribution Manager application could not be recorded.')}
     finally{setBusy(false)}
   }
 
@@ -115,6 +115,8 @@ export default function ManagerDashboardPage(){
           <p><strong className="text-white">Administration verification.</strong> Signing submits your application for review. One-month probation begins only when Administration verifies the appointment, not when you sign.</p>
           <p><strong className="text-white">Core duty.</strong> Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaigns and return distribution records to Administration.</p>
           <p><strong className="text-white">Field organization.</strong> Help Bridgers carry Prospect-to-Client movement and help Agents carry WEAVE distribution through their existing positions.</p>
+          <p><strong className="text-white">Team authority.</strong> After verification, you select up to two Assistant Distribution Managers. Coordinate plans, responsibilities and handoffs directly in the team communication workspace. Distribution Studio and existing WEAVE campaign tools perform the work.</p>
+          <p><strong className="text-white">Administration oversight.</strong> Administration reviews your signed appointment, verified referrals and team reports, but does not join or overwrite internal team messages. Normal institutional compliance and payment approvals remain in force.</p>
           <p><strong className="text-white">Monthly target.</strong> 300 verified Agent or Bridger referrals shared by the Manager and up to two appointed assistants in their first one-month probation period, then 500 each subsequent team employment month. No separate individual quota.</p>
           <p><strong className="text-white">Salary condition.</strong> ₦70,000 full monthly salary when the team reaches 300 verified referrals in the first probation month, or 500 in a later team employment month. Below the applicable target, receive only ₦500 for each qualifying referral you personally made; no full salary. Salary requires month-end payroll verification and referral bonuses are never paid twice.</p>
           <p><strong className="text-white">Lifestyle access.</strong> {agentFree?'Agent position access is free. Distribution Manager remains open while the Agent account is active.':'Distribution Manager follows Bridger Continuance. If Continuance closes, this Lifestyle closes while preserving the underlying Bridger role.'}</p>
