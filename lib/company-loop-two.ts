@@ -9,9 +9,17 @@ export const ONE_NIGERIAN_LOOP = {
   name: 'One Nigerian',
   title: 'Company Loop 2 — Flame Event: One Nigerian',
   startsAt: '2027-01-01T00:00:00+01:00',
-  endsAt: '2027-05-01T23:59:59.999+01:00',
+  endsAt: '2027-01-11T23:59:59.999+01:00',
   flag: ['#008751', '#FFFFFF', '#008751'] as const,
 } as const
+
+/** Loop 3 begins immediately after One Nigerian closes. Its identity and ending are unannounced. */
+export const COMPANY_LOOP_THREE_STARTS_AT = '2027-01-12T00:00:00+01:00' as const
+
+/** Do not infer an ending or theme for Company Loop 3. */
+export function hasCompanyLoopThreeStarted(now:Date = new Date()):boolean {
+  return now.getTime() >= Date.parse(COMPANY_LOOP_THREE_STARTS_AT)
+}
 
 export type OneNigerianRole = 'admin' | 'bridger' | 'agent' | 'client'
 
