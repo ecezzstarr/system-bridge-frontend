@@ -90,8 +90,8 @@ export default function AppLayout({
           })
           const data = await res.json()
           if (data.success && data.subscription?.status === 'suspended') {
-            router.replace('/bridger/subscription')
-            toast.error('Automatic renewal could not complete. Add enough Flame Coin to your wallet to restore Continuance.')
+            router.replace('/weave/lifestyles')
+            toast.error('Bridger Continuance is due. Subscribe from Lifestyle or fund your Flame Coin wallet to reopen it.')
           }
         } catch (e) {
           console.error('Sub check error:', e)
