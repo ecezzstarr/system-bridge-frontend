@@ -98,7 +98,7 @@ export async function postDistributionTeamUpdate(userId:string,kind:Distribution
 export async function readDistributionEmploymentOverview(){
   await ensureDistributionTeamUpdateSchema()
   const pool=getPool()
-  const [teams,updates]=await Promise.all([
+  const [teams,updates,assistants]=await Promise.all([
     pool.query(`SELECT me.user_id AS manager_id,u.name AS manager_name,me.status,
       me.document_accepted_at,me.verified_at,me.probation_started_at,me.probation_ends_at,
       (SELECT COUNT(*)::int FROM weave_distribution_assistants a
@@ -113,7 +113,13 @@ export async function readDistributionEmploymentOverview(){
       u.name AS author_name,m.name AS manager_name
       FROM weave_distribution_team_updates t JOIN users u ON u.id=t.author_user_id
       JOIN users m ON m.id=t.manager_user_id
-      ORDER BY t.created_at DESC,t.id DESC LIMIT 150`)
+      ORDER BY t.created_at DESC,t.id DESC LIMIT 150`),
+    pool.query(`SELECT a.user_id,a.status,a.manager_user_id,a.hired_at,a.reviewed_at,
+      a.exited_at,a.exit_kind,u.name,u.role,m.name AS manager_name
+      FROM weave_distribution_assistants a JOIN users u ON u.id=a.user_id
+      LEFT JOIN users m ON m.id=a.manager_user_id
+      ORDER BY CASE WHEN a.status='approved' THEN 0 WHEN a.status='pending' THEN 1 ELSE 2 END,
+      a.updated_at DESC LIMIT 100`)
   ])
   // Referral figures are independent database measurements, not claims from reports.
   const verified=await Promise.all(teams.rows.map(async row=>{
@@ -125,5 +131,5 @@ export async function readDistributionEmploymentOverview(){
     return {...row,referralMetrics:report?{total:report.total,target:report.target,
       remaining:report.remaining,monthNumber:report.monthNumber,probation:report.probation}:null}
   }))
-  return {teams:verified,updates:updates.rows}
+  return {teams:verified,updates:updates.rows,assistants:assistants.rows}
 }
