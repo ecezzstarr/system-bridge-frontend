@@ -124,7 +124,7 @@ export default function LegionLifestylePage(){
 
     <Link href="/enterprise/legions-notebook" className="mt-5 inline-flex min-h-11 items-center rounded-full border border-amber-300/25 bg-amber-400/[.07] px-4 text-xs font-black text-amber-100">Read Enterprise Legions · The General's Notebook</Link>
 
-    {!data?.eligible&&<div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-400/[.05] p-5 text-sm text-amber-100">{freeAgent?'Your Agent account must be active before you can apply for Legion employment.':'Buy Agentic-Bridger once for 20 Flame Coin to apply for Legion employment.'}</div>}
+    {!data?.eligible&&<div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-400/[.05] p-5 text-sm text-amber-100">{freeAgent?'Your Agent account must be active before you can apply for Legion employment.':'Attain Agentic-Bridger with one payment of 11 Flame Coin to become eligible to apply for Legion employment.'}</div>}
 
     {offers.length>0&&<section className="mt-7 rounded-2xl border border-amber-300/25 bg-amber-200/[.04] p-5">
       <h2 className="text-lg font-bold text-amber-100">Employment offers requiring your agreement</h2>
