@@ -19,7 +19,7 @@ type AccessState = {
   status: string
   expiresAt: string | null
   role: string
-  source: 'role_monthly_subscription' | 'agent_position' | 'administration' | 'unsupported'
+  source: 'role_monthly_subscription' | 'agentic_bridger_one_time' | 'agent_position' | 'administration' | 'unsupported'
   positionScoped: true
 }
 
@@ -73,8 +73,8 @@ export default function WeaveLifestylesPage() {
           return
         }
 
-        if (data.reason === 'account_inactive') {
-          setContinuanceError('This Bridger account is inactive. Contact Administration before renewing.')
+        if (data.reason === 'bridger_unavailable') {
+          setContinuanceError('This Bridger account is inactive. Contact Administration to check your position.')
           return
         }
         throw new Error(data.error || 'Could not purchase Agentic-Bridger.')
@@ -128,7 +128,7 @@ export default function WeaveLifestylesPage() {
         <div className="flex min-h-64 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-yellow-400" /></div>
       ) : (
         <>
-          <section className="mt-6 border-y border-white/10 py-4" data-lifestyle-entitlement={agentFree ? 'agent-position' : 'position-subscription'}>
+          <section className="mt-6 border-y border-white/10 py-4" data-lifestyle-entitlement={agentFree ? 'agent-position' : bridger ? 'agentic-permanent' : 'position-subscription'}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{agentFree ? 'Agent position access' : bridger ? 'Agentic-Bridger · permanent access' : `${roleLabel} monthly subscription`}</p>

@@ -244,226 +244,57 @@ function AdminPanelSection({ user }: { user: any }) {
 function BridgerManagementSection() {
   const { token } = useAuth()
   const [bridgers, setBridgers] = useState<any[]>([])
-  const [summary, setSummary] = useState({ total: 0, continuanceActive: 0, continuanceDue: 0, continuanceSuspended: 0, bridgeAiActive: 0 })
+  const [summary, setSummary] = useState({total:0,agenticOwned:0,agenticNotOwned:0,bridgeAiActive:0})
   const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState<string | null>(null)
   const [error, setError] = useState('')
 
-  const fetchBridgers = async () => {
-    if (!token) {
-      setBridgers([])
-      setError('Administration session is unavailable. Sign in again to operate Bridgers.')
-      setLoading(false)
-      return
-    }
-
+  const load = async () => {
+    if (!token) { setError('Administration session required'); setLoading(false); return }
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/admin/bridger/list', {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
-      })
-      const data = await res.json()
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || data.message || 'Unable to read Bridger operations')
-      }
-      setBridgers(data.bridgers || [])
-      setSummary(data.summary || { total: 0, continuanceActive: 0, continuanceDue: 0, continuanceSuspended: 0, bridgeAiActive: 0 })
-    } catch (requestError) {
-      const message = requestError instanceof Error ? requestError.message : 'Unable to read Bridger operations'
-      console.error('Failed to fetch bridgers:', requestError)
-      setBridgers([])
-      setError(message)
-    } finally {
-      setLoading(false)
-    }
+      const response=await fetch('/api/admin/bridger/list',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
+      const data=await response.json()
+      if(!response.ok||!data.success)throw new Error(data.error||'Bridger register unavailable')
+      setBridgers(data.bridgers||[])
+      setSummary(data.summary||{total:0,agenticOwned:0,agenticNotOwned:0,bridgeAiActive:0})
+    } catch (err) {setError(err instanceof Error?err.message:'Could not load Bridgers')}
+    finally {setLoading(false)}
   }
+  useEffect(()=>{void load()},[token])
 
-  useEffect(() => {
-    void fetchBridgers()
-  }, [token])
-
-  const toggleExempt = async (userId: string, currentExempt: boolean) => {
-    if (!token) {
-      setError('Administration session is unavailable. Sign in again to operate Bridgers.')
-      return
-    }
-
-    setUpdating(userId)
-    setError('')
-    try {
-      const res = await fetch('/api/admin/bridger/exemption', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ userId, isExempt: !currentExempt })
-      })
-      const data = await res.json()
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || data.message || 'Unable to update Bridger Continuance')
-      }
-      toast.success(data.message)
-      await fetchBridgers()
-    } catch (requestError) {
-      const message = requestError instanceof Error ? requestError.message : 'Unable to update Bridger Continuance'
-      setError(message)
-      toast.error(message)
-    } finally {
-      setUpdating(null)
-    }
-  }
-
-  if (loading) return (
-    <div className="flex justify-center py-20">
-      <Loader2 className="h-10 w-10 animate-spin text-purple-500 opacity-20" />
+  return <div className="p-4 text-white" data-admin-agentic-brider-ledger="permanent">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div><h3 className="text-lg font-bold uppercase">Bridger Operations</h3>
+      <p className="mt-2 text-xs text-slate-400">No Bridger membership subscription. Agentic-Bridger opens Lifestyle and employment once for 20 Flame Coin. Echo is free; each new Bridge AI template path costs 8 Flame Coin.</p></div>
+      <button type="button" onClick={()=>void load()} className="rounded-xl border border-white/15 px-3 py-2 text-xs font-bold text-white">Refresh</button>
     </div>
-  )
-
-  return (
-    <div className="p-4 text-white">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-bold uppercase tracking-tight">Bridger Operations</h3>
-          <p className="text-xs text-slate-500 font-medium">Bridgers have no recurring subscription. Agentic-Bridger is an optional permanent Lifestyle purchase.</p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <button
-            type="button"
-            onClick={() => void fetchBridgers()}
-            className="h-9 rounded-lg border border-slate-700 bg-slate-800/50 px-3 text-[9px] font-black uppercase tracking-widest text-slate-300 hover:border-purple-400/40 hover:text-white"
-          >
-            Refresh
-          </button>
-          <div className="text-center px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Fee</p>
-            <p className="text-sm font-bold text-emerald-400">{WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN} Flame Coin · once</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
-        <div className="rounded-xl border border-white/10 bg-black/20 p-3"><p className="text-[9px] font-black uppercase tracking-wider text-slate-500">Current Bridgers</p><p className="mt-1 text-lg font-black text-white">{summary.total}</p></div>
-        <div className="rounded-xl border border-emerald-300/15 bg-emerald-400/[.04] p-3"><p className="text-[9px] font-black uppercase tracking-wider text-emerald-300">Continuance active</p><p className="mt-1 text-lg font-black text-white">{summary.continuanceActive}</p></div>
-        <div className="rounded-xl border border-amber-300/15 bg-amber-400/[.04] p-3"><p className="text-[9px] font-black uppercase tracking-wider text-amber-300">Due</p><p className="mt-1 text-lg font-black text-white">{summary.continuanceDue}</p></div>
-        <div className="rounded-xl border border-red-300/15 bg-red-400/[.04] p-3"><p className="text-[9px] font-black uppercase tracking-wider text-red-300">Suspended</p><p className="mt-1 text-lg font-black text-white">{summary.continuanceSuspended}</p></div>
-        <div className="rounded-xl border border-cyan-300/15 bg-cyan-400/[.04] p-3"><p className="text-[9px] font-black uppercase tracking-wider text-cyan-300">Bridge AI active</p><p className="mt-1 text-lg font-black text-white">{summary.bridgeAiActive}</p></div>
-      </div>
-
-      {error && (
-        <div className="mb-4 flex flex-col gap-3 rounded-xl border border-rose-400/20 bg-rose-500/5 p-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs font-semibold text-rose-200">{error}</p>
-          <button
-            type="button"
-            onClick={() => void fetchBridgers()}
-            className="shrink-0 rounded-lg border border-rose-300/20 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-rose-100"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">
-            <tr>
-              <th className="px-4 py-3">Bridger Identity</th>
-              <th className="px-4 py-3">Continuance</th>
-              <th className="px-4 py-3">Continuance Expiry</th>
-              <th className="px-4 py-3">Bridge AI</th>
-              <th className="px-4 py-3">Bridge AI Expiry</th>
-              <th className="px-4 py-3">Exempt</th>
-              <th className="px-4 py-3 text-right">Control</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/50">
-            {bridgers.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="py-20 text-center text-slate-600 text-sm italic">
-                  {error ? 'Bridger registry is unavailable.' : 'No Bridgers found in the system.'}
-                </td>
-              </tr>
-            ) : (
-              bridgers.map((bridger) => (
-                <tr key={bridger.id} className="hover:bg-slate-800/30 transition-colors group">
-                  <td className="px-4 py-4">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold uppercase">{bridger.name}</span>
-                      <span className="text-[10px] text-slate-500 font-mono tracking-tighter">{bridger.email}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    {bridger.subscription_status === 'active' ? (
-                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                        <CheckCircle2 className="h-2.5 w-2.5" /> Active
-                      </div>
-                    ) : bridger.subscription_status === 'due' ? (
-                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
-                        <AlertTriangle className="h-2.5 w-2.5" /> Due
-                      </div>
-                    ) : (
-                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-red-500/10 text-red-500 border border-red-500/20">
-                        <XCircle className="h-2.5 w-2.5" /> Suspended
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-4 font-mono text-[10px] text-slate-400">
-                    {bridger.subscription_expiry ? new Date(bridger.subscription_expiry).toLocaleDateString() : 'N/A'}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-black uppercase ${
-                      bridger.bridge_ai_status === 'active'
-                        ? 'border-cyan-400/20 bg-cyan-500/10 text-cyan-300'
-                        : bridger.bridge_ai_status === 'expired'
-                          ? 'border-amber-400/20 bg-amber-500/10 text-amber-300'
-                          : 'border-slate-700 bg-slate-800/60 text-slate-500'
-                    }`}>
-                      {bridger.bridge_ai_status || 'inactive'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 font-mono text-[10px] text-slate-400">
-                    {bridger.bridge_ai_expiry ? new Date(bridger.bridge_ai_expiry).toLocaleDateString() : 'N/A'}
-                  </td>
-                  <td className="px-4 py-4">
-                    {bridger.is_subscription_exempt ? (
-                      <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Exempt</span>
-                    ) : (
-                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Required</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => void toggleExempt(bridger.id, Boolean(bridger.is_subscription_exempt))}
-                      disabled={updating === bridger.id}
-                      className={`h-8 text-[9px] font-black uppercase tracking-widest ${
-                        bridger.is_subscription_exempt 
-                          ? 'border-slate-700 text-slate-400 hover:bg-slate-700' 
-                          : 'border-purple-500/30 text-purple-400 bg-purple-500/5 hover:bg-purple-500/10'
-                      }`}
-                    >
-                      {updating === bridger.id ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : bridger.is_subscription_exempt ? (
-                        'Remove Exemption'
-                      ) : (
-                        <>
-                          <ShieldCheck className="mr-1 h-3 w-3" /> Grant Exemption
-                        </>
-                      )}
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+    <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+      {[
+        ['Bridgers',summary.total],
+        ['Agentic-Bridger owned',summary.agenticOwned],
+        ['Not purchased',summary.agenticNotOwned],
+        ['Bridge AI paths',summary.bridgeAiActive],
+      ].map(([label,value])=><div key={label} className="rounded-xl border border-white/10 bg-black/20 p-4"><p className="text-[10px] text-slate-400">{label}</p><p className="mt-1 text-lg font-black text-white">{value}</p></div>)}
     </div>
-  )
+    {error&&<p role="alert" className="mb-4 text-sm text-rose-300">{error}</p>}
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-xs">
+        <thead className="border-b border-white/15 text-slate-400"><tr><th className="px-3 py-3">Bridger</th><th className="px-3 py-3">Agentic-Bridger</th><th className="px-3 py-3">Purchased</th><th className="px-3 py-3">Bridge AI</th><th className="px-3 py-3">Echo</th></tr></thead>
+        <tbody>
+          {loading?<tr><td colSpan={5} className="px-3 py-8 text-center">Loading Bridger register…</td></tr>:
+          bridgers.length===0?<tr><td colSpan={5} className="px-3 py-8 text-center">No Bridgers found.</td></tr>:
+          bridgers.map(bridger=><tr key={bridger.id} className="border-b border-white/[.06]">
+            <td className="px-3 py-3"><strong>{bridger.name}</strong><p className="mt-1 text-[10px] text-slate-400">{bridger.email}</p></td>
+            <td className="px-3 py-3">{bridger.agentic_bridger_owned?'Owned permanently':'Not purchased'}</td>
+            <td className="px-3 py-3">{bridger.agentic_bridger_paid_at?new Date(bridger.agentic_bridger_paid_at).toLocaleDateString():'—'}</td>
+            <td className="px-3 py-3">{bridger.bridge_ai_status==='templates_opened'?'Paths opened':'8 Flame Coin per path'}</td>
+            <td className="px-3 py-3">Free</td>
+          </tr>)}
+        </tbody>
+      </table>
+    </div>
+  </div>
 }
 
 function UserManagementSection() {

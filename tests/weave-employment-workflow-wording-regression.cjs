@@ -42,6 +42,8 @@ assert.ok(adminDistribution.includes('Decline application'),'Administration does
 assert.ok(catalog.includes('Administration reviews applications and verifies appointments'),'Food employment verification belongs to Administration')
 assert.ok(catalog.includes('Administration does not assign food preparation tasks'),'Kitchen work assignment belongs to approved Stability Lead')
 assert.ok(assistantEngine.includes('exit_kind,exit_reason,exited_at'),'Former Distribution assistants retain exit state for readable status')
+assert.ok(assistant.includes("['rejected','ended'].includes(appointment.status)")&&assistant.includes('Apply again for a vacant assistant position'),'Former employees can apply anew without erasing the earlier appointment')
+assert.ok(assistantEngine.includes("weave_distribution_assistants.status IN ('rejected','ended')"),'A new assistant application remains subject to normal vacancy and appointment checks')
 assert.ok(employmentAPI.includes("action==='resign'||action==='fire'"),'Business API separates resignation and dismissal')
 assert.ok(!publicLifestyle.includes('₦40,000 monthly salary')&&!publicLifestyle.includes('₦30,000 monthly salary'),'General Lifestyle remains salary-free')
 console.log('WEAVE employment workflow wording regression checks passed')

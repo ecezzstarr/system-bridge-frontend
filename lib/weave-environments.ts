@@ -393,10 +393,10 @@ const prefix: Array<[string, WeaveEnvironmentCopy]> = [
   }],
   ['/bridger/subscription', {
     key: 'bridger-continuance',
-    title: 'Bridger Continuance',
+    title: 'Bridger Participation',
     district: 'Bridge',
     purpose: 'The environment that keeps Bridger participation active and connected to company movement.',
-    movement: 'Check standing → renew when due → continue',
+    movement: 'See free Bridger work → open Bridge AI templates → buy optional Agentic-Bridger',
     layer: 'system',
   }],
   ['/agent/presence', {
