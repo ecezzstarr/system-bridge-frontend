@@ -91,7 +91,7 @@ export default function FoodPreparationManagerPage(){
     <header className="mt-6 border-b border-white/10 pb-6">
       <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[.2em] text-amber-200"><ChefHat className="h-4 w-4"/> Agent Employment · Food Operations</p>
       <h1 className="mt-2 text-3xl font-black md:text-5xl">FOOD PREPARATION TEAM</h1>
-      <p className="mt-4 text-sm text-emerald-200">One Stability Lead Manager heads the Agent food department and assigns verified orders to five Assistant Food Preparation Managers.</p>
+      <p className="mt-4 text-sm text-emerald-200">One Stability Lead Manager heads the Agent food department and assigns verified orders to two Assistant Food Preparation Managers.</p>
       {data?.appointment && data.salaryNgn !== null && <p data-applicant-salary="submitted-application" className="mt-4 text-2xl font-black text-emerald-200">{money(data.salaryNgn)} <span className="text-sm font-normal text-stone-300">monthly employment terms · {data.appointment.position==='manager'?'Manager':'Assistant Manager'}</span></p>}
       <p className="mt-3 max-w-4xl text-sm leading-6 text-stone-300">
         Coordinate and support preparation, packaging and dispatch of Agility, Electrolyte, Ember and Daisy Pastries for verified customer and Agent supply orders.
