@@ -12,6 +12,7 @@ import { WeaveLogo } from '@/components/weave-logo'
 import { DepartmentEntryTicketGate } from '@/components/department-entry-ticket-gate'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
+import { FLAME_EVENT_INTRO } from '@/lib/weave-event'
 
 type Step = 'role' | 'dept-gate' | 'notice' | 'terms' | 'guide' | 'details'
 const BRIDGER_DRAFT_KEY = 'weave:staff:registration-draft:v1'
@@ -208,7 +209,7 @@ function RegisterContent() {
               <h3 className="font-bold text-white mb-2 uppercase tracking-wide">Agent</h3>
               <p className="text-xs text-slate-400 mb-3">{WEAVE_SYSTEM_MAP.positions.agent.description}</p>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-md p-2">
-                <p className="text-[10px] text-blue-300 font-black uppercase">Fixed Compensation</p>
+                <p className="text-[10px] text-blue-300 font-black uppercase">Product sales + qualifying commissions</p>
               </div>
             </button>
             <button
@@ -219,10 +220,17 @@ function RegisterContent() {
               <h3 className="font-bold text-white mb-2 uppercase tracking-wide">Bridger</h3>
               <p className="text-xs text-slate-400 mb-3">{WEAVE_SYSTEM_MAP.positions.bridger.description}</p>
               <div className="bg-green-500/10 border border-green-500/30 rounded-md p-2">
-                <p className="text-[10px] text-green-300 font-black uppercase">Performance Share</p>
+                <p className="text-[10px] text-green-300 font-black uppercase">Verified Client crossing share</p>
               </div>
             </button>
           </div>
+          <section data-department-event-explanation="true" className="space-y-2 rounded-lg border border-amber-300/25 bg-amber-300/[.06] p-4 text-left">
+            <p className="text-xs font-black uppercase tracking-wide text-amber-200">{FLAME_EVENT_INTRO.name}</p>
+            <p className="text-xs font-bold text-slate-200">{FLAME_EVENT_INTRO.period} · Same event for both departments</p>
+            <p className="text-xs leading-5 text-slate-300">{FLAME_EVENT_INTRO.summary}</p>
+            <p className="text-xs leading-5 text-slate-400">{FLAME_EVENT_INTRO.next}</p>
+            <p className="text-[11px] font-semibold text-amber-100">Agent or Bridger: same 3 Flame Coin entry ticket, different daily work. Entry alone does not create earnings.</p>
+          </section>
           <div className="text-center text-sm pt-2">
             <span className="text-slate-500">{WEAVE_WRITING.positionAccess.existing} </span>
             <Link href="/login" className="text-cyan-400 hover:text-cyan-300 font-bold uppercase text-xs tracking-widest">{WEAVE_WRITING.positionAccess.signIn}</Link>
@@ -309,7 +317,7 @@ function RegisterContent() {
             className="h-64 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-lg p-4 text-xs text-slate-400 space-y-3"
           >
             <p><strong className="text-slate-300">1. Platform Nature.</strong> WEAVE is a paid operational platform. Access to Arena, Casino, the Enterprise Systems Exchange, and related paid functions may require an active balance, subscription, contract, or company approval.</p>
-            <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents represent WEAVE directly and are compensated on a fixed schedule set by Administration.' : 'Bridgers operate as independent partners connecting clients to WEAVE and earn a share of client activity, subject to an active monthly subscription.'}</p>
+            <p><strong className="text-slate-300">2. Role Responsibilities.</strong> {formData.role === 'agent' ? 'Agents work in Stability through WEAVE product and service sales, stock distribution and customer orders. Qualifying commission earnings and any separately approved salaried appointments are recorded under their own terms.' : 'Bridgers work in Hope through digital Prospect outreach and introduce File Folders to interested people worldwide. Earnings depend on verified Client crossings, and Bridger Continuance has separate ongoing requirements.'}</p>
             <p><strong className="text-slate-300">3. Financial Conduct.</strong> All deposits, withdrawals, and client fund handling must go through WEAVE's official channels. Off-platform arrangements with clients are not covered or protected by WEAVE.</p>
             <p><strong className="text-slate-300">4. Continuance & Access.</strong> Certain roles may be suspended if recurring dues are not paid within the grace period communicated to you.</p>
             <p><strong className="text-slate-300">5. Conduct.</strong> Misrepresentation of WEAVE, fraudulent client dealings, or circumventing platform fees may result in immediate suspension.</p>
