@@ -44,6 +44,29 @@ export function ClientBridgeAiSupport() {
     void load()
   },[])
 
+  // Keep the Client and assigned Bridger in the same live assistance history.
+  useEffect(()=>{
+    let mounted=true
+    const refresh=async()=>{
+      if(document.hidden||sending)return
+      const token=getClientToken()
+      if(!token)return
+      try{
+        const response=await fetch('/api/client/bridge-ai',{
+          headers:{Authorization:'Bearer '+token},
+          cache:'no-store',
+        })
+        if(!response.ok)return
+        const body=await response.json()
+        if(mounted&&Array.isArray(body.messages))setMessages(body.messages)
+      }catch{
+        // Existing messages stay visible during temporary connection failures.
+      }
+    }
+    const interval=window.setInterval(()=>void refresh(),15000)
+    return ()=>{mounted=false;window.clearInterval(interval)}
+  },[sending])
+
   useEffect(()=>{ endRef.current?.scrollIntoView({behavior:'smooth'}) },[messages,sending])
 
   const send=async()=>{
