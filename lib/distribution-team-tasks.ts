@@ -1,4 +1,5 @@
-import {getPool} from '@/lib/db'
+import {getPool,sql} from '@/lib/db'
+import {getActiveLegionEmployment} from '@/lib/legion-employment'
 import {getLifestyleAccess} from '@/lib/weave-lifestyle'
 import {ensureDistributionTeamUpdateSchema,resolveDistributionTeamMember} from '@/lib/distribution-team-updates'
 
@@ -41,7 +42,7 @@ export async function readDistributionTeamTasks(userId:string){
   await ensureDistributionTeamTasksSchema()
   const member=await resolveDistributionTeamMember(userId)
   const access=await getLifestyleAccess(userId)
-  if(!member||!access.active)return null
+  if(!member||!access.active||(await getActiveLegionEmployment(sql,userId)).active)return null
   const pool=getPool()
   const [tasks,history]=await Promise.all([
     pool.query(`SELECT t.id,t.manager_user_id,t.assigned_user_id,t.title,t.instructions,t.status,
@@ -65,7 +66,7 @@ export async function createDistributionTeamTask(userId:string,targetId:string,r
   await ensureDistributionTeamTasksSchema()
   const member=await resolveDistributionTeamMember(userId)
   const access=await getLifestyleAccess(userId)
-  if(member?.member_position!=='manager'||!access.active)
+  if(member?.member_position!=='manager'||!access.active||(await getActiveLegionEmployment(sql,userId)).active)
     return {success:false as const,reason:'not_manager' as const}
   const client=await getPool().connect()
   try{
@@ -104,7 +105,7 @@ export async function moveDistributionTeamTask(
   await ensureDistributionTeamTasksSchema()
   const member=await resolveDistributionTeamMember(userId)
   const access=await getLifestyleAccess(userId)
-  if(!member||!access.active)return {success:false as const,reason:'not_employee' as const}
+  if(!member||!access.active||(await getActiveLegionEmployment(sql,userId)).active)return {success:false as const,reason:'not_employee' as const}
   const client=await getPool().connect()
   try{
     await client.query('BEGIN')
@@ -152,7 +153,7 @@ export async function reassignDistributionTeamTask(
   await ensureDistributionTeamTasksSchema()
   const member=await resolveDistributionTeamMember(userId)
   const access=await getLifestyleAccess(userId)
-  if(member?.member_position!=='manager'||!access.active)
+  if(member?.member_position!=='manager'||!access.active||(await getActiveLegionEmployment(sql,userId)).active)
     return {success:false as const,reason:'not_manager' as const}
   const client=await getPool().connect()
   let previousAssignee=''
