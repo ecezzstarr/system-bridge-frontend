@@ -20,7 +20,7 @@ assert.ok(lifestyle.includes('eligible = subscription.role')&&lifestyle.includes
 assert.ok(carrierAccess.includes("gate: 'agentic_bridger_one_time'")&&carrierAccess.includes('permanent Agentic-Bridger purchase'),'Carrier gates only Agentic ownership')
 assert.ok(carrierAccess.includes("ensureAceAccount(user.id, user.name || user.username || 'Ace', user.role)"),'Carrier keeps role-specific Ace identity')
 assert.ok(carrierApi.includes('lifestyleInsideAce')&&carrierApi.includes('eligible_sales_and_activities'),'Carrier keeps Agentic earnings classification')
-assert.ok(page.includes('data-lifestyle-home="agentic-bridger"')&&page.includes('one-time 20 Flame Coin purchase'),'Agentic page describes one-time price')
+assert.ok(page.includes('data-lifestyle-home="agentic-bridger"')&&page.includes('paying 11 Flame Coin once'),'Agentic page describes one-time price')
 assert.ok(page.includes('/bridger/bridge-ai')&&page.includes('/arena')&&page.includes('/weave/carrier'),'Purchased Agentic retains its existing tools')
 assert.ok(bridgerCommission.includes('agentic.active ? agentic.earningRate : WORLD_RULES.BRIDGER_YIELD_RATE'),'Ordinary Bridger earnings remain available without purchase')
 assert.ok(referralCommission.includes('agentic.active ? agentic.earningRate : BRIDGER_REFERRAL_RATE'),'Referrals retain ordinary rates without Agentic')
