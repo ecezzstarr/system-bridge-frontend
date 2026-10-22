@@ -1,5 +1,6 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
+import { notifyAdministrationOfCompanyApplication } from '@/lib/employment-application-notifications'
 import { ensureWeaveEmploymentLifecycleSchema } from '@/lib/weave-employment-lifecycle'
 import { getPool } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
@@ -141,6 +142,15 @@ export async function POST(request:NextRequest){
         return NextResponse.json({success:false,error:'You already have an active food preparation application.'},{status:409})
       }
       await client.query('COMMIT')
+      try {
+        await notifyAdministrationOfCompanyApplication({
+          kind:'food_preparation',applicationId:String(rows[0].id),applicantId:user.id,
+          positionTitle:position==='manager'?'Food Preparation Manager':'Assistant Food Preparation Manager',
+          name:String(user.name||'Agent applicant'),applicationNote:note,
+        })
+      } catch (notificationError) {
+        console.error('[food preparation] Administration application alert failed',notificationError)
+      }
       return NextResponse.json({
         success:true,appointment:rows[0],
         message:`Application sent to Administration. The ₦${foodPreparationSalary(position).toLocaleString('en-NG')} monthly salary applies only after approval and is not an automatic wallet payment.`,
