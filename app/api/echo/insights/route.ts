@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import {
-  getEchoIdentity,
+  createEchoIdentity,
+  getEchoLiveSignals,
   retrieveEchoContext,
   storeEchoInsight,
   listEchoInsights,
   hasActiveContinuance,
 } from '@/lib/echo-db'
 import { runEchoAnalysis } from '@/lib/echo-model'
+import { buildImmediateEchoResult } from '@/lib/echo-immediate'
 
 // GET: fetch stored insights for the dashboard
 export async function GET(request: NextRequest) {
@@ -16,11 +18,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const identity = await getEchoIdentity(authUser.id)
-  if (!identity) return NextResponse.json({ error: 'No Echo Identity' }, { status: 404 })
-
-  const insights = await listEchoInsights(identity.id)
-  return NextResponse.json({ insights })
+  const identity = await createEchoIdentity(authUser.id)
+  const [insights,signals]=await Promise.all([
+    listEchoInsights(identity.id),getEchoLiveSignals(authUser.id,identity.id),
+  ])
+  const immediate=buildImmediateEchoResult(authUser.role,signals)
+  return NextResponse.json({success:true,insights,immediate},{headers:{'Cache-Control':'private, no-store'}})
 }
 
 // POST: trigger on-demand analysis. Same code path works from a scheduled
@@ -31,8 +34,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const identity = await getEchoIdentity(authUser.id)
-  if (!identity) return NextResponse.json({ error: 'No Echo Identity' }, { status: 404 })
+  const identity = await createEchoIdentity(authUser.id)
 
   const subscribed = await hasActiveContinuance(authUser.id)
   if (!subscribed) {
@@ -42,7 +44,13 @@ export async function POST(request: NextRequest) {
   // Bounded retrieval, not a full-history dump — see retrieveEchoContext.
   const context = await retrieveEchoContext(identity.id, { recentDays: 30, maxItems: 300 })
   if (context.length === 0) {
-    return NextResponse.json({ insights: [] })
+    const signals=await getEchoLiveSignals(authUser.id,identity.id)
+    return NextResponse.json({
+      success:true,insights:await listEchoInsights(identity.id),
+      immediate:buildImmediateEchoResult(authUser.role,signals),
+      message:'Immediate guidance is available. Deeper AI findings require recorded activity, not months of waiting.',
+      analysisStatus:'no_recorded_activity',
+    },{headers:{'Cache-Control':'private, no-store'}})
   }
 
   const results = await runEchoAnalysis(context as any)
@@ -63,5 +71,12 @@ export async function POST(request: NextRequest) {
     stored.push(row)
   }
 
-  return NextResponse.json({ insights: stored }, { status: 201 })
+  const signals=await getEchoLiveSignals(authUser.id,identity.id)
+  return NextResponse.json({
+    success:true,
+    insights:await listEchoInsights(identity.id),
+    immediate:buildImmediateEchoResult(authUser.role,signals),
+    analysisStatus:stored.length?'completed':'no_new_findings',
+    message:stored.length?'New recorded insights are ready.':'No new AI findings from the available activities. Immediate guidance remains ready.',
+  },{status:200,headers:{'Cache-Control':'private, no-store'}})
 }
