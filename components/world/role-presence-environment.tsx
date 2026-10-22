@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowRight, CircleUserRound, Globe2, Route, Share2, Sparkles } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { getRoleDistricts } from '@/lib/weave-role-districts'
+import { FLAME_EVENT_INTRO } from '@/lib/weave-event'
 import { placeThroughSystemSwitch } from '@/lib/system-switch-role-place'
 import { useEnvironmentOrganizer } from '@/components/world/environment-organizer-provider'
 
@@ -21,15 +22,15 @@ const COPY:Record<PresenceRole,{
   agent:{
     eyebrow:'Agent Presence',
     title:'Know the position before movement.',
-    detail:'The Agent position stays intentionally small. Presence gives orientation; Agent Work opens Agility, Electrolyte and Daisy Pastries; Referral Movement carries qualified people into WEAVE; Commissions records the Agent share from qualifying Prospect purchases by attached Bridgers and the Agent share when those Bridgers convert Clients through verified File Folder purchases.',
-    loop:'Presence → Agent Work + Referral Movement + Bridger movement → File Folder crossing → Commission record',
+    detail:'Stability is WEAVE’s product and distribution work in Nigeria. Through Agent Work, sell Agility, Electrolyte, Ember and Daisy Pastries to customers, order stock and supply shops through the Distribution Route or Carrier Door. Attached Bridger activity can also generate separately verified Prospect and File Folder commissions.',
+    loop:'Agent Work → customer order or outlet supply → verified delivery + sale; attached Bridger activity → qualifying commission',
     worldHref:'/agent/dashboard',
   },
   bridger:{
     eyebrow:'Hope · Bridger Presence',
     title:'You are Hope working in the field.',
-    detail:'WEAVE builds systems, services and operating environments across the world. Hope is the Bridger Department working through unverified Prospect possibilities until real human response appears. The Bridger recognizes that response, carries the relationship toward Client crossing, and helps what WEAVE has built reach Client ownership and practical use. When that guided crossing completes through a verified File Folder purchase, the Bridger share is recorded without changing Hope into a sales-only function.',
-    loop:'WEAVE builds → Hope farms Prospect possibilities → response → relationship → Client → ownership + use',
+    detail:'Hope introduces WEAVE digital File Folders and cloud-based operating systems to interested people worldwide, including Europe. Use Prospect Market, Email Outreach, Number Bay and Bridge AI to attempt real human contact. Prospect candidates are unverified until a response; guide interested people to informed, verified Client ownership and continue supporting them.',
+    loop:'Prospect candidate → respectful digital contact → real response → File Folder explanation → verified Client crossing',
     worldHref:'/bridger/dashboard',
   },
   client:{
@@ -95,6 +96,12 @@ export function RolePresenceEnvironment({role}:{role:PresenceRole}){
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-400">{copy.detail}</p>
         <p className="mt-4 text-[10px] font-black uppercase tracking-[.12em] text-emerald-200">{copy.loop}</p>
       </header>
+
+      <section className="mx-auto mt-8 max-w-3xl border-y border-amber-300/20 bg-amber-300/[.035] px-4 py-4 text-center" data-company-loop-training="true">
+        <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-200">{FLAME_EVENT_INTRO.name} · {FLAME_EVENT_INTRO.period}</p>
+        <p className="mt-2 text-xs leading-6 text-slate-300">{FLAME_EVENT_INTRO.summary}</p>
+        <p className="mt-2 text-xs leading-6 text-slate-400">{FLAME_EVENT_INTRO.next}</p>
+      </section>
 
       <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-3">
         <Link href={copy.worldHref} data-presence-output={'Open '+role+' WEAVE world'} className="inline-flex items-center gap-2 border-y border-sky-200/15 px-4 py-3 text-[10px] font-black uppercase tracking-[.12em] text-sky-100 transition hover:border-sky-200/35">
