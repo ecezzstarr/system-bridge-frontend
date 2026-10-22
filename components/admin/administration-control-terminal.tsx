@@ -266,7 +266,7 @@ function BridgerManagementSection() {
   return <div className="p-4 text-white" data-admin-agentic-brider-ledger="permanent">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div><h3 className="text-lg font-bold uppercase">Bridger Operations</h3>
-      <p className="mt-2 text-xs text-slate-400">No Bridger membership subscription. Agentic-Bridger opens Lifestyle and employment once for 20 Flame Coin. Echo is free; each new Bridge AI template path costs 8 Flame Coin.</p></div>
+      <p className="mt-2 text-xs text-slate-400">No Bridger membership subscription. Agentic-Bridger opens Lifestyle and employment once for 11 Flame Coin. Echo is free; each new Bridge AI template path costs 8 Flame Coin.</p></div>
       <button type="button" onClick={()=>void load()} className="rounded-xl border border-white/15 px-3 py-2 text-xs font-bold text-white">Refresh</button>
     </div>
     <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
