@@ -33,7 +33,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     route: '/weave/lifestyles/agentic-bridger',
     parent: ACE_LIFESTYLE,
     roles: ['bridger'],
-    summary: 'Agentic-Bridger is attained once for 20 Flame Coin. This permanent Bridger specialization enables Lifestyle access and eligibility for activities such as Ace, Distribution Manager applications and Legion opportunities. Employment still requires its own approval.',
+    summary: 'Agentic-Bridger is attained once for 11 Flame Coin. This permanent Bridger specialization enables Lifestyle access and eligibility for activities such as Ace, Distribution Manager applications and Legion opportunities. Employment still requires its own approval.',
     environments: [
       { label: 'Prospect Market', href: '/weave/market/prospects', purpose: 'Work unverified Prospect candidates toward real interaction.' },
       { label: 'Email Outreach', href: '/bridger/email-outreach', purpose: 'Carry Prospect movement through email.' },
