@@ -79,7 +79,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       purpose:'Hope: introduce WEAVE digital File Folders and cloud-based systems to people worldwide through human-first outreach. Prospect candidates remain unverified until real response; guide willing people toward Client ownership and use.',
       accent:'#22d3ee',
       places:[
-        {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Read how a subscribed Bridger can join a Client enterprise as an exclusive Legion.'},
+        {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Read how a Bridger with permanent Agentic-Bridger access can join a Client enterprise as an exclusive Legion.'},
         {label:'Crossing Notebook',href:'/bridger/crossing-notebook',detail:'Read how Hope moves from Prospect possibility → real response → relationship → File Folder → Client ownership and use.',daily:true},
         {label:'Prospect Market',href:'/weave/market/prospects',detail:'Claim or purchase unverified Prospect farming tools and work them for real human interaction.',daily:true},
         {label:'Email Outreach',href:'/bridger/email-outreach',detail:'Acquire lower-cost unverified email Prospect candidates, attempt contact and inspect the response movement.',daily:true},
@@ -172,7 +172,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Agent Channel Requests',href:'/admin/agent-channels',detail:'Review channel applications and assign and manage Agents through the existing system workflow.',daily:true},
         {label:'Access Recovery Desk',href:'/admin/access-recovery',detail:'Verify a user and issue one-time password recovery access without exposing an old password.',daily:true},
         {label:'Departmental Registration',href:'/admin/departmental-registration',detail:'Issue departmental codes and company placement.'},
-        {label:'Subscriptions',href:'/admin/subscriptions',detail:'Review subscription and Continuance standing.'},
+        {label:'Subscriptions',href:'/admin/subscriptions',detail:'Review historical Client and retired Bridger payment records.'},
         {label:'Settings',href:'/settings',detail:'Manage Administration identity, password and the current signed-in session.'},
       ],
     },
