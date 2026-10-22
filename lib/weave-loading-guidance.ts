@@ -131,6 +131,51 @@ export function trainingBriefsForRole(role: WeaveLoadingRole): readonly WeaveLoa
   return PLATFORM_TRAINING
 }
 
+// Guidance explains the live forms and who decides the result; it never
+// treats an application or activity as verified before the system records it.
+const EMPLOYMENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveOperatingGuide}>=[
+  {match:path=>path.startsWith('/manager/dashboard'),guide:{
+    title:'Distribution Manager · sign and begin',
+    explanation:'Three lead Distribution Manager positions are available through active Agent or Bridger identities. Acceptance records the job terms and starts a one-month probation.',
+    steps:[
+      'Read the employment conditions and confirm the underlying Agent position or Bridger Continuance is active.',
+      'Accept the terms and type your registered full account name into the signature field. Submit and check the recorded employment status.',
+      'An appointed lead may review assistant applications. The lead and up to two assistants share 300 verified referrals in probation, then 500 per later month; salary is subject to verification.',
+    ],
+    nextHref:'/manager/dashboard',nextLabel:'View Distribution Manager employment',
+  }},
+  {match:path=>path.startsWith('/weave/lifestyles/distribution-assistant'),guide:{
+    title:'Assistant Distribution Manager · apply',
+    explanation:'Six assistant positions exist, with two positions under each lead Distribution Manager. Applying does not create an appointment.',
+    steps:[
+      'Read the published employment conditions and check your Agent or Bridger position is active.',
+      'Enter your real distribution experience and plan, then submit the application.',
+      'A lead Distribution Manager reviews applications. Return here to see whether an appointment is actually approved.',
+    ],
+    nextHref:'/weave/lifestyles/distribution-assistant',nextLabel:'View assistant employment',
+  }},
+]
+const FOOD_PREPARATION_GUIDE:WeaveOperatingGuide={
+  title:'Food Preparation · Agent employment',
+  explanation:'One lead Food Preparation Manager works with two Assistant Managers. Only Agents apply; Administration decides appointments, and work follows verified paid orders.',
+  steps:[
+    'Select an available position and enter your actual food preparation, handling and delivery experience.',
+    'Submit the application and check Administration approval before treating the position as active.',
+    'The approved lead assigns preparation work to approved assistants. Record actual packaging and dispatch handoffs.',
+  ],
+  nextHref:'/weave/lifestyles/food-preparation',nextLabel:'View food preparation',
+}
+const LIFESTYLE_HUB_GUIDE:WeaveOperatingGuide={
+  title:'WEAVE Lifestyle · choose a working place',
+  explanation:'Lifestyles connect extra employment applications and operating environments to your existing Agent or Bridger identity.',
+  steps:[
+    'Review the visible requirements and select the relevant Lifestyle entrance.',
+    'Use that working page to apply, operate or inspect real information.',
+    'Confirm an application, approval, receipt or completion from its recorded status.',
+  ],
+  nextHref:'/weave/lifestyles',nextLabel:'Open Lifestyle',
+}
+
 const DEFAULT_AGENT_GUIDE: WeaveOperatingGuide = {
   title:'Start with one working system',
   explanation:'WEAVE Agents support Stability through product commerce, service work and verified customer operations.',
@@ -144,6 +189,9 @@ const DEFAULT_AGENT_GUIDE: WeaveOperatingGuide = {
 }
 
 const AGENT_GUIDES: ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveOperatingGuide}> = [
+  ...EMPLOYMENT_GUIDES,
+  {match:path=>path.startsWith('/weave/lifestyles/food-preparation'),guide:FOOD_PREPARATION_GUIDE},
+  {match:path=>path==='/weave/lifestyles',guide:LIFESTYLE_HUB_GUIDE},
   {match:path=>path.startsWith('/agent/creative')||path.startsWith('/video-ad-studio'),guide:{
     title:'Create and deliver business media',
     explanation:'Use Creative Studio for images or the Video Studio for paid video work. Agents control what they quote outside customers.',
@@ -193,6 +241,8 @@ export function agentOperatingGuideForPath(path:string):WeaveOperatingGuide {
 }
 
 const BRIDGER_GUIDES:ReadonlyArray<{match:(pathname:string)=>boolean;guide:WeaveOperatingGuide}>=[
+  ...EMPLOYMENT_GUIDES,
+  {match:path=>path==='/weave/lifestyles',guide:LIFESTYLE_HUB_GUIDE},
   {match:path=>/bridge-ai|bridge-radiance/.test(path),guide:{
     title:'Help a Prospect understand the crossing',
     explanation:'Bridge AI introduces WEAVE to a real Prospect. An invitation becomes a Client relationship only through an informed choice and the authorized verification flow.',

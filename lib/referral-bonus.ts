@@ -227,9 +227,11 @@ export async function settlePendingReferralBonuses(referrerId: string) {
   }
 }
 
-export async function getReferralCoreState(userId: string) {
+export async function getReferralCoreState(userId: string, options: {settlePending?: boolean} = {}) {
   await ensureReferralBonusTable()
-  await settlePendingReferralBonuses(userId)
+  // Reporting-only callers must not wait for a live FX quote or wallet ledger
+  // settlement before showing employment or signature confirmation.
+  if (options.settlePending !== false) await settlePendingReferralBonuses(userId)
 
   const [user] = await sql`
     SELECT id,role,referral_code

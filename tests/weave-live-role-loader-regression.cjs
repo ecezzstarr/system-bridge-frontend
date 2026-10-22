@@ -36,11 +36,9 @@ assert.ok(transit.includes('data-client-loader-open-world-return'),'Client loade
 assert.ok(!transit.includes("Today's company updates")&&!transit.includes('Select Destination'),'Static image menus and fabricated live updates are absent')
 assert.ok(transit.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'The readiness gate is preserved')
 
-const guide=read('components/agent/agent-smart-guide.tsx')
 const layout=read('app/(app)/layout.tsx')
-assert.ok(guide.includes('export function BridgerSmartGuide'),'Bridger receives the same persistent guide mechanism')
-assert.ok(guide.includes('roleOperatingGuideForPath(role,pathname)'),'Guide changes when the destination changes')
-assert.ok(layout.includes('<BridgerSmartGuide userId={user.id}/>')&&layout.includes('!legionEmployment?.active'),'Exclusive Legions do not receive ordinary Bridger work guidance')
+assert.ok(layout.includes('<BridgerSmartGuide userId={user.id}/>'),'Bridger retains contextual guidance as a closed bubble')
+assert.ok(read('components/agent/agent-smart-guide.tsx').includes("setOpen(false)"),'Guide can dismiss on navigation and outside interaction')
 const client=read('app/client/system-switch/page.tsx')
 assert.ok(client.includes('data-client-return-weave-open-world')&&client.includes('href="/client/dashboard"'),'Client can return from an active File Folder')
 assert.ok(client.includes('data-client-loading-with-open-world-return'),'Client can also return while a File Folder is still loading')
