@@ -18,7 +18,7 @@ export const ENTERPRISE_LEGION_RULES = [
   'Real Client product sales fund expenses, agreed Legion compensation, operations and expansion; there is no guaranteed surplus.',
   'Lord or Lady is the Client title; General means enterprise leadership, never military authority.',
   'Only an approved enterprise with active Legion Quarters recruits Legions.',
-  'Agents qualify through their active position; Bridgers require the one-time 20 Flame Coin Agentic-Bridger purchase.',
+  'Agents qualify through their active position; Bridgers require the one-time 11 Flame Coin Agentic-Bridger purchase.',
   'Applications and invitations are voluntary and do not guarantee employment.',
   'Active Legions serve one Client enterprise exclusively inside WEAVE.',
   'Employment and earning terms must be clear; do not promise automatic sales or income.',
