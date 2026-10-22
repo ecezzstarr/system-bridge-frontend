@@ -34,8 +34,8 @@ export default function WeaveLifestylesPage() {
   const [access, setAccess] = useState<AccessState | null>(null)
   const [carrier, setCarrier] = useState<CarrierState | null>(null)
   const [loading, setLoading] = useState(true)
-  const [continuanceRenewing, setContinuanceRenewing] = useState(false)
-  const [continuanceError, setContinuanceError] = useState<string | null>(null)
+  const [agenticAttainmentPending, setAgenticAttainmentPending] = useState(false)
+  const [agenticAttainmentError, setAgenticAttainmentError] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -57,10 +57,10 @@ export default function WeaveLifestylesPage() {
     }
   }
 
-  const renewContinuance = async () => {
-    if (access?.role !== 'bridger' || access.active || continuanceRenewing) return
-    setContinuanceRenewing(true)
-    setContinuanceError(null)
+  const attainAgenticBridger = async () => {
+    if (access?.role !== 'bridger' || access.active || agenticAttainmentPending) return
+    setAgenticAttainmentPending(true)
+    setAgenticAttainmentError(null)
     try {
       const response = await fetch('/api/weave/lifestyles/agentic/purchase', {
         method: 'POST',
@@ -69,12 +69,12 @@ export default function WeaveLifestylesPage() {
       const data = await response.json().catch(() => ({}))
       if (!response.ok || !data.success) {
         if (data.reason === 'insufficient_balance') {
-          setContinuanceError(`Your wallet has ${Number(data.availableFlameCoin || 0).toLocaleString()} Flame Coin. Attaining Agentic-Bridger requires a one-time payment of ${Number(data.requiredFlameCoin || 20).toLocaleString()} Flame Coin. Fund your wallet and try again.`)
+          setAgenticAttainmentError(`Your wallet has ${Number(data.availableFlameCoin || 0).toLocaleString()} Flame Coin. Attaining Agentic-Bridger requires a one-time payment of ${Number(data.requiredFlameCoin || 20).toLocaleString()} Flame Coin. Fund your wallet and try again.`)
           return
         }
 
         if (data.reason === 'bridger_unavailable') {
-          setContinuanceError('This Bridger account is inactive. Contact Administration to check your position.')
+          setAgenticAttainmentError('This Bridger account is inactive. Contact Administration to check your position.')
           return
         }
         throw new Error(data.error || 'Could not complete Agentic-Bridger attainment.')
@@ -82,9 +82,9 @@ export default function WeaveLifestylesPage() {
       await load()
       toast.success(data.alreadyOwned ? 'Agentic-Bridger already attained.' : 'Agentic-Bridger attained permanently. Lifestyle access is now enabled.')
     } catch (error: any) {
-      setContinuanceError(error.message || 'Could not purchase Agentic-Bridger.')
+      setAgenticAttainmentError(error.message || 'Could not complete Agentic-Bridger attainment.')
     } finally {
-      setContinuanceRenewing(false)
+      setAgenticAttainmentPending(false)
     }
   }
 
@@ -155,18 +155,18 @@ export default function WeaveLifestylesPage() {
                   <p className="mt-2 text-xs text-slate-400">Bridge AI costs 8 Flame Coin per new template. Echo is free. Agentic-Bridger is attained once for 20 Flame Coin; there is no recurring Bridger or Agentic-Bridger subscription.</p>
                   
                 </div>
-                <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase ${access.active ? 'border-emerald-300/25 text-emerald-200' : 'border-amber-300/25 text-amber-200'}`}>{access.active ? 'Owned permanently' : 'Not purchased'}</span>
+                <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase ${access.active ? 'border-emerald-300/25 text-emerald-200' : 'border-amber-300/25 text-amber-200'}`}>{access.active ? 'Attained permanently' : 'Not attained'}</span>
               </div>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 {!access.active && (
-                  <button type="button" onClick={() => void renewContinuance()} disabled={continuanceRenewing} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-950 disabled:cursor-wait disabled:opacity-50">
-                    {continuanceRenewing ? 'Attaining Agentic-Bridger…' : 'Attain Agentic-Bridger · 20 Flame Coin once'}
+                  <button type="button" onClick={() => void attainAgenticBridger()} disabled={agenticAttainmentPending} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-950 disabled:cursor-wait disabled:opacity-50">
+                    {agenticAttainmentPending ? 'Attaining Agentic-Bridger…' : 'Attain Agentic-Bridger · 20 Flame Coin once'}
                   </button>
                 )}
                 <Link href="/wallet/deposit-withdraw" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-xs font-black text-white">Fund Flame Coin Wallet</Link>
                 <Link href="/weave/lifestyles/agentic-bridger" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 px-4 py-3 text-xs font-black text-emerald-100">Agentic-Bridger · Permanent attainment</Link>
               </div>
-              {continuanceError && <p role="alert" className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/[.08] px-4 py-3 text-xs leading-5 text-rose-200">{continuanceError}</p>}
+              {agenticAttainmentError && <p role="alert" className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/[.08] px-4 py-3 text-xs leading-5 text-rose-200">{agenticAttainmentError}</p>}
             </section>
           )}
 
