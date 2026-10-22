@@ -120,6 +120,12 @@ export default function FoodPreparationManagerPage(){
         {data?.eligible && (!data.appointment||['rejected','revoked'].includes(data.appointment.status))&&
         <form onSubmit={apply} className="mt-4 border border-amber-300/20 p-5">
           <h3 className="text-sm font-black">Apply for one available position</h3>
+          <section data-food-preparation-employment-document="before-application" className="mt-4 space-y-2 border border-amber-300/25 bg-amber-300/[.035] p-4">
+            <p className="text-xs font-black uppercase tracking-wide text-amber-200">Position employment terms · Read before applying</p>
+            <p className="text-sm text-stone-200">Selected: {position==='manager'?'Food Preparation Manager':'Assistant Food Preparation Manager'}</p>
+            <p className="text-2xl font-black text-white">{position==='manager'?'₦70,000':'₦40,000'} <span className="text-xs font-normal text-stone-300">monthly salary term</span></p>
+            <p className="text-xs leading-5 text-stone-300">Lead duties: coordinate verified food orders and allocate preparation to approved assistants. Assistant duties: prepare, package, and dispatch only assigned orders. Employment requires Administration approval. This stated monthly term is not an automatic wallet credit; actual payroll processing and verification remain separate.</p>
+          </section>
           <div className="mt-3 grid gap-2">
             {(['manager','assistant'] as const).map(role=><label key={role} className="flex items-center gap-3 border border-white/10 p-3 text-xs">
               <input type="radio" name="foodPosition" value={role} checked={position===role}
