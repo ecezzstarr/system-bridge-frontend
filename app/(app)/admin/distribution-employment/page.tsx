@@ -36,7 +36,7 @@ export default function DistributionEmploymentAdministration(){
         body:JSON.stringify({applicantId:id,action,note})})
       const result=await res.json()
       if(!res.ok)throw new Error(result.error||'Verification failed')
-      setMessage(action==='approve'?'Verified. The one-month probation has started.':'Application rejected. No probation has started.')
+      setMessage(action==='approve'?'Verified. The one-month probation has started.':'Application declined. No probation has started.')
       await load()
     }catch(err){setError(err instanceof Error?err.message:'Unable to review')}
     finally{setWorking(null)}
@@ -67,8 +67,8 @@ export default function DistributionEmploymentAdministration(){
           placeholder="Verify identity, eligibility, signed terms and company position availability."
           className="mt-2 w-full border border-white/20 bg-slate-950 p-3 text-sm"/>
         <div className="mt-3 flex flex-wrap gap-3">
-          <Button disabled={working!==null||(notes[a.user_id]||'').trim().length<10} onClick={()=>review(a.user_id,'approve')} className="bg-emerald-700 text-white">Verify · Start probation</Button>
-          <Button disabled={working!==null||(notes[a.user_id]||'').trim().length<10} onClick={()=>review(a.user_id,'reject')} variant="outline">Reject application</Button>
+          <Button disabled={working!==null||(notes[a.user_id]||'').trim().length<10} onClick={()=>review(a.user_id,'approve')} className="bg-emerald-700 text-white">Approve appointment · Start probation</Button>
+          <Button disabled={working!==null||(notes[a.user_id]||'').trim().length<10} onClick={()=>review(a.user_id,'reject')} variant="outline">Decline application</Button>
         </div>
         <EmploymentActions position="distribution_manager" employeeId={a.user_id} administration onStatusChange={()=>void load()}/>
       </article>)}
