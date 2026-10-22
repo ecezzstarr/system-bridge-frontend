@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowRight, CalendarDays, Music2, Orbit, Radio, Sparkles } from 'lucide-react'
 import {
   FLAME_EVENT,
+  FLAME_EVENT_INTRO,
   type EventRole,
   type WeaveEvent,
   getEventCountdown,
@@ -162,6 +163,12 @@ export default function PositionEventWorld({
             </>
           )}
         </div>
+
+        <section className="border-b border-orange-200/15 bg-black/35 px-4 py-4 sm:px-7" data-flame-event-business-loop="true">
+          <p className="text-[9px] font-black uppercase tracking-[.18em] text-orange-200">A business loop, not another department</p>
+          <p className="mt-2 max-w-4xl text-xs leading-6 text-stone-200">{FLAME_EVENT_INTRO.summary}</p>
+          <p className="mt-1 max-w-4xl text-xs leading-6 text-stone-400">{FLAME_EVENT_INTRO.next}</p>
+        </section>
 
         <div
           className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-200/15 bg-[#071c34]/75 px-4 py-4 sm:px-7"
