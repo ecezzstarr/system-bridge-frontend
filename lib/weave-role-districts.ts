@@ -35,8 +35,8 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
     {
       key:'position',
       name:'Agent Work',
-      subtitle:'AGILITY · ELECTROLYTE · COMMISSION · DAISY PASTRIES',
-      purpose:'Order and move Agility and Electrolyte, handle Daisy Pastries requests, and review qualifying commission returns.',
+      subtitle:'AGILITY · ELECTROLYTE · EMBER · DAISY PASTRIES · DISTRIBUTION',
+      purpose:'Stability: sell WEAVE products in Nigeria, stock and supply shops, fulfill customer orders, handle Daisy Pastries requests and track qualifying commissions from attached Bridgers.',
       accent:'#34d399',
       places:[
         {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Read the voluntary Client enterprise employment flow before applying to be a Legion.',daily:true},
@@ -51,7 +51,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       key:'bridge',
       name:'Connection & Event',
       subtitle:'BRIDGER + LOOP ONE',
-      purpose:'Speak directly with attached Bridgers and enter the shared Company Loop 1 Flame Event.',
+      purpose:'Coordinate with attached Bridgers and participate in Burning River, the shared October 1–December 31, 2026 company business loop rather than a separate department.',
       accent:'#f59e0b',
       places:[
         {label:'Direct Communication',href:'/communications',detail:'Message Bridgers attached to your Agent position directly.',daily:true},
@@ -76,7 +76,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       key:'bridge',
       name:'Prospect & Crossing',
       subtitle:'PROSPECT → RESPONSE → CLIENT → OWNERSHIP',
-      purpose:'Work unverified Prospect tools through human-first outreach. When a real response appears, recognize the relationship and carry willing participation toward Client crossing so WEAVE systems can become owned and used.',
+      purpose:'Hope: introduce WEAVE digital File Folders and cloud-based systems to people worldwide through human-first outreach. Prospect candidates remain unverified until real response; guide willing people toward Client ownership and use.',
       accent:'#22d3ee',
       places:[
         {label:'Enterprise Legions Notebook',href:'/enterprise/legions-notebook',detail:'Read how a subscribed Bridger can join a Client enterprise as an exclusive Legion.'},
@@ -92,7 +92,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       key:'participation',
       name:'Continuity',
       subtitle:'HOPE · VALUE + PEOPLE + LOOP ONE',
-      purpose:'Keep Hope connected after outreach: value, direct communication, Presences and the current company event support the same movement from possibility into Client use.',
+      purpose:'Continue digital Prospect and Client relationships, communication and verified earnings during Burning River, the October–December 2026 business loop shared across every WEAVE department.',
       accent:'#a78bfa',
       places:[
         {label:'Deposit & Withdrawal',href:'/wallet/deposit-withdraw',detail:'Deposit Flame Coin value or request withdrawal.',daily:true},
