@@ -36,6 +36,10 @@ export const ONE_NIGERIAN_SCROLL_PASSAGES = [
     role: 'admin',
     text: 'Administration: with that saying a new frontier opened before us who are Hope in being.\nA bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
   },
+  {
+    role: 'client',
+    text: 'Dream Lovely, Lord/Lady ownership department: Weave had promised us presence, the kind like the burning love of God for his creations, the kind that makes a man sings in love after a hard day at work. Our dreams are laid at the file folder where we can be conscious even while sleeping and dreaming lovely cause we have Weave of presence and our legions rotating around our success.',
+  },
 ] as const satisfies ReadonlyArray<{role:OneNigerianRole; text:string}>
 
 export const ONE_NIGERIAN_SCROLL_TEXT = ONE_NIGERIAN_SCROLL_PASSAGES.map(passage => passage.text).join('\n\n')
@@ -45,7 +49,7 @@ export const ONE_NIGERIAN_DEPARTMENT_WORDS: Record<OneNigerianRole, {department:
   admin: {department:'Administration · A Cat',words:ONE_NIGERIAN_SCROLL_PASSAGES.filter(item => item.role==='admin').map(item=>item.text).join('\n\n')},
   bridger: {department:'Hope · Bridgers Department',words:ONE_NIGERIAN_SCROLL_PASSAGES[1].text},
   agent: {department:'Stability · Agents Department',words:ONE_NIGERIAN_SCROLL_PASSAGES[2].text},
-  client: {department:'Lord / Lady · Clients Department',words:''},
+  client: {department:'Dream Lovely, Lord/Lady ownership department',words:ONE_NIGERIAN_SCROLL_PASSAGES[4].text},
 }
 
 export function isOneNigerianLoopActive(now:Date = new Date()):boolean {
