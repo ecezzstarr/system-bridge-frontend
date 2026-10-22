@@ -1,6 +1,7 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { ensureAgenticBridgerPurchaseTable } from '@/lib/agentic-bridger-purchase'
 import {
   getGuidanceStaffDepartments,isGuidanceDepartment,GUIDANCE_DEPARTMENT_NAMES,
 } from '@/lib/weave-guidance-departments'
@@ -102,6 +103,7 @@ export async function POST(request:NextRequest){
   try{
     const allowed=await getGuidanceStaffDepartments(user)
     if(!allowed.includes(department))return NextResponse.json({success:false,error:'Your department appointment is not active.'},{status:403})
+    await ensureAgenticBridgerPurchaseTable()
     const client=await getPool().connect()
     try{
       await client.query('BEGIN')
@@ -111,8 +113,9 @@ export async function POST(request:NextRequest){
         SELECT a.id FROM weave_guidance_staff_applications a JOIN users u ON u.id=a.user_id
         WHERE a.user_id=$1::uuid AND a.department=$2 AND a.source_role=$3 AND a.status='approved'
           AND u.role=$3 AND COALESCE(u.is_active,true)=true
-          AND (u.role='agent' OR u.is_subscription_exempt=true OR
-            (u.subscription_status='active' AND (u.subscription_expiry IS NULL OR u.subscription_expiry>NOW())))
+          AND (u.role='agent' OR EXISTS (
+            SELECT 1 FROM bridger_agentic_purchases ap WHERE ap.user_id=u.id
+          ))
         FOR SHARE OF a,u
       `,[user.id,department,user.role])
       if(!appointment.rows.length){await client.query('ROLLBACK');return NextResponse.json({success:false,error:'Your department appointment is no longer active.'},{status:403})}
