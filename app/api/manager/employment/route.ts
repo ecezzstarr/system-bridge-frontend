@@ -68,7 +68,6 @@ export async function POST(request: NextRequest) {
     const result=await subscribeManagerContinuance(user.id)
     if(!result.success){
       if(result.reason==='insufficient_balance') return NextResponse.json({...result,error:'You need 20 Flame Coin to buy permanent Agentic-Bridger access.'},{status:402})
-      if(result.reason==='rate_unavailable') return NextResponse.json({success:false,error:'Agentic-Bridger payment temporarily unavailable.'},{status:503})
       return NextResponse.json({success:false,error:'Agentic-Bridger could not be purchased.'},{status:500})
     }
     return NextResponse.json({success:true,result,state:await getManagerEmploymentState(user.id)})
