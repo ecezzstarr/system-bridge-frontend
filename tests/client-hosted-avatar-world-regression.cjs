@@ -40,7 +40,7 @@ assert.ok(presence.includes("new URL(request.headers.get('origin')!).host"),'Mov
 assert.ok(live.includes("'/api/world/presence'")&&live.includes("4500"),'Avatar movement heartbeats use real server API')
 assert.ok(scene.includes('data-system-switch-plaza="visitor-and-staff-avatar"')&&scene.includes('room')===false || scene.includes("useWorldPresence('system-switch',presence)"),'Visitors and staff occupy shared plaza')
 assert.ok(scene.includes("useWorldPresence('door:'+slug,presence"),'Hosted Client world has real shared avatar presence')
-assert.ok(scene.includes('<FileFolderPresenceAvatar presence={presence}/>')&&scene.includes('<SharedWorldAvatars others={others}/>'),'Actual avatar and remote avatars are visible in 3D')
+assert.ok(scene.includes('<FileFolderPresenceAvatar presence={presence}/>')&&scene.includes('<SharedWorldAvatars others={others}/>')&&common.includes('Billboard'),'Client movement persists and remote players have neutral game-world nameplates')
 assert.ok(scene.includes("world.shopUrl")&&scene.includes('Continue to Client checkout'),'Visitors can purchase actual Client offers')
 assert.ok(cloud.includes("useWorldPresence('client-cloud',presence")&&cloud.includes('otherLords={otherLords}'),'Lords and Ladies have live cloud multiplayer in their real construction scene')
 assert.ok(common.includes('others.slice')&&!common.includes('Math.random'),'No artificial simulated multiplayer figures')
