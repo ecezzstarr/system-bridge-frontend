@@ -11,23 +11,12 @@ export type WeaveLoadingBrief = {
   movement: string
 }
 /**
- * A loader lyric is an existing lesson broken into short reading beats.
- * Preserve every word in the original message: never invent a new offer,
- * payment status, construction completion, or user-specific achievement.
+ * Three complete reading passages, never five rapidly disappearing fragments.
+ * Titles, practical explanation and next movement retain their actual meaning.
+ * The reader decides when to advance to the next lesson.
  */
 export function lyricLinesForBrief(brief:WeaveLoadingBrief):readonly string[] {
-  const words=brief.body.trim().split(/\s+/).filter(Boolean)
-  const bodyLines:string[]=[]
-  const bodyLineCount=Math.min(3,words.length)
-  let offset=0
-  for(let line=0;line<bodyLineCount;line++){
-    const remaining=words.length-offset
-    const available=bodyLineCount-line
-    const size=Math.ceil(remaining/available)
-    bodyLines.push(words.slice(offset,offset+size).join(' '))
-    offset+=size
-  }
-  return [brief.title.trim(),...bodyLines,brief.movement.trim()].filter(Boolean)
+  return [brief.title.trim(),brief.body.trim(),brief.movement.trim()]
 }
 
 export type WeaveOperatingGuide = {
@@ -105,19 +94,19 @@ const CLIENT_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'CLIENT TRAINING · 1 OF 3',
     title:'Your File Folder is an operating world.',
-    body:'A Client owns the business and chooses the systems to build. The File Folder connects previews, construction, activation and actual use in one place.',
+    body:'Your File Folder belongs to you as a Client. Select the systems your business needs and inspect their real functions before construction. The File Folder is an operating environment, not a picture or a promise of instant income. WEAVE connects your choices, builds and working systems in one place.',
     movement:'Recognize → preview → build → activate → operate',
   },
   {
     eyebrow:'CLIENT TRAINING · 2 OF 3',
     title:'A build uses real time.',
-    body:'Preview the system before buying materials or starting construction. Check the indicated build time and live status; a started build should not be described as finished.',
+    body:'Before starting a build, preview its result, materials, requirements and stated construction time. Once a build starts, watch the real status of the site rather than treating a preview as finished work. Only the confirmed completion and activation of a system make it ready for actual operation.',
     movement:'Inspect requirements → start build → monitor real status',
   },
   {
     eyebrow:'CLIENT TRAINING · 3 OF 3',
     title:'Operate what you have built.',
-    body:'Once a system is actually active, configure its Customer Door or work functions. Verified orders, payments and customers are distinct from a preview or plan.',
+    body:'When your system becomes active, set up the functions you actually own and choose what customers may see through your Customer Door. Staff and visitors discover only published offerings. Real orders, payments and delivery require their own recorded confirmation. Return to the Weave Open World whenever you need to recognize your next working place.',
     movement:'Activate → publish authorized door → operate',
   },
 ]
@@ -126,19 +115,19 @@ const ADMIN_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'ADMINISTRATION · 1 OF 3',
     title:'WEAVE operates through verified roles.',
-    body:'Administration organizes work across Agents, Bridgers and Clients. Review the current position, permissions and pending evidence before taking action.',
+    body:'Administration coordinates the operating institution without replacing the work of its departments. Agents carry Stability, Bridgers carry Hope and Clients own their enterprises. Use the authorized workshops to review positions, applications, permissions and pending work; keep decisions tied to actual company records.',
     movement:'Identify → review → authorize',
   },
   {
     eyebrow:'ADMINISTRATION · 2 OF 3',
     title:'Separate a request from proof.',
-    body:'A pending payment, submitted order or claimed production is not automatically confirmed. Use the authorized verification, approval and receipt systems.',
+    body:'A request for approval is not approval. Forensics verifies the relevant order, receipt, payment or delivery evidence before a status changes. Administration can approve, reject or request correction through its designated systems. Preserve the resulting record so the worker, department and Client can see what actually happened.',
     movement:'Request → evidence → Forensics → confirmation',
   },
   {
     eyebrow:'ADMINISTRATION · 3 OF 3',
     title:'Keep work continuous.',
-    body:'Check exceptions, outstanding orders and support requests. Changes to charges, roles or content must come from the correct workshop and be recorded.',
+    body:'Review real notifications, outstanding orders, employed teams and support cases. Keep each department responsible for its authorized activities while Administration observes outcomes and resolves exceptions. Changes to prices, permissions, employment terms or public content must be made from the correct workshop and reflected in the recorded state.',
     movement:'Recognize exception → resolve → record → continue',
   },
 ]
