@@ -8,13 +8,15 @@ import {EmploymentActions} from '@/components/employment/employment-actions'
 type Applicant={user_id:string;name:string;email:string;source_role:string;status:string;accepted_name:string;document_version:number;document_accepted_at:string;verified_at:string|null;verification_note:string|null;probation_started_at:string|null;probation_ends_at:string|null}
 type TeamRow={manager_id:string;manager_name:string;status:string;assistant_count:number;last_update_at:string|null;probation_started_at:string|null;probation_ends_at:string|null;referralMetrics:{total:number;target:number;remaining:number;monthNumber:number;probation:boolean}|null}
 type WorkUpdate={id:string;manager_user_id:string;manager_name:string;author_name:string;kind:string;content:string;created_at:string}
-type AssistantRecord={user_id:string;name:string;role:string;status:string;manager_user_id:string|null;manager_name:string|null;hired_at:string|null;exited_at:string|null;exit_kind:string|null}
+type AssistantRecord={user_id:string;name:string;role:string;status:string;manager_user_id:string|null;manager_name:string|null;hired_at:string|null;exited_at:string|null;exit_kind:string|null;application_note:string;created_at:string;administration_verification:'pending'|'verified'|'declined';administration_verification_note:string|null}
 type ReviewState={appointments:Applicant[];overview:{teams:TeamRow[];updates:WorkUpdate[];assistants:AssistantRecord[]};readOnlyReports:boolean}
 export default function DistributionEmploymentAdministration(){
   const {user,token,isInitialized}=useAuth()
   const [state,setState]=useState<ReviewState|null>(null)
   const [notes,setNotes]=useState<Record<string,string>>({})
   const [working,setWorking]=useState<string|null>(null)
+  const [assistantNotes,setAssistantNotes]=useState<Record<string,string>>({})
+  const selectedApplication=typeof window!=='undefined'?new URLSearchParams(window.location.search).get('applicationId'):null
   const [error,setError]=useState('')
   const [message,setMessage]=useState('')
   const load=useCallback(async()=>{
@@ -41,6 +43,22 @@ export default function DistributionEmploymentAdministration(){
     }catch(err){setError(err instanceof Error?err.message:'Unable to review')}
     finally{setWorking(null)}
   }
+  const reviewAssistant=async(id:string,action:'verify'|'decline')=>{
+    const note=(assistantNotes[id]||'').trim()
+    if(note.length<10){setError('Record at least 10 characters explaining Administration eligibility review.');return}
+    if(!token)return
+    setWorking(id);setError('');setMessage('')
+    try{
+      const res=await fetch('/api/admin/distribution-employment',{method:'POST',
+        headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({position:'distribution_assistant',applicantId:id,action,note})})
+      const data=await res.json()
+      if(!res.ok)throw new Error(data.error||'Unable to decide application')
+      setMessage(action==='verify'?'Eligibility verified. The application is now available for a lead Manager to consider.':'Application declined by Administration.')
+      await load()
+    }catch(err){setError(err instanceof Error?err.message:'Application decision failed')}
+    finally{setWorking(null)}
+  }
   if(!isInitialized)return <main className="p-6 text-slate-300">Opening Distribution verification…</main>
   if(user?.role!=='admin')return <main className="p-6 text-rose-200">Administration authorization required.</main>
   const pending=state?.appointments.filter(a=>a.status==='pending_verification')||[]
@@ -57,7 +75,7 @@ export default function DistributionEmploymentAdministration(){
     <section className="space-y-3">
       <h2 className="text-xl font-black">Awaiting Administration verification · {pending.length}</h2>
       {!pending.length&&<p className="border border-white/10 p-4 text-sm text-slate-400">No pending signed applications.</p>}
-      {pending.map(a=><article key={a.user_id} className="border border-amber-300/20 bg-amber-300/[.035] p-5">
+      {pending.map(a=><article id={`application-${a.user_id}`} key={a.user_id} className={`scroll-mt-24 border p-5 ${selectedApplication===a.user_id?'border-amber-300 bg-amber-300/[.09]':'border-amber-300/20 bg-amber-300/[.035]'}`}>
         <h3 className="text-base font-black">{a.name} <span className="text-xs text-amber-200">· {a.source_role}</span></h3>
         <p className="mt-2 text-xs text-slate-300">Signed by {a.accepted_name} · {new Date(a.document_accepted_at).toLocaleString('en-NG')} · Document v{a.document_version}</p>
         <p className="mt-1 text-xs text-slate-400">Account: {a.email} · Probation: not started · Salary: not active</p>
@@ -93,9 +111,26 @@ export default function DistributionEmploymentAdministration(){
       <h2 className="text-xl font-black">Assistant Distribution Manager appointments</h2>
       <p className="mt-2 text-xs leading-6 text-slate-400">The verified lead Manager appoints assistants and coordinates team assignments. Administration can send employment replies, inspect appointment records and dismiss appointed staff for a recorded reason; this does not grant Administration control of the team's work conversation.</p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
-        {(state?.overview.assistants||[]).map(a=><article key={a.user_id} className="border border-white/10 p-4">
+        {(state?.overview.assistants||[]).map(a=><article id={`application-${a.user_id}`} key={a.user_id} className={`scroll-mt-24 border p-4 ${selectedApplication===a.user_id?'border-amber-300 bg-amber-300/[.08]':'border-white/10'}`}>
           <p className="text-sm font-black text-white">{a.name} <span className="text-xs text-slate-400">· {a.role}</span></p>
           <p className="mt-2 text-xs font-bold text-cyan-200">{a.status.toUpperCase()} · Lead: {a.manager_name||'Not appointed'}</p>
+          <p className="mt-2 text-xs text-slate-300">Administration eligibility: <strong>{a.administration_verification==='verified'?'Verified · awaiting lead Manager decision':a.administration_verification==='declined'?'Declined':a.status==='pending'?'Verification pending':'Not applicable'}</strong></p>
+          <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-slate-200" data-assistant-application-statement="true">{a.application_note}</p>
+          {a.administration_verification_note&&<p className="mt-2 text-[11px] text-slate-400">Verification findings: {a.administration_verification_note}</p>}
+          {a.status==='pending'&&a.administration_verification==='pending'&&<div className="mt-4 space-y-3 border-t border-amber-200/15 pt-3">
+            <label className="block text-xs text-amber-200" htmlFor={`assistant-reason-${a.user_id}`}>Administration eligibility findings</label>
+            <textarea id={`assistant-reason-${a.user_id}`} maxLength={1200} rows={3}
+              value={assistantNotes[a.user_id]||''}
+              onChange={e=>setAssistantNotes(prev=>({...prev,[a.user_id]:e.target.value}))}
+              placeholder="Record evidence of eligibility, availability and application suitability."
+              className="w-full border border-white/20 bg-slate-950 p-3 text-sm text-white"/>
+            <div className="flex flex-wrap gap-2">
+              <Button disabled={working!==null||(assistantNotes[a.user_id]||'').trim().length<10}
+                onClick={()=>void reviewAssistant(a.user_id,'verify')} className="bg-emerald-700 text-white">Verify eligibility · Send to Managers</Button>
+              <Button disabled={working!==null||(assistantNotes[a.user_id]||'').trim().length<10}
+                onClick={()=>void reviewAssistant(a.user_id,'decline')} variant="outline">Decline application</Button>
+            </div>
+          </div>}
           {a.hired_at&&<p className="mt-1 text-xs text-slate-400">Appointed: {new Date(a.hired_at).toLocaleString('en-NG')}</p>}
           <EmploymentActions position="distribution_assistant" employeeId={a.user_id} administration onStatusChange={()=>void load()}/>
         </article>)}
