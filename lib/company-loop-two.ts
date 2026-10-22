@@ -15,24 +15,37 @@ export const ONE_NIGERIAN_LOOP = {
 
 export type OneNigerianRole = 'admin' | 'bridger' | 'agent' | 'client'
 
-/** Administration, Hope and Stability wording are the Administrator's event copy. */
+/**
+ * Sovereign-authored Loop 2 scroll in the original order.
+ * Do not normalize grammar, punctuation or merge separate passages by role.
+ */
+export const ONE_NIGERIAN_SCROLL_PASSAGES = [
+  {
+    role: 'admin',
+    text: "Let us have what is known as bad government. Weave will fix it and it will all be like bad was all a stepping stone for wherever I am, there's a way.",
+  },
+  {
+    role: 'bridger',
+    text: 'Hope. Bridgers department: wordings.\n\nAn so we arrived for where faith moves presence follows',
+  },
+  {
+    role: 'agent',
+    text: 'Stability Agent department: Where Presence moves family moves with that Stability came into being for who will feed the country if not Weave',
+  },
+  {
+    role: 'admin',
+    text: 'Administration: with that saying a new frontier opened before us who are Hope in being.\n\nA bridge is forming between us and those who have heard of our Burning River soil an outreach from Hope begins in time while Stability sustains',
+  },
+] as const satisfies ReadonlyArray<{role:OneNigerianRole; text:string}>
+
+export const ONE_NIGERIAN_SCROLL_TEXT = ONE_NIGERIAN_SCROLL_PASSAGES.map(passage => passage.text).join('\n\n')
+
+/** Department identity for route-aware guidance, separate from authored scroll text. */
 export const ONE_NIGERIAN_DEPARTMENT_WORDS: Record<OneNigerianRole, {department:string; words:string}> = {
-  admin: {
-    department: 'Administration · A Cat',
-    words: "Let us have what is known as bad government. Weave will fix it, and it will all be like bad was a stepping stone for wherever I am. There's a way.\n\nWith that saying, a new frontier opened before us who are Hope in being. A bridge is forming between us and those who have heard of our Burning River soil. An outreach from Hope begins in time, while Stability sustains.",
-  },
-  bridger: {
-    department: 'Hope · Bridgers Department',
-    words: 'And so we arrived, for where faith moves, Presence follows.',
-  },
-  agent: {
-    department: 'Stability · Agents Department',
-    words: 'Where Presence moves, family moves. With that, Stability came into being. For who will feed the country, if not Weave?',
-  },
-  client: {
-    department: 'Lord / Lady · Clients Department',
-    words: 'Your File Folder is the world you build, activate and operate. The working system follows your real progress.',
-  },
+  admin: {department:'Administration · A Cat',words:ONE_NIGERIAN_SCROLL_PASSAGES.filter(item => item.role==='admin').map(item=>item.text).join('\n\n')},
+  bridger: {department:'Hope · Bridgers Department',words:ONE_NIGERIAN_SCROLL_PASSAGES[1].text},
+  agent: {department:'Stability · Agents Department',words:ONE_NIGERIAN_SCROLL_PASSAGES[2].text},
+  client: {department:'Lord / Lady · Clients Department',words:''},
 }
 
 export function isOneNigerianLoopActive(now:Date = new Date()):boolean {
