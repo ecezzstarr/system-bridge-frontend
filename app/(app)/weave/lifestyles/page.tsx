@@ -69,7 +69,7 @@ export default function WeaveLifestylesPage() {
       const data = await response.json().catch(() => ({}))
       if (!response.ok || !data.success) {
         if (data.reason === 'insufficient_balance') {
-          setAgenticAttainmentError(`Your wallet has ${Number(data.availableFlameCoin || 0).toLocaleString()} Flame Coin. Attaining Agentic-Bridger requires a one-time payment of ${Number(data.requiredFlameCoin || 20).toLocaleString()} Flame Coin. Fund your wallet and try again.`)
+          setAgenticAttainmentError(`Your wallet has ${Number(data.availableFlameCoin || 0).toLocaleString()} Flame Coin. Attaining Agentic-Bridger requires a one-time payment of ${Number(data.requiredFlameCoin ?? WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN).toLocaleString()} Flame Coin. Fund your wallet and try again.`)
           return
         }
 
@@ -118,7 +118,7 @@ export default function WeaveLifestylesPage() {
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">LIFESTYLE</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Agents have included Lifestyle access. Bridgers can attain Agentic-Bridger with one payment of 20 Flame Coin. Agentic-Bridger then enables Lifestyle access and eligibility to apply for positions such as Distribution Manager and Legion. Regular Bridger work has no subscription; Clients follow their own access terms.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Agents have included Lifestyle access. Bridgers can attain Agentic-Bridger with one payment of 11 Flame Coin. Agentic-Bridger then enables Lifestyle access and eligibility to apply for positions such as Distribution Manager and Legion. Regular Bridger work has no subscription; Clients follow their own access terms.</p>
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
@@ -133,7 +133,7 @@ export default function WeaveLifestylesPage() {
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{agentFree ? 'Agent position access' : bridger ? 'Agentic-Bridger · permanent access' : `${roleLabel} monthly subscription`}</p>
                 <p className="mt-1 text-sm font-black text-white">{access?.active ? 'LIFESTYLE LAYER OPEN' : 'LIFESTYLE LAYER CLOSED'}</p>
-                <p className="mt-1 text-xs text-slate-500">{agentFree ? 'Agents enter Lifestyle at no additional monthly charge.' : bridger ? 'One payment of 20 Flame Coin attains Agentic-Bridger permanently. Agentic-Bridger enables Lifestyle access; job appointments still require application and approval.' : 'Your Client subscription determines Lifestyle access.'}</p>
+                <p className="mt-1 text-xs text-slate-500">{agentFree ? 'Agents enter Lifestyle at no additional monthly charge.' : bridger ? 'One payment of 11 Flame Coin attains Agentic-Bridger permanently. Agentic-Bridger enables Lifestyle access; job appointments still require application and approval.' : 'Your Client subscription determines Lifestyle access.'}</p>
                 {!agentFree && !bridger && access?.expiresAt && <p className="mt-1 text-xs text-slate-500">Current period ends {new Date(access.expiresAt).toLocaleDateString()}</p>}
               </div>
               {!agentFree && !bridger && !access?.active && (
@@ -151,8 +151,8 @@ export default function WeaveLifestylesPage() {
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Attain Agentic-Bridger · Enable Lifestyle</p>
                   <h2 className="mt-2 text-2xl font-black text-white">{WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN} Flame Coin <span className="text-sm text-slate-300">· one time</span></h2>
-                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Pay 20 Flame Coin once to attain Agentic-Bridger. This permanent attainment enables Lifestyle access, including applications for eligible Distribution Manager and Legion positions. Appointment and employment are separate approval processes. Regular Bridger activity remains free.</p>
-                  <p className="mt-2 text-xs text-slate-400">Bridge AI costs 8 Flame Coin per new template. Echo is free. Agentic-Bridger is attained once for 20 Flame Coin; there is no recurring Bridger or Agentic-Bridger subscription.</p>
+                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Pay 11 Flame Coin once to attain Agentic-Bridger. This permanent attainment enables Lifestyle access, including applications for eligible Distribution Manager and Legion positions. Appointment and employment are separate approval processes. Regular Bridger activity remains free.</p>
+                  <p className="mt-2 text-xs text-slate-400">Bridge AI costs 8 Flame Coin per new template. Echo is free. Agentic-Bridger is attained once for 11 Flame Coin; there is no recurring Bridger or Agentic-Bridger subscription.</p>
                   
                 </div>
                 <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase ${access.active ? 'border-emerald-300/25 text-emerald-200' : 'border-amber-300/25 text-amber-200'}`}>{access.active ? 'Attained permanently' : 'Not attained'}</span>
@@ -160,7 +160,7 @@ export default function WeaveLifestylesPage() {
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 {!access.active && (
                   <button type="button" onClick={() => void attainAgenticBridger()} disabled={agenticAttainmentPending} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-950 disabled:cursor-wait disabled:opacity-50">
-                    {agenticAttainmentPending ? 'Attaining Agentic-Bridger…' : 'Attain Agentic-Bridger · 20 Flame Coin once'}
+                    {agenticAttainmentPending ? 'Attaining Agentic-Bridger…' : 'Attain Agentic-Bridger · 11 Flame Coin once'}
                   </button>
                 )}
                 <Link href="/wallet/deposit-withdraw" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-xs font-black text-white">Fund Flame Coin Wallet</Link>
@@ -187,7 +187,7 @@ export default function WeaveLifestylesPage() {
                 title="ACE"
                 detail="Ace is the playing and outward-distribution identity. Arena is the Ace game ground. Carrier is the Ace distribution instrument. They are not separate Lifestyles."
                 open={aceOpen}
-                reason={carrier?.reason || (access?.active ? 'Your current position has not opened Ace.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Attain Agentic-Bridger for a one-time 20 Flame Coin payment.' : `Renew the ${roleLabel} monthly subscription first.`)}
+                reason={carrier?.reason || (access?.active ? 'Your current position has not opened Ace.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Attain Agentic-Bridger for a one-time 11 Flame Coin payment.' : `Renew the ${roleLabel} monthly subscription first.`)}
                 href="/weave/lifestyles/ace"
                 action="Enter Ace"
                 tools={[{icon:<Gamepad2 className="h-3.5 w-3.5"/>,label:'Arena'},{icon:<Megaphone className="h-3.5 w-3.5"/>,label:'Carrier'}]}
@@ -199,9 +199,9 @@ export default function WeaveLifestylesPage() {
                   icon={<Bot className="h-8 w-8" />}
                   eyebrow="Inside Ace · Bridger only"
                   title="AGENTIC-BRIDGER"
-                  detail="Agentic-Bridger is attained through a one-time payment of 20 Flame Coin. Attainment permanently enables Lifestyle access and eligible activities, including the Agentic-Bridger earning rules; it does not change the underlying Bridger role or automatically approve employment."
+                  detail="Agentic-Bridger is attained through a one-time payment of 11 Flame Coin. Attainment permanently enables Lifestyle access and eligible activities, including the Agentic-Bridger earning rules; it does not change the underlying Bridger role or automatically approve employment."
                   open={agenticOpen}
-                  reason={access?.active ? (carrier?.reason || 'Ace has not opened yet.') : 'Attain Agentic-Bridger for a one-time 20 Flame Coin payment.'}
+                  reason={access?.active ? (carrier?.reason || 'Ace has not opened yet.') : 'Attain Agentic-Bridger for a one-time 11 Flame Coin payment.'}
                   href="/weave/lifestyles/agentic-bridger"
                   action="Enter Agentic-Bridger"
                   tools={[{icon:<Bot className="h-3.5 w-3.5"/>,label:'Bridger movement'},{icon:<Gamepad2 className="h-3.5 w-3.5"/>,label:'Ace standing'}]}
@@ -217,7 +217,7 @@ export default function WeaveLifestylesPage() {
                   title="WEAVE MANDATE"
                   detail="Agents and Bridgers can apply for Company Guidance departments: Mandate, Forensics or Attorney. Administration reviews each application. Approved personnel can answer only the guidance conversations assigned to their department. No additional Lifestyle payment."
                   open={mandateOpen}
-                  reason={access?.active ? 'Mandate is open for applications from your position.' : agentFree ? 'An active Agent account is required.' : 'Attain Agentic-Bridger for a one-time 20 Flame Coin payment.'}
+                  reason={access?.active ? 'Mandate is open for applications from your position.' : agentFree ? 'An active Agent account is required.' : 'Attain Agentic-Bridger for a one-time 11 Flame Coin payment.'}
                   href="/weave/lifestyles/mandate"
                   action="Apply to Weave Mandate"
                   tools={[{icon:<ShieldCheck className="h-3.5 w-3.5"/>,label:'Department application'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Company Guidance'}]}
@@ -260,7 +260,7 @@ export default function WeaveLifestylesPage() {
                   title="DISTRIBUTION MANAGER"
                   detail="Distribution Manager is an actual WEAVE distribution position carried by an existing Agent or Bridger: public distribution, campaign movement, Agent/Bridger acquisition, coordination and reporting back to Administration."
                   open={distributionManagerOpen}
-                  reason={access?.active ? 'Distribution Manager entry is available from your current position.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Attain Agentic-Bridger for a one-time 20 Flame Coin payment.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
+                  reason={access?.active ? 'Distribution Manager entry is available from your current position.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Attain Agentic-Bridger for a one-time 11 Flame Coin payment.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
                   href="/manager/dashboard"
                   action="Enter Distribution Manager"
                   tools={[{icon:<Megaphone className="h-3.5 w-3.5"/>,label:'Distribution Studio'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'WEAVE employment'}]}
