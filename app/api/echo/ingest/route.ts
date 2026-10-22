@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
-import { getEchoIdentity, writeEchoActivity, hasActiveContinuance } from '@/lib/echo-db'
+import { createEchoIdentity, writeEchoActivity, hasActiveContinuance } from '@/lib/echo-db'
 
 const ALLOWED_SOURCES = ['extension', 'ios', 'android', 'web'] as const
 
@@ -12,16 +12,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const identity = await getEchoIdentity(authUser.id)
-  if (!identity) {
-    return NextResponse.json({ error: 'No Echo Identity for this user' }, { status: 404 })
-  }
-
-  // Continuance ended -> data collection stops, checked live each write
+  // Echo is free for every active WEAVE position. There is no
+  // recurring subscription gate or separate Identity signup.
   const subscribed = await hasActiveContinuance(authUser.id)
   if (!subscribed) {
-    return NextResponse.json({ error: 'Echo is locked; subscription inactive' }, { status: 403 })
+    return NextResponse.json({ error: 'An active WEAVE account is required' }, { status: 403 })
   }
+  const identity = await createEchoIdentity(authUser.id)
 
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
