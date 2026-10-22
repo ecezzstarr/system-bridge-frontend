@@ -24,7 +24,7 @@ for(const role of ['visitor','agent','bridger','client','admin']){
 }
 assert.ok(trainingBriefsForRole('agent')[0].title.includes('Stability'))
 assert.ok(trainingBriefsForRole('agent')[1].body.includes('1.5 Flame Coin'))
-assert.ok(trainingBriefsForRole('agent')[0].body.includes('Agility')&&trainingBriefsForRole('agent')[0].body.includes('Nigerian')===false,'Agent lesson describes Nigerian work without relying on a nationality label')
+assert.ok(trainingBriefsForRole('agent')[0].body.includes('Agility')&&trainingBriefsForRole('agent')[0].body.includes('Ember'),'Agent lesson describes real WEAVE products')
 assert.ok(trainingBriefsForRole('agent')[0].body.includes('Nigeria'),'Agent Stability operates Nigerian product commerce')
 assert.ok(trainingBriefsForRole('agent')[2].body.includes('Company Loop 1')&&trainingBriefsForRole('agent')[2].body.includes('December 31, 2026'),'Agent lesson preserves Loop 1 period')
 assert.ok(trainingBriefsForRole('bridger')[0].body.includes('digital outreach')&&trainingBriefsForRole('bridger')[0].body.includes('worldwide'),'Hope lesson reflects global digital movement')
@@ -33,6 +33,7 @@ assert.ok(trainingBriefsForRole('visitor').some(item=>item.body.includes('Flame 
 const roleRegistration=read('app/(auth)/register/page.tsx')
 assert.ok(roleRegistration.includes('FLAME_EVENT_INTRO')&&roleRegistration.includes('data-department-event-explanation'),'Role choice explains the shared Flame Event before payment')
 assert.ok(!roleRegistration.includes('Fixed Compensation')&&!roleRegistration.includes('compensated on a fixed schedule'),'Registration does not falsely promise an automatic Agent salary')
+assert.ok(roleRegistration.includes('data-role-first-activities={formData.role}')&&roleRegistration.includes('Distribution Route')&&roleRegistration.includes('Bridge AI entrance'),'First-activity training differs for Agents and Bridgers')
 const loopDefinition=read('lib/weave-event.ts')
 assert.ok(loopDefinition.includes('FLAME_EVENT_INTRO')&&loopDefinition.includes('October 1 – December 31, 2026')&&loopDefinition.includes('not another department'),'Loop 1 description stays consistent with the company period')
 const loopWorld=read('components/events/position-event-world.tsx')
