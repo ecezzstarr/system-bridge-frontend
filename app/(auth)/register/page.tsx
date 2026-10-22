@@ -349,27 +349,28 @@ function RegisterContent() {
       <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
         <CardHeader className="text-center flex flex-col items-center">
           <Target className="h-8 w-8 text-green-400 mb-2" />
-          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{WEAVE_WRITING.positionAccess.guidanceTitle}</CardTitle>
-          <CardDescription>{WEAVE_WRITING.positionAccess.guidanceDetail}</CardDescription>
+          <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{formData.role === 'agent' ? 'Stability · First Agent Activities' : 'Hope · First Bridger Activities'}</CardTitle>
+          <CardDescription>{formData.role === 'agent' ? 'Sell products and serve Nigerian customers. Bridger coordination is a separate commission stream.' : 'Introduce digital File Folders to interested people worldwide and guide informed Client crossings.'}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="space-y-3 text-sm text-slate-300">
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">1</span>
-              <p className="text-xs">Share your personal referral link with prospective clients directly — WhatsApp, social media, or in person.</p>
-            </div>
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">2</span>
-              <p className="text-xs">Explain WEAVE clearly and honestly — clients trust representatives who don't overpromise returns.</p>
-            </div>
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">3</span>
-              <p className="text-xs">Once a client registers through your link, they're tracked to your account automatically.</p>
-            </div>
-            <div className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">4</span>
-              <p className="text-xs">Stay responsive in the Lounge — clients and Administration may reach you there for support.</p>
-            </div>
+          <div className="space-y-3 text-sm text-slate-300" data-role-first-activities={formData.role}>
+            {(formData.role === 'agent' ? [
+              'Open Agent Work: choose Agility, Electrolyte, Ember or Daisy Pastries and learn the actual product prices and order rules.',
+              'Sell to customers in Nigeria through the appropriate Agent order page or Carrier Door. Verify the order and payment before promising delivery.',
+              'To supply shops, order allowed carton quantities through the Distribution Route. Record your stock, outlet supply and collection.',
+              'Work with your attached Bridgers through their authorized programs and review qualifying commissions separately from food sales.',
+            ] : [
+              'Open Prospect Market, Email Outreach or Number Bay. A candidate is not a verified person, contact or customer.',
+              'Reach out respectfully to interested people through digital channels worldwide, including Europe, and listen to their actual needs.',
+              'Explain the File Folder, its cloud-based building possibilities, real prices and authorized Bridge AI entrance before requesting a decision.',
+              'Guide willing prospects through verified Client crossing. Earnings depend on actual qualifying File Folder purchases, not on sending messages.',
+            ]).map((instruction,index)=>(
+              <div key={instruction} className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-bold flex items-center justify-center">{index+1}</span>
+                <p className="text-xs leading-5">{instruction}</p>
+              </div>
+            ))}
+            <p className="border-t border-amber-300/20 pt-3 text-xs text-amber-100">These activities belong to {FLAME_EVENT_INTRO.name}, {FLAME_EVENT_INTRO.period}. The event is shared; your department determines your daily work.</p>
           </div>
           <Button onClick={() => setStep('details')} className="w-full bg-green-600 hover:bg-green-700 mt-2 font-bold uppercase tracking-widest h-11">
             Complete Registration
