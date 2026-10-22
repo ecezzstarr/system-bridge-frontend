@@ -25,7 +25,7 @@ export const WORLD_RULES = {
   
   // Continuance (formerly Continuance)
   // Bridgers have no recurring membership subscription. These are product purchases.
-  AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN: 20,
+  AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN: 11,
   BRIDGE_AI_TEMPLATE_OPEN_FLAME_COIN: 8,
   
   // Wallet Fees
