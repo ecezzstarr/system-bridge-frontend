@@ -67,7 +67,7 @@ assert.ok(transit.includes('const activeBriefs:readonly LoadingBrief[]=booting?b
 assert.ok(transit.includes('data-weave-loader-no-auto-close="true"')&&transit.includes('enterEnvironment'),'The gate never auto closes while someone is reading')
 assert.ok(transit.includes('briefIndex!==activeBriefs.length-1||!environmentReady'),'Entering requires all three lessons and destination readiness')
 assert.ok(transit.includes('onNextLesson')&&transit.includes('onPreviousLesson'),'Readers control lesson speed in both directions')
-assert.ok(!transit.includes('waitForBriefingSequence')&&!transit.includes('setInterval'),'The global loader cannot silently advance or close on a countdown')
+assert.ok(!transit.includes('waitForBriefingSequence')&&!transit.includes('BOOT_LYRIC_STEP_MS'),'The loader has no automatic lyric countdown or timed reveal')
 const folderContinuous=read('components/system-switch/file-folder-environment-loader.tsx')
 assert.ok(folderContinuous.includes('data-file-folder-loader="shared-gate-only"')&&folderContinuous.includes('data-environment-pending="true"'),'Private File Folder uses the same global loader rather than mounting a second screen')
 assert.ok(!folderContinuous.includes('FILE_FOLDER_BEATS')&&!folderContinuous.includes('animate-spin'),'No duplicate File Folder lyric or spinner competes with the global entrance')
