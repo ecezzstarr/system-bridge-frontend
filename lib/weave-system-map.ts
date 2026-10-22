@@ -37,12 +37,12 @@ export const WEAVE_SYSTEM_MAP = {
     bridger: {
       name: 'Bridger',
       kind: 'partner',
-      description: 'The Bridger creates and maintains the human connection that carries a Prospect toward Client participation.',
+      description: 'Hope: the Bridger introduces WEAVE digital File Folders to interested people worldwide, reaches out to unverified prospects and guides willing people toward verified Client ownership.',
     },
     agent: {
       name: 'Agent',
       kind: 'employee',
-      description: 'The Agent moves Agility and receives defined shares from attached Bridger Prospect purchases and verified Client File Folder crossings.',
+      description: 'Stability: the Agent sells and distributes WEAVE products to Nigerians, manages customers and shop supply, and participates in attached Bridger programs with qualifying commissions.',
     },
     admin: {
       name: 'Administration',
