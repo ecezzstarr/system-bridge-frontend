@@ -48,6 +48,8 @@ export default function EchoPage() {
   const [loading, setLoading] = useState(true)
   const [subscribing, setSubscribing] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
+  const [recording,setRecording]=useState(false)
+  const [currentMovement,setCurrentMovement]=useState('')
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -144,6 +146,31 @@ export default function EchoPage() {
       setError('Analysis failed')
     } finally {
       setAnalyzing(false)
+    }
+  }
+
+  async function handleRecordAndAnalyze() {
+    const text=currentMovement.trim()
+    if(!text||recording||analyzing)return
+    setRecording(true)
+    setError(null)
+    setMessage(null)
+    try {
+      const headers=authHeaders()
+      headers.set('Content-Type','application/json')
+      const res=await fetch('/api/echo/ingest',{
+        method:'POST',headers,
+        body:JSON.stringify({source:'web',activityType:'user_update',content:text,occurredAt:new Date().toISOString()}),
+      })
+      const data=await res.json()
+      if(!res.ok)throw Error(data.error||'Unable to record current movement')
+      setCurrentMovement('')
+      await load(true)
+      await handleAnalyze()
+    }catch(error:any){
+      setError(error.message||'Unable to record current movement')
+    }finally{
+      setRecording(false)
     }
   }
 
@@ -264,6 +291,12 @@ export default function EchoPage() {
         </section>
       ) : (
         <section className="space-y-4 px-5 py-6 md:px-7" data-echo-station="insights">
+          <section className="rounded-xl border border-cyan-300/15 bg-slate-900/35 p-4" data-echo-record-now="true">
+            <h3 className="text-sm font-bold text-white">What are you working on now?</h3>
+            <p className="mt-1 text-xs leading-5 text-slate-400">Write one real activity, result or question from today. Echo records it to this account and can analyze it immediately; no extension or long activity history is needed.</p>
+            <textarea value={currentMovement} onChange={event=>setCurrentMovement(event.target.value)} maxLength={2000} rows={3} placeholder="Describe your actual work, challenge or next decision…" className="mt-3 w-full rounded-xl border border-white/15 bg-black/30 p-3 text-sm leading-6 text-white placeholder:text-slate-500"/>
+            <button type="button" disabled={!currentMovement.trim()||recording||analyzing} onClick={()=>void handleRecordAndAnalyze()} className="mt-3 rounded-xl bg-cyan-200 px-4 py-3 text-xs font-bold text-[#051522] disabled:opacity-40">{recording||analyzing?'Working on your current movement…':'Record and analyze this movement'}</button>
+          </section>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium text-white">Insights</h2>
             <button
