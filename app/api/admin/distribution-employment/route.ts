@@ -2,6 +2,7 @@ import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { listManagerEmploymentForAdmin,reviewManagerEmployment } from '@/lib/manager-employment'
 import { readDistributionEmploymentOverview } from '@/lib/distribution-team-updates'
+import { readDistributionTasksForAdministration } from '@/lib/distribution-team-tasks'
 import {reviewAssistantEligibilityByAdministration} from '@/lib/distribution-assistant-admin-review'
 export const dynamic='force-dynamic'
 async function admin(request:NextRequest){
@@ -12,11 +13,12 @@ export async function GET(request:NextRequest){
   const user=await admin(request)
   if(!user)return NextResponse.json({success:false,error:'Administration required'},{status:403})
   try{
-    const [appointments,overview]=await Promise.all([
+    const [appointments,overview,teamTasks]=await Promise.all([
       listManagerEmploymentForAdmin(user.id),
       readDistributionEmploymentOverview(),
+      readDistributionTasksForAdministration(),
     ])
-    return NextResponse.json({success:true,appointments,overview,readOnlyReports:true},
+    return NextResponse.json({success:true,appointments,overview,teamTasks,readOnlyReports:true},
       {headers:{'Cache-Control':'private, no-store'}})
   }catch(error){console.error('[distribution verification] reading failed',error)
     return NextResponse.json({success:false,error:'Unable to load verification desk'},{status:500})}
