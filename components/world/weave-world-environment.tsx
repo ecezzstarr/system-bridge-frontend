@@ -4,6 +4,7 @@ import { visiblePoll } from '@/lib/visible-poll'
 import { useEffect, useMemo, useState } from 'react'
 import { FLAME_EVENT, type WeaveEvent, resolveEventStatus } from '@/lib/weave-event'
 import { WeaveLiveFlameField } from '@/components/world/weave-live-flame-field'
+import { isOneNigerianLoopActive } from '@/lib/company-loop-two'
 
 export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
   void soft
@@ -34,13 +35,24 @@ export function WeaveWorldEnvironment({ soft }: { soft?: boolean }) {
     [event, now]
   )
 
+  const loopTwoActive=isOneNigerianLoopActive(now)
+
   useEffect(() => {
     const root=document.documentElement
-    root.dataset.weaveEvent=active?'flame-live':'normal'
+    root.dataset.weaveEvent=active||loopTwoActive?'flame-live':'normal'
+    if(loopTwoActive){
+      root.dataset.weaveLoopTheme='one-nigerian'
+      root.dataset.weaveCompanyLoop='2'
+    } else {
+      delete root.dataset.weaveLoopTheme
+      delete root.dataset.weaveCompanyLoop
+    }
     return () => {
       delete root.dataset.weaveEvent
+      delete root.dataset.weaveLoopTheme
+      delete root.dataset.weaveCompanyLoop
     }
-  }, [active])
+  }, [active,loopTwoActive])
 
-  return <WeaveLiveFlameField flameLive={active} />
+  return <WeaveLiveFlameField flameLive={active||loopTwoActive} />
 }
