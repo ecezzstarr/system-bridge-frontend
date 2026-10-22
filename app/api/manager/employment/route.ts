@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       positionSubscriptionNgn:agentFree ? 0 : POSITION_MONTHLY_SUBSCRIPTION_NGN,
       subscriptionRule:agentFree
         ? 'The active Agent position opens Distribution Manager Lifestyle without a monthly subscription.'
-        : 'Distribution Manager is covered by active Bridger Continuance. It has no second Distribution Manager-only subscription.',
+        : 'The permanent 20 Flame Coin Agentic-Bridger purchase opens Lifestyle and Distribution Manager applications. There is no monthly Bridger subscription.',
       coreDuty:DISTRIBUTION_MANAGER_CORE_DUTY,
     },
   }, { headers:{ 'Cache-Control':'private, no-store' } })
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => ({}))
 
-  if (body?.action === 'subscribe_continuance') {
+  if (body?.action === 'buy_agentic_bridger' || body?.action === 'subscribe_continuance') {
     if (user.role === 'agent') {
       return NextResponse.json({
         success:true,
@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
     }
     const result=await subscribeManagerContinuance(user.id)
     if(!result.success){
-      if(result.reason==='insufficient_balance') return NextResponse.json({...result,error:'Insufficient Flame Coin to renew the Bridger monthly subscription.'},{status:402})
-      if(result.reason==='rate_unavailable') return NextResponse.json({success:false,error:'Bridger Continuance rate is temporarily unavailable.'},{status:503})
-      return NextResponse.json({success:false,error:'Bridger monthly subscription could not be activated.'},{status:500})
+      if(result.reason==='insufficient_balance') return NextResponse.json({...result,error:'You need 20 Flame Coin to buy permanent Agentic-Bridger access.'},{status:402})
+      if(result.reason==='rate_unavailable') return NextResponse.json({success:false,error:'Agentic-Bridger payment temporarily unavailable.'},{status:503})
+      return NextResponse.json({success:false,error:'Agentic-Bridger could not be purchased.'},{status:500})
     }
     return NextResponse.json({success:true,result,state:await getManagerEmploymentState(user.id)})
   }
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         success:false,
         error:user.role === 'agent'
           ? 'An active Agent account is required before Distribution Manager Lifestyle can begin.'
-          : 'Active Bridger Continuance is required before Distribution Manager Lifestyle can begin.',
+          : 'Buy Agentic-Bridger once for 20 Flame Coin to open Distribution Manager applications.',
       }, { status:403 })
     }
     if (result.reason === 'already_applied') return NextResponse.json({success:false,error:'An application is already recorded. Refresh your verification status.'},{status:409})
