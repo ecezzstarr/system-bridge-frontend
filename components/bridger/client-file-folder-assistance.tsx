@@ -11,7 +11,7 @@ type SharedMessage = {
   created_at: string
 }
 
-function authHeaders(): HeadersInit {
+function authHeaders(): Record<string, string> {
   return { Authorization: 'Bearer ' + (localStorage.getItem('ssb_auth_token') || '') }
 }
 
@@ -109,7 +109,7 @@ export function ClientFileFolderAssistance() {
         </div>
       </div>
       {loading ? <p className="mt-4 text-sm text-slate-400">Loading assigned Clients…</p> : clients.length === 0 ? (
-        <p className="mt-4 text-sm text-slate-400">Clients assigned to you will appear here when they enter Weave.</p>
+        <p className="mt-4 text-sm text-slate-400">Assigned Clients will appear here when registered. Assistance continues inside their File Folder.</p>
       ) : (
         <div className="mt-5 grid gap-4 md:grid-cols-[minmax(150px,230px)_minmax(0,1fr)]">
           <nav aria-label="Assigned Clients" className="flex gap-2 overflow-x-auto md:flex-col">
