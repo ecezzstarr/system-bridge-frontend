@@ -156,10 +156,10 @@ export function trainingBriefsForRole(role: WeaveLoadingRole): readonly WeaveLoa
 const EMPLOYMENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveOperatingGuide}>=[
   {match:path=>path.startsWith('/manager/dashboard'),guide:{
     title:'Distribution Manager · sign and begin',
-    explanation:'Three lead Distribution Manager positions are available through active Agent or Bridger identities. Acceptance records the job terms and starts a one-month probation.',
+    explanation:'Three lead Distribution Manager positions are available through active Agent or Bridger identities. Your signature sends the application to Administration. One-month probation starts only after Administration verifies the appointment.',
     steps:[
       'Read the employment conditions and confirm the underlying Agent position or Bridger Continuance is active.',
-      'Accept the terms and type your registered full account name into the signature field. Submit and check the recorded employment status.',
+      'Accept the terms and type your registered full account name into the signature field. Submit for Administration verification and check its actual status before treating probation as started.',
       'An appointed lead may review assistant applications. The lead and up to two assistants share 300 verified referrals in probation, then 500 per later month; salary is subject to verification.',
     ],
     nextHref:'/manager/dashboard',nextLabel:'View Distribution Manager employment',
