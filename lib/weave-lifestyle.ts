@@ -156,7 +156,7 @@ export async function requireLifestyleAccess(userId: string) {
     const position = access.role ? `${access.role[0]?.toUpperCase()}${access.role.slice(1)}` : 'WEAVE'
     const reason = access.role === 'agent'
       ? 'An active Agent account is required to enter Lifestyle'
-      : access.role === 'bridger' ? 'Attain Agentic-Bridger with a one-time 20 Flame Coin payment to enable Lifestyle access and eligible job applications' : `${position} monthly subscription is required to enter Lifestyle`
+      : access.role === 'bridger' ? 'Attain Agentic-Bridger with a one-time 11 Flame Coin payment to enable Lifestyle access and eligible job applications' : `${position} monthly subscription is required to enter Lifestyle`
     const error = new Error(reason) as Error & { status?: number; lifestyleAccess?: LifestyleAccess }
     error.status = 403
     error.lifestyleAccess = access
