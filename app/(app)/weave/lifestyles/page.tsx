@@ -62,31 +62,27 @@ export default function WeaveLifestylesPage() {
     setContinuanceRenewing(true)
     setContinuanceError(null)
     try {
-      const response = await fetch('/api/bridger/subscription', {
+      const response = await fetch('/api/weave/lifestyles/agentic/purchase', {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ action: 'auto_deduct' }),
       })
       const data = await response.json().catch(() => ({}))
       if (!response.ok || !data.success) {
         if (data.reason === 'insufficient_balance') {
-          setContinuanceError(`Your wallet contains ${Number(data.availableFlameCoin || 0).toLocaleString()} Flame Coin. ${Number(data.requiredFlameCoin || 0).toLocaleString()} Flame Coin is required at the current conversion rate. Fund the wallet, then subscribe here.`)
+          setContinuanceError(`Your wallet has ${Number(data.availableFlameCoin || 0).toLocaleString()} Flame Coin. The one-time Agentic-Bridger purchase needs ${Number(data.requiredFlameCoin || 20).toLocaleString()} Flame Coin. Fund your wallet and try again.`)
           return
         }
-        if (data.reason === 'rate_unavailable') {
-          setContinuanceError('The Flame Coin conversion rate is temporarily unavailable. No payment was taken.')
-          return
-        }
+
         if (data.reason === 'account_inactive') {
           setContinuanceError('This Bridger account is inactive. Contact Administration before renewing.')
           return
         }
-        throw new Error(data.error || 'Could not renew Bridger Continuance.')
+        throw new Error(data.error || 'Could not purchase Agentic-Bridger.')
       }
       await load()
-      toast.success(data.renewed ? 'Bridger Continuance renewed. Lifestyle access has been refreshed.' : 'Bridger Continuance is already current.')
+      toast.success(data.alreadyOwned ? 'Agentic-Bridger is already owned.' : 'Agentic-Bridger purchased permanently. Lifestyle is now open.')
     } catch (error: any) {
-      setContinuanceError(error.message || 'Could not renew Bridger Continuance.')
+      setContinuanceError(error.message || 'Could not purchase Agentic-Bridger.')
     } finally {
       setContinuanceRenewing(false)
     }
@@ -100,6 +96,7 @@ export default function WeaveLifestylesPage() {
   }, [access?.role])
 
   const agentFree = access?.role === 'agent'
+  const bridger = access?.role === 'bridger'
   const aceOpen = Boolean(access?.active && carrier?.active && carrier?.position === 'Ace')
   const agenticAvailable = access?.role === 'bridger'
   const agenticOpen = Boolean(agenticAvailable && aceOpen)
@@ -121,7 +118,7 @@ export default function WeaveLifestylesPage() {
         <div className="mt-2 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">LIFESTYLE</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Lifestyle is a layer carried by your existing WEAVE position. Agents enter Lifestyle, Ace and Carrier as part of the Agent company position with no monthly subscription. Bridger and Client access continues to follow the rules of those positions.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Agents have included Lifestyle access. Bridgers work without subscriptions and may buy Agentic-Bridger once for 20 Flame Coin to open Lifestyle, Ace, Distribution Manager, Legion and other eligible jobs. Clients use their own subscription.</p>
           </div>
           <Sparkles className="h-8 w-8 shrink-0 text-yellow-400" />
         </div>
@@ -134,12 +131,12 @@ export default function WeaveLifestylesPage() {
           <section className="mt-6 border-y border-white/10 py-4" data-lifestyle-entitlement={agentFree ? 'agent-position' : 'position-subscription'}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{agentFree ? 'Agent position access' : `${roleLabel} monthly subscription`}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{agentFree ? 'Agent position access' : bridger ? 'Agentic-Bridger · permanent access' : `${roleLabel} monthly subscription`}</p>
                 <p className="mt-1 text-sm font-black text-white">{access?.active ? 'LIFESTYLE LAYER OPEN' : 'LIFESTYLE LAYER CLOSED'}</p>
-                <p className="mt-1 text-xs text-slate-500">{agentFree ? 'Agent Lifestyle, Ace and Carrier are included with the Agent position. No monthly subscription is required.' : 'One position subscription → the Lifestyle identities allowed by your current position.'}</p>
-                {!agentFree && access?.expiresAt && <p className="mt-1 text-xs text-slate-500">Current period ends {new Date(access.expiresAt).toLocaleDateString()}</p>}
+                <p className="mt-1 text-xs text-slate-500">{agentFree ? 'Agents enter Lifestyle at no additional monthly charge.' : bridger ? 'No Bridger subscription. One permanent Agentic-Bridger purchase opens eligible Lifestyle roles and jobs.' : 'Your Client subscription determines Lifestyle access.'}</p>
+                {!agentFree && !bridger && access?.expiresAt && <p className="mt-1 text-xs text-slate-500">Current period ends {new Date(access.expiresAt).toLocaleDateString()}</p>}
               </div>
-              {!agentFree && !access?.active && (
+              {!agentFree && !bridger && !access?.active && (
                 <div className="max-w-sm border-l border-amber-300/20 pl-3 text-xs leading-5 text-amber-100/70">
                   <span className="inline-flex items-center gap-2 font-black text-amber-200"><LockKeyhole className="h-4 w-4" />Renew your {roleLabel} monthly subscription</span>
                   <p className="mt-1 text-slate-500">Lifestyle reopens automatically when the position subscription returns to active. No separate Lifestyle payment is taken.</p>
@@ -149,25 +146,25 @@ export default function WeaveLifestylesPage() {
           </section>
 
           {access?.role === 'bridger' && (
-            <section className="mt-5 rounded-2xl border border-emerald-300/25 bg-emerald-400/[.05] p-5 sm:p-6" data-lifestyle-bridger-continuance="self-service">
+            <section className="mt-5 rounded-2xl border border-emerald-300/25 bg-emerald-400/[.05] p-5 sm:p-6" data-lifestyle-agentic-purchase="self-service">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Bridger Continuance · Open Lifestyle</p>
-                  <h2 className="mt-2 text-2xl font-black text-white">₦{WORLD_RULES.BRIDGER_CONTINUANCE_NGN.toLocaleString('en-NG')} <span className="text-sm text-slate-300">/ 30 days</span></h2>
-                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Subscribe personally with your Flame Coin wallet. Active Bridger Continuance opens eligible Lifestyle activities, Ace and Agentic-Bridger. Bridge AI and Echo are optional separate services; Lifestyle takes no second subscription fee.</p>
-                  <p className="mt-2 text-xs text-slate-400">The ₦ amount converts to Flame Coin at the current payment rate. An already-current Continuance is never charged again.</p>
-                  {access.expiresAt && <p className="mt-2 text-xs text-slate-400">Current period ends {new Date(access.expiresAt).toLocaleDateString('en-NG')}.</p>}
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Agentic-Bridger · Open Lifestyle</p>
+                  <h2 className="mt-2 text-2xl font-black text-white">{WORLD_RULES.AGENTIC_BRIDGER_ONE_TIME_FLAME_COIN} Flame Coin <span className="text-sm text-slate-300">· one time</span></h2>
+                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-300">Buy Agentic-Bridger once with your Flame Coin wallet. It permanently opens eligible Lifestyle identities and Bridger employment applications, including Distribution Manager and Legion. Your normal Bridger work remains free.</p>
+                  <p className="mt-2 text-xs text-slate-400">Bridge AI costs 8 Flame Coin each time you open a new template path. Echo is free. Agentic-Bridger never renews and is never charged twice.</p>
+                  
                 </div>
-                <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase ${access.active ? 'border-emerald-300/25 text-emerald-200' : 'border-amber-300/25 text-amber-200'}`}>{access.active ? 'Continuance active' : 'Continuance required'}</span>
+                <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase ${access.active ? 'border-emerald-300/25 text-emerald-200' : 'border-amber-300/25 text-amber-200'}`}>{access.active ? 'Owned permanently' : 'Not purchased'}</span>
               </div>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 {!access.active && (
                   <button type="button" onClick={() => void renewContinuance()} disabled={continuanceRenewing} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-slate-950 disabled:cursor-wait disabled:opacity-50">
-                    {continuanceRenewing ? 'Processing Continuance…' : 'Subscribe · Open Lifestyle'}
+                    {continuanceRenewing ? 'Opening Lifestyle…' : 'Buy Once · Open Lifestyle'}
                   </button>
                 )}
                 <Link href="/wallet/deposit-withdraw" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 bg-white/[.06] px-4 py-3 text-xs font-black text-white">Fund Flame Coin Wallet</Link>
-                <Link href="/bridger/subscription" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 px-4 py-3 text-xs font-black text-emerald-100">Continuance details / payment proof</Link>
+                <Link href="/weave/lifestyles/agentic-bridger" className="inline-flex min-h-11 items-center rounded-xl border border-white/15 px-4 py-3 text-xs font-black text-emerald-100">Agentic-Bridger · One-time access</Link>
               </div>
               {continuanceError && <p role="alert" className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/[.08] px-4 py-3 text-xs leading-5 text-rose-200">{continuanceError}</p>}
             </section>
@@ -190,7 +187,7 @@ export default function WeaveLifestylesPage() {
                 title="ACE"
                 detail="Ace is the playing and outward-distribution identity. Arena is the Ace game ground. Carrier is the Ace distribution instrument. They are not separate Lifestyles."
                 open={aceOpen}
-                reason={carrier?.reason || (access?.active ? 'Your current position has not opened Ace.' : agentFree ? 'An active Agent account is required.' : `Renew the ${roleLabel} monthly subscription first.`)}
+                reason={carrier?.reason || (access?.active ? 'Your current position has not opened Ace.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Buy Agentic-Bridger once for 20 Flame Coin.' : `Renew the ${roleLabel} monthly subscription first.`)}
                 href="/weave/lifestyles/ace"
                 action="Enter Ace"
                 tools={[{icon:<Gamepad2 className="h-3.5 w-3.5"/>,label:'Arena'},{icon:<Megaphone className="h-3.5 w-3.5"/>,label:'Carrier'}]}
@@ -202,9 +199,9 @@ export default function WeaveLifestylesPage() {
                   icon={<Bot className="h-8 w-8" />}
                   eyebrow="Inside Ace · Bridger only"
                   title="AGENTIC-BRIDGER"
-                  detail="Agentic-Bridger is the Bridger-only Lifestyle specialization inside Ace. Your Bridger role remains intact; active Continuance opens the specialization and its eligible 45% earning rule."
+                  detail="Agentic-Bridger is the Bridger-only Lifestyle specialization inside Ace. Your Bridger role remains intact; the one-time 20 Flame Coin purchase opens the specialization and its eligible 45% earning rule."
                   open={agenticOpen}
-                  reason={access?.active ? (carrier?.reason || 'Ace has not opened yet.') : 'Active Bridger Continuance is required.'}
+                  reason={access?.active ? (carrier?.reason || 'Ace has not opened yet.') : 'Buy Agentic-Bridger once for 20 Flame Coin.'}
                   href="/weave/lifestyles/agentic-bridger"
                   action="Enter Agentic-Bridger"
                   tools={[{icon:<Bot className="h-3.5 w-3.5"/>,label:'Bridger movement'},{icon:<Gamepad2 className="h-3.5 w-3.5"/>,label:'Ace standing'}]}
@@ -220,7 +217,7 @@ export default function WeaveLifestylesPage() {
                   title="WEAVE MANDATE"
                   detail="Agents and Bridgers can apply for Company Guidance departments: Mandate, Forensics or Attorney. Administration reviews each application. Approved personnel can answer only the guidance conversations assigned to their department. No additional Lifestyle payment."
                   open={mandateOpen}
-                  reason={access?.active ? 'Mandate is open for applications from your position.' : agentFree ? 'An active Agent account is required.' : 'Active Bridger Continuance is required.'}
+                  reason={access?.active ? 'Mandate is open for applications from your position.' : agentFree ? 'An active Agent account is required.' : 'Buy Agentic-Bridger once for 20 Flame Coin.'}
                   href="/weave/lifestyles/mandate"
                   action="Apply to Weave Mandate"
                   tools={[{icon:<ShieldCheck className="h-3.5 w-3.5"/>,label:'Department application'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Company Guidance'}]}
@@ -263,7 +260,7 @@ export default function WeaveLifestylesPage() {
                   title="DISTRIBUTION MANAGER"
                   detail="Distribution Manager is an actual WEAVE distribution position carried by an existing Agent or Bridger: public distribution, campaign movement, Agent/Bridger acquisition, coordination and reporting back to Administration."
                   open={distributionManagerOpen}
-                  reason={access?.active ? 'Distribution Manager entry is available from your current position.' : agentFree ? 'An active Agent account is required.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
+                  reason={access?.active ? 'Distribution Manager entry is available from your current position.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Buy Agentic-Bridger once for 20 Flame Coin.' : `Renew the ${roleLabel} monthly subscription to reopen this Lifestyle.`}
                   href="/manager/dashboard"
                   action="Enter Distribution Manager"
                   tools={[{icon:<Megaphone className="h-3.5 w-3.5"/>,label:'Distribution Studio'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'WEAVE employment'}]}
@@ -278,7 +275,7 @@ export default function WeaveLifestylesPage() {
                   title="ASSISTANT DISTRIBUTION MANAGER"
                   detail="Work alongside verified WEAVE Distribution Managers on campaigns, outreach, follow-up and verified Agent/Bridger acquisition. Six appointments are available, two per Manager. Read the salary, monthly target and payment conditions inside the employment document before submitting an application."
                   open={distributionManagerOpen}
-                  reason={access?.active ? 'Assistant Distribution Manager applications are available.' : agentFree ? 'An active Agent account is required.' : 'Renew Bridger Continuance to apply.'}
+                  reason={access?.active ? 'Assistant Distribution Manager applications are available.' : agentFree ? 'An active Agent account is required.' : 'Buy Agentic-Bridger once to apply.'}
                   href="/weave/lifestyles/distribution-assistant"
                   action="Apply for Assistant Distribution Manager"
                   tools={[{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Employment application'},{icon:<Users className="h-3.5 w-3.5"/>,label:'Monthly referrals'}]}
@@ -293,7 +290,7 @@ export default function WeaveLifestylesPage() {
                   title="LEGION"
                   detail="Legion is exclusive employment inside a Client enterprise. Agents and subscribed Bridgers can apply to open Client Legion Quarters or accept a Client invitation. Once accepted, normal Agent/Bridger functions close and the person works only for that Client inside Weave until Legion employment ends."
                   open={legionOpen}
-                  reason={access?.active ? 'Legion employment is available from your current position.' : agentFree ? 'An active Agent account is required.' : `Renew the ${roleLabel} monthly subscription before applying.`}
+                  reason={access?.active ? 'Legion employment is available from your current position.' : agentFree ? 'An active Agent account is required.' : bridger ? 'Buy Agentic-Bridger once to apply.' : `Renew the ${roleLabel} monthly subscription before applying.`}
                   href="/weave/lifestyles/legion"
                   action="Enter Legion Market"
                   tools={[{icon:<Users className="h-3.5 w-3.5"/>,label:'Client recruitment'},{icon:<BriefcaseBusiness className="h-3.5 w-3.5"/>,label:'Exclusive employment'}]}
@@ -302,7 +299,7 @@ export default function WeaveLifestylesPage() {
 
               <div className="border-y border-white/10 px-4 py-5 sm:border" data-lifestyle-position-rule="true">
                 <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-500">Position rule</p>
-                <h2 className="mt-1 text-xl font-black text-white">{agentFree ? 'AGENT POSITION · FREE LIFESTYLE ACCESS' : 'ONE SUBSCRIPTION · POSITION-SCOPED ACCESS'}</h2>
+                <h2 className="mt-1 text-xl font-black text-white">{agentFree ? 'AGENT POSITION · FREE LIFESTYLE ACCESS' : 'POSITION-SCOPED LIFESTYLE ACCESS'}</h2>
                 <p className="mt-2 text-xs leading-5 text-slate-500">{agentFree ? 'The Agent position itself opens Lifestyle and Ace. No Agent monthly subscription is required. Legion remains the exclusive-employment exception: normal Agent functions pause while the Agent serves a Client as Legion.' : 'Your core account role remains Administration, Agent, Bridger or Client. Legion is the exclusive-employment exception: the underlying Agent/Bridger identity is preserved, but its normal work functions are suspended while the person serves a Client as Legion.'}</p>
               </div>
             </div>
