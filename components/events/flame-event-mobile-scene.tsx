@@ -74,7 +74,7 @@ function CascadingFalls({side,quiet}:{side:-1|1;quiet:boolean}){
       'void main(){',
       'float stream=sin(uvFall.x*30.+sin(uvFall.y*12.-time*1.8)*1.7)*.5+.5;',
       'float mist=sin(uvFall.x*49.+uvFall.y*73.-time*3.2)*.5+.5;',
-      'float edge=smoothstep(.0,.12,uvFall.x)*smoothstep(1.,.86,uvFall.x);',
+      'float edge=smoothstep(.0,.12,uvFall.x)*(1.-smoothstep(.86,1.,uvFall.x));',
       'float fall=pow(stream,.8)*.65+mist*.2;',
       'vec3 teal=vec3(.035,.32,.51); vec3 white=vec3(.60,.88,1.);',
       'vec3 color=mix(teal,white,fall);',
