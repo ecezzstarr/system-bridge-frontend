@@ -102,6 +102,16 @@ export async function PATCH(request:NextRequest){
           WHERE id=$4::uuid RETURNING id,agent_id,status,position
         `,[decision,note,admin.id,appointmentId])
         await client.query('COMMIT')
+        // The applicant receives a deep link to their own employment record.
+        try{
+          await getPool().query(`INSERT INTO notifications
+            (user_id,type,title,content,from_user_name,link)
+            VALUES ($1::uuid,'food_preparation_decision',$2,$3,
+              'WEAVE Administration','/weave/lifestyles/food-preparation')`,
+            [person.agent_id,decision==='approved'?'Food Preparation appointment approved':'Food Preparation application declined',
+              decision==='approved'?'Administration approved your employment application. Open your approved Food Preparation workspace to receive actual team tasks.':
+                'Administration declined your Food Preparation application. Open the employment record to read the decision and respond.'])
+        }catch(error){console.error('[food preparation] employee decision notification failed',error)}
         return NextResponse.json({success:true,appointment:rows[0]})
       }catch(error){
         await client.query('ROLLBACK').catch(()=>{})
