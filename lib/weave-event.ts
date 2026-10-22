@@ -16,7 +16,7 @@ export type WeaveEvent = {
   status: WeaveEventStatus
   startsAt: string
   endsAt: string
-  loopNumber: 1
+  loopNumber: 1 | 2
   announcement: string
   adEnabled: boolean
   autoStart: boolean
@@ -77,6 +77,46 @@ export const FLAME_EVENT: WeaveEvent = {
       purpose: 'Administration holds Company Loop 1 together: preparing the ground, recognizing movement, organizing positions and controlling the event lifecycle.',
       focus: ['Event Control', 'Four User Positions', 'Announcements', 'Schedule', 'Event Ground', 'Continuity'],
       movement: ['Hold the live event ground', 'Keep Loop 1 state synchronized across WEAVE', 'Coordinate position movement and Administration signals', 'Operate DJ, advertisements and event controls', 'Recognize, close or extend the event when required'],
+    },
+  },
+}
+
+/**
+ * Loop 2 is a separate event, not a rename of Burning River. Existing
+ * departmental systems remain available; any changed business rules must be
+ * separately approved by Administration.
+ */
+export const ONE_NIGERIAN_EVENT: WeaveEvent = {
+  key: 'flame-event-02',
+  title: 'One Nigerian',
+  subtitle: 'One Nigerian · One WEAVE · Green, White, Green.',
+  status: 'planned',
+  startsAt: '2027-01-01T00:00:00+01:00',
+  endsAt: '2027-05-01T23:59:59.999+01:00',
+  loopNumber: 2,
+  announcement: 'Company Loop 2 — Flame Event: One Nigerian runs January 1 through May 1, 2027. WEAVE becomes green, white and green across every position and public environment at the opening.',
+  adEnabled: true,
+  autoStart: true,
+  positions: {
+    client: {
+      ...FLAME_EVENT.positions.client,
+      purpose: 'During Company Loop 2 — One Nigerian, Clients continue to own and operate their real File Folder systems, building work and Customer Doors.',
+      movement: ['Continue operating your File Folder', 'Build, activate and operate Client-owned systems', 'Make verified Client activity visible in the shared event'],
+    },
+    bridger: {
+      ...FLAME_EVENT.positions.bridger,
+      purpose: 'During Company Loop 2 — One Nigerian, Bridgers continue authorized outreach, Bridge AI use, Client introductions and position work.',
+      movement: ['Carry authorized prospect introductions', 'Help interested people understand WEAVE Client ownership', 'Record verified Bridger activity in the event'],
+    },
+    agent: {
+      ...FLAME_EVENT.positions.agent,
+      purpose: 'During Company Loop 2 — One Nigerian, Agents continue real WEAVE product distribution, customer orders, local outlet supply and verified operations.',
+      movement: ['Serve WEAVE customer and outlet orders', 'Track real stock and distribution', 'Record verified activity in the event'],
+    },
+    admin: {
+      ...FLAME_EVENT.positions.admin,
+      purpose: 'Administration directs Company Loop 2 — One Nigerian, its schedule, official event signals and nationwide visual continuity.',
+      movement: ['Oversee the One Nigerian event lifecycle', 'Keep all four positions operating', 'Coordinate official company communications', 'Review and verify activity throughout the event'],
     },
   },
 }
