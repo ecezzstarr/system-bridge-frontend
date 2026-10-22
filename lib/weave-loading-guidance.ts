@@ -262,7 +262,10 @@ export function transitDirectionForPath(from:string,to:string):'return'|'forward
 }
 
 export function transitTrainingForPath(role:WeaveLoadingRole,path:string):WeaveLoadingBrief|null {
+  const pathname=path.split('?')[0]
   if(role==='agent'){
+    // An unrelated Agent introduction must never replace the real destination.
+    if(!AGENT_GUIDES.some(entry=>entry.match(pathname)))return null
     const guide=agentOperatingGuideForPath(path)
     return {
       eyebrow:'AGENT · OPERATING INTRODUCTION',
@@ -272,6 +275,7 @@ export function transitTrainingForPath(role:WeaveLoadingRole,path:string):WeaveL
     }
   }
   if(role==='bridger'){
+    if(!BRIDGER_GUIDES.some(entry=>entry.match(pathname)))return null
     const guide=bridgerOperatingGuideForPath(path)
     return {eyebrow:'BRIDGER · OPERATING INTRODUCTION',title:guide.title,body:guide.explanation+' '+guide.steps[0],movement:'Next: '+guide.steps[1]}
   }

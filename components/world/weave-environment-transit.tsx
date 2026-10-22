@@ -346,7 +346,14 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
       }
     }
     const guidance=transitTrainingForPath(role,destinationPath)
-    if(guidance)return guidance
+    if(guidance)return {
+      ...baseBrief,
+      eyebrow:guidance.eyebrow,
+      // The named destination stays in focus. Its verified purpose remains the
+      // opening lyric even when the position has more specific instructions.
+      body:`${destinationEnvironment.purpose} ${guidance.body}`,
+      movement:guidance.movement,
+    }
     if(!hopeDestination)return baseBrief
     return {
       ...baseBrief,
@@ -381,7 +388,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
         timers.push(window.setTimeout(()=>setLyricIndex(line),line*TRANSIT_LYRIC_STEP_MS))
       }
     }
-    return ()=>timers.forEach(window.clearTimeout)
+    return ()=>timers.forEach(timer=>window.clearTimeout(timer))
   },[covered,sequenceId,booting,bootBriefs,transitBrief])
   const openingLabel=returningToWorld
     ? `Returning to ${destinationEnvironment.title}`
@@ -390,7 +397,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
     : showClientBriefing
       ? 'Client training · File Folder'
       : showAdminBriefing
-        ? 'Administration · Operating Guidance'
+        ? 'Administration · Work Introduction'
         : showHopeBriefing
     ? 'Hope · forming the Bridger field'
     : showFlameBriefing
