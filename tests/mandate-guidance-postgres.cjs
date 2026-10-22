@@ -7,7 +7,7 @@ function load(file,deps={}){const exports={};vm.runInNewContext(ts.transpileModu
 const sql=async(strings,...values)=>(await pool.query(strings.reduce((s,part,i)=>s+(i?'$'+i:'')+part,''),values)).rows
 const db={getPool:()=>pool,sql}
 const catalog=load('lib/weave-lifestyle-catalog.ts')
-const lifestyle=load('lib/weave-lifestyle.ts',{'@/lib/db':db,'@/lib/weave-lifestyle-catalog':catalog,'@/lib/client-monthly-subscription':{getClientMonthlyStanding:async()=>({active:false,hasPayment:false,paidUntil:null})}})
+const lifestyle=load('lib/weave-lifestyle.ts',{'@/lib/db':db,'@/lib/weave-lifestyle-catalog':catalog,'@/lib/client-monthly-subscription':{getClientMonthlyStanding:async()=>({active:false,hasPayment:false,paidUntil:null})},'@/lib/agentic-bridger-purchase':{getAgenticBridgerPurchase:async()=>null}})
 const departments=load('lib/weave-guidance-departments.ts',{'@/lib/db':db,'@/lib/weave-lifestyle':lifestyle})
 const auth=load('lib/auth-api.ts',{'next-auth/next':{getServerSession:async()=>null},'./auth':{authOptions:{}},'./db':db,'./weave-infrastructure':{getDivineShieldState:async()=>({active:false})}})
 const deps={'next/server':{NextResponse:{json:(body,options)=>new Response(JSON.stringify(body),options)}},'@/lib/auth-api':auth,'@/lib/db':db,'@/lib/weave-lifestyle':lifestyle,'@/lib/weave-guidance-departments':departments}

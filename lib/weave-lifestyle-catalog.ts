@@ -81,7 +81,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     label: 'Assistant Distribution Manager',
     route: '/weave/lifestyles/distribution-assistant',
     roles: ['agent','bridger'],
-    summary: 'Six Assistant Distribution Manager appointments, two under each of the three verified Distribution Managers. Teams carry distribution campaigns and verified Agent/Bridger acquisition. The salary and performance conditions appear in the applicant's employment terms before submission, not in the general Lifestyle listing. Apply through your existing Agent or Bridger Lifestyle.',
+    summary: 'Six Assistant Distribution Manager appointments, two under each of the three verified Distribution Managers. Teams carry distribution campaigns and verified Agent/Bridger acquisition. The salary and performance conditions appear in the employment terms supplied to each applicant before submission, not in the general Lifestyle listing. Apply through your existing Agent or Bridger Lifestyle.',
     environments: [
       { label: 'Employment Application', href: '/weave/lifestyles/distribution-assistant', purpose: 'Apply for one of six assistant appointments.' },
       { label: 'Distribution Studio', href: '/distribution-studio', purpose: 'Carry actual WEAVE distribution work after appointment.' },
