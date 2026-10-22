@@ -69,7 +69,7 @@ const AGENT_TRAINING: readonly WeaveLoadingBrief[] = [
   {
     eyebrow:'AGENT TRAINING · 2 OF 3',
     title:'Learn the work before spending.',
-    body:'Agent Work opens real food and customer sales. Order stock, supply outlets and follow verified payments. Creative Studio offers media services; commissions from attached Bridger activity are a separate recorded earning stream.',
+    body:'Agent Work opens real food and customer sales. Order stock, supply outlets and follow verified payments. Creative Studio makes image layouts free and videos at an Agent Studio fee of up to 1.5 Flame Coin. Attached Bridger commissions are separate.',
     movement:'Agent Work → product or creative service → customer',
   },
   {
