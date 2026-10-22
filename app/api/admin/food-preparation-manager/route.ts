@@ -2,6 +2,7 @@ import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
 import { FOOD_ADMIN_PER_PACKAGE_NGN } from '@/lib/food-forensic-settlement'
+import { exitWeaveEmployment } from '@/lib/weave-employment-lifecycle'
 import {
   ensureFoodPreparationManagerSchema,validUuid,
   FOOD_PREPARATION_MANAGER_SALARY_NGN,FOOD_PREPARATION_ASSISTANT_SALARY_NGN,FOOD_PREPARATION_CAPACITY,
@@ -55,6 +56,15 @@ export async function PATCH(request:NextRequest){
       const note=typeof body.reviewNote==='string'?body.reviewNote.trim():''
       if(!validUuid(appointmentId)||!['approved','rejected','revoked'].includes(decision)||note.length<15||note.length>2000)
         return NextResponse.json({success:false,error:'Appointment, decision and review reason (15–2000 characters) required.'},{status:400})
+      if(decision==='revoked'){
+        const {rows:matches}=await getPool().query(
+          'SELECT agent_id FROM weave_food_preparation_managers WHERE id=$1::uuid AND status=\'approved\'', [appointmentId])
+        if(!matches.length)return NextResponse.json({success:false,error:'This approved appointment is no longer active.'},{status:409})
+        const outcome=await exitWeaveEmployment('food_preparation',String(matches[0].agent_id),
+          {id:admin.id,role:admin.role},'fire',note)
+        if(!outcome.success)return NextResponse.json({success:false,error:'Employment could not be terminated.'},{status:409})
+        return NextResponse.json({success:true,appointment:{id:appointmentId,agent_id:matches[0].agent_id,status:'revoked'},assignedOrdersToReview:outcome.assignedFoodOrdersToReview})
+      }
       const client=await getPool().connect()
       try{
         await client.query('BEGIN')
