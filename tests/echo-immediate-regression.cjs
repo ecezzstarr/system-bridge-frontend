@@ -16,7 +16,7 @@ const expected={
   agent:'/agent/work',
   bridger:'/bridger/bridge-ai',
   client:'/client/system-switch',
-  legion:'/enterprise/legions-notebook',
+  legion:'/weave/lifestyles/legion',
 }
 for(const [role,href] of Object.entries(expected)){
   const immediate=buildImmediateEchoResult(role,blank,new Date('2026-10-22T00:00:00Z'))
