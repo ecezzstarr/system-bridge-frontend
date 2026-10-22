@@ -42,11 +42,11 @@ export default function AgenticBridgerLifestylePage(){
     <header className="mt-5 border-b border-cyan-300/15 pb-7">
       <div className="flex items-center gap-2 text-cyan-300"><Bot className="h-5 w-5"/><p className="text-[10px] font-black uppercase tracking-[0.28em]">Inside Ace · Bridger only</p></div>
       <h1 className="mt-2 text-4xl font-black tracking-tight text-white sm:text-6xl">AGENTIC-BRIDGER</h1>
-      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-400">A Bridger attains Agentic-Bridger by paying 20 Flame Coin once. This permanent attainment enables Lifestyle access and eligibility for the appropriate Distribution Manager, Legion and other Lifestyle opportunities. It does not replace the Bridger position, automatically appoint anyone to employment, or create a recurring subscription.</p>
+      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-400">A Bridger attains Agentic-Bridger by paying 11 Flame Coin once. This permanent attainment enables Lifestyle access and eligibility for the appropriate Distribution Manager, Legion and other Lifestyle opportunities. It does not replace the Bridger position, automatically appoint anyone to employment, or create a recurring subscription.</p>
     </header>
-    {!open && bridger && <Link href="/weave/lifestyles" className="mt-4 inline-flex rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-sm font-bold text-cyan-100">Attain Agentic-Bridger · 20 Flame Coin once</Link>}
+    {!open && bridger && <Link href="/weave/lifestyles" className="mt-4 inline-flex rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-sm font-bold text-cyan-100">Attain Agentic-Bridger · 11 Flame Coin once</Link>}
 
-    {!open?<section className="mt-7 border border-white/10 bg-black/20 p-6"><div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-slate-500"/><div><p className="text-sm font-black text-white">Agentic-Bridger is closed.</p><p className="mt-2 text-xs leading-5 text-slate-500">{!bridger?'This Lifestyle belongs only to the Bridger position.':error||'Pay 20 Flame Coin once to attain Agentic-Bridger and enable Lifestyle.'}</p></div></div></section>:<>
+    {!open?<section className="mt-7 border border-white/10 bg-black/20 p-6"><div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-slate-500"/><div><p className="text-sm font-black text-white">Agentic-Bridger is closed.</p><p className="mt-2 text-xs leading-5 text-slate-500">{!bridger?'This Lifestyle belongs only to the Bridger position.':error||'Pay 11 Flame Coin once to attain Agentic-Bridger and enable Lifestyle.'}</p></div></div></section>:<>
       <section className="mt-7 grid gap-4 md:grid-cols-3">
         <Metric label="Core position" value="Bridger"/>
         <Metric label="Parent Lifestyle" value="Ace"/>
