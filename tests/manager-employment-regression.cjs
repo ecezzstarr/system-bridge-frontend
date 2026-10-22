@@ -37,7 +37,7 @@ assert.ok(engine.includes("NOW()+INTERVAL '1 month'")&&engine.includes("status='
 assert.ok(engine.includes("pg_advisory_xact_lock(hashtext('weave_manager_employment_capacity'))"),'Three Distribution Manager positions are protected from concurrent acceptance races')
 assert.ok(engine.includes('DISTRIBUTION_MANAGER_CORE_DUTY')&&engine.includes('Distribute WEAVE across public channels'),'Distribution Manager core duty is actual WEAVE distribution rather than generic referral marketing')
 assert.ok(team.includes('GREATEST(me.probation_started_at')&&team.includes('GREATEST(a.hired_at')&&team.includes('getDistributionEmploymentPeriod'),'Count only referrals after employee start within the Manager-anchored employment month')
-assert.ok(api.includes("body?.action === 'subscribe_continuance'")&&api.includes("body?.action !== 'accept_document'"),'Distribution Manager API preserves compatibility renewal while separating document acceptance')
+assert.ok(api.includes("body?.action === 'buy_agentic_bridger'")&&api.includes("body?.action !== 'accept_document'"),'Distribution Manager API preserves one-time Agentic purchase while separating document acceptance')
 assert.ok(api.includes("const agentFree = user.role === 'agent'")&&api.includes('continuanceNgn:agentFree ? 0')&&api.includes('positionSubscriptionNgn:agentFree ? 0'),'Agent Distribution Manager terms carry zero monthly subscription cost')
 assert.ok(api.includes("reason:'agent_position_free'")&&api.includes('flameCoinAmount:0'),'Agent renewal compatibility action cannot debit Agent funds')
 assert.ok(api.includes('The active Agent position opens Distribution Manager Lifestyle without a monthly subscription.'),'Distribution Manager API states the free Agent entitlement')
