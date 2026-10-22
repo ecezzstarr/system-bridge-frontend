@@ -60,6 +60,48 @@ export function RiverSurface({quiet}:{quiet:boolean}) {
   </mesh>
 }
 
+/** Moving waterfalls frame the river without a wallpaper or video.
+ * Two small transparent shader planes are cheaper than particle emitters on phones. */
+function CascadingFalls({side,quiet}:{side:-1|1;quiet:boolean}){
+  const material=useMemo(()=>new THREE.ShaderMaterial({
+    uniforms:{time:{value:0}},
+    vertexShader:[
+      'varying vec2 uvFall;',
+      'void main(){uvFall=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}'
+    ].join('\n'),
+    fragmentShader:[
+      'uniform float time; varying vec2 uvFall;',
+      'void main(){',
+      'float stream=sin(uvFall.x*30.+sin(uvFall.y*12.-time*1.8)*1.7)*.5+.5;',
+      'float mist=sin(uvFall.x*49.+uvFall.y*73.-time*3.2)*.5+.5;',
+      'float edge=smoothstep(.0,.12,uvFall.x)*smoothstep(1.,.86,uvFall.x);',
+      'float fall=pow(stream,.8)*.65+mist*.2;',
+      'vec3 teal=vec3(.035,.32,.51); vec3 white=vec3(.60,.88,1.);',
+      'vec3 color=mix(teal,white,fall);',
+      'gl_FragColor=vec4(color,(.36+fall*.47)*edge);',
+      '}'
+    ].join('\n'),
+    transparent:true,depthWrite:false,side:THREE.DoubleSide,
+  }),[])
+  useEffect(()=>()=>material.dispose(),[material])
+  useFrame(({clock})=>{material.uniforms.time.value=quiet?0:clock.elapsedTime})
+  return <group position={[side*19.2,0,-10]} data-flame-live-waterfall={side}>
+    <mesh scale={[2.3,4,2.1]} position={[side*.8,3.4,-1.4]}>
+      <dodecahedronGeometry args={[1.6,1]}/><meshStandardMaterial color="#244456" roughness={.94}/>
+    </mesh>
+    <mesh scale={[1.9,3.1,1.5]} position={[-side*2,2.7,-1.5]}>
+      <dodecahedronGeometry args={[1.4,1]}/><meshStandardMaterial color="#35566b" roughness={.96}/>
+    </mesh>
+    <mesh position={[0,4.1,.25]} rotation={[0,-side*.14,0]} material={material}>
+      <planeGeometry args={[3.4,8]}/>
+    </mesh>
+    <mesh position={[0,-.28,1.4]} rotation={[-Math.PI/2,0,0]}>
+      <circleGeometry args={[2.9,32]}/><meshBasicMaterial color="#84d7f4" transparent opacity={.27} depthWrite={false}/>
+    </mesh>
+    <pointLight position={[0,1.6,1]} intensity={.65} color="#63cbed" distance={9}/>
+  </group>
+}
+
 function StonePaving(){
   const texture=useMemo(()=>{
     const el=document.createElement('canvas')
@@ -412,6 +454,8 @@ function World({enterprises,inputRef,role,sharedPresence,others,onNearbyDoor,onR
     <pointLight position={[0,7,-13]} color="#ffc381" intensity={5} distance={31}/>
     <RiverSurface quiet={budget.reducedMotion}/>
     <Terrain quality={budget.level}/>
+    <CascadingFalls side={-1} quiet={budget.reducedMotion}/>
+    <CascadingFalls side={1} quiet={budget.reducedMotion}/>
     <SystemSwitchThreshold active={!budget.reducedMotion} quiet={budget.reducedMotion}/>
     <PresenceCurrent motion={playerMotion} quiet={budget.reducedMotion}/>
     {enterprises.map((door,i)=><Portal key={door.public_slug} enterprise={door} index={i} x={doorPositions[i].x} z={doorPositions[i].z} playerMotion={playerMotion}/>)}
