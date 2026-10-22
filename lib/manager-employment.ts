@@ -1,5 +1,6 @@
 import { purchaseAgenticBridger } from '@/lib/agentic-bridger-purchase'
 import { getPool, sql } from '@/lib/db'
+import { notifyAdministrationOfCompanyApplication } from '@/lib/employment-application-notifications'
 import { getReferralCoreState, STAFF_REFERRAL_BONUS_NGN } from '@/lib/referral-bonus'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { DISTRIBUTION_MANAGER_LIFESTYLE as DISTRIBUTION_MANAGER_LIFESTYLE_KEY } from '@/lib/weave-lifestyle-catalog'
@@ -165,10 +166,11 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
     try{
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
         VALUES (${userId}::uuid,'manager_application','Distribution Manager verification pending','Your signed application is recorded. Administration must verify it before your one-month probation, salary qualification and team appointment permissions begin.','WEAVE Administration')`
-      await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        SELECT id,'manager_verification','Distribution Manager application ready for verification',
-          ${String(user.name||'Agent or Bridger')+' signed a Distribution Manager application. Review it from Distribution Employment Verification.'},'WEAVE Distribution'
-        FROM users WHERE role='admin' AND is_active=true`
+      await notifyAdministrationOfCompanyApplication({
+        kind:'distribution_manager',applicationId:userId,applicantId:userId,
+        positionTitle:'Distribution Manager',name:String(user.name||'Agent or Bridger'),
+        applicationNote:'Signed Distribution Manager employment terms',
+      })
     }catch(error){console.error('[manager-employment] verification notification failed',error)}
     return {success:true as const,created:true,employment:result.rows[0]}
   }catch(error){try{await client.query('ROLLBACK')}catch{};console.error('[manager-employment] acceptance failed',error);return {success:false as const,reason:'error' as const}}finally{client.release()}
