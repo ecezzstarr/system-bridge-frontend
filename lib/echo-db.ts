@@ -162,3 +162,29 @@ export async function listEchoInsights(echoId: string, limit = 50) {
     LIMIT ${limit}
   `
 }
+
+
+/** Private live signals for the current account. Never read another user's Echo. */
+export async function getEchoLiveSignals(userId:string,echoId:string){
+  await ensureEchoTables()
+  const [activity,counts,unread]=await Promise.all([
+    sql`SELECT activity_type,occurred_at FROM echo_activity
+        WHERE echo_id=${echoId}::uuid AND occurred_at>=now()-interval '7 days'
+        ORDER BY occurred_at DESC LIMIT 1`,
+    sql`SELECT count(*)::integer AS total FROM echo_activity
+        WHERE echo_id=${echoId}::uuid AND occurred_at>=now()-interval '7 days'`,
+    sql`SELECT count(*)::integer AS total FROM notifications
+        WHERE user_id=${userId}::uuid AND is_read=false`
+      .catch(error=>{
+        console.error('[Echo] unread notification signal unavailable:',error)
+        return [{total:null}]
+      }),
+  ])
+  const latest=activity[0]
+  return {
+    recentActivityCount:Number(counts[0]?.total||0),
+    lastActivityType:latest?.activity_type?String(latest.activity_type):null,
+    lastActivityAt:latest?.occurred_at?new Date(latest.occurred_at).toISOString():null,
+    unreadNotifications:unread[0]?.total==null?null:Number(unread[0].total),
+  }
+}
