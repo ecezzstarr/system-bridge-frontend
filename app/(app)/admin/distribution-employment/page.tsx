@@ -49,7 +49,7 @@ export default function DistributionEmploymentAdministration(){
       <Link href="/admin/distribution-studio" className="text-xs text-cyan-200">← Distribution Studio</Link>
       <p className="mt-5 text-[10px] font-black uppercase tracking-widest text-amber-200">Administration · Verification and oversight</p>
       <h1 className="mt-2 text-3xl font-black">Distribution Employment</h1>
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Administration verifies a signed lead Manager before probation begins. After approval, the Manager assigns up to two assistants and directs their own team. Administration observes records, performance and reports without entering or changing team conversations.</p>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Administration verifies a signed lead Distribution Manager application before probation can begin. The verified Manager independently appoints up to two assistants and directs team operations. Administration reviews verified results and employment correspondence, but cannot post into or change the team's own work messages.</p>
     </header>
     {error&&<p role="alert" className="border border-rose-300/25 p-3 text-xs text-rose-200">{error}</p>}
     {message&&<p role="status" className="border border-emerald-300/25 p-3 text-xs text-emerald-200">{message}</p>}
@@ -75,7 +75,7 @@ export default function DistributionEmploymentAdministration(){
     </section>
     <section className="border-t border-white/10 pt-6">
       <h2 className="text-xl font-black">Manager appointments and team standing</h2>
-      <p className="mt-2 text-xs text-slate-400">Three lead Manager positions maximum. Verification controls employment start; it does not transfer day-to-day decisions to Administration.</p>
+      <p className="mt-2 text-xs text-slate-400">Three lead Distribution Manager appointments maximum. Application signing is not employment approval. Administration verification starts the one-month probation; approved Managers direct daily distribution work.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(state?.overview.teams||[]).map(t=><article key={t.manager_id} className="border border-white/10 p-4 text-xs text-slate-300">
           <p className="text-base font-black text-white">{t.manager_name}</p>
@@ -91,7 +91,7 @@ export default function DistributionEmploymentAdministration(){
     </section>
     <section className="border-t border-white/10 pt-6" data-distribution-assistant-employment-admin="true">
       <h2 className="text-xl font-black">Assistant Distribution Manager appointments</h2>
-      <p className="mt-2 text-xs leading-6 text-slate-400">The appointed lead chooses their assistants. Administration can correspond directly, inspect status and terminate employment for documented reasons, but does not assign their daily team messages.</p>
+      <p className="mt-2 text-xs leading-6 text-slate-400">The verified lead Manager appoints assistants and coordinates team assignments. Administration can send employment replies, inspect appointment records and dismiss appointed staff for a recorded reason; this does not grant Administration control of the team's work conversation.</p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {(state?.overview.assistants||[]).map(a=><article key={a.user_id} className="border border-white/10 p-4">
           <p className="text-sm font-black text-white">{a.name} <span className="text-xs text-slate-400">· {a.role}</span></p>
