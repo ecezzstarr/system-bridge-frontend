@@ -136,11 +136,38 @@ export async function POST(request: NextRequest) {
     await runFfmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', concatPath, '-c', 'copy', '-movflags', '+faststart', silentPath])
 
     let finalPath = silentPath
-    if (row.soundtrack_url) {
-      const soundtrackPath = path.join(workDir, `soundtrack${extFor(row.soundtrack_url, '.mp3')}`)
-      await downloadAsset(row.soundtrack_url, soundtrackPath)
+    const narrationUrl = row.narration_url ? String(row.narration_url) : ''
+    const soundtrackUrl = row.soundtrack_url ? String(row.soundtrack_url) : ''
+    if (narrationUrl || soundtrackUrl) {
+      // The narrator remains intelligible: voice is the principal channel,
+      // background music is deliberately quieter. Never treat script TEXT
+      // as if it had already been synthesized into speech.
+      const duration = Number(row.duration_seconds)
+      const inputs = ['-y', '-i', silentPath]
+      const tracks: string[] = []
+      let inputIndex = 1
+      let narratorTrack = ''
+      let musicTrack = ''
+      if (narrationUrl) {
+        const narrationPath = path.join(workDir, `narration${extFor(narrationUrl, '.mp3')}`)
+        await downloadAsset(narrationUrl, narrationPath)
+        inputs.push('-i', narrationPath)
+        narratorTrack = `[${inputIndex}:a]atrim=duration=${duration},asetpts=PTS-STARTPTS,apad,highpass=f=75,acompressor=threshold=-18dB:ratio=2.5:attack=10:release=180,volume=1.25[voice]`
+        tracks.push('[voice]')
+        inputIndex++
+      }
+      if (soundtrackUrl) {
+        const soundtrackPath = path.join(workDir, `soundtrack${extFor(soundtrackUrl, '.mp3')}`)
+        await downloadAsset(soundtrackUrl, soundtrackPath)
+        inputs.push('-stream_loop', '-1', '-i', soundtrackPath)
+        musicTrack = `[${inputIndex}:a]atrim=duration=${duration},asetpts=PTS-STARTPTS,volume=${narrationUrl ? '0.16' : '0.80'},apad[music]`
+        tracks.push('[music]')
+      }
+      const audioFilter = [narratorTrack,musicTrack].filter(Boolean)
+      if (tracks.length === 2) audioFilter.push(`${tracks.join('')}amix=inputs=2:duration=first:dropout_transition=0[mix]`)
+      else audioFilter.push(`${tracks[0]}anull[mix]`)
       finalPath = path.join(workDir, 'final.mp4')
-      await runFfmpeg(['-y', '-i', silentPath, '-stream_loop', '-1', '-i', soundtrackPath, '-t', String(row.duration_seconds), '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', finalPath])
+      await runFfmpeg([...inputs,'-filter_complex',audioFilter.join(';'),'-map','0:v:0','-map','[mix]','-t',String(duration),'-c:v','copy','-c:a','aac','-b:a','192k','-movflags','+faststart',finalPath])
     }
 
     const outputObject = `video-ads/renders/${new Date().toISOString().slice(0, 10)}/${projectId}.mp4`
