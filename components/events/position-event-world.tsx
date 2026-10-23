@@ -15,7 +15,6 @@ import {
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
 import { type FlameDoorFeedStatus } from '@/components/events/flame-event-open-world'
 import { BurningRiverOfficialGateway } from '@/components/events/burning-river-official-gateway'
-import { BurningRiverLiveWorld } from '@/components/events/burning-river-live-world'
 import { FlameFoodCurrent } from '@/components/events/flame-food-current'
 import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -116,7 +115,6 @@ export default function PositionEventWorld({
 
       <div className="relative z-10">
         <BurningRiverOfficialGateway staff/>
-        <BurningRiverLiveWorld role={role}/>
         <header className="grid gap-5 border-b border-white/8 px-4 py-5 sm:px-6 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:px-8 lg:py-7">
           <FlameEventArtifactMark size="md" surface="client-event" className="mx-auto lg:mx-0" />
 
