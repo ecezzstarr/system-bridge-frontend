@@ -4,6 +4,7 @@ import {getBusinessDb} from '@/lib/client-business-store'
 import {resolveClientToken} from '@/lib/client-vault'
 import {BURNING_RIVER_LOOP,ensureWeaveOpenWorldSchema} from '@/lib/weave-open-world-store'
 import {FLAME_EVENT,resolveEventStatus} from '@/lib/weave-event'
+import {notifyUser} from '@/lib/deposit-notifications'
 
 export const dynamic='force-dynamic'
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -87,7 +88,7 @@ export async function POST(request:NextRequest){
       if(domain.collaboration_open!==true)
         return NextResponse.json({error:'Open your world to collaboration before inviting another Client'},{status:409})
       const [target]=await sql`
-        SELECT d.id FROM weave_open_world_domains d
+        SELECT d.id,d.client_id FROM weave_open_world_domains d
         JOIN client_file_folders f ON f.client_id=d.client_id AND f.file_number=d.file_number
         WHERE d.id=${targetId}::uuid AND d.collaboration_open=true
           AND f.status='active'
@@ -112,6 +113,16 @@ export async function POST(request:NextRequest){
         RETURNING id,status
       `
       if(!inserted)return NextResponse.json({error:'A connection request or response already exists for these two worlds'},{status:409})
+      // Arrival is signaled by the WEAVE notification bell and its river sound.
+      // Delivery cannot roll back a successfully recorded invitation.
+      await notifyUser(String(target.client_id),{
+        type:'company_loop_invitation',
+        title:'Burning River · Client world invitation',
+        content:'Another Client domain has invited you to form a business and systems connection in Company Loop 1. Open your shared world to accept or decline.',
+        fromUserId:String(domain.client_id),
+        fromUserName:'WEAVE Company Loop',
+        link:'/flame-event/world#domains',
+      })
       return NextResponse.json({success:true,status:'pending',connectionId:String(inserted.id)},
         {status:201,headers:{'Cache-Control':'private, no-store'}})
     }
@@ -132,9 +143,23 @@ export async function POST(request:NextRequest){
           AND (c.domain_a=${domain.id}::uuid OR c.domain_b=${domain.id}::uuid)
           AND EXISTS(SELECT 1 FROM weave_open_world_domains d
             WHERE d.id=${domain.id}::uuid AND d.collaboration_open=true)
-        RETURNING c.id,c.status
+        RETURNING c.id,c.status,c.requested_by
       `
       if(!updated)return NextResponse.json({error:'Invitation is unavailable or already answered'},{status:409})
+      const [sender]=await sql`
+        SELECT client_id FROM weave_open_world_domains
+        WHERE id=${updated.requested_by}::uuid
+      `
+      if(sender)await notifyUser(String(sender.client_id),{
+        type:nextStatus==='accepted'?'company_loop_connection_accepted':'company_loop_connection_declined',
+        title:nextStatus==='accepted'?'Burning River · Connection accepted':'Burning River · Invitation answered',
+        content:nextStatus==='accepted'
+          ?'Another Client accepted your Company Loop connection. The two File Folder domains are now linked in the shared world.'
+          :'Your Company Loop invitation was declined. No connection or shared work was created.',
+        fromUserId:String(domain.client_id),
+        fromUserName:'WEAVE Company Loop',
+        link:'/flame-event/world#domains',
+      })
       return NextResponse.json({success:true,status:updated.status},
         {headers:{'Cache-Control':'private, no-store'}})
     }
