@@ -286,7 +286,7 @@ export default function PublicFileFolderPurchasePage() {
 
               <label className="mt-5 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">TRX transaction hash</span><div className="mt-2 flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3"><FileKey2 className="h-4 w-4 text-orange-200" /><input value={reference} onChange={e=>setReference(e.target.value)} disabled={Boolean(purchase)} placeholder="Paste transaction hash after payment" className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-white/20 disabled:opacity-50" /></div></label>
 
-              {!purchase && <Button onClick={submitPurchase} disabled={busy || !validAmount || !name.trim() || !phone.trim() || !reference.trim()} className="mt-5 h-12 w-full bg-white font-black text-[#090605] hover:bg-stone-100">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ArrowRight className="mr-2 h-4 w-4"/>}Submit File Folder purchase</Button>}
+              {!purchase && <Button onClick={submitPurchase} disabled={busy || !wallet || !validAmount || !name.trim() || !phone.trim() || !reference.trim()} className="mt-5 h-12 w-full bg-white font-black text-[#090605] hover:bg-stone-100">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<ArrowRight className="mr-2 h-4 w-4"/>}Submit File Folder purchase</Button>}
 
               {message && <div className={`mt-5 rounded-2xl border p-4 text-xs leading-5 ${purchase?.status==='confirmed'?'border-emerald-300/20 bg-emerald-300/[.06] text-emerald-100':purchase?.status==='rejected'?'border-rose-300/20 bg-rose-300/[.05] text-rose-100':'border-amber-300/15 bg-amber-300/[.04] text-amber-100'}`}>{message}</div>}
 
