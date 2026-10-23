@@ -7,7 +7,7 @@ export const runtime='nodejs'
 function hostAuthenticated(request:NextRequest){
   const expected=process.env.WEAVE_HOST_CONTROL_TOKEN||''
   const actual=(request.headers.get('authorization')||'').replace(/^Bearer\s+/i,'')
-  if(expected.length<32||actual.length!==expected.length)return false
+  if(expected.length<32||actual.length!==expected.length||Buffer.byteLength(expected)!==Buffer.byteLength(actual))return false
   return timingSafeEqual(Buffer.from(actual),Buffer.from(expected))
 }
 export async function POST(request:NextRequest){
