@@ -22,6 +22,7 @@ export default function AdminClientStaffOffers() {
   const [error,setError] = useState('')
   const [notice,setNotice] = useState('')
   const [checks,setChecks] = useState<Record<string,boolean>>({})
+  const [workView,setWorkView] = useState<{offerId:string;items:{id:string;prospect_name:string;organization:string|null;stage:string;next_action:string|null}[]}|null>(null)
 
   const load=useCallback(async()=>{
     if(!token)return
@@ -55,6 +56,17 @@ export default function AdminClientStaffOffers() {
     finally{setBusy(false)}
   }
 
+  async function reviewWork(offerId:string){
+    setError('')
+    try{
+      const response=await fetch('/api/admin/client-staff-offers?offerId='+encodeURIComponent(offerId),{
+        headers:{Authorization:'Bearer '+token},cache:'no-store',
+      })
+      const data=await response.json()
+      if(!response.ok)throw new Error(data.error||'Unable to read employee activity')
+      setWorkView({offerId,items:data.work||[]})
+    }catch(e:any){setError(e?.message||'Unable to read employee activity')}
+  }
   async function review(offerId:string,action:'approve'|'reject'){
     setBusy(true);setError('');setNotice('')
     try{
@@ -107,6 +119,16 @@ export default function AdminClientStaffOffers() {
         <p className="text-sm text-slate-200">{offer.ticket_amount_usdt} USDT entry ticket · {offer.folder_tier.toUpperCase()} granted folder · {offer.monthly_salary_usdt} USDT/month offered salary</p>
         {offer.payment_reference&&<p className="break-all rounded-lg bg-slate-900 p-3 text-xs">Submitted payment: {offer.payment_network} · {offer.payment_reference}</p>}
         {offer.file_number&&<p className="text-xs text-cyan-200">Issued File Number: {offer.file_number}</p>}
+        {offer.status==='approved'&&<div className="space-y-3">
+          <button type="button" className="text-sm text-cyan-200 underline" onClick={()=>void reviewWork(offer.id)}>Review employee work</button>
+          {workView?.offerId===offer.id&&<div className="space-y-2 rounded-xl border border-white/10 p-3">
+            <p className="text-xs font-bold">Recorded business relationships · {workView.items.length}</p>
+            {workView.items.map(item=><p className="text-xs text-slate-300" key={item.id}>
+              {item.prospect_name}{item.organization?' · '+item.organization:''} — {item.stage.replaceAll('_',' ')} · Next: {item.next_action||'Not recorded'}
+            </p>)}
+            {!workView.items.length&&<p className="text-xs text-slate-400">No activity recorded.</p>}
+          </div>}
+        </div>}
         {offer.status==='pending_verification'&&<>
           <label className="flex items-start gap-3 text-sm leading-6 text-slate-200">
             <input type="checkbox" checked={Boolean(checks[offer.id])} onChange={e=>setChecks(p=>({...p,[offer.id]:e.target.checked}))} className="mt-1"/>
