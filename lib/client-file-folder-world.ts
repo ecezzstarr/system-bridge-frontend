@@ -753,7 +753,8 @@ export async function getFileFolderWorldSnapshot(
     SELECT
       b.*,
       COALESCE(i.name,'') AS required_item_name,
-      COALESCE(i.price_flame_coin,0) AS required_item_price_flame_coin
+      COALESCE(i.price_flame_coin,0) AS required_item_price_flame_coin,
+      COALESCE(i.published,false) AS required_item_published
     FROM weave_file_folder_blueprints b
     LEFT JOIN weave_file_folder_items i ON i.item_key=b.required_item_key
     WHERE b.published=true

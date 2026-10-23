@@ -1,5 +1,6 @@
 'use client'
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
+import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
 import FileFolderPlatformProjectStudio from './file-folder-platform-project-studio'
 import FileFolderLivingTerrain from './file-folder-living-terrain'
 import FileFolderPlusRadiantWorld from './file-folder-plus-radiant-world'
@@ -129,7 +130,7 @@ export default function FileFolderOpenWorld({
   fileFolderTier = 'standard',
   worldAppearance,
 }: Props) {
-  const { isVisible, orderFor } = useEnvironmentOrganizer()
+  const { orderFor } = useEnvironmentOrganizer()
   const [world, setWorld] = useState(initialWorld)
   const [aiFileFolders,setAiFileFolders]=useState<AiFileFolderIdentity[]>(initialAiFileFolders || WEAVE_AI_FILE_FOLDERS)
   const [district, setDistrict] = useState(initialDistrict)
@@ -271,16 +272,20 @@ export default function FileFolderOpenWorld({
     }
   }
 
-  const visibleDistricts = districts.filter(item=>item.key==='workshop_core'||isVisible(`/client/system-switch#studio:${item.key}`))
-    .sort((a,b)=>{
-      if(a.key==='workshop_core')return -1
-      if(b.key==='workshop_core')return 1
-      return orderFor(`/client/system-switch#studio:${a.key}`)-orderFor(`/client/system-switch#studio:${b.key}`)
-    })
-
+  // A hidden organizer preference must not erase a Client's working district.
+  // Preserve Administration's ordering while keeping every built-in station reachable.
+  const visibleDistricts = [...districts].sort((a,b)=>{
+    if(a.key==='workshop_core')return -1
+    if(b.key==='workshop_core')return 1
+    return orderFor(`/client/system-switch#studio:${a.key}`)-orderFor(`/client/system-switch#studio:${b.key}`)
+  })
+  const enterDistrict=(key:string)=>{
+    setDistrict(key)
+    window.requestAnimationFrame(()=>document.getElementById('file-folder-workspace')?.scrollIntoView({behavior:'smooth',block:'start'}))
+  }
   useEffect(()=>{
-    if(!visibleDistricts.some(item=>item.key===district))setDistrict('workshop_core')
-  },[district,isVisible])
+    if(!districts.some(item=>item.key===district))setDistrict('workshop_core')
+  },[district])
 
   const activeBuilds = (world?.builds || []).filter((build: any) => build.status === 'building')
   const orderedBuilds = initialBuildId
@@ -302,7 +307,7 @@ export default function FileFolderOpenWorld({
   const filteredBlueprints = (world?.blueprints || []).filter((blueprint:any)=>{
     const query=blueprintSearch.trim().toLowerCase()
     if(!query)return true
-    return [blueprint.name,blueprint.description,blueprint.district,blueprint.system_type]
+    return [blueprint.blueprint_key,blueprint.name,blueprint.description,blueprint.district,blueprint.system_type]
       .some(value=>String(value||'').toLowerCase().includes(query))
   })
 
@@ -317,9 +322,10 @@ export default function FileFolderOpenWorld({
             <h2 className="mt-1 truncate text-lg font-black text-white md:mt-2 md:text-4xl">{world?.businessFormation?.business_name || workshopTitle}</h2>
             <p className="mt-1 truncate text-[9px] font-mono text-slate-500 md:mt-2 md:text-[10px]">{clientName} · {fileNumber}</p>
           </div>
-          <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-400/5 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] text-emerald-200">
-            Client control
-          </span>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <span className="rounded-full border border-emerald-300/20 bg-emerald-400/5 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] text-emerald-200">Client control</span>
+            <Link href="/client/dashboard" className="text-[10px] font-black text-cyan-200 underline">Return to Weave Open World</Link>
+          </div>
         </div>
 
         <p className="mt-3 hidden max-w-3xl text-xs leading-6 text-slate-400 md:block">{world?.businessFormation?.purpose || workshopPurpose || 'You own the business and decide what to build. WEAVE hosts, organizes and integrates the technology through your Customer Door.'}</p>
@@ -373,16 +379,17 @@ export default function FileFolderOpenWorld({
       <div className="min-h-[520px] sm:min-h-[650px]">
         {fileFolderTier==='standard'
           ? <FileFolderStandardLivingWorld appearance={worldAppearance||resolveFileFolderAppearance('standard')}
-              districts={visibleDistricts} active={district} onEnter={setDistrict}
+              districts={visibleDistricts} active={district} onEnter={enterDistrict}
               systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds}
               operatingSystems={world?.systems||[]} customerDoor={world?.customerDoor} now={now}/>
           : fileFolderTier==='plus'
           ? <FileFolderPlusRadiantWorld appearance={worldAppearance||resolveFileFolderAppearance('plus')}
-              districts={visibleDistricts} active={district} onEnter={setDistrict}
+              districts={visibleDistricts} active={district} onEnter={enterDistrict}
               systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}/>
-          : <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={setDistrict}
+          : <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={enterDistrict}
               systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}
               appearance={worldAppearance||resolveFileFolderAppearance(fileFolderTier==='premium'?'premium':'pro')}/>} 
+
 
 
         <nav aria-label="Walk the build site" className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
@@ -417,7 +424,7 @@ export default function FileFolderOpenWorld({
           </div>
         </nav>
 
-        <div className="p-3 sm:p-4 md:p-6">
+        <div id="file-folder-workspace" className="scroll-mt-28 p-3 sm:p-4 md:p-6">
           {message && <div role="status" aria-live="polite" className="mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-300">{message}</div>}
 
           {district==='workshop_core'&&(
@@ -523,15 +530,16 @@ export default function FileFolderOpenWorld({
                   blueprints={world?.blueprints||[]}
                   busy={busy==='create_platform_project'}
                   onCreate={(kind:FileFolderPlatformKind,title:string,purpose:string)=>act({action:'create_platform_project',kind,title,purpose},'create_platform_project')}
-                  onChooseBlueprint={key=>setBlueprintSearch(key)}
+                  onChooseBlueprint={key=>{setBlueprintSearch(key);window.requestAnimationFrame(()=>document.getElementById('ff-blueprint-list')?.scrollIntoView({behavior:'smooth',block:'start'}))}}
                 />
               </div>
               <input value={blueprintSearch} onChange={event=>setBlueprintSearch(event.target.value)} className="mt-4 w-full rounded-xl border border-violet-300/15 bg-black/25 px-4 py-3 text-sm text-white outline-none" placeholder="Search store, payments, AI, streaming, operations, marketplace…"/>
               {filteredBlueprints.length===0&&<p role="status" className="mt-5 rounded-xl border border-white/10 p-4 text-sm text-slate-300">No blueprints match this search. <button type="button" onClick={()=>setBlueprintSearch('')} className="mt-2 block text-sky-200">Clear search</button></p>}
-              <div className="mt-5 grid gap-3 md:grid-cols-2">
+              <div id="ff-blueprint-list" className="mt-5 scroll-mt-28 grid gap-3 md:grid-cols-2">
                 {filteredBlueprints.map((blueprint:any) => {
                   const owned = Number(inventory.get(blueprint.required_item_key) || 0)
-                  const hasComponents = !blueprint.required_item_key || owned >= Number(blueprint.required_item_quantity || 0)
+                  const quote=quoteFileFolderBlueprint(blueprint,owned)
+                  const hasComponents=quote.materialMissing===0
                   const canStart = hasComponents && !fundingGateLocked
                   const effectiveMinutes = Math.max(15, Math.ceil(Number(blueprint.build_hours || 1) * 60 / Number(buildFunding?.buildSpeedMultiplier || 1)))
                   const effectiveLabel = effectiveMinutes >= 1440
@@ -542,12 +550,21 @@ export default function FileFolderOpenWorld({
                   return <div key={blueprint.blueprint_key} className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
                     <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[0.14em] text-violet-300">{branchLabel(blueprint.district)}</p><h4 className="mt-1 font-bold text-white">{blueprint.name}</h4></div><span className="shrink-0 rounded-full bg-white/5 px-2 py-1 text-[9px] text-slate-400">Base {blueprint.build_hours}h · Yours {effectiveLabel}</span></div>
                     <p className="mt-2 text-xs leading-5 text-slate-400">{blueprint.description}</p>
-                    <p className="mt-3 text-[10px] text-slate-500">Requires: {blueprint.required_item_quantity || 0} × {blueprint.required_item_name || 'No component'} · Owned {owned}{blueprint.required_item_key ? <> · <span className="font-bold text-amber-200">{Number(blueprint.required_item_price_flame_coin || 0).toLocaleString()} Flame Coin each</span></> : null}</p>
+                    <div data-file-folder-build-quote={blueprint.blueprint_key} className="mt-3 rounded-xl border border-violet-300/20 bg-violet-400/[.04] p-3 text-[11px] leading-6 text-slate-200">
+                      <p className="font-black text-amber-100">Acquire &amp; Build Price</p>
+                      <p>Materials: {quote.materialRequired} × {quote.materialName} · {quote.materialOwned} owned</p>
+                      {quote.priceAvailable ? <>
+                        <p>Kit price: <strong>{quote.unitPrice.toLocaleString()} Flame Coin each</strong> · Full requirement: {quote.requiredMaterialCost.toLocaleString()} FC</p>
+                        <p className="font-black text-emerald-200">Still to acquire: {quote.materialMissing} kit(s) · {quote.acquireCost.toLocaleString()} Flame Coin</p>
+                      </> : <p role="alert" className="font-bold text-amber-200">Kit pricing is unavailable. Administration must publish this item before acquisition.</p>}
+                      {quote.materialMissing>0&&!quote.purchaseAvailable&&<p role="alert" className="text-amber-200">Required kit is not currently published for purchase.</p>}
+                      <p>Start construction: <strong>No separate Flame Coin charge</strong> after required kits are owned. Formation time: {effectiveLabel}.</p>
+                    </div>
                     <div className="mt-4 grid gap-2">
                       <input value={buildDrafts[blueprint.blueprint_key]?.title||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:event.target.value,purpose:current[blueprint.blueprint_key]?.purpose||''}}))} className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder={`Business name for this system · ${blueprint.name}`}/>
                       <textarea value={buildDrafts[blueprint.blueprint_key]?.purpose||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:current[blueprint.blueprint_key]?.title||'',purpose:event.target.value}}))} rows={2} className="resize-none rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder="How should this system serve your business?"/>
                     </div>
-                    {fundingGateLocked ? <Link href="/client/deposit" className="mt-4 inline-flex items-center rounded-full bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950">Add Flame Credits</Link> : !hasComponents ? <button type="button" onClick={()=>{setDistrict('build_market');setMessage(`Required material: ${blueprint.required_item_name}. Acquire it here, then return to Blueprint Foundry. Your system name and purpose are kept.`)}} className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-300/40 px-4 py-3 text-sm text-violet-100"><Store className="h-4 w-4"/>Get required material</button> : <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key,title:buildDrafts[blueprint.blueprint_key]?.title||'',purpose:buildDrafts[blueprint.blueprint_key]?.purpose||''},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Build this system':'Acquire Component'}</button>}
+                    {fundingGateLocked ? <Link href="/client/deposit" className="mt-4 inline-flex items-center rounded-full bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950">Add Flame Credits</Link> : !hasComponents ? <button type="button" onClick={()=>{enterDistrict('build_market');setMessage(`Required material: ${blueprint.required_item_name||blueprint.required_item_key}. ${quote.purchaseAvailable?'Acquire it here, then return to Blueprint Foundry.':'This kit is unavailable for purchase. Administration needs to publish it.'} Your system name and purpose are kept.`)}} className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-300/40 px-4 py-3 text-sm text-violet-100"><Store className="h-4 w-4"/>Get required material</button> : <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key,title:buildDrafts[blueprint.blueprint_key]?.title||'',purpose:buildDrafts[blueprint.blueprint_key]?.purpose||''},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Build this system':'Acquire Component'}</button>}
                   </div>
                 })}
               </div>

@@ -1,5 +1,6 @@
 'use client'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
+import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
 import { BuiltSystemRuntime } from './built-system-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -129,6 +130,7 @@ const BUILD_LADDER = [
 
 function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { blueprint: any; label?: string; onBuild?: () => void }) {
   const modules = systemModules(blueprint?.system_type)
+  const priceQuote=blueprint?quoteFileFolderBlueprint(blueprint):null
   if (!blueprint) {
     return (
       <div className="rounded-3xl border border-dashed border-white/10 bg-black/20 p-8 text-sm text-slate-500">
@@ -153,6 +155,13 @@ function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { bluepr
           </span>
         </div>
       </div>
+      {priceQuote&&<div data-client-blueprint-preview-price className="border-b border-amber-200/20 bg-amber-300/[.04] px-5 py-4 text-xs leading-6 text-amber-100">
+        <p className="font-black">Acquire &amp; Build Price</p>
+        {priceQuote.priceAvailable
+          ? <p>Required materials: {priceQuote.materialRequired} × {priceQuote.materialName} · Total kit cost {priceQuote.requiredMaterialCost.toLocaleString()} Flame Coin</p>
+          : <p role="alert">Required kit price unavailable. Administration must publish the missing material.</p>}
+        <p>Starting the build has no separate Flame Coin fee after the required kit is acquired. Check your owned kit balance in Blueprint Foundry.</p>
+      </div>}
       <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((module, index) => (
           <div key={module} className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">

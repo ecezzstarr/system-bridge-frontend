@@ -3,57 +3,45 @@ import { getAuthUser } from '@/lib/auth-api'
 import { sql } from '@/lib/db'
 import { WORLD_RULES } from '@/lib/world/constants'
 import { notifyDepositSubmitted } from '@/lib/deposit-notifications'
+import { submitClientTronDeposit, normalizeTronTxHash, normalizeTronAmount } from '@/lib/client-trx-deposits'
 
-export async function POST(request: NextRequest) {
-  try {
-    const user = await getAuthUser(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+export const dynamic='force-dynamic'
 
-    if (user.role !== 'client' && user.role !== 'admin') {
-      return NextResponse.json({ error: 'TRON deposit is reserved for Clients. Please use OPay (NGN).' }, { status: 403 })
-    }
-
-    const body = await request.json()
-    const { amount, txHash } = body
-
-    if (!amount || Number(amount) <= 0) {
-      return NextResponse.json({ error: 'Valid amount required' }, { status: 400 })
-    }
-
-    if (!txHash || typeof txHash !== 'string' || !txHash.trim()) {
-      return NextResponse.json({ error: 'TRX transaction hash is required for verification' }, { status: 400 })
-    }
-
-    const result = await sql`
-      INSERT INTO deposits (id, user_id, amount_trx, status, method, currency, receipt_data, created_at, updated_at)
-      VALUES (gen_random_uuid(), ${user.id}::uuid, ${Number(amount)}, 'pending', 'tron', 'TRX', ${txHash.trim()}, NOW(), NOW())
-      RETURNING id
+export async function GET(request:NextRequest){
+  const user=await getAuthUser(request)
+  if(!user||user.role!=='client')return NextResponse.json({error:'Client login required'},{status:403})
+  try{
+    const deposits=await sql`
+      SELECT id,amount_trx,method,status,receipt_data,created_at,updated_at,verified_at
+      FROM deposits WHERE user_id=${user.id}::uuid AND method='tron'
+      ORDER BY created_at DESC LIMIT 30
     `
-
-    if (user.role !== 'admin') {
-      await notifyDepositSubmitted({
-        depositorId: user.id,
-        depositorName: user.name || user.username || user.email,
-        role: 'Client',
-        depositId: result[0].id,
-        rail: 'TRX',
-        amountLabel: `${Number(amount).toLocaleString()} TRX`,
-        secondaryLabel: `${Number(amount).toLocaleString()} Flame Coin after verification`,
-        adminLink: '/admin/client-deposits',
-      })
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'TRX payment submitted for verification. Administration will verify its value and credit the equivalent Flame Coin.',
-      depositId: result[0].id,
-      txHash: txHash.trim(),
-      companyTrxWallet: WORLD_RULES.COMPANY_TRX_WALLET,
+    return NextResponse.json({success:true,deposits},{headers:{'Cache-Control':'private, no-store'}})
+  }catch(error){console.error('[client TRX deposit history]',error);return NextResponse.json({error:'Deposit history unavailable'},{status:503})}
+}
+export async function POST(request:NextRequest){
+  const user=await getAuthUser(request)
+  if(!user||user.role!=='client')return NextResponse.json({error:'Client login required'},{status:403})
+  try{
+    const body=await request.json()
+    const amount=normalizeTronAmount(body?.amount)
+    const hash=normalizeTronTxHash(body?.txHash)
+    const submitted=await submitClientTronDeposit(user.id,amount,hash)
+    if(!submitted.existing)await notifyDepositSubmitted({
+      depositorId:user.id,depositorName:user.name||user.username||user.email,role:'Client',
+      depositId:submitted.id,rail:'TRX',amountLabel:amount.toLocaleString()+' TRX',
+      secondaryLabel:amount.toLocaleString()+' Flame Coin after verification',
+      adminLink:'/admin/client-deposits',
     })
-  } catch (error: any) {
-    console.error('TRON Deposit error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({
+      success:true,status:'pending',existing:submitted.existing,depositId:submitted.id,
+      txHash:hash,companyTrxWallet:WORLD_RULES.COMPANY_TRX_WALLET,
+      message:submitted.existing?'This deposit is already awaiting Administration verification. No second request was created.':'Deposit recorded. Administration must verify the TRX transaction and Company wallet receipt before crediting Flame Coin.',
+    })
+  }catch(error:any){
+    const message=String(error?.message||'TRX deposit could not be submitted')
+    const invalid=/transaction ID|amount|already belongs/.test(message)
+    console.error('[client TRX deposit]',message)
+    return NextResponse.json({error:invalid?message:'TRX deposit could not be submitted'},{status:invalid?400:503})
   }
 }
