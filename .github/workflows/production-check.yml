@@ -59,6 +59,9 @@ jobs:
         run: |
           node tests/agent-creative-studio-regression.cjs
           node tests/echo-immediate-regression.cjs
+          node tests/one-nigerian-scroll-regression.cjs
+          node tests/bridge-ai-shared-file-folder-assistance.cjs
+          node tests/admin-loader-workshop-contract.cjs
 
       - name: Smart WEAVE loading guidance regression
         run: node tests/weave-loading-guidance-regression.cjs
