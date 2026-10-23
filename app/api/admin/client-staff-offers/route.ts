@@ -4,6 +4,7 @@ import { getAuthUser } from '@/lib/auth-api'
 import { getPool, sql } from '@/lib/db'
 import { createRandomFileNumberCandidate, ensureFneTables } from '@/lib/fne'
 import { ensureCompanyClientStaffSchema, staffOfferTokenHash, tierFromStaffTicketUSDT } from '@/lib/company-client-staff'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export const dynamic = 'force-dynamic'
 
@@ -207,6 +208,16 @@ export async function PATCH(request: NextRequest) {
           loanUSDT>0?String(body.loanFundingReference).trim():null,
           loanUSDT>0?String(body.loanFundingNetwork).trim():null])
       await connection.query('COMMIT')
+      if (offer.client_id) {
+        try {
+          await issueWeaveReceipt({
+            userId:String(offer.client_id),kind:'payment',source:'company_staff_entry_ticket',
+            sourceId:String(offer.id),amount:applicantUSDT,currency:'USDT',status:'verified',
+            description:'Verified applicant contribution to company entry ticket; separately funded private loan is not a Client payment',
+            metadata:{receiptReference:receiptNumber,proposedPersonalLoanUSDT:loanUSDT},
+          })
+        } catch (receiptError) { console.error('[company staff] existing Client receipt unavailable',receiptError) }
+      }
       return NextResponse.json({ success:true,offer:result.rows[0],
         verification:'manual_USDT_reference',receiptReference:receiptNumber }, {
         headers:{'Cache-Control':'private, no-store'},
