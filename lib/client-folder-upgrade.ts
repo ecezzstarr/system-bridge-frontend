@@ -15,6 +15,7 @@ export async function ensureClientFolderUpgrades(){
     loan_funded_at timestamptz,
     loan_funding_reference varchar(255),
     loan_agreed_at timestamptz,
+    loan_agreement_reference varchar(255),
     repayment_verified_usdt numeric(16,2) NOT NULL DEFAULT 0,
     construction_note text NOT NULL,
     prepared_by uuid REFERENCES users(id),
