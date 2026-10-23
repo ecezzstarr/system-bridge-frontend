@@ -160,8 +160,8 @@ export async function GET(request: NextRequest) {
       `
       if (purchaseTier) {
         persistedTier = purchaseTier.file_folder_tier === 'plus'
-          && purchaseTier.payment_method === 'usdt'
-          && Number(purchaseTier.amount_usdt) === 20_000
+          && ((purchaseTier.payment_method === 'trx' && Number(purchaseTier.amount_trx) === FILE_FOLDER_PRICING.plusTrx)
+            || (purchaseTier.payment_method === 'usdt' && Number(purchaseTier.amount_usdt) === FILE_FOLDER_PRICING.plusUsdt))
           ? 'plus'
           : getFileFolderTier(Number(purchaseTier.amount_trx), purchaseTier.file_folder_tier)
       }
