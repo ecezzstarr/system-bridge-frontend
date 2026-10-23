@@ -15,7 +15,7 @@ export type WorldDomainRow={
   public_name?:string|null
   building_count?:number|string|null;completed_count?:number|string|null
   operating_count?:number|string|null;published_offers?:number|string|null
-  accepted_connections?:number|string|null;forming_progress?:number|string|null
+  accepted_connections?:number|string|null;linked_projects?:number|string|null;forming_progress?:number|string|null
   available_for_collaboration?:boolean|null
 }
 export type PublicWorldDomain={
@@ -25,7 +25,7 @@ export type PublicWorldDomain={
   stage:DomainStage
   buildLevel:number
   building:boolean
-  activity:{formation:'forming'|'constructed'|'operating';activeBuilds:number;operatingSystems:number;expansions:number}
+  activity:{formation:'forming'|'constructed'|'operating';activeBuilds:number;operatingSystems:number;expansions:number;jointFormations:number}
   publicName:string
   customerDoor:{open:boolean;href:string|null}
   publishedOffers:number
@@ -60,11 +60,13 @@ export function projectPublicWorldDomain(row:WorldDomainRow):PublicWorldDomain{
   const operating=boundedCount(row.operating_count)
   const offers=boundedCount(row.published_offers)
   const accepted=boundedCount(row.accepted_connections)
+  const linked=boundedCount(row.linked_projects)
   const progress=Math.min(100,Math.max(0,Number(row.forming_progress)||0))
-  // No forged growth: only stored completed systems, currently building work,
-  // verified active systems and accepted user-user connections add world level.
-  const score=completed+operating*2+accepted*2+building*progress/100
-  const stage:DomainStage=accepted>0||operating>=3?'expanding'
+  // An invitation, even once accepted, is a real human connection but is NOT
+  // yet a joint system or a claim of business expansion. Only two separately
+  // contributed, actively commissioned Client systems add partnership growth.
+  const score=completed+operating*2+linked*3+building*progress/100
+  const stage:DomainStage=linked>0||operating>=3?'expanding'
     :operating>0?'operating':building>0||completed>0?'forming':'foundation'
   const doorOpen=row.open_door===true && typeof row.public_slug==='string'&&
     /^[a-z0-9-]{1,160}$/.test(row.public_slug)
@@ -81,6 +83,7 @@ export function projectPublicWorldDomain(row:WorldDomainRow):PublicWorldDomain{
       activeBuilds:building,
       operatingSystems:operating,
       expansions:accepted,
+      jointFormations:linked,
     },
     // Unpublished private identity and File Numbers never enter the public API.
     publicName:doorOpen&&row.public_name?String(row.public_name).slice(0,100):
