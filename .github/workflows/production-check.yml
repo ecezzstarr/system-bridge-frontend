@@ -8,6 +8,7 @@ on:
       - main
       - 'feature/**'
       - 'reconcile/**'
+      - 'integration/**'
   workflow_dispatch:
 
 jobs:
