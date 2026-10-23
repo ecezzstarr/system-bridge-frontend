@@ -107,14 +107,12 @@ export class FulfillmentAgent {
    * RECONCILE: Generate the next available package if needed
    */
   async reconcile() {
-    const availableCount = await sql`
-      SELECT COUNT(*) FROM market_prospect_contacts WHERE status = 'available'
-    `
-    const count = parseInt(availableCount[0].count)
-    
-    if (count >= 3) {
-      await this.packageAvailable(3, 5)
-    }
+    // Marketplace replenishment must obey the Administration enable switch,
+    // the published 120-candidate threshold and the two-country spacing rule.
+    // Legacy automatic packaging from unallocated stock bypassed all three.
+    const { runProspectMarketAuto } = await import('@/lib/prospect-market-auto')
+    return runProspectMarketAuto()
+
   }
 }
 
