@@ -20,7 +20,7 @@ assert.ok(scenes.length>1&&scenes.length<=24)
 assert.equal(scenes.reduce((sum,scene)=>sum+scene.durationSeconds,0),120)
 assert.equal(scenes.map(s=>s.voiceover).join(' '),exact)
 assert.ok(scenes.every(s=>s.text.length<=110),'captions fit mobile screen')
-assert.throws(()=>make(exact,30),/at least/)
+assert.throws(()=>make(exact+' '+exact,30),/at least/)
 assert.throws(()=>make(' ',90),/original narration/)
 assert.throws(()=>make(exact,500),/30 seconds/)
 
