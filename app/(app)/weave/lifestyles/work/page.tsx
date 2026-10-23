@@ -26,11 +26,25 @@ const guidance:Record<string,JobGuidance>={
       'Prepare, package, and record the actual stage and handoff for each authorized order.',
       'Follow the approved Stability Lead’s allocation; Administration handles verification and financial authorization.']},
 }
-const guidanceFor=(position:WorkPosition):JobGuidance=>guidance[position.id]||
-  {group:'Company Guidance',start:position.tools[0]?.href||'/weave/lifestyles',talk:position.tools[0]?.href||'/communications',
-    steps:['Read your authorized department inbox and identify the requests assigned to you.',
-      'Reply with factual progress through the department’s approved work system.',
-      'Escalate decisions outside your delegated duties to Administration.']}
+const guidanceFor=(position:WorkPosition):JobGuidance=>{
+  if(position.id==='food_preparation'){
+    const lead=position.title==='Food Preparation Manager'
+    return {...guidance.food_preparation,steps:lead?[
+      'Review paid, verified food orders and plan the preparation workload.',
+      'Assign real orders to the two approved Assistants or take responsibility for specific orders yourself.',
+      'Check preparation, packaging and dispatch handoffs; ensure shortages and exceptions are reported.'
+    ]:[
+      'Check the preparation orders assigned to you by the approved Stability Lead.',
+      'Prepare, package and dispatch to the recorded order specification and destination.',
+      'Record each actual handoff and alert the food team to shortages or assistance needed.'
+    ]}
+  }
+  return guidance[position.id]||
+    {group:'Company Guidance',start:position.tools[0]?.href||'/weave/lifestyles',talk:position.tools[0]?.href||'/communications',
+      steps:['Read your authorized department inbox and identify the requests assigned to you.',
+        'Reply with factual progress through the department’s approved work system.',
+        'Escalate decisions outside your delegated duties to Administration.']}
+}
 export default function CompanyWorkspaces(){
   const {user,token,isInitialized}=useAuth()
   const [positions,setPositions]=useState<WorkPosition[]>([])
