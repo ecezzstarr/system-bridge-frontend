@@ -78,7 +78,7 @@ assert.ok(client.includes("action==='propose_project'")&&client.includes("action
  'Joint work requires a proposal, partner approval and real operating Client system')
 assert.ok(client.includes("b.client_id=${domain.client_id}::uuid")&&
  client.includes("b.status='active'"),
- 'A Client cannot contribute another person's or an inactive system')
+ "A Client cannot contribute another person\'s or an inactive system")
 assert.ok(db.includes('idx_weave_open_world_projects_connection')&&
  db.includes("active_system.status='active'")&&
  migration.includes('weave_open_world_project_contributions'),
