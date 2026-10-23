@@ -83,8 +83,28 @@ git fetch origin main
 PREVIOUS_SHA="$(git rev-parse HEAD)"
 ORIGIN_MAIN_SHA="$(git rev-parse origin/main)"
 REQUESTED_SHA="${WEAVE_DEPLOY_TARGET_SHA:-}"
+ROLLBACK_TARGET="${WEAVE_DEPLOY_ROLLBACK_SHA:-}"
+if [[ -n "$ROLLBACK_TARGET" && -n "$REQUESTED_SHA" ]]; then
+  echo "Cannot request a new release and a rollback simultaneously." >&2
+  exit 4
+fi
 
-if [[ -n "$REQUESTED_SHA" ]]; then
+if [[ -n "$ROLLBACK_TARGET" ]]; then
+  if [[ ! "$ROLLBACK_TARGET" =~ ^[0-9a-fA-F]{40}$ ]]; then
+    echo "Rollback must name one exact historical Git commit SHA." >&2
+    exit 4
+  fi
+  if ! git cat-file -e "${ROLLBACK_TARGET}^{commit}" 2>/dev/null; then
+    echo "Historical rollback commit is absent from the host checkout." >&2
+    exit 5
+  fi
+  if ! git merge-base --is-ancestor "$ROLLBACK_TARGET" "$ORIGIN_MAIN_SHA"; then
+    echo "Refusing rollback to a commit outside canonical main history." >&2
+    exit 6
+  fi
+  TARGET_SHA="$ROLLBACK_TARGET"
+  DEPLOY_SOURCE="administration-release-rollback"
+elif [[ -n "$REQUESTED_SHA" ]]; then
   if [[ ! "$REQUESTED_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
     echo "WEAVE_DEPLOY_TARGET_SHA must be a full Git commit SHA." >&2
     exit 4
@@ -237,7 +257,11 @@ log "Verified target release: $TARGET_SHA"
 # Every movement is attempted against the current WEAVE runtime. On the first
 # rollout, or during an outage, a failed record write is appended to the host
 # journal and replayed after a healthy runtime returns.
-post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" || true
+if [[ -n "$ROLLBACK_TARGET" ]]; then
+  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Administration selected previously healthy release" "{\\"startedAt\\":\\"$DEPLOY_STARTED_AT\\"}" || true
+else
+  post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" || true
+fi
 
 git reset --hard "$TARGET_SHA"
 set_env_value WEAVE_RELEASE_SHA "$TARGET_SHA"
@@ -257,7 +281,11 @@ post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WE
 wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
 
 VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}" || true
+if [[ -n "$ROLLBACK_TARGET" ]]; then
+  post_record rolled_back "$TARGET_SHA" "$PREVIOUS_SHA" "Administration rollback verified against local and public health" "{\\"verifiedAt\\":\\"$VERIFIED_AT\\",\\"domain\\":\\"$DOMAIN\\"}" || true
+else
+  post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}" || true
+fi
 replay_journal || true
 
 "${COMPOSE[@]}" ps
