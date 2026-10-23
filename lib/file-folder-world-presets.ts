@@ -36,7 +36,7 @@ export type FileFolderThemeId = typeof FILE_FOLDER_THEME_IDS[number]
 export const FILE_FOLDER_REALNESS = ['basic','refined','high'] as const
 export type FileFolderRealness = typeof FILE_FOLDER_REALNESS[number]
 export const FILE_FOLDER_EQUIPMENT_PACKS = [
-  'formation','business-operations','enterprise-command','plus-complete-systems',
+  'formation','standard-business-districts','business-operations','enterprise-command','plus-complete-systems',
 ] as const
 export type FileFolderEquipmentPack = typeof FILE_FOLDER_EQUIPMENT_PACKS[number]
 
