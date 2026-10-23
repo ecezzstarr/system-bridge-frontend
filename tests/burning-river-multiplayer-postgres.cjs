@@ -130,6 +130,8 @@ async function run(){
   assert.equal(worldA.customerDoor.open,true)
   assert.equal(worldA.customerDoor.href,'/market/published-company-door?via=system-switch')
   assert.equal(worldA.activity.activeBuilds,1)
+  assert.ok(worldA.activity.buildProgress>=40&&worldA.activity.buildProgress<=60,
+    'Public geometry must track actual server timestamps rather than fictitious building stages')
   assert.equal(worldB.customerDoor.open,false)
   assert.equal(worldB.customerDoor.href,null)
   assert.ok(!JSON.stringify(first).includes('PRIVATE SYSTEM BLUEPRINT'))
