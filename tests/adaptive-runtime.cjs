@@ -120,7 +120,7 @@ async function readiness(){
   let done=false
   const controller=new AbortController()
   waitForEnvironmentReadiness('boot',config,controller.signal).then(()=>done=true)
-  await h.tick(7999);assert.equal(done,false)
+  await h.tick(config.loading.maxWaitMs-1);assert.equal(done,false)
   await h.tick(1);assert.equal(done,true,'unresolved fonts/images cannot strand loading')
   assert.equal(image.count(),0);assert.equal(observed,0);assert.equal(h.timers.size,0)
   const next=new AbortController()
@@ -155,3 +155,4 @@ function frames(){
   cleanup()
 }
 (async()=>{await polling();await resources();await adaptation();await readiness();frames();console.log('PASS: adaptive runtime behavior, capped/offscreen rendering, request lifetimes, hidden-tab recovery and readiness cleanup')})().catch(error=>{console.error(error);process.exitCode=1})
+
