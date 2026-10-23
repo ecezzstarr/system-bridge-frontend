@@ -49,3 +49,6 @@ assert.ok(hosted.includes('href="/music-workshop"')&&hosted.includes("system.sys
 assert.ok(legion.includes('href="/music-workshop"'),'Hired Legion has private workshop entrance')
 assert.ok(layout.includes("pathname !== '/music-workshop'"),'Exclusive Legion can enter Music Studio without reopening its general Agent/Bridger role')
 console.log('Music Studio build, audio, visuals, access and privacy checks passed.')
+
+assert.ok(read('lib/client-file-folder-world.ts').includes('${item[5] !== false}'),'Catalog published flag must be a bound SQL parameter');
+assert.ok(read('lib/client-file-folder-world.ts').includes('${blueprint[8] !== false}'),'Blueprint published flag must be a bound SQL parameter');

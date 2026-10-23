@@ -289,7 +289,7 @@ async function seedFileFolderWorld(sql: any) {
         item_key, name, category, description, price_flame_coin, published
       )
       VALUES (
-        ${item[0]}, ${item[1]}, ${item[2]}, ${item[3]}, ${item[4]}, item[5] !== false
+        ${item[0]}, ${item[1]}, ${item[2]}, ${item[3]}, ${item[4]}, ${item[5] !== false}
       )
       ON CONFLICT (item_key) DO NOTHING
     `
@@ -408,7 +408,7 @@ async function seedFileFolderWorld(sql: any) {
       )
       VALUES (
         ${blueprint[0]}, ${blueprint[1]}, ${blueprint[2]}, ${blueprint[3]},
-        ${blueprint[4]}, ${blueprint[5]}, ${blueprint[6]}, ${blueprint[7]}, blueprint[8] !== false
+        ${blueprint[4]}, ${blueprint[5]}, ${blueprint[6]}, ${blueprint[7]}, ${blueprint[8] !== false}
       )
       ON CONFLICT (blueprint_key) DO NOTHING
     `
