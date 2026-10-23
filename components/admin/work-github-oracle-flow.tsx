@@ -78,7 +78,7 @@ export default function WorkGithubOracleFlow({
       })
       const body=await response.json()
       if(!response.ok||!body.success)throw new Error(body.error||'Merge refused')
-      setNotice('GitHub accepted PR #'+pull.number+' into main. Await a new successful Production Check before authorizing Oracle.')
+      setNotice('GitHub accepted PR #'+pull.number+' into main. Await a new successful Production Check before authorizing Oracle.'+(body.result?.auditRecorded===false?' The WEAVE merge audit update needs reconciliation.':''))
       setMergePhrase('');setSelectedPr(null)
       await refresh(true)
     }catch(reason){setError(reason instanceof Error?reason.message:'GitHub merge refused')}
