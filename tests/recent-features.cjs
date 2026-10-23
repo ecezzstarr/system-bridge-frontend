@@ -557,7 +557,7 @@ assert.ok(roleDistrictEnvironmentSource.includes('districtScenes')&&roleDistrict
 assert.equal(getRoleDistricts('admin')[0].name,'Control','Administration starts with one control district')
 assert.deepEqual(
  getRolePlaces('agent').map(place=>place.href),
- ['/agent/presence','/settings','/enterprise/legions-notebook','/agility','/electrolyte','/ember','/agent/cakes','/agent/commissions','/communications','/company-chat','/event'],
+ ['/agent/presence','/settings','/enterprise/legions-notebook','/agility','/electrolyte','/ember','/agent/cakes','/agent/commissions','/echo','/communications','/company-chat','/event'],
  'Agent account keeps focused districts with Company Guidance inside Connection & Event'
 )
 assert.deepEqual(
@@ -570,6 +570,7 @@ assert.ok(roleLabel('agent','Agent Presence'),'Agent has a Presence environment 
 assert.ok(roleLabel('bridger','Bridger Presence'),'Bridger has a Presence environment for understanding the position')
 assert.ok(roleLabel('client','Client Presence'),'Client has a Presence environment for understanding the Client world')
 assert.ok(roleHas('client','/client/loops')&&roleHas('client','/client/event'),'Client Loops and Flame Event live inside the canonical Client world catalog')
+assert.ok(['admin','agent','bridger','client'].every(role=>roleHas(role,'/echo')),'Echo is directly available in all four active role districts')
 assert.ok(roleLabel('client','Loop Field')&&roleLabel('client','Flame Event · Loop 1'),'Client Loop/Event names are canonical inside the role world')
 assert.ok(roleHas('agent','/communications')&&roleHas('bridger','/communications')&&roleHas('admin','/communications'),'Agent Bridger and Administration expose Direct Communication')
 assert.ok(roleHas('agent','/settings')&&roleHas('bridger','/settings')&&roleHas('admin','/settings')&&roleHas('client','/client/settings'),'Every role exposes Settings')
@@ -1579,7 +1580,7 @@ const clientEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/client/l
 const authEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/(auth)/layout.tsx'),'utf8')
 
 assert.ok(weaveEnvironmentTransitSource.includes("first.current?'boot':'transit'")&&weaveEnvironmentTransitSource.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'Boot and route entry use cancellable environment readiness')
-assert.ok(weaveEnvironmentTransitSource.includes("mode==='boot'?8000:3000"),'Readiness has a bounded fallback for stalled assets')
+assert.ok(weaveEnvironmentTransitSource.includes('Math.min(loading.maxWaitMs,60000)'),'Readiness has an Administration-configurable bounded fallback for stalled assets')
 assert.ok(weaveEnvironmentTransitSource.includes('document.fonts.ready'),'Environment readiness waits for typography before reveal')
 assert.ok(weaveEnvironmentTransitSource.includes('document.images'),'Environment readiness can wait for current media before reveal')
 assert.ok(weaveEnvironmentTransitSource.includes('MutationObserver'),'Environment readiness waits for DOM component formation to become quiet')

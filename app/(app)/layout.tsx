@@ -14,6 +14,7 @@ import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
 import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
+import { CompanyLoopTwoScroll } from '@/components/events/company-loop-two-scroll'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
@@ -66,7 +67,7 @@ export default function AppLayout({
         const data = await res.json().catch(() => ({}))
         const employment = data?.employment?.active ? data.employment : null
         setLegionEmployment(employment)
-        if (employment && !pathname.startsWith('/weave/lifestyles/legion')) {
+        if (employment && !pathname.startsWith('/weave/lifestyles/legion') && pathname !== '/echo') {
           router.replace('/weave/lifestyles/legion')
         }
       } catch (e) {
@@ -131,7 +132,7 @@ export default function AppLayout({
 
   if (!isAuthenticated) return null
   if (!routeAllowed) return null
-  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion')) return null
+  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion') && pathname !== '/echo') return null
 
   return (
     <EnvironmentOrganizerProvider>
@@ -139,6 +140,7 @@ export default function AppLayout({
       <div className="relative z-10 flex min-h-dvh min-w-0 flex-col">
         <AppHeader user={user as any} />
         <FlameEventAd />
+        <CompanyLoopTwoScroll />
         <main className="relative min-w-0 flex-1 overflow-x-clip" data-weave-world-interior="route">
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>

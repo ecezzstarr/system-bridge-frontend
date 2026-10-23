@@ -35,7 +35,7 @@ assert.ok(transit.includes('transitTrainingForPath(role,destinationPath)'),'Dest
 assert.ok(transit.includes('data-client-loader-open-world-return'),'Client loader provides a real return route')
 assert.ok(!transit.includes("Today's company updates")&&!transit.includes('Select Destination'),'Static image menus and fabricated live updates are absent')
 assert.ok(transit.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'The readiness gate is preserved')
-assert.ok(transit.includes('setBriefIndex(index=>Math.min(index+1,activeBriefs.length-1))')&&transit.includes('data-loading-lyric={briefIndex+1}'),'Reader-controlled lyrics advance one complete lesson at a time')
+assert.ok(transit.includes('setInterval(showCurrentLesson,180)')&&transit.includes('data-loading-lyric={briefIndex+1}'),'Automatic lyrics advance one complete lesson at a time')
 
 const guide=read('components/agent/agent-smart-guide.tsx')
 const layout=read('app/(app)/layout.tsx')

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Copy, QrCode, Eye, MessageSquare, UserPlus, Loader2, Code2, Sparkles, ShieldCheck, ExternalLink } from 'lucide-react'
 import { RiverChat } from '@/components/river-chat'
 import { WORLD_RULES } from '@/lib/world/constants'
+import { ClientFileFolderAssistance } from '@/components/bridger/client-file-folder-assistance'
 
 interface Template { id: string; name: string; welcome_message: string; description?: string }
 interface Bridge {
@@ -267,6 +268,7 @@ export default function BridgerWorkshopPage() {
         </DialogContent>
       </Dialog>
 
+      <ClientFileFolderAssistance />
       <div className="border-t border-slate-800"><RiverChat /></div>
     </main>
   )

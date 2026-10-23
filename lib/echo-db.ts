@@ -1,7 +1,9 @@
 import { sql } from './db'
 
-
-export async function ensureEchoTables() {
+let echoSchemaPromise:Promise<void>|null=null
+export function ensureEchoTables():Promise<void> {
+  if(echoSchemaPromise)return echoSchemaPromise
+  echoSchemaPromise=(async()=>{
   await sql`
     CREATE TABLE IF NOT EXISTS echo_identities (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,6 +49,11 @@ export async function ensureEchoTables() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `
+  })().catch(error=>{
+    echoSchemaPromise=null
+    throw error
+  })
+  return echoSchemaPromise
 }
 
 // Echo is available without a recurring fee. Historical rows are preserved.
@@ -161,4 +168,30 @@ export async function listEchoInsights(echoId: string, limit = 50) {
     ORDER BY generated_at DESC
     LIMIT ${limit}
   `
+}
+
+
+/** Private live signals for the current account. Never read another user's Echo. */
+export async function getEchoLiveSignals(userId:string,echoId:string){
+  await ensureEchoTables()
+  const [activity,counts,unread]=await Promise.all([
+    sql`SELECT activity_type,occurred_at FROM echo_activity
+        WHERE echo_id=${echoId}::uuid AND occurred_at>=now()-interval '7 days'
+        ORDER BY occurred_at DESC LIMIT 1`,
+    sql`SELECT count(*)::integer AS total FROM echo_activity
+        WHERE echo_id=${echoId}::uuid AND occurred_at>=now()-interval '7 days'`,
+    sql`SELECT count(*)::integer AS total FROM notifications
+        WHERE user_id=${userId}::uuid AND is_read=false`
+      .catch(error=>{
+        console.error('[Echo] unread notification signal unavailable:',error)
+        return [{total:null}]
+      }),
+  ])
+  const latest=activity[0]
+  return {
+    recentActivityCount:Number(counts[0]?.total||0),
+    lastActivityType:latest?.activity_type?String(latest.activity_type):null,
+    lastActivityAt:latest?.occurred_at?new Date(latest.occurred_at).toISOString():null,
+    unreadNotifications:unread[0]?.total==null?null:Number(unread[0].total),
+  }
 }

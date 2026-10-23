@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
-import { Sparkles, ShieldCheck, Smartphone, Chrome, Globe, BrainCircuit } from 'lucide-react'
+import { Sparkles, ShieldCheck, Smartphone, Chrome, Globe, BrainCircuit, ArrowRight, RefreshCw } from 'lucide-react'
 
 const EchoOrb = dynamic(() => import('@/components/echo-orb'), { ssr: false })
-
-const SUBSCRIPTION_FEE_FLAME_COIN = 0
 
 type Continuance = {
   user_id: string
@@ -22,6 +21,17 @@ type Insight = {
   category: string | null
   confidence: number | null
   generated_at: string
+  recommended_action?:string|null
+  evidence_type?:string|null
+  confidence_label?:string|null
+}
+
+type ImmediateEcho={
+  headline:string
+  explanation:string
+  generatedAt:string
+  signals:{recentActivityCount:number;unreadNotifications:number|null;lastActivityAt:string|null}
+  nextMovements:Array<{title:string;detail:string;href:string}>
 }
 
 const SOURCES = [
@@ -34,9 +44,12 @@ export default function EchoPage() {
   const { user, token } = useAuth()
   const [subscription, setContinuance] = useState<Continuance | null>(null)
   const [insights, setInsights] = useState<Insight[]>([])
+  const [immediate,setImmediate]=useState<ImmediateEcho|null>(null)
   const [loading, setLoading] = useState(true)
   const [subscribing, setSubscribing] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
+  const [recording,setRecording]=useState(false)
+  const [currentMovement,setCurrentMovement]=useState('')
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -54,27 +67,43 @@ export default function EchoPage() {
   }
 
   useEffect(() => {
-    if (user) load()
+    if (user?.id) void load()
     else setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
+  }, [user?.id,token])
 
-  async function load() {
-    setLoading(true)
+  useEffect(()=>{
+    if(!user?.id)return
+    const refresh=()=>{if(document.visibilityState==='visible')void load(true)}
+    document.addEventListener('visibilitychange',refresh)
+    const interval=window.setInterval(refresh,30000)
+    return ()=>{
+      document.removeEventListener('visibilitychange',refresh)
+      window.clearInterval(interval)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[user?.id,token])
+
+  async function load(silent=false) {
+    if(!silent)setLoading(true)
     try {
-      const subRes = await fetch('/api/echo/subscribe', { headers: authHeaders() })
+      const subRes = await fetch('/api/echo/subscribe', { headers: authHeaders(),cache:'no-store' })
       const subData = await subRes.json()
+      if(!subRes.ok)throw Error(subData.error||'Echo status unavailable')
       setContinuance(subData.subscription)
 
       if (subData.subscription?.status === 'active') {
-        const insRes = await fetch('/api/echo/insights', { headers: authHeaders() })
+        const insRes = await fetch('/api/echo/insights', { headers: authHeaders(),cache:'no-store' })
         const insData = await insRes.json()
+        if(!insRes.ok)throw Error(insData.error||'Echo results unavailable')
         setInsights(insData.insights || [])
+        setImmediate(insData.immediate||null)
       }
-    } catch {
-      setError('Failed to load Echo')
+      setError(null)
+    } catch(error:any) {
+      if(!silent)setError(error.message||'Failed to load Echo')
     } finally {
-      setLoading(false)
+      if(!silent)setLoading(false)
     }
   }
 
@@ -86,7 +115,7 @@ export default function EchoPage() {
       const res = await fetch('/api/echo/subscribe', { method: 'POST', headers: authHeaders() })
       const data = await res.json()
       if (res.ok) {
-        setMessage('Echo activated. Your reflective insights will build over time.')
+        setMessage('Echo is ready. Your immediate next movements are available now.')
         await load()
       } else if (data.reason === 'insufficient_balance') {
         setError(`Insufficient balance. Need ${data.requiredFlameCoin} Flame Coin, wallet has ${data.availableFlameCoin} Flame Coin.`)
@@ -108,9 +137,8 @@ export default function EchoPage() {
       const data = await res.json()
       if (res.ok) {
         setInsights(data.insights || [])
-        if ((data.insights || []).length === 0) {
-          setMessage('Not enough activity yet to surface new insights.')
-        }
+        if(data.immediate)setImmediate(data.immediate)
+        setMessage(data.message||'Echo has reviewed your current recorded movement.')
       } else {
         setError(data.error || 'Analysis failed')
       }
@@ -118,6 +146,31 @@ export default function EchoPage() {
       setError('Analysis failed')
     } finally {
       setAnalyzing(false)
+    }
+  }
+
+  async function handleRecordAndAnalyze() {
+    const text=currentMovement.trim()
+    if(!text||recording||analyzing)return
+    setRecording(true)
+    setError(null)
+    setMessage(null)
+    try {
+      const headers=authHeaders()
+      headers.set('Content-Type','application/json')
+      const res=await fetch('/api/echo/ingest',{
+        method:'POST',headers,
+        body:JSON.stringify({source:'web',activityType:'user_update',content:text,occurredAt:new Date().toISOString()}),
+      })
+      const data=await res.json()
+      if(!res.ok)throw Error(data.error||'Unable to record current movement')
+      setCurrentMovement('')
+      await load(true)
+      await handleAnalyze()
+    }catch(error:any){
+      setError(error.message||'Unable to record current movement')
+    }finally{
+      setRecording(false)
     }
   }
 
@@ -143,9 +196,8 @@ export default function EchoPage() {
       <header className="border-b border-white/10 px-5 py-6 md:px-7">
         <h1 className="text-2xl font-bold text-white">Echo</h1>
         <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-          Echo is the institutional participation layer and continuity engine of Weave of Presence. 
-          It governs how different intelligences participate with humans and systems, preserving 
-          the memory of the institution so it does not forget itself across movement.
+          Echo provides immediate private, role-specific direction from your verified WEAVE position and available activity. 
+          It keeps activity connected to the next relevant operating system. No monthly waiting period is required.
         </p>
       </header>
 
@@ -158,15 +210,15 @@ export default function EchoPage() {
         <ol className="space-y-3 text-sm text-slate-400">
           <li className="flex gap-3">
             <span className="flex-shrink-0 w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold flex items-center justify-center">1</span>
-            <span>Echo collects activity from the sources you use — nothing you haven't touched.</span>
+            <span>Echo reads your verified position and your own recorded WEAVE activity. Connected devices can add more activity.</span>
           </li>
           <li className="flex gap-3">
             <span className="flex-shrink-0 w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold flex items-center justify-center">2</span>
-            <span>When you run an analysis, it looks at your last 30 days of activity — a bounded window, never your entire history at once.</span>
+            <span>Immediate guidance appears as soon as Echo opens. Optional AI analysis examines bounded recorded activity; it does not require months of history.</span>
           </li>
           <li className="flex gap-3">
             <span className="flex-shrink-0 w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold flex items-center justify-center">3</span>
-            <span>It surfaces short, plain-language insights — patterns in how you work, trade, or engage — so you can act on them.</span>
+            <span>Echo identifies a current next movement and distinguishes verified signals from optional AI observations.</span>
           </li>
         </ol>
 
@@ -187,7 +239,7 @@ export default function EchoPage() {
         <div className="border-t border-slate-800 pt-4 flex gap-2 items-start">
           <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-slate-500 leading-relaxed">
-            Privacy: Echo only ever analyzes your own activity. Echo is free, and nothing is shared with other users or admins.
+            Privacy: Echo reads this account's own activity and notifications. The immediate guidance is private, free and does not publish another person's records.
           </p>
         </div>
       </section>
@@ -203,6 +255,22 @@ export default function EchoPage() {
           </span>
         </div>
       </section>
+
+      {isActive&&immediate&&<section className="space-y-4 border-b border-sky-300/20 bg-sky-300/[.045] px-5 py-6 md:px-7" data-echo-immediate="ready">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div><p className="text-[10px] font-bold uppercase tracking-widest text-sky-300">Immediate Echo · Current movement</p>
+            <h2 className="mt-2 text-xl font-bold text-white">{immediate.headline}</h2></div>
+          <button onClick={()=>void load(true)} className="inline-flex items-center gap-2 rounded-lg border border-sky-200/20 px-3 py-2 text-xs font-semibold text-sky-100"><RefreshCw className="h-4 w-4"/>Refresh now</button>
+        </div>
+        <p className="max-w-3xl text-sm leading-6 text-slate-200">{immediate.explanation}</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {immediate.nextMovements.map(move=><Link key={move.href} href={move.href} className="rounded-xl border border-white/10 bg-black/25 p-4 transition hover:border-sky-200/40">
+            <p className="flex items-center justify-between gap-2 text-sm font-bold text-white">{move.title}<ArrowRight className="h-4 w-4 shrink-0 text-sky-200"/></p>
+            <p className="mt-2 text-xs leading-5 text-slate-300">{move.detail}</p>
+          </Link>)}
+        </div>
+        <p className="text-xs text-slate-400">Verified here: {immediate.signals.recentActivityCount} recorded Echo activities in the last seven days{immediate.signals.unreadNotifications===null?' · Notification status unavailable':` · ${immediate.signals.unreadNotifications} unread notifications`}. Guidance is not a confirmed sale, completed order or approved build.</p>
+      </section>}
 
       {error && <div className="text-sm text-red-400">{error}</div>}
       {message && <div className="text-sm text-green-400">{message}</div>}
@@ -223,6 +291,12 @@ export default function EchoPage() {
         </section>
       ) : (
         <section className="space-y-4 px-5 py-6 md:px-7" data-echo-station="insights">
+          <section className="rounded-xl border border-cyan-300/15 bg-slate-900/35 p-4" data-echo-record-now="true">
+            <h3 className="text-sm font-bold text-white">What are you working on now?</h3>
+            <p className="mt-1 text-xs leading-5 text-slate-400">Write one real activity, result or question from today. Echo records it to this account and can analyze it immediately; no extension or long activity history is needed.</p>
+            <textarea value={currentMovement} onChange={event=>setCurrentMovement(event.target.value)} maxLength={2000} rows={3} placeholder="Describe your actual work, challenge or next decision…" className="mt-3 w-full rounded-xl border border-white/15 bg-black/30 p-3 text-sm leading-6 text-white placeholder:text-slate-500"/>
+            <button type="button" disabled={!currentMovement.trim()||recording||analyzing} onClick={()=>void handleRecordAndAnalyze()} className="mt-3 rounded-xl bg-cyan-200 px-4 py-3 text-xs font-bold text-[#051522] disabled:opacity-40">{recording||analyzing?'Working on your current movement…':'Record and analyze this movement'}</button>
+          </section>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium text-white">Insights</h2>
             <button
@@ -237,7 +311,7 @@ export default function EchoPage() {
           {insights.length === 0 ? (
             <div className="border-y border-slate-800 bg-slate-900/20 p-8 text-center">
               <p className="text-slate-500 text-sm">
-                No insights yet. Keep using the extension and apps, then run an analysis.
+                No saved AI analysis yet. Your immediate Echo guidance above is already available; further findings can be generated from recorded activity.
               </p>
             </div>
           ) : (
@@ -255,6 +329,8 @@ export default function EchoPage() {
                     </span>
                   </div>
                   <p className="text-sm text-white leading-relaxed">{insight.summary}</p>
+                  {insight.recommended_action&&<p className="mt-2 text-sm text-sky-100"><strong>Next movement:</strong> {insight.recommended_action}</p>}
+                  {insight.evidence_type&&<p className="mt-2 text-xs text-slate-400">{insight.evidence_type} · {insight.confidence_label||'Unrated confidence'}</p>}
                 </article>
               ))}
             </div>

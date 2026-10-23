@@ -143,18 +143,43 @@ async function contextFor(request: NextRequest) {
     crossing = rows[0] || null
   }
 
-  return { sql, client, workshop: workshop || null, systems, crossing, error: null }
+  // Show real work that is still in construction, not just completed systems.
+  const builds = await sql`
+    SELECT id,title,system_type,status,started_at,completes_at
+    FROM client_file_folder_builds
+    WHERE client_id=${client.id}::uuid
+      AND file_number=${client.file_number}
+      AND status IN ('building','funding_gate')
+    ORDER BY started_at DESC
+    LIMIT 20
+  `
+
+  const [bridger] = client.assigned_bridger_id
+    ? await sql`
+        SELECT id,name
+        FROM users
+        WHERE id=${client.assigned_bridger_id}::uuid
+          AND role='bridger' AND is_active=true
+        LIMIT 1
+      `
+    : []
+
+  return { sql, client, workshop: workshop || null, systems, builds, bridger: bridger || null, crossing, error: null }
 }
 
 async function supportHistory(sql: any, clientId: string) {
   return sql`
     SELECT id,sender_type,content,created_at
-    FROM client_messages
-    WHERE client_id::text=${clientId}
-      AND position='bridge_ai'
-      AND sender_type IN ('client','bridge_ai')
+    FROM (
+      SELECT id,sender_type,content,created_at
+      FROM client_messages
+      WHERE client_id::text=${clientId}
+        AND position='bridge_ai'
+        AND sender_type IN ('client','bridge_ai','bridger')
+      ORDER BY created_at DESC
+      LIMIT 100
+    ) recent
     ORDER BY created_at ASC
-    LIMIT 60
   `
 }
 
@@ -179,6 +204,7 @@ export async function GET(request: NextRequest) {
         role: 'Client AI Support',
         continuity: ctx.crossing?.id ? 'crossing-linked' : 'client-continuity',
         template: ctx.crossing?.template_name || null,
+        assignedBridger: ctx.bridger ? { id: ctx.bridger.id, name: ctx.bridger.name } : null,
       },
       billing: {
         feeFlameCoin,
@@ -235,7 +261,11 @@ export async function POST(request: NextRequest) {
     const historyRows = await supportHistory(ctx.sql, String(ctx.client.id))
     const history: BridgeMessage[] = historyRows.slice(-24).map((entry: any) => ({
       role: entry.sender_type === 'bridge_ai' ? 'assistant' : 'user',
-      content: String(entry.content || ''),
+      content: entry.sender_type === 'bridger'
+        ? 'Assigned Bridger: ' + String(entry.content || '')
+        : entry.sender_type === 'client'
+          ? 'Client: ' + String(entry.content || '')
+          : String(entry.content || ''),
     }))
 
     const installedSystems = (ctx.systems || []).map((system: any) => ({
@@ -263,12 +293,22 @@ Workshop purpose: ${ctx.workshop?.description || 'Continue the Client movement t
 Installed live systems:
 ${JSON.stringify(installedSystems, null, 2)}
 
+Active construction and funding gates (the times below are recorded estimates, not proof of completion):
+${JSON.stringify(ctx.builds || [], null, 2)}
+
+Assigned human Bridger: ${ctx.bridger?.name || 'No active Bridger assigned'}
+
 Crossing continuity:
 Template: ${ctx.crossing?.template_name || 'Bridge AI continuity'}
 Recovered crossing record: ${crossingRecord}
 
 Client-support rules:
 - You are the Client's Bridge AI support continuing from the crossing.
+- Work in one assistance thread with the Client and their assigned human Bridger.
+- The Bridger offers human guidance; the Client owns the File Folder and decides what to build.
+- Use the identity prefix on recent messages to distinguish the Bridger from the Client.
+- Only the Client's authenticated request can trigger an AI-assisted reply or any associated fee.
+- Do not treat a Bridger's suggestion as authorization to purchase, activate or modify systems.
 - Treat the File Folder as the Client's persistent operating environment.
 - Help the Client understand, use, continue and build their real systems.
 - Distinguish previews, construction state and live recorded operation.

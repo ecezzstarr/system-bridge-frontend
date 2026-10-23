@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db'
+import { ONE_NIGERIAN_LOOP, COMPANY_LOOP_THREE_STARTS_AT } from '@/lib/company-loop-two'
 
 export const COMPANY_LOOP_ROLES = ['client', 'agent', 'bridger', 'admin'] as const
 export const COMPANY_LOOP_PLAYER_ROLE = 'client' as const
@@ -34,6 +35,82 @@ export async function ensureCompanyLoopsSchema(sql = getDb()) {
   `
   await sql`
     CREATE INDEX IF NOT EXISTS company_loops_number_idx ON company_loops(loop_number)
+  `
+
+  // Official Company Loop 2 is independent of the preserved Burning River row.
+  // Existing Administration-authored Loop 2 records are never overwritten.
+  await sql`
+    INSERT INTO company_loops (
+      loop_number, title, purpose, stage, position, functions,
+      responsibilities, boundaries, audience, status, published_at
+    )
+    SELECT
+      2,
+      'One Nigerian',
+      'Company Loop 2 — Flame Event: One Nigerian operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment.',
+      'Scheduled',
+      'all',
+      'Agents operate Stability; Bridgers carry Hope; Clients build and operate their File Folder worlds; Administration organizes and verifies movement.',
+      'Each position follows its authorized operating systems, records real work and checks the status of approvals, orders and builds.',
+      'The daily scroll explains the current place but does not confirm employment, payments, orders or completed systems.',
+      ARRAY['client','agent','bridger','admin']::text[],
+      'published',
+      NOW()
+    WHERE NOT EXISTS (SELECT 1 FROM company_loops WHERE loop_number = 2)
+  `
+
+  // Reconcile only the original generated description, never an edited Administration record.
+  await sql`
+    UPDATE company_loops
+    SET purpose = ${"Company Loop 2 — Flame Event: One Nigerian operates January 1–11, 2027, with WEAVE taking on a green–white–green national environment."}, updated_at = NOW()
+    WHERE loop_number = 2 AND title = 'One Nigerian'
+      AND purpose = ${"Company Loop 2 — Flame Event: One Nigerian operates from January 1 through May 1, 2027, with WEAVE taking on a green–white–green national environment."}
+  `
+
+  // Loop 3 is a dated placeholder. The Administrator has not named its theme,
+  // duration or authored its scroll; do not fabricate those details.
+  await sql`
+    INSERT INTO company_loops (
+      loop_number, title, purpose, stage, position, boundaries,
+      audience, status, published_at
+    )
+    SELECT
+      3,
+      'Company Loop 3',
+      'Company Loop 3 begins January 12, 2027 (West Africa Time). Its event identity, theme, scroll and ending have not yet been supplied.',
+      'Scheduled',
+      'all',
+      'Do not carry forward the One Nigerian scroll or green–white–green theme into this loop without Administration direction.',
+      ARRAY['client','agent','bridger','admin']::text[],
+      'published',
+      NOW()
+    WHERE NOT EXISTS (SELECT 1 FROM company_loops WHERE loop_number = 3)
+  `
+  await sql`
+    UPDATE company_loops
+    SET stage = CASE WHEN NOW() >= ${COMPANY_LOOP_THREE_STARTS_AT}::timestamptz
+      THEN 'Movement' ELSE 'Scheduled' END,
+      updated_at = NOW()
+    WHERE loop_number = 3 AND title = 'Company Loop 3' AND status = 'published'
+      AND stage IS DISTINCT FROM CASE WHEN NOW() >= ${COMPANY_LOOP_THREE_STARTS_AT}::timestamptz
+        THEN 'Movement' ELSE 'Scheduled' END
+  `
+
+  await sql`
+    UPDATE company_loops
+    SET stage = CASE
+      WHEN NOW() > ${ONE_NIGERIAN_LOOP.endsAt}::timestamptz THEN 'Closing'
+      WHEN NOW() >= ${ONE_NIGERIAN_LOOP.startsAt}::timestamptz THEN 'Movement'
+      ELSE 'Scheduled'
+    END, updated_at = NOW()
+    WHERE loop_number = 2
+      AND title = 'One Nigerian'
+      AND status = 'published'
+      AND stage IS DISTINCT FROM CASE
+        WHEN NOW() > ${ONE_NIGERIAN_LOOP.endsAt}::timestamptz THEN 'Closing'
+        WHEN NOW() >= ${ONE_NIGERIAN_LOOP.startsAt}::timestamptz THEN 'Movement'
+        ELSE 'Scheduled'
+      END
   `
 }
 

@@ -6,7 +6,7 @@ import { getClientToken } from '@/lib/client-auth'
 
 type SupportMessage = {
   id?: string
-  sender_type: 'client' | 'bridge_ai'
+  sender_type: 'client' | 'bridge_ai' | 'bridger'
   content: string
   created_at?: string
 }
@@ -43,6 +43,29 @@ export function ClientBridgeAiSupport() {
     }
     void load()
   },[])
+
+  // Keep the Client and assigned Bridger in the same live assistance history.
+  useEffect(()=>{
+    let mounted=true
+    const refresh=async()=>{
+      if(document.hidden||sending)return
+      const token=getClientToken()
+      if(!token)return
+      try{
+        const response=await fetch('/api/client/bridge-ai',{
+          headers:{Authorization:'Bearer '+token},
+          cache:'no-store',
+        })
+        if(!response.ok)return
+        const body=await response.json()
+        if(mounted&&Array.isArray(body.messages))setMessages(body.messages)
+      }catch{
+        // Existing messages stay visible during temporary connection failures.
+      }
+    }
+    const interval=window.setInterval(()=>void refresh(),15000)
+    return ()=>{mounted=false;window.clearInterval(interval)}
+  },[sending])
 
   useEffect(()=>{ endRef.current?.scrollIntoView({behavior:'smooth'}) },[messages,sending])
 
@@ -93,13 +116,13 @@ export function ClientBridgeAiSupport() {
               <p className="weave-word-presence text-[9px] font-black uppercase tracking-[0.2em] text-sky-300">Client AI Support</p>
               <h3 className="mt-1 text-lg font-black text-white">Bridge AI</h3>
               <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">
-                The same support intelligence that begins at the crossing continues here with your File Folder, builds and live systems.
+                Your Bridger and Bridge AI work with you here. Ask about the File Folder, active construction, and systems you operate. You remain in control of each build.
               </p>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <span className="rounded-full border border-emerald-300/15 bg-emerald-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-200">
-              {identity?.continuity==='crossing-linked'?'Crossing linked':'Continuity active'}
+              {identity?.assignedBridger ? 'Bridger: ' + identity.assignedBridger.name : (identity?.continuity==='crossing-linked'?'Crossing linked':'Continuity active')}
             </span>
             {billing&&<span className="rounded-full border border-amber-300/15 bg-amber-400/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-amber-200">
               {billing.feeFlameCoin.toLocaleString()} Flame Coin / assisted reply
@@ -118,8 +141,10 @@ export function ClientBridgeAiSupport() {
         )}
         {messages.map((message,index)=>{
           const ai=message.sender_type==='bridge_ai'
-          return <div key={message.id||index} className={`flex ${ai?'justify-start':'justify-end'}`}>
-            <div className={`max-w-[88%] rounded-2xl border px-4 py-3 text-sm leading-6 ${ai?'border-sky-300/10 bg-sky-400/[0.045] text-slate-200':'border-emerald-300/10 bg-emerald-400/[0.055] text-white'}`}>
+          const humanBridger=message.sender_type==='bridger'
+          return <div key={message.id||index} className={`flex ${ai||humanBridger?'justify-start':'justify-end'}`}>
+            <div className={`max-w-[88%] rounded-2xl border px-4 py-3 text-sm leading-6 ${ai?'border-sky-300/10 bg-sky-400/[0.045] text-slate-200':humanBridger?'border-violet-300/15 bg-violet-400/[0.07] text-slate-100':'border-emerald-300/10 bg-emerald-400/[0.055] text-white'}`}>
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-sky-300">{ai?'Bridge AI':humanBridger?(identity?.assignedBridger?.name||'Assigned Bridger'):'You'}</p>
               <p className="weave-word-presence whitespace-pre-wrap">{message.content}</p>
             </div>
           </div>
