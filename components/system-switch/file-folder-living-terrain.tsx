@@ -15,6 +15,8 @@ const LOCATIONS:Record<string,{x:number;y:number;description:string;type:string}
 }
 export default function FileFolderLivingTerrain({districts,onEnter,active,systems=0,building=0,builds=[],now=Date.now(),appearance=resolveFileFolderAppearance('standard')}:{districts:District[];onEnter:(key:string)=>void;active:string;systems?:number;building?:number;builds?:Array<{id:string;title:string;status:string;started_at?:string;completes_at?:string}>;now?:number;appearance?:FileFolderWorldAppearance}){
  const [selected,setSelected]=useState<string|null>(null)
+ const palette=FILE_FOLDER_PALETTES[appearance.theme]
+ const equipment=appearance.equipmentZones.map(zone=>({zone,...FILE_FOLDER_EQUIPMENT[zone]}))
  const places=useMemo(()=>districts.map((district,i)=>({district,...(LOCATIONS[district.key]||{x:18+(i%3)*31,y:35+Math.floor(i/3)*20,description:'Enter this construction workspace.',type:'dome'})})),[districts])
  const forming=builds.filter(b=>b.status==='building').slice(0,4).map(b=>({ ...b,progress:buildFormationProgress(b,now),remaining:Math.max(0,Math.ceil((new Date(b.completes_at||now).getTime()-now)/1000)) }))
  const focused=places.find(p=>p.district.key===selected)||places.find(p=>p.district.key===active)||places[0]
