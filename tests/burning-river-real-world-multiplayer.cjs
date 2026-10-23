@@ -91,8 +91,11 @@ assert.ok(!map.includes('WeaveEmbodiedAvatar')&&!map.includes('joystick')&&!map.
 assert.ok(gate.includes("burning-river-crossing-official.webp")&&
  map.includes("burning-river-open-world-official.webp"),
  'Both official approved images are referenced; no alternate concept image')
-assert.ok(gate.includes('href="/flame-event/world"')&&route.includes('<BurningRiverLiveWorld role={role}/>'),
+assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role}/>'),
  'Clickable crossing opens real shared world route')
+assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
+ route.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),
+ 'Agent Carrier attribution remains connected while visitors cross into the shared world')
 assert.ok(staff.includes('<BurningRiverLiveWorld role={role}/>')&&
  visitor.includes('<BurningRiverOfficialGateway/>'),
  'Same worlds accessible from staff and public entrances')
