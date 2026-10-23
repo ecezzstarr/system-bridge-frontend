@@ -13,7 +13,7 @@ export function quoteFileFolderBlueprint(blueprint:BlueprintCostFields,ownedInpu
   const priceAvailable=!hasMaterial||Boolean(blueprint.required_item_name&&Number.isFinite(unit)&&unit>=0)
   const purchaseAvailable=!hasMaterial||blueprint.required_item_published!==false
   const missing=Math.max(0,required-owned)
-  const price=priceAvailable?Math.max(0,unit):0
+  const price=priceAvailable&&Number.isFinite(unit)?Math.max(0,unit):0
   return {
     materialName:String(blueprint.required_item_name||blueprint.required_item_key||'No additional materials'),
     materialRequired:required,materialOwned:owned,materialMissing:missing,
