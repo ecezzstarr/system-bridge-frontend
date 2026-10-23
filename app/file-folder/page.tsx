@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { WeaveLogo } from '@/components/weave-logo'
 import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
+import EmployeeClientTicketCrossing from '@/components/public/employee-client-ticket-crossing'
 
 const STORAGE_KEY = 'weave:public-file-folder-purchase'
 
@@ -39,6 +40,7 @@ function authHeaders(json = false): Record<string, string> {
 }
 
 export default function PublicFileFolderPurchasePage() {
+  const [staffOfferToken, setStaffOfferToken] = useState('')
   const [tier, setTier] = useState<'standard' | 'premium'>('standard')
   const [standardAmount, setStandardAmount] = useState(String(FILE_FOLDER_PRICING.standardMinimumFlameCoin))
   const [name, setName] = useState('')
@@ -67,6 +69,10 @@ export default function PublicFileFolderPurchasePage() {
     if (name.trim() && phone.trim() && validAmount) return 2
     return 1
   }, [purchase, reference, name, phone, validAmount])
+
+  useEffect(() => {
+    setStaffOfferToken(new URLSearchParams(window.location.search).get('staffOffer') || '')
+  }, [])
 
   useEffect(() => {
     fetch('/api/bridge/file-folder', { cache: 'no-store' })
@@ -214,6 +220,8 @@ export default function PublicFileFolderPurchasePage() {
     setMessage('')
     try { window.localStorage.removeItem(STORAGE_KEY) } catch {}
   }
+
+  if (staffOfferToken) return <EmployeeClientTicketCrossing offerToken={staffOfferToken} />
 
   const stages = ['Recognize', 'Choose File Folder', 'Record payment', 'Administration', 'Become Client']
 
