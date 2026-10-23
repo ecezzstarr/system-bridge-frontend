@@ -99,6 +99,7 @@ export default function SovereignReleaseWorkshop(){
     <header className="mt-5 border-b border-white/10 pb-6">
       <p className="text-[10px] font-black uppercase tracking-widest text-orange-200">Administration · Production Authority</p>
       <h1 className="mt-2 text-3xl font-black sm:text-4xl">WEAVE Release Workshop</h1>
+      <Link href="/admin/file-folder-world-releases" className="mt-3 inline-flex border border-sky-200/30 px-4 py-2 text-xs font-bold text-sky-200">File Folder Update Engine · All four tiers →</Link>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Administration authorizes releases and rollbacks; an independent WEAVE host worker performs them after verification. Neither source code nor host commands are accepted from this page. Execution requires the separately configured host worker.</p>
     </header>
     {error&&<p role="alert" className="mt-4 rounded-xl border border-red-300/20 bg-red-400/10 p-4 text-sm text-red-200">{error}</p>}
