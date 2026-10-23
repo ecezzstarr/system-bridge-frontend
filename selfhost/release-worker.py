@@ -33,7 +33,7 @@ def env_values():
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, val = line.split("=", 1)
-            values[key.strip()] = val.strip().strip("'\\"")
+            values[key.strip()] = val.strip().strip(chr(39) + chr(34))
     values.update(os.environ)
     return values
 
@@ -93,7 +93,7 @@ def get_local_release():
 
 def validate_origin():
     remote = cmd("git", "remote", "get-url", "origin").strip()
-    if not re.search(r"(github\\.com[:/]ecezzstarr/system-bridge-frontend(?:\\.git)?)$", remote):
+    if not re.search(r"(github\.com[:/]ecezzstarr/system-bridge-frontend(?:\.git)?)$", remote):
         raise RuntimeError("Host checkout does not point to the canonical WEAVE repository")
 
 
