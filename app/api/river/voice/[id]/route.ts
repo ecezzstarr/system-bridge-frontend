@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { getPool } from '@/lib/db'
+import { notifyUser } from '@/lib/deposit-notifications'
 import { chatWithRiver, type RiverMessage } from '@/lib/river-assistant'
 import {
   affirmative,ensureRiverCallSchema,followupRequested,loadCall,negative,
@@ -27,7 +28,7 @@ export async function POST(request:NextRequest,{params}:Params) {
   if(call.stage==='ended')return twilioResponse(xmlResponse('Thank you for your time.'))
   if(call.stage==='intro' && !speech){
     return twilioResponse(xmlResponse(
-      'Hello. I am River, an A I assistant calling on behalf of '+name+', a Bridger with WEAVE. You requested information about WEAVE. I use speech recognition to respond; this call is not recorded. Is this a good time to speak? Say yes to continue, or say no to end the call.',
+      'Hello. I am River, an A I assistant calling on behalf of '+name+', a Bridger with WEAVE. You requested information about WEAVE. I use speech recognition to respond; brief text of this call is kept for the handoff; no audio is recorded. Is this a good time to speak? Say yes to continue, or say no to end the call.',
       action))
   }
   if(stopRequested(speech) || (call.stage==='intro' && negative(speech))){
@@ -53,6 +54,12 @@ export async function POST(request:NextRequest,{params}:Params) {
         let status='ready_manual'
         try{status=await requestWhatsAppHandoff(recorded.rows[0])}catch(e){console.error('[river whatsapp handoff]',e)}
         await pool.query('UPDATE weave_river_calls SET whatsapp_status=$1 WHERE id=$2::uuid',[status,id])
+        await notifyUser(String(call.bridger_id),{
+          type:'river_whatsapp_handoff',
+          title:'River prospect requests WhatsApp follow-up',
+          content:(call.candidate_name||'A candidate')+' agreed to receive more information. Open River Outreach to start your WhatsApp conversation.',
+          link:'/bridger/river-call-outreach',fromUserName:'AI River',
+        })
       }
       return twilioResponse(xmlResponse('Thank you. I will hand your request to your Bridger. A WhatsApp follow up can now begin. Goodbye.'))
     }
@@ -70,7 +77,7 @@ export async function POST(request:NextRequest,{params}:Params) {
       [JSON.stringify(updated),id])
     return twilioResponse(xmlResponse('I can connect you with '+name+' through WhatsApp to understand more. Do you agree to receive a WhatsApp message about this conversation? Say yes or no.',action))
   }
-  if(history.length>=14){
+  if(history.length>=10){
     await pool.query("UPDATE weave_river_calls SET stage='ask_whatsapp' WHERE id=$1::uuid",[id])
     return twilioResponse(xmlResponse('We have reached the end of this short introduction. May your Bridger contact you on WhatsApp with more information? Say yes or no.',action))
   }
