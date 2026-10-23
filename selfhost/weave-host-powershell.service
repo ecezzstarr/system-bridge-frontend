@@ -1,0 +1,24 @@
+[Unit]
+Description=WEAVE Private PowerShell Host Sentinel
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/weave/host-powershell.env
+WorkingDirectory=/opt/weave/system-bridge-frontend
+ExecStart=/usr/bin/pwsh -NoProfile -NonInteractive -File /opt/weave/system-bridge-frontend/selfhost/host-powershell.ps1 -IntervalSeconds 30
+User=weave
+Group=weave
+SupplementaryGroups=docker
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+UMask=0077
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
