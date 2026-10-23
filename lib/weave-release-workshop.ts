@@ -59,6 +59,7 @@ export async function getReleaseWorkshopState(){
   const lastSeen=workers[0]?.last_seen_at?new Date(workers[0].last_seen_at):null
   const workerOnline=Boolean(lastSeen&&Date.now()-lastSeen.getTime()<60000)
   return {jobs,healthyReleases,history:history.slice(0,30),serverKey:serverKey(),
+    hostProvider:process.env.WEAVE_HOST_PROVIDER==='oracle'?'Oracle Cloud':'Self-hosted Linux',
     workerOnline,workerLastSeen:lastSeen?.toISOString()||null,
     activeRelease:process.env.WEAVE_RELEASE_SHA||null}
 }
@@ -74,15 +75,17 @@ export async function requestReleaseJob(input:{action:ReleaseAction;targetSha?:s
       AND server_key=${serverKey()} LIMIT 1`
     if(!known)throw new Error('Rollback is restricted to a previously healthy release on this WEAVE server.')
     if(input.targetSha===process.env.WEAVE_RELEASE_SHA)throw new Error('Selected release is already active.')
-  }else if(input.action!=='deploy_latest'){
+  }else if(input.action==='deploy_latest'){
+    if(!fullReleaseSha(input.targetSha))throw new Error('Select the exact CI-verified main commit before deployment.')
+  }else{
     throw new Error('Unsupported release operation.')
   }
   try{
     const [job]=await sql`INSERT INTO weave_release_jobs(
       server_key,action,target_sha,requested_by,verification
     ) VALUES (
-      ${serverKey()},${input.action},${input.action==='rollback'?input.targetSha:null},
-      ${input.userId}::uuid,'Administration confirmed release request'
+      ${serverKey()},${input.action},${input.targetSha},
+      ${input.userId}::uuid,'Administration approved exact GitHub release SHA'
     ) RETURNING id,server_key,action,target_sha,status,requested_at`
     return job
   }catch(error:any){

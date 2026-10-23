@@ -18,6 +18,10 @@ export async function POST(req:NextRequest){
     const body=await req.json()
     const action=String(body?.action||'')
     if(action==='claim'){
+      // An older Oracle worker ignores a queued pinned target and would deploy
+      // whichever main SHA it sees at claim time. Refuse all legacy workers.
+      if(!Array.isArray(body.capabilities)||!body.capabilities.includes('pinned-main-v2'))
+        return NextResponse.json({error:'Oracle release worker must support pinned-main-v2 before claiming jobs'},{status:409})
       const workerKey=String(body.workerKey||'').slice(0,120)
       if(!/^[a-z0-9][a-z0-9._-]{2,119}$/i.test(workerKey))
         return NextResponse.json({error:'Worker identifier invalid'},{status:400})

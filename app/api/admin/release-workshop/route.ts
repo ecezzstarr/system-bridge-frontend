@@ -1,5 +1,7 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
+import {requireWorkshopAuthorization} from '@/lib/workshop-auth'
+import {assertDeployableMain} from '@/lib/weave-github-release'
 import {getReleaseWorkshopState,requestReleaseJob,cancelQueuedReleaseJob,fullReleaseSha} from '@/lib/weave-release-workshop'
 export const dynamic='force-dynamic'
 
@@ -20,6 +22,10 @@ export async function GET(request:NextRequest){
 export async function POST(request:NextRequest){
   const auth=await authorize(request)
   if(auth.error)return auth.error
+  // Only the single active sovereign Administration may authorize
+  // a GitHub-to-Oracle production release, matching the GitHub merge workshop.
+  const workshop=await requireWorkshopAuthorization(request)
+  if(!workshop.authorized)return workshop.response
   try{
     if(!request.headers.get('content-type')?.includes('application/json'))
       return NextResponse.json({error:'JSON submission required'},{status:415})
@@ -33,10 +39,11 @@ export async function POST(request:NextRequest){
     }
     if(action!=='deploy_latest'&&action!=='rollback')
       return NextResponse.json({error:'Only verified deployment or historical rollback is allowed'},{status:400})
-    if(action==='rollback'&&!fullReleaseSha(body?.targetSha))
-      return NextResponse.json({error:'Select an exact 40-character release SHA'},{status:400})
+    if(!fullReleaseSha(body?.targetSha))
+      return NextResponse.json({error:'Select an exact 40-character release SHA from GitHub'},{status:400})
+    if(action==='deploy_latest')await assertDeployableMain(String(body.targetSha).toLowerCase())
     const job=await requestReleaseJob({
-      action,targetSha:body?.targetSha,userId:auth.user!.id,
+      action,targetSha:String(body?.targetSha||'').toLowerCase(),userId:auth.user!.id,
       confirmation:String(body?.confirmation||''),
     })
     return NextResponse.json({success:true,job},{status:202,headers:{'Cache-Control':'private, no-store'}})

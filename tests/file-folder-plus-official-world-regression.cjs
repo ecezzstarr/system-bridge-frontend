@@ -37,4 +37,34 @@ assert.ok(api.includes('resolveClientToken')&&api.includes('getPublishedFileFold
  'Live release fetch requires Client authentication')
 assert.ok(client.includes("setInterval(()=>{void synchronize()},45000)")&&client.includes('file_folder_world_release'),
  'Client theme/equipment receives current Administration version without a deployment')
+const living=read('lib/plus-file-folder-formation.ts')
+assert.ok(presets.includes("posterAssetPath: '/weave/plus-file-folder-white-official.webp'"),
+ 'Plus must share the exact approved picture path with the homepage')
+assert.ok(renderer.includes('PLUS_FILE_FOLDER_REFERENCE.posterAssetPath')&&
+ renderer.includes('data-plus-file-folder-construction-reference="389215.png"'),
+ 'Clients can inspect the approved reference in their own Plus environment')
+assert.ok(ui.includes('PLUS_FILE_FOLDER_REFERENCE.posterAssetPath')&&
+ ui.includes('data-admin-plus-official-construction-reference="389215.png"'),
+ 'Administration uses that identical picture as its release reference')
+assert.ok(living.includes('derivePlusWorldFormation')&&living.includes('buildFormationProgress')&&
+ living.includes("system.status==='active'")&&living.includes("build.status==='building'"),
+ 'Only persisted build timestamps and commissioned systems produce extra 3D construction')
+assert.ok(renderer.includes('RadiantLandscape')&&renderer.includes('WaterCascade')&&
+ renderer.includes('formation.zones[zone]')&&renderer.includes('formation.environmentStage'),
+ 'A living white-gold environment grows with real Client construction and systems')
+assert.ok(world.includes('systemRecords={Array.isArray(world?.systems)?world.systems:[]}')&&
+ world.includes('builds={Array.isArray(world?.builds)?world.builds:[]}'),
+ 'Plus renderer receives real complete world records, not simulated build counts')
+assert.ok(release.includes("if(tier==='plus')")&&
+ release.includes('Plus File Folder must retain the approved white-and-gold world'),
+ 'Published runtime themes cannot break the approved Plus design')
+assert.ok(ui.includes("disabled={tier==='plus'}"),
+ 'Administration visually identifies protected Plus base design')
+
+const crypto=require('node:crypto')
+const poster=fs.readFileSync(path.resolve(__dirname,'../public/weave/plus-file-folder-white-official.webp'))
+assert.equal(crypto.createHash('sha256').update(poster).digest('hex'),
+ 'f35abcf28c07a47b751a76397b1863873db4d189533bcae9a48716c813a8fea5',
+ 'Client and Administration must use the authentic optimized 389215.png image')
+
 console.log('Official Plus 3D world, 4 tier engines, equipment and live release contracts passed')

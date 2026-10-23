@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
-import {FILE_FOLDER_WORLD_APPEARANCES,FILE_FOLDER_THEME_IDS,FILE_FOLDER_EQUIPMENT_PACKS,FILE_FOLDER_REALNESS,FILE_FOLDER_EQUIPMENT_ZONES,type FileFolderWorldAppearance,type EquipmentZone} from '@/lib/file-folder-world-presets'
+import {FILE_FOLDER_WORLD_APPEARANCES,FILE_FOLDER_THEME_IDS,FILE_FOLDER_EQUIPMENT_PACKS,FILE_FOLDER_REALNESS,FILE_FOLDER_EQUIPMENT_ZONES,type FileFolderWorldAppearance,type EquipmentZone,PLUS_FILE_FOLDER_REFERENCE} from '@/lib/file-folder-world-presets'
 type Tier='standard'|'pro'|'premium'|'plus'
 const tiers:Tier[]=['standard','pro','premium','plus']
 type Config={headline:string;description:string;tierMessages:Record<Tier,string>;tierVisuals:Record<Tier,FileFolderWorldAppearance>}
@@ -21,14 +21,15 @@ export default function FileFolderGlobalReleaseWorkshop(){
  const [active,setActive]=useState<Release|null>(null)
  const [list,setList]=useState<Release[]>([])
  const [busy,setBusy]=useState(false)
+ const [referenceUnavailable,setReferenceUnavailable]=useState(false)
  const [error,setError]=useState('')
  const [message,setMessage]=useState('')
  const [confirmation,setConfirmation]=useState('')
  const [candidate,setCandidate]=useState('')
- const withDefaults=(incoming:Config):Config=>({...incoming,tierVisuals:{...FILE_FOLDER_WORLD_APPEARANCES,...(incoming.tierVisuals||{})}})
- const updateTier=(tier:Tier,patch:Partial<FileFolderWorldAppearance>)=>setConfig(previous=>({
+ const withDefaults=(incoming:Config):Config=>({...incoming,tierVisuals:{...FILE_FOLDER_WORLD_APPEARANCES,...(incoming.tierVisuals||{}),plus:FILE_FOLDER_WORLD_APPEARANCES.plus}})
+ const updateTier=(tier:Tier,patch:Partial<FileFolderWorldAppearance>)=>{if(tier==='plus')return;setConfig(previous=>({
   ...previous,tierVisuals:{...previous.tierVisuals,[tier]:{...previous.tierVisuals[tier],...patch}}
- }))
+ }));}
  const authHeaders={'Authorization':'Bearer '+(token||''),'Content-Type':'application/json'}
  const reload=useCallback(async()=>{
   if(!token)return
@@ -67,6 +68,23 @@ export default function FileFolderGlobalReleaseWorkshop(){
     <Link href="/admin/client-build-catalog" className="text-cyan-200 underline">Blueprint & item catalog →</Link>
    </div>
   </header>
+  <section data-admin-plus-official-construction-reference="389215.png" className="rounded-2xl border border-[#d8b875]/45 bg-[#fcfaf5] p-4 text-[#29374a] sm:p-6">
+    <div className="grid gap-5 sm:grid-cols-[minmax(0,240px)_minmax(0,1fr)]">
+     <div className="overflow-hidden rounded-lg border border-[#d9c48d] bg-white">
+      {!referenceUnavailable
+       ? <img src={PLUS_FILE_FOLDER_REFERENCE.posterAssetPath} width={PLUS_FILE_FOLDER_REFERENCE.originalDimensions.width} height={PLUS_FILE_FOLDER_REFERENCE.originalDimensions.height}
+           alt="Founder-approved white-and-gold Plus File Folder world design, to be formed as working 3D structures"
+           onError={()=>setReferenceUnavailable(true)} loading="lazy" className="h-auto w-full object-contain"/>
+       : <p role="status" className="p-4 text-sm">The official Plus artwork is unavailable; do not substitute an unapproved world design.</p>}
+     </div>
+     <div><p className="text-xs font-bold uppercase tracking-widest text-[#8c681f]">Official Plus world construction reference</p>
+      <h2 className="mt-2 text-xl font-bold">Build the real File Folder world to match the approved image</h2>
+      <p className="mt-3 text-sm leading-6">Its open central File Folder, porcelain and marble structures, radiant gold details, glass equipment, waterfalls and six working districts are the construction target. The live 3D world progresses from real Client builds and active systems, rather than using this illustration as a wallpaper.</p>
+      <p className="mt-3 text-sm font-semibold">{PLUS_FILE_FOLDER_REFERENCE.sixFunctions.map(x=>x[0].toUpperCase()+x.slice(1)).join(' · ')}</p>
+      <p className="mt-3 text-xs">The market promise on the artwork is an estimate, not verified returns or an earnings guarantee.</p>
+     </div>
+    </div>
+   </section>
   {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-200">{error}</p>}
   {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
   <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[.03] p-5">
@@ -88,16 +106,17 @@ export default function FileFolderGlobalReleaseWorkshop(){
      <div className="mt-4 grid gap-4 md:grid-cols-2">
       {tiers.map(tier=><section key={tier} className="rounded-xl border border-white/10 bg-slate-950/70 p-4">
        <p className="mb-3 text-sm font-black uppercase tracking-wider text-cyan-200">{tier} environment</p>
+       {tier==='plus'&&<p className="mb-3 text-xs leading-5 text-amber-200">Plus world retains its official white-and-gold design, high realism and all six districts. Additional construction is driven by real Client systems. Code releases can advance the world, but the official identity is protected.</p>}
        <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-xs">Theme preset
-         <select aria-label={tier+' theme'} value={config.tierVisuals[tier]?.theme||FILE_FOLDER_WORLD_APPEARANCES[tier].theme}
+         <select aria-label={tier+' theme'} disabled={tier==='plus'} value={config.tierVisuals[tier]?.theme||FILE_FOLDER_WORLD_APPEARANCES[tier].theme}
           onChange={e=>updateTier(tier,{theme:e.target.value as FileFolderWorldAppearance['theme']})}
           className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-2">
           {FILE_FOLDER_THEME_IDS.map(id=><option key={id} value={id}>{id.replaceAll('-',' ')}</option>)}
          </select>
         </label>
         <label className="text-xs">Realness
-         <select aria-label={tier+' realness'} value={config.tierVisuals[tier]?.realness||FILE_FOLDER_WORLD_APPEARANCES[tier].realness}
+         <select aria-label={tier+' realness'} disabled={tier==='plus'} value={config.tierVisuals[tier]?.realness||FILE_FOLDER_WORLD_APPEARANCES[tier].realness}
           onChange={e=>updateTier(tier,{realness:e.target.value as FileFolderWorldAppearance['realness']})}
           className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-2">
           {FILE_FOLDER_REALNESS.map(id=><option key={id} value={id}>{id}</option>)}
@@ -105,7 +124,7 @@ export default function FileFolderGlobalReleaseWorkshop(){
         </label>
        </div>
        <label className="mt-3 block text-xs">Equipment pack
-        <select aria-label={tier+' equipment pack'} value={config.tierVisuals[tier]?.equipmentPack||FILE_FOLDER_WORLD_APPEARANCES[tier].equipmentPack}
+        <select aria-label={tier+' equipment pack'} disabled={tier==='plus'} value={config.tierVisuals[tier]?.equipmentPack||FILE_FOLDER_WORLD_APPEARANCES[tier].equipmentPack}
          onChange={e=>updateTier(tier,{equipmentPack:e.target.value as FileFolderWorldAppearance['equipmentPack']})}
          className="mt-2 w-full rounded-lg border border-white/20 bg-slate-900 p-2">
          {FILE_FOLDER_EQUIPMENT_PACKS.map(id=><option key={id} value={id}>{id.replaceAll('-',' ')}</option>)}
@@ -115,7 +134,7 @@ export default function FileFolderGlobalReleaseWorkshop(){
         <p className="text-xs font-semibold">Visible equipment and operating stations</p>
         <div className="mt-2 grid grid-cols-2 gap-2">
         {FILE_FOLDER_EQUIPMENT_ZONES.map(zone=><label key={zone} className="flex items-center gap-2 text-xs capitalize text-slate-300">
-         <input type="checkbox" checked={(config.tierVisuals[tier]?.equipmentZones||FILE_FOLDER_WORLD_APPEARANCES[tier].equipmentZones).includes(zone)}
+         <input type="checkbox" disabled={tier==='plus'} checked={(config.tierVisuals[tier]?.equipmentZones||FILE_FOLDER_WORLD_APPEARANCES[tier].equipmentZones).includes(zone)}
           onChange={e=>{
            const current=config.tierVisuals[tier]?.equipmentZones||FILE_FOLDER_WORLD_APPEARANCES[tier].equipmentZones
            const next=e.target.checked?[...current,zone]:current.filter(item=>item!==zone)
