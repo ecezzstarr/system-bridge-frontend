@@ -99,6 +99,12 @@ export function resolveFileFolderAppearance(
 ):FileFolderWorldAppearance {
   const chosen=config?.tierVisuals?.[tier]
   if(!chosen)return FILE_FOLDER_WORLD_APPEARANCES[tier]
+  // Existing published releases predate the approved Standard living landscape.
+  // Seamlessly uplift their exact legacy defaults; never leave verified Standard
+  // purchasers in the old abstract river-slate map after this code is released.
+  if(tier==='standard'&&chosen.theme==='river-slate'&&
+     chosen.equipmentPack==='formation'&&chosen.realness==='basic')
+    return FILE_FOLDER_WORLD_APPEARANCES.standard
   try{return validateFileFolderAppearance(chosen)}
   catch{return FILE_FOLDER_WORLD_APPEARANCES[tier]}
 }
