@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest) {
     const narrationUrl = body.narrationUrl === undefined ? current.rows[0].narration_url : (body.narrationUrl ? String(body.narrationUrl).slice(0, 2048) : null)
     if (narrationUrl) {
       const object = mediaObjectNameFromUrl(narrationUrl)
-      if (!object || !object.startsWith('video-ads/assets/') || !/\\.(mp3|wav|ogg|m4a|webm)$/i.test(object)) {
+      if (!object || !object.startsWith('video-ads/assets/') || !/\.(mp3|wav|ogg|m4a|webm)$/i.test(object)) {
         return NextResponse.json({ success:false, error:'Narration must be audio uploaded into WEAVE Studio' },{status:400})
       }
     }
