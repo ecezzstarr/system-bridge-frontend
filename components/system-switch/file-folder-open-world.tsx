@@ -375,7 +375,7 @@ export default function FileFolderOpenWorld({
               districts={visibleDistricts} active={district} onEnter={setDistrict}
               systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}/>
           : <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={setDistrict}
-              systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}/>}
+              systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now} appearance={worldAppearance||resolveFileFolderAppearance(fileFolderTier==='premium'?'premium':fileFolderTier==='pro'?'pro':'standard')}/>}
 
 
         <nav aria-label="Walk the build site" className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
