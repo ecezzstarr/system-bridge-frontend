@@ -46,4 +46,10 @@ for(const marker of order){
 }
 assert.ok(!source.includes('<ProFileFolderPreview'),'Homepage presents Plus poster, not Pro product preview')
 assert.ok(!source.includes('visitor avatar'),'Homepage should not advertise a humanoid visitor avatar')
+const crypto=require('node:crypto')
+const poster=fs.readFileSync(path.join(__dirname,'../public/weave/plus-file-folder-white-official.webp'))
+assert.equal(crypto.createHash('sha256').update(poster).digest('hex'),
+ 'f35abcf28c07a47b751a76397b1863873db4d189533bcae9a48716c813a8fea5',
+ 'Homepage must include the verified optimized version of 389215.png, not a substitute')
+
 console.log('The Company of Time homepage source checks passed')
