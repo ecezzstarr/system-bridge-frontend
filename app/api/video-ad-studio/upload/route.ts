@@ -14,7 +14,10 @@ const EXT_BY_MIME: Record<string,string> = {
   'video/quicktime':'mov',
   'audio/mpeg':'mp3',
   'audio/mp4':'m4a',
+  'audio/ogg':'ogg',
+  'audio/x-m4a':'m4a',
   'audio/wav':'wav',
+  'audio/webm':'webm',
   'audio/x-wav':'wav',
 }
 
