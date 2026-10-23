@@ -113,6 +113,14 @@ export default function ClientSystemSwitchPage() {
         className="fixed left-3 top-[max(4.25rem,env(safe-area-inset-top))] z-[90] inline-flex min-h-11 max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-sky-200/35 bg-[#06182a]/95 px-3 py-2 text-[11px] font-bold text-sky-100 shadow-xl backdrop-blur-xl sm:left-5">
         <ArrowLeft className="h-4 w-4 shrink-0"/> Return to Weave Open World
       </Link>
+      {privateWorkshop&&data?.file_folder_world_release?.config&&<section
+        className="mx-3 mb-3 rounded-xl border border-cyan-200/20 bg-[#071927]/85 p-3 text-white sm:mx-5"
+        data-global-file-folder-release={String(data.file_folder_world_release.version)}>
+        <p className="text-[10px] font-black uppercase tracking-widest text-cyan-200">{String(data.file_folder_tier||'standard').toUpperCase()} File Folder · World update {data.file_folder_world_release.version}</p>
+        <h2 className="mt-1 text-sm font-bold">{data.file_folder_world_release.config.headline}</h2>
+        <p className="mt-1 text-xs leading-5 text-slate-300">{data.file_folder_world_release.config.tierMessages?.[data.file_folder_tier]||data.file_folder_world_release.config.description}</p>
+      </section>}
+
       {privateWorkshop&&<section className="mx-2 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/25 bg-[linear-gradient(120deg,rgba(74,111,133,.23),rgba(8,23,40,.93)_52%,rgba(158,102,39,.16))] px-3 py-3 text-white sm:mx-5" data-system-switch-client-continuation="real-file-folder">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[.15em] text-amber-200">{arrivedFromEvent?'Arrived from Flame Event · System Switch':'System Switch · Client-owned File Folder'}</p>
