@@ -103,6 +103,24 @@ export async function reconcileExistingWorldDomains(sql:any){
         AND d.tier IS DISTINCT FROM confirmed.file_folder_tier
     `
   }
+  // Employee Client File Folders are issued via approved company offers,
+  // not retail purchase receipts. Their real Standard/Pro/Premium/Plus
+  // entitlement must also determine their exterior world.
+  const [staffTables]=await sql`
+    SELECT to_regclass('public.company_client_staff_offers')::text AS offers
+  `
+  if(staffTables?.offers){
+    await sql`
+      UPDATE weave_open_world_domains d
+      SET tier=o.folder_tier,updated_at=now()
+      FROM company_client_staff_offers o
+      WHERE o.client_id=d.client_id
+        AND o.file_number=d.file_number
+        AND o.status='approved'
+        AND o.folder_tier IN ('standard','pro','premium','plus')
+        AND d.tier IS DISTINCT FROM o.folder_tier
+    `
+  }
   return result.length
 }
 
