@@ -8,9 +8,9 @@ const src=read('lib/weave-open-world-domains.ts')
 const c=ts.transpileModule(src,{compilerOptions:{
   module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,
 }}).outputText
-const exports={}
-vm.runInNewContext(c,{exports,Math,Number,String},{filename:'lib/weave-open-world-domains.ts'})
-const {projectPublicWorldDomain,worldLocationForSlot,formatWorldMovement}=exports
+const moduleExports={}
+vm.runInNewContext(c,{exports:moduleExports,Math,Number,String},{filename:'lib/weave-open-world-domains.ts'})
+const {projectPublicWorldDomain,worldLocationForSlot,formatWorldMovement}=moduleExports
 const first=worldLocationForSlot(12)
 assert.equal(first.slot,12)
 assert.equal(worldLocationForSlot(12).x,first.x)
