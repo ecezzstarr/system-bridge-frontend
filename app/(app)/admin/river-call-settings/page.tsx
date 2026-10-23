@@ -5,7 +5,6 @@ import {getAuthHeaders} from '@/lib/auth-client'
 type Report={settings:{price_flame_coin:string|null;enabled:boolean;updated_at:string};statistics:{calls:number;handoffs:number;refunds:number};voiceConfigured:boolean;aiConfigured:boolean;whatsappConfigured:boolean}
 export default function RiverCallSettingsPage(){
   const [data,setData]=useState<Report|null>(null)
-  const [price,setPrice]=useState('')
   const [enabled,setEnabled]=useState(false)
   const [error,setError]=useState('')
   const [notice,setNotice]=useState('')
@@ -15,7 +14,7 @@ export default function RiverCallSettingsPage(){
       const response=await fetch('/api/admin/river-call-settings',{headers:getAuthHeaders(),cache:'no-store'})
       const report=await response.json()
       if(!response.ok)throw new Error(report.error||'Unable to load settings')
-      setData(report);setPrice(report.settings.price_flame_coin??'');setEnabled(Boolean(report.settings.enabled))
+      setData(report);setEnabled(Boolean(report.settings.enabled))
     }catch(e:any){setError(e?.message||'Settings unavailable')}
   },[])
   useEffect(()=>{load()},[load])
@@ -23,10 +22,10 @@ export default function RiverCallSettingsPage(){
     setBusy(true);setError('');setNotice('')
     try{
       const response=await fetch('/api/admin/river-call-settings',{method:'PATCH',headers:getAuthHeaders(),
-        body:JSON.stringify({priceFlameCoin:price,enabled})})
+        body:JSON.stringify({enabled})})
       const result=await response.json()
       if(!response.ok)throw new Error(result.error||'Unable to save settings')
-      setNotice('River call price and availability updated without an app deployment.')
+      setNotice('River calling availability updated. Each call costs 5 Flame Coin.')
       await load()
     }catch(e:any){setError(e?.message||'Could not save')}
     finally{setBusy(false)}
@@ -35,7 +34,7 @@ export default function RiverCallSettingsPage(){
     <div className="mx-auto max-w-4xl">
       <Link href="/admin/dashboard" className="text-xs text-sky-300">← Administration</Link>
       <h1 className="mt-5 text-3xl font-black">River Call Outreach · Administration</h1>
-      <p className="mt-2 text-sm leading-6 text-slate-400">Control the price Bridgers pay for each AI phone call. Activation is restricted until both the verified telephony service and River AI are available.</p>
+      <p className="mt-2 text-sm leading-6 text-slate-400">Each River call costs 5 Flame Coin. Activate or suspend calling without redeployment. Activation is restricted until both the verified telephony service and River AI are available.</p>
       <div className="mt-7 grid gap-4 sm:grid-cols-3">
         {[
           ['Voice provider',data?.voiceConfigured?'Configured':'Not configured'],
@@ -45,10 +44,9 @@ export default function RiverCallSettingsPage(){
       </div>
       {(error||notice)&&<p role="alert" className={'mt-5 text-sm '+(error?'text-rose-300':'text-emerald-300')}>{error||notice}</p>}
       <div className="mt-8 border-y border-white/10 py-6">
-        <label className="block text-sm font-semibold">One River call · Flame Coin</label>
-        <input type="number" step="0.01" min="0.01" max="10000" value={price} onChange={e=>setPrice(e.target.value)} className="mt-3 w-full max-w-xs border border-white/15 bg-slate-900 px-3 py-2"/>
+        <p className="text-sm font-bold">One River call = 5 Flame Coin</p>
         <label className="mt-6 flex items-center gap-3 text-sm"><input type="checkbox" checked={enabled} onChange={e=>setEnabled(e.target.checked)}/> Enable new River calls</label>
-        <button onClick={save} disabled={busy||!price} className="mt-5 border border-sky-300/40 px-5 py-3 text-sm font-bold text-sky-100 disabled:opacity-40">{busy?'Saving…':'Save River call settings'}</button>
+        <button onClick={save} disabled={busy} className="mt-5 border border-sky-300/40 px-5 py-3 text-sm font-bold text-sky-100 disabled:opacity-40">{busy?'Saving…':'Save River calling availability'}</button>
       </div>
       <div className="mt-8 grid gap-5 sm:grid-cols-3">
         {[
