@@ -13,7 +13,7 @@ type Job={
   resolved_sha:string|null;previous_sha:string|null;status:string
   requested_at:string;started_at:string|null;finished_at:string|null;verification:string|null
 }
-type Snapshot={success:boolean;serverKey:string;activeRelease:string|null;workerOnline:boolean;workerLastSeen:string|null;healthyReleases:string[];jobs:Job[];error?:string}
+type Snapshot={success:boolean;serverKey:string;hostProvider:string;activeRelease:string|null;workerOnline:boolean;workerLastSeen:string|null;healthyReleases:string[];jobs:Job[];error?:string}
 const abbreviated=(sha:string|null|undefined)=>sha?sha.slice(0,12):'unreported'
 const date=(time:string|null)=>time?new Date(time).toLocaleString():'—'
 export default function SovereignReleaseWorkshop(){
@@ -136,7 +136,7 @@ export default function SovereignReleaseWorkshop(){
         </label>
         <button disabled={Boolean(inProgress)||busy||confirmation!==(mode==='rollback'?'ROLL BACK':'DEPLOY')||(mode==='rollback'&&!selected)||(mode==='deploy_latest'&&githubMain?.check.state!=='passed')} onClick={()=>void submit()} className="mt-4 min-h-12 w-full rounded-xl bg-orange-200 px-4 text-sm font-black text-[#09131e] disabled:opacity-35">{busy?'Submitting request…':inProgress?'Release already in progress':mode==='rollback'?'Request verified rollback':'Request verified deployment'}</button>
         {!state.workerOnline&&<p role="status" className="mt-3 rounded-xl border border-amber-300/25 bg-amber-400/[.06] p-3 text-xs leading-5 text-amber-100">No host worker heartbeat within the last minute. A new request can be queued, but it will not deploy until the separate WEAVE release worker is installed and connected.</p>}
-        <p className="mt-3 text-[11px] leading-5 text-slate-400">A queued request is not proof of deployment. Successful health verification and an updated Sovereign + Flame Record are required. Current server: {state.serverKey}.</p>
+        <p className="mt-3 text-[11px] leading-5 text-slate-400">A queued request is not proof of deployment. Successful health verification and an updated Sovereign + Flame Record are required. Configured host: {state.hostProvider} · {state.serverKey}.</p>
       </section>
       <section className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-5">
         <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-black">Release operation history</h2><button onClick={()=>void refresh()} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-3 py-2 text-xs font-bold"><RefreshCw className="h-4 w-4"/>Refresh</button></div>
