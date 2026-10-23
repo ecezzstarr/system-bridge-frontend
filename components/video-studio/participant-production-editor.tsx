@@ -83,7 +83,7 @@ export function ParticipantProductionEditor({production,onUpdated}:{production:P
 
   return <div className="space-y-5 border border-cyan-300/20 bg-black/30 p-4 sm:p-6">
     <div><p className="text-xs font-black uppercase tracking-wider text-cyan-200">WEAVE Production Editor</p><h3 className="mt-1 text-xl font-black text-white">{draft.title}</h3><p className="mt-2 text-xs text-slate-400">{draft.storyboard.length} scenes · {total}/{draft.durationSeconds} seconds · {draft.status}</p></div>
-    <WeaveNarrationCapture uploadEndpoint="/api/video-ad-studio/upload" existingUrl={draft.narrationUrl} onUploaded={async url=>{const next={...draft,narrationUrl:url};setDraft(next);await save(next)}}/>
+    <WeaveNarrationCapture uploadEndpoint="/api/video-ad-studio/upload" existingUrl={draft.narrationUrl} onUploaded={async url=>{const next={...draft,narrationUrl:url};setDraft(next);const saved=await save(next);if(!saved)throw new Error('Narration was uploaded but was not attached to the project')}}/>
     {draft.narrationScript&&<div><p className="text-xs font-black text-white">Original words — preserved</p><textarea readOnly rows={5} value={draft.narrationScript} className="mt-2 w-full bg-black/30 p-3 text-sm text-slate-200"/></div>}
     <label className="inline-flex cursor-pointer items-center gap-2 border border-white/20 px-3 py-2 text-xs text-white"><Music2 className="h-4 w-4"/>{busy==='music'?'UPLOADING…':draft.soundtrackUrl?'CHANGE MUSIC':'ADD LICENSED MUSIC'}<input type="file" accept="audio/*" className="hidden" onChange={changeMusic}/></label>
     <p className="text-xs text-slate-400">Narration has priority over background music; written voiceover directions are not automatically synthesized.</p>
