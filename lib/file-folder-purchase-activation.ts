@@ -239,8 +239,8 @@ export async function activatePurchasedFileFolderForClient(params: {
         AND client_id=${clientId}::uuid
         AND status='confirmed'
         AND file_folder_tier='plus'
-        AND payment_method='usdt'
-        AND amount_usdt=${PLUS_FILE_FOLDER.price}
+        AND ((payment_method='trx' AND amount_trx=${PLUS_FILE_FOLDER.trx})
+          OR (payment_method='usdt' AND amount_usdt=${PLUS_FILE_FOLDER.usdt}))
       ORDER BY confirmed_at DESC NULLS LAST
       LIMIT 1
     `
