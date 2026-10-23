@@ -1,11 +1,9 @@
 name: Weave Client Preview Pages
 
+# Optional historical documentation preview only. WEAVE production uses
+# the verified Oracle/self-hosted worker, never GitHub Pages. A production main
+# merge must not trigger a Pages deploy when the repo has no Pages site.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/**'
-      - '.github/workflows/weave-client-preview-pages.yml'
   workflow_dispatch:
 
 permissions:
