@@ -43,11 +43,15 @@ function SoundMeter({analyser}:{analyser:AnalyserNode|null}){
  return <canvas width={640} height={110} ref={canvas} className="h-24 w-full" aria-label="Live analyzer driven by the actual output audio"/>
 }
 function Waveform({samples}:{samples?:number[]}){
- return <svg viewBox="0 0 320 48" className="h-12 w-full" role="img" aria-label={samples?.length?'Real decoded audio waveform':'Synthesized track pattern'}>
+ if(!samples?.length)return <div className="flex h-12 items-center rounded-lg border border-white/5 bg-slate-950/50 px-3 text-[10px] text-slate-500">
+  The synthesized sound is heard on playback; the meter above displays its actual signal.
+ </div>
+ return <svg viewBox="0 0 320 48" className="h-12 w-full" role="img" aria-label="Waveform measured from decoded recording">
   <line x1="0" y1="24" x2="320" y2="24" stroke="#516373" strokeWidth="1"/>
-  {(samples||Array.from({length:64},(_,i)=>.15+Math.abs(Math.sin(i*.7)*Math.cos(i*.2))*.68)).map((v,i,arr)=>{
+  {samples.map((v,i)=>{
    const height=Math.max(1.5,v*42)
-   return <rect key={i} x={i*320/arr.length+.4} y={24-height/2} width={Math.max(1,320/arr.length-1.3)} height={height} fill={samples?'#8ad8ed':'#83ad8c'}/>
+   return <rect key={i} x={i*320/samples.length+.4} y={24-height/2}
+    width={Math.max(1,320/samples.length-1.3)} height={height} fill="#8ad8ed"/>
   })}
  </svg>
 }
