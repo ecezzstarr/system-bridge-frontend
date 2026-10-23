@@ -1,6 +1,7 @@
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { provisionPurchasedFileFolderCustomerDoor } from '@/lib/client-customer-door-provisioning'
+import { PLUS_FILE_FOLDER, provisionPlusFileFolderSystems } from '@/lib/file-folder-plus'
 
 function normalizedPhone(value: unknown) {
   return String(value || '').replace(/\D/g, '')
@@ -226,5 +227,29 @@ export async function activatePurchasedFileFolderForClient(params: {
     clientName,
   })
 
-  return { folder, workshop, client, customerDoor }
+  // The existing TRX-priced tiers retain their timed construction. Plus is
+  // independent, has an exact USDT price, and only provisions ready systems
+  // after the purchase record has been confirmed by Administration.
+  let plusDelivery = null
+  if (purchase_table) {
+    await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS amount_usdt numeric(30,8)`
+    const [verifiedPlus] = await sql`
+      SELECT id FROM file_folder_purchases
+      WHERE file_number=${fileNumber}
+        AND client_id=${clientId}::uuid
+        AND status='confirmed'
+        AND file_folder_tier='plus'
+        AND payment_method='usdt'
+        AND amount_usdt=${PLUS_FILE_FOLDER.price}
+      ORDER BY confirmed_at DESC NULLS LAST
+      LIMIT 1
+    `
+    if (verifiedPlus) {
+      plusDelivery = await provisionPlusFileFolderSystems({
+        sql, clientId, fileNumber, purchaseId: String(verifiedPlus.id),
+      })
+    }
+  }
+
+  return { folder, workshop, client, customerDoor, plusDelivery }
 }
