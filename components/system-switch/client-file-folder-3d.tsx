@@ -17,6 +17,8 @@ import { FileFolderScenery,FileFolderFacilities,FileFolderPresenceAvatar,FILE_FO
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
 import { FileFolderCityStreets } from './file-folder-city-streets'
 import { CityMaterial } from './file-folder-city-material'
+import { FileFolderTierArchitecture, FILE_FOLDER_TIER_THEMES, resolveFileFolderVisualTier, type FileFolderVisualTier } from './file-folder-tier-architecture'
+import { LivingRiverSurface, LivingFlameSurface } from './file-folder-living-surfaces'
 import { FileFolderCityArchitecture } from './file-folder-city-architecture'
 import { InstitutionalArchitecture } from './file-folder-institutional-architecture'
 
@@ -46,11 +48,11 @@ function StoneGround(){
     </mesh>
     <mesh position={[0,-.28,0]} receiveShadow>
       <boxGeometry args={[58,.08,58]}/>
-      <CityMaterial kind="paving"/>
+      <CityMaterial kind="paving" tileX={19} tileY={19}/>
     </mesh>
     <mesh position={[0,-.235,0]} rotation={[-Math.PI/2,0,0]} receiveShadow>
       <planeGeometry args={[56,56]}/>
-      <CityMaterial kind="paving"/>
+      <CityMaterial kind="paving" tileX={19} tileY={19}/>
     </mesh>
     <mesh position={[0,-.21,0]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[8.8,8.84,96]}/>
@@ -67,7 +69,7 @@ function PavedRoad({from,to,width=.72}:{from:[number,number,number];to:[number,n
   return <group position={[(from[0]+to[0])/2,-.16,(from[2]+to[2])/2]} rotation={[0,angle,0]}>
     <mesh receiveShadow>
       <boxGeometry args={[width,.08,length]}/>
-      <meshStandardMaterial color="#111820" roughness={.94}/>
+      <CityMaterial kind="paving" tileX={1} tileY={Math.max(1,Math.round(length/3))} tint="#455565"/>
     </mesh>
     <mesh position={[-width*.41,.055,0]}>
       <boxGeometry args={[.035,.025,length]}/>
@@ -88,8 +90,9 @@ function WaterChannel({position,rotation=0,length=5}:{position:[number,number,nu
     </mesh>
     <mesh position={[0,-.045,0]}>
       <boxGeometry args={[.56,.035,length-.18]}/>
-      <meshStandardMaterial color="#315d63" transparent opacity={.55} roughness={.16} metalness={.04}/>
+      <meshStandardMaterial color="#1b4b54" transparent opacity={.66} roughness={.16} metalness={.04}/>
     </mesh>
+    <LivingRiverSurface width={.56} length={length-.18}/>
   </group>
 }
 
@@ -104,8 +107,7 @@ function FlameBeacon({position,scale=.75}:{position:[number,number,number];scale
   return <group position={position} scale={scale}>
     <mesh position={[0,.12,0]} castShadow><cylinderGeometry args={[.25,.34,.3,18]}/><meshStandardMaterial color="#263843" metalness={.62} roughness={.34}/></mesh>
     <group ref={fire} position={[0,.66,0]}>
-      <mesh><coneGeometry args={[.17,.76,7]}/><meshStandardMaterial color="#f97316" emissive="#f97316" emissiveIntensity={1.8} toneMapped={false}/></mesh>
-      <mesh position={[0,-.05,.03]} scale={.58}><coneGeometry args={[.16,.67,7]}/><meshBasicMaterial color="#fef3c7"/></mesh>
+      <LivingFlameSurface/>
       <pointLight intensity={5.5} distance={3.2} color="#fb923c"/>
     </group>
   </group>
@@ -527,7 +529,7 @@ function CloudDevelopmentLevel(){
 
 function Scene({
   districts,activeSurface,onSurfaceChange,activeBuilds,liveSystems,
-  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,onReturnToFlame,thirdPerson,constructionPage,systemPage,otherLords,
+  marketLevel,marketBuildProgress,streamLevel,enterpriseLevel,enterprisePosition,enterpriseApproved,enterpriseName,routeCount,vitalityScore,systemWeaves,aiTerritories,emergence,routeCurrent,input,presence,onNearby,onSystemEnter,onBuildEnter,onStudioEnter,onReturnToFlame,thirdPerson,constructionPage,systemPage,otherLords,visualTier,
 }:{
   districts:District[]
   activeSurface:DistrictKey
@@ -558,20 +560,23 @@ function Scene({
   constructionPage:number
   systemPage:number
   otherLords:WorldAvatar[]
+  visualTier:FileFolderVisualTier
 }){
   const mobileBudget=useAdaptiveRuntime()
   const visibleSystems=liveSystems.slice(systemPage*12,systemPage*12+12)
+  const palette=FILE_FOLDER_TIER_THEMES[visualTier]
   return <>
-    <color attach="background" args={['#58667b']}/>
-    <fog attach="fog" args={['#58667b',25,65]}/>
+    <color attach="background" args={[visualTier==='plus'?'#9aabb4':visualTier==='premium'?'#74706d':'#58667b']}/>
+    <fog attach="fog" args={[visualTier==='plus'?'#9aabb4':visualTier==='premium'?'#74706d':'#58667b',25,65]}/>
     <Sky sunPosition={[8,4,-20]} turbidity={8} rayleigh={1.8} mieCoefficient={.005}/>
     <ambientLight intensity={1.1} color="#ffe2bb"/>
-    <hemisphereLight args={["#b6d7ee","#16312b",1.18]}/>
+    <hemisphereLight args={[palette.accent,"#16312b",1.18]}/>
     <directionalLight position={[5,11,6]} intensity={3.8} color="#ffdfb8" castShadow/>
     <pointLight position={[-6,4,-4]} intensity={7} color="#fb923c" distance={12}/>
     <pointLight position={[6,4,3]} intensity={5} color="#f6c878" distance={12}/>
 
     <StoneGround/>
+    <FileFolderTierArchitecture tier={visualTier} reducedDetail={mobileBudget.reducedMotion}/>
     <FileFolderCityArchitecture/>
     <FileFolderCityStreets/>
     <SystemSwitchThreshold position={[0,0,7.5]} scale={.44} quiet={mobileBudget.reducedMotion}/>
@@ -642,7 +647,7 @@ function Scene({
 
 export function ClientFileFolder3D({
   activeSurface,onSurfaceChange,activeBuilds,liveSystems,premiumSound,visibleSurfaceKeys,onSystemEnter,onBuildEnter,onStudioEnter,navigationEnabled=true,presenceKey='',staffVisitor=false,
-  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,
+  marketLevel=0,marketBuildProgress=0,streamLevel=0,enterpriseLevel=0,enterprisePosition='client',enterpriseApproved=false,enterpriseName=null,routeCount=0,vitalityScore=0,systemWeaves=[],aiTerritories=[],businessName='Client Business',businessSector=null,territoryMode=false,fileFolderTier='legacy',
 }:{
   activeSurface:DistrictKey
   onSurfaceChange:(key:DistrictKey)=>void
@@ -670,8 +675,10 @@ export function ClientFileFolder3D({
   businessName?:string
   businessSector?:string|null
   territoryMode?:boolean
+  fileFolderTier?:string
 }){
   const router=useRouter()
+  const visualTier=resolveFileFolderVisualTier(fileFolderTier)
   const input=useRef<WorldInput>({keys:new Set(),enter:false,active:false,analogForward:0,analogStrafe:0,lookDelta:0,lookPitchDelta:0,zoomDelta:0})
   const presence=useRef<Presence>({x:0,z:8.2,yaw:0})
   const {others:otherLords,online:cloudOnline}=useWorldPresence('client-cloud',presence,Boolean(presenceKey))
@@ -762,6 +769,7 @@ export function ClientFileFolder3D({
       : "relative overflow-hidden rounded-[2rem] border border-cyan-200/10 bg-[#070b10] shadow-[0_32px_100px_rgba(0,0,0,.48)]"
     }
     data-file-folder-territory={territoryMode?'persistent-world':'embedded-world'}
+    data-file-folder-visual-tier={visualTier}
   >
     <div className={territoryMode
       ? "absolute left-3 top-[7.5rem] z-10 hidden max-w-[72%] sm:block border-l border-cyan-200/20 bg-[#080d13]/58 px-3 py-2 backdrop-blur-md sm:left-5 sm:top-[8.5rem] sm:rounded-2xl sm:border sm:border-cyan-100/10 sm:bg-[#080d13]/78 sm:px-4 sm:py-3"
@@ -815,6 +823,7 @@ export function ClientFileFolder3D({
         <WorldImageCapture captureRef={captureWorldRef}/>
         <Scene
           districts={districts}
+          visualTier={visualTier}
           activeSurface={activeSurface}
           onSurfaceChange={onSurfaceChange}
           activeBuilds={activeBuilds}

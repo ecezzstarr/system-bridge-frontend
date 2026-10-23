@@ -40,7 +40,9 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: File Folder world runtime regression
-        run: node tests/file-folder-world-runtime-regression.cjs
+        run: |
+          node tests/file-folder-world-runtime-regression.cjs
+          node tests/file-folder-environment-fidelity.cjs
 
       - name: Shared System Switch protocol and PostgreSQL multiplayer
         env:
