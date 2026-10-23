@@ -34,23 +34,32 @@ export function ensureReleaseWorkshopSchema(){
       ON weave_release_jobs(server_key) WHERE status IN ('queued','running')`
     await sql`CREATE INDEX IF NOT EXISTS weave_release_jobs_history
       ON weave_release_jobs(server_key,requested_at DESC)`
+    await sql`CREATE TABLE IF NOT EXISTS weave_release_workers(
+      server_key varchar(120) PRIMARY KEY,
+      worker_key varchar(120) NOT NULL,
+      last_seen_at timestamptz NOT NULL DEFAULT now()
+    )`
   })().catch(error=>{schemaReady=null;throw error})
   return schemaReady
 }
 
 export async function getReleaseWorkshopState(){
   await ensureReleaseWorkshopSchema()
-  const [jobs,history]=await Promise.all([
+  const [jobs,history,workers]=await Promise.all([
     sql`SELECT id,server_key,action,target_sha,resolved_sha,previous_sha,
         status,requested_by,requested_at,started_at,finished_at,verification,details
         FROM weave_release_jobs WHERE server_key=${serverKey()}
         ORDER BY requested_at DESC LIMIT 30`,
-    listWeaveDeploymentRecords(80),
+    listWeaveDeploymentRecords(200),
+    sql`SELECT worker_key,last_seen_at FROM weave_release_workers WHERE server_key=${serverKey()} LIMIT 1`,
   ])
   const healthyReleases=[...new Set(history.filter(row=>
     row.status==='healthy'||row.status==='rolled_back'
   ).map(row=>String(row.release_sha)).filter(fullReleaseSha))]
+  const lastSeen=workers[0]?.last_seen_at?new Date(workers[0].last_seen_at):null
+  const workerOnline=Boolean(lastSeen&&Date.now()-lastSeen.getTime()<60000)
   return {jobs,healthyReleases,history:history.slice(0,30),serverKey:serverKey(),
+    workerOnline,workerLastSeen:lastSeen?.toISOString()||null,
     activeRelease:process.env.WEAVE_RELEASE_SHA||null}
 }
 
@@ -85,6 +94,9 @@ export async function requestReleaseJob(input:{action:ReleaseAction;targetSha?:s
 export async function claimReleaseJob(workerKey:string){
   await ensureReleaseWorkshopSchema()
   const lease=randomUUID()
+  await sql`INSERT INTO weave_release_workers(server_key,worker_key,last_seen_at)
+    VALUES(${serverKey()},${workerKey},now())
+    ON CONFLICT(server_key) DO UPDATE SET worker_key=excluded.worker_key,last_seen_at=now()`
   const [job]=await sql`
     UPDATE weave_release_jobs SET
       status='running',started_at=now(),worker_key=${workerKey},
