@@ -1,7 +1,7 @@
 'use client'
 
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react'
-import {audioPeaks,beginMusicLoop,exportMusicWav,loadMusicBuffers,type LiveMusic} from '@/lib/music-loop-engine'
+import {audioPeaks,beginMusicLoop,exportMusicWav,type LiveMusic} from '@/lib/music-loop-engine'
 import type {MusicArrangement,MusicSound,MusicTrack,VoicePosition,WordCue} from '@/lib/music-workshop'
 import {Headphones,Mic,MicOff,Music2,Pause,Play,Plus,Save,Trash2,Upload,Volume2,Download} from 'lucide-react'
 
