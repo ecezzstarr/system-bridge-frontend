@@ -146,6 +146,17 @@ export async function POST(request: NextRequest) {
       } catch (receiptError) {
         console.error('[company client staff] ticket receipt publication failed', receiptError)
       }
+      try {
+        await sql`
+          INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+          VALUES (${user.id}::uuid,'company_staff_position',
+            'Your company position workspace is ready',
+            ${'Your approved company position and granted File Folder are ready. Open your workspace for business conversations and company correspondence.'},
+            'WEAVE Employment','/client/staff-workspace')
+        `
+      } catch (notificationError) {
+        console.error('[company client staff] position notification failed',notificationError)
+      }
     }
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
