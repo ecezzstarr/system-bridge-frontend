@@ -26,6 +26,9 @@ const tierEndpoint=read('app/api/client/system-switch/route.ts')
 const office=read('app/api/client/staff-workspace/route.ts')
 const migration=read('migrations/20261023_company_client_staff_entry.sql')
 const normalPurchase=read('app/api/public/file-folder/purchase/route.ts')
+const invite=read('components/public/employee-client-ticket-crossing.tsx')
+const officePage=read('app/client/staff-workspace/page.tsx')
+const adminPage=read('app/(app)/admin/client-staff-offers/page.tsx')
 
 assert.ok(publicPage.includes('EmployeeClientTicketCrossing')&&publicPage.includes('/api/public/file-folder/purchase'),
   'Company tickets and normal File Folder purchases must share an entrance, not a ledger')
@@ -47,4 +50,18 @@ assert.ok(office.includes("role!=='client'")&&office.includes("status='approved'
   'Employee work is authenticated and limited to granted Clients')
 assert.ok(normalPurchase.includes('file_folder_purchases'),
   'Existing retail File Folder checkout must remain intact')
+assert.ok(admin.includes('applicantContributionUSDT')&&admin.includes('proposedPersonalLoanUSDT')&&admin.includes('personalLoanTerms'),
+  'Employment loans must be separate from the applicant contribution with written terms')
+assert.ok(admin.includes('loanChecked')&&admin.includes('loanFundingReference')&&admin.includes('personal_loan_accepted_at'),
+  'Administration must verify actual separate loan funding and consent before granting Pro')
+assert.ok(admin.includes('existingClient')&&admin.includes('client.file_number !== fileNumber'),
+  'Existing Clients retain their owned File Number when a company position is granted')
+assert.ok(applicant.includes('personalLoanTermsAccepted')&&invite.includes('loanTermsAccepted'),
+  'Accepting an employee offer cannot silently incur a personal loan')
+assert.ok(adminPage.includes('applicantContribution')&&adminPage.includes('personalLoan')&&officePage.includes('To be confirmed'),
+  'Regional manager salary may remain unconfirmed and the 200 USDT ticket may split 100/100')
+assert.ok(register.includes('staffGrant.applicant_contribution_usdt')&&register.includes('proposedPersonalLoanUSDT'),
+  'Applicant payment receipts must not count separately funded personal loan proceeds')
+assert.ok(migration.includes('loan_funding_reference')&&migration.includes('personal_loan_accepted_at'),
+  'Loan proposal, consent and funding audit fields must be durable')
 console.log('Company employee tickets, separate ledger, grant and workspace regression passed')
