@@ -4,7 +4,7 @@ import { useCallback,useEffect,useState } from 'react'
 import { getClientToken } from '@/lib/client-auth'
 
 type Item = {id:string;prospect_name:string;organization:string|null;stage:string;next_action:string|null;created_at:string}
-type Position = {position_title:string;monthly_salary_usdt:number;ticket_amount_usdt:number;folder_tier:string;file_number:string;receipt_number:string;verified_at:string}
+type Position = {position_title:string;monthly_salary_usdt:number;ticket_amount_usdt:number;applicant_contribution_usdt:number;proposed_personal_loan_usdt:number;personal_loan_terms:string|null;folder_tier:string;file_number:string;receipt_number:string;verified_at:string}
 const stages=['introduced','conversation','follow_up','proposal','completed'] as const
 
 export default function CompanyClientStaffWorkspace(){
@@ -62,15 +62,15 @@ export default function CompanyClientStaffWorkspace(){
         <section className="space-y-3 rounded-2xl border border-cyan-200/20 bg-cyan-300/[.06] p-5">
           <h2 className="text-2xl font-bold">{position.position_title}</h2>
           <p className="text-sm text-slate-200">Company-granted {position.folder_tier.toUpperCase()} File Folder · {position.file_number}</p>
-          <p className="text-sm text-slate-200">Monthly salary in approved offer: {Number(position.monthly_salary_usdt).toLocaleString()} USDT. Salary payments and terms are managed separately by the company.</p>
-          <p className="text-xs text-slate-400">Entry ticket: {Number(position.ticket_amount_usdt).toLocaleString()} USDT · receipt {position.receipt_number}</p>
+          <p className="text-sm text-slate-200">Monthly salary: {Number(position.monthly_salary_usdt)>0?Number(position.monthly_salary_usdt).toLocaleString()+" USDT in the offered terms":"To be confirmed with Administration"}. Salary payments are managed separately by the company.</p>
+          <p className="text-xs text-slate-400">Entry ticket: {Number(position.ticket_amount_usdt).toLocaleString()} USDT · Your verified contribution: {Number(position.applicant_contribution_usdt||position.ticket_amount_usdt).toLocaleString()} USDT · Proposed personal loan: {Number(position.proposed_personal_loan_usdt||0).toLocaleString()} USDT · receipt {position.receipt_number}</p>
         </section>
         <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {[
             ['Meet businesses','Introduce WEAVE and understand how the organization might use a File Folder.','/file-folder-preview'],
             ['Present File Folders','Demonstrate the actual File Folder offer, options and operating systems.','/file-folder'],
             ['My File Folder','Open your company-granted Client systems and Bridge AI assistance.','/client/system-switch'],
-            ['Team correspondence','Communicate with other WEAVE participants through company communication channels.','/communications'],
+            ['Employment terms & salary enquiries','Read your position offer here and contact Administration for verified salary and employment terms.','/communications'],
             ['Position notifications','Read approved company instructions and employment updates.','/notifications'],
           ].map(([title,detail,href])=><Link key={title} href={href} className="rounded-xl border border-white/15 bg-white/[.04] p-5">
             <h3 className="font-bold text-cyan-200">{title} →</h3><p className="mt-3 text-xs leading-5 text-slate-300">{detail}</p>
