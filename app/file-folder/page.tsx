@@ -230,6 +230,14 @@ export default function PublicFileFolderPurchasePage() {
       </nav>
 
       <div className="mx-auto max-w-6xl px-3 py-5 sm:px-5 sm:py-8">
+        <aside className="mb-5 flex flex-col gap-3 rounded-2xl border border-amber-200/30 bg-amber-50/10 p-5 sm:flex-row sm:items-center sm:justify-between" data-company-client-staff-ticket-entry="separate-from-purchase">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-amber-200">Company employment invitation</p>
+            <h2 className="mt-1 text-lg font-bold text-white">Have you been offered a company Client staff position?</h2>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-stone-300">Enter with your Administration-issued Entry Ticket. Ticket fees do not purchase File Folders; verified employees receive their assigned File Folder as a company benefit, with a linked staff workspace.</p>
+          </div>
+          <Link href="/file-folder/company-ticket" className="inline-flex shrink-0 items-center justify-center rounded-xl border border-amber-300/40 px-5 py-3 text-sm font-bold text-amber-100">Company Entry Ticket <ArrowRight className="ml-2 h-4 w-4" /></Link>
+        </aside>
         <section className="overflow-hidden rounded-[2rem] border border-orange-200/15 bg-[#0b0706]/92 shadow-[0_32px_110px_rgba(85,20,5,.18)]">
           <header className="grid gap-5 border-b border-white/10 px-5 py-6 md:grid-cols-[1fr_auto] md:items-end md:px-8">
             <div>
