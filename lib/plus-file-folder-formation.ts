@@ -86,6 +86,9 @@ export function derivePlusWorldFormation(
     // The baseline approved Plus environment is present at purchase.
     // Extra skyline/detail grows only from recorded Client operations.
     environmentStage:live.length>0?'operating':activeBuilds>0||completedBuilds>0?'expanding':'formed',
-    expansionLevel:Math.min(3,Math.floor(live.length/2)),
+    // Stage number does not stop when the reference image is reached.
+    // Scene detail uses bounded mobile-friendly LOD, while actual system count
+    // and stage can continue increasing with the Client's verified work.
+    expansionLevel:Math.floor(Math.log2(live.length+1)),
   }
 }
