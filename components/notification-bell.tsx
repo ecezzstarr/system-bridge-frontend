@@ -113,7 +113,7 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
                       })
                       popup.onclick = () => {
                         window.focus()
-                        if (n.link) window.location.href = n.link
+                        window.location.href = '/notifications?open=' + encodeURIComponent(n.id)
                       }
                     } catch {
                       // Mobile browsers may disallow page-created system notifications.
@@ -263,8 +263,7 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
                         </p>
                       </div>
                       <div className="flex flex-col gap-1">
-                        {(
-                          <Link
+                        <Link
                             href={`/notifications?open=${encodeURIComponent(notification.id)}`}
                             onClick={() => {
                               setIsOpen(false)
@@ -273,7 +272,6 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
                           >
                             View message
                           </Link>
-                        )}
                         {!notification.is_read && (
                           <button
                             onClick={() => markAsRead(notification.id)}
