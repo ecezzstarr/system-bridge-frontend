@@ -28,6 +28,37 @@ async function runFfmpeg(args: string[]) {
   })
 }
 
+function readableCaption(value: string) {
+  const words = String(value || '').replace(/\r/g, '').trim().split(/\s+/u).filter(Boolean)
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    if (current && (current + ' ' + word).length > 27) {
+      lines.push(current)
+      current = word
+    } else {
+      current = current ? current + ' ' + word : word
+    }
+  }
+  if (current) lines.push(current)
+  // The complete original narration is preserved in narration_script.
+  // Only short visual captions appear in the frame's mobile safe zone.
+  return lines.slice(0, 5).join('\n')
+}
+
+async function probeNarrationSeconds(source: string) {
+  return await new Promise<number>((resolve, reject) => {
+    const child = spawn('ffprobe',['-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',source],{stdio:['ignore','pipe','pipe']})
+    let output=''
+    child.stdout.on('data',chunk=>{output+=String(chunk)})
+    child.on('error',reject)
+    child.on('close',code=>{
+      const duration=Number(output.trim())
+      code===0 && Number.isFinite(duration) && duration>0 ? resolve(duration) : reject(new Error('Narration audio is invalid or unreadable'))
+    })
+  })
+}
+
 function safeConcatPath(filePath: string) {
   return filePath.replace(/'/g, "'\\''")
 }
@@ -111,7 +142,7 @@ export async function POST(request: NextRequest) {
       const textPath = path.join(workDir, `text-${scene.order}.txt`)
       const segmentPath = path.join(segmentDir, `scene-${String(scene.order).padStart(2, '0')}.mp4`)
       await downloadAsset(scene.assetUrl!, inputPath)
-      await writeFile(textPath, String(scene.text || '').replace(/\r/g, '').slice(0, 300), 'utf8')
+      await writeFile(textPath, readableCaption(scene.text), 'utf8')
 
       const duration = Math.max(1, Number(scene.durationSeconds || 1))
       const visualFilter = [
@@ -151,6 +182,8 @@ export async function POST(request: NextRequest) {
       if (narrationUrl) {
         const narrationPath = path.join(workDir, `narration${extFor(narrationUrl, '.mp3')}`)
         await downloadAsset(narrationUrl, narrationPath)
+        const audioDuration = await probeNarrationSeconds(narrationPath)
+        if (audioDuration > duration + 0.75) throw new Error(`Narration is ${Math.ceil(audioDuration)}s but video is only ${duration}s. Extend scene timings or record a shorter reading; the Studio will not cut off your words.`)
         inputs.push('-i', narrationPath)
         narratorTrack = `[${inputIndex}:a]atrim=duration=${duration},asetpts=PTS-STARTPTS,apad,highpass=f=75,acompressor=threshold=-18dB:ratio=2.5:attack=10:release=180,volume=1.25[voice]`
         tracks.push('[voice]')
