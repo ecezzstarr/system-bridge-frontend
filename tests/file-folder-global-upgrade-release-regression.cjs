@@ -11,11 +11,11 @@ assert.ok(tierMatch,'Every File Folder must use a shared tier contract')
 assert.deepStrictEqual(tierMatch[1].match(/'[^']+'/g).map(x=>x.slice(1,-1)),['standard','pro','premium','plus'])
 assert.ok(pricing.includes("requested === 'plus'")&&pricing.includes('plusFlameCoin: 60000'),
  'Plus is a distinct, explicitly selected tier')
-assert.ok(read('app/file-folder/page.tsx').includes('>Plus</span>')&&
+assert.ok(read('app/file-folder/page.tsx').includes('>Plus · Completed systems</span>')&&
  read('app/file-folder/page.tsx').includes('>Pro</span>'),
  'Public File Folder entrance must show all four types')
-assert.ok(read('app/api/bridge/file-folder/purchase/route.ts').includes("requestedTier==='plus'"),
- 'Unquoted Plus cannot silently enter TRX checkout')
+assert.ok(read('app/api/bridge/file-folder/purchase/route.ts').includes("getFileFolderTier(amountFlameCoin, requestedTier)"),
+ 'Every checkout tier must pass the explicit fixed price contract')
 const upgrade=read('lib/client-folder-upgrade.ts')
 const gate=read('components/system-switch/client-file-folder-gate.tsx')
 const entry=read('app/api/client/file-folder-entry/route.ts')

@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
     const amountFlameCoin = rawAmount == null || rawAmount === '' ? FILE_FOLDER_PRICING.standardMinimumFlameCoin : Number(rawAmount)
     const requestedTier = typeof body.fileFolderTier === 'string' ? body.fileFolderTier.trim().toLowerCase() : null
     const fileFolderTier = getFileFolderTier(amountFlameCoin, requestedTier)
-    if(requestedTier==='plus') return NextResponse.json({error:'Plus requires a verified company quote and funding instructions; no automatic TRX equivalent is offered.'},{status:400})
     const paymentMethod = 'trx'
     const paymentReference = typeof body.paymentReference === 'string' ? body.paymentReference.trim() : ''
     const buyerName = typeof body.buyerName === 'string' ? body.buyerName.trim() : null
