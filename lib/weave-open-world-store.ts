@@ -150,7 +150,9 @@ export async function reconcileExistingWorldDomains(sql:any){
         AND o.file_number=d.file_number
         AND o.status='approved'
         AND o.folder_tier IN ('standard','pro','premium','plus')
-        AND d.tier IS DISTINCT FROM o.folder_tier
+        -- A verified retail upgrade takes precedence over an older staff grant.
+        -- Approved staff offers fill previously unknown Client entitlements.
+        AND d.tier='unclassified'
     `
   }
   return result.length
