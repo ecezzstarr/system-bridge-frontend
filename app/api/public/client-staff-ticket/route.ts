@@ -24,7 +24,8 @@ export async function GET(request:NextRequest) {
       receiptNumber:offer.status==='approved'?offer.receipt_number:null,
       rejectionReason:offer.status==='rejected'?offer.rejection_reason:null,
       registerUrl:offer.status==='approved'&&offer.file_number
-        ?'/client/register?fileNumber='+encodeURIComponent(offer.file_number):null,
+        ?offer.client_id?'/client/staff-workspace':'/client/register?fileNumber='+encodeURIComponent(offer.file_number):null,
+      existingClient:Boolean(offer.client_id),
     }},{headers:privateHeaders})
   } catch(error) {
     console.error('[client staff ticket] read',error)
