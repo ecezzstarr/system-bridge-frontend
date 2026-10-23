@@ -24,6 +24,7 @@ import {
   X,
 } from 'lucide-react'
 import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-world'
+import {resolveFileFolderAppearance} from '@/lib/file-folder-world-presets'
 import GenerativeFormationWorkshop from '@/components/system-switch/generative-formation-workshop'
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
@@ -816,6 +817,11 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <FileFolderOpenWorld
                   clientName={data.client.name}
                   fileNumber={data.client.file_number}
+                  fileFolderTier={data.file_folder_tier}
+                  worldAppearance={resolveFileFolderAppearance(
+                    data.file_folder_tier==='plus'?'plus':data.file_folder_tier==='premium'?'premium':data.file_folder_tier==='pro'?'pro':'standard',
+                    data.file_folder_world_release?.config,
+                  )}
                   workshopTitle={data.workshop.title}
                   workshopPurpose={data.workshop.purpose}
                   initialWorld={world}
