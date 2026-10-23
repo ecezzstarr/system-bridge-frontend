@@ -149,8 +149,9 @@ export async function GET(request: NextRequest) {
     let persistedTier: string | null = null
     if (purchaseTable?.table_name) {
       await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS file_folder_tier varchar(20)`
+      await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS amount_usdt numeric(30,8)`
       const [purchaseTier] = await sql`
-        SELECT amount_trx,file_folder_tier
+        SELECT amount_trx,amount_usdt,payment_method,file_folder_tier
         FROM file_folder_purchases
         WHERE (client_id=${client.id}::uuid OR file_number=${client.file_number})
           AND status IN ('confirmed','approved','paid_pending_folder')
@@ -158,7 +159,11 @@ export async function GET(request: NextRequest) {
         LIMIT 1
       `
       if (purchaseTier) {
-        persistedTier = getFileFolderTier(Number(purchaseTier.amount_trx), purchaseTier.file_folder_tier)
+        persistedTier = purchaseTier.file_folder_tier === 'plus'
+          && purchaseTier.payment_method === 'usdt'
+          && Number(purchaseTier.amount_usdt) === 20_000
+          ? 'plus'
+          : getFileFolderTier(Number(purchaseTier.amount_trx), purchaseTier.file_folder_tier)
       }
     }
 
