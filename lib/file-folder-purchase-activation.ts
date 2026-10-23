@@ -2,6 +2,7 @@ import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { provisionPurchasedFileFolderCustomerDoor } from '@/lib/client-customer-door-provisioning'
 import { PLUS_FILE_FOLDER, provisionPlusFileFolderSystems } from '@/lib/file-folder-plus'
+import {provisionPurchasedWorldDomain} from '@/lib/weave-open-world-store'
 
 function normalizedPhone(value: unknown) {
   return String(value || '').replace(/\D/g, '')
@@ -251,5 +252,25 @@ export async function activatePurchasedFileFolderForClient(params: {
     }
   }
 
-  return { folder, workshop, client, customerDoor, plusDelivery }
+  // One purchased Client folder = one permanent position in Burning River.
+  // The exterior exists while Customer Door construction is still in progress;
+  // it has NO capability to reveal this Client's private workspace.
+  let worldTier:string|null=null
+  if(purchase_table){
+    const [verified]=await sql`
+      SELECT file_folder_tier
+      FROM file_folder_purchases
+      WHERE file_number=${fileNumber}
+        AND client_id=${clientId}::uuid
+        AND status='confirmed'
+        AND file_folder_tier IN ('standard','pro','premium','plus')
+      ORDER BY confirmed_at DESC NULLS LAST
+      LIMIT 1
+    `
+    worldTier=verified?.file_folder_tier||null
+  }
+  const worldDomain=await provisionPurchasedWorldDomain({
+    sql,clientId,fileNumber,tier:worldTier,
+  })
+  return { folder, workshop, client, customerDoor, plusDelivery, worldDomain }
 }
