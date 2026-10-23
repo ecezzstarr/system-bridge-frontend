@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#b37b2f"/><stop offset=".16" stop-color="#f9e7ad"/><stop offset=".35" stop-color="#e4b95f"/><stop offset=".62" stop-color="#fff4c4"/><stop offset=".85" stop-color="#c29340"/><stop offset="1" stop-color="#f8df99"/></linearGradient>
+ <pattern id="brushed" width="9" height="512" patternUnits="userSpaceOnUse"><path d="M1 0v512 M4 0v512 M8 0v512" stroke="#fff4d4" stroke-opacity=".16" stroke-width=".55"/></pattern>
+</defs>
+<rect width="512" height="512" fill="url(#metal)"/><rect width="512" height="512" fill="url(#brushed)"/>
+<path d="M0 112H512 M0 366H512" stroke="#fff9d6" stroke-width="1" opacity=".15"/>
+</svg>
