@@ -12,6 +12,7 @@ const gate=read('app/api/client/file-folder-entry/route.ts')
 assert.ok(references.includes('STANDARD_FILE_FOLDER_REFERENCE')&&references.includes("referenceImage: '383187.png'"))
 assert.ok(references.includes('bdbd47223243d0996967087ef9733288dd9b863ab16b3b40be0d49e6b33f79cb'))
 assert.ok(references.includes("standard:{theme:'standard-living-valley'")&&references.includes("equipmentPack:'standard-business-districts'"),'Standard must have its own official world identity')
+assert.ok(scene.includes('<LivingWaterfall')&&scene.includes('<RiverRipples'), 'Official river and waterfalls must have live 3D motion')
 assert.ok(scene.includes('<Canvas')&&scene.includes('<OrbitControls')&&scene.includes('<WaterAndLandscape'),
   'World must use actual 3D landscape, live water and touch navigation, not a static wallpaper')
 for(const district of ['customer_door','food_business','farm_to_customer','boutique_brand','creative_studio','app_platform','build']){
