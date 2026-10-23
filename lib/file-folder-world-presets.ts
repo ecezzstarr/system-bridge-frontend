@@ -21,7 +21,20 @@ export const PLUS_FILE_FOLDER_REFERENCE = {
   name: 'Official Plus File Folder',
   approved: '2026-10-23',
   referenceImage: '389215.png',
+  // One approved design reference across homepage, Client world, and Administration.
+  posterAssetPath: '/weave/plus-file-folder-white-official.webp',
+  originalSha256: '544ba241448127f8550bb11a1b94058304467addef9156ba8486221fdc4385b3',
+  originalDimensions: {width:1229,height:1536},
   composition: 'A luminous white-and-gold open world unfolding from the central File Folder',
+  constructionRequirements: [
+    'A large open white-and-gold File Folder is the physical center, not a flat wallpaper',
+    'Porcelain-white structures, marble terraces, brushed gold edges and transparent glass',
+    'Warm radiant daylight, receding towers, water cascades and spatial depth',
+    'Six distinguishable interactive equipment zones: Systems, Modules, Tools, People, Operations, Expansion',
+    'The equipment zones lead to actual Client systems, workspaces and recorded builds',
+    'No avatar or joystick; phone-first inspection by tap, drag and pinch',
+    'Market-promise text in the image is promotional artwork, not verified earnings or guaranteed returns',
+  ] as const,
   sixFunctions: ['systems','modules','tools','people','operations','expansion'] as const,
   message: 'A completed set of systems for immediate uses',
 } as const
@@ -105,8 +118,16 @@ export function resolveFileFolderAppearance(
   if(tier==='standard'&&chosen.theme==='river-slate'&&
      chosen.equipmentPack==='formation'&&chosen.realness==='basic')
     return FILE_FOLDER_WORLD_APPEARANCES.standard
-  try{return validateFileFolderAppearance(chosen)}
-  catch{return FILE_FOLDER_WORLD_APPEARANCES[tier]}
+  try{
+    const validated=validateFileFolderAppearance(chosen)
+    if(tier==='plus'){
+      // Persisted legacy releases must never hide the approved Plus equipment.
+      const official=FILE_FOLDER_WORLD_APPEARANCES.plus
+      return {...validated,theme:official.theme,equipmentPack:official.equipmentPack,
+        realness:official.realness,equipmentZones:[...official.equipmentZones]}
+    }
+    return validated
+  }catch{return FILE_FOLDER_WORLD_APPEARANCES[tier]}
 }
 export function isSupportedFileFolderTier(tier:unknown):tier is FileFolderTier {
   return typeof tier==='string'&&FILE_FOLDER_TIERS.includes(tier as FileFolderTier)
