@@ -1,7 +1,7 @@
 import { NextRequest,NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
-import { aiConfigured,ensureRiverCallSchema,twilioConfigured } from '@/lib/river-voice-outreach'
+import { aiConfigured,ensureRiverCallSchema,twilioConfigured,RIVER_CALL_PRICE_FLAME_COIN } from '@/lib/river-voice-outreach'
 
 export const runtime='nodejs'
 export async function GET(request:NextRequest) {
@@ -21,15 +21,12 @@ export async function PATCH(request:NextRequest) {
   const user=await getAuthUser(request)
   if(!user||user.role!=='admin')return NextResponse.json({error:'Administration required'},{status:403})
   const body=await request.json().catch(()=>({}))
-  const price=Number(body.priceFlameCoin)
-  if(!Number.isFinite(price)||price<0.01||price>10000 || !/^\d+(\.\d{1,8})?$/.test(String(body.priceFlameCoin)))
-    return NextResponse.json({error:'Set a per-call price between 0.01 and 10,000 Flame Coin'},{status:400})
   if(typeof body.enabled!=='boolean')return NextResponse.json({error:'An enabled setting is required'},{status:400})
   if(body.enabled && (!twilioConfigured()||!aiConfigured()))
     return NextResponse.json({error:'The verified voice provider and River AI must be configured before activation'},{status:409})
   await ensureRiverCallSchema()
   const updated=await getPool().query(
     'UPDATE weave_river_call_settings SET price_flame_coin=$1,enabled=$2,updated_at=NOW() WHERE id=1 RETURNING price_flame_coin,enabled,updated_at',
-    [price,body.enabled])
+    [RIVER_CALL_PRICE_FLAME_COIN,body.enabled])
   return NextResponse.json({success:true,settings:updated.rows[0]})
 }
