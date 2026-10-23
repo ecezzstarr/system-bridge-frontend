@@ -12,7 +12,7 @@ type Job={
   resolved_sha:string|null;previous_sha:string|null;status:string
   requested_at:string;started_at:string|null;finished_at:string|null;verification:string|null
 }
-type Snapshot={success:boolean;serverKey:string;activeRelease:string|null;healthyReleases:string[];jobs:Job[];error?:string}
+type Snapshot={success:boolean;serverKey:string;activeRelease:string|null;workerOnline:boolean;workerLastSeen:string|null;healthyReleases:string[];jobs:Job[];error?:string}
 const abbreviated=(sha:string|null|undefined)=>sha?sha.slice(0,12):'unreported'
 const date=(time:string|null)=>time?new Date(time).toLocaleString():'—'
 export default function SovereignReleaseWorkshop(){
@@ -90,7 +90,7 @@ export default function SovereignReleaseWorkshop(){
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Server className="h-5 w-5 text-sky-300"/><p className="mt-3 text-xs text-slate-400">Active reported release</p><p className="mt-1 break-all font-mono text-sm font-black">{abbreviated(state.activeRelease)}</p></div>
         <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><ShieldCheck className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-xs text-slate-400">Previously healthy releases</p><p className="mt-1 text-xl font-black">{state.healthyReleases.length}</p></div>
-        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Activity className="h-5 w-5 text-orange-300"/><p className="mt-3 text-xs text-slate-400">Host release request</p><p className="mt-1 text-sm font-black">{inProgress?.status||'No active request'}</p></div>
+        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Activity className="h-5 w-5 text-orange-300"/><p className="mt-3 text-xs text-slate-400">Independent release worker</p><p className="mt-1 text-sm font-black">{state.workerOnline?'Connected': 'Not recently connected'}</p><p className="mt-1 text-xs text-slate-400">{state.workerLastSeen?'Last check '+date(state.workerLastSeen):'Host setup not verified'} · {inProgress?.status||'No active request'}</p></div>
       </div>
       <section className="mt-5 rounded-2xl border border-orange-300/20 bg-[#0c1824] p-5">
         <h2 className="text-lg font-black">Control production</h2>
@@ -107,6 +107,7 @@ export default function SovereignReleaseWorkshop(){
           <input value={confirmation} onChange={event=>setConfirmation(event.target.value)} placeholder={mode==='rollback'?'ROLL BACK':'DEPLOY'} autoCapitalize="characters" autoComplete="off" className="mt-2 block w-full rounded-lg border border-white/20 bg-[#09131e] p-3 text-sm font-black text-white"/>
         </label>
         <button disabled={Boolean(inProgress)||busy||confirmation!==(mode==='rollback'?'ROLL BACK':'DEPLOY')||(mode==='rollback'&&!selected)} onClick={()=>void submit()} className="mt-4 min-h-12 w-full rounded-xl bg-orange-200 px-4 text-sm font-black text-[#09131e] disabled:opacity-35">{busy?'Submitting request…':inProgress?'Release already in progress':mode==='rollback'?'Request verified rollback':'Request verified deployment'}</button>
+        {!state.workerOnline&&<p role="status" className="mt-3 rounded-xl border border-amber-300/25 bg-amber-400/[.06] p-3 text-xs leading-5 text-amber-100">No host worker heartbeat within the last minute. A new request can be queued, but it will not deploy until the separate WEAVE release worker is installed and connected.</p>}
         <p className="mt-3 text-[11px] leading-5 text-slate-400">A queued request is not proof of deployment. Successful health verification and an updated Sovereign + Flame Record are required. Current server: {state.serverKey}.</p>
       </section>
       <section className="mt-5 rounded-2xl border border-white/10 bg-black/25 p-5">
