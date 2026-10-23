@@ -45,7 +45,7 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
       <p>Explore real Client-built systems inside Burning River. Food purchases remain linked to the Agent who brought you here.</p>
       <Link href={carrierHref} className="inline-flex min-h-10 shrink-0 items-center gap-2 font-black text-amber-200" data-flame-event-return-carrier><ArrowLeft className="h-4 w-4"/> Order through your Agent</Link>
     </div>}
-    <BurningRiverOfficialGateway/>
+    <BurningRiverOfficialGateway carrierCode={carrierCode}/>
     <details className="border-t border-amber-200/20 bg-[#071a2d] px-4 py-4" data-legacy-public-market-preview>
       <summary className="cursor-pointer text-sm font-bold text-amber-200">Browse existing commissioned Customer Doors</summary>
       <FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>
