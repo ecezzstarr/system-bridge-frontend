@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
-import {FILE_FOLDER_WORLD_APPEARANCES,FILE_FOLDER_THEME_IDS,FILE_FOLDER_EQUIPMENT_PACKS,FILE_FOLDER_REALNESS,FILE_FOLDER_EQUIPMENT_ZONES,type FileFolderWorldAppearance,type EquipmentZone} from '@/lib/file-folder-world-presets'
+import {FILE_FOLDER_WORLD_APPEARANCES,FILE_FOLDER_THEME_IDS,FILE_FOLDER_EQUIPMENT_PACKS,FILE_FOLDER_REALNESS,FILE_FOLDER_EQUIPMENT_ZONES,PLUS_FILE_FOLDER_REFERENCE,type FileFolderWorldAppearance,type EquipmentZone} from '@/lib/file-folder-world-presets'
 type Tier='standard'|'pro'|'premium'|'plus'
 const tiers:Tier[]=['standard','pro','premium','plus']
 type Config={headline:string;description:string;tierMessages:Record<Tier,string>;tierVisuals:Record<Tier,FileFolderWorldAppearance>}
@@ -21,6 +21,7 @@ export default function FileFolderGlobalReleaseWorkshop(){
  const [active,setActive]=useState<Release|null>(null)
  const [list,setList]=useState<Release[]>([])
  const [busy,setBusy]=useState(false)
+ const [referenceUnavailable,setReferenceUnavailable]=useState(false)
  const [error,setError]=useState('')
  const [message,setMessage]=useState('')
  const [confirmation,setConfirmation]=useState('')
@@ -67,6 +68,27 @@ export default function FileFolderGlobalReleaseWorkshop(){
     <Link href="/admin/client-build-catalog" className="text-cyan-200 underline">Blueprint & item catalog →</Link>
    </div>
   </header>
+  <section className="rounded-2xl border border-[#d8b875]/40 bg-[#fcfaf5] p-4 text-[#2e3540] sm:p-6" data-admin-plus-official-construction-reference="389215.png">
+   <div className="grid gap-5 sm:grid-cols-[minmax(0,240px)_minmax(0,1fr)]">
+    <div className="overflow-hidden rounded-lg border border-[#dac893] bg-white">
+      {!referenceUnavailable
+       ? <img src={PLUS_FILE_FOLDER_REFERENCE.posterAssetPath}
+           alt="Founder-approved official Plus File Folder white-and-gold world construction image"
+           width={PLUS_FILE_FOLDER_REFERENCE.originalDimensions.width}
+           height={PLUS_FILE_FOLDER_REFERENCE.originalDimensions.height}
+           loading="lazy" onError={()=>setReferenceUnavailable(true)}
+           className="h-auto w-full object-contain" />
+       : <p role="status" className="p-4 text-sm">The approved poster has not been installed in the public image assets. Import its exact verified image before publishing the Plus world.</p>}
+    </div>
+    <div>
+      <p className="text-xs font-black uppercase tracking-widest text-[#895e18]">Official Plus design reference · 23 October 2026</p>
+      <h2 className="mt-2 text-xl font-black">The approved image is the Plus world construction specification</h2>
+      <p className="mt-3 text-sm leading-6">The same founder-approved picture appears on the homepage and here. Plus must remain a white-and-gold living world with a central opened File Folder, marble terraces, radiant structures, water, glass and six connected operating systems. It is not a recolored Premium File Folder or a static background.</p>
+      <p className="mt-3 text-sm font-semibold">Required stations: {PLUS_FILE_FOLDER_REFERENCE.sixFunctions.map(item=>item[0].toUpperCase()+item.slice(1)).join(' · ')}</p>
+      <p className="mt-3 text-xs leading-5 text-[#596677]">Keep this original artwork as the visual reference when publishing equipment and theme changes. Promotional market projections in the poster are not verified user earnings or a system guarantee.</p>
+    </div>
+   </div>
+  </section>
   {error&&<p role="alert" className="rounded-xl border border-rose-300/30 p-4 text-sm text-rose-200">{error}</p>}
   {message&&<p role="status" className="rounded-xl border border-cyan-300/30 p-4 text-sm text-cyan-100">{message}</p>}
   <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[.03] p-5">
