@@ -5,6 +5,7 @@ import {ensureFileFolderWorldSchema} from '@/lib/client-file-folder-world'
 import {matureElapsedCustomerDoors} from '@/lib/customer-door-maturity'
 import {getPublicBurningRiverWorld,reconcileExistingWorldDomains} from '@/lib/weave-open-world-store'
 import {FLAME_EVENT,resolveEventStatus} from '@/lib/weave-event'
+import {getFlameEvent} from '@/lib/weave-event-store'
 
 export const dynamic='force-dynamic'
 
@@ -25,11 +26,11 @@ export async function GET(request:NextRequest){
     const pageRaw=Number(request.nextUrl.searchParams.get('page')||0)
     if(!Number.isInteger(pageRaw)||pageRaw<0||pageRaw>1000)
       return NextResponse.json({error:'Invalid map page'},{status:400})
-    const world=await getPublicBurningRiverWorld(sql,pageRaw)
+    const [world,event]=await Promise.all([getPublicBurningRiverWorld(sql,pageRaw),getFlameEvent()])
     return NextResponse.json({
       success:true,
       event:{key:FLAME_EVENT.key,label:'Company Loop 1 — Flame Event: Burning River',
-        status:resolveEventStatus(FLAME_EVENT),worldMode:'systems_and_business_expansion',
+        status:event.effectiveStatus||resolveEventStatus(event),worldMode:'systems_and_business_expansion',
         combat:false},
       ...world,
       updatedAt:new Date().toISOString(),
