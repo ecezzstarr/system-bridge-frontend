@@ -27,6 +27,7 @@ interface MyProspect {
   sentAt: string | null
   lastActivityAt: string
   name: string
+  country: string | null
   prospectWhatsapp: string
   phone: string
   bridgeUrl: string | null
@@ -379,7 +380,7 @@ export default function ProspectMarketPage() {
                     <CardContent className="flex items-center justify-between py-4">
                       <div>
                         <p className="text-white font-medium">{p.name}</p>
-                        <p className="text-xs text-slate-500">{p.prospectWhatsapp || p.phone}</p>
+                        <p className="text-xs text-slate-500">{p.country ? p.country+" · " : ""}{p.prospectWhatsapp || p.phone}</p>
                         <Badge variant="outline" className={`mt-1 text-[10px] ${st.color}`}>{st.label}</Badge>
                       </div>
                       {p.status === 'pending' ? (
