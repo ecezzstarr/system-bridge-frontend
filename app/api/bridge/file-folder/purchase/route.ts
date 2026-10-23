@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
     if (!validPrice(amountFlameCoin, requestedTier) || !fileFolderTier) {
       return NextResponse.json({
-        error: `Choose Standard from ${FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to ${FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()} Flame Coin, an explicitly negotiated Pro sale from ${FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} up to below ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin (normal Pro starting value ${FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()}), or Premium at exactly ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin.`,
+        error: `Choose Standard from ${FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to ${FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()} Flame Coin, an explicitly negotiated Pro sale from ${FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin.toLocaleString()} up to below ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin (normal Pro starting value ${FILE_FOLDER_PRICING.proStartingFlameCoin.toLocaleString()}), or Premium at exactly ${FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()} Flame Coin; Plus is ${FILE_FOLDER_PRICING.plusFlameCoin.toLocaleString()} Flame Coin priced at ${FILE_FOLDER_PRICING.plusTrx.toLocaleString()} TRX (reference ${FILE_FOLDER_PRICING.plusUsdt.toLocaleString()} USDT).`,
       }, { status: 400 })
     }
     if (!paymentReference) return NextResponse.json({ error: 'TRX transaction hash is required.' }, { status: 400 })
@@ -169,9 +169,9 @@ export async function POST(request: NextRequest) {
     if (existing) return NextResponse.json({ error: 'Payment reference already recorded' }, { status: 409 })
     const [record] = await sql`INSERT INTO file_folder_purchases (file_number,client_id,buyer_name,buyer_email,buyer_phone,amount_trx,file_folder_tier,payment_method,payment_reference,bridge_code,provider_key,provider_name,flame_name,flame_external_id,bridger_id,movement_code) VALUES (${fileNumber},${clientId || null},${buyerName},${buyerEmail},${buyerPhone},${amountFlameCoin},${fileFolderTier},${paymentMethod},${paymentReference},${bridgeCode},${providerKey},${providerName},${flameName},${flameExternalId},${directBridgerId || movementBridgerId}::uuid,${movementAttribution?.movement_code || null}) RETURNING *`
     const tierLabel = fileFolderTierLabel(fileFolderTier)
-    await notifyAdminOrder({orderId:String(record.id),event:'placed',department:directBridgerId||movementBridgerId?'bridger':'client',subject:'File Folder purchase awaiting verification',detail:`${buyerName} requested ${tierLabel} File Folder for ${amountFlameCoin.toLocaleString()} Flame Coin through ${bridgeCode?'Bridge AI':'public crossing'}. Verify payment before Client activation`,adminPath:'/admin/file-folder-sales-manager',actorId:directBridgerId||movementBridgerId||clientId||null,actorName:'Bridge of Radiance'})
+    await notifyAdminOrder({orderId:String(record.id),event:'placed',department:directBridgerId||movementBridgerId?'bridger':'client',subject:'File Folder purchase awaiting verification',detail:`${buyerName} requested ${tierLabel} File Folder for ${amountFlameCoin.toLocaleString()} TRX${fileFolderTier === 'plus' ? ' (60,000 Flame Coin package, 20,000 USDT reference)' : ''} through ${bridgeCode?'Bridge AI':'public crossing'}. Verify payment before Client activation`,adminPath:'/admin/file-folder-sales-manager',actorId:directBridgerId||movementBridgerId||clientId||null,actorName:'Bridge of Radiance'})
     await recordSystemEvent({ eventType: 'file_folder_purchased', actorId: clientId, subjectType: 'file_folder_purchase', subjectId: String(record.id), source: 'bridge-file-folder', payload: { fileNumber, amountFlameCoin, fileFolderTier, paymentMethod, paymentReference } })
-    const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'Flame Coin', status: 'pending', description: `${tierLabel} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference } }) : null
+    const receipt = clientId ? await issueWeaveReceipt({ userId: clientId, kind: 'purchase', source: 'file_folder', sourceId: String(record.id), amount: amountFlameCoin, currency: 'TRX', status: 'pending', description: `${tierLabel} File Folder purchase submitted`, metadata: { fileNumber, fileFolderTier, paymentMethod, paymentReference, plusFlameCoinValue: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : null, plusUsdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null } }) : null
     try {
       await recordPublicFlameMovementEvent({
         movementCode,
@@ -189,13 +189,15 @@ export async function POST(request: NextRequest) {
         id: record.id,
         status: record.status,
         fileNumber: record.file_number || null,
-        amountFlameCoin: Number(record.amount_trx || amountFlameCoin),
+        amountFlameCoin: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : Number(record.amount_trx || amountFlameCoin),
+        amountTrx: Number(record.amount_trx || amountFlameCoin),
+        usdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null,
         fileFolderTier,
       },
       receipt,
       fileFolderTier,
       crossing: { ready: false },
-      message: `${tierLabel} File Folder payment recorded. Administration will verify the payment, issue the File Number, activate the Client File Folder and start the included Customer Door construction.`,
+      message: `${tierLabel} File Folder payment recorded. Administration will verify the payment and issue the File Number. ${fileFolderTier === 'plus' ? 'Plus includes completed working systems and an immediately ready Customer Door upon Client activation.' : 'The included Customer Door construction will then start.'}`,
     }, { status: 201 })
   } catch (error: any) { return NextResponse.json({ error: error?.message || 'Unable to record File Folder purchase' }, { status: 500 }) }
 }
