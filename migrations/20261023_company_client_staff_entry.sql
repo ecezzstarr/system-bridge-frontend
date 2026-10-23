@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS company_client_staff_offers (
   payment_network varchar(80),
   file_number varchar(120) UNIQUE,
   client_id uuid UNIQUE,
+  receipt_number varchar(80) UNIQUE,
   created_by uuid NOT NULL,
   verified_by uuid,
   rejection_reason varchar(500),
@@ -25,6 +26,19 @@ CREATE TABLE IF NOT EXISTS company_client_staff_offers (
   verified_at timestamptz,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS company_client_staff_work (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  offer_id uuid NOT NULL REFERENCES company_client_staff_offers(id),
+  client_id uuid NOT NULL REFERENCES users(id),
+  prospect_name varchar(160) NOT NULL,
+  organization varchar(200),
+  stage varchar(32) NOT NULL DEFAULT 'introduced'
+    CHECK(stage IN ('introduced','conversation','follow_up','proposal','completed')),
+  next_action varchar(1200),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS company_client_staff_work_owner_idx ON company_client_staff_work(client_id,created_at DESC);
 CREATE INDEX IF NOT EXISTS company_staff_offers_email_idx ON company_client_staff_offers(lower(candidate_email));
 CREATE INDEX IF NOT EXISTS company_staff_offers_status_idx ON company_client_staff_offers(status,created_at DESC);
 COMMENT ON TABLE company_client_staff_offers IS
