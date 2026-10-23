@@ -1,4 +1,5 @@
 import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
+import {getClientFolderUpgrade,clientUpgradePublicView} from '@/lib/client-folder-upgrade'
 import { allowedBuildPartSystems } from '@/lib/file-folder-build-compatibility'
 import { NextRequest, NextResponse } from 'next/server'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
@@ -43,6 +44,13 @@ async function resolveClientWorld(request: NextRequest) {
   if (!client?.file_number) {
     return { sql, error: NextResponse.json({ error: 'Active File Folder required' }, { status: 409 }) }
   }
+
+  const upgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
+  if(upgrade&&upgrade.status!=='ready')
+    return {sql,error:NextResponse.json({
+      error:'Your Pro File Folder world is under construction; repayment must be verified before entry.',
+      gate:'construction',upgrade:clientUpgradePublicView(upgrade),
+    },{status:423,headers:{'Cache-Control':'private, no-store'}})}
 
   const [folder] = await sql`
     SELECT id,file_number,status,workshop_type
