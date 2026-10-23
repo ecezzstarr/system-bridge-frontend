@@ -116,3 +116,13 @@ export function getEventCountdown(event: WeaveEvent, now = new Date()) {
     seconds: Math.floor((remaining % 60000) / 1000),
   }
 }
+
+/** Nigeria calendar date for daily role notices. */
+export function nigeriaDayKey(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(now)
+}
+/** One Nigerian role notices appear only during the announced January 1–11 loop. */
+export function isOneNigerianEventActive(now = new Date()): boolean {
+  const time = now.getTime()
+  return time >= Date.parse('2027-01-01T00:00:00+01:00') && time < Date.parse('2027-01-12T00:00:00+01:00')
+}
