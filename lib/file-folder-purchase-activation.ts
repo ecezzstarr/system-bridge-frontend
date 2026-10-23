@@ -227,8 +227,8 @@ export async function activatePurchasedFileFolderForClient(params: {
     clientName,
   })
 
-  // The existing TRX-priced tiers retain their timed construction. Plus is
-  // independent, has an exact USDT price, and only provisions ready systems
+  // The other tiers retain their timed construction. Plus has an exact TRX
+  // price (and a separate USDT reference) and provisions ready systems
   // after the purchase record has been confirmed by Administration.
   let plusDelivery = null
   if (purchase_table) {
