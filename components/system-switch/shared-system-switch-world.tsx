@@ -60,7 +60,7 @@ export default function SharedSystemSwitchWorld({getToken,role,onPrivateWorkshop
  const look=useRef<{id:number;x:number;y:number}|null>(null),stick=useRef<{id:number;x:number;y:number}|null>(null)
  const stop=()=>{input.current.keys.clear();input.current.active=false;input.current.running=false;input.current.analogForward=0;input.current.analogStrafe=0;look.current=null;stick.current=null}
  useEffect(()=>{let alive=true;const cancel=visiblePoll(async signal=>{
-  try{const token=getToken(),res=await fetch('/api/system-switch/doors',{headers:token?{Authorization:`Bearer ${token}`}:{},cache:'no-store',signal});if(!res.ok)throw Error();const data=await res.json();if(alive){setDoors(data.doors);setDirectoryLoaded(true);setDate(data.broadcastDate);setDirectoryError('')}}catch{if(alive&&!signal.aborted)setDirectoryError('Customer Doors could not be refreshed.')}
+  try{const token=getToken(),res=await fetch('/api/system-switch/doors',{headers:token?{Authorization:`Bearer ${token}`}:{},cache:'no-store',signal});if(!res.ok)throw Error();const data=await res.json();if(alive){setDoors(Array.isArray(data.doors)?data.doors:[]);setDirectoryLoaded(true);setDate(String(data.broadcastDate||''));setDirectoryError('')}}catch{if(alive&&!signal.aborted)setDirectoryError('Customer Doors could not be refreshed.')}
  },15000);return()=>{alive=false;cancel()}},[getToken])
  useEffect(()=>{const hidden=()=>{if(document.hidden)stop()};window.addEventListener('blur',stop);document.addEventListener('visibilitychange',hidden);return()=>{stop();window.removeEventListener('blur',stop);document.removeEventListener('visibilitychange',hidden)}},[])
  useEffect(()=>{if(selected||directoryOpen||status==='denied')stop()},[selected,directoryOpen,status])
