@@ -4,7 +4,7 @@ import {Canvas,useFrame} from '@react-three/fiber'
 import {OrbitControls,Text,useTexture} from '@react-three/drei'
 import type {Group} from 'three'
 import {DoubleSide,RepeatWrapping,SRGBColorSpace} from 'three'
-import {FILE_FOLDER_EQUIPMENT,FILE_FOLDER_PALETTES,
+import {FILE_FOLDER_EQUIPMENT,FILE_FOLDER_PALETTES,PLUS_FILE_FOLDER_REFERENCE,
   type EquipmentZone,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
 
@@ -166,6 +166,7 @@ function Scene({appearance,selected,onSelect}:{appearance:FileFolderWorldAppeara
 }
 export default function FileFolderPlusRadiantWorld({appearance,districts,onEnter,active,systems,building,builds,now}:Props){
  const [selected,setSelected]=useState<EquipmentZone>('systems')
+ const [referenceUnavailable,setReferenceUnavailable]=useState(false)
  const enabled=appearance.equipmentZones.filter(zone=>FILE_FOLDER_EQUIPMENT_ZONES.has(zone))
  const selectedInfo=FILE_FOLDER_EQUIPMENT[selected]
  const canEnter=districts.some(d=>d.key===selectedInfo.district)
@@ -176,9 +177,37 @@ export default function FileFolderPlusRadiantWorld({appearance,districts,onEnter
    <header className="border-b border-[#d4b16a]/35 bg-[#fcfaf2] px-4 py-4">
     <p className="text-[10px] font-black uppercase tracking-[.18em] text-[#966b27]">WEAVE · Plus File Folder · Radiant Systems</p>
     <h3 className="mt-1 text-xl font-black">A complete systems world for immediate uses</h3>
-    <p className="mt-1 text-xs leading-5 text-[#52657c]">Explore the living world, select equipment, and enter the real workshop connected to your Client systems. Drag to look; pinch or scroll to move closer.</p>
+    <p className="mt-1 text-xs leading-5 text-[#52657c]">Built from the Administrator-approved white-and-gold Plus File Folder reference. Inspect the living 3D world, select equipment, and enter the real Client workshop. Drag to look; pinch or scroll to move closer.</p>
     <p className="mt-2 text-xs font-bold text-[#8a5f22]">{building} construction builds · {systems} commissioned systems · real-world construction time</p>
    </header>
+   <details className="border-b border-[#d4b16a]/35 bg-[#fffdf9]" data-plus-file-folder-construction-reference="389215.png">
+    <summary className="cursor-pointer px-4 py-3 text-sm font-black text-[#855e1b]">
+      View the official Plus File Folder construction reference
+    </summary>
+    <div className="grid gap-4 px-4 pb-5 sm:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+      <div className="overflow-hidden rounded-lg border border-[#d9c48d] bg-white">
+        {!referenceUnavailable
+          ? <img src={PLUS_FILE_FOLDER_REFERENCE.posterAssetPath}
+              width={PLUS_FILE_FOLDER_REFERENCE.originalDimensions.width}
+              height={PLUS_FILE_FOLDER_REFERENCE.originalDimensions.height}
+              alt="Approved Plus File Folder artwork: central open white-and-gold File Folder and connected Systems, Modules, Tools, People, Operations and Expansion environments"
+              onError={()=>setReferenceUnavailable(true)}
+              loading="lazy" className="h-auto w-full object-contain" />
+          : <p role="status" className="px-4 py-8 text-sm text-[#52657c]">
+              Official image asset is awaiting installation. The interactive Plus world and recorded Client work remain available below.
+            </p>}
+      </div>
+      <div className="space-y-3 text-sm leading-6 text-[#44556e]">
+        <p className="font-black text-[#805919]">One official design · the same reference used by the WEAVE homepage</p>
+        <p>The central opened File Folder leads into a luminous white-and-gold world. Porcelain and marble terraces, water, glass equipment and radiant gold structures support six accessible operating districts. The 3D environment below must follow this image rather than become a separate visual concept.</p>
+        <div className="grid grid-cols-2 gap-2 text-xs font-bold sm:grid-cols-3">
+          {PLUS_FILE_FOLDER_REFERENCE.sixFunctions.map(zone=><span key={zone}
+            className="rounded-lg border border-[#e4d5af] bg-white px-3 py-2 capitalize">{zone}</span>)}
+        </div>
+        <p className="text-xs text-[#607087]">The poster is the approved visual specification. Its price and projected returns are promotional wording, not verified balances, completed builds or guaranteed earnings. Live Client systems and construction results must come from actual records.</p>
+      </div>
+    </div>
+   </details>
    <div className="h-[430px] w-full sm:h-[570px]" role="img" aria-label="Interactive three-dimensional white and gold Plus File Folder, central opening folder and six functional equipment districts">
     <Canvas camera={{position:[20,20,25],fov:46,near:.1,far:130}} dpr={[1,1.5]} gl={{antialias:true,alpha:false,powerPreference:'high-performance'}}>
       <Scene appearance={appearance} selected={selected} onSelect={setSelected}/>
