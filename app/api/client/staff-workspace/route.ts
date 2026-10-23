@@ -9,7 +9,8 @@ async function access(request:NextRequest) {
   if(!user||user.role!=='client')return null
   await ensureCompanyClientStaffSchema()
   const [offer]=await sql`
-    SELECT id,position_title,monthly_salary_usdt,ticket_amount_usdt,folder_tier,
+    SELECT id,position_title,monthly_salary_usdt,ticket_amount_usdt,applicant_contribution_usdt,
+      proposed_personal_loan_usdt,personal_loan_terms,folder_tier,
       file_number,receipt_number,status,verified_at
     FROM company_client_staff_offers
     WHERE client_id=${user.id}::uuid AND status='approved'
