@@ -53,12 +53,18 @@ export default function AdminClientDepositsPage() {
   }, [isInitialized, token, user?.role])
 
   const decide = async (depositId: string, status: 'approved' | 'rejected') => {
+    const deposit=pending.find(item=>item.id===depositId)
+    if(!deposit || busy)return
+    const approved=status==='approved'
+    if(!window.confirm(approved
+      ? 'Have you independently verified the TRON transaction, its amount, and receipt at the Company TRX wallet? Confirm only after all three match.'
+      : 'Reject this Client deposit? No Flame Coin will be credited.'))return
     setBusy(depositId)
     try {
       const res = await fetch('/api/admin/deposit/tron/verify', {
         method: 'POST',
         headers: headers(),
-        body: JSON.stringify({ depositId, status }),
+        body: JSON.stringify({ depositId, status, confirmation: status==='approved' ? 'VERIFIED TRX' : 'REJECT TRX', ...(status==='approved'?{verifiedAmountTrx:Number(deposit.amount_trx)}:{}) }),
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.error || 'Deposit decision failed')
@@ -99,7 +105,7 @@ export default function AdminClientDepositsPage() {
         </div>
 
         {pending.length === 0 ? (
-          <p className="mt-5 rounded-2xl border border-white/5 bg-white/[0.02] p-6 text-base text-slate-400">No Client TRX deposit is waiting for review.</p>
+          <p className="mt-5 rounded-2xl border border-white/5 bg-white/[0.02] p-6 text-base text-slate-400">No Client TRX deposit is waiting for review. Refresh after a Client submits payment evidence.</p>
         ) : (
           <div className="mt-5 space-y-3">
             {pending.map(deposit => (
@@ -118,19 +124,25 @@ export default function AdminClientDepositsPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-bold uppercase tracking-wider text-slate-500">Transaction hash</p>
                     <p className="mt-2 break-all font-mono text-sm leading-6 text-slate-300">{deposit.receipt_data || 'No hash supplied'}</p>
+                    {typeof deposit.receipt_data==='string' && /^[0-9a-f]{64}$/i.test(deposit.receipt_data.trim()) && (
+                      <a target="_blank" rel="noreferrer noopener" href={`https://tronscan.org/#/transaction/${encodeURIComponent(deposit.receipt_data.trim())}`} className="mt-2 inline-flex min-h-10 items-center text-sm font-semibold text-cyan-200 underline">
+                        Inspect TRON transaction on Tronscan
+                      </a>
+                    )}
+                    <p className="mt-2 text-xs text-amber-200">Approval requires independently verifying the transfer arrived in the Company wallet for this exact TRX amount. A submitted hash is not proof of payment.</p>
                     <p className="mt-2 text-sm text-slate-500">{new Date(deposit.created_at).toLocaleString()}</p>
                   </div>
                   <div className="flex gap-2 lg:flex-col">
                     <button
                       onClick={() => void decide(deposit.id, 'approved')}
-                      disabled={busy === deposit.id}
+                      disabled={Boolean(busy)}
                       className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-black text-slate-950 disabled:opacity-50"
                     >
                       <CheckCircle2 className="h-4 w-4" /> Approve
                     </button>
                     <button
                       onClick={() => void decide(deposit.id, 'rejected')}
-                      disabled={busy === deposit.id}
+                      disabled={Boolean(busy)}
                       className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500/15 px-4 py-3 text-sm font-black text-red-200 disabled:opacity-50"
                     >
                       <XCircle className="h-4 w-4" /> Reject
