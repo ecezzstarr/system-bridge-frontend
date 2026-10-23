@@ -10,7 +10,7 @@ export const SYSTEM_CAPABILITIES: Record<string, readonly Capability[]> = {
   customer_door: ['customer_door'], commerce_storefront: ['customer_door'], marketplace_network: ['customer_door'],
   enterprise_door: ['customer_door'], integration_network: ['system_routes'], route_station: ['system_routes'],
   distribution_network: ['system_routes'], media_network: ['system_routes','work_queue'],
-  creator_booth: ['work_queue'], broadcast_studio: ['work_queue'], streaming_gate: ['work_queue'],
+  creator_booth: ['work_queue'], broadcast_studio: ['work_queue'], animation_studio: ['work_queue'], music_studio: ['work_queue'], streaming_gate: ['work_queue'],
   campaign_system: ['work_queue'], mobile_service_app: ['work_queue'], enterprise_shell: ['work_queue'],
   enterprise_hall: ['work_queue'], legion_quarters: ['work_queue'], enterprise_treasury: ['record_search'],
   payments_gateway: ['record_search'], crypto_exchange_workshop: ['record_search'],

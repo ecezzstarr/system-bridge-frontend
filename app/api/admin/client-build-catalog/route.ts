@@ -52,6 +52,9 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: 'Valid Flame Coin price required' }, { status: 400 })
       }
       const published = body.published !== false
+      if (published && ['music_studio_kit','animation_production_kit'].includes(key) && price <= 0) {
+        return NextResponse.json({ error:'Set a positive, approved Flame Coin price before publishing this production workshop kit.' }, { status:400 })
+      }
       const rows = await sql`
         UPDATE weave_file_folder_items
         SET price_flame_coin=${price},published=${published},updated_at=NOW()
@@ -62,6 +65,15 @@ export async function PATCH(request: NextRequest) {
     } else {
       const hours = Math.max(1, Math.min(24 * 30, Number(body.buildHours) || 1))
       const published = body.published !== false
+      if (published && ['music_studio','animation_studio'].includes(key)) {
+        const requiredKit = key === 'music_studio' ? 'music_studio_kit' : 'animation_production_kit'
+        const kitRows = await sql`
+          SELECT published,price_flame_coin FROM weave_file_folder_items WHERE item_key=${requiredKit}
+        `
+        if (!kitRows[0]?.published || Number(kitRows[0]?.price_flame_coin || 0) <= 0) {
+          return NextResponse.json({ error:'Approve and publish the priced production kit before opening its Client blueprint.' }, { status:409 })
+        }
+      }
       const rows = await sql`
         UPDATE weave_file_folder_blueprints
         SET build_hours=${hours},published=${published},updated_at=NOW()

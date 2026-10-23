@@ -23,6 +23,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react'
+import Link from 'next/link'
 import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-world'
 import {resolveFileFolderAppearance} from '@/lib/file-folder-world-presets'
 import GenerativeFormationWorkshop from '@/components/system-switch/generative-formation-workshop'
@@ -64,6 +65,8 @@ const previewModules: Record<string, string[]> = {
   route_station: ['Connected systems', 'Routes', 'Movement records', 'Throughput'],
   creator_booth: ['Program ideas', 'Production notes', 'Publishing queue', 'Media records'],
   broadcast_studio: ['Programs', 'Schedule', 'Production control', 'Broadcast preparation'],
+  animation_studio: ['3D scene stage', 'Textured materials', 'Movement keyframes', 'Film recording'],
+  music_studio: ['Word arrangement', 'Self & Environment tracks', 'Loop pattern', 'Recording & master WAV'],
   streaming_gate: ['Public channel', 'Live source', 'Audience entry', 'Replay movement'],
   media_network: ['Programming', 'Distribution', 'Audience', 'Media routes'],
   enterprise_door: ['Public enterprise entrance', 'Identity', 'Systems', 'Customer paths'],
@@ -303,6 +306,8 @@ function HostedSystem({
         </div>
       </header>
 
+      {system.system_type==='music_studio'&&<div className="border-b border-cyan-300/15 bg-cyan-300/[.04] p-5"><p className="mb-3 text-xs text-slate-300">The Music Studio has been constructed and activated. Compose sound loops, record your voice, weave words into beat cues, and hear Self and Environment in musical conversation.</p><Link className="inline-flex rounded-xl bg-cyan-300 px-5 py-3 text-xs font-bold text-slate-950" href="/music-workshop">Enter Music Studio →</Link></div>}
+      {system.system_type==='animation_studio'&&<div className="border-b border-cyan-300/15 bg-cyan-300/[.04] p-5"><p className="mb-3 text-xs text-slate-300">The Animation Workshop is operational. Open the interactive 3D timeline to produce a film, assign a movement path, direct camera shots and record real movie footage.</p><Link className="inline-flex rounded-xl bg-cyan-300 px-5 py-3 text-xs font-bold text-slate-950" href="/animation-workshop">Enter Animation Movie Workshop →</Link></div>}
       {institution&&<p role="note" className="border-b border-amber-300/15 bg-amber-300/[.045] px-5 py-3 text-[11px] leading-5 text-amber-100">This is a Client-owned administrative planning and records workspace. Do not enter patient details, identity credentials, emergency calls or other sensitive operational data. A constructed blueprint is not official authorization, clinical certification or production deployment.</p>}
       <BuiltSystemRuntime key={system.id} system={system} onNavigate={onNavigate} busy={Boolean(busy)}
         onToggle={entry=>void act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} />
