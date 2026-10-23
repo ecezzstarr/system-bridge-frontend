@@ -105,9 +105,10 @@ export default function VideoAdStudioProductionPage(){
       const uploaded=await uploadFile(file)
       if(uploaded.mediaType==='audio')throw new Error('Scene media must be an image or video')
       const assetType:SceneMediaType=uploaded.mediaType
-      const next:Project={...project,storyboard:project.storyboard.map((scene,i)=>i===index?{...scene,assetUrl:uploaded.url,assetType}:scene)}
+      const next:Project={...project,storyboard:project.storyboard.map((scene,i)=>(i===index||(Boolean(project.narrationScript)&&!scene.assetUrl))?{...scene,assetUrl:uploaded.url,assetType}:scene)}
       setProject(next)
       await saveProject(next)
+      if(project.narrationScript)setMessage('Image/video added. Empty narration scenes reuse the same visual; replace individual scenes if desired.')
     }catch(error:any){setMessage(error.message||'Scene upload failed')}finally{setUploading(null);event.target.value=''}
   }
 
