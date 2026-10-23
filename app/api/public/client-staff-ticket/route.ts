@@ -17,6 +17,7 @@ export async function GET(request:NextRequest) {
       ticketAmountUSDT:Number(offer.ticket_amount_usdt),
       grantedTier:offer.status==='approved'?offer.folder_tier:null,
       status:offer.status, fileNumber:offer.status==='approved'?offer.file_number:null,
+      receiptNumber:offer.status==='approved'?offer.receipt_number:null,
       rejectionReason:offer.status==='rejected'?offer.rejection_reason:null,
       registerUrl:offer.status==='approved'&&offer.file_number
         ?'/client/register?fileNumber='+encodeURIComponent(offer.file_number):null,
