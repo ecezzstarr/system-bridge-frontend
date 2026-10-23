@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
     }
     const offers = await sql`
       SELECT id,candidate_name,candidate_email,candidate_phone,position_title,monthly_salary_usdt,
-        ticket_amount_usdt,folder_tier,status,payment_reference,payment_network,file_number,
+        ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,personal_loan_terms,
+        personal_loan_accepted_at,loan_funding_reference,loan_funding_network,folder_tier,status,payment_reference,payment_network,file_number,
         client_id,receipt_number,rejection_reason,created_at,accepted_at,submitted_at,verified_at
       FROM company_client_staff_offers ORDER BY created_at DESC LIMIT 200
     `
@@ -55,24 +56,33 @@ export async function POST(request: NextRequest) {
     const salaryUSDT = Number(body.monthlySalaryUSDT)
     const ticketUSDT = Number(body.ticketAmountUSDT)
     const tier = tierFromStaffTicketUSDT(ticketUSDT)
+    const applicantUSDT = body.applicantContributionUSDT === undefined ? ticketUSDT : Number(body.applicantContributionUSDT)
+    const personalLoanUSDT = Number(body.proposedPersonalLoanUSDT || 0)
+    const personalLoanTerms = String(body.personalLoanTerms || '').trim()
     if (!candidateName || candidateName.length > 255 ||
       !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(candidateEmail) || candidateEmail.length > 255 ||
       !positionTitle || positionTitle.length > 160 || !tier ||
       !Number.isFinite(salaryUSDT) || salaryUSDT < 0 || salaryUSDT > 100000 ||
-      Math.round(salaryUSDT * 100) !== salaryUSDT * 100 || ticketUSDT > 1000000) {
-      return NextResponse.json({ error: 'Enter a valid name, recipient email, position, monthly USDT salary and USDT ticket amount' }, { status: 400 })
+      Math.round(salaryUSDT * 100) !== salaryUSDT * 100 || ticketUSDT > 1000000 ||
+      !Number.isFinite(applicantUSDT) || applicantUSDT <= 0 ||
+      !Number.isFinite(personalLoanUSDT) || personalLoanUSDT < 0 ||
+      Math.round(applicantUSDT * 100) !== applicantUSDT * 100 ||
+      Math.round(personalLoanUSDT * 100) !== personalLoanUSDT * 100 ||
+      Math.round((applicantUSDT + personalLoanUSDT) * 100) !== Math.round(ticketUSDT * 100) ||
+      (personalLoanUSDT > 0 && (personalLoanTerms.length < 40 || personalLoanTerms.length > 2000))) {
+      return NextResponse.json({ error: 'Enter name, email, position and accurate USDT ticket funding. If a personal loan is offered, specify repayment terms before requesting acceptance' }, { status: 400 })
     }
     await ensureCompanyClientStaffSchema()
     const offerToken = randomBytes(32).toString('hex')
     const [offer] = await sql`
       INSERT INTO company_client_staff_offers
         (token_hash,candidate_name,candidate_email,position_title,monthly_salary_usdt,
-         ticket_amount_usdt,folder_tier,created_by)
+         ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,personal_loan_terms,folder_tier,created_by)
       VALUES
         (${staffOfferTokenHash(offerToken)},${candidateName},${candidateEmail},${positionTitle},
-         ${salaryUSDT},${ticketUSDT},${tier},${admin.id}::uuid)
+         ${salaryUSDT},${ticketUSDT},${applicantUSDT},${personalLoanUSDT},${personalLoanTerms || null},${tier},${admin.id}::uuid)
       RETURNING id,candidate_name,candidate_email,position_title,monthly_salary_usdt,
-        ticket_amount_usdt,folder_tier,status
+        ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,status
     `
     return NextResponse.json({
       success: true, offer,
@@ -128,6 +138,18 @@ export async function PATCH(request: NextRequest) {
       }
       const tier = tierFromStaffTicketUSDT(offer.ticket_amount_usdt)
       if (!tier || tier !== offer.folder_tier) throw new Error('Ticket tier does not match offer')
+      const loanUSDT = Number(offer.proposed_personal_loan_usdt || 0)
+      const applicantUSDT = Number(offer.applicant_contribution_usdt || offer.ticket_amount_usdt)
+      if (Math.round((loanUSDT+applicantUSDT)*100) !== Math.round(Number(offer.ticket_amount_usdt)*100))
+        throw new Error('Ticket contribution ledger does not balance')
+      if (loanUSDT > 0 && (
+        !offer.personal_loan_accepted_at || body.loanChecked !== true ||
+        String(body.loanFundingReference||'').trim().length < 6 ||
+        String(body.loanFundingNetwork||'').trim().length < 2
+      )) {
+        await connection.query('ROLLBACK')
+        return NextResponse.json({error:'Personal loan acceptance and separate funding verification are required'},{status:400})
+      }
       let fileNumber = ''
       for (let attempt=0; attempt<12; attempt++) {
         const candidate = createRandomFileNumberCandidate()
@@ -153,10 +175,14 @@ export async function PATCH(request: NextRequest) {
       const result = await connection.query(
         `UPDATE company_client_staff_offers SET
          status='approved',file_number=$1,verified_by=$2::uuid,receipt_number=$4,
+         loan_funding_reference=$5,loan_funding_network=$6,
          verified_at=now(),updated_at=now(),rejection_reason=NULL
          WHERE id=$3::uuid AND status='pending_verification'
-         RETURNING id,status,file_number,folder_tier,ticket_amount_usdt,position_title,receipt_number`,
-        [fileNumber,admin.id,offerId,receiptNumber])
+         RETURNING id,status,file_number,folder_tier,ticket_amount_usdt,applicant_contribution_usdt,
+           proposed_personal_loan_usdt,position_title,receipt_number`,
+        [fileNumber,admin.id,offerId,receiptNumber,
+          loanUSDT>0?String(body.loanFundingReference).trim():null,
+          loanUSDT>0?String(body.loanFundingNetwork).trim():null])
       await connection.query('COMMIT')
       return NextResponse.json({ success:true,offer:result.rows[0],
         verification:'manual_USDT_reference',receiptReference:receiptNumber }, {
