@@ -45,6 +45,14 @@ export default function FileFolderLivingTerrain({districts,onEnter,active,system
    <button type="button" disabled={!focused} onClick={()=>focused&&onEnter(focused.district.key)} className="mt-2 min-h-11 w-full rounded-lg bg-amber-200 px-4 py-2 text-sm font-black text-[#10243b] disabled:opacity-40">Enter {focused?.district.label||'workspace'} →</button>
   </div>
  </div>
+ <div className="border-t border-cyan-300/10 bg-[#071523]/90 p-3" data-file-folder-live-equipment={appearance.equipmentPack}>
+  <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-200">{appearance.equipmentPack.replaceAll('-',' ')} · {appearance.realness} realness</p>
+  <div className="mt-2 flex flex-wrap gap-2">
+   {equipment.map(item=><button key={item.zone} type="button" onClick={()=>onEnter(item.district)}
+    disabled={!districts.some(d=>d.key===item.district)}
+    className="min-h-10 rounded-lg border border-amber-200/30 bg-white/[.06] px-3 py-2 text-[10px] font-bold text-amber-100 disabled:opacity-40">{item.name} · {item.equipment}</button>)}
+  </div>
+ </div>
  <p className="px-4 py-2 text-[10px] text-slate-400">Illustrative interactive terrain · building locations open existing File Folder workspaces, not separate demo pages.</p>
  </section>
 }
