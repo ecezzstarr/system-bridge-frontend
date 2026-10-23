@@ -25,6 +25,8 @@ storage and source/CI access. Provider-neutral does not mean infrastructure-free
    There is no automatic production promotion merely because CI succeeded.
 3. Administration chooses **Deploy verified update**, types `DEPLOY`, and confirms.
    The database records one queued request per server.
+   If the worker is not connected, Administration can cancel **only** the queued
+   request; a running release must finish its health/recovery checks.
 4. The separate worker fetches canonical `main`, requires its GitHub Production
    Check to be successful, and calls `selfhost/deploy-production.sh` with the
    exact 40-character commit SHA (never an arbitrary branch or shell command).
