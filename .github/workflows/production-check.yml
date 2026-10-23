@@ -104,6 +104,7 @@ jobs:
           node tests/bridger-bridge-radiance-purchase-regression.cjs
           node tests/selfhost-deployment-regression.cjs
           node tests/release-workshop-regression.cjs
+          node tests/work-github-oracle-release-regression.cjs
           node tests/notification-staff-workspace-regression.cjs
           node tests/weave-narration-studio.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
