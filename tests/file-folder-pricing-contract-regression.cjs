@@ -18,7 +18,8 @@ assert.ok(pricing.includes('standardMaximumFlameCoin: 3000'),'Standard ends at 3
 assert.ok(pricing.includes('proNegotiatedMinimumFlameCoin: 3000'),'Negotiated Pro may reach 3,000 Flame Coin')
 assert.ok(pricing.includes('proStartingFlameCoin: 6500'),'Pro normal starting value is 6,500 Flame Coin')
 assert.ok(pricing.includes('premiumFlameCoin: 35800'),'Premium is fixed at 35,800 Flame Coin')
-assert.ok(pricing.includes("export type FileFolderTier = 'standard' | 'pro' | 'premium'"),'Pricing contract has Standard, Pro and Premium')
+assert.ok(pricing.includes("export const FILE_FOLDER_TIERS = ['standard','pro','premium','plus'] as const"),'Pricing contract defines exactly Standard, Pro, Premium and Plus')
+assert.ok(pricing.includes('plusFlameCoin: 60000'),'Plus exists as a distinct published File Folder level')
 assert.ok(pricing.includes("if (requested === 'pro')"),'Pro classification requires explicit sale context')
 assert.ok(pricing.includes('New Pro sales are negotiated/external sales and must be explicitly marked Pro.'),'Amount-only inference cannot silently turn the 3,000 overlap into Pro')
 
