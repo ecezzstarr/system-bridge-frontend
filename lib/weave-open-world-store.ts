@@ -204,6 +204,7 @@ export async function getPublicBurningRiverWorld(sql:any,page=0){
          AND b.status='building') AS forming_progress
     FROM weave_open_world_domains d
     JOIN client_file_folders f ON f.client_id=d.client_id AND f.file_number=d.file_number
+    JOIN users owner ON owner.id=d.client_id AND owner.role='client' AND COALESCE(owner.is_active,true)=true
     LEFT JOIN client_business_stores s ON s.client_id=d.client_id AND s.file_number=d.file_number
     WHERE f.status='active'
     ORDER BY d.world_slot ASC
@@ -216,6 +217,8 @@ export async function getPublicBurningRiverWorld(sql:any,page=0){
     JOIN weave_open_world_domains b ON b.id=c.domain_b
     JOIN client_file_folders fa ON fa.client_id=a.client_id AND fa.file_number=a.file_number
     JOIN client_file_folders fb ON fb.client_id=b.client_id AND fb.file_number=b.file_number
+    JOIN users ua ON ua.id=a.client_id AND ua.role='client' AND COALESCE(ua.is_active,true)=true
+    JOIN users ub ON ub.id=b.client_id AND ub.role='client' AND COALESCE(ub.is_active,true)=true
     WHERE c.loop_key=${BURNING_RIVER_LOOP} AND c.status='accepted'
       AND fa.status='active' AND fb.status='active'
     ORDER BY c.responded_at DESC
