@@ -40,6 +40,8 @@ The example service assumes the user `weave`, repository `/opt/weave/system-brid
 
 ## Security review conducted in code
 
+**Before deployment:** confirm the real Administration account has a usable bcrypt password in the database and test normal Administration login in a non-public preview. The removed fallback must not be the only way the Administrator can access the system. Set long, distinct JWT_SECRET and NEXTAUTH_SECRET values before starting the updated runtime.
+
 Hardening in this branch:
 - Removed a legacy privileged login fallback and its fixed administrator identity.
 - Replaced timestamp-derived browser session tokens with cryptographically random 256-bit tokens.
