@@ -6,6 +6,7 @@ import {useRouter} from 'next/navigation'
 import {Activity,ArrowLeft,CloudUpload,History,RefreshCw,RotateCcw,ShieldCheck,Server} from 'lucide-react'
 import {toast} from 'sonner'
 import {useAuth} from '@/lib/auth-provider'
+import WorkGithubOracleFlow,{type WorkMainCandidate} from '@/components/admin/work-github-oracle-flow'
 
 type Job={
   id:string;server_key:string;action:'deploy_latest'|'rollback';target_sha:string|null
@@ -21,6 +22,7 @@ export default function SovereignReleaseWorkshop(){
   const [state,setState]=useState<Snapshot|null>(null)
   const [selected,setSelected]=useState('')
   const [confirmation,setConfirmation]=useState('')
+  const [githubMain,setGithubMain]=useState<WorkMainCandidate|null>(null)
   const [mode,setMode]=useState<'deploy_latest'|'rollback'>('deploy_latest')
   const [loading,setLoading]=useState(true)
   const [busy,setBusy]=useState(false)
@@ -56,16 +58,20 @@ export default function SovereignReleaseWorkshop(){
       toast.error('Select a previously healthy release')
       return
     }
+    if(mode==='deploy_latest'&&githubMain?.check.state!=='passed'){
+      toast.error('Wait for the exact current GitHub main Production Check to pass')
+      return
+    }
     if(!window.confirm(mode==='rollback'
       ? `Request a verified production rollback to ${selected}? The host must approve this target from its history.`
-      : 'Request deployment of the latest fully CI-verified main release? The host worker will independently verify it.')){
+      : `Deploy the GitHub main release ${githubMain?.sha} to the Oracle host? The worker will reject a changed commit or failed CI.`)){
       return
     }
     setBusy(true)
     try{
       const res=await fetch('/api/admin/release-workshop',{
         method:'POST',headers:headers(),body:JSON.stringify({
-          action:mode,confirmation,targetSha:mode==='rollback'?selected:undefined,
+          action:mode,confirmation,targetSha:mode==='rollback'?selected:githubMain?.sha,
         }),
       })
       const body=await res.json()
@@ -108,12 +114,18 @@ export default function SovereignReleaseWorkshop(){
         <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><ShieldCheck className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-xs text-slate-400">Previously healthy releases</p><p className="mt-1 text-xl font-black">{state.healthyReleases.length}</p></div>
         <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Activity className="h-5 w-5 text-orange-300"/><p className="mt-3 text-xs text-slate-400">Independent release worker</p><p className="mt-1 text-sm font-black">{inProgress?.status==='running'?'Executing release':state.workerOnline?'Connected':'Not recently connected'}</p><p className="mt-1 text-xs text-slate-400">{state.workerLastSeen?'Last check '+date(state.workerLastSeen):'Host setup not verified'} · {inProgress?.status||'No active request'}</p></div>
       </div>
+      <WorkGithubOracleFlow token={token} workerOnline={state.workerOnline} activeRelease={state.activeRelease} onMainChange={setGithubMain}/>
       <section className="mt-5 rounded-2xl border border-orange-300/20 bg-[#0c1824] p-5">
         <h2 className="text-lg font-black">Control production</h2>
-        <p className="mt-2 text-xs leading-5 text-slate-300">One request at a time per server. A new release must be canonical main with a successful Production Check. A rollback must be a release recorded healthy on this server. Both are independently checked by the host.</p>
+        <p className="mt-2 text-xs leading-5 text-slate-300">One request at a time per server. A new release must be the exact GitHub main commit shown above with a successful Production Check. A rollback must be a release recorded healthy on this server. Both are independently checked by the host.</p>
         <div className="mt-5 flex flex-wrap gap-2">
           {([{value:'deploy_latest',title:'Deploy verified update',Icon:CloudUpload},{value:'rollback',title:'Restore previous release',Icon:RotateCcw}] as const).map(item=><button key={item.value} onClick={()=>{setMode(item.value);setConfirmation('')}} className={mode===item.value?'inline-flex items-center gap-2 rounded-xl bg-orange-200 px-4 py-3 text-xs font-black text-[#06121c]':'inline-flex items-center gap-2 rounded-xl border border-white/20 px-4 py-3 text-xs font-bold text-white'}><item.Icon className="h-4 w-4"/>{item.title}</button>)}
         </div>
+        {mode==='deploy_latest'&&<div className="mt-5 rounded-xl border border-cyan-200/15 bg-cyan-400/[.04] p-3 text-xs text-slate-200">
+          <p className="text-[10px] font-black uppercase tracking-wider text-cyan-200">Pinned GitHub main release</p>
+          <p className="mt-2 break-all font-mono">{githubMain?.sha||'Unable to verify GitHub main'}</p>
+          <p className="mt-1 text-slate-400">Production Check: {githubMain?.check.state||'Unavailable'}. A new merge changes this SHA and requires another check.</p>
+        </div>}
         {mode==='rollback'&&<label className="mt-5 block text-xs text-slate-200">Healthy release to restore
           <select value={selected} onChange={e=>setSelected(e.target.value)} className="mt-2 block w-full rounded-lg border border-white/20 bg-[#09131e] p-3 font-mono text-xs text-white">
             {state.healthyReleases.length===0?<option value="">No verified releases recorded</option>:state.healthyReleases.map(sha=><option key={sha} value={sha}>{sha}</option>)}
@@ -122,7 +134,7 @@ export default function SovereignReleaseWorkshop(){
         <label className="mt-5 block text-xs font-semibold text-slate-200">Type {mode==='rollback'?'ROLL BACK':'DEPLOY'} to authorize this request
           <input value={confirmation} onChange={event=>setConfirmation(event.target.value)} placeholder={mode==='rollback'?'ROLL BACK':'DEPLOY'} autoCapitalize="characters" autoComplete="off" className="mt-2 block w-full rounded-lg border border-white/20 bg-[#09131e] p-3 text-sm font-black text-white"/>
         </label>
-        <button disabled={Boolean(inProgress)||busy||confirmation!==(mode==='rollback'?'ROLL BACK':'DEPLOY')||(mode==='rollback'&&!selected)} onClick={()=>void submit()} className="mt-4 min-h-12 w-full rounded-xl bg-orange-200 px-4 text-sm font-black text-[#09131e] disabled:opacity-35">{busy?'Submitting request…':inProgress?'Release already in progress':mode==='rollback'?'Request verified rollback':'Request verified deployment'}</button>
+        <button disabled={Boolean(inProgress)||busy||confirmation!==(mode==='rollback'?'ROLL BACK':'DEPLOY')||(mode==='rollback'&&!selected)||(mode==='deploy_latest'&&githubMain?.check.state!=='passed')} onClick={()=>void submit()} className="mt-4 min-h-12 w-full rounded-xl bg-orange-200 px-4 text-sm font-black text-[#09131e] disabled:opacity-35">{busy?'Submitting request…':inProgress?'Release already in progress':mode==='rollback'?'Request verified rollback':'Request verified deployment'}</button>
         {!state.workerOnline&&<p role="status" className="mt-3 rounded-xl border border-amber-300/25 bg-amber-400/[.06] p-3 text-xs leading-5 text-amber-100">No host worker heartbeat within the last minute. A new request can be queued, but it will not deploy until the separate WEAVE release worker is installed and connected.</p>}
         <p className="mt-3 text-[11px] leading-5 text-slate-400">A queued request is not proof of deployment. Successful health verification and an updated Sovereign + Flame Record are required. Current server: {state.serverKey}.</p>
       </section>
@@ -131,7 +143,7 @@ export default function SovereignReleaseWorkshop(){
         <div className="mt-4 space-y-3">
           {state.jobs.length===0?<p className="text-sm text-slate-400">No Administration deployment requests yet. Earlier host deployment events remain in Sovereign + Flame Record.</p>:state.jobs.map(job=><article key={job.id} className="rounded-xl border border-white/10 bg-white/[.025] p-4">
             <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs font-bold uppercase text-orange-200">{job.action==='rollback'?'Rollback':'Deploy'} · {job.status.replaceAll('_',' ')}</p><p className="text-xs text-slate-400">{date(job.requested_at)}</p></div>
-            <p className="mt-2 break-all font-mono text-xs text-white">{job.resolved_sha||job.target_sha||'Host will resolve latest verified main'}</p>
+            <p className="mt-2 break-all font-mono text-xs text-white">{job.resolved_sha||job.target_sha||'Exact GitHub commit pending'}</p>
             {job.previous_sha&&<p className="mt-1 break-all font-mono text-[10px] text-slate-400">Previous: {job.previous_sha}</p>}
             {job.verification&&<p className="mt-2 text-xs leading-5 text-slate-300">{job.verification}</p>}
             {job.status==='queued'&&<button type="button" disabled={busy} onClick={()=>void cancel(job.id)} className="mt-3 rounded-lg border border-amber-300/30 px-3 py-2 text-xs font-bold text-amber-100 disabled:opacity-40">Cancel queued request</button>}
@@ -139,7 +151,7 @@ export default function SovereignReleaseWorkshop(){
           </article>)}
         </div>
       </section>
-      <footer className="mt-5 text-xs leading-5 text-slate-400"><History className="mr-2 inline h-4 w-4"/>The workshop uses the same container workflow on Oracle, a standard VPS or WEAVE-owned hardware. Database, DNS, persistent media and backup continuity must also be maintained when moving hosts.</footer>
+      <footer className="mt-5 text-xs leading-5 text-slate-400"><History className="mr-2 inline h-4 w-4"/>Work commits and reviewed merges enter GitHub main; Oracle executes only the pinned CI-verified SHA through the independent host worker. Database, DNS, persistent media and backup continuity must also be maintained when moving hosts.</footer>
     </>}
   </main>
 }
