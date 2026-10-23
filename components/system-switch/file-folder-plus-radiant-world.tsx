@@ -1,9 +1,9 @@
 'use client'
 import {useMemo,useRef,useState} from 'react'
 import {Canvas,useFrame} from '@react-three/fiber'
-import {OrbitControls,Text} from '@react-three/drei'
+import {OrbitControls,Text,useTexture} from '@react-three/drei'
 import type {Group} from 'three'
-import {DoubleSide} from 'three'
+import {DoubleSide,RepeatWrapping,SRGBColorSpace} from 'three'
 import {FILE_FOLDER_EQUIPMENT,FILE_FOLDER_PALETTES,
   type EquipmentZone,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
@@ -27,7 +27,17 @@ const ZONE_IDS:EquipmentZone[]=['systems','modules','tools','people','operations
 function RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
   color:string;gold?:boolean;glass?:boolean;realness?:string
 }){
-  return <meshPhysicalMaterial color={color}
+  // These are repository-owned material maps, not remote textures or a flat
+  // image of the promised world. Canvas/WebGL renders actual surface geometry.
+  const [porcelain,brushedGold]=useTexture([
+    '/weave/file-folder/assets/plus-porcelain-marble.svg',
+    '/weave/file-folder/assets/plus-brushed-gold.svg',
+  ])
+  porcelain.colorSpace=SRGBColorSpace
+  brushedGold.colorSpace=SRGBColorSpace
+  porcelain.wrapS=porcelain.wrapT=RepeatWrapping
+  brushedGold.wrapS=brushedGold.wrapT=RepeatWrapping
+  return <meshPhysicalMaterial color={color} map={glass?undefined:gold?brushedGold:porcelain}
     metalness={gold?.76:glass?.32:.23} roughness={realness==='basic'?.47:gold?.17:glass?.13:.28}
     clearcoat={glass?1:.75} clearcoatRoughness={.16} transparent={glass} opacity={glass?.72:1}
     side={DoubleSide}/>
@@ -42,7 +52,7 @@ function EquipmentBuilding({zone,index,selected,appearance,onSelect}:{
   const z=Math.cos(angle)*RADIUS
   const palette=FILE_FOLDER_PALETTES[appearance.theme]
   const kind=FILE_FOLDER_EQUIPMENT[zone].kind
-  const detailed=appearance.realness!=='basic'
+  const detailed=appearance.realness!=='basic'&&appearance.equipmentPack!=='formation'
   const height=kind==='tower'?3.75:kind==='command'?3.25:kind==='globe'?3.1:2.75
   return <group position={[x,0,z]}
     onClick={event=>{event.stopPropagation();onSelect(zone)}}>
@@ -66,6 +76,11 @@ function EquipmentBuilding({zone,index,selected,appearance,onSelect}:{
       {[-1.08,1.08].map(side=><mesh key={side} position={[side,height/2+.28,.48]}>
         <boxGeometry args={[.085,height,.12]}/><RadiantMaterial color={palette.accent} gold/>
       </mesh>)}
+    </group>}
+    {appearance.equipmentPack==='plus-complete-systems'&&<group position={[0,.53,1.15]}>
+      <mesh><boxGeometry args={[1.3,.22,.72]}/><RadiantMaterial color={palette.accent} gold/></mesh>
+      <mesh position={[0,.22,0]}><boxGeometry args={[.98,.34,.09]}/><RadiantMaterial color={palette.glass} glass/></mesh>
+      <mesh position={[0,.23,.056]}><boxGeometry args={[.74,.035,.025]}/><meshStandardMaterial color={palette.sky} emissive={palette.glow} emissiveIntensity={.25}/></mesh>
     </group>}
     {detailed&&[-1.88,1.88].map(side=><group key={side}>
       <mesh position={[side,.9,0]}><cylinderGeometry args={[.15,.22,1.65,10]}/><RadiantMaterial color={palette.structure}/></mesh>
