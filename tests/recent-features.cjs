@@ -1380,9 +1380,9 @@ assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
 assert.ok(roleWorldReturnSource.includes("router.replace(roleHome(user?.role))"),'Retired /weave route returns each authenticated position to its own world')
 assert.ok(!roleWorldReturnSource.includes('Bridge Plaza'),'Retired /weave route does not expose Bridge Plaza')
-assert.ok(fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8').includes('<BurningRiverLiveWorld role={role}/>') &&
+assert.ok(fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8').includes('<BurningRiverOfficialGateway staff/>') &&
   fs.readFileSync(path.join(root,'components/events/burning-river-live-world.tsx'),'utf8').includes('/api/events/flame/open-world'),
-  'Flame Event mounts live purchased Client File Folder domains instead of the former door-only joystick scene')
+  'Staff Flame Event shows an explicit crossing into the live purchased Client world instead of a joystick scene')
 assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
 assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
 
