@@ -48,8 +48,14 @@ export async function GET(request:NextRequest){
       SELECT p.id,p.connection_id,p.kind,p.title,p.status,p.created_by_domain,p.created_at,
         c.domain_a,c.domain_b,
         EXISTS(SELECT 1 FROM weave_open_world_project_contributions own
+          JOIN client_built_systems active_own ON active_own.id=own.system_id
+            AND active_own.status='active' AND active_own.client_id=${domain.client_id}::uuid
           WHERE own.project_id=p.id AND own.domain_id=${domain.id}::uuid) AS own_contribution,
         EXISTS(SELECT 1 FROM weave_open_world_project_contributions other
+          JOIN weave_open_world_domains other_domain ON other_domain.id=other.domain_id
+          JOIN client_built_systems active_other ON active_other.id=other.system_id
+            AND active_other.status='active' AND active_other.client_id=other_domain.client_id
+            AND active_other.file_number=other_domain.file_number
           WHERE other.project_id=p.id AND other.domain_id<>${domain.id}::uuid) AS partner_contribution
       FROM weave_open_world_projects p
       JOIN weave_open_world_connections c ON c.id=p.connection_id
