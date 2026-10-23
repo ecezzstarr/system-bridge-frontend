@@ -7,10 +7,12 @@ Requires=docker.service
 [Service]
 Type=simple
 # Adjust both paths to the actual WEAVE checkout on this Linux host.
+EnvironmentFile=-/etc/weave/release-worker.env
 WorkingDirectory=/opt/weave/system-bridge-frontend
 ExecStart=/usr/bin/python3 /opt/weave/system-bridge-frontend/selfhost/release-worker.py --interval 15
 User=weave
 Group=weave
+SupplementaryGroups=docker
 Restart=always
 RestartSec=15
 NoNewPrivileges=true
