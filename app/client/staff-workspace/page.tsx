@@ -70,7 +70,8 @@ export default function CompanyClientStaffWorkspace(){
             ['Meet businesses','Introduce WEAVE and understand how the organization might use a File Folder.','/file-folder-preview'],
             ['Present File Folders','Demonstrate the actual File Folder offer, options and operating systems.','/file-folder'],
             ['My File Folder','Open your company-granted Client systems and Bridge AI assistance.','/client/system-switch'],
-            ['Team correspondence','Read company instructions and communicate through existing approved channels.','/notifications'],
+            ['Team correspondence','Communicate with other WEAVE participants through company communication channels.','/communications'],
+            ['Position notifications','Read approved company instructions and employment updates.','/notifications'],
           ].map(([title,detail,href])=><Link key={title} href={href} className="rounded-xl border border-white/15 bg-white/[.04] p-5">
             <h3 className="font-bold text-cyan-200">{title} →</h3><p className="mt-3 text-xs leading-5 text-slate-300">{detail}</p>
           </Link>)}
