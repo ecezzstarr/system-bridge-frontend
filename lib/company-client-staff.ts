@@ -82,7 +82,7 @@ export async function getCompanyStaffOfferByToken(token: string) {
   const rows = await sql`
     SELECT id,candidate_name,candidate_email,position_title,monthly_salary_usdt,
       ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,
-      personal_loan_terms,personal_loan_accepted_at,folder_tier,status,file_number,receipt_number,rejection_reason,created_at
+      personal_loan_terms,personal_loan_accepted_at,folder_tier,status,file_number,client_id,receipt_number,rejection_reason,created_at
     FROM company_client_staff_offers
     WHERE token_hash=${staffOfferTokenHash(token)}
     LIMIT 1
