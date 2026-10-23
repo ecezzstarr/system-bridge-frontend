@@ -70,7 +70,7 @@ sudo usermod -aG docker "$USER"
 ```bash
 git clone https://github.com/ecezzstarr/system-bridge-frontend.git
 cd system-bridge-frontend
-git checkout weave-self-hosting-ready
+git checkout main
 ```
 
 ## 3. Configure secrets
