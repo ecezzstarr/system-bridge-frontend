@@ -67,11 +67,13 @@ export async function decideClientTronDeposit(input:{
     const deposit=found.rows[0]
     if(!deposit||deposit.owner_role!=='client')throw new Error('Client TRX deposit not found')
     if(deposit.status!=='pending')throw new Error('Deposit already decided. No additional wallet credit was applied.')
-    const amount=normalizeTronAmount(deposit.amount_trx)
-    const hash=normalizeTronTxHash(deposit.receipt_data)
-    const credited=trxPaymentToFlameCoin(amount)
-    if(!Number.isFinite(credited)||credited<=0)throw new Error('Invalid Flame Coin credit amount')
+    // Rejection must also work for malformed or missing payment evidence.
+    const amount=Number(deposit.amount_trx)
     if(input.decision==='approved'){
+      normalizeTronAmount(amount)
+      const hash=normalizeTronTxHash(deposit.receipt_data)
+      const credited=trxPaymentToFlameCoin(amount)
+      if(!Number.isFinite(credited)||credited<=0)throw new Error('Invalid Flame Coin credit amount')
       if(normalizeTronAmount(input.verifiedAmountTrx)!==amount)
         throw new Error('Confirmed on-chain TRX amount must exactly match the submitted amount')
       await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',['client-tron:'+hash])
@@ -113,7 +115,7 @@ export async function decideClientTronDeposit(input:{
     )
     if(updated.rowCount!==1)throw new Error('Deposit decision conflict')
     await client.query('COMMIT')
-    return {depositId:input.depositId,decision:'rejected' as const,userId:String(deposit.user_id),paidTrx:amount,flameCoinAmount:0,receipt:null,balance:null}
+    return {depositId:input.depositId,decision:'rejected' as const,userId:String(deposit.user_id),paidTrx:Number.isFinite(amount)?amount:0,flameCoinAmount:0,receipt:null,balance:null}
   }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error}
   finally{client.release()}
 }
