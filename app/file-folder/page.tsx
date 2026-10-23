@@ -80,6 +80,7 @@ export default function PublicFileFolderPurchasePage() {
       if (stored) {
         const parsed = JSON.parse(stored)
         if (parsed?.id && parsed?.accessToken) {
+          if (parsed.tier === 'plus' || parsed.tier === 'premium' || parsed.tier === 'standard') setTier(parsed.tier)
           setPurchase({
             id: String(parsed.id),
             accessToken: String(parsed.accessToken),
@@ -127,6 +128,9 @@ export default function PublicFileFolderPurchasePage() {
           accessToken: purchase.accessToken,
         }
         setPurchase(next)
+        if (body.purchase?.fileFolderTier === 'plus' || body.purchase?.fileFolderTier === 'premium' || body.purchase?.fileFolderTier === 'standard') {
+          setTier(body.purchase.fileFolderTier)
+        }
 
         if (body.crossing?.ready) {
           const nextUrl = body.crossing.systemSwitchUrl || body.crossing.registerUrl || ''
@@ -198,7 +202,7 @@ export default function PublicFileFolderPurchasePage() {
         amountFlameCoin: Number(body.purchase.amountFlameCoin || amount),
       }
       setPurchase(next)
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: next.id, accessToken: next.accessToken }))
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: next.id, accessToken: next.accessToken, tier }))
       setMessage(body.message || 'Payment recorded. Administration verification is now open.')
     } catch (error: any) {
       setMessage(error?.message || 'Unable to record File Folder purchase')
