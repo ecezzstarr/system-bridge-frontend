@@ -385,7 +385,10 @@ export default function FileFolderOpenWorld({
           : fileFolderTier==='plus'
           ? <FileFolderPlusRadiantWorld appearance={worldAppearance||resolveFileFolderAppearance('plus')}
               districts={visibleDistricts} active={district} onEnter={enterDistrict}
-              systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}/>
+              systems={world?.systems?.length||0} building={activeBuilds.length}
+              builds={Array.isArray(world?.builds)?world.builds:[]}
+              systemRecords={Array.isArray(world?.systems)?world.systems:[]}
+              now={now}/>
           : <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={enterDistrict}
               systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}
               appearance={worldAppearance||resolveFileFolderAppearance(fileFolderTier==='premium'?'premium':'pro')}/>} 
