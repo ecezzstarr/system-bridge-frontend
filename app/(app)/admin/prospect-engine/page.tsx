@@ -1,5 +1,6 @@
 'use client'
 import { getAuthHeaders } from '@/lib/auth-client'
+import Link from 'next/link'
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
@@ -118,6 +119,7 @@ export default function ProspectEnginePage() {
       pulse={isGenerating?'Reachability Agent running':isPackaging?'Packaging selected prospects':'Prospect Engine ready'}
       left={
         <div className="space-y-6">
+          <Link href="/admin/river-call-settings" className="block border border-sky-300/25 px-4 py-3 text-sm text-sky-200">River AI live calls · price and activation →</Link>
           <section className="border-l border-orange-300/25 pl-4">
             <div className="flex items-center gap-2">
               <PhoneCall className="h-4 w-4 text-orange-300"/>
