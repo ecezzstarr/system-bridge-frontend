@@ -15,6 +15,10 @@ export async function GET(request:NextRequest) {
       candidateName:offer.candidate_name,recipientEmail:offer.candidate_email,
       positionTitle:offer.position_title,monthlySalaryUSDT:Number(offer.monthly_salary_usdt),
       ticketAmountUSDT:Number(offer.ticket_amount_usdt),
+      applicantContributionUSDT:Number(offer.applicant_contribution_usdt || offer.ticket_amount_usdt),
+      proposedPersonalLoanUSDT:Number(offer.proposed_personal_loan_usdt || 0),
+      personalLoanTerms:offer.personal_loan_terms || null,
+      personalLoanAccepted:Boolean(offer.personal_loan_accepted_at),
       grantedTier:offer.status==='approved'?offer.folder_tier:null,
       status:offer.status, fileNumber:offer.status==='approved'?offer.file_number:null,
       receiptNumber:offer.status==='approved'?offer.receipt_number:null,
@@ -44,11 +48,14 @@ export async function POST(request:NextRequest) {
 
     if(action==='accept') {
       const phone=String(body.phone||'').trim()
+      if(Number(offer.proposed_personal_loan_usdt)>0 && body.personalLoanTermsAccepted!==true)
+        return NextResponse.json({error:'Review and explicitly accept the written personal loan terms before continuing'},{status:400})
       if(phone.length<7||phone.length>80)
         return NextResponse.json({error:'Enter your contact phone number'},{status:400})
       const [accepted]=await sql`
         UPDATE company_client_staff_offers
-        SET status='accepted',candidate_phone=${phone},accepted_at=now(),updated_at=now()
+        SET status='accepted',candidate_phone=${phone},accepted_at=now(),updated_at=now(),
+          personal_loan_accepted_at=CASE WHEN proposed_personal_loan_usdt > 0 THEN now() ELSE NULL END
         WHERE token_hash=${staffOfferTokenHash(token)} AND status='offered'
         RETURNING id,status
       `
@@ -74,7 +81,7 @@ export async function POST(request:NextRequest) {
           await sql`
             INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
             SELECT id,'company_staff_ticket_pending','Company staff ticket for verification',
-              ${offer.candidate_name+' submitted a '+String(offer.ticket_amount_usdt)+' USDT company-entry ticket for '+offer.position_title+'. Verify the transaction before issuing their File Number.'},
+              ${offer.candidate_name+' submitted a '+String(offer.applicant_contribution_usdt || offer.ticket_amount_usdt)+' USDT applicant portion of a '+String(offer.ticket_amount_usdt)+' USDT company-entry ticket for '+offer.position_title+'. Verify the transaction before issuing their File Number.'},
               'WEAVE Employment','/admin/client-staff-offers'
             FROM users WHERE role='admin' AND COALESCE(is_active,true)=true
           `
