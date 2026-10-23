@@ -32,6 +32,7 @@ The system intentionally does **not** auto-merge, auto-deploy after CI, or deplo
    WEAVE_RELEASE_CONTROL_TOKEN=<independent long random host worker token>
    WEAVE_RELEASE_SHA=<current deployed 40-character SHA>
    ```
+   The server key `weave-oracle` is an example **only for a fresh Oracle installation**. If an existing Oracle host already uses `weave-selfhost` or another key, preserve that exact value so older healthy release records remain available for rollback.
    The same `WEAVE_DEPLOYMENT_SERVER` and worker token must be visible to both deployed WEAVE and the independent worker. Existing host/production secrets remain private.
 4. Optional GitHub access configuration in **the server environment, never client-side**:
    ```ini
