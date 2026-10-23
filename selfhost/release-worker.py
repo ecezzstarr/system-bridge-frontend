@@ -127,6 +127,7 @@ def execute(job, values):
     process_env.update({
         "WEAVE_DEPLOY_TARGET_SHA": target if action == "deploy_latest" else "",
         "WEAVE_DEPLOY_ROLLBACK_SHA": target if action == "rollback" else "",
+        "WEAVE_DEPLOY_REQUESTED_BY": str(job.get("requested_by") or ""),
     })
     # Existing script builds locally, waits for matching local/public health,
     # and automatically restores the prior release on a failed deployment.
