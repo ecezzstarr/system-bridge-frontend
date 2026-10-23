@@ -2,6 +2,9 @@
 import { isBuildPartCompatible } from '@/lib/file-folder-build-compatibility'
 import FileFolderPlatformProjectStudio from './file-folder-platform-project-studio'
 import FileFolderLivingTerrain from './file-folder-living-terrain'
+import FileFolderPlusRadiantWorld from './file-folder-plus-radiant-world'
+import FileFolderStandardLivingWorld from './file-folder-standard-living-world'
+import {resolveFileFolderAppearance,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 import { type FileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -41,6 +44,8 @@ type Props = {
   initialAiFileFolders?: AiFileFolderIdentity[]
   pollWorld?: boolean
   pollAi?: boolean
+  fileFolderTier?: string
+  worldAppearance?: FileFolderWorldAppearance
 }
 
 const districts = [
@@ -121,6 +126,8 @@ export default function FileFolderOpenWorld({
   initialAiFileFolders,
   pollWorld = true,
   pollAi = true,
+  fileFolderTier = 'standard',
+  worldAppearance,
 }: Props) {
   const { isVisible, orderFor } = useEnvironmentOrganizer()
   const [world, setWorld] = useState(initialWorld)
@@ -364,7 +371,19 @@ export default function FileFolderOpenWorld({
       </details>
 
       <div className="min-h-[520px] sm:min-h-[650px]">
-        <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={setDistrict} systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}/>
+        {fileFolderTier==='standard'
+          ? <FileFolderStandardLivingWorld appearance={worldAppearance||resolveFileFolderAppearance('standard')}
+              districts={visibleDistricts} active={district} onEnter={setDistrict}
+              systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds}
+              operatingSystems={world?.systems||[]} customerDoor={world?.customerDoor} now={now}/>
+          : fileFolderTier==='plus'
+          ? <FileFolderPlusRadiantWorld appearance={worldAppearance||resolveFileFolderAppearance('plus')}
+              districts={visibleDistricts} active={district} onEnter={setDistrict}
+              systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}/>
+          : <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={setDistrict}
+              systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}
+              appearance={worldAppearance||resolveFileFolderAppearance(fileFolderTier==='premium'?'premium':'pro')}/>} 
+
 
         <nav aria-label="Walk the build site" className="sticky top-0 z-30 border-b border-amber-100/10 bg-[#17100b]/94 backdrop-blur-xl" data-build-site-awareness="compact-sticky-rail">
           <div className="ff-workspace-picker"><label htmlFor="ff-build-district">Build workspace</label><select id="ff-build-district" aria-label="Choose build workspace" value={district} onChange={e=>{setDistrict(e.target.value);recordOutput({type:'action',label:`File Folder district: ${e.target.value}`,toScene:'file-folder'})}}>{visibleDistricts.map(item=><option key={item.key} value={item.key}>{item.label}</option>)}</select></div>

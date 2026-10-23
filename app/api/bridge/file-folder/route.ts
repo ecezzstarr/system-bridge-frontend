@@ -15,6 +15,7 @@ export async function GET() {
     creditedAsset: 'Flame Coin',
     companyTrxWallet: WORLD_RULES.COMPANY_TRX_WALLET,
     depositWallet: WORLD_RULES.COMPANY_TRX_WALLET,
+    plus: {priceFlameCoin:FILE_FOLDER_PRICING.plusFlameCoin,quoteRequired:true,checkoutEnabled:false},
     premium: {
       priceFlameCoin: premiumPriceFlameCoin,
       requiredTrx: premiumPriceFlameCoin,

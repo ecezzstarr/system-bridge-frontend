@@ -9,13 +9,15 @@ import { buildUserReferralCode } from '@/lib/user-referral'
 import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } from '@/lib/public-flame-movement'
 import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
 import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/client-monthly-subscription'
+import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function POST(request: NextRequest) {
   try {
     const shield=await getDivineShieldState()
     if(shield.active) return NextResponse.json({error:'WEAVE is under maintenance. Divine Shield is active.'},{status:423})
 
-    const { fileNumber, email, password, businessName, gender: rawGender } = await request.json()
+    const { fileNumber, staffOffer, email, password, businessName, gender: rawGender } = await request.json()
     const gender=normalizeRegisteredGender(rawGender)
     if(!gender)return NextResponse.json({error:'Choose Male or Female at registration.'},{status:400})
     await ensureClientMonthlySchema()
@@ -35,6 +37,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // A company-granted File Number requires the private offer link and
+    // exact intended recipient email; retail registration is unaffected.
+    await ensureCompanyClientStaffSchema()
+    const [staffGrant] = await sql`
+      SELECT id,token_hash,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number
+      FROM company_client_staff_offers
+      WHERE file_number=${fileNumber}
+      LIMIT 1
+    `
+    if (staffGrant && (
+      staffGrant.status !== 'approved' || staffGrant.client_id ||
+      String(staffGrant.candidate_email).toLowerCase() !== String(email).trim().toLowerCase() ||
+      !/^[a-f0-9]{64}$/i.test(String(staffOffer||'')) ||
+      staffGrant.token_hash !== staffOfferTokenHash(String(staffOffer))
+    )) {
+      return NextResponse.json({error:'This staff File Folder requires its private company invitation and named email'},{status:403})
+    }
     const existing = await sql`SELECT id FROM users WHERE email = ${email}`
     if (existing.length > 0) {
       return NextResponse.json(
@@ -105,6 +124,40 @@ export async function POST(request: NextRequest) {
       clientName: name,
     })
 
+    if (staffGrant) {
+      const [claimed] = await sql`
+        UPDATE company_client_staff_offers
+        SET client_id=${user.id}::uuid,updated_at=now()
+        WHERE file_number=${fileNumber} AND token_hash=${staffOfferTokenHash(String(staffOffer))}
+          AND status='approved' AND client_id IS NULL
+        RETURNING id
+      `
+      if (!claimed) throw new Error('Staff File Folder has already been claimed')
+      // The company ticket is already verified by Administration. Record its
+      // receipt against the new Client identity without adding a retail sale.
+      try {
+        await issueWeaveReceipt({
+          userId:String(user.id),kind:'payment',source:'company_staff_entry_ticket',
+          sourceId:String(staffGrant.id),amount:Number(staffGrant.applicant_contribution_usdt || staffGrant.ticket_amount_usdt),
+          currency:'USDT',status:'verified',
+          description:'Verified applicant contribution to company entry ticket · company-granted '+String(staffGrant.folder_tier).toUpperCase()+' File Folder',
+          metadata:{receiptReference:staffGrant.receipt_number,proposedPersonalLoanUSDT:Number(staffGrant.proposed_personal_loan_usdt||0)},
+        })
+      } catch (receiptError) {
+        console.error('[company client staff] ticket receipt publication failed', receiptError)
+      }
+      try {
+        await sql`
+          INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+          VALUES (${user.id}::uuid,'company_staff_position',
+            'Your company position workspace is ready',
+            ${'Your approved company position and granted File Folder are ready. Open your workspace for business conversations and company correspondence.'},
+            'WEAVE Employment','/client/staff-workspace')
+        `
+      } catch (notificationError) {
+        console.error('[company client staff] position notification failed',notificationError)
+      }
+    }
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
       INSERT INTO sessions (id, user_id, token, created_at, expires_at)

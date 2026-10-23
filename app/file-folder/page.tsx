@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { WeaveLogo } from '@/components/weave-logo'
 import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
+import EmployeeClientTicketCrossing from '@/components/public/employee-client-ticket-crossing'
 
 const STORAGE_KEY = 'weave:public-file-folder-purchase'
 
@@ -39,6 +40,7 @@ function authHeaders(json = false): Record<string, string> {
 }
 
 export default function PublicFileFolderPurchasePage() {
+  const [staffOfferToken, setStaffOfferToken] = useState('')
   const [tier, setTier] = useState<'standard' | 'premium'>('standard')
   const [standardAmount, setStandardAmount] = useState(String(FILE_FOLDER_PRICING.standardMinimumFlameCoin))
   const [name, setName] = useState('')
@@ -67,6 +69,10 @@ export default function PublicFileFolderPurchasePage() {
     if (name.trim() && phone.trim() && validAmount) return 2
     return 1
   }, [purchase, reference, name, phone, validAmount])
+
+  useEffect(() => {
+    setStaffOfferToken(new URLSearchParams(window.location.search).get('staffOffer') || '')
+  }, [])
 
   useEffect(() => {
     fetch('/api/bridge/file-folder', { cache: 'no-store' })
@@ -215,6 +221,8 @@ export default function PublicFileFolderPurchasePage() {
     try { window.localStorage.removeItem(STORAGE_KEY) } catch {}
   }
 
+  if (staffOfferToken) return <EmployeeClientTicketCrossing offerToken={staffOfferToken} />
+
   const stages = ['Recognize', 'Choose File Folder', 'Record payment', 'Administration', 'Become Client']
 
   return (
@@ -270,9 +278,11 @@ export default function PublicFileFolderPurchasePage() {
 
             <section className="p-5 lg:p-8">
               <div className="flex items-center gap-2 text-orange-200"><FolderOpen className="h-4 w-4" /><p className="text-[9px] font-black uppercase tracking-[.18em]">Choose File Folder</p></div>
-              <div className="mt-4 grid overflow-hidden rounded-2xl border border-white/10 sm:grid-cols-2">
+              <div className="mt-4 grid overflow-hidden rounded-2xl border border-white/10 sm:grid-cols-4">
                 <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('standard')} className={`min-h-36 border-b border-white/10 p-4 text-left sm:border-b-0 sm:border-r ${tier==='standard'?'bg-sky-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Wallet className="h-4 w-4 text-sky-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Standard</span></div><p className="mt-5 text-2xl font-black">{FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()}–{FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</p><p className="mt-1 text-[9px] text-stone-500">Flame Coin · building power</p></button>
-                <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('premium')} className={`min-h-36 p-4 text-left ${tier==='premium'?'bg-orange-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Crown className="h-4 w-4 text-orange-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Premium</span></div><p className="mt-5 text-2xl font-black">{FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()}</p><p className="mt-1 text-[9px] text-stone-500">Flame Coin · fixed · same amount in TRX</p></button>
+                <div className="min-h-36 border-b border-white/10 p-4 text-left sm:border-b-0 sm:border-r"><div className="flex items-center gap-2"><FolderOpen className="h-4 w-4 text-cyan-200"/><span className="text-[9px] font-black uppercase tracking-[.14em]">Pro</span></div><p className="mt-5 text-sm font-black">Negotiated company offer</p><p className="mt-2 text-[9px] leading-5 text-stone-400">Pro Folder sales and company-granted employee Pro access follow separately verified offers.</p></div>
+                <button type="button" disabled={Boolean(purchase)} onClick={()=>setTier('premium')} className={`min-h-36 border-b border-white/10 p-4 text-left sm:border-b-0 sm:border-r ${tier==='premium'?'bg-orange-300/[.07]':'bg-black/15'}`}><div className="flex items-center gap-2"><Crown className="h-4 w-4 text-orange-200" /><span className="text-[9px] font-black uppercase tracking-[.14em]">Premium</span></div><p className="mt-5 text-2xl font-black">{FILE_FOLDER_PRICING.premiumFlameCoin.toLocaleString()}</p><p className="mt-1 text-[9px] text-stone-500">Flame Coin · fixed · same amount in TRX</p></button>
+                <div className="min-h-36 p-4 text-left"><div className="flex items-center gap-2"><Crown className="h-4 w-4 text-cyan-200"/><span className="text-[9px] font-black uppercase tracking-[.14em]">Plus</span></div><p className="mt-5 text-sm font-black">20,000 USDT · Company quotation</p><p className="mt-2 text-[9px] leading-5 text-stone-400">A complete File Folder system level. Contact WEAVE for confirmed funding instructions; do not send an assumed TRX equivalent.</p></div>
               </div>
 
               {tier === 'standard' && <label className="mt-4 block"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-stone-500">Standard amount · {FILE_FOLDER_PRICING.standardMinimumFlameCoin.toLocaleString()} to {FILE_FOLDER_PRICING.standardMaximumFlameCoin.toLocaleString()}</span><input inputMode="decimal" type="number" min={FILE_FOLDER_PRICING.standardMinimumFlameCoin} max={FILE_FOLDER_PRICING.standardMaximumFlameCoin} value={standardAmount} onChange={e=>setStandardAmount(e.target.value)} disabled={Boolean(purchase)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" /></label>}

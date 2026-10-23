@@ -76,7 +76,7 @@ async function verifyBridgeRadiancePurchase({
     getFileFolderTier(purchaseAmount, purchase.file_folder_tier) ||
     (purchase.bridge_code ? bridgeSaleTier(purchaseAmount) : getFileFolderTier(purchaseAmount))
   if (!fileFolderTier) {
-    return NextResponse.json({ error: 'Stored File Folder amount is outside the current Standard, Pro and Premium pricing rules' }, { status: 409 })
+    return NextResponse.json({ error: 'Stored File Folder amount is outside the current Standard, Pro, Premium and Plus pricing rules' }, { status: 409 })
   }
   const tierLabel = fileFolderTierLabel(fileFolderTier)
 

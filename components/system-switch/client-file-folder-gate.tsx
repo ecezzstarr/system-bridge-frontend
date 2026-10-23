@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { ArrowLeft, Bot, FileBox, Scale, Search, ShieldCheck, UserRoundCheck } from 'lucide-react'
 
-type GateStage = 'bridge_file_folder' | 'forensics' | 'administration' | 'personalization' | 'active'
+type GateStage = 'bridge_file_folder' | 'forensics' | 'administration' | 'personalization' | 'construction' | 'active'
 
 const stageMeta: Record<Exclude<GateStage, 'active'>, {
   eyebrow: string
@@ -24,6 +24,11 @@ const stageMeta: Record<Exclude<GateStage, 'active'>, {
     eyebrow: 'System Switch Gate',
     icon: ShieldCheck,
     status: 'Awaiting Administration',
+  },
+  construction: {
+    eyebrow: 'Pro File Folder · Construction',
+    icon: ShieldCheck,
+    status: 'Entry held during construction',
   },
   personalization: {
     eyebrow: 'Client Personalization',
@@ -85,6 +90,22 @@ export default function ClientFileFolderGate({ entry }: { entry: any }) {
               ))}
             </div>
           </div>
+
+          {stage === 'construction' && entry?.upgrade && (
+            <section className="mt-6 space-y-4 rounded-2xl border border-sky-300/30 bg-sky-300/[0.04] p-5" data-client-pro-construction-gate="true">
+              <p className="text-xs font-bold uppercase tracking-widest text-sky-300">Pro File Folder · World in construction</p>
+              <p className="text-sm leading-6 text-slate-200">{entry.upgrade.constructionNote}</p>
+              <div className="rounded-xl border border-amber-300/25 p-4">
+                <p className="text-xs uppercase tracking-widest text-amber-200">Personal loan · USDT</p>
+                {entry.upgrade.loan?.remaining!==null&&entry.upgrade.loan?.remaining!==undefined?
+                  <p className="mt-2 text-2xl font-bold text-amber-100">{Number(entry.upgrade.loan.remaining).toFixed(2)} USDT remaining</p>:
+                  <p className="mt-2 text-sm text-amber-100">100 USDT loan proposal · agreement and funding verification pending</p>}
+                <p className="mt-2 text-sm leading-6 text-slate-300">{entry.upgrade.loan?.display}</p>
+              </div>
+              <p className="text-xs leading-6 text-slate-400">Entry will open only after verified repayment, completed construction and Administration release. No payment is automatically withdrawn.</p>
+              <Link href="/notifications" className="inline-flex rounded-full border border-cyan-200/30 px-4 py-2 text-xs font-semibold text-cyan-100">Read my notifications</Link>
+            </section>
+          )}
 
           {stage === 'bridge_file_folder' && (
             <div className="mt-6 rounded-2xl border border-sky-400/20 bg-sky-400/5 p-5">

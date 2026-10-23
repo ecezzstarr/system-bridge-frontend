@@ -9,6 +9,8 @@ import { ensureEnterpriseDreamSchema, getEnterpriseDream } from '@/lib/enterpris
 import { ensureClientMoneyEnvironment } from '@/lib/client-money-environment'
 import { getFileFolderWorldSnapshot } from '@/lib/client-file-folder-world'
 import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
+import {getClientFolderUpgrade,clientUpgradePublicView} from '@/lib/client-folder-upgrade'
+import {getPublishedFileFolderRelease} from '@/lib/file-folder-world-release'
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,6 +43,14 @@ export async function GET(request: NextRequest) {
     if (!client) return NextResponse.json({ error: 'Client record not found' }, { status: 404 })
 
     const money = await ensureClientMoneyEnvironment(sql, client.id)
+    if(client.file_number){
+      const upgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
+      if(upgrade && upgrade.status!=='ready')
+        return NextResponse.json({
+          error:'Your Pro File Folder is under construction; verified repayment and release are required before entry.',
+          gate:'construction',upgrade:clientUpgradePublicView(upgrade),
+        },{status:423,headers:{'Cache-Control':'private, no-store'}})
+    }
 
     if (!client.file_number) {
       return NextResponse.json(
@@ -182,7 +192,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const fileFolderTier = persistedTier || getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'legacy'
+    // Employee-granted tiers are sourced from their separate verified company
+    // tickets, not from a fabricated retail File Folder purchase.
+    {
+      const [staffTable] = await sql`SELECT to_regclass('public.company_client_staff_offers') AS name`
+      if (staffTable?.name) {
+        const [grant] = await sql`
+          SELECT folder_tier FROM company_client_staff_offers
+          WHERE status='approved' AND client_id=${client.id}::uuid AND file_number=${client.file_number}
+          LIMIT 1
+        `
+        if (grant && ['standard','pro','premium','plus'].includes(grant.folder_tier)) persistedTier = grant.folder_tier
+      }
+    }
+
+    const directUpgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
+    if (directUpgrade?.status==='ready') persistedTier=directUpgrade.tier
+    const fileFolderTier = persistedTier || getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'standard'
 
     const workshopType=workshop.workshop_type
     const isCrypto=workshopType==='crypto_exchange'
@@ -203,9 +229,11 @@ export async function GET(request: NextRequest) {
       legions:enterpriseState.legions,
     }
 
+    const globalRelease=await getPublishedFileFolderRelease()
     return NextResponse.json({
       success:true,
       verified:true,
+      file_folder_world_release:{version:Number(globalRelease.version),config:globalRelease.config},
       client:{id:client.id,name:client.name,email:client.email,business_name:client.business_name,file_number:client.file_number},
       file_folder:folder,
       file_folder_world:fileFolderWorld,
