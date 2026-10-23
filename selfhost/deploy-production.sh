@@ -9,6 +9,13 @@ ENV_FILE="$ROOT/selfhost/.env"
 JOURNAL_FILE="$ROOT/selfhost/deployment-history.log"
 DEFAULT_DOMAIN="weavingsystem.online"
 DEPLOY_SOURCE="selfhost-deploy"
+if [[ -n "${WEAVE_DEPLOY_REQUESTED_BY:-}" ]]; then
+  if [[ ! "$WEAVE_DEPLOY_REQUESTED_BY" =~ ^[0-9a-fA-F-]{36}$ ]]; then
+    echo "Administration authorizer identity invalid." >&2
+    exit 4
+  fi
+  DEPLOY_SOURCE="administration-release-workshop"
+fi
 DEPLOY_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ROLLING_BACK=0
 
@@ -139,9 +146,10 @@ ROLLBACK_PATH="git reset --hard ${PREVIOUS_SHA} && WEAVE_RELEASE_SHA=${PREVIOUS_
 
 build_record_payload() {
   local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-{}}"
-  python3 - "$status" "$release_sha" "$previous_sha" "$SERVER_KEY" "$DEPLOY_SOURCE" "$verification" "$ROLLBACK_PATH" "$details" <<'PY'
+  python3 - "$status" "$release_sha" "$previous_sha" "$SERVER_KEY" "$DEPLOY_SOURCE" "$verification" "$ROLLBACK_PATH" "$details" "${WEAVE_DEPLOY_REQUESTED_BY:-}" <<'PY'
 import json,sys,datetime,uuid
-status,release,previous,server,source,verification,rollback,details=sys.argv[1:]
+status,release,previous,server,source,verification,rollback,details,requester=sys.argv[1:]
+if requester: uuid.UUID(requester)
 try: detail_obj=json.loads(details)
 except Exception: detail_obj={'note':details}
 detail_obj=dict(detail_obj)
@@ -150,7 +158,7 @@ detail_obj.setdefault('hostJournaledAt',datetime.datetime.now(datetime.timezone.
 print(json.dumps({
  'status':status,'releaseSha':release,'previousSha':previous or None,
  'serverKey':server,'source':source,'verification':verification or None,
- 'rollbackPath':rollback,'details':detail_obj,
+ 'rollbackPath':rollback,'details':detail_obj,'sovereignId':requester or None,
 },separators=(',',':')))
 PY
 }
