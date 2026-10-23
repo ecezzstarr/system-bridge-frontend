@@ -188,7 +188,9 @@ function WaterCascade({angle,index}:{angle:number;index:number}){
 
 function RadiantLandscape({appearance,formation}:{appearance:FileFolderWorldAppearance;formation:PlusWorldFormation}){
  const palette=FILE_FOLDER_PALETTES[appearance.theme]
- const skyline=14+formation.expansionLevel*4
+ // Bounded level of detail for phones; actual Client growth is never capped.
+ const visualLevel=Math.min(4,formation.expansionLevel)
+ const skyline=14+visualLevel*4
  return <group>
    {[4.9,6.25,12.7].map((radius,index)=><mesh key={radius}
      rotation={[-Math.PI/2,0,0]} position={[0,-.17+index*.025,0]}>
@@ -202,7 +204,7 @@ function RadiantLandscape({appearance,formation}:{appearance:FileFolderWorldAppe
    {Array.from({length:skyline},(_,i)=>{
      const angle=i/skyline*Math.PI*2
      const radius=16+(i%3)*1.15
-     const height=1.8+(i%5)*.72+formation.expansionLevel*.22
+     const height=1.8+(i%5)*.72+visualLevel*.22
      return <group key={i} position={[Math.sin(angle)*radius,0,Math.cos(angle)*radius]}>
        <mesh position={[0,height/2,0]} castShadow>
          <cylinderGeometry args={[.29,.55,height,10]}/>
@@ -218,8 +220,8 @@ function RadiantLandscape({appearance,formation}:{appearance:FileFolderWorldAppe
        </mesh>)}
      </group>
    })}
-   {formation.expansionLevel>0&&Array.from({length:formation.expansionLevel*2},(_,i)=>{
-     const angle=(i+0.5)/(formation.expansionLevel*2)*Math.PI*2
+   {visualLevel>0&&Array.from({length:visualLevel*2},(_,i)=>{
+     const angle=(i+0.5)/(visualLevel*2)*Math.PI*2
      const radius=13.1
      const height=2.45+i*.28
      return <group key={i} position={[Math.sin(angle)*radius,0,Math.cos(angle)*radius]}>
@@ -285,7 +287,7 @@ export default function FileFolderPlusRadiantWorld({appearance,districts,onEnter
     <h3 className="mt-1 text-xl font-black">A complete systems world for immediate uses</h3>
     <p className="mt-1 text-xs leading-5 text-[#52657c]">Built from the Administrator-approved white-and-gold Plus File Folder reference. Inspect the living 3D world, select equipment, and enter the real Client workshop. Drag to look; pinch or scroll to move closer.</p>
     <p className="mt-2 text-xs font-bold text-[#8a5f22]" data-plus-world-stage={formation.environmentStage}>
-      {formation.activeBuilds} active builds · {formation.completedBuilds} completed builds · {formation.liveSystems} active systems · {formation.environmentStage} world
+      {formation.activeBuilds} active builds · {formation.completedBuilds} completed builds · {formation.liveSystems} active systems · {formation.environmentStage} world · advancement stage {formation.expansionLevel}
     </p>
    </header>
    <details className="border-b border-[#d4b16a]/35 bg-[#fffdf9]" data-plus-file-folder-construction-reference="389215.png">
