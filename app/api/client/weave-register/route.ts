@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // exact intended recipient email; retail registration is unaffected.
     await ensureCompanyClientStaffSchema()
     const [staffGrant] = await sql`
-      SELECT id,token_hash,candidate_email,status,client_id,ticket_amount_usdt,folder_tier,receipt_number
+      SELECT id,token_hash,candidate_email,status,client_id,ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,receipt_number
       FROM company_client_staff_offers
       WHERE file_number=${fileNumber}
       LIMIT 1
@@ -138,10 +138,10 @@ export async function POST(request: NextRequest) {
       try {
         await issueWeaveReceipt({
           userId:String(user.id),kind:'payment',source:'company_staff_entry_ticket',
-          sourceId:String(staffGrant.id),amount:Number(staffGrant.ticket_amount_usdt),
+          sourceId:String(staffGrant.id),amount:Number(staffGrant.applicant_contribution_usdt || staffGrant.ticket_amount_usdt),
           currency:'USDT',status:'verified',
-          description:'Employment entry ticket · company-granted '+String(staffGrant.folder_tier).toUpperCase()+' File Folder',
-          metadata:{receiptReference:staffGrant.receipt_number},
+          description:'Verified applicant contribution to company entry ticket · company-granted '+String(staffGrant.folder_tier).toUpperCase()+' File Folder',
+          metadata:{receiptReference:staffGrant.receipt_number,proposedPersonalLoanUSDT:Number(staffGrant.proposed_personal_loan_usdt||0)},
         })
       } catch (receiptError) {
         console.error('[company client staff] ticket receipt publication failed', receiptError)
