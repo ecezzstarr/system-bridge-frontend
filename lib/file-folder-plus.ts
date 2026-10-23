@@ -10,7 +10,7 @@ export const PLUS_FILE_FOLDER = {
   flameCoin: 60_000,
   trx: 59_602,
   usdt: 20_000,
-  currency: 'USDT',
+  currency: 'Flame Coin',
   delivery: 'completed_systems',
 } as const
 
