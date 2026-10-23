@@ -247,8 +247,12 @@ rollback() {
     "${COMPOSE[@]}" build weave
   fi
   "${COMPOSE[@]}" up -d --remove-orphans
-  wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" || true
-  post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback restored previous release after failure at line $line" "{\"failedRelease\":\"$TARGET_SHA\"}" || true
+  if wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" \
+     && wait_for_health "https://${DOMAIN}/api/health" "$PREVIOUS_SHA" "Rollback public health"; then
+    post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback verified locally and publicly after failure at line $line" "$(printf '{"failedRelease":"%s"}' "$TARGET_SHA")" || true
+  else
+    post_record failed "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback could not verify previous release locally and publicly; operator recovery required" "$(printf '{"failedRelease":"%s","recovery":"manual_required"}' "$TARGET_SHA")" || true
+  fi
   replay_journal || true
 
   exit "$exit_code"
