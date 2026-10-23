@@ -10,7 +10,7 @@ function token(write=false){
 }
 
 async function github(path:string,opts:{method?:'GET'|'PUT';body?:unknown;write?:boolean}={}){
-  if(!path.startsWith('/')||path.startsWith('//')||path.includes('..')||!/^\/[a-zA-Z0-9_?&=.%/-]+$/.test(path))
+  if(!path.startsWith('/')||path.startsWith('//')||path.includes('..')||!/^\/[a-zA-Z0-9_?&=.%\/-]+$/.test(path))
     throw new Error('Invalid fixed GitHub resource')
   const credential=token(opts.write)
   if(opts.write&&!credential)throw new Error('GitHub promotion has not been configured in the Oracle server environment')
