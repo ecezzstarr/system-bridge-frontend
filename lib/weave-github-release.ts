@@ -74,7 +74,17 @@ export type GithubWorkPull={
   author:string;check:GithubCheck;mergeReady:boolean;
 }
 
+let releaseBoardCache:{data:Awaited<ReturnType<typeof buildReleaseBoard>>;expiresAt:number}|null=null
 export async function workGithubReleaseBoard(){
+  if(releaseBoardCache&&releaseBoardCache.expiresAt>Date.now())return releaseBoardCache.data
+  const data=await buildReleaseBoard()
+  // Authenticated GitHub requests have a larger rate limit. Anonymous requests
+  // must be throttled to avoid exhausting the public repository quota.
+  const ttl=token(false)?60000:15*60*1000
+  releaseBoardCache={data,expiresAt:Date.now()+ttl}
+  return data
+}
+async function buildReleaseBoard(){
   const [main,pulls]=await Promise.all([
     githubMainCandidate(),
     github('/pulls?state=open&base=main&per_page=12&sort=updated&direction=desc'),
@@ -156,6 +166,7 @@ export async function mergeApprovedWorkPull(input:{number:number;headSha:string;
       method:'PUT',write:true,body:{sha:head,merge_method:'squash',
         commit_title:String(pr.title||'WEAVE reviewed release').slice(0,180)},
     })
+    releaseBoardCache=null // A merge invalidates GitHub main and open PR snapshot immediately.
     const mergedSha=String(result.sha||'').toLowerCase()
     if(!result.merged||!githubReleaseSha(mergedSha))
       throw new Error('GitHub did not confirm a successful merge')
