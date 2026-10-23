@@ -236,7 +236,7 @@ rollback() {
   log "Deployment failed at line $line. Restoring $PREVIOUS_SHA"
 
   post_record failed "$TARGET_SHA" "$PREVIOUS_SHA" "Deployment failed before final verification at line $line" "{\"failedLine\":\"$line\"}" || true
-  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started" "{\"failedLine\":\"$line\"}" || true
+  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Administration selected previously healthy release" "$(printf '{\"startedAt\":\"%s\"}' "$DEPLOY_STARTED_AT")" || true
 
   git reset --hard "$PREVIOUS_SHA"
   set_env_value WEAVE_RELEASE_SHA "$PREVIOUS_SHA"
@@ -282,7 +282,7 @@ wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
 
 VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 if [[ -n "$ROLLBACK_TARGET" ]]; then
-  post_record rolled_back "$TARGET_SHA" "$PREVIOUS_SHA" "Administration rollback verified against local and public health" "{\\"verifiedAt\\":\\"$VERIFIED_AT\\",\\"domain\\":\\"$DOMAIN\\"}" || true
+  post_record rolled_back "$TARGET_SHA" "$PREVIOUS_SHA" "Administration rollback verified against local and public health" "$(printf '{\"verifiedAt\":\"%s\",\"domain\":\"%s\"}' "$VERIFIED_AT" "$DOMAIN")" || true
 else
   post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}" || true
 fi
