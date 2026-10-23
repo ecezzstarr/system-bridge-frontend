@@ -106,9 +106,12 @@ def execute(job, values):
     if not SHA.fullmatch(main):
         raise RuntimeError("Cannot verify canonical origin/main release")
     if action == "deploy_latest":
-        target = main
+        if not target or not SHA.fullmatch(target):
+            raise RuntimeError("Administration did not pin an exact GitHub release SHA")
+        if target.lower() != main.lower():
+            raise RuntimeError("GitHub main moved after Administration approval; refresh and submit a new request")
         if not is_good_ci(target, values.get("WEAVE_GITHUB_TOKEN", "")):
-            raise RuntimeError("Latest main has no successful Production Check; deployment is blocked")
+            raise RuntimeError("Selected main commit has no successful Production Check; deployment is blocked")
     elif action == "rollback":
         if not target or not SHA.fullmatch(target):
             raise RuntimeError("Rollback request does not contain a historical SHA")
@@ -133,6 +136,9 @@ def execute(job, values):
     # and automatically restores the prior release on a failed deployment.
     # An existing managed host may preserve its own Compose/env layout.
     # This root-owned setting is never accepted from a website release request.
+    # The worker must never execute a website-selected script path, nor an executor
+    # outside the trusted checkout. A host operator may choose a fixed script
+    # through its private service environment, not through a browser request.
     executor = Path(values.get("WEAVE_RELEASE_EXECUTOR", str(ROOT / "selfhost" / "deploy-production.sh"))).resolve()
     if not executor.is_file():
         raise RuntimeError("Configured host release executor is unavailable")
