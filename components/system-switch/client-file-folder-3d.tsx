@@ -18,6 +18,7 @@ import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
 import { FileFolderCityStreets } from './file-folder-city-streets'
 import { CityMaterial } from './file-folder-city-material'
 import { FileFolderTierArchitecture, FILE_FOLDER_TIER_THEMES, resolveFileFolderVisualTier, type FileFolderVisualTier } from './file-folder-tier-architecture'
+import { LivingRiverSurface, LivingFlameSurface } from './file-folder-living-surfaces'
 import { FileFolderCityArchitecture } from './file-folder-city-architecture'
 import { InstitutionalArchitecture } from './file-folder-institutional-architecture'
 
@@ -89,8 +90,9 @@ function WaterChannel({position,rotation=0,length=5}:{position:[number,number,nu
     </mesh>
     <mesh position={[0,-.045,0]}>
       <boxGeometry args={[.56,.035,length-.18]}/>
-      <meshStandardMaterial color="#315d63" transparent opacity={.55} roughness={.16} metalness={.04}/>
+      <meshStandardMaterial color="#1b4b54" transparent opacity={.66} roughness={.16} metalness={.04}/>
     </mesh>
+    <LivingRiverSurface width={.56} length={length-.18}/>
   </group>
 }
 
@@ -105,8 +107,7 @@ function FlameBeacon({position,scale=.75}:{position:[number,number,number];scale
   return <group position={position} scale={scale}>
     <mesh position={[0,.12,0]} castShadow><cylinderGeometry args={[.25,.34,.3,18]}/><meshStandardMaterial color="#263843" metalness={.62} roughness={.34}/></mesh>
     <group ref={fire} position={[0,.66,0]}>
-      <mesh><coneGeometry args={[.17,.76,7]}/><meshStandardMaterial color="#f97316" emissive="#f97316" emissiveIntensity={1.8} toneMapped={false}/></mesh>
-      <mesh position={[0,-.05,.03]} scale={.58}><coneGeometry args={[.16,.67,7]}/><meshBasicMaterial color="#fef3c7"/></mesh>
+      <LivingFlameSurface/>
       <pointLight intensity={5.5} distance={3.2} color="#fb923c"/>
     </group>
   </group>
