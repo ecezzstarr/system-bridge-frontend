@@ -65,3 +65,5 @@ assert.ok(register.includes('staffGrant.applicant_contribution_usdt')&&register.
 assert.ok(migration.includes('loan_funding_reference')&&migration.includes('personal_loan_accepted_at'),
   'Loan proposal, consent and funding audit fields must be durable')
 console.log('Company employee tickets, separate ledger, grant and workspace regression passed')
+
+assert.ok(read('app/api/client/system-switch/route.ts').includes("tierOrder.indexOf(grant.folder_tier)>tierOrder.indexOf(persistedTier||'')"),'Employee grants must not downgrade a purchased Client world');
