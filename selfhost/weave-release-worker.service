@@ -1,0 +1,20 @@
+[Unit]
+Description=WEAVE Sovereign Release Worker
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+# Adjust both paths to the actual WEAVE checkout on this Linux host.
+WorkingDirectory=/opt/weave/system-bridge-frontend
+ExecStart=/usr/bin/python3 /opt/weave/system-bridge-frontend/selfhost/release-worker.py --interval 15
+User=weave
+Group=weave
+Restart=always
+RestartSec=15
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
