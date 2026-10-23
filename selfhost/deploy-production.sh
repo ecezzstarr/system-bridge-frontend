@@ -241,7 +241,11 @@ rollback() {
   git reset --hard "$PREVIOUS_SHA"
   set_env_value WEAVE_RELEASE_SHA "$PREVIOUS_SHA"
   export WEAVE_RELEASE_SHA="$PREVIOUS_SHA"
-  "${COMPOSE[@]}" build weave
+  if docker image inspect "weave-release:$PREVIOUS_SHA" >/dev/null 2>&1; then
+    log "Reusing locally retained known-good release image $PREVIOUS_SHA"
+  else
+    "${COMPOSE[@]}" build weave
+  fi
   "${COMPOSE[@]}" up -d --remove-orphans
   wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" || true
   post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback restored previous release after failure at line $line" "{\"failedRelease\":\"$TARGET_SHA\"}" || true
@@ -267,7 +271,11 @@ git reset --hard "$TARGET_SHA"
 set_env_value WEAVE_RELEASE_SHA "$TARGET_SHA"
 export WEAVE_RELEASE_SHA="$TARGET_SHA"
 BUILD_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-"${COMPOSE[@]}" build --pull weave
+if [[ -n "$ROLLBACK_TARGET" ]] && docker image inspect "weave-release:$TARGET_SHA" >/dev/null 2>&1; then
+  log "Reusing retained verified release image $TARGET_SHA"
+else
+  "${COMPOSE[@]}" build --pull weave
+fi
 BUILD_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 "${COMPOSE[@]}" up -d --remove-orphans
