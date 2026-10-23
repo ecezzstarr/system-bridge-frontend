@@ -29,9 +29,9 @@ export async function GET(request: NextRequest) {
     {
       id: 'echo',
       name: 'Echo',
-      description: 'Per-user private insight engine.',
+      description: 'Immediate private guidance for all WEAVE roles, with optional activity analysis.',
       model: 'Echo analysis model',
-      auth: 'Continuance-gated per user',
+      auth: 'Active authenticated WEAVE account; free, no recurring subscription',
       accessLevel: "User's own activity only",
       configured: true,
     },

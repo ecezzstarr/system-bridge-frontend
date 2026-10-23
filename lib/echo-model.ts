@@ -11,7 +11,7 @@ const vertexAI = new VertexAI({
 
 function getOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY
-  return apiKey ? new OpenAI({ apiKey }) : null
+  return apiKey ? new OpenAI({ apiKey, timeout: 10000, maxRetries: 0 }) : null
 }
 
 function canUseVertex() {
@@ -125,14 +125,24 @@ async function reason(activityText: string, researchBrief: string): Promise<Echo
   return (JSON.parse(text.replace(/```json|```/g, '').trim()).insights ?? []) as EchoInsightResult[]
 }
 
-export async function runEchoAnalysis(activity: EchoActivityRow[]): Promise<EchoInsightResult[]> {
+export async function runEchoAnalysis(activity: EchoActivityRow[],role?:string): Promise<EchoInsightResult[]> {
+  if(!activity.length)return []
+  let timer:ReturnType<typeof setTimeout>|undefined
   try {
-    const activityText = collect(activity)
-    const researchBrief = await research(activityText)
-    return await reason(activityText, researchBrief)
-  } catch (error) {
-    console.error('Echo analysis error:', error)
+    // Immediate first: do not block an on-demand answer behind optional
+    // external public research. The request only analyzes recorded activity.
+    const activityText=collect(activity)
+    const verifiedRole=String(role||'').slice(0,40)
+    const work=reason(`VERIFIED WEAVE POSITION: ${verifiedRole}\nACTIVITY: ${activityText}`,'')
+    const deadline=new Promise<EchoInsightResult[]>(resolve=>{
+      timer=setTimeout(()=>resolve([]),12000)
+    })
+    return await Promise.race([work,deadline])
+  } catch(error){
+    console.error('Echo analysis error:',error)
     return []
+  } finally {
+    if(timer)clearTimeout(timer)
   }
 }
 

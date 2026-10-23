@@ -54,6 +54,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       purpose:'Coordinate with attached Bridgers and participate in Burning River, the shared October 1–December 31, 2026 company business loop rather than a separate department.',
       accent:'#f59e0b',
       places:[
+        {label:'Echo · Immediate Guidance',href:'/echo',detail:'Receive free, immediate guidance from verified Agent work and notifications.',daily:true},
         {label:'Direct Communication',href:'/communications',detail:'Message Bridgers attached to your Agent position directly.',daily:true},
         {label:'Company Guidance',href:'/company-chat',detail:'Get company guidance for Agent movement, Agility, earnings and the current Loop.'},
         {label:'Flame Event · Loop 1',href:'/event',detail:'Enter the same Burning River event ground used by every WEAVE role.',daily:true},
@@ -85,7 +86,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'Email Outreach',href:'/bridger/email-outreach',detail:'Acquire lower-cost unverified email Prospect candidates, attempt contact and inspect the response movement.',daily:true},
         {label:'Number Bay',href:'/bridger/numbers',detail:'Purchase outreach numbers and follow their delivery and verification movement.',daily:true},
         {label:'Bridge AI',href:'/bridger/bridge-ai',detail:'Carry a responding Prospect through the Bridge toward Client crossing and continuity.',daily:true},
-        {label:'Echo',href:'/echo',detail:'Operate authorized AI-assisted outreach and amplification for Hope movement.'},
+        {label:'Echo · Immediate Guidance',href:'/echo',detail:'Review verified Bridger activity and receive free next-movement guidance immediately.',daily:true},
       ],
     },
     {
@@ -150,6 +151,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
       purpose:'Reach the WEAVE position needed for the next movement and continue into Company Loops or the current Flame Event without a second duplicate district.',
       accent:'#a78bfa',
       places:[
+        {label:'Echo · Immediate Guidance',href:'/echo',detail:'Receive free guidance for File Folder work from your private recorded state.',daily:true},
         {label:'Your Bridger',href:'/client/chat/bridger',detail:'Contact Your Bridger for crossing and continuity support.'},
         {label:'Mandate',href:'/client/chat/mandate',detail:'Contact Mandate for operational support.'},
         {label:'Forensics',href:'/client/chat/forensic',detail:'Contact Forensics for value and verification support.'},
@@ -205,6 +207,7 @@ const byRole:Record<WeaveRole,WeaveRoleDistrict[]>={
         {label:'File Number Engine',href:'/admin/file-number-engine',detail:'Issue and administer Client File Numbers.',daily:true},
         {label:'Prospect Engine',href:'/admin/prospect-engine',detail:'Create and organize Prospect movement.',daily:true},
         {label:'Email Outreach',href:'/admin/email-outreach',detail:'Load email Prospects, configure Administration outreach, run the daily engine and inspect Admin/Bridger reports.',daily:true},
+        {label:'Echo · Immediate Guidance',href:'/echo',detail:'Receive immediate, private Administration signals and next-action guidance.',daily:true},
         {label:'File Folder Sales Manager',href:'/admin/file-folder-sales-manager',detail:'Echo coordinates daily prospect follow-up while EIGHT diagnoses the weekly File Folder sales funnel and escalation state.',daily:true},
         {label:'Enterprise Legion Changes',href:'/admin/legion-releases',detail:'Administration audit of Worker departures, Client releases and unfinished Client order obligations.',daily:true},
         {label:'System Store Workshop',href:'/admin/system-store',detail:'Verify Client-built system versions, approve public releases and inspect distribution movement.',daily:true},
