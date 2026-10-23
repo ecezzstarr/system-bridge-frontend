@@ -52,6 +52,13 @@ export async function provisionPlusFileFolderSystems(input: {
   const { sql, clientId, fileNumber, purchaseId } = input
   const { ensureFileFolderWorldSchema } = await import('@/lib/client-file-folder-world')
   await ensureFileFolderWorldSchema(sql)
+  // Two concurrent Client sessions may attempt fulfillment at the same time.
+  // Guarantee one purchased build per blueprint and file number.
+  await sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_client_plus_purchase_build_unique
+    ON client_file_folder_builds(client_id,file_number,blueprint_key,purpose)
+    WHERE purpose LIKE 'Plus File Folder ready system (%)'
+  `
 
   // Verify the ledger again at the point of fulfillment. Client input or
   // a claim of payment cannot grant a completed operating world.
@@ -120,9 +127,22 @@ export async function provisionPlusFileFolderSystems(input: {
           ${Math.max(1,Number(blueprint.build_hours))*60},0,1,1,
           NOW(),NOW(),NOW()
         )
+        ON CONFLICT DO NOTHING
         RETURNING id
       `
-      buildId = build.id
+      buildId = build?.id
+      if (!buildId) {
+        const [createdByOtherSession] = await sql`
+          SELECT id FROM client_file_folder_builds
+          WHERE client_id=${clientId}::uuid AND file_number=${fileNumber}
+            AND blueprint_key=${key}
+            AND purpose=${`Plus File Folder ready system (${purchaseId})`}
+            AND status='complete'
+          LIMIT 1
+        `
+        buildId = createdByOtherSession?.id
+      }
+      if (!buildId) throw new Error('Plus system commissioning is not yet consistent')
     }
     const [system] = await sql`
       INSERT INTO client_built_systems (
