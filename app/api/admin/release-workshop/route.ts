@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from 'next/server'
 import {getAuthUser} from '@/lib/auth-api'
-import {getReleaseWorkshopState,requestReleaseJob,fullReleaseSha} from '@/lib/weave-release-workshop'
+import {getReleaseWorkshopState,requestReleaseJob,cancelQueuedReleaseJob,fullReleaseSha} from '@/lib/weave-release-workshop'
 export const dynamic='force-dynamic'
 
 async function authorize(request:NextRequest){
@@ -25,6 +25,12 @@ export async function POST(request:NextRequest){
       return NextResponse.json({error:'JSON submission required'},{status:415})
     const body=await request.json()
     const action=body?.action
+    if(action==='cancel_queued'){
+      if(body?.confirmation!=='CANCEL')
+        return NextResponse.json({error:'Type CANCEL to abandon an unclaimed request'},{status:400})
+      const job=await cancelQueuedReleaseJob(String(body?.jobId||''),auth.user!.id)
+      return NextResponse.json({success:true,job},{headers:{'Cache-Control':'private, no-store'}})
+    }
     if(action!=='deploy_latest'&&action!=='rollback')
       return NextResponse.json({error:'Only verified deployment or historical rollback is allowed'},{status:400})
     if(action==='rollback'&&!fullReleaseSha(body?.targetSha))
