@@ -89,6 +89,7 @@ function ClientRegisterContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fileNumber,
+          staffOffer: searchParams.get('staffOffer') || undefined,
           email: formData.email,
           password: formData.password,
           businessName: formData.businessName,
