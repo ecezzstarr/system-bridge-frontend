@@ -279,7 +279,7 @@ async function verifyBridgeRadiancePurchase({
 
   if (activation?.customerDoor && existingClientId) {
     await recordSystemEvent({
-      eventType: 'customer_door_construction_started',
+      eventType: fileFolderTier === 'plus' ? 'plus_file_folder_operating_systems_ready' : 'customer_door_construction_started',
       actorId: existingClientId,
       actorRole: 'client',
       subjectType: 'customer_door_build',
