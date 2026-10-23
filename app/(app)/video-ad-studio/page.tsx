@@ -5,6 +5,7 @@ import { useEffect,useMemo,useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-provider'
+import { ParticipantProductionEditor, type Production } from '@/components/video-studio/participant-production-editor'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CheckCircle2,Clapperboard,Copy,ExternalLink,Flame,Loader2,Play,ReceiptText,RefreshCw,Upload,Users } from 'lucide-react'
@@ -14,7 +15,7 @@ type Order={id:string;packageName:string;durationSeconds:number;priceFlameCoin:n
 type ServiceProfile={userId:string;publicCode:string;displayName:string;tagline:string;active:boolean}
 type ServicePrice={packageKey:string;personalPrice:number|null;businessPrice:number|null;currency:string;active:boolean}
 type ServiceOrder={id:string;customerKind:'personal'|'business';customerName:string;customerContact:string;customerEmail:string;businessName:string;packageKey:string;packageName:string;durationSeconds:number;quotedAmount:number|null;quotedCurrency:string;subject:string;objective:string;audience:string;notes:string;assets:string[];soundtrackUrl:string|null;customerPaymentStatus:'pending'|'received';status:string;studioOrderId:string|null;projectId:string|null;outputUrl:string|null;createdAt:string}
-type Project={id:string;orderId:string|null;title:string;status:string;outputUrl:string|null;errorMessage:string|null}
+type Project=Production & {orderId:string|null}
 type PriceDraft=Record<string,{personalPrice:string;businessPrice:string;currency:string}>
 
 function durationLabel(seconds:number){if(seconds<60)return `${seconds}s`;const m=Math.floor(seconds/60),s=seconds%60;return s?`${m}m ${s}s`:`${m}m`}
@@ -26,6 +27,7 @@ export default function VideoAdStudioPage(){
   const [orders,setOrders]=useState<Order[]>([])
   const [serviceOrders,setServiceOrders]=useState<ServiceOrder[]>([])
   const [projects,setProjects]=useState<Project[]>([])
+  const [editingProjectId,setEditingProjectId]=useState<string|null>(null)
   const [serviceDoorUrl,setServiceDoorUrl]=useState('')
   const [profile,setProfile]=useState<ServiceProfile|null>(null)
   const [profileDraft,setProfileDraft]=useState({displayName:'',tagline:'',active:true})
@@ -122,6 +124,8 @@ export default function VideoAdStudioPage(){
       <Upload className="mr-2 h-3.5 w-3.5"/>{soundtrackUrl?'MUSIC ATTACHED · REPLACE':'ADD LICENSED SOUNDTRACK'}
       <input type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/x-wav" className="hidden" onChange={uploadSoundtrack} disabled={uploading}/>
     </label><p className="mt-2 text-[10px] text-slate-500">Optional. Upload music you are licensed to use. Without it, this production may render silently.</p><p className="mt-3 text-[10px] text-slate-600">{assets.length} / 12 files attached</p></div><div className="mt-8 border-t border-white/10 pt-5"><div className="flex items-center justify-between"><p className="text-xs font-black text-white">ADMINISTRATION STUDIO FEE</p><p className="text-xl font-black text-white">{selected.priceFlameCoin} <span className="text-[10px] text-orange-300">FLAME COIN</span></p></div><Button onClick={purchase} disabled={!canBuy||Boolean(busy)||uploading} className="mt-4 w-full bg-fuchsia-300 font-black text-slate-950 hover:bg-fuchsia-200">{busy==='self-purchase'?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Clapperboard className="mr-2 h-4 w-4"/>}PAY & ENTER STUDIO</Button></div></div></section>}
+
+    {projects.length>0&&<section className="space-y-4 border-y border-cyan-300/20 bg-black/15 p-5 sm:border sm:p-6"><h2 className="text-xl font-black text-white">YOUR PRODUCTION EDITOR</h2><p className="text-xs text-slate-400">Edit the scenes of a paid project, upload your voice, add licensed music, save changes, and render the finished TikTok-ready MP4 from WEAVE.</p><div className="flex flex-wrap gap-2">{projects.map(item=><button type="button" key={item.id} onClick={()=>setEditingProjectId(item.id)} className={`border px-3 py-2 text-xs font-black ${editingProjectId===item.id?'border-cyan-300/50 text-cyan-100':'border-white/10 text-slate-400'}`}>{item.title} · {item.status}</button>)}</div>{projects.filter(item=>item.id===(editingProjectId||projects[0].id)).map(item=><ParticipantProductionEditor key={item.id} production={item} onUpdated={updated=>setProjects(current=>current.map(old=>old.id===updated.id?{...old,...updated}:old))}/>)}</section>}
 
     <section className="border-y border-white/10 bg-black/15 p-5 sm:border sm:p-6"><div className="flex items-center gap-3"><ReceiptText className="h-5 w-5 text-cyan-300"/><div><p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-600">Studio fee records</p><h2 className="text-xl font-black text-white">YOUR STUDIO ORDERS</h2></div></div>{orders.length===0?<p className="mt-5 text-sm text-slate-600">No Studio order yet.</p>:<div className="mt-4 divide-y divide-white/10">{orders.map(order=><article key={order.id} className="py-4"><div className="flex flex-wrap items-start justify-between gap-4"><div><div className="flex items-center gap-2"><p className="text-sm font-black text-white">{order.businessName} · {order.packageName}</p>{order.status==='ready'||order.status==='delivered'?<CheckCircle2 className="h-4 w-4 text-emerald-300"/>:null}</div><p className="mt-1 text-[10px] uppercase tracking-wider text-slate-600">{order.orderSource==='outside_client'?'outside customer':'own production'} · {durationLabel(order.durationSeconds)} · {order.status.replaceAll('_',' ')} · {new Date(order.createdAt).toLocaleString()}</p></div><p className="text-sm font-black text-orange-300">{order.priceFlameCoin} Flame Coin</p></div>{order.outputUrl&&<div className="mt-4 grid gap-4 sm:grid-cols-[180px_1fr]"><video src={order.outputUrl} controls className="aspect-[9/16] w-full bg-black object-contain"/><div className="flex items-center"><Button asChild variant="outline" className="border-white/15 text-white"><a href={order.outputUrl} target="_blank" rel="noreferrer"><Play className="mr-2 h-4 w-4"/>OPEN FINISHED VIDEO</a></Button></div></div>}</article>)}</div>}</section>
   </main>

@@ -16,6 +16,7 @@ const EXT_BY_MIME: Record<string, string> = {
   'audio/mp4': 'm4a',
   'audio/x-m4a': 'm4a',
   'audio/wav': 'wav',
+  'audio/webm': 'webm',
   'audio/x-wav': 'wav',
   'audio/ogg': 'ogg',
 }
