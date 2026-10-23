@@ -50,7 +50,7 @@ export function BurningRiverOfficialGateway({staff=false}:{staff?:boolean}){
          <Castle className="h-5 w-5"/> Enter Burning River <ArrowRight className="h-5 w-5"/>
        </Link>
        <nav aria-label="Flame Event entrance types" className="grid gap-2 sm:grid-cols-3">
-         <Link href={staff?"/system-switch/flame-event":"/login"}
+         <Link href="/system-switch"
            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-orange-300/50 bg-orange-800/35 p-3 text-sm font-bold text-orange-100">
            <Users className="h-5 w-5"/> Staff Entrance
          </Link>
