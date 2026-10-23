@@ -35,6 +35,31 @@ export async function ensureWeaveOpenWorldSchema(sql:any=getBusinessDb()){
       UNIQUE(loop_key,domain_a,domain_b)
     )
   `
+  await sql`
+    CREATE TABLE IF NOT EXISTS weave_open_world_projects (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      connection_id uuid NOT NULL REFERENCES weave_open_world_connections(id),
+      created_by_domain uuid NOT NULL REFERENCES weave_open_world_domains(id),
+      kind varchar(32) NOT NULL CHECK(kind IN (
+        'shared_service','distribution','media','commerce','system_integration'
+      )),
+      title varchar(120) NOT NULL,
+      status varchar(20) NOT NULL DEFAULT 'proposed' CHECK(status IN ('proposed','active')),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      accepted_at timestamptz
+    )
+  `
+  await sql`
+    CREATE TABLE IF NOT EXISTS weave_open_world_project_contributions (
+      project_id uuid NOT NULL REFERENCES weave_open_world_projects(id),
+      domain_id uuid NOT NULL REFERENCES weave_open_world_domains(id),
+      system_id uuid NOT NULL REFERENCES client_built_systems(id),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY(project_id,domain_id)
+    )
+  `
+  await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_projects_connection ON weave_open_world_projects(connection_id,status,created_at DESC)`
+  await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_contributions_domain ON weave_open_world_project_contributions(domain_id,created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_domains_slot ON weave_open_world_domains(world_slot)`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_connections_a ON weave_open_world_connections(domain_a,status,created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_connections_b ON weave_open_world_connections(domain_b,status,created_at DESC)`
@@ -156,6 +181,13 @@ export async function getPublicBurningRiverWorld(sql:any,page=0){
       (SELECT count(*)::int FROM weave_open_world_connections c
         WHERE c.loop_key=${BURNING_RIVER_LOOP}
           AND c.status='accepted' AND (c.domain_a=d.id OR c.domain_b=d.id)) AS accepted_connections,
+      (SELECT count(*)::int FROM weave_open_world_projects p
+        JOIN weave_open_world_connections c ON c.id=p.connection_id
+        WHERE c.loop_key=${BURNING_RIVER_LOOP}
+          AND c.status='accepted' AND p.status='active'
+          AND (c.domain_a=d.id OR c.domain_b=d.id)
+          AND (SELECT count(DISTINCT pc.domain_id) FROM weave_open_world_project_contributions pc
+            WHERE pc.project_id=p.id)=2) AS linked_projects,
       (SELECT max(CASE WHEN b.completes_at>b.started_at THEN
          GREATEST(0,LEAST(100,
            EXTRACT(EPOCH FROM (now()-b.started_at))/
@@ -188,7 +220,8 @@ export async function getPublicBurningRiverWorld(sql:any,page=0){
     public_name:row.public_name,open_door:row.open_door,
     building_count:row.building_count,completed_count:row.completed_count,
     operating_count:row.operating_count,published_offers:row.published_offers,
-    accepted_connections:row.accepted_connections,forming_progress:row.forming_progress,
+    accepted_connections:row.accepted_connections,linked_projects:row.linked_projects,
+    forming_progress:row.forming_progress,
     available_for_collaboration:row.available_for_collaboration,
   } as WorldDomainRow))
   const included=new Set(domains.map((d:any)=>d.domainId))
