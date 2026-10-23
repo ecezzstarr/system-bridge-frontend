@@ -131,8 +131,13 @@ def execute(job, values):
     })
     # Existing script builds locally, waits for matching local/public health,
     # and automatically restores the prior release on a failed deployment.
+    # An existing managed host may preserve its own Compose/env layout.
+    # This root-owned setting is never accepted from a website release request.
+    executor = Path(values.get("WEAVE_RELEASE_EXECUTOR", str(ROOT / "selfhost" / "deploy-production.sh"))).resolve()
+    if not executor.is_file():
+        raise RuntimeError("Configured host release executor is unavailable")
     result = subprocess.run(
-        ["bash", "selfhost/deploy-production.sh"],
+        ["bash", str(executor)],
         cwd=ROOT, env=process_env, text=True, capture_output=True, timeout=3600,
     )
     if result.returncode:

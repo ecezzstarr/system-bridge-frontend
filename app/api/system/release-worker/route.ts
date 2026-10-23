@@ -7,7 +7,7 @@ export const runtime='nodejs'
 function authorized(req:NextRequest){
   const expected=process.env.WEAVE_RELEASE_CONTROL_TOKEN||''
   const actual=(req.headers.get('authorization')||'').replace(/^Bearer /,'')
-  if(expected.length<32||actual.length!==expected.length)return false
+  if(expected.length<32||actual.length!==expected.length||Buffer.byteLength(actual)!==Buffer.byteLength(expected))return false
   return timingSafeEqual(Buffer.from(actual),Buffer.from(expected))
 }
 export async function POST(req:NextRequest){
