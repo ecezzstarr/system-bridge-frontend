@@ -55,6 +55,9 @@ jobs:
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
 
+      - name: The Company of Time homepage regression
+        run: node tests/company-of-time-homepage-regression.cjs
+
       - name: Agent Creative Studio fee and image regressions
         run: |
           node tests/agent-creative-studio-regression.cjs
