@@ -14,6 +14,7 @@ import { LiveAdSurface } from '@/components/live-ad-surface'
 import { FlameEventRoleAtmosphere } from '@/components/events/flame-event-role-atmosphere'
 import { NormalWeaveRoleAtmosphere } from '@/components/world/normal-weave-role-atmosphere'
 import { FlameEventAd } from '@/components/events/flame-event-ad'
+import { CompanyLoopTwoScroll } from '@/components/events/company-loop-two-scroll'
 import { PresenceCameraSignal, PresenceCameraViewport } from '@/components/world/presence-camera'
 import { WeaveEnvironmentSurface } from '@/components/world/weave-environment-surface'
 import { EnvironmentOrganizerProvider, EnvironmentPageGuard } from '@/components/world/environment-organizer-provider'
@@ -139,6 +140,7 @@ export default function AppLayout({
       <div className="relative z-10 flex min-h-dvh min-w-0 flex-col">
         <AppHeader user={user as any} />
         <FlameEventAd />
+        <CompanyLoopTwoScroll />
         <main className="relative min-w-0 flex-1 overflow-x-clip" data-weave-world-interior="route">
           <PresenceCameraViewport>
             <WeaveEnvironmentSurface role={user?.role} userName={user?.name}>
