@@ -7,7 +7,10 @@ import {FlameEventFoodStore} from '@/components/events/flame-event-food-store'
 
 export default function BurningRiverWorldPage(){
  const [role,setRole]=useState<'client'|'admin'|'agent'|'bridger'|'visitor'>('visitor')
+ const [carrierCode,setCarrierCode]=useState<string|null>(null)
  useEffect(()=>{
+   const ref=new URLSearchParams(window.location.search).get('carrier')
+   if(ref&&/^[a-zA-Z0-9-]{1,40}$/.test(ref))setCarrierCode(ref)
    try{
      const parsed=JSON.parse(localStorage.getItem('ssb_auth_user')||'null')
      const next=parsed?.role
@@ -22,6 +25,6 @@ export default function BurningRiverWorldPage(){
      <Link href="/" className="text-xs text-sky-100/80">The Company of Time</Link>
    </nav>
    <BurningRiverLiveWorld role={role}/>
-   <FlameEventFoodStore/>
+   <FlameEventFoodStore carrierCode={carrierCode}/>
  </main>
 }
