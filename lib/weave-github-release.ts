@@ -160,23 +160,36 @@ export async function mergeApprovedWorkPull(input:{number:number;headSha:string;
   await ensurePromotionAudit()
   const [audit]=await sql`INSERT INTO weave_git_promotions(pr_number,head_sha,requested_by,status)
     VALUES(${input.number},${head},${input.adminId}::uuid,'requested') RETURNING id`
+  let result:any
   try{
     // GitHub enforces branch protection and required reviews. No force push or bypass option.
-    const result=await github('/pulls/'+input.number+'/merge',{
+    result=await github('/pulls/'+input.number+'/merge',{
       method:'PUT',write:true,body:{sha:head,merge_method:'squash',
         commit_title:String(pr.title||'WEAVE reviewed release').slice(0,180)},
     })
-    releaseBoardCache=null // A merge invalidates GitHub main and open PR snapshot immediately.
-    const mergedSha=String(result.sha||'').toLowerCase()
-    if(!result.merged||!githubReleaseSha(mergedSha))
+    if(!result.merged||!githubReleaseSha(String(result.sha||'')))
       throw new Error('GitHub did not confirm a successful merge')
-    await sql`UPDATE weave_git_promotions SET status='merged',result_sha=${mergedSha},
-      note='GitHub confirmed the protected main merge',completed_at=now() WHERE id=${audit.id}::uuid`
-    return {prNumber:input.number,mergedSha,checkRequired:'A new successful main Production Check is required before Oracle deployment'}
   }catch(error:any){
     await sql`UPDATE weave_git_promotions SET status='refused',
       note=${String(error?.message||'GitHub merge refused').slice(0,500)},completed_at=now()
       WHERE id=${audit.id}::uuid`.catch(()=>{})
     throw error
+  }
+  releaseBoardCache=null // The GitHub write succeeded; re-read main and PR status.
+  const mergedSha=String(result.sha).toLowerCase()
+  let auditRecorded=true
+  try{
+    await sql`UPDATE weave_git_promotions SET status='merged',result_sha=${mergedSha},
+      note='GitHub confirmed the protected main merge',completed_at=now()
+      WHERE id=${audit.id}::uuid`
+  }catch(error){
+    auditRecorded=false
+    // A database read/write failure cannot turn a completed GitHub merge into
+    // a claimed refusal. The requested audit row remains for reconciliation.
+    console.error('[GitHub release] merged on GitHub but audit update failed',error)
+  }
+  return {
+    prNumber:input.number,mergedSha,auditRecorded,
+    checkRequired:'A new successful main Production Check is required before Oracle deployment',
   }
 }
