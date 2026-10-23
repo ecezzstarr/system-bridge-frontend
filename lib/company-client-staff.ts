@@ -27,6 +27,12 @@ export async function ensureCompanyClientStaffSchema() {
       position_title varchar(160) NOT NULL,
       monthly_salary_usdt numeric(16,2) NOT NULL DEFAULT 0,
       ticket_amount_usdt numeric(16,2) NOT NULL,
+      applicant_contribution_usdt numeric(16,2) NOT NULL DEFAULT 0,
+      proposed_personal_loan_usdt numeric(16,2) NOT NULL DEFAULT 0,
+      personal_loan_terms text,
+      personal_loan_accepted_at timestamptz,
+      loan_funding_reference varchar(255),
+      loan_funding_network varchar(80),
       folder_tier varchar(12) NOT NULL CHECK (folder_tier IN ('standard','pro','premium')),
       status varchar(32) NOT NULL DEFAULT 'offered'
         CHECK (status IN ('offered','accepted','pending_verification','approved','rejected','withdrawn')),
@@ -45,6 +51,12 @@ export async function ensureCompanyClientStaffSchema() {
       updated_at timestamptz NOT NULL DEFAULT now()
     )
   `
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS applicant_contribution_usdt numeric(16,2) NOT NULL DEFAULT 0`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS proposed_personal_loan_usdt numeric(16,2) NOT NULL DEFAULT 0`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS personal_loan_terms text`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS personal_loan_accepted_at timestamptz`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS loan_funding_reference varchar(255)`
+  await sql`ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS loan_funding_network varchar(80)`
   await sql`CREATE INDEX IF NOT EXISTS company_staff_offers_email_idx ON company_client_staff_offers(lower(candidate_email))`
   await sql`CREATE INDEX IF NOT EXISTS company_staff_offers_status_idx ON company_client_staff_offers(status,created_at DESC)`
   await sql`
@@ -69,7 +81,8 @@ export async function getCompanyStaffOfferByToken(token: string) {
   await ensureCompanyClientStaffSchema()
   const rows = await sql`
     SELECT id,candidate_name,candidate_email,position_title,monthly_salary_usdt,
-      ticket_amount_usdt,folder_tier,status,file_number,receipt_number,rejection_reason,created_at
+      ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,
+      personal_loan_terms,personal_loan_accepted_at,folder_tier,status,file_number,receipt_number,rejection_reason,created_at
     FROM company_client_staff_offers
     WHERE token_hash=${staffOfferTokenHash(token)}
     LIMIT 1
