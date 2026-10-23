@@ -48,7 +48,8 @@ export function ParticipantProductionEditor({production,onUpdated}:{production:P
     try {
       const data=await upload(file)
       if(data.mediaType==='audio')throw new Error('Choose an image or video for a scene')
-      const next={...draft,storyboard:draft.storyboard.map((scene,i)=>i===index?{...scene,assetUrl:data.url,assetType:data.mediaType}:scene)}
+      const assetType:'image'|'video'=data.mediaType
+      const next:Production={...draft,storyboard:draft.storyboard.map((scene,i)=>i===index?{...scene,assetUrl:data.url,assetType}:scene)}
       setDraft(next);setMessage('Scene media added. Save the changes before rendering.')
     }catch(error:any){setMessage(error.message||'Media upload failed')}
     finally{setBusy('');event.target.value=''}
