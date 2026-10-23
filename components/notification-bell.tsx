@@ -187,6 +187,7 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
           setIsOpen(!isOpen)
           if('Notification' in window&&Notification.permission==='default')void Notification.requestPermission()
         }}
+        aria-label={`Notifications, ${unreadCount} unread`}
         className="relative p-2 text-slate-400 hover:text-white transition rounded-lg hover:bg-slate-800"
       >
         <Bell className="h-5 w-5" />
@@ -203,9 +204,9 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full mt-2 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+          <div className="absolute right-0 top-full mt-2 w-[min(23rem,calc(100vw-1.5rem))] bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
             <div className="flex items-center justify-between p-3 border-b border-slate-700">
-              <h3 className="font-semibold text-white">Notifications</h3>
+              <div className="flex items-center gap-3"><h3 className="font-semibold text-white">Notifications</h3><Link href="/notifications" onClick={()=>setIsOpen(false)} className="text-xs font-bold text-cyan-200 hover:underline">View all messages</Link></div>
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
@@ -251,7 +252,7 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
                         <p className="text-sm font-medium text-white truncate">
                           {notification.title}
                         </p>
-                        <p className="text-xs text-slate-400 truncate">
+                        <p className="text-xs text-slate-400 line-clamp-2 break-words">
                           {notification.content}
                         </p>
                         <p className="text-xs text-slate-500 mt-1">
@@ -262,16 +263,15 @@ export function NotificationBell({position='phone'}:{position?:'phone'|'desktop'
                         </p>
                       </div>
                       <div className="flex flex-col gap-1">
-                        {notification.link && (
+                        {(
                           <Link
-                            href={notification.link}
+                            href={`/notifications?open=${encodeURIComponent(notification.id)}`}
                             onClick={() => {
-                              markAsRead(notification.id)
                               setIsOpen(false)
                             }}
                             className="text-xs text-cyan-400 hover:text-cyan-300"
                           >
-                            View
+                            View message
                           </Link>
                         )}
                         {!notification.is_read && (
