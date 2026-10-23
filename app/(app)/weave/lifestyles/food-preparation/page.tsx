@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft,ClipboardList,PackageCheck,Truck,ChefHat,RefreshCcw,ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { EmploymentActions } from '@/components/employment/employment-actions'
+import { FoodTeamCommunications } from '@/components/food-preparation/food-team-communications'
 
 type PreparationTask={
   id:string;product:'agility'|'electrolyte'|'ember'|'daisy';source_order_id:string;stage:string;next_stage:string|null;
@@ -102,6 +103,7 @@ export default function FoodPreparationManagerPage(){
     </header>
     {error&&<p role="alert" className="mt-5 border border-rose-300/20 px-4 py-3 text-xs text-rose-200">{error}</p>}
     {message&&<p role="status" className="mt-5 border border-emerald-300/20 px-4 py-3 text-xs text-emerald-200">{message}</p>}
+    {data?.appointment?.status==='approved'&&<div className="mt-7"><FoodTeamCommunications/></div>}
     <div className="mt-6 grid gap-3 md:grid-cols-4">
       {[
         ['1','Receive a verified order'],['2','Prepare to specification'],
