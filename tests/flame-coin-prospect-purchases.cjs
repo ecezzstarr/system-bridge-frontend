@@ -14,7 +14,7 @@ const publicRedirect=read('app/system-switch/bridge-radiance/trx/page.tsx')
 const adminRedirect=read('app/(app)/admin/weave-trx-sales/page.tsx')
 const nav=read('lib/weave-role-districts.ts')
 const plaza=read('components/system-switch/customer-door-avatar-world.tsx')
-const gate=read('app/system-switch/page.tsx')
+const gate=read('app/(app)/system-switch/flame-event/page.tsx')
 const constants=read('lib/world/constants.ts')
 
 assert.ok(!fs.existsSync(path.join(root,'lib/weave-trx-sales.ts')),'Obsolete sale-to-external-TRX engine must be absent')

@@ -17,7 +17,7 @@ const rolePresence=read('components/world/role-presence-environment.tsx')
 
 assert.ok(staffGate.includes("['admin', 'agent', 'bridger']") || staffGate.includes("['agent', 'bridger', 'admin']"),'Admin, Agent and Bridger share the staff System Switch gate')
 assert.ok(staffGate.includes("redirect('/client/system-switch')"),'Client entering the shared System Switch resolves into the owned Client File Folder gate')
-assert.ok(staffGate.includes('data-system-switch-gate="file-folder"')&&staffGate.includes('href="/system-switch/flame-event"'),'Staff System Switch is the gate into the File Folder layer before Flame Event')
+assert.ok(staffGate.includes("redirect('/system-switch/flame-event')"),'Staff System Switch is now a transition into the ONE event world')
 assert.ok(staffEvent.includes('data-flame-event-location="file-folder"')&&staffEvent.includes('data-system-switch-crossed="true"'),'Staff Flame Event exists inside the File Folder after System Switch')
 assert.ok(clientSwitch.includes('href="/client/system-switch/flame-event"')&&clientSwitch.includes('data-file-folder-flame-event="inside"'),'Client File Folder exposes Flame Event from inside the File Folder')
 assert.ok(clientEvent.includes('data-flame-event-location="file-folder"')&&clientEvent.includes('href="/client/system-switch"'),'Client Flame Event remains inside and returns to the File Folder')
@@ -29,9 +29,9 @@ assert.ok(worldSurface.includes('weaveWorldBoundaryForPath(pathname)'),'Visual r
 assert.ok(rolePlace.includes("label: 'System Switch'")&&rolePlace.includes("'/client/system-switch'")&&rolePlace.includes("'/system-switch'"),'Legacy event places are presented as the System Switch gate for every role')
 assert.ok(roleDistrict.includes('placeThroughSystemSwitch')&&rolePresence.includes('placeThroughSystemSwitch'),'Role districts and Presence movement show System Switch rather than top-level Flame Event')
 
-console.log('System Switch is the shared File Folder gate and Flame Event stays inside the File Folder boundary')
+console.log('System Switch enters one staff Burning River; private Client File Folder boundary remains protected')
 
 const staffWalking=read("components/system-switch/staff-file-folder-world.tsx")
-assert.ok(staffGate.includes("<StaffFileFolderWorld role={role}"),"Staff gate mounts the walking world for the authenticated role")
+assert.ok(staffEvent.includes('<PositionEventWorld role={role}'),'Staff enter the actual embodied event world, not a competing plaza')
 assert.ok(staffWalking.includes("<SharedSystemSwitchWorld role={role}"),"Staff enter the same public room as Clients using their own authenticated position")
 assert.ok(!staffWalking.includes("/api/client/")&&!staffWalking.includes("fetch("),"Staff movement does not request private Client data")

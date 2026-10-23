@@ -52,6 +52,14 @@ jobs:
           node tests/mandate-guidance-postgres.cjs
           node tests/today-food-postgres.cjs
 
+      - name: Open-world movement and Carrier regressions
+        run: |
+          node tests/flame-event-open-world-regression.cjs
+          node tests/burning-river-system-switch-continuity.cjs
+          node tests/carrier-burning-river-crossing-regression.cjs
+          node tests/client-hosted-avatar-world-regression.cjs
+          node tests/living-presence-renderer.cjs
+
       - name: Core recent-feature regression
         run: node tests/recent-features.cjs
 
