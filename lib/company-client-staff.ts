@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { sql } from '@/lib/db'
 
-export type CompanyStaffTier = 'standard' | 'pro' | 'premium'
+export type CompanyStaffTier = 'standard' | 'pro' | 'premium' | 'plus'
 
 /** Employee invitation tickets are USDT company-entry records, never retail File Folder purchases. */
 export function tierFromStaffTicketUSDT(value: unknown): CompanyStaffTier | null {
