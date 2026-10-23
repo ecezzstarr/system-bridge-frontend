@@ -193,3 +193,6 @@ jobs:
       - name: Container build
         run: docker build --progress=plain -t weave-production-check .
 
+      - name: Exact founder-approved Burning River imagery
+        run: node tests/burning-river-approved-artwork.cjs
+
