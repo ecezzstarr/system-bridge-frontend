@@ -217,6 +217,15 @@ export async function PATCH(request: NextRequest) {
             metadata:{receiptReference:receiptNumber,proposedPersonalLoanUSDT:loanUSDT},
           })
         } catch (receiptError) { console.error('[company staff] existing Client receipt unavailable',receiptError) }
+        try {
+          await sql`
+            INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+            VALUES (${offer.client_id}::uuid,'company_staff_position',
+              'Your company position is approved',
+              ${'Administration verified your company employment ticket. Your new position is now accessible inside your existing Client File Folder.'},
+              'WEAVE Employment','/client/staff-workspace')
+          `
+        } catch (notificationError) { console.error('[company staff] existing Client notification unavailable',notificationError) }
       }
       return NextResponse.json({ success:true,offer:result.rows[0],
         verification:'manual_USDT_reference',receiptReference:receiptNumber }, {
