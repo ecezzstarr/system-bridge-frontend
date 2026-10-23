@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { HostPowerShellStatus } from '@/components/admin/host-powershell-status'
 import { Activity, Flame, Globe2, Loader2, RefreshCw, ScrollText, Server, Shield, ShieldCheck, TerminalSquare } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { Button } from '@/components/ui/button'
@@ -132,6 +133,8 @@ export default function InfrastructureWorkshop(){
             </Button>
           </div>
         </section>
+
+        <HostPowerShellStatus token={token} />
 
         <section className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
           <div className="rounded-[2rem] border border-white/10 bg-black/25 p-6">

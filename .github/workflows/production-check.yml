@@ -104,6 +104,7 @@ jobs:
       - name: Remaining regression checks
         run: |
           node tests/client-deposit-world-regression.cjs
+          node tests/host-powershell-security-regression.cjs
           node tests/bridger-bridge-radiance-purchase-regression.cjs
           node tests/selfhost-deployment-regression.cjs
           node tests/release-workshop-regression.cjs
