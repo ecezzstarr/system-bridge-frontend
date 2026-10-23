@@ -18,6 +18,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  if (!await hasActiveContinuance(authUser.id)) {
+    return NextResponse.json({ error: 'An active WEAVE account is required' }, { status: 403 })
+  }
   const identity = await createEchoIdentity(authUser.id)
   const [insights,signals]=await Promise.all([
     listEchoInsights(identity.id),getEchoLiveSignals(authUser.id,identity.id),

@@ -117,21 +117,12 @@ export function getEventCountdown(event: WeaveEvent, now = new Date()) {
   }
 }
 
-
-/** One Nigerian Company Loop 2 occupies January 1–11, 2027, Lagos time.
- * Loop 3 begins January 12; no Loop 2 banner may continue past that date.
- */
-export function isOneNigerianEventActive(now=new Date()):boolean{
-  const timestamp=now.getTime()
-  return timestamp>=Date.parse('2027-01-01T00:00:00+01:00') &&
-    timestamp<Date.parse('2027-01-12T00:00:00+01:00')
+/** Nigeria calendar date for daily role notices. */
+export function nigeriaDayKey(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).format(now)
 }
-
-/** Stable Nigeria-local day key for once-per-day Company Loop banners. */
-export function nigeriaDayKey(now=new Date()):string{
-  const components=new Intl.DateTimeFormat('en-GB',{
-    timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit',
-  }).formatToParts(now)
-  const part=(name:string)=>components.find(item=>item.type===name)?.value||''
-  return `${part('year')}-${part('month')}-${part('day')}`
+/** One Nigerian role notices appear only during the announced January 1–11 loop. */
+export function isOneNigerianEventActive(now = new Date()): boolean {
+  const time = now.getTime()
+  return time >= Date.parse('2027-01-01T00:00:00+01:00') && time < Date.parse('2027-01-12T00:00:00+01:00')
 }

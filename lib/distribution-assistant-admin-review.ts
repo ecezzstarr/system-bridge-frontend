@@ -35,9 +35,9 @@ export async function reviewAssistantEligibilityByAdministration(
     const verified=decision==='verify'
     await client.query(`
       UPDATE weave_distribution_assistants SET
-        administration_verification=$2,administration_verified_by=$3::uuid,
+        administration_verification=$2::varchar,administration_verified_by=$3::uuid,
         administration_verified_at=NOW(),administration_verification_note=$4,
-        status=CASE WHEN $2='declined' THEN 'rejected' ELSE 'pending' END,
+        status=CASE WHEN $2::varchar='declined' THEN 'rejected' ELSE 'pending' END,
         updated_at=NOW()
       WHERE user_id=$1::uuid AND status='pending' AND administration_verification='pending'`,
       [applicantId,verified?'verified':'declined',administratorId,reason])

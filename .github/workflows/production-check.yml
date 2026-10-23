@@ -56,7 +56,9 @@ jobs:
         run: node tests/recent-features.cjs
 
       - name: Agent Creative Studio fee and image regressions
-        run: node tests/agent-creative-studio-regression.cjs
+        run: |
+          node tests/agent-creative-studio-regression.cjs
+          node tests/echo-immediate-regression.cjs
 
       - name: Smart WEAVE loading guidance regression
         run: node tests/weave-loading-guidance-regression.cjs
