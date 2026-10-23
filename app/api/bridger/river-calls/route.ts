@@ -4,7 +4,7 @@ import { getPool } from '@/lib/db'
 import { ensureWeaveReceiptSchema,issueWeaveReceipt } from '@/lib/weave-receipts'
 import {
   aiConfigured,ensureRiverCallSchema,hashToken,ID_RE,newWebhookToken,PHONE_RE,
-  refundUnconnectedCall,startTwilioVoice,twilioConfigured,webhookUrl
+  refundUnconnectedCall,startTwilioVoice,twilioConfigured,webhookUrl,RIVER_CALL_PRICE_FLAME_COIN
 } from '@/lib/river-voice-outreach'
 
 export const runtime='nodejs'
@@ -22,7 +22,7 @@ export async function GET(request:NextRequest) {
       pool.query('SELECT balance_trx FROM wallets WHERE user_id=$1::uuid AND is_primary=true LIMIT 1',[user.id]),
     ])
     const config=settings.rows[0]
-    return NextResponse.json({success:true,priceFlameCoin:config?.price_flame_coin===null?null:Number(config?.price_flame_coin),
+    return NextResponse.json({success:true,priceFlameCoin:RIVER_CALL_PRICE_FLAME_COIN,
       enabled:Boolean(config?.enabled),providerReady:twilioConfigured()&&aiConfigured(),
       walletBalance:Number(wallet.rows[0]?.balance_trx||0),calls:calls.rows},{headers:{'Cache-Control':'private,no-store'}})
   }catch(e){console.error('[river voice GET]',e);return NextResponse.json({error:'River call records unavailable'},{status:503})}
@@ -64,7 +64,7 @@ export async function POST(request:NextRequest) {
     const blocked=await client.query('SELECT 1 FROM weave_river_call_optouts WHERE phone_e164=$1 LIMIT 1',[phone])
     if(blocked.rows.length){await client.query('ROLLBACK');return NextResponse.json({error:'This contact declined AI outreach and cannot be called'},{status:403})}
     const cfg=await client.query('SELECT enabled,price_flame_coin FROM weave_river_call_settings WHERE id=1')
-    fee=Number(cfg.rows[0]?.price_flame_coin)
+    fee=RIVER_CALL_PRICE_FLAME_COIN
     if(!cfg.rows[0]?.enabled || !Number.isFinite(fee) || fee<=0){
       await client.query('ROLLBACK');return NextResponse.json({error:'Administration has not activated a River call price'},{status:503})
     }
