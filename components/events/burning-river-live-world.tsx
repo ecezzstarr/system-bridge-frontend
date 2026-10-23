@@ -11,6 +11,9 @@ import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
 import {ArrowRight,Castle,Handshake,Layers3,MapPinned,RefreshCcw,ShieldCheck,Store,Waves} from 'lucide-react'
 
 type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:string;direction:'incoming'|'outgoing';requestNote:string}
+type JointProject={id:string;connectionId:string;kind:string;title:string;status:'proposed'|'active';createdBySelf:boolean;otherDomainId:string;ownContribution:boolean;partnerContribution:boolean}
+type OwnOperatingSystem={id:string;name:string;systemType:string}
+type OwnWorld={domainId:string;collaborationOpen:boolean;connections:Connection[];projects:JointProject[];ownSystems:OwnOperatingSystem[]}
 type WorldFeed={domains:PublicWorldDomain[];links:{from:string;to:string}[];hasMore:boolean}
 const palette:{[key:string]:[string,string,string]}={
   standard:['#8799b5','#d5dfec','#62a8d9'],
@@ -167,7 +170,11 @@ export function BurningRiverLiveWorld({role='visitor'}:{
  const [status,setStatus]=useState<'loading'|'ready'|'unavailable'>('loading')
  const [selected,setSelected]=useState<string|null>(null)
  const [page,setPage]=useState(0)
- const [owner,setOwner]=useState<{domainId:string;collaborationOpen:boolean;connections:Connection[]}|null>(null)
+ const [owner,setOwner]=useState<OwnWorld|null>(null)
+ const [jointConnectionId,setJointConnectionId]=useState('')
+ const [jointTitle,setJointTitle]=useState('')
+ const [jointKind,setJointKind]=useState('system_integration')
+ const [selectedSystemIds,setSelectedSystemIds]=useState<Record<string,string>>({})
  const [operation,setOperation]=useState('')
  const [busy,setBusy]=useState(false)
  const [webgl,setWebgl]=useState(true)
@@ -191,7 +198,8 @@ export function BurningRiverLiveWorld({role='visitor'}:{
    if(!response.ok)return
    const json=await response.json()
    if(json.success)setOwner({domainId:json.domainId,
-     collaborationOpen:json.collaborationOpen,connections:json.connections||[]})
+     collaborationOpen:json.collaborationOpen,connections:json.connections||[],
+     projects:json.projects||[],ownSystems:json.ownSystems||[]})
  },[role])
  useEffect(()=>{
    try{const canvas=document.createElement('canvas');setWebgl(Boolean(canvas.getContext('webgl2')||canvas.getContext('webgl')))}
@@ -225,6 +233,7 @@ export function BurningRiverLiveWorld({role='visitor'}:{
    finally{setBusy(false)}
  }
  const incoming=owner?.connections.filter(c=>c.status==='pending'&&c.direction==='incoming')||[]
+ const accepted=owner?.connections.filter(c=>c.status==='accepted')||[]
  const labels=new Map(feed.domains.map(d=>[d.domainId,d.publicName]))
  return <section className="relative isolate overflow-hidden bg-[#070e1e] text-white"
    data-burning-river-live-multiplayer="systems-and-business"
@@ -279,7 +288,7 @@ export function BurningRiverLiveWorld({role='visitor'}:{
          className={`rounded-xl border p-3 text-left text-xs ${selected===d.domainId?'border-amber-200 bg-amber-200/10':'border-white/15 bg-white/[.04]'}`}>
          <span className="block truncate font-bold text-white">{d.publicName}</span>
          <span className="mt-1 block capitalize text-amber-200">{d.tier} · {stageLabel[d.stage]}</span>
-         <span className="mt-1 block text-sky-100/70">{d.activity.activeBuilds} building · {d.activity.operatingSystems} operating · {d.acceptedConnections} connections</span>
+         <span className="mt-1 block text-sky-100/70">{d.activity.activeBuilds} building · {d.activity.operatingSystems} operating · {d.activity.jointFormations} joint formations</span>
        </button>)}
        {feed.domains.length===0&&<p className="col-span-2 text-sm text-sky-100/70">
          {status==='loading'?'Retrieving the real domains…':status==='unavailable'?'The world feed is temporarily unavailable.':'No verified Client File Folder domain is active yet.'}
@@ -301,7 +310,7 @@ export function BurningRiverLiveWorld({role='visitor'}:{
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <span className="rounded-lg border border-white/15 p-2"><b className="block text-lg">{selectedDomain.activity.activeBuilds}</b>Forming</span>
           <span className="rounded-lg border border-white/15 p-2"><b className="block text-lg">{selectedDomain.activity.operatingSystems}</b>Operating</span>
-          <span className="rounded-lg border border-white/15 p-2"><b className="block text-lg">{selectedDomain.acceptedConnections}</b>Connections</span>
+          <span className="rounded-lg border border-white/15 p-2"><b className="block text-lg">{selectedDomain.activity.jointFormations}</b>Joint systems</span>
         </div>
         {selectedDomain.customerDoor.open&&selectedDomain.customerDoor.href?
           <Link href={selectedDomain.customerDoor.href}
