@@ -120,8 +120,8 @@ export default function Home() {
               <img
                 src="/weave/plus-file-folder-white-official.webp"
                 alt="Official white Plus File Folder picture with its environment, capabilities, price and market promises"
-                width={1000}
-                height={1499}
+                width={1229}
+                height={1536}
                 loading="eager"
                 decoding="async"
                 onError={() => setPosterMissing(true)}
