@@ -101,8 +101,17 @@ export function resolveFileFolderAppearance(
 ):FileFolderWorldAppearance {
   const chosen=config?.tierVisuals?.[tier]
   if(!chosen)return FILE_FOLDER_WORLD_APPEARANCES[tier]
-  try{return validateFileFolderAppearance(chosen)}
-  catch{return FILE_FOLDER_WORLD_APPEARANCES[tier]}
+  try{
+    const validated=validateFileFolderAppearance(chosen)
+    if(tier==='plus'){
+      // Old persisted releases may predate the official founder artwork.
+      // Never let an earlier draft recolor or hide the Plus world on Client entry.
+      const official=FILE_FOLDER_WORLD_APPEARANCES.plus
+      return {...validated,theme:official.theme,equipmentPack:official.equipmentPack,
+        realness:official.realness,equipmentZones:[...official.equipmentZones]}
+    }
+    return validated
+  }catch{return FILE_FOLDER_WORLD_APPEARANCES[tier]}
 }
 export function isSupportedFileFolderTier(tier:unknown):tier is FileFolderTier {
   return typeof tier==='string'&&FILE_FOLDER_TIERS.includes(tier as FileFolderTier)
