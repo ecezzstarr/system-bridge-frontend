@@ -24,6 +24,7 @@ const privateRow={id:'domain-1',slot:12,tier:'standard',
 const formed=projectPublicWorldDomain(privateRow)
 assert.equal(formed.stage,'forming')
 assert.equal(formed.building,true)
+assert.equal(formed.activity.buildProgress,35,'Public scaffolding tracks real Client construction percent')
 assert.equal(formed.customerDoor.href,null)
 assert.equal(formed.publicName.includes('PRIVATE FAMILY BUSINESS'),false)
 assert.equal(formed.publishedOffers,0)
