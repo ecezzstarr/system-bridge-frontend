@@ -169,7 +169,7 @@ def main():
         sys.exit("WEAVE_DEPLOYMENT_SERVER must be a safe, stable worker identifier")
     while True:
         try:
-            job = api({"action": "claim", "workerKey": worker}, token).get("job")
+            job = api({"action": "claim", "workerKey": worker, "capabilities": ["pinned-main-v2"]}, token).get("job")
             if job:
                 print(f"[WEAVE Release] {job['id']} {job['action']} accepted", flush=True)
                 status = "failed"
