@@ -8,6 +8,20 @@ import {getFlameEvent} from '@/lib/weave-event-store'
 import {notifyUser} from '@/lib/deposit-notifications'
 
 export const dynamic='force-dynamic'
+
+// A cookie-authenticated Client must not be able to mutate their business
+// connections from a foreign website. Browser Origin should match Host,
+// including behind WEAVE's reverse proxy where nextUrl may be internal.
+function validWriteOrigin(request:NextRequest):boolean{
+  const origin=request.headers.get('origin')
+  if(!origin)return true
+  try{
+    const url=new URL(origin)
+    return (url.protocol==='https:'||url.protocol==='http:')&&
+      !url.username&&!url.password&&
+      url.host===(request.headers.get('host')||request.nextUrl.host)
+  }catch{return false}
+}
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 async function clientDomain(request:NextRequest){
@@ -105,6 +119,8 @@ export async function GET(request:NextRequest){
 
 export async function POST(request:NextRequest){
   try{
+    if(!validWriteOrigin(request))
+      return NextResponse.json({error:'Cross-origin Company Loop changes are not allowed'},{status:403})
     const {sql,domain,error}=await clientDomain(request)
     if(error)return error
     const payload=await request.json()
