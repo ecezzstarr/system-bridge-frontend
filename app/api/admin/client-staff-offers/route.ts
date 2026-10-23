@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const offers = await sql`
       SELECT id,candidate_name,candidate_email,candidate_phone,position_title,monthly_salary_usdt,
         ticket_amount_usdt,folder_tier,status,payment_reference,payment_network,file_number,
-        client_id,rejection_reason,created_at,accepted_at,submitted_at,verified_at
+        client_id,receipt_number,rejection_reason,created_at,accepted_at,submitted_at,verified_at
       FROM company_client_staff_offers ORDER BY created_at DESC LIMIT 200
     `
     return NextResponse.json({ success: true, offers }, { headers: { 'Cache-Control': 'private, no-store' } })
@@ -118,6 +118,7 @@ export async function PATCH(request: NextRequest) {
       let fileNumber = ''
       for (let attempt=0; attempt<12; attempt++) {
         const candidate = createRandomFileNumberCandidate()
+        await connection.query('SAVEPOINT file_number_attempt')
         try {
           await connection.query(
             `INSERT INTO file_folders(file_number,bridger_id,identity_data,status)
@@ -126,11 +127,11 @@ export async function PATCH(request: NextRequest) {
               name:offer.candidate_name, phone:offer.candidate_phone || '',
               origin:'company_granted_employee', offerId:offer.id,
             })])
+          await connection.query('RELEASE SAVEPOINT file_number_attempt')
           fileNumber=candidate
           break
         } catch (error:any) {
-          // An INSERT failure aborts a PostgreSQL transaction. Savepoints
-          // keep a rare random-number collision local to this attempt.
+          await connection.query('ROLLBACK TO SAVEPOINT file_number_attempt')
           if (error?.code !== '23505') throw error
         }
       }
@@ -138,11 +139,11 @@ export async function PATCH(request: NextRequest) {
       const receiptNumber='WEAVE-STAFF-'+randomUUID().slice(0,8).toUpperCase()
       const result = await connection.query(
         `UPDATE company_client_staff_offers SET
-         status='approved',file_number=$1,verified_by=$2::uuid,
+         status='approved',file_number=$1,verified_by=$2::uuid,receipt_number=$4,
          verified_at=now(),updated_at=now(),rejection_reason=NULL
          WHERE id=$3::uuid AND status='pending_verification'
-         RETURNING id,status,file_number,folder_tier,ticket_amount_usdt,position_title`,
-        [fileNumber,admin.id,offerId])
+         RETURNING id,status,file_number,folder_tier,ticket_amount_usdt,position_title,receipt_number`,
+        [fileNumber,admin.id,offerId,receiptNumber])
       await connection.query('COMMIT')
       return NextResponse.json({ success:true,offer:result.rows[0],
         verification:'manual_USDT_reference',receiptReference:receiptNumber }, {
