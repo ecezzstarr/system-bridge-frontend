@@ -554,6 +554,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
       <div className="ff-scene absolute inset-0">
         <ClientFileFolder3D
+          fileFolderTier={data.file_folder_tier}
           activeSurface={current.key}
           onSurfaceChange={(next) => enterSurface(next)}
           navigationEnabled={!panelOpen}
