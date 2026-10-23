@@ -35,7 +35,7 @@ const voice=read('app/api/admin/video-ads/narration/route.ts')
 
 assert.ok(api.includes('formOriginalScriptScenes')&&api.includes('narrationScript'),'exact user script is saved, not sent to promotional copy generator')
 assert.ok(schema.includes('narration_script text')&&schema.includes('narration_url text'),'story and voice persist separately')
-assert.ok(render.includes('amix=inputs=2')&&render.includes('volume=0.16'),'narration priority over quieter music')
+assert.ok(render.includes('amix=inputs=2')&&render.includes("narrationUrl ? '0.16' : '0.80'"),'narration priority over quieter music')
 assert.ok(render.includes('probeNarrationSeconds')&&render.includes('will not cut off your words'),'audio never truncates silently')
 assert.ok(admin.includes('WeaveNarrationCapture')&&admin.includes('scriptText'),'administration can create an audiobook episode and capture spoken audio')
 assert.ok(participant.includes('WeaveNarrationCapture')&&participant.includes('RENDER MP4'),'paid participants can finish their own narrated videos')
