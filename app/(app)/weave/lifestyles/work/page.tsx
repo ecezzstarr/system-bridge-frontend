@@ -4,6 +4,7 @@ import {useCallback,useEffect,useState} from 'react'
 import {useAuth} from '@/lib/auth-provider'
 import {ArrowRight,Bell,BriefcaseBusiness,CheckCircle2,ClipboardList,MessageSquareText,RefreshCw,ShieldCheck,Users} from 'lucide-react'
 import {DistributionTeamWorkspace} from '@/components/distribution/team-workspace'
+import {FoodTeamCommunications} from '@/components/food-preparation/food-team-communications'
 
 type WorkLink={label:string;href:string;purpose:string}
 type WorkPosition={id:string;title:string;department:string;standing:string;description:string;tools:WorkLink[]}
@@ -20,7 +21,7 @@ const guidance:Record<string,JobGuidance>={
       'Carry out distribution and referral activities using the authorized company instruments.',
       'Report progress with evidence, submit completed work and respond to the lead’s review.']},
   food_preparation:{
-    group:'Stability · Food Preparation',start:'/weave/lifestyles/food-preparation',talk:'/communications',
+    group:'Stability · Food Preparation',start:'/weave/lifestyles/food-preparation',talk:'#food-team-communication',
     steps:['Open verified food orders and your own assigned preparation work.',
       'Prepare, package, and record the actual stage and handoff for each authorized order.',
       'Follow the approved Stability Lead’s allocation; Administration handles verification and financial authorization.']},
@@ -52,6 +53,7 @@ export default function CompanyWorkspaces(){
   if(!isInitialized)return <main className="p-6 text-slate-300">Opening company workspace…</main>
   if(!['agent','bridger'].includes(user?.role||''))return <main className="p-6 text-slate-200">Active Agent or Bridger identity required.</main>
   const distribution=positions.some(position=>['distribution_manager','distribution_assistant'].includes(position.id))
+  const foodTeam=positions.some(position=>position.id==='food_preparation')
   return <main className="weave-operating-environment mx-auto min-h-[72vh] max-w-7xl space-y-6 px-3 py-6 text-white sm:px-6 sm:py-9" data-verified-employment-workspace="true">
     <header className="relative overflow-hidden rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-[#08273a] via-[#091521] to-[#0b111b] p-5 sm:p-8">
       <div className="pointer-events-none absolute -right-14 -top-24 h-72 w-72 rounded-full border-[25px] border-cyan-300/[.055]"/>
@@ -61,6 +63,7 @@ export default function CompanyWorkspaces(){
       <p className="relative mt-3 max-w-3xl text-sm leading-6 text-slate-200">Your verified jobs, today’s responsibilities, working systems and team communications in one place. Use the role-specific instructions to begin work, report what was done and follow up with your colleagues.</p>
       <div className="relative mt-6 flex flex-wrap gap-2">
         <a href="#my-jobs" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-cyan-300 px-4 text-xs font-black text-slate-950"><ClipboardList className="h-4 w-4"/> My duties</a>
+        {foodTeam&&<a href="#food-team-communication" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-xs font-bold text-white"><Users className="h-4 w-4"/> Food team messages</a>}
         {distribution&&<a href="#team-communication" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-xs font-bold text-white"><Users className="h-4 w-4"/> Team & assignments</a>}
         <Link href="/notifications" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-xs font-bold text-white"><Bell className="h-4 w-4"/> Messages & alerts</Link>
       </div>
@@ -93,7 +96,7 @@ export default function CompanyWorkspaces(){
               </ol>
               <div className="mt-5 flex flex-wrap gap-2">
                 <Link href={guide.start} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-cyan-300 px-4 text-xs font-black text-slate-950">Start job work <ArrowRight className="h-4 w-4"/></Link>
-                <Link href={guide.talk} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 px-4 text-xs font-bold text-slate-100"><MessageSquareText className="h-4 w-4"/> {distribution&&guide.talk==='#team-communication'?'Talk to my team':'Open work messages'}</Link>
+                <Link href={guide.talk} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 px-4 text-xs font-bold text-slate-100"><MessageSquareText className="h-4 w-4"/> {guide.talk.startsWith('#')?'Talk to my team':'Open work messages'}</Link>
               </div>
               <details className="mt-5 rounded-xl border border-white/10 p-4">
                 <summary className="cursor-pointer text-xs font-black text-white">All working instruments ({position.tools.length})</summary>
@@ -114,6 +117,7 @@ export default function CompanyWorkspaces(){
       <p className="text-xs leading-6 text-slate-300">Speak directly with your verified team, check instructions, post real progress, and resolve handoffs without leaving the staff workspace.</p>
       <DistributionTeamWorkspace/>
     </section>}
+    {foodTeam&&<FoodTeamCommunications/>}
     {!loading&&!positions.length&&<section className="rounded-2xl border border-white/10 p-6 text-sm text-slate-300">
       <p>No approved employment workspace is available for this account yet. Your normal Agent or Bridger work remains separate.</p>
       <Link href="/weave/lifestyles" className="mt-4 inline-flex min-h-11 items-center text-sm font-black text-amber-200">View company positions and applications →</Link>
