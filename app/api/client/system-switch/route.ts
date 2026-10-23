@@ -182,6 +182,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Employee-granted tiers are sourced from their separate verified company
+    // tickets, not from a fabricated retail File Folder purchase.
+    if (!persistedTier) {
+      const [staffTable] = await sql`SELECT to_regclass('public.company_client_staff_offers') AS name`
+      if (staffTable?.name) {
+        const [grant] = await sql`
+          SELECT folder_tier FROM company_client_staff_offers
+          WHERE status='approved' AND client_id=${client.id}::uuid AND file_number=${client.file_number}
+          LIMIT 1
+        `
+        if (grant && ['standard','pro','premium'].includes(grant.folder_tier)) persistedTier = grant.folder_tier
+      }
+    }
+
     const fileFolderTier = persistedTier || getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'legacy'
 
     const workshopType=workshop.workshop_type
