@@ -3,7 +3,7 @@ import {sql} from '@/lib/db'
 import {listWeaveDeploymentRecords} from '@/lib/weave-deployment-records'
 
 export type ReleaseAction='deploy_latest'|'rollback'
-export type ReleaseJobStatus='queued'|'running'|'healthy'|'rolled_back'|'failed'
+export type ReleaseJobStatus='queued'|'running'|'healthy'|'rolled_back'|'failed'|'cancelled'
 export const fullReleaseSha=(value:unknown):value is string=>
   typeof value==='string'&&/^[0-9a-f]{40}$/i.test(value)
 const serverKey=()=>process.env.WEAVE_DEPLOYMENT_SERVER||'weave-selfhost'
@@ -20,7 +20,7 @@ export function ensureReleaseWorkshopSchema(){
       resolved_sha varchar(40),
       previous_sha varchar(40),
       status varchar(24) NOT NULL DEFAULT 'queued'
-        CHECK(status IN ('queued','running','healthy','rolled_back','failed')),
+        CHECK(status IN ('queued','running','healthy','rolled_back','failed','cancelled')),
       requested_by uuid NOT NULL REFERENCES users(id),
       worker_key varchar(120),
       lease_token uuid,
@@ -54,7 +54,7 @@ export async function getReleaseWorkshopState(){
     sql`SELECT worker_key,last_seen_at FROM weave_release_workers WHERE server_key=${serverKey()} LIMIT 1`,
   ])
   const healthyReleases=[...new Set(history.filter(row=>
-    row.status==='healthy'||row.status==='rolled_back'
+    row.server_key===serverKey()&&(row.status==='healthy'||row.status==='rolled_back')
   ).map(row=>String(row.release_sha)).filter(fullReleaseSha))]
   const lastSeen=workers[0]?.last_seen_at?new Date(workers[0].last_seen_at):null
   const workerOnline=Boolean(lastSeen&&Date.now()-lastSeen.getTime()<60000)
@@ -131,5 +131,21 @@ export async function completeReleaseJob(input:{
         OR (action='rollback' AND ${input.status} IN ('rolled_back','failed')))
     RETURNING id,status,resolved_sha,previous_sha,finished_at`
   if(!job)throw new Error('This release is no longer held by the requesting host worker.')
+  return job
+}
+
+/** Only not-yet-claimed operations may be cancelled. A running Docker
+ * operation must be allowed to verify or automatically recover.
+ */
+export async function cancelQueuedReleaseJob(id:string,userId:string){
+  await ensureReleaseWorkshopSchema()
+  if(!/^[0-9a-f-]{36}$/i.test(id))throw new Error('Invalid release job identifier')
+  const [job]=await sql`UPDATE weave_release_jobs
+    SET status='cancelled',finished_at=now(),
+      verification=${'Queued release cancelled by Administration before host execution'},
+      details=jsonb_set(details,'{cancelledBy}',to_jsonb(${userId}::text),true)
+    WHERE id=${id}::uuid AND server_key=${serverKey()} AND status='queued'
+    RETURNING id,status,finished_at`
+  if(!job)throw new Error('Only a queued release can be cancelled. Running operations cannot be interrupted here.')
   return job
 }
