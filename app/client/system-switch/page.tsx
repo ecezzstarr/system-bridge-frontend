@@ -94,6 +94,34 @@ export default function ClientSystemSwitchPage() {
     }
   }, [router])
 
+  // Administration can publish new equipment/theme packs without an app deployment.
+  // Keep the Client's current 3D/working state; update only the release settings.
+  useEffect(()=>{
+    if(!data?.verified)return
+    let mounted=true
+    const synchronize=async()=>{
+      if(document.visibilityState!=='visible')return
+      const token=getClientToken()
+      if(!token)return
+      try{
+        const response=await fetch('/api/client/file-folder-release',{
+          headers:{Authorization:'Bearer '+token},cache:'no-store',
+        })
+        if(!response.ok)return
+        const release=await response.json()
+        if(!mounted||!release.success)return
+        setData((previous:any)=>{
+          if(!previous || Number(previous.file_folder_world_release?.version)===Number(release.version))return previous
+          return {...previous,file_folder_world_release:{version:release.version,config:release.config}}
+        })
+      }catch{}
+    }
+    const timer=window.setInterval(()=>{void synchronize()},45000)
+    const onVisible=()=>{void synchronize()}
+    document.addEventListener('visibilitychange',onVisible)
+    return()=>{mounted=false;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible)}
+  },[Boolean(data?.verified)])
+
   if (loading) return <div className="relative" data-client-loading-with-open-world-return="true">
     <FileFolderEnvironmentLoader />
     <Link href="/client/dashboard" className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 z-[150] inline-flex min-h-12 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border border-sky-200/40 bg-[#06182a]/95 px-5 text-xs font-bold text-white shadow-xl backdrop-blur-lg">
@@ -113,6 +141,14 @@ export default function ClientSystemSwitchPage() {
         className="fixed left-3 top-[max(4.25rem,env(safe-area-inset-top))] z-[90] inline-flex min-h-11 max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-sky-200/35 bg-[#06182a]/95 px-3 py-2 text-[11px] font-bold text-sky-100 shadow-xl backdrop-blur-xl sm:left-5">
         <ArrowLeft className="h-4 w-4 shrink-0"/> Return to Weave Open World
       </Link>
+      {privateWorkshop&&data?.file_folder_world_release?.config&&<section
+        className="mx-3 mb-3 rounded-xl border border-cyan-200/20 bg-[#071927]/85 p-3 text-white sm:mx-5"
+        data-global-file-folder-release={String(data.file_folder_world_release.version)}>
+        <p className="text-[10px] font-black uppercase tracking-widest text-cyan-200">{String(data.file_folder_tier||'standard').toUpperCase()} File Folder · World update {data.file_folder_world_release.version}</p>
+        <h2 className="mt-1 text-sm font-bold">{data.file_folder_world_release.config.headline}</h2>
+        <p className="mt-1 text-xs leading-5 text-slate-300">{data.file_folder_world_release.config.tierMessages?.[data.file_folder_tier]||data.file_folder_world_release.config.description}</p>
+      </section>}
+
       {privateWorkshop&&<section className="mx-2 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/25 bg-[linear-gradient(120deg,rgba(74,111,133,.23),rgba(8,23,40,.93)_52%,rgba(158,102,39,.16))] px-3 py-3 text-white sm:mx-5" data-system-switch-client-continuation="real-file-folder">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[.15em] text-amber-200">{arrivedFromEvent?'Arrived from Flame Event · System Switch':'System Switch · Client-owned File Folder'}</p>

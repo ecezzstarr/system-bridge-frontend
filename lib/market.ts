@@ -33,6 +33,9 @@ export async function ensureMarketTables() {
       )
     `
 
+    // Country identifies the intended numbering plan; it does not verify a person.
+    await sql`ALTER TABLE market_prospect_contacts ADD COLUMN IF NOT EXISTS country VARCHAR(3)`
+
     // 3. Prospect Audit table
     await sql`
       CREATE TABLE IF NOT EXISTS market_prospect_audit (

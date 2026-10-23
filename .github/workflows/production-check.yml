@@ -8,6 +8,7 @@ on:
       - main
       - 'feature/**'
       - 'reconcile/**'
+      - 'integration/**'
   workflow_dispatch:
 
 jobs:
@@ -40,7 +41,9 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: File Folder world runtime regression
-        run: node tests/file-folder-world-runtime-regression.cjs
+        run: |
+          node tests/file-folder-world-runtime-regression.cjs
+          node tests/file-folder-environment-fidelity.cjs
 
       - name: Shared System Switch protocol and PostgreSQL multiplayer
         env:
@@ -101,14 +104,28 @@ jobs:
 
       - name: Remaining regression checks
         run: |
+          node tests/client-deposit-world-regression.cjs
+          node tests/host-powershell-security-regression.cjs
+          node tests/prospect-market-country-auto.cjs
           node tests/bridger-bridge-radiance-purchase-regression.cjs
           node tests/selfhost-deployment-regression.cjs
           node tests/release-workshop-regression.cjs
           node tests/notification-staff-workspace-regression.cjs
+          node tests/company-client-staff-ticket-regression.cjs
+          node tests/file-folder-plus-contract-regression.cjs
+          node tests/file-folder-global-upgrade-release-regression.cjs
+          node tests/file-folder-plus-official-world-regression.cjs
+          node tests/plus-file-folder-formation-behavior.cjs
+          node tests/admin-music-studio-dj.cjs
+          node tests/work-github-oracle-release-regression.cjs
+          node tests/company-of-time-homepage-regression.cjs
+          node tests/file-folder-standard-official-world-regression.cjs
           node tests/weave-narration-studio.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/bridger-whatsapp-replacement-limit.cjs
           node tests/file-folder-sales-manager-regression.cjs
+          node tests/animation-workshop.cjs
+          node tests/music-workshop.cjs
           node tests/public-flame-movement-regression.cjs
           node tests/carrier-ace-regression.cjs
           node tests/lifestyle-position-access-regression.cjs
@@ -143,6 +160,7 @@ jobs:
           node tests/wiring.cjs
           node tests/environment-grade.cjs
           node tests/flame-event-open-world-regression.cjs
+          node tests/burning-river-real-world-multiplayer.cjs
           node tests/adaptive-runtime.cjs
           node tests/communication-security.cjs
 
@@ -171,6 +189,11 @@ jobs:
           WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
         run: node tests/legion-position-release-postgres.cjs
 
+      - name: Burning River two-Client world and business formation PostgreSQL regression
+        env:
+          WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
+        run: node tests/burning-river-multiplayer-postgres.cjs
+
       - name: TypeScript check
         run: npx tsc --noEmit
 
@@ -179,4 +202,7 @@ jobs:
 
       - name: Container build
         run: docker build --progress=plain -t weave-production-check .
+
+      - name: Exact founder-approved Burning River imagery
+        run: node tests/burning-river-approved-artwork.cjs
 

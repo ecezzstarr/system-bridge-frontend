@@ -312,9 +312,9 @@ assert.ok(djPlaylistsSource.includes('ensureDjSchema'),'Playlist library bootstr
 assert.ok(departmentMusicSource.includes('ensureDjSchema'),'Department Entry sound shares the DJ library safely')
 assert.ok(fs.existsSync(path.join(root,'migrations/20260924_dj_live_broadcast.sql')),'DJ live migration exists')
 assert.ok(!homePageSource.includes('<WeaveWorldEnvironment'),'Public homepage does not mount a duplicate WEAVE world')
-assert.ok(homePageSource.includes('Interaction in Motion.'),'Homepage presents Interaction in Motion')
+assert.ok(homePageSource.includes('Interaction in Motion presents')&&homePageSource.includes('The Company of Time'),'Homepage uses founder-approved Company of Time introduction')
 const weaveSystemMapSource=fs.readFileSync(path.join(root,'lib/weave-system-map.ts'),'utf8')
-assert.ok(homePageSource.includes('WEAVE_SYSTEM_MAP.identity.publicDescription'),'Homepage renders the canonical WEAVE public description')
+assert.ok(homePageSource.includes('The company through the people of its departments')&&homePageSource.includes('The Weave of Presence: System Switch — Bridge of Radiance'),'Homepage introduces the four-department institution using its approved wording')
 assert.ok(weaveSystemMapSource.includes('An interactional company where human participation can become organized work, value, systems and opportunity.'),'Canonical system map identifies WEAVE as an interactional company')
 assert.ok(homePageSource.includes("title: 'Services'") && homePageSource.includes("title: 'Instruments'") && homePageSource.includes("title: 'Systems'"),'Homepage explains WEAVE services, instruments and systems')
 assert.ok(homePageSource.includes('Client Access Point'),'Homepage contains a dedicated Client access surface')
@@ -858,7 +858,7 @@ assert.ok(fileFolderWorldSource.includes("'route_capacity_module'")&&fileFolderW
 assert.ok(fileFolderWorldSource.includes("'ai_flame_node'")&&fileFolderWorldSource.includes("'automation_node'")&&fileFolderWorldSource.includes("'verification_lab_module'"),'Flame Coin catalog includes intelligence, automation and verification build modules')
 assert.ok(!fileFolderWorldSource.includes('price_flame_coin=EXCLUDED.price_flame_coin'),'Catalog bootstrap does not silently overwrite Administration Flame Coin pricing')
 assert.ok(fileFolderWorldApiSource.includes("gate:'module_compatibility'"),'Capability modules cannot be installed into unrelated active builds')
-assert.ok(fs.readFileSync(path.join(root,'lib/file-folder-build-compatibility.ts'),'utf8').includes("route_capacity:['route_station'")&&fs.readFileSync(path.join(root,'lib/file-folder-build-compatibility.ts'),'utf8').includes("stream_capacity:['broadcast_studio'")&&fs.readFileSync(path.join(root,'lib/file-folder-build-compatibility.ts'),'utf8').includes("legion_capacity:['legion_quarters'")&&fileFolderWorldApiSource.includes('allowedBuildPartSystems(effectType)'),'Capability compatibility is enforced by system family and shared with the Client phone controls')
+assert.ok(fs.readFileSync(path.join(root,'lib/file-folder-build-compatibility.ts'),'utf8').includes("route_capacity:['route_station'")&&fs.readFileSync(path.join(root,'lib/file-folder-build-compatibility.ts'),'utf8').includes("stream_capacity:['animation_studio','broadcast_studio'")&&fs.readFileSync(path.join(root,'lib/file-folder-build-compatibility.ts'),'utf8').includes("legion_capacity:['legion_quarters'")&&fileFolderWorldApiSource.includes('allowedBuildPartSystems(effectType)'),'Capability compatibility is enforced by system family and shared with the Client phone controls')
 assert.ok(fileFolderWorldApiSource.includes("broadcast_studio:{systems:[{systemType:'creator_booth'"),'Broadcast Studio requires Creator Booth')
 assert.ok(fileFolderWorldApiSource.includes("streaming_gate:{systems:[{systemType:'broadcast_studio'"),'Streaming Open Gate requires Broadcast Studio')
 assert.ok(fileFolderWorldApiSource.includes("media_network:{systems:[{systemType:'streaming_gate'"),'Media Network requires Streaming Open Gate')
@@ -1380,7 +1380,9 @@ assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
 assert.ok(roleWorldReturnSource.includes("router.replace(roleHome(user?.role))"),'Retired /weave route returns each authenticated position to its own world')
 assert.ok(!roleWorldReturnSource.includes('Bridge Plaza'),'Retired /weave route does not expose Bridge Plaza')
-assert.ok(fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8').includes('<FlameEventOpenWorld enterprises={enterprises} doorStatus={doorStatus} role={role} />'),'Flame Event carries live public Client enterprises as world portals')
+assert.ok(fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8').includes('<BurningRiverOfficialGateway staff/>') &&
+  fs.readFileSync(path.join(root,'components/events/burning-river-live-world.tsx'),'utf8').includes('/api/events/flame/open-world'),
+  'Staff Flame Event shows an explicit crossing into the live purchased Client world instead of a joystick scene')
 assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
 assert.ok(cadenceEngineSource.includes('Results are human cadences, not generated answers'),'Cadence search preserves human attribution')
 

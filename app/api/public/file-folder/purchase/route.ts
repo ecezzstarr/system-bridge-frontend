@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { neon } from '@/lib/pg-neon'
 import { POST as submitFileFolderPurchase } from '@/app/api/bridge/file-folder/purchase/route'
-import { getFileFolderTier } from '@/lib/file-folder-pricing'
+import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricing'
 import { requireApiUser } from '@/lib/api-auth'
 import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
 
@@ -69,7 +69,9 @@ function purchaseResponse(purchase: any, clientOwnsPurchase = false) {
       id: purchase.id,
       status: purchase.status,
       fileNumber: purchase.file_number || null,
-      amountFlameCoin,
+      amountFlameCoin: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : amountFlameCoin,
+      amountTrx: amountFlameCoin,
+      usdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null,
       fileFolderTier,
       confirmedAt: purchase.confirmed_at || null,
     },

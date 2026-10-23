@@ -1,6 +1,8 @@
 import { ensureClientFileFolderSchema } from '@/lib/client-file-folder'
 import { ensureClientWorkshopSchema } from '@/lib/client-system-workshop'
 import { provisionPurchasedFileFolderCustomerDoor } from '@/lib/client-customer-door-provisioning'
+import { PLUS_FILE_FOLDER, provisionPlusFileFolderSystems } from '@/lib/file-folder-plus'
+import {provisionPurchasedWorldDomain} from '@/lib/weave-open-world-store'
 
 function normalizedPhone(value: unknown) {
   return String(value || '').replace(/\D/g, '')
@@ -226,5 +228,49 @@ export async function activatePurchasedFileFolderForClient(params: {
     clientName,
   })
 
-  return { folder, workshop, client, customerDoor }
+  // The other tiers retain their timed construction. Plus has an exact TRX
+  // price (and a separate USDT reference) and provisions ready systems
+  // after the purchase record has been confirmed by Administration.
+  let plusDelivery = null
+  if (purchase_table) {
+    await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS amount_usdt numeric(30,8)`
+    const [verifiedPlus] = await sql`
+      SELECT id FROM file_folder_purchases
+      WHERE file_number=${fileNumber}
+        AND client_id=${clientId}::uuid
+        AND status='confirmed'
+        AND file_folder_tier='plus'
+        AND ((payment_method='trx' AND amount_trx=${PLUS_FILE_FOLDER.trx})
+          OR (payment_method='usdt' AND amount_usdt=${PLUS_FILE_FOLDER.usdt}))
+      ORDER BY confirmed_at DESC NULLS LAST
+      LIMIT 1
+    `
+    if (verifiedPlus) {
+      plusDelivery = await provisionPlusFileFolderSystems({
+        sql, clientId, fileNumber, purchaseId: String(verifiedPlus.id),
+      })
+    }
+  }
+
+  // One purchased Client folder = one permanent position in Burning River.
+  // The exterior exists while Customer Door construction is still in progress;
+  // it has NO capability to reveal this Client's private workspace.
+  let worldTier:string|null=null
+  if(purchase_table){
+    const [verified]=await sql`
+      SELECT file_folder_tier
+      FROM file_folder_purchases
+      WHERE file_number=${fileNumber}
+        AND client_id=${clientId}::uuid
+        AND status='confirmed'
+        AND file_folder_tier IN ('standard','pro','premium','plus')
+      ORDER BY confirmed_at DESC NULLS LAST
+      LIMIT 1
+    `
+    worldTier=verified?.file_folder_tier||null
+  }
+  const worldDomain=await provisionPurchasedWorldDomain({
+    sql,clientId,fileNumber,tier:worldTier,
+  })
+  return { folder, workshop, client, customerDoor, plusDelivery, worldDomain }
 }

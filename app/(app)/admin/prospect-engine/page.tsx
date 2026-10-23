@@ -1,5 +1,6 @@
 'use client'
 import { getAuthHeaders } from '@/lib/auth-client'
+import Link from 'next/link'
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,10 @@ import { Loader2, Zap, Users, Package, PhoneCall, CheckCircle2 } from 'lucide-re
 import { toast } from 'sonner'
 import { WeaveSystemRoom } from '@/components/world/weave-system-room'
 
+interface AutoCountry { code:string; name:string; dial:string }
+interface AutoSource {country_code:string;seed_phone:string;next_offset:number;enabled:boolean}
+interface AutoState { enabled:boolean;marketCandidates:number;threshold:number;countrySpacing:number;countries:AutoCountry[];sources:AutoSource[];lastRun:{run_status:string;reason:string;added:number;market_before:number;market_after:number;created_at:string}|null }
+
 interface Contact {
   id: string
   phone: string
@@ -32,9 +37,16 @@ export default function ProspectEnginePage() {
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([])
   const [selectedContacts, setSelectedContacts] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [autoState,setAutoState] = useState<AutoState|null>(null)
+  const [autoCountry,setAutoCountry] = useState('NG')
+  const [autoSeed,setAutoSeed] = useState('')
+  const [autoSourceEnabled,setAutoSourceEnabled] = useState(true)
+  const [autoBusy,setAutoBusy] = useState(false)
+  const [autoError,setAutoError] = useState('')
 
   useEffect(() => {
     fetchAvailable()
+    void fetchAuto()
   }, [])
 
   const fetchAvailable = async () => {
@@ -52,6 +64,38 @@ export default function ProspectEnginePage() {
     }
   }
 
+  const fetchAuto = async () => {
+    try {
+      const response=await fetch('/api/admin/market/prospects/auto',{headers:getAuthHeaders(),cache:'no-store'})
+      const data=await response.json()
+      if(!response.ok||!data.success)throw new Error(data.error||'Automation state unavailable')
+      setAutoState(data)
+      setAutoError('')
+    } catch(error:any){setAutoError(error?.message||'Automation state unavailable')}
+  }
+
+  const updateAuto = async (body:Record<string,unknown>) => {
+    setAutoBusy(true)
+    try {
+      const response=await fetch('/api/admin/market/prospects/auto',{
+        method:'POST',
+        headers:{...getAuthHeaders(),'Content-Type':'application/json'},
+        body:JSON.stringify(body),
+      })
+      const data=await response.json()
+      if(!response.ok||!data.success)throw new Error(data.error||'Automation change failed')
+      setAutoState(data)
+      setAutoError('')
+      if(body.action==='run_now') {
+        toast.success('Auto publication: '+String(data.result?.status||'completed')+' · '+String(data.result?.added||0)+' candidates added')
+      } else {
+        toast.success('Prospect automation updated')
+      }
+      if(body.action==='run_now')void fetchAvailable()
+    } catch(error:any){setAutoError(error?.message||'Automation change failed');toast.error(error?.message||'Automation change failed')}
+    finally{setAutoBusy(false)}
+  }
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsGenerating(true)
@@ -63,7 +107,7 @@ export default function ProspectEnginePage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success(`Generated series: ${data.contactsGenerated} qualified prospects found.`)
+        toast.success(`Generated series: ${data.contactsGenerated} unverified candidate numbers recorded.`)
         fetchAvailable()
       } else {
         toast.error(data.error || 'Generation failed')
@@ -115,9 +159,10 @@ export default function ProspectEnginePage() {
       title="Prospect discovery authority"
       detail="Generate, qualify and package Prospect movement inside one Administration system. The number engine, inventory and qualified pool remain visible together."
       tone="amber"
-      pulse={isGenerating?'Reachability Agent running':isPackaging?'Packaging selected prospects':'Prospect Engine ready'}
+      pulse={isGenerating?'Candidate series running':isPackaging?'Packaging selected prospects':'Prospect Engine ready'}
       left={
         <div className="space-y-6">
+          <Link href="/admin/river-call-settings" className="block border border-sky-300/25 px-4 py-3 text-sm text-sky-200">River AI live calls · price and activation →</Link>
           <section className="border-l border-orange-300/25 pl-4">
             <div className="flex items-center gap-2">
               <PhoneCall className="h-4 w-4 text-orange-300"/>
@@ -159,15 +204,57 @@ export default function ProspectEnginePage() {
               Create package
             </Button>
           </section>
+
+          <section data-auto-prospect-engine className="border-l border-cyan-300/25 pl-4">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-cyan-300"/>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-cyan-200">Automatic multi-country supply</p>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-slate-400">
+              When unsold published candidates fall below 120, replenish the Prospect Market up to 120. Mix countries randomly without repeating either of the previous two countries.
+            </p>
+            {autoState ? <>
+              <div className="mt-3 grid grid-cols-2 gap-3 border-y border-white/10 py-3 text-xs">
+                <div><p className="text-slate-500">Published candidates</p><p className="text-xl font-black text-white">{autoState.marketCandidates} / {autoState.threshold}</p></div>
+                <div><p className="text-slate-500">Active country sources</p><p className="text-xl font-black text-white">{autoState.sources.filter(source=>source.enabled).length}</p></div>
+              </div>
+              <p className="mt-2 text-[10px] text-slate-500">At least three country sources are required for spacing. All generated numbers remain unverified until real contact is established.</p>
+              <div className="mt-3 space-y-2">
+                <label htmlFor="auto-country" className="block text-xs text-slate-300">Country source</label>
+                <select id="auto-country" value={autoCountry} onChange={event=>{
+                  const code=event.target.value
+                  setAutoCountry(code)
+                  const source=autoState.sources.find(value=>value.country_code===code)
+                  setAutoSeed(source?.seed_phone||'')
+                  setAutoSourceEnabled(source?.enabled??true)
+                }} className="w-full rounded-lg border border-white/15 bg-slate-950 p-2 text-xs text-white">
+                  {autoState.countries.map(country=><option key={country.code} value={country.code}>{country.name} (+{country.dial})</option>)}
+                </select>
+                <Input value={autoSeed} onChange={event=>setAutoSeed(event.target.value)} placeholder="International country-specific source number" className="border-white/10 bg-black/20 text-xs text-white"/>
+                <label className="flex items-center gap-2 text-xs text-slate-300"><input type="checkbox" checked={autoSourceEnabled} onChange={event=>setAutoSourceEnabled(event.target.checked)}/> Enable this country source</label>
+                <Button disabled={autoBusy||!autoSeed.trim()} variant="outline" className="w-full border-white/20" onClick={()=>void updateAuto({action:'save_country',countryCode:autoCountry,seed:autoSeed,enabled:autoSourceEnabled})}>Save country series</Button>
+              </div>
+              <div className="mt-3 space-y-1 text-[10px] text-slate-400">
+                {autoState.sources.map(source=><p key={source.country_code}>{source.country_code} · {source.enabled?'Active':'Paused'} · next offset {source.next_offset}</p>)}
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Button disabled={autoBusy} variant="outline" className="border-white/15 text-xs" onClick={()=>void updateAuto({action:'set_enabled',enabled:!autoState.enabled})}>{autoState.enabled?'Suspend auto':'Enable auto'}</Button>
+                <Button disabled={autoBusy||!autoState.enabled} className="bg-cyan-600 text-xs font-black" onClick={()=>void updateAuto({action:'run_now'})}>Run stock check</Button>
+              </div>
+              <p className="mt-2 text-[10px] text-slate-500">Scheduler: hourly · {autoState.enabled?'Enabled':'Suspended'}. A run at or above 120 publishes nothing.</p>
+              {autoState.lastRun&&<p className="mt-2 text-[10px] leading-5 text-slate-400">Last run: {autoState.lastRun.run_status} · {autoState.lastRun.added} added. {autoState.lastRun.reason}</p>}
+            </> : <p className="mt-3 text-xs text-amber-300">{autoError||'Loading automation…'}</p>}
+            {autoError&&autoState&&<p role="alert" className="mt-2 text-xs text-rose-300">{autoError}</p>}
+          </section>
         </div>
       }
       center={
         <section data-prospect-pool>
           <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Qualified Prospect Pool</p>
-              <h2 className="mt-1 text-xl font-black text-white">Reachability-confirmed inventory</h2>
-              <p className="mt-1 text-[10px] text-slate-500">Select rows to form a Prospect package.</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-amber-300">Unverified Candidate Pool</p>
+              <h2 className="mt-1 text-xl font-black text-white">Prospect candidates awaiting real verification</h2>
+              <p className="mt-1 text-[10px] text-slate-500">Select candidates to form a Prospect package. Generation does not establish phone ownership or consent.</p>
             </div>
             <Button variant="outline" size="sm" onClick={fetchAvailable} className="border-white/10 text-slate-300">Refresh</Button>
           </div>
@@ -182,7 +269,7 @@ export default function ProspectEnginePage() {
                     <TableHead className="w-12"></TableHead>
                     <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Phone</TableHead>
                     <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Source</TableHead>
-                    <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Verified</TableHead>
+                    <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Added</TableHead>
                     <TableHead className="text-[9px] font-black uppercase tracking-widest text-slate-500">Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -203,7 +290,7 @@ export default function ProspectEnginePage() {
                       <TableCell className="font-mono text-xs text-white">{contact.phone || (contact as any).whatsapp_number}</TableCell>
                       <TableCell className="text-[9px] font-black uppercase tracking-wider text-slate-500">Engine</TableCell>
                       <TableCell className="font-mono text-[9px] text-slate-500">{new Date(contact.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell><Badge variant="outline" className="border-green-500/20 bg-green-500/5 text-[8px] uppercase text-green-500">Qualified</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="border-green-500/20 bg-green-500/5 text-[8px] uppercase text-green-500">Unverified</Badge></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -217,9 +304,9 @@ export default function ProspectEnginePage() {
           <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-300">Movement</p>
           <div className="mt-3 space-y-2 text-[10px] leading-5 text-slate-400">
             <p>Generate from a source series.</p>
-            <p>Reachability qualifies contacts.</p>
-            <p>Select real Prospect records.</p>
-            <p>Package only the selected movement.</p>
+            <p>Generated candidates are unverified until a real response establishes contact.</p>
+            <p>Select real database records, not confirmed people.</p>
+            <p>Publish country-mixed packages only below the 120-candidate stock threshold.</p>
           </div>
         </section>
       }

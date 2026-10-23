@@ -1,5 +1,6 @@
 'use client'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
+import { quoteFileFolderBlueprint } from '@/lib/file-folder-build-quote'
 import { institutionalArchetype } from '@/lib/file-folder-institutional-visual'
 import { BuiltSystemRuntime } from './built-system-runtime'
 import { visiblePoll } from '@/lib/visible-poll'
@@ -23,7 +24,9 @@ import {
   Wallet,
   X,
 } from 'lucide-react'
+import Link from 'next/link'
 import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-world'
+import {resolveFileFolderAppearance} from '@/lib/file-folder-world-presets'
 import GenerativeFormationWorkshop from '@/components/system-switch/generative-formation-workshop'
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
 import EnterpriseDreamPanel from '@/components/system-switch/enterprise-dream-panel'
@@ -63,6 +66,8 @@ const previewModules: Record<string, string[]> = {
   route_station: ['Connected systems', 'Routes', 'Movement records', 'Throughput'],
   creator_booth: ['Program ideas', 'Production notes', 'Publishing queue', 'Media records'],
   broadcast_studio: ['Programs', 'Schedule', 'Production control', 'Broadcast preparation'],
+  animation_studio: ['3D scene stage', 'Textured materials', 'Movement keyframes', 'Film recording'],
+  music_studio: ['Word arrangement', 'Self & Environment tracks', 'Loop pattern', 'Recording & master WAV'],
   streaming_gate: ['Public channel', 'Live source', 'Audience entry', 'Replay movement'],
   media_network: ['Programming', 'Distribution', 'Audience', 'Media routes'],
   enterprise_door: ['Public enterprise entrance', 'Identity', 'Systems', 'Customer paths'],
@@ -125,6 +130,7 @@ const BUILD_LADDER = [
 
 function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { blueprint: any; label?: string; onBuild?: () => void }) {
   const modules = systemModules(blueprint?.system_type)
+  const priceQuote=blueprint?quoteFileFolderBlueprint(blueprint):null
   if (!blueprint) {
     return (
       <div className="rounded-3xl border border-dashed border-white/10 bg-black/20 p-8 text-sm text-slate-500">
@@ -149,6 +155,13 @@ function PreviewFrame({ blueprint, label = 'Design preview', onBuild }: { bluepr
           </span>
         </div>
       </div>
+      {priceQuote&&<div data-client-blueprint-preview-price className="border-b border-amber-200/20 bg-amber-300/[.04] px-5 py-4 text-xs leading-6 text-amber-100">
+        <p className="font-black">Acquire &amp; Build Price</p>
+        {priceQuote.priceAvailable
+          ? <p>Required materials: {priceQuote.materialRequired} × {priceQuote.materialName} · Total kit cost {priceQuote.requiredMaterialCost.toLocaleString()} Flame Coin</p>
+          : <p role="alert">Required kit price unavailable. Administration must publish the missing material.</p>}
+        <p>Starting the build has no separate Flame Coin fee after the required kit is acquired. Check your owned kit balance in Blueprint Foundry.</p>
+      </div>}
       <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
         {modules.map((module, index) => (
           <div key={module} className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
@@ -302,6 +315,8 @@ function HostedSystem({
         </div>
       </header>
 
+      {system.system_type==='music_studio'&&<div className="border-b border-cyan-300/15 bg-cyan-300/[.04] p-5"><p className="mb-3 text-xs text-slate-300">The Music Studio has been constructed and activated. Compose sound loops, record your voice, weave words into beat cues, and hear Self and Environment in musical conversation.</p><Link className="inline-flex rounded-xl bg-cyan-300 px-5 py-3 text-xs font-bold text-slate-950" href="/music-workshop">Enter Music Studio →</Link></div>}
+      {system.system_type==='animation_studio'&&<div className="border-b border-cyan-300/15 bg-cyan-300/[.04] p-5"><p className="mb-3 text-xs text-slate-300">The Animation Workshop is operational. Open the interactive 3D timeline to produce a film, assign a movement path, direct camera shots and record real movie footage.</p><Link className="inline-flex rounded-xl bg-cyan-300 px-5 py-3 text-xs font-bold text-slate-950" href="/animation-workshop">Enter Animation Movie Workshop →</Link></div>}
       {institution&&<p role="note" className="border-b border-amber-300/15 bg-amber-300/[.045] px-5 py-3 text-[11px] leading-5 text-amber-100">This is a Client-owned administrative planning and records workspace. Do not enter patient details, identity credentials, emergency calls or other sensitive operational data. A constructed blueprint is not official authorization, clinical certification or production deployment.</p>}
       <BuiltSystemRuntime key={system.id} system={system} onNavigate={onNavigate} busy={Boolean(busy)}
         onToggle={entry=>void act({action:'toggle_system_entry',entry_id:entry.id,status:entry.status==='done'?'open':'done'},entry.id)} />
@@ -554,6 +569,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
 
       <div className="ff-scene absolute inset-0">
         <ClientFileFolder3D
+          fileFolderTier={data.file_folder_tier}
           activeSurface={current.key}
           onSurfaceChange={(next) => enterSurface(next)}
           navigationEnabled={!panelOpen}
@@ -816,6 +832,11 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 <FileFolderOpenWorld
                   clientName={data.client.name}
                   fileNumber={data.client.file_number}
+                  fileFolderTier={data.file_folder_tier}
+                  worldAppearance={resolveFileFolderAppearance(
+                    data.file_folder_tier==='plus'?'plus':data.file_folder_tier==='premium'?'premium':data.file_folder_tier==='pro'?'pro':'standard',
+                    data.file_folder_world_release?.config,
+                  )}
                   workshopTitle={data.workshop.title}
                   workshopPurpose={data.workshop.purpose}
                   initialWorld={world}

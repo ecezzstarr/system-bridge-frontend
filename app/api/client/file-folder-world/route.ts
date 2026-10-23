@@ -1,4 +1,5 @@
 import { isFileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
+import {getClientFolderUpgrade,clientUpgradePublicView} from '@/lib/client-folder-upgrade'
 import { allowedBuildPartSystems } from '@/lib/file-folder-build-compatibility'
 import { NextRequest, NextResponse } from 'next/server'
 import { issueWeaveReceipt } from '@/lib/weave-receipts'
@@ -43,6 +44,13 @@ async function resolveClientWorld(request: NextRequest) {
   if (!client?.file_number) {
     return { sql, error: NextResponse.json({ error: 'Active File Folder required' }, { status: 409 }) }
   }
+
+  const upgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
+  if(upgrade&&upgrade.status!=='ready')
+    return {sql,error:NextResponse.json({
+      error:'Your Pro File Folder world is under construction; repayment must be verified before entry.',
+      gate:'construction',upgrade:clientUpgradePublicView(upgrade),
+    },{status:423,headers:{'Cache-Control':'private, no-store'}})}
 
   const [folder] = await sql`
     SELECT id,file_number,status,workshop_type
@@ -347,6 +355,8 @@ export async function POST(request: NextRequest) {
         route_station:{systems:[{systemType:'customer_door',label:'Customer Door'}]},
         creator_booth:{systems:[{systemType:'customer_door',label:'Customer Door'}]},
         broadcast_studio:{systems:[{systemType:'creator_booth',label:'Creator Booth'}]},
+        animation_studio:{systems:[{systemType:'creator_booth',label:'Creator Booth'}]},
+        music_studio:{systems:[{systemType:'creator_booth',label:'Creator Booth'}]},
         streaming_gate:{systems:[{systemType:'broadcast_studio',label:'Broadcast Studio'}]},
         media_network:{systems:[{systemType:'streaming_gate',label:'Streaming Open Gate'}]},
         enterprise_door:{
@@ -410,7 +420,7 @@ export async function POST(request: NextRequest) {
 
       const singleInstanceBlueprints=new Set([
         'commerce_storefront','marketplace_network','route_station',
-        'creator_booth','broadcast_studio','streaming_gate','media_network',
+        'creator_booth','broadcast_studio','animation_studio','music_studio','streaming_gate','media_network',
         'enterprise_door','enterprise_hall','legion_quarters','operations_command',
         'enterprise_treasury','distribution_network',
       ])

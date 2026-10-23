@@ -269,6 +269,8 @@ async function seedFileFolderWorld(sql: any) {
     ['market_network_kit', 'Marketplace Network Kit', 'business', 'Components for multi-offer marketplace movement, sellers, buyers, orders and records.', 1200],
     ['creator_booth_kit', 'Creator Booth Kit', 'streaming', 'Core room, interface and publishing components for the first Client-owned media production space.', 180],
     ['broadcast_studio_kit', 'Broadcast Studio Kit', 'streaming', 'Studio control, program formation and broadcast workflow components for a Client media operation.', 520],
+    ['animation_production_kit', 'Animation Production Kit', 'streaming', 'The 3D object timeline, textured materials and camera recording workstation for Client-owned film creation. Administration must set the kit price before publication.', 0, false],
+    ['music_studio_kit', 'Music Studio Kit', 'streaming', 'Real multitrack audio composition: words, recorded sounds, beat-locked Self and Environment response loops, and sound export. Administration sets the kit price before publication.', 0, false],
     ['streaming_gate_kit', 'Streaming Open Gate Kit', 'streaming', 'Public broadcast entrance components that open the Client channel to people outside WEAVE.', 950],
     ['media_network_kit', 'Media Network Kit', 'streaming', 'High-capacity components for a larger programming, distribution and audience network.', 1900],
     ['route_station_kit', 'Business Route Station Kit', 'network', 'Infrastructure for connecting completed Client systems and recording real movement between them.', 650],
@@ -287,7 +289,7 @@ async function seedFileFolderWorld(sql: any) {
         item_key, name, category, description, price_flame_coin, published
       )
       VALUES (
-        ${item[0]}, ${item[1]}, ${item[2]}, ${item[3]}, ${item[4]}, true
+        ${item[0]}, ${item[1]}, ${item[2]}, ${item[3]}, ${item[4]}, ${item[5] !== false}
       )
       ON CONFLICT (item_key) DO NOTHING
     `
@@ -385,6 +387,8 @@ async function seedFileFolderWorld(sql: any) {
     ['route_station', 'System Route Station', 'network_district', 'route_station', 'A persistent route station that carries authorized movement between completed Client technologies and records what crossed, where it went and what it produced.', 72, 'route_station_kit', 1],
     ['creator_booth', 'Creator Booth', 'streaming_district', 'creator_booth', 'The first Client-owned production room for planning programs, launches, demonstrations, interviews and media movement.', 24, 'creator_booth_kit', 1],
     ['broadcast_studio', 'Broadcast Studio', 'streaming_district', 'broadcast_studio', 'A three-day studio build that opens structured programming, scheduling and broadcast preparation.', 72, 'broadcast_studio_kit', 1],
+    ['animation_studio', 'Animation Workshop', 'streaming_district', 'animation_studio', 'A Client-owned three-dimensional movie-making workshop with textured object animation, camera movement, production records and WebM film recording.', 72, 'animation_production_kit', 1, false],
+    ['music_studio', 'Music Studio', 'streaming_district', 'music_studio', 'A real music production environment where recorded voices, lyrics, synthesized instruments and environmental sounds form synchronized repeating conversations, with Client-owned projects and WAV export.', 72, 'music_studio_kit', 1, false],
     ['streaming_gate', 'Streaming Open Gate', 'streaming_district', 'streaming_gate', 'A five-day public broadcast gate that allows people outside WEAVE to visit the Client channel and enter a live source when the Client opens it.', 120, 'streaming_gate_kit', 1],
     ['media_network', 'Media Network', 'streaming_district', 'media_network', 'A ten-day expansion from one public Streaming Gate into a larger programming and media-distribution network.', 240, 'media_network_kit', 1],
     ['enterprise_door', 'Enterprise Door', 'enterprise_district', 'enterprise_door', 'A seven-day public enterprise entrance unlocked only after Administration approves Lord/Lady elevation and the Client has formed a Marketplace Network.', 168, 'enterprise_door_kit', 1],
@@ -404,7 +408,7 @@ async function seedFileFolderWorld(sql: any) {
       )
       VALUES (
         ${blueprint[0]}, ${blueprint[1]}, ${blueprint[2]}, ${blueprint[3]},
-        ${blueprint[4]}, ${blueprint[5]}, ${blueprint[6]}, ${blueprint[7]}, true
+        ${blueprint[4]}, ${blueprint[5]}, ${blueprint[6]}, ${blueprint[7]}, ${blueprint[8] !== false}
       )
       ON CONFLICT (blueprint_key) DO NOTHING
     `
@@ -749,7 +753,8 @@ export async function getFileFolderWorldSnapshot(
     SELECT
       b.*,
       COALESCE(i.name,'') AS required_item_name,
-      COALESCE(i.price_flame_coin,0) AS required_item_price_flame_coin
+      COALESCE(i.price_flame_coin,0) AS required_item_price_flame_coin,
+      COALESCE(i.published,false) AS required_item_published
     FROM weave_file_folder_blueprints b
     LEFT JOIN weave_file_folder_items i ON i.item_key=b.required_item_key
     WHERE b.published=true

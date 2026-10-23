@@ -19,6 +19,7 @@ export default function WalletDepositWithdrawPage() {
   const [flameCoinRate, setFlameCoinRate] = useState<number | null>(null)
   const [companyTrxWallet, setCompanyTrxWallet] = useState('')
   const [depositTxHash, setDepositTxHash] = useState('')
+  const [clientDeposits,setClientDeposits] = useState<Array<{id:string;amount_trx:number|string;status:string;receipt_data:string|null;created_at:string}>>([])
   const [platformFeePercent, setPlatformFeePercent] = useState(5)
   const [withdrawBankName, setWithdrawBankName] = useState('')
   const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('')
@@ -64,6 +65,7 @@ export default function WalletDepositWithdrawPage() {
 
   useEffect(() => {
     if (!user || isOpayRole) return
+    void fetchClientDeposits()
     // Fetch only the Company TRX wallet and Flame Coin peg; no NGN quote for Clients.
     fetch('/api/bridge/file-folder')
       .then(res => res.json())
@@ -73,6 +75,18 @@ export default function WalletDepositWithdrawPage() {
       })
       .catch(() => {})
   }, [user, isOpayRole])
+
+  const fetchClientDeposits = async () => {
+    if(!user||isOpayRole)return
+    try{
+      const token=localStorage.getItem('ssb_auth_token')
+      const response=await fetch('/api/deposit/tron',{
+        cache:'no-store',headers:token?{Authorization:'Bearer '+token}:{},
+      })
+      const body=await response.json()
+      if(response.ok&&body.success)setClientDeposits(body.deposits||[])
+    }catch(error){console.error('Unable to refresh Client deposit history',error)}
+  }
 
   const fetchBalance = async () => {
     if (!user) return
@@ -118,8 +132,8 @@ export default function WalletDepositWithdrawPage() {
       setMessage('Please enter a valid amount')
       return
     }
-    if (!isOpayRole && !depositTxHash.trim()) {
-      setMessage('Enter the TRX transaction hash after sending to the Company TRX wallet')
+    if (!isOpayRole && !/^[0-9a-f]{64}$/i.test(depositTxHash.trim())) {
+      setMessage('Enter the exact 64-character hexadecimal TRX transaction hash after sending to the Company wallet')
       return
     }
 
@@ -151,9 +165,10 @@ export default function WalletDepositWithdrawPage() {
           setDepositStep('receipt')
           setMessage('')
         } else {
-          setMessage(`TRX payment submitted. Administration will verify it and credit the equivalent Flame Coin.`)
+          setMessage(data.message||'TRX request awaiting Administration verification.')
           setAmount('')
           setDepositTxHash('')
+          void fetchClientDeposits()
         }
       } else {
         setMessage(data.error || 'Deposit initialization failed')
@@ -547,6 +562,24 @@ export default function WalletDepositWithdrawPage() {
                   </p>
                 </div>
               </div>
+
+              {!isOpayRole && <section data-client-tron-deposits className="rounded-2xl border border-cyan-300/20 bg-slate-900/60 p-5 text-white">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div><h3 className="text-lg font-black">My TRX deposits</h3><p className="mt-1 text-xs text-slate-400">Pending requests remain uncredited until Administration verifies the Company wallet receipt.</p></div>
+                  <Button onClick={()=>{void fetchClientDeposits();void fetchBalance()}} variant="outline" size="sm">Refresh deposits</Button>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {clientDeposits.length===0 ? <p className="text-sm text-slate-400">No TRX deposit request recorded yet.</p> : clientDeposits.map(item=>(
+                    <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
+                      <div><p className="font-bold text-white">{Number(item.amount_trx).toLocaleString()} TRX</p><p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString()}</p>
+                        <p className="mt-1 max-w-[260px] truncate font-mono text-[10px] text-cyan-200">{item.receipt_data||'Missing transaction hash'}</p></div>
+                      <span className={item.status==='approved'?'text-sm font-bold text-emerald-300':item.status==='rejected'?'text-sm font-bold text-red-300':'text-sm font-bold text-amber-200'}>
+                        {item.status==='approved'?'Approved · Flame Coin credited':item.status==='rejected'?'Rejected · No credit':'Awaiting Administration'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>}
 
               {isOpayRole && (
                 <div className="space-y-6">

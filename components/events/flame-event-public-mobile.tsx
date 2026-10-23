@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Flame } from 'lucide-react'
 import type { FlameDoorFeedStatus } from '@/components/events/flame-event-open-world'
 import { FlameEventPublicPreview, type PublicClientFolder } from '@/components/events/flame-event-public-preview'
+import { BurningRiverOfficialGateway } from '@/components/events/burning-river-official-gateway'
 import { FlameEventFoodStore } from '@/components/events/flame-event-food-store'
 import { visiblePoll } from '@/lib/visible-poll'
 
@@ -44,7 +45,11 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
       <p>Explore real Client-built systems inside Burning River. Food purchases remain linked to the Agent who brought you here.</p>
       <Link href={carrierHref} className="inline-flex min-h-10 shrink-0 items-center gap-2 font-black text-amber-200" data-flame-event-return-carrier><ArrowLeft className="h-4 w-4"/> Order through your Agent</Link>
     </div>}
-    <FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>
+    <BurningRiverOfficialGateway carrierCode={carrierCode}/>
+    <details className="border-t border-amber-200/20 bg-[#071a2d] px-4 py-4" data-legacy-public-market-preview>
+      <summary className="cursor-pointer text-sm font-bold text-amber-200">Browse existing commissioned Customer Doors</summary>
+      <FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>
+    </details>
     <FlameEventFoodStore carrierCode={carrierCode}/>
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">

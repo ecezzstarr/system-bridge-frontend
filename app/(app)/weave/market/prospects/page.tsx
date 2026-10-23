@@ -27,6 +27,7 @@ interface MyProspect {
   sentAt: string | null
   lastActivityAt: string
   name: string
+  country: string | null
   prospectWhatsapp: string
   phone: string
   bridgeUrl: string | null
@@ -334,6 +335,10 @@ export default function ProspectMarketPage() {
         </>
       ) : (
         <div className="space-y-6">
+          <Link href="/bridger/river-call-outreach" className="flex items-center justify-between gap-3 rounded-xl border border-sky-400/30 bg-sky-400/10 px-5 py-4 text-sm font-semibold text-sky-100">
+            <span>AI River · Live Calls — pay per consenting candidate and hand over to your WhatsApp</span>
+            <span aria-hidden="true">→</span>
+          </Link>
           <div className="border-y border-amber-300/15 bg-amber-300/[.035] px-4 py-4 sm:px-5">
             <p className="text-[9px] font-black uppercase tracking-[.16em] text-amber-200">Hope · before outreach</p>
             <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-400">The Prospect in front of you is a candidate, not a verified person or guaranteed contact. Read the Crossing Notebook one page at a time. First contact is human-first. The Bridge is a separate action only after recognition, response and permission.</p>
@@ -379,7 +384,7 @@ export default function ProspectMarketPage() {
                     <CardContent className="flex items-center justify-between py-4">
                       <div>
                         <p className="text-white font-medium">{p.name}</p>
-                        <p className="text-xs text-slate-500">{p.prospectWhatsapp || p.phone}</p>
+                        <p className="text-xs text-slate-500">{p.country ? p.country+" · " : ""}{p.prospectWhatsapp || p.phone}</p>
                         <Badge variant="outline" className={`mt-1 text-[10px] ${st.color}`}>{st.label}</Badge>
                       </div>
                       {p.status === 'pending' ? (

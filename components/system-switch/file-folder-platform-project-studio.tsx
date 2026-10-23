@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect,useState } from 'react'
+import { quoteFileFolderBlueprint, type BlueprintCostFields } from '@/lib/file-folder-build-quote'
 import { Boxes,CheckCircle2,Clock3,ArrowRight,Plus,ShieldAlert } from 'lucide-react'
 import { FILE_FOLDER_PLATFORM_TEMPLATES,type FileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 
@@ -11,7 +12,7 @@ type PlatformProject={
 }
 type Props={
   projects:PlatformProject[];
-  blueprints:Array<{blueprint_key:string;name:string}>;
+  blueprints:Array<{blueprint_key:string;name:string}&BlueprintCostFields>;
   busy:boolean;
   onCreate:(kind:FileFolderPlatformKind,title:string,purpose:string)=>Promise<void>;
   onChooseBlueprint:(key:string)=>void;
@@ -101,12 +102,21 @@ export default function FileFolderPlatformProjectStudio({projects,blueprints,bus
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-cyan-300" style={{width:(selected.total?selected.completed/selected.total*100:0)+'%'}}/></div>
         <div className="mt-3 space-y-2">
           {selected.stages.map((stage,index)=>{
-            const published=blueprints.some(b=>b.blueprint_key===stage.blueprintKey)
+            const blueprint=blueprints.find(b=>b.blueprint_key===stage.blueprintKey)
+            const published=Boolean(blueprint)
+            const quote=blueprint?quoteFileFolderBlueprint(blueprint):null
             return <div key={stage.blueprintKey} className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
               <div className="w-5 shrink-0">
                 {stage.status==='operating'?<CheckCircle2 className="h-4 w-4 text-emerald-300"/>:stage.status==='building'?<Clock3 className="h-4 w-4 text-amber-300"/>:<span className="text-[10px] text-slate-500">{index+1}</span>}
               </div>
-              <div className="min-w-0 flex-1"><p className="text-xs font-bold text-white">{stage.label}</p><p className="mt-1 text-[9px] uppercase tracking-wide text-slate-400">{stage.status==='operating'?'Built system operating':stage.status==='building'?'Construction in progress':'Not yet constructed'}</p></div>
+              <div className="min-w-0 flex-1"><p className="text-xs font-bold text-white">{stage.label}</p><p className="mt-1 text-[9px] uppercase tracking-wide text-slate-400">{stage.status==='operating'?'Built system operating':stage.status==='building'?'Construction in progress':'Not yet constructed'}</p>
+                {stage.status==='not_started'&&quote&&<p className="mt-2 text-[10px] leading-5 text-amber-100">
+                  Acquire kit: {quote.priceAvailable?quote.requiredMaterialCost.toLocaleString()+' Flame Coin total':'Price unavailable'}
+                  {' · '}Start-build fee: 0 FC
+                  {quote.materialRequired>0&&' · '+quote.materialRequired+' × '+quote.materialName}
+                </p>}
+                {stage.status==='not_started'&&!published&&<p className="mt-2 text-[10px] text-amber-300">Blueprint not yet published</p>}
+              </div>
               {stage.status==='not_started'&&published&&<button onClick={()=>onChooseBlueprint(stage.blueprintKey)}
                 className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-cyan-200/35 px-2.5 py-2 text-[10px] font-black text-cyan-100">
                 Blueprint <ArrowRight className="h-3 w-3"/>

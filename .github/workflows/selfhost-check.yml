@@ -9,7 +9,7 @@ on:
       - 'selfhost/**'
       - '.github/workflows/selfhost-check.yml'
   push:
-    branches: [main]
+    branches: [main, 'integration/**']
     paths:
       - 'Dockerfile.selfhost'
       - 'docker-compose.selfhost.yml'

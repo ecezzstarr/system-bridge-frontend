@@ -70,7 +70,7 @@ sudo usermod -aG docker "$USER"
 ```bash
 git clone https://github.com/ecezzstarr/system-bridge-frontend.git
 cd system-bridge-frontend
-git checkout weave-self-hosting-ready
+git checkout main
 ```
 
 ## 3. Configure secrets
@@ -172,6 +172,10 @@ release or choose a historically healthy rollback release without using SSH.
 
 See [full setup, rollback and server-move playbook](../docs/sovereign-release-workshop.md).
 Application rollback is not a PostgreSQL rollback; preserve database and media backups.
+
+## PowerShell host operations inside Administration
+
+The optional PowerShell 7 sentinel runs **outside the public app** on the same Linux server and sends sanitized Docker/health/disk snapshots to the Infrastructure Workshop. The independent Release Workshop already performs verified self-host deployment and rollback; no arbitrary web terminal is exposed. Install and secure the host service following [PowerShell Host Security](../docs/powershell-host-security.md). The service is not active just because its source exists in GitHub.
 
 ## Permanent Weave-owned server
 

@@ -99,6 +99,7 @@ export default function CompanyEmploymentApplications(){
       <Link href="/admin/dashboard" className="text-xs text-cyan-200">← Administration</Link>
       <p className="mt-5 text-[10px] font-black uppercase tracking-widest text-amber-200">Company positions · Administration</p>
       <h1 className="mt-2 text-3xl font-black">Employment applications</h1>
+      <Link href="/admin/client-staff-offers" className="mt-4 inline-flex border border-cyan-200/30 px-4 py-3 text-sm font-bold text-cyan-200">Company Client staff offers & tickets →</Link>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Read each applicant's statement, then open the correct verification desk to approve or decline. Lead Distribution Managers select their assistants only after Administration verifies eligibility. All decisions preserve their review records.</p>
     </header>
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

@@ -5,7 +5,7 @@
 export const FILE_FOLDER_PART_COMPATIBILITY: Record<string, readonly string[]> = {
   route_capacity:['route_station','integration_network','distribution_network','enterprise_operating_system'],
   legion_capacity:['legion_quarters','enterprise_hall','enterprise_operating_system'],
-  stream_capacity:['broadcast_studio','streaming_gate','media_network'],
+  stream_capacity:['animation_studio','broadcast_studio','streaming_gate','media_network'],
   audience_capacity:['streaming_gate','media_network'],
   ai_node:['ai_service_desk','intelligence_lab','operations_command','media_network','enterprise_operating_system'],
   automation:['service_workflow','operations_suite','operations_command','distribution_network','enterprise_operating_system'],

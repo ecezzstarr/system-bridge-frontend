@@ -93,6 +93,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-development-foundry', label:'Development Foundry', kind:'district', route:'/admin/development-agents', area:'Administration', scope:'admin', protected:true, defaultOrder:202 },
   { key:'admin-integrity-engine', label:'WEAVE Integrity Engine', kind:'district', route:'/admin/dev-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:205 },
   { key:'admin-dj-workshop', label:'DJ Workshop', kind:'district', route:'/admin/dj-workshop', area:'Administration', scope:'admin', defaultOrder:210 },
+  { key:'admin-music-studio', label:'Music Studio', kind:'district', route:'/admin/music-studio', area:'Administration', scope:'admin', protected:true, defaultOrder:212 },
   { key:'admin-ad-workshop', label:'Ad Workshop', kind:'district', route:'/admin/ad-workshop', area:'Administration', scope:'admin', defaultOrder:220 },
   { key:'admin-video-ad-studio', label:'Video Ad Studio', kind:'district', route:'/admin/video-ad-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:225 },
   { key:'admin-distribution-studio', label:'Distribution Studio', kind:'district', route:'/admin/distribution-studio', area:'Administration', scope:'admin', protected:true, defaultOrder:227 },

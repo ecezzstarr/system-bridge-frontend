@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool, sql } from '@/lib/db'
+import { ensureMarketTables } from '@/lib/market'
 import { DAILY_WHATSAPP_REPLACEMENT_LIMIT, getDailyWhatsAppReplacementCount } from '@/lib/bridger-prospect-replacements'
 import { getWeaveBridgeOrigin } from '@/lib/weave-origin'
 
@@ -15,6 +16,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    if(!await ensureMarketTables())throw new Error('Prospect Market unavailable')
     const rows = await sql`
       SELECT
         o.id as outreach_id,
@@ -23,6 +25,7 @@ export async function GET(request: NextRequest) {
         o.sent_at,
         o.last_activity_at,
         c.name,
+        c.country,
         c.phone,
         c.whatsapp_number as prospect_whatsapp,
         b.bridge_code
@@ -47,6 +50,7 @@ export async function GET(request: NextRequest) {
       sentAt: r.sent_at,
       lastActivityAt: r.last_activity_at,
       name: r.name,
+      country: r.country || null,
       prospectWhatsapp: r.prospect_whatsapp,
       phone: r.phone,
       bridgeUrl: r.bridge_code
