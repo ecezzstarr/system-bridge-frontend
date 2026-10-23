@@ -18,11 +18,14 @@ assert.ok(pricing.includes('standardMaximumFlameCoin: 3000'),'Standard ends at 3
 assert.ok(pricing.includes('proNegotiatedMinimumFlameCoin: 3000'),'Negotiated Pro may reach 3,000 Flame Coin')
 assert.ok(pricing.includes('proStartingFlameCoin: 6500'),'Pro normal starting value is 6,500 Flame Coin')
 assert.ok(pricing.includes('premiumFlameCoin: 35800'),'Premium is fixed at 35,800 Flame Coin')
-assert.ok(pricing.includes("export type FileFolderTier = 'standard' | 'pro' | 'premium'"),'Pricing contract has Standard, Pro and Premium')
+assert.ok(pricing.includes("export type FileFolderTier = 'standard' | 'pro' | 'premium' | 'plus'"),'Pricing contract includes Plus in addition to existing tiers')
+assert.ok(pricing.includes('plusFlameCoin: 60000'),'Plus package is valued at 60,000 Flame Coin')
+assert.ok(pricing.includes('plusTrx: 59602'),'Plus purchase is 59,602 TRX')
+assert.ok(pricing.includes('plusUsdt: 20000'),'Plus alternative reference is 20,000 USDT')
 assert.ok(pricing.includes("if (requested === 'pro')"),'Pro classification requires explicit sale context')
 assert.ok(pricing.includes('New Pro sales are negotiated/external sales and must be explicitly marked Pro.'),'Amount-only inference cannot silently turn the 3,000 overlap into Pro')
 
-assert.ok(publicPage.includes("useState<'standard' | 'premium'>('standard')"),'Normal public WEAVE purchase exposes Standard and Premium, not self-selected Pro')
+assert.ok(publicPage.includes("useState<'standard' | 'premium' | 'plus'>('standard')"),'Normal public WEAVE purchase exposes Standard, Premium and Plus, not self-selected Pro')
 assert.ok(publicPage.includes('standardMaximumFlameCoin'),'Normal Standard purchase is capped at the Standard building-power maximum')
 assert.ok(publicPage.includes('getFileFolderTier(amount, tier)'),'Normal purchase validates the selected tier explicitly')
 
@@ -48,4 +51,4 @@ assert.ok(metadata.includes('standardMaximumFlameCoin'),'File Folder metadata ex
 assert.ok(terms.includes('CURRENT_TERMS_VERSION = 12'),'WEAVE terms version advances with the pricing contract')
 assert.ok(terms.includes('PRO_FILE_FOLDER_START'),'WEAVE terms explain Pro separately from Standard and Premium')
 
-console.log('File Folder contract aligned: Standard 180–3,000; Pro starts 6,500 and negotiates to 3,000; Premium 35,800')
+console.log('File Folder contract aligned: Standard 180–3,000; Pro starts 6,500; Premium 35,800; Plus 60,000 Flame Coin = 59,602 TRX or 20,000 USDT reference')
