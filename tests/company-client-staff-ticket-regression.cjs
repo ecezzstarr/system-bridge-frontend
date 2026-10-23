@@ -54,7 +54,7 @@ assert.ok(admin.includes('applicantContributionUSDT')&&admin.includes('proposedP
   'Employment loans must be separate from the applicant contribution with written terms')
 assert.ok(admin.includes('loanChecked')&&admin.includes('loanFundingReference')&&admin.includes('personal_loan_accepted_at'),
   'Administration must verify actual separate loan funding and consent before granting Pro')
-assert.ok(admin.includes('existingClient')&&admin.includes('client.file_number !== fileNumber'),
+assert.ok(admin.includes('existingClient')&&admin.includes('client.rows[0].file_number !== fileNumber'),
   'Existing Clients retain their owned File Number when a company position is granted')
 assert.ok(applicant.includes('personalLoanTermsAccepted')&&invite.includes('loanTermsAccepted'),
   'Accepting an employee offer cannot silently incur a personal loan')
