@@ -189,7 +189,7 @@ export default function FileFolderPlusRadiantWorld({appearance,districts,onEnter
       </button>
     </div>
     {forming.length>0&&<div className="mt-3 text-[10px] text-[#68778c]">
-      {forming.map(b=><p key={b.id}>{b.title}: {buildFormationProgress(b,now).percent}% built · formation continues through real time</p>)}
+      {forming.map(b=><p key={b.id}>{b.title}: {Math.round(buildFormationProgress(b,now))}% built · formation continues through real time</p>)}
     </div>}
    </div>
   </section>
