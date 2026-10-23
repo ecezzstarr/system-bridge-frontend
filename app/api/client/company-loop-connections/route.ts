@@ -4,6 +4,7 @@ import {getBusinessDb} from '@/lib/client-business-store'
 import {resolveClientToken} from '@/lib/client-vault'
 import {BURNING_RIVER_LOOP,ensureWeaveOpenWorldSchema} from '@/lib/weave-open-world-store'
 import {FLAME_EVENT,resolveEventStatus} from '@/lib/weave-event'
+import {getFlameEvent} from '@/lib/weave-event-store'
 import {notifyUser} from '@/lib/deposit-notifications'
 
 export const dynamic='force-dynamic'
@@ -79,7 +80,8 @@ export async function POST(request:NextRequest){
       return NextResponse.json({success:true,collaborationOpen:row?.collaboration_open===true},
         {headers:{'Cache-Control':'private, no-store'}})
     }
-    if(resolveEventStatus(FLAME_EVENT)!=='active')
+    const currentEvent=await getFlameEvent()
+    if((currentEvent.effectiveStatus||resolveEventStatus(currentEvent))!=='active')
       return NextResponse.json({error:'Business connections open while Company Loop 1 is live'},{status:409})
     if(action==='request_connection'){
       const targetId=String(payload.targetDomainId||'')
