@@ -187,6 +187,12 @@ export async function getPublicBurningRiverWorld(sql:any,page=0){
           AND c.status='accepted' AND p.status='active'
           AND (c.domain_a=d.id OR c.domain_b=d.id)
           AND (SELECT count(DISTINCT pc.domain_id) FROM weave_open_world_project_contributions pc
+            JOIN weave_open_world_domains contributor ON contributor.id=pc.domain_id
+            JOIN client_built_systems active_system
+              ON active_system.id=pc.system_id
+              AND active_system.client_id=contributor.client_id
+              AND active_system.file_number=contributor.file_number
+              AND active_system.status='active'
             WHERE pc.project_id=p.id)=2) AS linked_projects,
       (SELECT max(CASE WHEN b.completes_at>b.started_at THEN
          GREATEST(0,LEAST(100,
