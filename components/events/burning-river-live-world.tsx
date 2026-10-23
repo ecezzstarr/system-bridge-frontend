@@ -8,7 +8,6 @@ import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import {visiblePoll} from '@/lib/visible-poll'
 import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
-import {worldLocationForSlot} from '@/lib/weave-open-world-domains'
 import {ArrowRight,Castle,Handshake,Layers3,MapPinned,RefreshCcw,ShieldCheck,Store,Waves} from 'lucide-react'
 
 type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:string;direction:'incoming'|'outgoing';requestNote:string}
@@ -274,7 +273,7 @@ export function BurningRiverLiveWorld({role='visitor'}:{
         </button>
       </div>
       <p className="text-xs leading-5 text-sky-100/70">Every verified Client File Folder has a permanent world location from activation. Buildings respond to recorded construction and live systems. Public Customer Doors become enterable only when commissioned.</p>
-      <div className="grid max-h-60 grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
+      <div id="domains" className="grid max-h-60 scroll-mt-10 grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
        {feed.domains.map(d=><button type="button" key={d.domainId}
          onClick={()=>setSelected(d.domainId)} aria-pressed={selected===d.domainId}
          className={`rounded-xl border p-3 text-left text-xs ${selected===d.domainId?'border-amber-200 bg-amber-200/10':'border-white/15 bg-white/[.04]'}`}>
