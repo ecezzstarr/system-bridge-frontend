@@ -155,6 +155,46 @@ function exportWav(buffer:AudioBuffer){
  }
  return new Blob([raw],{type:'audio/wav'})
 }
+/** Build one genuine uninterrupted multi-section song for the institutional DJ.
+ * Each section references a saved musical composition, so the Intro, Call,
+ * Answer, Bridge and Closing may have different instruments and word phrases.
+ * Sections are rendered on one shared sample timeline, not screenshots or
+ * just a duplicated audio-player playlist. */
+export async function exportAdvancedSongWav(
+ sections:Array<{arrangement:MusicArrangement;repeats:number}>,
+ fetchAsset:(id:string)=>Promise<ArrayBuffer>
+){
+ if(!sections.length||sections.length>16)throw Error('Arrange up to sixteen song sections.')
+ const seconds=sections.reduce((sum,part)=>{
+  if(!Number.isInteger(part.repeats)||part.repeats<1||part.repeats>4)throw Error('A section must repeat one to four times.')
+  if(part.arrangement.tracks.filter(t=>!t.muted&&t.level>0).length<2)throw Error('Each song section needs two sounding tracks.')
+  return sum+loopSeconds(part.arrangement)*part.repeats
+ },0)
+ if(seconds>160)throw Error('DJ songs must be 160 seconds or shorter for current WAV broadcast limits.')
+ const sampleRate=44100
+ const context=new OfflineAudioContext(2,Math.ceil((seconds+.01)*sampleRate),sampleRate)
+ const master=context.createGain();master.gain.value=.70
+ master.connect(context.destination)
+ ;(context as OfflineAudioContext & {__weaveMusicBus?:AudioNode}).__weaveMusicBus=master
+ let cursor=0
+ // Cache decoded audio across sections that reuse the same source recording.
+ const buffers:AudioBuffers=new Map()
+ for(const part of sections){
+  const loaded=await loadMusicBuffers(context,part.arrangement,fetchAsset)
+  for(const [key,value] of loaded)buffers.set(key,value)
+  const unit=60/part.arrangement.bpm
+  const beats=part.arrangement.bars*4
+  for(let repeat=0;repeat<part.repeats;repeat++){
+   const beginning=cursor
+   for(let beat=0;beat<beats;beat++)
+    renderBeat(context,part.arrangement,buffers,beat,beginning+beat*unit)
+   cursor+=beats*unit
+  }
+ }
+ const result=await context.startRendering()
+ return exportWav(result)
+}
+
 export async function exportMusicWav(
  arrangement:MusicArrangement,fetchAsset:(id:string)=>Promise<ArrayBuffer>
 ){
