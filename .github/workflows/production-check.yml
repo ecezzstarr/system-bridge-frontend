@@ -107,6 +107,7 @@ jobs:
           node tests/notification-staff-workspace-regression.cjs
           node tests/company-client-staff-ticket-regression.cjs
           node tests/file-folder-global-upgrade-release-regression.cjs
+          node tests/file-folder-plus-official-world-regression.cjs
           node tests/weave-narration-studio.cjs
           node tests/prospect-whatsapp-handoff-regression.cjs
           node tests/bridger-whatsapp-replacement-limit.cjs
