@@ -36,3 +36,32 @@ CREATE INDEX IF NOT EXISTS idx_weave_open_world_connections_a
   ON weave_open_world_connections(domain_a,status,created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_weave_open_world_connections_b
   ON weave_open_world_connections(domain_b,status,created_at DESC);
+
+
+-- Multiplayer business formation is not the same thing as an invitation.
+-- Both Client worlds must accept a project and contribute operating systems.
+CREATE TABLE IF NOT EXISTS weave_open_world_projects (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  connection_id uuid NOT NULL REFERENCES weave_open_world_connections(id),
+  created_by_domain uuid NOT NULL REFERENCES weave_open_world_domains(id),
+  kind varchar(32) NOT NULL CHECK(kind IN (
+    'shared_service','distribution','media','commerce','system_integration'
+  )),
+  title varchar(120) NOT NULL,
+  status varchar(20) NOT NULL DEFAULT 'proposed'
+    CHECK(status IN ('proposed','active')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  accepted_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS idx_weave_open_world_projects_connection
+  ON weave_open_world_projects(connection_id,status,created_at DESC);
+
+CREATE TABLE IF NOT EXISTS weave_open_world_project_contributions (
+  project_id uuid NOT NULL REFERENCES weave_open_world_projects(id),
+  domain_id uuid NOT NULL REFERENCES weave_open_world_domains(id),
+  system_id uuid NOT NULL REFERENCES client_built_systems(id),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(project_id,domain_id)
+);
+CREATE INDEX IF NOT EXISTS idx_weave_open_world_contributions_domain
+  ON weave_open_world_project_contributions(domain_id,created_at DESC);
