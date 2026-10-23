@@ -7,9 +7,9 @@ import {DoubleSide,RepeatWrapping,SRGBColorSpace} from 'three'
 import {FILE_FOLDER_EQUIPMENT,FILE_FOLDER_PALETTES,PLUS_FILE_FOLDER_REFERENCE,
   type EquipmentZone,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
+import {derivePlusWorldFormation,type PlusBuildRecord,type PlusSystemRecord,type PlusZoneProgress,type PlusWorldFormation} from '@/lib/plus-file-folder-formation'
 
 type District={key:string;label:string}
-type Build={id:string;title:string;status:string;started_at?:string;completes_at?:string}
 type Props={
   appearance:FileFolderWorldAppearance
   districts:District[]
@@ -17,7 +17,8 @@ type Props={
   active:string
   systems:number
   building:number
-  builds:Build[]
+  builds:PlusBuildRecord[]
+  systemRecords:PlusSystemRecord[]
   now:number
 }
 const ANGLES=[-2.55,-1.58,-.55,.55,1.58,2.55]
@@ -43,8 +44,9 @@ function RadiantMaterial({color,gold=false,glass=false,realness='high'}:{
     side={DoubleSide}/>
 }
 
-function EquipmentBuilding({zone,index,selected,appearance,onSelect}:{
+function EquipmentBuilding({zone,index,selected,appearance,formation,onSelect}:{
   zone:EquipmentZone;index:number;selected:boolean;appearance:FileFolderWorldAppearance
+  formation:PlusZoneProgress
   onSelect:(zone:EquipmentZone)=>void
 }){
   const angle=ANGLES[index]
@@ -54,6 +56,7 @@ function EquipmentBuilding({zone,index,selected,appearance,onSelect}:{
   const kind=FILE_FOLDER_EQUIPMENT[zone].kind
   const detailed=appearance.realness!=='basic'&&appearance.equipmentPack!=='formation'
   const height=kind==='tower'?3.75:kind==='command'?3.25:kind==='globe'?3.1:2.75
+  const formationHeight=Math.max(.12,Math.min(1,formation.progress/100))
   return <group position={[x,0,z]}
     onClick={event=>{event.stopPropagation();onSelect(zone)}}>
     <mesh position={[0,-.12,0]} receiveShadow><cylinderGeometry args={[2.95,3.15,.34,32]}/><RadiantMaterial color={palette.structure}/></mesh>
@@ -90,6 +93,43 @@ function EquipmentBuilding({zone,index,selected,appearance,onSelect}:{
       fontSize={.44} color={palette.sky} anchorX="center" anchorY="middle" maxWidth={3.6} outlineWidth={.015} outlineColor={palette.glass}>
       {FILE_FOLDER_EQUIPMENT[zone].name.toUpperCase()}
     </Text>
+    {formation.building>0&&<group>
+      <mesh position={[-2.15,.2+formationHeight*1.8,.5]}>
+        <boxGeometry args={[.24,.4+formationHeight*3.6,.24]}/>
+        <meshStandardMaterial color={palette.accent} metalness={.7} roughness={.23}/>
+      </mesh>
+      <mesh position={[2.15,.2+formationHeight*1.8,.5]}>
+        <boxGeometry args={[.24,.4+formationHeight*3.6,.24]}/>
+        <meshStandardMaterial color={palette.accent} metalness={.7} roughness={.23}/>
+      </mesh>
+      <mesh position={[0,.23+formationHeight*3.1,.5]}>
+        <boxGeometry args={[4.6,.12,.18]}/>
+        <meshStandardMaterial color={palette.accent} metalness={.7} roughness={.24}/>
+      </mesh>
+      <mesh position={[0,.45+formationHeight*1.3,.6]}>
+        <boxGeometry args={[3.1,.25+formationHeight*2.6,.36]}/>
+        <meshPhysicalMaterial color={palette.glass} transparent opacity={.42}
+          metalness={.15} roughness={.2} depthWrite={false}/>
+      </mesh>
+    </group>}
+    {formation.live>0&&Array.from({length:Math.min(4,formation.live)},(_,i)=>{
+      const side=i%2===0?-1:1
+      const depth=Math.floor(i/2)
+      return <group key={i} position={[side*(2.05+depth*.2),0,1.45+depth*.5]}>
+        <mesh position={[0,1.15+depth*.2,0]} castShadow>
+          <boxGeometry args={[.72,2.3+depth*.4,.7]}/>
+          <RadiantMaterial color={palette.structure}/>
+        </mesh>
+        <mesh position={[0,2.38+depth*.4,0]}>
+          <boxGeometry args={[.92,.13,.92]}/>
+          <RadiantMaterial color={palette.accent} gold/>
+        </mesh>
+        <mesh position={[0,1.5,.39]}>
+          <planeGeometry args={[.49,.85]}/>
+          <meshStandardMaterial color={palette.glass} emissive={palette.glow} emissiveIntensity={.18}/>
+        </mesh>
+      </group>
+    })}
     {selected&&<mesh position={[0,.04,0]} rotation={[-Math.PI/2,0,0]}>
       <torusGeometry args={[2.88,.07,8,44]}/><meshStandardMaterial color={palette.glow} emissive={palette.glow} emissiveIntensity={.65}/>
     </mesh>}
