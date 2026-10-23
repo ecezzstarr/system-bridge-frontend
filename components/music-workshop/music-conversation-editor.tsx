@@ -8,14 +8,13 @@ import {Headphones,Mic,MicOff,Music2,Pause,Play,Plus,Save,Trash2,Upload,Volume2,
 export type MusicProject={id:string;title:string;arrangement:MusicArrangement;created_by:string;updated_at:string}
 export type MusicAsset={id:string;original_name:string;media_type:string;size_bytes:number;created_at:string}
 type Props={
- project:MusicProject;assets:MusicAsset[];fileNumber:string;
+ project:MusicProject;assets:MusicAsset[];fileNumber:string;mode?:'client'|'administration';
  onSaved:(next:MusicProject)=>Promise<void>;onAsset:(file:File)=>Promise<MusicAsset>;onClose:()=>void
 }
 const button='inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-cyan-200/20 bg-cyan-200/[.075] px-4 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-200/15 disabled:opacity-40'
 const field='w-full rounded-lg border border-white/15 bg-slate-950/90 px-2 py-2 text-xs text-white outline-none focus:border-cyan-300/45'
 const soundOptions:MusicSound[]=['ember','river','glass','bass','pulse','uploaded']
 const titleCase=(str:string)=>str.charAt(0).toUpperCase()+str.slice(1)
-const mediaEndpoint='/api/music-workshop/media'
 const id=()=>Math.random().toString(36).slice(2,12)+Date.now().toString(36)
 function SoundMeter({analyser}:{analyser:AnalyserNode|null}){
  const canvas=useRef<HTMLCanvasElement>(null)
@@ -55,7 +54,9 @@ function Waveform({samples}:{samples?:number[]}){
   })}
  </svg>
 }
-export default function MusicConversationEditor({project,assets,fileNumber,onSaved,onAsset,onClose}:Props){
+export default function MusicConversationEditor({project,assets,fileNumber,mode='client',onSaved,onAsset,onClose}:Props){
+ const mediaEndpoint=mode==='administration'?'/api/admin/music-studio/media':'/api/music-workshop/media'
+ const collectionName=mode==='administration'?'WEAVE Administration Sound Library':'Client File Folder'
  const [draft,setDraft]=useState(project)
  const [beat,setBeat]=useState(0)
  const [playing,setPlaying]=useState(false)
@@ -91,14 +92,14 @@ export default function MusicConversationEditor({project,assets,fileNumber,onSav
    {headers:token?{Authorization:'Bearer '+token}:{},cache:'no-store'})
   if(!res.ok)throw Error((await res.json().catch(()=>({}))).error||'Cannot read this Client sound.')
   return res.arrayBuffer()
- },[fileNumber])
+ },[fileNumber,mediaEndpoint])
  const run=async(key:string,fn:()=>Promise<void>)=>{
   setBusy(key);setMessage('')
   try{await fn()}catch(error){setMessage(error instanceof Error?error.message:'Music production failed.')}
   finally{setBusy('')}
  }
  const save=()=>void run('save',async()=>{
-  await onSaved(draft);setMessage('Word and sound arrangement saved to the Client File Folder.')
+  await onSaved(draft);setMessage('Word and sound arrangement saved to '+collectionName+'.')
  })
  const play=()=>void run('play',async()=>{
   if(draft.arrangement.tracks.filter(t=>!t.muted).length<2)throw Error('Arrange at least two active tracks for a real conversation loop.')
@@ -246,7 +247,7 @@ export default function MusicConversationEditor({project,assets,fileNumber,onSav
       <button className={button} disabled={Boolean(busy)||(recording!==null&&recording!==track.id)}
        onClick={()=>recording===track.id?stopMic():void startMic(track.id)}>
        {recording===track.id?<MicOff className="h-4 w-4"/>:<Mic className="h-4 w-4"/>}{recording===track.id?'Stop and save voice':'Record words / sound'}</button>
-      {track.assetId&&<span className="text-[10px] text-emerald-300">Recorded audio belongs to this Client File Folder</span>}
+      {track.assetId&&<span className="text-[10px] text-emerald-300">Recorded audio belongs to {collectionName}</span>}
      </div>
     </div>)}
    </div>
