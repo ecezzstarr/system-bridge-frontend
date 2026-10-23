@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
     if (purchaseTable?.table_name) {
       await sql`ALTER TABLE file_folder_purchases ADD COLUMN IF NOT EXISTS file_folder_tier varchar(20)`
       const [purchaseTier] = await sql`
-        SELECT amount_trx,file_folder_tier
+        SELECT amount_trx,file_folder_tier,status
         FROM file_folder_purchases
         WHERE (client_id=${client.id}::uuid OR file_number=${client.file_number})
           AND status IN ('confirmed','approved','paid_pending_folder')
@@ -158,7 +158,12 @@ export async function GET(request: NextRequest) {
         LIMIT 1
       `
       if (purchaseTier) {
-        persistedTier = getFileFolderTier(Number(purchaseTier.amount_trx), purchaseTier.file_folder_tier)
+        // Plus visual identity requires an explicitly recorded, confirmed Plus purchase.
+        // Never infer Plus ownership from a high deposit or change the purchase contract here.
+        persistedTier = String(purchaseTier.file_folder_tier||'').toLowerCase()==='plus' &&
+          ['confirmed','approved'].includes(String(purchaseTier.status))
+            ? 'plus'
+            : getFileFolderTier(Number(purchaseTier.amount_trx), purchaseTier.file_folder_tier)
       }
     }
 
@@ -211,7 +216,7 @@ export async function GET(request: NextRequest) {
       file_folder_world:fileFolderWorld,
       build_funding:fileFolderWorld.buildFunding,
       file_folder_tier:fileFolderTier,
-      premium_dj_enabled:fileFolderTier==='premium',
+      premium_dj_enabled:fileFolderTier==='premium'||fileFolderTier==='plus',
       vault:{
         balance:money.vault.balance,
         currency:money.vault.currency,
