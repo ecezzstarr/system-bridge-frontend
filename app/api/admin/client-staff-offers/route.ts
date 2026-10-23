@@ -18,6 +18,19 @@ export async function GET(request: NextRequest) {
   if (!admin) return NextResponse.json({ error: 'Administration access required' }, { status: 403 })
   try {
     await ensureCompanyClientStaffSchema()
+    const workFor=request.nextUrl.searchParams.get('offerId')
+    if (workFor) {
+      if (!/^[0-9a-f-]{36}$/i.test(workFor))
+        return NextResponse.json({error:'Invalid offer ID'},{status:400})
+      const work=await sql`
+        SELECT w.id,w.prospect_name,w.organization,w.stage,w.next_action,w.created_at,w.updated_at
+        FROM company_client_staff_work w
+        JOIN company_client_staff_offers o ON o.id=w.offer_id
+        WHERE o.id=${workFor}::uuid AND o.status='approved'
+        ORDER BY w.updated_at DESC LIMIT 100
+      `
+      return NextResponse.json({success:true,work},{headers:{'Cache-Control':'private, no-store'}})
+    }
     const offers = await sql`
       SELECT id,candidate_name,candidate_email,candidate_phone,position_title,monthly_salary_usdt,
         ticket_amount_usdt,folder_tier,status,payment_reference,payment_network,file_number,
