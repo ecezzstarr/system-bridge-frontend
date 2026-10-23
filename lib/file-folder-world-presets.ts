@@ -10,7 +10,21 @@ export const PLUS_FILE_FOLDER_REFERENCE = {
   name: 'Official Plus File Folder',
   approved: '2026-10-23',
   referenceImage: '389215.png',
+  // The same approved picture is used on the homepage and inside every Plus world.
+  // No alternate concept image may silently replace this construction reference.
+  posterAssetPath: '/weave/plus-file-folder-white-official.webp',
+  originalSha256: '544ba241448127f8550bb11a1b94058304467addef9156ba8486221fdc4385b3',
+  originalDimensions: {width:1229,height:1536},
   composition: 'A luminous white-and-gold open world unfolding from the central File Folder',
+  constructionRequirements: [
+    'A large open white-and-gold File Folder is the physical center, not a flat wallpaper',
+    'Porcelain-white structures, marble terraces, brushed gold edges and transparent glass',
+    'Warm radiant daylight, receding towers, water cascades and spatial depth',
+    'Six distinguishable interactive equipment zones: Systems, Modules, Tools, People, Operations, Expansion',
+    'The equipment zones lead to actual Client systems, workspaces and recorded builds',
+    'No avatar or joystick; phone-first inspection by tap, drag and pinch',
+    'Market-promise text in the image is promotional artwork, not verified earnings or guaranteed returns',
+  ] as const,
   sixFunctions: ['systems','modules','tools','people','operations','expansion'] as const,
   message: 'A completed set of systems for immediate uses',
 } as const
