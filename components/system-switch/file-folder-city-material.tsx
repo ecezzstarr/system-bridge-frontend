@@ -81,8 +81,8 @@ export function getFileFolderSurface(atlas:THREE.Texture,kind:CitySurface,tileX:
 }
 
 /** Physically lit, tileable surfaces mapped onto actual three-dimensional meshes. */
-export function CityMaterial({kind='metal',glow=0,tileX=1,tileY=1}:{
-  kind?:CitySurface;glow?:number;tileX?:number;tileY?:number
+export function CityMaterial({kind='metal',glow=0,tileX=1,tileY=1,tint='#ffffff'}:{
+  kind?:CitySurface;glow?:number;tileX?:number;tileY?:number;tint?:string
 }){
   const atlas=useTexture('/weave/file-folder/assets/city-material-atlas.png')
   const surfaces=useMemo(()=>getFileFolderSurface(atlas,kind,tileX,tileY),[atlas,kind,tileX,tileY])
@@ -92,7 +92,7 @@ export function CityMaterial({kind='metal',glow=0,tileX=1,tileY=1}:{
     map={surfaces.diffuse}
     bumpMap={surfaces.relief}
     bumpScale={kind==='paving'?.035:kind==='metal'?.012:.006}
-    color="#ffffff"
+    color={tint}
     roughness={roughness}
     metalness={metalness}
     clearcoat={kind==='glass'||kind==='warm'?.45:.08}
