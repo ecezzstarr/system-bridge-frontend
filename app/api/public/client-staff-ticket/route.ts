@@ -68,8 +68,20 @@ export async function POST(request:NextRequest) {
         WHERE token_hash=${staffOfferTokenHash(token)} AND status='accepted'
         RETURNING id,status
       `
-      return submitted?NextResponse.json({success:true,status:'pending_verification'},{headers:privateHeaders})
-        :NextResponse.json({error:'Accept the offer before submitting a ticket payment reference'},{status:409})
+      if (submitted) {
+        // Bring the pending ticket to Administration's notification inbox.
+        try {
+          await sql`
+            INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+            SELECT id,'company_staff_ticket_pending','Company staff ticket for verification',
+              ${offer.candidate_name+' submitted a '+String(offer.ticket_amount_usdt)+' USDT company-entry ticket for '+offer.position_title+'. Verify the transaction before issuing their File Number.'},
+              'WEAVE Employment','/admin/client-staff-offers'
+            FROM users WHERE role='admin' AND COALESCE(is_active,true)=true
+          `
+        } catch (notificationError) { console.error('[company staff] notification unavailable',notificationError) }
+        return NextResponse.json({success:true,status:'pending_verification'},{headers:privateHeaders})
+      }
+      return NextResponse.json({error:'Accept the offer before submitting a ticket payment reference'},{status:409})
     }
     return NextResponse.json({error:'Unknown offer action'},{status:400})
   } catch(error){
