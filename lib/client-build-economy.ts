@@ -62,7 +62,16 @@ export async function getClientBuildEconomy(
 
   if (await tableExists(sql, 'file_folder_purchases')) {
     const [purchaseAmount] = await sql`
-      SELECT COALESCE(MAX(amount_trx),0) AS amount
+      SELECT COALESCE(MAX(
+        CASE
+          WHEN file_folder_tier='plus'
+            AND payment_method='trx'
+            AND amount_trx=59602
+            AND status='confirmed'
+          THEN 60000
+          ELSE amount_trx
+        END
+      ),0) AS amount
       FROM file_folder_purchases
       WHERE (
         file_number=${fileNumber}

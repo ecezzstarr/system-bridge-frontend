@@ -1,6 +1,12 @@
 export const FILE_FOLDER_PRICING = {
   premiumFlameCoin: 35800,
+<<<<<<< HEAD
   plusFlameCoin: 60000, // Plus File Folder published offer, not a legacy Premium alias
+=======
+  plusFlameCoin: 60000,
+  plusTrx: 59602,
+  plusUsdt: 20000,
+>>>>>>> origin/feature/plus-file-folder-usdt-ready-systems
   standardMinimumFlameCoin: 180,
   standardMaximumFlameCoin: 3000,
   proNegotiatedMinimumFlameCoin: 3000,
@@ -16,8 +22,12 @@ export const FILE_FOLDER_PRICING = {
   ),
 } as const
 
+<<<<<<< HEAD
 export const FILE_FOLDER_TIERS = ['standard','pro','premium','plus'] as const
 export type FileFolderTier = typeof FILE_FOLDER_TIERS[number]
+=======
+export type FileFolderTier = 'standard' | 'pro' | 'premium' | 'plus'
+>>>>>>> origin/feature/plus-file-folder-usdt-ready-systems
 
 function isRequestedTier(value: unknown): value is FileFolderTier {
   return value === 'standard' || value === 'pro' || value === 'premium' || value === 'plus'
@@ -32,8 +42,12 @@ export function getFileFolderTier(
   const requested = isRequestedTier(requestedTier) ? requestedTier : null
 
   if (requested === 'plus') {
+<<<<<<< HEAD
     // Plus is always explicitly selected; never infer a Plus sale from unrelated deposits.
     return amount === FILE_FOLDER_PRICING.plusFlameCoin ? 'plus' : null
+=======
+    return amount === FILE_FOLDER_PRICING.plusTrx ? 'plus' : null
+>>>>>>> origin/feature/plus-file-folder-usdt-ready-systems
   }
 
   if (requested === 'premium') {
