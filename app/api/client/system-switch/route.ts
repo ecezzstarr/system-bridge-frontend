@@ -208,7 +208,7 @@ export async function GET(request: NextRequest) {
 
     const directUpgrade=await getClientFolderUpgrade(sql,String(client.id),String(client.file_number))
     if (directUpgrade?.status==='ready') persistedTier=directUpgrade.tier
-    const fileFolderTier = persistedTier || getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'legacy'
+    const fileFolderTier = persistedTier || getFileFolderTier(Number(fileFolderWorld.buildFunding.initialFileFolderFlameCoin)) || 'standard'
 
     const workshopType=workshop.workshop_type
     const isCrypto=workshopType==='crypto_exchange'
