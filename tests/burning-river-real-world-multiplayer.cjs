@@ -100,6 +100,9 @@ assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
 assert.ok(staff.includes('<BurningRiverOfficialGateway staff/>')&&
  visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),
  'Same worlds accessible from staff and public entrances')
+assert.ok(client.includes('validWriteOrigin(request)') &&
+ client.includes("url.host===(request.headers.get('host')||request.nextUrl.host)"),
+ 'Foreign websites cannot forge an authenticated Client invitation or project approval')
 assert.ok(api.includes('await readyWorldStorage(sql)')&&
  api.includes('lastReconciliation')&&api.includes('initialization'),
  'Open-world polling cannot recreate schema/catalog on every public request')
