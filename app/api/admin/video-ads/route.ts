@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth-api'
 import { getPool } from '@/lib/db'
+import { formOriginalScriptScenes } from '@/lib/weave-narration-script'
+import { mediaObjectNameFromUrl } from '@/lib/weave-media-storage'
 import {
   clampVideoAdDuration,
   ensureVideoAdWorkshopSchema,
@@ -44,17 +46,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Title, subject, objective and audience are required' }, { status: 400 })
     }
 
-    const generated = await generateVideoAdStoryboard({ title, subject, objective, audience, durationSeconds })
+    const narrationScript = typeof body?.scriptText === 'string' ? body.scriptText : ''
+    const scenes = narrationScript.trim()
+      ? formOriginalScriptScenes(narrationScript, durationSeconds)
+      : (await generateVideoAdStoryboard({ title, subject, objective, audience, durationSeconds })).scenes
     await ensureVideoAdWorkshopSchema()
     const pool = getPool()
     const result = await pool.query(
       `INSERT INTO admin_video_ad_projects
-        (created_by,title,subject,objective,audience,duration_seconds,aspect_ratio,status,storyboard)
-       VALUES ($1::uuid,$2,$3,$4,$5,$6,'9:16','planned',$7::jsonb)
+        (created_by,title,subject,objective,audience,duration_seconds,aspect_ratio,status,storyboard,narration_script)
+       VALUES ($1::uuid,$2,$3,$4,$5,$6,'9:16','planned',$7::jsonb,$8)
        RETURNING *`,
-      [auth.user.id, title, subject, objective, audience, durationSeconds, JSON.stringify(generated.scenes)]
+      [auth.user.id, title, subject, objective, audience, durationSeconds, JSON.stringify(scenes), narrationScript]
     )
-    return NextResponse.json({ success: true, project: mapVideoAdProject(result.rows[0]), provider: generated.provider })
+    return NextResponse.json({ success: true, project: mapVideoAdProject(result.rows[0]), provider: narrationScript.trim() ? 'original-script' : 'storyboard' })
   } catch (error: any) {
     console.error('[Video Ad Workshop] create failed:', error)
     return NextResponse.json({ success: false, error: error.message || 'Unable to form video ad' }, { status: 500 })
@@ -98,12 +103,19 @@ export async function PATCH(request: NextRequest) {
     }
 
     const soundtrackUrl = body.soundtrackUrl === undefined ? current.rows[0].soundtrack_url : (body.soundtrackUrl ? String(body.soundtrackUrl).slice(0, 2048) : null)
+    const narrationUrl = body.narrationUrl === undefined ? current.rows[0].narration_url : (body.narrationUrl ? String(body.narrationUrl).slice(0, 2048) : null)
+    if (narrationUrl) {
+      const object = mediaObjectNameFromUrl(narrationUrl)
+      if (!object || !object.startsWith('video-ads/assets/') || !/\\.(mp3|wav|ogg|m4a|webm)$/i.test(object)) {
+        return NextResponse.json({ success:false, error:'Narration must be audio uploaded into WEAVE Studio' },{status:400})
+      }
+    }
     const result = await pool.query(
       `UPDATE admin_video_ad_projects
-       SET storyboard=$2::jsonb,soundtrack_url=$3,status=CASE WHEN status='ready' THEN 'planned' ELSE status END,output_url=CASE WHEN status='ready' THEN NULL ELSE output_url END,error_message=NULL,updated_at=NOW()
+       SET storyboard=$2::jsonb,soundtrack_url=$3,narration_url=$4,status=CASE WHEN status='ready' THEN 'planned' ELSE status END,output_url=CASE WHEN status='ready' THEN NULL ELSE output_url END,error_message=NULL,updated_at=NOW()
        WHERE id=$1::uuid
        RETURNING *`,
-      [id, JSON.stringify(storyboard), soundtrackUrl]
+      [id, JSON.stringify(storyboard), soundtrackUrl, narrationUrl]
     )
     return NextResponse.json({ success: true, project: mapVideoAdProject(result.rows[0]) })
   } catch (error: any) {
