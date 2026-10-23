@@ -6,16 +6,16 @@ export type VoicePosition='self'|'environment'
 export type MusicSound='ember'|'river'|'glass'|'bass'|'pulse'|'uploaded'
 export type MusicTrack={
  id:string;title:string;position:VoicePosition;sound:MusicSound;assetId:string|null;
- startBeat:number;repeatBars:1|2|4;level:number;pan:number;note:number;muted:boolean
+ startBeat:number;repeatBars:1|2|4;level:number;pan:number;note:number;sourceBpm:number;muted:boolean
 }
 export type WordCue={id:string;position:VoicePosition;text:string;beat:number}
 export type MusicArrangement={bpm:number;bars:4|8;tracks:MusicTrack[];words:WordCue[]}
 export const STARTER_ARRANGEMENT:MusicArrangement={
  bpm:96,bars:4,
  tracks:[
-  {id:'self-ember',title:'Self · Ember melody',position:'self',sound:'ember',assetId:null,startBeat:0,repeatBars:2,level:.75,pan:-.32,note:64,muted:false},
-  {id:'world-river',title:'Environment · River answer',position:'environment',sound:'river',assetId:null,startBeat:4,repeatBars:2,level:.48,pan:.35,note:57,muted:false},
-  {id:'world-glass',title:'Environment · Radiance',position:'environment',sound:'glass',assetId:null,startBeat:6,repeatBars:2,level:.35,pan:.18,note:72,muted:false},
+  {id:'self-ember',title:'Self · Ember melody',position:'self',sound:'ember',assetId:null,startBeat:0,repeatBars:2,level:.75,pan:-.32,note:64,sourceBpm:96,muted:false},
+  {id:'world-river',title:'Environment · River answer',position:'environment',sound:'river',assetId:null,startBeat:4,repeatBars:2,level:.48,pan:.35,note:57,sourceBpm:96,muted:false},
+  {id:'world-glass',title:'Environment · Radiance',position:'environment',sound:'glass',assetId:null,startBeat:6,repeatBars:2,level:.35,pan:.18,note:72,sourceBpm:96,muted:false},
  ],
  words:[
   {id:'line-self',position:'self',text:'I am here. What is moving?',beat:0},
@@ -50,6 +50,7 @@ export function cleanMusicArrangement(input:unknown):MusicArrangement{
    startBeat:Math.round(clamp(entry?.startBeat,0,bars*4-1,0)),
    repeatBars:repeats,level:clamp(entry?.level,0,1,.7),
    pan:clamp(entry?.pan,-1,1,0),note:Math.round(clamp(entry?.note,36,96,60)),
+   sourceBpm:Math.round(clamp(entry?.sourceBpm,50,180,bpm)),
    muted:Boolean(entry?.muted)}
  })
  const words:WordCue[]=raw.words.map((entry:any,index:number)=>({
