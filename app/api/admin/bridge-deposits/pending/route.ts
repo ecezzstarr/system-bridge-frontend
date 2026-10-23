@@ -5,6 +5,7 @@ import { FILE_FOLDER_PRICING, getFileFolderTier } from '@/lib/file-folder-pricin
 import { ensureFlameSchema } from '@/lib/flame-schema'
 
 function bridgeSaleTier(amount: number) {
+  if (amount === FILE_FOLDER_PRICING.plusTrx) return getFileFolderTier(amount, 'plus')
   if (amount === FILE_FOLDER_PRICING.premiumFlameCoin) return getFileFolderTier(amount, 'premium')
   if (amount >= FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin && amount < FILE_FOLDER_PRICING.premiumFlameCoin) {
     return getFileFolderTier(amount, 'pro')
