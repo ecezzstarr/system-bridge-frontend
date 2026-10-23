@@ -131,6 +131,40 @@ function Building({id,selected,onSelect,realness,hasLiveSystem}:{id:StandardStat
   </group>
 }
 
+function LivingWaterfall({x,z}:{x:number;z:number}){
+ const cascade=useRef<Group>(null)
+ useFrame(({clock})=>{
+  if(cascade.current)cascade.current.position.y=-.06-Math.sin(clock.elapsedTime*2.3)*.1
+ })
+ return <group position={[x,-.35,z]}>
+  <mesh position={[0,.7,-.42]} castShadow>
+   <boxGeometry args={[3.3,1.9,1.5]}/><NatureMaterial color="#7a8380"/>
+  </mesh>
+  <group ref={cascade} position={[0,.6,.42]}>
+   {Array.from({length:6},(_,i)=><mesh key={i} position={[-1.25+i*.5,0,i*.04]} rotation={[.06,0,0]}>
+    <planeGeometry args={[.43,2.25]}/>
+    <meshBasicMaterial color={i%2?'#b3edf4':'#e1fbff'} transparent opacity={i%2?.67:.74} side={DoubleSide} depthWrite={false}/>
+   </mesh>)}
+  </group>
+  <mesh position={[0,-.32,.75]} rotation={[-Math.PI/2,0,0]}>
+   <circleGeometry args={[1.75,16]}/><meshBasicMaterial color="#d4f8fb" transparent opacity={.38}/>
+  </mesh>
+ </group>
+}
+function RiverRipples(){
+ const ripple=useRef<Group>(null)
+ useFrame(({clock})=>{
+  if(ripple.current)ripple.current.position.z=(clock.elapsedTime*.48)%4
+ })
+ return <group ref={ripple}>
+  {Array.from({length:7},(_,i)=><mesh key={i}
+    position={[Math.sin(i*1.76)*4,-.46,-1+i*2.2]}
+    rotation={[-Math.PI/2,0,.22]}>
+    <planeGeometry args={[1.1+i%3*.23,.07]}/>
+    <meshBasicMaterial color="#d9f4f7" transparent opacity={.3} depthWrite={false}/>
+  </mesh>)}
+ </group>
+}
 function WaterAndLandscape({details}:{details:boolean}){
  const river=useRef<Mesh>(null)
  useFrame(({clock})=>{if(river.current)river.current.rotation.z=Math.sin(clock.elapsedTime*.5)*.007})
@@ -141,6 +175,9 @@ function WaterAndLandscape({details}:{details:boolean}){
   <mesh ref={river} rotation={[-Math.PI/2,0,0]} position={[0,-.55,7]}>
     <planeGeometry args={[32,14]}/><meshPhysicalMaterial color="#60afc4" metalness={.22} roughness={.16} transparent opacity={.87} clearcoat={.8}/>
   </mesh>
+  <RiverRipples/>
+  <LivingWaterfall x={16} z={12}/>
+  <LivingWaterfall x={-17} z={9}/>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.37,-4.5]} receiveShadow>
     <circleGeometry args={[22,60]}/><NatureMaterial color="#668655"/>
   </mesh>
