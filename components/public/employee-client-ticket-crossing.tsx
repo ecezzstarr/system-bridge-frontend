@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 type Offer = {
   candidateName:string;recipientEmail:string;positionTitle:string
   monthlySalaryUSDT:number;ticketAmountUSDT:number;grantedTier:string|null
-  status:string;fileNumber:string|null;registerUrl:string|null;rejectionReason:string|null
+  status:string;fileNumber:string|null;receiptNumber:string|null;registerUrl:string|null;rejectionReason:string|null
 }
 
 export default function EmployeeClientTicketCrossing({offerToken}:{offerToken:string}) {
@@ -93,7 +93,8 @@ export default function EmployeeClientTicketCrossing({offerToken}:{offerToken:st
         {offer.status==='approved'&&<div className="space-y-3">
           <p className="text-sm text-emerald-200">Administration verified the ticket. Your <strong>{offer.grantedTier?.toUpperCase()}</strong> File Folder is granted through the company, not purchased.</p>
           <p className="text-sm">Issued File Number: <strong>{offer.fileNumber}</strong></p>
-          {offer.registerUrl&&<Link href={offer.registerUrl} className="inline-flex rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950">Open Client registration →</Link>}
+          <p className="text-xs text-slate-300">Verified ticket receipt: {offer.receiptNumber}</p>
+          {offer.registerUrl&&<Link href={offer.registerUrl+'&staffOffer='+encodeURIComponent(offerToken)} className="inline-flex rounded-xl bg-cyan-300 px-5 py-3 font-bold text-slate-950">Open Client registration →</Link>}
         </div>}
         {offer.status==='rejected'&&<p className="text-sm text-rose-200">Administration did not verify the submitted ticket. {offer.rejectionReason}</p>}
       </section>}
