@@ -1,6 +1,7 @@
 'use client'
 import {useMemo,useState} from 'react'
 import {buildFormationProgress} from '@/lib/file-folder-world-runtime'
+import {FILE_FOLDER_PALETTES,FILE_FOLDER_EQUIPMENT,resolveFileFolderAppearance,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 type District={key:string;label:string}
 const LOCATIONS:Record<string,{x:number;y:number;description:string;type:string}>={
  workshop_core:{x:50,y:28,description:'Understand your world, resources and next movement.',type:'citadel'},
@@ -12,7 +13,7 @@ const LOCATIONS:Record<string,{x:number;y:number;description:string;type:string}
  active_systems:{x:83,y:75,description:'Enter completed and operating systems.',type:'city'},
  library_district:{x:51,y:82,description:'Explore what systems can become together.',type:'sphere'}
 }
-export default function FileFolderLivingTerrain({districts,onEnter,active,systems=0,building=0,builds=[],now=Date.now()}:{districts:District[];onEnter:(key:string)=>void;active:string;systems?:number;building?:number;builds?:Array<{id:string;title:string;status:string;started_at?:string;completes_at?:string}>;now?:number}){
+export default function FileFolderLivingTerrain({districts,onEnter,active,systems=0,building=0,builds=[],now=Date.now(),appearance=resolveFileFolderAppearance('standard')}:{districts:District[];onEnter:(key:string)=>void;active:string;systems?:number;building?:number;builds?:Array<{id:string;title:string;status:string;started_at?:string;completes_at?:string}>;now?:number;appearance?:FileFolderWorldAppearance}){
  const [selected,setSelected]=useState<string|null>(null)
  const places=useMemo(()=>districts.map((district,i)=>({district,...(LOCATIONS[district.key]||{x:18+(i%3)*31,y:35+Math.floor(i/3)*20,description:'Enter this construction workspace.',type:'dome'})})),[districts])
  const forming=builds.filter(b=>b.status==='building').slice(0,4).map(b=>({ ...b,progress:buildFormationProgress(b,now),remaining:Math.max(0,Math.ceil((new Date(b.completes_at||now).getTime()-now)/1000)) }))
@@ -24,7 +25,7 @@ export default function FileFolderLivingTerrain({districts,onEnter,active,system
   <p className="mt-1 text-xs leading-5 text-slate-300">Touch a building to see what happens there, then enter to work. Your real construction records remain connected to the existing workshops.</p>
   <p className="mt-2 text-[10px] text-cyan-200">{building} building · {systems} completed · construction follows real-world time, even while you are away</p>
  </header>
- <div className="relative overflow-hidden" style={{minHeight:540,background:'radial-gradient(ellipse at 50% 22%,rgba(255,196,125,.9),transparent 22%),linear-gradient(180deg,#0b1d3d 0%,#355177 25%,#dd9971 43%,#28728a 54%,#06384e 100%)'}}>
+ <div className="relative overflow-hidden" data-tier-theme={appearance.theme} data-tier-realness={appearance.realness} style={{minHeight:540,background:`radial-gradient(ellipse at 50% 22%,${palette.glow},transparent 24%),linear-gradient(180deg,${palette.sky} 0%,${palette.glass} 32%,${palette.accent} 53%,${palette.ground} 100%)`}}>
   <div aria-hidden="true" className="absolute inset-x-0 top-[43%] h-[57%]" style={{background:'repeating-radial-gradient(ellipse at 50% 50%,rgba(13,98,125,.3) 0px,rgba(46,176,204,.3) 3px,rgba(8,46,73,.8) 8px,rgba(7,46,70,.9) 24px)'}}/>
   <div aria-hidden="true" className="absolute left-1/2 top-[47%] h-[44%] w-[90%] -translate-x-1/2 rounded-[50%] border-[10px] border-[#a9f3e5]/25 bg-[#165a63]/45 shadow-[0_0_75px_rgba(63,210,228,.25)]"/>
   <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-60" viewBox="0 0 100 100" preserveAspectRatio="none">
