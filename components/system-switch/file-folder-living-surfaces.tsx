@@ -6,14 +6,14 @@ import * as THREE from 'three'
 
 // These surfaces are actual in-scene GPU shaders: no animated wallpapers,
 // externally hosted videos, or fake static river/flame screenshots.
-const vertex=\`
+const vertex=`
   varying vec2 vUv;
   void main(){
     vUv=uv;
     gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
   }
-\`
-const waterFragment=\`
+`
+const waterFragment=`
   precision mediump float;
   varying vec2 vUv;
   uniform float uTime;
@@ -36,8 +36,8 @@ const waterFragment=\`
     river+=vec3(.21,.43,.45)*edgeFoam;
     gl_FragColor=vec4(clamp(river,0.0,1.0),.96);
   }
-\`
-const fireFragment=\`
+`
+const fireFragment=`
   precision mediump float;
   varying vec2 vUv;
   uniform float uTime;
@@ -62,7 +62,7 @@ const fireFragment=\`
     color=mix(color,tip,smoothstep(.69,1.0,upwards));
     gl_FragColor=vec4(color,clamp(alpha,0.0,.9));
   }
-\`
+`
 function useLivingMaterial(fragmentShader:string){
  const material=useMemo(()=>new THREE.ShaderMaterial({
    vertexShader:vertex,fragmentShader,transparent:true,depthWrite:false,
