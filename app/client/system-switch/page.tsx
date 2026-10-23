@@ -94,6 +94,34 @@ export default function ClientSystemSwitchPage() {
     }
   }, [router])
 
+  // Administration can publish new equipment/theme packs without an app deployment.
+  // Keep the Client's current 3D/working state; update only the release settings.
+  useEffect(()=>{
+    if(!data?.verified)return
+    let mounted=true
+    const synchronize=async()=>{
+      if(document.visibilityState!=='visible')return
+      const token=getClientToken()
+      if(!token)return
+      try{
+        const response=await fetch('/api/client/file-folder-release',{
+          headers:{Authorization:'Bearer '+token},cache:'no-store',
+        })
+        if(!response.ok)return
+        const release=await response.json()
+        if(!mounted||!release.success)return
+        setData((previous:any)=>{
+          if(!previous || Number(previous.file_folder_world_release?.version)===Number(release.version))return previous
+          return {...previous,file_folder_world_release:{version:release.version,config:release.config}}
+        })
+      }catch{}
+    }
+    const timer=window.setInterval(()=>{void synchronize()},45000)
+    const onVisible=()=>{void synchronize()}
+    document.addEventListener('visibilitychange',onVisible)
+    return()=>{mounted=false;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible)}
+  },[Boolean(data?.verified)])
+
   if (loading) return <div className="relative" data-client-loading-with-open-world-return="true">
     <FileFolderEnvironmentLoader />
     <Link href="/client/dashboard" className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 z-[150] inline-flex min-h-12 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border border-sky-200/40 bg-[#06182a]/95 px-5 text-xs font-bold text-white shadow-xl backdrop-blur-lg">
