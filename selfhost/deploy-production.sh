@@ -236,7 +236,7 @@ rollback() {
   log "Deployment failed at line $line. Restoring $PREVIOUS_SHA"
 
   post_record failed "$TARGET_SHA" "$PREVIOUS_SHA" "Deployment failed before final verification at line $line" "{\"failedLine\":\"$line\"}" || true
-  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Administration selected previously healthy release" "$(printf '{\"startedAt\":\"%s\"}' "$DEPLOY_STARTED_AT")" || true
+  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started" "$(printf '{"failedLine":"%s"}' "$line")" || true
 
   git reset --hard "$PREVIOUS_SHA"
   set_env_value WEAVE_RELEASE_SHA "$PREVIOUS_SHA"
@@ -258,7 +258,7 @@ log "Verified target release: $TARGET_SHA"
 # rollout, or during an outage, a failed record write is appended to the host
 # journal and replayed after a healthy runtime returns.
 if [[ -n "$ROLLBACK_TARGET" ]]; then
-  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Administration selected previously healthy release" "{\\"startedAt\\":\\"$DEPLOY_STARTED_AT\\"}" || true
+  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Administration selected previously healthy release" "$(printf '{"startedAt":"%s"}' "$DEPLOY_STARTED_AT")" || true
 else
   post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" || true
 fi
