@@ -2,7 +2,7 @@
 
 The Administrator-approved **Plus File Folder** reference is the white-and-gold visual shared in the 23 October 2026 conversation (uploaded as `389215.png`, 1229 × 1536 pixels, SHA-256 `544ba241448127f8550bb11a1b94058304467addef9156ba8486221fdc4385b3`).
 
-**Asset provenance:** The uploaded binary image is available in the conversation. The GitHub text connector used for this change cannot transfer that original binary to the repository; do not claim the original PNG is included here. The 3D code and appearance presets explicitly implement the image's composition. A later binary asset import can be verified against the SHA-256 above without changing the theme contract.
+**Asset provenance:** The founder's original PNG (`389215.png`) is the authoritative source, with SHA-256 `544ba241448127f8550bb11a1b94058304467addef9156ba8486221fdc4385b3`. Its 1229 × 1536 optimized WebP derivative is committed at `public/weave/plus-file-folder-white-official.webp` (SHA-256 `f35abcf28c07a47b751a76397b1863873db4d189533bcae9a48716c813a8fea5`). Homepage, Client Plus world and Administration workshop reference this one file. The original PNG remains available as founder-supplied source; converting to WebP is not changing the approved composition.
 
 ## Approved interpretation
 
@@ -30,7 +30,7 @@ The current branch implements a **first living formation layer**, not full photo
 
 **Visual acceptance before production:** Compare the interactive world side-by-side with `389215.png` on a phone and desktop. The open central File Folder, six spatially distinguishable equipment wings, tiered architecture, flowing water, light, metallic/porcelain finishes, transparent depth and responsive interactions all need assessment. The current procedural models are foundational and have **not** been verified to match every feature of the painting. Extend real 3D structures, texture variation, installed modules and environmental fidelity in subsequent reviewed source releases; never claim the poster itself is the running world.
 
-**Original asset note:** `PLUS_FILE_FOLDER_REFERENCE.posterAssetPath` points to `/weave/plus-file-folder-white-official.webp`. The homepage, Plus Client world and Administration reference panel share that path. The original image must be installed into the repository from the founder's approved upload before merging/deploying; the reference panels show a truthful fallback while it is missing. The existing SHA-256 records the original PNG; a lossy WebP conversion will have a different digest and must be compared visually to the original. No image should be used as a flat wallpaper in lieu of 3D geometry.
+**Original asset note:** `PLUS_FILE_FOLDER_REFERENCE.posterAssetPath` points to `/weave/plus-file-folder-white-official.webp`. The homepage, Plus Client world and Administration reference panel share that path. The approved optimized image has now been installed in the Plus branch and the homepage branch. The reference panels retain a truthful fallback if an unrelated deployment omits the asset. The existing SHA-256 records the original PNG; a lossy WebP conversion will have a different digest and must be compared visually to the original. No image should be used as a flat wallpaper in lieu of 3D geometry.
 
 ## Runtime files
 
