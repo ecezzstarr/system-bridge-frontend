@@ -10,6 +10,7 @@ import { publicFlameMovementCodeFromRequest, recordPublicFlameMovementEvent } fr
 import { activatePurchasedFileFolderForClient } from '@/lib/file-folder-purchase-activation'
 import { ensureClientMonthlySchema, normalizeRegisteredGender } from '@/lib/client-monthly-subscription'
 import { ensureCompanyClientStaffSchema, staffOfferTokenHash } from '@/lib/company-client-staff'
+import { issueWeaveReceipt } from '@/lib/weave-receipts'
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     // exact intended recipient email; retail registration is unaffected.
     await ensureCompanyClientStaffSchema()
     const [staffGrant] = await sql`
-      SELECT token_hash,candidate_email,status,client_id
+      SELECT id,token_hash,candidate_email,status,client_id,ticket_amount_usdt,folder_tier,receipt_number
       FROM company_client_staff_offers
       WHERE file_number=${fileNumber}
       LIMIT 1
@@ -132,6 +133,19 @@ export async function POST(request: NextRequest) {
         RETURNING id
       `
       if (!claimed) throw new Error('Staff File Folder has already been claimed')
+      // The company ticket is already verified by Administration. Record its
+      // receipt against the new Client identity without adding a retail sale.
+      try {
+        await issueWeaveReceipt({
+          userId:String(user.id),kind:'payment',source:'company_staff_entry_ticket',
+          sourceId:String(staffGrant.id),amount:Number(staffGrant.ticket_amount_usdt),
+          currency:'USDT',status:'verified',
+          description:'Employment entry ticket · company-granted '+String(staffGrant.folder_tier).toUpperCase()+' File Folder',
+          metadata:{receiptReference:staffGrant.receipt_number},
+        })
+      } catch (receiptError) {
+        console.error('[company client staff] ticket receipt publication failed', receiptError)
+      }
     }
     const token = `ssb_${randomBytes(32).toString('base64url')}`
     await sql`
