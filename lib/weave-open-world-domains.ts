@@ -25,7 +25,7 @@ export type PublicWorldDomain={
   stage:DomainStage
   buildLevel:number
   building:boolean
-  activity:{formation:'forming'|'constructed'|'operating';activeBuilds:number;operatingSystems:number;expansions:number;jointFormations:number}
+  activity:{formation:'forming'|'constructed'|'operating';activeBuilds:number;buildProgress:number;operatingSystems:number;expansions:number;jointFormations:number}
   publicName:string
   customerDoor:{open:boolean;href:string|null}
   publishedOffers:number
@@ -81,6 +81,7 @@ export function projectPublicWorldDomain(row:WorldDomainRow):PublicWorldDomain{
     activity:{
       formation:operating>0?'operating':completed>0?'constructed':'forming',
       activeBuilds:building,
+      buildProgress:building>0?Math.round(progress):0,
       operatingSystems:operating,
       expansions:accepted,
       jointFormations:linked,
