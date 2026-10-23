@@ -73,14 +73,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Enter name, email, position and accurate USDT ticket funding. If a personal loan is offered, specify repayment terms before requesting acceptance' }, { status: 400 })
     }
     await ensureCompanyClientStaffSchema()
+    // A named existing Client retains their one owned File Folder. The
+    // employment offer attaches a new company position, not a second folder.
+    const existingClients = await sql`
+      SELECT id,file_number,name FROM users
+      WHERE role='client' AND COALESCE(is_active,true)=true
+        AND lower(email)=${candidateEmail}
+      LIMIT 2
+    `
+    if (existingClients.length > 1) return NextResponse.json({error:'Ambiguous Client identity'},{status:409})
+    const existingClient = existingClients[0] || null
+    if (existingClient && !existingClient.file_number)
+      return NextResponse.json({error:'Existing Client does not yet have an activated File Folder; resolve their current entrance first'},{status:409})
+    if (existingClient && String(existingClient.name || '').trim().toLowerCase() !== candidateName.toLowerCase())
+      return NextResponse.json({error:'The named candidate and existing Client account do not match; verify identity before issuing'},{status:409})
     const offerToken = randomBytes(32).toString('hex')
     const [offer] = await sql`
       INSERT INTO company_client_staff_offers
         (token_hash,candidate_name,candidate_email,position_title,monthly_salary_usdt,
-         ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,personal_loan_terms,folder_tier,created_by)
+         ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,personal_loan_terms,folder_tier,client_id,file_number,created_by)
       VALUES
         (${staffOfferTokenHash(offerToken)},${candidateName},${candidateEmail},${positionTitle},
-         ${salaryUSDT},${ticketUSDT},${applicantUSDT},${personalLoanUSDT},${personalLoanTerms || null},${tier},${admin.id}::uuid)
+         ${salaryUSDT},${ticketUSDT},${applicantUSDT},${personalLoanUSDT},${personalLoanTerms || null},${tier},${existingClient?.id || null}::uuid,${existingClient?.file_number || null},${admin.id}::uuid)
       RETURNING id,candidate_name,candidate_email,position_title,monthly_salary_usdt,
         ticket_amount_usdt,applicant_contribution_usdt,proposed_personal_loan_usdt,folder_tier,status
     `
@@ -150,27 +164,36 @@ export async function PATCH(request: NextRequest) {
         await connection.query('ROLLBACK')
         return NextResponse.json({error:'Personal loan acceptance and separate funding verification are required'},{status:400})
       }
-      let fileNumber = ''
-      for (let attempt=0; attempt<12; attempt++) {
-        const candidate = createRandomFileNumberCandidate()
-        await connection.query('SAVEPOINT file_number_attempt')
-        try {
-          await connection.query(
-            `INSERT INTO file_folders(file_number,bridger_id,identity_data,status)
-             VALUES ($1,NULL,$2::jsonb,'pending')`,
-            [candidate, JSON.stringify({
-              name:offer.candidate_name, phone:offer.candidate_phone || '',
-              origin:'company_granted_employee', offerId:offer.id,
-            })])
-          await connection.query('RELEASE SAVEPOINT file_number_attempt')
-          fileNumber=candidate
-          break
-        } catch (error:any) {
-          await connection.query('ROLLBACK TO SAVEPOINT file_number_attempt')
-          if (error?.code !== '23505') throw error
+      let fileNumber = String(offer.file_number || '')
+      if (offer.client_id) {
+        const client = await connection.query(
+          `SELECT id,file_number FROM users
+           WHERE id=$1::uuid AND role='client' AND COALESCE(is_active,true)=true FOR UPDATE`,
+          [offer.client_id])
+        if (!client.rows[0] || !fileNumber || client.rows[0].file_number !== fileNumber)
+          throw new Error('Existing Client File Folder ownership changed; manual reconciliation required')
+      } else {
+        for (let attempt=0; attempt<12; attempt++) {
+          const candidate = createRandomFileNumberCandidate()
+          await connection.query('SAVEPOINT file_number_attempt')
+          try {
+            await connection.query(
+              `INSERT INTO file_folders(file_number,bridger_id,identity_data,status)
+               VALUES ($1,NULL,$2::jsonb,'pending')`,
+              [candidate, JSON.stringify({
+                name:offer.candidate_name, phone:offer.candidate_phone || '',
+                origin:'company_granted_employee', offerId:offer.id,
+              })])
+            await connection.query('RELEASE SAVEPOINT file_number_attempt')
+            fileNumber=candidate
+            break
+          } catch (error:any) {
+            await connection.query('ROLLBACK TO SAVEPOINT file_number_attempt')
+            if (error?.code !== '23505') throw error
+          }
         }
       }
-      if (!fileNumber) throw new Error('Unable to issue a unique File Number')
+      if (!fileNumber) throw new Error('Unable to resolve Client File Number')
       const receiptNumber='WEAVE-STAFF-'+randomUUID().slice(0,8).toUpperCase()
       const result = await connection.query(
         `UPDATE company_client_staff_offers SET
