@@ -324,7 +324,7 @@ export default function FileFolderOpenWorld({
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <span className="rounded-full border border-emerald-300/20 bg-emerald-400/5 px-2.5 py-1 text-[8px] font-black uppercase tracking-[.12em] text-emerald-200">Client control</span>
-            <Link href="/client/dashboard" className="text-[10px] font-black text-cyan-200 underline">Return to Weave Open World</Link>
+            <Link href="/flame-event/world" className="text-[10px] font-black text-cyan-200 underline">Return to Weave Open World</Link>
           </div>
         </div>
 

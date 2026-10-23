@@ -155,6 +155,7 @@ jobs:
           node tests/wiring.cjs
           node tests/environment-grade.cjs
           node tests/flame-event-open-world-regression.cjs
+          node tests/burning-river-real-world-multiplayer.cjs
           node tests/adaptive-runtime.cjs
           node tests/communication-security.cjs
 
@@ -183,6 +184,11 @@ jobs:
           WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
         run: node tests/legion-position-release-postgres.cjs
 
+      - name: Burning River two-Client world and business formation PostgreSQL regression
+        env:
+          WEAVE_SYSTEM_SWITCH_TEST_DATABASE_URL: postgres://weave_qa:weave_qa_only@127.0.0.1:5432/weave_switch_test
+        run: node tests/burning-river-multiplayer-postgres.cjs
+
       - name: TypeScript check
         run: npx tsc --noEmit
 
@@ -191,4 +197,7 @@ jobs:
 
       - name: Container build
         run: docker build --progress=plain -t weave-production-check .
+
+      - name: Exact founder-approved Burning River imagery
+        run: node tests/burning-river-approved-artwork.cjs
 
