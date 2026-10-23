@@ -2,14 +2,15 @@ import crypto from 'crypto'
 import { getPool } from '@/lib/db'
 import { getWeavePublicOrigin } from '@/lib/weave-origin'
 
+export const RIVER_CALL_PRICE_FLAME_COIN = 5
 export const PHONE_RE = /^\+[1-9]\d{7,14}$/
 export const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 export const NO_ANSWER = new Set(['busy', 'failed', 'no-answer', 'canceled'])
 
 export async function ensureRiverCallSchema() {
   const pool = getPool()
-  await pool.query("CREATE TABLE IF NOT EXISTS weave_river_call_settings (id smallint PRIMARY KEY CHECK (id=1), price_flame_coin numeric(18,8), enabled boolean NOT NULL DEFAULT false, updated_at timestamptz NOT NULL DEFAULT now())")
-  await pool.query("INSERT INTO weave_river_call_settings(id,price_flame_coin,enabled) VALUES (1,NULL,false) ON CONFLICT (id) DO NOTHING")
+  await pool.query("CREATE TABLE IF NOT EXISTS weave_river_call_settings (id smallint PRIMARY KEY CHECK (id=1), price_flame_coin numeric(18,8) NOT NULL DEFAULT 5, enabled boolean NOT NULL DEFAULT false, updated_at timestamptz NOT NULL DEFAULT now())")
+  await pool.query("INSERT INTO weave_river_call_settings(id,price_flame_coin,enabled) VALUES (1,5,false) ON CONFLICT (id) DO UPDATE SET price_flame_coin=5 WHERE weave_river_call_settings.price_flame_coin IS DISTINCT FROM 5")
   await pool.query(
     "CREATE TABLE IF NOT EXISTS weave_river_call_optouts (" +
     "phone_e164 varchar(20) PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now())"
