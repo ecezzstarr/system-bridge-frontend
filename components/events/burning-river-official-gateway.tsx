@@ -12,7 +12,7 @@ import {ArrowRight,Castle,Compass,DoorOpen,ShieldCheck,Users} from 'lucide-react
  */
 export function BurningRiverOfficialGateway({staff=false,carrierCode=null}:{staff?:boolean;carrierCode?:string|null}){
  const worldHref=carrierCode?'/flame-event/world?carrier='+encodeURIComponent(carrierCode):'/flame-event/world'
- const customerHref=worldHref+(worldHref.includes('?')?'#domains':'#domains')
+ const customerHref=worldHref+'#domains'
  const [missing,setMissing]=useState(false)
  return <section className="relative isolate overflow-hidden bg-[#080e1c] text-white"
    data-flame-official-gateway="bridge_of_radiance_flame_event_gateway.png">
