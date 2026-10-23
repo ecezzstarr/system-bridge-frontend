@@ -2,6 +2,7 @@
 
 import { useEffect,useMemo,useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
   ArrowDown,
   ArrowUp,
@@ -133,6 +134,7 @@ export default function EnvironmentOrganizerWorkshop(){
       </label>
     </div>
 
+    <Link href="/admin/loader-workshop" className="mt-5 block rounded-xl border border-sky-300/25 bg-sky-400/[.045] p-4 text-sm font-bold text-sky-100">Open Loader Workshop → Edit three department lessons and automatic timing, then publish without deployment</Link>
     <EnvironmentRuntimeControls />
 
     <div className="mt-5 space-y-5">

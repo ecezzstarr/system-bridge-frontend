@@ -290,8 +290,8 @@
   margin-top: .05rem;
 }
 
-/* A single, reader-controlled gate is not a countdown. The full instructions
-   scroll within a stable text surface; the next lesson never advances by itself. */
+/* The single automatic gate displays three full lessons. Long instructions
+   remain scrollable in a stable, sharp text surface as lessons advance. */
 .weave-loader-actions {
   min-height: 2.75rem;
   flex: 0 0 auto;

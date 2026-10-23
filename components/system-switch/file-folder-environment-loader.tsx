@@ -1,7 +1,7 @@
 'use client'
 
 // The single WEAVE environment transit gate supplies the three Client lessons,
-// the background artwork, readiness check, and reader-controlled Enter action.
+// the background artwork, readiness check, and automatically timed entrance.
 // This nested Client request contributes only a pending signal to that gate.
 // It must never create a second full-screen loader.
 export function FileFolderEnvironmentLoader() {

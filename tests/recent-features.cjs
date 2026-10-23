@@ -1579,7 +1579,7 @@ const clientEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/client/l
 const authEnvironmentLayoutSource=fs.readFileSync(path.join(root,'app/(auth)/layout.tsx'),'utf8')
 
 assert.ok(weaveEnvironmentTransitSource.includes("first.current?'boot':'transit'")&&weaveEnvironmentTransitSource.includes('waitForEnvironmentReadiness(mode,configRef.current,controller.signal)'),'Boot and route entry use cancellable environment readiness')
-assert.ok(weaveEnvironmentTransitSource.includes("mode==='boot'?8000:3000"),'Readiness has a bounded fallback for stalled assets')
+assert.ok(weaveEnvironmentTransitSource.includes('Math.min(loading.maxWaitMs,60000)'),'Readiness has an Administration-configurable bounded fallback for stalled assets')
 assert.ok(weaveEnvironmentTransitSource.includes('document.fonts.ready'),'Environment readiness waits for typography before reveal')
 assert.ok(weaveEnvironmentTransitSource.includes('document.images'),'Environment readiness can wait for current media before reveal')
 assert.ok(weaveEnvironmentTransitSource.includes('MutationObserver'),'Environment readiness waits for DOM component formation to become quiet')
