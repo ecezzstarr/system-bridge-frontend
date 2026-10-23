@@ -70,6 +70,8 @@ export async function PATCH(request: NextRequest) {
        WHERE id=$1::uuid AND created_by=$2::uuid AND status<>'rendering' RETURNING *`,
       [id,user.id,JSON.stringify(storyboard),soundtrackUrl,narrationUrl])
     if(!result.rows[0])return NextResponse.json({success:false,error:'Production changed; refresh and try again'},{status:409})
+    await pool.query("UPDATE video_ad_studio_orders SET status='in_production',output_url=NULL,updated_at=NOW() WHERE project_id=$1::uuid AND user_id=$2::uuid",[id,user.id])
+    await pool.query("UPDATE video_ad_service_orders SET status='in_production',output_url=NULL,updated_at=NOW() WHERE project_id=$1::uuid AND provider_user_id=$2::uuid AND status<>'delivered'",[id,user.id])
     return NextResponse.json({success:true,project:mapVideoAdProject(result.rows[0])})
   }catch(error:any){
     console.error('[Video Studio editor] save failed',error)
