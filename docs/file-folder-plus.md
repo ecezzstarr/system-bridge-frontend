@@ -1,6 +1,6 @@
 # Plus File Folder — completed-system product
 
-**Price:** 20,000 USDT, fixed. This is a distinct asset and product from the existing Standard, Pro and Premium File Folders priced in Flame Coin/TRX. Neither asset is silently converted into the other.
+**Plus package:** 60,000 Flame Coin valuation; payable at the fixed WEAVE package quote of **59,602 TRX**, with **20,000 USDT** as the equivalent reference. These are three explicitly defined amounts, not a live or automatic FX rate. Existing Standard, Pro and Premium File Folder pricing is unchanged.
 
 **Promise:** On verified purchase, the Lord receives ownership of a Client File Folder with existing WEAVE-operable systems already commissioned, rather than a new empty construction yard. They can begin recording work, handling services, setting up offers and receiving customer movement. Further construction remains optional.
 
@@ -16,15 +16,15 @@
 Only working functions already present in WEAVE are represented as complete. These are Client-owned records with permission checks; they are not automatic bank accounts or third-party business licenses. Customers cannot purchase nonexistent offers: the Lord must publish a real offer before orders can occur.
 
 ## Correct lifecycle
-1. Administration has approved the exact package and the **20,000 USDT** payment instructions for a known network and company address. There must be no TRX payment label.
-2. The payment is confirmed by Administration against reliable evidence, not by the buyer's self-declared transaction hash.
-3. Only a purchase record with `file_folder_tier='plus'`, `payment_method='usdt'`, `amount_usdt=20000`, `status='confirmed'` and the verified owner/File Number can start ready-system provisioning.
+1. The current Plus checkout accepts **59,602 TRX** to the existing WEAVE company TRX wallet. The public site also displays the **20,000 USDT reference**, but USDT is *not* currently a selectable checkout method without an approved company USDT wallet and network.
+2. Administration verifies the **59,602 TRX** blockchain transaction and checks the amount, company destination, network and uniqueness. Future USDT direct payment (20,000 USDT) requires separate network-specific verification.
+3. Only a verified ledger record with `file_folder_tier='plus'`, `status='confirmed'`, a matching Client and File Number, and either `payment_method='trx', amount_trx=59602` or `payment_method='usdt', amount_usdt=20000` may commission Plus systems. The TRX checkout does not mint 60,000 spendable Flame Coin automatically: 60,000 is the Plus package value.
 4. Repeated activation does not charge again; completed systems appear in the existing File Folder world as active. Customer Door bypasses the normal three-day build only for the verified Plus purchase.
 5. The Lord operates those systems, maintains business records and configures actual goods, staff, customers and external integrations.
 
 ## Release criteria / limitations
 
-**Do not accept public Plus payments until a verified USDT wallet/network, Administration payment verification, USDT-specific receipts and a tested checkout and login crossing are connected.** Existing TRX checkout cannot be reused as a USDT payment instruction. The separate product definition and fulfillment core do not by themselves satisfy that release gate.
+**Current status: implementation branch, not live release.** TRX checkout uses the existing company TRX payment instructions and manual Administration verification. Before production enabling, test exact-value TRX proof, receipt, Client registration and all ready-system operations end-to-end. To accept actual USDT, separately implement an approved destination wallet and chain/network verification; the 20,000 USDT reference alone is not payment instructions.
 
 Test a pending order, rejection, verified order, an existing Client, a new Client after registration, repeated activation, partial provisioning retry, and concurrent activation against a staging database before enabling production sales. Independently verify real Customer Door orders and permissions.
 
