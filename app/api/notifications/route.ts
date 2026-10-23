@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const notificationType=String(type||'message').trim().slice(0,90)
     // Only the trusted server order/deposit workflows may mint operational alerts.
     // An ordinary authenticated user must not forge a paid/order-verification notice.
-    if(notificationType.startsWith('order_')||notificationType.startsWith('deposit_')||notificationType.startsWith('employment_')||['cake_paid','carrier_cake_payment','carrier_customer_payment','distribution_team_update','distribution_team_task','distribution_task_progress','food_team_message'].includes(notificationType)){
+    if(notificationType.startsWith('order_')||notificationType.startsWith('deposit_')||notificationType.startsWith('employment_')||notificationType.startsWith('company_staff_')||['cake_paid','carrier_cake_payment','carrier_customer_payment','distribution_team_update','distribution_team_task','distribution_task_progress','food_team_message'].includes(notificationType)){
       return NextResponse.json({success:false,error:'System notification types are server-controlled'},{status:403})
     }
     if (!userId || !title) {
