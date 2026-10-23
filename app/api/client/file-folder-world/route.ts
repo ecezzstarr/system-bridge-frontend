@@ -348,6 +348,7 @@ export async function POST(request: NextRequest) {
         creator_booth:{systems:[{systemType:'customer_door',label:'Customer Door'}]},
         broadcast_studio:{systems:[{systemType:'creator_booth',label:'Creator Booth'}]},
         animation_studio:{systems:[{systemType:'creator_booth',label:'Creator Booth'}]},
+        music_studio:{systems:[{systemType:'creator_booth',label:'Creator Booth'}]},
         streaming_gate:{systems:[{systemType:'broadcast_studio',label:'Broadcast Studio'}]},
         media_network:{systems:[{systemType:'streaming_gate',label:'Streaming Open Gate'}]},
         enterprise_door:{
@@ -411,7 +412,7 @@ export async function POST(request: NextRequest) {
 
       const singleInstanceBlueprints=new Set([
         'commerce_storefront','marketplace_network','route_station',
-        'creator_booth','broadcast_studio','animation_studio','streaming_gate','media_network',
+        'creator_booth','broadcast_studio','animation_studio','music_studio','streaming_gate','media_network',
         'enterprise_door','enterprise_hall','legion_quarters','operations_command',
         'enterprise_treasury','distribution_network',
       ])
