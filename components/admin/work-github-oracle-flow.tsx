@@ -13,6 +13,7 @@ type WorkPull={
 }
 type Board={
   repository:string;repositoryUrl:string;main:WorkMainCandidate;pulls:WorkPull[]
+  promotions:Array<{id:string;pr_number:number;head_sha:string;result_sha:string|null;status:string;created_at:string}>
   promotionConfigured:boolean;fetchedAt:string
 }
 const short=(sha:string)=>sha.slice(0,12)
@@ -175,6 +176,16 @@ export default function WorkGithubOracleFlow({
             </article>)}
           </div>}
       </div>
+      {board.promotions?.length>0&&<details className="mt-5 border-t border-white/10 pt-4" data-github-promotion-audit="persistent">
+        <summary className="cursor-pointer text-xs font-black text-white">GitHub merge authorization history · {board.promotions.length}</summary>
+        <div className="mt-3 space-y-2">
+          {board.promotions.map(item=><div key={item.id} className="rounded-lg border border-white/10 bg-black/15 p-3">
+            <p className="text-xs font-bold text-slate-100">PR #{item.pr_number} · {item.status}</p>
+            <p className="mt-1 break-all font-mono text-[10px] text-slate-400">{item.result_sha||item.head_sha}</p>
+            <p className="mt-1 text-[10px] text-slate-500">{new Date(item.created_at).toLocaleString()}</p>
+          </div>)}
+        </div>
+      </details>}
       <p className="mt-4 text-[10px] leading-5 text-slate-500">
         GitHub may still reject a merge for branch protection, missing human reviews, conflicts or token permissions. No GitHub code is deployed just by clicking Merge. Last checked {new Date(board.fetchedAt).toLocaleString()}.
       </p>
