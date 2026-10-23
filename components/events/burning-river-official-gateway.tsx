@@ -10,7 +10,9 @@ import {ArrowRight,Castle,Compass,DoorOpen,ShieldCheck,Users} from 'lucide-react
  * Its image must be imported from the approved source at the target path;
  * the fallback is clearly marked rather than silently substituting new art.
  */
-export function BurningRiverOfficialGateway({staff=false}:{staff?:boolean}){
+export function BurningRiverOfficialGateway({staff=false,carrierCode=null}:{staff?:boolean;carrierCode?:string|null}){
+ const worldHref=carrierCode?'/flame-event/world?carrier='+encodeURIComponent(carrierCode):'/flame-event/world'
+ const customerHref=worldHref+(worldHref.includes('?')?'#domains':'#domains')
  const [missing,setMissing]=useState(false)
  return <section className="relative isolate overflow-hidden bg-[#080e1c] text-white"
    data-flame-official-gateway="bridge_of_radiance_flame_event_gateway.png">
@@ -45,7 +47,7 @@ export function BurningRiverOfficialGateway({staff=false}:{staff?:boolean}){
          File Folder castles develop through real systems and business participation.
          No private Client workspaces are exposed.
        </p>
-       <Link href="/flame-event/world" className="flex min-h-14 items-center justify-center gap-3 rounded-xl border border-amber-200 bg-gradient-to-r from-[#61321d] via-[#bf852a] to-[#533320] px-4 py-4 font-serif text-lg font-bold tracking-wide text-white shadow-[0_0_28px_rgba(244,160,45,.15)]"
+       <Link href={worldHref} className="flex min-h-14 items-center justify-center gap-3 rounded-xl border border-amber-200 bg-gradient-to-r from-[#61321d] via-[#bf852a] to-[#533320] px-4 py-4 font-serif text-lg font-bold tracking-wide text-white shadow-[0_0_28px_rgba(244,160,45,.15)]"
          data-enter-burning-river="true">
          <Castle className="h-5 w-5"/> Enter Burning River <ArrowRight className="h-5 w-5"/>
        </Link>
@@ -54,11 +56,11 @@ export function BurningRiverOfficialGateway({staff=false}:{staff?:boolean}){
            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-orange-300/50 bg-orange-800/35 p-3 text-sm font-bold text-orange-100">
            <Users className="h-5 w-5"/> Staff Entrance
          </Link>
-         <Link href="/flame-event/world"
+         <Link href={worldHref}
            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-sky-300/50 bg-sky-900/45 p-3 text-sm font-bold text-sky-100">
            <Compass className="h-5 w-5"/> Visitor Entrance
          </Link>
-         <Link href="/flame-event/world#domains"
+         <Link href={customerHref}
            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-emerald-300/50 bg-emerald-900/35 p-3 text-sm font-bold text-emerald-100">
            <DoorOpen className="h-5 w-5"/> Customer Door
          </Link>
