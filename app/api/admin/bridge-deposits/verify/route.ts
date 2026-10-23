@@ -15,6 +15,7 @@ import {
 } from '@/lib/file-folder-purchase-activation'
 
 function bridgeSaleTier(amount: number) {
+  if (amount === FILE_FOLDER_PRICING.plusTrx) return getFileFolderTier(amount, 'plus')
   if (amount === FILE_FOLDER_PRICING.premiumFlameCoin) return getFileFolderTier(amount, 'premium')
   if (amount >= FILE_FOLDER_PRICING.proNegotiatedMinimumFlameCoin && amount < FILE_FOLDER_PRICING.premiumFlameCoin) {
     return getFileFolderTier(amount, 'pro')
@@ -76,7 +77,7 @@ async function verifyBridgeRadiancePurchase({
     getFileFolderTier(purchaseAmount, purchase.file_folder_tier) ||
     (purchase.bridge_code ? bridgeSaleTier(purchaseAmount) : getFileFolderTier(purchaseAmount))
   if (!fileFolderTier) {
-    return NextResponse.json({ error: 'Stored File Folder amount is outside the current Standard, Pro and Premium pricing rules' }, { status: 409 })
+    return NextResponse.json({ error: 'Stored File Folder amount is outside the current Standard, Pro, Premium and Plus pricing rules' }, { status: 409 })
   }
   const tierLabel = fileFolderTierLabel(fileFolderTier)
 
@@ -125,7 +126,9 @@ async function verifyBridgeRadiancePurchase({
       bridgerId: purchase.bridger_id || null,
       amount: Number(purchase.amount_trx),
       fileFolderTier,
-      currency: 'Flame Coin',
+      currency: fileFolderTier === 'plus' ? 'TRX' : 'Flame Coin',
+      plusFlameCoinValue: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : null,
+      plusUsdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null,
       commissionMovement,
       registerUrl: existingClient ? null : `/client/register?fileNumber=${encodeURIComponent(purchase.file_number)}`,
       systemSwitchUrl: existingClient ? '/client/system-switch' : null,
@@ -214,6 +217,19 @@ async function verifyBridgeRadiancePurchase({
 
   if (!confirmed) {
     return NextResponse.json({ error: 'File Folder purchase changed before verification completed' }, { status: 409 })
+  }
+
+  // Plus requires a confirmed ledger row before ready systems may be issued.
+  // The existing Client was initially attached while payment was still
+  // pending confirmation, so fulfill Plus *after* the status transition.
+  if (fileFolderTier === 'plus' && existingClientId) {
+    activation = await activatePurchasedFileFolderForClient({
+      sql,
+      clientId: existingClientId,
+      fileNumber,
+      clientName: existingClient.name || prospectName,
+      purchaseId: String(confirmed.id),
+    })
   }
 
   if (confirmed.bridge_code) {
@@ -310,14 +326,16 @@ async function verifyBridgeRadiancePurchase({
     bridgerId,
     amount: Number(confirmed.amount_trx),
     fileFolderTier,
-    currency: 'Flame Coin',
+    currency: fileFolderTier === 'plus' ? 'TRX' : 'Flame Coin',
+    plusFlameCoinValue: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusFlameCoin : null,
+    plusUsdtReference: fileFolderTier === 'plus' ? FILE_FOLDER_PRICING.plusUsdt : null,
     registerUrl: existingClientId ? null : `/client/register?fileNumber=${encodeURIComponent(fileNumber)}`,
     systemSwitchUrl: existingClientId ? '/client/system-switch' : null,
     aiProviderAllocation: allocation?.allocation || null,
     commissionMovement,
     customerDoor: activation?.customerDoor || null,
     message: existingClientId
-      ? 'File Folder approved, attached to the Client account, and the included Customer Door formation started.'
+      ? fileFolderTier === 'plus' ? 'Plus File Folder approved with completed operating systems and a ready Customer Door.' : 'File Folder approved, attached to the Client account, and the included Customer Door formation started.'
       : 'File Folder approved. File Number issued. Prospect can now register as Client and cross into System Switch.',
   })
 }
