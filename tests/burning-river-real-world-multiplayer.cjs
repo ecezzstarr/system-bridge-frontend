@@ -40,6 +40,15 @@ assert.equal(commissioned.publishedOffers,5)
 assert.equal(commissioned.publicName,'Radiant Office')
 assert.ok(commissioned.buildLevel>formed.buildLevel)
 assert.equal(projectPublicWorldDomain({...privateRow,operating_count:3}).stage,'expanding')
+const acceptedOnly=projectPublicWorldDomain({...privateRow,
+  operating_count:1,accepted_connections:1,linked_projects:0})
+assert.equal(acceptedOnly.stage,'operating','An accepted invitation is not proof of expansion')
+assert.equal(acceptedOnly.activity.jointFormations,0)
+const genuineJoint=projectPublicWorldDomain({...privateRow,
+  operating_count:1,accepted_connections:1,linked_projects:1})
+assert.equal(genuineJoint.stage,'expanding','Two verified systems in one accepted project develop castles')
+assert.equal(genuineJoint.activity.jointFormations,1)
+assert.ok(genuineJoint.buildLevel>acceptedOnly.buildLevel)
 assert.equal(formatWorldMovement('connection_accepted'),'Two Clients formed a company-event connection')
 
 const purchased=read('lib/file-folder-purchase-activation.ts')
@@ -64,6 +73,16 @@ assert.ok(!api.includes('buyer_email')&&!api.includes('file_number:')&&!api.incl
 assert.ok(client.includes('c.requested_by<>')&&client.includes("c.status='pending'")&&
  client.includes('ON CONFLICT (loop_key,domain_a,domain_b) DO NOTHING'),
  'No self approval, replayed invitation or unsupported acceptance')
+assert.ok(client.includes("action==='propose_project'")&&client.includes("action==='accept_project'")&&
+ client.includes("action==='contribute_system'"),
+ 'Joint work requires a proposal, partner approval and real operating Client system')
+assert.ok(client.includes("b.client_id=${domain.client_id}::uuid")&&
+ client.includes("b.status='active'"),
+ 'A Client cannot contribute another person's or an inactive system')
+assert.ok(db.includes('idx_weave_open_world_projects_connection')&&
+ db.includes("active_system.status='active'")&&
+ migration.includes('weave_open_world_project_contributions'),
+ 'Public domain maturity uses independently active contributions from both worlds')
 assert.ok(map.includes('MovingBurningRiver')&&map.includes('DomainCastle')&&map.includes('<AdaptiveCanvas')&&
  map.includes('request_connection')&&map.includes('respond_connection'),
  'Real 3D castle and multiplayer interaction operate from actual records')
