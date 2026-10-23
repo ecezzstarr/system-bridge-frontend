@@ -155,6 +155,7 @@ jobs:
           node tests/wiring.cjs
           node tests/environment-grade.cjs
           node tests/flame-event-open-world-regression.cjs
+          node tests/burning-river-real-world-multiplayer.cjs
           node tests/adaptive-runtime.cjs
           node tests/communication-security.cjs
 
