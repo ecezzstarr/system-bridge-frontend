@@ -173,6 +173,10 @@ release or choose a historically healthy rollback release without using SSH.
 See [full setup, rollback and server-move playbook](../docs/sovereign-release-workshop.md).
 Application rollback is not a PostgreSQL rollback; preserve database and media backups.
 
+## PowerShell host operations inside Administration
+
+The optional PowerShell 7 sentinel runs **outside the public app** on the same Linux server and sends sanitized Docker/health/disk snapshots to the Infrastructure Workshop. The independent Release Workshop already performs verified self-host deployment and rollback; no arbitrary web terminal is exposed. Install and secure the host service following [PowerShell Host Security](../docs/powershell-host-security.md). The service is not active just because its source exists in GitHub.
+
 ## Permanent Weave-owned server
 
 The same Docker image and Compose stack can later move to a Weave-owned machine. If that machine has a public IP or forwarded ports 80/443, Caddy can remain unchanged. If it is behind carrier-grade NAT or cannot receive inbound traffic, add a reverse tunnel at that stage rather than changing the Weave application.
