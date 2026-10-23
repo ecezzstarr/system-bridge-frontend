@@ -27,12 +27,17 @@ export async function POST(request:NextRequest){
   const ext=formats[file.type]
   if(!ext)return fail('Supported audio: MP3, WAV, M4A, OGG or WEBM.',400)
   if(!file.size||file.size>MAX)return fail('Audio clips must be 16 MB or smaller.',413)
+  const pool=getPool()
+  const limits=(await pool.query(
+   'SELECT COUNT(*)::int AS files,COALESCE(SUM(size_bytes),0)::bigint AS bytes FROM weave_music_assets WHERE client_id=$1::uuid',
+   [access.ownerId])).rows[0]
+  if(Number(limits.files)>=60||Number(limits.bytes)+file.size>256*1024*1024)
+   return fail('This Client File Folder has reached its 60-file or 256 MB Music Studio storage limit.',409)
   const objectName='weave-private/music/'+access.ownerId+'/'+randomUUID()+'.'+ext
   // Private media is returned only through this authenticated Client asset endpoint.
   await saveMediaObject(objectName,Buffer.from(await file.arrayBuffer()),{
    contentType:file.type,cacheControl:'private, no-store'
   })
-  const pool=getPool()
   const result=await pool.query(
    `INSERT INTO weave_music_assets(client_id,file_number,created_by,object_name,media_type,original_name,size_bytes)
     VALUES($1::uuid,$2,$3::uuid,$4,$5,$6,$7)
