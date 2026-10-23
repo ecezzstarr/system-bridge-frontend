@@ -77,6 +77,7 @@ export function WeaveDashboardWorld({
   const {isVisible,orderFor}=useEnvironmentOrganizer()
   const hasRolePresence=role==='agent'||role==='bridger'||role==='client'
   const hasVideoStudio=role!=='admin'&&isVisible('/video-ad-studio')
+  const hasImageStudio=role!=='admin'&&isVisible('/agent/creative')
 
   const districts=getRoleDistricts(role)
     .map(district=>({
@@ -131,9 +132,9 @@ export function WeaveDashboardWorld({
         </span>
       </Link>
 
-      {role==='agent'&&isVisible('/video-ad-studio')&&<Link href="/agent/creative" data-agent-creative-first-step="true" className="mb-3 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-amber-300/30 bg-amber-300/[.07] px-4 py-3">
+      {hasImageStudio&&<Link href="/agent/creative" data-agent-creative-first-step={role==='agent'?'true':undefined} data-shared-image-studio={role} className="mb-3 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-amber-300/30 bg-amber-300/[.07] px-4 py-3">
         <Clapperboard className="h-6 w-6 shrink-0 text-amber-200"/>
-        <span><span className="block text-xs font-black uppercase text-white">Image + Video Studio · Agent Work</span><span className="mt-1 block text-[10px] leading-4 text-slate-300">Create image advertisements free. Produce customer videos for 0.3–1.5 Flame Coin. Open training and tools.</span></span>
+        <span><span className="block text-xs font-black uppercase text-white">Image Studio · Shared WEAVE</span><span className="mt-1 block text-[10px] leading-4 text-slate-300">Create image advertisements free. Continue to the Video Studio for narrated productions and your position's displayed price.</span></span>
       </Link>}
 
       <div className="my-2 border-y border-white/[.07] py-2">
@@ -200,6 +201,11 @@ export function WeaveDashboardWorld({
       <span className="mt-1 block text-[8px] text-slate-500">{hasRolePresence?'Understand your position':'Enter institutional control'}</span>
     </Link>
 
+    {hasImageStudio&&<Link href="/agent/creative" data-shared-image-studio={role}
+      className="group absolute bottom-[14%] left-1/2 z-20 hidden -translate-x-1/2 items-center gap-2 border border-amber-300/25 bg-black/40 px-4 py-2.5 backdrop-blur-xl sm:flex">
+      <Clapperboard className="h-4 w-4 text-amber-200"/>
+      <span><span className="block text-[9px] font-black uppercase tracking-[.12em] text-white">Image Studio · Shared WEAVE</span><span className="mt-0.5 block text-[8px] text-slate-400">Create and download real artwork · Free</span></span>
+    </Link>}
     {hasVideoStudio&&<Link
       href="/video-ad-studio"
       data-shared-video-ad-studio={role}

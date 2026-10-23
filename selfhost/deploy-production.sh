@@ -9,6 +9,13 @@ ENV_FILE="$ROOT/selfhost/.env"
 JOURNAL_FILE="$ROOT/selfhost/deployment-history.log"
 DEFAULT_DOMAIN="weavingsystem.online"
 DEPLOY_SOURCE="selfhost-deploy"
+if [[ -n "${WEAVE_DEPLOY_REQUESTED_BY:-}" ]]; then
+  if [[ ! "$WEAVE_DEPLOY_REQUESTED_BY" =~ ^[0-9a-fA-F-]{36}$ ]]; then
+    echo "Administration authorizer identity invalid." >&2
+    exit 4
+  fi
+  DEPLOY_SOURCE="administration-release-workshop"
+fi
 DEPLOY_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ROLLING_BACK=0
 
@@ -83,8 +90,28 @@ git fetch origin main
 PREVIOUS_SHA="$(git rev-parse HEAD)"
 ORIGIN_MAIN_SHA="$(git rev-parse origin/main)"
 REQUESTED_SHA="${WEAVE_DEPLOY_TARGET_SHA:-}"
+ROLLBACK_TARGET="${WEAVE_DEPLOY_ROLLBACK_SHA:-}"
+if [[ -n "$ROLLBACK_TARGET" && -n "$REQUESTED_SHA" ]]; then
+  echo "Cannot request a new release and a rollback simultaneously." >&2
+  exit 4
+fi
 
-if [[ -n "$REQUESTED_SHA" ]]; then
+if [[ -n "$ROLLBACK_TARGET" ]]; then
+  if [[ ! "$ROLLBACK_TARGET" =~ ^[0-9a-fA-F]{40}$ ]]; then
+    echo "Rollback must name one exact historical Git commit SHA." >&2
+    exit 4
+  fi
+  if ! git cat-file -e "${ROLLBACK_TARGET}^{commit}" 2>/dev/null; then
+    echo "Historical rollback commit is absent from the host checkout." >&2
+    exit 5
+  fi
+  if ! git merge-base --is-ancestor "$ROLLBACK_TARGET" "$ORIGIN_MAIN_SHA"; then
+    echo "Refusing rollback to a commit outside canonical main history." >&2
+    exit 6
+  fi
+  TARGET_SHA="$ROLLBACK_TARGET"
+  DEPLOY_SOURCE="administration-release-rollback"
+elif [[ -n "$REQUESTED_SHA" ]]; then
   if [[ ! "$REQUESTED_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
     echo "WEAVE_DEPLOY_TARGET_SHA must be a full Git commit SHA." >&2
     exit 4
@@ -119,9 +146,10 @@ ROLLBACK_PATH="git reset --hard ${PREVIOUS_SHA} && WEAVE_RELEASE_SHA=${PREVIOUS_
 
 build_record_payload() {
   local status="$1" release_sha="$2" previous_sha="$3" verification="${4:-}" details="${5:-{}}"
-  python3 - "$status" "$release_sha" "$previous_sha" "$SERVER_KEY" "$DEPLOY_SOURCE" "$verification" "$ROLLBACK_PATH" "$details" <<'PY'
+  python3 - "$status" "$release_sha" "$previous_sha" "$SERVER_KEY" "$DEPLOY_SOURCE" "$verification" "$ROLLBACK_PATH" "$details" "${WEAVE_DEPLOY_REQUESTED_BY:-}" <<'PY'
 import json,sys,datetime,uuid
-status,release,previous,server,source,verification,rollback,details=sys.argv[1:]
+status,release,previous,server,source,verification,rollback,details,requester=sys.argv[1:]
+if requester: uuid.UUID(requester)
 try: detail_obj=json.loads(details)
 except Exception: detail_obj={'note':details}
 detail_obj=dict(detail_obj)
@@ -130,7 +158,7 @@ detail_obj.setdefault('hostJournaledAt',datetime.datetime.now(datetime.timezone.
 print(json.dumps({
  'status':status,'releaseSha':release,'previousSha':previous or None,
  'serverKey':server,'source':source,'verification':verification or None,
- 'rollbackPath':rollback,'details':detail_obj,
+ 'rollbackPath':rollback,'details':detail_obj,'sovereignId':requester or None,
 },separators=(',',':')))
 PY
 }
@@ -216,15 +244,23 @@ rollback() {
   log "Deployment failed at line $line. Restoring $PREVIOUS_SHA"
 
   post_record failed "$TARGET_SHA" "$PREVIOUS_SHA" "Deployment failed before final verification at line $line" "{\"failedLine\":\"$line\"}" || true
-  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started" "{\"failedLine\":\"$line\"}" || true
+  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Automatic rollback started" "$(printf '{"failedLine":"%s"}' "$line")" || true
 
   git reset --hard "$PREVIOUS_SHA"
   set_env_value WEAVE_RELEASE_SHA "$PREVIOUS_SHA"
   export WEAVE_RELEASE_SHA="$PREVIOUS_SHA"
-  "${COMPOSE[@]}" build weave
+  if docker image inspect "weave-release:$PREVIOUS_SHA" >/dev/null 2>&1; then
+    log "Reusing locally retained known-good release image $PREVIOUS_SHA"
+  else
+    "${COMPOSE[@]}" build weave
+  fi
   "${COMPOSE[@]}" up -d --remove-orphans
-  wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" || true
-  post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback restored previous release after failure at line $line" "{\"failedRelease\":\"$TARGET_SHA\"}" || true
+  if wait_for_health http://127.0.0.1:3000/api/health "$PREVIOUS_SHA" "Rollback local health" \
+     && wait_for_health "https://${DOMAIN}/api/health" "$PREVIOUS_SHA" "Rollback public health"; then
+    post_record rolled_back "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback verified locally and publicly after failure at line $line" "$(printf '{"failedRelease":"%s"}' "$TARGET_SHA")" || true
+  else
+    post_record failed "$PREVIOUS_SHA" "$TARGET_SHA" "Automatic rollback could not verify previous release locally and publicly; operator recovery required" "$(printf '{"failedRelease":"%s","recovery":"manual_required"}' "$TARGET_SHA")" || true
+  fi
   replay_journal || true
 
   exit "$exit_code"
@@ -237,13 +273,21 @@ log "Verified target release: $TARGET_SHA"
 # Every movement is attempted against the current WEAVE runtime. On the first
 # rollout, or during an outage, a failed record write is appended to the host
 # journal and replayed after a healthy runtime returns.
-post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" || true
+if [[ -n "$ROLLBACK_TARGET" ]]; then
+  post_record rollback_started "$TARGET_SHA" "$PREVIOUS_SHA" "Administration selected previously healthy release" "$(printf '{"startedAt":"%s"}' "$DEPLOY_STARTED_AT")" || true
+else
+  post_record started "$TARGET_SHA" "$PREVIOUS_SHA" "Verified canonical main selected for production deployment" "{\"startedAt\":\"$DEPLOY_STARTED_AT\"}" || true
+fi
 
 git reset --hard "$TARGET_SHA"
 set_env_value WEAVE_RELEASE_SHA "$TARGET_SHA"
 export WEAVE_RELEASE_SHA="$TARGET_SHA"
 BUILD_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-"${COMPOSE[@]}" build --pull weave
+if [[ -n "$ROLLBACK_TARGET" ]] && docker image inspect "weave-release:$TARGET_SHA" >/dev/null 2>&1; then
+  log "Reusing retained verified release image $TARGET_SHA"
+else
+  "${COMPOSE[@]}" build --pull weave
+fi
 BUILD_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 "${COMPOSE[@]}" up -d --remove-orphans
@@ -257,7 +301,11 @@ post_record restarted "$TARGET_SHA" "$PREVIOUS_SHA" "Docker Compose restarted WE
 wait_for_health "https://${DOMAIN}/api/health" "$TARGET_SHA" "Public WEAVE"
 
 VERIFIED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}" || true
+if [[ -n "$ROLLBACK_TARGET" ]]; then
+  post_record rolled_back "$TARGET_SHA" "$PREVIOUS_SHA" "Administration rollback verified against local and public health" "$(printf '{\"verifiedAt\":\"%s\",\"domain\":\"%s\"}' "$VERIFIED_AT" "$DOMAIN")" || true
+else
+  post_record healthy "$TARGET_SHA" "$PREVIOUS_SHA" "Local and public /api/health both serve the verified canonical release SHA" "{\"verifiedAt\":\"$VERIFIED_AT\",\"domain\":\"$DOMAIN\"}" || true
+fi
 replay_journal || true
 
 "${COMPOSE[@]}" ps

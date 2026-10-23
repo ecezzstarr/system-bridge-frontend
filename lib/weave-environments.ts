@@ -237,6 +237,14 @@ const exact: Record<string, WeaveEnvironmentCopy> = {
     movement: 'Select department → preview lessons → set pace → publish live',
     layer: 'system',
   },
+  '/admin/release-workshop': {
+    key: 'sovereign-release-workshop',
+    title: 'Release Workshop',
+    district: 'Administration',
+    purpose: 'Authorize verified production releases and previously healthy rollback versions, then inspect host execution and Sovereign + Flame evidence.',
+    movement: 'Review → confirm → queue → verify → preserve record',
+    layer: 'system',
+  },
   '/admin/environment-organizer': {
     key: 'administration-environment-organizer',
     title: 'Environment Organizer',

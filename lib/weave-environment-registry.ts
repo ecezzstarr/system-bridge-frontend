@@ -71,6 +71,7 @@ export const WEAVE_ENVIRONMENT_REGISTRY: EnvironmentSurfaceDefinition[] = [
   { key:'admin-control-center', label:'Administration Control Center', kind:'district', route:'/admin/control-center', area:'Administration', scope:'admin', protected:true, defaultOrder:30 },
   { key:'admin-environment-organizer', label:'Environment Organizer', kind:'district', route:'/admin/environment-organizer', area:'Administration', scope:'admin', protected:true, defaultOrder:40 },
   { key:'admin-loader-workshop', label:'Loader Workshop', kind:'district', route:'/admin/loader-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:45 },
+  { key:'admin-release-workshop', label:'Release Workshop', kind:'district', route:'/admin/release-workshop', area:'Administration', scope:'admin', protected:true, defaultOrder:46 },
   { key:'admin-prospect-engine', label:'Prospect Engine', kind:'district', route:'/admin/prospect-engine', area:'Administration', scope:'admin', defaultOrder:60 },
   { key:'admin-access-recovery', label:'Access Recovery Desk', kind:'district', route:'/admin/access-recovery', area:'Administration', scope:'admin', protected:true, defaultOrder:62 },
   { key:'admin-email-outreach', label:'Email Outreach', kind:'district', route:'/admin/email-outreach', area:'Administration', scope:'admin', protected:true, defaultOrder:65 },

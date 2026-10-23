@@ -11,6 +11,17 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const unreadOnly = searchParams.get('unreadOnly') === 'true'
+    const notificationId=searchParams.get('id')
+    if(notificationId){
+      if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(notificationId))
+        return NextResponse.json({success:false,error:'Invalid notification ID'},{status:400})
+      const selected=await sql`
+        SELECT id,type,title,content,from_user_id,from_user_name,link,is_read,created_at
+        FROM notifications WHERE id=${notificationId}::uuid AND user_id=${user.id}::uuid LIMIT 1
+      `
+      return NextResponse.json({success:true,notification:selected[0]||null},
+        {headers:{'Cache-Control':'private, no-store'}})
+    }
 
     const notifications = unreadOnly
       ? await sql`
@@ -48,7 +59,7 @@ export async function POST(request: NextRequest) {
     const notificationType=String(type||'message').trim().slice(0,90)
     // Only the trusted server order/deposit workflows may mint operational alerts.
     // An ordinary authenticated user must not forge a paid/order-verification notice.
-    if(notificationType.startsWith('order_')||notificationType.startsWith('deposit_')||['cake_paid','carrier_cake_payment','carrier_customer_payment'].includes(notificationType)){
+    if(notificationType.startsWith('order_')||notificationType.startsWith('deposit_')||notificationType.startsWith('employment_')||['cake_paid','carrier_cake_payment','carrier_customer_payment','distribution_team_update','distribution_team_task','distribution_task_progress','food_team_message'].includes(notificationType)){
       return NextResponse.json({success:false,error:'System notification types are server-controlled'},{status:403})
     }
     if (!userId || !title) {

@@ -154,6 +154,7 @@ export default function InfrastructureWorkshop(){
                 <p className="mt-1 break-all text-[10px] leading-4 text-slate-500">Release {data.runtime.releaseSha || 'not reported yet'} · edge {data.runtime.edge}</p>
               </div>
             </div>
+            <Link href="/admin/release-workshop" className="mt-4 mr-2 inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-300/20 bg-emerald-300/[.04] px-4 text-xs font-black text-emerald-100">Release Workshop · Deploy or Roll Back</Link>
             <Link href="/admin/deployment-records" className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl border border-orange-300/15 bg-orange-300/[0.04] px-4 text-xs font-black text-orange-100 hover:bg-orange-300/[0.08]">
               <ScrollText className="h-4 w-4"/> Sovereign + Flame Record
             </Link>
