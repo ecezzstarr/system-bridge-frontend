@@ -125,8 +125,8 @@ export async function moveDistributionTeamTask(
       (task.status==='submitted'&&next==='in_progress'&&isLead)
     )
     if(!permitted){await client.query('ROLLBACK');return {success:false as const,reason:'invalid_transition' as const}}
-    await client.query(`UPDATE weave_distribution_team_tasks SET status=$2,
-      updated_at=NOW(),completed_at=CASE WHEN $2='completed' THEN NOW() ELSE NULL END
+    await client.query(`UPDATE weave_distribution_team_tasks SET status=$2::varchar,
+      updated_at=NOW(),completed_at=CASE WHEN $2::varchar='completed' THEN NOW() ELSE NULL END
       WHERE id=$1::uuid`,[taskId,next])
     await client.query(`INSERT INTO weave_distribution_team_task_history
       (task_id,actor_user_id,from_status,to_status,note) VALUES($1::uuid,$2::uuid,$3,$4,$5)`,
