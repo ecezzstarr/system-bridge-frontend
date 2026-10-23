@@ -4,6 +4,7 @@ import type { ChangeEvent } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-provider'
+import { WeaveNarrationCapture } from '@/components/video-studio/narration-capture'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Clapperboard, Film, Image as ImageIcon, Loader2, Music2, Play, Save, Sparkles, Upload, Video } from 'lucide-react'
@@ -28,6 +29,9 @@ export default function VideoAdStudioProductionPage(){
   const [uploading,setUploading]=useState<string|null>(null)
   const [message,setMessage]=useState<string|null>(null)
   const [form,setForm]=useState({title:'WEAVE',subject:'',objective:'',audience:'',durationSeconds:30})
+  const [scriptText,setScriptText]=useState('')
+  const [voiceAvailable,setVoiceAvailable]=useState(false)
+  const [voiceBusy,setVoiceBusy]=useState(false)
 
   const headers=(json=false):Record<string,string>=>{
     const token=localStorage.getItem('ssb_auth_token')
@@ -48,23 +52,24 @@ export default function VideoAdStudioProductionPage(){
     }catch(error:any){setMessage(error.message||'Unable to load Studio productions')}finally{setLoading(false)}
   }
 
-  useEffect(()=>{if(user?.role==='admin')void loadProjects()},[user?.role])
+  useEffect(()=>{if(user?.role==='admin'){void loadProjects();void fetch('/api/admin/video-ads/narration',{headers:headers()}).then(r=>r.json()).then(data=>setVoiceAvailable(Boolean(data.available))).catch(()=>setVoiceAvailable(false))}},[user?.role])
 
   const totalSeconds=useMemo(()=>project?.storyboard.reduce((sum:number,scene:Scene)=>sum+Number(scene.durationSeconds||0),0)||0,[project])
 
   const formProduction=async()=>{
-    if(!form.title.trim()||!form.subject.trim()||!form.objective.trim()||!form.audience.trim()){
-      setMessage('Name the production, subject, objective and audience.')
+    if(!form.title.trim()||(!scriptText.trim()&&(!form.subject.trim()||!form.objective.trim()||!form.audience.trim()))){
+      setMessage('Name the production; for an ad also describe the subject, objective and audience.')
       return
     }
     setForming(true);setMessage(null)
     try{
-      const response=await fetch('/api/admin/video-ads',{method:'POST',headers:headers(true),body:JSON.stringify(form)})
+      const payload=scriptText.trim()?{...form,subject:form.subject||'Original book narration',objective:form.objective||'Preserve and narrate the author’s original words',audience:form.audience||'TikTok audience',scriptText}:form
+      const response=await fetch('/api/admin/video-ads',{method:'POST',headers:headers(true),body:JSON.stringify(payload)})
       const data=await response.json()
       if(!response.ok||!data.success)throw new Error(data.error||'Unable to form video')
       setProject(data.project)
       setProjects(current=>[data.project,...current.filter(item=>item.id!==data.project.id)])
-      setMessage('Production formed. Refine the storyboard, supply scene media, then render.')
+      setMessage(scriptText.trim()?'Original wording preserved. Add the Burning River media and voice narration, then render.':'Production formed. Refine the storyboard, supply scene media, then render.')
     }catch(error:any){setMessage(error.message||'Unable to form video')}finally{setForming(false)}
   }
 
@@ -74,7 +79,7 @@ export default function VideoAdStudioProductionPage(){
     if(!next)return null
     setSaving(true)
     try{
-      const response=await fetch('/api/admin/video-ads',{method:'PATCH',headers:headers(true),body:JSON.stringify({id:next.id,storyboard:next.storyboard,soundtrackUrl:next.soundtrackUrl})})
+      const response=await fetch('/api/admin/video-ads',{method:'PATCH',headers:headers(true),body:JSON.stringify({id:next.id,storyboard:next.storyboard,soundtrackUrl:next.soundtrackUrl,narrationUrl:next.narrationUrl})})
       const data=await response.json()
       if(!response.ok||!data.success)throw new Error(data.error||'Save failed')
       const saved:Project=data.project
@@ -119,6 +124,19 @@ export default function VideoAdStudioProductionPage(){
     }catch(error:any){setMessage(error.message||'Soundtrack upload failed')}finally{setUploading(null);event.target.value=''}
   }
 
+  const generateVoice=async()=>{
+    if(!project?.narrationScript.trim())return setMessage('An original narration script is required to generate a voice.')
+    setVoiceBusy(true);setMessage(null)
+    try{
+      const response=await fetch('/api/admin/video-ads/narration',{method:'POST',headers:headers(true),body:JSON.stringify({projectId:project.id})})
+      const data=await response.json()
+      if(!response.ok||!data.success)throw new Error(data.error||'Local voice unavailable')
+      setProject(data.project);setProjects(current=>current.map(item=>item.id===data.project.id?data.project:item))
+      setMessage('WEAVE local narration generated and stored for this production.')
+    }catch(error:any){setMessage(error.message||'Local voice unavailable')}
+    finally{setVoiceBusy(false)}
+  }
+
   const render=async()=>{
     if(!project)return
     if(totalSeconds!==project.durationSeconds){setMessage(`Scene timing must total ${project.durationSeconds} seconds.`);return}
@@ -152,6 +170,7 @@ export default function VideoAdStudioProductionPage(){
         <div className="grid gap-3 sm:grid-cols-2"><Input value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Production name" className="border-white/10 bg-black/30 text-white"/><Input value={form.audience} onChange={e=>setForm({...form,audience:e.target.value})} placeholder="Audience" className="border-white/10 bg-black/30 text-white"/></div>
         <textarea rows={3} value={form.subject} onChange={e=>setForm({...form,subject:e.target.value})} placeholder="Subject / product / environment" className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none"/>
         <textarea rows={3} value={form.objective} onChange={e=>setForm({...form,objective:e.target.value})} placeholder="What should this video achieve?" className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none"/>
+        <div className="border border-amber-300/20 bg-amber-300/[.04] p-3"><p className="text-xs font-black text-amber-100">ORIGINAL WORDS · AUDIO BOOK / STORY</p><p className="mt-1 text-xs text-slate-400">Paste the author's exact narration. WEAVE stores it unchanged and forms readable caption scenes without asking AI to rewrite the words. Leave blank for the original advertising storyboard workflow.</p><textarea rows={7} value={scriptText} onChange={e=>setScriptText(e.target.value)} placeholder="Paste the Scroll of Time and Continuity narration exactly as written" className="mt-3 w-full rounded-md border border-white/15 bg-black/50 px-3 py-2 text-sm text-white outline-none"/></div>
         <div className="border-y border-white/10 py-4"><div className="flex items-center justify-between"><p className="text-xs font-black text-white">DURATION</p><p className="text-xl font-black text-fuchsia-200">{durationLabel(form.durationSeconds)}</p></div><input type="range" min={30} max={360} step={15} value={form.durationSeconds} onChange={e=>setForm({...form,durationSeconds:Number(e.target.value)})} className="mt-3 w-full accent-fuchsia-300"/><div className="mt-3 flex flex-wrap gap-2">{PRESETS.map(seconds=><button key={seconds} onClick={()=>setForm({...form,durationSeconds:seconds})} className={`border px-2 py-1 text-[9px] font-black ${form.durationSeconds===seconds?'border-fuchsia-300/50 text-fuchsia-100':'border-white/10 text-slate-500'}`}>{durationLabel(seconds)}</button>)}</div></div>
         <Button onClick={formProduction} disabled={forming} className="w-full bg-fuchsia-300 font-black text-slate-950 hover:bg-fuchsia-200">{forming?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Sparkles className="mr-2 h-4 w-4"/>}FORM PRODUCTION</Button>
       </section>
@@ -165,9 +184,10 @@ export default function VideoAdStudioProductionPage(){
     {project&&<section className="space-y-5 border-y border-white/10 bg-[#070910]/70 px-3 py-6 sm:border sm:px-6">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5"><div><p className="text-[9px] font-black uppercase tracking-[0.28em] text-fuchsia-300/70">{project.orderId?'Paid customer production':'WEAVE video ad'}</p><h2 className="mt-1 text-2xl font-black text-white">{project.title}</h2><p className="mt-2 text-xs text-slate-500">{durationLabel(project.durationSeconds)} · {project.storyboard.length} scenes · {project.status}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>void saveProject()} disabled={saving} className="border-white/15 text-white">{saving?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Save className="mr-2 h-4 w-4"/>}SAVE</Button><label className="inline-flex cursor-pointer items-center border border-white/15 px-4 py-2 text-xs font-black text-white"><Music2 className="mr-2 h-4 w-4"/>{uploading==='soundtrack'?'UPLOADING…':project.soundtrackUrl?'REPLACE SOUND':'ADD SOUND'}<input type="file" accept="audio/*" className="hidden" onChange={uploadSoundtrack} disabled={Boolean(uploading)}/></label></div></div>
 
+      <div className="space-y-3"><WeaveNarrationCapture uploadEndpoint="/api/admin/video-ads/upload" existingUrl={project.narrationUrl} onUploaded={async url=>{const next={...project,narrationUrl:url};setProject(next);await saveProject(next)}}/>{project.narrationScript&&<div className="border border-white/10 p-4"><p className="text-xs font-black uppercase tracking-wider text-amber-100">Author's unchanged script</p><textarea readOnly value={project.narrationScript} rows={7} className="mt-2 w-full resize-y bg-black/30 p-3 text-sm text-slate-200"/><button type="button" onClick={generateVoice} disabled={!voiceAvailable||voiceBusy} className="mt-2 border border-amber-300/30 px-3 py-2 text-xs font-bold text-amber-100 disabled:cursor-not-allowed disabled:opacity-40">{voiceBusy?'GENERATING NARRATION…':'GENERATE WITH WEAVE LOCAL VOICE'}</button>{!voiceAvailable&&<p className="mt-2 text-xs text-slate-400">Local neural voice is not configured on this server. Record or upload a professional narration; no robotic voice is substituted.</p>}</div>}</div>
       <div className="grid gap-4 lg:grid-cols-2">{project.storyboard.map((scene,index)=><article key={scene.id} className="overflow-hidden border border-white/10 bg-black/20"><div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div><p className="text-[9px] font-black uppercase tracking-[0.2em] text-fuchsia-300">SCENE {scene.order} · {scene.beat}</p><p className="mt-1 text-[10px] text-slate-600">{scene.durationSeconds}s</p></div>{scene.assetType==='video'?<Video className="h-5 w-5 text-cyan-300"/>:scene.assetType==='image'?<ImageIcon className="h-5 w-5 text-cyan-300"/>:<Upload className="h-5 w-5 text-slate-700"/>}</div>{scene.assetUrl&&<div className="aspect-[9/16] max-h-80 overflow-hidden bg-black">{scene.assetType==='video'?<video src={scene.assetUrl} controls className="h-full w-full object-cover"/>:<img src={scene.assetUrl} alt="" className="h-full w-full object-cover"/>}</div>}<div className="space-y-3 p-4"><Input value={scene.text} onChange={e=>updateScene(index,{text:e.target.value})} placeholder="Short on-screen line" className="border-white/10 bg-black/30 text-white"/><textarea rows={3} value={scene.visualDirection} onChange={e=>updateScene(index,{visualDirection:e.target.value})} placeholder="What should we see?" className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-xs text-slate-300 outline-none"/><textarea rows={2} value={scene.voiceover} onChange={e=>updateScene(index,{voiceover:e.target.value})} placeholder="Voice / sound direction" className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-xs text-slate-300 outline-none"/><label className="inline-flex cursor-pointer items-center border border-cyan-300/20 px-3 py-2 text-[9px] font-black text-cyan-200"><Upload className="mr-2 h-3.5 w-3.5"/>{uploading===`scene-${index}`?'UPLOADING…':scene.assetUrl?'REPLACE MEDIA':'ADD MEDIA'}<input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" className="hidden" onChange={e=>uploadScene(index,e)} disabled={Boolean(uploading)}/></label></div></article>)}</div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-y border-white/10 py-5"><div><p className="text-xs font-black text-white">Timeline {totalSeconds}s / {project.durationSeconds}s · {project.storyboard.filter(scene=>scene.assetUrl).length}/{project.storyboard.length} scenes supplied</p><p className="mt-1 text-[10px] text-slate-600">The Studio normalizes every scene to 9:16, joins the timeline and lays the optional soundtrack under the final MP4.</p></div><Button onClick={render} disabled={rendering||saving||Boolean(uploading)} className="bg-cyan-300 font-black text-slate-950 hover:bg-cyan-200">{rendering?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Play className="mr-2 h-4 w-4"/>}{rendering?'RENDERING…':'RENDER VIDEO'}</Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-y border-white/10 py-5"><div><p className="text-xs font-black text-white">Timeline {totalSeconds}s / {project.durationSeconds}s · {project.storyboard.filter(scene=>scene.assetUrl).length}/{project.storyboard.length} scenes supplied</p><p className="mt-1 text-[10px] text-slate-600">The Studio produces a vertical MP4. Narration is kept clear above the optional quieter soundtrack. Script text alone is not spoken unless voice audio is generated or recorded.</p></div><Button onClick={render} disabled={rendering||saving||Boolean(uploading)} className="bg-cyan-300 font-black text-slate-950 hover:bg-cyan-200">{rendering?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<Play className="mr-2 h-4 w-4"/>}{rendering?'RENDERING…':'RENDER VIDEO'}</Button></div>
 
       {project.status==='failed'&&project.errorMessage&&<div className="border border-red-400/20 bg-red-400/[0.05] p-4 text-sm text-red-200">{project.errorMessage}</div>}
       {project.outputUrl&&<div className="grid gap-5 lg:grid-cols-[.75fr_1.25fr]"><div className="mx-auto w-full max-w-sm bg-black"><video src={project.outputUrl} controls className="aspect-[9/16] w-full object-contain"/></div><div className="flex flex-col justify-center"><p className="text-[9px] font-black uppercase tracking-[0.26em] text-emerald-300">FINISHED VIDEO</p><h3 className="mt-2 text-2xl font-black text-white">{project.orderId?'RETURNED TO CUSTOMER STUDIO':'READY FOR WEAVE MOVEMENT'}</h3><p className="mt-3 max-w-xl text-sm leading-6 text-slate-400">{project.orderId?'The customer can watch the finished production from their own Video Ad Studio order.':'Keep this video inside the Studio. Use the WEAVE Movement controls below to choose its audience, placement, schedule and frequency, then publish it directly across WEAVE.'}</p></div></div>}
