@@ -6,6 +6,17 @@ import { FILE_FOLDER_TIERS, type FileFolderTier } from '@/lib/file-folder-pricin
  * not an image used as a world wallpaper and not a representation of earnings.
  * Every station routes into an existing File Folder operating district.
  */
+export const STANDARD_FILE_FOLDER_REFERENCE = {
+  name: 'Official Standard File Folder World',
+  approved: '2026-10-23',
+  referenceImage: '383187.png',
+  sha256: 'bdbd47223243d0996967087ef9733288dd9b863ab16b3b40be0d49e6b33f79cb',
+  dimensions: '1536x864',
+  composition: 'Mountain-and-river living business landscape; stone Customer Door; formation yard; farm, food, boutique, creative and software districts',
+  progression: ['Recognize','Preview','Build','Activate','Operate'],
+  operatingRule: 'Every verified Standard File Folder owner gets this actual interactive world, with businesses tied to their own records',
+} as const
+
 export const PLUS_FILE_FOLDER_REFERENCE = {
   name: 'Official Plus File Folder',
   approved: '2026-10-23',
@@ -20,7 +31,7 @@ export const FILE_FOLDER_EQUIPMENT_ZONES = [
 ] as const
 export type EquipmentZone = typeof FILE_FOLDER_EQUIPMENT_ZONES[number]
 
-export const FILE_FOLDER_THEME_IDS = ['river-slate','radiant-blue','ember-gold','plus-white-gold'] as const
+export const FILE_FOLDER_THEME_IDS = ['river-slate','standard-living-valley','radiant-blue','ember-gold','plus-white-gold'] as const
 export type FileFolderThemeId = typeof FILE_FOLDER_THEME_IDS[number]
 export const FILE_FOLDER_REALNESS = ['basic','refined','high'] as const
 export type FileFolderRealness = typeof FILE_FOLDER_REALNESS[number]
@@ -36,7 +47,7 @@ export type FileFolderWorldAppearance = {
   equipmentZones:EquipmentZone[]
 }
 export const FILE_FOLDER_WORLD_APPEARANCES:Record<FileFolderTier,FileFolderWorldAppearance> = {
-  standard:{theme:'river-slate',equipmentPack:'formation',realness:'basic',equipmentZones:['systems','modules','tools']},
+  standard:{theme:'standard-living-valley',equipmentPack:'standard-business-districts',realness:'high',equipmentZones:['systems','modules','tools','people','operations','expansion']},
   pro:{theme:'radiant-blue',equipmentPack:'business-operations',realness:'refined',equipmentZones:['systems','modules','tools','operations']},
   premium:{theme:'ember-gold',equipmentPack:'enterprise-command',realness:'high',equipmentZones:['systems','modules','tools','people','operations','expansion']},
   plus:{theme:'plus-white-gold',equipmentPack:'plus-complete-systems',realness:'high',equipmentZones:[...FILE_FOLDER_EQUIPMENT_ZONES]},
@@ -45,6 +56,7 @@ export const FILE_FOLDER_PALETTES:Record<FileFolderThemeId,{
   ground:string;structure:string;accent:string;glow:string;glass:string;sky:string
 }> = {
   'river-slate':{ground:'#172936',structure:'#a8c2c5',accent:'#4ac3d1',glow:'#84e6f2',glass:'#b3e0e2',sky:'#10243e'},
+  'standard-living-valley':{ground:'#678956',structure:'#d9ccb2',accent:'#b9a477',glow:'#eddfa3',glass:'#b9dae9',sky:'#b7d9ef'},
   'radiant-blue':{ground:'#243d57',structure:'#c7d9ec',accent:'#74cbe9',glow:'#a4e4ff',glass:'#e4f6ff',sky:'#264d77'},
   'ember-gold':{ground:'#3d2e35',structure:'#dbc19e',accent:'#e2ad63',glow:'#ffda92',glass:'#fff0dc',sky:'#4b3b51'},
   'plus-white-gold':{ground:'#eceaf1',structure:'#f8f5e9',accent:'#c69745',glow:'#ffe3a1',glass:'#f4faff',sky:'#dbeaff'},
