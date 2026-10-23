@@ -92,6 +92,29 @@ export async function postDistributionTeamUpdate(userId:string,kind:Distribution
       )
     RETURNING id,created_at
   `,[userId,String(member.manager_id),kind,content])
+  if(rows.length){
+    // Notify the other members of this verified three-person team. The message
+    // itself is already committed; notification delivery must not duplicate it.
+    try{
+      await getPool().query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
+        SELECT teammate.user_id,'distribution_team_update',$3,$4,author.name,
+          '/weave/lifestyles/work#team-communication'
+        FROM (
+          SELECT me.user_id FROM manager_employment me
+            WHERE me.user_id=$1::uuid AND me.status IN ('probation','active')
+          UNION
+          SELECT a.user_id FROM weave_distribution_assistants a
+            WHERE a.manager_user_id=$1::uuid AND a.status='approved'
+        ) teammate
+        JOIN users recipient ON recipient.id=teammate.user_id AND recipient.is_active=true
+        JOIN users author ON author.id=$2::uuid
+        WHERE teammate.user_id<>$2::uuid`,
+        [String(member.manager_id),userId,
+          kind==='message'?'New distribution team message':kind==='plan'?'Distribution team plan updated':
+          kind==='progress'?'Distribution team progress reported':'Distribution handoff needs attention',
+          content.slice(0,380)])
+    }catch(error){console.error('[distribution team] teammate alerts failed',error)}
+  }
   return rows.length?{success:true as const,update:rows[0]}:{success:false as const,reason:'not_employed' as const}
 }
 
