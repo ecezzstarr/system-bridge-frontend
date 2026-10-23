@@ -347,7 +347,90 @@ export function BurningRiverLiveWorld({role='visitor'}:{
               className="min-h-10 rounded-lg border border-white/25 px-4 text-xs">Decline</button>
           </div>
         </div>)}
-        <p className="text-xs text-sky-100/75">{owner.connections.filter(c=>c.status==='accepted').length} accepted connections · {owner.connections.filter(c=>c.status==='pending'&&c.direction==='outgoing').length} sent invitations.</p>
+        <p className="text-xs text-sky-100/75">{accepted.length} accepted connections · {owner.connections.filter(c=>c.status==='pending'&&c.direction==='outgoing').length} sent invitations.</p>
+        {accepted.length>0&&<form className="space-y-2 rounded-xl border border-amber-200/25 bg-white/[.03] p-3"
+          onSubmit={event=>{
+            event.preventDefault()
+            if(jointConnectionId&&jointTitle.trim().length>=4){
+              void request('propose_project',{connectionId:jointConnectionId,kind:jointKind,title:jointTitle.trim()})
+              setJointTitle('')
+            }
+          }} data-joint-system-proposal="consent-required">
+          <p className="text-xs font-bold text-amber-100">Form a project with another Client domain</p>
+          <label className="block text-xs text-sky-100/80">Connected world
+            <select value={jointConnectionId} onChange={event=>setJointConnectionId(event.target.value)}
+              required className="mt-1 min-h-10 w-full rounded-lg border border-white/25 bg-[#0b2840] px-3 text-sm text-white">
+              <option value="">Choose a connected Client</option>
+              {accepted.map(c=><option key={c.id} value={c.id}>
+                {labels.get(c.otherDomainId)||'Client world'} · accepted
+              </option>)}
+            </select>
+          </label>
+          <label className="block text-xs text-sky-100/80">System or business formation
+            <input value={jointTitle} onChange={event=>setJointTitle(event.target.value)} required minLength={4} maxLength={120}
+              placeholder="Name the work two worlds can form"
+              className="mt-1 min-h-10 w-full rounded-lg border border-white/25 bg-[#0b2840] px-3 text-sm text-white"/>
+          </label>
+          <label className="block text-xs text-sky-100/80">Type of cooperation
+            <select value={jointKind} onChange={event=>setJointKind(event.target.value)}
+              className="mt-1 min-h-10 w-full rounded-lg border border-white/25 bg-[#0b2840] px-3 text-sm text-white">
+              <option value="system_integration">Connect operating systems</option>
+              <option value="commerce">Commerce and Customer Doors</option>
+              <option value="distribution">Distribution and fulfillment</option>
+              <option value="media">Media production</option>
+              <option value="shared_service">Shared service</option>
+            </select>
+          </label>
+          <button type="submit" disabled={busy||!jointConnectionId||jointTitle.trim().length<4}
+            className="min-h-11 w-full rounded-lg border border-amber-200/50 bg-amber-200/10 px-3 text-xs font-black text-amber-100 disabled:opacity-40">
+            Propose joint work · Partner must accept
+          </button>
+        </form>}
+        {owner.projects.map(project=><div key={project.id}
+           className="space-y-2 rounded-lg border border-white/20 p-3" data-joint-system-formation={project.id}>
+          <p className="text-xs font-black text-white">{project.title}</p>
+          <p className="text-xs text-sky-100/70">
+            {labels.get(project.otherDomainId)||'Connected Client domain'} · {project.kind.replaceAll('_',' ')} · {project.status}
+          </p>
+          {project.status==='proposed'&&!project.createdBySelf&&
+            <button type="button" disabled={busy}
+              onClick={()=>void request('accept_project',{projectId:project.id})}
+              className="min-h-10 rounded-lg bg-amber-200 px-3 text-xs font-bold text-[#182539]">
+              Approve this joint project
+            </button>}
+          {project.status==='proposed'&&project.createdBySelf&&
+            <p className="text-xs text-sky-100/65">Awaiting the other Client's approval. No shared systems exist yet.</p>}
+          {project.status==='active'&&<>
+            <p className="text-xs text-emerald-100">
+              My system: {project.ownContribution?'contributed':'not connected'} · Other Client: {project.partnerContribution?'contributed':'awaiting contribution'}
+            </p>
+            {!project.ownContribution&&owner.ownSystems.length>0&&
+              <div className="flex flex-col gap-2">
+                <select aria-label={'My system for '+project.title}
+                  value={selectedSystemIds[project.id]||''}
+                  onChange={event=>setSelectedSystemIds(values=>({...values,[project.id]:event.target.value}))}
+                  className="min-h-11 rounded-lg border border-white/20 bg-[#0b2840] px-3 text-xs text-white">
+                  <option value="">Select my live system</option>
+                  {owner.ownSystems.map(sys=><option key={sys.id} value={sys.id}>
+                    {sys.name} · {sys.systemType}
+                  </option>)}
+                </select>
+                <button type="button" disabled={busy||!selectedSystemIds[project.id]}
+                  onClick={()=>void request('contribute_system',{projectId:project.id,systemId:selectedSystemIds[project.id]})}
+                  className="min-h-11 rounded-lg border border-emerald-300/45 px-3 text-xs font-bold text-emerald-100 disabled:opacity-40">
+                  Connect this real active system
+                </button>
+              </div>}
+            {!project.ownContribution&&owner.ownSystems.length===0&&
+              <Link href="/client/system-switch" className="text-xs font-bold text-amber-200">
+                Build and commission a system in my private File Folder first →
+              </Link>}
+            {project.ownContribution&&project.partnerContribution&&
+              <p className="text-xs font-bold text-emerald-200">
+                Both worlds have contributed commissioned systems. This joint formation now develops their public castles; it does not claim a completed sale or integration.
+              </p>}
+          </>}
+        </div>)}
         <Link href="/client/system-switch" className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-amber-200">
           <Layers3 className="h-4 w-4"/> Continue building my private File Folder
         </Link>
