@@ -33,6 +33,7 @@ assert.ok(media.includes('Cache-Control')&&media.includes('private, no-store'),'
 assert.ok(publicMedia.includes("objectName.startsWith('weave-private/admin-music/')"),'Generic Weave media gateway denies private Admin stems')
 assert.ok(engine.includes('exportAdvancedSongWav')&&engine.includes('new OfflineAudioContext'),'Advanced song is rendered using real audio, not simulated playback')
 assert.ok(engine.includes('renderBeat(context,part.arrangement,buffers,beat,beginning+beat*unit)'),'All song sections render on one uninterrupted beat timeline')
+assert.ok(engine.includes('context.createDynamicsCompressor()')&&engine.includes('sectionBus.gain.linearRampToValueAtTime'),'Published song masters have soft movement transitions and peak control')
 assert.ok(publish.includes('parseWav(bytes)'),'DJ publishing verifies actual PCM WAV audio')
 assert.ok(publish.includes('Math.abs(decodedSeconds-intendedSeconds)>.12'),'WAV duration must match the saved song arrangement')
 assert.ok(publish.includes('await ensureDjSchema()')&&publish.includes('INSERT INTO dj_tracks('),'Released songs enter the existing DJ track library')
