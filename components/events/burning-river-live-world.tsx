@@ -55,9 +55,10 @@ function DomainCastle({domain,selected,onSelect}:{
   const [stone,roof,light]=palette[domain.tier]
   const base=domain.tier==='plus'?3:domain.tier==='premium'?2.5:domain.tier==='pro'?2.05:1.6
   const growth=Math.min(3.5,Math.log2(domain.buildLevel+1)*.5)
-  const height=base+growth
+  const height=base+growth+(domain.building?domain.activity.buildProgress/100*.95:0)
   const [x,z]=[domain.location.x,domain.location.z]
   const isBuilding=domain.building
+  const buildHeight=0.3+(domain.activity.buildProgress/100)*(height+.4)
   return <group position={[x,0,z]} onClick={event=>{event.stopPropagation();onSelect(domain.domainId)}}>
     <mesh position={[0,-.16,0]}><cylinderGeometry args={[2.9,3.1,.38,10]}/>
       <meshStandardMaterial color={domain.location.region==='ember_reach'?'#684437':'#697781'} roughness={.94}/>
@@ -90,11 +91,11 @@ function DomainCastle({domain,selected,onSelect}:{
           <meshStandardMaterial color={roof} metalness={.48}/></mesh>
       </group>):null}
     {isBuilding&&<group data-world-domain-construction="recorded">
-      {[-1,1].map(side=><mesh key={side} position={[side*2.02,height*.44,1.3]}>
-        <boxGeometry args={[.1,height+.7,.14]}/>
+      {[-1,1].map(side=><mesh key={side} position={[side*2.02,buildHeight/2,1.3]}>
+        <boxGeometry args={[.1,buildHeight,.14]}/>
         <meshStandardMaterial color="#efbd66" metalness={.76} roughness={.24}/>
       </mesh>)}
-      <mesh position={[0,height*.75,1.3]}><boxGeometry args={[4.3,.12,.14]}/>
+      <mesh position={[0,buildHeight,1.3]}><boxGeometry args={[4.3,.12,.14]}/>
         <meshStandardMaterial color="#f3bf71" metalness={.75}/></mesh>
     </group>}
     {domain.activity.operatingSystems>0&&<group>
@@ -288,7 +289,7 @@ export function BurningRiverLiveWorld({role='visitor'}:{
          className={`rounded-xl border p-3 text-left text-xs ${selected===d.domainId?'border-amber-200 bg-amber-200/10':'border-white/15 bg-white/[.04]'}`}>
          <span className="block truncate font-bold text-white">{d.publicName}</span>
          <span className="mt-1 block capitalize text-amber-200">{d.tier} · {stageLabel[d.stage]}</span>
-         <span className="mt-1 block text-sky-100/70">{d.activity.activeBuilds} building · {d.activity.operatingSystems} operating · {d.activity.jointFormations} joint formations</span>
+         <span className="mt-1 block text-sky-100/70">{d.activity.activeBuilds} building{d.building?' · '+d.activity.buildProgress+'% formed':''} · {d.activity.operatingSystems} operating · {d.activity.jointFormations} joint formations</span>
        </button>)}
        {feed.domains.length===0&&<p className="col-span-2 text-sm text-sky-100/70">
          {status==='loading'?'Retrieving the real domains…':status==='unavailable'?'The world feed is temporarily unavailable.':'No verified Client File Folder domain is active yet.'}
