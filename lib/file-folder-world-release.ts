@@ -55,6 +55,7 @@ export async function ensureFileFolderGlobalReleases(){
     INSERT INTO file_folder_global_releases(state,config)
     SELECT 'published',${JSON.stringify(DEFAULT_FILE_FOLDER_WORLD_CONFIG)}::jsonb
     WHERE NOT EXISTS(SELECT 1 FROM file_folder_global_releases)
+    ON CONFLICT DO NOTHING
   `
 }
 export async function getPublishedFileFolderRelease(){
