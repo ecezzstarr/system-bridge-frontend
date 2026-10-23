@@ -9,6 +9,12 @@ CREATE TABLE IF NOT EXISTS company_client_staff_offers (
   position_title varchar(160) NOT NULL,
   monthly_salary_usdt numeric(16,2) NOT NULL DEFAULT 0,
   ticket_amount_usdt numeric(16,2) NOT NULL,
+  applicant_contribution_usdt numeric(16,2) NOT NULL DEFAULT 0,
+  proposed_personal_loan_usdt numeric(16,2) NOT NULL DEFAULT 0,
+  personal_loan_terms text,
+  personal_loan_accepted_at timestamptz,
+  loan_funding_reference varchar(255),
+  loan_funding_network varchar(80),
   folder_tier varchar(12) NOT NULL CHECK (folder_tier IN ('standard','pro','premium')),
   status varchar(32) NOT NULL DEFAULT 'offered'
     CHECK (status IN ('offered','accepted','pending_verification','approved','rejected','withdrawn')),
@@ -47,3 +53,13 @@ COMMENT ON COLUMN company_client_staff_offers.monthly_salary_usdt IS
   'Confidential monthly employment offer figure, not an automatic salary payment.';
 COMMENT ON COLUMN company_client_staff_offers.ticket_amount_usdt IS
   'USDT employment ticket amount for manual Administration verification; not File Folder purchase price.';
+
+-- Compatible with databases that created company staff offers before personal-loan support.
+ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS applicant_contribution_usdt numeric(16,2) NOT NULL DEFAULT 0;
+ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS proposed_personal_loan_usdt numeric(16,2) NOT NULL DEFAULT 0;
+ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS personal_loan_terms text;
+ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS personal_loan_accepted_at timestamptz;
+ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS loan_funding_reference varchar(255);
+ALTER TABLE company_client_staff_offers ADD COLUMN IF NOT EXISTS loan_funding_network varchar(80);
+COMMENT ON COLUMN company_client_staff_offers.proposed_personal_loan_usdt IS 'Optional explicitly proposed private loan, not automatically funded, incurred or repaid';
+COMMENT ON COLUMN company_client_staff_offers.applicant_contribution_usdt IS 'Actual expected applicant part of a company entry ticket; Administration verifies its own payment evidence';
