@@ -1,11 +1,15 @@
 /**
- * Plus File Folder is a separate, fixed-price USDT product. It must never be
- * derived from TRX/Flame Coin amounts or passed into the existing TRX checkout.
+ * Plus File Folder has three explicit, Administration-defined values.
+ * 60,000 Flame Coin is the product entitlement, payable as either
+ * 59,602 TRX or 20,000 USDT. These are a fixed product quotation, NOT
+ * a live exchange rate. Never silently apply this price ratio elsewhere.
  */
 export const PLUS_FILE_FOLDER = {
   tier: 'plus',
   title: 'Plus File Folder',
-  price: 20_000,
+  flameCoin: 60_000,
+  trx: 59_602,
+  usdt: 20_000,
   currency: 'USDT',
   delivery: 'completed_systems',
 } as const
@@ -27,14 +31,14 @@ export const PLUS_READY_BLUEPRINTS = [
 export type PlusReadyBlueprint = typeof PLUS_READY_BLUEPRINTS[number]
 
 export function validPlusFileFolderPrice(amount: unknown, currency: unknown) {
-  return currency === PLUS_FILE_FOLDER.currency &&
-    typeof amount === 'number' &&
+  return typeof amount === 'number' &&
     Number.isFinite(amount) &&
-    amount === PLUS_FILE_FOLDER.price
+    ((currency === 'TRX' && amount === PLUS_FILE_FOLDER.trx) ||
+      (currency === 'USDT' && amount === PLUS_FILE_FOLDER.usdt))
 }
 
 /**
- * Called only for an Administration-verified Plus USDT purchase.
+ * Called only for an Administration-verified Plus TRX or USDT purchase.
  * Replays reuse existing Plus-tagged builds and never debit a Client wallet.
  * The Customer Door opens to customers immediately; the Lord still publishes
  * their own offers and must configure any external payment integration.
@@ -56,13 +60,15 @@ export async function provisionPlusFileFolderSystems(input: {
     WHERE id=${purchaseId}::uuid
       AND status='confirmed'
       AND file_folder_tier='plus'
-      AND payment_method='usdt'
-      AND amount_usdt=${PLUS_FILE_FOLDER.price}
+      AND (
+        (payment_method='trx' AND amount_trx=${PLUS_FILE_FOLDER.trx})
+        OR (payment_method='usdt' AND amount_usdt=${PLUS_FILE_FOLDER.usdt})
+      )
       AND client_id=${clientId}::uuid
       AND file_number=${fileNumber}
     LIMIT 1
   `
-  if (!purchase) throw new Error('Plus File Folder needs a verified 20,000 USDT purchase owned by this Client')
+  if (!purchase) throw new Error('Plus File Folder needs a verified 59,602 TRX or 20,000 USDT payment owned by this Client')
 
   const commissioned: Array<{ blueprintKey: string; systemId: string }> = []
   for (const key of PLUS_READY_BLUEPRINTS) {
@@ -177,7 +183,9 @@ export async function provisionPlusFileFolderSystems(input: {
 
   return {
     tier: PLUS_FILE_FOLDER.tier,
-    currency: PLUS_FILE_FOLDER.currency,
+    flameCoinValue: PLUS_FILE_FOLDER.flameCoin,
+    trxPrice: PLUS_FILE_FOLDER.trx,
+    usdtPrice: PLUS_FILE_FOLDER.usdt,
     readySystemCount: commissioned.length + 1,
     systems: commissioned,
     customerDoor: 'ready_for_offer',
