@@ -3,6 +3,7 @@
 import {Text} from '@react-three/drei'
 import * as THREE from 'three'
 import {CityMaterial} from './file-folder-city-material'
+import {FileFolderPlusLandmark} from './file-folder-plus-landmark'
 
 export const FILE_FOLDER_VISUAL_TIERS=['standard','pro','premium','plus'] as const
 export type FileFolderVisualTier=typeof FILE_FOLDER_VISUAL_TIERS[number]|'legacy'
@@ -34,6 +35,7 @@ export function FileFolderTierArchitecture({tier='legacy',reducedDetail=false}:{
   const markers=([[-16,-14],[16,-14],[-16,14],[16,14]] as const).slice(0,reducedDetail?2:4)
   const strips=tier==='plus'?6:tier==='premium'?4:tier==='pro'?3:2
   return <group data-file-folder-architecture-tier={tier}>
+    {tier==='plus'&&<FileFolderPlusLandmark reducedDetail={reducedDetail}/>}
     {markers.map(([x,z],index)=><group key={index} position={[x,0,z]} rotation={[0,index%2?Math.PI*.25:-Math.PI*.25,0]}>
       <mesh receiveShadow position={[0,-.04,0]}>
         <boxGeometry args={[1.8,.16,1.7]}/>
