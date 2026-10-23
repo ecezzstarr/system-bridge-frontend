@@ -18,7 +18,17 @@ export default function NotificationInbox(){
       const response=await fetch('/api/notifications',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
       const data=await response.json()
       if(!response.ok)throw new Error(data.error||'Unable to load notifications')
-      setItems(data.notifications||[])
+      const list:Notice[]=data.notifications||[]
+      const requested=new URLSearchParams(window.location.search).get('open')
+      if(requested&&!list.some(item=>item.id===requested)){
+        const detail=await fetch('/api/notifications?id='+encodeURIComponent(requested),
+          {headers:{Authorization:`Bearer ${token}`},cache:'no-store'})
+        if(detail.ok){
+          const selected=await detail.json()
+          if(selected.notification)list.unshift(selected.notification)
+        }
+      }
+      setItems(list)
       setError('')
     }catch(e){setError(e instanceof Error?e.message:'Unable to load notifications')}
     finally{setLoading(false)}
