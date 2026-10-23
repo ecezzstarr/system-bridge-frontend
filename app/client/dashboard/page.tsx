@@ -10,5 +10,6 @@ export default function ClientDashboardPage() {
   return <>
     <WeaveDashboardWorld role="client" userName={user?.name} />
     <LifestyleEntry />
+    <CompanyStaffWorkspaceEntry />
   </>
 }
