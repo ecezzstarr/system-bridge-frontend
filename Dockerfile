@@ -35,6 +35,7 @@ RUN node tests/communication-security.cjs
 RUN node tests/recovery-desk.cjs
 RUN node tests/commerce-ledger-regression.cjs
 RUN node tests/video-ad-workshop.cjs
+RUN node tests/weave-narration-studio.cjs
 RUN npx tsc --noEmit
 RUN npm run build
 
