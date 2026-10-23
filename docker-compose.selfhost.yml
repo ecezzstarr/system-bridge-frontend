@@ -1,5 +1,6 @@
 services:
   weave:
+    image: weave-release:${WEAVE_RELEASE_SHA:-selfhost}
     build:
       context: .
       dockerfile: Dockerfile.selfhost

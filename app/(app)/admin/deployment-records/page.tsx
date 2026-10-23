@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Flame, ScrollText, Server, ShieldCheck } from 'lucide-react'
+import { Flame, ScrollText, Server, ShieldCheck, CloudUpload } from 'lucide-react'
+import Link from 'next/link'
 
 interface DeploymentRecord {
   id: string
@@ -49,6 +50,7 @@ export default function DeploymentRecordsPage() {
         </p>
       </header>
 
+      <Link href="/admin/release-workshop" className="mt-5 inline-flex min-h-12 items-center gap-2 rounded-xl border border-orange-300/30 bg-orange-400/[.06] px-5 text-sm font-black text-orange-100"><CloudUpload className="h-4 w-4"/>Open Release Workshop · Deploy or Roll Back</Link>
       <section className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="border border-white/10 bg-white/[.025] p-4">
           <ScrollText className="h-4 w-4 text-sky-300" />

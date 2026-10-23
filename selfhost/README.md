@@ -1,6 +1,6 @@
 # Weave self-hosting
 
-This is the temporary and permanent host path for **Weave of Presence: System Switch — Bridge of Radiance**.
+This is the provider-neutral Docker host path for **Weave of Presence: System Switch — Bridge of Radiance**. Routine deployments and rollbacks are now requested through the Administration **Release Workshop**, not automatic server pulls. The full setup, verification and migration process is documented in [Sovereign Release Workshop](../docs/sovereign-release-workshop.md).
 
 The same application image can run on:
 
@@ -8,7 +8,7 @@ The same application image can run on:
 - an x86_64 or ARM64 VPS
 - a Weave-owned Ubuntu machine with a reachable public IP or router port forwarding
 
-The temporary Oracle path keeps PostgreSQL external through `DATABASE_URL` and uses Caddy for automatic HTTPS. The Weave Node server itself remains private on the host at `127.0.0.1:3000`.
+Any supported Linux host keeps PostgreSQL external through `DATABASE_URL` and uses Caddy for automatic HTTPS. Oracle is one possible provider, not a requirement. The Weave Node server itself remains private on the host at `127.0.0.1:3000`.
 
 ## Architecture
 
@@ -151,30 +151,27 @@ After DNS points to the server:
 https://weavingsystem.online/api/health
 ```
 
-## Updating Weave
+## Updating and rolling back WEAVE
 
-```bash
-git pull
-docker compose -f docker-compose.selfhost.yml build --pull
-docker compose -f docker-compose.selfhost.yml up -d --remove-orphans
-docker image prune -f
-```
+The canonical deployment source is the exact GitHub `main` commit verified by
+the Production Check. Administration operates the **Release Workshop** at
+`/admin/release-workshop`, linked from Sovereign + Flame Record.
 
-## Rollback
+After one-time host setup of `WEAVE_RELEASE_CONTROL_TOKEN` and the separate
+`selfhost/release-worker.py` service, Administration may request a verified
+release or choose a historically healthy rollback release without using SSH.
 
-Before updating, record the current commit:
+- Requests are recorded as queued; **queued does not mean deployed**.
+- The independent host worker verifies CI and executes the Docker process.
+- The deployment script checks local and public release health before success.
+- If it fails, the previous release is restored when available and a failure
+  plus rollback movement is recorded.
+- Production deployment never runs automatically merely because CI succeeded.
+  The manual GitHub workflow_dispatch fallback is available when the app is
+  offline, and enforces the same successful CI gate.
 
-```bash
-git rev-parse HEAD
-```
-
-To return to it:
-
-```bash
-git checkout <commit-sha>
-docker compose -f docker-compose.selfhost.yml build
-docker compose -f docker-compose.selfhost.yml up -d
-```
+See [full setup, rollback and server-move playbook](../docs/sovereign-release-workshop.md).
+Application rollback is not a PostgreSQL rollback; preserve database and media backups.
 
 ## Permanent Weave-owned server
 
