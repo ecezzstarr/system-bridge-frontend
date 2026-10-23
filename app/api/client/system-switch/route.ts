@@ -216,7 +216,7 @@ export async function GET(request: NextRequest) {
       file_folder_world:fileFolderWorld,
       build_funding:fileFolderWorld.buildFunding,
       file_folder_tier:fileFolderTier,
-      premium_dj_enabled:fileFolderTier==='premium',
+      premium_dj_enabled:fileFolderTier==='premium'||fileFolderTier==='plus',
       vault:{
         balance:money.vault.balance,
         currency:money.vault.currency,
