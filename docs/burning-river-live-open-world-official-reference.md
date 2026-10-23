@@ -24,6 +24,8 @@ This is **The Company of Time** expressed as interacting Clients, Agents, Bridge
 - Standard, Pro, Premium and Plus use distinct physical architecture. Each is a real 3D clickable domain in the same live river landscape; further Client systems develop the domain.
 - A visitor may inspect a castle exterior immediately, but must not see a private File Number, Client name, private business plan, unpublished system, internal workspace, wallet, order, address or contact. The Client Customer Door is clickable only after real commissioning and permitted public publication.
 - Clients may opt in to invitations during Company Loop 1. Invitations are rate-limited, idempotent and require the recipient's independent approval. An accepted link appears as a connection across real neighboring domains. A link is **not** proof of income, sale, completed system integration or operational merger.
+- After both Clients accept their connection, either can propose a **joint business/system plan** (system integration, shared service, media, commerce, distribution); the second Client must independently approve the project. Only then can either contribute an actual commissioned system owned by their own File Folder. A joint public world formation appears only once **both independently verified active systems** are connected. Stale/deactivated contributions cease to count. This constitutes a consented multi-Client formation, not proof of live API integration, payment, sales or income.
+- Proposal, acceptance and invitation notifications route each Client back to the Flame Event domain. The public map never reveals the private contributed system titles, system configurations, proposal content or Client identities while the Customer Door is unpublished.
 - The world refreshes approximately every 15 seconds while visible; it is not yet a WebSocket presence simulation and cannot claim continuous live avatar occupancy.
 - Other company roles retain their actual functioning roles in the event. No weapons, armies, battle scores, player killing or combat economy.
 
@@ -34,7 +36,7 @@ This is **The Company of Time** expressed as interacting Clients, Agents, Bridge
 - `migrations/20261023_burning_river_open_world_domains.sql`: permanent map and invitations.
 - `lib/file-folder-purchase-activation.ts`: purchased Client folder creates a map domain.
 - `app/api/events/flame/open-world/route.ts`: public read from real Client records.
-- `app/api/client/company-loop-connections/route.ts`: Client-only consent/approval actions.
+- `app/api/client/company-loop-connections/route.ts`: Client-only invitations, connected project proposals, recipient approvals, and authenticated, actual operating-system contributions.
 - `components/events/burning-river-official-gateway.tsx`: official crossing and working entrances.
 - `components/events/burning-river-live-world.tsx`: actual mobile/desktop 3D world map and events.
 - `app/flame-event/world/page.tsx`: shared world route.
