@@ -33,7 +33,7 @@ export async function ensureCompanyClientStaffSchema() {
       personal_loan_accepted_at timestamptz,
       loan_funding_reference varchar(255),
       loan_funding_network varchar(80),
-      folder_tier varchar(12) NOT NULL CHECK (folder_tier IN ('standard','pro','premium')),
+      folder_tier varchar(12) NOT NULL CHECK (folder_tier IN ('standard','pro','premium','plus')),
       status varchar(32) NOT NULL DEFAULT 'offered'
         CHECK (status IN ('offered','accepted','pending_verification','approved','rejected','withdrawn')),
       payment_reference varchar(255),
