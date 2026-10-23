@@ -29,6 +29,8 @@ export type VideoAdProject = {
   status: 'draft' | 'planned' | 'rendering' | 'ready' | 'failed'
   storyboard: VideoAdScene[]
   soundtrackUrl: string | null
+  narrationUrl: string | null
+  narrationScript: string
   outputUrl: string | null
   errorMessage: string | null
   createdAt: string
@@ -109,6 +111,8 @@ export async function ensureVideoAdWorkshopSchema() {
       status varchar(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','planned','rendering','ready','failed')),
       storyboard jsonb NOT NULL DEFAULT '[]'::jsonb,
       soundtrack_url text,
+      narration_url text,
+      narration_script text NOT NULL DEFAULT '',
       output_url text,
       error_message text,
       created_at timestamptz NOT NULL DEFAULT NOW(),
@@ -116,6 +120,8 @@ export async function ensureVideoAdWorkshopSchema() {
     )
   `)
   await pool.query('ALTER TABLE admin_video_ad_projects ADD COLUMN IF NOT EXISTS order_id uuid')
+  await pool.query("ALTER TABLE admin_video_ad_projects ADD COLUMN IF NOT EXISTS narration_url text")
+  await pool.query("ALTER TABLE admin_video_ad_projects ADD COLUMN IF NOT EXISTS narration_script text NOT NULL DEFAULT ''")
   await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS admin_video_ad_projects_order_idx ON admin_video_ad_projects(order_id) WHERE order_id IS NOT NULL')
   await pool.query('CREATE INDEX IF NOT EXISTS admin_video_ad_projects_created_idx ON admin_video_ad_projects(created_at DESC)')
 }
@@ -197,6 +203,8 @@ export function mapVideoAdProject(row: any): VideoAdProject {
     status: row.status,
     storyboard: Array.isArray(row.storyboard) ? row.storyboard : [],
     soundtrackUrl: row.soundtrack_url || null,
+    narrationUrl: row.narration_url || null,
+    narrationScript: String(row.narration_script || ''),
     outputUrl: row.output_url || null,
     errorMessage: row.error_message || null,
     createdAt: row.created_at,
