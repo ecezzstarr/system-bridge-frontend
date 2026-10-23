@@ -44,6 +44,15 @@ export function validateFileFolderWorldConfig(value:unknown):FileFolderWorldRele
     tierVisuals[tier]=rawVisuals?.[tier]===undefined
       ? FILE_FOLDER_WORLD_APPEARANCES[tier]
       : validateFileFolderAppearance(rawVisuals[tier])
+    if(tier==='plus'){
+      const visual=tierVisuals.plus
+      const official=FILE_FOLDER_WORLD_APPEARANCES.plus
+      if(visual.theme!==official.theme||visual.equipmentPack!==official.equipmentPack||
+        visual.realness!==official.realness||
+        official.equipmentZones.some(zone=>!visual.equipmentZones.includes(zone))){
+        throw new Error('Plus File Folder must retain the approved white-and-gold world, high-realness equipment pack and all six working zones.')
+      }
+    }
   }
   return {headline,description,tierMessages,tierVisuals}
 }
