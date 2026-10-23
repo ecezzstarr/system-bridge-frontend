@@ -203,6 +203,9 @@ export default function Home() {
             <p className="text-sm font-bold text-emerald-200">WEAVE · Stability and Lifestyle</p>
             <h2 className="mt-2 text-xl font-black sm:text-2xl">Continue into real company activity</h2>
             <p className="mt-3 text-sm leading-6 text-slate-200">Browse WEAVE Family Food, explore Farm to Family and find available ways to participate. Published products and actual recorded orders remain distinct from artwork or estimates.</p>
+            <Link href="/food-store" className="mt-5 block w-full max-w-md overflow-hidden rounded-xl border border-emerald-200/20" aria-label="Browse WEAVE Family Food products">
+              <img src="/weave-food/weave-family-products.avif" alt="WEAVE Family Food collection — the company's food products, with stock and pricing verified inside the Family Food Store" width={1200} height={700} loading="lazy" className="h-auto w-full object-cover"/>
+            </Link>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/food-store" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><Store className="h-4 w-4" /> Family Food Store</Link>
               <Link href="/lifestyle" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-emerald-200/30 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-emerald-200/10"><BriefcaseBusiness className="h-4 w-4" /> Lifestyle</Link>
