@@ -174,14 +174,28 @@ export async function exportAdvancedSongWav(
  const sampleRate=44100
  const context=new OfflineAudioContext(2,Math.ceil((seconds+.01)*sampleRate),sampleRate)
  const master=context.createGain();master.gain.value=.70
- master.connect(context.destination)
- ;(context as OfflineAudioContext & {__weaveMusicBus?:AudioNode}).__weaveMusicBus=master
+ const limiter=context.createDynamicsCompressor()
+ limiter.threshold.value=-12
+ limiter.knee.value=14
+ limiter.ratio.value=2.5
+ limiter.attack.value=.004
+ limiter.release.value=.18
+ master.connect(limiter);limiter.connect(context.destination)
  let cursor=0
  // Cache decoded audio across sections that reuse the same source recording.
  const buffers:AudioBuffers=new Map()
  for(const part of sections){
   const loaded=await loadMusicBuffers(context,part.arrangement,fetchAsset)
   for(const [key,value] of loaded)buffers.set(key,value)
+  // Shape each new musical movement to eliminate hard-cut pops at boundaries.
+  const length=loopSeconds(part.arrangement)*part.repeats
+  const sectionBus=context.createGain()
+  sectionBus.connect(master)
+  sectionBus.gain.setValueAtTime(.0001,cursor)
+  sectionBus.gain.linearRampToValueAtTime(1,cursor+.10)
+  sectionBus.gain.setValueAtTime(1,Math.max(cursor+.10,cursor+length-.12))
+  sectionBus.gain.linearRampToValueAtTime(.0001,cursor+length)
+  ;(context as OfflineAudioContext & {__weaveMusicBus?:AudioNode}).__weaveMusicBus=sectionBus
   const unit=60/part.arrangement.bpm
   const beats=part.arrangement.bars*4
   for(let repeat=0;repeat<part.repeats;repeat++){
