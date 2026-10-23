@@ -20,7 +20,7 @@ The Music Studio is a **Client-built system in the Streaming district of the Fil
 - Each track has an adjustable start beat, 1/2/4-bar recurrence, volume, pan, note and mute. The global project has 4 or 8 bars and a 50–180 BPM clock.
 - Beat-aligned sample playback and a per-clip **source BPM** parameter. Playback-rate matching can change sample pitch. There is no claim of high-quality time-stretch or key matching.
 - Word cues (up to 32) with position, speaker and exact beat; playback highlights the current words. Word cues **do not produce spoken audio** unless the user records or uploads their own voice onto a sound track.
-- Microphone recording through browser permission; upload of WAV, MP3, M4A, OGG, WEBM sound files into WEAVE's private media storage (16 MB per clip).
+- Microphone recording through browser permission; upload of WAV, MP3, M4A, OGG, WEBM sound files into WEAVE's private media storage (16 MB per clip; at most 60 clips and 256 MB of stored audio per Client File Folder).
 - Actual live FFT output meter, decoded sample waveform previews, stereo mixer, and playable synchronized loop.
 - Local bounce to real 44.1kHz stereo WAV through `OfflineAudioContext`, not a screenshot or simulated export.
 - Project save, reopen, revision, invited staff access and revoke.
