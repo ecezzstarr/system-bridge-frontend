@@ -93,9 +93,13 @@ export async function workGithubReleaseBoard(){
       mergeReady:!draft&&check.state==='passed',
     } satisfies GithubWorkPull
   }))
+  const promotions=await recentWorkPromotions().catch(()=>{
+    // GitHub discovery remains usable during a PostgreSQL audit migration issue.
+    return [] as Array<{id:string;pr_number:number;head_sha:string;result_sha:string|null;status:string;created_at:string}>
+  })
   return {
     repository:REPO,repositoryUrl:'https://github.com/'+REPO,main,
-    pulls:pending,promotionConfigured:Boolean(token(true)),
+    pulls:pending,promotions,promotionConfigured:Boolean(token(true)),
     fetchedAt:new Date().toISOString(),
   }
 }
@@ -118,6 +122,12 @@ function ensurePromotionAudit(){
     await sql`CREATE INDEX IF NOT EXISTS weave_git_promotions_recent ON weave_git_promotions(created_at DESC)`
   })().catch(error=>{auditReady=null;throw error})
   return auditReady
+}
+
+export async function recentWorkPromotions(){
+  await ensurePromotionAudit()
+  return sql`SELECT id,pr_number,head_sha,result_sha,status,created_at
+    FROM weave_git_promotions ORDER BY created_at DESC LIMIT 12`
 }
 
 export async function mergeApprovedWorkPull(input:{number:number;headSha:string;adminId:string;confirmation:string}){
