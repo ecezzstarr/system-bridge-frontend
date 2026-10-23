@@ -106,7 +106,7 @@ export async function claimReleaseJob(workerKey:string){
       WHERE server_key=${serverKey()} AND status='queued'
       ORDER BY requested_at ASC FOR UPDATE SKIP LOCKED LIMIT 1
     )
-    RETURNING id,action,target_sha,status,lease_token,server_key
+    RETURNING id,action,target_sha,status,lease_token,server_key,requested_by
   `
   return job||null
 }
