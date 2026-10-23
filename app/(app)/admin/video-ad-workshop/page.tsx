@@ -11,7 +11,7 @@ import { Clapperboard, Film, Image as ImageIcon, Loader2, Music2, Play, Save, Sp
 
 type SceneMediaType='image'|'video'
 type Scene={id:string;order:number;durationSeconds:number;beat:string;text:string;visualDirection:string;voiceover:string;assetUrl:string|null;assetType:SceneMediaType|null}
-type Project={id:string;orderId:string|null;title:string;subject:string;objective:string;audience:string;durationSeconds:number;aspectRatio:string;status:'draft'|'planned'|'rendering'|'ready'|'failed';storyboard:Scene[];soundtrackUrl:string|null;outputUrl:string|null;errorMessage:string|null;updatedAt:string}
+type Project={id:string;orderId:string|null;title:string;subject:string;objective:string;audience:string;durationSeconds:number;aspectRatio:string;status:'draft'|'planned'|'rendering'|'ready'|'failed';storyboard:Scene[];soundtrackUrl:string|null;narrationUrl:string|null;narrationScript:string;outputUrl:string|null;errorMessage:string|null;updatedAt:string}
 type UploadedMedia={url:string;mediaType:'image'|'video'|'audio'}
 
 const PRESETS=[30,45,60,90,120,180,240,300,360]
