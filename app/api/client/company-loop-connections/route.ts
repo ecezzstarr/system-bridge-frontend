@@ -44,9 +44,44 @@ export async function GET(request:NextRequest){
       ORDER BY c.created_at DESC
       LIMIT 80
     `
+    const projects=await sql`
+      SELECT p.id,p.connection_id,p.kind,p.title,p.status,p.created_by_domain,p.created_at,
+        c.domain_a,c.domain_b,
+        EXISTS(SELECT 1 FROM weave_open_world_project_contributions own
+          WHERE own.project_id=p.id AND own.domain_id=${domain.id}::uuid) AS own_contribution,
+        EXISTS(SELECT 1 FROM weave_open_world_project_contributions other
+          WHERE other.project_id=p.id AND other.domain_id<>${domain.id}::uuid) AS partner_contribution
+      FROM weave_open_world_projects p
+      JOIN weave_open_world_connections c ON c.id=p.connection_id
+      WHERE c.loop_key=${BURNING_RIVER_LOOP}
+        AND c.status='accepted'
+        AND (c.domain_a=${domain.id}::uuid OR c.domain_b=${domain.id}::uuid)
+      ORDER BY p.created_at DESC
+      LIMIT 40
+    `
+    // Each Client sees only the name/type of their OWN operating systems.
+    // The partner's configuration, names and records are never sent here.
+    const ownSystems=await sql`
+      SELECT b.id,b.title,b.system_type
+      FROM client_built_systems b
+      WHERE b.client_id=${domain.client_id}::uuid AND b.status='active'
+        AND b.file_number IN (SELECT file_number FROM weave_open_world_domains
+          WHERE id=${domain.id}::uuid)
+      ORDER BY b.activated_at DESC LIMIT 40
+    `
     return NextResponse.json({
       success:true,domainId:String(domain.id),
       collaborationOpen:domain.collaboration_open===true,
+      projects:projects.map((p:any)=>({
+        id:String(p.id),connectionId:String(p.connection_id),kind:p.kind,
+        title:String(p.title),status:p.status,
+        createdBySelf:String(p.created_by_domain)===String(domain.id),
+        otherDomainId:String(p.domain_a)===String(domain.id)?String(p.domain_b):String(p.domain_a),
+        ownContribution:p.own_contribution===true,partnerContribution:p.partner_contribution===true,
+      })),
+      ownSystems:ownSystems.map((b:any)=>({
+        id:String(b.id),name:String(b.title),systemType:String(b.system_type),
+      })),
       connections:connections.map((c:any)=>({
         id:String(c.id),status:c.status,
         otherDomainId:String(c.domain_a)===String(domain.id)?String(c.domain_b):String(c.domain_a),
@@ -127,6 +162,102 @@ export async function POST(request:NextRequest){
       })
       return NextResponse.json({success:true,status:'pending',connectionId:String(inserted.id)},
         {status:201,headers:{'Cache-Control':'private, no-store'}})
+    }
+    if(action==='propose_project'){
+      const connectionId=String(payload.connectionId||'')
+      const kind=String(payload.kind||'')
+      const title=String(payload.title||'').trim().slice(0,120)
+      const allowed=['shared_service','distribution','media','commerce','system_integration']
+      if(!uuid.test(connectionId)||!allowed.includes(kind)||title.length<4)
+        return NextResponse.json({error:'Select an accepted connection, kind and project name'},{status:400})
+      const [link]=await sql`
+        SELECT c.id,c.domain_a,c.domain_b
+        FROM weave_open_world_connections c
+        WHERE c.id=${connectionId}::uuid AND c.loop_key=${BURNING_RIVER_LOOP}
+          AND c.status='accepted'
+          AND (c.domain_a=${domain.id}::uuid OR c.domain_b=${domain.id}::uuid)
+      `
+      if(!link)return NextResponse.json({error:'An accepted Client connection is required'},{status:403})
+      const [count]=await sql`
+        SELECT count(*)::int AS total FROM weave_open_world_projects
+        WHERE connection_id=${connectionId}::uuid
+      `
+      if(Number(count?.total||0)>=3)
+        return NextResponse.json({error:'Each Client connection supports three active formation plans in this event'},{status:429})
+      const [project]=await sql`
+        INSERT INTO weave_open_world_projects(
+          connection_id,created_by_domain,kind,title
+        ) VALUES(${connectionId}::uuid,${domain.id}::uuid,${kind},${title})
+        RETURNING id
+      `
+      const partnerId=String(link.domain_a)===String(domain.id)?String(link.domain_b):String(link.domain_a)
+      const [partner]=await sql`SELECT client_id FROM weave_open_world_domains WHERE id=${partnerId}::uuid`
+      if(partner)await notifyUser(String(partner.client_id),{
+        type:'company_loop_joint_system_proposal',
+        title:'Burning River · Joint system formation',
+        content:'A connected Client proposed a joint business or systems project. Your approval is required before either world can contribute an operating system.',
+        fromUserId:String(domain.client_id),
+        fromUserName:'WEAVE Company Loop',
+        link:'/flame-event/world#domains',
+      })
+      return NextResponse.json({success:true,projectId:String(project.id),status:'proposed'},
+        {status:201,headers:{'Cache-Control':'private, no-store'}})
+    }
+    if(action==='accept_project'){
+      const projectId=String(payload.projectId||'')
+      if(!uuid.test(projectId))
+        return NextResponse.json({error:'Choose a joint formation proposal'},{status:400})
+      const [project]=await sql`
+        UPDATE weave_open_world_projects p
+        SET status='active',accepted_at=now()
+        FROM weave_open_world_connections c
+        WHERE p.id=${projectId}::uuid
+          AND c.id=p.connection_id AND c.loop_key=${BURNING_RIVER_LOOP}
+          AND c.status='accepted' AND p.status='proposed'
+          AND p.created_by_domain<>${domain.id}::uuid
+          AND (c.domain_a=${domain.id}::uuid OR c.domain_b=${domain.id}::uuid)
+        RETURNING p.id,p.created_by_domain
+      `
+      if(!project)return NextResponse.json({error:'Only the other participating Client may accept a pending joint project'},{status:409})
+      const [creator]=await sql`SELECT client_id FROM weave_open_world_domains WHERE id=${project.created_by_domain}::uuid`
+      if(creator)await notifyUser(String(creator.client_id),{
+        type:'company_loop_joint_system_approved',
+        title:'Burning River · Joint project approved',
+        content:'A connected Client accepted your joint system plan. Both worlds can now contribute actual commissioned systems.',
+        fromUserId:String(domain.client_id),fromUserName:'WEAVE Company Loop',
+        link:'/flame-event/world#domains',
+      })
+      return NextResponse.json({success:true,projectId:String(project.id),status:'active'},
+        {headers:{'Cache-Control':'private, no-store'}})
+    }
+    if(action==='contribute_system'){
+      const projectId=String(payload.projectId||'')
+      const systemId=String(payload.systemId||'')
+      if(!uuid.test(projectId)||!uuid.test(systemId))
+        return NextResponse.json({error:'Choose an accepted project and your own commissioned system'},{status:400})
+      // A single atomic INSERT proves both the accepted two-party project
+      // and real Client ownership/operation of the contributed system.
+      const [contribution]=await sql`
+        INSERT INTO weave_open_world_project_contributions(project_id,domain_id,system_id)
+        SELECT p.id,${domain.id}::uuid,b.id
+        FROM weave_open_world_projects p
+        JOIN weave_open_world_connections c ON c.id=p.connection_id
+        JOIN client_built_systems b ON b.id=${systemId}::uuid
+        WHERE p.id=${projectId}::uuid AND p.status='active'
+          AND c.loop_key=${BURNING_RIVER_LOOP} AND c.status='accepted'
+          AND (c.domain_a=${domain.id}::uuid OR c.domain_b=${domain.id}::uuid)
+          AND b.client_id=${domain.client_id}::uuid
+          AND b.file_number IN (SELECT file_number FROM weave_open_world_domains
+            WHERE id=${domain.id}::uuid)
+          AND b.status='active'
+        ON CONFLICT (project_id,domain_id) DO UPDATE SET
+          system_id=EXCLUDED.system_id,
+          created_at=now()
+        RETURNING project_id
+      `
+      if(!contribution)return NextResponse.json({error:'Only an active system from your own File Folder can be contributed'},{status:403})
+      return NextResponse.json({success:true,projectId:String(contribution.project_id),status:'contributed'},
+        {headers:{'Cache-Control':'private, no-store'}})
     }
     if(action==='respond_connection'){
       const connectionId=String(payload.connectionId||'')
