@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
 
     // Employee-granted tiers are sourced from their separate verified company
     // tickets, not from a fabricated retail File Folder purchase.
-    if (!persistedTier) {
+    {
       const [staffTable] = await sql`SELECT to_regclass('public.company_client_staff_offers') AS name`
       if (staffTable?.name) {
         const [grant] = await sql`
