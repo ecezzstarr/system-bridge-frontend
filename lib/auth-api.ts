@@ -74,13 +74,22 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
   try {
     const session = await getServerSession(authOptions)
     if (session?.user) {
-      const user = session.user as any
+      // Re-read role and activity from the database on every privileged request.
+      // Signed JWT claims can outlive suspension, demotion, or account closure.
+      const sessionUser=session.user as any
+      if(typeof sessionUser.id!=='string'||!/^[0-9a-f-]{36}$/i.test(sessionUser.id))return null
+      const rows=await sql`
+        SELECT id,name,username,email,role FROM users
+        WHERE id=${sessionUser.id}::uuid AND is_active=true LIMIT 1
+      `
+      if(!rows.length)return null
+      const user=rows[0]
       return applyRuntimeAccess({
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        email: user.email,
-        role: user.role,
+        id:user.id,
+        name:user.name||user.username||'User',
+        username:user.username||'user',
+        email:user.email,
+        role:user.role,
       })
     }
 
@@ -95,7 +104,8 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
     if (sessions.length > 0) {
       const userId = sessions[0].user_id
       const users = await sql`
-        SELECT id, name, username, email, role FROM users WHERE id = ${userId}::uuid
+        SELECT id, name, username, email, role FROM users
+        WHERE id = ${userId}::uuid AND is_active=true
       `
       if (users.length > 0) {
         return applyRuntimeAccess({
