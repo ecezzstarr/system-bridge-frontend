@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
           WHERE status='approved' AND client_id=${client.id}::uuid AND file_number=${client.file_number}
           LIMIT 1
         `
-        if (grant && ['standard','pro','premium'].includes(grant.folder_tier)) persistedTier = grant.folder_tier
+        if (grant && ['standard','pro','premium','plus'].includes(grant.folder_tier)) persistedTier = grant.folder_tier
       }
     }
 
