@@ -10,7 +10,7 @@ const compiled=ts.transpileModule(source,{compilerOptions:{
   target:ts.ScriptTarget.ES2022,
   module:ts.ModuleKind.CommonJS,
 }}).outputText
-const exports={}
+const moduleExports={}
 const zones=['systems','modules','tools','people','operations','expansion']
 const progress=(b,now)=>{
   const start=Date.parse(b.started_at||b.created_at||new Date(now).toISOString())
@@ -22,12 +22,12 @@ const deps={
   '@/lib/file-folder-world-runtime':{buildFormationProgress:progress},
   '@/lib/file-folder-world-presets':{FILE_FOLDER_EQUIPMENT_ZONES:zones},
 }
-vm.runInNewContext(compiled,{exports,require:(key)=>{
+vm.runInNewContext(compiled,{exports:moduleExports,require:(key)=>{
   if(!(key in deps))throw new Error('Unmocked Plus dependency '+key)
   return deps[key]
 },Date,Math,console},{filename:'lib/plus-file-folder-formation.ts'})
 
-const {derivePlusWorldFormation,plusZoneFor}=exports
+const {derivePlusWorldFormation,plusZoneFor}=moduleExports
 const start=Date.parse('2026-10-23T00:00:00Z')
 const now=start+3600*1000
 const end=new Date(start+2*3600*1000).toISOString()
