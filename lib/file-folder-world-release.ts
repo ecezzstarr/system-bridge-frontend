@@ -1,10 +1,12 @@
 import { getPool,sql } from '@/lib/db'
 import { FILE_FOLDER_TIERS, type FileFolderTier } from '@/lib/file-folder-pricing'
+import {FILE_FOLDER_WORLD_APPEARANCES,validateFileFolderAppearance,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 
 export type FileFolderWorldReleaseConfig = {
   headline:string
   description:string
   tierMessages:Record<FileFolderTier,string>
+  tierVisuals:Record<FileFolderTier,FileFolderWorldAppearance>
 }
 export const DEFAULT_FILE_FOLDER_WORLD_CONFIG:FileFolderWorldReleaseConfig = {
   headline:'Weave File Folder World',
@@ -14,7 +16,8 @@ export const DEFAULT_FILE_FOLDER_WORLD_CONFIG:FileFolderWorldReleaseConfig = {
     pro:'Pro File Folder · Business systems in formation and operation',
     premium:'Premium File Folder · Extended operating environment',
     plus:'Plus File Folder · Complete systems for immediate uses',
-  }
+  },
+  tierVisuals:FILE_FOLDER_WORLD_APPEARANCES,
 }
 function clean(value:unknown,limit:number):string{
   return typeof value==='string'?value.trim().slice(0,limit):''
@@ -34,7 +37,15 @@ export function validateFileFolderWorldConfig(value:unknown):FileFolderWorldRele
   const headline=clean(body.headline,160)
   const description=clean(body.description,1500)
   if(headline.length<4||description.length<12)throw new Error('A meaningful title and explanation are required')
-  return {headline,description,tierMessages}
+  const tierVisuals={} as Record<FileFolderTier,FileFolderWorldAppearance>
+  const rawVisuals=body.tierVisuals as Record<string,unknown>|undefined
+  for(const tier of FILE_FOLDER_TIERS){
+    // Old published versions can still be restored after visual packs are introduced.
+    tierVisuals[tier]=rawVisuals?.[tier]===undefined
+      ? FILE_FOLDER_WORLD_APPEARANCES[tier]
+      : validateFileFolderAppearance(rawVisuals[tier])
+  }
+  return {headline,description,tierMessages,tierVisuals}
 }
 
 export async function ensureFileFolderGlobalReleases(){
