@@ -165,7 +165,7 @@ export async function POST(request:NextRequest){
         fromUserId:String(domain.client_id),
         fromUserName:'WEAVE Company Loop',
         link:'/flame-event/world#domains',
-      })
+      }).catch((error)=>console.error('[Burning River notification delivery]',error))
       return NextResponse.json({success:true,status:'pending',connectionId:String(inserted.id)},
         {status:201,headers:{'Cache-Control':'private, no-store'}})
     }
@@ -205,7 +205,7 @@ export async function POST(request:NextRequest){
         fromUserId:String(domain.client_id),
         fromUserName:'WEAVE Company Loop',
         link:'/flame-event/world#domains',
-      })
+      }).catch((error)=>console.error('[Burning River notification delivery]',error))
       return NextResponse.json({success:true,projectId:String(project.id),status:'proposed'},
         {status:201,headers:{'Cache-Control':'private, no-store'}})
     }
@@ -232,7 +232,7 @@ export async function POST(request:NextRequest){
         content:'A connected Client accepted your joint system plan. Both worlds can now contribute actual commissioned systems.',
         fromUserId:String(domain.client_id),fromUserName:'WEAVE Company Loop',
         link:'/flame-event/world#domains',
-      })
+      }).catch((error)=>console.error('[Burning River notification delivery]',error))
       return NextResponse.json({success:true,projectId:String(project.id),status:'active'},
         {headers:{'Cache-Control':'private, no-store'}})
     }
@@ -298,7 +298,7 @@ export async function POST(request:NextRequest){
         fromUserId:String(domain.client_id),
         fromUserName:'WEAVE Company Loop',
         link:'/flame-event/world#domains',
-      })
+      }).catch((error)=>console.error('[Burning River notification delivery]',error))
       return NextResponse.json({success:true,status:updated.status},
         {headers:{'Cache-Control':'private, no-store'}})
     }
