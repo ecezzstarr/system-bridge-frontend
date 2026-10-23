@@ -12,11 +12,13 @@ export function formOriginalScriptScenes(script: string, durationSeconds: number
   }
 
   const words = script.trim().split(/\s+/u)
+  const minimumSeconds = Math.ceil(words.length / 2.5)
+  if (durationSeconds < minimumSeconds) throw new Error(`The script needs at least ${minimumSeconds} seconds for a measured storyteller voice. Choose a longer duration or split into episodes.`)
   const captionChunks: string[] = []
   let line = ''
   for (const word of words) {
-    if (word.length > 155) throw new Error('A word or link is too long for readable video captions')
-    if (line && (line + ' ' + word).length > 155) {
+    if (word.length > 110) throw new Error('A word or link is too long for readable video captions')
+    if (line && (line + ' ' + word).length > 110) {
       captionChunks.push(line)
       line = word
     } else {
