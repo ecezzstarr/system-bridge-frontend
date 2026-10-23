@@ -76,6 +76,22 @@ export default function SovereignReleaseWorkshop(){
     }catch(err:any){toast.error(err.message||'Unable to submit release request')}
     finally{setBusy(false)}
   }
+  const cancel=async(id:string)=>{
+    if(busy||!window.confirm('Cancel this queued request before the host claims it? Running deployments cannot be cancelled.'))return
+    setBusy(true)
+    try{
+      const response=await fetch('/api/admin/release-workshop',{
+        method:'POST',headers:headers(),body:JSON.stringify({
+          action:'cancel_queued',jobId:id,confirmation:'CANCEL',
+        }),
+      })
+      const body=await response.json()
+      if(!response.ok)throw Error(body.error||'Unable to cancel this request')
+      toast.success('Unclaimed release request cancelled')
+      await refresh(true)
+    }catch(err:any){toast.error(err.message||'Cancellation rejected')}
+    finally{setBusy(false)}
+  }
   if(!isInitialized||user?.role!=='admin')return null
   const inProgress=state?.jobs.find(job=>job.status==='queued'||job.status==='running')
   return <main className="mx-auto max-w-6xl px-4 py-8 text-white" data-sovereign-release-workshop="protected">
@@ -90,7 +106,7 @@ export default function SovereignReleaseWorkshop(){
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Server className="h-5 w-5 text-sky-300"/><p className="mt-3 text-xs text-slate-400">Active reported release</p><p className="mt-1 break-all font-mono text-sm font-black">{abbreviated(state.activeRelease)}</p></div>
         <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><ShieldCheck className="h-5 w-5 text-emerald-300"/><p className="mt-3 text-xs text-slate-400">Previously healthy releases</p><p className="mt-1 text-xl font-black">{state.healthyReleases.length}</p></div>
-        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Activity className="h-5 w-5 text-orange-300"/><p className="mt-3 text-xs text-slate-400">Independent release worker</p><p className="mt-1 text-sm font-black">{state.workerOnline?'Connected': 'Not recently connected'}</p><p className="mt-1 text-xs text-slate-400">{state.workerLastSeen?'Last check '+date(state.workerLastSeen):'Host setup not verified'} · {inProgress?.status||'No active request'}</p></div>
+        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4"><Activity className="h-5 w-5 text-orange-300"/><p className="mt-3 text-xs text-slate-400">Independent release worker</p><p className="mt-1 text-sm font-black">{inProgress?.status==='running'?'Executing release':state.workerOnline?'Connected':'Not recently connected'}</p><p className="mt-1 text-xs text-slate-400">{state.workerLastSeen?'Last check '+date(state.workerLastSeen):'Host setup not verified'} · {inProgress?.status||'No active request'}</p></div>
       </div>
       <section className="mt-5 rounded-2xl border border-orange-300/20 bg-[#0c1824] p-5">
         <h2 className="text-lg font-black">Control production</h2>
@@ -118,6 +134,7 @@ export default function SovereignReleaseWorkshop(){
             <p className="mt-2 break-all font-mono text-xs text-white">{job.resolved_sha||job.target_sha||'Host will resolve latest verified main'}</p>
             {job.previous_sha&&<p className="mt-1 break-all font-mono text-[10px] text-slate-400">Previous: {job.previous_sha}</p>}
             {job.verification&&<p className="mt-2 text-xs leading-5 text-slate-300">{job.verification}</p>}
+            {job.status==='queued'&&<button type="button" disabled={busy} onClick={()=>void cancel(job.id)} className="mt-3 rounded-lg border border-amber-300/30 px-3 py-2 text-xs font-bold text-amber-100 disabled:opacity-40">Cancel queued request</button>}
             {job.status==='running'&&<p className="mt-2 text-xs text-amber-200">Host executing or verifying. Do not submit another release.</p>}
           </article>)}
         </div>
