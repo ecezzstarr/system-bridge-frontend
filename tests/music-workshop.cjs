@@ -32,6 +32,7 @@ assert.ok(api.includes("if(!access.isOwner)return fail('Only the Client owner ca
 assert.ok(api.includes("WHERE id=$1::uuid AND client_id=$2::uuid AND file_number=$5"),'Project saves are owner-and-folder-scoped')
 assert.ok(api.includes('owned.rows.length!==assetIds.length'),'Cross-Client sound references rejected')
 assert.ok(media.includes('saveMediaObject(')&&media.includes("weave-private/music/"),'Real uploads saved privately in Weave media storage')
+assert.ok(media.includes('Number(limits.files)>=60')&&media.includes('256*1024*1024'),'Music upload storage has a Client-level clip and byte limit')
 assert.ok(media.includes("resolveMusicAccess(request,file)")&&media.includes("AND client_id=$2::uuid AND file_number=$3"),'Audio downloads authenticated to owner')
 assert.ok(publicMedia.includes("objectName.startsWith('weave-private/music/')"),'Generic media route cannot leak private music files')
 assert.ok(engine.includes('context.createOscillator()')&&engine.includes('context.createBufferSource()'),'Actual generated and uploaded audio production')
