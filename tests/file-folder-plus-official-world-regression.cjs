@@ -61,4 +61,10 @@ assert.ok(release.includes("if(tier==='plus')")&&
 assert.ok(ui.includes("disabled={tier==='plus'}"),
  'Administration visually identifies protected Plus base design')
 
+const crypto=require('node:crypto')
+const poster=fs.readFileSync(path.resolve(__dirname,'../public/weave/plus-file-folder-white-official.webp'))
+assert.equal(crypto.createHash('sha256').update(poster).digest('hex'),
+ 'f35abcf28c07a47b751a76397b1863873db4d189533bcae9a48716c813a8fea5',
+ 'Client and Administration must use the authentic optimized 389215.png image')
+
 console.log('Official Plus 3D world, 4 tier engines, equipment and live release contracts passed')
