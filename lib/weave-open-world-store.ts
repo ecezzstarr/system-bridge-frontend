@@ -4,7 +4,12 @@ import {projectPublicWorldDomain,type WorldDomainRow} from '@/lib/weave-open-wor
 export const BURNING_RIVER_LOOP='flame-event-01' as const
 
 /** Idempotent schema install for older databases; migration is also checked in. */
-export async function ensureWeaveOpenWorldSchema(sql:any=getBusinessDb()){
+// WEAVE operates one primary company database per application process.
+// Share one schema-initialization promise across requests and reset on error.
+let worldSchemaReady:Promise<void>|null=null
+export function ensureWeaveOpenWorldSchema(sql:any=getBusinessDb()):Promise<void>{
+  if(worldSchemaReady)return worldSchemaReady
+  worldSchemaReady=(async()=>{
   await sql`
     CREATE TABLE IF NOT EXISTS weave_open_world_domains (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -63,6 +68,8 @@ export async function ensureWeaveOpenWorldSchema(sql:any=getBusinessDb()){
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_domains_slot ON weave_open_world_domains(world_slot)`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_connections_a ON weave_open_world_connections(domain_a,status,created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_connections_b ON weave_open_world_connections(domain_b,status,created_at DESC)`
+  })().catch(error=>{worldSchemaReady=null;throw error})
+  return worldSchemaReady
 }
 
 /** A purchase activates exactly one permanent world slot, not one slot per visit. */
