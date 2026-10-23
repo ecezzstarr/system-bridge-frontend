@@ -22,7 +22,7 @@ export function notificationDestination(notification:{type?:string;link?:string|
   if(type.startsWith('distribution_team')||type.startsWith('distribution_task'))
     return {href:'/weave/lifestyles/work#team-communication',label:'Open distribution team',exact:false}
   if(type.startsWith('private_message')||type.includes('message')||type.includes('chat'))
-    return {href:role==='client'?'/company-chat':role==='admin'?'/admin/company-guidance':'/communications',label:'Open conversations',exact:false}
+    return {href:role==='client'?'/client/dashboard':role==='admin'?'/admin/company-guidance':'/communications',label:role==='client'?'Open Client dashboard':'Open conversations',exact:false}
   if(type.startsWith('order_')||type.startsWith('deposit_'))
     return {href:role==='admin'?'/admin/orders':fallback[role||'']||'/weave',label:'Open relevant dashboard',exact:false}
   return {href:fallback[role||'']||'/weave',label:'Open '+(roleLabels[role||'']||'WEAVE')+' dashboard',exact:false}
