@@ -34,6 +34,7 @@ export async function ensureCompanyClientStaffSchema() {
       payment_network varchar(80),
       file_number varchar(120) UNIQUE,
       client_id uuid UNIQUE,
+      receipt_number varchar(80) UNIQUE,
       created_by uuid NOT NULL,
       verified_by uuid,
       rejection_reason varchar(500),
@@ -46,6 +47,21 @@ export async function ensureCompanyClientStaffSchema() {
   `
   await sql`CREATE INDEX IF NOT EXISTS company_staff_offers_email_idx ON company_client_staff_offers(lower(candidate_email))`
   await sql`CREATE INDEX IF NOT EXISTS company_staff_offers_status_idx ON company_client_staff_offers(status,created_at DESC)`
+  await sql`
+    CREATE TABLE IF NOT EXISTS company_client_staff_work (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      offer_id uuid NOT NULL REFERENCES company_client_staff_offers(id),
+      client_id uuid NOT NULL REFERENCES users(id),
+      prospect_name varchar(160) NOT NULL,
+      organization varchar(200),
+      stage varchar(32) NOT NULL DEFAULT 'introduced'
+        CHECK(stage IN ('introduced','conversation','follow_up','proposal','completed')),
+      next_action varchar(1200),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )
+  `
+  await sql`CREATE INDEX IF NOT EXISTS company_client_staff_work_owner_idx ON company_client_staff_work(client_id,created_at DESC)`
 }
 
 export async function getCompanyStaffOfferByToken(token: string) {
@@ -53,7 +69,7 @@ export async function getCompanyStaffOfferByToken(token: string) {
   await ensureCompanyClientStaffSchema()
   const rows = await sql`
     SELECT id,candidate_name,candidate_email,position_title,monthly_salary_usdt,
-      ticket_amount_usdt,folder_tier,status,file_number,rejection_reason,created_at
+      ticket_amount_usdt,folder_tier,status,file_number,receipt_number,rejection_reason,created_at
     FROM company_client_staff_offers
     WHERE token_hash=${staffOfferTokenHash(token)}
     LIMIT 1
