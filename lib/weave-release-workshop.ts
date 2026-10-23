@@ -59,6 +59,7 @@ export async function getReleaseWorkshopState(){
   const lastSeen=workers[0]?.last_seen_at?new Date(workers[0].last_seen_at):null
   const workerOnline=Boolean(lastSeen&&Date.now()-lastSeen.getTime()<60000)
   return {jobs,healthyReleases,history:history.slice(0,30),serverKey:serverKey(),
+    hostProvider:process.env.WEAVE_HOST_PROVIDER==='oracle'?'Oracle Cloud':'Self-hosted Linux',
     workerOnline,workerLastSeen:lastSeen?.toISOString()||null,
     activeRelease:process.env.WEAVE_RELEASE_SHA||null}
 }
