@@ -137,6 +137,7 @@ jobs:
           node tests/file-folder-customer-door-purchase-regression.cjs
           node tests/system-switch-file-folder-boundary-regression.cjs
           node tests/flame-event-role-login-flow.cjs
+          node tests/flame-event-department-world-entrances.cjs
           node tests/client-hosted-avatar-world-regression.cjs
           node tests/file-folder-pricing-contract-regression.cjs
           node tests/legion-commerce-regression.cjs
