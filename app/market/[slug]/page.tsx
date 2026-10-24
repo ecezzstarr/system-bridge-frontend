@@ -37,11 +37,11 @@ export default async function PublicClientMarketStore({
     LIMIT 1
   `
   if(!store)notFound()
-  // Public Store links cross through the one shared Burning River land.
+  // Public Store links pass through System Switch's shared WEAVE Open World land.
   // Preserve Legion attribution and real order confirmation/checkout routes.
   if(store.world_host_customer_market&&query.checkout!=='1'&&!query.order&&query.via!=='system-switch'){
     const legion=typeof query.legion==='string'?query.legion.trim().slice(0,80):''
-    redirect('/flame-event/world?door='+encodeURIComponent(slug)+
+    redirect('/system-switch/world?door='+encodeURIComponent(slug)+
       (legion?'&legion='+encodeURIComponent(legion):''))
   }
 
