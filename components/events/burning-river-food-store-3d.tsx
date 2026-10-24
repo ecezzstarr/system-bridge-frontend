@@ -39,7 +39,7 @@ function FoodPhotos({carrierCode}:{carrierCode?:string|null}){
     {BURNING_RIVER_FOOD_PRODUCTS.map((item,i)=>{
       const x=COLUMNS[i%3],y=i<3?5.35:2.55
       return <group key={item.id} position={[x,y,1.42]}>
-        <mesh position={[0,0,-.07]}>
+        <mesh position={[0,0,-.12]}>
           <boxGeometry args={[3.04,2.2,.16]}/>
           <meshStandardMaterial color="#c4934e" metalness={.42} roughness={.3}/>
         </mesh>

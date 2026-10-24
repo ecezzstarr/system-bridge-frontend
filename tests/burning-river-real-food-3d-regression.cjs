@@ -44,3 +44,8 @@ assert.ok(read('app/flame-event/world/page.tsx').includes('<BurningRiverLiveWorl
 assert.ok(publicApi.includes("p.enabled=true AND b.status='active'"),'Client File Folder structures require published active systems')
 assert.ok(clientRoute.includes("query.checkout!=='1'")&&carrier.includes("query.checkout!=='1'"),'Public Client and food checkout boundaries remain in place')
 console.log('3D WEAVE food uses original repository images, one open world, valid Agent links, and real Client publication tiers')
+
+// The frame's front face must sit behind the photo plane at local z=0.
+const frame=scene.match(/<mesh position=\{\[0,0,(-?[\d.]+)\]\}>\s*<boxGeometry args=\{\[[\d.]+,[\d.]+,([\d.]+)\]\}\/>/)
+assert.ok(frame,'Photo frames must have inspectable physical geometry')
+assert.ok(Number(frame[1])+Number(frame[2])/2<0,'A frame in front of the photo hides the actual image')
