@@ -7,6 +7,7 @@ import {useFrame,useThree} from '@react-three/fiber'
 import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
 import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-landscape'
 import {WeaveWorldMapFallback} from '@/components/world/weave-world-map-fallback'
+import {WeaveOpenWorldAtlas} from '@/components/world/weave-open-world-atlas'
 import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import {burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
 import * as THREE from 'three'
@@ -234,6 +235,9 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
   role?:'visitor'|'client'|'agent'|'bridger'|'admin'
 }){
  const [focus,setFocus]=useState<'world'|'food'>('world')
+ const [landMode,setLandMode]=useState<'atlas'|'3d'>('atlas')
+ const [detailsOpen,setDetailsOpen]=useState(false)
+ const [helpOpen,setHelpOpen]=useState(false)
  const [feed,setFeed]=useState<WorldFeed>(emptyFeed)
  const [status,setStatus]=useState<'loading'|'ready'|'unavailable'>('loading')
  const [selected,setSelected]=useState<string|null>(null)
@@ -374,36 +378,51 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    </header>
    <div className="relative h-[calc(100svh-4.5rem)] min-h-[540px] max-h-[1120px] overflow-hidden sm:h-[calc(100svh-4rem)]"
       data-open-world-map="interactive" data-world-first-view="castle-landscape">
-     {/* Approved burning-river-open-world-official.webp defines the architectural art direction.
-          Land, fire, trees and buildings are physical in-scene geometry, not a wallpaper. */}
-     <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
-     {webgl===true&&<AdaptiveCanvas camera={{position:[12,21,24],fov:46,near:.1,far:350}}
-       gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
-       fallback={<WeaveWorldMapFallback domains={displayDomains} onSelect={tapCastle}/>}
-       onWorldReady={()=>setSceneReady(true)} mobileGame>
-       <WorldScene domains={displayDomains} links={feed.links} selected={selected} onSelect={tapCastle}
-         carrierCode={carrierCode} focus={focus} placing={placing} onPlace={placeOnLand} preview={candidate}/>
-     </AdaptiveCanvas>}
-     {(webgl!==true||!sceneReady)&&<WeaveWorldMapFallback domains={displayDomains} onSelect={tapCastle}/>}
-     {focus==='food'&&(webgl!==true||!sceneReady)&&<div className="absolute inset-x-7 bottom-20 z-10 mx-auto max-w-sm overflow-hidden rounded-lg border border-amber-200/35 bg-[#082b34]/90 p-2 shadow-2xl">
+     {landMode==='atlas'?<WeaveOpenWorldAtlas domains={displayDomains} selected={selected}
+       onSelect={tapCastle} role={role} enable3D={webgl===true}
+       onExplore={()=>{setLandMode('3d');setFocus('world')}}
+       onShowDomains={()=>setDetailsOpen(true)}
+       onShowCommunity={()=>setDetailsOpen(true)}
+       onShowGuide={()=>setHelpOpen(open=>!open)}
+       onCustomerDoor={()=>{
+         const door=feed.domains.find(domain=>Boolean(publicHref(domain)))
+         if(door){setSelected(door.domainId);const href=publicHref(door);if(href)window.location.assign(href)}
+         else{setOperation('No commissioned Customer Door is available in this area yet.');setDetailsOpen(true)}
+       }}/>:<>
+       {/* The atlas art is an illustrated map. This mode is the navigable,
+           physically rendered 3D WEAVE terrain and real Client castles. */}
+       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
+       {webgl===true&&<AdaptiveCanvas camera={{position:[12,21,24],fov:46,near:.1,far:350}}
+         gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
+         fallback={<WeaveWorldMapFallback domains={displayDomains} onSelect={tapCastle}/>}
+         onWorldReady={()=>setSceneReady(true)} mobileGame>
+         <WorldScene domains={displayDomains} links={feed.links} selected={selected} onSelect={tapCastle}
+           carrierCode={carrierCode} focus={focus} placing={placing} onPlace={placeOnLand} preview={candidate}/>
+       </AdaptiveCanvas>}
+       {(webgl!==true||!sceneReady)&&<WeaveWorldMapFallback domains={displayDomains} onSelect={tapCastle}/>}
+     </>}
+     {landMode==='3d'&&focus==='food'&&(webgl!==true||!sceneReady)&&<div className="absolute inset-x-7 bottom-20 z-10 mx-auto max-w-sm overflow-hidden rounded-lg border border-amber-200/35 bg-[#082b34]/90 p-2 shadow-2xl">
        <img src="/weave-food/weave-family-products.avif" width={1200} height={700} alt="WEAVE Food Store original product collection" loading="lazy" className="h-auto w-full object-contain"/>
      </div>}
 
-     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-[#061225]/85 to-transparent px-3 pb-12 pt-3">
+     {landMode==='3d'&&<div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-[#061225]/85 to-transparent px-3 pb-12 pt-3">
        <div className="flex items-center justify-between gap-2 text-[11px]">
          <span className="rounded-md bg-[#061225]/80 px-2 py-1.5 font-bold text-amber-100">
-           WEAVE Open World <span className="text-sky-100/75">· {feed.domains.length} {feed.domains.length===1?'castle':'castles'}</span>
+           WEAVE Live 3D <span className="text-sky-100/75">· {feed.domains.length} {feed.domains.length===1?'castle':'castles'}</span>
          </span>
          <span className="rounded-md bg-[#061225]/70 px-2 py-1.5 text-amber-100">Burning River</span>
        </div>
-     </div>
+     </div>}
+     {landMode==='3d'&&<button type="button" onClick={()=>{setLandMode('atlas');setFocus('world')}}
+       className="absolute left-3 top-[6.5rem] z-30 min-h-10 rounded border border-amber-200/50 bg-[#081a31]/95 px-3 text-xs font-black text-amber-100"
+       data-weave-open-world-atlas-return="true">← WEAVE Open World</button>}
      {role==='client'&&owner&&<div className="absolute right-3 top-16 z-20 flex max-w-[57%] flex-col gap-2" data-client-world-castle-relocation="owner-only">
        {!placing&&<button type="button" className="min-h-10 rounded-xl border border-amber-200/40 bg-[#112b36]/95 px-3 text-xs font-bold text-amber-100"
-          onClick={()=>{setFocus('world');setPage(Math.max(0,Math.floor((owner.worldSlot-1)/48)));setSelected(owner.domainId)}}>
+          onClick={()=>{setLandMode('3d');setFocus('world');setPage(Math.max(0,Math.floor((owner.worldSlot-1)/48)));setSelected(owner.domainId)}}>
           Find my castle
        </button>}
        {!placing?<button type="button" className="min-h-11 rounded-xl border border-cyan-200/45 bg-[#092a36]/95 px-3 text-xs font-black text-cyan-100"
-         onClick={()=>{setSelected(owner.domainId);setFocus('world');setPlacing(true);setCandidate(null);setOperation('Tap an empty area of land to preview your castle position.')}}>
+         onClick={()=>{setLandMode('3d');setSelected(owner.domainId);setFocus('world');setPlacing(true);setCandidate(null);setOperation('Tap an empty area of land to preview your castle position.')}}>
          Position my castle
        </button>:<div className="space-y-2 rounded-xl border border-emerald-200/40 bg-[#082b2b]/95 p-3 text-xs text-white shadow-xl">
          <p className="font-bold text-emerald-100">Tap an open space on the land.</p>
@@ -414,11 +433,11 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
            className="min-h-10 w-full rounded-lg border border-white/30 px-2">Cancel</button>
        </div>}
      </div>}
-     <nav aria-label="Explore the WEAVE land" className="absolute left-3 top-14 z-20 flex gap-2">{(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-11 rounded-xl border border-amber-200/30 bg-[#061225]/95 px-3 py-2 text-xs font-bold text-amber-100">{view==='food'?'WEAVE Food Store':'File Folder Land'}</button>)}</nav>
-     <div className="pointer-events-none absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-[11px] text-sky-100">
+     {landMode==='3d'&&<nav aria-label="Explore the WEAVE land" className="absolute left-3 top-14 z-20 flex gap-2">{(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-11 rounded-xl border border-amber-200/30 bg-[#061225]/95 px-3 py-2 text-xs font-bold text-amber-100">{view==='food'?'WEAVE Food Store':'File Folder Land'}</button>)}</nav>}
+     {landMode==='3d'&&<div className="pointer-events-none absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-[11px] text-sky-100">
        {placing?'Tap free land · Confirm move':focus==='food'?'Tap product · Choose Agent':'Drag · Zoom · Tap castle'}
-     </div>
-     {focus==='food'&&<Link href={burningRiverFoodHref(carrierCode,'agent-electrolyte')}
+     </div>}
+     {landMode==='3d'&&focus==='food'&&<Link href={burningRiverFoodHref(carrierCode,'agent-electrolyte')}
        data-weave-food-direct-carrier-order="true"
        className="absolute bottom-14 right-3 inline-flex min-h-11 items-center rounded-lg border border-amber-200/50 bg-[#07231c]/95 px-3 text-xs font-black text-amber-100 shadow-xl">
        {carrierCode?'Order through my Agent':'Choose a Food Agent'} <ArrowRight className="ml-2 h-4 w-4"/>
@@ -432,6 +451,9 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
          <Link href={publicHref(selectedDomain)!} className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-amber-200 px-2 text-xs font-bold text-[#13263a]">Open public Customer Door · View products <ArrowRight className="ml-1 h-4 w-4"/></Link>:
          <p className="mt-2 text-[11px] text-sky-100/70">This building is forming. Its Customer Door has not been publicly commissioned.</p>}
      </div>}
+     {helpOpen&&<div className="absolute left-3 top-[11rem] z-30 max-w-[65%] rounded-lg border border-amber-200/50 bg-[#081c2a]/95 p-3 text-xs text-amber-100" role="status">
+       Only LIVE markers represent verified Client File Folder worlds. Select one to enter an authorized private workspace or commissioned public Customer Door. Explore opens the full live 3D land.
+     </div>}
      {status==='unavailable'&&<div role="alert" className="absolute bottom-16 left-3 z-20 max-w-[75%] rounded-xl border border-amber-200/50 bg-[#071b2c]/95 p-3 text-xs leading-5 text-amber-100">
        The live land feed did not respond. The landscape remains available while the connection recovers.
        <button type="button" onClick={()=>{setStatus('loading');void refresh().catch(()=>setStatus('unavailable'))}}
@@ -440,7 +462,9 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      
    </div>
    {/* Food remains a real image/store entrance on phones without WebGL; no second page of cards. */}
-   <details className="group border-t border-amber-100/20 bg-[#091626]" data-weave-world-details="collapsed-by-default">
+   <details className="group border-t border-amber-100/20 bg-[#091626]" open={detailsOpen}
+     onToggle={event=>setDetailsOpen(event.currentTarget.open)}
+     data-weave-world-details="collapsed-by-default">
      <summary className="cursor-pointer px-4 py-3 text-xs font-semibold text-amber-100">Castles · World details · Client connections</summary>
      <div className="grid gap-4 p-4 lg:grid-cols-[1.25fr_1fr] lg:p-6">
     <div className="space-y-3">
