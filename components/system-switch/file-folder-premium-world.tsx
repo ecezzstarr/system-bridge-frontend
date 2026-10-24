@@ -11,7 +11,7 @@ type District={key:string;label:string}
 type RecordRow={id?:string;title?:string;status?:string;system_type?:string;completes_at?:string;started_at?:string;created_at?:string}
 type Props={
  appearance:FileFolderWorldAppearance;districts:District[];active:string
- onEnter:(key:string)=>void;builds:RecordRow[];systemRecords:RecordRow[]
+ onEnter:(key:string)=>void;onOpenCustomerDoor?:()=>void;builds:RecordRow[];systemRecords:RecordRow[]
  blueprints?:Array<{blueprint_key:string;name:string;required_item_key?:string;required_item_quantity?:number}>
  inventory?:Array<{item_key:string;quantity:number}>
  customerDoor?:{public_slug?:string|null;formation_status?:string|null}
@@ -215,7 +215,7 @@ function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationK
  </>
 }
 export default function FileFolderPremiumWorld({
- appearance,districts,onEnter,builds,systemRecords,blueprints=[],inventory=[],customerDoor,now
+ appearance,districts,onEnter,onOpenCustomerDoor,builds,systemRecords,blueprints=[],inventory=[],customerDoor,now
 }:Props){
  const [selected,setSelected]=useState<StationKey>('build')
  const station=STATIONS.find(s=>s.key===selected)!
@@ -259,8 +259,12 @@ export default function FileFolderPremiumWorld({
    </div>
    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#b99355]/30 bg-[#17151c] p-4">
     <div className="max-w-xl"><p className="font-bold text-[#f7ddb0]">{station.name}</p><p className="mt-1 text-sm leading-6 text-[#d4c8b8]">{station.detail}</p></div>
-    {selected==='customers'&&publishedDoor?<a href={'/market/'+encodeURIComponent(String(customerDoor?.public_slug))}
-      target="_blank" rel="noreferrer" className="rounded-lg bg-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#261e21]">View public Customer Door →</a>
+    {selected==='customers'?<div className="flex flex-wrap gap-2">
+      <button type="button" onClick={()=>onOpenCustomerDoor?.()||go(station.district)}
+        className="rounded-lg bg-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#261e21]">Manage Customer Door →</button>
+      {publishedDoor&&<a href={'/market/'+encodeURIComponent(String(customerDoor?.public_slug))}
+        target="_blank" rel="noreferrer" className="rounded-lg border border-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#f1d4a2]">Preview public door →</a>}
+     </div>
     :<button type="button" onClick={()=>go(station.district)}
       className="rounded-lg bg-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#261e21]">Enter {station.name} →</button>}
    </div>
