@@ -29,7 +29,7 @@ assert.ok(preview.includes('checkout=1#offers')&&marketRoute.includes("query.che
 assert.ok(publicApi.includes('client_customer_door_systems p')&&publicApi.includes('p.enabled=true AND b.status=\'active\''),'Only Client-approved and active published system names are exposed')
 assert.ok(publicApi.includes('visual_preset:config.preset'),'Rendered environment reflects Client-chosen theme')
 assert.ok(food.includes('/weave-food/electrolyte.jpeg')&&food.includes('/weave-food/agility.jpeg')&&food.includes('/weave-food/ember.jpg')&&food.includes('DAISY_PASTRIES_IMAGE_SRC'),'Products use existing real food image assets')
-assert.ok(food.includes('encodeURIComponent(carrierCode)')&&food.includes('?checkout=1#'),'Every category preserves originating Agent')
+assert.ok(food.includes('encodeURIComponent(carrierCode!)')&&food.includes("'?checkout=1'")&&food.includes("carrierOrder+'#'+anchor"),'Every product category preserves the originating Agent and opens its exact Carrier section')
 for(const slug of ['agent-agility','agent-electrolyte','agent-ember']){
   assert.ok(foodCheckout.includes('id="'+slug+'"'),'Agent food checkout supports direct category selection')
 }
