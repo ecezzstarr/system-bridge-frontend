@@ -48,6 +48,6 @@ assert.ok(event.includes('data-flame-event-system-switch-entry="true"')&&event.i
 assert.ok(market.includes('href="/system-switch/world#domains"'),'Visitors cross from Customer Market as avatar')
 assert.ok(staffGate.includes('data-system-switch-gate="burning-river"')&&staffGate.includes('href="/system-switch/world?via=system-switch"'),'System Switch staff gate opens the real Client File Folder world after the river crossing')
 const publicOpenWorld=read('app/system-switch/world/page.tsx')
-assert.ok(publicOpenWorld.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door}/>')&&publicOpenWorld.includes("fromSwitch?'/system-switch'"),'Public File Folder domain world returns to the gate')
+assert.ok(publicOpenWorld.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>')&&publicOpenWorld.includes("fromSwitch?'/system-switch'"),'Public File Folder domain world returns to the gate')
 assert.ok(page.includes("redirect('/system-switch/world?")&&worldPage.includes("redirect('/system-switch/world?"),'Retired Customer Door Avatar Plaza routes lead into the permanent Weave Open World')
 console.log('System Switch · Client-hosted Doors · staff/visitor avatar multiplayer and Client cloud boundaries passed')
