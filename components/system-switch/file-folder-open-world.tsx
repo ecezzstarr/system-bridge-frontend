@@ -532,7 +532,7 @@ export default function FileFolderOpenWorld({
                   projects={world?.platformProjects||[]}
                   blueprints={world?.blueprints||[]}
                   busy={busy==='create_platform_project'}
-                  onCreate={(kind:FileFolderPlatformKind,title:string,purpose:string)=>act({action:'create_platform_project',kind,title,purpose},'create_platform_project')}
+                  onCreate={async (kind:FileFolderPlatformKind,title:string,purpose:string)=>{await act({action:'create_platform_project',kind,title,purpose},'create_platform_project')}}
                   onChooseBlueprint={key=>{setBlueprintSearch(key);window.requestAnimationFrame(()=>document.getElementById('ff-blueprint-list')?.scrollIntoView({behavior:'smooth',block:'start'}))}}
                 />
               </div>
