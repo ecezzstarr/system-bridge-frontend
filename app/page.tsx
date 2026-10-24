@@ -66,9 +66,9 @@ export default function Home() {
   }, [user, router])
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-transparent text-white" data-public-weave-world>
+    <div className="weave-public-home relative min-h-screen overflow-x-hidden" data-public-weave-world>
       <div className="relative z-10 min-h-screen">
-        <nav className="sticky top-0 z-50 border-b border-sky-200/15 bg-[#03101d]/90 px-3 py-3 backdrop-blur-2xl sm:px-5">
+        <nav className="weave-home-nav sticky top-0 z-50 px-3 py-3 sm:px-5">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
             <Link href="/" aria-label="WEAVE home"><WeaveLogo size="sm" /></Link>
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -79,32 +79,32 @@ export default function Home() {
           </div>
         </nav>
 
-        <main className="mx-auto w-full max-w-6xl space-y-6 px-3 pb-16 pt-5 sm:px-5 sm:pt-8" data-weave-public-entry-world="true">
-          <section className="relative overflow-hidden rounded-[1.6rem] border border-sky-200/20 bg-[#061427]/75 px-4 py-10 text-center shadow-[0_30px_110px_rgba(2,8,23,.5)] backdrop-blur-md sm:px-8 sm:py-14" data-company-of-time="introduction">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(245,158,11,.13),transparent_42%),radial-gradient(circle_at_25%_80%,rgba(56,189,248,.10),transparent_38%)]" />
+        <main className="weave-home-content mx-auto w-full px-3 pb-16 sm:px-5" data-weave-public-entry-world="true">
+          <section className="weave-home-hero relative px-3 py-10 text-center sm:px-8 sm:py-14" data-company-of-time="introduction">
+            <div className="weave-home-hero-light pointer-events-none absolute inset-0" aria-hidden="true" />
             <div className="relative mx-auto max-w-5xl">
-              <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-6xl md:text-7xl">The Company of Time</h1>
-              <p className="mt-5 text-base font-semibold tracking-wide text-amber-100 sm:text-lg">Interaction in Motion presents</p>
-              <h2 className="mx-auto mt-5 max-w-4xl text-2xl font-black leading-snug tracking-tight text-white sm:text-4xl">
+              <h1 className="weave-home-title text-4xl font-black leading-tight tracking-tight sm:text-6xl md:text-7xl">The Company of Time</h1>
+              <p className="weave-home-credit mt-5 text-base font-semibold tracking-wide sm:text-lg">Interaction in Motion presents</p>
+              <h2 className="weave-home-subtitle mx-auto mt-5 max-w-4xl text-2xl font-black leading-snug tracking-tight sm:text-4xl">
                 The Weave of Presence: System Switch — Bridge of Radiance
               </h2>
-              <div className="mx-auto mt-9 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4" data-company-time-departments>
+              <div className="weave-home-departments mx-auto mt-9 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4" data-company-time-departments>
                 {departments.map(department => (
-                  <div key={department.name} className="border-y border-sky-200/25 bg-white/[.035] px-3 py-4">
+                  <div key={department.name} className="weave-home-department px-3 py-4">
                     <h3 className="text-lg font-black text-white sm:text-xl">{department.name}</h3>
                     <p className="mt-1 text-sm font-medium text-slate-300">{department.people}</p>
                   </div>
                 ))}
               </div>
-              <p className="mt-6 text-base font-medium leading-relaxed text-slate-200 sm:text-lg">The company through the people of its departments</p>
-              <div className="mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-2" data-company-time-loops>
-                <div className="border-l-4 border-orange-300 bg-orange-200/[.065] p-5">
+              <p className="weave-home-department-summary mt-6 text-base font-medium leading-relaxed sm:text-lg">The company through the people of its departments</p>
+              <div className="weave-home-loops mx-auto mt-9 grid max-w-4xl gap-3 text-left sm:grid-cols-2" data-company-time-loops>
+                <div className="weave-home-loop weave-home-loop-flame p-5">
                   <p className="text-base font-black text-white sm:text-lg">Company Loop 1 — Flame Event: Burning River</p>
                   <Link href="/flame-event" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-orange-100 hover:text-white">
                     Explore Burning River <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
-                <div className="border-l-4 border-emerald-300 bg-emerald-300/[.055] p-5">
+                <div className="weave-home-loop weave-home-loop-country p-5">
                   <p className="text-base font-black text-white sm:text-lg">Company Loop 2 — Country Event: One Nigeria</p>
                   <p className="mt-3 text-sm leading-6 text-slate-300">The next company movement, carried by the same departments and their people.</p>
                 </div>
@@ -112,8 +112,8 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-[1.3rem] border border-amber-200/25 bg-[#f9f7f2] text-[#202327]" data-home-plus-file-folder="official-picture">
-            <div className="px-5 pb-3 pt-5 text-center sm:px-8">
+          <section className="weave-home-plus-world relative" data-home-plus-file-folder="official-picture">
+            <div className="weave-home-plus-heading px-5 pb-3 pt-5 text-center sm:px-8">
               <h2 className="text-2xl font-black sm:text-3xl">Plus File Folder</h2>
             </div>
             {!posterMissing ? (
@@ -125,7 +125,7 @@ export default function Home() {
                 loading="eager"
                 decoding="async"
                 onError={() => setPosterMissing(true)}
-                className="mx-auto h-auto w-full max-w-[930px] object-contain"
+                className="weave-home-plus-image mx-auto h-auto w-full max-w-[930px] object-contain"
                 data-plus-file-folder-official-image
               />
             ) : (
@@ -134,7 +134,7 @@ export default function Home() {
                 <p className="mt-2 text-sm leading-6 text-stone-600">The approved official picture is awaiting publication with this release.</p>
               </div>
             )}
-            <div className="flex flex-wrap justify-center gap-3 border-t border-[#d7c7a5] px-4 py-4">
+            <div className="weave-home-plus-actions flex flex-wrap justify-center gap-3 px-4 py-4">
               <Link href="/file-folder" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#283d52] px-5 py-3 text-sm font-bold text-white hover:bg-[#16293e]">
                 Explore File Folders <ArrowRight className="h-4 w-4" />
               </Link>
@@ -144,14 +144,14 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]" data-home-what-weave-builds>
-            <div className="rounded-[1.4rem] border border-white/15 bg-[#061427]/75 p-5 backdrop-blur-md sm:p-7">
+          <section className="weave-home-work-section grid gap-5 lg:grid-cols-[1.15fr_.85fr]" data-home-what-weave-builds>
+            <div className="weave-home-work-copy p-5 sm:p-7">
               <p className="text-sm font-bold text-sky-200">What WEAVE Builds</p>
               <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">Technology and systems formed around movement already present in human life.</h2>
               <p className="mt-4 text-base leading-7 text-slate-200">Weave of Presence builds systems, services and instruments around human participation. We work with people and their existing movement to create organized functions, work and value.</p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {systems.map(({ icon: Icon, title, copy }) => (
-                  <article key={title} className="rounded-xl border border-white/15 bg-white/[.035] p-4">
+                  <article key={title} className="weave-home-system p-4">
                     <Icon className="h-6 w-6 text-sky-200" aria-hidden="true" />
                     <h3 className="mt-3 text-lg font-bold text-white">{title}</h3>
                     <p className="mt-2 text-sm leading-6 text-slate-200">{copy}</p>
@@ -160,7 +160,7 @@ export default function Home() {
               </div>
             </div>
 
-            <aside className="rounded-[1.4rem] border border-amber-200/20 bg-amber-100/[.055] p-5 backdrop-blur-md sm:p-7" data-home-client-access>
+            <aside className="weave-home-client-entry p-5 sm:p-7" data-home-client-access>
               <p className="text-sm font-bold text-amber-200">Client Access Point</p>
               <h2 className="mt-3 text-2xl font-black sm:text-3xl">Already a WEAVE Client?</h2>
               <p className="mt-4 text-base leading-7 text-slate-200">Enter your Client Portal with your issued WEAVE File Number and secure passkey. Your File Folder, System Switch and Client movement continue from there.</p>
@@ -174,13 +174,13 @@ export default function Home() {
             </aside>
           </section>
 
-          <section className="rounded-[1.4rem] border border-sky-200/20 bg-[#071c31]/80 p-5 sm:p-7" data-home-staff-entry>
+          <section className="weave-home-staff p-5 sm:p-7" data-home-staff-entry>
             <p className="text-sm font-bold text-sky-200">The Company of Time · Department Entrances</p>
             <h2 className="mt-2 text-2xl font-black sm:text-3xl">Enter WEAVE as staff</h2>
             <p className="mt-3 text-base leading-7 text-slate-200">Agent, Bridger, Client and Administration. Enter through your existing position, or establish a position through the appropriate company route.</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {staffEntrances.map(entrance => (
-                <div key={entrance.name} className="flex flex-col rounded-xl border border-white/15 bg-white/[.035] p-4">
+                <div key={entrance.name} className="weave-home-staff-position flex flex-col p-4">
                   <p className="text-sm font-bold text-amber-200">{entrance.department}</p>
                   <h3 className="mt-1 text-xl font-black">{entrance.name}</h3>
                   <Link href={entrance.enter} className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-lg bg-sky-100 px-4 py-3 text-sm font-bold text-[#09243c] hover:bg-white">
@@ -199,11 +199,11 @@ export default function Home() {
             </Link>
           </section>
 
-          <section className="rounded-[1.4rem] border border-emerald-200/15 bg-emerald-300/[.045] p-5 sm:p-7" data-home-farm-to-family>
+          <section className="weave-home-participation p-5 sm:p-7" data-home-farm-to-family>
             <p className="text-sm font-bold text-emerald-200">WEAVE · Stability and Lifestyle</p>
             <h2 className="mt-2 text-xl font-black sm:text-2xl">Continue into real company activity</h2>
             <p className="mt-3 text-sm leading-6 text-slate-200">Browse WEAVE Family Food, explore Farm to Family and find available ways to participate. Published products and actual recorded orders remain distinct from artwork or estimates.</p>
-            <Link href="/food-store" className="mt-5 block w-full max-w-md overflow-hidden rounded-xl border border-emerald-200/20" aria-label="Browse WEAVE Family Food products">
+            <Link href="/food-store" className="weave-home-food-picture mt-5 block w-full max-w-md overflow-hidden" aria-label="Browse WEAVE Family Food products">
               <img src="/weave-food/weave-family-products.avif" alt="WEAVE Family Food collection — the company's food products, with stock and pricing verified inside the Family Food Store" width={1200} height={700} loading="lazy" className="h-auto w-full object-cover"/>
             </Link>
             <div className="mt-5 flex flex-wrap gap-3">
@@ -216,7 +216,7 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="rounded-[1.4rem] border border-white/15 bg-black/20 p-5 sm:p-7" data-ai-participation="public-world">
+          <section className="weave-home-ai p-5 sm:p-7" data-ai-participation="public-world">
             <div className="flex items-start gap-3">
               <Bot className="mt-1 h-6 w-6 shrink-0 text-violet-200" />
               <div>
@@ -227,7 +227,7 @@ export default function Home() {
           </section>
         </main>
 
-        <footer className="border-t border-sky-200/15 bg-black/25 px-4 py-8">
+        <footer className="weave-home-footer px-4 py-8">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
             <WeaveLogo size="sm" />
             <p className="text-sm font-semibold text-slate-300">The Company of Time · Interaction in Motion</p>
