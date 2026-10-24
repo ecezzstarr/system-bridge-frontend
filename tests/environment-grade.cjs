@@ -617,7 +617,7 @@ assert.ok(staffTerritorySource.includes("redirect('/event')"),'staff cannot ente
 
 const publicInternetWorldSource = read('app/market/page.tsx')
 assert.ok(publicInternetWorldSource.includes('The open internet meets Client-built enterprises.')&&publicInternetWorldSource.includes('No WEAVE account is required'),'public Client Customer Doors are reachable as open-internet commerce rather than private System Switch access')
-assert.ok(publicInternetWorldSource.includes('Visitors arrive here from the WEAVE homepage')&&publicInternetWorldSource.includes('then enter the shared Burning River land'),'Visitors reach Customer Doors through the public homepage path or a Client-shared direct link')
+assert.ok(publicInternetWorldSource.includes('Visitors arrive here from the WEAVE homepage')&&publicInternetWorldSource.includes('then enter Weave Open World through System Switch'),'Visitors reach Customer Doors through the public homepage path or a Client-shared direct link')
 assert.ok(publicInternetWorldSource.includes("const doorName=config.platformName || store.name || 'Customer Door'"),'public market names the Client Door from the Client platform/company identity')
 assert.ok(customerDoorWorldSource.includes('No WEAVE account required')&&customerDoorWorldSource.includes('Enter ${doorName}'),'Client-named Customer Door is directly usable by non-WEAVE visitors')
 assert.ok(clientStoreIdentitySource.includes('client_customer_door_systems'),'Customer Door schema persists Client-authorized system publication separately from private File Folder systems')
