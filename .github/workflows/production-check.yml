@@ -84,6 +84,7 @@ jobs:
         run: |
           node tests/burning-river-system-switch-continuity.cjs
           node tests/weave-open-world-system-switch.cjs
+          node tests/weave-castle-position-and-entry.cjs
 
       - name: WEAVE food regressions
         run: |
