@@ -15,7 +15,7 @@ export default function SystemSwitchEntryPage() {
   if (!['admin', 'agent', 'bridger'].includes(user.role)) redirect('/login')
 
   const role = user.role as 'admin' | 'agent' | 'bridger'
-  const backHref = role === 'admin' ? '/admin/dashboard' : role === 'agent' ? '/agent/dashboard' : '/bridger/dashboard'
+  const backHref = '/event'
   const position = role === 'admin' ? 'Administration' : role === 'agent' ? 'Agent' : 'Bridger'
 
   return <main
@@ -30,7 +30,7 @@ export default function SystemSwitchEntryPage() {
     <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[12%] h-[26rem] w-[26rem] -translate-x-1/2 rounded-full border border-amber-200/15 bg-[radial-gradient(circle,rgba(255,211,131,.14),transparent_69%)] blur-sm"/>
     <div className="relative mx-auto w-full max-w-6xl" data-system-switch-gate-world>
       <Link href={backHref} className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-sky-100/90">
-        <ArrowLeft className="h-4 w-4" /> Return to {position}
+        <ArrowLeft className="h-4 w-4" /> Return to Burning River
       </Link>
       {/* The living mobile environment arrives before descriptive website content. */}
       <div className="relative mt-3 mb-4" data-system-switch-living-river="water-fire-bridge">

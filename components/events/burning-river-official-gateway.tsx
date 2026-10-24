@@ -10,7 +10,7 @@ import {ArrowRight,Castle,Compass,DoorOpen,ShieldCheck,Users} from 'lucide-react
  * Its image must be imported from the approved source at the target path;
  * the fallback is clearly marked rather than silently substituting new art.
  */
-export function BurningRiverOfficialGateway({staff=false,carrierCode=null}:{staff?:boolean;carrierCode?:string|null}){
+export function BurningRiverOfficialGateway({staff=false,carrierCode=null,staffHref='/system-switch'}:{staff?:boolean;carrierCode?:string|null;staffHref?:string}){
  const worldHref=carrierCode?'/flame-event/world?carrier='+encodeURIComponent(carrierCode):'/flame-event/world'
  const customerHref=worldHref+'#domains'
  const [missing,setMissing]=useState(false)
@@ -52,9 +52,9 @@ export function BurningRiverOfficialGateway({staff=false,carrierCode=null}:{staf
          <Castle className="h-5 w-5"/> Enter Burning River <ArrowRight className="h-5 w-5"/>
        </Link>
        <nav aria-label="Flame Event entrance types" className="grid gap-2 sm:grid-cols-3">
-         <Link href="/system-switch"
+         <Link href={staff ? staffHref : '/login'}
            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-orange-300/50 bg-orange-800/35 p-3 text-sm font-bold text-orange-100">
-           <Users className="h-5 w-5"/> Staff Entrance
+           <Users className="h-5 w-5"/> {staff ? 'Cross System Switch' : 'Staff Login'}
          </Link>
          <Link href={worldHref}
            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-sky-300/50 bg-sky-900/45 p-3 text-sm font-bold text-sky-100">

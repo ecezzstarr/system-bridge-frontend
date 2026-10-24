@@ -20,6 +20,34 @@ import { FlameEventArtifactMark } from '@/components/events/flame-event-artifact
 import { visiblePoll } from '@/lib/visible-poll'
 import { getRolePlaces } from '@/lib/weave-role-districts'
 
+const ROLE_WORK_ENTRANCES: Record<EventRole, { label: string; detail: string; href: string }[]> = {
+  admin: [
+    { label: 'Administration Work', detail: 'Verify people, manage operations and approve movement.', href: '/admin/control-center' },
+    { label: 'Staff Applications', detail: 'Review and respond to company employment applications.', href: '/admin/employment-applications' },
+    { label: 'Flame Event Control', detail: 'Manage the live event, announcements and schedule.', href: '/admin/flame-event' },
+    { label: 'Staff Communications', detail: 'Reach Agents, Bridgers and Clients.', href: '/communications' },
+  ],
+  agent: [
+    { label: 'Agent Work · Stability', detail: 'Stock, orders, product operations and commissions.', href: '/agent/work' },
+    { label: 'My Staff Workspace', detail: 'Open verified jobs, team tasks and assignments.', href: '/weave/lifestyles/work' },
+    { label: 'Team Communications', detail: 'Coordinate with Bridgers and company positions.', href: '/communications' },
+    { label: 'Distribution Route', detail: 'Move products through customers and outlets.', href: '/agent/distribution' },
+  ],
+  bridger: [
+    { label: 'Hope · Prospect Work', detail: 'Work Prospect possibilities and responses.', href: '/weave/market/prospects' },
+    { label: 'My Staff Workspace', detail: 'Open approved jobs, team tasks and assignments.', href: '/weave/lifestyles/work' },
+    { label: 'Bridge AI Assistance', detail: 'Support Clients across their File Folder crossing.', href: '/bridger/bridge-ai' },
+    { label: 'Team Communications', detail: 'Connect with Agents, Prospects and Clients.', href: '/communications' },
+  ],
+  client: [
+    { label: 'My File Folder', detail: 'Cross System Switch into your own operating world.', href: '/client/system-switch' },
+    { label: 'Client World', detail: 'Continue building, funding and managing your business.', href: '/client/dashboard' },
+    { label: 'Your Bridger', detail: 'Receive assistance from your connected Bridger.', href: '/client/chat/bridger' },
+    { label: 'Notifications', detail: 'Read instructions and updates from the company.', href: '/notifications' },
+  ],
+}
+
+
 const ROLE_LABELS: Record<EventRole, string> = {
   client: 'CLIENT',
   bridger: 'BRIDGER',
@@ -90,12 +118,16 @@ export default function PositionEventWorld({
   const eventStations = useMemo(() => {
     const selfEventHref = role === 'client' ? '/client/event' : '/event'
     const available = getRolePlaces(role).filter(place =>
-      place.href !== selfEventHref &&
-      place.label !== 'Settings'
+      place.href !== selfEventHref && place.label !== 'Settings'
     )
-    const daily = available.filter(place => place.daily)
-    const additional = available.filter(place => !place.daily)
-    const merged = [...daily, ...additional]
+    const priority: Record<EventRole, string[]> = {
+      admin: ['/admin/flame-event', '/admin/employment-applications', '/admin/control-center', '/communications'],
+      agent: ['/agility', '/agent/commissions', '/communications', '/echo'],
+      bridger: ['/weave/market/prospects', '/bridger/bridge-ai', '/communications', '/bridger/numbers'],
+      client: ['/client/system-switch', '/client/chat/bridger', '/client/deposit', '/echo'],
+    }
+    const first = priority[role].flatMap(href => available.filter(place => place.href === href))
+    const merged = [...first, ...available.filter(place => place.daily), ...available.filter(place => !place.daily)]
     const seen = new Set<string>()
     return merged.filter(place => {
       if (seen.has(place.href)) return false
@@ -114,7 +146,18 @@ export default function PositionEventWorld({
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,247,237,.018),transparent_18%,transparent_78%,rgba(249,115,22,.035)),radial-gradient(circle_at_50%_42%,rgba(249,115,22,.08),transparent_30%)]" />
 
       <div className="relative z-10">
-        <BurningRiverOfficialGateway staff/>
+        <nav aria-label="Your live department work and System Switch" data-flame-event-staff-flow="role-directed" className="grid gap-2 border-b border-orange-300/20 bg-[#091321]/95 px-3 py-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-5">
+          {ROLE_WORK_ENTRANCES[role].map(action => (
+            <Link key={action.href} href={action.href} className="flex min-h-20 items-center justify-between gap-2 rounded-xl border border-sky-200/15 bg-white/[.035] px-3 py-3 transition hover:border-orange-200/40 hover:bg-white/[.075]">
+              <span className="min-w-0"><span className="block text-xs font-black text-white">{action.label}</span><span className="mt-1 block text-[10px] leading-4 text-sky-100/65">{action.detail}</span></span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-amber-200"/>
+            </Link>
+          ))}
+          <Link href={role === 'client' ? '/client/system-switch' : '/system-switch'} data-flame-event-system-switch-entry="true" className="flex min-h-20 items-center justify-between gap-3 rounded-xl border border-amber-300/45 bg-amber-300/10 px-3 py-3 text-xs font-black text-amber-100 transition hover:bg-amber-300/20">
+            System Switch · Bridge of Radiance <Orbit className="h-5 w-5 shrink-0"/>
+          </Link>
+        </nav>
+        <BurningRiverOfficialGateway staff staffHref={role === 'client' ? '/client/system-switch' : '/system-switch'}/>
         <header className="grid gap-5 border-b border-white/8 px-4 py-5 sm:px-6 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:px-8 lg:py-7">
           <FlameEventArtifactMark size="md" surface="client-event" className="mx-auto lg:mx-0" />
 
@@ -185,7 +228,7 @@ export default function PositionEventWorld({
           <span className="text-[9px] font-black uppercase tracking-[.12em] text-amber-100">Staff Customer Door current</span>
           <span className="sr-only">Enter Customer Door by selecting an opened public portal.</span>
         </div>
-        <Link href="/system-switch/customer-doors?entrance=flame-event" className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">Enter as Presence · Client-hosted Customer Doors</Link>
+        <Link href={role === 'client' ? '/client/system-switch' : '/system-switch/customer-doors?entrance=flame-event'} className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-emerald-200/30 px-4 py-3 text-xs font-bold text-emerald-100">{role === 'client' ? 'Open your File Folder · System Switch' : 'Enter as Presence · Client-hosted Customer Doors'}</Link>
         <FlameFoodCurrent />
 
         {role === 'client' && (
