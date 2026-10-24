@@ -65,6 +65,9 @@ export function ensureWeaveOpenWorldSchema(sql:any=getBusinessDb()):Promise<void
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_projects_connection ON weave_open_world_projects(connection_id,status,created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_contributions_domain ON weave_open_world_project_contributions(domain_id,created_at DESC)`
+  await sql`ALTER TABLE weave_open_world_domains ADD COLUMN IF NOT EXISTS map_x numeric(8,2)`
+  await sql`ALTER TABLE weave_open_world_domains ADD COLUMN IF NOT EXISTS map_z numeric(8,2)`
+  await sql`ALTER TABLE weave_open_world_domains ADD COLUMN IF NOT EXISTS map_position_changed_at timestamptz`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_domains_slot ON weave_open_world_domains(world_slot)`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_connections_a ON weave_open_world_connections(domain_a,status,created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_weave_open_world_connections_b ON weave_open_world_connections(domain_b,status,created_at DESC)`
@@ -163,7 +166,7 @@ export async function getPublicBurningRiverWorld(sql:any,page=0){
   await ensureWeaveOpenWorldSchema(sql)
   const offset=Math.min(100000,Math.max(0,Math.trunc(page)))*48
   const rows=await sql`
-    SELECT d.id,d.world_slot AS slot,d.tier,d.collaboration_open AS available_for_collaboration,
+    SELECT d.id,d.world_slot AS slot,d.tier,d.map_x,d.map_z,d.collaboration_open AS available_for_collaboration,
       s.public_slug,
       CASE WHEN s.enabled=true AND s.world_host_customer_market=true
         AND s.formation_status IN ('selling','ready_for_offer')
@@ -234,7 +237,7 @@ export async function getPublicBurningRiverWorld(sql:any,page=0){
     LIMIT 120
   `
   const domains=rows.map((row:any)=>projectPublicWorldDomain({
-    id:String(row.id),slot:row.slot,tier:row.tier,public_slug:row.public_slug,
+    id:String(row.id),slot:row.slot,tier:row.tier,map_x:row.map_x,map_z:row.map_z,public_slug:row.public_slug,
     public_name:row.public_name,open_door:row.open_door,
     building_count:row.building_count,completed_count:row.completed_count,
     operating_count:row.operating_count,published_offers:row.published_offers,
