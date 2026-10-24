@@ -30,7 +30,7 @@ assert.ok(systemSwitch.includes('<RiverSurface quiet={false} />')&&systemSwitch.
 assert.ok(systemSwitch.indexOf('<RiverSurface quiet={false} />')<systemSwitch.indexOf('Enter Weave Open World'),'Burning River is visible before the File Folder crossing action')
 assert.ok(!systemSwitch.includes('<StaffFileFolderWorld'),'Staff must explicitly cross the gate before opening the world')
 const fileFolderWorld=read('app/system-switch/world/page.tsx')
-assert.ok(fileFolderWorld.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door}/>')&&fileFolderWorld.includes('data-file-folder-open-world-entry'),'The destination renders verified Client File Folder domains')
+assert.ok(fileFolderWorld.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>')&&fileFolderWorld.includes('data-file-folder-open-world-entry'),'The destination renders verified Client File Folder domains')
 assert.ok(shared.includes("const moveEnabled=status!=='denied'"),'Temporary network interruption cannot freeze the local scene')
 assert.ok(shared.includes("status==='denied'"),'Denied positions remain blocked')
 assert.ok(shared.includes("status==='connected'?"),'Shared participant counts are not invented')
