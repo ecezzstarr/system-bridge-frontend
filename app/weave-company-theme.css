@@ -87,7 +87,7 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
 html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
   .weave-header,.weave-sidebar,.weave-client-nav,
   .weave-environment-panel,.weave-reading-surface,.field-surface,
-  [data-slot="card"]
+  .card,[role="card"],[data-slot="card"]
 ) {
   border-color: rgba(215, 177, 111, .35);
   background: linear-gradient(138deg, rgba(24,87,117,.81),rgba(13,43,74,.90));
@@ -131,7 +131,7 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
   border-bottom: 1px solid var(--weave-company-gold-line);
   box-shadow: 0 7px 24px rgba(29,92,127,.10);
 }
-html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav a:not(:first-child) {
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav a {
   color: #214c68;
 }
 html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav a:hover {
