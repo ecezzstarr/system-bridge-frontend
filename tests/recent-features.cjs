@@ -910,7 +910,7 @@ assert.ok(fileFolderPurchaseApiSource.includes('export async function GET(reques
 assert.ok(!fileFolderPurchaseApiSource.includes('verifyNativeTrxPayment')&&!fileFolderPurchaseApiSource.includes('attemptAutomaticPaymentVerification'),'Prospect API cannot automatically verify or open a File Folder crossing')
 assert.ok(adminDashboardNotificationSource.includes('visiblePoll(() => fetchPendingDeposits(true), 8000, false)'),'Administration File Folder verification queue syncs live like Department Entry tickets')
 assert.ok(adminDashboardNotificationSource.includes('Verify · Issue File Number · Open Crossing'),'Administration sees one explicit authority action for File Number issuance and crossing release')
-assert.ok(clientRegisterSource2.includes("router.replace('/client/system-switch')"),'Completed Client registration opens the purchased File Folder System Switch instead of the generic dashboard')
+assert.ok(clientRegisterSource2.includes("isFlameEventActive() ? '/client/event' : '/client/system-switch'"),'Completed Client registration first opens the active Flame Event, then allows the owned File Folder crossing')
 assert.ok(fileFolderPurchaseApiSource.includes('Prospect name and phone are required'),'Unauthenticated File Folder purchase carries enough identity for File Number issuance')
 assert.ok(fileFolderPurchaseApiSource.includes("user && user.role !== 'client'"),'Authenticated support positions cannot purchase a File Folder for themselves')
 assert.ok(fileFolderPurchaseApiSource.includes("role='client'"),'File Folder assignment validates that the owner is a Client account')
