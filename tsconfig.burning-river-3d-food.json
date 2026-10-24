@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false
+  },
+  "include": [
+    "next-env.d.ts",
+    "lib/burning-river-food-catalog.ts",
+    "components/events/burning-river-food-store-3d.tsx",
+    "components/events/flame-event-public-preview.tsx",
+    "components/events/flame-event-public-mobile.tsx",
+    "components/events/flame-event-mobile-scene.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "eight-core"
+  ]
+}

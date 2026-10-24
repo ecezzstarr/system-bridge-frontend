@@ -16,8 +16,8 @@ const three=read('components/events/flame-event-mobile-scene.tsx')
 assert.ok(carrier.includes("if(query.checkout!=='1')redirect('/flame-event?carrier='+encodeURIComponent(code))"),'Permanent Agent link opens Burning River first')
 assert.ok(carrier.includes('<AgentFarmCarrierPublic referralCode={code}/>')&&carrier.includes('<AgentFoodCarrierPublic referralCode={code}/>')&&carrier.includes('<AgentCakeCarrierPublic referralCode={code}/>'),'Existing Agent checkout remains fully attributed behind checkout=1')
 assert.ok(flamePage.includes('carrierCode')&&flamePage.includes('^[a-zA-Z0-9-]{1,40}$'),'Arrival accepts only normalized Agent referral shape')
-assert.ok(publicFlame.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>'),'Visitor previews Client world instead of becoming an avatar')
-assert.ok(publicFlame.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),'Burning River exposes the contextual Weave Food Store')
+assert.ok(publicFlame.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>'),'Visitor previews Client world with preserved Agent identity')
+assert.ok(preview.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&!publicFlame.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),'Real-image WEAVE Food Store appears inside the same 3D river, not beneath it')
 assert.ok(!publicFlame.includes('FlameEventOpenWorld enterprises='),'Public route does not require player transformation or joystick')
 assert.ok(preview.includes('data-flame-preview-no-avatar="true"')&&!preview.includes('WeaveEmbodiedAvatar'),'No visitor avatar is created')
 assert.ok(preview.includes('<RiverSurface quiet={false}/>')&&three.includes('export function RiverSurface'),'Preview uses actual live water and fire shader')
@@ -35,3 +35,5 @@ for(const slug of ['agent-agility','agent-electrolyte','agent-ember']){
 }
 assert.ok(food.includes('no invented product photographs or stock.'),'Farm and household listings are not misrepresented')
 console.log('Burning River preview + public Client build + attributed Agent checkout regression passed')
+
+require('./burning-river-real-food-3d-regression.cjs')

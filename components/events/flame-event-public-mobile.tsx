@@ -7,6 +7,7 @@ import type { FlameDoorFeedStatus } from '@/components/events/flame-event-open-w
 import { FlameEventPublicPreview, type PublicClientFolder } from '@/components/events/flame-event-public-preview'
 import { BurningRiverOfficialGateway } from '@/components/events/burning-river-official-gateway'
 import { FlameEventFoodStore } from '@/components/events/flame-event-food-store'
+
 import { visiblePoll } from '@/lib/visible-poll'
 
 /** Public visitor landing: the same physical doors, never the private Client folder. */
@@ -48,12 +49,14 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
     <BurningRiverOfficialGateway carrierCode={carrierCode}/>
     <details className="border-t border-amber-200/20 bg-[#071a2d] px-4 py-4" data-legacy-public-market-preview>
       <summary className="cursor-pointer text-sm font-bold text-amber-200">Browse existing commissioned Customer Doors</summary>
-      <FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>
+      <FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>
     </details>
     <FlameEventFoodStore carrierCode={carrierCode}/>
+
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">
-      <p>Browse published Client File Folder systems and visit their Customer Doors without becoming an avatar or creating a WEAVE account.</p>
+      <p>Explore the WEAVE Food Store and real published Client File Folder systems inside one 3D world. No avatar, joystick, or account is required to browse.</p>
+      <Link href="/food-store" className="inline-flex min-h-11 items-center font-semibold text-amber-200">Food Store</Link>
       <Link href="/market" className="inline-flex items-center gap-1.5 font-semibold text-amber-200">Customer Market directory <ArrowRight className="h-4 w-4"/></Link>
     </div>
   </main>

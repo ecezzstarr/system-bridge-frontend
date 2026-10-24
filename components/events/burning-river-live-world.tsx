@@ -3,7 +3,9 @@
 import {useEffect,useMemo,useState,useCallback} from 'react'
 import Link from 'next/link'
 import {Html,OrbitControls,Line} from '@react-three/drei'
-import {useFrame} from '@react-three/fiber'
+import {useFrame,useThree} from '@react-three/fiber'
+import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
+import {FlameEventFoodStore} from './flame-event-food-store'
 import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import {visiblePoll} from '@/lib/visible-poll'
@@ -118,10 +120,13 @@ function DomainCastle({domain,selected,onSelect}:{
   </group>
 }
 
-function WorldScene({domains,links,selected,onSelect}:{
+function WorldScene({domains,links,selected,onSelect,carrierCode,focus}:{
+  carrierCode?:string|null;focus:'world'|'food'
   domains:PublicWorldDomain[];links:WorldFeed['links'];selected:string|null
   onSelect:(id:string)=>void
 }){
+  const {camera}=useThree()
+  useEffect(()=>{camera.position.set(...(focus==='food'?[17,11,17]:[0,66,95]) as [number,number,number])},[camera,focus])
   const byId=useMemo(()=>new Map(domains.map(d=>[d.domainId,d])),[domains])
   return <>
     <fog attach="fog" args={['#1a233c',112,260]}/>
@@ -142,6 +147,7 @@ function WorldScene({domains,links,selected,onSelect}:{
       </group>
     })}
     <MovingBurningRiver/>
+    <BurningRiverFoodStore3D carrierCode={carrierCode}/>
     {domains.map(d=><DomainCastle key={d.domainId} domain={d}
       selected={selected===d.domainId} onSelect={onSelect}/>)}
     {links.map((link,i)=>{
@@ -156,7 +162,7 @@ function WorldScene({domains,links,selected,onSelect}:{
     <OrbitControls makeDefault enableDamping enablePan
       minDistance={16} maxDistance={155}
       minPolarAngle={.2} maxPolarAngle={1.4}
-      target={[0,0,0]}/>
+      target={focus==='food'?[9.1,3,-5.1]:[0,0,0]}/>
   </>
 }
 const stageLabel:{[key:string]:string}={
@@ -164,9 +170,11 @@ const stageLabel:{[key:string]:string}={
  operating:'Systems operating',expanding:'Business expanding',
 }
 
-export function BurningRiverLiveWorld({role='visitor'}:{
+export function BurningRiverLiveWorld({role='visitor',carrierCode=null}:{
+  carrierCode?:string|null
   role?:'visitor'|'client'|'agent'|'bridger'|'admin'
 }){
+ const [focus,setFocus]=useState<'world'|'food'>('world')
  const [feed,setFeed]=useState<WorldFeed>(emptyFeed)
  const [status,setStatus]=useState<'loading'|'ready'|'unavailable'>('loading')
  const [selected,setSelected]=useState<string|null>(null)
@@ -254,7 +262,7 @@ export function BurningRiverLiveWorld({role='visitor'}:{
        aria-hidden="true"/>
      {webgl&&<AdaptiveCanvas camera={{position:[0,66,95],fov:46,near:.1,far:350}}
        gl={{antialias:false,alpha:true,powerPreference:'low-power'}} mobileGame>
-       <WorldScene domains={feed.domains} links={feed.links} selected={selected} onSelect={setSelected}/>
+       <WorldScene domains={feed.domains} links={feed.links} selected={selected} onSelect={setSelected} carrierCode={carrierCode} focus={focus}/>
      </AdaptiveCanvas>}
      <div className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-[#061225]/95 to-transparent px-3 pb-10 pt-3">
        <div className="flex items-center justify-between gap-2 text-xs">
@@ -264,6 +272,7 @@ export function BurningRiverLiveWorld({role='visitor'}:{
          <span className="rounded-lg border border-white/15 bg-[#061225]/75 px-2 py-2 text-sky-100">No combat · real work</span>
        </div>
      </div>
+     <nav aria-label="World camera focus" className="absolute left-3 top-16 flex gap-2">{(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-11 rounded-lg border border-amber-200/30 bg-[#061225]/95 px-3 py-2 text-xs font-bold text-amber-100">{view==='food'?'Food storefront':'Entire world'}</button>)}</nav>
      <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-xs text-sky-100">
        Drag to look · Pinch or scroll to zoom · Tap a castle
      </div>
@@ -271,6 +280,7 @@ export function BurningRiverLiveWorld({role='visitor'}:{
        3D is not available on this device. Use the same verified Client domains below.
      </div>}
    </div>
+   {!webgl&&<FlameEventFoodStore carrierCode={carrierCode}/>}
    <div className="grid gap-4 border-t border-amber-100/20 bg-[#091626] p-4 lg:grid-cols-[1.25fr_1fr] lg:p-6">
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">

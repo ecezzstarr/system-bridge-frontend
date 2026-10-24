@@ -3,7 +3,6 @@ import {useEffect,useState} from 'react'
 import Link from 'next/link'
 import {ArrowLeft} from 'lucide-react'
 import {BurningRiverLiveWorld} from '@/components/events/burning-river-live-world'
-import {FlameEventFoodStore} from '@/components/events/flame-event-food-store'
 
 export default function BurningRiverWorldPage(){
  const [role,setRole]=useState<'client'|'admin'|'agent'|'bridger'|'visitor'>('visitor')
@@ -24,7 +23,6 @@ export default function BurningRiverWorldPage(){
      </Link>
      <Link href="/" className="text-xs text-sky-100/80">The Company of Time</Link>
    </nav>
-   <BurningRiverLiveWorld role={role}/>
-   <FlameEventFoodStore carrierCode={carrierCode}/>
+   <BurningRiverLiveWorld role={role} carrierCode={carrierCode}/>
  </main>
 }

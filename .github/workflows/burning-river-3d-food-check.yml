@@ -1,0 +1,32 @@
+name: Burning River 3D Food
+on:
+  push:
+    branches: [feature/burning-river-actual-food-3d]
+  pull_request:
+    paths:
+      - 'components/events/**'
+      - 'lib/burning-river-food-catalog.ts'
+      - 'tests/burning-river-real-food-3d-regression.cjs'
+      - 'tests/carrier-burning-river-crossing-regression.cjs'
+      - '.github/workflows/burning-river-3d-food-check.yml'
+  workflow_dispatch:
+
+jobs:
+  verify-food-open-world:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify original food photos and 3D world
+        run: |
+          node tests/burning-river-real-food-3d-regression.cjs
+          node tests/carrier-burning-river-crossing-regression.cjs
+          node tests/flame-event-open-world-regression.cjs
+          node tests/burning-river-system-switch-continuity.cjs
+      - name: TypeScript check
+        run: npx tsc --project tsconfig.burning-river-3d-food.json --noEmit --pretty false

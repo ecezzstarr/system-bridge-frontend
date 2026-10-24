@@ -109,7 +109,7 @@ assert.match(world,/if\(!webglAvailable\)\{setEntered\(true\);setShowDirectory\(
 assert.match(world,/weave:flame-event:save-presence/)
 assert.match(world,/onReady=\{sceneReady\}/)
 assert.match(world,/doorStatus==='loading'/)
-assert.ok(read('components/events/flame-event-public-mobile.tsx').includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>'))
+assert.ok(read('components/events/flame-event-public-mobile.tsx').includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>'))
 assert.match(read('components/events/flame-event-public-preview.tsx'),/data-flame-preview-no-avatar/)
 assert.match(read('components/events/flame-event-public-preview.tsx'),/public_systems/)
 assert.match(world,/data-system-switch-physically-crossed/)
