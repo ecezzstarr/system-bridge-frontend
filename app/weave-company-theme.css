@@ -159,6 +159,25 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
   border-color: rgba(187,148,81,.4);
 }
 
+/* Loop 2's company-wide green / white / green theme also reaches the
+   homepage TOP and BOTTOM so navy strips never reappear across a loop switch. */
+html[data-weave-loop-theme="one-nigerian"] .weave-home-nav,
+html[data-weave-loop-theme="one-nigerian"] .weave-home-footer {
+  background:
+    linear-gradient(90deg,rgba(0,135,81,.23),rgba(250,255,251,.97) 25% 75%,rgba(0,135,81,.23));
+  border-color: rgba(0,135,81,.29);
+  box-shadow: 0 6px 24px rgba(1,99,62,.07);
+}
+html[data-weave-loop-theme="one-nigerian"] .weave-home-nav a,
+html[data-weave-loop-theme="one-nigerian"] .weave-home-footer p {
+  color: #155d3f;
+}
+html[data-weave-loop-theme="one-nigerian"] :is(.weave-home-nav,.weave-home-footer) .weave-logo-live {
+  padding: .25rem .5rem;
+  border-radius: .4rem;
+  background: linear-gradient(100deg,#0a4a30,#117a50);
+}
+
 /* Loop 2 receives the Nigerian flag and green field, never River/Gold override.
    The older core Loop 2 rules in weave-theme.css remain authoritative. */
 @media (prefers-reduced-motion: reduce) {
