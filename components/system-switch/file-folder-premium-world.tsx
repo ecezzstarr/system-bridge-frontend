@@ -260,7 +260,7 @@ export default function FileFolderPremiumWorld({
    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#b99355]/30 bg-[#17151c] p-4">
     <div className="max-w-xl"><p className="font-bold text-[#f7ddb0]">{station.name}</p><p className="mt-1 text-sm leading-6 text-[#d4c8b8]">{station.detail}</p></div>
     {selected==='customers'?<div className="flex flex-wrap gap-2">
-      <button type="button" onClick={()=>onOpenCustomerDoor?.()||go(station.district)}
+      <button type="button" onClick={()=>{if(onOpenCustomerDoor)onOpenCustomerDoor();else go(station.district)}}
         className="rounded-lg bg-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#261e21]">Manage Customer Door →</button>
       {publishedDoor&&<a href={'/market/'+encodeURIComponent(String(customerDoor?.public_slug))}
         target="_blank" rel="noreferrer" className="rounded-lg border border-[#e7bb6c] px-4 py-3 text-sm font-bold text-[#f1d4a2]">Preview public door →</a>}
