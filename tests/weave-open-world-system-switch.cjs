@@ -60,8 +60,8 @@ assert.ok(!worldFood3D.includes('<Text '),'World storefront cannot suspend on ex
 assert.ok(worldFood3D.includes('<Html center position='),'Storefront signage must remain visible without external font fetching')
 assert.ok(visual.includes("setStatus('unavailable')")&&visual.includes('if(mounted&&!document.hidden)'),
   'World feed timeout must leave the loading state, including watchdog-aborted requests')
-assert.ok(visual.includes('Retry land connection')&&visual.includes('fallback={<div'),
-  'Keep an in-world retry and WebGL failure path')
+assert.ok(visual.includes('Retry land connection')&&visual.includes('fallback={<WeaveWorldMapFallback'),
+  'World errors retain a visible castle map rather than an empty canvas')
 assert.ok(visual.includes('<Suspense fallback={<meshStandardMaterial')&&land.includes('<Suspense fallback={<meshStandardMaterial'),
   '3D terrain and Client castles must remain visible while the atlas loads')
 assert.ok(world.includes('data-weave-open-world-loader="loading-3d-world"'),
@@ -69,3 +69,22 @@ assert.ok(world.includes('data-weave-open-world-loader="loading-3d-world"'),
 const worldFeed=read('app/api/events/flame/open-world/route.ts')
 assert.ok(worldFeed.includes('void reconciliation.catch')&&worldFeed.includes("getFlameEvent().catch"),
   'Database maintenance and event metadata cannot block already verified public Client land')
+
+const mobileWorld=read('components/world/weave-world-map-fallback.tsx')
+const canvasDriver=read('components/world/adaptive-canvas.tsx')
+assert.ok(visual.includes('data-world-first-view="castle-landscape"') &&
+  visual.includes("const anchor=domains.find(domain=>domain.domainId===selected)||domains[0]") &&
+  visual.includes('camera.lookAt(focal.x,focal.y,focal.z)'),
+  'Map camera centers real Client castles at phone-visible zoom, not a distant empty sky')
+assert.ok(visual.includes('onWorldReady={()=>setSceneReady(true)}') &&
+  visual.includes('(webgl!==true||!sceneReady)&&<WeaveWorldMapFallback'),
+  'Real domain castle map appears before GPU scene finishes and when GPU fails')
+assert.ok(mobileWorld.includes('data-weave-open-world-visual-fallback="real-domains"') &&
+  mobileWorld.includes('domains.map') && mobileWorld.includes('onSelect(d.domainId)'),
+  'Fallback plots only recorded castles with clickable safe entrances')
+assert.ok(canvasDriver.includes('if(document.hidden){last=0;frame=requestAnimationFrame(tick);return}'),
+  'Backgrounding a phone does not permanently end the Open World rendering loop')
+assert.ok(visual.includes('data-weave-world-details="collapsed-by-default"') &&
+  visual.includes('<summary className='),
+  'World activity and Client connections are available but do not overwhelm the map')
+console.log('PASS: Castle-first map, GPU fallback, resumed canvas, and compact World UI')
