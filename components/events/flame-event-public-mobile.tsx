@@ -15,6 +15,10 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
   const [enterprises,setEnterprises]=useState<PublicClientFolder[]>([])
   const [message,setMessage]=useState('')
   const [doorStatus,setDoorStatus]=useState<FlameDoorFeedStatus>('loading')
+  const [customerDoorsOpen,setCustomerDoorsOpen]=useState(false)
+  useEffect(()=>{
+    if(customerDoorsOpen)document.getElementById('commissioned-doors')?.scrollIntoView({behavior:'smooth',block:'start'})
+  },[customerDoorsOpen])
   useEffect(()=>{
     let mounted=true
     const stop=visiblePoll(async signal=>{
@@ -45,11 +49,12 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
       <p>Explore real Client-built systems inside Burning River. Food purchases remain linked to the Agent who brought you here.</p>
       <Link href={carrierHref} className="inline-flex min-h-10 shrink-0 items-center gap-2 font-black text-amber-200" data-flame-event-return-carrier><ArrowLeft className="h-4 w-4"/> Order through your Agent</Link>
     </div>}
-    <BurningRiverOfficialGateway carrierCode={carrierCode}/>
-    <details className="border-t border-amber-200/20 bg-[#071a2d] px-4 py-4" data-legacy-public-market-preview>
-      <summary className="cursor-pointer text-sm font-bold text-amber-200">Browse existing commissioned Customer Doors</summary>
+    <BurningRiverOfficialGateway carrierCode={carrierCode} onCustomerDoor={()=>setCustomerDoorsOpen(true)}/>
+    {customerDoorsOpen&&<section id="commissioned-doors" aria-label="Commissioned Customer Doors"
+      className="scroll-mt-6 border-t border-amber-200/20 bg-[#071a2d] px-4 py-4"
+      data-public-customer-doors-from-image="true">
       <FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>
-    </details>
+    </section>}
     <FlameEventFoodStore carrierCode={carrierCode}/>
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">

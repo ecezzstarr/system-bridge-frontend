@@ -98,7 +98,7 @@ assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
  route.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),
  'Agent Carrier attribution remains connected while visitors cross into the shared world')
 assert.ok(staff.includes('<BurningRiverOfficialGateway staff/>')&&
- visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),
+ visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode} onCustomerDoor='),
  'Same worlds accessible from staff and public entrances')
 assert.ok(client.includes('validWriteOrigin(request)') &&
  client.includes("url.host===(request.headers.get('host')||request.nextUrl.host)"),
@@ -112,3 +112,13 @@ assert.ok(client.includes(".catch((error)=>console.error('[Burning River notific
  'Notification service failures do not falsely report an already committed event action as failed')
 
 console.log('PASS: Purchased Client domains, protected public records, approved art paths, noncombat interaction')
+
+const imageEntrances=['river','staff','visitor','customer']
+for(const entrance of imageEntrances){
+ assert.ok(gate.includes('data-gateway-image-entrance="'+entrance+'"'),'Official image hotspot must work: '+entrance)
+}
+for(const repeated of ['System Switch · The Crossing','Enter the Living Company World','Open world entry never grants another Client']){
+ assert.ok(!gate.includes(repeated),'Do not duplicate text already in official image: '+repeated)
+}
+assert.ok(!visitor.includes('Browse existing commissioned Customer Doors'),'Customer Door browsing is reached from the official image, not a second heading')
+assert.ok(visitor.includes('customerDoorsOpen&&<section')&&visitor.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>'),'Public Customer Door image button reveals existing real Client door data')
