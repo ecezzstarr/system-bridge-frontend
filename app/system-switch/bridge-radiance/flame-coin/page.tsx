@@ -62,7 +62,7 @@ export default function BuyWeaveFlameCoin(){
  const crypto=sale&&['trx','usdt','btc'].includes(sale.payment_method)
  return <main className="min-h-dvh bg-[radial-gradient(circle_at_50%_0%,rgba(251,191,84,.13),transparent_44%),linear-gradient(180deg,#091827,#04090f)] px-4 py-8 text-white" data-bridge-radiance-flame-coin>
    <div className="mx-auto max-w-2xl">
-     <Link href="/flame-event/world#domains" className="text-xs font-bold text-sky-200">← Burning River · Client Customer Doors</Link>
+     <Link href="/system-switch/world#domains" className="text-xs font-bold text-sky-200">← Weave Open World · Customer Doors</Link>
      <div className="mt-7 flex items-center gap-3 text-amber-200"><Waves className="h-6 w-6"/><Coins className="h-6 w-6"/><span className="text-[10px] font-black uppercase tracking-[.2em]">Weave · Bridge of Radiance</span></div>
      <h1 className="mt-4 text-4xl font-black">Buy Flame Coin</h1>
      <p className="mt-4 text-sm leading-7 text-slate-300">Choose how you want to pay. You receive Flame Coin inside your Weave Main Wallet, not TRX, USDT or BTC back. Administration manually quotes the price and independently verifies payment before any Flame Coin is credited.</p>
