@@ -158,7 +158,7 @@ export function FlameEventPublicPreview({enterprises,status,carrierCode=null}:{
     <div className="relative z-10 px-4 pb-3 pt-5">
       <p className="text-[10px] font-black uppercase tracking-[.23em] text-amber-200">Company Loop 1 · Flame Event</p>
       <h1 className="mt-1 text-3xl font-black tracking-tight">Burning River</h1>
-      <p className="mt-1 text-[10px] font-black uppercase tracking-[.18em] text-cyan-100">System Switch · Client File Folder Open World</p>
+      <p className="mt-1 text-[10px] font-black uppercase tracking-[.18em] text-cyan-100">WEAVE Open World · Inside System Switch</p>
       <p className="mt-2 max-w-xl text-xs leading-5 text-sky-100/85">
         System Switch reveals one live 3D world: Client-owned File Folder structures and the WEAVE Food Store beside the flowing river. Tap the actual food pictures to order through the Agent who brought you here.
       </p>
