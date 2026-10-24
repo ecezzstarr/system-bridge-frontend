@@ -14,13 +14,16 @@ export default function WeaveOpenWorldPage(){
  const [role,setRole]=useState<'client'|'admin'|'agent'|'bridger'|'visitor'>('visitor')
  const [carrierCode,setCarrierCode]=useState<string|null>(null)
  const [door,setDoor]=useState<string|null>(null)
+ const [legionCode,setLegionCode]=useState<string|null>(null)
  const [fromSwitch,setFromSwitch]=useState(false)
  useEffect(()=>{
    const query=new URLSearchParams(window.location.search)
    const code=query.get('carrier')
    const doorSlug=query.get('door')
+   const legion=query.get('legion')
    if(code&&/^[a-zA-Z0-9-]{1,40}$/.test(code))setCarrierCode(code)
    if(doorSlug&&/^[a-z0-9-]{1,160}$/i.test(doorSlug))setDoor(doorSlug)
+   if(legion&&/^[a-zA-Z0-9_-]{1,80}$/.test(legion))setLegionCode(legion)
    setFromSwitch(query.get('via')==='system-switch')
    try{
      const parsed=JSON.parse(localStorage.getItem('ssb_auth_user')||'null')
@@ -40,6 +43,6 @@ export default function WeaveOpenWorldPage(){
      </Link>
      <Link href="/" className="text-xs text-sky-100/80">The Company of Time</Link>
    </nav>
-   <BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door}/>
+   <BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>
  </main>
 }
