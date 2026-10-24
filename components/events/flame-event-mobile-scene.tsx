@@ -10,6 +10,7 @@ import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, enforceSystemSwitchGate, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
 import type { FlameWorldCustomerDoor } from './flame-event-open-world'
 import { WeaveEmbodiedAvatar, type WeaveAvatarMotion, type WeaveAvatarPosition } from '@/components/world/weave-embodied-avatar'
+import {BurningRiverFoodStore3D} from '@/components/events/burning-river-food-store-3d'
 
 export type FlameMobileInput = {
   forward:number
@@ -370,6 +371,7 @@ function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
     <pointLight position={[0,7,-13]} color="#ffc381" intensity={5} distance={31}/>
     <RiverSurface quiet={budget.reducedMotion}/>
     <Terrain quality={budget.level}/>
+    <BurningRiverFoodStore3D/>
     <SystemSwitchThreshold active={!budget.reducedMotion} quiet={budget.reducedMotion}/>
     <PresenceCurrent motion={playerMotion} quiet={budget.reducedMotion}/>
     {enterprises.map((door,i)=><Portal key={door.public_slug} enterprise={door} index={i} x={doorPositions[i].x} z={doorPositions[i].z} playerMotion={playerMotion}/>)}

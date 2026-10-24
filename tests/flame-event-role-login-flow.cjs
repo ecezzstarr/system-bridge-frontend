@@ -44,7 +44,7 @@ assert.ok(!gate.includes('<StaffFileFolderWorld'),'The gate does not skip straig
 const publicFileFolderWorld = read('app/flame-event/world/page.tsx')
 assert.match(publicFileFolderWorld,/data-file-folder-open-world-entry=/)
 assert.match(publicFileFolderWorld,/fromSwitch\?'\/system-switch':'\/flame-event'/,'The File Folder open world returns to the same gate')
-assert.match(publicFileFolderWorld,/<BurningRiverLiveWorld role=\{role\}\s*\/>/,'The destination is the existing real Client domain world')
+assert.match(publicFileFolderWorld,/<BurningRiverLiveWorld role=\{role\} carrierCode=\{carrierCode\}\s*\/>/,'The destination is the existing real Client domain world')
 
 assert.match(staffWorkspace,/data-verified-employment-workspace="true"/)
 assert.match(clientStaffWorkspace,/\/api\/client\/staff-workspace/)

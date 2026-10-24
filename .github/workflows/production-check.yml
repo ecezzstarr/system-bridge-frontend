@@ -97,6 +97,7 @@ jobs:
           node tests/weave-family-food-store-regression.cjs
           node tests/farm-to-family-lifestyle-regression.cjs
           node tests/carrier-farm-door-regression.cjs
+          node tests/burning-river-real-food-3d-regression.cjs
           node tests/carrier-burning-river-crossing-regression.cjs
           node tests/flame-real-food-current-regression.cjs
           node tests/weave-food-economics-escrow-regression.cjs

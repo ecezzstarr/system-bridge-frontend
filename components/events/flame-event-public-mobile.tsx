@@ -53,7 +53,7 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
     {customerDoorsOpen&&<section id="commissioned-doors" aria-label="Commissioned Customer Doors"
       className="scroll-mt-6 border-t border-amber-200/20 bg-[#071a2d] px-4 py-4"
       data-public-customer-doors-from-image="true">
-      <FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>
+      <FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>
     </section>}
     <FlameEventFoodStore carrierCode={carrierCode}/>
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}

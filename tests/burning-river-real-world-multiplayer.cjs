@@ -92,10 +92,10 @@ assert.ok(!map.includes('WeaveEmbodiedAvatar')&&!map.includes('joystick')&&!map.
 assert.ok(gate.includes("burning-river-crossing-official.webp")&&
  map.includes("burning-river-open-world-official.webp"),
  'Both official approved images are referenced; no alternate concept image')
-assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role}/>'),
+assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode}/>'),
  'Clickable crossing opens real shared world route')
 assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
- route.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),
+ route.includes('carrierCode={carrierCode}')&&map.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),
  'Agent Carrier attribution remains connected while visitors cross into the shared world')
 assert.ok(staff.includes('<BurningRiverOfficialGateway staff staffHref=')&&
  visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode} onCustomerDoor='),
@@ -121,4 +121,4 @@ for(const repeated of ['System Switch · The Crossing','Enter the Living Company
  assert.ok(!gate.includes(repeated),'Do not duplicate text already in official image: '+repeated)
 }
 assert.ok(!visitor.includes('Browse existing commissioned Customer Doors'),'Customer Door browsing is reached from the official image, not a second heading')
-assert.ok(visitor.includes('customerDoorsOpen&&<section')&&visitor.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus}/>'),'Public Customer Door image button reveals existing real Client door data')
+assert.ok(visitor.includes('customerDoorsOpen&&<section')&&visitor.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>'),'Public Customer Door image button reveals existing real Client door data')
