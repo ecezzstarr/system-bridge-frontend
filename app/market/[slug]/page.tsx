@@ -37,11 +37,11 @@ export default async function PublicClientMarketStore({
     LIMIT 1
   `
   if(!store)notFound()
-  // Existing shared Client Store links enter the avatar System Switch first.
+  // Public Store links cross through the one shared Burning River land.
   // Preserve Legion attribution and real order confirmation/checkout routes.
-  if(store.world_host_customer_market&&query.checkout!=='1'&&!query.order){
+  if(store.world_host_customer_market&&query.checkout!=='1'&&!query.order&&query.via!=='system-switch'){
     const legion=typeof query.legion==='string'?query.legion.trim().slice(0,80):''
-    redirect('/system-switch/customer-doors?entrance=market&door='+encodeURIComponent(slug)+
+    redirect('/flame-event/world?door='+encodeURIComponent(slug)+
       (legion?'&legion='+encodeURIComponent(legion):''))
   }
 
