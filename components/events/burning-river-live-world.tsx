@@ -191,7 +191,6 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,o
   useEffect(()=>{
     camera.position.set(focal.x+12,focal.y+(focus==='food'?14:20),focal.z+(focus==='food'?19:23))
     camera.lookAt(focal.x,focal.y,focal.z)
-    camera.updateProjectionMatrix()
   },[camera,focus,focal.x,focal.y,focal.z])
   const byId=useMemo(()=>new Map(domains.map(d=>[d.domainId,d])),[domains])
   return <>
