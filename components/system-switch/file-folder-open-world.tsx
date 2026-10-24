@@ -148,6 +148,8 @@ export default function FileFolderOpenWorld({
     operating_model:String(initialWorld?.businessFormation?.operating_model||''),
   })
   const [blueprintSearch,setBlueprintSearch]=useState('')
+  const [premiumFocusBlueprint,setPremiumFocusBlueprint]=useState('')
+  const [premiumFocusMaterial,setPremiumFocusMaterial]=useState('')
   const [buildDrafts,setBuildDrafts]=useState<Record<string,{title:string;purpose:string}>>({})
   const { recordOutput } = usePresenceCamera()
   const buildStateRef=useRef<Map<string,string>>(new Map())
@@ -264,10 +266,12 @@ export default function FileFolderOpenWorld({
       onWorldChange?.(body.world)
       emitWeaveMotion(body.motion||fileFolderMotion(String(payload?.action||'')))
       setMessage('Movement recorded in the Main File Folder.')
+      return true
     } catch (error: any) {
       const label=error?.message||'Movement failed'
       emitWeaveMotion({kind:'interruption',label,intensity:.65,confirmed:true,source:'file-folder'})
       setMessage(label)
+      return false
     } finally {
       setBusy('')
     }
@@ -304,6 +308,8 @@ export default function FileFolderOpenWorld({
   }
   const buildPartItems = (world?.items || []).filter((item:any)=>item.build_effect!=='speed_boost'&&isCapabilityPart(item))
   const buildMarketItems = (world?.items || []).filter((item: any) => item.build_effect !== 'speed_boost'&&!isCapabilityPart(item))
+    .sort((a:any,b:any)=>fileFolderTier==='premium'?Number(b.item_key===premiumFocusMaterial)-Number(a.item_key===premiumFocusMaterial):0)
+  const premiumFocusRecord=(world?.blueprints||[]).find((item:any)=>item.blueprint_key===premiumFocusBlueprint)
   const boostItems = (world?.items || []).filter((item: any) => item.build_effect === 'speed_boost')
   const filteredBlueprints = (world?.blueprints || []).filter((blueprint:any)=>{
     const query=blueprintSearch.trim().toLowerCase()
@@ -437,6 +443,21 @@ export default function FileFolderOpenWorld({
         </nav>
 
         <div id="file-folder-workspace" className="scroll-mt-28 p-3 sm:p-4 md:p-6">
+          {fileFolderTier==='premium'&&<div className="mb-5 rounded-xl border border-[#d6ab67]/35 bg-[#b58a4f]/[.085] p-4 text-sm leading-6 text-[#eddbbf]" data-premium-workshop-guidance="active-step">
+            <p className="font-bold text-[#f5d6a0]">Premium · {visibleDistricts.find(item=>item.key===district)?.label||'Your Workshop'}</p>
+            <p className="mt-1">{district==='blueprint_foundry'?'Choose a blueprint and inspect its full Acquire & Build Price. Purchase kits only if your inventory lacks them.'
+              :district==='build_market'?'Purchase the exact required kit below. Then return to your chosen blueprint to begin building.'
+              :district==='formation_yard'?'Your confirmed builds form here in real time. Install compatible purchased parts or boosts on a selected live build.'
+              :district==='active_systems'?'Completed systems appear here. Operate them and record genuine outputs.'
+              :district==='parts_workshop'?'Parts extend the capabilities of an active build. Purchase compatible parts, then install them in Construction Yard.'
+              :district==='boost_bay'?'Boosts change time on an active build. Purchase here, install in Construction Yard.'
+              :district==='workshop_core'?'Recognize the business you own before choosing the technology you need.'
+              :'This area supports the Premium File Folder you own. Continue from your active build or choose another system.'}</p>
+            {premiumFocusRecord&&<div className="mt-3 flex flex-wrap items-center gap-3 border-t border-[#d6ab67]/20 pt-3 text-xs">
+              <span>Chosen blueprint: <strong>{premiumFocusRecord.name}</strong></span>
+              <button type="button" onClick={()=>enterDistrict('blueprint_foundry')} className="rounded-lg border border-[#d6ab67]/50 px-3 py-2 font-bold">Return to chosen blueprint →</button>
+            </div>}
+          </div>}
           {message && <div role="status" aria-live="polite" className="mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-300">{message}</div>}
 
           {district==='workshop_core'&&(
@@ -576,7 +597,7 @@ export default function FileFolderOpenWorld({
                       <input value={buildDrafts[blueprint.blueprint_key]?.title||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:event.target.value,purpose:current[blueprint.blueprint_key]?.purpose||''}}))} className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder={`Business name for this system · ${blueprint.name}`}/>
                       <textarea value={buildDrafts[blueprint.blueprint_key]?.purpose||''} onChange={event=>setBuildDrafts(current=>({...current,[blueprint.blueprint_key]:{title:current[blueprint.blueprint_key]?.title||'',purpose:event.target.value}}))} rows={2} className="resize-none rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-xs text-white outline-none" placeholder="How should this system serve your business?"/>
                     </div>
-                    {fundingGateLocked ? <Link href="/client/deposit" className="mt-4 inline-flex items-center rounded-full bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950">Add Flame Credits</Link> : !hasComponents ? <button type="button" onClick={()=>{enterDistrict('build_market');setMessage(`Required material: ${blueprint.required_item_name||blueprint.required_item_key}. ${quote.purchaseAvailable?'Acquire it here, then return to Blueprint Foundry.':'This kit is unavailable for purchase. Administration needs to publish it.'} Your system name and purpose are kept.`)}} className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-300/40 px-4 py-3 text-sm text-violet-100"><Store className="h-4 w-4"/>Get required material</button> : <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={()=>act({action:'start_build',blueprint_key:blueprint.blueprint_key,title:buildDrafts[blueprint.blueprint_key]?.title||'',purpose:buildDrafts[blueprint.blueprint_key]?.purpose||''},blueprint.blueprint_key)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Build this system':'Acquire Component'}</button>}
+                    {fundingGateLocked ? <Link href="/client/deposit" className="mt-4 inline-flex items-center rounded-full bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950">Add Flame Credits</Link> : !hasComponents ? <button type="button" onClick={()=>{if(fileFolderTier==='premium'){setPremiumFocusBlueprint(blueprint.blueprint_key);setPremiumFocusMaterial(blueprint.required_item_key)}enterDistrict('build_market');setMessage(`Required material: ${blueprint.required_item_name||blueprint.required_item_key}. ${quote.purchaseAvailable?'Acquire it here, then return to Blueprint Foundry.':'This kit is unavailable for purchase. Administration needs to publish it.'} Your system name and purpose are kept.`)}} className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-300/40 px-4 py-3 text-sm text-violet-100"><Store className="h-4 w-4"/>Get required material</button> : <button disabled={busy===blueprint.blueprint_key || !canStart} onClick={async()=>{if(fileFolderTier==='premium'){setPremiumFocusBlueprint(blueprint.blueprint_key);setPremiumFocusMaterial(blueprint.required_item_key)}const started=await act({action:'start_build',blueprint_key:blueprint.blueprint_key,title:buildDrafts[blueprint.blueprint_key]?.title||'',purpose:buildDrafts[blueprint.blueprint_key]?.purpose||''},blueprint.blueprint_key);if(started&&fileFolderTier==='premium')enterDistrict('formation_yard')}} className="mt-4 inline-flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white disabled:opacity-35"><Hammer className="h-3.5 w-3.5"/>{busy===blueprint.blueprint_key?'Starting…':fundingGateLocked?'Add Flame Credits':hasComponents?'Build this system':'Acquire Component'}</button>}
                   </div>
                 })}
               </div>
@@ -587,6 +608,11 @@ export default function FileFolderOpenWorld({
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-emerald-300">Materials Depot</p>
               <h3 className="mt-2 text-2xl font-black">Every material has a structural consequence. Nothing enters the territory without a function.</h3>
+              {fileFolderTier==='premium'&&premiumFocusRecord&&<div className="mt-4 rounded-lg border border-[#e5bc7e]/35 bg-[#e5bc7e]/[.06] p-4 text-sm text-[#f0d8b4]">
+                <p className="font-bold">Material for {premiumFocusRecord.name}</p>
+                <p className="mt-1">Required kit: {premiumFocusRecord.required_item_name||premiumFocusMaterial}. Purchased kits are kept in your inventory; they are not charged again when starting construction.</p>
+                <button type="button" onClick={()=>enterDistrict('blueprint_foundry')} className="mt-3 rounded-lg bg-[#e6bd79] px-4 py-2.5 text-xs font-bold text-[#271a15]">Back to blueprint and build →</button>
+              </div>}
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {buildMarketItems.map((item:any) => <div key={item.item_key} className="rounded-2xl border border-emerald-300/10 bg-emerald-400/[0.035] p-5">
                   <div className="flex items-start justify-between gap-3"><div><h4 className="font-bold text-white">{item.name}</h4><p className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300">{item.category}</p></div><div className="text-right"><p className="flex items-center gap-1 text-sm font-black text-white"><Coins className="h-3.5 w-3.5 text-amber-300"/>{Number(item.price_flame_coin).toLocaleString()}</p><p className="text-[8px] text-slate-500">Flame Coin</p></div></div>
@@ -607,7 +633,8 @@ export default function FileFolderOpenWorld({
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-300">Parts Workshop</p>
               <h3 className="mt-2 text-2xl font-black">Start modest. Add capability. Keep moving.</h3>
               <p className="mt-2 max-w-3xl text-xs leading-6 text-slate-400">Parts are an open market, not a wealth gate. A Standard Client can choose inexpensive, narrower capabilities and operate them for as long as needed. More advanced parts increase capacity, automation and reach; they do not erase the value of a modest working system. Install purchased capability into a compatible active structure in Formation Yard.</p>
-              <div className="mt-4 border-l border-amber-300/20 bg-amber-300/[0.025] p-4" data-standard-growth-path="time-capital-continuum"><p className="text-[8px] font-black uppercase tracking-[.16em] text-amber-200">Standard growth path</p><p className="mt-2 text-[10px] leading-5 text-slate-400">Low capital can be exchanged for longer time and smaller capability. Operate what you can afford, preserve field evidence, earn, add parts, connect systems and expand. Enterprise remains reachable through sustained movement and recognition.</p></div>
+              {fileFolderTier==='premium'&&<p className="mt-3 text-xs text-[#ead0a5]">Premium capability parts may extend capacity or automation, but they are optional. Match each purchased part to the active system before installing it.</p>}
+              {fileFolderTier!=='premium'&&<div className="mt-4 border-l border-amber-300/20 bg-amber-300/[0.025] p-4" data-standard-growth-path="time-capital-continuum"><p className="text-[8px] font-black uppercase tracking-[.16em] text-amber-200">Standard growth path</p><p className="mt-2 text-[10px] leading-5 text-slate-400">Low capital can be exchanged for longer time and smaller capability. Operate what you can afford, preserve field evidence, earn, add parts, connect systems and expand. Enterprise remains reachable through sustained movement and recognition.</p></div>}
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {buildPartItems.map((item:any)=><div key={item.item_key} className="border-l border-sky-300/20 bg-sky-400/[0.025] p-5">
                   <div className="flex items-start justify-between gap-3"><div><p className="text-[8px] font-black uppercase tracking-[.15em] text-sky-300">{String(item.category||'build part').replaceAll('_',' ')}</p><h4 className="mt-1 font-bold text-white">{item.name}</h4></div><div className="text-right"><p className="text-sm font-black text-amber-200">{Number(item.price_flame_coin).toLocaleString()} FC</p>{item.category==='accessible_part'&&<p className="mt-1 text-[7px] font-black uppercase tracking-wider text-emerald-300">Accessible part</p>}</div></div>
