@@ -39,6 +39,25 @@ export const PLUS_FILE_FOLDER_REFERENCE = {
   message: 'A completed set of systems for immediate uses',
 } as const
 
+/**
+ * Administrator-approved Premium File Folder artwork, generated 24 October 2026.
+ * The source image is preserved in the WEAVE Library. It is a construction
+ * reference for geometry and navigation, never a flattened 3D world background.
+ * Standard, Pro and Plus use their own unrelated official references.
+ */
+export const PREMIUM_FILE_FOLDER_REFERENCE = {
+  name:'Official Premium File Folder',
+  approved:'2026-10-24',
+  referenceImage:'weave-premium-file-folder-official.png',
+  libraryPath:'/WEAVE/File-Folder/Reference/weave-premium-file-folder-official.png',
+  sha256:'17b3564a588377a18b6edc3670acacfccfaf9d443c7608c75d85d2c3973fc940',
+  dimensions:{width:1122,height:1402},
+  palette:'charcoal-black-gold',
+  composition:'Monumental black-and-gold File Folder citadel, connected terraces, waterfalls, and six working districts',
+  sixFunctions:['Build Zone','Materials Depot','Systems','Live Operations','Participation','Customer Access'],
+  operatingRule:'Every verified Premium owner enters a dedicated 3D environment. Construction, material balances and activated systems reflect the Client records, not the reference image.',
+} as const
+
 export const FILE_FOLDER_EQUIPMENT_ZONES = [
   'systems','modules','tools','people','operations','expansion',
 ] as const
