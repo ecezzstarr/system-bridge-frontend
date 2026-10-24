@@ -54,10 +54,11 @@ assert.ok(scene.includes('onWorldReady={()=>setSceneReady(true)}')&&
  scene.includes('setPlacing(true)')&&
  scene.includes('moveMyCastle'),
  'Actual Client castles and owner relocation are still part of navigable 3D')
-assert.ok(scene.includes('const href=publicHref(domain)')&&
- scene.includes("if(role==='client'&&owner?.domainId===id)")&&
- scene.includes('if(!domain.customerDoor.open'),
- 'Visitors never enter private File Folders and only commissioned public Doors open')
+assert.ok(scene.includes("role==='client'&&owner?.domainId===selectedDomain.domainId")&&
+ scene.includes('publicHref(selectedDomain)')&&
+ scene.includes('if(!domain.customerDoor.open')&&
+ scene.includes('if(!feed.domains.some(domain=>domain.domainId===id))return'),
+ 'Selecting the exterior cannot enter private File Folders; separately authorized Client and Customer Door links remain guarded')
 assert.ok(api.includes('readVerifiedClientDomains')&&
  data.includes('publicName:doorOpen&&row.public_name'),
  'The real world feed excludes private Client identity and fabricated accounts')
