@@ -11,10 +11,22 @@ import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
    Every live marker and the rotating 3D castle below comes from the verified
    System Switch public world feed. Only commissioned Doors can be entered. */
 const SCENE_HEIGHT=1672
-const SCENE_TILES=Array.from({length:10},(_,i)=>({
-  href:'/weave/open-world/scene-'+String(i).padStart(2,'0')+'.webp',
-  start:Math.floor(SCENE_HEIGHT*i/10),
-  end:Math.floor(SCENE_HEIGHT*(i+1)/10),
+const SCENE_URLS=[
+  '/weave/open-world/scene-00.webp',
+  '/weave/open-world/scene-01.webp',
+  '/weave/open-world/scene-02.webp',
+  '/weave/open-world/scene-03.webp',
+  '/weave/open-world/scene-04.webp',
+  '/weave/open-world/scene-05.webp',
+  '/weave/open-world/scene-06.webp',
+  '/weave/open-world/scene-07.webp',
+  '/weave/open-world/scene-08.webp',
+  '/weave/open-world/scene-09.webp',
+] as const
+const SCENE_TILES=SCENE_URLS.map((href,i)=>({
+  href,
+  start:Math.floor(SCENE_HEIGHT*i/SCENE_URLS.length),
+  end:Math.floor(SCENE_HEIGHT*(i+1)/SCENE_URLS.length),
 }))
 const finish=(number:number,min:number,max:number)=>Math.max(min,Math.min(max,number))
 function plot(domain:PublicWorldDomain){
