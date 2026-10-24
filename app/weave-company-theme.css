@@ -1,0 +1,170 @@
+/*
+ * WEAVE of Presence — one company world
+ *
+ * Permanent palette: porcelain and cloud white, living river blue and warm gold.
+ * Loop 1: soft flowing flame light is an atmosphere, not a separate wallpaper.
+ * Existing Standard / Pro / Premium / Plus 3D materials and actual photographs
+ * are NEVER tinted, filtered, replaced or covered by the global theme.
+ *
+ * Keep dark, readable functional controls and real 3D sky/terrain intact.
+ * One Nigerian Loop 2 owns the green-white-green override.
+ */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) {
+  --weave-company-river: #237bb7;
+  --weave-company-ink: #183b55;
+  --weave-company-gold: #b28643;
+  --weave-company-gold-line: rgba(192, 152, 86, .36);
+  --weave-company-porcelain: #f2f9fe;
+  --weave-company-glow: rgba(255, 217, 141, .34);
+  --weave-world-base: #eaf6fc;
+  --weave-world-line: rgba(193, 159, 91, .22);
+  --presence-glow: #57afe0;
+  --field-border: rgba(181, 146, 89, .29);
+  background: #eaf6fc;
+}
+
+/* The background belongs to the ROOT application, so the area above and
+   below the homepage as well as the exposed world behind each route shares
+   exactly the same light-and-water foundation. No dark viewport gutters. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) body {
+  background:
+    radial-gradient(ellipse 75% 45% at 4% 6%, rgba(125, 199, 245, .20), transparent 75%),
+    radial-gradient(ellipse 58% 45% at 94% 8%, rgba(251, 208, 126, .18), transparent 80%),
+    linear-gradient(180deg, #eef8ff 0%, #fffefa 44%, #edf7fc 100%);
+}
+
+/* Shared living canvas: genuine river and gentle fire illumination without
+   the dark full-screen base / vignette from the former navy-root theme. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-field {
+  background:
+    radial-gradient(ellipse at var(--weave-flame-x) var(--weave-flame-y),
+      rgba(255, 222, 163, .23), transparent 56%),
+    radial-gradient(ellipse at 28% 80%, rgba(65, 163, 224, .13), transparent 75%),
+    linear-gradient(180deg, #ecf7fd, #fffefa 49%, #eaf7fc);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-vignette {
+  background:
+    radial-gradient(ellipse 47% 25% at 88% 7%, rgba(248, 200, 122, .11), transparent 90%),
+    linear-gradient(90deg, rgba(79,165,220,.06), transparent 20% 80%, rgba(79,165,220,.05));
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-canvas {
+  filter: none;
+  opacity: .21;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-current-a {
+  opacity: .42;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-current-b {
+  opacity: .30;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-live-flame-core {
+  background: radial-gradient(ellipse at 52% 78%,
+    rgba(255,238,199,.23) 0 11%, rgba(250,194,101,.17) 26%,
+    rgba(81,172,230,.055) 53%, transparent 73%);
+}
+
+/* Physical World districts and workspaces share a gold/river framing and the
+   same atmospheric motion. Functional text keeps its existing light-on-dark
+   contrast inside these operating stations; never invert forms blindly. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell,.weave-environment-surface
+) {
+  background: transparent;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world {
+  background:
+    radial-gradient(ellipse 60% 34% at 90% 5%, rgba(245, 194, 100, .20), transparent 83%),
+    radial-gradient(ellipse 50% 32% at 5% 94%, rgba(50, 178, 231, .30), transparent 87%),
+    linear-gradient(165deg, rgba(9,41,65,.91), rgba(13,80,107,.90) 55%, rgba(7,37,63,.92));
+  box-shadow: inset 0 0 0 1px rgba(220, 182, 120, .16);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world :is(
+  .weave-dashboard-position,[data-role-presence-gate],[data-role-district]
+) {
+  border-color: rgba(218, 180, 112, .30);
+  box-shadow: inset 0 1px 0 rgba(255, 245, 218, .09);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-header,.weave-sidebar,.weave-client-nav,
+  .weave-environment-panel,.weave-reading-surface,.field-surface,
+  [data-slot="card"]
+) {
+  border-color: rgba(215, 177, 111, .35);
+  background: linear-gradient(138deg, rgba(24,87,117,.81),rgba(13,43,74,.90));
+  box-shadow: 0 12px 34px rgba(20,61,90,.13), inset 0 1px 0 rgba(246,224,168,.10);
+}
+/* Dialogs, dropdowns, sensitive inputs and payment controls keep opaque,
+   accessible dark surfaces. Only refine their gold trim. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  [data-slot="dialog-content"],[data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],[data-slot="sheet-content"]
+) {
+  background: #0c2d49;
+  border-color: rgba(220,179,109,.38);
+}
+
+/* Public entry paths use the shared signature while retaining their original
+   official artwork, foreground text contrast, working links and 3D assets. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  [data-public-lifestyle-catalog],[data-public-flame-preview-world],
+  [data-weave-open-world="system-switch"],[data-system-switch-gate="burning-river"]
+) {
+  border-top: 1px solid rgba(226,188,124,.36);
+  background-color: #103b5b;
+  background-image:
+    radial-gradient(ellipse 40% 18% at 86% 3%, rgba(243,189,99,.17), transparent 95%),
+    linear-gradient(145deg, rgba(17,80,108,.94), rgba(7,42,69,.94) 56%,rgba(21,88,112,.92));
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  [data-public-lifestyle-catalog],[data-public-flame-preview-world],
+  [data-weave-open-world="system-switch"],[data-system-switch-gate="burning-river"]
+) :is(a,button):focus-visible {
+  outline: 2px solid #f5c77e;
+  outline-offset: 3px;
+}
+
+/* Shared navigation and entrance contrast: no recolouring of official logos. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav {
+  background:
+    radial-gradient(ellipse 48% 190% at 90% 0%, rgba(242,198,115,.24), transparent),
+    linear-gradient(104deg, rgba(240,249,255,.96), rgba(255,254,248,.97) 53%, rgba(227,243,252,.96));
+  border-bottom: 1px solid var(--weave-company-gold-line);
+  box-shadow: 0 7px 24px rgba(29,92,127,.10);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav a:not(:first-child) {
+  color: #214c68;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav a:hover {
+  color: #8a5e27;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(.weave-home-nav,.weave-home-footer) .weave-logo-live {
+  padding: .25rem .5rem;
+  border-radius: .4rem;
+  background: linear-gradient(100deg,#184968,#286c92);
+  box-shadow: inset 0 0 0 1px rgba(255,219,151,.21);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-footer {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(89,176,225,.19), transparent 75%),
+    linear-gradient(100deg, #edf8fd, #fffdf6 52%, #eaf6ff);
+  border-top: 1px solid var(--weave-company-gold-line);
+  box-shadow: none;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-footer p {
+  color: #214c68;
+}
+/* Override dark utility text only on the light public nav; leave official
+   image tags, assets and all private operating pages untouched. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-home-nav [class*="border-sky"] {
+  border-color: rgba(187,148,81,.4);
+}
+
+/* Loop 2 receives the Nigerian flag and green field, never River/Gold override.
+   The older core Loop 2 rules in weave-theme.css remain authoritative. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-weave-app-theme="river-gold"] .weave-live-flame-canvas,
+  html[data-weave-app-theme="river-gold"] .weave-live-flame-core {
+    animation: none;
+    transition: none;
+  }
+}
