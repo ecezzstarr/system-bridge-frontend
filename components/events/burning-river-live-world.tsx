@@ -13,7 +13,7 @@ import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import {visiblePoll} from '@/lib/visible-poll'
 import {verifyCastlePlacement,type PublicWorldDomain} from '@/lib/weave-open-world-domains'
-import {ArrowRight,Castle,Handshake,Layers3,MapPinned,RefreshCcw,ShieldCheck,Store,Waves} from 'lucide-react'
+import {ArrowRight,Castle,Handshake,Layers3,RefreshCcw,ShieldCheck,Store} from 'lucide-react'
 
 type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:string;direction:'incoming'|'outgoing';requestNote:string}
 type JointProject={id:string;connectionId:string;kind:string;title:string;status:'proposed'|'active';createdBySelf:boolean;otherDomainId:string;ownContribution:boolean;partnerContribution:boolean}
@@ -392,7 +392,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-[#061225]/85 to-transparent px-3 pb-12 pt-3">
        <div className="flex items-center justify-between gap-2 text-[11px]">
          <span className="rounded-md bg-[#061225]/80 px-2 py-1.5 font-bold text-amber-100">
-           WEAVE Open World <span className="text-sky-100/75">· {feed.domains.length} castles</span>
+           WEAVE Open World <span className="text-sky-100/75">· {feed.domains.length} {feed.domains.length===1?'castle':'castles'}</span>
          </span>
          <span className="rounded-md bg-[#061225]/70 px-2 py-1.5 text-amber-100">Burning River</span>
        </div>
