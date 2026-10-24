@@ -2,7 +2,7 @@
 
 import {Suspense,useEffect} from 'react'
 import Link from 'next/link'
-import {Html,Text,useTexture} from '@react-three/drei'
+import {Html,useTexture} from '@react-three/drei'
 import * as THREE from 'three'
 import {BURNING_RIVER_FOOD_PRODUCTS,BURNING_RIVER_FARM,burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
 
@@ -93,11 +93,14 @@ export function BurningRiverFoodStore3D({carrierCode}:{carrierCode?:string|null}
       <boxGeometry args={[10.7,.48,.20]}/>
       <meshStandardMaterial color="#e7b75d" emissive="#a66e20" emissiveIntensity={.4} metalness={.4}/>
     </mesh>
-    <Text position={[0,8.68,1.22]} fontSize={.69} maxWidth={10} anchorX="center" color="#ffe1a0"
-      outlineWidth={.015} outlineColor="#081d26">WEAVE FOOD STORE</Text>
-    <Text position={[0,7.87,1.8]} fontSize={.17} maxWidth={10} anchorX="center" color="#fff3d1">
-      Real product imagery · Agent ordering
-    </Text>
+    {/* Drei Text downloads a font before mounting the scene. Local HTML lettering
+        avoids freezing the entire Open World on phones or blocked font networks. */}
+    <Html center position={[0,8.68,1.55]} distanceFactor={15} style={{pointerEvents:'none'}}>
+      <span className="whitespace-nowrap rounded-md bg-[#09211d]/90 px-3 py-1 text-center text-sm font-black tracking-wide text-amber-100">WEAVE FOOD STORE</span>
+    </Html>
+    <Html center position={[0,7.87,1.8]} distanceFactor={14} style={{pointerEvents:'none'}}>
+      <span className="whitespace-nowrap bg-[#09211d]/85 px-2 py-1 text-[10px] font-bold text-amber-50">Real product imagery · Agent ordering</span>
+    </Html>
     <Suspense fallback={<PhotoLoading/>}>
       <FoodPhotos carrierCode={carrierCode}/>
     </Suspense>
@@ -108,12 +111,12 @@ export function BurningRiverFoodStore3D({carrierCode}:{carrierCode?:string|null}
         <planeGeometry args={[2.8,1.83]}/>
         <meshStandardMaterial color="#255449" emissive="#164036" emissiveIntensity={.4}/>
       </mesh>
-      <Text position={[0,.27,.045]} fontSize={.28} maxWidth={2.6} color="#ddf8d5" anchorX="center">
-        FARM PRODUCE
-      </Text>
-      <Text position={[0,-.28,.045]} fontSize={.17} maxWidth={2.4} color="#f6e8ba" anchorX="center">
-        Live supplier listings
-      </Text>
+      <Html center position={[0,.27,.08]} distanceFactor={10} style={{pointerEvents:'none'}}>
+        <span className="whitespace-nowrap text-xs font-black text-emerald-100">FARM PRODUCE</span>
+      </Html>
+      <Html center position={[0,-.28,.08]} distanceFactor={10} style={{pointerEvents:'none'}}>
+        <span className="whitespace-nowrap text-[10px] font-bold text-amber-100">Live supplier listings</span>
+      </Html>
       <Html center position={[0,-1.31,.12]} distanceFactor={12} style={{pointerEvents:'auto'}} zIndexRange={[35,15]}>
         <Link href={burningRiverFoodHref(carrierCode,BURNING_RIVER_FARM.anchor)}
           data-flame-food-order="farm" className="block min-w-24 rounded-md border border-emerald-100/45 bg-[#092622]/95 px-2 py-1.5 text-center text-[10px] font-bold text-emerald-100">
