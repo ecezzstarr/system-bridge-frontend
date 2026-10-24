@@ -113,7 +113,47 @@ function CentralPremiumCitadel(){
   </Text>
  </group>
 }
-function Scene({selected,onSelect,builds,systems}:{selected:StationKey;onSelect:(id:StationKey)=>void;builds:RecordRow[];systems:RecordRow[]}){
+/** Only actual Client records can add construction and operational structures. */
+function VerifiedStructures({builds,systems,now,onEnter}:{builds:RecordRow[];systems:RecordRow[];now:number;onEnter:(district:string)=>void}){
+ const active=builds.filter(b=>b.status==='building')
+ const commissioned=systems.filter(s=>s.status==='active'||s.status==='complete')
+ return <>
+  {active.slice(0,6).map((record,index)=>{
+   const progress=Math.max(0,Math.min(100,buildFormationProgress(record,now)))
+   const builtHeight=Math.max(.2,progress/100*2.8)
+   const x=-11+(index%3)*5.6,z=18+Math.floor(index/3)*4.8
+   return <group key={record.id||index} position={[x,0,z]}
+    onClick={event=>{event.stopPropagation();onEnter('formation_yard')}}>
+    <mesh position={[0,.1,0]}><boxGeometry args={[3.2,.3,2.8]}/><GoldMaterial color="#b79a74"/></mesh>
+    <mesh position={[0,.28+builtHeight/2,0]}><boxGeometry args={[2.0,builtHeight,1.7]}/>
+     <GoldMaterial color="#393340"/></mesh>
+    {[-1.25,1.25].map(dx=><mesh key={dx} position={[dx,1.55,0]}>
+      <boxGeometry args={[.09,3,.09]}/><GoldMaterial/></mesh>)}
+    <mesh position={[0,3.02,0]}><boxGeometry args={[2.75,.12,.12]}/><GoldMaterial/></mesh>
+    <Text position={[0,3.6,0]} fontSize={.28} color="#fff0d2" maxWidth={3.5}
+     anchorX="center" outlineWidth={.013} outlineColor="#2c2222">
+     {(record.title||'Building').slice(0,35)+' · '+Math.round(progress)+'%'}
+    </Text>
+   </group>
+  })}
+  {commissioned.slice(0,6).map((record,index)=>{
+   const x=6+(index%3)*5.1,z=18+Math.floor(index/3)*4.6
+   return <group key={record.id||index} position={[x,0,z]}
+    onClick={event=>{event.stopPropagation();onEnter('active_systems')}}>
+    <mesh position={[0,.13,0]}><boxGeometry args={[3,.3,2.7]}/><GoldMaterial color="#ab915f"/></mesh>
+    <mesh position={[0,1.5,0]} castShadow><boxGeometry args={[2.2,2.7,1.7]}/><GoldMaterial color="#253642"/></mesh>
+    <mesh position={[0,2.95,0]}><boxGeometry args={[2.5,.25,2]}/><GoldMaterial/></mesh>
+    <mesh position={[0,1.75,.89]}><planeGeometry args={[1.4,1.25]}/><GoldMaterial color="#a8e9da" glass/></mesh>
+    <Text position={[0,3.5,0]} fontSize={.28} color="#fff0d2" maxWidth={3.5}
+     anchorX="center" outlineWidth={.013} outlineColor="#2c2222">
+     {(record.title||'Operating system').slice(0,35)}
+    </Text>
+   </group>
+  })}
+ </>
+}
+
+function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationKey;onSelect:(id:StationKey)=>void;builds:RecordRow[];systems:RecordRow[];now:number;onEnter:(district:string)=>void}){
  const live=systems.filter(s=>s.status==='active'||s.status==='complete').length
  return <>
   <color attach="background" args={['#8d8890']}/>
@@ -145,6 +185,7 @@ function Scene({selected,onSelect,builds,systems}:{selected:StationKey;onSelect:
   })}
   <Waterfalls/>
   <CentralPremiumCitadel/>
+  <VerifiedStructures builds={builds} systems={systems} now={now} onEnter={onEnter}/>
   {Array.from({length:12},(_,i)=>{
    const a=i/12*Math.PI*2
    const x=Math.sin(a)*21,z=Math.cos(a)*21
@@ -190,7 +231,7 @@ export default function FileFolderPremiumWorld({
   <div className="h-[390px] w-full sm:h-[540px]" aria-label="Interactive Premium black-and-gold citadel, six operating districts, water, connected terraces and ongoing verified construction">
    <Canvas camera={{position:[26,22,30],fov:47,near:.1,far:140}}
     dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:'high-performance'}}>
-    <Scene selected={selected} onSelect={setSelected} builds={builds} systems={systemRecords}/>
+    <Scene selected={selected} onSelect={setSelected} builds={builds} systems={systemRecords} now={now} onEnter={go}/>
    </Canvas>
   </div>
   <div className="border-t border-[#b99355]/30 bg-[#252029] p-4 sm:p-5">
