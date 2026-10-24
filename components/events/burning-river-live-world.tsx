@@ -355,15 +355,12 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    }catch(error){setOperation(error instanceof Error?error.message:'Your previous castle position is unchanged.')}
    finally{setBusy(false)}
  }
+ // Selection is not authorization. An illustrated or 3D castle first opens
+ // its verified exterior and available entrances; entering a private folder
+ // or commissioned Customer Door always requires a deliberate second action.
  const tapCastle=(id:string)=>{
+   if(!feed.domains.some(domain=>domain.domainId===id))return
    setSelected(id)
-   if(placing)return
-   const domain=feed.domains.find(d=>d.domainId===id)
-   if(!domain)return
-   if(role==='client'&&!owner)return
-   if(role==='client'&&owner?.domainId===id){window.location.assign('/client/system-switch');return}
-   const href=publicHref(domain)
-   if(href)window.location.assign(href)
  }
  const incoming=owner?.connections.filter(c=>c.status==='pending'&&c.direction==='incoming')||[]
  const accepted=owner?.connections.filter(c=>c.status==='accepted')||[]
@@ -385,9 +382,20 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
        onShowCommunity={()=>setDetailsOpen(true)}
        onShowGuide={()=>setHelpOpen(open=>!open)}
        onCustomerDoor={()=>{
-         const door=feed.domains.find(domain=>Boolean(publicHref(domain)))
-         if(door){setSelected(door.domainId);const href=publicHref(door);if(href)window.location.assign(href)}
-         else{setOperation('No commissioned Customer Door is available in this area yet.');setDetailsOpen(true)}
+         // The selected castle takes precedence. Never silently transfer a
+         // visitor into an unrelated Client's commercial Door.
+         const domain=feed.domains.find(d=>d.domainId===selected)
+         if(domain){
+           const href=publicHref(domain)
+           if(href){window.location.assign(href);return}
+           setOperation('This Client Customer Door is not yet publicly commissioned.')
+           setDetailsOpen(true)
+           return
+         }
+         const door=feed.domains.find(d=>Boolean(publicHref(d)))
+         if(door){setSelected(door.domainId);return}
+         setOperation('No commissioned Customer Door is available in this area yet.')
+         setDetailsOpen(true)
        }}/>:<>
        {/* The atlas art is an illustrated map. This mode is the navigable,
            physically rendered 3D WEAVE terrain and real Client castles. */}
@@ -442,7 +450,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
        className="absolute bottom-14 right-3 inline-flex min-h-11 items-center rounded-lg border border-amber-200/50 bg-[#07231c]/95 px-3 text-xs font-black text-amber-100 shadow-xl">
        {carrierCode?'Order through my Agent':'Choose a Food Agent'} <ArrowRight className="ml-2 h-4 w-4"/>
      </Link>}
-     {selectedDomain&&focus==='world'&&<div className="absolute bottom-14 right-3 z-10 w-[min(280px,calc(100%-1.5rem))] rounded-xl border border-amber-200/40 bg-[#081c2a]/95 p-3 shadow-xl" data-open-world-selected-building={selectedDomain.domainId}>
+     {selectedDomain&&focus==='world'&&<div className={`absolute right-3 z-30 w-[min(280px,calc(100%-1.5rem))] rounded-xl border border-amber-200/50 bg-[#081c2a]/95 p-3 shadow-xl ${landMode==='atlas'?'bottom-[17%]':'bottom-14'}`} data-open-world-selected-building={selectedDomain.domainId}>
        <p className="truncate text-xs font-black text-amber-100">{selectedDomain.publicName}</p>
        <p className="mt-1 text-[11px] capitalize text-sky-100/70">{selectedDomain.tier} · {stageLabel[selectedDomain.stage]}</p>
        {role==='client'&&owner?.domainId===selectedDomain.domainId?
