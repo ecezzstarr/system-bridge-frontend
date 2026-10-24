@@ -18,7 +18,7 @@ import {ArrowRight,Castle,Handshake,Layers3,MapPinned,RefreshCcw,ShieldCheck,Sto
 type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:string;direction:'incoming'|'outgoing';requestNote:string}
 type JointProject={id:string;connectionId:string;kind:string;title:string;status:'proposed'|'active';createdBySelf:boolean;otherDomainId:string;ownContribution:boolean;partnerContribution:boolean}
 type OwnOperatingSystem={id:string;name:string;systemType:string}
-type OwnWorld={domainId:string;collaborationOpen:boolean;connections:Connection[];projects:JointProject[];ownSystems:OwnOperatingSystem[]}
+type OwnWorld={domainId:string;worldSlot:number;collaborationOpen:boolean;connections:Connection[];projects:JointProject[];ownSystems:OwnOperatingSystem[]}
 type WorldFeed={domains:PublicWorldDomain[];links:{from:string;to:string}[];hasMore:boolean;event?:{label:string;status:string}}
 const palette:{[key:string]:[string,string,string]}={
   standard:['#8799b5','#d5dfec','#62a8d9'],
@@ -269,7 +269,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      {headers:token?{Authorization:'Bearer '+token}:{},signal,cache:'no-store'})
    if(!response.ok)return
    const json=await response.json()
-   if(json.success)setOwner({domainId:json.domainId,
+   if(json.success)setOwner({domainId:json.domainId,worldSlot:Number(json.worldSlot)||1,
      collaborationOpen:json.collaborationOpen,connections:json.connections||[],
      projects:json.projects||[],ownSystems:json.ownSystems||[]})
  },[role])
@@ -369,6 +369,10 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
        </div>
      </div>
      {role==='client'&&owner&&<div className="absolute right-3 top-16 z-20 flex max-w-[57%] flex-col gap-2" data-client-world-castle-relocation="owner-only">
+       {!placing&&<button type="button" className="min-h-10 rounded-xl border border-amber-200/40 bg-[#112b36]/95 px-3 text-xs font-bold text-amber-100"
+          onClick={()=>{setFocus('world');setPage(Math.max(0,Math.floor((owner.worldSlot-1)/48)));setSelected(owner.domainId)}}>
+          Find my castle
+       </button>}
        {!placing?<button type="button" className="min-h-11 rounded-xl border border-cyan-200/45 bg-[#092a36]/95 px-3 text-xs font-black text-cyan-100"
          onClick={()=>{setSelected(owner.domainId);setFocus('world');setPlacing(true);setCandidate(null);setOperation('Tap an empty area of land to preview your castle position.')}}>
          Position my castle
