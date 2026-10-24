@@ -30,6 +30,10 @@ assert.match(clientGuard,/if \(isPublic\) return/)
 assert.match(eventWorld,/data-flame-event-staff-flow="role-directed"/)
 assert.match(eventWorld,/data-flame-event-system-switch-entry="true"/)
 assert.match(eventWorld,/ROLE_WORK_ENTRANCES\[role\]/)
+assert.match(eventWorld,/data-flame-event-compact-entrance="true"/)
+for (const removed of ['Your Loop 1 Position','River Bank · Functions','Movement Current','Staff Customer Door current','<FlameFoodCurrent />','The River that Burns']) {
+  assert.ok(!eventWorld.includes(removed), 'The removed event information must not reappear: '+removed)
+}
 assert.match(gate,/const backHref = '\/event'/)
 assert.match(staffWorkspace,/data-verified-employment-workspace="true"/)
 assert.match(clientStaffWorkspace,/\/api\/client\/staff-workspace/)
