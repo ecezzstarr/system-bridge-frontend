@@ -31,7 +31,7 @@ assert.ok(land.includes('CanvasTexture')&&land.includes('LandMaterial')&&land.in
 assert.ok(visual.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>'),'Physical landscape is mounted under Client domains')
 assert.ok(!visual.includes("backgroundImage:\"url('/weave/flame-event/burning-river-open-world-official.webp')"),'The reference image is not rendered as an image wallpaper behind fake world geometry')
 assert.ok(visual.includes('new THREE.ShaderMaterial')&&visual.includes('water.uniforms.time.value'),'Event water and fire move on actual 3D surfaces')
-assert.ok(visual.includes('<DomainCastle')&&visual.includes('selectedDomain.customerDoor.open'),'Real Client-built world and commissioned Customer Door gates remain clickable')
+assert.ok(visual.includes('<DomainCastle')&&visual.includes('publicHref(selectedDomain)')&&visual.includes('tapCastle'),'Real Client-built world and commissioned Customer Door gates remain clickable')
 assert.ok(visual.includes('requestedDoor')&&visual.includes('setSelected(match.domainId)'),'A direct Client link focuses the actual public building')
 assert.ok(visual.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&food.includes('data-weave-real-food-photo-panels'),'Existing real product photos stay inside the 3D store')
 assert.ok(visual.includes('data-weave-food-direct-carrier-order="true"'),'A compact Carrier purchase link is kept in the open world')
