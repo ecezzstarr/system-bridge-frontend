@@ -58,7 +58,7 @@ const api=read('app/api/events/flame/open-world/route.ts')
 const client=read('app/api/client/company-loop-connections/route.ts')
 const map=read('components/events/burning-river-live-world.tsx')
 const gate=read('components/events/burning-river-official-gateway.tsx')
-const route=read('app/flame-event/world/page.tsx')
+const route=read('app/system-switch/world/page.tsx')
 const staff=read('components/events/position-event-world.tsx')
 const visitor=read('components/events/flame-event-public-mobile.tsx')
 const migration=read('migrations/20261023_burning_river_open_world_domains.sql')
@@ -92,13 +92,13 @@ assert.ok(!map.includes('WeaveEmbodiedAvatar')&&!map.includes('joystick')&&!map.
 assert.ok(gate.includes("burning-river-crossing-official.webp")&&
  map.includes("burning-river-open-world-official.webp"),
  'Both official approved images are referenced; no alternate concept image')
-assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode}/>'),
+assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>'),
  'Clickable crossing opens real shared world route')
 assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
  route.includes('carrierCode={carrierCode}')&&map.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),
  'Agent Carrier attribution remains connected while visitors cross into the shared world')
 assert.ok(staff.includes('<BurningRiverOfficialGateway staff staffHref=')&&
- visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode} onCustomerDoor='),
+ visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),
  'Same worlds accessible from staff and public entrances')
 assert.ok(client.includes('validWriteOrigin(request)') &&
  client.includes("url.host===(request.headers.get('host')||request.nextUrl.host)"),
@@ -121,4 +121,4 @@ for(const repeated of ['System Switch · The Crossing','Enter the Living Company
  assert.ok(!gate.includes(repeated),'Do not duplicate text already in official image: '+repeated)
 }
 assert.ok(!visitor.includes('Browse existing commissioned Customer Doors'),'Customer Door browsing is reached from the official image, not a second heading')
-assert.ok(visitor.includes('customerDoorsOpen&&<section')&&visitor.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>'),'Public Customer Door image button reveals existing real Client door data')
+assert.ok(visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>')&&gate.includes("const customerHref=worldHref+'#domains'"),'Public Customer Door image button reveals existing real Client door data')

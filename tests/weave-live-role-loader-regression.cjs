@@ -43,7 +43,7 @@ assert.ok(guide.includes('export function BridgerSmartGuide')&&guide.includes('d
 assert.ok(guide.includes('roleOperatingGuideForPath(role,pathname)'),'Guide changes when the destination changes')
 assert.ok(layout.includes('<BridgerSmartGuide userId={user.id}/>')&&layout.includes('!legionEmployment?.active'),'Exclusive Legions do not receive ordinary Bridger work guidance')
 const client=read('app/client/system-switch/page.tsx')
-assert.ok(client.includes('data-client-return-weave-open-world')&&client.includes('href="/client/dashboard"'),'Client can return from an active File Folder')
+assert.ok(client.includes('data-client-return-weave-open-world')&&client.includes('href="/system-switch/world"'),'Client can return from an active File Folder')
 assert.ok(client.includes('data-client-loading-with-open-world-return'),'Client can also return while a File Folder is still loading')
 assert.ok(client.includes('Return to Weave Open World'))
 const folderLoader=read('components/system-switch/file-folder-environment-loader.tsx')

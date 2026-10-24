@@ -90,7 +90,7 @@ export async function GET(request:NextRequest){
       ORDER BY b.activated_at DESC LIMIT 40
     `
     return NextResponse.json({
-      success:true,domainId:String(domain.id),
+      success:true,domainId:String(domain.id),worldSlot:Number(domain.world_slot),
       collaborationOpen:domain.collaboration_open===true,
       projects:projects.map((p:any)=>({
         id:String(p.id),connectionId:String(p.connection_id),kind:p.kind,

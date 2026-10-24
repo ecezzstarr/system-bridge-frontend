@@ -510,7 +510,7 @@ export function WeaveEnvironmentTransit({children}:{children:ReactNode}){
           </p>
         </div>
 
-        {canReturnClientWorld&&destinationPath!=='/client/dashboard'&&<Link href="/client/dashboard"
+        {canReturnClientWorld&&destinationPath!=='/system-switch/world'&&<Link href="/system-switch/world"
           data-client-loader-open-world-return="true"
           className="weave-loader-return mx-auto inline-flex min-h-11 items-center justify-center rounded-full border border-amber-200/40 bg-[#071c30]/95 px-5 py-2 text-xs font-black text-amber-100">
           Return to Weave Open World <ArrowRight className="ml-2 h-4 w-4"/>

@@ -11,6 +11,7 @@ export type DomainRegion='ember_reach'|'radiant_heights'|'riverlands'|'green_val
 
 export type WorldDomainRow={
   id:string;slot:number|string;tier?:string|null;client_id?:string
+  map_x?:number|string|null;map_z?:number|string|null
   open_door?:boolean|null;public_slug?:string|null
   public_name?:string|null
   building_count?:number|string|null;completed_count?:number|string|null
@@ -31,6 +32,21 @@ export type PublicWorldDomain={
   publishedOffers:number
   collaborationAvailable:boolean
   acceptedConnections:number
+}
+export const CASTLE_CLEARANCE=10.5
+export type CastlePoint={x:number;z:number}
+/** Coordinates belong to the WEAVE land, never a device GPS position. */
+export function verifyCastlePlacement(rawX:unknown,rawZ:unknown,occupied:CastlePoint[]=[]):{ok:true;point:CastlePoint}|{ok:false;reason:string}{
+  const x=Number(rawX),z=Number(rawZ)
+  if(rawX===null||rawZ===null||typeof rawX==='boolean'||typeof rawZ==='boolean'||!Number.isFinite(x)||!Number.isFinite(z))
+    return {ok:false,reason:'Choose a valid place on the WEAVE land.'}
+  if(Math.abs(x)>105||Math.abs(z)>105||Math.abs(x)<12)
+    return {ok:false,reason:'Choose land away from the river and within the WEAVE world boundary.'}
+  if(Math.hypot(x-9.1,z+5.1)<16)
+    return {ok:false,reason:'The WEAVE Food Store grounds are reserved for visitors.'}
+  if(occupied.some(p=>Math.hypot(p.x-x,p.z-z)<CASTLE_CLEARANCE))
+    return {ok:false,reason:'Another Client castle occupies this area. Leave space between buildings.'}
+  return {ok:true,point:{x:Math.round(x*100)/100,z:Math.round(z*100)/100}}
 }
 export const OPEN_WORLD_REGIONS:DomainRegion[]=[
   'ember_reach','radiant_heights','riverlands','green_valley','tidal_basin','starfall_ridge',
@@ -71,9 +87,13 @@ export function projectPublicWorldDomain(row:WorldDomainRow):PublicWorldDomain{
   const doorOpen=row.open_door===true && typeof row.public_slug==='string'&&
     /^[a-z0-9-]{1,160}$/.test(row.public_slug)
   const slot=worldLocationForSlot(Number(row.slot))
+  const positionX=row.map_x===null||row.map_x===undefined?null:Number(row.map_x)
+  const positionZ=row.map_z===null||row.map_z===undefined?null:Number(row.map_z)
+  const location=positionX!==null&&positionZ!==null&&Number.isFinite(positionX)&&Number.isFinite(positionZ)
+    ?{...slot,x:positionX,z:positionZ}:slot
   return {
     domainId:String(row.id),
-    location:slot,
+    location,
     tier,
     stage,
     buildLevel:Math.max(0,Math.floor(score)),
