@@ -6,6 +6,7 @@ import {Html,OrbitControls,Line} from '@react-three/drei'
 import {useFrame,useThree} from '@react-three/fiber'
 import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
 import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-landscape'
+import {WeaveWorldMapFallback} from '@/components/world/weave-world-map-fallback'
 import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import {burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
 import {FlameEventFoodStore} from './flame-event-food-store'
@@ -183,7 +184,16 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,o
   onSelect:(id:string)=>void
 }){
   const {camera}=useThree()
-  useEffect(()=>{camera.position.set(...(focus==='food'?[17,11,17]:[0,66,95]) as [number,number,number])},[camera,focus])
+  // Camera begins near the first verified castle, so even a single Premium
+  // domain has recognizable architecture on a narrow mobile screen.
+  const anchor=domains.find(domain=>domain.domainId===selected)||domains[0]
+  const focal=focus==='food'?{x:9.1,y:3,z:-5.1}
+    :{x:anchor?.location.x||0,y:1.3,z:anchor?.location.z||0}
+  useEffect(()=>{
+    camera.position.set(focal.x+12,focal.y+(focus==='food'?14:20),focal.z+(focus==='food'?19:23))
+    camera.lookAt(focal.x,focal.y,focal.z)
+    camera.updateProjectionMatrix()
+  },[camera,focus,focal.x,focal.y,focal.z])
   const byId=useMemo(()=>new Map(domains.map(d=>[d.domainId,d])),[domains])
   return <>
     <fog attach="fog" args={['#1a233c',112,260]}/>
@@ -209,9 +219,9 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,o
         dashed dashScale={2} dashSize={.45} gapSize={.25}/>
     })}
     <OrbitControls makeDefault enableDamping enablePan
-      minDistance={16} maxDistance={155}
+      minDistance={9} maxDistance={155}
       minPolarAngle={.2} maxPolarAngle={1.4}
-      target={focus==='food'?[9.1,3,-5.1]:[0,0,0]}/>
+      target={[focal.x,focal.y,focal.z]}/>
   </>
 }
 const stageLabel:{[key:string]:string}={
@@ -240,6 +250,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  const [operation,setOperation]=useState('')
  const [busy,setBusy]=useState(false)
  const [webgl,setWebgl]=useState<boolean|null>(null)
+ const [sceneReady,setSceneReady]=useState(false)
  const [stamp,setStamp]=useState('')
  const selectedDomain=feed.domains.find(d=>d.domainId===selected)||null
  const publicHref=(domain:PublicWorldDomain)=>{
