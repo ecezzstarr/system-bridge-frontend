@@ -6,7 +6,6 @@ import { ArrowLeft, ArrowRight, Flame } from 'lucide-react'
 import type { FlameDoorFeedStatus } from '@/components/events/flame-event-open-world'
 import { FlameEventPublicPreview, type PublicClientFolder } from '@/components/events/flame-event-public-preview'
 import { BurningRiverOfficialGateway } from '@/components/events/burning-river-official-gateway'
-import { FlameEventFoodStore } from '@/components/events/flame-event-food-store'
 
 import { visiblePoll } from '@/lib/visible-poll'
 
@@ -51,7 +50,6 @@ export function PublicFlameEventMobile({carrierCode=null}:{carrierCode?:string|n
       <summary className="cursor-pointer text-sm font-bold text-amber-200">Browse existing commissioned Customer Doors</summary>
       <FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>
     </details>
-    <FlameEventFoodStore carrierCode={carrierCode}/>
 
     {message&&<p role="status" className="border-t border-amber-200/20 px-4 py-3 text-xs text-amber-100">{message}</p>}
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-200">
