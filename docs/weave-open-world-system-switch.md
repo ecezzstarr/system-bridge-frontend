@@ -23,6 +23,17 @@ Retired `/system-switch/customer-doors` and `/system-switch/customer-doors/[slug
 ## Event separation
 The world heading is **Weave Open World**, with a secondary event label that only describes Burning River as currently taking place when the Company Loop service reports it active. No forced war-gaming, avatar/joystick controls or separate empty Customer Door Plaza.
 
+## Flame Event · Company Loop 1 department-world entrances
+Loop 1 is a shared company event, but each signed-in participant receives **only their own department-world entrance** on the event ground:
+- **Agent → Agent World** (`/agent/dashboard`) — Stability districts and active Agent functions.
+- **Bridger → Bridger World** (`/bridger/dashboard`) — Hope districts, prospect movement and Bridge AI.
+- **Administration → Administration World** (`/admin/dashboard`) — the company's supervisory, operational and organization districts.
+- **Client → Client World** (`/client/dashboard`) — Dream Lovely, File Folder and enterprise participation.
+
+The main event page `/event` receives the verified Agent/Bridger/Admin role from the session. Client Loop 1 arrival is `/client/event`, with a separate authenticated Client guard. The compact event environment renders one large **My Department World** entrance from that role, alongside *only* that role's existing work shortcuts, the official Burning River image and System Switch crossing. The latter is **not** renamed to a department world and still leads to the independent File Folder land.
+
+Direct access to other departments' dashboard-world pages is blocked by route-role rendering guards. Existing private Client world access and system APIs preserve their own authorization independently. Regression checks: `tests/flame-event-department-world-entrances.cjs` and `tests/flame-event-role-login-flow.cjs`.
+
 ## Client-owned castle placement and two-sided Customer Door
 - Every purchased Client File Folder retains its unique, permanent world slot and owner; an optional persisted `map_x/map_z` relocates only the appearance of its **castle on the shared land**. The system does not change File Numbers, accounts, payment records, workshops, store ownership or Client Customer Door privileges.
 - An authenticated Client chooses **Position my castle**, taps actual open land, previews the new site and chooses **Confirm castle position**. Cancellation never writes. The server independently validates active Client ownership, same-origin requests, map boundaries, river and WEAVE Food Store reserved areas, and clear distance from every other Client castle (including those not on the current displayed map page).
