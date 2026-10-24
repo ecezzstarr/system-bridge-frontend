@@ -31,6 +31,16 @@ assert.ok(theme.includes('.weave-dashboard-world')&&role.includes('data-role-wor
   'Agent, Bridger, Administration and Client worlds share the company field without changing roles')
 assert.ok(theme.includes('.weave-app-shell,.weave-client-shell,.weave-environment-surface'),
   'Client and staff shells must both inherit one company world')
+const operatingLifestyles=read('app/(app)/weave/lifestyles/page.tsx')
+const carrier=read('app/(app)/weave/carrier/page.tsx')
+const market=read('app/market/page.tsx')
+assert.ok(theme.includes('.weave-operating-environment') &&
+  operatingLifestyles.includes('weave-operating-environment') &&
+  carrier.includes('weave-operating-environment'),
+  'Authenticated Lifestyle and Carrier retain usable controls in one river-gold operating environment')
+assert.ok(theme.includes('[data-public-market-world]') &&
+  market.includes('data-public-market-world'),
+  'Public Customer Market must visually belong to the same WEAVE world')
 assert.ok(theme.includes('[data-public-lifestyle-catalog]')&&lifestyle.includes('data-public-lifestyle-catalog'),
   'Lifestyle shares WEAVE styling')
 assert.ok(theme.includes('[data-public-flame-preview-world]')&&publicEvent.includes('data-public-flame-preview-world'),
