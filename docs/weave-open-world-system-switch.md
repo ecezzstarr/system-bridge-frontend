@@ -8,6 +8,8 @@
 ## Canonical entry
 `/system-switch` → **System Switch Gate** for signed-in Agent, Bridger and Administration → `/system-switch/world?via=system-switch` → Client File Folder land. Visitors enter `/system-switch/world` through the official event image or public Customer Market. Clients continue entering private systems through their own client gate and may inspect public land separately.
 
+The official Burning River event image's **Customer Door hotspot** goes straight to the same System Switch WEAVE Open World; it no longer mounts a second little 3D Client preview inside the event page. The event and permanent land are separate environments.
+
 Retired `/system-switch/customer-doors` and `/system-switch/customer-doors/[slug]` are server redirects to the canonical world. Old `/flame-event/world` also redirects to the same permanent land, maintaining allowed `carrier`, `door`, `legion`, and crossing parameters.
 
 ## Physical scene and public access
