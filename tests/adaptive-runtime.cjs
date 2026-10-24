@@ -151,8 +151,18 @@ function frames(){
   assert.equal(rendered.length,count,'offscreen scenes schedule no frames')
   FrameDriver({active:true,fps:15});cleanup=effect();frame(30000)
   assert.ok(rendered.at(-1)>rendered.at(-2),'resuming preserves scene time')
-  h.document.hidden=true;frame(30100);assert.equal(callbacks.size,0)
+  h.document.hidden=true;frame(30100);assert.equal(callbacks.size,0,
+    'Hidden scene must stop requesting GPU animation frames')
+  const beforeReturn=rendered.length
+  h.document.hidden=false;h.document.emit('visibilitychange')
+  assert.equal(callbacks.size,1,'Visible scene resumes with exactly one requested frame')
+  frame(30200)
+  assert.ok(rendered.length>beforeReturn,'Returning to an open-world tab renders again')
+  assert.ok(rendered.at(-1)-rendered.at(-2)<=.10001,'Return cannot jump simulation time')
+  h.document.hidden=true;h.document.emit('visibilitychange')
+  assert.equal(callbacks.size,0,'Visibility hide cancels the queued frame immediately')
   cleanup()
+  assert.equal(h.document.count(),0,'World loop removes visibility listener on unmount')
 }
 (async()=>{await polling();await resources();await adaptation();await readiness();frames();console.log('PASS: adaptive runtime behavior, capped/offscreen rendering, request lifetimes, hidden-tab recovery and readiness cleanup')})().catch(error=>{console.error(error);process.exitCode=1})
 
