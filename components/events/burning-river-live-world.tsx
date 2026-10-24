@@ -28,28 +28,62 @@ const palette:{[key:string]:[string,string,string]}={
 const emptyFeed:WorldFeed={domains:[],links:[],hasMore:false}
 
 function MovingBurningRiver(){
-  const river=useMemo(()=>{
-    const curve=new THREE.CatmullRomCurve3(Array.from({length:18},(_,i)=>{
-      const z=-110+i*13
-      return new THREE.Vector3(Math.sin(i*.62)*6,-.25,z)
-    }))
-    return new THREE.TubeGeometry(curve,200,2.4,10,false)
-  },[])
-  useEffect(()=>()=>river.dispose(),[river])
-  const water=useMemo(()=>new THREE.MeshPhysicalMaterial({
-    color:'#2e8cc8',emissive:'#0f619e',emissiveIntensity:.5,
-    metalness:.28,roughness:.2,clearcoat:1,
-  }),[])
-  const fire=useMemo(()=>new THREE.MeshBasicMaterial({color:'#ef7e32'}),[])
-  useFrame(({clock})=>{
-    water.emissiveIntensity=.38+.23*Math.sin(clock.elapsedTime*1.9)
-    fire.color.setHSL(.055+.025*Math.sin(clock.elapsedTime*1.1),.96,.55)
-  })
-  useEffect(()=>()=>{water.dispose();fire.dispose()},[water,fire])
-  return <group data-live-burning-river="flowing-fire-and-water">
-    <mesh geometry={river} material={water}/>
-    <mesh geometry={river} material={fire} position={[1.05,-.035,0]} scale={[.38,.82,1]}/>
-  </group>
+ const river=useMemo(()=>{
+  const curve=new THREE.CatmullRomCurve3(Array.from({length:18},(_,i)=>{
+   const z=-110+i*13
+   return new THREE.Vector3(Math.sin(i*.62)*6,-.25,z)
+  }))
+  return new THREE.TubeGeometry(curve,200,2.4,10,false)
+ },[])
+ useEffect(()=>()=>river.dispose(),[river])
+ const vertex=String.raw`
+  varying vec2 vUv;
+  void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}
+ `
+ const water=useMemo(()=>new THREE.ShaderMaterial({
+  uniforms:{time:{value:0}},
+  vertexShader:vertex,
+  fragmentShader:String.raw`
+   precision mediump float;
+   uniform float time;varying vec2 vUv;
+   void main(){
+    vec2 p=vUv;
+    float wave=sin(p.y*120.0-time*1.4+sin(p.x*20.0+time*.7));
+    wave+=.36*sin(p.y*210.0-time*2.2+p.x*14.0);
+    float crest=smoothstep(.45,.95,wave);
+    vec3 deep=mix(vec3(.015,.13,.19),vec3(.055,.33,.41),p.x);
+    vec3 blue=deep+vec3(.1,.19,.2)*wave*.45+vec3(.32,.44,.45)*crest*.5;
+    gl_FragColor=vec4(blue,1.);
+   }
+  `,
+  side:THREE.DoubleSide,
+ }),[vertex])
+ const fire=useMemo(()=>new THREE.ShaderMaterial({
+  uniforms:{time:{value:0}},
+  vertexShader:vertex,
+  fragmentShader:String.raw`
+   precision mediump float;
+   uniform float time;varying vec2 vUv;
+   void main(){
+    vec2 p=vUv;
+    float v=sin(p.y*95.0-time*3.2+sin(p.x*23.0+time*1.3)*1.5);
+    v+=.45*sin(p.y*190.0-time*4.7+p.x*31.0);
+    float heat=smoothstep(-.1,.85,v);
+    vec3 ember=mix(vec3(.78,.12,.022),vec3(1.,.72,.18),heat);
+    gl_FragColor=vec4(ember,1.);
+   }
+  `,
+  side:THREE.DoubleSide,
+ }),[vertex])
+ useFrame(({clock})=>{
+  water.uniforms.time.value=clock.elapsedTime
+  fire.uniforms.time.value=clock.elapsedTime
+ })
+ useEffect(()=>()=>{water.dispose();fire.dispose()},[water,fire])
+ return <group data-live-burning-river="flowing-fire-and-water" data-company-loop-one-event="burning-river">
+   <mesh geometry={river} material={water}/>
+   <mesh geometry={river} material={fire} position={[1.05,-.035,0]} scale={[.38,.82,1]}/>
+ </group>
 }
 
 function DomainCastle({domain,selected,onSelect}:{
