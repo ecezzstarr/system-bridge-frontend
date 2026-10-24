@@ -74,7 +74,7 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-md w-full">
+    <Card className="weave-position-access-card border-slate-700 bg-slate-800/50 backdrop-blur max-w-md w-full mx-auto" data-weave-position-access="sign-in">
       <CardHeader className="text-center flex flex-col items-center">
         <WeaveLogo size="md" className="mb-2" />
         <CardDescription className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">

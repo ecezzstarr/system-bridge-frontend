@@ -195,10 +195,10 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,o
   },[camera,focus,focal.x,focal.y,focal.z])
   const byId=useMemo(()=>new Map(domains.map(d=>[d.domainId,d])),[domains])
   return <>
-    <fog attach="fog" args={['#1a233c',112,260]}/>
-    <ambientLight intensity={1.3} color="#b9d3fc"/>
-    <hemisphereLight args={['#b9d8ff','#624337',1.2]}/>
-    <directionalLight position={[30,55,15]} intensity={2.2} color="#ffe8bf"/>
+    <fog attach="fog" args={['#a6cce0',112,260]}/>
+    <ambientLight intensity={1.4} color="#ecf8ff"/>
+    <hemisphereLight args={['#d6efff','#6b7861',1.25]}/>
+    <directionalLight position={[30,55,15]} intensity={2.35} color="#fff3d5"/>
     <WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>
     {placing&&preview&&<mesh position={[preview.x,.09,preview.z]} rotation={[-Math.PI/2,0,0]}>
       <ringGeometry args={[3.15,3.55,40]}/>
@@ -235,7 +235,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
   role?:'visitor'|'client'|'agent'|'bridger'|'admin'
 }){
  const [focus,setFocus]=useState<'world'|'food'>('world')
- const [landMode,setLandMode]=useState<'atlas'|'3d'>('atlas')
+ const [landMode,setLandMode]=useState<'atlas'|'3d'>('3d')
  const [detailsOpen,setDetailsOpen]=useState(false)
  const [worldPanel,setWorldPanel]=useState<'domains'|'doors'|'community'|null>(null)
  const [helpOpen,setHelpOpen]=useState(false)
@@ -375,17 +375,17 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      {feed.event?.status==='active'?'Company event taking place in this land.':'Company event calendar.'}
    </header>
    <div className="relative h-svh min-h-[480px] overflow-hidden"
-      data-open-world-map="interactive" data-world-first-view="castle-landscape">
+      data-open-world-map="interactive" data-world-first-view="live-3d-castle-landscape">
      {landMode==='atlas'?<WeaveOpenWorldAtlas domains={displayDomains} selected={selected}
        onSelect={tapCastle} role={role} enable3D={webgl===true}
-       onExplore={()=>{setLandMode('3d');setFocus('world')}}
+       onExplore={()=>{setSceneReady(false);setLandMode('3d');setFocus('world')}}
        onShowDomains={()=>setWorldPanel(panel=>panel==='domains'?null:'domains')}
        onShowCommunity={()=>setWorldPanel(panel=>panel==='community'?null:'community')}
        onShowGuide={()=>setHelpOpen(open=>!open)}
        onCustomerDoor={()=>setWorldPanel(panel=>panel==='doors'?null:'doors')}/>:<>
        {/* The atlas art is an illustrated map. This mode is the navigable,
            physically rendered 3D WEAVE terrain and real Client castles. */}
-       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
+       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#d7eafb,#7baec5_68%,#294f62)]"/>
        {webgl===true&&<AdaptiveCanvas camera={{position:[12,21,24],fov:46,near:.1,far:350}}
          gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
          fallback={<WeaveWorldMapFallback domains={displayDomains} onSelect={tapCastle}/>}

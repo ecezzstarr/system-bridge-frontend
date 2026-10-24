@@ -226,7 +226,7 @@ export function DepartmentEntryTicketGate({
 
   if (!entered) {
     return (
-      <div className="space-y-5 text-center">
+      <div className="space-y-5 text-center" data-weave-department-ticket="entry">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/10">
           <Music2 className="h-7 w-7 text-cyan-300" />
         </div>
@@ -258,7 +258,7 @@ export function DepartmentEntryTicketGate({
 
   if (!ticket) {
     return (
-      <div className="py-10 text-center">
+      <div className="py-10 text-center" data-weave-department-ticket="loading">
         <Loader2 className="mx-auto h-7 w-7 animate-spin text-cyan-400" />
         <p className="mt-3 text-xs uppercase tracking-widest text-slate-500">Presenting ticket</p>
       </div>
@@ -269,7 +269,7 @@ export function DepartmentEntryTicketGate({
   const codeIssued = ticket.status === 'CODE_ISSUED' && Boolean(ticket.departmentalCode)
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" data-weave-department-ticket="verification">
       <div className="flex items-center justify-between rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3">
         <div className="flex items-center gap-3">
           <Volume2 className="h-4 w-4 text-cyan-300" />

@@ -22,8 +22,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   // Do not unmount children during the registration request. Unmounting resets
   // every controlled input and puts a rejected paid applicant back at Step 1.
 
-  return <div className="relative flex min-h-dvh items-start justify-center overflow-x-hidden overflow-y-auto bg-transparent px-4 py-8 sm:items-center">
-    <div className="w-full max-w-md relative z-10">
+  return <div className="relative flex min-h-dvh items-start justify-center overflow-x-hidden overflow-y-auto bg-transparent px-4 py-8 sm:items-center" data-weave-position-access-shell="homepage-theme">
+    <div className="w-full max-w-2xl relative z-10">
       <RegistrationReferralCapture />
       <WeaveEnvironmentSurface compact>{children}</WeaveEnvironmentSurface>
     </div>

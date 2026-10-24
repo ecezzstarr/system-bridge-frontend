@@ -194,7 +194,7 @@ function RegisterContent() {
   // Step 1: Role Selection
   if (step === 'role') {
     return (
-      <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
+      <Card className="weave-position-access-card border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-auto">
         <CardHeader className="text-center flex flex-col items-center">
           <WeaveLogo size="md" className="mb-2" />
           <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{WEAVE_WRITING.positionAccess.chooseTitle}</CardTitle>
@@ -244,7 +244,7 @@ function RegisterContent() {
   // Step 2: Departmental Entry Ticket Gate
   if (step === 'dept-gate') {
     return (
-      <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
+      <Card className="weave-position-access-card border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-auto">
         <CardHeader className="text-center flex flex-col items-center">
           <ShieldAlert className="h-10 w-10 text-amber-500 mb-2" />
           <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">Department Entry Ticket</CardTitle>
@@ -273,7 +273,7 @@ function RegisterContent() {
   // Step 3: WEAVE Paid Platform Notice
   if (step === 'notice') {
     return (
-      <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
+      <Card className="weave-position-access-card border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-auto">
         <CardHeader className="text-center flex flex-col items-center">
           <WeaveLogo size="md" className="mb-2" />
           <ShieldCheck className="h-10 w-10 text-amber-400 mb-2" />
@@ -306,7 +306,7 @@ function RegisterContent() {
   // Step 4: Terms of Service
   if (step === 'terms') {
     return (
-      <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
+      <Card className="weave-position-access-card border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-auto">
         <CardHeader className="text-center flex flex-col items-center">
           <ScrollText className="h-8 w-8 text-cyan-400 mb-2" />
           <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{WEAVE_WRITING.positionAccess.termsTitle}</CardTitle>
@@ -347,7 +347,7 @@ function RegisterContent() {
   // Step 5: Client Acquisition Guide
   if (step === 'guide') {
     return (
-      <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
+      <Card className="weave-position-access-card border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-auto">
         <CardHeader className="text-center flex flex-col items-center">
           <Target className="h-8 w-8 text-green-400 mb-2" />
           <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{formData.role === 'agent' ? 'Stability · First Agent Activities' : 'Hope · First Bridger Activities'}</CardTitle>
@@ -386,7 +386,7 @@ function RegisterContent() {
 
   // Step 6: Account Details
   return (
-    <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-md mx-4 sm:mx-0">
+    <Card className="weave-position-access-card border-slate-700 bg-slate-800/50 backdrop-blur max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="text-xl sm:text-2xl uppercase tracking-tighter">{WEAVE_WRITING.positionAccess.identityTitle}</CardTitle>
         <CardDescription className="flex items-center justify-center gap-2">
@@ -541,7 +541,7 @@ function RegisterContent() {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <Card className="border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-4 sm:mx-0">
+      <Card className="weave-position-access-card border-slate-700 bg-slate-800/50 backdrop-blur max-w-lg mx-auto">
         <CardContent className="p-8 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-slate-600 mx-auto" />
         </CardContent>
