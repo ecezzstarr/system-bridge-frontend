@@ -371,12 +371,12 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  return <section className="relative isolate overflow-hidden bg-[#070e1e] text-white"
    data-burning-river-live-multiplayer="systems-and-business"
    data-weave-open-world="system-switch-file-folder-world"
-   data-weave-official-open-world-reference="burning_river_fantasy_world_map.png">
+   data-weave-official-open-world-reference="weave_open_world_fantasy_map.png">
    <header className="sr-only">
      Weave Open World · {feed.event?.label||'Company Loop 1 · Burning River'}.
      {feed.event?.status==='active'?'Company event taking place in this land.':'Company event calendar.'}
    </header>
-   <div className="relative h-[calc(100svh-4.5rem)] min-h-[540px] max-h-[1120px] overflow-hidden sm:h-[calc(100svh-4rem)]"
+   <div className="relative h-svh min-h-[480px] overflow-hidden"
       data-open-world-map="interactive" data-world-first-view="castle-landscape">
      {landMode==='atlas'?<WeaveOpenWorldAtlas domains={displayDomains} selected={selected}
        onSelect={tapCastle} role={role} enable3D={webgl===true}
