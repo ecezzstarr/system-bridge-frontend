@@ -1,0 +1,59 @@
+/* Company Loop 1 homepage atmosphere only. Existing DOM, official imagery,
+   text and navigation remain above this non-interactive decorative layer. */
+html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+[data-public-weave-world] {
+  isolation: isolate;
+  background: transparent;
+}
+html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+[data-public-weave-world]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(180deg, rgba(3, 13, 31, .08), rgba(3, 14, 33, .16) 25%, rgba(3, 14, 33, .53) 67%, rgba(3, 14, 33, .72)),
+    url('/weave/home-burning-river-theme.svg');
+  background-position: center top, center top;
+  background-size: 100% 100%, max(100%, 1100px) auto;
+  background-repeat: no-repeat, repeat-y;
+  opacity: .78;
+}
+html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+[data-public-weave-world]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 43% 12% at 92% 7%, rgba(255, 195, 102, .12), transparent 95%),
+    radial-gradient(ellipse 45% 13% at 4% 30%, rgba(36, 153, 227, .14), transparent 95%),
+    radial-gradient(ellipse 36% 11% at 92% 56%, rgba(255, 198, 122, .08), transparent 96%),
+    radial-gradient(ellipse 48% 17% at 14% 85%, rgba(23, 128, 204, .11), transparent 95%);
+}
+html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+[data-public-weave-world] > .relative.z-10 {
+  position: relative;
+  z-index: 1;
+}
+/* Restore warm flame only behind this homepage; never recolour image assets. */
+html[data-weave-event="flame-live"]:has([data-public-weave-world]):not([data-weave-loop-theme="one-nigerian"])
+.weave-live-flame-canvas {
+  filter: none;
+  opacity: .56;
+}
+@media (max-width: 640px) {
+  html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+  [data-public-weave-world]::before {
+    background-size: 100% 100%, 1180px auto;
+    background-position: center top, 52% top;
+    opacity: .55;
+  }
+  html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+  [data-public-weave-world]::after {
+    opacity: .55;
+  }
+}
+/* The static texture is sufficient without additional page-wide animation. */
