@@ -81,7 +81,10 @@ jobs:
         run: node tests/weave-loader-visual-stability.cjs
 
       - name: Burning River and System Switch living-world continuity
-        run: node tests/burning-river-system-switch-continuity.cjs
+        run: |
+          node tests/burning-river-system-switch-continuity.cjs
+          node tests/weave-open-world-system-switch.cjs
+          node tests/weave-castle-position-and-entry.cjs
 
       - name: WEAVE food regressions
         run: |
@@ -134,6 +137,7 @@ jobs:
           node tests/file-folder-customer-door-purchase-regression.cjs
           node tests/system-switch-file-folder-boundary-regression.cjs
           node tests/flame-event-role-login-flow.cjs
+          node tests/flame-event-department-world-entrances.cjs
           node tests/client-hosted-avatar-world-regression.cjs
           node tests/file-folder-pricing-contract-regression.cjs
           node tests/legion-commerce-regression.cjs

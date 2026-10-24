@@ -1,13 +1,20 @@
 'use client'
 
 import Link from 'next/link'
+import {useEffect} from 'react'
+import {useRouter} from 'next/navigation'
 import { Share2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-provider'
 import { WeaveDashboardWorld } from '@/components/world/weave-dashboard-world'
 import { ManagerLifestyleEntry } from '@/components/manager-lifestyle-entry'
 
 export default function BridgerDashboardPage() {
-  const { user } = useAuth()
+  const {user,isInitialized,isLoading}=useAuth()
+  const router=useRouter()
+  useEffect(()=>{
+    if(isInitialized&&!isLoading&&user&&user.role!=='bridger')router.replace('/event')
+  },[isInitialized,isLoading,user?.role,router])
+  if(!isInitialized||isLoading||user?.role!=='bridger')return null
   return <>
     <WeaveDashboardWorld role="bridger" userName={user?.name} />
     <ManagerLifestyleEntry />

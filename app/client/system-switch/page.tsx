@@ -124,7 +124,7 @@ export default function ClientSystemSwitchPage() {
 
   if (loading) return <div className="relative" data-client-loading-with-open-world-return="true">
     <FileFolderEnvironmentLoader />
-    <Link href="/client/dashboard" className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 z-[150] inline-flex min-h-12 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border border-sky-200/40 bg-[#06182a]/95 px-5 text-xs font-bold text-white shadow-xl backdrop-blur-lg">
+    <Link href="/system-switch/world" className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 z-[150] inline-flex min-h-12 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border border-sky-200/40 bg-[#06182a]/95 px-5 text-xs font-bold text-white shadow-xl backdrop-blur-lg">
       <ArrowLeft className="h-4 w-4"/> Return to Weave Open World
     </Link>
   </div>
@@ -132,12 +132,12 @@ export default function ClientSystemSwitchPage() {
   if (entry && !entry.active) return <ClientFileFolderGate entry={entry} />
 
   if (error || !data?.verified || !data?.workshop) {
-    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg border-y border-cyan-200/10 bg-[#040a12]/92 p-8 text-center backdrop-blur-xl"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><Link href="/client/dashboard" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Weave Open World</Link></div></main>
+    return <main className="min-h-screen bg-transparent text-white p-4 flex items-center justify-center"><div className="w-full max-w-lg border-y border-cyan-200/10 bg-[#040a12]/92 p-8 text-center backdrop-blur-xl"><FolderOpen className="mx-auto h-10 w-10 text-sky-400" /><h1 className="mt-5 text-2xl font-semibold">File Folder</h1><p className="mt-3 text-sm leading-6 text-slate-400">{error || 'Your File Folder could not be opened.'}</p><Link href="/system-switch/world" className="mt-6 inline-flex rounded-full border border-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em]">Return to Weave Open World</Link></div></main>
   }
 
   return (
     <main className="weave-file-folder-page min-h-dvh bg-transparent pt-16 text-white sm:pt-0" data-client-file-folder-entry="crossing-to-open-world" data-system-switch-gate="crossed" data-system-switch-flame-event="burning-river" data-weave-world="file-folder">
-      <Link href="/client/dashboard" data-client-return-weave-open-world="true"
+      <Link href="/system-switch/world" data-client-return-weave-open-world="true"
         className="fixed left-3 top-[max(4.25rem,env(safe-area-inset-top))] z-[90] inline-flex min-h-11 max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-sky-200/35 bg-[#06182a]/95 px-3 py-2 text-[11px] font-bold text-sky-100 shadow-xl backdrop-blur-xl sm:left-5">
         <ArrowLeft className="h-4 w-4 shrink-0"/> Return to Weave Open World
       </Link>
@@ -163,7 +163,7 @@ export default function ClientSystemSwitchPage() {
         <nav aria-label="File Folder actions">
           <p>File Folder</p>
           {privateWorkshop&&<button type="button" onClick={()=>setPrivateWorkshop(false)}>Return to shared System Switch</button>}
-          <Link href="/client/dashboard"><ArrowLeft className="h-4 w-4"/>Return to Weave Open World</Link>
+          <Link href="/system-switch/world"><ArrowLeft className="h-4 w-4"/>Return to Weave Open World</Link>
           <Link href="/client/system-store" data-file-folder-publish-system="true"><PackageOpen className="h-4 w-4"/>Publish System</Link>
           <Link href="/client/system-switch/flame-event" data-file-folder-flame-event="inside"><Flame className="h-4 w-4"/>Flame Event</Link>
           <button type="button" disabled={!soundAvailable} onClick={()=>window.dispatchEvent(new Event('weave:toggle-live-sound'))}><Volume2 className="h-4 w-4"/>{!soundAvailable?'Live sound is offline':soundPlaying?'Pause live sound':'Play live sound'}</button>

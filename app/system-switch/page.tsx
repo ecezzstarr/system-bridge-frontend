@@ -73,11 +73,11 @@ export default function SystemSwitchEntryPage() {
             {position} · Cross the river of water and fire to enter the shared open world of Client File Folders. Open a commissioned Customer Door to visit the Client's public systems.
           </p>
           <Link
-            href="/flame-event/world?via=system-switch"
+            href="/system-switch/world?via=system-switch"
             data-system-switch-crossing="open-file-folder-world"
             className="mt-6 inline-flex min-h-14 w-full max-w-md items-center justify-center gap-3 rounded-xl border border-amber-100 bg-amber-200 px-5 py-3 text-sm font-black text-[#0a2033] shadow-[0_8px_35px_rgba(253,197,99,.24)]"
           >
-            <FolderOpen className="h-5 w-5" /> Enter File Folder Open World <ArrowRight className="h-5 w-5" />
+            <FolderOpen className="h-5 w-5" /> Enter Weave Open World <ArrowRight className="h-5 w-5" />
           </Link>
           <p className="mt-3 flex items-center gap-2 text-[11px] text-sky-100/65">
             <Waves className="h-4 w-4 text-sky-300" /> Public Client worlds only · Private Client builds stay protected
