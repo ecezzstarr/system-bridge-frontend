@@ -103,6 +103,30 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
   border-color: rgba(220,179,109,.38);
 }
 
+/* Echo, Carrier, Lifestyle, Arena, notifications and workstations use one
+   warm river-blue operating material. White labels remain legible; individual
+   controls and real scene canvases are not replaced. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-operating-environment {
+  border-color: rgba(221, 182, 117, .36);
+  background:
+    radial-gradient(ellipse 52% 27% at 87% 3%, rgba(249,208,133,.16), transparent 82%),
+    radial-gradient(ellipse 52% 26% at 5% 92%, rgba(53,168,217,.16), transparent 85%),
+    linear-gradient(165deg, rgba(12,55,81,.94),rgba(19,88,116,.92) 55%,rgba(8,46,70,.95));
+  box-shadow: inset 0 1px 0 rgba(255,227,176,.12);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-public-market-world] {
+  background:
+    radial-gradient(ellipse 57% 32% at 8% 3%, rgba(42,157,215,.24), transparent),
+    linear-gradient(180deg,#153d5a,#0a3656 66%,#0d4765);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-public-market-world] > section:first-child {
+  background:
+    radial-gradient(ellipse 51% 45% at 85% 5%, rgba(248,200,118,.22), transparent 83%),
+    radial-gradient(ellipse 52% 47% at 8% 75%, rgba(87,192,239,.18), transparent 83%),
+    linear-gradient(135deg,#124865,#0b2f4e);
+  border-color: rgba(221,182,117,.30);
+}
+
 /* Public entry paths use the shared signature while retaining their original
    official artwork, foreground text contrast, working links and 3D assets. */
 html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
