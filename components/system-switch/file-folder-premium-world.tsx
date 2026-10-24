@@ -183,6 +183,21 @@ function Scene({selected,onSelect,builds,systems,now,onEnter}:{selected:StationK
     selected={selected===station.key} onSelect={()=>onSelect(station.key)}
     building={own.length} live={index===2||index===3?live:0}/>
   })}
+  {STATIONS.map(station=>{
+   const [x,,z]=station.location
+   const dx=x,dz=z+1
+   const length=Math.hypot(dx,dz)
+   const angle=Math.atan2(dx,dz)
+   return <group key={'path-'+station.key} position={[x/2,-.12,(z-1)/2]} rotation={[0,angle,0]}>
+    <mesh receiveShadow><boxGeometry args={[2.4,.22,length]}/><GoldMaterial color="#c8b299"/></mesh>
+    {[-1.05,1.05].map(side=><mesh key={side} position={[side,.47,0]}>
+     <boxGeometry args={[.1,.75,length]}/><GoldMaterial/></mesh>)}
+    {Array.from({length:Math.min(12,Math.ceil(length/2.2))},(_,i)=><group key={i} position={[0,0,-length/2+1.1+i*2.2]}>
+     {[-1.05,1.05].map(side=><mesh key={side} position={[side,.94,0]}>
+      <sphereGeometry args={[.15,8,6]}/><meshStandardMaterial color="#ffe5aa" emissive="#ffd189" emissiveIntensity={.6}/></mesh>)}
+    </group>)}
+   </group>
+  })}
   <Waterfalls/>
   <CentralPremiumCitadel/>
   <VerifiedStructures builds={builds} systems={systems} now={now} onEnter={onEnter}/>
