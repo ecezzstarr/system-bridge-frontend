@@ -31,6 +31,7 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
     radial-gradient(ellipse 75% 45% at 4% 6%, rgba(125, 199, 245, .20), transparent 75%),
     radial-gradient(ellipse 58% 45% at 94% 8%, rgba(251, 208, 126, .18), transparent 80%),
     linear-gradient(180deg, #eef8ff 0%, #fffefa 44%, #edf7fc 100%);
+  color: var(--weave-company-ink);
 }
 
 /* Shared living canvas: genuine river and gentle fire illumination without
@@ -70,6 +71,13 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
   .weave-app-shell,.weave-client-shell,.weave-environment-surface
 ) {
   background: transparent;
+}
+/* Ordinary text on the light root is river-ink; private company workspaces
+   retain their established light-on-dark operational contrast. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell
+) {
+  color: #f0f8ff;
 }
 html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world {
   background:
