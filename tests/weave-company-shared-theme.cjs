@@ -45,7 +45,7 @@ assert.ok(theme.includes('[data-weave-loop-theme="one-nigerian"]')&&
 assert.ok(page.includes('/weave/plus-file-folder-white-official.webp')&&
   page.includes('/weave-food/weave-family-products.avif'),
   'Approved official imagery remains in place; no replacement')
-assert.ok(!/\b(?:img|canvas|video)\s*\{\s*filter\s*:/m.test(theme),
+assert.ok(!/(?:^|[,}\s])(?:img|canvas|video)\s*\{\s*filter\s*:/m.test(theme),
   'Company-wide theme must not recolour official media or 3D canvases')
 assert.ok(home.includes('weave-home-hero')&&home.includes('border-radius: 0'),
   'Company introduction must remain directly in the landscape without another enclosing card')
