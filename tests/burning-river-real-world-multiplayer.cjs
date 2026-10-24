@@ -97,7 +97,7 @@ assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWo
 assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
  route.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),
  'Agent Carrier attribution remains connected while visitors cross into the shared world')
-assert.ok(staff.includes('<BurningRiverOfficialGateway staff/>')&&
+assert.ok(staff.includes('<BurningRiverOfficialGateway staff staffHref=')&&
  visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode} onCustomerDoor='),
  'Same worlds accessible from staff and public entrances')
 assert.ok(client.includes('validWriteOrigin(request)') &&
