@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo} from 'react'
 import * as THREE from 'three'
+import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
 
 /**
@@ -38,7 +39,7 @@ function LandMaterial(){
   return map
  },[])
  useEffect(()=>()=>texture.dispose(),[texture])
- return <meshStandardMaterial map={texture} color="#e1e7d9" roughness={.98} metalness={0}/>
+ return <meshPhysicalMaterial map={texture} bumpMap={texture} bumpScale={.22} color="#dce7da" roughness={.97} metalness={0} clearcoat={.02}/>
 }
 
 function Woodland(){
@@ -73,18 +74,19 @@ function WorldFootpath({domain}:{domain:PublicWorldDomain}){
  return <group rotation={[0,angle,0]}>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.42,distance*.48]} receiveShadow>
    <planeGeometry args={[1.45,Math.max(1,distance*.95)]}/>
-   <meshStandardMaterial color="#aeaa92" roughness={.97}/>
+   <CityMaterial kind="paving" tileX={2} tileY={Math.max(2,Math.round(distance/2))} tint="#d0c8b2"/>
   </mesh>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.416,distance*.48]}>
    <planeGeometry args={[.28,Math.max(1,distance*.95)]}/>
-   <meshStandardMaterial color="#c8b991" roughness={.95} transparent opacity={.7}/>
+   <meshStandardMaterial color="#d7c59e" roughness={.93} transparent opacity={.65}/>
   </mesh>
  </group>
 }
 
-export function WeaveOpenWorldLandscape({domains}:{domains:PublicWorldDomain[]}){
+export function WeaveOpenWorldLandscape({domains,placing=false,onPlace}:{domains:PublicWorldDomain[];placing?:boolean;onPlace?:(location:{x:number;z:number})=>void}){
  return <group data-weave-world-landscape="physical-ground-forest-and-paths">
-  <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.52,0]} receiveShadow>
+  <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.52,0]} receiveShadow
+    onClick={event=>{if(placing&&onPlace){event.stopPropagation();onPlace({x:event.point.x,z:event.point.z})}}}>
    <planeGeometry args={[260,260,1,1]}/>
    <LandMaterial/>
   </mesh>
