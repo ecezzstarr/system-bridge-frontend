@@ -100,6 +100,19 @@ export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowD
         className="absolute left-0 w-full object-fill"
         style={{top:(tile.start/SCENE_HEIGHT*100)+'%',height:((tile.end-tile.start)/SCENE_HEIGHT*100)+'%'}}/>)}
     </div>
+    {/* Water and flame are a subtle moving light field; actual Client builds
+        remain in live WebGL and the verified System Switch data feed. */}
+    <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"
+      viewBox="0 0 941 1672" preserveAspectRatio="none" data-weave-world-moving-river="image-overlay">
+      <path className="weave-atlas-water-current" fill="none" stroke="#a8eaff" strokeWidth="3"
+        d="M 505 270 C 650 354 460 440 580 534 S 374 699 533 805 S 700 899 384 1068 S 564 1181 639 1264"/>
+      <path className="weave-atlas-fire-current" fill="none" stroke="#ffc269" strokeWidth="3"
+        d="M 510 282 C 675 361 472 451 601 547 S 380 718 553 811 S 710 912 398 1079 S 571 1191 654 1269"/>
+    </svg>
+    <div className="pointer-events-none absolute bottom-[13.7%] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded border border-amber-300/35 bg-[#06172a]/85 px-2 py-1 text-[9px] font-bold tracking-wide text-amber-100"
+      data-weave-verified-live-count={domains.length}>
+      {domains.length} VERIFIED LIVE {domains.length===1?'FILE FOLDER':'FILE FOLDERS'}
+    </div>
     {/* The picture depicts example fortresses. The only live castles are generated
         from the purchased Client domains returned by WEAVE's protected projection. */}
     {domains.map(domain=>{
