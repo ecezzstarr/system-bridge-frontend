@@ -4,6 +4,7 @@ import {useEffect,useState} from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import {ArrowLeft} from 'lucide-react'
+import './open-world-atlas.css'
 // Load the GPU-heavy scene after the System Switch page can paint its entry.
 // Visitors always see a recognizable world-loading surface during the split.
 const BurningRiverLiveWorld=dynamic(
