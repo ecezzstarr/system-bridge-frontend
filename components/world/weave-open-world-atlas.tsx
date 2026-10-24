@@ -2,7 +2,7 @@
 
 import {useMemo,useRef} from 'react'
 import Link from 'next/link'
-import {useFrame} from '@react-three/fiber'
+import {useFrame,useThree} from '@react-three/fiber'
 import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
@@ -85,6 +85,26 @@ function LiveClientCastle({domain}:{domain:PublicWorldDomain}){
   </group>
 }
 
+/* A single transparent GPU canvas renders several real castles directly ON
+ * the approved WEAVE image. One canvas is important on low-memory phones.
+ * Up to 12 three-dimensional exteriors render at once; every other verified
+ * castle retains its clickable, accurate server-backed position and status. */
+function VerifiedCastleLayer({domains,selected}:{domains:PublicWorldDomain[];selected:string|null}){
+  const viewport=useThree(state=>state.viewport)
+  const scale=Math.min(viewport.width/44,viewport.height/70)
+  return <group data-weave-live-world-castles="verified-domains-only">
+    {domains.map(domain=>{
+      const point=plot(domain)
+      const active=selected===domain.domainId
+      return <group key={domain.domainId}
+        position={[(point.left/100-.5)*viewport.width,(.5-point.top/100)*viewport.height,0]}
+        scale={scale*(active?1.15:1)}>
+        <LiveClientCastle domain={domain}/>
+      </group>
+    })}
+  </group>
+}
+
 export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowDomains,onShowCommunity,onShowGuide,onCustomerDoor,role,enable3D=true}:{
   domains:PublicWorldDomain[]
   selected:string|null
@@ -98,7 +118,12 @@ export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowD
   enable3D?:boolean
 }){
   const active=useMemo(()=>domains.find(d=>d.domainId===selected)||domains[0]||null,[domains,selected])
-  const where=active?plot(active):null
+  const renderedCastles=useMemo(()=>{
+    const nearby=domains.slice(0,12)
+    const highlighted=domains.find(domain=>domain.domainId===selected)
+    return highlighted&&!nearby.some(domain=>domain.domainId===highlighted.domainId)
+      ?[...nearby.slice(0,11),highlighted]:nearby
+  },[domains,selected])
   const staffHref=role==='client'?'/client/system-switch':
     role==='visitor'?'/login':'/system-switch'
   return <div className="relative mx-auto aspect-[941/1672] h-full max-h-full w-auto max-w-full overflow-hidden bg-[#08172b]"
@@ -141,17 +166,19 @@ export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowD
         <span className="max-w-20 truncate text-[8px] font-semibold capitalize">{domain.tier}</span>
       </button>
     })}
-    {enable3D&&active&&where&&<div aria-label={'Live three-dimensional '+active.tier+' File Folder castle'} role="img"
-      data-weave-live-castle-spotlight={active.domainId}
-      className="pointer-events-none absolute z-10 h-[19%] w-[32%] -translate-x-1/2 -translate-y-[115%] overflow-visible"
-      style={{left:where.left+'%',top:where.top+'%'}}>
-      <AdaptiveCanvas camera={{position:[10,11,14],fov:40,near:.1,far:90}}
+    {enable3D&&renderedCastles.length>0&&<div
+      data-weave-live-castle-layer="multi-domain-three-dimensional"
+      data-weave-live-3d-count={renderedCastles.length}
+      className="pointer-events-none absolute inset-0 z-10">
+      <AdaptiveCanvas orthographic
+        camera={{position:[0,0,100],zoom:42,near:.1,far:160}}
         gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
-        fallback={<div className="h-full w-full" aria-hidden="true"/>} mobileGame>
-        <ambientLight intensity={1.5} color="#fff5df"/>
+        fallback={<div className="h-full w-full" aria-hidden="true"/>}
+        mobileGame>
+        <ambientLight intensity={1.55} color="#fff5df"/>
         <hemisphereLight args={['#d6e9ff','#947348',1.4]}/>
         <directionalLight position={[9,16,11]} intensity={2.4} color="#ffe4a8"/>
-        <LiveClientCastle domain={active}/>
+        <VerifiedCastleLayer domains={renderedCastles} selected={active?.domainId||null}/>
       </AdaptiveCanvas>
     </div>}
     <button type="button" aria-label="Open World menu and domains"
