@@ -6,6 +6,7 @@ import {Html,OrbitControls,Line} from '@react-three/drei'
 import {useFrame,useThree} from '@react-three/fiber'
 import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
 import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-landscape'
+import {burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
 import {FlameEventFoodStore} from './flame-event-food-store'
 import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
@@ -217,7 +218,8 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    if(!requestedDoor||selected)return
    const match=feed.domains.find(d=>d.customerDoor.href?.startsWith('/market/'+encodeURIComponent(requestedDoor)+'?'))
    if(match)setSelected(match.domainId)
- },[feed.domains,requestedDoor,selected])
+   else if(status==='ready'&&feed.hasMore&&page<10)setPage(p=>p+1)
+ },[feed.domains,requestedDoor,selected,status,feed.hasMore,page])
 
  const refresh=useCallback(async(signal?:AbortSignal)=>{
    const response=await fetch('/api/system-switch/open-world?page='+page,
@@ -300,9 +302,21 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
        </div>
      </div>
      <nav aria-label="Explore the WEAVE land" className="absolute left-3 top-16 flex gap-2">{(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-11 rounded-xl border border-amber-200/30 bg-[#061225]/95 px-3 py-2 text-xs font-bold text-amber-100">{view==='food'?'WEAVE Food Store':'File Folder Land'}</button>)}</nav>
-     <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-xs text-sky-100">
-       Drag to look · Pinch to zoom · Tap a Client building
+     <div className="pointer-events-none absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-[11px] text-sky-100">
+       {focus==='food'?'Real WEAVE products · Choose an Agent to order':'Drag to look · Pinch to zoom · Tap a Client building'}
      </div>
+     {focus==='food'&&<Link href={burningRiverFoodHref(carrierCode,'agent-electrolyte')}
+       data-weave-food-direct-carrier-order="true"
+       className="absolute bottom-14 right-3 inline-flex min-h-11 items-center rounded-lg border border-amber-200/50 bg-[#07231c]/95 px-3 text-xs font-black text-amber-100 shadow-xl">
+       {carrierCode?'Order through my Agent':'Choose a Food Agent'} <ArrowRight className="ml-2 h-4 w-4"/>
+     </Link>}
+     {selectedDomain&&focus==='world'&&<div className="absolute bottom-14 right-3 z-10 w-[min(280px,calc(100%-1.5rem))] rounded-xl border border-amber-200/40 bg-[#081c2a]/95 p-3 shadow-xl" data-open-world-selected-building={selectedDomain.domainId}>
+       <p className="truncate text-xs font-black text-amber-100">{selectedDomain.publicName}</p>
+       <p className="mt-1 text-[11px] capitalize text-sky-100/70">{selectedDomain.tier} · {stageLabel[selectedDomain.stage]}</p>
+       {selectedDomain.customerDoor.open&&selectedDomain.customerDoor.href?
+         <Link href={selectedDomain.customerDoor.href} className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-amber-200 px-2 text-xs font-bold text-[#13263a]">Enter public Customer Door <ArrowRight className="ml-1 h-4 w-4"/></Link>:
+         <p className="mt-2 text-[11px] text-sky-100/70">This building is forming. Its Customer Door has not been publicly commissioned.</p>}
+     </div>}
      {!webgl&&<div className="absolute inset-0 flex items-center justify-center bg-[#08172a]/85 px-6 text-center text-sm">
        3D is not available on this device. Use the same verified Client domains below.
      </div>}
