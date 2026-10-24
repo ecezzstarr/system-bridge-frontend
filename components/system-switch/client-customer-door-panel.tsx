@@ -441,8 +441,8 @@ export default function ClientCustomerDoorPanel({
       <p className="mt-3 text-xs leading-6 text-slate-400">Agents, Bridgers and Administration enter from Flame Event as avatars. Visitors enter from Customer Market as avatars. Both arrive in the shared System Switch plaza before crossing your Customer Door. Other active participants are visible in the world, but only the Lord or Lady owns construction, workshop and finance permissions.</p>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {[
-          {id:'flame_event' as const,title:'Flame Event · Staff',checked:Boolean(data.store?.world_host_flame_event),detail:'Show your commissioned Customer Door to Agent, Bridger and Administration in the shared Burning River world.'},
-          {id:'customer_market' as const,title:'Customer Market · Visitors',checked:Boolean(data.store?.world_host_customer_market),detail:'Allow visitors to enter your commissioned Customer Door from Burning River and buy published offers.'},
+          {id:'flame_event' as const,title:'Flame Event · Staff',checked:Boolean(data.store?.world_host_flame_event),detail:'Show your commissioned Customer Door to Agent, Bridger and Administration in the shared Weave Open World.'},
+          {id:'customer_market' as const,title:'Customer Market · Visitors',checked:Boolean(data.store?.world_host_customer_market),detail:'Allow visitors to enter your commissioned Customer Door from Weave Open World and buy published offers.'},
         ].map(item=><label key={item.id} className="flex cursor-pointer items-start gap-3 border border-white/10 bg-black/20 p-4">
           <input type="checkbox" checked={item.checked} disabled={busy==='world-hosting'||!hasDoor||data.store?.formation_status!=='selling'}
             onChange={e=>void setWorldHosting(item.id,e.target.checked)} aria-label={'Host '+item.title} className="mt-1 h-4 w-4"/>
@@ -451,8 +451,8 @@ export default function ClientCustomerDoorPanel({
       </div>
       {(!hasDoor||data.store?.formation_status!=='selling')&&<p className="mt-3 text-xs text-amber-200">Construct and activate the Customer Door, then open the Client store before hosting a world.</p>}
       {data.store?.public_slug&&<div className="mt-4 flex flex-wrap gap-2">
-        <Link href={`/flame-event/world?door=${encodeURIComponent(data.store.public_slug)}#domains`}
-          className="inline-flex items-center gap-2 border border-emerald-300/25 px-4 py-3 text-xs text-emerald-200">Preview my Customer Door in Burning River <ArrowRight className="h-4 w-4"/></Link>
+        <Link href={`/system-switch/world?door=${encodeURIComponent(data.store.public_slug)}#domains`}
+          className="inline-flex items-center gap-2 border border-emerald-300/25 px-4 py-3 text-xs text-emerald-200">Preview my Customer Door in Weave Open World <ArrowRight className="h-4 w-4"/></Link>
         {data.store?.world_host_customer_market&&<Link href={`/system-switch/customer-doors/${encodeURIComponent(data.store.public_slug)}?entrance=market`}
           className="inline-flex items-center gap-2 border border-sky-300/25 px-4 py-3 text-xs text-sky-200">Open my hosted visitor world</Link>}
       </div>}
