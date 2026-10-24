@@ -14,9 +14,10 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
     let elapsed=clock.elapsedTime
     let hasDrawn=false
     const tick=(time:number)=>{
-      // A hidden browser tab must not permanently kill the render loop.
-      // Keep one lightweight frame request queued and reset frame timing on return.
-      if(document.hidden){last=0;frame=requestAnimationFrame(tick);return}
+      // Hidden worlds must not schedule frames. The visibility listener below
+      // re-arms exactly one frame when a phone returns to this tab.
+      frame=0
+      if(document.hidden){last=0;return}
       const delta=last?time-last:1000/fps
       if(!last||delta>=1000/fps){
         if(last)reportRuntimeFrame(delta,1000/fps)
@@ -27,8 +28,20 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
       }
       frame=requestAnimationFrame(tick)
     }
-    frame=requestAnimationFrame(tick)
-    return ()=>cancelAnimationFrame(frame)
+    const visibilityChange=()=>{
+      last=0
+      if(document.hidden){
+        if(frame){cancelAnimationFrame(frame);frame=0}
+      }else if(!frame){
+        frame=requestAnimationFrame(tick)
+      }
+    }
+    document.addEventListener('visibilitychange',visibilityChange)
+    if(!document.hidden)frame=requestAnimationFrame(tick)
+    return ()=>{
+      document.removeEventListener('visibilitychange',visibilityChange)
+      if(frame)cancelAnimationFrame(frame)
+    }
   },[active,fps,advance,clock,onFirstFrame])
   return null
 }
