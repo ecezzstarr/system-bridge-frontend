@@ -18,7 +18,7 @@ type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:
 type JointProject={id:string;connectionId:string;kind:string;title:string;status:'proposed'|'active';createdBySelf:boolean;otherDomainId:string;ownContribution:boolean;partnerContribution:boolean}
 type OwnOperatingSystem={id:string;name:string;systemType:string}
 type OwnWorld={domainId:string;collaborationOpen:boolean;connections:Connection[];projects:JointProject[];ownSystems:OwnOperatingSystem[]}
-type WorldFeed={domains:PublicWorldDomain[];links:{from:string;to:string}[];hasMore:boolean}
+type WorldFeed={domains:PublicWorldDomain[];links:{from:string;to:string}[];hasMore:boolean;event?:{label:string;status:string}}
 const palette:{[key:string]:[string,string,string]}={
   standard:['#8799b5','#d5dfec','#62a8d9'],
   pro:['#a9bad7','#d4edff','#a9d5ff'],
@@ -226,7 +226,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      {signal,cache:'no-store'})
    const json=await response.json()
    if(!response.ok||!json.success||!Array.isArray(json.domains))throw new Error('World service unavailable')
-   setFeed({domains:json.domains,links:json.links||[],hasMore:json.hasMore===true})
+   setFeed({domains:json.domains,links:json.links||[],hasMore:json.hasMore===true,event:json.event})
    setStamp(json.updatedAt||'')
    setStatus('ready')
  },[page])
@@ -282,7 +282,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    <header className="relative border-b border-amber-200/25 bg-[linear-gradient(90deg,#101a2e,#16233e,#28140e)] px-4 py-5 sm:px-7">
      <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-amber-200">The Company of Time · System Switch — Bridge of Radiance</p>
      <h2 className="mt-1 font-serif text-2xl font-bold tracking-wide text-amber-100 sm:text-4xl">Weave Open World</h2>
-     <p className="mt-1 text-xs leading-5 text-sky-100/80">The living land of Client File Folders, real construction, systems and Customer Doors. <span className="text-amber-200">Company Loop 1 · Burning River</span> is the current event within this world.</p>
+     <p className="mt-1 text-xs leading-5 text-sky-100/80">The living land of Client File Folders, real construction, systems and Customer Doors. <span className="text-amber-200">{feed.event?.label||'Company Loop 1 · Burning River'}</span> {feed.event?.status==='active'?'is taking place in this world.':'belongs to the company event calendar.'}</p>
    </header>
    <div className="relative h-[71svh] min-h-[430px] max-h-[960px] overflow-hidden sm:h-[77svh]"
       data-open-world-map="interactive">
