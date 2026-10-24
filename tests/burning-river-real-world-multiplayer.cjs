@@ -98,7 +98,7 @@ assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
  route.includes('carrierCode={carrierCode}')&&map.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),
  'Agent Carrier attribution remains connected while visitors cross into the shared world')
 assert.ok(staff.includes('<BurningRiverOfficialGateway staff staffHref=')&&
- visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode} onCustomerDoor='),
+ visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),
  'Same worlds accessible from staff and public entrances')
 assert.ok(client.includes('validWriteOrigin(request)') &&
  client.includes("url.host===(request.headers.get('host')||request.nextUrl.host)"),
@@ -121,4 +121,4 @@ for(const repeated of ['System Switch · The Crossing','Enter the Living Company
  assert.ok(!gate.includes(repeated),'Do not duplicate text already in official image: '+repeated)
 }
 assert.ok(!visitor.includes('Browse existing commissioned Customer Doors'),'Customer Door browsing is reached from the official image, not a second heading')
-assert.ok(visitor.includes('customerDoorsOpen&&<section')&&visitor.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>'),'Public Customer Door image button reveals existing real Client door data')
+assert.ok(visitor.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>')&&gate.includes("const customerHref=worldHref+'#domains'"),'Public Customer Door image button reveals existing real Client door data')
