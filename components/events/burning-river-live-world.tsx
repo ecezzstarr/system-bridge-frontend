@@ -6,6 +6,7 @@ import {Html,OrbitControls,Line} from '@react-three/drei'
 import {useFrame,useThree} from '@react-three/fiber'
 import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
 import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-landscape'
+import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import {burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
 import {FlameEventFoodStore} from './flame-event-food-store'
 import * as THREE from 'three'
@@ -106,12 +107,27 @@ function DomainCastle({domain,selected,onSelect}:{
     </mesh>
     <mesh position={[0,height*.43+.2,0]} castShadow>
       <boxGeometry args={[2.45,height*.86,2.1]}/>
-      <meshStandardMaterial color={stone} metalness={domain.tier==='plus'?.32:.12} roughness={.47}/>
+      <CityMaterial kind={domain.tier==='plus'?'glass':domain.tier==='premium'?'warm':'metal'} tileX={2} tileY={Math.max(1,Math.round(height/1.2))} tint={stone}/>
     </mesh>
     <mesh position={[0,height+.4,0]} castShadow>
       <coneGeometry args={[1.6,1.7,4]}/>
-      <meshStandardMaterial color={roof} metalness={.37} roughness={.3}/>
+      <CityMaterial kind={domain.tier==='premium'?'warm':'metal'} tileX={2} tileY={1} tint={roof}/>
     </mesh>
+    {/* A three-dimensional entrance exists on every building; commissioned doors
+         are lit by verified public Client status, never by visual assumption. */}
+    <mesh position={[0,.96,1.087]}>
+      <boxGeometry args={[.86,1.56,.14]}/>
+      <meshPhysicalMaterial color={domain.customerDoor.open?'#5cbab1':'#20374b'} emissive={domain.customerDoor.open?'#1c9b93':'#000000'} emissiveIntensity={domain.customerDoor.open?.55:0} metalness={.5} roughness={.24} clearcoat={.6}/>
+    </mesh>
+    <mesh position={[0,1.8,1.17]}>
+      <boxGeometry args={[1.12,.1,.16]}/><meshStandardMaterial color={roof} metalness={.7} roughness={.28}/>
+    </mesh>
+    {[-.78,.78].map(x=><group key={'windows-'+x}>
+      {Array.from({length:Math.max(1,Math.min(5,Math.floor(height/1.3)))},(_,level)=><mesh key={level} position={[x,.83+level*1.15,1.083]}>
+         <boxGeometry args={[.35,.42,.05]}/>
+         <meshPhysicalMaterial color={domain.tier==='plus'?'#bddde8':'#95bbca'} metalness={.26} roughness={.17} clearcoat={.8}/>
+       </mesh>)}
+    </group>)}
     {[-1,1].map(side=><group key={side} position={[side*1.55,0,.35]}>
       <mesh position={[0,(height+1)/2,0]} castShadow>
         <cylinderGeometry args={[.5,.69,height+1,8]}/>
