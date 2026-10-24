@@ -535,7 +535,7 @@ assert.ok(read('app/(app)/admin/client-messages/page.tsx').includes("redirect('/
 assert.ok(!loadStabilityDjPlayer.includes('setInterval(() => void syncBroadcast()'),'DJ player no longer launches overlapping hidden-tab network intervals')
 assert.ok(!loadStabilityCommunication.includes('setInterval(loadMessages'),'Direct Communication uses serial visible polling instead of stacked message intervals')
 assert.ok(loadStabilityDevelopmentFoundry.includes('visiblePoll(() => refresh(), 30000)')&&loadStabilityDevelopmentFoundry.includes('visiblePoll(() => pulse(false), 60000)')&&!loadStabilityDevelopmentFoundry.includes('window.setInterval'),'Development Foundry UI uses serial visible polling rather than overlapping background intervals')
-assert.ok(loadStabilityPositionEvent.includes('visiblePoll(() => setNow(new Date()), 1000)')&&!loadStabilityPositionEvent.includes('window.setInterval(() => setNow(new Date())'),'Flame Event clock stops consuming render work while its page is hidden')
+assert.ok(!loadStabilityPositionEvent.includes('setNow(new Date())')&&!loadStabilityPositionEvent.includes('window.setInterval(() => setNow(new Date())'),'Flame Event clock stops consuming render work while its page is hidden')
 assert.ok(read('app/(app)/event/page.tsx').includes('<PositionEventWorld role={role}')&&read('app/client/event/page.tsx').includes('<PositionEventWorld')&&read('app/client/event/page.tsx').includes('role="client"'),'Agent Bridger Administration and Client enter the same PositionEventWorld for Loop 1')
 
 

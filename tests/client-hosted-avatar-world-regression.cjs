@@ -48,6 +48,6 @@ assert.ok(event.includes('data-flame-event-system-switch-entry="true"')&&event.i
 assert.ok(market.includes('href="/system-switch/customer-doors?entrance=market"'),'Visitors cross from Customer Market as avatar')
 assert.ok(staffGate.includes('data-system-switch-gate="burning-river"')&&staffGate.includes('href="/flame-event/world?via=system-switch"'),'System Switch staff gate opens the real Client File Folder world after the river crossing')
 const publicOpenWorld=read('app/flame-event/world/page.tsx')
-assert.ok(publicOpenWorld.includes('<BurningRiverLiveWorld role={role}/>')&&publicOpenWorld.includes("fromSwitch?'/system-switch'"),'Public File Folder domain world returns to the gate')
+assert.ok(publicOpenWorld.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode}/>')&&publicOpenWorld.includes("fromSwitch?'/system-switch'"),'Public File Folder domain world returns to the gate')
 assert.ok(page.includes('<SystemSwitchDoorPlaza/>')&&worldPage.includes('<HostedFileFolderVisit'),'Pages render actual 3D world not cards only')
 console.log('System Switch · Client-hosted Doors · staff/visitor avatar multiplayer and Client cloud boundaries passed')
