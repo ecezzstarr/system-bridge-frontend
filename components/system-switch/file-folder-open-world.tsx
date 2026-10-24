@@ -48,6 +48,7 @@ type Props = {
   pollAi?: boolean
   fileFolderTier?: string
   worldAppearance?: FileFolderWorldAppearance
+  embedded?: boolean
 }
 
 const districts = [
@@ -130,6 +131,7 @@ export default function FileFolderOpenWorld({
   pollAi = true,
   fileFolderTier = 'standard',
   worldAppearance,
+  embedded = false,
 }: Props) {
   const { orderFor } = useEnvironmentOrganizer()
   const [world, setWorld] = useState(initialWorld)
@@ -397,6 +399,12 @@ export default function FileFolderOpenWorld({
               builds={Array.isArray(world?.builds)?world.builds:[]}
               systemRecords={Array.isArray(world?.systems)?world.systems:[]}
               now={now}/>
+          : fileFolderTier==='premium'&&embedded
+          ? <div className="border-b border-[#c59b5c]/30 bg-[#251e21] px-4 py-4 text-[#f5dfc2]" data-premium-workshop-interior="true">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#f2c67d]">Premium File Folder · Operating Workshop</p>
+              <p className="mt-2 text-sm">You entered this workshop from your Premium world. Select a station below to choose a system, acquire materials, build, or operate. Your work remains attached to your Client File Folder.</p>
+              <p className="mt-2 text-xs text-[#d8bea0]">Your interactive Premium citadel remains outside this panel; this view is for doing the work.</p>
+            </div>
           : fileFolderTier==='premium'
           ? <FileFolderPremiumWorld appearance={worldAppearance||resolveFileFolderAppearance('premium')}
               districts={visibleDistricts} active={district} onEnter={enterDistrict}
