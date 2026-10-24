@@ -28,7 +28,7 @@ assert.ok(visual.includes('Company Loop 1 · Burning River')&&visual.includes("f
 assert.ok(visual.includes('data-weave-open-world="system-switch-file-folder-world"'),'Shared real-world rendering belongs to System Switch')
 assert.ok(land.includes('data-weave-world-landscape="physical-ground-forest-and-paths"'),'3D geography is real geometry')
 assert.ok(land.includes('CanvasTexture')&&land.includes('LandMaterial')&&land.includes('WorldFootpath'),'The shared landscape has actual terrain material and verified building approaches')
-assert.ok(visual.includes('<WeaveOpenWorldLandscape domains={domains}/>'),'Physical landscape is mounted under Client domains')
+assert.ok(visual.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>'),'Physical landscape is mounted under Client domains')
 assert.ok(!visual.includes("backgroundImage:\"url('/weave/flame-event/burning-river-open-world-official.webp')"),'The reference image is not rendered as an image wallpaper behind fake world geometry')
 assert.ok(visual.includes('new THREE.ShaderMaterial')&&visual.includes('water.uniforms.time.value'),'Event water and fire move on actual 3D surfaces')
 assert.ok(visual.includes('<DomainCastle')&&visual.includes('selectedDomain.customerDoor.open'),'Real Client-built world and commissioned Customer Door gates remain clickable')
