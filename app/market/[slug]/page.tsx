@@ -119,6 +119,15 @@ export default async function PublicClientMarketStore({
   const checkoutOrder=orderForCheckout[0]||null
 
   const carrierCode=String(query.legion||'').trim().slice(0,80)
+  // Public sales representatives are drawn only from this Client's real,
+  // active Legions. They share the Client's published offer windows; WEAVE
+  // does not invent employee products, stock or unverified commission claims.
+  const teamSellers=await sql`
+    SELECT name,function_title,sales_code FROM enterprise_legions
+    WHERE client_id=${store.client_id}::uuid AND active=true AND sales_enabled=true
+      AND sales_code IS NOT NULL AND sales_code<>''
+    ORDER BY name ASC LIMIT 12
+  `
   const [legion]=carrierCode
     ? await sql`
         SELECT name,function_title,sales_code
@@ -135,6 +144,15 @@ export default async function PublicClientMarketStore({
     {legion&&<div className="border-b border-violet-300/15 bg-violet-400/[0.06] px-5 py-3 text-center text-xs text-violet-100">
       <span className="font-black">Legion Carrier:</span> {legion.name} · {legion.function_title}. This Client-owned Customer Door remains the business destination; this Legion carried you here.
     </div>}
+    {teamSellers.length>0&&<nav aria-label="Client and Legion selling team" data-public-client-legion-storefronts="verified-active-sellers"
+      className="mx-auto max-w-5xl space-y-2 px-5 py-4">
+      <h2 className="text-sm font-black text-amber-100">This Client's selling team</h2>
+      <p className="text-xs text-slate-300">Choose a verified team representative to view the Client's published products and services through their attributed sales door.</p>
+      <div className="flex flex-wrap gap-2">{teamSellers.map((seller:any)=><a key={seller.sales_code}
+        href={'/market/'+encodeURIComponent(slug)+'?via=system-switch&checkout=1&legion='+encodeURIComponent(String(seller.sales_code))+'#offers'}
+        className="min-h-10 rounded-lg border border-amber-200/30 bg-[#122b31] px-3 py-2 text-xs font-bold text-amber-100">
+        {String(seller.name).slice(0,75)} · {String(seller.function_title||'Sales representative').slice(0,60)} →</a>)}</div>
+    </nav>}
     {checkoutOrder&&<div className="mx-auto max-w-5xl px-5 py-4"><CustomerDoorCheckout orderId={String(checkoutOrder.id)} amount={Number(checkoutOrder.amount)} currency={String(checkoutOrder.currency)}/></div>}
     <ClientMarketEnvironment
       slug={slug}
