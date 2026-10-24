@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import FileFolderOpenWorld from '@/components/system-switch/file-folder-open-world'
+import FileFolderPremiumWorld from '@/components/system-switch/file-folder-premium-world'
 import {resolveFileFolderAppearance} from '@/lib/file-folder-world-presets'
 import GenerativeFormationWorkshop from '@/components/system-switch/generative-formation-workshop'
 import ClientWorkshopWorld from '@/components/system-switch/client-workshop-world'
@@ -430,6 +431,15 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
   }
 
   const [insideWorkshop,setInsideWorkshop]=useState(false)
+  const enterPremiumDistrict=(district:string)=>{
+    setInsideWorkshop(false)
+    setSelectedBuildId('')
+    setSelectedSystemId('')
+    setFormationDistrict(district)
+    setFormationOpen(true)
+    setSurface('builds')
+    setPanelOpen(true)
+  }
   const travelToStudio = (district: string) => {
     setInsideWorkshop(true)
     setSelectedBuildId('')
@@ -568,7 +578,33 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
       </header>
 
       <div className="ff-scene absolute inset-0">
-        <ClientFileFolder3D
+        {data.file_folder_tier==='premium'
+          ? <div className="h-full overflow-y-auto overscroll-contain px-2 pb-24 pt-36 sm:px-4 sm:pt-44 md:px-6" data-premium-file-folder-entrance="official-live-world">
+              <div className="mx-auto max-w-7xl">
+                <FileFolderPremiumWorld
+                  appearance={resolveFileFolderAppearance('premium',data.file_folder_world_release?.config)}
+                  districts={[
+                    {key:'workshop_core',label:'Business Core'},
+                    {key:'blueprint_foundry',label:'Blueprint Foundry'},
+                    {key:'build_market',label:'Materials Depot'},
+                    {key:'parts_workshop',label:'Parts Workshop'},
+                    {key:'formation_yard',label:'Construction Yard'},
+                    {key:'boost_bay',label:'Acceleration Bay'},
+                    {key:'active_systems',label:'Systems in Motion'},
+                    {key:'library_district',label:'Formation Intelligence'},
+                  ]}
+                  active={formationDistrict}
+                  onEnter={enterPremiumDistrict}
+                  builds={builds}
+                  systemRecords={systems}
+                  blueprints={blueprints}
+                  inventory={Array.isArray(world?.inventory)?world.inventory:[]}
+                  customerDoor={world?.customerDoor}
+                  now={now}
+                />
+              </div>
+            </div>
+          : <ClientFileFolder3D
           fileFolderTier={data.file_folder_tier}
           activeSurface={current.key}
           onSurfaceChange={(next) => enterSurface(next)}
@@ -628,13 +664,14 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
           businessSector={businessFormation.sector || null}
           presenceKey={String(data.client.file_number||'')}
           territoryMode
-        />
+        />}
       </div>
 
       <div
         className={`ff-workspace absolute z-40 transition-all duration-500 ease-out
           inset-x-2 bottom-[4.75rem] max-h-[56dvh]
-          md:inset-y-[7.75rem] md:left-auto md:right-0 md:bottom-auto md:w-[min(43rem,48vw)] md:max-h-none
+          md:inset-y-[7.75rem] md:left-auto md:right-0 md:bottom-auto md:max-h-none
+          ${data.file_folder_tier==='premium'?'md:w-[min(72rem,76vw)]':'md:w-[min(43rem,48vw)]'}
           ${panelOpen ? 'translate-y-0 opacity-100 md:translate-x-0' : 'pointer-events-none translate-y-[115%] opacity-0 md:translate-y-0 md:translate-x-[110%]'}`}
         aria-hidden={!panelOpen}
         inert={!panelOpen}
