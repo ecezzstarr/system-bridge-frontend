@@ -40,7 +40,7 @@ assert.ok(shared.includes("b.status='active'")===false,'Front end does not fake 
 assert.ok(staffDoors.includes("d.status='active'")&&publicDoors.includes("b.status='active'"),'Only verified public build records identify Client Customer Doors')
 assert.ok(staffDoors.includes("s.world_host_customer_market=true OR s.world_host_flame_event=true"),'Staff sees legitimate doors from both hosted positions')
 assert.ok(publicDoors.includes("s.world_host_customer_market=true"),'Visitors see only publicly hosted Customer Doors')
-assert.ok(publicArrival.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>'),'Visitor enters open world with Agent attribution and without compulsory player')
+assert.ok(publicArrival.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),'Visitor enters open world with Agent attribution and without compulsory player')
 assert.ok(publicPreview.includes('<RiverSurface quiet={false}/>')&&publicPreview.includes('public_systems'),'Visitor sees a living river and published Client system structures')
 assert.ok(store.includes('<ClientMarketEnvironment')&&store.includes('offers={offers}'),'Customer Door leads to its owner-controlled real offers')
 assert.ok(carrier.includes("redirect('/flame-event?carrier='+encodeURIComponent(code))"),'Agent link still enters Burning River before attributed checkout')
