@@ -53,7 +53,7 @@ export default function EmployeeClientTicketCrossing({offerToken}:{offerToken:st
     finally{setBusy(false)}
   }
 
-  return <main className="min-h-dvh bg-[#050d15] px-4 py-10 text-white">
+  return <main className="min-h-dvh bg-[#050d15] px-4 py-10 text-white" data-weave-company-ticket="employee-file-folder">
     <div className="mx-auto max-w-2xl space-y-6">
       <Link href="/file-folder" className="text-sm text-cyan-200">← File Folder entrance</Link>
       <header className="space-y-2">

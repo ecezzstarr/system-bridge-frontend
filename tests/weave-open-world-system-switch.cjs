@@ -72,7 +72,7 @@ assert.ok(worldFeed.includes('void reconciliation.catch')&&worldFeed.includes("g
 
 const mobileWorld=read('components/world/weave-world-map-fallback.tsx')
 const canvasDriver=read('components/world/adaptive-canvas.tsx')
-assert.ok(visual.includes('data-world-first-view="castle-landscape"') &&
+assert.ok(visual.includes('data-world-first-view="live-3d-castle-landscape"') &&
   visual.includes("const anchor=domains.find(domain=>domain.domainId===selected)||domains[0]") &&
   visual.includes('camera.lookAt(focal.x,focal.y,focal.z)'),
   'Map camera centers real Client castles at phone-visible zoom, not a distant empty sky')

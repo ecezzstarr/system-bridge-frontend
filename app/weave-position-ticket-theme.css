@@ -1,0 +1,221 @@
+/*
+ * WEAVE Position Access and Ticket continuation.
+ *
+ * Shared light porcelain / river-blue / warm-gold visual language from the
+ * official homepage and Plus File Folder. No payment, auth, ticket, role,
+ * Administration-approval, or entitlement flow is changed here.
+ * Company Loop 2's green-white-green stylesheet remains authoritative.
+ */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] {
+  background:
+    radial-gradient(ellipse 75% 38% at 5% 4%, rgba(129,199,236,.26), transparent 80%),
+    radial-gradient(ellipse 64% 29% at 94% 85%, rgba(243,207,136,.22), transparent 86%),
+    linear-gradient(165deg, #edf8ff, #fffefa 53%, #eaf5fb);
+  color: #24465f;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card {
+  width: 100%;
+  border: 1px solid rgba(185,146,78,.48);
+  border-radius: clamp(1.1rem,3vw,2rem);
+  background: linear-gradient(135deg,rgba(248,252,255,.98),rgba(255,253,246,.99) 59%,rgba(235,248,255,.98));
+  color: #1c405a;
+  box-shadow: 0 25px 72px rgba(29,89,119,.12), inset 0 1px 0 rgba(255,255,255,.95);
+  backdrop-filter: blur(12px);
+  min-width: 0;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card :is(
+  h1,h2,h3,h4,[data-slot="card-title"],[data-slot="card-description"]
+) {
+  color: #1c4664;
+  text-shadow: none;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card :is(
+  [class~="text-white"],[class~="text-slate-200"],[class~="text-slate-300"],[class~="text-slate-400"],[class~="text-slate-500"]
+) {
+  color: #45677e;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card [class~="text-amber-100"],
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card [class~="text-amber-200"],
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card [class~="text-amber-300"] {
+  color: #886025;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card :is(
+  input,select,textarea
+) {
+  background: rgba(255,255,255,.96);
+  border-color: rgba(165,134,88,.38);
+  color: #1a425d;
+  box-shadow: inset 0 1px 3px rgba(24,72,98,.035);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card input::placeholder,
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card textarea::placeholder {
+  color: #658197;
+  opacity: 1;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card .weave-logo-live {
+  padding: .3rem .6rem;
+  background: linear-gradient(100deg,#184968,#286c92);
+  border: 1px solid rgba(231,197,128,.36);
+  border-radius: .65rem;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card button:is(
+  [class*="bg-slate-7"],[class*="bg-slate-6"]
+) {
+  background: #e3f0f8;
+  color: #23536e;
+  border-color: rgba(186,149,93,.42);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card :is(
+  button[class*="border-slate-6"],[data-department-event-explanation]
+) {
+  border-color: rgba(184,140,70,.43);
+  background: linear-gradient(145deg,rgba(248,251,255,.98),rgba(255,247,226,.80));
+  color: #244863;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card button[class*="border-slate-6"]:hover {
+  border-color: #b27b2c;
+  background: #fff1d4;
+}
+/* Department gate is an operational extension of Position Access. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-department-ticket] {
+  color: #25455e;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-department-ticket] :is(
+  [class*="bg-slate-950"],[class*="bg-slate-900"],[class*="bg-black/"],[class*="from-amber-400/10"]
+) {
+  background: linear-gradient(155deg,#f8fcff,#fffaf0);
+  border-color: rgba(181,144,82,.33);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-department-ticket] :is(
+  [class~="text-white"],[class~="text-slate-300"],[class~="text-slate-400"],[class~="text-slate-500"]
+) {
+  color: #335771;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-department-ticket] :is(
+  [class~="text-cyan-300"],[class~="text-cyan-400"],[class~="text-green-300"]
+) {
+  color: #1d7d87;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-department-ticket] :is(
+  input,textarea
+) {
+  background: #fff;
+  color: #193e59;
+  border-color: rgba(187,150,85,.43);
+}
+/* Position Access and ticket privacy never depends on visual styling. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-department-ticket] :is(button,input):focus-visible,
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] :is(a,button,input):focus-visible {
+  outline: 3px solid #ad7e3b;
+  outline-offset: 3px;
+}
+/* Employee tickets (USDT, invitation-scoped) and public retail File Folders
+   remain DIFFERENT workflows and transaction types. Only the visual identity
+   is unified. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-company-ticket="employee-file-folder"] {
+  background:
+    radial-gradient(ellipse at 6% 0%,rgba(157,214,245,.31),transparent 64%),
+    linear-gradient(160deg,#ecf8fe,#fffdf5 61%,#ecf7fd);
+  color: #1c425c;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-company-ticket="employee-file-folder"] > div > header {
+  border-bottom: 1px solid rgba(181,143,81,.42);
+  padding-bottom: 1.3rem;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-company-ticket="employee-file-folder"] > div > section {
+  border-color: rgba(186,141,74,.42);
+  background: linear-gradient(145deg,#f9fcff,#fffaf0 66%,#f2f9ff);
+  box-shadow: 0 23px 65px rgba(27,86,122,.12);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-company-ticket="employee-file-folder"] :is(
+  [class~="text-white"],[class~="text-slate-200"],[class~="text-slate-300"],[class~="text-slate-400"],[class~="text-cyan-200"]
+) {
+  color: #335973;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-company-ticket="employee-file-folder"] input:not([type="checkbox"]) {
+  background: #fff;
+  color: #1f4560;
+  border-color: #cbb88e;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-company-ticket="employee-file-folder"] [class~="text-amber-100"] {
+  color: #8b601f;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-public-file-folder-purchase="river-gold"] {
+  background: linear-gradient(180deg,#ebf6fd,#fffefa 46%,#eaf5fb);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-public-file-folder-purchase="river-gold"] > nav {
+  background: linear-gradient(115deg,#e8f6fe,#fffdf5 58%,#e7f5fb);
+  border-color: rgba(186,144,82,.41);
+  color: #244e69;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-public-file-folder-purchase="river-gold"] > nav .weave-logo-live {
+  padding: .18rem .48rem;
+  background: #194866;
+  border-radius: .45rem;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-public-file-folder-purchase="river-gold"] > div > section {
+  border-color: rgba(192,156,90,.48);
+  background:
+    radial-gradient(ellipse at 97% 1%,rgba(243,205,129,.12),transparent 66%),
+    linear-gradient(160deg,rgba(14,62,89,.98),rgba(11,57,85,.98));
+  box-shadow: 0 24px 70px rgba(15,70,105,.15);
+}
+@media (max-width: 640px) {
+  html[data-weave-app-theme="river-gold"] [data-weave-position-access-shell] {
+    padding-inline: .7rem;
+  }
+  html[data-weave-app-theme="river-gold"] [data-weave-position-access-shell] .weave-position-access-card {
+    border-radius: 1.15rem;
+  }
+}
+
+
+/* Preserve readable high-contrast actions on the new light surfaces. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card :is(
+  button[class*="bg-blue-600"],button[class*="bg-cyan-600"],
+  button[class*="bg-green-600"],button[class*="bg-emerald-600"]
+) {
+  background: linear-gradient(110deg,#185573,#237e9b);
+  color: #fff;
+  border: 1px solid rgba(207,173,108,.56);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card :is(
+  button[class*="bg-blue-600"],button[class*="bg-cyan-600"],
+  button[class*="bg-green-600"],button[class*="bg-emerald-600"]
+):hover { background: #1c607c; color: #fff; }
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card :is(
+  button[class*="bg-blue-600"],button[class*="bg-cyan-600"],
+  button[class*="bg-green-600"],button[class*="bg-emerald-600"]
+) :is(.text-white,[class~="text-white"]) { color: #fff; }
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card [class~="bg-slate-900"]:not(input):not(textarea) {
+  background: rgba(233,245,253,.88);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] .weave-position-access-card :is(
+  [class~="text-blue-400"],[class~="text-blue-300"],[class~="text-cyan-400"]
+) { color: #176f99; }
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-department-ticket] [class*="from-amber-400/10"] {
+  background: linear-gradient(145deg,#fffaf0,#f5fbff);
+  border-color: rgba(195,153,82,.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.92);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-department-ticket] .border-white\/10 {
+  border-color: rgba(182,142,78,.35);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-position-access-shell] [data-weave-department-ticket] [class~="text-red-300"] {
+  color: #ad3147;
+}
+/* Agent, Bridger and Client job entitlement controls continue to live inside
+   the same river-gold enterprise framing, not in a disconnected navy page. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-lifestyle-catalog="canonical"] {
+  border-color: rgba(195,153,83,.42);
+  background:
+    radial-gradient(ellipse at 90% 0%,rgba(248,204,130,.19),transparent 60%),
+    linear-gradient(165deg,rgba(16,74,106,.96),rgba(12,54,83,.97) 62%,rgba(18,76,99,.95));
+  box-shadow: 0 20px 58px rgba(27,91,118,.13);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) [data-weave-lifestyle-catalog="canonical"] :is(
+  [data-lifestyle],[data-lifestyle-agentic-purchase]
+) {
+  border-color: rgba(218,184,121,.34);
+  background: linear-gradient(140deg,rgba(48,120,147,.17),rgba(226,183,105,.06));
+}

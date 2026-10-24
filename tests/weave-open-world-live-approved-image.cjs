@@ -10,7 +10,7 @@ const api=read('app/api/system-switch/open-world/route.ts')
 const data=read('lib/weave-open-world-domains.ts')
 
 assert.ok(atlas.includes('data-weave-official-atlas="approved-image-live-world"'),
- 'The official WEAVE Open World picture is the main entry landscape')
+ 'The official WEAVE Open World picture remains an available navigable atlas view')
 assert.ok(atlas.includes('const SCENE_URLS=[')&&
  Array.from({length:10},(_,i)=>"'/weave/open-world/scene-"+String(i).padStart(2,'0')+".webp'").every(url=>atlas.includes(url))&&
  atlas.includes("'/weave/open-world/scene-preview.webp'"),
@@ -44,11 +44,11 @@ assert.ok(css.includes('weave-atlas-river-drift')&&
 assert.ok(page.includes("import './open-world-atlas.css'")&&
  page.includes('/weave/open-world/scene-preview.webp')&&
  page.includes('data-weave-open-world="system-switch"'),
- 'System Switch route loads approved picture first while remaining the permanent world container')
-assert.ok(scene.includes("landMode,setLandMode]=useState<'atlas'|'3d'>('atlas')")&&
+ 'System Switch preserves the approved picture as a lightweight loading surface for the live world')
+assert.ok(scene.includes("landMode,setLandMode]=useState<'atlas'|'3d'>('3d')")&&
  scene.includes('landMode===\'atlas\'?<WeaveOpenWorldAtlas')&&
  scene.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>'),
- 'The official image is the default and the actual movable 3D landscape stays available')
+ 'Live physical 3D is the default and the official image atlas remains available on demand')
 assert.ok(scene.includes('onWorldReady={()=>setSceneReady(true)}')&&
  scene.includes('<DomainCastle key={d.domainId}')&&
  scene.includes('setPlacing(true)')&&
