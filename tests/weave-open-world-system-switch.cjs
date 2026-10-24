@@ -51,3 +51,21 @@ assert.ok(owner.includes('Preview my Customer Door in Weave Open World'),'Owner 
 assert.ok(exists('app/system-switch/customer-doors/page.tsx')&&exists('app/system-switch/customer-doors/[slug]/page.tsx'),'Historical URLs remain redirected, not deleted or broken')
 assert.ok(visual.includes("action==='request_connection'")&&visual.includes("action==='respond_connection'"),'Client-owned consented company-event collaboration is preserved')
 console.log('PASS: Permanent WEAVE Open World, Company Loop event distinction, physical Client land, no duplicate plaza, real doors and Carrier food')
+
+
+// Production load regression: texture/font networking and a ten-second API timeout
+// must not strand the entire Open World or show a permanent empty 3D canvas.
+const worldFood3D=read('components/events/burning-river-food-store-3d.tsx')
+assert.ok(!worldFood3D.includes('<Text '),'World storefront cannot suspend on external Drei font downloads')
+assert.ok(worldFood3D.includes('<Html center position='),'Storefront signage must remain visible without external font fetching')
+assert.ok(visual.includes("setStatus('unavailable')")&&visual.includes('if(mounted&&!document.hidden)'),
+  'World feed timeout must leave the loading state, including watchdog-aborted requests')
+assert.ok(visual.includes('Retry land connection')&&visual.includes('fallback={<div'),
+  'Keep an in-world retry and WebGL failure path')
+assert.ok(visual.includes('<Suspense fallback={<meshStandardMaterial')&&land.includes('<Suspense fallback={<meshStandardMaterial'),
+  '3D terrain and Client castles must remain visible while the atlas loads')
+assert.ok(world.includes('data-weave-open-world-loader="loading-3d-world"'),
+  'Entry must paint a world loader before heavy 3D modules download')
+const worldFeed=read('app/api/events/flame/open-world/route.ts')
+assert.ok(worldFeed.includes('void reconciliation.catch')&&worldFeed.includes("getFlameEvent().catch"),
+  'Database maintenance and event metadata cannot block already verified public Client land')

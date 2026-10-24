@@ -1,9 +1,18 @@
 'use client'
 
 import {useEffect,useState} from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import {ArrowLeft} from 'lucide-react'
-import {BurningRiverLiveWorld} from '@/components/events/burning-river-live-world'
+// Load the GPU-heavy scene after the System Switch page can paint its entry.
+// Visitors always see a recognizable world-loading surface during the split.
+const BurningRiverLiveWorld=dynamic(
+  ()=>import('@/components/events/burning-river-live-world').then(m=>m.BurningRiverLiveWorld),
+  {ssr:false,loading:()=> <div role="status" data-weave-open-world-loader="loading-3d-world"
+    className="flex min-h-[60svh] items-center justify-center bg-[radial-gradient(ellipse_at_center,#183c51,#071324)] p-6 text-center text-sm font-semibold text-sky-100">
+    Opening WEAVE Open World · Client land, castles and public Customer Doors…
+  </div>},
+)
 
 /**
  * SYSTEM SWITCH is the container and gate of the permanent WEAVE Open World.

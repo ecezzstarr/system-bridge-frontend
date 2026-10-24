@@ -1,6 +1,6 @@
 'use client'
 
-import {useEffect,useMemo} from 'react'
+import {Suspense,useEffect,useMemo} from 'react'
 import * as THREE from 'three'
 import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
@@ -74,7 +74,9 @@ function WorldFootpath({domain}:{domain:PublicWorldDomain}){
  return <group rotation={[0,angle,0]}>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.42,distance*.48]} receiveShadow>
    <planeGeometry args={[1.45,Math.max(1,distance*.95)]}/>
-   <CityMaterial kind="paving" tileX={2} tileY={Math.max(2,Math.round(distance/2))} tint="#d0c8b2"/>
+   <Suspense fallback={<meshStandardMaterial color="#b1a697" roughness={.9}/>}>
+    <CityMaterial kind="paving" tileX={2} tileY={Math.max(2,Math.round(distance/2))} tint="#d0c8b2"/>
+   </Suspense>
   </mesh>
   <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.416,distance*.48]}>
    <planeGeometry args={[.28,Math.max(1,distance*.95)]}/>
