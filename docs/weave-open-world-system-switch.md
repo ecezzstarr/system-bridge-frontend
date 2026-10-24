@@ -23,6 +23,15 @@ Retired `/system-switch/customer-doors` and `/system-switch/customer-doors/[slug
 ## Event separation
 The world heading is **Weave Open World**, with a secondary event label that only describes Burning River as currently taking place when the Company Loop service reports it active. No forced war-gaming, avatar/joystick controls or separate empty Customer Door Plaza.
 
+## Client-owned castle placement and two-sided Customer Door
+- Every purchased Client File Folder retains its unique, permanent world slot and owner; an optional persisted `map_x/map_z` relocates only the appearance of its **castle on the shared land**. The system does not change File Numbers, accounts, payment records, workshops, store ownership or Client Customer Door privileges.
+- An authenticated Client chooses **Position my castle**, taps actual open land, previews the new site and chooses **Confirm castle position**. Cancellation never writes. The server independently validates active Client ownership, same-origin requests, map boundaries, river and WEAVE Food Store reserved areas, and clear distance from every other Client castle (including those not on the current displayed map page).
+- Castle moves serialize with a PostgreSQL advisory transaction lock; no two concurrent confirmations can claim overlapping spots. The new position persists through reload and is delivered by the existing public world feed; old purchased slots stay unchanged.
+- When a Client taps **their own castle**, the system opens their authenticated private File Folder (`/client/system-switch`). This owner route is selected using the Client-only server-authenticated domain ID, not a guessed browser role or a public file number. The private folder continues enforcing its existing access controls.
+- When a visitor, customer, Bridger, Agent, or a different Client taps a commissioned castle, it leads only to that Client's actual **public Customer Door**, directly to their enabled product/service windows. An uncommissioned castle never opens an unrelated Client's private environment.
+- The public Customer Door lists the verified Client's active, sales-enabled **Legion team representatives** and offers attributable public sales links; the products are the real enabled `client_store_items` belonging to that Client. Legion attribution is carried through System Switch if provided, and checkout keeps independent authorization and receipts. No fake employee stock or extra entitlements.
+- Material improvements reuse the existing physically shaded city texture atlas for cobbled paths and built castle façades. The land has physically lit grass with terrain relief, modeled woods and a flowing water/fire event element; **not a 2D sales image wallpaper**.
+
 ## Quality checks
 `tests/weave-open-world-system-switch.cjs` validates permanent ownership, redirect safety, real landscape geometry, active construction, real Agent food links, public Customer Door gating and event identity. This runs alongside the existing live-world multiplayer, food, role login and System Switch CI checks.
 
