@@ -14,7 +14,9 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
     let elapsed=clock.elapsedTime
     let hasDrawn=false
     const tick=(time:number)=>{
-      if(document.hidden)return
+      // A hidden browser tab must not permanently kill the render loop.
+      // Keep one lightweight frame request queued and reset frame timing on return.
+      if(document.hidden){last=0;frame=requestAnimationFrame(tick);return}
       const delta=last?time-last:1000/fps
       if(!last||delta>=1000/fps){
         if(last)reportRuntimeFrame(delta,1000/fps)
