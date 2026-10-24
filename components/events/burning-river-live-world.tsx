@@ -12,7 +12,7 @@ import {FlameEventFoodStore} from './flame-event-food-store'
 import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import {visiblePoll} from '@/lib/visible-poll'
-import type {PublicWorldDomain} from '@/lib/weave-open-world-domains'
+import {verifyCastlePlacement,type PublicWorldDomain} from '@/lib/weave-open-world-domains'
 import {ArrowRight,Castle,Handshake,Layers3,MapPinned,RefreshCcw,ShieldCheck,Store,Waves} from 'lucide-react'
 
 type Connection={id:string;status:'pending'|'accepted'|'declined';otherDomainId:string;direction:'incoming'|'outgoing';requestNote:string}
@@ -172,7 +172,8 @@ function DomainCastle({domain,selected,onSelect}:{
   </group>
 }
 
-function WorldScene({domains,links,selected,onSelect,carrierCode,focus}:{
+function WorldScene({domains,links,selected,onSelect,carrierCode,focus,placing,onPlace,preview}:{
+  placing:boolean;onPlace:(point:{x:number;z:number})=>void;preview:{x:number;z:number}|null
   carrierCode?:string|null;focus:'world'|'food'
   domains:PublicWorldDomain[];links:WorldFeed['links'];selected:string|null
   onSelect:(id:string)=>void
@@ -185,7 +186,11 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus}:{
     <ambientLight intensity={1.3} color="#b9d3fc"/>
     <hemisphereLight args={['#b9d8ff','#624337',1.2]}/>
     <directionalLight position={[30,55,15]} intensity={2.2} color="#ffe8bf"/>
-    <WeaveOpenWorldLandscape domains={domains}/>
+    <WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>
+    {placing&&preview&&<mesh position={[preview.x,.09,preview.z]} rotation={[-Math.PI/2,0,0]}>
+      <ringGeometry args={[3.15,3.55,40]}/>
+      <meshBasicMaterial color="#a7ffe2" side={THREE.DoubleSide} transparent opacity={.85}/>
+    </mesh>}
     <MovingBurningRiver/>
     <BurningRiverFoodStore3D carrierCode={carrierCode}/>
     {domains.map(d=><DomainCastle key={d.domainId} domain={d}
@@ -210,7 +215,8 @@ const stageLabel:{[key:string]:string}={
  operating:'Systems operating',expanding:'Business expanding',
 }
 
-export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requestedDoor=null}:{
+export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requestedDoor=null,legionCode=null}:{
+  legionCode?:string|null
   carrierCode?:string|null
   requestedDoor?:string|null
   role?:'visitor'|'client'|'agent'|'bridger'|'admin'
@@ -219,6 +225,8 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  const [feed,setFeed]=useState<WorldFeed>(emptyFeed)
  const [status,setStatus]=useState<'loading'|'ready'|'unavailable'>('loading')
  const [selected,setSelected]=useState<string|null>(null)
+ const [placing,setPlacing]=useState(false)
+ const [candidate,setCandidate]=useState<{x:number;z:number}|null>(null)
  const [page,setPage]=useState(0)
  const [owner,setOwner]=useState<OwnWorld|null>(null)
  const [jointConnectionId,setJointConnectionId]=useState('')
@@ -230,6 +238,14 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  const [webgl,setWebgl]=useState(true)
  const [stamp,setStamp]=useState('')
  const selectedDomain=feed.domains.find(d=>d.domainId===selected)||null
+ const publicHref=(domain:PublicWorldDomain)=>{
+   if(!domain.customerDoor.open||!domain.customerDoor.href?.startsWith('/market/'))return null
+   const suffix=legionCode&&/^[a-zA-Z0-9_-]{1,80}$/.test(legionCode)?'&legion='+encodeURIComponent(legionCode):''
+   return domain.customerDoor.href+suffix+'#offers'
+ }
+ const displayDomains=placing&&candidate&&owner
+  ?feed.domains.map(d=>d.domainId===owner.domainId?{...d,location:{...d.location,...candidate}}:d)
+  :feed.domains
  useEffect(()=>{
    if(!requestedDoor||selected)return
    const match=feed.domains.find(d=>d.customerDoor.href?.startsWith('/market/'+encodeURIComponent(requestedDoor)+'?'))
@@ -287,6 +303,40 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      await Promise.all([refresh(),refreshOwner()])
    }catch(error){setOperation(error instanceof Error?error.message:'Event action unavailable')}
    finally{setBusy(false)}
+ }
+ const placeOnLand=(point:{x:number;z:number})=>{
+   if(!placing||!owner)return
+   const occupied=feed.domains.filter(d=>d.domainId!==owner.domainId).map(d=>({x:d.location.x,z:d.location.z}))
+   const result=verifyCastlePlacement(point.x,point.z,occupied)
+   if(!result.ok){setOperation(result.reason);setCandidate(null);return}
+   setCandidate(result.point)
+   setOperation('Previewing this position. Confirm to move your castle for everyone.')
+ }
+ const moveMyCastle=async()=>{
+   if(!owner||!candidate||busy)return
+   setBusy(true);setOperation('')
+   try{
+     const token=localStorage.getItem('ssb_auth_token')||''
+     const response=await fetch('/api/client/open-world/castle-position',{method:'POST',
+       headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
+       body:JSON.stringify(candidate)})
+     const data=await response.json()
+     if(!response.ok||!data.success)throw Error(data.error||'Castle relocation could not be completed.')
+     setPlacing(false);setCandidate(null)
+     await refresh()
+     setOperation('Your castle moved to its new WEAVE land position. File Folder ownership and Customer Door are unchanged.')
+   }catch(error){setOperation(error instanceof Error?error.message:'Your previous castle position is unchanged.')}
+   finally{setBusy(false)}
+ }
+ const tapCastle=(id:string)=>{
+   setSelected(id)
+   if(placing)return
+   const domain=feed.domains.find(d=>d.domainId===id)
+   if(!domain)return
+   if(role==='client'&&!owner)return
+   if(role==='client'&&owner?.domainId===id){window.location.assign('/client/system-switch');return}
+   const href=publicHref(domain)
+   if(href)window.location.assign(href)
  }
  const incoming=owner?.connections.filter(c=>c.status==='pending'&&c.direction==='incoming')||[]
  const accepted=owner?.connections.filter(c=>c.status==='accepted')||[]
