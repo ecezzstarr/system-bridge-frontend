@@ -129,31 +129,37 @@ export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowD
         <LiveClientCastle domain={active}/>
       </AdaptiveCanvas>
     </div>}
+    <button type="button" aria-label="Open World menu and domains"
+      onClick={onShowDomains} className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+      style={{right:'1%',top:'1%',width:'10%',height:'6%'}}/>
+    <Link href={staffHref} aria-label="Bridge of Radiance: System Switch crossing"
+      className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+      style={{left:'70%',top:'16%',width:'29%',height:'5%'}}/>
     {/* Invisible semantic controls are positioned over the illustration's
         EXISTING entrance/menu artwork. No duplicate word-cards are painted. */}
     <Link href={staffHref} aria-label="Staff Entrance" title="Staff Entrance"
       className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-      style={{left:'2.2%',top:'84.0%',width:'31.5%',height:'6.4%'}} data-weave-image-entrance="staff"/>
+      style={{left:'2.2%',top:'79.2%',width:'31.5%',height:'6.9%'}} data-weave-image-entrance="staff"/>
     <button type="button" aria-label="Visitor Entrance: explore WEAVE live 3D world"
       onClick={onExplore} className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-      style={{left:'34.0%',top:'84.0%',width:'31.5%',height:'6.4%'}} data-weave-image-entrance="visitor"/>
+      style={{left:'34.0%',top:'79.2%',width:'31.5%',height:'6.9%'}} data-weave-image-entrance="visitor"/>
     <button type="button" aria-label="Customer Door: commissioned Client products and services"
       onClick={onCustomerDoor} className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-      style={{left:'66.0%',top:'84.0%',width:'31.5%',height:'6.4%'}} data-weave-image-entrance="customer"/>
+      style={{left:'66.0%',top:'79.2%',width:'31.5%',height:'6.9%'}} data-weave-image-entrance="customer"/>
     <button type="button" aria-label="World Map" onClick={onExplore}
       className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-      style={{left:'0',top:'93.0%',width:'19.8%',height:'5.1%'}}/>
+      style={{left:'0',top:'88.1%',width:'19.8%',height:'6.5%'}}/>
     <button type="button" aria-label="Domains" onClick={onShowDomains}
       className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-      style={{left:'20%',top:'93.0%',width:'19.8%',height:'5.1%'}}/>
+      style={{left:'20%',top:'88.1%',width:'19.8%',height:'6.5%'}}/>
     <button type="button" aria-label="Explore 3D" onClick={onExplore}
       className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-      style={{left:'40%',top:'93.0%',width:'19.8%',height:'5.1%'}}/>
+      style={{left:'40%',top:'88.1%',width:'19.8%',height:'6.5%'}}/>
     <button type="button" aria-label="Community" onClick={onShowCommunity}
       className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-      style={{left:'60%',top:'93.0%',width:'19.8%',height:'5.1%'}}/>
+      style={{left:'60%',top:'88.1%',width:'19.8%',height:'6.5%'}}/>
     <button type="button" aria-label="Guide" onClick={onShowGuide}
       className="absolute z-20 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-      style={{left:'80%',top:'93.0%',width:'19.8%',height:'5.1%'}}/>
+      style={{left:'80%',top:'88.1%',width:'19.8%',height:'6.5%'}}/>
   </div>
 }
