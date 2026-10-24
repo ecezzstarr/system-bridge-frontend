@@ -19,7 +19,7 @@ const hotspots={
 export function BurningRiverOfficialGateway({
  staff=false,carrierCode=null,staffHref='/system-switch',onCustomerDoor,
 }:{staff?:boolean;carrierCode?:string|null;staffHref?:string;onCustomerDoor?:()=>void}){
- const worldHref=carrierCode?'/flame-event/world?carrier='+encodeURIComponent(carrierCode):'/flame-event/world'
+ const worldHref=carrierCode?'/system-switch/world?carrier='+encodeURIComponent(carrierCode):'/system-switch/world'
  const customerHref=worldHref+'#domains'
  const staffEntrance=staff?staffHref:'/login'
  const [missing,setMissing]=useState(false)
