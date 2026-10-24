@@ -9,7 +9,6 @@ import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-lands
 import {WeaveWorldMapFallback} from '@/components/world/weave-world-map-fallback'
 import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import {burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
-import {FlameEventFoodStore} from './flame-event-food-store'
 import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
 import {visiblePoll} from '@/lib/visible-poll'
@@ -387,6 +386,9 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
          carrierCode={carrierCode} focus={focus} placing={placing} onPlace={placeOnLand} preview={candidate}/>
      </AdaptiveCanvas>}
      {(webgl!==true||!sceneReady)&&<WeaveWorldMapFallback domains={displayDomains} onSelect={tapCastle}/>}
+     {focus==='food'&&(webgl!==true||!sceneReady)&&<div className="absolute inset-x-7 bottom-20 z-10 mx-auto max-w-sm overflow-hidden rounded-lg border border-amber-200/35 bg-[#082b34]/90 p-2 shadow-2xl">
+       <img src="/weave-food/weave-family-products.avif" width={1200} height={700} alt="WEAVE Food Store original product collection" loading="lazy" className="h-auto w-full object-contain"/>
+     </div>}
 
      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-[#061225]/85 to-transparent px-3 pb-12 pt-3">
        <div className="flex items-center justify-between gap-2 text-[11px]">
@@ -438,7 +440,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      </div>}
      
    </div>
-   {webgl===false&&<FlameEventFoodStore carrierCode={carrierCode}/>}
+   {/* Food remains a real image/store entrance on phones without WebGL; no second page of cards. */}
    <details className="group border-t border-amber-100/20 bg-[#091626]" data-weave-world-details="collapsed-by-default">
      <summary className="cursor-pointer px-4 py-3 text-xs font-semibold text-amber-100">Castles · World details · Client connections</summary>
      <div className="grid gap-4 p-4 lg:grid-cols-[1.25fr_1fr] lg:p-6">
