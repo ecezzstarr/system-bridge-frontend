@@ -1,5 +1,8 @@
-/**
- * Permanent System Switch Open World reads verified Client File Folder domains.
- * The original event route remains compatible for historic Company Loop clients.
+import {GET as readVerifiedClientDomains} from '@/app/api/events/flame/open-world/route'
+
+export const dynamic='force-dynamic'
+
+/** System Switch is the permanent Weave Open World container.
+ * The event compatibility endpoint retains the same verified public data.
  */
-export {GET,dynamic} from '@/app/api/events/flame/open-world/route'
+export const GET=readVerifiedClientDomains
