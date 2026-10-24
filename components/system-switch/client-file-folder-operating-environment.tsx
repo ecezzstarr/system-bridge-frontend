@@ -867,6 +867,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                 </div>
                 <GenerativeFormationWorkshop />
                 <FileFolderOpenWorld
+                  embedded={data.file_folder_tier==='premium'}
                   clientName={data.client.name}
                   fileNumber={data.client.file_number}
                   fileFolderTier={data.file_folder_tier}
