@@ -289,8 +289,14 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      projects:json.projects||[],ownSystems:json.ownSystems||[]})
  },[role])
  useEffect(()=>{
-   try{const canvas=document.createElement('canvas');setWebgl(Boolean(canvas.getContext('webgl2')||canvas.getContext('webgl')))}
-   catch{setWebgl(false)}
+   try{
+     const canvas=document.createElement('canvas')
+     const context=canvas.getContext('webgl2')||canvas.getContext('webgl')
+     setWebgl(Boolean(context))
+     // The capability probe must release its temporary GPU context on phones.
+     // The actual scene gets its own context from AdaptiveCanvas.
+     if(context)context.getExtension('WEBGL_lose_context')?.loseContext()
+   }catch{setWebgl(false)}
  },[])
  useEffect(()=>{
    let mounted=true
