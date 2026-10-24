@@ -17,7 +17,7 @@ const rolePresence=read('components/world/role-presence-environment.tsx')
 
 assert.ok(staffGate.includes("['admin', 'agent', 'bridger']") || staffGate.includes("['agent', 'bridger', 'admin']"),'Admin, Agent and Bridger share the staff System Switch gate')
 assert.ok(staffGate.includes("redirect('/client/system-switch')"),'Client entering the shared System Switch resolves into the owned Client File Folder gate')
-assert.ok(staffGate.includes('data-system-switch-gate="burning-river"')&&staffGate.includes('href="/flame-event/world?via=system-switch"'),'Staff System Switch displays the Burning River gate and deliberately opens the public File Folder world')
+assert.ok(staffGate.includes('data-system-switch-gate="burning-river"')&&staffGate.includes('href="/system-switch/world?via=system-switch"'),'Staff System Switch displays the Burning River gate and deliberately opens the public File Folder world')
 assert.ok(staffEvent.includes('data-flame-event-location="file-folder"')&&staffEvent.includes('data-system-switch-crossed="true"'),'Staff Flame Event exists inside the File Folder after System Switch')
 assert.ok(clientSwitch.includes('href="/client/system-switch/flame-event"')&&clientSwitch.includes('data-file-folder-flame-event="inside"'),'Client File Folder exposes Flame Event from inside the File Folder')
 assert.ok(clientEvent.includes('data-flame-event-location="file-folder"')&&clientEvent.includes('href="/client/system-switch"'),'Client Flame Event remains inside and returns to the File Folder')
