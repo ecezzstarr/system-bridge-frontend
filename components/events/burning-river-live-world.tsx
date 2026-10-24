@@ -1,6 +1,6 @@
 'use client'
 
-import {useEffect,useMemo,useState,useCallback} from 'react'
+import {Suspense,useEffect,useMemo,useState,useCallback} from 'react'
 import Link from 'next/link'
 import {Html,OrbitControls,Line} from '@react-three/drei'
 import {useFrame,useThree} from '@react-three/fiber'
@@ -107,11 +107,15 @@ function DomainCastle({domain,selected,onSelect}:{
     </mesh>
     <mesh position={[0,height*.43+.2,0]} castShadow>
       <boxGeometry args={[2.45,height*.86,2.1]}/>
-      <CityMaterial kind={domain.tier==='plus'?'glass':domain.tier==='premium'?'warm':'metal'} tileX={2} tileY={Math.max(1,Math.round(height/1.2))} tint={stone}/>
+      <Suspense fallback={<meshStandardMaterial color={stone} metalness={.15} roughness={.7}/>}>
+       <CityMaterial kind={domain.tier==='plus'?'glass':domain.tier==='premium'?'warm':'metal'} tileX={2} tileY={Math.max(1,Math.round(height/1.2))} tint={stone}/>
+      </Suspense>
     </mesh>
     <mesh position={[0,height+.4,0]} castShadow>
       <coneGeometry args={[1.6,1.7,4]}/>
-      <CityMaterial kind={domain.tier==='premium'?'warm':'metal'} tileX={2} tileY={1} tint={roof}/>
+      <Suspense fallback={<meshStandardMaterial color={roof} roughness={.6}/>}>
+       <CityMaterial kind={domain.tier==='premium'?'warm':'metal'} tileX={2} tileY={1} tint={roof}/>
+      </Suspense>
     </mesh>
     {/* A three-dimensional entrance exists on every building; commissioned doors
          are lit by verified public Client status, never by visual assumption. */}
@@ -235,7 +239,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
  const [selectedSystemIds,setSelectedSystemIds]=useState<Record<string,string>>({})
  const [operation,setOperation]=useState('')
  const [busy,setBusy]=useState(false)
- const [webgl,setWebgl]=useState(true)
+ const [webgl,setWebgl]=useState<boolean|null>(null)
  const [stamp,setStamp]=useState('')
  const selectedDomain=feed.domains.find(d=>d.domainId===selected)||null
  const publicHref=(domain:PublicWorldDomain)=>{
@@ -278,10 +282,14 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    catch{setWebgl(false)}
  },[])
  useEffect(()=>{
+   let mounted=true
    const stop=visiblePoll(async signal=>{
-     try{await refresh(signal)}catch{if(!signal.aborted)setStatus('unavailable')}
+     try{await refresh(signal)}catch{
+       // Requests aborted by the watchdog must exit the initial loading state.
+       if(mounted&&!document.hidden)setStatus('unavailable')
+     }
    },15000,true)
-   return stop
+   return ()=>{mounted=false;stop()}
  },[refresh])
  useEffect(()=>{
    if(role!=='client')return
@@ -355,8 +363,10 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      {/* Approved burning-river-open-world-official.webp defines the architectural art direction.
           Land, fire, trees and buildings are physical in-scene geometry, not a wallpaper. */}
      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
-     {webgl&&<AdaptiveCanvas camera={{position:[0,66,95],fov:46,near:.1,far:350}}
-       gl={{antialias:false,alpha:true,powerPreference:'low-power'}} mobileGame>
+     {webgl===true&&<AdaptiveCanvas camera={{position:[0,66,95],fov:46,near:.1,far:350}}
+       gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
+       fallback={<div className="flex h-full items-center justify-center px-6 text-center text-sm text-sky-100">3D graphics could not start. The Client land and Customer Door list remain accessible below.</div>}
+       mobileGame>
        <WorldScene domains={displayDomains} links={feed.links} selected={selected} onSelect={tapCastle}
          carrierCode={carrierCode} focus={focus} placing={placing} onPlace={placeOnLand} preview={candidate}/>
      </AdaptiveCanvas>}
@@ -403,11 +413,16 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
          <Link href={publicHref(selectedDomain)!} className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-amber-200 px-2 text-xs font-bold text-[#13263a]">Open public Customer Door · View products <ArrowRight className="ml-1 h-4 w-4"/></Link>:
          <p className="mt-2 text-[11px] text-sky-100/70">This building is forming. Its Customer Door has not been publicly commissioned.</p>}
      </div>}
-     {!webgl&&<div className="absolute inset-0 flex items-center justify-center bg-[#08172a]/85 px-6 text-center text-sm">
+     {status==='unavailable'&&<div role="alert" className="absolute bottom-16 left-3 z-20 max-w-[75%] rounded-xl border border-amber-200/50 bg-[#071b2c]/95 p-3 text-xs leading-5 text-amber-100">
+       The live land feed did not respond. The landscape remains available while the connection recovers.
+       <button type="button" onClick={()=>{setStatus('loading');void refresh().catch(()=>setStatus('unavailable'))}}
+         className="mt-2 block min-h-9 rounded-lg border border-amber-200/50 px-3 font-bold">Retry land connection</button>
+     </div>}
+     {webgl===false&&<div className="absolute inset-0 flex items-center justify-center bg-[#08172a]/85 px-6 text-center text-sm">
        3D is not available on this device. Use the same verified Client domains below.
      </div>}
    </div>
-   {!webgl&&<FlameEventFoodStore carrierCode={carrierCode}/>}
+   {webgl===false&&<FlameEventFoodStore carrierCode={carrierCode}/>}
    <div className="grid gap-4 border-t border-amber-100/20 bg-[#091626] p-4 lg:grid-cols-[1.25fr_1fr] lg:p-6">
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
