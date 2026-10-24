@@ -17,8 +17,8 @@ const hotspots={
 }
 
 export function BurningRiverOfficialGateway({
- staff=false,carrierCode=null,staffHref='/system-switch',onCustomerDoor,
-}:{staff?:boolean;carrierCode?:string|null;staffHref?:string;onCustomerDoor?:()=>void}){
+ staff=false,carrierCode=null,staffHref='/system-switch',
+}:{staff?:boolean;carrierCode?:string|null;staffHref?:string}){
  const worldHref=carrierCode?'/system-switch/world?carrier='+encodeURIComponent(carrierCode):'/system-switch/world'
  const customerHref=worldHref+'#domains'
  const staffEntrance=staff?staffHref:'/login'
@@ -41,22 +41,16 @@ export function BurningRiverOfficialGateway({
        <Link href={worldHref} className={hotspotBase} style={hotspots.visitor}
          aria-label="Visitor Entrance" title="Visitor Entrance"
          data-gateway-image-entrance="visitor"/>
-       {onCustomerDoor?
-         <button type="button" className={hotspotBase} style={hotspots.customer}
-           onClick={onCustomerDoor} aria-label="Customer Door: browse commissioned Client Customer Doors"
-           title="Customer Door" data-gateway-image-entrance="customer"/>:
-         <Link href={customerHref} className={hotspotBase} style={hotspots.customer}
-           aria-label="Customer Door: browse commissioned Client Customer Doors"
-           title="Customer Door" data-gateway-image-entrance="customer"/>}
+       <Link href={customerHref} className={hotspotBase} style={hotspots.customer}
+           aria-label="Customer Door: browse commissioned Client Customer Doors in WEAVE Open World"
+           title="Customer Door" data-gateway-image-entrance="customer"/>
      </div>:
      <nav aria-label="Burning River entrances" className="grid gap-3 bg-[#0d1726] p-5 text-center text-sm font-semibold"
        data-gateway-fallback="true">
        <Link href={worldHref} data-enter-burning-river="true" className="rounded-lg border border-amber-200 p-4">Enter Burning River</Link>
        <Link href={staffEntrance} className="rounded-lg border border-amber-200/40 p-4">Staff Entrance</Link>
        <Link href={worldHref} className="rounded-lg border border-sky-200/40 p-4">Visitor Entrance</Link>
-       {onCustomerDoor?
-         <button type="button" onClick={onCustomerDoor} className="rounded-lg border border-emerald-200/40 p-4">Customer Door</button>:
-         <Link href={customerHref} className="rounded-lg border border-emerald-200/40 p-4">Customer Door</Link>}
+       <Link href={customerHref} className="rounded-lg border border-emerald-200/40 p-4">Customer Door</Link>
      </nav>}
    </div>
  </section>
