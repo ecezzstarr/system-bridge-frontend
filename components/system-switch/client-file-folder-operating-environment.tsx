@@ -595,6 +595,7 @@ export default function ClientFileFolderOperatingEnvironment({ data }: Props) {
                   ]}
                   active={formationDistrict}
                   onEnter={enterPremiumDistrict}
+                  onOpenCustomerDoor={()=>{setInsideWorkshop(false);setSelectedSystemId('');setSurface('business');setPanelOpen(true)}}
                   builds={builds}
                   systemRecords={systems}
                   blueprints={blueprints}
