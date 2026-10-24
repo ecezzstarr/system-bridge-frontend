@@ -44,7 +44,7 @@ export default async function PublicClientMarket(){
         <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-sky-300"><Landmark className="h-4 w-4"/>WEAVE Customer Market</p>
         <h1 data-weave-live-word="title" className="mt-4 max-w-4xl text-4xl font-black tracking-[-0.04em] sm:text-6xl">The open internet meets Client-built enterprises.</h1>
         <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">Each Client builds privately inside System Switch. When the Customer Door opens, the enterprise enters this public market. Visitors arrive here from the WEAVE homepage or a Client Customer Door link, then enter the shared Burning River land to find the Client's real public File Folder domain. No WEAVE account is required. Logged-in staff meet Client Customer Doors inside Flame Event instead of browsing the private Client path.</p>
-        <Link href="/flame-event/world#domains" className="mt-6 inline-flex items-center gap-2 border border-emerald-300/30 bg-emerald-400/[.08] px-5 py-3 text-xs font-black text-emerald-100">Enter Burning River · Client Worlds <ArrowRight className="h-4 w-4"/></Link>
+        <Link href="/system-switch/world#domains" className="mt-6 inline-flex items-center gap-2 border border-emerald-300/30 bg-emerald-400/[.08] px-5 py-3 text-xs font-black text-emerald-100">Enter Weave Open World <ArrowRight className="h-4 w-4"/></Link>
         <div className="mt-7 flex flex-wrap gap-2 text-[9px] font-black uppercase tracking-wider text-slate-400">
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Open internet access</span>
           <span className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2">Client-owned stores</span>
@@ -68,7 +68,7 @@ export default async function PublicClientMarket(){
           const config=normalizeStoreEnvironmentConfig(store.environment_config)
           const doorName=config.platformName || store.name || 'Customer Door'
           const level=store.has_market_hall?'Market Hall':store.has_storefront?'Store Building':doorName
-          return <Link key={store.public_slug} href={`/flame-event/world?door=${encodeURIComponent(String(store.public_slug))}#domains` className="group relative min-h-[360px] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(155deg,rgba(14,165,233,.09),rgba(17,24,39,.88)_48%,rgba(88,28,135,.16))] p-5 shadow-[0_28px_80px_rgba(0,0,0,.28)] transition hover:-translate-y-1 hover:border-sky-200/20">
+          return <Link key={store.public_slug} href={`/system-switch/world?door=${encodeURIComponent(String(store.public_slug))}#domains` className="group relative min-h-[360px] overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(155deg,rgba(14,165,233,.09),rgba(17,24,39,.88)_48%,rgba(88,28,135,.16))] p-5 shadow-[0_28px_80px_rgba(0,0,0,.28)] transition hover:-translate-y-1 hover:border-sky-200/20">
             <div className="absolute inset-x-5 bottom-4 h-6 rounded-[50%] bg-black/50 blur-lg"/>
             <div className="relative flex items-start justify-between gap-3">
               <span className="text-[8px] font-black uppercase tracking-[0.18em] text-sky-300">{config.marketSection}</span>
