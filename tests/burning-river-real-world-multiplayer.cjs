@@ -58,7 +58,7 @@ const api=read('app/api/events/flame/open-world/route.ts')
 const client=read('app/api/client/company-loop-connections/route.ts')
 const map=read('components/events/burning-river-live-world.tsx')
 const gate=read('components/events/burning-river-official-gateway.tsx')
-const route=read('app/flame-event/world/page.tsx')
+const route=read('app/system-switch/world/page.tsx')
 const staff=read('components/events/position-event-world.tsx')
 const visitor=read('components/events/flame-event-public-mobile.tsx')
 const migration=read('migrations/20261023_burning_river_open_world_domains.sql')
@@ -92,7 +92,7 @@ assert.ok(!map.includes('WeaveEmbodiedAvatar')&&!map.includes('joystick')&&!map.
 assert.ok(gate.includes("burning-river-crossing-official.webp")&&
  map.includes("burning-river-open-world-official.webp"),
  'Both official approved images are referenced; no alternate concept image')
-assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode}/>'),
+assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door}/>'),
  'Clickable crossing opens real shared world route')
 assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
  route.includes('carrierCode={carrierCode}')&&map.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),
