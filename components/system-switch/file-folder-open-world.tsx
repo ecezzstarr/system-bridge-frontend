@@ -5,6 +5,7 @@ import FileFolderPlatformProjectStudio from './file-folder-platform-project-stud
 import FileFolderLivingTerrain from './file-folder-living-terrain'
 import FileFolderPlusRadiantWorld from './file-folder-plus-radiant-world'
 import FileFolderStandardLivingWorld from './file-folder-standard-living-world'
+import FileFolderPremiumWorld from './file-folder-premium-world'
 import {resolveFileFolderAppearance,type FileFolderWorldAppearance} from '@/lib/file-folder-world-presets'
 import { type FileFolderPlatformKind } from '@/lib/file-folder-platform-projects'
 import { buildFormationProgress } from '@/lib/file-folder-world-runtime'
@@ -389,9 +390,17 @@ export default function FileFolderOpenWorld({
               builds={Array.isArray(world?.builds)?world.builds:[]}
               systemRecords={Array.isArray(world?.systems)?world.systems:[]}
               now={now}/>
+          : fileFolderTier==='premium'
+          ? <FileFolderPremiumWorld appearance={worldAppearance||resolveFileFolderAppearance('premium')}
+              districts={visibleDistricts} active={district} onEnter={enterDistrict}
+              builds={Array.isArray(world?.builds)?world.builds:[]}
+              systemRecords={Array.isArray(world?.systems)?world.systems:[]}
+              blueprints={Array.isArray(world?.blueprints)?world.blueprints:[]}
+              inventory={Array.isArray(world?.inventory)?world.inventory:[]}
+              customerDoor={world?.customerDoor} now={now}/>
           : <FileFolderLivingTerrain districts={visibleDistricts} active={district} onEnter={enterDistrict}
               systems={world?.systems?.length||0} building={activeBuilds.length} builds={activeBuilds} now={now}
-              appearance={worldAppearance||resolveFileFolderAppearance(fileFolderTier==='premium'?'premium':'pro')}/>} 
+              appearance={worldAppearance||resolveFileFolderAppearance('pro')}/>} 
 
 
 
