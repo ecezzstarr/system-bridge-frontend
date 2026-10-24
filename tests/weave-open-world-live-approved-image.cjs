@@ -11,10 +11,10 @@ const data=read('lib/weave-open-world-domains.ts')
 
 assert.ok(atlas.includes('data-weave-official-atlas="approved-image-live-world"'),
  'The official WEAVE Open World picture is the main entry landscape')
-assert.ok(atlas.includes("SCENE_TILES=Array.from({length:10}")&&
- atlas.includes("'/weave/open-world/scene-'")&&
+assert.ok(atlas.includes('const SCENE_URLS=[')&&
+ Array.from({length:10},(_,i)=>"'/weave/open-world/scene-"+String(i).padStart(2,'0')+".webp'").every(url=>atlas.includes(url))&&
  atlas.includes("'/weave/open-world/scene-preview.webp'"),
- 'Full-resolution approved art sections and the quick-loading preview have fixed asset paths')
+ 'Ten explicit approved image assets and the fast preview are available for the route audit')
 assert.ok(atlas.includes("data-weave-verified-live-count={domains.length}")&&
  atlas.includes('domains.map(domain=>'),
  'Live castle markers come exclusively from real public File Folder records')
