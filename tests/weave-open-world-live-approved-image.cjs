@@ -21,10 +21,14 @@ assert.ok(atlas.includes("data-weave-verified-live-count={domains.length}")&&
 assert.ok(atlas.includes('onSelect(domain.domainId)')&&
  atlas.includes('data-open-world-domain={domain.domainId}'),
  'A verified Client castle is independently selectable on the approved art')
-assert.ok(atlas.includes('enable3D&&active&&where')&&
- atlas.includes('<AdaptiveCanvas')&&atlas.includes('<LiveClientCastle domain={active}/>')&&
+assert.ok(atlas.includes('data-weave-live-castle-layer="multi-domain-three-dimensional"')&&
+ atlas.includes('<AdaptiveCanvas orthographic')&&
+ atlas.includes('<VerifiedCastleLayer domains={renderedCastles}')&&
+ atlas.includes('<LiveClientCastle domain={domain}/>')&&
+ atlas.includes("useThree(state=>state.viewport)")&&
+ atlas.includes('domains.slice(0,12)')&&
  atlas.includes('useFrame((_,delta)'),
- 'Selected Client File Folder castle renders as live animated 3D, not a pasted sprite')
+ 'Multiple verified Client castles render in one adaptive live 3D canvas, not a single decorative spotlight')
 assert.ok(atlas.includes("domain.tier==='plus'")&&
  atlas.includes('domain.buildLevel')&&atlas.includes('domain.activity.buildProgress')&&
  atlas.includes('domain.activity.operatingSystems')&&
@@ -59,4 +63,17 @@ assert.ok(api.includes('readVerifiedClientDomains')&&
  'The real world feed excludes private Client identity and fabricated accounts')
 assert.ok(!atlas.includes('NORTHRIDGE FOLDER')&&!atlas.includes('ASHEN BASTION'),
  'Illustrated exemplar castle names must never be emitted as real Client data')
-console.log('PASS: approved WEAVE art, live 3D verified castle, hotspots, water/fire, and protected Customer Doors')
+const landscape=read('components/world/weave-open-world-landscape.tsx')
+assert.ok(landscape.includes('data-weave-open-world-geography="physical-mountain-ridge"')&&
+ landscape.includes('data-weave-world-bridge="physical-stone-crossing"')&&
+ landscape.includes('<PublicRiverCrossings/>')&&landscape.includes('<MountainRidge/>'),
+ 'Full 3D mode includes real bridge and mountain geometry, not only background art')
+assert.ok(scene.includes('const tapCastle=(id:string)=>{')&&
+ scene.includes('if(!feed.domains.some(domain=>domain.domainId===id))return')&&
+ scene.includes('setSelected(id)')&&
+ !scene.includes('if(role===\'client\'&&!owner)return'),
+ 'Tapping any real castle must allow inspection without depending on a separate private Client session')
+assert.ok(scene.includes("landMode==='atlas'?'bottom-[17%]':'bottom-14'")&&
+ scene.includes('publicHref(selectedDomain)'),
+ 'Selected castle shows authorized entrances without obscuring the approved atlas image buttons')
+console.log('PASS: approved WEAVE art, multi-castle 3D, physical geography, inspection, and protected Customer Doors')
