@@ -33,7 +33,9 @@ async function readyWorldStorage(sql:any){
         .then(()=>{lastReconciliation=Date.now()})
         .finally(()=>{reconciliation=null})
     }
-    await reconciliation
+    // Older-domain reconciliation is periodic maintenance. A slow or failing
+    // reconciliation must not block already commissioned public Client land.
+    void reconciliation.catch(error=>console.error('[world reconciliation]',error))
   }
 }
 
@@ -47,15 +49,18 @@ export async function GET(request:NextRequest){
   try{
     const sql=getBusinessDb()
     await readyWorldStorage(sql)
-    await matureElapsedCustomerDoors(sql)
+    await matureElapsedCustomerDoors(sql).catch(error=>console.error('[world customer-door maturity]',error))
     const pageRaw=Number(request.nextUrl.searchParams.get('page')||0)
     if(!Number.isInteger(pageRaw)||pageRaw<0||pageRaw>1000)
       return NextResponse.json({error:'Invalid map page'},{status:400})
-    const [world,event]=await Promise.all([getPublicBurningRiverWorld(sql,pageRaw),getFlameEvent()])
+    const [world,event]=await Promise.all([
+      getPublicBurningRiverWorld(sql,pageRaw),
+      getFlameEvent().catch(error=>{console.error('[world event status]',error);return null}),
+    ])
     return NextResponse.json({
       success:true,
       event:{key:FLAME_EVENT.key,label:'Company Loop 1 — Flame Event: Burning River',
-        status:event.effectiveStatus||resolveEventStatus(event),worldMode:'systems_and_business_expansion',
+        status:event?(event.effectiveStatus||resolveEventStatus(event)):'unavailable',worldMode:'systems_and_business_expansion',
         combat:false},
       ...world,
       updatedAt:new Date().toISOString(),
