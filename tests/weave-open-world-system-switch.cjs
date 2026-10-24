@@ -82,8 +82,10 @@ assert.ok(visual.includes('onWorldReady={()=>setSceneReady(true)}') &&
 assert.ok(mobileWorld.includes('data-weave-open-world-visual-fallback="real-domains"') &&
   mobileWorld.includes('domains.map') && mobileWorld.includes('onSelect(d.domainId)'),
   'Fallback plots only recorded castles with clickable safe entrances')
-assert.ok(canvasDriver.includes('if(document.hidden){last=0;frame=requestAnimationFrame(tick);return}'),
-  'Backgrounding a phone does not permanently end the Open World rendering loop')
+assert.ok(canvasDriver.includes("document.addEventListener('visibilitychange',visibilityChange)") &&
+  canvasDriver.includes('if(document.hidden){last=0;return}') &&
+  canvasDriver.includes("document.removeEventListener('visibilitychange',visibilityChange)"),
+  'Hidden phone scenes stop rendering and resume when visible without leaking a listener')
 assert.ok(visual.includes('data-weave-world-details="collapsed-by-default"') &&
   visual.includes('<summary className='),
   'World activity and Client connections are available but do not overwhelm the map')
