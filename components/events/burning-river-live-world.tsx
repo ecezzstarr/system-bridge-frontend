@@ -357,7 +357,8 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
      {webgl&&<AdaptiveCanvas camera={{position:[0,66,95],fov:46,near:.1,far:350}}
        gl={{antialias:false,alpha:true,powerPreference:'low-power'}} mobileGame>
-       <WorldScene domains={feed.domains} links={feed.links} selected={selected} onSelect={setSelected} carrierCode={carrierCode} focus={focus}/>
+       <WorldScene domains={displayDomains} links={feed.links} selected={selected} onSelect={tapCastle}
+         carrierCode={carrierCode} focus={focus} placing={placing} onPlace={placeOnLand} preview={candidate}/>
      </AdaptiveCanvas>}
      <div className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-[#061225]/95 to-transparent px-3 pb-10 pt-3">
        <div className="flex items-center justify-between gap-2 text-xs">
@@ -367,9 +368,22 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
          <span className="rounded-lg border border-white/15 bg-[#061225]/75 px-2 py-2 text-sky-100">System Switch · Living land</span>
        </div>
      </div>
+     {role==='client'&&owner&&<div className="absolute right-3 top-16 z-20 flex max-w-[57%] flex-col gap-2" data-client-world-castle-relocation="owner-only">
+       {!placing?<button type="button" className="min-h-11 rounded-xl border border-cyan-200/45 bg-[#092a36]/95 px-3 text-xs font-black text-cyan-100"
+         onClick={()=>{setSelected(owner.domainId);setFocus('world');setPlacing(true);setCandidate(null);setOperation('Tap an empty area of land to preview your castle position.')}}>
+         Position my castle
+       </button>:<div className="space-y-2 rounded-xl border border-emerald-200/40 bg-[#082b2b]/95 p-3 text-xs text-white shadow-xl">
+         <p className="font-bold text-emerald-100">Tap an open space on the land.</p>
+         <p className="text-[11px] text-slate-200">{candidate?('New site: '+candidate.x+', '+candidate.z):'Your current location remains unchanged until confirmation.'}</p>
+         <button type="button" disabled={!candidate||busy} onClick={()=>void moveMyCastle()}
+           className="min-h-10 w-full rounded-lg bg-emerald-200 px-2 font-bold text-[#082522] disabled:opacity-40">Confirm castle position</button>
+         <button type="button" onClick={()=>{setPlacing(false);setCandidate(null);setOperation('Castle movement cancelled.')}}
+           className="min-h-10 w-full rounded-lg border border-white/30 px-2">Cancel</button>
+       </div>}
+     </div>}
      <nav aria-label="Explore the WEAVE land" className="absolute left-3 top-16 flex gap-2">{(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-11 rounded-xl border border-amber-200/30 bg-[#061225]/95 px-3 py-2 text-xs font-bold text-amber-100">{view==='food'?'WEAVE Food Store':'File Folder Land'}</button>)}</nav>
      <div className="pointer-events-none absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-[11px] text-sky-100">
-       {focus==='food'?'Real WEAVE products · Choose an Agent to order':'Drag to look · Pinch to zoom · Tap a Client building'}
+       {placing?'Tap free land · Preview · Confirm move':focus==='food'?'Real WEAVE products · Choose an Agent to order':'Drag to look · Pinch to zoom · Tap a Client castle to enter'}
      </div>
      {focus==='food'&&<Link href={burningRiverFoodHref(carrierCode,'agent-electrolyte')}
        data-weave-food-direct-carrier-order="true"
@@ -379,8 +393,10 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
      {selectedDomain&&focus==='world'&&<div className="absolute bottom-14 right-3 z-10 w-[min(280px,calc(100%-1.5rem))] rounded-xl border border-amber-200/40 bg-[#081c2a]/95 p-3 shadow-xl" data-open-world-selected-building={selectedDomain.domainId}>
        <p className="truncate text-xs font-black text-amber-100">{selectedDomain.publicName}</p>
        <p className="mt-1 text-[11px] capitalize text-sky-100/70">{selectedDomain.tier} · {stageLabel[selectedDomain.stage]}</p>
-       {selectedDomain.customerDoor.open&&selectedDomain.customerDoor.href?
-         <Link href={selectedDomain.customerDoor.href} className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-amber-200 px-2 text-xs font-bold text-[#13263a]">Enter public Customer Door <ArrowRight className="ml-1 h-4 w-4"/></Link>:
+       {role==='client'&&owner?.domainId===selectedDomain.domainId?
+         <Link href="/client/system-switch" className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-emerald-200 px-2 text-xs font-bold text-[#0d2931]">Enter my private File Folder <ArrowRight className="ml-1 h-4 w-4"/></Link>:
+         publicHref(selectedDomain)?
+         <Link href={publicHref(selectedDomain)!} className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-amber-200 px-2 text-xs font-bold text-[#13263a]">Open public Customer Door · View products <ArrowRight className="ml-1 h-4 w-4"/></Link>:
          <p className="mt-2 text-[11px] text-sky-100/70">This building is forming. Its Customer Door has not been publicly commissioned.</p>}
      </div>}
      {!webgl&&<div className="absolute inset-0 flex items-center justify-center bg-[#08172a]/85 px-6 text-center text-sm">
@@ -399,7 +415,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
           <RefreshCcw className="h-3.5 w-3.5"/> Refresh
         </button>
       </div>
-      <p className="text-xs leading-5 text-sky-100/70">Each Client building stands in its permanent location. Construction and operating systems develop the visible structure. Tap a commissioned Customer Door to enter that Client's public store.</p>
+      <p className="text-xs leading-5 text-sky-100/70">Clients may move their castle on the land without losing its File Folder. Owners enter their private systems; visitors and customers enter only commissioned public Customer Doors to see actual products and services.</p>
       <div id="domains" className="grid max-h-60 scroll-mt-10 grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
        {feed.domains.map(d=><button type="button" key={d.domainId}
          onClick={()=>setSelected(d.domainId)} aria-pressed={selected===d.domainId}
@@ -430,10 +446,14 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
           <span className="rounded-lg border border-white/15 p-2"><b className="block text-lg">{selectedDomain.activity.operatingSystems}</b>Operating</span>
           <span className="rounded-lg border border-white/15 p-2"><b className="block text-lg">{selectedDomain.activity.jointFormations}</b>Joint systems</span>
         </div>
-        {selectedDomain.customerDoor.open&&selectedDomain.customerDoor.href?
-          <Link href={selectedDomain.customerDoor.href}
+        {role==='client'&&owner?.domainId===selectedDomain.domainId?
+          <Link href="/client/system-switch" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-200 px-3 py-3 text-sm font-black text-[#132d2a]">
+            <Castle className="h-4 w-4"/> Enter my private File Folder <ArrowRight className="h-4 w-4"/>
+          </Link>:
+          publicHref(selectedDomain)?
+          <Link href={publicHref(selectedDomain)!}
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-amber-200 px-3 py-3 text-sm font-black text-[#142139]">
-            <Store className="h-4 w-4"/> Open this Client Customer Door <ArrowRight className="h-4 w-4"/>
+            <Store className="h-4 w-4"/> Open public Customer Door · Products <ArrowRight className="h-4 w-4"/>
           </Link>:
           <p className="rounded-lg border border-sky-200/20 p-3 text-xs text-sky-100/75">
             This File Folder is present on the world map. Its private workspaces remain protected, and a public Customer Door is not yet open.
