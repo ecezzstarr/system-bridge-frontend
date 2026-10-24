@@ -25,7 +25,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#020617',
+  themeColor: '#eaf6fc',
 }
 
 export default function ClientLayout({
