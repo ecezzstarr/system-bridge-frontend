@@ -7,13 +7,11 @@ type RolePlace = {
   daily?: boolean
 }
 
-export function placeThroughSystemSwitch(role: SystemSwitchRole, place: RolePlace): RolePlace {
-  if (place.href !== '/event' && place.href !== '/client/event') return place
-
-  return {
-    ...place,
-    label: 'System Switch',
-    href: role === 'client' ? '/client/system-switch' : '/system-switch',
-    detail: 'Cross the System Switch gate into the File Folder. Flame Event is inside the File Folder after the crossing.',
-  }
+/**
+ * Keep the Flame Event visible in the role's district. It is the arrival
+ * ground, while System Switch remains a distinct, intentional crossing.
+ * This compatibility function keeps existing district consumers working.
+ */
+export function placeThroughSystemSwitch(_role: SystemSwitchRole, place: RolePlace): RolePlace {
+  return place
 }

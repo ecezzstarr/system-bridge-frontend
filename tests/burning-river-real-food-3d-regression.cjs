@@ -36,7 +36,7 @@ assert.ok(preview.includes('File Folder ·')&&preview.includes("door.level==='ma
 assert.ok(preview.includes('data-flame-preview-no-avatar="true"')&&!preview.includes('data-flame-mobile-joystick'),'Public 3D view has no avatar or joystick')
 assert.ok(preview.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),'Real image fallback remains available when WebGL is absent')
 assert.ok(arrival.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>'),'Agent identity reaches the real in-world food storefront')
-assert.ok(arrival.includes('<BurningRiverOfficialGateway carrierCode={carrierCode}/>'),'Preserve the newer official Burning River gateway')
+assert.ok(arrival.includes('<BurningRiverOfficialGateway carrierCode={carrierCode} onCustomerDoor='),'Preserve the newer official Burning River gateway')
 const live=read('components/events/burning-river-live-world.tsx')
 assert.ok(live.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),'Food photos must also be mounted in the current live world')
 assert.ok(live.includes('World camera focus'),'Phone users can focus the food shop')

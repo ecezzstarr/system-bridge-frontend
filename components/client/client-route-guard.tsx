@@ -16,12 +16,9 @@ export function ClientRouteGuard({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isInitialized) return
 
-    if (isPublic) {
-      if (user?.role === 'client' && pathname !== '/client') {
-        router.replace('/client/dashboard')
-      }
-      return
-    }
+    // Login and registration own their post-auth navigation. Redirecting from
+    // this public guard races the Flame Event arrival and sends Clients to the dashboard.
+    if (isPublic) return
 
     if (!user) {
       router.replace('/client/login')

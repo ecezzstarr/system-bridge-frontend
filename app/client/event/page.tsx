@@ -1,13 +1,25 @@
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useAuth } from '@/lib/auth-provider'
 import PositionEventWorld from '@/components/events/position-event-world'
+import CompanyStaffWorkspaceEntry from '@/components/client/company-staff-workspace-entry'
 
-// Source compatibility only. The legacy Client event URL never renders this
-// function because the route always returns through Client System Switch first.
-function LegacyClientEventRenderer() {
-  return <PositionEventWorld role="client" context={[]} />
-}
-void LegacyClientEventRenderer
+/** The Client first meets the company event; crossing to the private File Folder remains deliberate. */
+export default function ClientFlameEventPage() {
+  const { user, isInitialized } = useAuth()
+  if (!isInitialized || user?.role !== 'client') return null
 
-export default function LegacyClientFlameEventRoute() {
-  redirect('/client/system-switch')
+  return (
+    <main data-flame-event-location="burning-river" data-system-switch-crossed="false" data-weave-world="flame-event">
+      <CompanyStaffWorkspaceEntry />
+      <PositionEventWorld
+        role="client"
+        context={[
+          { label: 'Position', value: 'Client · Dream Lovely' },
+          { label: 'File Number', value: user.file_number || 'Open your File Folder' },
+          { label: 'Movement', value: 'Burning River · Event ground' },
+        ]}
+      />
+    </main>
+  )
 }

@@ -17,7 +17,7 @@ assert.ok(carrier.includes("if(query.checkout!=='1')redirect('/flame-event?carri
 assert.ok(carrier.includes('<AgentFarmCarrierPublic referralCode={code}/>')&&carrier.includes('<AgentFoodCarrierPublic referralCode={code}/>')&&carrier.includes('<AgentCakeCarrierPublic referralCode={code}/>'),'Existing Agent checkout remains fully attributed behind checkout=1')
 assert.ok(flamePage.includes('carrierCode')&&flamePage.includes('^[a-zA-Z0-9-]{1,40}$'),'Arrival accepts only normalized Agent referral shape')
 assert.ok(publicFlame.includes('<FlameEventPublicPreview enterprises={enterprises} status={doorStatus} carrierCode={carrierCode}/>'),'Visitor previews Client world with preserved Agent identity')
-assert.ok(preview.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&!publicFlame.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),'Real-image WEAVE Food Store appears inside the same 3D river, not beneath it')
+assert.ok(preview.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>')&&publicFlame.includes('<FlameEventFoodStore carrierCode={carrierCode}/>'),'Real-image storefront remains inside the 3D river alongside the newer compact checkout strip')
 assert.ok(!publicFlame.includes('FlameEventOpenWorld enterprises='),'Public route does not require player transformation or joystick')
 assert.ok(preview.includes('data-flame-preview-no-avatar="true"')&&!preview.includes('WeaveEmbodiedAvatar'),'No visitor avatar is created')
 assert.ok(preview.includes('<RiverSurface quiet={false}/>')&&three.includes('export function RiverSurface'),'Preview uses actual live water and fire shader')
@@ -29,11 +29,18 @@ assert.ok(preview.includes('checkout=1#offers')&&marketRoute.includes("query.che
 assert.ok(publicApi.includes('client_customer_door_systems p')&&publicApi.includes('p.enabled=true AND b.status=\'active\''),'Only Client-approved and active published system names are exposed')
 assert.ok(publicApi.includes('visual_preset:config.preset'),'Rendered environment reflects Client-chosen theme')
 assert.ok(food.includes('/weave-food/electrolyte.jpeg')&&food.includes('/weave-food/agility.jpeg')&&food.includes('/weave-food/ember.jpg')&&food.includes('DAISY_PASTRIES_IMAGE_SRC'),'Products use existing real food image assets')
-assert.ok(food.includes('encodeURIComponent(carrierCode)')&&food.includes('?checkout=1#'),'Every category preserves originating Agent')
+assert.ok(food.includes('encodeURIComponent(carrierCode!)')&&food.includes("'?checkout=1'")&&food.includes("carrierOrder+'#'+anchor"),'Every product category preserves the originating Agent and opens its exact Carrier section')
 for(const slug of ['agent-agility','agent-electrolyte','agent-ember']){
   assert.ok(foodCheckout.includes('id="'+slug+'"'),'Agent food checkout supports direct category selection')
 }
 assert.ok(food.includes('no invented product photographs or stock.'),'Farm and household listings are not misrepresented')
+assert.ok(food.includes('data-food-display="compact-carrier-strip"')&&food.includes('snap-x snap-mandatory')&&food.includes('overflow-x-auto'),'Burning River food occupies one compact horizontal product strip on mobile')
+assert.ok(food.includes('data-flame-food-main-carrier-order="true"'),'All food has a direct Carrier ordering action')
+assert.ok(food.includes("'/food-store#registered-food-agents'"),'Visitors without an originating Agent must choose a verified Agent, not an invented recipient')
+const directory=read('app/food-store/page.tsx')
+const directoryApi=read('app/api/food-store/route.ts')
+assert.ok(directory.includes('id="registered-food-agents"'),'Agent selection anchor is available even while catalogue loads')
+assert.ok(directoryApi.includes("+'?checkout=1'")&&directoryApi.includes("+'?checkout=1#agent-farm-produce'")&&directoryApi.includes("+'?checkout=1#agent-daisy-pastries'"),'Choosing an Agent opens its actual Carrier checkout without looping through the event again')
 console.log('Burning River preview + public Client build + attributed Agent checkout regression passed')
 
 require('./burning-river-real-food-3d-regression.cjs')

@@ -522,11 +522,10 @@ const roleDistrictEnvironmentSource=fs.readFileSync(path.join(root,'components/w
 const adminFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/admin/functions/page.tsx'),'utf8')
 const bridgerFunctionsSource=fs.readFileSync(path.join(root,'app/(app)/bridger/functions/page.tsx'),'utf8')
 assert.ok(positionEventSource.includes('data-loop-one-environment="burning-river"'),'Loop 1 is a continuous Burning River operating environment')
-assert.ok(positionEventSource.includes('The River that Burns'),'Loop 1 visibly declares the Flame Event identity')
-assert.ok(positionEventSource.includes('Your Loop 1 Position'),'Event ground centers the signed-in role')
-assert.ok(positionEventSource.includes('River Bank · Functions'),'Role functions are stations on the event ground rather than a generic card section')
-assert.ok(positionEventSource.includes('data-weave-route-station'),'Loop 1 exposes movement stations inside one current')
-assert.ok(positionEventSource.includes('data-flame-event-crossing-route="system-switch"')&&positionEventSource.includes('data-weave-world-gate="system-switch"'),'Client Flame Event Hall exposes physical travel into System Switch crossing')
+assert.ok(positionEventSource.includes('data-flame-event-compact-entrance="true"'),'Flame Event no longer stacks descriptive status and position dashboards')
+assert.ok(positionEventSource.includes('data-flame-event-staff-flow="role-directed"'),'Each signed-in position can go directly to its working systems')
+assert.ok(positionEventSource.includes('data-flame-event-system-switch-entry="true"'),'System Switch is a separate deliberate crossing')
+assert.ok(!positionEventSource.includes('Your Loop 1 Position')&&!positionEventSource.includes('River Bank · Functions')&&!positionEventSource.includes('<FlameFoodCurrent />'),'Removed Event descriptions and food statistics no longer render')
 assert.ok(!positionEventSource.includes('ROLE_ORDER'),'Event page does not explain other user roles')
 assert.ok(!positionEventSource.includes('FLAME_EVENT_FEATURES'),'Event page removes generic event feature clutter')
 assert.ok(compactWorldSource.includes('data-client-world={role===\'client\'?\'open-territory\':undefined}')&&compactWorldSource.includes('data-client-world-beacon'),'Client Home remains a spatial open territory with district beacons')
@@ -910,7 +909,7 @@ assert.ok(fileFolderPurchaseApiSource.includes('export async function GET(reques
 assert.ok(!fileFolderPurchaseApiSource.includes('verifyNativeTrxPayment')&&!fileFolderPurchaseApiSource.includes('attemptAutomaticPaymentVerification'),'Prospect API cannot automatically verify or open a File Folder crossing')
 assert.ok(adminDashboardNotificationSource.includes('visiblePoll(() => fetchPendingDeposits(true), 8000, false)'),'Administration File Folder verification queue syncs live like Department Entry tickets')
 assert.ok(adminDashboardNotificationSource.includes('Verify · Issue File Number · Open Crossing'),'Administration sees one explicit authority action for File Number issuance and crossing release')
-assert.ok(clientRegisterSource2.includes("router.replace('/client/system-switch')"),'Completed Client registration opens the purchased File Folder System Switch instead of the generic dashboard')
+assert.ok(clientRegisterSource2.includes("isFlameEventActive() ? '/client/event' : '/client/system-switch'"),'Completed Client registration first opens the active Flame Event, then allows the owned File Folder crossing')
 assert.ok(fileFolderPurchaseApiSource.includes('Prospect name and phone are required'),'Unauthenticated File Folder purchase carries enough identity for File Number issuance')
 assert.ok(fileFolderPurchaseApiSource.includes("user && user.role !== 'client'"),'Authenticated support positions cannot purchase a File Folder for themselves')
 assert.ok(fileFolderPurchaseApiSource.includes("role='client'"),'File Folder assignment validates that the owner is a Client account')
@@ -1380,7 +1379,7 @@ assert.ok(reserveEngineSource.includes('Reserve Engine'),'Creator Fund Wall is a
 assert.ok(!reserveEngineSource.includes('data?.wallet.address'),'Reserve no longer reads a nonexistent wallet shape')
 assert.ok(roleWorldReturnSource.includes("router.replace(roleHome(user?.role))"),'Retired /weave route returns each authenticated position to its own world')
 assert.ok(!roleWorldReturnSource.includes('Bridge Plaza'),'Retired /weave route does not expose Bridge Plaza')
-assert.ok(fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8').includes('<BurningRiverOfficialGateway staff/>') &&
+assert.ok(fs.readFileSync(path.join(root,'components/events/position-event-world.tsx'),'utf8').includes('<BurningRiverOfficialGateway staff staffHref=') &&
   fs.readFileSync(path.join(root,'components/events/burning-river-live-world.tsx'),'utf8').includes('/api/events/flame/open-world'),
   'Staff Flame Event shows an explicit crossing into the live purchased Client world instead of a joystick scene')
 assert.ok(cadenceEngineSource.includes('Human Cadence Engine'),'Search is an attributed human knowledge system')
@@ -1569,7 +1568,7 @@ const flameEventEnterpriseSource=fs.readFileSync(path.join(root,'components/even
 assert.ok(!fs.existsSync(path.join(root,'components/world/bridge-plaza-map.tsx')),'Retired Bridge Plaza implementation stays removed')
 assert.ok(roleWorldReturnRepairSource.includes('Opening your role world'),'Retired /weave route provides a role-world handoff')
 assert.ok(customerMarketApiRepairSource.includes("formation_status IN ('selling','ready_for_offer')"),'Public enterprise discovery is limited to opened Customer Doors')
-assert.ok(flameEventEnterpriseSource.includes('data-flame-event-client-enterprises="customer-door-current"'),'Flame Event carries Customer Door enterprise discovery')
+assert.ok(flameEventEnterpriseSource.includes('<BurningRiverOfficialGateway staff staffHref='),'Flame Event retains its Customer Door and living-world entrance through the official gateway')
 assert.ok(weaveReadabilityRepairSource.includes('.truncate:not([data-allow-truncate="true"])'),'WEAVE has a default no-clipping guardrail for operational copy')
 assert.ok(weaveReadabilityRepairSource.includes('[class*="line-clamp-"]'),'WEAVE prevents accidental line-clamp text loss by default')
 

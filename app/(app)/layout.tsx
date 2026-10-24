@@ -33,6 +33,7 @@ export default function AppLayout({
   const [legionEmployment, setLegionEmployment] = useState<any>(null)
   const [legionChecked, setLegionChecked] = useState(false)
   const routeAllowed = canAccessEnvironmentRoute(pathname, user?.role)
+  const legionEventRoute = pathname === '/event' || pathname === '/system-switch' || pathname === '/system-switch/flame-event'
   const restoringHope = user?.role === 'bridger' || pathname.startsWith('/bridger') || pathname === '/weave/market/prospects'
 
   useEffect(() => {
@@ -67,7 +68,7 @@ export default function AppLayout({
         const data = await res.json().catch(() => ({}))
         const employment = data?.employment?.active ? data.employment : null
         setLegionEmployment(employment)
-        if (employment && !pathname.startsWith('/weave/lifestyles/legion') && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop') {
+        if (employment && !pathname.startsWith('/weave/lifestyles/legion') && !legionEventRoute && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop') {
           router.replace('/weave/lifestyles/legion')
         }
       } catch (e) {
@@ -77,7 +78,7 @@ export default function AppLayout({
       }
     }
     if (isAuthenticated && user?.id) void checkLegion()
-  }, [isAuthenticated, user?.id, user?.role, pathname, router])
+  }, [isAuthenticated, user?.id, user?.role, pathname, legionEventRoute, router])
 
   // Bridger core work is not restricted by recurring subscriptions.
 
@@ -132,7 +133,7 @@ export default function AppLayout({
 
   if (!isAuthenticated) return null
   if (!routeAllowed) return null
-  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion') && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop') return null
+  if (legionEmployment?.active && !pathname.startsWith('/weave/lifestyles/legion') && !legionEventRoute && pathname !== '/echo' && pathname !== '/animation-workshop' && pathname !== '/music-workshop') return null
 
   return (
     <EnvironmentOrganizerProvider>

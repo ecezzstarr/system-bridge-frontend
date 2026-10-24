@@ -21,6 +21,7 @@ import { useAuth } from '@/lib/auth-provider'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { WeaveLogo } from '@/components/weave-logo'
 import { WEAVE_WRITING } from '@/lib/weave-writing'
+import { isFlameEventActive } from '@/lib/flame-event-landing'
 
 export default function ClientLoginPage() {
   const router = useRouter()
@@ -47,7 +48,7 @@ export default function ClientLoginPage() {
       if (result.success) {
         toast.success('Welcome back')
         setSession(result.token, result.user)
-        router.push('/client/dashboard')
+        router.replace(await isFlameEventActive() ? '/client/event' : '/client/dashboard')
       } else if (result.code === 'PASSWORD_SETUP_REQUIRED') {
         toast.message('Set a password for this Client account to continue.')
         router.push('/forgot-password?portal=client')

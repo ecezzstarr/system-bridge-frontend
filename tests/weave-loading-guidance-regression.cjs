@@ -37,7 +37,7 @@ assert.ok(roleRegistration.includes('data-role-first-activities={formData.role}'
 const loopDefinition=read('lib/weave-event.ts')
 assert.ok(loopDefinition.includes('FLAME_EVENT_INTRO')&&loopDefinition.includes('October 1 – December 31, 2026')&&loopDefinition.includes('not another department'),'Loop 1 description stays consistent with the company period')
 const loopWorld=read('components/events/position-event-world.tsx')
-assert.ok(loopWorld.includes('data-flame-event-business-loop'),'Event world shows the real company business loop explanation')
+assert.ok(loopWorld.includes('data-flame-event-compact-entrance="true"')&&!loopWorld.includes('data-flame-event-business-loop'),'Event entrance stays live without the removed explanatory panels')
 const loopRegistry=read('app/(app)/company/loops/page.tsx')
 assert.ok(loopRegistry.includes('data-company-loop-one-explanation'),'Loop registry teaches current period without fabricating published agreements')
 const departmentMap=read('lib/weave-system-map.ts')

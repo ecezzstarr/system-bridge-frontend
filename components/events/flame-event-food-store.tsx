@@ -4,52 +4,64 @@ import Link from 'next/link'
 import {ArrowRight,ShoppingBasket,Leaf} from 'lucide-react'
 import {DAISY_PASTRIES_IMAGE_SRC} from '@/lib/daisy-pastries-image'
 
+// This is a compact doorway into the actual Carrier ordering service, not a second store.
+// Food photos are the existing product assets; farm/household stock is not illustrated as if verified.
 const FOOD_SECTIONS=[
-  {id:'agility',label:'Agility',image:'/weave-food/agility.jpeg',alt:'Actual WEAVE Agility food package',anchor:'agent-agility'},
-  {id:'electrolyte',label:'Electrolyte',image:'/weave-food/electrolyte.jpeg',alt:'Actual WEAVE Electrolyte food bowl',anchor:'agent-electrolyte'},
-  {id:'ember',label:'Ember',image:'/weave-food/ember.jpg',alt:'Actual WEAVE Ember food package',anchor:'agent-ember'},
-  {id:'daisy',label:'Daisy Pastries',image:DAISY_PASTRIES_IMAGE_SRC,alt:'WEAVE Daisy Pastries original product photograph',anchor:'agent-daisy-pastries'},
+  {id:'agility',label:'Agility',image:'/weave-food/agility.jpeg',alt:'WEAVE Agility food package',anchor:'agent-agility'},
+  {id:'electrolyte',label:'Electrolyte',image:'/weave-food/electrolyte.jpeg',alt:'WEAVE Electrolyte food bowl',anchor:'agent-electrolyte'},
+  {id:'ember',label:'Ember',image:'/weave-food/ember.jpg',alt:'WEAVE Ember food package',anchor:'agent-ember'},
+  {id:'daisy',label:'Daisy Pastries',image:DAISY_PASTRIES_IMAGE_SRC,alt:'WEAVE Daisy Pastries photograph',anchor:'agent-daisy-pastries'},
+  {id:'farm',label:'Farm Produce',image:null,alt:'',anchor:'agent-farm-produce'},
+  {id:'household',label:'Family Baskets',image:null,alt:'',anchor:'agent-farm-produce'},
 ] as const
 
 export function FlameEventFoodStore({carrierCode}:{carrierCode?:string|null}){
-  const agent=carrierCode&&/^[a-zA-Z0-9-]{1,40}$/.test(carrierCode)
-  const link=(anchor:string)=>agent
-    ?'/carrier/food/'+encodeURIComponent(carrierCode)+'?checkout=1#'+anchor
-    :'/food-store'
-  return <section className="border-t border-amber-200/30 bg-[#07140f] px-4 py-8 text-white" data-burning-river-food-store>
+  const agent=Boolean(carrierCode&&/^[a-zA-Z0-9-]{1,40}$/.test(carrierCode))
+  const carrierOrder=agent
+    ?'/carrier/food/'+encodeURIComponent(carrierCode!)+'?checkout=1'
+    :'/food-store#registered-food-agents'
+  const link=(anchor:string)=>agent?carrierOrder+'#'+anchor:carrierOrder
+
+  return <section className="border-t border-emerald-200/15 bg-[#081810] px-3 py-3 text-white sm:px-5"
+    data-burning-river-food-store data-food-display="compact-carrier-strip">
     <div className="mx-auto max-w-6xl">
-      <div className="flex items-start gap-3">
-        <ShoppingBasket className="mt-1 h-7 w-7 shrink-0 text-amber-200"/>
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[.24em] text-emerald-200">Food in movement · Inside Burning River</p>
-          <h2 className="mt-1 text-3xl font-black">WEAVE FOOD STORE</h2>
-          <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-300">
-            Explore the real WEAVE food products. Orders from this entrance stay with the Agent whose link brought you here. Stock, pricing and delivery are verified in the Agent's ordering service.
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <ShoppingBasket className="h-5 w-5 shrink-0 text-amber-200" aria-hidden="true"/>
+          <div>
+            <h2 className="text-sm font-black tracking-wide sm:text-base">WEAVE FOOD</h2>
+            <p className="text-[10px] leading-4 text-sky-100/70">
+              {agent?'Order from your Agent\'s available stock':'Choose a registered Food Agent to order'}
+            </p>
+          </div>
         </div>
+        <Link href={carrierOrder}
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-amber-200/40 bg-amber-100/10 px-3 text-xs font-bold text-amber-100"
+          data-flame-food-main-carrier-order="true">
+          {agent?'Open Carrier Orders':'Choose Food Agent'} <ArrowRight className="h-4 w-4" aria-hidden="true"/>
+        </Link>
       </div>
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <nav aria-label="WEAVE food products and Carrier orders"
+        className="mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1.5 [scrollbar-width:thin]"
+        data-flame-food-compact-products="true">
         {FOOD_SECTIONS.map(item=><Link key={item.id} href={link(item.anchor)}
-          className="group overflow-hidden rounded-xl border border-amber-200/20 bg-[#132719]" data-flame-food-order={item.id}>
-          <img src={item.image} alt={item.alt} loading="lazy" className="aspect-[4/3] w-full bg-[#121d16] object-cover"/>
-          <div className="p-3">
-            <h3 className="text-xs font-black sm:text-sm">{item.label}</h3>
-            <p className="mt-2 inline-flex items-center gap-1 text-[10px] font-black text-amber-200">Order through Agent <ArrowRight className="h-3 w-3"/></p>
-          </div>
+          className="group relative flex w-[112px] shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-emerald-200/20 bg-[#11251b] transition hover:border-amber-200/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200 sm:w-[134px]"
+          data-flame-food-order={item.id}
+          aria-label={agent?'Order '+item.label+' through your Agent Carrier':'Choose a Food Agent for '+item.label}>
+          {item.image?
+            <img src={item.image} alt={item.alt} loading="lazy" className="h-[68px] w-full object-cover sm:h-[84px]"/>:
+            <span className="flex h-[68px] w-full items-center justify-center bg-[linear-gradient(140deg,#173c2c,#0e241d)] sm:h-[84px]">
+              <Leaf className="h-7 w-7 text-emerald-200/85" aria-hidden="true"/>
+            </span>}
+          <span className="flex min-h-10 items-center justify-between gap-1 px-2 py-2">
+            <span className="text-[10px] font-bold leading-4 sm:text-xs">{item.label}</span>
+            <ArrowRight className="h-3 w-3 shrink-0 text-amber-200" aria-hidden="true"/>
+          </span>
         </Link>)}
-        {[{id:'farm',label:'Farm Produce',anchor:'agent-farm-produce',image:null},
-          {id:'household',label:'Household Food & Family Baskets',anchor:'agent-farm-produce',image:'/weave-food/weave-family-products.avif'}].map(item=><Link key={item.id} href={link(item.anchor)}
-          className="flex min-h-36 flex-col justify-between rounded-xl border border-emerald-200/20 bg-[#163027] p-4" data-flame-food-order={item.id}>
-          {item.image?<img src={item.image} alt="Existing WEAVE household food branded illustration, not confirmed stock"
-            loading="lazy" className="mb-3 h-24 w-full rounded-lg object-cover"/>:<Leaf className="h-7 w-7 text-emerald-200"/>}
-          <div><h3 className="text-sm font-black">{item.label}</h3>
-            <p className="mt-1 text-[10px] leading-4 text-sky-100/75">Browse genuine approved supplier listings; no invented product photographs or stock.</p>
-            <p className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-amber-200">View offers <ArrowRight className="h-3 w-3"/></p>
-          </div>
-        </Link>)}
-      </div>
-      {!agent&&<p className="mt-4 text-xs text-amber-100">To order, choose a registered food Agent from the public food directory. The chosen Agent will receive your order.</p>}
-      {agent&&<p className="mt-4 text-xs text-sky-100/75">Agent attribution is retained across your order. If that Agent has no available stock, the checkout shows it rather than inventing inventory.</p>}
+      </nav>
+      <p className="mt-1 text-[10px] text-sky-100/60">
+        Farm and household offers depend on verified supplier listings; no invented product photographs or stock.
+      </p>
     </div>
   </section>
 }

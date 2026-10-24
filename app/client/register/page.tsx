@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { isFlameEventActive } from '@/lib/flame-event-landing'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -99,9 +100,9 @@ function ClientRegisterContent() {
 
       const result = await res.json()
       if (result.success) {
-        toast.success('Welcome into WEAVE. Opening your File Folder.')
+        toast.success('Welcome into WEAVE.')
         setSession(result.token, result.user)
-        router.replace('/client/system-switch')
+        router.replace(await isFlameEventActive() ? '/client/event' : '/client/system-switch')
       } else {
         toast.error(result.error || "That didn't complete. Try again.")
       }

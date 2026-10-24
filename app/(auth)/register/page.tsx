@@ -13,6 +13,7 @@ import { DepartmentEntryTicketGate } from '@/components/department-entry-ticket-
 import { WEAVE_WRITING } from '@/lib/weave-writing'
 import { WEAVE_SYSTEM_MAP } from '@/lib/weave-system-map'
 import { FLAME_EVENT_INTRO } from '@/lib/weave-event'
+import { isFlameEventActive } from '@/lib/flame-event-landing'
 
 type Step = 'role' | 'dept-gate' | 'notice' | 'terms' | 'guide' | 'details'
 const BRIDGER_DRAFT_KEY = 'weave:staff:registration-draft:v1'
@@ -182,7 +183,7 @@ function RegisterContent() {
         fullNameConfirmed: fullNameConfirm.trim(),
       } as any)
       try { sessionStorage.removeItem(BRIDGER_DRAFT_KEY) } catch {}
-      router.replace(formData.role === 'bridger' ? '/bridger/dashboard' : '/agent/dashboard')
+      router.replace(await isFlameEventActive() ? '/event' : formData.role === 'bridger' ? '/bridger/dashboard' : '/agent/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Your information remains on this page; you can retry.')
       submissionLock.current = false
