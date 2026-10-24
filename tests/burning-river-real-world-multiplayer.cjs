@@ -92,7 +92,7 @@ assert.ok(!map.includes('WeaveEmbodiedAvatar')&&!map.includes('joystick')&&!map.
 assert.ok(gate.includes("burning-river-crossing-official.webp")&&
  map.includes("burning-river-open-world-official.webp"),
  'Both official approved images are referenced; no alternate concept image')
-assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door}/>'),
+assert.ok(gate.includes('href={worldHref}')&&route.includes('<BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>'),
  'Clickable crossing opens real shared world route')
 assert.ok(gate.includes('encodeURIComponent(carrierCode)')&&
  route.includes('carrierCode={carrierCode}')&&map.includes('<BurningRiverFoodStore3D carrierCode={carrierCode}/>'),
