@@ -83,13 +83,17 @@ export default function WeaveFamilyFoodStore(){
         </div>
       </section>
 
-      {!!catalog?.carrierAgents?.length&&<section className="mt-6 border border-orange-300/20 p-4" data-store-real-agent-carriers>
+      <section id="registered-food-agents" className="mt-6 scroll-mt-4 border border-orange-300/20 p-4" data-store-real-agent-carriers>
+        {!catalog&&!error&&<p className="text-xs text-stone-400">Loading registered WEAVE Food Agents…</p>}
+        {catalog&&!catalog.carrierAgents.length&&<p className="text-xs text-stone-400">No Food Agent with a configured receiving account is listed yet. You can still browse published supplier offers below.</p>}
+        {!!catalog?.carrierAgents?.length&&<>
         <h2 className="text-lg font-black">Order from a registered WEAVE Food Agent</h2>
         <p className="mt-2 text-xs text-stone-400">These Agents have configured customer receiving accounts. Their Carrier Doors include Daisy Pastries requests; prepared food is orderable only where they have paid, received stock. Browse the food selection before paying.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {catalog.carrierAgents.slice(0,20).map((agent,i)=><Link key={agent.carrierPath+i} href={agent.carrierPath} className="border border-orange-300/25 px-3 py-2 text-xs text-orange-100">{agent.name} →</Link>)}
         </div>
-      </section>}
+        </>}
+      </section>
       <section className="mt-8" data-household-food-categories>
         <h2 className="text-xl font-black">Household food categories</h2>
         <p className="mt-2 text-xs text-stone-400">The catalogue below is a food checklist. Only separately displayed live offers are available for purchase.</p>

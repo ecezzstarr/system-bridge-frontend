@@ -43,14 +43,14 @@ export async function GET(_request:NextRequest){
       groups:WEAVE_HOUSEHOLD_FOOD_GROUPS,templates:WEAVE_HOUSEHOLD_BASKET_TEMPLATES,
       carrierAgents:agents.map(agent=>({
         name:agent.name||agent.username||'WEAVE Agent',
-        carrierPath:'/carrier/food/'+encodeURIComponent(agent.referral_code),
-        daisyPath:'/carrier/food/'+encodeURIComponent(agent.referral_code)+'#agent-daisy-pastries',
+        carrierPath:'/carrier/food/'+encodeURIComponent(agent.referral_code)+'?checkout=1',
+        daisyPath:'/carrier/food/'+encodeURIComponent(agent.referral_code)+'?checkout=1#agent-daisy-pastries',
       })),
       offers:rows.map(row=>({
         id:row.id,name:row.produce,unit:row.unit,
         priceNgn:Number(row.unit_price_ngn),availableQuantity:Number(row.available_quantity),
         details:row.details,farmName:row.farm_name,state:row.state,community:row.community,
-        agentName:row.agent_name||row.username,carrierPath:'/carrier/food/'+encodeURIComponent(row.referral_code)+'#agent-farm-produce',
+        agentName:row.agent_name||row.username,carrierPath:'/carrier/food/'+encodeURIComponent(row.referral_code)+'?checkout=1#agent-farm-produce',
         isBasket:Boolean(row.basket_template_id),basketComponents:row.basket_components||[],
         basketReferenceAtListingNgn:row.basket_individual_total_ngn===null?null:Number(row.basket_individual_total_ngn),
         basketSavingsAtListingNgn:row.basket_listed_saving_ngn===null?null:Number(row.basket_listed_saving_ngn),

@@ -34,4 +34,11 @@ for(const slug of ['agent-agility','agent-electrolyte','agent-ember']){
   assert.ok(foodCheckout.includes('id="'+slug+'"'),'Agent food checkout supports direct category selection')
 }
 assert.ok(food.includes('no invented product photographs or stock.'),'Farm and household listings are not misrepresented')
+assert.ok(food.includes('data-food-display="compact-carrier-strip"')&&food.includes('snap-x snap-mandatory')&&food.includes('overflow-x-auto'),'Burning River food occupies one compact horizontal product strip on mobile')
+assert.ok(food.includes('data-flame-food-main-carrier-order="true"'),'All food has a direct Carrier ordering action')
+assert.ok(food.includes("'/food-store#registered-food-agents'"),'Visitors without an originating Agent must choose a verified Agent, not an invented recipient')
+const directory=read('app/food-store/page.tsx')
+const directoryApi=read('app/api/food-store/route.ts')
+assert.ok(directory.includes('id="registered-food-agents"'),'Agent selection anchor is available even while catalogue loads')
+assert.ok(directoryApi.includes("+'?checkout=1'")&&directoryApi.includes("+'?checkout=1#agent-farm-produce'")&&directoryApi.includes("+'?checkout=1#agent-daisy-pastries'"),'Choosing an Agent opens its actual Carrier checkout without looping through the event again')
 console.log('Burning River preview + public Client build + attributed Agent checkout regression passed')
