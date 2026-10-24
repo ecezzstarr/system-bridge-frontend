@@ -73,7 +73,7 @@ function LiveClientCastle({domain}:{domain:PublicWorldDomain}){
   </group>
 }
 
-export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowDomains,onShowCommunity,onShowGuide,onCustomerDoor,role}:{
+export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowDomains,onShowCommunity,onShowGuide,onCustomerDoor,role,enable3D=true}:{
   domains:PublicWorldDomain[]
   selected:string|null
   onSelect:(id:string)=>void
@@ -83,6 +83,7 @@ export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowD
   onShowGuide:()=>void
   onCustomerDoor:()=>void
   role:'visitor'|'client'|'agent'|'bridger'|'admin'
+  enable3D?:boolean
 }){
   const active=useMemo(()=>domains.find(d=>d.domainId===selected)||domains[0]||null,[domains,selected])
   const where=active?plot(active):null
@@ -115,12 +116,13 @@ export function WeaveOpenWorldAtlas({domains,selected,onSelect,onExplore,onShowD
         <span className="max-w-20 truncate text-[8px] font-semibold capitalize">{domain.tier}</span>
       </button>
     })}
-    {active&&where&&<div aria-label={'Live three-dimensional '+active.tier+' File Folder castle'} role="img"
+    {enable3D&&active&&where&&<div aria-label={'Live three-dimensional '+active.tier+' File Folder castle'} role="img"
       data-weave-live-castle-spotlight={active.domainId}
       className="pointer-events-none absolute z-10 h-[19%] w-[32%] -translate-x-1/2 -translate-y-[115%] overflow-visible"
       style={{left:where.left+'%',top:where.top+'%'}}>
       <AdaptiveCanvas camera={{position:[10,11,14],fov:40,near:.1,far:90}}
-        gl={{antialias:false,alpha:true,powerPreference:'low-power'}} mobileGame>
+        gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
+        fallback={<div className="h-full w-full" aria-hidden="true"/>} mobileGame>
         <ambientLight intensity={1.5} color="#fff5df"/>
         <hemisphereLight args={['#d6e9ff','#947348',1.4]}/>
         <directionalLight position={[9,16,11]} intensity={2.4} color="#ffe4a8"/>
