@@ -1,11 +1,25 @@
-/* Company Loop 1 homepage atmosphere only. Existing DOM, official imagery,
-   text and navigation remain above this non-interactive decorative layer. */
-html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+/*
+ * WEAVE public entrance is one continuous world, not a dashboard of cards.
+ * Official Plus File Folder: porcelain white, cloud blue, transparent water,
+ * and polished gold. Burning River remains a living blue/fire current within
+ * that environment during Company Loop 1. All illustration layers are behind
+ * real text, links, and the unchanged official file-folder/product images.
+ */
 [data-public-weave-world] {
+  --home-ink: #183b55;
+  --home-muted: #43637a;
+  --home-gold: #a9772c;
+  --home-deep-gold: #80571e;
+  --home-gold-line: rgba(183, 141, 74, .37);
+  --home-water: #237bb7;
+  color: var(--home-ink);
   isolation: isolate;
-  background: transparent;
+  background:
+    radial-gradient(ellipse 75% 21% at 49% 2%, rgba(173, 219, 250, .48), transparent 80%),
+    radial-gradient(ellipse 70% 24% at 96% 30%, rgba(245, 210, 143, .26), transparent 84%),
+    radial-gradient(ellipse 90% 28% at 0% 62%, rgba(158, 211, 242, .24), transparent 82%),
+    linear-gradient(180deg, #ecf6fd 0%, #ffffff 18%, #fcfaf4 49%, #f0f8ff 76%, #fcf9f0 100%);
 }
-html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
 [data-public-weave-world]::before {
   content: '';
   position: absolute;
@@ -13,14 +27,13 @@ html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(180deg, rgba(3, 13, 31, .08), rgba(3, 14, 33, .16) 25%, rgba(3, 14, 33, .53) 67%, rgba(3, 14, 33, .72)),
+    linear-gradient(180deg, rgba(240, 249, 255, .67), rgba(255,255,255,.86) 33%, rgba(255,255,255,.88) 64%, rgba(250,252,254,.81)),
     url('/weave/home-burning-river-theme.svg');
-  background-position: center top, center top;
+  background-position: center top;
   background-size: 100% 100%, max(100%, 1100px) auto;
   background-repeat: no-repeat, repeat-y;
-  opacity: .78;
+  opacity: .38;
 }
-html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
 [data-public-weave-world]::after {
   content: '';
   position: absolute;
@@ -28,32 +41,389 @@ html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 43% 12% at 92% 7%, rgba(255, 195, 102, .12), transparent 95%),
-    radial-gradient(ellipse 45% 13% at 4% 30%, rgba(36, 153, 227, .14), transparent 95%),
-    radial-gradient(ellipse 36% 11% at 92% 56%, rgba(255, 198, 122, .08), transparent 96%),
-    radial-gradient(ellipse 48% 17% at 14% 85%, rgba(23, 128, 204, .11), transparent 95%);
+    radial-gradient(ellipse 22% 4% at 95% 14%, rgba(252,198,94,.26), transparent 90%),
+    radial-gradient(ellipse 32% 6% at 8% 42%, rgba(86,178,235,.17), transparent 90%),
+    radial-gradient(ellipse 34% 8% at 96% 83%, rgba(248,195,113,.14), transparent 90%);
 }
-html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
 [data-public-weave-world] > .relative.z-10 {
   position: relative;
   z-index: 1;
 }
-/* Restore warm flame only behind this homepage; never recolour image assets. */
-html[data-weave-event="flame-live"]:has([data-public-weave-world]):not([data-weave-loop-theme="one-nigerian"])
-.weave-live-flame-canvas {
-  filter: none;
-  opacity: .56;
+[data-public-weave-world] main,
+[data-public-weave-world] main :is(section,article,aside) {
+  isolation: isolate;
 }
-@media (max-width: 640px) {
-  html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+[data-public-weave-world] main :is(h1,h2,h3,p) {
+  color: var(--home-ink);
+  text-shadow: none;
+}
+[data-public-weave-world] main :is(p,li) {
+  line-height: 1.65;
+}
+[data-public-weave-world] main :is(h1,h2,h3) {
+  text-wrap: balance;
+}
+[data-public-weave-world] main :is(a) {
+  color: var(--home-deep-gold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: .25rem;
+}
+[data-public-weave-world] :is(a,button):focus-visible {
+  outline: 3px solid #1678be;
+  outline-offset: 4px;
+}
+
+/* Slim functional bar: the white WEAVE wordmark stays readable. */
+[data-public-weave-world] .weave-home-nav {
+  border-bottom: 1px solid rgba(239, 206, 148, .43);
+  background: linear-gradient(100deg, rgba(5,29,51,.97), rgba(16,49,77,.92) 54%, rgba(36,64,83,.94));
+  box-shadow: 0 8px 30px rgba(7,33,57,.12);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+}
+[data-public-weave-world] .weave-home-nav a {
+  color: #f6faff;
+}
+[data-public-weave-world] .weave-home-nav a:hover {
+  color: #ffe2a2;
+}
+[data-public-weave-world] .weave-home-content {
+  max-width: 1220px;
+  padding-top: clamp(1.6rem, 3.2vw, 2.6rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.6rem, 6vw, 5.5rem);
+}
+
+/* Open editorial title, printed into light / cloud / flowing water. */
+[data-public-weave-world] .weave-home-hero {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  overflow: visible;
+  padding-top: clamp(2.1rem, 5vw, 4.9rem);
+  padding-bottom: clamp(1.2rem, 3vw, 2.3rem);
+}
+[data-public-weave-world] .weave-home-hero-light {
+  inset: -10% -5%;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 42% 38% at 50% 14%, rgba(255,255,255,.97), transparent),
+    radial-gradient(ellipse 62% 20% at 49% 39%, rgba(255,239,198,.31), transparent 85%),
+    radial-gradient(ellipse 47% 19% at 4% 77%, rgba(68,169,231,.17), transparent),
+    radial-gradient(ellipse 36% 18% at 96% 76%, rgba(248,200,103,.15), transparent);
+  animation: weave-home-radiance 11s ease-in-out infinite alternate;
+}
+@keyframes weave-home-radiance {
+  from { opacity: .62; }
+  to { opacity: 1; }
+}
+[data-public-weave-world] .weave-home-title,
+[data-public-weave-world] .weave-home-subtitle,
+[data-public-weave-world] .weave-home-plus-heading h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+}
+[data-public-weave-world] .weave-home-title {
+  color: #8c5c1d;
+  letter-spacing: -.045em;
+  text-shadow: 0 1px 0 #fff, 0 5px 22px rgba(204,157,78,.15);
+}
+[data-public-weave-world] .weave-home-title::after {
+  content: '✦';
+  display: block;
+  margin: 1.1rem auto 0;
+  font-family: Georgia,serif;
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  color: #c39645;
+  letter-spacing: 0;
+  line-height: 1;
+}
+[data-public-weave-world] .weave-home-credit {
+  color: var(--home-deep-gold);
+  letter-spacing: .08em;
+  text-transform: none;
+}
+[data-public-weave-world] .weave-home-subtitle {
+  color: #173e60;
+  max-width: 920px;
+  letter-spacing: -.025em;
+}
+
+/* Department names sit on a shared horizontal gold line, never cards. */
+[data-public-weave-world] .weave-home-departments {
+  border-top: 1px solid var(--home-gold-line);
+  border-bottom: 1px solid var(--home-gold-line);
+  gap: 0;
+}
+[data-public-weave-world] .weave-home-department {
+  background: none;
+  border: 0;
+  border-right: 1px solid var(--home-gold-line);
+}
+[data-public-weave-world] .weave-home-department:last-child {
+  border-right: 0;
+}
+[data-public-weave-world] .weave-home-department h3 {
+  color: #916623;
+  font-family: Georgia,'Times New Roman',serif;
+}
+[data-public-weave-world] .weave-home-department p,
+[data-public-weave-world] .weave-home-department-summary {
+  color: var(--home-muted);
+}
+[data-public-weave-world] .weave-home-loops {
+  gap: clamp(1rem,3vw,2.25rem);
+}
+[data-public-weave-world] .weave-home-loop {
+  border: 0;
+  border-left: 2px solid rgba(187,137,61,.72);
+  border-radius: 0;
+  background: transparent;
+  padding-block: .6rem;
+}
+[data-public-weave-world] .weave-home-loop-country {
+  border-left-color: rgba(30,129,103,.55);
+}
+[data-public-weave-world] .weave-home-loop p:first-child {
+  color: #876023;
+}
+[data-public-weave-world] .weave-home-loop a {
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(158,109,43,.5);
+}
+
+/* Plus poster is the largest visual feature. Its actual image is never masked,
+   composited, recoloured, or placed in a bordered card. */
+[data-public-weave-world] .weave-home-plus-world {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--home-ink);
+  background: linear-gradient(180deg,rgba(255,255,255,0),#fff 8%,#fff 84%,rgba(255,255,255,.03));
+}
+[data-public-weave-world] .weave-home-plus-heading {
+  padding-top: clamp(1rem,3vw,2rem);
+  padding-bottom: .4rem;
+}
+[data-public-weave-world] .weave-home-plus-heading h2 {
+  font-size: clamp(1.65rem, 3.3vw, 2.6rem);
+  color: #906627;
+  letter-spacing: -.015em;
+}
+[data-public-weave-world] .weave-home-plus-image {
+  display: block;
+  max-width: 1030px;
+  width: 100%;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1;
+  filter: none;
+  transform: none;
+  mix-blend-mode: normal;
+}
+[data-public-weave-world] .weave-home-plus-actions {
+  border: 0;
+  padding-top: clamp(1rem,2.5vw,1.8rem);
+  padding-bottom: clamp(1.5rem,3vw,2.7rem);
+  background: transparent;
+}
+
+/* Every remaining group is an open station within the same landscape. */
+[data-public-weave-world] :is(
+  .weave-home-work-copy,
+  .weave-home-client-entry,
+  .weave-home-staff,
+  .weave-home-staff-position,
+  .weave-home-participation,
+  .weave-home-ai,
+  .weave-home-system
+) {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+[data-public-weave-world] :is(
+  .weave-home-work-section,
+  .weave-home-staff,
+  .weave-home-participation,
+  .weave-home-ai
+) {
+  border-top: 1px solid var(--home-gold-line);
+}
+[data-public-weave-world] .weave-home-work-section {
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+[data-public-weave-world] .weave-home-system {
+  border: 0;
+  border-left: 1px solid var(--home-gold-line);
+}
+[data-public-weave-world] .weave-home-system svg {
+  color: var(--home-gold);
+}
+[data-public-weave-world] .weave-home-client-entry {
+  border: 0;
+  border-left: 1px solid var(--home-gold-line);
+}
+[data-public-weave-world] .weave-home-client-entry > p:first-child,
+[data-public-weave-world] .weave-home-work-copy > p:first-child,
+[data-public-weave-world] .weave-home-staff > p:first-child,
+[data-public-weave-world] .weave-home-participation > p:first-child {
+  color: #98702f;
+}
+[data-public-weave-world] .weave-home-staff-position {
+  border: 0;
+  border-left: 1px solid var(--home-gold-line);
+  min-width: 0;
+  gap: .2rem;
+}
+[data-public-weave-world] .weave-home-staff-position p {
+  color: var(--home-deep-gold);
+}
+[data-public-weave-world] .weave-home-staff-position h3 {
+  color: #1d425e;
+}
+[data-public-weave-world] .weave-home-food-picture {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+}
+[data-public-weave-world] .weave-home-food-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  filter: none;
+  border-radius: 0;
+  opacity: 1;
+}
+[data-public-weave-world] .weave-home-ai svg {
+  color: var(--home-gold);
+}
+
+/* Functional entrances resemble simple gilt architectural controls,
+   not a stack of surrounding feature cards. */
+[data-public-weave-world] :is(
+  .weave-home-plus-actions a,
+  .weave-home-staff-position a[class*="bg-sky-100"],
+  .weave-home-client-entry a[class*="bg-amber-200"]
+) {
+  border: 1px solid rgba(164,113,44,.47);
+  background: linear-gradient(135deg,#f5e9cc,#fffaf0 56%,#efd5a3);
+  color: #264864;
+  border-radius: .35rem;
+  box-shadow: 0 3px 10px rgba(132,102,57,.07), inset 0 1px 0 #fff;
+  text-decoration: none;
+}
+[data-public-weave-world] :is(
+  .weave-home-plus-actions a,
+  .weave-home-staff-position a[class*="bg-sky-100"],
+  .weave-home-client-entry a[class*="bg-amber-200"]
+):hover {
+  border-color: #b98a44;
+  background: #fff5df;
+  color: #123a5a;
+}
+[data-public-weave-world] .weave-home-participation .flex.flex-wrap a {
+  border: 0;
+  border-bottom: 1px solid var(--home-gold-line);
+  border-radius: 0;
+  background: transparent;
+  padding-left: .2rem;
+  padding-right: .2rem;
+  color: #805c2a;
+}
+[data-public-weave-world] .weave-home-participation .flex.flex-wrap a:hover {
+  color: #2e739d;
+  border-color: #2e739d;
+}
+[data-public-weave-world] .weave-home-footer {
+  border-top: 1px solid rgba(234,202,135,.4);
+  background: linear-gradient(90deg,#092a45,#13405e,#092a45);
+}
+[data-public-weave-world] .weave-home-footer p {
+  color: #e9f2fb;
+}
+
+/* Loop 1 is luminous river blue and light gold fire. Never paint over content. */
+html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+[data-public-weave-world]::before {
+  opacity: .51;
+}
+html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
+[data-public-weave-world] .weave-home-hero-light {
+  background:
+    radial-gradient(ellipse 41% 33% at 50% 12%,rgba(255,255,255,.95),transparent),
+    radial-gradient(ellipse 57% 21% at 54% 33%,rgba(246,210,132,.33),transparent),
+    radial-gradient(ellipse 65% 23% at 1% 83%,rgba(44,161,222,.17),transparent),
+    radial-gradient(ellipse 37% 19% at 98% 70%,rgba(252,185,73,.18),transparent);
+}
+/* The global animated flame remains behind the opaque porcelain page. Do not
+   remove the shared field or recolour the existing photographed/poster images. */
+
+/* Loop 2 overrides only the atmosphere, preserving the company layout. */
+html[data-weave-loop-theme="one-nigerian"] [data-public-weave-world] {
+  --home-gold: #008751;
+  --home-deep-gold: #146944;
+  --home-gold-line: rgba(10,128,76,.27);
+  background: linear-gradient(90deg,rgba(0,135,81,.1),rgba(255,255,255,.92) 33%,rgba(255,255,255,.92) 67%,rgba(0,135,81,.1)),#f4fff8;
+}
+html[data-weave-loop-theme="one-nigerian"] [data-public-weave-world]::before {
+  opacity: 0;
+}
+html[data-weave-loop-theme="one-nigerian"] [data-public-weave-world] .weave-home-title,
+html[data-weave-loop-theme="one-nigerian"] [data-public-weave-world] .weave-home-department h3 {
+  color: #16734b;
+}
+
+@media (max-width: 680px) {
+  [data-public-weave-world] .weave-home-content {
+    gap: 2.5rem;
+    padding-top: 1.2rem;
+  }
+  [data-public-weave-world] .weave-home-hero {
+    padding-inline: .2rem;
+  }
+  [data-public-weave-world] .weave-home-hero-light {
+    inset: -3% -2%;
+  }
+  [data-public-weave-world] .weave-home-departments {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  [data-public-weave-world] .weave-home-department:nth-child(2) {
+    border-right: 0;
+  }
+  [data-public-weave-world] .weave-home-department:nth-child(-n+2) {
+    border-bottom: 1px solid var(--home-gold-line);
+  }
+  [data-public-weave-world] .weave-home-client-entry {
+    border-left: 0;
+    border-top: 1px solid var(--home-gold-line);
+  }
+  [data-public-weave-world] .weave-home-plus-heading {
+    padding-top: .7rem;
+  }
   [data-public-weave-world]::before {
     background-size: 100% 100%, 1180px auto;
     background-position: center top, 52% top;
-    opacity: .55;
+    opacity: .32;
   }
-  html[data-weave-event="flame-live"]:not([data-weave-loop-theme="one-nigerian"])
-  [data-public-weave-world]::after {
-    opacity: .55;
+  [data-public-weave-world] main :is(h1,h2,h3,p) {
+    overflow-wrap: anywhere;
   }
 }
-/* The static texture is sufficient without additional page-wide animation. */
+@media (prefers-reduced-motion: reduce) {
+  [data-public-weave-world] .weave-home-hero-light {
+    animation: none;
+    opacity: 1;
+  }
+}
