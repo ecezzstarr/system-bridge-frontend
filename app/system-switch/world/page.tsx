@@ -9,8 +9,10 @@ import {ArrowLeft} from 'lucide-react'
 const BurningRiverLiveWorld=dynamic(
   ()=>import('@/components/events/burning-river-live-world').then(m=>m.BurningRiverLiveWorld),
   {ssr:false,loading:()=> <div role="status" data-weave-open-world-loader="loading-3d-world"
-    className="flex min-h-[60svh] items-center justify-center bg-[radial-gradient(ellipse_at_center,#183c51,#071324)] p-6 text-center text-sm font-semibold text-sky-100">
-    Opening WEAVE Open World · Client land, castles and public Customer Doors…
+    className="relative flex h-svh items-center justify-center overflow-hidden bg-[#092039]">
+    <img src="/weave/open-world/scene-preview.webp" alt="" width={400} height={711}
+      className="absolute inset-0 h-full w-full object-cover opacity-95" loading="eager"/>
+    <span className="sr-only">Opening WEAVE Open World and verified Client File Folder castles…</span>
   </div>},
 )
 
@@ -40,17 +42,19 @@ export default function WeaveOpenWorldPage(){
      if(['client','admin','agent','bridger'].includes(next))setRole(next)
    }catch{}
  },[])
- return <main className="min-h-dvh bg-[#071324] text-white"
+ return <main className="relative min-h-dvh bg-[#071324] text-white"
     data-weave-open-world="system-switch"
     data-system-switch-container="file-folder-world"
     data-company-loop-event="burning-river"
     data-file-folder-open-world-entry={fromSwitch?'system-switch':'public'}
     data-system-switch-crossed={fromSwitch?'true':'false'}>
-   <nav className="flex items-center justify-between gap-3 border-b border-amber-200/15 px-4 py-2">
-     <Link href={fromSwitch?'/system-switch':'/flame-event'} className="inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-amber-200">
-       <ArrowLeft className="h-4 w-4"/>{fromSwitch?'System Switch Gate':'Company Loop 1 · Burning River'}
+   <nav className="absolute left-2 top-2 z-50" aria-label="Return from WEAVE Open World">
+     <Link href={fromSwitch?'/system-switch':'/flame-event'}
+       className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-amber-200/50 bg-[#07152d]/75 text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+       title={fromSwitch?'Return to System Switch Gate':'Return to Company Loop 1'}>
+       <ArrowLeft className="h-4 w-4"/>
+       <span className="sr-only">{fromSwitch?'System Switch Gate':'Company Loop 1 · Burning River'}</span>
      </Link>
-     <Link href="/" className="text-xs text-sky-100/80">The Company of Time</Link>
    </nav>
    <BurningRiverLiveWorld role={role} carrierCode={carrierCode} requestedDoor={door} legionCode={legionCode}/>
  </main>
