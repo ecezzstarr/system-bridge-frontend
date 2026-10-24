@@ -5,6 +5,7 @@ import Link from 'next/link'
 import {Html,OrbitControls,Line} from '@react-three/drei'
 import {useFrame,useThree} from '@react-three/fiber'
 import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
+import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-landscape'
 import {FlameEventFoodStore} from './flame-event-food-store'
 import * as THREE from 'three'
 import {AdaptiveCanvas} from '@/components/world/adaptive-canvas'
@@ -133,19 +134,7 @@ function WorldScene({domains,links,selected,onSelect,carrierCode,focus}:{
     <ambientLight intensity={1.3} color="#b9d3fc"/>
     <hemisphereLight args={['#b9d8ff','#624337',1.2]}/>
     <directionalLight position={[30,55,15]} intensity={2.2} color="#ffe8bf"/>
-    <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.58,0]} receiveShadow>
-      <planeGeometry args={[260,260,1,1]}/>
-      <meshStandardMaterial color="#2d4341" roughness={.97}/>
-    </mesh>
-    {Array.from({length:90},(_,i)=>{
-      const angle=i*2.39996,rad=8+Math.sqrt(i+1)*10
-      const x=Math.cos(angle)*rad,z=Math.sin(angle)*rad
-      const h=1.15+(i%6)*.49
-      return <group key={i} position={[x,0,z]}>
-        <mesh position={[0,h*.4,0]}><coneGeometry args={[1.4,h,6]}/>
-          <meshStandardMaterial color={i%3===0?'#283d50':'#3a6351'} roughness={.98}/></mesh>
-      </group>
-    })}
+    <WeaveOpenWorldLandscape domains={domains}/>
     <MovingBurningRiver/>
     <BurningRiverFoodStore3D carrierCode={carrierCode}/>
     {domains.map(d=><DomainCastle key={d.domainId} domain={d}
@@ -170,8 +159,9 @@ const stageLabel:{[key:string]:string}={
  operating:'Systems operating',expanding:'Business expanding',
 }
 
-export function BurningRiverLiveWorld({role='visitor',carrierCode=null}:{
+export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requestedDoor=null}:{
   carrierCode?:string|null
+  requestedDoor?:string|null
   role?:'visitor'|'client'|'agent'|'bridger'|'admin'
 }){
  const [focus,setFocus]=useState<'world'|'food'>('world')
@@ -189,9 +179,14 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null}:{
  const [webgl,setWebgl]=useState(true)
  const [stamp,setStamp]=useState('')
  const selectedDomain=feed.domains.find(d=>d.domainId===selected)||null
+ useEffect(()=>{
+   if(!requestedDoor||selected)return
+   const match=feed.domains.find(d=>d.customerDoor.href?.startsWith('/market/'+encodeURIComponent(requestedDoor)+'?'))
+   if(match)setSelected(match.domainId)
+ },[feed.domains,requestedDoor,selected])
 
  const refresh=useCallback(async(signal?:AbortSignal)=>{
-   const response=await fetch('/api/events/flame/open-world?page='+page,
+   const response=await fetch('/api/system-switch/open-world?page='+page,
      {signal,cache:'no-store'})
    const json=await response.json()
    if(!response.ok||!json.success||!Array.isArray(json.domains))throw new Error('World service unavailable')
@@ -246,20 +241,18 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null}:{
  const labels=new Map(feed.domains.map(d=>[d.domainId,d.publicName]))
  return <section className="relative isolate overflow-hidden bg-[#070e1e] text-white"
    data-burning-river-live-multiplayer="systems-and-business"
+   data-weave-open-world="system-switch-file-folder-world"
    data-weave-official-open-world-reference="burning_river_fantasy_world_map.png">
    <header className="relative border-b border-amber-200/25 bg-[linear-gradient(90deg,#101a2e,#16233e,#28140e)] px-4 py-5 sm:px-7">
-     <p className="text-xs font-semibold uppercase tracking-[.2em] text-amber-200">The Company of Time</p>
-     <h2 className="mt-1 font-serif text-2xl font-bold tracking-wide text-amber-100 sm:text-4xl">Burning River Open World</h2>
-     <p className="mt-2 max-w-3xl text-sm leading-6 text-sky-100/85">
-       Company Loop 1 · Shared world of real File Folder domains. Interact through construction,
-       systems, business, customers and accepted connections—not armies or combat.
-     </p>
+     <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-amber-200">The Company of Time · System Switch — Bridge of Radiance</p>
+     <h2 className="mt-1 font-serif text-2xl font-bold tracking-wide text-amber-100 sm:text-4xl">Weave Open World</h2>
+     <p className="mt-1 text-xs leading-5 text-sky-100/80">The living land of Client File Folders, real construction, systems and Customer Doors. <span className="text-amber-200">Company Loop 1 · Burning River</span> is the current event within this world.</p>
    </header>
-   <div className="relative h-[62svh] min-h-[375px] max-h-[850px] overflow-hidden sm:h-[69svh]"
+   <div className="relative h-[71svh] min-h-[430px] max-h-[960px] overflow-hidden sm:h-[77svh]"
       data-open-world-map="interactive">
-     <div className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-45"
-       style={{backgroundImage:"url('/weave/flame-event/burning-river-open-world-official.webp'),linear-gradient(135deg,#361f18,#1c2d49,#132a30)"}}
-       aria-hidden="true"/>
+     {/* Approved burning-river-open-world-official.webp defines the architectural art direction.
+          Land, fire, trees and buildings are physical in-scene geometry, not a wallpaper. */}
+     <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#385c62,#0b2334_68%,#071324)]"/>
      {webgl&&<AdaptiveCanvas camera={{position:[0,66,95],fov:46,near:.1,far:350}}
        gl={{antialias:false,alpha:true,powerPreference:'low-power'}} mobileGame>
        <WorldScene domains={feed.domains} links={feed.links} selected={selected} onSelect={setSelected} carrierCode={carrierCode} focus={focus}/>
@@ -267,14 +260,14 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null}:{
      <div className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-[#061225]/95 to-transparent px-3 pb-10 pt-3">
        <div className="flex items-center justify-between gap-2 text-xs">
          <span className="inline-flex items-center gap-2 rounded-lg border border-amber-200/30 bg-[#061225]/75 px-3 py-2 text-amber-100">
-           <MapPinned className="h-4 w-4"/> {status==='loading'?'Loading verified Client worlds…':status==='unavailable'?'Connection interrupted':feed.domains.length+' File Folder domains'}
+           <MapPinned className="h-4 w-4"/> {status==='loading'?'Opening Client land…':status==='unavailable'?'Connection interrupted':feed.domains.length+' Client File Folder worlds'}
          </span>
-         <span className="rounded-lg border border-white/15 bg-[#061225]/75 px-2 py-2 text-sky-100">No combat · real work</span>
+         <span className="rounded-lg border border-white/15 bg-[#061225]/75 px-2 py-2 text-sky-100">System Switch · Living land</span>
        </div>
      </div>
-     <nav aria-label="World camera focus" className="absolute left-3 top-16 flex gap-2">{(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-11 rounded-lg border border-amber-200/30 bg-[#061225]/95 px-3 py-2 text-xs font-bold text-amber-100">{view==='food'?'Food storefront':'Entire world'}</button>)}</nav>
+     <nav aria-label="Explore the WEAVE land" className="absolute left-3 top-16 flex gap-2">{(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-11 rounded-xl border border-amber-200/30 bg-[#061225]/95 px-3 py-2 text-xs font-bold text-amber-100">{view==='food'?'WEAVE Food Store':'File Folder Land'}</button>)}</nav>
      <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-xs text-sky-100">
-       Drag to look · Pinch or scroll to zoom · Tap a castle
+       Drag to look · Pinch to zoom · Tap a Client building
      </div>
      {!webgl&&<div className="absolute inset-0 flex items-center justify-center bg-[#08172a]/85 px-6 text-center text-sm">
        3D is not available on this device. Use the same verified Client domains below.
@@ -285,14 +278,14 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null}:{
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="flex items-center gap-2 font-serif text-xl font-bold text-amber-100">
-          <Castle className="h-5 w-5"/> Domains in this Company Loop
+          <Castle className="h-5 w-5"/> File Folder worlds on this land
         </h3>
         <button type="button" onClick={()=>{void refresh().catch(()=>setStatus('unavailable'));void refreshOwner()}}
           className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/25 px-3 py-2 text-xs text-white">
           <RefreshCcw className="h-3.5 w-3.5"/> Refresh
         </button>
       </div>
-      <p className="text-xs leading-5 text-sky-100/70">Every verified Client File Folder has a permanent world location from activation. Buildings respond to recorded construction and live systems. Public Customer Doors become enterable only when commissioned.</p>
+      <p className="text-xs leading-5 text-sky-100/70">Each Client building stands in its permanent location. Construction and operating systems develop the visible structure. Tap a commissioned Customer Door to enter that Client's public store.</p>
       <div id="domains" className="grid max-h-60 scroll-mt-10 grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
        {feed.domains.map(d=><button type="button" key={d.domainId}
          onClick={()=>setSelected(d.domainId)} aria-pressed={selected===d.domainId}
@@ -454,7 +447,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null}:{
     </aside>
    </div>
    <footer className="flex flex-wrap justify-between gap-3 border-t border-amber-200/20 bg-[#081424] px-4 py-4 text-xs text-sky-100/70">
-     <span className="inline-flex items-center gap-2"><Waves className="h-4 w-4 text-cyan-300"/> River of fire and water · Shared company time</span>
+     <span className="inline-flex items-center gap-2"><Waves className="h-4 w-4 text-cyan-300"/> WEAVE Open World · System Switch · Current event: Burning River</span>
      <span>Synced from recorded Client work every 15 seconds {stamp?'· '+new Date(stamp).toLocaleTimeString():''}</span>
    </footer>
  </section>
