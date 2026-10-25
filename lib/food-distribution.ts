@@ -171,3 +171,19 @@ export async function listPendingFoodDistributionRecords() {
   `)
   return rows
 }
+
+export async function resolveFoodDistributionManagerId(userId:string) {
+  await ensureFoodDistributionSchema()
+  const {rows}=await getPool().query(`
+    SELECT me.user_id AS manager_user_id
+    FROM manager_employment me
+    WHERE me.user_id=$1::uuid AND me.status IN ('probation','active')
+    UNION ALL
+    SELECT a.manager_user_id
+    FROM weave_distribution_assistants a
+    JOIN manager_employment me ON me.user_id=a.manager_user_id AND me.status IN ('probation','active')
+    WHERE a.user_id=$1::uuid AND a.status='approved' AND a.manager_user_id IS NOT NULL
+    LIMIT 1
+  `,[userId])
+  return rows[0]?.manager_user_id ? String(rows[0].manager_user_id) : null
+}
