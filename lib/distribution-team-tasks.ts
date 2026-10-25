@@ -88,7 +88,7 @@ export async function createDistributionTeamTask(userId:string,targetId:string,r
     try{
       await getPool().query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
         VALUES($1::uuid,'distribution_team_task',$2,$3,'WEAVE Distribution',
-          '/weave/lifestyles/work')`,[targetId,'Distribution team assignment · '+title,
+          '/weave/lifestyles/work')`,[targetId,'Food distribution task · '+title,
           'Your lead Food Distribution Manager assigned food-distribution work. Open your approved workspace to read the instructions and record actual progress.'])
     }catch(e){console.error('[distribution tasks] alert failed',e)}
     return {success:true as const,id:rows[0].id}
@@ -137,7 +137,7 @@ export async function moveDistributionTeamTask(
       if(recipient!==userId)
         await getPool().query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
           VALUES($1::uuid,'distribution_task_progress',$2,$3,'WEAVE Distribution','/weave/lifestyles/work')`,
-          [recipient,'Distribution assignment · '+next.replaceAll('_',' '),note.slice(0,350)])
+          [recipient,'Food distribution task · '+next.replaceAll('_',' '),note.slice(0,350)])
     }catch(e){console.error('[distribution tasks] progress notification failed',e)}
     return {success:true as const,status:next}
   }catch(e){try{await client.query('ROLLBACK')}catch{};console.error('[distribution tasks] transition',e)
