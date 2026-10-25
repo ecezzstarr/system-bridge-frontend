@@ -30,7 +30,7 @@ export async function POST(request:NextRequest) {
     if (!result.success) {
       const errors:Record<string,string>={
         position_inactive:'An active Agent or Bridger position is required.',
-        invalid_note:'Describe your distribution experience and monthly referral plan in 30–2000 characters.',
+        invalid_note:'Describe your food-distribution experience and monthly food handoff plan in 30–2000 characters.',
         already_applied:'You already have an active assistant application or appointment.',
         already_manager:'A current Distribution Manager cannot also hold an Assistant Manager position.',
         not_eligible:'Only active Agents and Bridgers may apply.',
@@ -46,12 +46,12 @@ export async function POST(request:NextRequest) {
     const result=await reviewDistributionAssistant(user.id,applicantId,body.action)
     if(!result.success) {
       const errors:Record<string,string>={
-        not_manager:'Only an active Distribution Manager may review assistant applications.',
+        not_manager:'Only an active Food Distribution Manager may review assistant applications.',
         not_pending:'The application is no longer pending.',
         administration_verification_required:'Administration must verify this application before the lead Manager can appoint an assistant.',
-        positions_full:'All six Assistant Distribution Manager positions are filled.',
-        manager_team_full:'This Distribution Manager already has two appointed assistants.',
-        already_manager:'This applicant currently holds a Distribution Manager position.',
+        positions_full:'All six Assistant Food Distribution Manager positions are filled.',
+        manager_team_full:'This Food Distribution Manager already has two appointed assistants.',
+        already_manager:'This applicant currently holds a Food Distribution Manager position.',
       }
       return NextResponse.json({success:false,error:errors[result.reason]||'Could not review the application'},{status:result.reason==='error'?500:409})
     }
