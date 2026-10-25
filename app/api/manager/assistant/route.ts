@@ -16,7 +16,7 @@ export async function GET(request:NextRequest) {
     return NextResponse.json({success:true,eligible:access.active,state:await getDistributionAssistantState(user.id)},{headers:{'Cache-Control':'private, no-store'}})
   } catch(error) {
     console.error('[distribution assistant API] GET failed',error)
-    return NextResponse.json({success:false,error:'Distribution employment unavailable'},{status:500})
+    return NextResponse.json({success:false,error:'Food Distribution employment unavailable'},{status:500})
   }
 }
 
