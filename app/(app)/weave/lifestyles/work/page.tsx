@@ -11,12 +11,12 @@ type WorkPosition={id:string;title:string;department:string;standing:string;desc
 type JobGuidance={steps:string[];start:string;talk:string;group:string}
 const guidance:Record<string,JobGuidance>={
   distribution_manager:{
-    group:'Distribution Team · Lead',start:'/manager/dashboard',talk:'#team-communication',
-    steps:['Set the team distribution plan and assign an accountable owner for each activity.',
+    group:'Food Distribution Team · Lead',start:'/manager/dashboard',talk:'#team-communication',
+    steps:['Set the food-product distribution plan and assign an accountable owner for each consumer/business handoff.',
       'Coordinate your two approved Assistant Food Distribution Managers, product availability, consumer and business orders, delivery handoffs and the 200 verified monthly food-distribution target.',
       'Review submitted work, ask for corrections when needed and verify recorded outcomes.']},
   distribution_assistant:{
-    group:'Distribution Team · Assistant',start:'/weave/lifestyles/distribution-assistant',talk:'#team-communication',
+    group:'Food Distribution Team · Assistant',start:'/weave/lifestyles/distribution-assistant',talk:'#team-communication',
     steps:['Read the assignments issued by your verified lead Manager.',
       'Distribute WEAVE food products to consumers and businesses, follow assigned delivery tasks, and record evidence-backed handoffs. Recruitment and referral activity is outside this role.',
       'Report progress with evidence, submit completed work and respond to the lead’s review.']},
