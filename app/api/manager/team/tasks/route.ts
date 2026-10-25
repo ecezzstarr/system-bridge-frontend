@@ -10,17 +10,17 @@ async function staff(request:NextRequest){
 }
 export async function GET(request:NextRequest){
   const user=await staff(request)
-  if(!user)return NextResponse.json({success:false,error:'Approved Distribution employment required'},{status:403})
+  if(!user)return NextResponse.json({success:false,error:'Approved food-distribution employment required'},{status:403})
   try{
     const workspace=await readDistributionTeamTasks(user.id)
-    if(!workspace)return NextResponse.json({success:false,error:'No approved Distribution team appointment'},{status:403})
+    if(!workspace)return NextResponse.json({success:false,error:'No approved food-distribution team appointment'},{status:403})
     return NextResponse.json({success:true,workspace},{headers:{'Cache-Control':'private, no-store'}})
   }catch(e){console.error('[team tasks] load failed',e)
-    return NextResponse.json({success:false,error:'Unable to load Distribution tasks'},{status:500})}
+    return NextResponse.json({success:false,error:'Unable to load food-distribution tasks'},{status:500})}
 }
 export async function POST(request:NextRequest){
   const user=await staff(request)
-  if(!user)return NextResponse.json({success:false,error:'Approved Distribution employment required'},{status:403})
+  if(!user)return NextResponse.json({success:false,error:'Approved food-distribution employment required'},{status:403})
   const body=await request.json().catch(()=>({}))
   try{
     let result
@@ -40,7 +40,7 @@ export async function POST(request:NextRequest){
       result=await moveDistributionTeamTask(user.id,body.taskId,body.status as TeamTaskStatus,body.note)
     }else return NextResponse.json({success:false,error:'Unknown task action'},{status:400})
     if(!result.success)return NextResponse.json({success:false,error:
-      result.reason==='not_manager'?'Only the verified lead Distribution Manager can assign work.':
+      result.reason==='not_manager'?'Only the verified lead Food Distribution Manager can assign food-distribution work.':
       result.reason==='invalid_assignee'?'Choose yourself or an appointed assistant in your own team.':
       result.reason==='invalid_transition'?'This task cannot be moved into that state by this role. Refresh progress.':
       result.reason==='not_employee'?'Your appointment no longer grants team work access.':
@@ -49,5 +49,5 @@ export async function POST(request:NextRequest){
       'Task action unavailable'},{status:result.reason==='error'?500:403})
     return NextResponse.json({success:true,result},{headers:{'Cache-Control':'private, no-store'}})
   }catch(e){console.error('[team tasks] action failed',e)
-    return NextResponse.json({success:false,error:'Unable to record team task'},{status:500})}
+    return NextResponse.json({success:false,error:'Unable to record food-distribution task'},{status:500})}
 }

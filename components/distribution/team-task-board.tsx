@@ -53,9 +53,9 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
   const isLead=data.memberPosition==='manager'
   return <section className="mt-6 space-y-4 border-y border-amber-300/20 py-5" data-distribution-task-workshop="role-restricted">
     <header className="flex flex-wrap items-center justify-between gap-3">
-      <div><h3 className="text-base font-black text-white">Distribution Assignment Workshop</h3>
+      <div><h3 className="text-base font-black text-white">Food Distribution Assignment Workshop</h3>
         <p className="mt-2 text-xs leading-6 text-slate-300">{isLead?
-          'As verified lead, assign actual campaigns or distribution activities to yourself or your approved assistants. Review submitted work before marking it complete.':
+          'As verified lead, assign food-product distribution, order follow-up, business supply or delivery tasks to yourself or your approved assistants. Review the evidence before marking work complete.':
           'Complete only work assigned to you. Record a meaningful progress note before submitting it to your lead for verification.'}</p>
       </div>
       <Button type="button" size="sm" variant="outline" onClick={()=>void load()}>Refresh tasks</Button>
@@ -63,7 +63,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
     {message&&<p role="status" className="border border-emerald-300/20 p-3 text-xs text-emerald-200">{message}</p>}
     {error&&<p role="alert" className="border border-rose-300/20 p-3 text-xs text-rose-200">{error}</p>}
     {isLead&&<div className="space-y-3 border border-cyan-200/15 bg-cyan-200/[.025] p-4">
-      <h4 className="text-xs font-black text-cyan-200">Assign distribution work</h4>
+      <h4 className="text-xs font-black text-cyan-200">Assign food distribution work</h4>
       <label className="block text-xs text-slate-300" htmlFor="team-task-assignee">Responsible team member</label>
       <select id="team-task-assignee" className="w-full border border-white/20 bg-slate-950 p-3 text-sm text-white"
         value={assignee} onChange={e=>setAssignee(e.target.value)}>
@@ -132,7 +132,7 @@ export function DistributionTeamTaskBoard({members}:{members:Member[]}){
           </details>
         </article>
       })}
-      {!data.tasks.length&&<p className="text-sm text-slate-400">No assignments yet. A verified lead Manager can issue the first real distribution task.</p>}
+      {!data.tasks.length&&<p className="text-sm text-slate-400">No assignments yet. A verified Food Distribution Manager can issue the first food-distribution task.</p>}
     </div>
   </section>
 }

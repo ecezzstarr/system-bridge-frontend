@@ -3,7 +3,7 @@ import {ensureDistributionAssistantSchema} from '@/lib/distribution-assistants'
 import {getLifestyleAccess} from '@/lib/weave-lifestyle'
 
 // Administration checks eligibility. The verified lead Manager still selects,
-// appoints, supervises and assigns the actual Assistant Distribution Manager.
+// appoints, supervises and assigns the actual Assistant Food Distribution Manager.
 export async function reviewAssistantEligibilityByAdministration(
   administratorId:string,applicantId:string,decision:'verify'|'decline',rawNote:string
 ){
@@ -47,12 +47,12 @@ export async function reviewAssistantEligibilityByAdministration(
         VALUES($1::uuid,'assistant_application_review',$2,$3,'WEAVE Administration',
           '/weave/lifestyles/distribution-assistant')`,
         [applicantId,verified?'Administration verified your assistant application':'Administration declined your assistant application',
-        verified?'Your application has passed Administration eligibility verification. A verified lead Distribution Manager will make the separate appointment decision. You are not employed yet.':
-          'Your Assistant Distribution Manager application was declined by Administration. Open Lifestyle to review your record.'])
+        verified?'Your application has passed Administration eligibility verification. A verified lead Food Distribution Manager will make the separate appointment decision. You are not employed yet.':
+          'Your Assistant Food Distribution Manager application was declined by Administration. Open Lifestyle to review your record.'])
       if(verified){
         await pool.query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
           SELECT me.user_id,'assistant_eligible','Verified assistant application ready',
-            'Administration has verified an Assistant Distribution Manager applicant. Open the Manager workspace to review the statement and decide on appointment.',
+            'Administration has verified an Assistant Food Distribution Manager applicant. Open the Manager workspace to review the statement and decide on appointment.',
             'WEAVE Employment','/manager/dashboard?assistantId='||$1
           FROM manager_employment me WHERE me.status IN ('probation','active')`,[applicantId])
       }

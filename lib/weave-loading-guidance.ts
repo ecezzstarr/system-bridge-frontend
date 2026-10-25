@@ -144,22 +144,22 @@ export function trainingBriefsForRole(role: WeaveLoadingRole): readonly WeaveLoa
 // treats an application or activity as verified before the system records it.
 const EMPLOYMENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveOperatingGuide}>=[
   {match:path=>path.startsWith('/manager/dashboard'),guide:{
-    title:'Distribution Manager · sign and begin',
-    explanation:'Three lead Distribution Manager positions are available through active Agent or Bridger identities. Your signature sends the application to Administration. One-month probation starts only after Administration verifies the appointment.',
+    title:'Food Distribution Manager · sign and begin',
+    explanation:'Three lead Food Distribution Manager positions are available through active Agent or Bridger identities. The job distributes WEAVE food products to consumers and businesses. Your signature sends the application to Administration; probation starts only after verification.',
     steps:[
       'Read the employment conditions and confirm an active Agent position or permanent Agentic-Bridger purchase.',
       'Accept the terms and type your registered full account name into the signature field. Submit for Administration verification and check its actual status before treating probation as started.',
-      'An appointed lead may review assistant applications. The lead and up to two assistants share 300 verified referrals in probation, then 500 per later month; salary is subject to verification.',
+      'An appointed lead may review assistant applications. The lead and up to two assistants share a target of 200 Administration-verified food distributions per calendar month across all WEAVE food product types; salary is subject to verification.',
     ],
-    nextHref:'/manager/dashboard',nextLabel:'View Distribution Manager employment',
+    nextHref:'/manager/dashboard',nextLabel:'View Food Distribution Manager employment',
   }},
   {match:path=>path.startsWith('/weave/lifestyles/distribution-assistant'),guide:{
-    title:'Assistant Distribution Manager · apply',
-    explanation:'Six assistant positions exist, with two positions under each lead Distribution Manager. Applying does not create an appointment.',
+    title:'Assistant Food Distribution Manager · apply',
+    explanation:'Six Assistant Food Distribution Manager positions exist, with two under each lead. The work focuses on WEAVE food-product handoffs to consumers and businesses, with a shared target of 200 verified distributions per calendar month. Applying does not create an appointment.',
     steps:[
       'Read the published employment conditions and check your Agent or Bridger position is active.',
-      'Enter your real distribution experience and plan, then submit the application.',
-      'A lead Distribution Manager reviews applications. Return here to see whether an appointment is actually approved.',
+      'Enter your food distribution experience and monthly plan, then submit the application.',
+      'A lead Food Distribution Manager reviews applications. Return here to see whether an appointment is actually approved.',
     ],
     nextHref:'/weave/lifestyles/distribution-assistant',nextLabel:'View assistant employment',
   }},

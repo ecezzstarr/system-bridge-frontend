@@ -4,6 +4,7 @@ import { listManagerEmploymentForAdmin,reviewManagerEmployment } from '@/lib/man
 import { readDistributionEmploymentOverview } from '@/lib/distribution-team-updates'
 import { readDistributionTasksForAdministration } from '@/lib/distribution-team-tasks'
 import {reviewAssistantEligibilityByAdministration} from '@/lib/distribution-assistant-admin-review'
+import {listPendingFoodDistributionRecords,reviewFoodDistributionRecord} from '@/lib/food-distribution'
 export const dynamic='force-dynamic'
 async function admin(request:NextRequest){
   const user=await getAuthUser(request)
@@ -13,12 +14,13 @@ export async function GET(request:NextRequest){
   const user=await admin(request)
   if(!user)return NextResponse.json({success:false,error:'Administration required'},{status:403})
   try{
-    const [appointments,overview,teamTasks]=await Promise.all([
+    const [appointments,overview,teamTasks,pendingFoodDistributions]=await Promise.all([
       listManagerEmploymentForAdmin(user.id),
       readDistributionEmploymentOverview(),
       readDistributionTasksForAdministration(),
+      listPendingFoodDistributionRecords(),
     ])
-    return NextResponse.json({success:true,appointments,overview,teamTasks,readOnlyReports:true},
+    return NextResponse.json({success:true,appointments,overview,teamTasks,pendingFoodDistributions,readOnlyReports:true},
       {headers:{'Cache-Control':'private, no-store'}})
   }catch(error){console.error('[distribution verification] reading failed',error)
     return NextResponse.json({success:false,error:'Unable to load verification desk'},{status:500})}
@@ -27,14 +29,23 @@ export async function POST(request:NextRequest){
   const user=await admin(request)
   if(!user)return NextResponse.json({success:false,error:'Administration required'},{status:403})
   const body=await request.json().catch(()=>({}))
-  const validDecision=body.position==='distribution_assistant'
-    ?['verify','decline'].includes(body.action)
-    :['approve','reject'].includes(body.action)
+  const foodRecord=body.position==='food_distribution_record'
+  const targetId=foodRecord?body.recordId:body.applicantId
+  const validDecision=foodRecord
+    ?['verify','reject'].includes(body.action)
+    :body.position==='distribution_assistant'
+      ?['verify','decline'].includes(body.action)
+      :['approve','reject'].includes(body.action)
   if(!validDecision
-    ||typeof body.applicantId!=='string'
-    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.applicantId)
+    ||typeof targetId!=='string'
+    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(targetId)
     || typeof body.note!=='string'||body.note.trim().length<10||body.note.trim().length>1200)
-    return NextResponse.json({success:false,error:'Provide a valid applicant, decision and verification reason of 10–1200 characters.'},{status:400})
+    return NextResponse.json({success:false,error:'Provide a valid record, decision and verification reason of 10–1200 characters.'},{status:400})
+  if(foodRecord){
+    const outcome=await reviewFoodDistributionRecord(user.id,targetId,body.action,body.note)
+    if(!outcome.success)return NextResponse.json({success:false,error:'This food distribution record is no longer pending verification.'},{status:409})
+    return NextResponse.json({success:true,record:outcome.record},{headers:{'Cache-Control':'private, no-store'}})
+  }
   if(body.position==='distribution_assistant'){
     if(!['verify','decline'].includes(body.action))
       return NextResponse.json({success:false,error:'Choose Verify eligibility or Decline application.'},{status:400})
