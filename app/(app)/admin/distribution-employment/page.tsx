@@ -89,9 +89,9 @@ export default function DistributionEmploymentAdministration(){
   const pending=state?.appointments.filter(a=>a.status==='pending_verification')||[]
   return <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-white" data-distribution-employment-admin="read-only-oversight">
     <header className="border-b border-amber-300/15 pb-5">
-      <Link href="/admin/distribution-studio" className="text-xs text-cyan-200">← Distribution Studio</Link>
+      <Link href="/admin" className="text-xs text-cyan-200">← Administration</Link>
       <p className="mt-5 text-[10px] font-black uppercase tracking-widest text-amber-200">Administration · Verification and oversight</p>
-      <h1 className="mt-2 text-3xl font-black">Distribution Employment</h1>
+      <h1 className="mt-2 text-3xl font-black">Food Distribution Employment</h1>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Administration verifies signed Food Distribution Manager applications before probation can begin. Verified Managers appoint up to two Assistant Food Distribution Managers and direct daily food-distribution operations. Administration independently verifies each reported consumer or business handoff; only verified records count toward the shared target of 200 food distributions per calendar month.</p>
     </header>
     {error&&<p role="alert" className="border border-rose-300/25 p-3 text-xs text-rose-200">{error}</p>}
