@@ -7,7 +7,7 @@ import { getFoodDistributionTeamState, calculateFoodDistributionCompensation, FO
 export const DISTRIBUTION_ASSISTANT_LIMIT = 6
 export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
 export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 40_000
-// Team target is 300 in the Manager's probation month, then 500 per employment month.
+// Each team targets 200 verified food distributions per calendar month.
 export const DISTRIBUTION_ASSISTANT_MONTHLY_FOOD_TARGET = FOOD_DISTRIBUTION_MONTHLY_TARGET
 
 // Assistants retain their Agent or Bridger identity; appointment is a separate
@@ -175,9 +175,9 @@ export async function reviewDistributionAssistant(
       UPDATE weave_distribution_assistants SET status=$2::varchar,manager_user_id=$3::uuid,
         hired_at=CASE WHEN $2::varchar='approved' THEN NOW() ELSE NULL END,
         reviewed_at=NOW(),updated_at=NOW(),
-        monthly_salary_ngn=$4,monthly_referral_target=$5
+        monthly_salary_ngn=$4,monthly_referral_target=$5,monthly_food_distribution_target=$5
       WHERE user_id=$1::uuid
-    `,[applicantId,status,reviewerId,DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN,DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET])
+    `,[applicantId,status,reviewerId,DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN,DISTRIBUTION_ASSISTANT_MONTHLY_FOOD_TARGET])
     await client.query('COMMIT')
     try {
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
