@@ -158,7 +158,7 @@ const EMPLOYMENT_GUIDES:ReadonlyArray<{match:(path:string)=>boolean;guide:WeaveO
     explanation:'Six Assistant Food Distribution Manager positions exist, with two under each lead. The work focuses on WEAVE food-product handoffs to consumers and businesses, with a shared target of 200 verified distributions per calendar month. Applying does not create an appointment.',
     steps:[
       'Read the published employment conditions and check your Agent or Bridger position is active.',
-      'Enter your real distribution experience and plan, then submit the application.',
+      'Enter your food distribution experience and monthly plan, then submit the application.',
       'A lead Food Distribution Manager reviews applications. Return here to see whether an appointment is actually approved.',
     ],
     nextHref:'/weave/lifestyles/distribution-assistant',nextLabel:'View assistant employment',
