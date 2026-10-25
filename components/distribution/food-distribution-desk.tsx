@@ -22,7 +22,7 @@ export function FoodDistributionDesk(){
   const [recipientName,setRecipientName]=useState('')
   const [quantity,setQuantity]=useState('1')
   const [evidenceReference,setEvidenceReference]=useState('')
-  const [distributionDate,setDistributionDate]=useState(new Date().toISOString().slice(0,10))
+  const [distributionDate,setDistributionDate]=useState(new Date(Date.now()+60*60*1000).toISOString().slice(0,10))
   const [error,setError]=useState('')
   const [message,setMessage]=useState('')
   const [busy,setBusy]=useState(false)
@@ -75,7 +75,7 @@ export function FoodDistributionDesk(){
         <Field label="Recipient category"><select value={customerType} onChange={e=>setCustomerType(e.target.value as 'consumer'|'business')} className={fieldClass}><option value="consumer">Consumer</option><option value="business">Business</option></select></Field>
         <Field label="Consumer or business name"><input value={recipientName} onChange={e=>setRecipientName(e.target.value)} maxLength={120} minLength={2} placeholder="Recipient / business name" className={fieldClass}/></Field>
         <Field label="Quantity / packages delivered"><input type="number" value={quantity} onChange={e=>setQuantity(e.target.value)} min={1} max={10000} step={1} className={fieldClass}/></Field>
-        <Field label="Distribution date"><input type="date" value={distributionDate} onChange={e=>setDistributionDate(e.target.value)} max={new Date().toISOString().slice(0,10)} className={fieldClass}/></Field>
+        <Field label="Distribution date"><input type="date" value={distributionDate} onChange={e=>setDistributionDate(e.target.value)} max={new Date(Date.now()+60*60*1000).toISOString().slice(0,10)} className={fieldClass}/></Field>
         <Field label="Order / receipt / delivery reference"><input value={evidenceReference} onChange={e=>setEvidenceReference(e.target.value)} minLength={6} maxLength={500} placeholder="WEAVE order or receipt reference" className={fieldClass}/></Field>
       </div>
       <button type="button" onClick={()=>void submit()} disabled={busy||recipientName.trim().length<2||evidenceReference.trim().length<6||!Number.isInteger(Number(quantity))||Number(quantity)<1||!distributionDate} className="mt-4 min-h-11 rounded-xl bg-emerald-300 px-5 text-sm font-black text-slate-950 disabled:opacity-40">{busy?'Submitting…':'Submit for Administration verification'}</button>
