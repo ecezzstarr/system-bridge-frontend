@@ -6,6 +6,7 @@ import './weave-mobile.css'
 import './weave-home-burning-river.css'
 import './weave-company-theme.css'
 import './weave-position-ticket-theme.css'
+import './weave-plus-app-foundation.css'
 import { AuthProvider } from '@/lib/auth-provider'
 import { ThemeProvider } from 'next-themes'
 import { PWARegister } from '@/components/pwa-register'
@@ -52,7 +53,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="overflow-x-hidden" data-weave-theme="dark-blue" data-weave-app-theme="river-gold">
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden" data-weave-theme="river-gold" data-weave-app-theme="river-gold">
       <body className="bg-background text-foreground overflow-x-hidden antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
           <AuthProvider>
