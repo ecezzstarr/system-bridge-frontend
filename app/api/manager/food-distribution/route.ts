@@ -45,6 +45,7 @@ export async function POST(request:NextRequest) {
         invalid_customer_type:'Choose consumer or business.',
         invalid_record:'Provide the recipient, a positive quantity, and an order/receipt reference.',
         invalid_date:'Enter a valid distribution date that is not in the future.',
+        duplicate_reference:'This order or receipt reference has already been recorded for your team. Use the unique reference for this handoff.',
         not_appointed:'Only an appointed Food Distribution Manager or Assistant Food Distribution Manager can record team distribution.',
       }
       return NextResponse.json({success:false,error:errors[result.reason]||'Could not record food distribution.'},{status:result.reason==='not_appointed'?403:400})
