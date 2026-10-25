@@ -31,7 +31,7 @@ export default function ManagerDashboardPage(){
     const assistants=await fetch('/api/manager/assistant',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}).catch(()=>null)
     if(assistants?.ok){
       try{const body=await assistants.json();setAssistantState(body.state)}
-      catch(error){console.error('[distribution-manager] assistant report unavailable',error)}
+      catch(error){console.error('[food-distribution-manager] assistant report unavailable',error)}
     }
   }
 
@@ -103,7 +103,7 @@ export default function ManagerDashboardPage(){
         <p className="mt-3 text-sm leading-6 text-slate-400">{agentFree?'Agents use WEAVE Lifestyle, Ace and Food Distribution Manager through the Agent company position with no monthly subscription. Restore the Agent account position to continue.':'Pay 11 Flame Coin once to attain Agentic-Bridger. Agentic-Bridger enables Lifestyle and applications for eligible employment positions; appointments require separate approval. No monthly subscription.'}</p>
         {error&&<p className="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{error}</p>}
         {state?.employment&&<EmploymentActions position="distribution_manager" onStatusChange={()=>void load()}/>}
-        <div className="mt-6 grid gap-3 sm:grid-cols-2"><Metric icon={<Target className="h-4 w-4"/>} label="Company distribution" value="Team outreach"/><Metric icon={<CalendarClock className="h-4 w-4"/>} label="Employment document" value="Terms after access"/></div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2"><Metric icon={<Target className="h-4 w-4"/>} label="Food distribution target" value="200 handoffs / month"/><Metric icon={<CalendarClock className="h-4 w-4"/>} label="Employment document" value="Terms after access"/></div>
         {agentFree?<Button asChild className="mt-6 w-full bg-amber-600 font-black uppercase tracking-wider hover:bg-amber-700"><Link href="/agent/dashboard">RETURN TO AGENT POSITION</Link></Button>:<><Button onClick={subscribe} disabled={busy} className="mt-6 w-full bg-amber-600 font-black uppercase tracking-wider hover:bg-amber-700">{busy?'Activating Agentic-Bridger…':'Attain Agentic-Bridger · 11 Flame Coin once'}</Button><p className="mt-3 text-center text-[10px] text-slate-500">Agentic-Bridger attainment costs 11 Flame Coin once. It is not a recurring subscription or automatic Manager employment.</p></>}
       </section>
     </main>
