@@ -27,7 +27,7 @@ assert.ok(actions.includes("'Dismissed by Administration'"),'Employment terminat
 assert.ok(actions.includes("thread?.messages.length?'Send reply':'Send message'"),'First message and subsequent replies are distinguished')
 assert.ok(actions.includes("position==='food_preparation'&&thread?.record.position"),'Food Preparation labels reflect lead versus assistant')
 assert.ok(actions.includes('underlying WEAVE account remains intact'),'Employment exit does not claim account deletion')
-assert.ok(actions.includes('appointments of its approved Assistant Distribution Managers'),'Lead departure warns about automatic assistant exit')
+assert.ok(actions.includes('appointments of its approved Assistant Food Distribution Managers'),'Lead departure warns about automatic assistant exit')
 assert.ok(actions.includes('Previously assigned food orders stay on record'),'Food preparation departure warns about order reassignment')
 assert.ok(lifecycle.includes('agent_id AS user_id,position,status'),'Food employment API returns actual position for correct label')
 assert.ok(lifecycle.includes('administrationRoute')&&lifecycle.includes('employeeRoute'),'Replies link to the appropriate employment desk')
