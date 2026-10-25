@@ -32,7 +32,7 @@ export async function POST(request:NextRequest) {
         position_inactive:'An active Agent or Bridger position is required.',
         invalid_note:'Describe your food-distribution experience and monthly food handoff plan in 30–2000 characters.',
         already_applied:'You already have an active assistant application or appointment.',
-        already_manager:'A current Distribution Manager cannot also hold an Assistant Manager position.',
+        already_manager:'A current Food Distribution Manager cannot also hold an Assistant Food Distribution Manager position.',
         not_eligible:'Only active Agents and Bridgers may apply.',
       }
       return NextResponse.json({success:false,error:errors[result.reason]||'Assistant application unavailable'},{status:result.reason==='error'?500:result.reason==='already_applied'?409:400})
