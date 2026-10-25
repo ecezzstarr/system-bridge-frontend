@@ -345,3 +345,57 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
 @media (prefers-reduced-motion: reduce) {
   html[data-weave-app-theme="river-gold"] .weave-header { transition: none; }
 }
+
+
+/*
+ * Theme reconciliation — Plus File Folder is the shared visual reference.
+ * The former navy glass + 20px blur washed edges and small text together,
+ * while the company shell painted light scenery underneath white text.
+ * Use porcelain / river-blue / gold for shared chrome; keep the actual
+ * operational world and its 3D materials untouched.
+ */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) body {
+  color: #183b55;
+  font-weight: 400;
+  text-shadow: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-header, .weave-sidebar, .weave-client-nav,
+  .weave-environment-panel, .weave-reading-surface, .field-surface,
+  .card, [role="card"], [data-slot="card"]
+) {
+  color: #183b55;
+  background: linear-gradient(145deg, rgba(247,251,254,.97), rgba(255,253,247,.96) 58%, rgba(236,247,253,.96)) !important;
+  border-color: rgba(178,134,66,.34);
+  box-shadow: 0 12px 32px rgba(24,59,85,.09), inset 0 1px 0 rgba(255,255,255,.96);
+  -webkit-backdrop-filter: blur(6px) saturate(112%);
+  backdrop-filter: blur(6px) saturate(112%);
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-header, .weave-sidebar, .weave-client-nav,
+  .weave-environment-panel, .weave-reading-surface, .field-surface,
+  .card, [role="card"], [data-slot="card"]
+) :is(.text-white, [class~="text-slate-200"], [class~="text-slate-300"], [class~="text-slate-400"], [class~="text-sky-100"], [class~="text-cyan-100"], [class~="text-amber-100"], [class~="text-amber-200"]) {
+  color: #34566d;
+}
+/* Dialogs and menus are opaque paper surfaces, not blurred glass. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  [data-slot="dialog-content"], [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"], [data-slot="sheet-content"]
+) {
+  background: #fffdf7 !important;
+  color: #183b55;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Keep the dark operational landscape legible where it is intentionally used. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world {
+  color: #f2f9fe;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-dashboard-world :is(
+  .weave-dashboard-position, [data-role-presence-gate], [data-role-district]
+) {
+  color: #f2f9fe;
+}

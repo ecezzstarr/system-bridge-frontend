@@ -1,13 +1,15 @@
 /* One dark-blue palette and strong writing for public and role entrances. */
 @theme {
-  --font-weight-thin: 650;
-  --font-weight-extralight: 650;
-  --font-weight-light: 650;
-  --font-weight-normal: 700;
-  --font-weight-medium: 700;
-  --font-weight-semibold: 750;
-  --font-weight-bold: 800;
-  --font-weight-extrabold: 850;
+  /* Preserve the actual requested weight. Artificially making every font
+     weight 650–900 makes small text look swollen and blurred on phones. */
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
   --font-weight-black: 900;
   --color-slate-950: #06152e;
   --color-slate-900: #0b2242;
@@ -22,7 +24,7 @@
 html[data-weave-theme="dark-blue"] body {
   background: var(--background);
   color: var(--foreground);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 html[data-weave-theme="dark-blue"] {
@@ -44,11 +46,11 @@ html[data-weave-theme="dark-blue"] :is(
   [data-slot="popover-content"], [data-slot="dropdown-menu-content"],
   [data-slot="sheet-content"], [data-weave-dj-mirror="true"]
 ) {
-  background: linear-gradient(135deg, rgba(24, 57, 97, .56), rgba(6, 21, 46, .72));
-  border-color: rgba(191, 219, 254, .22);
-  box-shadow: 0 16px 48px rgba(2, 8, 23, .28), inset 0 1px 0 rgba(239, 246, 255, .12);
-  -webkit-backdrop-filter: blur(20px) saturate(135%);
-  backdrop-filter: blur(20px) saturate(135%);
+  background: linear-gradient(135deg, rgba(242, 249, 254, .94), rgba(255, 253, 246, .92));
+  border-color: rgba(192, 152, 86, .32);
+  box-shadow: 0 12px 32px rgba(24, 59, 85, .10), inset 0 1px 0 rgba(255, 255, 255, .96);
+  -webkit-backdrop-filter: blur(6px) saturate(112%);
+  backdrop-filter: blur(6px) saturate(112%);
 }
 
 /* Keep menus and dialogs readable over any content beneath their glass. */
@@ -56,7 +58,10 @@ html[data-weave-theme="dark-blue"] :is(
   [data-slot="dialog-content"], [data-slot="popover-content"],
   [data-slot="dropdown-menu-content"], [data-slot="sheet-content"]
 ) {
-  background-color: rgba(6, 21, 46, .84);
+  background: rgba(255, 253, 247, .98);
+  color: #183b55;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -67,7 +72,7 @@ html[data-weave-theme="dark-blue"] :is(
     [data-slot="dialog-content"], [data-slot="popover-content"],
     [data-slot="dropdown-menu-content"], [data-slot="sheet-content"],
     [data-weave-dj-mirror="true"]
-  ) { background: rgba(6, 21, 46, .94); }
+  ) { background: rgba(255, 253, 247, .98); }
 }
 
 html[data-weave-theme="dark-blue"] :where(h1,h2,h3,h4,h5,h6) {
