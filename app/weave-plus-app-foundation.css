@@ -7,38 +7,12 @@
  * Keep text crisp: no backdrop blur on functional surfaces, no text filters,
  * and no compounded translucent theme layers.
  */
-html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) {
-  --background: #f4f9fc;
-  --foreground: #183b55;
-  --card: #ffffff;
-  --card-foreground: #183b55;
-  --popover: #fffefa;
-  --popover-foreground: #183b55;
-  --primary: #237bb7;
-  --primary-foreground: #ffffff;
-  --secondary: #eaf5fb;
-  --secondary-foreground: #24465f;
-  --muted: #edf5f9;
-  --muted-foreground: #4b687c;
-  --accent: #f4e6c8;
-  --accent-foreground: #60471f;
-  --border: #d9e5eb;
-  --input: #ffffff;
-  --ring: #237bb7;
-  --sidebar: #f8fbfd;
-  --sidebar-foreground: #183b55;
-  --weave-world-base: #f4f9fc;
-  --weave-world-surface: rgba(255,255,255,.96);
-  --weave-world-surface-strong: #ffffff;
-  --weave-world-line: rgba(178,134,67,.28);
-  color-scheme: light;
-}
 html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) body {
   background:
     radial-gradient(ellipse 72% 32% at 6% 0%, rgba(139,204,239,.22), transparent 78%),
     radial-gradient(ellipse 60% 34% at 96% 8%, rgba(244,211,151,.20), transparent 80%),
     linear-gradient(180deg,#f1f9fd 0%,#fffefa 52%,#eff7fb 100%);
-  color: #183b55;
+  color: var(--weave-company-ink);
   text-shadow: none;
 }
 
@@ -48,7 +22,7 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
   .weave-reading-surface,.field-surface
 ) {
   background: linear-gradient(140deg,rgba(255,255,255,.99),rgba(244,250,253,.98));
-  color: #183b55;
+  color: var(--weave-company-ink);
   border-color: rgba(178,134,67,.32);
   box-shadow: 0 10px 30px rgba(24,59,85,.07),inset 0 1px 0 #fff;
   -webkit-backdrop-filter: none;
@@ -69,7 +43,7 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
     radial-gradient(ellipse 55% 30% at 90% 0%,rgba(245,207,133,.23),transparent 82%),
     radial-gradient(ellipse 52% 34% at 4% 95%,rgba(100,187,230,.18),transparent 85%),
     linear-gradient(155deg,#ffffff 0%,#f3f9fc 58%,#fffdf7 100%);
-  color: #183b55;
+  color: var(--weave-company-ink);
   border: 1px solid rgba(178,134,67,.28);
   box-shadow: 0 18px 48px rgba(24,59,85,.08),inset 0 1px 0 #fff;
 }
@@ -77,7 +51,7 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
   .weave-dashboard-position,[data-role-presence-gate],[data-role-district]
 ) {
   background: linear-gradient(145deg,#ffffff,#f5fafc);
-  color: #183b55;
+  color: var(--weave-company-ink);
   border-color: rgba(178,134,67,.32);
   box-shadow: 0 6px 20px rgba(24,59,85,.055),inset 0 1px 0 #fff;
   -webkit-backdrop-filter: none;
@@ -93,7 +67,7 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
 
 /* Ordinary operating places use Plus materials. Burning River stays untouched. */
 html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) .weave-operating-environment:not([data-weave-environment="flame-event-loop-one"]) {
-  color: #183b55;
+  color: var(--weave-company-ink);
   border-color: rgba(178,134,67,.30);
   background:
     radial-gradient(ellipse 58% 28% at 88% 2%,rgba(244,211,151,.20),transparent 82%),
@@ -105,7 +79,7 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
   .weave-environment-panel,.weave-reading-surface,.field-surface,[data-slot="card"]
 ) {
   background: rgba(255,255,255,.96);
-  color: #183b55;
+  color: var(--weave-company-ink);
   border-color: rgba(178,134,67,.30);
   box-shadow: 0 8px 26px rgba(24,59,85,.06);
   -webkit-backdrop-filter: none;

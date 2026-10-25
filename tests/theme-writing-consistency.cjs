@@ -1,0 +1,35 @@
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
+const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')
+
+const companyTheme = read('app/weave-company-theme.css')
+const appFoundation = read('app/weave-plus-app-foundation.css')
+const writing = read('lib/weave-writing.ts')
+const login = read('app/(auth)/login/page.tsx')
+const home = read('app/page.tsx')
+const clientHome = read('app/client/page.tsx')
+const clientLogin = read('app/client/login/page.tsx')
+
+assert.ok(companyTheme.includes('--background: var(--weave-company-app-background)'))
+assert.ok(companyTheme.includes('--foreground: var(--weave-company-ink)'))
+assert.ok(companyTheme.includes('--primary: var(--weave-company-river)'))
+assert.ok(companyTheme.includes('--weave-world-base: var(--weave-company-app-background)'))
+assert.ok(!/--(?:background|foreground|card|popover|primary|secondary|muted|accent|border|input|ring|sidebar):/.test(appFoundation),
+  'The Plus foundation must consume, not redeclare, shared semantic theme tokens')
+assert.ok(appFoundation.includes('color: var(--weave-company-ink)'),
+  'The Plus foundation must use the shared company ink token')
+
+assert.ok(writing.includes("signIn: 'Sign In'"))
+assert.ok(writing.includes("forgotPassword: 'Forgot password?'"))
+assert.ok(login.includes('WEAVE_WRITING.positionAccess.signIn'))
+assert.ok(login.includes('WEAVE_WRITING.positionAccess.forgotPassword'))
+assert.ok(login.includes('WEAVE_WRITING.positionAccess.loginFailed'))
+assert.ok(home.includes('WEAVE_WRITING.positionAccess.signIn'))
+assert.ok(home.includes('WEAVE_WRITING.identity.movement'))
+assert.ok(clientHome.includes('WEAVE_WRITING.positionAccess.signIn'))
+assert.ok(clientHome.includes('WEAVE_WRITING.identity.movement'))
+assert.ok(clientLogin.includes('WEAVE_WRITING.positionAccess.forgotPassword'))
+assert.ok(clientLogin.includes('WEAVE_WRITING.identity.movement'))
+
+console.log('PASS: shared River/Gold theme tokens and canonical access wording')

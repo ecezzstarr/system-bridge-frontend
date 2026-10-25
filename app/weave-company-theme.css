@@ -15,11 +15,34 @@ html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian
   --weave-company-gold: #b28643;
   --weave-company-gold-line: rgba(192, 152, 86, .36);
   --weave-company-porcelain: #f2f9fe;
+  --weave-company-app-background: #f4f9fc;
   --weave-company-glow: rgba(255, 217, 141, .34);
-  --weave-world-base: #eaf6fc;
-  --weave-world-line: rgba(193, 159, 91, .22);
+  --background: var(--weave-company-app-background);
+  --foreground: var(--weave-company-ink);
+  --card: #ffffff;
+  --card-foreground: var(--weave-company-ink);
+  --popover: #fffefa;
+  --popover-foreground: var(--weave-company-ink);
+  --primary: var(--weave-company-river);
+  --primary-foreground: #ffffff;
+  --secondary: #eaf5fb;
+  --secondary-foreground: #24465f;
+  --muted: #edf5f9;
+  --muted-foreground: #4b687c;
+  --accent: #f4e6c8;
+  --accent-foreground: #60471f;
+  --border: #d9e5eb;
+  --input: #ffffff;
+  --ring: var(--weave-company-river);
+  --sidebar: #f8fbfd;
+  --sidebar-foreground: var(--weave-company-ink);
+  --weave-world-base: var(--weave-company-app-background);
+  --weave-world-surface: rgba(255,255,255,.96);
+  --weave-world-surface-strong: #ffffff;
+  --weave-world-line: rgba(178,134,67,.28);
   --presence-glow: #57afe0;
   --field-border: rgba(181, 146, 89, .29);
+  color-scheme: light;
   background: #eaf6fc;
 }
 
