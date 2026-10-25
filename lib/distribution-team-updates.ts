@@ -110,8 +110,8 @@ export async function postDistributionTeamUpdate(userId:string,kind:Distribution
         JOIN users author ON author.id=$2::uuid
         WHERE teammate.user_id<>$2::uuid`,
         [String(member.manager_id),userId,
-          kind==='message'?'New distribution team message':kind==='plan'?'Distribution team plan updated':
-          kind==='progress'?'Distribution team progress reported':'Distribution handoff needs attention',
+          kind==='message'?'New food distribution team message':kind==='plan'?'Food distribution team plan updated':
+          kind==='progress'?'Food distribution progress reported':'Food-product handoff needs attention',
           content.slice(0,380)])
     }catch(error){console.error('[distribution team] teammate alerts failed',error)}
   }
