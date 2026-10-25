@@ -3,6 +3,8 @@
 import { useRef, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+import { LivingPresenceForm } from '@/components/world/weave-living-presence'
+import { usePresenceElement } from '@/components/world/use-presence-element'
 
 interface PlayerProps {
   onMove?: (position: THREE.Vector3) => void
@@ -10,6 +12,7 @@ interface PlayerProps {
 }
 
 export function Player({ onMove, externalDir }: PlayerProps) {
+  const element=usePresenceElement()
   const meshRef = useRef<THREE.Group>(null)
   const { camera } = useThree()
   
@@ -17,6 +20,7 @@ export function Player({ onMove, externalDir }: PlayerProps) {
   const keys = useRef<{ [key: string]: boolean }>({})
   const velocity = useRef(new THREE.Vector3())
   const direction = useRef(new THREE.Vector3())
+  const flow = useRef({speed:0})
   
   const targetCamPos=useRef(new THREE.Vector3())
   const lastReported=useRef(new THREE.Vector3(Infinity,Infinity,Infinity))
@@ -70,6 +74,7 @@ export function Player({ onMove, externalDir }: PlayerProps) {
 
     // Apply friction/damping
     velocity.current.multiplyScalar(Math.pow(friction,step))
+    flow.current.speed=Math.min(6,velocity.current.length()*16)
 
     // Update position
     meshRef.current.position.addScaledVector(velocity.current,step)
@@ -98,6 +103,12 @@ export function Player({ onMove, externalDir }: PlayerProps) {
     )
   })
 
-  // Invisible control anchor: exploring a world requires no elemental player form.
-  return <group ref={meshRef} userData={{gameExplorer:true}}/>
+  return (
+    <group ref={meshRef}>
+      {/* Corridor movement, station proximity and third-person camera are unchanged. */}
+      <group position={[0,-2.2,0]}>
+        <LivingPresenceForm element={element} motion={flow}/>
+      </group>
+    </group>
+  )
 }
