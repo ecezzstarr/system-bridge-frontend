@@ -37,8 +37,10 @@ export async function ensureFoodDistributionSchema() {
 }
 
 function monthRange(at = new Date()) {
-  const start = new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), 1))
-  const end = new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth() + 1, 1))
+  // WEAVE operates on Nigeria calendar dates (UTC+1), while PostgreSQL DATE is timezone-free.
+  const nigeriaNow = new Date(at.getTime() + 60 * 60 * 1000)
+  const start = new Date(Date.UTC(nigeriaNow.getUTCFullYear(), nigeriaNow.getUTCMonth(), 1))
+  const end = new Date(Date.UTC(nigeriaNow.getUTCFullYear(), nigeriaNow.getUTCMonth() + 1, 1))
   return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) }
 }
 
@@ -96,7 +98,7 @@ export async function getFoodDistributionTeamState(managerUserId:string) {
     WHERE manager_user_id=$1::uuid AND distribution_date >= $2::date AND distribution_date < $3::date
     GROUP BY distributor_user_id
   `,[managerUserId,start,end])
-  const metricsByUser=new Map(memberMetrics.map((m:any)=>[String(m.userId),{verified:Number(m.verified||0),pending:Number(m.pending||0)}]))
+  const metricsByUser=new Map<string,{verified:number;pending:number}>(memberMetrics.map((m:any)=>[String(m.userId),{verified:Number(m.verified||0),pending:Number(m.pending||0)}] as [string,{verified:number;pending:number}]))
   const {rows:recent} = await pool.query(`
     SELECT r.id,r.distributor_user_id AS "distributorUserId",u.name AS "distributorName",
       r.product_type AS "productType",r.customer_type AS "customerType",
