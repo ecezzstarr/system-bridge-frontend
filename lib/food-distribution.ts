@@ -34,7 +34,7 @@ export async function ensureFoodDistributionSchema() {
   `
   await sql`CREATE INDEX IF NOT EXISTS weave_food_distribution_manager_month_idx ON weave_food_distribution_records(manager_user_id,distribution_date,status)`
   await sql`CREATE INDEX IF NOT EXISTS weave_food_distribution_status_idx ON weave_food_distribution_records(status,created_at)`
-  await sql`CREATE UNIQUE INDEX IF NOT EXISTS weave_food_distribution_evidence_unique_idx ON weave_food_distribution_records(manager_user_id,LOWER(BTRIM(evidence_reference)))`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS weave_food_distribution_evidence_unique_idx ON weave_food_distribution_records(manager_user_id,LOWER(BTRIM(evidence_reference))) WHERE status IN ('pending','verified')`
 }
 
 function monthRange(at = new Date()) {
@@ -113,7 +113,7 @@ export async function getFoodDistributionTeamState(managerUserId:string) {
   const progress=progressRows[0]||{}
   const verified=Number(progress.verified||0)
   return {
-    managerUserId, monthStart:start, monthEnd:end,
+    managerUserId, monthStart:start, monthEnd:new Date(Date.parse(end+'T00:00:00Z')-86400000).toISOString().slice(0,10),
     target:FOOD_DISTRIBUTION_MONTHLY_TARGET,
     verified, pending:Number(progress.pending||0), rejected:Number(progress.rejected||0),
     remaining:Math.max(0,FOOD_DISTRIBUTION_MONTHLY_TARGET-verified),
