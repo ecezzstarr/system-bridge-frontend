@@ -29,7 +29,7 @@ assert.ok(read('components/agent/agent-smart-guide.tsx').includes('data-weave-gu
 assert.ok(engine.includes('MANAGER_MONTHLY_SALARY_NGN = 70_000'),'Distribution Manager monthly salary is ₦70,000')
 assert.ok(catalog.includes("DISTRIBUTION_MANAGER_LIFESTYLE = 'distribution_manager'"),'Distribution Manager is encoded as a Lifestyle rather than a fifth role')
 assert.ok(engine.includes('MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE'),'Legacy Manager API remains a compatibility surface over Distribution Manager Lifestyle')
-assert.ok(engine.includes('MANAGER_PROBATION_TARGET = FOOD_DISTRIBUTION_MONTHLY_TARGET')&&read('lib/food-distribution.ts').includes('FOOD_DISTRIBUTION_MONTHLY_TARGET = 200'),'Team probation is 300 referrals in first employment month then 500 afterward')
+assert.ok(engine.includes('MANAGER_PROBATION_TARGET = FOOD_DISTRIBUTION_MONTHLY_TARGET')&&read('lib/food-distribution.ts').includes('FOOD_DISTRIBUTION_MONTHLY_TARGET = 200'),'Food Distribution Manager team target is 200 verified handoffs each calendar month')
 assert.ok(engine.includes("role IN ('agent','bridger')"),'Distribution Manager Lifestyle is carried only by Agent or Bridger identities')
 assert.ok(engine.includes('getLifestyleAccess(userId)'),'Distribution Manager resolves Lifestyle entitlement through the shared position access engine')
 assert.ok(engine.includes("reason:'continuance_required'"),'Employment document cannot activate Distribution Manager without the underlying position entitlement')
