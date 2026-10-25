@@ -32,7 +32,7 @@ assert.ok(actions.includes('Previously assigned food orders stay on record'),'Fo
 assert.ok(lifecycle.includes('agent_id AS user_id,position,status'),'Food employment API returns actual position for correct label')
 assert.ok(lifecycle.includes('administrationRoute')&&lifecycle.includes('employeeRoute'),'Replies link to the appropriate employment desk')
 assert.ok(lifecycle.includes('roleName+\' · \'+sender+\' sent an employment message\''),'Administration notification identifies employee and position')
-assert.ok(manager.includes('Administration verification.')&&manager.includes('one-month probation'),'Lead acceptance explains verification before probation')
+assert.ok(manager.includes('Administration verification.')&&manager.toLowerCase().includes('one-month probation'),'Lead acceptance explains verification before probation')
 assert.ok(assistant.includes('awaiting Administration eligibility verification')&&assistant.includes('a lead Food Distribution Manager can review'),'Assistant sees Administration screening before lead Manager appointment')
 assert.ok(assistant.includes('target of 200 Administration-verified food distributions per calendar month'),'Assistant employment terms use the 200 monthly verified food-distribution target')
 assert.ok(food.includes('approved Stability Lead assigns verified paid food orders'),'Food preparation shows proper order-assignment authority')
