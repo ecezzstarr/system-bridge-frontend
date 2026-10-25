@@ -89,7 +89,7 @@ export async function createDistributionTeamTask(userId:string,targetId:string,r
       await getPool().query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
         VALUES($1::uuid,'distribution_team_task',$2,$3,'WEAVE Distribution',
           '/weave/lifestyles/work')`,[targetId,'Distribution team assignment · '+title,
-          'Your lead Distribution Manager assigned work. Open your approved workspace to read the instructions and record actual progress.'])
+          'Your lead Food Distribution Manager assigned food-distribution work. Open your approved workspace to read the instructions and record actual progress.'])
     }catch(e){console.error('[distribution tasks] alert failed',e)}
     return {success:true as const,id:rows[0].id}
   }catch(e){try{await client.query('ROLLBACK')}catch{};console.error('[distribution tasks] assign',e)
