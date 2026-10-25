@@ -168,7 +168,7 @@ export async function exitWeaveEmployment(
         SET status='ended',exit_kind='lead_departed',exit_reason=$2,
           exited_at=NOW(),exited_by=$3::uuid,updated_at=NOW()
         WHERE manager_user_id=$1::uuid AND status='approved' RETURNING user_id`,
-        [employeeId,'The lead Distribution Manager appointment ended. Assistant employment is closed until a new appointment is approved.',actor.id])
+        [employeeId,'The lead Food Distribution Manager appointment ended. Assistant employment is closed until a new appointment is approved.',actor.id])
       affectedAssistants=rows
       for(const assistant of affectedAssistants){
         await client.query(`INSERT INTO weave_employment_exit_events(position,employee_user_id,actor_user_id,exit_kind,reason)
