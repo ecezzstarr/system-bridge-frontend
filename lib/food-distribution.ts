@@ -34,6 +34,7 @@ export async function ensureFoodDistributionSchema() {
   `
   await sql`CREATE INDEX IF NOT EXISTS weave_food_distribution_manager_month_idx ON weave_food_distribution_records(manager_user_id,distribution_date,status)`
   await sql`CREATE INDEX IF NOT EXISTS weave_food_distribution_status_idx ON weave_food_distribution_records(status,created_at)`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS weave_food_distribution_evidence_unique_idx ON weave_food_distribution_records(manager_user_id,LOWER(BTRIM(evidence_reference)))`
 }
 
 function monthRange(at = new Date()) {
@@ -148,12 +149,19 @@ export async function submitFoodDistributionRecord(userId:string,input:{
   `,[userId])
   if(!managerRows.length)return {success:false as const,reason:'not_appointed'}
   const managerUserId=String(managerRows[0].user_id)
-  const {rows}=await pool.query(`
+  let rows:any[]
+  try {
+    const inserted=await pool.query(`
     INSERT INTO weave_food_distribution_records
       (manager_user_id,distributor_user_id,product_type,customer_type,recipient_name,quantity,evidence_reference,distribution_date,status)
     VALUES ($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8::date,'pending')
     RETURNING id,status,created_at
   `,[managerUserId,userId,input.productType,input.customerType,recipientName,quantity,evidenceReference,input.distributionDate])
+    rows=inserted.rows
+  } catch(error:any) {
+    if(error?.code==='23505')return {success:false as const,reason:'duplicate_reference' as const}
+    throw error
+  }
   return {success:true as const,record:rows[0]}
 }
 
