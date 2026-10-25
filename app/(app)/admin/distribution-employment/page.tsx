@@ -87,7 +87,7 @@ export default function DistributionEmploymentAdministration(){
   if(!isInitialized)return <main className="p-6 text-slate-300">Opening Food Distribution verification…</main>
   if(user?.role!=='admin')return <main className="p-6 text-rose-200">Administration authorization required.</main>
   const pending=state?.appointments.filter(a=>a.status==='pending_verification')||[]
-  return <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-white" data-distribution-employment-admin="read-only-oversight">
+  return <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-white" data-distribution-employment-admin="food-distribution-verification-and-employment-oversight">
     <header className="border-b border-amber-300/15 pb-5">
       <Link href="/admin" className="text-xs text-cyan-200">← Administration</Link>
       <p className="mt-5 text-[10px] font-black uppercase tracking-widest text-amber-200">Administration · Verification and oversight</p>
