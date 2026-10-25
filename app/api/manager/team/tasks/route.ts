@@ -40,7 +40,7 @@ export async function POST(request:NextRequest){
       result=await moveDistributionTeamTask(user.id,body.taskId,body.status as TeamTaskStatus,body.note)
     }else return NextResponse.json({success:false,error:'Unknown task action'},{status:400})
     if(!result.success)return NextResponse.json({success:false,error:
-      result.reason==='not_manager'?'Only the verified lead Distribution Manager can assign work.':
+      result.reason==='not_manager'?'Only the verified lead Food Distribution Manager can assign food-distribution work.':
       result.reason==='invalid_assignee'?'Choose yourself or an appointed assistant in your own team.':
       result.reason==='invalid_transition'?'This task cannot be moved into that state by this role. Refresh progress.':
       result.reason==='not_employee'?'Your appointment no longer grants team work access.':
