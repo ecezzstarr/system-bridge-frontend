@@ -18,7 +18,7 @@ const guidance:Record<string,JobGuidance>={
   distribution_assistant:{
     group:'Distribution Team · Assistant',start:'/weave/lifestyles/distribution-assistant',talk:'#team-communication',
     steps:['Read the assignments issued by your verified lead Manager.',
-      'Carry out distribution and referral activities using the authorized company instruments.',
+      'Distribute WEAVE food products to consumers and businesses, follow assigned delivery tasks, and record evidence-backed handoffs. Recruitment and referral activity is outside this role.',
       'Report progress with evidence, submit completed work and respond to the lead’s review.']},
   food_preparation:{
     group:'Stability · Food Preparation',start:'/weave/lifestyles/food-preparation',talk:'#food-team-communication',
