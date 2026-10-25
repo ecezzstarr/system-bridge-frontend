@@ -43,3 +43,6 @@ CREATE INDEX IF NOT EXISTS weave_food_distribution_manager_month_idx
   ON weave_food_distribution_records(manager_user_id,distribution_date,status);
 CREATE INDEX IF NOT EXISTS weave_food_distribution_status_idx
   ON weave_food_distribution_records(status,created_at);
+
+CREATE UNIQUE INDEX IF NOT EXISTS weave_food_distribution_evidence_unique_idx
+  ON weave_food_distribution_records(manager_user_id,LOWER(BTRIM(evidence_reference)));
