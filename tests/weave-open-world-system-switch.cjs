@@ -21,7 +21,7 @@ const source=read('app/api/events/flame/open-world/route.ts')
 const publicDomains=read('lib/weave-open-world-domains.ts')
 
 assert.ok(world.includes('data-weave-open-world="system-switch"'),'Weave Open World belongs to System Switch')
-assert.ok(world.includes('data-system-switch-container="file-folder-world"'),'System Switch contains Client File Folder worlds')
+assert.ok(world.includes('data-system-switch-container="weave-open-3d-world"')&&world.includes('data-system-switch-identity="bridge-of-radiance-is-open-world"'),'System Switch — Bridge of Radiance IS WEAVE Open World')
 assert.ok(world.includes('data-company-loop-event="burning-river"'),'Burning River is company event, not the permanent world name')
 assert.ok(visual.includes('Weave Open World')&&!visual.includes('Burning River Open World</h2>'),'Correct public world name is shown')
 assert.ok(visual.includes('Company Loop 1 · Burning River')&&visual.includes("feed.event?.status==='active'"),'Burning River is a dated event within the world, not the world')
@@ -38,7 +38,7 @@ assert.ok(visual.includes('data-weave-food-direct-carrier-order="true"'),'A comp
 assert.ok(visual.includes("'/api/system-switch/open-world?page='"),'World data reads from canonical System Switch endpoint')
 assert.ok(api.includes('readVerifiedClientDomains')&&source.includes('getPublicBurningRiverWorld'),'Canonical API preserves source-of-truth purchases, builds and open doors')
 assert.ok(publicDomains.includes('customerDoor:{open:doorOpen,href:doorOpen'),'No Customer Door link is published without verified commissioning')
-assert.ok(staffGate.includes('href="/system-switch/world?via=system-switch"'),'Agent, Bridger and Administration cross the actual System Switch Gate')
+assert.ok(staffGate.includes("redirect('/system-switch/world?via=system-switch')"),'Old System Switch URLs directly enter permanent WEAVE Open World')
 assert.ok(eventGate.includes('/system-switch/world'),'Company Loop event entrance opens permanent Weave world')
 assert.ok(eventGate.includes('<Link href={customerHref}')&&!eventGate.includes('onCustomerDoor'),'The official Customer Door hotspot always enters Weave Open World, never mounts a second mini-world')
 const eventArrival=read('components/events/flame-event-public-mobile.tsx')
@@ -60,8 +60,7 @@ assert.ok(!worldFood3D.includes('<Text '),'World storefront cannot suspend on ex
 assert.ok(worldFood3D.includes('<Html center position='),'Storefront signage must remain visible without external font fetching')
 assert.ok(visual.includes("setStatus('unavailable')")&&visual.includes('if(mounted&&!document.hidden)'),
   'World feed timeout must leave the loading state, including watchdog-aborted requests')
-assert.ok(visual.includes('Retry land connection')&&visual.includes('fallback={<WeaveWorldMapFallback'),
-  'World errors retain a visible castle map rather than an empty canvas')
+assert.ok(visual.includes('Retry land connection')&&visual.includes('data-weave-world-gpu-fallback="no-illustrated-map"'),'Live 3D reports failure honestly without presenting a fake illustrated castle map')
 assert.ok(visual.includes('<Suspense fallback={<meshStandardMaterial')&&land.includes('<Suspense fallback={<meshStandardMaterial'),
   '3D terrain and Client castles must remain visible while the atlas loads')
 assert.ok(world.includes('data-weave-open-world-loader="loading-3d-world"'),
@@ -76,12 +75,10 @@ assert.ok(visual.includes('data-world-first-view="live-3d-castle-landscape"') &&
   visual.includes("const anchor=domains.find(domain=>domain.domainId===selected)||domains[0]") &&
   visual.includes('camera.lookAt(focal.x,focal.y,focal.z)'),
   'Map camera centers real Client castles at phone-visible zoom, not a distant empty sky')
-assert.ok(visual.includes('onWorldReady={()=>setSceneReady(true)}') &&
-  visual.includes('(webgl!==true||!sceneReady)&&<WeaveWorldMapFallback'),
-  'Real domain castle map appears before GPU scene finishes and when GPU fails')
-assert.ok(mobileWorld.includes('data-weave-open-world-visual-fallback="real-domains"') &&
-  mobileWorld.includes('domains.map') && mobileWorld.includes('onSelect(d.domainId)'),
-  'Fallback plots only recorded castles with clickable safe entrances')
+assert.ok(visual.includes('onWorldReady={()=>setSceneReady(true)}')&&
+  !visual.includes('WeaveWorldMapFallback')&&
+  visual.includes('data-weave-world-gpu-unavailable="true"'),
+  '3D must never be obscured by the former flat castle image layer')
 assert.ok(canvasDriver.includes("document.addEventListener('visibilitychange',visibilityChange)") &&
   canvasDriver.includes('if(document.hidden){last=0;return}') &&
   canvasDriver.includes("document.removeEventListener('visibilitychange',visibilityChange)"),

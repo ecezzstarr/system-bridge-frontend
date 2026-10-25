@@ -47,8 +47,7 @@ assert.ok(theme.includes('[data-public-flame-preview-world]')&&publicEvent.inclu
   'Burning River event preserves the same company atmosphere')
 assert.ok(theme.includes('[data-weave-open-world="system-switch"]')&&world.includes('data-weave-open-world="system-switch"'),
   'Open World uses the same shared palette while retaining physical 3D land')
-assert.ok(theme.includes('[data-system-switch-gate="burning-river"]')&&gate.includes('data-system-switch-gate="burning-river"'),
-  'System Switch crossing visually continues from the company')
+assert.ok(gate.includes("redirect('/system-switch/world?via=system-switch')"),'System Switch resolves directly to the real shared WEAVE open world')
 assert.ok(theme.includes('[data-weave-loop-theme="one-nigerian"]')&&
   theme.includes(':not([data-weave-loop-theme="one-nigerian"])'),
   'Green-white-green company event can override river-gold completely')
