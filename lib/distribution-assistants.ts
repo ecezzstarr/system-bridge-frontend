@@ -2,14 +2,13 @@ import { getPool, sql } from '@/lib/db'
 import { notifyAdministrationOfCompanyApplication } from '@/lib/employment-application-notifications'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable, getManagerEmployment } from '@/lib/manager-employment'
-import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET, DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
-import { calculateDistributionTeamCompensation } from '@/lib/distribution-team-compensation'
+import { getFoodDistributionTeamState, calculateFoodDistributionCompensation, FOOD_DISTRIBUTION_MONTHLY_TARGET } from '@/lib/food-distribution'
 
 export const DISTRIBUTION_ASSISTANT_LIMIT = 6
 export const DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2
 export const DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 40_000
 // Team target is 300 in the Manager's probation month, then 500 per employment month.
-export const DISTRIBUTION_ASSISTANT_MONTHLY_REFERRAL_TARGET = DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
+export const DISTRIBUTION_ASSISTANT_MONTHLY_FOOD_TARGET = FOOD_DISTRIBUTION_MONTHLY_TARGET
 
 // Assistants retain their Agent or Bridger identity; appointment is a separate
 // employment record. Applying never activates salary or access to manager tools.
@@ -27,7 +26,8 @@ export async function ensureDistributionAssistantSchema() {
       administration_verification_note TEXT,
       manager_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
       monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 40000,
-      monthly_referral_target INTEGER NOT NULL DEFAULT 500,
+      monthly_referral_target INTEGER NOT NULL DEFAULT 200,
+      monthly_food_distribution_target INTEGER NOT NULL DEFAULT 200,
       hired_at TIMESTAMPTZ,
       reviewed_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -46,11 +46,15 @@ export async function ensureDistributionAssistantSchema() {
   await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_salary_ngn SET DEFAULT 40000`
   // Update previous ₦30,000 appointments; preserve any separately authorized custom terms.
   await sql`UPDATE weave_distribution_assistants SET monthly_salary_ngn=40000,updated_at=NOW() WHERE monthly_salary_ngn=30000`
-  await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_referral_target SET DEFAULT 500`
-  await sql`UPDATE weave_distribution_assistants SET monthly_referral_target=500 WHERE monthly_referral_target<>500`
+  await sql`ALTER TABLE weave_distribution_assistants ADD COLUMN IF NOT EXISTS monthly_food_distribution_target INTEGER NOT NULL DEFAULT 200`
+  await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_food_distribution_target SET DEFAULT 200`
+  await sql`UPDATE weave_distribution_assistants SET monthly_food_distribution_target=200 WHERE monthly_food_distribution_target<>200`
+  // Keep the legacy column for deployed compatibility; it no longer drives the job target.
+  await sql`ALTER TABLE weave_distribution_assistants ALTER COLUMN monthly_referral_target SET DEFAULT 200`
+  await sql`UPDATE weave_distribution_assistants SET monthly_referral_target=200 WHERE monthly_referral_target<>200`
 }
 
-// Only a real Distribution Manager whose position access is active may hire.
+// Only a real Food Distribution Manager whose position access is active may hire.
 async function canReviewAssistants(userId: string) {
   const [employment, access] = await Promise.all([
     getManagerEmployment(userId), getLifestyleAccess(userId),
@@ -102,7 +106,7 @@ export async function applyForDistributionAssistant(userId: string, note: string
       const applicant=await pool.query('SELECT name FROM users WHERE id=$1::uuid',[userId])
       await notifyAdministrationOfCompanyApplication({
         kind:'distribution_assistant',applicationId:userId,applicantId:userId,
-        positionTitle:'Assistant Distribution Manager',
+        positionTitle:'Assistant Food Food Distribution Manager',
         name:String(applicant.rows[0]?.name||'Agent or Bridger'),applicationNote:applicantNote,
       })
     }catch(error){console.error('[distribution assistant] Administration notification failed',error)}
@@ -177,7 +181,7 @@ export async function reviewDistributionAssistant(
     await client.query('COMMIT')
     try {
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Distribution Manager appointment approved':'Assistant Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Distribution Manager. Your monthly salary term is ₦40,000 and your three-person team has a shared target of 300 verified referrals in its first probation month and 500 in later employment months. Full monthly salary is conditional on meeting the applicable team target. Below that target, you earn only the existing ₦500 bonus per verified referral you personally brought.':'Your Assistant Distribution Manager application was not selected.'},'WEAVE Distribution')`
+        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Food Food Distribution Manager appointment approved':'Assistant Food Food Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Food Food Distribution Manager. Your monthly salary term is ₦40,000. Your three-person team shares a target of 200 verified food distributions per calendar month across all WEAVE food product types. Full monthly salary eligibility depends on the verified food-distribution target and month-end payroll approval.':'Your Assistant Food Food Distribution Manager application was not selected.'},'WEAVE Distribution')`
     } catch(error) {console.error('[distribution-assistants] notification failed',error)}
     return {success:true as const,status}
   } catch(error) {
@@ -193,7 +197,7 @@ export async function getDistributionAssistantState(userId:string) {
   const canReview=await canReviewAssistants(userId)
   const {rows:own}=await getPool().query(`
     SELECT user_id,status,application_note,manager_user_id,
-      monthly_salary_ngn,monthly_referral_target,administration_verification,administration_verification_note,administration_verified_at,hired_at,reviewed_at,exit_kind,exit_reason,exited_at,created_at
+      monthly_salary_ngn,monthly_referral_target,monthly_food_distribution_target,administration_verification,administration_verification_note,administration_verified_at,hired_at,reviewed_at,exit_kind,exit_reason,exited_at,created_at
     FROM weave_distribution_assistants WHERE user_id=$1::uuid LIMIT 1
   `,[userId])
   const appointment=own[0]||null
@@ -204,15 +208,15 @@ export async function getDistributionAssistantState(userId:string) {
   // Team statistics can be unavailable without invalidating an approved job
   // or preventing a lead Manager from appointing/reviewing assistants.
   const teamProgress = appointment?.status==='approved' && appointment.manager_user_id
-    ? await getDistributionTeamMonthlyReferrals(String(appointment.manager_user_id)).catch(error=>{
-        console.error('[distribution-assistants] team report unavailable',error)
+    ? await getFoodDistributionTeamState(String(appointment.manager_user_id)).catch(error=>{
+        console.error('[food-distribution-assistants] team report unavailable',error)
         return null
       })
     : null
-  const verifiedReferrals=teamProgress?.total||0
-  const applicableTarget=teamProgress?.target||DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
-  const ownReferrals=teamProgress?.members.find(member=>member.userId===userId)?.referrals||0
-  const compensation=calculateDistributionTeamCompensation({teamReferrals:verifiedReferrals,ownReferrals,teamTarget:applicableTarget,monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN})
+  const verifiedFoodDistributions=teamProgress?.verified||0
+  const applicableTarget=FOOD_DISTRIBUTION_MONTHLY_TARGET
+  const ownFoodDistributions=teamProgress?.members.find(member=>member.userId===userId)?.verifiedDistributions||0
+  const compensation=calculateFoodDistributionCompensation({verifiedDistributions:verifiedFoodDistributions,target:applicableTarget,monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN})
   let pending:any[]=[]
   let team:any[]=[]
   if (canReview) {
@@ -238,16 +242,15 @@ export async function getDistributionAssistantState(userId:string) {
     monthlySalaryNgn:DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN,
     monthlyTarget:applicableTarget,
     teamTarget:applicableTarget,
-    probationTarget:DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET,
-    regularTeamTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
-    probationPeriod:Boolean(teamProgress?.probation),
-    employmentMonth:teamProgress?.monthNumber||null,
-    periodStart:teamProgress?.periodStart||null,
-    periodEnd:teamProgress?.periodEnd||null,
+    probationPeriod:false,
+    employmentMonth:null,
+    periodStart:teamProgress?.monthStart||null,
+    periodEnd:teamProgress?.monthEnd||null,
     teamMembers:teamProgress?.members||[],
-    ownReferrals,
+    ownFoodDistributions,
     compensation,
-    verifiedReferrals, remainingReferrals:Math.max(0,applicableTarget-verifiedReferrals),
+    verifiedFoodDistributions, remainingFoodDistributions:Math.max(0,applicableTarget-verifiedFoodDistributions),
+    foodDistributionTeam:teamProgress,
     payrollStatus:'employment_terms_only_no_automatic_payment',
   }
 }
