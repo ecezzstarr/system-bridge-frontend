@@ -137,8 +137,10 @@ export async function submitFoodDistributionRecord(userId:string,input:{
   const quantity=Number(input.quantity)
   if(recipientName.length<2||recipientName.length>120||evidenceReference.length<6||evidenceReference.length>500
     ||!Number.isInteger(quantity)||quantity<1||quantity>10000) return {success:false as const,reason:'invalid_record'}
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(input.distributionDate)||input.distributionDate>new Date().toISOString().slice(0,10))
-    return {success:false as const,reason:'invalid_date'}
+  const dateValue=new Date(input.distributionDate+'T00:00:00Z')
+  const nigeriaToday=new Date(Date.now()+60*60*1000).toISOString().slice(0,10)
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(input.distributionDate)||!Number.isFinite(dateValue.getTime())||dateValue.toISOString().slice(0,10)!==input.distributionDate||input.distributionDate>nigeriaToday)
+    return {success:false as const,reason:'invalid_date' as const}
   const pool=getPool()
   const {rows:managerRows}=await pool.query(`
     SELECT me.user_id FROM manager_employment me
