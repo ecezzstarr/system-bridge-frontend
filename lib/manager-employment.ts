@@ -82,7 +82,7 @@ export async function ensureManagerEmploymentTable() {
   await sql`ALTER TABLE manager_employment ALTER COLUMN probation_target SET DEFAULT 200`
   await sql`UPDATE manager_employment SET probation_target=200 WHERE probation_target<>200`
   await sql`UPDATE manager_employment SET monthly_salary_ngn=70000 WHERE monthly_salary_ngn=150000`
-  await sql`UPDATE manager_employment SET core_duty=${DISTRIBUTION_MANAGER_CORE_DUTY},updated_at=NOW() WHERE core_duty<>${DISTRIBUTION_MANAGER_CORE_DUTY}`
+  await sql`UPDATE manager_employment SET core_duty=${DISTRIBUTION_MANAGER_CORE_DUTY},updated_at=NOW() WHERE core_duty IS NULL OR core_duty ILIKE '%verified referral movement%' OR core_duty ILIKE '%public channels%' OR core_duty ILIKE '%campaign movement%'`
   await sql`CREATE INDEX IF NOT EXISTS manager_employment_status_idx ON manager_employment(status, probation_ends_at)`
 }
 
