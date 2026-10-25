@@ -129,7 +129,7 @@ export default function DistributionEmploymentAdministration(){
     </section>
     <section className="border-t border-white/10 pt-6">
       <h2 className="text-xl font-black">Manager appointments and team standing</h2>
-      <p className="mt-2 text-xs text-slate-400">Three lead Food Distribution Manager appointments maximum. Application signing is not employment approval. Administration verification starts the one-month probation; approved Managers direct daily distribution work.</p>
+      <p className="mt-2 text-xs text-slate-400">Three lead Food Distribution Manager appointments maximum. Application signing is not employment approval. Administration verification starts the one-month probation; approved Managers direct daily food-distribution work.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(state?.overview.teams||[]).map(t=><article key={t.manager_id} className="border border-white/10 p-4 text-xs text-slate-300">
           <p className="text-base font-black text-white">{t.manager_name}</p>
@@ -174,8 +174,8 @@ export default function DistributionEmploymentAdministration(){
       </div>
     </section>
     <section className="border-t border-white/10 pt-6" data-distribution-tasks="administration-read-only">
-      <h2 className="text-xl font-black">Actual distribution assignments</h2>
-      <p className="mt-2 text-xs leading-6 text-slate-400">The verified Manager assigns jobs and marks submitted work complete. Assistants operate the work in their own system. This Administration view observes task status and recorded instructions without editing those assignments.</p>
+      <h2 className="text-xl font-black">Food distribution assignments</h2>
+      <p className="mt-2 text-xs leading-6 text-slate-400">The verified Food Distribution Manager assigns product-distribution, order follow-up and dispatch tasks. Assistants operate the work in their own workspace. Administration observes task status and recorded evidence without editing team assignments.</p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {(state?.teamTasks||[]).map(t=><article key={t.id} className="min-w-0 border border-white/10 p-4">
           <p className="text-xs font-black text-white">{t.title}</p>
