@@ -144,9 +144,13 @@ export async function submitFoodDistributionRecord(userId:string,input:{
   const pool=getPool()
   const {rows:managerRows}=await pool.query(`
     SELECT me.user_id FROM manager_employment me
+    JOIN users u ON u.id=me.user_id AND u.is_active=true
     WHERE me.user_id=$1::uuid AND me.status IN ('probation','active')
+      AND u.role IN ('agent','bridger')
     UNION
     SELECT a.manager_user_id AS user_id FROM weave_distribution_assistants a
+    JOIN manager_employment me ON me.user_id=a.manager_user_id AND me.status IN ('probation','active')
+    JOIN users u ON u.id=a.user_id AND u.is_active=true
     WHERE a.user_id=$1::uuid AND a.status='approved' AND a.manager_user_id IS NOT NULL
   `,[userId])
   if(!managerRows.length)return {success:false as const,reason:'not_appointed'}
