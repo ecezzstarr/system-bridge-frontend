@@ -106,7 +106,7 @@ export async function applyForDistributionAssistant(userId: string, note: string
       const applicant=await pool.query('SELECT name FROM users WHERE id=$1::uuid',[userId])
       await notifyAdministrationOfCompanyApplication({
         kind:'distribution_assistant',applicationId:userId,applicantId:userId,
-        positionTitle:'Assistant Food Food Distribution Manager',
+        positionTitle:'Assistant Food Distribution Manager',
         name:String(applicant.rows[0]?.name||'Agent or Bridger'),applicationNote:applicantNote,
       })
     }catch(error){console.error('[distribution assistant] Administration notification failed',error)}
@@ -181,7 +181,7 @@ export async function reviewDistributionAssistant(
     await client.query('COMMIT')
     try {
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Food Food Distribution Manager appointment approved':'Assistant Food Food Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Food Food Distribution Manager. Your monthly salary term is ₦40,000. Your three-person team shares a target of 200 verified food distributions per calendar month across all WEAVE food product types. Full monthly salary eligibility depends on the verified food-distribution target and month-end payroll approval.':'Your Assistant Food Food Distribution Manager application was not selected.'},'WEAVE Distribution')`
+        VALUES (${applicantId}::uuid,'distribution_assistant',${decision==='approve'?'Assistant Food Distribution Manager appointment approved':'Assistant Food Distribution Manager application reviewed'},${decision==='approve'?'You have been appointed as an Assistant Food Distribution Manager. Your monthly salary term is ₦40,000. Your three-person team shares a target of 200 verified food distributions per calendar month across all WEAVE food product types. Full monthly salary eligibility depends on the verified food-distribution target and month-end payroll approval.':'Your Assistant Food Distribution Manager application was not selected.'},'WEAVE Distribution')`
     } catch(error) {console.error('[distribution-assistants] notification failed',error)}
     return {success:true as const,status}
   } catch(error) {
