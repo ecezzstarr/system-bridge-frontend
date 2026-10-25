@@ -8,7 +8,7 @@ export async function GET(request:NextRequest){
   if(!['agent','bridger'].includes(user.role))return NextResponse.json({success:false,error:'Verified staff role required'},{status:403})
   try{
     const team=await readDistributionTeam(user.id)
-    if(!team)return NextResponse.json({success:false,error:'Verified active Distribution team employment required'},{status:403})
+    if(!team)return NextResponse.json({success:false,error:'Verified active food-distribution team employment required'},{status:403})
     return NextResponse.json({success:true,team},{headers:{'Cache-Control':'private, no-store'}})
   }catch(error){console.error('[distribution team] load failed',error)
     return NextResponse.json({success:false,error:'Unable to open team workspace'},{status:500})}
