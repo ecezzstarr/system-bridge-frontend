@@ -4,7 +4,20 @@ import Link from 'next/link'
 import { ArrowRight, Orbit } from 'lucide-react'
 import type { EventRole } from '@/lib/weave-event'
 import { FlameEventRiverField } from '@/components/events/flame-event-river-field'
+import { FlameEventOpenWorld, type FlameDoorFeedStatus } from '@/components/events/flame-event-open-world'
 import { BurningRiverOfficialGateway } from '@/components/events/burning-river-official-gateway'
+import { visiblePoll } from '@/lib/visible-poll'
+import { useEffect, useState } from 'react'
+
+type PublicClientEnterprise = {
+  public_slug: string
+  name: string
+  description?: string | null
+  platform_name?: string | null
+  market_section?: string | null
+  level: 'door' | 'storefront' | 'market_hall'
+  offer_count: number
+}
 
 /**
  * Each position receives its own world on the SAME Company Loop 1 ground.
@@ -56,6 +69,32 @@ export default function PositionEventWorld({
 }) {
   const switchHref = '/system-switch/world?via=system-switch'
   const departmentWorld = ROLE_DEPARTMENT_WORLD[role]
+  const [enterprises, setEnterprises] = useState<PublicClientEnterprise[]>([])
+  const [doorStatus, setDoorStatus] = useState<FlameDoorFeedStatus>('loading')
+
+  useEffect(() => {
+    let mounted = true
+    const stop = visiblePoll(async signal => {
+      try {
+        const isClient = role === 'client'
+        const res = await fetch(isClient ? '/api/public/client-market' : '/api/events/flame/client-doors', {
+          cache: 'no-store',
+          signal,
+          headers: isClient ? {} : { Authorization: `Bearer ${localStorage.getItem('ssb_auth_token') || ''}` },
+        })
+        if (!res.ok) throw new Error('Customer Door feed unavailable')
+        const data = await res.json()
+        if (!data?.success || !Array.isArray(data.enterprises)) throw new Error('Invalid Customer Door feed')
+        if (mounted) {
+          setEnterprises(data.enterprises.slice(0, 9))
+          setDoorStatus('ready')
+        }
+      } catch {
+        if (mounted && !signal.aborted) setDoorStatus('unavailable')
+      }
+    }, 12000)
+    return () => { mounted = false; stop() }
+  }, [role])
 
   return (
     <section
@@ -66,6 +105,7 @@ export default function PositionEventWorld({
     >
       <FlameEventRiverField />
       <div className="relative z-10">
+        <FlameEventOpenWorld enterprises={enterprises} doorStatus={doorStatus} role={role} />
         <div className="border-b border-amber-300/15 bg-[#061323]/90 px-3 pb-3 pt-4 sm:px-5" data-flame-event-department-world={role}>
           <Link href={departmentWorld.href}
             data-flame-event-own-world-entry={role}

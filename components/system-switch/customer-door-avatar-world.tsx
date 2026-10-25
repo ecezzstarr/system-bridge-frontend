@@ -9,11 +9,23 @@ import { SharedWorldAvatars } from '@/components/system-switch/shared-world-avat
 import { useWorldPresence } from '@/components/system-switch/use-world-presence'
 import { type Presence } from '@/lib/file-folder-world-runtime'
 import { ArrowLeft,ArrowRight,Users,ShoppingBag,ShieldCheck } from 'lucide-react'
+import {choosePresenceElement,usePresenceElement} from '@/components/world/use-presence-element'
 
 export type Door={slug:string;name:string;description:string;platform:string;entrance:'market'|'flame-event';offerCount:number}
 export type Hosted={publicSlug:string;name:string;description:string;environment:{platformName:string;tagline:string;sign:string;marketSection:string};entrance:string;
   systems:{name:string;description:string;systemType:string}[];offers:{id:string;name:string;description:string;price:number|null;currency:string;offerType:string}[];shopUrl:string}
 type Landmark={id:string;name:string;kind:'door'|'offer'|'system';at:[number,number,number];click:()=>void;tag:string}
+function PresenceChoiceBar(){
+  const selected=usePresenceElement()
+  return <div role="group" aria-label="Living Presence element" className="flex items-center gap-1 border border-cyan-200/25 bg-[#092436]/90 p-1" data-public-presence-picker>
+    {([{id:'water',name:'Water'},{id:'fire',name:'Fire'},{id:'confluence',name:'Both'}] as const).map(choice=>
+      <button type="button" key={choice.id} onClick={()=>choosePresenceElement(choice.id)}
+        aria-pressed={selected===choice.id}
+        className={'px-2.5 py-2 text-[10px] font-bold '+(selected===choice.id?'bg-cyan-200 text-[#062336]':'text-cyan-100/80')}>
+        {choice.name}
+      </button>)}
+  </div>
+}
 const at=(i:number,n:number):[number,number,number]=>{
   const theta=i/Math.max(1,n)*Math.PI*2
   return [Math.cos(theta+Math.PI/2)*6.25,0,Math.sin(theta+Math.PI/2)*6.25]
@@ -135,10 +147,10 @@ export function SystemSwitchDoorPlaza(){
     <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5">
       <div><p className="text-[10px] font-black uppercase tracking-[.18em] text-emerald-200">WEAVE · Bridge of Radiance</p>
         <h1 className="mt-2 text-3xl font-black">System Switch · Customer Door Plaza</h1>
-        <p className="mt-2 text-xs text-stone-400">Explore the open world, approach a Client Customer Door, and enter its published business systems.</p>
+        <p className="mt-2 text-xs text-stone-400">Arrive as your {position} Presence. Flow to a hosted Client Customer Door and cross into its public File Folder territory.</p>
       </div>
       <Link href="/system-switch/bridge-radiance/flame-coin" className="inline-flex items-center gap-2 border border-amber-200/25 bg-amber-300/[.07] p-3 text-xs font-bold text-amber-200">Buy Flame Coin · Purchase enquiry</Link>
-      
+      <PresenceChoiceBar/>
       <Link href={position==='visitor'?'/market':'/system-switch/flame-event'} className="inline-flex items-center gap-2 border border-white/10 p-3 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>Back</Link>
     </header>
     <section className="mx-auto max-w-7xl px-3" data-shared-customer-door-avatar-plaza>
@@ -146,7 +158,7 @@ export function SystemSwitchDoorPlaza(){
         <SpatialWorld presence={presence} input={input} places={places} others={others} onNearby={setNearby}/>
         <div className="pointer-events-none absolute left-3 top-3 bg-[#07111b]/80 p-3 text-xs text-white/90">
           <p className="flex items-center gap-2 font-bold"><Users className="h-4 w-4"/>{online?others.length+1+' participants here':'Connecting real participants…'}</p>
-          <p className="mt-1 text-emerald-200">{nearby?'Nearby: '+nearby:'Walk toward a Customer Door'}</p>
+          <p className="mt-1 text-emerald-200">{nearby?'Nearby: '+nearby:'Move toward a Customer Door'}</p>
         </div>
       </div>
       <Controls input={input}/>
@@ -157,7 +169,7 @@ export function SystemSwitchDoorPlaza(){
           <p className="text-[10px] font-black uppercase tracking-[.14em] text-emerald-200">{d.entrance==='flame-event'?'Flame Event hosted':'Customer Market hosted'}</p>
           <h2 className="mt-2 text-lg font-black">{d.platform||d.name}</h2>
           <p className="mt-2 text-xs leading-5 text-stone-400">{d.description||'A Client-created business and systems world.'}</p>
-          <p className="mt-3 text-xs text-amber-200">{d.offerCount} live offer{d.offerCount===1?'':'s'} · Enter the World <ArrowRight className="inline h-3 w-3"/></p>
+          <p className="mt-3 text-xs text-amber-200">{d.offerCount} live offer{d.offerCount===1?'':'s'} · Enter as Presence <ArrowRight className="inline h-3 w-3"/></p>
         </button>)}
       </section>
       {!doors.length&&!error&&<p className="pb-12 text-sm text-stone-500">No Client has hosted a public Customer Door for your position yet. The plaza remains available for real participant movement.</p>}
@@ -199,7 +211,7 @@ export function HostedFileFolderVisit({slug,entrance}:{slug:string;entrance:'mar
       <div><p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-200">System Switch · Public File Folder</p>
         <h1 className="mt-2 text-3xl font-black">{world?.name||'Client Customer Door'}</h1>
         <p className="mt-2 max-w-2xl text-xs text-stone-400">{world?.description||'A Client-controlled public world. Private File Folder construction remains reserved for its Lord or Lady.'}</p></div>
-      
+      <PresenceChoiceBar/>
       <Link href="/system-switch/customer-doors" className="flex items-center gap-2 border border-white/10 p-3 text-xs text-sky-200"><ArrowLeft className="h-4 w-4"/>System Switch Plaza</Link>
     </header>
     {error&&<p role="alert" className="mx-auto max-w-7xl px-4 py-5 text-rose-200">{error}</p>}
@@ -208,7 +220,7 @@ export function HostedFileFolderVisit({slug,entrance}:{slug:string;entrance:'mar
         <SpatialWorld places={places} presence={presence} input={input} others={others} onNearby={setNearby}/>
         <div className="pointer-events-none absolute left-3 top-3 bg-[#07111b]/80 p-3 text-xs">
           <p className="flex items-center gap-2"><Users className="h-4 w-4"/>{online?others.length+1+' present':'Connecting multiplayer presence…'}</p>
-          <p className="mt-1 text-emerald-200">{nearby||'Move through the world to a public system or offer'}</p>
+          <p className="mt-1 text-emerald-200">{nearby||'Move your Presence to a public system or offer'}</p>
         </div>
       </div>
       <Controls input={input}/>

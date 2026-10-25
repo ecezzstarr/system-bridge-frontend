@@ -10,9 +10,7 @@ import { useAdaptiveRuntime } from '@/components/world/use-adaptive-runtime'
 import { FLAME_EVENT_PLAYER_START, clampFlameEventPosition, enforceSystemSwitchGate, flameEventDoorPositions, nearestFlameEventDoor } from '@/lib/flame-event-world-geometry'
 import type { FlameWorldCustomerDoor } from './flame-event-open-world'
 import { WeaveEmbodiedAvatar, type WeaveAvatarMotion, type WeaveAvatarPosition } from '@/components/world/weave-embodied-avatar'
-import {SharedWorldAvatars} from '@/components/system-switch/shared-world-avatars'
-import type {WorldAvatar} from '@/components/system-switch/use-world-presence'
-import type {Presence} from '@/lib/file-folder-world-runtime'
+import {BurningRiverFoodStore3D} from '@/components/events/burning-river-food-store-3d'
 
 export type FlameMobileInput = {
   forward:number
@@ -58,48 +56,6 @@ export function RiverSurface({quiet}:{quiet:boolean}) {
   return <mesh rotation={[-Math.PI/2,0,0]} position={[0,-.47,0]} material={material}>
     <planeGeometry args={[220,220,1,1]}/>
   </mesh>
-}
-
-/** Moving waterfalls frame the river without a wallpaper or video.
- * Two small transparent shader planes are cheaper than particle emitters on phones. */
-function CascadingFalls({side,quiet}:{side:-1|1;quiet:boolean}){
-  const material=useMemo(()=>new THREE.ShaderMaterial({
-    uniforms:{time:{value:0}},
-    vertexShader:[
-      'varying vec2 uvFall;',
-      'void main(){uvFall=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}'
-    ].join('\n'),
-    fragmentShader:[
-      'uniform float time; varying vec2 uvFall;',
-      'void main(){',
-      'float stream=sin(uvFall.x*30.+sin(uvFall.y*12.-time*1.8)*1.7)*.5+.5;',
-      'float mist=sin(uvFall.x*49.+uvFall.y*73.-time*3.2)*.5+.5;',
-      'float edge=smoothstep(.0,.12,uvFall.x)*(1.-smoothstep(.86,1.,uvFall.x));',
-      'float fall=pow(stream,.8)*.65+mist*.2;',
-      'vec3 teal=vec3(.035,.32,.51); vec3 white=vec3(.60,.88,1.);',
-      'vec3 color=mix(teal,white,fall);',
-      'gl_FragColor=vec4(color,(.36+fall*.47)*edge);',
-      '}'
-    ].join('\n'),
-    transparent:true,depthWrite:false,side:THREE.DoubleSide,
-  }),[])
-  useEffect(()=>()=>material.dispose(),[material])
-  useFrame(({clock})=>{material.uniforms.time.value=quiet?0:clock.elapsedTime})
-  return <group position={[side*19.2,0,-10]} data-flame-live-waterfall={side}>
-    <mesh scale={[2.3,4,2.1]} position={[side*.8,3.4,-1.4]}>
-      <dodecahedronGeometry args={[1.6,1]}/><meshStandardMaterial color="#244456" roughness={.94}/>
-    </mesh>
-    <mesh scale={[1.9,3.1,1.5]} position={[-side*2,2.7,-1.5]}>
-      <dodecahedronGeometry args={[1.4,1]}/><meshStandardMaterial color="#35566b" roughness={.96}/>
-    </mesh>
-    <mesh position={[0,4.1,.25]} rotation={[0,-side*.14,0]} material={material}>
-      <planeGeometry args={[3.4,8]}/>
-    </mesh>
-    <mesh position={[0,-.28,1.4]} rotation={[-Math.PI/2,0,0]}>
-      <circleGeometry args={[2.9,32]}/><meshBasicMaterial color="#84d7f4" transparent opacity={.27} depthWrite={false}/>
-    </mesh>
-    <pointLight position={[0,1.6,1]} intensity={.65} color="#63cbed" distance={9}/>
-  </group>
 }
 
 function StonePaving(){
@@ -188,36 +144,6 @@ function Terrain({quality}:{quality:number}){
   </group>
 }
 
-/** A visible structure exists only after the Client publishes an ACTIVE built system.
- * No construction countdowns, private workshops, or fictional businesses are shown. */
-function PublishedClientSystem({system,index,preset}:{system:{name:string;system_type:string};index:number;preset?:string}){
-  const kind=system.system_type.toLowerCase()
-  const tower=/stream|broadcast|media|creator/.test(kind)
-  const commerce=/store|market|commerce|distribution/.test(kind)
-  const height=tower?2.6:commerce?1.65:2.05
-  const glow=preset==='garden_exchange'?'#8bffcf':preset==='night_market'?'#ebafff':preset==='glass_citadel'?'#8adfff':'#ffd18b'
-  return <group position={[index===0?-2.8:2.8,0,-1.75]} data-public-client-built-system={system.system_type}>
-    <mesh position={[0,.05,0]} receiveShadow><cylinderGeometry args={[.95,1.08,.18,8]}/><meshStandardMaterial color="#647a80" roughness={.75}/></mesh>
-    <mesh position={[0,height/2+.1,0]} castShadow>
-      {tower?<cylinderGeometry args={[.45,.77,height,8]}/>:<boxGeometry args={[1.38,height,1.17]}/>}
-      <meshStandardMaterial color={commerce?'#345e66':'#326a81'} metalness={.54} roughness={.24} emissive="#0a4861" emissiveIntensity={.26}/>
-    </mesh>
-    {[-.41,.41].map((x)=><mesh key={x} position={[x,height*.59,.595]}>
-      <boxGeometry args={[.18,height*.54,.02]}/><meshStandardMaterial color="#9ce4ff" metalness={.22} emissive="#30b5da" emissiveIntensity={.65}/>
-    </mesh>)}
-    <mesh position={[0,height+.19,0]}>
-      {tower?<octahedronGeometry args={[.35,0]}/>:<boxGeometry args={[1.58,.2,1.37]}/>}
-      <meshStandardMaterial color={glow} emissive={glow} emissiveIntensity={.9} metalness={.48}/>
-    </mesh>
-    <Html center position={[0,height+1,0]} distanceFactor={14} style={{pointerEvents:'none'}} zIndexRange={[11,1]}>
-      <div style={{maxWidth:110,minWidth:90,background:'rgba(5,27,44,.88)',padding:'5px 7px',border:'1px solid rgba(255,216,148,.45)',borderRadius:7,textAlign:'center',fontSize:9,lineHeight:1.3,color:'#fff5df',fontWeight:700}}>
-        <span style={{display:'block',fontSize:7,letterSpacing:'.1em',color:'#9ce5f5'}}>LIVE CLIENT SYSTEM</span>
-        {system.name}
-      </div>
-    </Html>
-  </group>
-}
-
 function Portal({
   enterprise,x,z,index,playerMotion,
 }:{
@@ -291,9 +217,6 @@ function Portal({
       <mesh><boxGeometry args={[1.75,.35,.46]}/><meshStandardMaterial color="#d3c3ab" metalness={.41}/></mesh>
       <mesh position={[0,.29,0]}><octahedronGeometry args={[.34,0]}/><meshStandardMaterial color="#fff1c3" emissive="#d3a050" emissiveIntensity={1.65}/></mesh>
     </group>}
-    {(enterprise.public_systems||[]).filter(s=>s.system_type!=='customer_door').slice(0,2).map((system,i)=>
-      <PublishedClientSystem key={system.system_type+':'+i} system={system} index={i} preset={enterprise.visual_preset}/>
-    )}
     <Html position={[0,strong?3.94:complete?3.42:3.08,0]} center distanceFactor={13} style={{pointerEvents:'none'}} zIndexRange={[12,2]}>
       <div style={{width:132,textAlign:'center',color:'#fff2d8',fontWeight:800,fontSize:12,lineHeight:1.3,textShadow:'0 2px 7px #061421,0 0 8px #061421',overflowWrap:'break-word'}}>
         <div style={{fontSize:8,letterSpacing:1.25,color:'#ffdb98'}}>{tier.toUpperCase()} {String(index+1).padStart(2,'0')}</div>
@@ -331,14 +254,13 @@ function PresenceCurrent({motion,quiet}:{motion:MutableRefObject<WeaveAvatarMoti
   </group>
 }
 
-function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion,sharedPresence}:{
+function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion}:{
   inputRef:MutableRefObject<FlameMobileInput>
   doors:{x:number;z:number}[]
   role:string
   onNearbyDoor:(index:number|null)=>void
   onRegionChange:(region:FlameRegion)=>void
   playerMotion:MutableRefObject<WeaveAvatarMotion>
-  sharedPresence:MutableRefObject<Presence>
 }){
   const {camera}=useThree()
   const budget=useAdaptiveRuntime()
@@ -416,27 +338,14 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion,sh
     playerMotion.current.x=position.current.x
     playerMotion.current.z=position.current.z
     playerMotion.current.yaw=heading.current
-    sharedPresence.current.x=position.current.x
-    sharedPresence.current.z=position.current.z
-    sharedPresence.current.yaw=heading.current
     playerMotion.current.speed=actual
     playerMotion.current.crouching=crouch.current
     playerMotion.current.airborne=height.current
-    // Camera-led exploration: see the playable landscape, not a mandatory avatar.
-    // Keep the actual collision position and proximity rules unchanged.
-    const dist=data.crouch?1.8:data.run?2.8:2.35
-    const footfall=budget.reducedMotion?0:Math.sin(clock.elapsedTime*(data.run?13:8.8))*Math.min(.038,actual*.008)
-    target.current.set(
-      position.current.x+Math.sin(data.yaw)*dist,
-      (data.crouch?1.55:2.4)+data.pitch*1.65+footfall+height.current*.5,
-      position.current.z+Math.cos(data.yaw)*dist,
-    )
+    const dist=data.crouch?3.8:data.run?5.3:4.5
+    const footfall=budget.reducedMotion?0:Math.sin(clock.elapsedTime*(data.run?13:8.8))*Math.min(.045,actual*.009)
+    target.current.set(position.current.x+Math.sin(data.yaw)*dist,(data.crouch?1.8:2.5)+data.pitch*2.2+footfall,position.current.z+Math.cos(data.yaw)*dist)
     camera.position.lerp(target.current,1-Math.exp(-dt*7))
-    look.current.set(
-      position.current.x-Math.sin(data.yaw)*7.5,
-      1.55+data.pitch*.55+height.current*.35,
-      position.current.z-Math.cos(data.yaw)*7.5,
-    )
+    look.current.set(position.current.x,1.28+height.current*.35,position.current.z)
     camera.lookAt(look.current)
   })
   return <WeaveEmbodiedAvatar motion={playerMotion} role={role as WeaveAvatarPosition}/>
@@ -444,12 +353,10 @@ function Walker({inputRef,doors,role,onNearbyDoor,onRegionChange,playerMotion,sh
 
 export type FlameRegion='riverbank'|'burning-river'|'system-switch'|'customer-door'
 
-function World({enterprises,inputRef,role,sharedPresence,others,onNearbyDoor,onRegionChange}:{
+function World({enterprises,inputRef,role,onNearbyDoor,onRegionChange}:{
   enterprises:FlameWorldCustomerDoor[]
   inputRef:MutableRefObject<FlameMobileInput>
   role:string
-  sharedPresence:MutableRefObject<Presence>
-  others:WorldAvatar[]
   onNearbyDoor:(index:number|null)=>void
   onRegionChange:(region:FlameRegion)=>void
 }){
@@ -457,29 +364,25 @@ function World({enterprises,inputRef,role,sharedPresence,others,onNearbyDoor,onR
   const doorPositions=useMemo(()=>flameEventDoorPositions(enterprises.length),[enterprises.length])
   const playerMotion=useRef<WeaveAvatarMotion>({x:FLAME_EVENT_PLAYER_START.x,z:FLAME_EVENT_PLAYER_START.z,yaw:0,speed:0,crouching:false,airborne:0})
   return <>
-    <fog attach="fog" args={['#0b2840',27,89]}/>
-    <ambientLight intensity={.92} color="#c5e9fc"/>
-    <hemisphereLight args={['#82caff','#413329',1.1]}/>
-    <directionalLight position={[-10,21,-13]} color="#ffd09a" intensity={2.4} castShadow={budget.shadows} shadow-mapSize-width={512} shadow-mapSize-height={512}/>
+    <fog attach="fog" args={['#7894a8',30,95]}/>
+    <ambientLight intensity={1.15} color="#dae9f7"/>
+    <hemisphereLight args={['#d9e7fc','#726759',1.2]}/>
+    <directionalLight position={[-10,21,-13]} color="#ffe2ab" intensity={2.4} castShadow={budget.shadows} shadow-mapSize-width={512} shadow-mapSize-height={512}/>
     <pointLight position={[0,7,-13]} color="#ffc381" intensity={5} distance={31}/>
     <RiverSurface quiet={budget.reducedMotion}/>
     <Terrain quality={budget.level}/>
-    <CascadingFalls side={-1} quiet={budget.reducedMotion}/>
-    <CascadingFalls side={1} quiet={budget.reducedMotion}/>
+    <BurningRiverFoodStore3D/>
     <SystemSwitchThreshold active={!budget.reducedMotion} quiet={budget.reducedMotion}/>
     <PresenceCurrent motion={playerMotion} quiet={budget.reducedMotion}/>
     {enterprises.map((door,i)=><Portal key={door.public_slug} enterprise={door} index={i} x={doorPositions[i].x} z={doorPositions[i].z} playerMotion={playerMotion}/>)}
-    <SharedWorldAvatars others={others}/>
-    <Walker inputRef={inputRef} doors={doorPositions} role={role} sharedPresence={sharedPresence} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange} playerMotion={playerMotion}/>
+    <Walker inputRef={inputRef} doors={doorPositions} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange} playerMotion={playerMotion}/>
   </>
 }
 
-export function FlameEventMobileScene({enterprises,inputRef,role,sharedPresence,others,onNearbyDoor,onRegionChange,onReady}:{
+export function FlameEventMobileScene({enterprises,inputRef,role,onNearbyDoor,onRegionChange,onReady}:{
   enterprises:FlameWorldCustomerDoor[]
   inputRef:MutableRefObject<FlameMobileInput>
   role:string
-  sharedPresence:MutableRefObject<Presence>
-  others:WorldAvatar[]
   onNearbyDoor:(index:number|null)=>void
   onRegionChange:(region:FlameRegion)=>void
   onReady?:()=>void
@@ -492,7 +395,7 @@ export function FlameEventMobileScene({enterprises,inputRef,role,sharedPresence,
       mobileGame
       onWorldReady={onReady}
     >
-      <World enterprises={enterprises} inputRef={inputRef} role={role} sharedPresence={sharedPresence} others={others} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
+      <World enterprises={enterprises} inputRef={inputRef} role={role} onNearbyDoor={onNearbyDoor} onRegionChange={onRegionChange}/>
     </AdaptiveCanvas>
   </div>
 }

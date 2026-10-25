@@ -3,11 +3,12 @@
 import { useRef, type MutableRefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { LivingPresenceForm, type PresenceElement } from '@/components/world/weave-living-presence'
+import { usePresenceElement } from '@/components/world/use-presence-element'
 
 /**
- * Camera-controlled game explorer anchor shared by the open worlds. It tracks
- * real movement but never forces a water/fire avatar, decorative humanoid or
- * visual effect on the player. The world itself is the visual experience.
+ * The same moving, non-human Presence crosses Flame Event, System Switch and
+ * the Client File Folder. Movement still comes from the real character controller.
  */
 export type WeaveAvatarMotion = {
   x:number
@@ -20,12 +21,14 @@ export type WeaveAvatarMotion = {
 export type WeaveAvatarPosition = 'visitor'|'client'|'agent'|'bridger'|'admin'
 
 export function WeaveEmbodiedAvatar({
-  motion,role='visitor',scale=1,
+  motion,role='visitor',scale=1,element,
 }:{
   motion:MutableRefObject<WeaveAvatarMotion>
   role?:WeaveAvatarPosition
   scale?:number
+  element?:PresenceElement
 }){
+  const preferredElement=usePresenceElement()
   const root=useRef<THREE.Group>(null)
   const yaw=useRef(0)
   useFrame((_,delta)=>{
@@ -38,5 +41,7 @@ export function WeaveEmbodiedAvatar({
     actor.position.set(state.x,Math.max(0,state.airborne)-(state.crouching ? .24 : 0),state.z)
     actor.rotation.y=yaw.current
   })
-  return <group ref={root} scale={scale} userData={{weaveEmbodiedAvatar:role,weaveGameExplorer:true}}/>
+  return <group ref={root} scale={scale} userData={{weaveEmbodiedAvatar:role}}>
+    <LivingPresenceForm element={element||preferredElement} motion={motion}/>
+  </group>
 }
