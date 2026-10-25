@@ -42,12 +42,11 @@ assert.ok(theme.includes('[data-weave-position-access-shell]') &&
 assert.ok(theme.includes(':not([data-weave-loop-theme="one-nigerian"])'),
   'Current company palette must not override the future One Nigerian event')
 assert.equal((theme.match(/{/g)||[]).length,(theme.match(/}/g)||[]).length,'Ticket CSS blocks must be balanced')
-assert.ok(live.includes("useState<'atlas'|'3d'>('3d')") &&
-  live.includes('data-world-first-view="live-3d-castle-landscape"') &&
-  live.includes('WeaveOpenWorldLandscape')&&live.includes('<AdaptiveCanvas'),
-  'Permanent WEAVE Open World starts in actual navigable live 3D instead of illustrated atlas')
-assert.ok(live.includes('WeaveWorldMapFallback')&&live.includes('visiblePoll'),
-  '3D open world must retain device fallback and live public domain updates')
+assert.ok(live.includes('<AdaptiveCanvas')&&
+  live.includes('data-world-first-view="live-3d-castle-landscape"')&&
+  !live.includes('<WeaveOpenWorldAtlas'),'Permanent WEAVE World immediately mounts physical 3D without an illustrated alternative')
+assert.ok(live.includes('visiblePoll')&&live.includes('data-weave-world-gpu-fallback="no-illustrated-map"'),
+  'Real Client domains poll while unsupported devices receive a truthful status instead of fake 3D')
 assert.ok(plus.includes('derivePlusWorldFormation') &&
   plus.includes('<Canvas')&&plus.includes('onEnter(selectedInfo.district)'),
   'Plus is still a client-record-driven, actionable 3D world, not a poster')

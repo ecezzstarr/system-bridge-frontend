@@ -54,7 +54,7 @@ export default function PositionEventWorld({
   role: EventRole
   context?: { label: string; value: string | number }[]
 }) {
-  const switchHref = role === 'client' ? '/client/system-switch' : '/system-switch'
+  const switchHref = '/system-switch/world?via=system-switch'
   const departmentWorld = ROLE_DEPARTMENT_WORLD[role]
 
   return (

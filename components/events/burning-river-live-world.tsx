@@ -6,8 +6,6 @@ import {Html,OrbitControls,Line} from '@react-three/drei'
 import {useFrame,useThree} from '@react-three/fiber'
 import {BurningRiverFoodStore3D} from './burning-river-food-store-3d'
 import {WeaveOpenWorldLandscape} from '@/components/world/weave-open-world-landscape'
-import {WeaveWorldMapFallback} from '@/components/world/weave-world-map-fallback'
-import {WeaveOpenWorldAtlas} from '@/components/world/weave-open-world-atlas'
 import {CityMaterial} from '@/components/system-switch/file-folder-city-material'
 import {burningRiverFoodHref} from '@/lib/burning-river-food-catalog'
 import * as THREE from 'three'
@@ -235,10 +233,7 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
   role?:'visitor'|'client'|'agent'|'bridger'|'admin'
 }){
  const [focus,setFocus]=useState<'world'|'food'>('world')
- const [landMode,setLandMode]=useState<'atlas'|'3d'>('3d')
  const [detailsOpen,setDetailsOpen]=useState(false)
- const [worldPanel,setWorldPanel]=useState<'domains'|'doors'|'community'|null>(null)
- const [helpOpen,setHelpOpen]=useState(false)
  const [feed,setFeed]=useState<WorldFeed>(emptyFeed)
  const [status,setStatus]=useState<'loading'|'ready'|'unavailable'>('loading')
  const [selected,setSelected]=useState<string|null>(null)
@@ -376,101 +371,40 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
    </header>
    <div className="relative h-svh min-h-[480px] overflow-hidden"
       data-open-world-map="interactive" data-world-first-view="live-3d-castle-landscape">
-     {landMode==='atlas'?<WeaveOpenWorldAtlas domains={displayDomains} selected={selected}
-       onSelect={tapCastle} role={role} enable3D={webgl===true}
-       onExplore={()=>{setSceneReady(false);setLandMode('3d');setFocus('world')}}
-       onShowDomains={()=>setWorldPanel(panel=>panel==='domains'?null:'domains')}
-       onShowCommunity={()=>setWorldPanel(panel=>panel==='community'?null:'community')}
-       onShowGuide={()=>setHelpOpen(open=>!open)}
-       onCustomerDoor={()=>setWorldPanel(panel=>panel==='doors'?null:'doors')}/>:<>
-       {/* The atlas art is an illustrated map. This mode is the navigable,
-           physically rendered 3D WEAVE terrain and real Client castles. */}
-       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#d7eafb,#7baec5_68%,#294f62)]"/>
-       {webgl===true&&<AdaptiveCanvas camera={{position:[12,21,24],fov:46,near:.1,far:350}}
-         gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
-         fallback={<WeaveWorldMapFallback domains={displayDomains} onSelect={tapCastle}/>}
-         onWorldReady={()=>setSceneReady(true)} mobileGame>
-         <WorldScene domains={displayDomains} links={feed.links} selected={selected} onSelect={tapCastle}
-           carrierCode={carrierCode} focus={focus} placing={placing} onPlace={placeOnLand} preview={candidate}/>
-       </AdaptiveCanvas>}
-       {(webgl!==true||!sceneReady)&&<WeaveWorldMapFallback domains={displayDomains} onSelect={tapCastle}/>}
-     </>}
-     {landMode==='atlas'&&worldPanel&&<aside
-       data-weave-atlas-live-panel={worldPanel}
-       aria-label={worldPanel==='domains'?'Actual Client File Folder castles':worldPanel==='doors'?'Commissioned Customer Doors':'Client world connections'}
-       className="absolute inset-x-3 top-[20%] z-40 mx-auto max-h-[46%] max-w-md overflow-y-auto rounded-xl border border-amber-200/65 bg-[#081a2d]/95 p-3 text-xs text-amber-50 shadow-[0_14px_60px_rgba(0,0,0,.55)] backdrop-blur-sm">
-       <header className="flex items-center justify-between gap-2 border-b border-amber-200/20 pb-2">
-         <h2 className="font-serif text-sm font-bold tracking-wide text-amber-100">
-           {worldPanel==='domains'?'Real File Folder worlds':worldPanel==='doors'?'Customer Doors':'World community'}
-         </h2>
-         <button type="button" aria-label="Close world panel" onClick={()=>setWorldPanel(null)}
-           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-amber-200/25 text-lg text-amber-100">×</button>
-       </header>
-       {worldPanel==='domains'&&<div className="mt-2 space-y-1">
-         {feed.domains.map(domain=><button key={domain.domainId} type="button"
-           onClick={()=>{tapCastle(domain.domainId);setWorldPanel(null)}}
-           className="flex min-h-11 w-full items-center justify-between gap-3 rounded border border-amber-200/15 px-3 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200">
-           <span className="min-w-0"><strong className="block truncate">{domain.publicName}</strong>
-             <span className="mt-1 block capitalize text-[10px] text-sky-100/80">{domain.tier} · {stageLabel[domain.stage]}</span>
-           </span>
-           <span className="shrink-0 text-[10px] text-amber-200">{domain.activity.operatingSystems} operating</span>
-         </button>)}
-         {feed.domains.length===0&&<p className="py-3 text-sky-100/80">
-           {status==='loading'?'Loading verified worlds…':status==='unavailable'?'World connection interrupted.':'No commissioned File Folder worlds are recorded in this area.'}
-         </p>}
-         {(page>0||feed.hasMore)&&<div className="flex items-center justify-between gap-2 pt-2">
-           <button type="button" disabled={page===0} onClick={()=>{setSelected(null);setPage(p=>Math.max(0,p-1))}}
-             className="min-h-10 rounded border border-amber-200/30 px-3 disabled:opacity-40">← Previous</button>
-           <span className="text-sky-100/75">Area {page+1}</span>
-           <button type="button" disabled={!feed.hasMore} onClick={()=>{setSelected(null);setPage(p=>p+1)}}
-             className="min-h-10 rounded border border-amber-200/30 px-3 disabled:opacity-40">Next →</button>
-         </div>}
-       </div>}
-       {worldPanel==='doors'&&<div className="mt-2 space-y-2">
-         {feed.domains.filter(domain=>Boolean(publicHref(domain))).map(domain=>
-           <Link key={domain.domainId} href={publicHref(domain)!}
-             className="flex min-h-11 items-center justify-between gap-3 rounded border border-amber-200/25 px-3 py-2 font-semibold text-amber-100">
-             <span className="min-w-0 truncate">{domain.publicName} <span className="text-[10px] capitalize text-sky-100/70">· {domain.tier}</span></span>
-             <ArrowRight className="h-4 w-4 shrink-0"/>
-           </Link>)}
-         {!feed.domains.some(domain=>Boolean(publicHref(domain)))&&
-           <p className="py-3 leading-5 text-sky-100/80">There is no publicly commissioned Customer Door in this area yet. Private File Folders remain protected.</p>}
-       </div>}
-       {worldPanel==='community'&&<div className="mt-3 space-y-3 text-sky-100">
-         <p>{feed.links.length} verified Client world connections in this area.</p>
-         <p>Connections develop only through participating Client worlds and independently approved systems.</p>
-         {role==='client'&&owner&&<p>{owner.connections.length} connections recorded for your File Folder.</p>}
-         <button type="button" onClick={()=>{
-           setDetailsOpen(true)
-           setWorldPanel(null)
-           window.requestAnimationFrame(()=>document.querySelector('[data-weave-world-details]')?.scrollIntoView({behavior:'smooth',block:'start'}))
-         }} className="min-h-11 w-full rounded border border-amber-200/40 px-3 font-bold text-amber-100">
-           View connections and formations
-         </button>
-       </div>}
-     </aside>}
-     {landMode==='3d'&&focus==='food'&&(webgl!==true||!sceneReady)&&<div className="absolute inset-x-7 bottom-20 z-10 mx-auto max-w-sm overflow-hidden rounded-lg border border-amber-200/35 bg-[#082b34]/90 p-2 shadow-2xl">
+     {/* System Switch — Bridge of Radiance IS the WEAVE Open World. This is a
+         rendered 3D scene, not the flat SVG castle map or separate atlas page. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#d7eafb,#7baec5_68%,#294f62)]"/>
+      {webgl===true&&<AdaptiveCanvas camera={{position:[12,21,24],fov:46,near:.1,far:350}}
+        gl={{antialias:false,alpha:true,powerPreference:'low-power'}}
+        fallback={<div role="status" data-weave-world-gpu-fallback="no-illustrated-map" className="flex h-full items-center justify-center px-6 text-center text-sm text-amber-50">Live 3D could not start on this browser. Verified Customer Doors are listed below.</div>}
+        onWorldReady={()=>setSceneReady(true)} mobileGame>
+        <WorldScene domains={displayDomains} links={feed.links} selected={selected} onSelect={tapCastle}
+          carrierCode={carrierCode} focus={focus} placing={placing} onPlace={placeOnLand} preview={candidate}/>
+      </AdaptiveCanvas>}
+      {webgl===null&&<div role="status" className="pointer-events-none absolute inset-x-5 bottom-20 z-10 rounded-lg bg-[#0e3651]/75 px-4 py-3 text-center text-xs text-amber-50">Opening System Switch · WEAVE Live 3D…</div>}
+      {webgl===true&&!sceneReady&&<div role="status" className="pointer-events-none absolute inset-x-5 bottom-20 z-10 rounded-lg bg-[#0e3651]/75 px-4 py-3 text-center text-xs text-amber-50">Rendering the living WEAVE 3D world…</div>}
+      {webgl===false&&<div role="status" data-weave-world-gpu-unavailable="true" className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[radial-gradient(ellipse_at_50%_40%,#8cbdd5,#225273)] px-6 text-center">
+        <p className="text-lg font-black text-amber-50">System Switch · Bridge of Radiance</p>
+        <p className="max-w-sm text-sm leading-6 text-white">This device cannot render the live 3D world. WEAVE will not substitute an illustrated castle screen. You can still browse verified public Customer Doors below.</p>
+        <button type="button" onClick={()=>setDetailsOpen(true)} className="min-h-11 rounded-lg border border-amber-200/70 bg-[#113a55] px-4 text-sm font-bold text-amber-50">Browse public Customer Doors</button>
+      </div>}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-[#061225]/65 to-transparent px-3 pb-8 pt-3">
+        <span className="rounded-md bg-[#061225]/80 px-2 py-1.5 text-[11px] font-bold text-amber-100">System Switch · Bridge of Radiance · WEAVE Open World</span>
+      </div>
+      <nav aria-label="Explore WEAVE physical 3D land" className="absolute left-3 top-12 z-20 flex max-w-[calc(100%-1.5rem)] gap-2">
+        {(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-10 rounded-lg border border-amber-200/35 bg-[#082740]/80 px-3 py-2 text-[11px] font-bold text-amber-50">{view==='food'?'WEAVE Food Store':'File Folder Land'}</button>)}
+      </nav>
+      {focus==='food'&&webgl===false&&<div className="absolute inset-x-7 bottom-20 z-10 mx-auto max-w-sm overflow-hidden rounded-lg border border-amber-200/35 bg-[#082b34]/90 p-2 shadow-2xl">
        <img src="/weave-food/weave-family-products.avif" width={1200} height={700} alt="WEAVE Food Store original product collection" loading="lazy" className="h-auto w-full object-contain"/>
      </div>}
 
-     {landMode==='3d'&&<div className="pointer-events-none absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-[#061225]/85 to-transparent px-3 pb-12 pt-3">
-       <div className="flex items-center justify-between gap-2 text-[11px]">
-         <span className="rounded-md bg-[#061225]/80 px-2 py-1.5 font-bold text-amber-100">
-           WEAVE Live 3D <span className="text-sky-100/75">· {feed.domains.length} {feed.domains.length===1?'castle':'castles'}</span>
-         </span>
-         <span className="rounded-md bg-[#061225]/70 px-2 py-1.5 text-amber-100">Burning River</span>
-       </div>
-     </div>}
-     {landMode==='3d'&&<button type="button" onClick={()=>{setLandMode('atlas');setFocus('world')}}
-       className="absolute left-3 top-[6.5rem] z-30 min-h-10 rounded border border-amber-200/50 bg-[#081a31]/95 px-3 text-xs font-black text-amber-100"
-       data-weave-open-world-atlas-return="true">← WEAVE Open World</button>}
      {role==='client'&&owner&&<div className="absolute right-3 top-16 z-20 flex max-w-[57%] flex-col gap-2" data-client-world-castle-relocation="owner-only">
        {!placing&&<button type="button" className="min-h-10 rounded-xl border border-amber-200/40 bg-[#112b36]/95 px-3 text-xs font-bold text-amber-100"
-          onClick={()=>{setLandMode('3d');setFocus('world');setPage(Math.max(0,Math.floor((owner.worldSlot-1)/48)));setSelected(owner.domainId)}}>
+          onClick={()=>{setFocus('world');setPage(Math.max(0,Math.floor((owner.worldSlot-1)/48)));setSelected(owner.domainId)}}>
           Find my castle
        </button>}
        {!placing?<button type="button" className="min-h-11 rounded-xl border border-cyan-200/45 bg-[#092a36]/95 px-3 text-xs font-black text-cyan-100"
-         onClick={()=>{setLandMode('3d');setSelected(owner.domainId);setFocus('world');setPlacing(true);setCandidate(null);setOperation('Tap an empty area of land to preview your castle position.')}}>
+         onClick={()=>{setSelected(owner.domainId);setFocus('world');setPlacing(true);setCandidate(null);setOperation('Tap an empty area of land to preview your castle position.')}}>
          Position my castle
        </button>:<div className="space-y-2 rounded-xl border border-emerald-200/40 bg-[#082b2b]/95 p-3 text-xs text-white shadow-xl">
          <p className="font-bold text-emerald-100">Tap an open space on the land.</p>
@@ -481,16 +415,12 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
            className="min-h-10 w-full rounded-lg border border-white/30 px-2">Cancel</button>
        </div>}
      </div>}
-     {landMode==='3d'&&<nav aria-label="Explore the WEAVE land" className="absolute left-3 top-14 z-20 flex gap-2">{(['world','food'] as const).map(view=><button key={view} type="button" aria-pressed={focus===view} onClick={()=>setFocus(view)} className="min-h-11 rounded-xl border border-amber-200/30 bg-[#061225]/95 px-3 py-2 text-xs font-bold text-amber-100">{view==='food'?'WEAVE Food Store':'File Folder Land'}</button>)}</nav>}
-     {landMode==='3d'&&<div className="pointer-events-none absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-lg border border-white/20 bg-[#061225]/85 px-3 py-2 text-[11px] text-sky-100">
-       {placing?'Tap free land · Confirm move':focus==='food'?'Tap product · Choose Agent':'Drag · Zoom · Tap castle'}
-     </div>}
-     {landMode==='3d'&&focus==='food'&&<Link href={burningRiverFoodHref(carrierCode,'agent-electrolyte')}
+     {focus==='food'&&<Link href={burningRiverFoodHref(carrierCode,'agent-electrolyte')}
        data-weave-food-direct-carrier-order="true"
        className="absolute bottom-14 right-3 inline-flex min-h-11 items-center rounded-lg border border-amber-200/50 bg-[#07231c]/95 px-3 text-xs font-black text-amber-100 shadow-xl">
        {carrierCode?'Order through my Agent':'Choose a Food Agent'} <ArrowRight className="ml-2 h-4 w-4"/>
      </Link>}
-     {selectedDomain&&focus==='world'&&<div className={`absolute right-3 z-30 w-[min(280px,calc(100%-1.5rem))] rounded-xl border border-amber-200/50 bg-[#081c2a]/95 p-3 shadow-xl ${landMode==='atlas'?'bottom-[17%]':'bottom-14'}`} data-open-world-selected-building={selectedDomain.domainId}>
+     {selectedDomain&&focus==='world'&&<div className={`absolute right-3 z-30 w-[min(280px,calc(100%-1.5rem))] rounded-xl border border-amber-200/50 bg-[#081c2a]/95 p-3 shadow-xl bottom-14`} data-open-world-selected-building={selectedDomain.domainId}>
        <p className="truncate text-xs font-black text-amber-100">{selectedDomain.publicName}</p>
        <p className="mt-1 text-[11px] capitalize text-sky-100/70">{selectedDomain.tier} · {stageLabel[selectedDomain.stage]}</p>
        {role==='client'&&owner?.domainId===selectedDomain.domainId?
@@ -498,9 +428,6 @@ export function BurningRiverLiveWorld({role='visitor',carrierCode=null,requested
          publicHref(selectedDomain)?
          <Link href={publicHref(selectedDomain)!} className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-amber-200 px-2 text-xs font-bold text-[#13263a]">Open public Customer Door · View products <ArrowRight className="ml-1 h-4 w-4"/></Link>:
          <p className="mt-2 text-[11px] text-sky-100/70">This building is forming. Its Customer Door has not been publicly commissioned.</p>}
-     </div>}
-     {helpOpen&&<div className="absolute left-3 top-[11rem] z-30 max-w-[65%] rounded-lg border border-amber-200/50 bg-[#081c2a]/95 p-3 text-xs text-amber-100" role="status">
-       Only LIVE markers represent verified Client File Folder worlds. Select one to enter an authorized private workspace or commissioned public Customer Door. Explore opens the full live 3D land.
      </div>}
      {status==='unavailable'&&<div role="alert" className="absolute bottom-16 left-3 z-20 max-w-[75%] rounded-xl border border-amber-200/50 bg-[#071b2c]/95 p-3 text-xs leading-5 text-amber-100">
        The live land feed did not respond. The landscape remains available while the connection recovers.

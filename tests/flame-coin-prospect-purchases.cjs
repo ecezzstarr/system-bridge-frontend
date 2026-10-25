@@ -51,5 +51,6 @@ assert.ok(adminPage.includes('Credited')&&adminPage.includes('credit'),'Forensic
 assert.ok(retired.includes('status:410')&&retiredAdmin.includes('status:410'),'Retired TRX-sales APIs cannot process orders')
 assert.ok(publicRedirect.includes('/system-switch/bridge-radiance/flame-coin'),'Old prospect URL redirects')
 assert.ok(adminRedirect.includes('/admin/weave-flame-coin-sales'),'Old Admin URL redirects')
-for(const x of [nav,plaza,gate])assert.ok(x.includes('flame-coin'),'Navigation names Flame Coin rather than TRX sales')
+for(const x of [nav,plaza])assert.ok(x.includes('flame-coin'),'Flame Coin sales remain reachable through their actual navigation')
+assert.ok(gate.includes("redirect('/system-switch/world?via=system-switch')"),'System Switch shortcut now resolves straight into WEAVE 3D, not a redundant sales/gate page')
 console.log('Flame Coin prospect purchase, verified wallet transfer and legacy TRX-sale retirement checks passed')

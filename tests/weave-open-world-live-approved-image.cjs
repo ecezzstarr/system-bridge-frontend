@@ -41,14 +41,13 @@ assert.ok(atlas.includes('data-weave-image-entrance="staff"')&&
 assert.ok(css.includes('weave-atlas-river-drift')&&
  css.includes('prefers-reduced-motion:reduce'),
  'Living water and fire preserve reduced-motion accessibility')
-assert.ok(page.includes("import './open-world-atlas.css'")&&
- page.includes('/weave/open-world/scene-preview.webp')&&
- page.includes('data-weave-open-world="system-switch"'),
- 'System Switch preserves the approved picture as a lightweight loading surface for the live world')
-assert.ok(scene.includes("landMode,setLandMode]=useState<'atlas'|'3d'>('3d')")&&
- scene.includes('landMode===\'atlas\'?<WeaveOpenWorldAtlas')&&
- scene.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>'),
- 'Live physical 3D is the default and the official image atlas remains available on demand')
+assert.ok(page.includes('data-weave-open-world="system-switch"')&&
+  page.includes('data-weave-open-world-loader="loading-3d-world"')&&
+  !page.includes('<img src="/weave/open-world/scene-preview.webp"'),
+ 'World loads directly as physical WEAVE 3D without an illustrated loading page')
+assert.ok(scene.includes('<WeaveOpenWorldLandscape domains={domains} placing={placing} onPlace={onPlace}/>')&&
+  !scene.includes('<WeaveOpenWorldAtlas')&&!scene.includes('WeaveWorldMapFallback'),
+ 'The former atlas and SVG castle screenshot do not mount in the active world')
 assert.ok(scene.includes('onWorldReady={()=>setSceneReady(true)}')&&
  scene.includes('<DomainCastle key={d.domainId}')&&
  scene.includes('setPlacing(true)')&&
@@ -74,7 +73,7 @@ assert.ok(scene.includes('const tapCastle=(id:string)=>{')&&
  scene.includes('setSelected(id)')&&
  !scene.includes('if(role===\'client\'&&!owner)return'),
  'Tapping any real castle must allow inspection without depending on a separate private Client session')
-assert.ok(scene.includes("landMode==='atlas'?'bottom-[17%]':'bottom-14'")&&
- scene.includes('publicHref(selectedDomain)'),
- 'Selected castle shows authorized entrances without obscuring the approved atlas image buttons')
+assert.ok(scene.includes('publicHref(selectedDomain)')&&
+  scene.includes('data-world-first-view="live-3d-castle-landscape"'),
+  'Client Customer Doors stay protected in the live 3D world without an image-only switch')
 console.log('PASS: approved WEAVE art, multi-castle 3D, physical geography, inspection, and protected Customer Doors')
