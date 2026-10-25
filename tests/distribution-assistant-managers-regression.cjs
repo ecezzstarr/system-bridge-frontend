@@ -20,7 +20,7 @@ assert.ok(engine.includes('DISTRIBUTION_ASSISTANTS_PER_MANAGER = 2'),'Each of th
 assert.ok(engine.includes("reason:'manager_team_full'"),'A manager cannot appoint more than two assistants')
 assert.ok(engine.includes('DISTRIBUTION_ASSISTANT_MONTHLY_SALARY_NGN = 40_000'),'Assistant monthly salary is ₦40,000')
 assert.ok(application.includes('200 Administration-verified food distributions per calendar month')&&application.includes('FoodDistributionDesk'),'Assistant work is food-only and tracks verified monthly handoffs')
-assert.ok(engine.includes('DISTRIBUTION_ASSISTANT_MONTHLY_FOOD_TARGET = FOOD_DISTRIBUTION_MONTHLY_TARGET')&&food.includes('FOOD_DISTRIBUTION_MONTHLY_TARGET = 200'),'A Manager and their assistants share 300 referrals during probation, then 500 in later team months')
+assert.ok(engine.includes('DISTRIBUTION_ASSISTANT_MONTHLY_FOOD_TARGET = FOOD_DISTRIBUTION_MONTHLY_TARGET')&&food.includes('FOOD_DISTRIBUTION_MONTHLY_TARGET = 200'),'The lead and assistants share 200 verified food distributions each calendar month')
 assert.ok(engine.includes("status='approved'")&&engine.includes('pg_advisory_xact_lock'),'Appointments, not applications, consume capacity under transaction lock')
 assert.ok(engine.includes('manager_user_id'),'Approved assistants are connected to the Distribution Manager')
 assert.ok(engine.includes("['agent','bridger']")&&engine.includes('getLifestyleAccess(userId)'),'Applicants use existing Agent/Bridger standing')
