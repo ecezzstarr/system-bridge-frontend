@@ -88,6 +88,15 @@ export async function getFoodDistributionTeamState(managerUserId:string) {
     FROM weave_food_distribution_records
     WHERE manager_user_id=$1::uuid AND distribution_date >= $2::date AND distribution_date < $3::date
   `,[managerUserId,start,end])
+  const {rows:memberMetrics} = await pool.query(`
+    SELECT distributor_user_id AS "userId",
+      COUNT(*) FILTER (WHERE status='verified')::int AS verified,
+      COUNT(*) FILTER (WHERE status='pending')::int AS pending
+    FROM weave_food_distribution_records
+    WHERE manager_user_id=$1::uuid AND distribution_date >= $2::date AND distribution_date < $3::date
+    GROUP BY distributor_user_id
+  `,[managerUserId,start,end])
+  const metricsByUser=new Map(memberMetrics.map((m:any)=>[String(m.userId),{verified:Number(m.verified||0),pending:Number(m.pending||0)}]))
   const {rows:recent} = await pool.query(`
     SELECT r.id,r.distributor_user_id AS "distributorUserId",u.name AS "distributorName",
       r.product_type AS "productType",r.customer_type AS "customerType",
@@ -107,7 +116,9 @@ export async function getFoodDistributionTeamState(managerUserId:string) {
     remaining:Math.max(0,FOOD_DISTRIBUTION_MONTHLY_TARGET-verified),
     progressPercent:Math.min(100,Math.round(verified/FOOD_DISTRIBUTION_MONTHLY_TARGET*1000)/10),
     productTypesVerified:Number(progress.product_types||0),
-    members:members.map((m:any)=>({userId:String(m.userId),name:String(m.name||'WEAVE colleague'),position:m.position})),
+    members:members.map((m:any)=>({userId:String(m.userId),name:String(m.name||'WEAVE colleague'),position:m.position,
+      verifiedDistributions:metricsByUser.get(String(m.userId))?.verified||0,
+      pendingDistributions:metricsByUser.get(String(m.userId))?.pending||0})),
     recent,
   }
 }
