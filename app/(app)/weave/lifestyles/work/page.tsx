@@ -13,7 +13,7 @@ const guidance:Record<string,JobGuidance>={
   distribution_manager:{
     group:'Distribution Team · Lead',start:'/manager/dashboard',talk:'#team-communication',
     steps:['Set the team distribution plan and assign an accountable owner for each activity.',
-      'Coordinate your two approved Assistant Distribution Managers and the verified referral movement.',
+      'Coordinate your two approved Assistant Food Distribution Managers, product availability, consumer and business orders, delivery handoffs and the 200 verified monthly food-distribution target.',
       'Review submitted work, ask for corrections when needed and verify recorded outcomes.']},
   distribution_assistant:{
     group:'Distribution Team · Assistant',start:'/weave/lifestyles/distribution-assistant',talk:'#team-communication',
