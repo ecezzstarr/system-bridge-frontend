@@ -63,6 +63,11 @@ export default function DistributionAssistantLifestylePage(){
       {appointed&&<>
         <div className="mt-4 grid grid-cols-2 gap-3"><Info label="Verified food distributions this month" value={`${state.verifiedFoodDistributions} / ${target}`}/><Info label="Food distributions remaining" value={String(state.remainingFoodDistributions)}/></div>
         <FoodDistributionDesk/>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <Info label="Salary eligibility (provisional)" value={`₦${Number(state.compensation?.salaryEntitlementNgn||0).toLocaleString('en-NG')}`}/>
+          <Info label="Verified team distributions" value={`${state.verifiedFoodDistributions||0} / ${target}`}/>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-slate-400">{state.compensation?.teamQualified?'Your team has reached 200 Administration-verified food distributions. Salary eligibility remains subject to month-end payroll approval.':'Your team has not yet reached 200 verified food distributions. Pending records do not count until Administration verifies them.'} This preview does not confirm a payment.</p>
         <DistributionTeamWorkspace/>
 
       </>}
