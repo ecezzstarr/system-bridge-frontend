@@ -1,7 +1,7 @@
 import { purchaseAgenticBridger } from '@/lib/agentic-bridger-purchase'
 import { getPool, sql } from '@/lib/db'
 import { notifyAdministrationOfCompanyApplication } from '@/lib/employment-application-notifications'
-import { getReferralCoreState, STAFF_REFERRAL_BONUS_NGN } from '@/lib/referral-bonus'
+import { getReferralCoreState } from '@/lib/referral-bonus'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { DISTRIBUTION_MANAGER_LIFESTYLE as DISTRIBUTION_MANAGER_LIFESTYLE_KEY } from '@/lib/weave-lifestyle-catalog'
 import { getFoodDistributionTeamState, calculateFoodDistributionCompensation, FOOD_DISTRIBUTION_MONTHLY_TARGET } from '@/lib/food-distribution'
