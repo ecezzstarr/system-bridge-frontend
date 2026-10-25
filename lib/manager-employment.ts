@@ -4,20 +4,19 @@ import { notifyAdministrationOfCompanyApplication } from '@/lib/employment-appli
 import { getReferralCoreState, STAFF_REFERRAL_BONUS_NGN } from '@/lib/referral-bonus'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { DISTRIBUTION_MANAGER_LIFESTYLE as DISTRIBUTION_MANAGER_LIFESTYLE_KEY } from '@/lib/weave-lifestyle-catalog'
-import { getDistributionTeamMonthlyReferrals, DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET, DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET } from '@/lib/distribution-team-referrals'
-import { calculateDistributionTeamCompensation } from '@/lib/distribution-team-compensation'
+import { getFoodDistributionTeamState, calculateFoodDistributionCompensation, FOOD_DISTRIBUTION_MONTHLY_TARGET } from '@/lib/food-distribution'
 
 export const MANAGER_EMPLOYMENT_LIMIT = 3
 export const MANAGER_MONTHLY_SALARY_NGN = 70_000
-export const MANAGER_PROBATION_TARGET = DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET
+export const MANAGER_PROBATION_TARGET = FOOD_DISTRIBUTION_MONTHLY_TARGET
 export const MANAGER_PROBATION_MONTHS = 1
-export const MANAGER_DOCUMENT_VERSION = 3
+export const MANAGER_DOCUMENT_VERSION = 4
 export const DISTRIBUTION_MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE_KEY
 // Compatibility alias for existing Manager API paths and tables. The Lifestyle
-// itself is now named Distribution Manager; it remains an overlay on Agent/Bridger.
+// itself is now named Food Distribution Manager; it remains an overlay on Agent/Bridger.
 export const MANAGER_LIFESTYLE = DISTRIBUTION_MANAGER_LIFESTYLE
 export const POSITION_MONTHLY_SUBSCRIPTION_NGN = 0 // Retired: no monthly Bridger subscription
-export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.'
+export const DISTRIBUTION_MANAGER_CORE_DUTY = 'Distribute WEAVE food products to consumers and businesses, coordinate verified order handoffs across all food product types, meet the 200-distribution monthly team target, and report distribution records to Administration.'
 // Compatibility alias for the existing Manager API/UI. This amount renews the
 // underlying Agent/Bridger monthly position subscription, not a Manager-only fee.
 export const MANAGER_CONTINUANCE_NGN = POSITION_MONTHLY_SUBSCRIPTION_NGN
@@ -58,7 +57,7 @@ export async function ensureManagerEmploymentTable() {
       verified_at TIMESTAMPTZ,
       verification_note TEXT,
       monthly_salary_ngn NUMERIC(12,2) NOT NULL DEFAULT 70000,
-      probation_target INTEGER NOT NULL DEFAULT 300,
+      probation_target INTEGER NOT NULL DEFAULT 200,
       core_duty TEXT NOT NULL DEFAULT 'Distribute WEAVE across public channels, carry verified Agent and Bridger acquisition, coordinate campaign movement, coach field distribution, and report distribution movement to Administration.',
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -80,10 +79,10 @@ export async function ensureManagerEmploymentTable() {
   await sql`ALTER TABLE manager_employment ALTER COLUMN status TYPE VARCHAR(24)`
   await sql`ALTER TABLE manager_employment ALTER COLUMN status SET DEFAULT 'pending_verification'`
   await sql`ALTER TABLE manager_employment ALTER COLUMN monthly_salary_ngn SET DEFAULT 70000`
-  await sql`ALTER TABLE manager_employment ALTER COLUMN probation_target SET DEFAULT 300`
-  await sql`UPDATE manager_employment SET probation_target=300 WHERE probation_target<>300`
+  await sql`ALTER TABLE manager_employment ALTER COLUMN probation_target SET DEFAULT 200`
+  await sql`UPDATE manager_employment SET probation_target=200 WHERE probation_target<>200`
   await sql`UPDATE manager_employment SET monthly_salary_ngn=70000 WHERE monthly_salary_ngn=150000`
-  await sql`UPDATE manager_employment SET core_duty=${DISTRIBUTION_MANAGER_CORE_DUTY},updated_at=NOW() WHERE core_duty='Market WEAVE to prospective Agents and Bridgers and carry verified referral movement.'`
+  await sql`UPDATE manager_employment SET core_duty=${DISTRIBUTION_MANAGER_CORE_DUTY},updated_at=NOW() WHERE core_duty<>${DISTRIBUTION_MANAGER_CORE_DUTY}`
   await sql`CREATE INDEX IF NOT EXISTS manager_employment_status_idx ON manager_employment(status, probation_ends_at)`
 }
 
@@ -165,11 +164,11 @@ export async function acceptManagerEmploymentDocument(userId: string, acceptedNa
     await client.query('COMMIT')
     try{
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
-        VALUES (${userId}::uuid,'manager_application','Distribution Manager verification pending','Your signed application is recorded. Administration must verify it before your one-month probation, salary qualification and team appointment permissions begin.','WEAVE Administration')`
+        VALUES (${userId}::uuid,'manager_application','Food Distribution Manager verification pending','Your signed application is recorded. Administration must verify it before your one-month probation, salary qualification and team appointment permissions begin.','WEAVE Administration')`
       await notifyAdministrationOfCompanyApplication({
         kind:'distribution_manager',applicationId:userId,applicantId:userId,
-        positionTitle:'Distribution Manager',name:String(user.name||'Agent or Bridger'),
-        applicationNote:'Signed Distribution Manager employment terms',
+        positionTitle:'Food Distribution Manager',name:String(user.name||'Agent or Bridger'),
+        applicationNote:'Signed Food Distribution Manager employment terms',
       })
     }catch(error){console.error('[manager-employment] verification notification failed',error)}
     return {success:true as const,created:true,employment:result.rows[0]}
@@ -215,8 +214,8 @@ export async function reviewManagerEmployment(adminId:string, applicantId:string
     try{
       await sql`INSERT INTO notifications (user_id,type,title,content,from_user_name)
         VALUES (${applicantId}::uuid,'manager_verification',
-          ${approved?'Distribution Manager verified · probation started':'Distribution Manager application not approved'},
-          ${approved?'Administration has verified your signed Distribution Manager appointment. Your one-month probation starts now; open your team workspace, appoint up to two assistants and work the verified monthly team target.':'Administration has not approved your Distribution Manager application. Review the decision in Lifestyle and submit a new application if appropriate.'},
+          ${approved?'Food Distribution Manager verified · probation started':'Food Distribution Manager application not approved'},
+          ${approved?'Administration has verified your signed Food Distribution Manager appointment. Your one-month probation starts now; open your team workspace, appoint up to two assistants and work the verified monthly team target.':'Administration has not approved your Food Distribution Manager application. Review the decision in Lifestyle and submit a new application if appropriate.'},
           'WEAVE Administration')`
     }catch(error){console.error('[manager-employment] review notification failed',error)}
     return {success:true as const,employment:updated[0]}
@@ -239,22 +238,24 @@ export async function getManagerEmploymentState(userId: string) {
   const continuance=await getManagerContinuanceAccess(userId)
   if(!continuance.eligible)return null
   const employment=await getManagerEmployment(userId)
-  // Referral ledger reconciliation is not a condition for viewing an accepted
-  // employment position. A reporting failure must never hide the signed record.
+  // Referral ledger access is retained for account-level history, but food
+  // distribution—not recruitment—is the performance measure for this role.
   const referral=await getReferralCoreState(userId,{settlePending:false}).catch(error=>{
-    console.error('[manager-employment] referral summary unavailable',error)
+    console.error('[food-distribution-manager] referral summary unavailable',error)
     return null
   })
   const team = employment && ['probation','active'].includes(employment.status)
-    ? await getDistributionTeamMonthlyReferrals(userId).catch(error=>{
-        console.error('[manager-employment] team referral report unavailable',error)
+    ? await getFoodDistributionTeamState(userId).catch(error=>{
+        console.error('[food-distribution-manager] food distribution report unavailable',error)
         return null
       })
     : null
-  const successful=team?.total||0
-  const target=team?.target||DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET
-  const myReferrals=team?.members.find(member=>member.userId===userId)?.referrals||0
-  const compensation=calculateDistributionTeamCompensation({teamReferrals:successful,ownReferrals:myReferrals,teamTarget:target,monthlySalaryNgn:team?Number(employment?.monthly_salary_ngn||MANAGER_MONTHLY_SALARY_NGN):0})
+  const verified=team?.verified||0
+  const target=FOOD_DISTRIBUTION_MONTHLY_TARGET
+  const myDistributions=team?.members.find(member=>member.userId===userId)?.verifiedDistributions||0
+  const compensation=calculateFoodDistributionCompensation({
+    verifiedDistributions:verified,target,monthlySalaryNgn:team?Number(employment?.monthly_salary_ngn||MANAGER_MONTHLY_SALARY_NGN):0
+  })
   return {
     lifestyle:DISTRIBUTION_MANAGER_LIFESTYLE,
     managerAccess:Boolean(continuance.active&&employment&&['probation','active'].includes(employment.status)),
@@ -262,22 +263,21 @@ export async function getManagerEmploymentState(userId: string) {
     continuance,
     employment:employment||null,
     target,
-    successfulReferrals:successful,
-    myReferrals,
+    verifiedFoodDistributions:verified,
+    myFoodDistributions:myDistributions,
     teamMembers:team?.members||[],
-    probationTarget:DISTRIBUTION_TEAM_PROBATION_REFERRAL_TARGET,
-    monthlyTeamTarget:DISTRIBUTION_TEAM_MONTHLY_REFERRAL_TARGET,
-    probationPeriod:Boolean(team?.probation),
-    employmentMonth:team?.monthNumber||null,
-    periodStart:team?.periodStart||null,
-    periodEnd:team?.periodEnd||null,
+    monthlyTeamTarget:FOOD_DISTRIBUTION_MONTHLY_TARGET,
+    probationPeriod:false,
+    employmentMonth:null,
+    periodStart:team?.monthStart||null,
+    periodEnd:team?.monthEnd||null,
     compensation,
-    remaining:Math.max(0,target-successful),
-    progressPercent:target>0?Math.min(100,Math.round((successful/target)*1000)/10):0,
-    referralBonusNgn:STAFF_REFERRAL_BONUS_NGN,
+    remaining:Math.max(0,target-verified),
+    progressPercent:target>0?Math.min(100,Math.round((verified/target)*1000)/10):0,
     totalReferralBonusNgn:Number(referral?.totalBonusNgn||0),
     totalReferralBonusFlameCoin:Number(referral?.totalBonusFlameCoin||0),
     referralCode:referral?.referralCode||employment?.referral_code||null,
     monthlySalaryNgn:Number(employment?.monthly_salary_ngn||MANAGER_MONTHLY_SALARY_NGN),
+    foodDistributionTeam:team,
   }
 }
