@@ -11,7 +11,7 @@ const catalog=read('lib/weave-lifestyle-catalog.ts')
 const lifestyles=read('app/(app)/weave/lifestyles/page.tsx')
 const room=read('app/(app)/manager/dashboard/page.tsx')
 const application=read('app/(app)/weave/lifestyles/distribution-assistant/page.tsx')
-const migration=read('migrations/20261021_distribution_assistant_managers.sql')
+const migration=read('migrations/20261025_food_distribution_manager.sql')
 const salaryMigration=read('migrations/20261022_distribution_assistant_salary_40000.sql')
 const managerDocument=read('app/(app)/manager/dashboard/page.tsx')
 
