@@ -7,6 +7,7 @@ import { FlameEventRiverField } from '@/components/events/flame-event-river-fiel
 import { FlameEventOpenWorld, type FlameDoorFeedStatus } from '@/components/events/flame-event-open-world'
 import { BurningRiverOfficialGateway } from '@/components/events/burning-river-official-gateway'
 import { visiblePoll } from '@/lib/visible-poll'
+import { useEffect, useState } from 'react'
 
 type PublicClientEnterprise = {
   public_slug: string
