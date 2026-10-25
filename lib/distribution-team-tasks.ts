@@ -83,7 +83,7 @@ export async function createDistributionTeamTask(userId:string,targetId:string,r
       (manager_user_id,assigned_user_id,title,instructions)
       VALUES($1::uuid,$2::uuid,$3,$4) RETURNING id`,[userId,targetId,title,instructions])
     await client.query(`INSERT INTO weave_distribution_team_task_history(task_id,actor_user_id,from_status,to_status,note)
-      VALUES($1::uuid,$2::uuid,NULL,'assigned','Assigned by the verified lead Distribution Manager')`,[rows[0].id,userId])
+      VALUES($1::uuid,$2::uuid,NULL,'assigned','Assigned by the verified lead Food Distribution Manager')`,[rows[0].id,userId])
     await client.query('COMMIT')
     try{
       await getPool().query(`INSERT INTO notifications(user_id,type,title,content,from_user_name,link)
