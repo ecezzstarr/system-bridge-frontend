@@ -2,7 +2,6 @@ import { getPool } from '@/lib/db'
 import { getLifestyleAccess } from '@/lib/weave-lifestyle'
 import { ensureManagerEmploymentTable } from '@/lib/manager-employment'
 import { ensureDistributionAssistantSchema } from '@/lib/distribution-assistants'
-import { getDistributionTeamMonthlyReferrals } from '@/lib/distribution-team-referrals'
 
 export type DistributionTeamUpdateKind='message'|'plan'|'progress'|'handoff'
 
@@ -146,15 +145,5 @@ export async function readDistributionEmploymentOverview(){
       ORDER BY CASE WHEN a.status='approved' THEN 0 WHEN a.status='pending' THEN 1 ELSE 2 END,
       a.updated_at DESC LIMIT 100`)
   ])
-  // Referral figures are independent database measurements, not claims from reports.
-  const verified=await Promise.all(teams.rows.map(async row=>{
-    if(!['probation','active'].includes(row.status))return {...row,referralMetrics:null}
-    const report=await getDistributionTeamMonthlyReferrals(String(row.manager_id)).catch(error=>{
-      console.error('[distribution oversight] verified referral summary unavailable',error)
-      return null
-    })
-    return {...row,referralMetrics:report?{total:report.total,target:report.target,
-      remaining:report.remaining,monthNumber:report.monthNumber,probation:report.probation}:null}
-  }))
-  return {teams:verified,updates:updates.rows,assistants:assistants.rows}
+  return {teams:teams.rows,updates:updates.rows,assistants:assistants.rows}
 }
