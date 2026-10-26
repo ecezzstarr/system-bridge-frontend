@@ -10,6 +10,7 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
     if(!active)return
     let frame=0
     let last=0
+    let simulatedTimeMs=0
     let hasDrawn=false
     const tick=(time:number)=>{
       // Hidden worlds must not schedule frames. The visibility listener below
@@ -19,10 +20,11 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
       const delta=last?time-last:1000/fps
       if(!last||delta>=1000/fps){
         if(last)reportRuntimeFrame(delta,1000/fps)
-        // R3F's advance() expects the requestAnimationFrame timestamp in ms.
-        // Passing accumulated seconds makes the manual render loop's clock
-        // run at the wrong scale and can leave animated 3D scenes appearing frozen.
-        advance(time)
+        // R3F's advance() expects milliseconds, not accumulated seconds.
+        // Preserve the 100ms stall cap in the same unit so the scene clock
+        // advances normally without a large jump after a suspended phone tab.
+        simulatedTimeMs+=Math.min(delta,100)
+        advance(simulatedTimeMs)
         if(!hasDrawn){hasDrawn=true;onFirstFrame?.()}
         last=time
       }
