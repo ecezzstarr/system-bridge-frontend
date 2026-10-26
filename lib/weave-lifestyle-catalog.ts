@@ -52,6 +52,7 @@ export const WEAVE_LIFESTYLE_CATALOG = {
     environments: [
       { label: 'Department Applications', href: '/weave/lifestyles/mandate', purpose: 'Apply to Mandate, Forensics or Attorney support.' },
       { label: 'Guidance Department Inbox', href: '/weave/lifestyles/mandate/inbox', purpose: 'Approved staff reply to actual Company Guidance conversations in their assigned department.' },
+      { label: 'Child & Parent Support', href: '/weave/child-support', purpose: 'Approved Forensics personnel verify payment evidence and record transfers; Mandate and Attorney provide practical family guidance.' },
     ],
   },
   [FOOD_PREPARATION_MANAGER_LIFESTYLE]: {
