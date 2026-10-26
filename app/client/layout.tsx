@@ -12,7 +12,7 @@ import { WeaveExistingPageImage } from '@/components/world/weave-existing-page-i
 
 export const metadata: Metadata = {
   title: 'WEAVE of Presence — Client Services',
-  description: 'WEAVE of Presence · System Switch · Bridge Radiance — Client Services',
+  description: 'The Weave of Presence: System Switch — Bridge of Radiance · Client Services',
   icons: {
     icon: [{ url: '/icon.svg?v=3', type: 'image/svg+xml' }],
     shortcut: '/icon.svg?v=3',
