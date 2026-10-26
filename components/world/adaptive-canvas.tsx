@@ -6,12 +6,10 @@ import { reportRuntimeFrame,useAdaptiveRuntime,useOnscreen } from './use-adaptiv
 
 export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number;onFirstFrame?:()=>void}){
   const advance=useThree(state=>state.advance)
-  const clock=useThree(state=>state.clock)
   useEffect(()=>{
     if(!active)return
     let frame=0
     let last=0
-    let elapsed=clock.elapsedTime
     let hasDrawn=false
     const tick=(time:number)=>{
       // Hidden worlds must not schedule frames. The visibility listener below
@@ -21,8 +19,10 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
       const delta=last?time-last:1000/fps
       if(!last||delta>=1000/fps){
         if(last)reportRuntimeFrame(delta,1000/fps)
-        elapsed+=Math.min(delta,100)/1000
-        advance(elapsed)
+        // R3F's advance() expects the requestAnimationFrame timestamp in ms.
+        // Passing accumulated seconds makes the manual render loop's clock
+        // run at the wrong scale and can leave animated 3D scenes appearing frozen.
+        advance(time)
         if(!hasDrawn){hasDrawn=true;onFirstFrame?.()}
         last=time
       }
@@ -42,7 +42,7 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
       document.removeEventListener('visibilitychange',visibilityChange)
       if(frame)cancelAnimationFrame(frame)
     }
-  },[active,fps,advance,clock,onFirstFrame])
+  },[active,fps,advance,onFirstFrame])
   return null
 }
 
