@@ -5,6 +5,15 @@
 - **WEAVE Open World** is the shared physical land inside System Switch where verified File Folder territories, live system previews, Client construction and public Customer Doors appear.
 - **Burning River** is Company Loop 1's Flame Event. Flowing fire and water are part of its activity inside the shared land, not the name of the permanent world. Later company events occupy that same place, preserving Client File Folder ownership and locations.
 
+## One Open World · WEAVE AI File Folder ownership model
+- There is exactly **one Open World** inside System Switch. WEAVE-owned File Folders and human-owned File Folders are all present in this same continuous world; do not create a separate Plus world, tier world, product world, or second Open World.
+- **WEAVE File Folder** is WEAVE's AI-powered File Folder product. WEAVE builds and maintains its product experience and makes File Folder ownership available to humans. A human-owned File Folder is an owned account and private AI-enabled working environment inside the same shared world.
+- **Standard, Pro, Plus, and Premium** are File Folder types/offerings, not separate worlds. Each type may define its own capabilities, construction style, materials, and operating tools, while retaining the same world, entry model, and ownership boundaries.
+- The shared world must represent WEAVE's own File Folder as a genuine, textured 3D structure alongside customer territories. Do not invent a fake completed system: use the real system interface/build asset when available and label incomplete systems as forming.
+- A File Folder is the territory/container; its websites, markets, services, applications, and other systems are structures belonging to that folder—not separate WEAVE businesses or separate worlds.
+- Private systems and construction remain private to the owner and authorized legions. Only genuine previews explicitly published through a public Customer Door may be rendered to other visitors. Public visibility never grants private access.
+- Product catalogue and purchase/access flows must select a File Folder type within the same world. Buying a type must not redirect the customer into a different world or imply that tier names are separate environments.
+
 ## Canonical entry
 `/system-switch` → **System Switch Gate** for signed-in Agent, Bridger and Administration → `/system-switch/world?via=system-switch` → Client File Folder land. Visitors enter `/system-switch/world` through the official event image or public Customer Market. Clients continue entering private systems through their own client gate and may inspect public land separately.
 
@@ -13,11 +22,11 @@ The official Burning River event image's **Customer Door hotspot** goes straight
 Retired `/system-switch/customer-doors` and `/system-switch/customer-doors/[slug]` are server redirects to the canonical world. Old `/flame-event/world` also redirects to the same permanent land, maintaining allowed `carrier`, `door`, `legion`, and crossing parameters.
 
 ## Physical scene and public access
-- The world uses actual Three.js terrain texture, physically modeled trees, footpaths to *verified Client positions*, existing construction-scaled 3D Client structures, tier-sensitive building texture facades, windows and public Customer Door entrances.
+- The world uses actual Three.js terrain texture, physically modeled trees, footpaths to verified positions, construction-scaled 3D File Folder structures, tier-sensitive material facades, windows, real system previews, and public Customer Door entrances. WEAVE's own File Folder and human-owned File Folders occupy this same land.
 - The approved Burning River image is an **architectural reference**, not a substitute wallpaper behind an ordinary 2D page.
 - Only real commissioned public Client Customer Doors have opening links. Buildings forming in public do not grant or imply another Client's private File Folder access.
 - Company Loop 1's live river uses time-animated water/fire shader material inside the world.
-- The Open World contains only Client File Folders and their system/build previews. There is no WEAVE Food Store building, food-store panel, or food-order shortcut in this world.
+- The Open World contains File Folders—including WEAVE's own AI File Folder and human-owned File Folders—and the genuine system/build previews belonging to those folders. There is no WEAVE Food Store building, food-store panel, or food-order shortcut in this world.
 - Preview systems and active builds are parts of their owning Client File Folder. They appear as live, selectable world structures so customers can see the intended system style and construction taking shape in the open field before entering the commissioned public Customer Door. Preview visibility never grants access to a private File Folder.
 - Client business interactions, reciprocal invitations and joint system formation remain behind the existing server permissions and verified Client ownership.
 
@@ -54,4 +63,4 @@ Direct access to other departments' dashboard-world pages is blocked by route-ro
 4. Compare world screenshots against the approved open-world land image. This pass is an implementation, **not certified exact visual parity** with the artwork.
 5. Validate Company Loop 2 transition later. The shared world must persist across event changes.
 
-**Release status:** Code-only. No merge, no Oracle deployment.
+**Release status:** Code-only. This branch documents and pins the one-world ownership model; it does not by itself implement the WEAVE-owned 3D File Folder structure or its product purchase flow. No merge or deployment.
