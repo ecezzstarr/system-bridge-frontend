@@ -42,8 +42,6 @@ export function verifyCastlePlacement(rawX:unknown,rawZ:unknown,occupied:CastleP
     return {ok:false,reason:'Choose a valid place on the WEAVE land.'}
   if(Math.abs(x)>105||Math.abs(z)>105||Math.abs(x)<12)
     return {ok:false,reason:'Choose land away from the river and within the WEAVE world boundary.'}
-  if(Math.hypot(x-9.1,z+5.1)<16)
-    return {ok:false,reason:'The WEAVE Food Store grounds are reserved for visitors.'}
   if(occupied.some(p=>Math.hypot(p.x-x,p.z-z)<CASTLE_CLEARANCE))
     return {ok:false,reason:'Another Client castle occupies this area. Leave space between buildings.'}
   return {ok:true,point:{x:Math.round(x*100)/100,z:Math.round(z*100)/100}}
