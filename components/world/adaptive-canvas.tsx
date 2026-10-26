@@ -6,11 +6,12 @@ import { reportRuntimeFrame,useAdaptiveRuntime,useOnscreen } from './use-adaptiv
 
 export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number;onFirstFrame?:()=>void}){
   const advance=useThree(state=>state.advance)
+  const clock=useThree(state=>state.clock)
   useEffect(()=>{
     if(!active)return
     let frame=0
     let last=0
-    let simulatedTimeMs=0
+    let simulatedTimeMs=clock.elapsedTime*1000
     let hasDrawn=false
     const tick=(time:number)=>{
       // Hidden worlds must not schedule frames. The visibility listener below
@@ -44,7 +45,7 @@ export function FrameDriver({active,fps,onFirstFrame}:{active:boolean;fps:number
       document.removeEventListener('visibilitychange',visibilityChange)
       if(frame)cancelAnimationFrame(frame)
     }
-  },[active,fps,advance,onFirstFrame])
+  },[active,fps,advance,clock,onFirstFrame])
   return null
 }
 
