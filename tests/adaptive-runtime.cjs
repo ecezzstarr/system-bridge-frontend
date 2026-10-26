@@ -133,7 +133,7 @@ function frames(){
   let effect,id=0
   h.sandbox.requestAnimationFrame=fn=>{callbacks.set(++id,fn);return id}
   h.sandbox.cancelAnimationFrame=id=>callbacks.delete(id)
-  const state={clock,advance:time=>{clock.elapsedTime=time;rendered.push(time)}}
+  const state={clock,advance:time=>{clock.elapsedTime=time/1000;rendered.push(time)}}
   const {FrameDriver}=h.load('components/world/adaptive-canvas.tsx',{
     react:{useEffect:fn=>effect=fn},'react/jsx-runtime':{},
     '@react-three/fiber':{useThree:selector=>selector(state)},
