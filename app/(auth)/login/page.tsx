@@ -93,7 +93,7 @@ export default function LoginPage() {
             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <Input
               type="email"
-              placeholder="Email"
+              placeholder={WEAVE_WRITING.positionAccess.email}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <Input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Password"
+              placeholder={WEAVE_WRITING.positionAccess.password}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="pl-10 pr-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
@@ -127,7 +127,7 @@ export default function LoginPage() {
               href={administrationPortal ? '/forgot-password?portal=admin' : '/forgot-password'} 
               className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
             >
-              Forgot password?
+              {WEAVE_WRITING.positionAccess.forgotPassword}
             </Link>
           </div>
 
@@ -140,7 +140,7 @@ export default function LoginPage() {
               {isSubmitting || isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                'Sign In'
+                WEAVE_WRITING.positionAccess.signIn
               )}
             </Button>
 
@@ -168,7 +168,7 @@ export default function LoginPage() {
           <div className="text-center text-sm">
             <span className="text-slate-400">{"Don't have an account? "}</span>
             <Link href="/register" className="text-blue-400 hover:text-blue-300">
-              Register
+              {WEAVE_WRITING.positionAccess.register}
             </Link>
           </div>
         </form>
