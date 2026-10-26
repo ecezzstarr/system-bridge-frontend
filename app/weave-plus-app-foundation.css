@@ -133,3 +133,20 @@ html[data-weave-app-theme="river-gold"] [data-weave-environment="flame-event-loo
   text-shadow: none;
   filter: none;
 }
+
+
+
+/* Inner routes inherit Plus ink on the light company ground. Existing
+   explicitly styled dark operating stations retain their own text colors. */
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell,.weave-environment-surface
+) {
+  color: #183b55;
+  text-shadow: none;
+}
+html[data-weave-app-theme="river-gold"]:not([data-weave-loop-theme="one-nigerian"]) :is(
+  .weave-app-shell,.weave-client-shell,.weave-environment-surface
+) :is(h1,h2,h3,h4,h5) {
+  text-shadow: none;
+  filter: none;
+}

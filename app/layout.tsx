@@ -28,8 +28,8 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   metadataBase: new URL(WEAVE_PUBLIC_ORIGIN),
   applicationName: 'WEAVE of Presence',
-  title: 'WEAVE of Presence — System Switch — Bridge Radiance',
-  description: 'Interaction in Motion: a living WEAVE environment for real participation, systems, value and livelihood.',
+  title: 'The Weave of Presence: System Switch — Bridge of Radiance',
+  description: 'Interaction in Motion. The Weave of Presence: System Switch — Bridge of Radiance. A living environment for participation, working systems, value and livelihood.',
   manifest: '/manifest.webmanifest',
   alternates: { canonical: '/' },
   icons: {

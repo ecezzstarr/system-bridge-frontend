@@ -62,3 +62,26 @@ assert.equal((theme.match(/{/g)||[]).length,(theme.match(/}/g)||[]).length,
   'Global CSS blocks should be balanced')
 
 console.log('PASS: WEAVE shared river-gold root, homepage header/footer, four role worlds, public event, world boundary and official images')
+
+const manifest=read('app/manifest.ts')
+const logo=read('public/weave-logo.svg')
+const writing=read('lib/weave-writing.ts')
+const architecture=read('lib/weave-architecture.ts')
+const firstParty=read('lib/weave-first-party-system.ts')
+const plus=read('app/weave-plus-app-foundation.css')
+assert.ok(root.includes('The Weave of Presence: System Switch — Bridge of Radiance'),
+  'Root metadata uses the complete official institutional name')
+assert.ok(manifest.includes('The Weave of Presence: System Switch — Bridge of Radiance'),
+  'Installed app metadata uses the complete official institutional name')
+assert.ok(logo.includes('BRIDGE OF RADIANCE') && !logo.includes('BRIDGE RADIANCE'),
+  'Visible official SVG wordmark uses the approved name')
+assert.ok(writing.includes('Bridge of Radiance') && !writing.includes("'Bridge Radiance'"),
+  'Shared writing constants use the approved name')
+assert.ok(architecture.includes('Bridge of Radiance') && !architecture.includes('Bridge Radiance'),
+  'Architecture prompts use the approved name')
+assert.ok(firstParty.includes('Bridge of Radiance') && !firstParty.includes('Bridge Radiance'),
+  'First-party system metadata uses the approved name')
+assert.ok(manifest.includes("background_color: '#f4f9fc'") && manifest.includes("theme_color: '#eaf6fc'"),
+  'Installed app splash and browser chrome match the Plus light palette')
+assert.ok(plus.includes('.weave-client-shell') && plus.includes('color: #183b55'),
+  'Inner route shells inherit readable Plus river-ink without blanket card inversion')

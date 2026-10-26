@@ -10,7 +10,7 @@ export const WEAVE_ARCHITECTURE = {
       'The board is the responsive intelligence humans write into. It can read, organize, calculate, build, connect, and act on what is written while the human remains the source of direction and judgment.',
   },
   subject: {
-    name: 'The Weave of Presence: System Switch — Bridge Radiance',
+    name: 'The Weave of Presence: System Switch — Bridge of Radiance',
     description:
       'The fixed subject through which people can recognize, organize, build and continue what they bring into WEAVE.',
   },
@@ -23,7 +23,7 @@ export const WEAVE_ARCHITECTURE = {
   systemSwitch:
     'System Switch is the Client crossing where what the person brings can become a working File Folder world.',
   bridgeRadiance:
-    'Bridge Radiance is where the human connection remains visible while a topic finds its next useful place in WEAVE.',
+    'Bridge of Radiance is where the human connection remains visible while a topic finds its next useful place in WEAVE.',
 } as const
 
 export function normalizeWeaveTopic(topic?: string | null) {
@@ -37,9 +37,9 @@ export function normalizeWeaveTopic(topic?: string | null) {
 export const WEAVE_ARCHITECTURE_PROMPT = `Institutional subject model:
 - School: Existence — Earth and the space beyond Earth are the field in which learning, building, discovery, and participation continue.
 - Board: Intelligence — the responsive surface a human writes into. It can read, organize, calculate, build, connect, and act on what is written, but the human remains the source of direction and judgment.
-- Subject: The Weave of Presence: System Switch — Bridge Radiance.
+- Subject: The Weave of Presence: System Switch — Bridge of Radiance.
 - Topics: whatever the human and Weave are currently building, doing, discovering, solving, organizing, operating, or participating in.
 - System Switch: the crossing that carries the human and the current topic into the subject.
-- Bridge Radiance: the visible continuation of the topic as the movement continues through life, work, systems, and participation.
+- Bridge of Radiance: the visible continuation of the topic as the movement continues through life, work, systems, and participation.
 
 Operational rule: keep the subject stable while the topic can change without limit. Recognize the current topic from the person's interaction and help make that topic functional inside Weave. Do not collapse Weave into a single topic, page, tool, or chatbot.`

@@ -1,9 +1,9 @@
 export const WEAVE_FIRST_PARTY_SYSTEM = {
   publicSlug: 'weave',
   weaveSystemId: 'weave-core',
-  systemName: 'WEAVE of Presence · System Switch · Bridge Radiance',
+  systemName: 'The Weave of Presence: System Switch — Bridge of Radiance',
   shortName: 'WEAVE',
-  summary: 'The official WEAVE operating environment: Presence, System Switch, Bridge Radiance, role worlds, File Folders, Customer Doors, participation, communication and company movement in one continuously updated system.',
+  summary: 'The official WEAVE operating environment: Presence, System Switch, Bridge of Radiance, role worlds, File Folders, Customer Doors, participation, communication and company movement in one continuously updated system.',
   category: 'WEAVE',
   packageType: 'pwa',
   publisherName: 'WEAVE Administration',

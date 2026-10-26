@@ -5,13 +5,13 @@ const ICON_VERSION = '3'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'WEAVE of Presence — System Switch — Bridge Radiance',
+    name: 'The Weave of Presence: System Switch — Bridge of Radiance',
     short_name: 'WEAVE',
-    description: 'Interaction in Motion: people, ideas, opportunities, value and livelihood in one living WEAVE environment.',
+    description: 'Interaction in Motion. The Weave of Presence: System Switch — Bridge of Radiance. People, participation, working systems, value and livelihood in one living WEAVE.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#06152e',
-    theme_color: '#06152e',
+    background_color: '#f4f9fc',
+    theme_color: '#eaf6fc',
     icons: [
       {
         src: `/icon.svg?v=${ICON_VERSION}`,

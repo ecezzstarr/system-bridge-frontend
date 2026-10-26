@@ -4,7 +4,7 @@ export const WEAVE_WRITING_STYLE = {
     'WEAVE',
     'The Weave of Presence',
     'System Switch',
-    'Bridge Radiance',
+    'Bridge of Radiance',
     'Interaction in Motion',
     'Prospect',
     'Client',
@@ -40,12 +40,12 @@ export const WEAVE_WRITING_STYLE = {
 export const WEAVE_WRITING = {
   identity: {
     institution: 'The Weave of Presence',
-    subject: 'System Switch — Bridge Radiance',
+    subject: 'System Switch — Bridge of Radiance',
     movement: 'Interaction in Motion',
   },
 
   bridgeRadiance: {
-    eyebrow: 'Bridge Radiance',
+    eyebrow: 'Bridge of Radiance',
     title: 'Begin with what is already present.',
     detail:
       'Speak from what is real now. Bridge AI and the Bridger can recognize what is already present and open the next useful part of WEAVE without forcing the crossing.',

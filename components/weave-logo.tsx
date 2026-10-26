@@ -27,11 +27,11 @@ export function WeaveLogo({ className, size = "md", showText = true }: WeaveLogo
         "weave-logo-live inline-flex items-center select-none",
         className
       )}
-      aria-label="WEAVE of Presence — System Switch — Bridge Radiance"
+      aria-label="The Weave of Presence: System Switch — Bridge of Radiance"
     >
       <img
         src={showText ? "/weave-logo.svg" : "/icon.svg"}
-        alt="WEAVE of Presence — System Switch — Bridge Radiance"
+        alt="The Weave of Presence: System Switch — Bridge of Radiance"
         className={cn(
           "block object-contain",
           showText ? fullSizes[size] : markSizes[size]
