@@ -43,3 +43,19 @@ assert.ok(carrier.includes("redirect('/flame-event?carrier='+encodeURIComponent(
 assert.ok(living.includes("type PresenceElement = 'water' | 'fire' | 'confluence'"),'Presence remains elemental, never humanoid')
 assert.ok(staffEntry.includes('<PositionEventWorld')&&clientEntry.includes('<PositionEventWorld'),'Client and staff event grounds remain available inside controlled routes')
 console.log('Burning River and System Switch share live water/fire, physical bridge, real Client doors, public permissions, Agent attribution, and phone movement')
+
+const openWorld=read('components/events/burning-river-live-world.tsx')
+const worldDomains=read('lib/weave-open-world-domains.ts')
+const worldDocs=read('docs/weave-open-world-system-switch.md')
+assert.ok(!openWorld.includes('BurningRiverFoodStore3D')&&!openWorld.includes('burningRiverFoodHref'),
+  'The permanent Open World contains no Food Store scene or food-order shortcut')
+assert.ok(!openWorld.includes('WEAVE Food Store')&&!openWorld.includes("['world','food']"),
+  'No Food Store control or food panel remains in the Open World UI')
+assert.ok(openWorld.includes('preview systems')&&openWorld.includes('activeBuilds'),
+  'Each File Folder visibly identifies its preview systems and active builds in the world')
+assert.ok(openWorld.includes('data-world-domain-construction="recorded"'),
+  'File Folder construction previews remain represented by live 3D structures')
+assert.ok(!worldDomains.includes('WEAVE Food Store grounds are reserved'),
+  'Removed Food Store grounds are available for File Folder land placement')
+assert.ok(worldDocs.includes('Preview systems and active builds are parts of their owning Client File Folder'),
+  'Open World doctrine defines previews/builds as File Folder parts, not separate stores')
